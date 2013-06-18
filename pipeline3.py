@@ -2,8 +2,8 @@
 Automated processing of MiSeq data.  
 
 Do a preliminary map of short reads in paired-end FASTQ files to a
-large set of reference sequences.  Split SAM file output into
-multiple SAM files by reference.  Remap all original FASTQ data
+large set of reference sequences.  Split the SAM file output into
+multiple SAM files by reference.  Remap all the original FASTQ data
 to new reference sequences generated as the consensus of each SAM
 file.
 
@@ -18,18 +18,21 @@ from seqUtils import convert_fasta
 from glob import glob
 import subprocess
 from sam2fasta import *
+#import parsePileup as pp
 
-if len(sys.argv) != 3:
+#path = '/Users/apoon/wip/miseq/data/quebec/HIV20120420/'
+if len(sys.argv) == 2:
 	print 'Usage: python pipeline3.py /path/to/*R1*.fastq 20'
 	sys.exit()
 
 root = sys.argv[1]
-qCutoffForBaseCensor = sys.argv[2]
+qCutoff = sys.argv[2]
 
-# Reference sequences for bowtie2-build
-ref = '/Users/emartin/Desktop/Art_MiSeq_Processing_Scripts/cfe_reference_sequences/cfe'
+# path to reference sequence files (processed by bowtie2-build)
+#ref = '/Users/apoon/wip/miseq/data/refs/cfe'
+ref = '/Users/emartin/Desktop/Art_MiSeq_Pipeline_Git/miseqpipeline/cfe_reference_sequences/cfe'
 
-# Get names of references
+# get names of references
 infile = open(ref+'.fasta', 'rU')
 refnames = []
 for line in infile:
@@ -37,6 +40,7 @@ for line in infile:
 		refnames.append(line.strip('>\n'))
 
 infile.close()
+
 
 def remap (f1, f2, samfile, ref):
 	"""
@@ -128,7 +132,7 @@ for f in files:
 		
 		print prefix, 'generating FASTA for', refname
 		infile = open(samfile, 'rU')
-		fasta = sam2fasta(infile, cutoff=qCutoffForBaseCensor)
+		fasta = sam2fasta(infile, cutoff=qCutoff)
 		infile.close()
 		
 		if fasta:

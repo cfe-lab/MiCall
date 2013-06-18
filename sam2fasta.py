@@ -159,7 +159,7 @@ def sam2fasta (infile, cutoff):
 				i += 2
 				continue
 			
-			seq2 = '-'*pos2 + censor_bases(seq2, qual2)
+			seq2 = '-'*pos2 + censor_bases(seq2, qual2, cutoff)
 			
 			mseq = merge_pairs(seq1, seq2)
 			if mseq.count('N') / float(len(mseq)) < 0.5:
