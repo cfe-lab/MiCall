@@ -19,13 +19,14 @@ from glob import glob
 import subprocess
 from sam2fasta import *
 
-if len(sys.argv) < 2:
-	print 'Usage: python pipeline3.py /path/to/*R1*.fastq'
+if len(sys.argv) != 3:
+	print 'Usage: python pipeline3.py /path/to/*R1*.fastq 20'
 	sys.exit()
 
 root = sys.argv[1]
+qCutoffForBaseCensor = sys.argv[2]
 
-# Specify the reference sequence files for bowtie2-build
+# Reference sequences for bowtie2-build
 ref = '/Users/emartin/Desktop/Art_MiSeq_Processing_Scripts/cfe_reference_sequences/cfe'
 
 # Get names of references
@@ -127,7 +128,7 @@ for f in files:
 		
 		print prefix, 'generating FASTA for', refname
 		infile = open(samfile, 'rU')
-		fasta = sam2fasta(infile, cutoff=10)
+		fasta = sam2fasta(infile, cutoff=qCutoffForBaseCensor)
 		infile.close()
 		
 		if fasta:
