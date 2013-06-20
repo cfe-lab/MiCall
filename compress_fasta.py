@@ -6,11 +6,22 @@ Output new FASTA with extension *.seq
 import sys
 from seqUtils import convert_fasta
 
-files = sys.argv[1:]
+helpOutput = """
+Usage: python compress_fasta.py <minCount> <fasta_files_to_collapse>
+Example (min count 3): python compress_fasta.py 3 ../path/to/files/*.fasta.5
+Example (no min count): python compress_fasta.py 0 ../path/to/files/*.fasta.5
+you can use $(ls PATH)
+"""
+
+if len(sys.argv) <= 2:
+	print helpOutput
+	sys.exit()
+
+minCount = int(sys.argv[1])
+files = sys.argv[2:]
 
 if len(files) == 0:
-	print 'usage: python compress_fasta.py ../path/to/files/*.fasta.5'
-	print 'you can use $(ls PATH)'
+	print helpOutput
 	sys.exit()
 
 for f in files:
@@ -37,10 +48,13 @@ for f in files:
 	
 	intermed = [(count, s) for s, count in d.iteritems()]
 	intermed.sort(reverse=True)
-	
-	outfile = open(f+'.seq', 'w')
-	
+
+	outfilename = "{}.{}.seq".format(f,minCount)
+	#outfile = open(f+'.seq', 'w')
+	outfile = open(outfilename, 'w')
+
 	for i, (count, seq) in enumerate(intermed):
-		outfile.write('>%s_variant_%d_count_%d\n%s\n' % (prefix, i, count, seq))
+		if count >= minCount:
+			outfile.write('>%s_variant_%d_count_%d\n%s\n' % (prefix, i, count, seq))
 	
 	outfile.close()

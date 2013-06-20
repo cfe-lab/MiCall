@@ -136,7 +136,8 @@ for f in files:
 		infile.close()
 		
 		if fasta:
-			outfile = open(samfile + '.fasta', 'w')
+			outfilename = "{}.{}.fasta".format(f, cutoff)
+			outfile = open(outfilename, 'w')
 			outfile.write(fasta)
 			outfile.close()
 	
