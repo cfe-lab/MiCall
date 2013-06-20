@@ -53,7 +53,7 @@ def apply_cigar (cigar, seq, qual):
 	return shift, newseq, newqual
 
 
-def censor_bases (seq, qual, cutoff):
+def censor_bases (seq, qual, cutoff=10):
 	"""
 	For each base in a nucleotide sequence and quality string,
 	replace a base with an ambiguous character 'N' if its associated
@@ -100,7 +100,7 @@ def merge_pairs (seq1, seq2):
 	return mseq
 
 
-def sam2fasta (infile, cutoff):
+def sam2fasta (infile, cutoff=10):
 	"""
 	Parse SAM file contents and return FASTA string.  In the case of
 	a matched set of paired-end reads, merge the reads together into
@@ -108,7 +108,7 @@ def sam2fasta (infile, cutoff):
 	"""
 	fasta = ''
 	lines = infile.readlines()
-	
+
 	# advance to first data line
 	for start, line in enumerate(lines):
 		if not line.startswith('@'):

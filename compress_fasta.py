@@ -1,5 +1,5 @@
 """
-Collapse all identical reads and keep track of read count.
+Collapse identical reads and track of read count.
 Output new FASTA with extension *.seq
 """
 
@@ -8,9 +8,8 @@ from seqUtils import convert_fasta
 
 files = sys.argv[1:]
 
-
 if len(files) == 0:
-	print 'usage: python compress_fasta.py (files)'
+	print 'usage: python compress_fasta.py ../path/to/files/*.fasta.5'
 	print 'you can use $(ls PATH)'
 	sys.exit()
 
@@ -20,6 +19,7 @@ for f in files:
 	
 	infile = open(f, 'rU')
 	try:
+		print "convert_fasta({})".format(filename)
 		fasta = convert_fasta(infile.readlines())
 	except:
 		print 'failed to convert', f
@@ -27,7 +27,7 @@ for f in files:
 	
 	infile.close()
 	
-	# collect identical sequences
+	# Collect identical sequences
 	d = {}
 	for h, s in fasta:
 		if d.has_key(s):

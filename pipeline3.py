@@ -21,7 +21,7 @@ from sam2fasta import *
 #import parsePileup as pp
 
 #path = '/Users/apoon/wip/miseq/data/quebec/HIV20120420/'
-if len(sys.argv) == 2:
+if len(sys.argv) != 3:
 	print 'Usage: python pipeline3.py /path/to/*R1*.fastq 20'
 	sys.exit()
 
@@ -132,7 +132,7 @@ for f in files:
 		
 		print prefix, 'generating FASTA for', refname
 		infile = open(samfile, 'rU')
-		fasta = sam2fasta(infile, cutoff=qCutoff)
+		fasta = sam2fasta(infile, qCutoff)
 		infile.close()
 		
 		if fasta:
