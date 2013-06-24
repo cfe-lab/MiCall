@@ -1,6 +1,8 @@
 """
 Resume pipeline3.py from the sam2fasta stage
 
+Starting with *.remap.sam, generate *.qScore.fasta
+
 Dependencies: sam2fasta
 """
 

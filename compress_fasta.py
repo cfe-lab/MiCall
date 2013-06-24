@@ -1,6 +1,12 @@
 """
 Collapse identical reads and track of read count.
-Output new FASTA with extension *.seq
+
+Fasta headers are renamed to only reference the
+sample, as determined by the prefix in the filename
+of the fasta file itself (As opposed to the header)
+
+Input: remap.sam.<qScore>.fasta
+Output: remap.sam.<qScore>.fasta.<minCount>.seq
 """
 
 import sys
