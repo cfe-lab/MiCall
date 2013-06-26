@@ -25,10 +25,11 @@ if len(sys.argv) != 3:
 G2P_FPR_cutoff = float(sys.argv[1])
 globPath = sys.argv[2] + '*.HIV1B-env.remap.sam.*.fasta.*.seq.v3'
 
-print "filename,sample,qCutoff,minCount,G2PFPRcutoff,total_X4_seqs,total_seqs,proportion_X4"
-
+print "sample,qCutoff,minCount,G2PFPRcutoff,total_X4_seqs,total_seqs,proportion_X4"
 
 files = glob(globPath)
+
+d = {}
 
 # For each v3 file containing G2P scores, determine proportion X4
 for f in files:
@@ -67,8 +68,67 @@ for f in files:
 		except:
 			continue
 
+
 	proportion_X4 = float(total_X4_seqs) / float(total_seqs)
 
-	# FIXME: Store data for (sample, qCutoff, minCount, G2P cutoff) - ROWS TO COLLUMNS CONVERSION
+    # Each sample contains a list of (filterType, data) tuples - themselves also tuples
+	filterType = (qCutoff, minCount, str(G2P_FPR_cutoff))
+	#data = (total_X4_seqs, total_seqs)
+	data = "%.3f" % proportion_X4
 
-	print filename+","+sample+","+qCutoff+","+minCount+","+str(G2P_FPR_cutoff)+"," +str(total_X4_seqs)+","+str(total_seqs)+","+str(proportion_X4)
+	myTuple = (filterType, data)
+
+	if sample not in d.keys():
+		d[sample] = []
+
+	d[sample].append(myTuple)
+
+# For each sample
+for sample in d:
+
+	q_0_min_1 = ""; q_10_min_1 = ""; q_15_min_1 = ""; q_20_min_1 = ""
+	q_0_min_3 = ""; q_10_min_3 = ""; q_15_min_3 = ""; q_20_min_3 = ""
+	q_0_min_50 = ""; q_10_min_50 = ""; q_15_min_50 = ""; q_20_min_50 = ""
+
+	# Traverse the list
+	for myTuple in d[sample]:
+		filterType = myTuple[0]; data = myTuple[1]
+		qCutoff = int(filterType[0]); minCount = int(filterType[1]); G2P_cutoff = float(filterType[2])
+
+		if qCutoff == 0 and minCount == 1:
+			q_0_min_1 = data
+
+		if qCutoff == 0 and minCount == 3:
+			q_0_min_3 = data
+
+		if qCutoff == 0 and minCount == 50:
+			q_0_min_50 = data
+
+		if qCutoff == 10 and minCount == 1:
+			q_10_min_1 = data
+
+		if qCutoff == 10 and minCount == 3:
+			q_10_min_3 = data
+
+		if qCutoff == 10 and minCount == 50:
+			q_10_min_50 = data
+
+		if qCutoff == 15 and minCount == 1:
+			q_15_min_1 = data
+
+		if qCutoff == 15 and minCount == 3:
+			q_15_min_3 = data
+
+		if qCutoff == 15 and minCount == 50:
+			q_15_min_50 = data
+
+		if qCutoff == 20 and minCount == 1:
+			q_20_min_1 = data
+
+		if qCutoff == 20 and minCount == 3:
+			q_20_min_3 = data
+
+		if qCutoff == 20 and minCount == 50:
+			q_20_min_50 = data
+
+	print sample + "," 	+ q_0_min_1 + "," + q_10_min_1 + "," + q_15_min_1 + "," + q_20_min_1 + q_0_min_3 + "," + q_10_min_3 + "," + q_15_min_3 + "," + q_20_min_3 + q_0_min_50 + "," + q_10_min_50 + "," + q_15_min_50 + "," + q_20_min_50
