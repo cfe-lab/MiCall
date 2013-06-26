@@ -2,6 +2,7 @@
 Resume pipeline3.py from the sam2fasta stage
 
 Starting with *.remap.sam, generate *.qScore.fasta
+Followup step: compress_fasta.py to generate minCount.seq
 
 Dependencies: sam2fasta
 """

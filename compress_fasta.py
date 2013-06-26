@@ -5,6 +5,9 @@ Fasta headers are renamed to only reference the
 sample, as determined by the prefix in the filename
 of the fasta file itself (As opposed to the header)
 
+Previous step: pipeline3_resume_from_sam2fasta.py
+Following step: extract_V3.py
+
 Input: remap.sam.<qScore>.fasta
 Output: remap.sam.<qScore>.fasta.<minCount>.seq
 """

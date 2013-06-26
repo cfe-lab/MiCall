@@ -1,21 +1,39 @@
 #!/bin/bash
 
-# Generate a matrix of different QC cutoffs
+# Generate matrix of different quality rules
 
-# 1) Generate fasta files with different base censoring rules
-python pipeline3_resume_from_sam2fasta.py ../../130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/ 0
-python pipeline3_resume_from_sam2fasta.py ../../130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/ 10
-python pipeline3_resume_from_sam2fasta.py ../../130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/ 15
-python pipeline3_resume_from_sam2fasta.py ../../130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/ 20
+DATAPATH="/Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/"
+
+exit # ONLY ACTIVATE THIS IF YOU REALLY WANT THIS TO GO...!!
+
+# 1) Starting with *.remap.sam files, generate .fasta files (with base censoring rules)
+python pipeline3_resume_from_sam2fasta.py $DATAPATH 0
+python pipeline3_resume_from_sam2fasta.py $DATAPATH 10
+python pipeline3_resume_from_sam2fasta.py $DATAPATH 15
+python pipeline3_resume_from_sam2fasta.py $DATAPATH 20
 
 # 2) Focus only on HIV1B-env fasta files
-rm /Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/*HLA*.fasta
-rm /Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/*pol*.fasta
+rm $DATAPATH*HLA*.fasta
+rm $DATAPATH*pol*.fasta
 
 # 3) Generate different min count seq files from fasta (Ex: F00142.HIV1B-env.remap.sam.15.fasta.3.seq)
-python compress_fasta.py 1 ../../130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/*remap.sam.[0-9]*.fasta
-python compress_fasta.py 3 ../../130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/*remap.sam.[0-9]*.fasta
-python compress_fasta.py 50 ../../130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/*remap.sam.[0-9]*.fasta
+python compress_fasta.py 1 $DATAPATH*remap.sam.[0-9]*.fasta
+python compress_fasta.py 3 $DATAPATH*remap.sam.[0-9]*.fasta
+python compress_fasta.py 50 $DATAPATH*remap.sam.[0-9]*.fasta
 
-# 4) Extract V3 out of env sequences (Ex: F00142.HIV1B-env.remap.sam.15.fasta.3.seq.v3)
+# 4) Extract V3 out of env sequences (Ex: Check *.HIV1B-env.remap.sam.10.fasta.*.seq files, generate .v3 files)
+# FIXME: NEEDS TO BE FORMALLY PARALLELIZED, WITH AMPERSAND?
+python extractV3_with_G2P.py 0 $DATAPATH
+python extractV3_with_G2P.py 10 $DATAPATH
+python extractV3_with_G2P.py 15 $DATAPATH
+python extractV3_with_G2P.py 20 $DATAPATH
+
+#python extractV3_with_G2P.py ../../130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/
+
 # 5) Feed into G2P with FPR cutoffs:	3.0  3.5  4.0  5.0  5.75  7.5
+python determine_proportion_X4.py 3.0 $DATAPATH >> results
+python determine_proportion_X4.py 3.5 $DATAPATH >> results
+python determine_proportion_X4.py 4.0 $DATAPATH >> results
+python determine_proportion_X4.py 5.0 $DATAPATH >> results
+python determine_proportion_X4.py 5.75 $DATAPATH >> results
+python determine_proportion_X4.py 7.5 $DATAPATH >> results
