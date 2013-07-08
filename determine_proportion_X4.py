@@ -23,12 +23,13 @@ if len(sys.argv) != 3:
 	sys.exit()
 
 G2P_FPR_cutoff = float(sys.argv[1])
+G2P = str(G2P_FPR_cutoff) # Shorthand
+
+# "q" needed to prevent excel from interpreting my labels as dates
+print "sample,G2P_FPR_Cutoff,q0-1" + G2P + ",q10-1-" + G2P + ",q15-1-" + G2P + ",q20-1-" + G2P + ",q0-3-" + G2P + ",q10-3-" + G2P + ",q15-3-" + G2P + ",q20-3-" + G2P + ",q0-50-" + G2P + ",q10-50" + G2P + ",q15-50" + G2P + ",q20-50" + G2P
+
 globPath = sys.argv[2] + '*.HIV1B-env.remap.sam.*.fasta.*.seq.v3'
-
-print "sample,qCutoff,minCount,G2PFPRcutoff,total_X4_seqs,total_seqs,proportion_X4"
-
 files = glob(globPath)
-
 d = {}
 
 # For each v3 file containing G2P scores, determine proportion X4
@@ -36,6 +37,10 @@ for f in files:
 
 	# Get sample/qCutoff/minCount information out of filename
 	filename = os.path.basename(f)
+
+	# Ignore positive controls and negative controls
+	if "pn" in filename or "neg" in filename or "NEG" in filename: continue	
+
 	filenameFields = re.split('[.]', filename)
 	sample =filenameFields[0]
 	qCutoff = filenameFields[4]
@@ -45,7 +50,7 @@ for f in files:
 	try:
 		fasta = convert_fasta(infile.readlines())
 	except:
-		print 'failed to convert', f
+		sys.stderr.write('Failed to convert ' + f + '\n')
 		continue
 	infile.close()
 
@@ -69,11 +74,10 @@ for f in files:
 			continue
 
 
-	proportion_X4 = float(total_X4_seqs) / float(total_seqs)
+	proportion_X4 = float(total_X4_seqs) / float(total_seqs) * 100
 
     # Each sample contains a list of (filterType, data) tuples - themselves also tuples
 	filterType = (qCutoff, minCount, str(G2P_FPR_cutoff))
-	#data = (total_X4_seqs, total_seqs)
 	data = "%.3f" % proportion_X4
 
 	myTuple = (filterType, data)
@@ -86,9 +90,9 @@ for f in files:
 # For each sample
 for sample in d:
 
-	q_0_min_1 = ""; q_10_min_1 = ""; q_15_min_1 = ""; q_20_min_1 = ""
-	q_0_min_3 = ""; q_10_min_3 = ""; q_15_min_3 = ""; q_20_min_3 = ""
-	q_0_min_50 = ""; q_10_min_50 = ""; q_15_min_50 = ""; q_20_min_50 = ""
+	q_0_min_1 = "NA"; q_10_min_1 = "NA"; q_15_min_1 = "NA"; q_20_min_1 = "NA"
+	q_0_min_3 = "NA"; q_10_min_3 = "NA"; q_15_min_3 = "NA"; q_20_min_3 = "NA"
+	q_0_min_50 = "NA"; q_10_min_50 = "NA"; q_15_min_50 = "NA"; q_20_min_50 = "NA"
 
 	# Traverse the list
 	for myTuple in d[sample]:
@@ -98,37 +102,37 @@ for sample in d:
 		if qCutoff == 0 and minCount == 1:
 			q_0_min_1 = data
 
-		if qCutoff == 0 and minCount == 3:
+		elif qCutoff == 0 and minCount == 3:
 			q_0_min_3 = data
 
-		if qCutoff == 0 and minCount == 50:
+		elif qCutoff == 0 and minCount == 50:
 			q_0_min_50 = data
 
-		if qCutoff == 10 and minCount == 1:
+		elif qCutoff == 10 and minCount == 1:
 			q_10_min_1 = data
 
-		if qCutoff == 10 and minCount == 3:
+		elif qCutoff == 10 and minCount == 3:
 			q_10_min_3 = data
 
-		if qCutoff == 10 and minCount == 50:
+		elif qCutoff == 10 and minCount == 50:
 			q_10_min_50 = data
 
-		if qCutoff == 15 and minCount == 1:
+		elif qCutoff == 15 and minCount == 1:
 			q_15_min_1 = data
 
-		if qCutoff == 15 and minCount == 3:
+		elif qCutoff == 15 and minCount == 3:
 			q_15_min_3 = data
 
-		if qCutoff == 15 and minCount == 50:
+		elif qCutoff == 15 and minCount == 50:
 			q_15_min_50 = data
 
-		if qCutoff == 20 and minCount == 1:
+		elif qCutoff == 20 and minCount == 1:
 			q_20_min_1 = data
 
-		if qCutoff == 20 and minCount == 3:
+		elif qCutoff == 20 and minCount == 3:
 			q_20_min_3 = data
 
-		if qCutoff == 20 and minCount == 50:
+		elif qCutoff == 20 and minCount == 50:
 			q_20_min_50 = data
 
-	print sample + "," 	+ q_0_min_1 + "," + q_10_min_1 + "," + q_15_min_1 + "," + q_20_min_1 + q_0_min_3 + "," + q_10_min_3 + "," + q_15_min_3 + "," + q_20_min_3 + q_0_min_50 + "," + q_10_min_50 + "," + q_15_min_50 + "," + q_20_min_50
+	print sample + "," + str(G2P_FPR_cutoff) + "," + q_0_min_1 + "," + q_10_min_1 + "," + q_15_min_1 + "," + q_20_min_1 + "," + q_0_min_3 + "," + q_10_min_3 + "," + q_15_min_3 + "," + q_20_min_3 + "," + q_0_min_50 + "," + q_10_min_50 + "," + q_15_min_50 + "," + q_20_min_50

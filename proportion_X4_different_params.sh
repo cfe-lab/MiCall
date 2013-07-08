@@ -4,6 +4,8 @@
 
 DATAPATH="/Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/"
 
+#python determine_proportion_X4.py 3.0 /Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/
+
 exit # ONLY ACTIVATE THIS IF YOU REALLY WANT THIS TO GO...!!
 
 # 1) Starting with *.remap.sam files, generate .fasta files (with base censoring rules)
@@ -20,6 +22,7 @@ rm $DATAPATH*pol*.fasta
 python compress_fasta.py 1 $DATAPATH*remap.sam.[0-9]*.fasta
 python compress_fasta.py 3 $DATAPATH*remap.sam.[0-9]*.fasta
 python compress_fasta.py 50 $DATAPATH*remap.sam.[0-9]*.fasta
+exit
 
 # 4) Extract V3 out of env sequences (Ex: Check *.HIV1B-env.remap.sam.10.fasta.*.seq files, generate .v3 files)
 # FIXME: NEEDS TO BE FORMALLY PARALLELIZED, WITH AMPERSAND?
@@ -38,3 +41,10 @@ python determine_proportion_X4.py 4.0 $DATAPATH >> results
 python determine_proportion_X4.py 5.0 $DATAPATH >> results
 python determine_proportion_X4.py 5.75 $DATAPATH >> results
 python determine_proportion_X4.py 7.5 $DATAPATH >> results
+
+#python determine_proportion_X4.py 3.0 /Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/ >> results
+#python determine_proportion_X4.py 3.5 /Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/ >> results
+#python determine_proportion_X4.py 4.0 /Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/ >> results
+#python determine_proportion_X4.py 5.0 /Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/ >> results
+#python determine_proportion_X4.py 5.75 /Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/ >> results
+#python determine_proportion_X4.py 7.5 /Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/ >> results
