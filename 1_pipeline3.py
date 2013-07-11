@@ -18,19 +18,21 @@ from seqUtils import convert_fasta
 from glob import glob
 import subprocess
 from sam2fasta import *
-#import parsePileup as pp
 
 #path = '/Users/apoon/wip/miseq/data/quebec/HIV20120420/'
 if len(sys.argv) != 3:
-	print 'Usage: python pipeline3.py /path/to/*R1*.fastq 20'
+	print 'Example: python 1_pipeline3.py 130705_M01841_0008_000000000-A4573/Data/Intensities/BaseCalls/ 20'
 	sys.exit()
 
 root = sys.argv[1]
 qCutoff = sys.argv[2]
 
+# FIXME: Automatically gunzip files
+# command = 'gunzip ' + root + '/*.gz'
+# subprocess.call(command, shell=True)
+
 # path to reference sequence files (processed by bowtie2-build)
-#ref = '/Users/apoon/wip/miseq/data/refs/cfe'
-ref = '/Users/emartin/Desktop/Art_MiSeq_Pipeline_Git/miseqpipeline/cfe_reference_sequences/cfe'
+ref = '/Users/emartin/Desktop/MiSeq/Art_MiSeq_Pipeline_Git/miseqpipeline/cfe_reference_sequences/cfe'
 
 # get names of references
 infile = open(ref+'.fasta', 'rU')
@@ -40,7 +42,6 @@ for line in infile:
 		refnames.append(line.strip('>\n'))
 
 infile.close()
-
 
 def remap (f1, f2, samfile, ref):
 	"""
@@ -70,9 +71,6 @@ def remap (f1, f2, samfile, ref):
 	
 	return samfile, confile
 
-
-
-
 files = glob(root+'/*R1*.fastq')
 
 for f in files:
@@ -80,7 +78,7 @@ for f in files:
 	f1 = f
 	f2 = f.replace('R1', 'R2')
 	
-	# initial mapping to construct reference
+	# Initial mapping to construct reference
 	print prefix, 'preliminary mapping'
 	samfile = '%s/%s.prelim.sam' % (root, prefix)
 	os.system('bowtie2 --quiet -p 6 --local -x %s -1 %s -2 %s -S %s' % (ref, 
@@ -88,7 +86,7 @@ for f in files:
 			f2, 
 			samfile))
 	
-	# prepare reference-specific SAM files
+	# Prepare reference-specific SAM files
 	refsams = {}
 	for i, refname in enumerate(refnames):
 		refsams.update({refname: {'handle': open('%s/%s.%s.sam' % (root, prefix, refname), 'w'),
@@ -130,15 +128,19 @@ for f in files:
 			print prefix, 'remapping on', refname
 			samfile, confile = remap(f1, f2, samfile, ref)
 		
-		print prefix, 'generating FASTA for', refname
-		infile = open(samfile, 'rU')
-		fasta = sam2fasta(infile, qCutoff)
-		infile.close()
-		
-		if fasta:
-			outfilename = "{}.{}.fasta".format(f, cutoff)
-			outfile = open(outfilename, 'w')
-			outfile.write(fasta)
-			outfile.close()
-	
+		# Generate fasta from infile (infile/samfile)
+		# THIS DOESNT APPEAR TO HAVE GENERATED REGIONCODE SPECIFIC FASTA!
+		# Instead I have things like "F00021_S82_L001_R1_001.fastq.10.fasta" (With only N chars)
 
+		# ERIC COMMENTED THIS OUT BECAUSE HE DOESNT BELIEVE IT GENERATES REGION SPECIFIC FASTA
+
+		# print prefix, 'generating FASTA for', refname
+		#infile = open(samfile, 'rU')
+		#fasta = sam2fasta(infile, qCutoff)
+		#infile.close()
+
+		#if fasta:
+		#	outfilename = "{}.{}.fasta".format(f, qCutoff)
+		#	outfile = open(outfilename, 'w')
+		#	outfile.write(fasta)
+		#	outfile.close()
