@@ -27,6 +27,10 @@ if len(sys.argv) != 3:
 root = sys.argv[1]
 qCutoff = sys.argv[2]
 
+# FIXME: Automatically copy files over into MiSeq_Runs
+
+# FIXME: Upload InterOp + generate QC summary statistics
+
 # FIXME: Automatically gunzip files
 # command = 'gunzip ' + root + '/*.gz'
 # subprocess.call(command, shell=True)
