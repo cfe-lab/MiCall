@@ -2,17 +2,28 @@
 
 # Generate matrix of different quality rules
 
-DATAPATH="/Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/"
+# Already done for Luke - A43J1: DATAPATH="/Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/"
 
-#python determine_proportion_X4.py 3.0 /Users/emartin/Desktop/130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/
+DATAPATH="/Users/emartin/Desktop/MiSeq/MiSeq_Runs/130621_M01841_0006_000000000-A3RWC/Data/Intensities/BaseCalls"
 
-exit # ONLY ACTIVATE THIS IF YOU REALLY WANT THIS TO GO...!!
+# 1) gunzip
+echo gunzip $DATAPATH/*.gz
+
+# 2) Run the pipeline with different q-cutoffs
+python 1_pipeline3.py $DATAPATH/ 0
+python 1_pipeline3.py $DATAPATH/ 10
+python 1_pipeline3.py $DATAPATH/ 15
+python 1_pipeline3.py $DATAPATH/ 20
+
+exit;
 
 # 1) Starting with *.remap.sam files, generate .fasta files (with base censoring rules)
-python pipeline3_resume_from_sam2fasta.py $DATAPATH 0
-python pipeline3_resume_from_sam2fasta.py $DATAPATH 10
-python pipeline3_resume_from_sam2fasta.py $DATAPATH 15
-python pipeline3_resume_from_sam2fasta.py $DATAPATH 20
+#python pipeline3_resume_from_sam2fasta.py $DATAPATH 0
+#python pipeline3_resume_from_sam2fasta.py $DATAPATH 10
+#python pipeline3_resume_from_sam2fasta.py $DATAPATH 15
+#python pipeline3_resume_from_sam2fasta.py $DATAPATH 20
+
+exit;
 
 # 2) Focus only on HIV1B-env fasta files
 rm $DATAPATH*HLA*.fasta
