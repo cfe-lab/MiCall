@@ -1,11 +1,6 @@
 """
-4_extractV3_with_G2P.py
-
 Generate V3-specific nucleotide sequence from remapped env .seq file
 Along with G2PFPR score in the header
-
-Previous step: 3_compress_fasta.py
-Following step: 5_determine_proportion_X4.py (Determine %X4 / file with G2P cutoffs)
 
 Input: <sample>.<region>.remap.sam.<qCutoff>.fasta.<minCount>.seq
 Output: <sample>.<region>.remap.sam.<qCutoff>.fasta.<minCount>.seq.V3
@@ -28,7 +23,7 @@ refseq = translate_nuc(refSeqs['V3, clinical'], 0)			# refSeq is V3 (HXB2: 7110-
 proteinV3RefSeq = "CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC"   	# Exactly the same as refseq (SO JUST TRANSLATE THE REFSEQ?)
 
 helpOutput = """
-Usage: python 4_extractV3_with_G2P.py <qCutoff to process> <folderContainingSeqFiles>
+Usage: python 4_extractV3_with_G2P.py <qCutoff file to process> <folderContainingSeqFiles>
 
 Ex: python 4_python extractV3_with_G2P.py 10 ../../130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/
 """

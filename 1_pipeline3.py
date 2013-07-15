@@ -19,32 +19,28 @@ from glob import glob
 import subprocess
 from sam2fasta import *
 
-#path = '/Users/apoon/wip/miseq/data/quebec/HIV20120420/'
-if len(sys.argv) != 3:
-	print 'Example: python 1_pipeline3.py 130705_M01841_0008_000000000-A4573/Data/Intensities/BaseCalls/ 20'
+if len(sys.argv) != 2:
+	print 'Example: python 1_pipeline3.py 130705_M01841_0008_000000000-A4573/Data/Intensities/BaseCalls/'
 	sys.exit()
 
 root = sys.argv[1]
-qCutoff = sys.argv[2]
+#qCutoff = sys.argv[2]
 
 # FIXME: Automatically copy files over into MiSeq_Runs
-
 # FIXME: Upload InterOp + generate QC summary statistics
-
 # FIXME: Automatically gunzip files
 # command = 'gunzip ' + root + '/*.gz'
 # subprocess.call(command, shell=True)
 
-# path to reference sequence files (processed by bowtie2-build)
+# Reference sequence files (Used by bowtie2-build)
 ref = '/Users/emartin/Desktop/MiSeq/Art_MiSeq_Pipeline_Git/miseqpipeline/cfe_reference_sequences/cfe'
 
-# get names of references
+# Get names of references
 infile = open(ref+'.fasta', 'rU')
 refnames = []
 for line in infile:
 	if line.startswith('>'):
 		refnames.append(line.strip('>\n'))
-
 infile.close()
 
 def remap (f1, f2, samfile, ref):

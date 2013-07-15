@@ -5,9 +5,6 @@ Fasta headers are renamed to only reference the
 sample, as determined by the prefix in the filename
 of the fasta file itself (As opposed to the header)
 
-Previous step: pipeline3_resume_from_sam2fasta.py
-Following step: extract_V3.py
-
 Input: <sample>.<region>.remap.sam.<qScore>.fasta
 Output: <sample>.<region>.remap.sam.<qScore>.fasta.<minCount>.seq
 """
@@ -16,10 +13,8 @@ import sys
 from seqUtils import convert_fasta
 
 helpOutput = """
-Usage: python 3_compress_fasta.py <minCount> <fasta_files_to_collapse>
-Example (min count 3): python 3_compress_fasta.py 3 ../path/to/files/*.5.fasta
-Example (no min count): python 3_compress_fasta.py 0 ../path/to/files/*.10.fasta
-you can use $(ls PATH)
+Usage: python 3_compress_fasta_with_min_count.py <minCount> <fasta_files_to_collapse>
+Example (min count 3): python 3_compress_fasta_with_min_count.py 3 ../path/to/files/*.5.fasta
 """
 
 if len(sys.argv) <= 2:
