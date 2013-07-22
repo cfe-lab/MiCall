@@ -34,7 +34,7 @@ for f in files:
 	
 	infile = open(f, 'rU')
 	try:
-		print "convert_fasta({})".format(filename)
+		print "convert_fasta({})  -  min count = {}".format(filename, minCount)
 		fasta = convert_fasta(infile.readlines())
 	except:
 		print 'failed to convert', f

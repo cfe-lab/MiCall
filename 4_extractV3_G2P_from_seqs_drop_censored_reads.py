@@ -23,9 +23,10 @@ refseq = translate_nuc(refSeqs['V3, clinical'], 0)			# refSeq is V3 (HXB2: 7110-
 proteinV3RefSeq = "CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC"   	# Exactly the same as refseq (SO JUST TRANSLATE THE REFSEQ?)
 
 helpOutput = """
-Usage: python 4_extractV3_with_G2P.py <qCutoff file to process> <folderContainingSeqFiles>
+Synopsis: Processes *.HIV1B-env.remap.sam.<qCutoff>.fasta.*.seq file into .V3 files (Works on all min count files)
 
-Ex: python 4_python extractV3_with_G2P.py 10 ../../130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/
+Usage: python 4_extractV3_G2P_from_seqs_drop_censored_reads.py <qCutoff file to process> <folderContainingSeqFiles>
+Ex: python 4_extractV3_G2P_from_seqs_drop_censored_reads.py 10 130524_M01841_0004_000000000-A43J1/Data/Intensities/BaseCalls/remap_sams/
 """
 
 if len(sys.argv) != 3:

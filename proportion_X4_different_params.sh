@@ -26,7 +26,7 @@ exit
 python 4_extractV3_with_G2P.py 20 $DATAPATH &
 exit
 
-# Determine the proportion X4 per sample
+# Determine the proportion X4 per sample (3, 3.5, 4, 5, 5.75, 7.5)
 rm results
 python 5_determine_proportion_X4.py 3.0 $DATAPATH >> results
 exit
