@@ -20,6 +20,38 @@ import subprocess
 from sam2fasta import *
 
 
+
+def remap (f1, f2, samfile, ref):
+	"""
+	Generate a sample-specific consensus sequence from a samtools
+	PILEUP file, and then remap everything to this consensus as a
+	reference sequence.  Returns paths to the SAM output and
+	consensus sequence file.
+	"""
+	bamfile = samfile.replace('.sam', '.bam')
+	os.system('samtools view -bt %s.fasta.fai %s > %s 2>/dev/null' % (ref, samfile, bamfile))
+	os.system('samtools sort %s %s.sorted' % (bamfile, bamfile))
+	os.system('samtools mpileup -A %s.sorted.bam > %s.pileup 2>/dev/null' % (bamfile, bamfile))
+	
+	# generate consensus sequence from pileup
+	os.system('python pileup2conseq_v2.py %s.pileup' % bamfile)
+	confile = bamfile+'.pileup.conseq'
+	os.system('bowtie2-build -q -f %s %s' % (confile, confile))
+	
+	# mapping against new reference
+	samfile = samfile.replace('.sam', '.remap.sam')
+	
+	os.system('bowtie2 --quiet -p 3 --local -x %s -1 %s -2 %s -S %s\
+				--no-unal --met-file %s --un %s --un-conc %s' % (confile, 
+			f1, f2, samfile, samfile.replace('.sam', '.bt2_metrics'),
+			samfile.replace('.sam', '.bt2_unpaired_noalign.fastq'), 
+			samfile.replace('.sam', '.bt2_paired_noalign.fastq')))
+	
+	return samfile, confile
+
+
+
+
 # Get names of references
 refpath = sys.argv[1]
 
@@ -91,31 +123,3 @@ for refname in refnames:
 
 
 
-
-def remap (f1, f2, samfile, ref):
-	"""
-	Generate a sample-specific consensus sequence from a samtools
-	PILEUP file, and then remap everything to this consensus as a
-	reference sequence.  Returns paths to the SAM output and
-	consensus sequence file.
-	"""
-	bamfile = samfile.replace('.sam', '.bam')
-	os.system('samtools view -bt %s.fasta.fai %s > %s 2>/dev/null' % (ref, samfile, bamfile))
-	os.system('samtools sort %s %s.sorted' % (bamfile, bamfile))
-	os.system('samtools mpileup -A %s.sorted.bam > %s.pileup 2>/dev/null' % (bamfile, bamfile))
-	
-	# generate consensus sequence from pileup
-	os.system('python pileup2conseq_v2.py %s.pileup' % bamfile)
-	confile = bamfile+'.pileup.conseq'
-	os.system('bowtie2-build -q -f %s %s' % (confile, confile))
-	
-	# mapping against new reference
-	samfile = samfile.replace('.sam', '.remap.sam')
-	
-	os.system('bowtie2 --quiet -p 3 --local -x %s -1 %s -2 %s -S %s\
-				--no-unal --met-file %s --un %s --un-conc %s' % (confile, 
-			f1, f2, samfile, samfile.replace('.sam', '.bt2_metrics'),
-			samfile.replace('.sam', '.bt2_unpaired_noalign.fastq'), 
-			samfile.replace('.sam', '.bt2_paired_noalign.fastq')))
-	
-	return samfile, confile
