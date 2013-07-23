@@ -34,14 +34,17 @@ infile.close()
 
 # path to R1 FASTQ
 f = sys.argv[2]
-prefix = f.split('/')[-1].split('.')[0].split('_')[0]
+root = '/'.join(f.split('/')[:-1])
+filename = f.split('/')[-1]
+prefix = filename.split('.')[0].split('_')[0]
+
 f1 = f
 f2 = f.replace('R1', 'R2')
 
 
 # Initial mapping to construct reference
 samfile = '%s/%s.prelim.sam' % (root, prefix)
-os.system('bowtie2 --quiet -p 3 --local -x %s -1 %s -2 %s -S %s' % (ref, 
+os.system('bowtie2 --quiet -p 3 --local -x %s -1 %s -2 %s -S %s' % (refpath, 
 		f1, 
 		f2, 
 		samfile))

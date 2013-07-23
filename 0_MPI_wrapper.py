@@ -3,6 +3,7 @@ Distribute pipeline processes across the cluster.
 """
 
 import sys
+import os
 from glob import glob
 from mpi4py import MPI
 
@@ -19,9 +20,8 @@ for i in range(len(files)):
 		continue
 	
 	filename = files[i].split('/')[-1]
-	sys.stdout('process %d of %d starting task 1_mapping.py on %s' % filename)
-	os.system('python 1_mapping.py %s %s' % (refpath, files[i])
-	sys.stdout('process %d of %d completed task 1_mapping.py on %s' % filename)
+	print '... process %d of %d starting task 1_mapping.py on %s' % (my_rank, nprocs, filename)
+	os.system('python 1_mapping.py %s %s' % (refpath, files[i]))
 
 
 MPI.COMM_WORLD.Barrier()

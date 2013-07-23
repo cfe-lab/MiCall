@@ -69,7 +69,7 @@ while 1:
 	outfile.close()
 	
 	timestamp('spawning MPI processes...')
-	os.system('/opt/scyld/openmpi/1.6.4/gnu/bin/mpirun -machinefile mfile python 0_MPI_wrapper.py %s' % home+run_name)
+	os.system('/opt/scyld/openmpi/1.6.4/gnu/bin/mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s' % home+run_name)
 	
 	# at this point, erase the needsprocessing file
 	break
