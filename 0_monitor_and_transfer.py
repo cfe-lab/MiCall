@@ -21,6 +21,7 @@ from datetime import datetime
 home = '/usr/local/share/miseq/data/'
 delay = 3600
 
+
 def timestamp(msg):
 	print '[%s] %s' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), msg)
 
@@ -54,10 +55,13 @@ while 1:
 		os.system('cp %s %s' % (file, local_file))
 		os.system('gunzip -f %s' % local_file)
 		nfiles += 1
-	
+
+	nfiles /= 2
+		
+	"""
 	# prepare a machine file 
 	outfile = open('mfile', 'w')
-	if nfiles <= 6:
+	if nfiles <= max_cores_per_node:
 		outfile.write('n0 slots=%d max_slots=24\n' % (nfiles, ))
 	elif nfiles <= 12:
 		outfile.write('n0 slots=6 max_slots=24\n')
@@ -67,9 +71,10 @@ while 1:
 		outfile.write('Bulbasaur slots=6 max_slots=24\n')
 		
 	outfile.close()
+	"""
 	
 	timestamp('spawning MPI processes...')
-	os.system('/opt/scyld/openmpi/1.6.4/gnu/bin/mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s' % home+run_name)
+	os.system('/opt/scyld/openmpi/1.6.4/gnu/bin/mpirun -H Bulbasaur,n0 -np 8 -loadbalance python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s' % home+run_name)
 	
 	# at this point, erase the needsprocessing file
 	break

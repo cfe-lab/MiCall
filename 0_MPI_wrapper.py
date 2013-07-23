@@ -14,6 +14,7 @@ refpath = '/usr/local/share/miseq/refs/cfe'
 
 root = sys.argv[1]
 files = glob(root + '/*R1*.fastq')
+print len(files), 'files'
 
 for i in range(len(files)):
 	if i % nprocs != my_rank:
@@ -22,7 +23,6 @@ for i in range(len(files)):
 	filename = files[i].split('/')[-1]
 	print '... process %d of %d starting task 1_mapping.py on %s' % (my_rank, nprocs, filename)
 	os.system('python 1_mapping.py %s %s' % (refpath, files[i]))
-
 
 MPI.COMM_WORLD.Barrier()
 MPI.Finalize()
