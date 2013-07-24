@@ -11,8 +11,7 @@ Output: <sample>.<region>.remap.sam.<qCutoff>.fasta.<minCount>.seq.V3
 
 import os
 import sys
-from glob import glob
-from Bio import SeqIO
+
 from seqUtils import *
 from hyphyAlign import *
 from minG2P import conan_g2p
