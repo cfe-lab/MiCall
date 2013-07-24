@@ -119,7 +119,7 @@ for refname in refnames:
 		continue
 	
 	samfile = refsams[refname]['handle'].name
-	samfile, confile = remap(f1, f2, samfile, ref)
+	samfile, confile = remap(f1, f2, samfile, refpath)
 
 
 
