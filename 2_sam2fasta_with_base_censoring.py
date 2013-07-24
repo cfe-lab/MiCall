@@ -20,7 +20,8 @@ infile.close()
 if fasta is None:
 	sys.exit()
 
-outfilename = "{}.{}.fasta".format(samfile, qCutoff)
+# for now, do not reject sequences based on the proportion that are 'N'
+outfilename = "{}.{}.fasta".format(samfile, qCutoff, max_prop_N=1.0)
 outfile = open(outfilename, 'w')
 outfile.write(fasta)
 outfile.close()

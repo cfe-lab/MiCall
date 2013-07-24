@@ -100,7 +100,7 @@ def merge_pairs (seq1, seq2):
 	return mseq
 
 
-def sam2fasta (infile, cutoff=10):
+def sam2fasta (infile, cutoff=10, max_prop_N=0.5):
 	"""
 	Parse SAM file contents and return FASTA string.  In the case of
 	a matched set of paired-end reads, merge the reads together into
@@ -162,7 +162,7 @@ def sam2fasta (infile, cutoff=10):
 			seq2 = '-'*pos2 + censor_bases(seq2, qual2, cutoff)
 			
 			mseq = merge_pairs(seq1, seq2)
-			if mseq.count('N') / float(len(mseq)) < 0.5:
+			if mseq.count('N') / float(len(mseq)) < max_prop_N:
 				# output only if sequence is good quality
 				fasta += '>%s\n%s\n' % (qname, mseq)
 			
