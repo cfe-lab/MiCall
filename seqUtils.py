@@ -1,4 +1,4 @@
-import sys, re, math
+import sys, HyPhy, re, math
 import random
 
 def convert_fasta (lines):	
@@ -414,14 +414,17 @@ def gaps2ambig (nucseq):
 
 	
 
-def consensus(column, resolve=False):
+def consensus(column, alphabet='ACGT', resolve=False):
 	"""
 	Plurality consensus - nucleotide with highest frequency.
 	In case of tie, report mixtures.
 	"""
-	freqs = {"A": 0, "T": 0, "C": 0, "G": 0, "-": 0}
+	freqs = {}
+	for char in alphabet:
+		freqs.update({char: 0})
+	#freqs = {"A": 0, "T": 0, "C": 0, "G": 0, "-": 0}
 	for char in column:
-		if char in 'ACGT-':
+		if char in alphabet:
 			freqs[char] += 1
 		elif mixture_dict.has_key(char):
 			# handled ambiguous nucleotides with equal weighting
@@ -487,7 +490,7 @@ def majority_consensus (fasta, threshold = 0.5, alphabet='ACGT', ambig_char = 'N
 	seqs = [s for h, s in fasta]
 	
 	for column in columns:
-		consen.append(consensus(column, resolve=False))
+		consen.append(consensus(column, alphabet=alphabet, resolve=False))
 	
 	newseq = "".join(consen)
 	
