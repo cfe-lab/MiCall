@@ -126,3 +126,7 @@ bamfiles = glob(root+'/'+prefix+'.*bam*')
 for bamfile in bamfiles:
 	os.remove(bamfile)
 
+# clean up intermediate SAM files
+for refname in refsams.iterkeys():
+	os.remove(refsams[refname]['handle'].name)
+

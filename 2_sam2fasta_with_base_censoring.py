@@ -42,7 +42,7 @@ for h, s in fasta:
 intermed = [(count, s) for s, count in d.iteritems()]
 intermed.sort(reverse=True)
 
-ofname = '.'.join(map(str, [samfile, qCutoff, 'fasta']))
+ofname = '.'.join(map(str, [samfile.replace('.remap.sam', ''), qCutoff, 'fasta']))
 
 outfile = open(ofname, 'w')
 

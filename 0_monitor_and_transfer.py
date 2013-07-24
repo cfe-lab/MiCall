@@ -74,7 +74,7 @@ while 1:
 	"""
 	
 	timestamp('spawning MPI processes...')
-	os.system('/opt/scyld/openmpi/1.6.4/gnu/bin/mpirun -H Bulbasaur,n0 -np 8 -loadbalance python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s' % home+run_name)
+	os.system('/opt/scyld/openmpi/1.6.4/gnu/bin/mpirun -H -1,0 -np 8 -loadbalance python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s' % home+run_name)
 	
 	# at this point, erase the needsprocessing file
 	break
