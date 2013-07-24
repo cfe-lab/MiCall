@@ -121,5 +121,8 @@ for refname in refnames:
 	samfile = refsams[refname]['handle'].name
 	samfile, confile = remap(f1, f2, samfile, refpath)
 
-
+# clean up intermediate BAM files
+bamfiles = glob(root+'/'+prefix+'.*bam*')
+for bamfile in bamfiles:
+	os.remove(bamfile)
 
