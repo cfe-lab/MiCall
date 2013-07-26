@@ -46,6 +46,7 @@ for i, file in enumerate(files):
 		continue
 	filename = files[i].split('/')[-1]
         print '... process %d of %d starting task 3_g2p_scoring on %s' % (my_rank, nprocs, filename)
+	os.system('python 3_g2p_scoring.py %s' % file)
 	
 
 MPI.COMM_WORLD.Barrier()
