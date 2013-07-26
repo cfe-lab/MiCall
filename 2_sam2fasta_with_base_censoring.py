@@ -6,7 +6,7 @@ Output: <sample>.<region>.remap.sam.<qScore>.fasta
 import sys
 import os
 
-from StringIO import StringIO
+
 from sam2fasta import *
 from seqUtils import *
 
@@ -19,14 +19,11 @@ prefix, region = filename.split('.')[:2]
 
 # convert SAM to FASTA by parsing CIGAR strings, censoring bases and merging reads
 infile = open(samfile, 'rU')
-fasta_str = sam2fasta(infile, qCutoff)
+fasta = sam2fasta(infile, qCutoff)
 infile.close()
 
-if fasta_str is None:
+if fasta is None:
 	sys.exit()
-
-handle = StringIO(fasta_str)
-fasta = convert_fasta(handle.readlines())
 
 
 # collate identical sequences

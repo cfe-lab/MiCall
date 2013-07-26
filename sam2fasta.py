@@ -77,6 +77,9 @@ def merge_pairs (seq1, seq2):
 	(in partial overlap region), take that base at face value.
 	"""
 	mseq = ''
+	if len(seq1) > len(seq2):
+		seq1, seq2 = seq2, seq1 # swap places
+	
 	for i, c2 in enumerate(seq2):
 		if i < len(seq1):
 			c1 = seq1[i]
@@ -106,9 +109,9 @@ def sam2fasta (infile, cutoff=10, max_prop_N=0.5):
 	a matched set of paired-end reads, merge the reads together into
 	a single sequence.
 	"""
-	fasta = ''
+	fasta = []
 	lines = infile.readlines()
-
+	
 	# advance to first data line
 	for start, line in enumerate(lines):
 		if not line.startswith('@'):
@@ -147,7 +150,7 @@ def sam2fasta (infile, cutoff=10, max_prop_N=0.5):
 			
 			if refname == '*' or cigar == '*': 
 				# second read is unmapped
-				fasta += '>%s\n%s\n' % (qname, seq1)
+				fasta.append([qname, seq1])
 				i += 2
 				continue
 			
@@ -155,7 +158,7 @@ def sam2fasta (infile, cutoff=10, max_prop_N=0.5):
 			shift, seq2, qual2 = apply_cigar(cigar, seq, qual)
 			if not seq2:
 				# failed to parse CIGAR string
-				fasta += '>%s\n%s\n' % (qname, seq1)
+				fasta.append([qname, seq1])
 				i += 2
 				continue
 			
@@ -164,13 +167,13 @@ def sam2fasta (infile, cutoff=10, max_prop_N=0.5):
 			mseq = merge_pairs(seq1, seq2)
 			if mseq.count('N') / float(len(mseq)) < max_prop_N:
 				# output only if sequence is good quality
-				fasta += '>%s\n%s\n' % (qname, mseq)
+				fasta.append([qname, mseq])
 			
 			i += 2
 			continue
 		
 		# ELSE no matched pair
-		fasta += '>%s\n%s\n' % (qname, seq1)
+		fasta.append([qname, seq1])
 		i += 1
 	
 	return fasta
