@@ -2,10 +2,9 @@
 pssm_lib.rb
 Written by Conan
 =end
-Dir.chdir('/Users/apoon/Python')
 
 require 'tempfile'
-require 'alignment' #recall alignment alg
+require './alignment' #recall alignment alg
 #require 'net/http'
 #require 'uri'
 #require 'ckwlib/ckw'
