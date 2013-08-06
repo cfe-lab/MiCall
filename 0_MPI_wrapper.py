@@ -12,7 +12,6 @@ from datetime import datetime
 
 
 def prop_x4 (handle, cutoff, min_count):
-	fasta = convert_fasta(handle.readlines())
 	total_count = 0
 	total_x4_count = 0
 
@@ -24,8 +23,8 @@ def prop_x4 (handle, cutoff, min_count):
 			count = int(tokens[tokens.index('count')+1])
 			fpr = float(tokens[tokens.index('fpr')+1])
 		except:
-			print 'ERROR, missing variant, count or fpr in header'
-			print h, s
+			#print 'ERROR, missing variant, count or fpr in header'
+			#print h, s
 			continue
 		
 		if count <= min_count:
@@ -124,8 +123,14 @@ if my_rank == 0:
 		for mincount in [0, 1, 3, 50]:
 			for cutoff in [3.0, 3.5, 4.0, 5.0, 5.75, 7.5]:
 				infile = open(file, 'rU')
-				x4_count, total_count = prop_x4(infile, cutoff, mincount)
+				fasta = convert_fasta(infile.readlines())
 				infile.close()
+				
+				if len(fasta) > 0:
+					x4_count, total_count = prop_x4(infile, cutoff, mincount)
+				else:
+					x4_count = 0
+					total_count = 0
 				
 				outfile.write('%s,%d,%f,%d,%d,%d,%s\n' % (sample, qcut, cutoff, 
 					mincount, x4_count, total_count, 
