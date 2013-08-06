@@ -123,7 +123,8 @@ if my_rank == 0:
 		for mincount in [0, 1, 3, 50]:
 			for cutoff in [3.0, 3.5, 4.0, 5.0, 5.75, 7.5]:
 				infile = open(file, 'rU')
-				fasta = convert_fasta(infile.readlines())
+				lines = infile.readlines()
+				fasta = convert_fasta(lines) if len(lines) > 0 else []
 				infile.close()
 				
 				if len(fasta) > 0:
