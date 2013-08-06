@@ -127,7 +127,7 @@ if my_rank == 0:
 				x4_count, total_count = prop_x4(infile, cutoff, mincount)
 				infile.close()
 			
-				outfile.write('%s,%d,%f,%d,%f\n' % (sample, qcut, cutoff, mincount, x4_count, 
+				outfile.write('%s,%d,%f,%d,%d,%d,%f\n' % (sample, qcut, cutoff, mincount, x4_count, 
 					total_count, x4_count/float(total_count) ))
 
 	outfile.close()
