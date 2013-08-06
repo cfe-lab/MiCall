@@ -14,13 +14,18 @@ processing while the pipeline is being executed.
 """
 
 import os
+import sys
 from glob import glob
 from datetime import datetime
 
 
 home = '/usr/local/share/miseq/data/'
 delay = 3600
-
+try:
+	np = int(sys.argv[1])
+except:
+	print '\nUsage:\npython 0_monitor_and_transfer.py [number of MPI processes]\n'
+	raise
 
 def timestamp(msg):
 	print '[%s] %s' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), msg)
@@ -58,25 +63,19 @@ while 1:
 
 	nfiles /= 2
 		
-	"""
 	# prepare a machine file 
 	outfile = open('mfile', 'w')
-	if nfiles <= max_cores_per_node:
-		outfile.write('n0 slots=%d max_slots=24\n' % (nfiles, ))
-	elif nfiles <= 12:
-		outfile.write('n0 slots=6 max_slots=24\n')
-		outfile.write('Bulbasaur slots=%d max_slots=24\n' % ((nfiles-6), ))
-	else:
-		outfile.write('n0 slots=6 max_slots=24\n')
-		outfile.write('Bulbasaur slots=6 max_slots=24\n')
-		
+	for node in ['n0', 'Bulbasaur']:
+		outfile.write('%s slots=%d max_slots=24\n' % (node, np))
 	outfile.close()
-	"""
 	
 	timestamp('spawning MPI processes...')
-	os.system('/opt/scyld/openmpi/1.6.4/gnu/bin/mpirun -H -1,0 -np 8 -loadbalance python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s' % home+run_name)
+	os.system('/opt/scyld/openmpi/1.6.4/gnu/bin/mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s' % (home+run_name))
 	
 	# at this point, erase the needsprocessing file
+	os.remove(runs[0])
+	flag = open(runs[0].replace('needsprocessing', 'processingdone'), 'w')
+	flag.close()
 	break
 
 
