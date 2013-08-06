@@ -6,6 +6,37 @@ import sys
 import os
 from glob import glob
 from mpi4py import MPI
+from seqUtils import convert_fasta
+
+
+def prop_x4 (handle, cutoff, mincount):
+	fasta = convert_fasta(handle.readlines())
+
+	total_count = 0
+	total_x4_count = 0
+
+	for h, s in fasta:
+		# >F00309-IL_variant_0_count_27_fpr_4.0
+		tokens = h.split('_')
+		try:
+			variant = int(tokens[tokens.index('variant')+1])
+			count = int(tokens[tokens.index('count')+1])
+			fpr = float(tokens[tokens.index('fpr')+1])
+		except:
+			print 'ERROR, missing variant, count or fpr in header'
+			print h
+			sys.exit()
+	
+		if count <= minCount:
+			continue
+		
+		total_count += count
+		if fpr < cutoff:
+			total_x4_count += count
+	
+	return (total_x4_count, total_count)
+	
+
 
 my_rank = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()
@@ -38,7 +69,7 @@ for i in range(len(files)):
 		os.system('python 2_sam2fasta_with_base_censoring.py %s %d' % (files[i], qcut))
 
 
-# collect all FASTA files
+# compute g2p scores for env-mapped FASTAs
 files = glob(root + '/*env*.fasta')
 
 for i, file in enumerate(files):
@@ -46,9 +77,42 @@ for i, file in enumerate(files):
 		continue
 	filename = files[i].split('/')[-1]
         print '... process %d of %d starting task 3_g2p_scoring on %s' % (my_rank, nprocs, filename)
-	os.system('python 3_g2p_scoring.py %s' % file)
-	
+	os.system('python 3_g2p_scoring.py %s' % file) # generates *.v3prot and *.badV3
+
+
+# generate amino acid count CSVs
+files = glob(root + '/*.fasta')
+
+for i, file in enumerate(files):
+	if i % nprocs != my_rank:
+		continue
+	filename = files[i].split('/')[-1]
+        print '... process %d of %d starting task 5_amino_freqs on %s' % (my_rank, nprocs, filename)
+    os.system('python 5_amino_freqs.py %s' % file)
+
 
 MPI.COMM_WORLD.Barrier()
 MPI.Finalize()
+
+
+# summary stats in serial mode
+outfile = open(root+'/_g2p.csv')
+outfile.write('sample,q.cut,fpr.cut,min.count,x4.count,total.count,prop.x4\n')
+
+files = glob(root + '/*.v3prot')
+for file in files:
+	filename = files[i].split('/')[-1]
+	sample, region, qcut = filename.split('.')[:3]
+	qcut = int(qcut)
+	
+	for mincount in [0, 1, 3, 50]:
+		for cutoff in [3.0, 3.5, 4.0, 5.0, 5.75, 7.5]:
+			infile = open(file, 'rU')
+			x4_count, total_count = prop_x4(infile, cutoff, mincount)
+			infile.close()
+			
+			outfile.write('%s,%d,%f,%d,%f\n' % (sample, qcut, cutoff, mincount, x4_count, total_count, x4_count/float(total_count))
+
+outfile.close()
+
 
