@@ -87,8 +87,8 @@ for i, file in enumerate(files):
 	if i % nprocs != my_rank:
 		continue
 	filename = files[i].split('/')[-1]
-        print '... process %d of %d starting task 5_amino_freqs on %s' % (my_rank, nprocs, filename)
-    os.system('python 5_amino_freqs.py %s' % file)
+	print '... process %d of %d starting task 5_amino_freqs on %s' % (my_rank, nprocs, filename)
+	os.system('python 5_amino_freqs.py %s' % file)
 
 
 MPI.COMM_WORLD.Barrier()
@@ -115,7 +115,7 @@ for file in files:
 			x4_count, total_count = prop_x4(infile, cutoff, mincount)
 			infile.close()
 			
-			outfile.write('%s,%d,%f,%d,%f\n' % (sample, qcut, cutoff, mincount, x4_count, total_count, x4_count/float(total_count))
+			outfile.write('%s,%d,%f,%d,%f\n' % (sample, qcut, cutoff, mincount, x4_count, total_count, x4_count/float(total_count)))
 
 outfile.close()
 
