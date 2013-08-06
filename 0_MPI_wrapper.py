@@ -95,6 +95,10 @@ MPI.COMM_WORLD.Barrier()
 MPI.Finalize()
 
 
+while not MPI.Is_finalized():
+	print 'Waiting for MPI environment to shutdown...'
+	sleep(5)
+
 # summary stats in serial mode
 outfile = open(root+'/_g2p.csv')
 outfile.write('sample,q.cut,fpr.cut,min.count,x4.count,total.count,prop.x4\n')
