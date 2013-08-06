@@ -26,7 +26,7 @@ def prop_x4 (handle, cutoff, min_count):
 		except:
 			print 'ERROR, missing variant, count or fpr in header'
 			print h, s
-			pass
+			continue
 		
 		if count <= min_count:
 			continue
