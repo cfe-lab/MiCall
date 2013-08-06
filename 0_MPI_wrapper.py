@@ -102,10 +102,9 @@ if my_rank == 0:
 
 	files = glob(root + '/*.v3prot')
 	for file in files:
-		filename = files[i].split('/')[-1]
+		filename = file.split('/')[-1]
 		sample, region, qcut = filename.split('.')[:3]
 		qcut = int(qcut)
-	
 		for mincount in [0, 1, 3, 50]:
 			for cutoff in [3.0, 3.5, 4.0, 5.0, 5.75, 7.5]:
 				infile = open(file, 'rU')
