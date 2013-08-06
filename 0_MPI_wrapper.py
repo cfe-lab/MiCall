@@ -126,9 +126,10 @@ if my_rank == 0:
 				infile = open(file, 'rU')
 				x4_count, total_count = prop_x4(infile, cutoff, mincount)
 				infile.close()
-			
-				outfile.write('%s,%d,%f,%d,%d,%d,%f\n' % (sample, qcut, cutoff, mincount, x4_count, 
-					total_count, x4_count/float(total_count) ))
+				
+				outfile.write('%s,%d,%f,%d,%d,%d,%s\n' % (sample, qcut, cutoff, 
+					mincount, x4_count, total_count, 
+					str(x4_count/float(total_count)) if total_count > 0 else 'NA'))
 
 	outfile.close()
 
