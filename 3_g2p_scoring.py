@@ -66,10 +66,13 @@ for header, seq in fasta:
 	aaEnvSeq = translate_nuc(seq, best_offset)	# Translate env on the correct offset (ORF)
 	
 	aquery, aref, ascore = pair_align(hyphy, refseq, aaEnvSeq)
+	
 	left, right = get_boundaries(aref)									# Get left/right boundaries of V3 protein
 	v3prot = aquery[left:right]											# Extract V3 protein
-	v3nuc = apply2nuc(seq[(3*left):], v3prot, aref[left:right], 		# use alignment to extract V3 nuc. seq
+	
+	v3nuc = apply2nuc(seq[(3*left-best_offset):], v3prot, aref[left:right], 		# use alignment to extract V3 nuc. seq
 					keepIns=True, keepDel=False)
+	
 	
 	# Conditions for dropping data
 	# 1) Censored bases were detected ('N')

@@ -591,12 +591,14 @@ $g2p_fpr_data = []
 def g2p_to_fpr(g2p)
     return nil if(g2p == nil)
     if($g2p_fpr_data == [])
+	$: << '.'
         filename = $:.map do |path|
             File.exists?(path + "/g2p_fpr.txt") ? path + "/g2p_fpr.txt" : nil
         end
+
         raise "missing fpr file" if(filename == nil or filename.size == 0)
         filename = filename.delete_if{|a| a==nil}.sort[0]
-        
+
         File.open(filename) do |file|
             file.each_line do |line|
                 row = line.strip.split(',')

@@ -39,7 +39,7 @@ for i in range(len(files)):
 
 
 # collect all FASTA files
-files = glob(root + '/*.fasta')
+files = glob(root + '/*env*.fasta')
 
 for i, file in enumerate(files):
 	if i % nprocs != my_rank:
