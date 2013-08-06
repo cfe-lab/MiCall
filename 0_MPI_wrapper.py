@@ -95,28 +95,26 @@ MPI.COMM_WORLD.Barrier()
 MPI.Finalize()
 
 
-while not MPI.Is_finalized():
-	print 'Waiting for MPI environment to shutdown...'
-	sleep(5)
-
 # summary stats in serial mode
-outfile = open(root+'/_g2p.csv')
-outfile.write('sample,q.cut,fpr.cut,min.count,x4.count,total.count,prop.x4\n')
+if my_rank == 0:
+	outfile = open(root+'/_g2p.csv', 'w')
+	outfile.write('sample,q.cut,fpr.cut,min.count,x4.count,total.count,prop.x4\n')
 
-files = glob(root + '/*.v3prot')
-for file in files:
-	filename = files[i].split('/')[-1]
-	sample, region, qcut = filename.split('.')[:3]
-	qcut = int(qcut)
+	files = glob(root + '/*.v3prot')
+	for file in files:
+		filename = files[i].split('/')[-1]
+		sample, region, qcut = filename.split('.')[:3]
+		qcut = int(qcut)
 	
-	for mincount in [0, 1, 3, 50]:
-		for cutoff in [3.0, 3.5, 4.0, 5.0, 5.75, 7.5]:
-			infile = open(file, 'rU')
-			x4_count, total_count = prop_x4(infile, cutoff, mincount)
-			infile.close()
+		for mincount in [0, 1, 3, 50]:
+			for cutoff in [3.0, 3.5, 4.0, 5.0, 5.75, 7.5]:
+				infile = open(file, 'rU')
+				x4_count, total_count = prop_x4(infile, cutoff, mincount)
+				infile.close()
 			
-			outfile.write('%s,%d,%f,%d,%f\n' % (sample, qcut, cutoff, mincount, x4_count, total_count, x4_count/float(total_count)))
+				outfile.write('%s,%d,%f,%d,%f\n' % (sample, qcut, cutoff, mincount, x4_count, 
+					total_count, x4_count/float(total_count) ))
 
-outfile.close()
+	outfile.close()
 
 
