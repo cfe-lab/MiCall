@@ -55,15 +55,19 @@ while 1:
 		if line.startswith('Assay,'):
 			assay = line.strip('\n').split(',')[-1]
 		elif line.startswith('Description,'):
-			description = line.strip('\n').split(',')[-1]
-			if description not in ['Nextera', 'Amplicon', '']:
-				print 'FATAL ERROR: Unrecognized mode', description
-				sys.exit()
-				
+			description = line.strip('\n').split(',')[-1]	
 		elif line.startswith('Chemistry,'):
 			chemistry = line.strip('\n').split(',')[-1]
 			break
+	infile.close()
 	
+	# handle exceptions
+	if description not in ['Nextera', 'Amplicon', '']:
+		print 'ERROR: Unrecognized mode', description, '... skipping'
+		os.remove(runs[0])
+		flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
+		flag.close()
+		continue
 	
 	
 	# transfer *.fasta.gz files
