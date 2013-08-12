@@ -48,6 +48,24 @@ while 1:
 	if not os.path.exists(home+run_name):
 		os.system('mkdir %s%s' % (home, run_name))
 	
+	# parse SampleSheet.csv
+	infile = open(runs[0].replace('needsprocessing', 'SampleSheet.csv'), 'rU')
+	assay, description, chemistry = '', '', ''
+	for line in infile:
+		if line.startswith('Assay,'):
+			assay = line.strip('\n').split(',')[-1]
+		elif line.startswith('Description,'):
+			description = line.strip('\n').split(',')[-1]
+			if description not in ['Nextera', 'Amplicon', '']:
+				print 'FATAL ERROR: Unrecognized mode', description
+				sys.exit()
+				
+		elif line.startswith('Chemistry,'):
+			chemistry = line.strip('\n').split(',')[-1]
+			break
+	
+	
+	
 	# transfer *.fasta.gz files
 	files = glob(root+'Data/Intensities/BaseCalls/*.fastq.gz')
 	nfiles = 0
@@ -74,7 +92,7 @@ while 1:
 	"""
 	
 	timestamp('spawning MPI processes...')
-	os.system('module load openmpi/gnu; mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s' % (home+run_name))
+	os.system('module load openmpi/gnu; mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s %s' % (home+run_name, description))
 
 	# at this point, erase the needsprocessing file
 	os.remove(runs[0])
