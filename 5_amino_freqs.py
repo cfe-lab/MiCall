@@ -8,6 +8,14 @@ import sys
 from glob import glob
 from seqUtils import *
 
+def convert_csf (handle):
+	fasta = []
+	for line in handle:
+		header, offset, seq = line.strip('\n').split(',')
+		fasta.append([header, '-'*offset + seq])
+	return fasta
+
+
 # load HyPhy
 from hyphyAlign import *
 
@@ -30,7 +38,7 @@ hxb2 = {'gag': 'ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAA
 
 
 f = sys.argv[1]
-
+mode = sys.argv[2]
 
 filename = f.split('/')[-1]
 
@@ -42,7 +50,11 @@ except:
 	sys.exit()
 
 infile = open(f, 'rU')
-fasta = convert_fasta(infile.readlines())
+if mode == 'Amplicon':
+	fasta = convert_fasta(infile.readlines())
+elif mode == 'Nextera':
+	fasta = convert_csf(infile)
+
 infile.close()
 
 # generate a consensus from n=1000 sequences and align
