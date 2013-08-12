@@ -19,14 +19,16 @@ from glob import glob
 from datetime import datetime
 
 
-home = '/usr/local/share/miseq/data/'
+#home = '/usr/local/share/miseq/data/'
+home='/data/miseq/'
 delay = 3600
+"""
 try:
 	np = int(sys.argv[1])
 except:
 	print '\nUsage:\npython 0_monitor_and_transfer.py [number of MPI processes]\n'
 	raise
-
+"""
 def timestamp(msg):
 	print '[%s] %s' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), msg)
 
@@ -63,21 +65,24 @@ while 1:
 
 	nfiles /= 2
 		
+	"""
 	# prepare a machine file 
 	outfile = open('mfile', 'w')
 	for node in ['n0', 'Bulbasaur']:
 		outfile.write('%s slots=%d max_slots=24\n' % (node, np))
 	outfile.close()
+	"""
 	
 	timestamp('spawning MPI processes...')
-	os.system('/opt/scyld/openmpi/1.6.4/gnu/bin/mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s' % (home+run_name))
-	
+	os.system('module load openmpi/gnu; mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s' % (home+run_name))
+
 	# at this point, erase the needsprocessing file
 	os.remove(runs[0])
-	flag = open(runs[0].replace('needsprocessing', 'processingdone'), 'w')
+	flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
 	flag.close()
-	break
 
-
+	# move results to macdatafile
+	os.mkdir(runs[0].replace('needsprocessing', 'Results')
+	
 
 

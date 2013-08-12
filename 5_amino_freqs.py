@@ -4,6 +4,7 @@ sequences should be aligned (in the same frame), but not necessarily
 correct reading frame :-/
 """
 import os
+import sys
 from glob import glob
 from seqUtils import *
 
@@ -35,7 +36,10 @@ filename = f.split('/')[-1]
 
 
 prefix, gene = filename.split('.')[:2]
-refseq = hxb2[gene.replace('HIV1B-', '')]
+try:
+	refseq = hxb2[gene.replace('HIV1B-', '')]
+except:
+	sys.exit()
 
 infile = open(f, 'rU')
 fasta = convert_fasta(infile.readlines())
