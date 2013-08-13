@@ -53,11 +53,11 @@ while 1:
 	assay, description, chemistry = '', '', ''
 	for line in infile:
 		if line.startswith('Assay,'):
-			assay = line.strip('\n').split(',')[-1]
+			assay = line.strip('\n').split(',')[1]
 		elif line.startswith('Description,'):
-			description = line.strip('\n').split(',')[-1]	
+			description = line.strip('\n').split(',')[1]
 		elif line.startswith('Chemistry,'):
-			chemistry = line.strip('\n').split(',')[-1]
+			chemistry = line.strip('\n').split(',')[1]
 			break
 	infile.close()
 	
