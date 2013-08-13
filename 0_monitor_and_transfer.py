@@ -50,20 +50,20 @@ while 1:
 	
 	# parse SampleSheet.csv
 	infile = open(runs[0].replace('needsprocessing', 'SampleSheet.csv'), 'rU')
-	assay, description, chemistry = '', '', ''
+	assay, mode, chemistry = '', '', ''
 	for line in infile:
 		if line.startswith('Assay,'):
 			assay = line.strip('\n').split(',')[1]
 		elif line.startswith('Description,'):
-			description = line.strip('\n').split(',')[1]
+			mode = line.strip('\n').split(',')[1]
 		elif line.startswith('Chemistry,'):
 			chemistry = line.strip('\n').split(',')[1]
 			break
 	infile.close()
 	
 	# handle exceptions
-	if description not in ['Nextera', 'Amplicon']:
-		print 'ERROR: Unrecognized mode "', description, '"... skipping'
+	if mode not in ['Nextera', 'Amplicon']:
+		print 'ERROR: Unrecognized mode "', mode, '"... skipping'
 		os.remove(runs[0])
 		flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
 		flag.close()
@@ -96,7 +96,7 @@ while 1:
 	"""
 	
 	timestamp('spawning MPI processes...')
-	os.system('module load openmpi/gnu; mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s %s' % (home+run_name, description))
+	os.system('module load openmpi/gnu; mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s %s' % (home+run_name, mode))
 
 	# at this point, erase the needsprocessing file
 	os.remove(runs[0])
