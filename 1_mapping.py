@@ -41,7 +41,7 @@ def remap (f1, f2, samfile, ref):
 	# mapping against new reference
 	samfile = samfile.replace('.sam', '.remap.sam')
 	
-	os.system('bowtie2 --quiet -p 3 --local -x %s -1 %s -2 %s -S %s\
+	os.system('bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s\
 				--no-unal --met-file %s --un %s --un-conc %s' % (confile, 
 			f1, f2, samfile, samfile.replace('.sam', '.bt2_metrics'),
 			samfile.replace('.sam', '.bt2_unpaired_noalign.fastq'), 
@@ -76,7 +76,7 @@ f2 = f.replace('R1', 'R2')
 
 # Initial mapping to construct reference
 samfile = '%s/%s.prelim.sam' % (root, prefix)
-os.system('bowtie2 --quiet -p 3 --local -x %s -1 %s -2 %s -S %s' % (refpath, 
+os.system('bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s' % (refpath, 
 		f1, 
 		f2, 
 		samfile))

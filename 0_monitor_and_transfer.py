@@ -105,7 +105,8 @@ while 1:
 
 	# move results to macdatafile
 	result_path = runs[0].replace('needsprocessing', 'Results')
-	os.mkdir(result_path)
+	if not os.path.exists(result_path):
+		os.mkdir(result_path)
 	
 	if mode == 'Amplicon':
 		files = glob(home + run_name + '/*.fasta')
