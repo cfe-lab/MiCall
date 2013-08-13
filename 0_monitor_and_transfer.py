@@ -63,7 +63,7 @@ while 1:
 	
 	# handle exceptions
 	if description not in ['Nextera', 'Amplicon']:
-		print 'ERROR: Unrecognized mode', description, '... skipping'
+		print 'ERROR: Unrecognized mode "', description, '"... skipping'
 		os.remove(runs[0])
 		flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
 		flag.close()
