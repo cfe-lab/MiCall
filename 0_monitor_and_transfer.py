@@ -62,7 +62,7 @@ while 1:
 	infile.close()
 	
 	# handle exceptions
-	if description not in ['Nextera', 'Amplicon', '']:
+	if description not in ['Nextera', 'Amplicon']:
 		print 'ERROR: Unrecognized mode', description, '... skipping'
 		os.remove(runs[0])
 		flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
@@ -104,7 +104,18 @@ while 1:
 	flag.close()
 
 	# move results to macdatafile
-	os.mkdir(runs[0].replace('needsprocessing', 'Results')
+	result_path = runs[0].replace('needsprocessing', 'Results')
+	os.mkdir(result_path)
 	
-
+	if mode == 'Amplicon':
+		files = glob(home + run_name + '/*.fasta')
+	else:
+		files = glob(home + run_name + '/*.csf')
+		
+	files += glob(home + run_name + '/*.amino.csv')
+	files += glob(home + run_name + '/*.v3prot')
+	
+	for file in files:
+		filename = file.split('/')[-1]
+		os.system('cp %s %s/%s' % (file, result_path, filename))
 
