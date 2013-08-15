@@ -29,18 +29,22 @@ except:
 	print '\nUsage:\npython 0_monitor_and_transfer.py [number of MPI processes]\n'
 	raise
 """
+
 def timestamp(msg):
+	# Display the date/time along with a message
 	print '[%s] %s' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), msg)
 
 
 while 1:
+
+	# Check for any runs with a needsprocessing flag
 	runs = glob('/media/macdatafile/MiSeq/runs/*/needsprocessing')
 	if len(runs) == 0:
 		timestamp('no runs need processing')
 		sleep(delay)
 		continue
 	
-	# sort with respect to run 
+	# If any exist, sort list by runID (run_name)
 	runs.sort()
 	root = runs[0].replace('needsprocessing', '')
 	timestamp ('processing %s' % root)
@@ -48,7 +52,7 @@ while 1:
 	if not os.path.exists(home+run_name):
 		os.system('mkdir %s%s' % (home, run_name))
 	
-	# parse SampleSheet.csv
+	# Extract assay/description/chemistry from SampleSheet.csv
 	infile = open(runs[0].replace('needsprocessing', 'SampleSheet.csv'), 'rU')
 	assay, mode, chemistry = '', '', ''
 	for line in infile:
@@ -61,22 +65,27 @@ while 1:
 			break
 	infile.close()
 	
-	# handle exceptions
+	# mode must be Nextera or Amplicon: if not, mark as processed and proceed
 	if mode not in ['Nextera', 'Amplicon']:
 		print 'ERROR: Unrecognized mode "', mode, '"... skipping'
+
+		# Eliminate 'needsprocessing' flag, add 'processed' flag
 		os.remove(runs[0])
 		flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
 		flag.close()
+
+		# Start over: this run will no longer be grepped
 		continue
 	
 	
-	# transfer *.fasta.gz files
+	# If run is valid, transfer fasta.gz files to cluster and unzip
 	files = glob(root+'Data/Intensities/BaseCalls/*.fastq.gz')
 	nfiles = 0
+
 	for file in files:
 		filename = file.split('/')[-1]
 		if filename.startswith('Undetermined'):
-			# skip undetermined read files
+			# Do not process undetermined read files
 			continue
 		
 		local_file = home + run_name + '/' + filename
@@ -85,6 +94,7 @@ while 1:
 		os.system('gunzip -f %s' % local_file)
 		nfiles += 1
 
+	# Why do we divide nFiles by 2?
 	nfiles /= 2
 		
 	"""
@@ -96,9 +106,14 @@ while 1:
 	"""
 	
 	timestamp('spawning MPI processes...')
+
+	# module load openmpi/gnu: sets up the correct alias for mpirun
+
+	# mpirun: reads mfile and loads k processes of 0_MPI_wrapper.py
+	#         (The mfile specifies the cluster, and the # CPUs to use)
 	os.system('module load openmpi/gnu; mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s %s' % (home+run_name, mode))
 
-	# at this point, erase the needsprocessing file
+	# Replace the 'needsprocesing' flag with a 'processed' flag
 	os.remove(runs[0])
 	flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
 	flag.close()
@@ -110,6 +125,7 @@ while 1:
 	
 	if mode == 'Amplicon':
 		files = glob(home + run_name + '/*.fasta')
+		files += glob(home + run_name + '/_g2p.csv')
 	else:
 		files = glob(home + run_name + '/*.csf')
 		
