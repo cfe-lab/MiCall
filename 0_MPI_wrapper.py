@@ -61,6 +61,8 @@ for i in range(len(files)):
 	for qcut in [0, 10, 15, 20]:
 		os.system('python 2_sam2fasta_with_base_censoring.py %s %d %s' % (files[i], qcut, mode))
 
+MPI.COMM_WORLD.Barrier()
+
 
 # Fpr amplicon sequencing runs, compute g2p scores for env-mapped FASTAs
 if mode == 'Amplicon':
