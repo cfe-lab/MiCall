@@ -6,7 +6,7 @@ import sys
 import os
 from glob import glob
 from mpi4py import MPI
-from seqUtils import convert_fasta
+from seqUtils import convert_fasta, ambig_dict
 from datetime import datetime
 
 # This process now has awareness of it's process rank
@@ -154,3 +154,44 @@ if my_rank == 0:
 					str(x4_count/float(total_count)) if total_count > 0 else 'NA'))
 
 	outfile.close()
+
+
+# generate consensus sequences
+if my_rank == 0:
+	thresholds = [0.01, 0.02, 0.05, 0.1, 0.25, 0.4, 1.0]
+	
+	outfile = open(root+'/_nuc_consensus.fasta', 'w')
+	
+	files = glob('%s/*.nuc.csv' % root)
+	for file in files:
+		sample, region, qcut = filename.split('.')[:3]
+		infile = open(file, 'rU')
+		header = infile.next()
+		
+		conseqs = dict([(x, '') for x in thresholds])
+		
+		for line in infile:
+			tokens = map(int, line.strip('\n').split(','))
+			pos = tokens[0]
+			counts = [(count, 'ACGT-'[i]) for i, count in enumerate(tokens[1:])]
+			
+			total_count = sum([count for count, nuc in counts])
+			freqs = [(count/float(total_count), nuc) for count, nuc in counts]
+			
+			# interpret any base above this threshold as "real" and report accordingly
+			for threshold in thresholds:
+				passed = [nuc for f, nuc in freqs]
+				if len(passed) == 1:
+					conseqs[threshold] += passed[0]
+				else:
+					# handle mixture
+					passed.sort()
+					conseqs[threshold] += ambig_dict[''.join(passed)]
+				
+		for threshold, conseq in conseqs.iteritems():
+			outfile.write('>%s_%s_Qcutoff_%s_mixtureCutoff_%f\n%s\n' % (sample, region, qcut, threshold, conseq))
+	
+	outfile.close()
+
+
+
