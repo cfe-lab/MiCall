@@ -17,6 +17,7 @@ import os
 import sys
 from glob import glob
 from datetime import datetime
+from time import sleep
 
 
 #home = '/usr/local/share/miseq/data/'
@@ -95,6 +96,7 @@ while 1:
 		nfiles += 1
 
 	# Why do we divide nFiles by 2?
+	# paired-end reads, each sample has two FASTQ files
 	nfiles /= 2
 		
 	"""

@@ -83,7 +83,7 @@ if mode == 'Amplicon':
 
 
 # Generate amino acid count CSVs
-files = glob(root + '/*.fasta' if mode == 'Amplicon' else 'csf')
+files = glob(root + '/*.fasta' if mode == 'Amplicon' else root+'/*.csf')
 
 for i, file in enumerate(files):
 

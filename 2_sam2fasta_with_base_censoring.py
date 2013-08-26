@@ -65,7 +65,7 @@ elif mode == 'Nextera':
 	# output in compact comma-separated FASTA
 	ofname = '.'.join(map(str, [samfile.replace('.remap.sam', ''), qCutoff, 'csf']))
 	outfile = open(ofname, 'w')
-	for (gp, h, seq) in enumerate(intermed):
+	for (gp, h, seq) in intermed:
 		outfile.write('%s,%d,%s\n' % (h, gp, seq.strip('-')))
 	
 	outfile.close()

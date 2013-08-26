@@ -12,7 +12,7 @@ def convert_csf (handle):
 	fasta = []
 	for line in handle:
 		header, offset, seq = line.strip('\n').split(',')
-		fasta.append([header, '-'*offset + seq])
+		fasta.append([header, '-'*int(offset) + seq])
 	return fasta
 
 
@@ -119,7 +119,15 @@ for j, (h, s) in enumerate(fasta):
 
 
 # output in CSV format
-outfile = open(f.replace('.fasta', '.amino.csv'), 'w')
+if f.endswith('.fasta'):
+	of = f.replace('.fasta', '.amino.csv')
+elif f.endswith('.csf'):
+	of = f.replace('.csf', '.amino.csv')
+else:
+	print 'ERROR: Unrecognized file extension'
+	sys.exit()
+
+outfile = open(of, 'w')
 outfile.write('AA.pos,' + ','.join(alphabet) + '\n')
 
 keys = aminos.keys()
