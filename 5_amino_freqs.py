@@ -110,7 +110,7 @@ for j, (h, s) in enumerate(fasta):
 		if nuc == '-':
 			continue
 		if not nucs.has_key(i): nucs.update({i:{}})
-		if not nucs[i].has_key(nuc): nucs[i].udpate({nuc: 0})
+		if not nucs[i].has_key(nuc): nucs[i].update({nuc: 0})
 		nucs[i][nuc] += 1
 
 	p = translate_nuc(s2, 0)
