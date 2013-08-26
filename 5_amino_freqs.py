@@ -85,6 +85,7 @@ offset = 0 if len(hits) == 0 else len(hits[0])
 
 # use alignment of consensus to pad each sequence
 aminos = {}
+nucs = {}
 for j, (h, s) in enumerate(fasta):
 	s2 = '' # new sequence padded with gaps relative to hxb2
 	index = offset
@@ -103,6 +104,14 @@ for j, (h, s) in enumerate(fasta):
 				break
 	
 		index += 1
+		
+	# tally nucleotides at each position
+	for i, nuc in enumerate(s2):
+		if nuc == '-':
+			continue
+		if not nucs.has_key(i): nucs.update({i:{}})
+		if not nucs[i].has_key(nuc): nucs[i].udpate({nuc: 0})
+		nucs[i][nuc] += 1
 
 	p = translate_nuc(s2, 0)
 
@@ -121,8 +130,10 @@ for j, (h, s) in enumerate(fasta):
 # output in CSV format
 if f.endswith('.fasta'):
 	of = f.replace('.fasta', '.amino.csv')
+	of2 = f.replace('.fasta', '.nuc.csv')
 elif f.endswith('.csf'):
 	of = f.replace('.csf', '.amino.csv')
+	of2 = f.replace('.csf', '.nuc.csv')
 else:
 	print 'ERROR: Unrecognized file extension'
 	sys.exit()
@@ -141,12 +152,27 @@ for k in keys:
 		outfile.write(',%d' % (aminos[k].get(aa, 0)))
 	outfile.write('\n')
 
+	"""
 	# what is the most frequent amino acid at this position?
 	intermed = [(count, char) for char, count in aminos[k].iteritems()]
 	intermed.sort(reverse=True)
 
 	max_count, max_state = intermed[0]
 	total_count = sum([count for count, char in intermed])
-
+	"""
 
 outfile.close()
+
+
+outfile2 = open(of2, 'w')
+outfile2.write('nuc.pos,A,C,G,T\n')
+
+keys = nucs.keys()
+keys.sort()
+for k in keys:
+	outfile2.write(str(k+1))
+	for nuc in 'ACGT':
+		outfile2.write(',%d' % (nucs[k].get(nuc, 0)))
+	outfile2.write('\n')
+
+outfile2.close()
