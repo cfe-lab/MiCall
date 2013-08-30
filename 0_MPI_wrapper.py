@@ -19,7 +19,6 @@ def timestamp(msg):
 			nprocs,
 			msg)
 
-
 refpath = '/usr/local/share/miseq/refs/cfe'
 
 # Iteratively map sequences in fastQ to reference sequences
@@ -45,19 +44,19 @@ for i in range(len(files)):
 # the subsequent glob, and the rank assignment approach to the division of labor will fail.
 MPI.COMM_WORLD.Barrier()
 
-# Create a list of remapped SAM files
+# Create list of remapped SAM files
 files = glob(root + '/*.remap.sam')
 
 for i in range(len(files)):
 
-	# Distribute them evenly to different processes
+	# Allocate the subset of remap.sam files properly to this process
 	if i % nprocs != my_rank:
 		continue
 
 	filename = files[i].split('/')[-1]
 	timestamp('2_sam2fasta %s' % filename)
 
-	# For each q-cutoff, generate a fasta file
+	# For each q-cutoff, generate fasta for amplicon, OR a csf file for Nextera
 	for qcut in [0, 10, 15, 20]:
 		os.system('python 2_sam2fasta_with_base_censoring.py %s %d %s' % (files[i], qcut, mode))
 
@@ -81,15 +80,19 @@ if mode == 'Amplicon':
 		os.system('python 3_g2p_scoring.py %s' % file)
 
 
+# Generate amino acid count CSVs from fastas (for Amplicon) OR csf (for Nextera)
+files_to_process = ""
+if mode == 'Amplicon':
+	files_to_process = root+'/*.fasta'
+else:
+	files_to_process = root+'/*.csf'
 
-# Generate amino acid count CSVs
-files = glob(root + '/*.fasta' if mode == 'Amplicon' else root+'/*.csf')
+#files = glob(root+'/*.fasta' if mode == 'Amplicon' else root+'/*.csf')
+files = glob(files_to_process)
 
 for i, file in enumerate(files):
-
 	if i % nprocs != my_rank:
 		continue
-
 	filename = files[i].split('/')[-1]
 	timestamp('5_amino_freqs %s' % filename)
 	os.system('python 5_amino_freqs.py %s %s' % (file, mode))
@@ -140,7 +143,13 @@ if my_rank == 0:
 			for cutoff in [3.0, 3.5, 4.0, 5.0, 5.75, 7.5]:
 				infile = open(file, 'rU')
 				lines = infile.readlines()
-				fasta = convert_fasta(lines) if len(lines) > 0 else []
+
+				fasta = ""
+				if len(lines > 0):
+					fasta = convert_fasta(lines)
+				else:
+					fasta = []
+				#fasta = convert_fasta(lines) if len(lines) > 0 else []
 				infile.close()
 				
 				if len(fasta) > 0:
@@ -148,13 +157,21 @@ if my_rank == 0:
 				else:
 					x4_count = 0
 					total_count = 0
-				
+
+				proportion_x4 = ""
+				if total_count > 0:
+					proportion_X4 = 'NA'
+				else:
+					proportion_X4 = str(x4_count/float(total_count))
+
 				outfile.write('%s,%d,%f,%d,%d,%d,%s\n' % (sample, qcut, cutoff, 
-					mincount, x4_count, total_count, 
-					str(x4_count/float(total_count)) if total_count > 0 else 'NA'))
+					mincount, x4_count, total_count, proportion_X4))
 
 	outfile.close()
 
+# Perform a rows to columns transform for Luke
+g2p_path = root + '/_g2p.csv'
+os.system("python convert_g2p_to_column_representation.py {} > {}.columned".format(g2p_path, g2p_path))
 
 # generate consensus sequences
 if my_rank == 0:
@@ -190,8 +207,4 @@ if my_rank == 0:
 				
 		for threshold, conseq in conseqs.iteritems():
 			outfile.write('>%s_%s_Qcutoff_%s_mixtureCutoff_%f\n%s\n' % (sample, region, qcut, threshold, conseq))
-	
 	outfile.close()
-
-
-

@@ -521,12 +521,16 @@ def transpose_fasta (fasta):
 		return None
 	if type(fasta[0]) is not list or len(fasta[0]) != 2:
 		return None
-	
+
+	# fasta[0][1] gets the length of the sequence in the first entry...?	
 	n_columns = len(fasta[0][1])
 	res = []
+
+	# For each coordinate, extract the character from each fasta sequence
 	for c in range(n_columns):
 		res.append ( [ s[c] for h, s in fasta ] )
 	
+	# Return list of lists: res[1] contains list of chars at position 1 of each seq
 	return res
 
 def untranspose_fasta(tfasta):

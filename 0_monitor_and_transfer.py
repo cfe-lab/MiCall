@@ -113,7 +113,11 @@ while 1:
 
 	# mpirun: reads mfile and loads k processes of 0_MPI_wrapper.py
 	#         (The mfile specifies the cluster, and the # CPUs to use)
+
 	os.system('module load openmpi/gnu; mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper.py %s %s' % (home+run_name, mode))
+
+	#os.system('module load openmpi/gnu; mpirun -machinefile mfile python /usr/local/share/miseq/scripts/0_MPI_wrapper_TEST.py %s %s' % (home+run_name, mode))
+	
 
 	# Replace the 'needsprocesing' flag with a 'processed' flag
 	os.remove(runs[0])

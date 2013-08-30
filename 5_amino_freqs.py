@@ -3,12 +3,22 @@ Count AA frequencies in FASTAs generated from MiSeq data,
 sequences should be aligned (in the same frame), but not necessarily
 correct reading frame :-/
 """
+
 import os
 import sys
 from glob import glob
 from seqUtils import *
 
+# In Amplicon sequencing, the sequence comes from the same regions, and so the sequences
+# can be trivially compressed. With nextera, the reads are distributed over different
+# coordinates - this leads to large external gaps. In the csf format to facilitate compression,
+# the data is stored as (HEADER,OFFSET,SEQ) so that the gaps don't uselessly consume disk space
+
 def convert_csf (handle):
+	"""
+	Extract the header, offset, and seq from the csf, and return a single list containing
+	[header, seq] tuples of decompressed sequence data
+	"""
 	fasta = []
 	for line in handle:
 		header, offset, seq = line.strip('\n').split(',')
@@ -16,18 +26,14 @@ def convert_csf (handle):
 	return fasta
 
 
-# load HyPhy
 from hyphyAlign import *
-
 hyphy = HyPhy._THyPhy (os.getcwd(), 1)
 
 # set up for nucleotide alignment
 change_settings(hyphy, alphabet = nucAlphabet, scoreMatrix = nucScoreMatrix,
-					gapOpen = 10, gapOpen2 = 10, gapExtend=1, gapExtend2=1,
-					noTerminalPenalty = 1)
+	gapOpen = 10, gapOpen2 = 10, gapExtend=1, gapExtend2=1,noTerminalPenalty = 1)
 
 alphabet = 'ACDEFGHIKLMNPQRSTVWY*-'
-
 
 hxb2 = {'gag': 'ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATATAGTATGGGCAAGCAGGGAGCTAGAACGATTCGCAGTTAATCCTGGCCTGTTAGAAACATCAGAAGGCTGTAGACAAATACTGGGACAGCTACAACCATCCCTTCAGACAGGATCAGAAGAACTTAGATCATTATATAATACAGTAGCAACCCTCTATTGTGTGCATCAAAGGATAGAGATAAAAGACACCAAGGAAGCTTTAGACAAGATAGAGGAAGAGCAAAACAAAAGTAAGAAAAAAGCACAGCAAGCAGCAGCTGACACAGGACACAGCAATCAGGTCAGCCAAAATTACCCTATAGTGCAGAACATCCAGGGGCAAATGGTACATCAGGCCATATCACCTAGAACTTTAAATGCATGGGTAAAAGTAGTAGAAGAGAAGGCTTTCAGCCCAGAAGTGATACCCATGTTTTCAGCATTATCAGAAGGAGCCACCCCACAAGATTTAAACACCATGCTAAACACAGTGGGGGGACATCAAGCAGCCATGCAAATGTTAAAAGAGACCATCAATGAGGAAGCTGCAGAATGGGATAGAGTGCATCCAGTGCATGCAGGGCCTATTGCACCAGGCCAGATGAGAGAACCAAGGGGAAGTGACATAGCAGGAACTACTAGTACCCTTCAGGAACAAATAGGATGGATGACAAATAATCCACCTATCCCAGTAGGAGAAATTTATAAAAGATGGATAATCCTGGGATTAAATAAAATAGTAAGAATGTATAGCCCTACCAGCATTCTGGACATAAGACAAGGACCAAAGGAACCCTTTAGAGACTATGTAGACCGGTTCTATAAAACTCTAAGAGCCGAGCAAGCTTCACAGGAGGTAAAAAATTGGATGACAGAAACCTTGTTGGTCCAAAATGCGAACCCAGATTGTAAGACTATTTTAAAAGCATTGGGACCAGCGGCTACACTAGAAGAAATGATGACAGCATGTCAGGGAGTAGGAGGACCCGGCCATAAGGCAAGAGTTTTGGCTGAAGCAATGAGCCAAGTAACAAATTCAGCTACCATAATGATGCAGAGAGGCAATTTTAGGAACCAAAGAAAGATTGTTAAGTGTTTCAATTGTGGCAAAGAAGGGCACACAGCCAGAAATTGCAGGGCCCCTAGGAAAAAGGGCTGTTGGAAATGTGGAAAGGAAGGACACCAAATGAAAGATTGTACTGAGAGACAGGCTAATTTTTTAGGGAAGATCTGGCCTTCCTACAAGGGAAGGCCAGGGAATTTTCTTCAGAGCAGACCAGAGCCAACAGCCCCACCAGAAGAGAGCTTCAGGTCTGGGGTAGAGACAACAACTCCCCCTCAGAAGCAGGAGCCGATAGACAAGGAACTGTATCCTTTAACTTCCCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAA', 
 		'pol': 'TTTTTTAGGGAAGATCTGGCCTTCCTACAAGGGAAGGCCAGGGAATTTTCTTCAGAGCAGACCAGAGCCAACAGCCCCACCAGAAGAGAGCTTCAGGTCTGGGGTAGAGACAACAACTCCCCCTCAGAAGCAGGAGCCGATAGACAAGGAACTGTATCCTTTAACTTCCCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTCTATGTAGATGGGGCAGCTAACAGGGAGACTAAATTAGGAAAAGCAGGATATGTTACTAATAGAGGAAGACAAAAAGTTGTCACCCTAACTGACACAACAAATCAGAAGACTGAGTTACAAGCAATTTATCTAGCTTTGCAGGATTCGGGATTAGAAGTAAACATAGTAACAGACTCACAATATGCATTAGGAATCATTCAAGCACAACCAGATCAAAGTGAATCAGAGTTAGTCAATCAAATAATAGAGCAGTTAATAAAAAAGGAAAAGGTCTATCTGGCATGGGTACCAGCACACAAAGGAATTGGAGGAAATGAACAAGTAGATAAATTAGTCAGTGCTGGAATCAGGAAAGTACTATTTTTAGATGGAATAGATAAGGCCCAAGATGAACATGAGAAATATCACAGTAATTGGAGAGCAATGGCTAGTGATTTTAACCTGCCACCTGTAGTAGCAAAAGAAATAGTAGCCAGCTGTGATAAATGTCAGCTAAAAGGAGAAGCCATGCATGGACAAGTAGACTGTAGTCCAGGAATATGGCAACTAGATTGTACACATTTAGAAGGAAAAGTTATCCTGGTAGCAGTTCATGTAGCCAGTGGATATATAGAAGCAGAAGTTATTCCAGCAGAAACAGGGCAGGAAACAGCATATTTTCTTTTAAAATTAGCAGGAAGATGGCCAGTAAAAACAATACATACTGACAATGGCAGCAATTTCACCGGTGCTACGGTTAGGGCCGCCTGTTGGTGGGCGGGAATCAAGCAGGAATTTGGAATTCCCTACAATCCCCAAAGTCAAGGAGTAGTAGAATCTATGAATAAAGAATTAAAGAAAATTATAGGACAGGTAAGAGATCAGGCTGAACATCTTAAGACAGCAGTACAAATGGCAGTATTCATCCACAATTTTAAAAGAAAAGGGGGGATTGGGGGGTACAGTGCAGGGGAAAGAATAGTAGACATAATAGCAACAGACATACAAACTAAAGAATTACAAAAACAAATTACAAAAATTCAAAATTTTCGGGTTTATTACAGGGACAGCAGAAATCCACTTTGGAAAGGACCAGCAAAGCTCCTCTGGAAAGGTGAAGGGGCAGTAGTAATACAAGATAATAGTGACATAAAAGTAGTGCCAAGAAGAAAAGCAAAGATCATTAGGGATTATGGAAAACAGATGGCAGGTGATGATTGTGTGGCAAGTAGACAGGATGAGGATTAG', 
@@ -37,90 +43,133 @@ hxb2 = {'gag': 'ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAA
 		#'hxb2-vif-vpu': 'ATGGAAAACAGATGGCAGGTGATGATTGTGTGGCAAGTAGACAGGATGAGGATTAGAACATGGAAAAGTTTAGTAAAACACCATATGTATGTTTCAGGGAAAGCTAGGGGATGGTTTTATAGACATCACTATGAAAGCCCTCATCCAAGAATAAGTTCAGAAGTACACATCCCACTAGGGGATGCTAGATTGGTAATAACAACATATTGGGGTCTGCATACAGGAGAAAGAGACTGGCATTTGGGTCAGGGAGTCTCCATAGAATGGAGGAAAAAGAGATATAGCACACAAGTAGACCCTGAACTAGCAGACCAACTAATTCATCTGTATTACTTTGACTGTTTTTCAGACTCTGCTATAAGAAAGGCCTTATTAGGACACATAGTTAGCCCTAGGTGTGAATATCAAGCAGGACATAACAAGGTAGGATCTCTACAATACTTGGCACTAGCAGCATTAATAACACCAAAAAAGATAAAGCCACCTTTGCCTAGTGTTACGAAACTGACAGAGGATAGATGGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAGGAGCTTTTAGAGGAGCTTAAGAATGAAGCTGTTAGACATTTTCCTAGGATTTGGCTCCATGGCTTAGGGCAACATATCTATGAAACTTATGGGGATACTTGGGCAGGAGTGGAAGCCATAATAAGAATTCTGCAACAACTGCTGTTTATCCATTTTCAGAATTGGGTGTCGACATAGCAGAATAGGCGTTACTCGACAGAGGAGAGCAAGAAATGGAGCCAGTAGATCCTAGACGCAACCTATACCAATAGTAGCAATAGTAGCATTAGTAGTAGCAATAATAATAGCAATAGTTGTGTGGTCCATAGTAATCATAGAATATAGGAAAATATTAAGACAAAGAAAAATAGACAGGTTAATTGATAGACTAATAGAAAGAGCAGAAGACAGTGGCAATGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCTCCTTGGGATGTTGATGATCTGTAG'}
 
 
+# The inputs (f is the csf/fasta file to process and mode is Amplicon/Nextera)
 f = sys.argv[1]
 mode = sys.argv[2]
-
 filename = f.split('/')[-1]
 
-
+# Get the first 2 parts of the filename (prefix is the sample, gene is gag/env/etc)
 prefix, gene = filename.split('.')[:2]
 try:
 	refseq = hxb2[gene.replace('HIV1B-', '')]
 except:
 	sys.exit()
 
+# Generate a fasta-like datastructure of [header, sequence] tuples
+# Regardless of whether or not this is Amplicon or Nextera
 infile = open(f, 'rU')
 if mode == 'Amplicon':
 	fasta = convert_fasta(infile.readlines())
+	print "convert_fasta() ..."
 elif mode == 'Nextera':
 	fasta = convert_csf(infile)
-
+	print "convert_csf() ..."
 infile.close()
 
-# generate a consensus from n=1000 sequences and align
-# against HXB2 nucleotide reference
+# Generate consensus from N=1000 sequences of this sample
+# And align against HXB2 nucleotide
 
+
+# Get the length of the longest sequence in the entire dataset
 maxlen = max([len(s) for h, s in fasta])
 
-if len(fasta) < 1000:
+# Uniformly subsample the fasta list
+
+subSampleSize = 10000
+if len(fasta) < subSampleSize:
 	subfasta = fasta
 else:
 	subfasta = []
-	for i in range(0, len(fasta), len(fasta)/1000):
+	for i in range(0, len(fasta), len(fasta)/subSampleSize):
 		subfasta.append(fasta[i])
+print "subfasta generated ..."
 
-# pad alignment with gap characters on the right to make a legit FASTA
+# Pad alignment with gap characters on the right to make a "legit FASTA" (Some programs barf)
+# For each fasta entry, pad alignment with gap characters so that all sequences are with respect to the longest sequence...?
 for i in range(len(subfasta)):
 	seqlen = len(subfasta[i][1])
 	if seqlen < maxlen:
 		subfasta[i][1] += '-'*(maxlen-seqlen)
 
+# From this subsampling, run majority_consensus
 conseq = majority_consensus(subfasta)
 
-aquery, aref, ascore = pair_align(hyphy, refseq, conseq.replace('-', 'N'))
+# Perform an alignment of the subsample consensus and the reference sequence (IE, gag, etc)
 
+# aref - the reference sequence post alignment (It can get gaps)
+# aquery - the consensus sequence post alignment
+aquery, aref, ascore = pair_align(hyphy, refseq, conseq.replace('-', 'N'))
+print "Alignment completed ..."
+
+# gap_prefix = re.compile('^[-]+') from HyPhy align - returns dashes appended to front of a sequence
 hits = gap_prefix.findall(aref)
+
+# Calculate the offset determined by the number of leading gaps
 offset = 0 if len(hits) == 0 else len(hits[0])
 
-
-# use alignment of consensus to pad each sequence
+# Use alignment of consensus to pad each sequence
 aminos = {}
 nucs = {}
+
+# Matches strings composed entirely of gaps
+gaps_only = re.compile('^[-]+$')
+
+# Big picture: we use the alignment from the consensus sequence as a guide
+# for where gaps LIKELY would be be in each individual sequence (s) without
+# performing individual alignments - this "simulated alignment" results in s2
+
+# For each sequence (s) ...
 for j, (h, s) in enumerate(fasta):
-	s2 = '' # new sequence padded with gaps relative to hxb2
+
+	# Generate s2: the new sequence with deduced gaps relative to hxb2
+	s2 = ''
 	index = offset
+
+	# Start from the offset to the end of the alignment
 	for i in range(offset, len(aquery)):
-		if aquery[i] == '-':
-			s2 += '-' # add a gap
+
+		# If the query has a gap, add a gap to s2 if it is non-terminal (IE, a legitimate indel)
+		# (And do not traverse along s)
+
+		# or set(aquery[:i]) == set('-')
+		if aquery[i] == '-' and not gaps_only.match(aquery[:i]) and not gaps_only.match(aquery[i:]):
+			s2 += '-'
 			continue
+
+		# Ignore HXB2 insertions in the aligned reference (And hence in s)
 		elif aref[i] == '-':
 			index += 1
-			continue # ignore insertion relative to hxb2
+			continue
+
+		# If not a gap, concatenate s2 with the original sequence s
 		else:
 			try:
 				s2 += s[index]
 			except:
-				# reached end of original sequence
+				# Reached end of original sequence
 				break
-	
+
 		index += 1
-		
-	# tally nucleotides at each position
+
+	# Enumerate through 'simulation aligned' sequence s2; tally nucleotides at each position
 	for i, nuc in enumerate(s2):
-		if nuc == '-':
+		if nuc == 'N':
 			continue
+
+		# Track counts for each position, and the nucleotide at that position
 		if not nucs.has_key(i): nucs.update({i:{}})
 		if not nucs[i].has_key(nuc): nucs[i].update({nuc: 0})
 		nucs[i][nuc] += 1
 
+	# Translate the sequence
 	p = translate_nuc(s2, 0)
 
-	# tally the amino acids in each position
+	# Enumerate through the protein sequence p; tally aminos at each position
 	for i, aa in enumerate(p):
 		if aa in '?':
-			# ignore missing data
 			continue
 	
+		# Track counts for each position, and the amino at that position
 		if not aminos.has_key(i): aminos.update({i:{}})
 		if not aminos[i].has_key(aa): aminos[i].update({aa: 0})
 		aminos[i][aa] += 1
@@ -138,14 +187,18 @@ else:
 	print 'ERROR: Unrecognized file extension'
 	sys.exit()
 
+# Write to the .amino.csv file
 outfile = open(of, 'w')
+
+# Write the csv header (Coord,A,C,D,E,F,etc)
 outfile.write('AA.pos,' + ','.join(alphabet) + '\n')
 
+# Sort by coordinate
 keys = aminos.keys()
 keys.sort()
 
+# For each HXB2 position
 for k in keys:
-	# for each hxb2 position
 	outfile.write(str(k+1))
 	for aa in alphabet:
 		# -1 flags unexpected position
@@ -165,13 +218,13 @@ outfile.close()
 
 
 outfile2 = open(of2, 'w')
-outfile2.write('nuc.pos,A,C,G,T\n')
+outfile2.write('nuc.pos,A,C,G,T,gap\n')
 
 keys = nucs.keys()
 keys.sort()
 for k in keys:
 	outfile2.write(str(k+1))
-	for nuc in 'ACGT':
+	for nuc in 'ACGT-':
 		outfile2.write(',%d' % (nucs[k].get(nuc, 0)))
 	outfile2.write('\n')
 
