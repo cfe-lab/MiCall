@@ -132,8 +132,15 @@ for j, (h, s) in enumerate(fasta):
 		# (And do not traverse along s)
 
 		# or set(aquery[:i]) == set('-')
-		if aquery[i] == '-' and not gaps_only.match(aquery[:i]) and not gaps_only.match(aquery[i:]):
-			s2 += '-'
+		if aquery[i] == '-':
+			if gaps_only.match(aquery[:i]):
+				# before sequenced region
+				s2 += 'N'
+			elif gaps_only.match(aquery[i:]):
+				# after sequenced region
+				s2 += 'N'
+			else:
+				s2 += '-'
 			continue
 
 		# Ignore HXB2 insertions in the aligned reference (And hence in s)
