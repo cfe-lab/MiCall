@@ -111,6 +111,10 @@ def sam2fasta (infile, cutoff=10, max_prop_N=0.5):
 	"""
 	fasta = []
 	lines = infile.readlines()
+
+	# Maybe this needs to be removed?
+	if len(lines) == 0:
+		return None
 	
 	# advance to first data line
 	for start, line in enumerate(lines):

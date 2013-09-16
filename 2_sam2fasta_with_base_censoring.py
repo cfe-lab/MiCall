@@ -31,6 +31,8 @@ prefix, region = filename.split('.')[:2]
 
 # convert SAM to FASTA by parsing CIGAR strings, censoring bases and merging reads
 infile = open(samfile, 'rU')
+
+# Note: sam2fasta has a 3rd argument: the proportion of N's needed before data are dropped (Default = 0.5)
 fasta = sam2fasta(infile, qCutoff)
 infile.close()
 

@@ -1,6 +1,27 @@
 import sys, HyPhy, re, math
 import random
 
+def convert_csf (csf_handle):
+	"""
+	Extract the header, offset, and seq from the csf, return a list of
+	[header, seq] tuples of decompressed sequence data.
+	"""
+	left_gap_position = {}
+	right_gap_position = {}
+
+	fasta = []
+	for line in csf_handle:
+
+		# Header = M01841:18:000000000-A4V8D:1:1111:14650:12016
+		header, offset, seq = line.strip('\n').split(',')
+
+		# Add the leading offset
+		fasta.append([header, '-'*int(offset) + seq])
+		left_gap_position[header] = int(offset)
+		right_gap_position[header] = left_gap_position[header] + len(seq)
+
+	return fasta,left_gap_position,right_gap_position
+
 def convert_fasta (lines):	
 	blocks = []
 	sequence = ''
@@ -420,26 +441,47 @@ def consensus(column, alphabet='ACGT', resolve=False):
 	In case of tie, report mixtures.
 	"""
 	freqs = {}
+
+	# Populate possible bases from alphabet
 	for char in alphabet:
 		freqs.update({char: 0})
-	#freqs = {"A": 0, "T": 0, "C": 0, "G": 0, "-": 0}
+
+	# Traverse the column...
 	for char in column:
+
+		# If the character is within the alphabet, keep it
 		if char in alphabet:
 			freqs[char] += 1
+
+		# If there exists an entry in mixture_dict, take that
+		# mixture_dict maps mixtures to bases ('-' maps to 'ACGT')
 		elif mixture_dict.has_key(char):
-			# handled ambiguous nucleotides with equal weighting
+
+			# Handle ambiguous nucleotides with equal weighting
+			# (Ex: for a gap, add 1/4 to all 4 chars)
 			resolutions = mixture_dict[char]
 			for char2 in resolutions:
 				freqs[char2] += 1./len(resolutions)
 		else:
-			# unrecognized nucleotide character
 			pass
-			
+
+	# AT THIS POINT, NO GAPS ARE RETAINED IN FREQS - TRUE GAPS ARE REPLACED WITH 'ACGT' (N)
+
+
+	# Get a base with the highest frequency
+	# Note: For 2 identical frequencies, it will only return 1 base
 	base = max(freqs, key=lambda n: freqs[n])
 	max_count = freqs[base]
+
+	# Return all bases (elements of freqs) such that the freq(b) = max_count
 	possib = filter(lambda n: freqs[n] == max_count, freqs)
+
+	# If there is only a single base with the max_count, return it
 	if len(possib) == 1:
 		return possib[0]
+
+	# If a gap is in the list of possible bases... remove it unless it is the only base
+	# CURRENTLY, THIS BRANCH IS NEVER REACHED
 	elif "-" in possib:
 		if resolve:
 			possib.remove("-")
@@ -449,8 +491,9 @@ def consensus(column, alphabet='ACGT', resolve=False):
 				return possib[0]
 			else:
 				return ambig_dict["".join(sorted(possib))]
+
+		# If resolve is turned off, gap characters override all ties
 		else:
-			# gap character overrides ties
 			return "-"
 	else:
 		return ambig_dict["".join(sorted(possib))]
