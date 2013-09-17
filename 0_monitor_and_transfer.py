@@ -117,7 +117,7 @@ while 1:
 	load_mpi = "module load openmpi/gnu"
 	script_path = "/usr/local/share/miseq/scripts/0_MPI_wrapper.py"
 	qCutoff = 20
-	os.system("{}; mpirun -machinefile mfile python {} {} {}".format(load_mpi, script_path, home+run_name, mode, qCutoff))
+	os.system("{}; mpirun -machinefile mfile python {} {} {} {}".format(load_mpi, script_path, home+run_name, mode, qCutoff))
 
 	# Replace the 'needsprocesing' flag with a 'processed' flag
 	os.remove(runs[0])

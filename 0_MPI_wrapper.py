@@ -10,6 +10,7 @@ from seqUtils import convert_fasta, ambig_dict
 from datetime import datetime
 
 import inspect  # For returning the line number
+
 def lineno():
 	return inspect.currentframe().f_back.f_lineno
 
@@ -29,20 +30,21 @@ mode = sys.argv[2] 				# Nextera or Amplicon
 qCutoff = int(sys.argv[3])
 
 # For each fastq file, map sequence to reference sequences: 1_mapping(refseq,files[i])
+
+
 files = glob(root + '/*R1*.fastq')
 for i in range(len(files)):
 	if i % nprocs != my_rank:
 		continue
 	filename = files[i].split('/')[-1]
 	timestamp('1_mapping %s' % filename)
-	os.system("python 1_mapping.py {} {}".format(refpath, files[i], qCutoff))
-
+	os.system("python 1_mapping.py {} {} {}".format(refpath, files[i], qCutoff))
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0:
 	timestamp('MPI.COMM_WORLD.Barrier() #1 passed\n')
 
 # For each remapped SAM, generate CSFs (done), generate pileup(Need to be done)
-#files = glob(root + '/*.remap.sam')
+files = glob(root + '/*.remap.sam')
 
 # Rename to bam
 #for i in range(len(files)):

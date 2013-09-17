@@ -22,6 +22,8 @@ indels_re = re.compile('\+[0-9]+|-[0-9]+')	# Matches a '+' or '-' followed by 1+
 # mpileup generates a massive file
 # A pileup file stores each aligned read for each position with respect to reference
 report_indels = True if '-indels' in sys.argv else False
+
+# Example input: a remap.bam.pileup file
 infile = open(sys.argv[1], 'rU')
 polyfile = open(sys.argv[1]+'.poly', 'w')
 polyfile.write('Position,A,C,G,T,N\n')
@@ -150,6 +152,7 @@ for ii, line in enumerate(infile):
 
 polyfile.close()
 
+# Example output: remap.bam.pileup.conseq
 confile = open(sys.argv[1]+'.conseq', 'w')
 confile.write(">{}\n{}\n".format(prefix, conseq)) 
 confile.close()

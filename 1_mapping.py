@@ -39,7 +39,7 @@ def remap (f1, f2, samfile, ref, qCutoff=30):
 	# Generate the pileup
 	os.system('samtools mpileup -A %s.sorted.bam > %s.pileup 2>/dev/null' % (bamfile, bamfile))
 	
-	# generate consensus sequence from pileup
+	# Generate consensus sequence from pileup
 	os.system("python pileup2conseq_v2.py {}.pileup {}".format(bamfile, qCutoff))
 	confile = bamfile+'.pileup.conseq'
 	os.system('bowtie2-build -q -f %s %s' % (confile, confile))

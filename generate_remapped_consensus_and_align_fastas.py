@@ -16,14 +16,14 @@ from glob import glob
 from seqUtils import convert_csf
 
 debug = 1
-debug_seq = "35854A"
+debug_seq = "35759A"
 
 from mpi4py import MPI
 my_rank = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()
 
 def consensus_from_remapped_sam(root,ref,samfile,qCutoff=30):
-	"""Generate remap conseq + remap bt"""
+	"""From remap.sam, generate remap conseq + remap bt"""
 	bamfile = samfile.replace('.sam', '.bam')
 
 	command = 'samtools view -bt {}.fasta.fai {} > {} 2>/dev/null'.format(ref, samfile, bamfile)
@@ -35,7 +35,7 @@ def consensus_from_remapped_sam(root,ref,samfile,qCutoff=30):
 	command = 'samtools mpileup -A {}.sorted.bam > {}.pileup 2>/dev/null'.format(bamfile, bamfile)
 	os.system(command)
 
-	# Also generates a poly file corresponding to this remapped sam
+	# From remap.bam.pileup, generate poly + conseq
 	command = 'python pileup2conseq_v2.py {}.pileup {}'.format(bamfile, qCutoff)
 	os.system(command)
 
@@ -71,15 +71,17 @@ root = sys.argv[1]
 # For each remapped sam, generate an indexed consensus (bt file)
 samfiles = glob(root + '/*.remap.sam')
 if debug == 1:
-	samfiles = glob('/data/miseq/130820_M01841_0018_000000000-A4V8D/{}-PR-RT.HIV1B-pol.remap.sam'.format(debug_seq))
+	samfiles = glob('/data/miseq/0_testing/{}-PR-RT.HIV1B-pol.remap.sam'.format(debug_seq))
 
 for i in range(len(samfiles)):
 	if i % nprocs != my_rank:
 		continue
 	samfile = samfiles[i]
 
-	# FIXME: Currently refpath is wrong - it is using con B, but should be using sample specific .pileup.conseq from 1_mapping
-	consensus_from_remapped_sam(root,refpath,samfile,20)
+	# Generate remap conseq bt using patient-specific prelim conseq
+	prelim_conseq = samfile.replace('.sam', '.bam.pileup.conseq')
+	consensus_from_remapped_sam(root,prelim_conseq,samfile,20)
+
 MPI.COMM_WORLD.Barrier()
 
 # Convert each csf to fasta for alignment against remap consensus
@@ -90,7 +92,7 @@ right_gap_position = {}
 csf_files = glob(root + '/*.csf')
 
 if debug == 1:
-	csf_files = glob('/data/miseq/130820_M01841_0018_000000000-A4V8D/{}-PR-RT.HIV1B-pol.20.csf'.format(debug_seq))
+	csf_files = glob('/data/miseq/0_testing/{}-PR-RT.HIV1B-pol.20.csf'.format(debug_seq))
 
 # For each csf, generate fasta with left-padded sequences
 for i in range(len(csf_files)):
@@ -138,7 +140,7 @@ MPI.COMM_WORLD.Barrier()
 # For each prefix.regioncode.qScore.csf.final.sam, generate the poly file
 final_sams = glob(root + '/*.final.sam')
 if debug == 1:
-	final_sams = glob(root + '/{}-PR-RT.HIV1B-pol.20.csf.final.sam'.format(debug_seq))
+	final_sams = glob('/data/miseq/0_testing/{}-PR-RT.HIV1B-pol.20.csf.final.sam'.format(debug_seq))
 
 for i in range(len(final_sams)):
 	if i % nprocs != my_rank:
@@ -151,7 +153,7 @@ for i in range(len(final_sams)):
 poly_files = glob(root + '/*.remap.*.poly')
 
 if debug == 1:
-	poly_files = glob(root + '/{}-PR-RT.HIV1B-pol.20.csf.final.bam.pileup.poly'.format(debug_seq))
+	poly_files = glob('/data/miseq/0_testing/{}-PR-RT.HIV1B-pol.20.csf.final.bam.pileup.poly'.format(debug_seq))
 
 for j in range(len(poly_files)):
 	if j % nprocs != my_rank:
@@ -161,7 +163,7 @@ for j in range(len(poly_files)):
 	# Open the poly file, generate the conseq
 	infile = open(f, 'rU')
 
-	consensus_sequence = ""
+	final_conseq = ""
 
 	for i, line in enumerate(infile):
 
@@ -176,9 +178,12 @@ for j in range(len(poly_files)):
 		max_count = freqs[base]
 		# Return all bases (elements of freqs) such that the freq(b) = max_count
 		possib = filter(lambda n: freqs[n] == max_count, freqs)
-		consensus_sequence += base
-
-	print "{}".format(consensus_sequence)
+		final_conseq += base
 	infile.close()
+
+	filename = poly_files[j] + ".final_conseq"
+	final_conseq_f = open(filename, 'w')
+	final_conseq_f.write("{}".format(final_conseq))
+	print "Writing final conseq: {}".format(filename)
 
 MPI.COMM_WORLD.Barrier()
