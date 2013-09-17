@@ -114,9 +114,8 @@ infile.close()
 for refname in refnames:
 	refsams[refname]['handle'].close()
 
-# erase the original (prelim) sam file to keep things tidy
+# Erase original prelim sam
 os.remove(samfile)
-
 
 # remap reads using sample- and target-specific consensus
 for refname in refnames:

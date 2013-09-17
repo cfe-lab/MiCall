@@ -205,8 +205,7 @@ if my_rank == 0 and mode == 'Amplicon':
 # Generate consensus sequence
 if my_rank == 0:
 
-	# ERIC: Guin prefers 20% to approximate population sequencing
-	# We may change this - or make multiple parameters for the future
+	# 20% approximates population sequencing
 	thresholds = [0.20]
 	outfile = open(root+'/_nuc_consensus.fasta', 'w')
 
