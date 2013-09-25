@@ -1,55 +1,59 @@
 """
-A library of functions for converting from a samtools SAM Format to a
-FASTA formatted alignment.
+Library of functions for converting from SAM to a FASTA formatted alignments.
 """
-
 import re
 
+# Matches 1+ occurences of a number, followed by a letter from {MIDNSHPX=}
 cigar_re = re.compile('[0-9]+[MIDNSHPX=]')
-
 
 def apply_cigar (cigar, seq, qual):
 	"""
-	Parse CIGAR info and apply it to the nucleotide sequence.
+	Parse SAM CIGAR and apply to the SAM nucleotide sequence.
+
+	Input: cigar, sequence, and quality string from SAM.
+	Output: shift (?), sequence with CIGAR incorporated + new quality string
 	"""
 	newseq = ''
 	newqual = ''
 	tokens = cigar_re.findall(cigar)
 	if len(tokens) == 0:
 		return None, None, None
-	
-	shift = 0 # to account for removing soft clipped bases on left
+
+	# Account for removing soft clipped bases on left
+	shift = 0
 	if tokens[0].endswith('S'):
 		shift = int(tokens[0][:-1])
 	
 	left = 0
 	for token in tokens:
 		length = int(token[:-1])
+
+		# Matching sequence: carry it over
 		if token[-1] == 'M':
-			# carry over matches
 			newseq += seq[left:(left+length)]
 			newqual += qual[left:(left+length)]
 			left += length
-			
+
+		# Deletion relative to reference: pad with gaps
 		elif token[-1] == 'D':
-			# deletion relative to reference, pad with gaps
 			newseq += '-'*length
-			newqual += 'A' # arbitrary high quality score
-			
+			newqual += 'A' 		# Assign arbitrary score
+
+		# Insertion relative to reference: skip it (excise it)
 		elif token[-1] == 'I':
-			# insertion relative to reference, excise
 			left += length
 			continue
-			
+
+		# Soft clipping leaves the sequence in the SAM - so we should skip it
 		elif token[-1] == 'S':
-			# ignore soft clipping
 			left += length
 			continue
 			
 		else:
-			print 'how to handle CIGAR token %s?' % token
+			print "Unable to handle CIGAR token: {} - quitting".format(token)
 			sys.exit()
-		
+
+	# What does shift do?
 	return shift, newseq, newqual
 
 
@@ -112,25 +116,23 @@ def sam2fasta (infile, cutoff=10, max_prop_N=0.5):
 	fasta = []
 	lines = infile.readlines()
 
-	# Maybe this needs to be removed?
 	if len(lines) == 0:
 		return None
 	
-	# advance to first data line
+	# Skip top SAM header lines
 	for start, line in enumerate(lines):
 		if not line.startswith('@'):
 			break
 	
-	# abort if file is empty
 	if start == (len(lines)-1):
 		return None
 	
 	i = start
 	while i < len(lines):
 		qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = lines[i].strip('\n').split('\t')[:11]
-		
+
+		# First read is unmapped
 		if refname == '*' or cigar == '*':
-			# first read is unmapped
 			i += 1
 			continue
 		
@@ -142,8 +144,8 @@ def sam2fasta (infile, cutoff=10, max_prop_N=0.5):
 		
 		seq1 = '-'*pos1 + censor_bases(seq1, qual1, cutoff)
 		
+		# No more lines
 		if (i+1) == len(lines):
-			# no more lines
 			break
 		
 		# look ahead for matched pair

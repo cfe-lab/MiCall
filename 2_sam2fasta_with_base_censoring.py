@@ -71,5 +71,3 @@ elif mode == 'Nextera':
 		outfile.write('%s,%d,%s\n' % (h, gp, seq.strip('-')))
 	
 	outfile.close()
-
-

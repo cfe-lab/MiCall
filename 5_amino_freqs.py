@@ -135,6 +135,10 @@ for j, (h, s) in enumerate(fasta):
 	# Enumerate through 'simulation aligned' s2, tally nucleotides at each position
 	for i, nuc in enumerate(s2):
 
+
+		# FIXME: THIS CODE IS CRASHING - h is not matching anything!
+		# KeyError: '50833A-RT3-only-F00826-V3LOOP-2_variant_0_count_1110'
+
 		# Do not tally anything in an artifactual gap
 		if i < left_gap_position[h] or i > right_gap_position[h] + num_internal_gaps:
 			continue
