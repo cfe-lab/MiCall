@@ -1,16 +1,16 @@
 """
 Persistent monitoring of MiSeq runs folder mounted at /media/macdatafile
-for 'needsprocessing' flag, which will trigger a pipeline on the cluster.
 
-The role of this script is to detect this flag, transfer the *.fastq.gz
-files in Data/Intensities/BaseCalls/, uncompress the files, and call
-the pipeline.  When the pipeline is complete, it will upload the end
-results back to macdatafile, create an empty file named 'processingcomplete'
-and remove 'needsprocessing'.
+Within each run folder, a 'needsprocessing' flag will trigger this
+monitoring script, which will then:
+	1) Copy the file over locally
+	2) Unzip it
+	3) Call the pipeline (0_MPI_wrapper.py)
+	4) Upon completion, upload the results back to macdatafile
+	5) Replace the 'needsprocessing' flag with 'processingcomplete'
 
-Processing will be done on a "first come first serve" basis, i.e., no
-asynchronous processing where another MiSeq run becomes available for 
-processing while the pipeline is being executed.
+Processing will be done in serial on a 'first come first serve' basis:
+no asynchronous processing of multiple runs will be performed
 """
 
 import os, sys
@@ -21,7 +21,7 @@ from time import sleep
 home='/data/miseq/'
 delay = 3600
 
-def timestamp(msg): print '[%s] %s' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), msg)
+def timestamp(msg): print '[{}] {}'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), msg)
 
 while 1:
 	runs = glob('/media/macdatafile/MiSeq/runs/*/needsprocessing')
@@ -50,40 +50,33 @@ while 1:
 			break
 	infile.close()
 	
-	# mode must be Nextera or Amplicon: if not, mark as processed and proceed
+	# mode must be Nextera or Amplicon: if not, mark as an error and proceed
 	if mode not in ['Nextera', 'Amplicon']:
-		print 'ERROR: Unrecognized mode "', mode, '"... skipping'
-
-		# Eliminate 'needsprocessing' flag, add 'processed' flag
+		timestamp('ERROR: Unrecognized mode {} ... skipping'.format(mode))
 		os.remove(runs[0])
-		flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
+		flag = open(runs[0].replace('needsprocessing', 'needsprocessing_ERROR'), 'w')
 		flag.close()
-
-		# Start over: this run will no longer be grepped
 		continue
 	
 	
 	# If run is valid, transfer fasta.gz files to cluster and unzip
 	files = glob(root+'Data/Intensities/BaseCalls/*.fastq.gz')
-	nfiles = 0
 
+	# Copy and unzip all files (Except for undetermined reads)
 	for file in files:
 		filename = file.split('/')[-1]
-
-		# Do not process undetermined read files
 		if filename.startswith('Undetermined'): continue
 		local_file = home + run_name + '/' + filename
 		timestamp('cp and gunzip {}'.format(filename))
 		os.system('cp {} {}'.format(file, local_file))
 		os.system('gunzip -f {}'.format(local_file))
-		nfiles += 1
 
 	# paired-end reads, each sample has two FASTQ files
 	timestamp('Spawning 0_MPI_wrapper ...')
 	load_mpi = "module load openmpi/gnu"
 	script_path = "/usr/local/share/miseq/scripts/0_MPI_wrapper.py"
 
-	# THIS NEEDS TO BE FIXED
+	# FIXME: THIS NEEDS TO BE FIXED
 	qCutoff = 20
 	os.system("{}; mpirun -machinefile mfile python {} {} {} {}".format(load_mpi, script_path, home+run_name, mode, qCutoff))
 
@@ -97,10 +90,9 @@ while 1:
 	timestamp('Posting results to {} ...'.format(result_path))
 	if not os.path.exists(result_path): os.mkdir(result_path)
 
-	#files = glob(home + run_name + '/*.fasta')
-	#files += glob(home + run_name + '/_g2p.csv')
-	#files += glob(home + run_name + '/_g2p.csv.consensus')
-	
+	# The following determines what files are uploaded
+	files += glob(home + run_name + '/HXB2.amino_poly.summary')
+
 	for file in files:
 		filename = file.split('/')[-1]
-		os.system('cp %s %s/%s' % (file, result_path, filename))
+		os.system('cp {} {}/{}'.format(file, result_path, filename))

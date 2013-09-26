@@ -41,7 +41,6 @@ for i in range(len(remapped_sams)):
 	remapped_sam = remapped_sams[i]
 	remap_conseq = remapped_sam.replace('.sam', '.bam.pileup.conseq')
 	consensus_from_remapped_sam(root,remap_conseq,remapped_sam,20)
-
 MPI.COMM_WORLD.Barrier()
 
 # Step 1B: From remap csfs, create remap fastas to be aligned against remap conseq

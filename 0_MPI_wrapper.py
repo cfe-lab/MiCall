@@ -51,7 +51,8 @@ if mode == 'Amplicon':
 		filename = files[i].split('/')[-1]
 		timestamp('3_g2p_scoring {}'.format(filename))
 		os.system('python 3_g2p_scoring.py {}'.format(file))
-
 MPI.COMM_WORLD.Barrier()
+
 if my_rank == 0: timestamp('MPI.COMM_WORLD.Barrier() #3 passed\n')
+
 MPI.Finalize()
