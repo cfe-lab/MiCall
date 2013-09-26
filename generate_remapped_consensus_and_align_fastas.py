@@ -1,6 +1,6 @@
 """
 INPUT: Folder path containing remapped sams
-OUTPUT: Final sam, HXB2 sam, amino_poly
+OUTPUT: *.final.sam, *.HXB2.sam, *.amino_poly, amino_poly.summary
 """
 import os,sys
 from glob import glob
@@ -16,7 +16,7 @@ conB_refpath="/usr/local/share/miseq/refs/cfe"
 hxb2refpath="/usr/local/share/miseq/refs/"      # hxb2_pol_ref.fasta
 root = sys.argv[1]
 
-# Set debug to 1 to test further development on this script
+# Set debug to 1 and modify debug parameters to test development on this pipeline
 debug = 0
 debug_root = "/data/miseq/0_testing"
 debug_seq = "35759A"
@@ -79,7 +79,6 @@ for i in range(len(csf_files)):
 	print "\nMaking final sam: {}".format(command)
 	os.system(command)
 	os.remove(fasta_filename)
-
 MPI.COMM_WORLD.Barrier()
 
 
@@ -94,7 +93,6 @@ for i in range(len(final_sams)):
 	command = 'python 2_sam2fasta_with_base_censoring.py {} {} {}'.format(final_sams[i], qCut, "Nextera")
 	print "Making final csf: {}".format(command)
 	os.system(command)
-
 MPI.COMM_WORLD.Barrier()
 
 # Step 3: HXB2 alignment of final csf
@@ -127,10 +125,9 @@ for i in range(len(final_csfs)):
         print "\nMaking HXB2 sam: {}".format(command)
 	os.system(command)
 	os.remove(fasta_filename)
-
 MPI.COMM_WORLD.Barrier()
 
-# Step 4: Extract HXB2 aligned sequences from the HXB2.sam and generate poly counts
+# Step 4A: Extract HXB2 aligned sequences from the HXB2.sam and generate poly counts
 HXB2_sams = glob(root + '/*.HXB2.sam')
 if debug == 1: HXB2_sams = glob('{}/{}-PR-RT.HIV1B-pol.20.final.sam.20.HXB2.sam'.format(debug_root,debug_seq))
 
@@ -169,21 +166,31 @@ for i in range(len(HXB2_sams)):
 			if not aminos[coord].has_key(aa): aminos[coord].update({aa: 0})
 			aminos[coord][aa] += 1
 
-		# Move to the next SAM line
+		# Move to next SAM line
 		j += 1
 
 	# For each sample, write amino frequency data to a .amino_poly file
-	print "Making amino matrix file: {}".format(f.replace('.HXB2.sam','.HXB2.amino_poly'))
+	print "Making amino matrix: {}".format(f.replace('.HXB2.sam','.HXB2.amino_poly'))
 	amino_poly = open(f.replace('.HXB2.sam','.HXB2.amino_poly'), 'w')
 	keys = aminos.keys()
 	keys.sort()
-	amino_poly.write('Sample,AA.pos,' + ','.join(amino_alphabet) + '\n')
+	amino_poly.write('Sample,region,AA.pos,' + ','.join(amino_alphabet) + '\n')
 	for k in keys:
-		amino_poly.write(sample+','+str(k+1))
-		for aa in amino_alphabet:
-			amino_poly.write(",{}".format(aminos[k].get(aa,0)))
+		amino_poly.write("{},{},{}".format(sample,region,str(k+1)))
+		for aa in amino_alphabet: amino_poly.write(",{}".format(aminos[k].get(aa,0)))
 		amino_poly.write('\n')
 	amino_poly.close()
 
-	# Close the SAM file
+	# Close the SAM
 	infile.close()
+MPI.COMM_WORLD.Barrier()
+
+# Step 4B: Generate an amino summary file
+if my_rank == 0:
+	amino_polys = glob(root + '*.HXB2.amino_poly')
+	amino_summary = root + "HXB2.amino_poly.summary"
+	print "Dumping amino matrix data into {}".format(amino_summary)
+	for i in range(len(amino_polys)): os.system("tail -n +2 {} >> {}".format(amino_polys[i], amino_summary))
+MPI.COMM_WORLD.Barrier()
+
+MPI.Finalize()

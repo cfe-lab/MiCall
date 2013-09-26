@@ -14,16 +14,14 @@ processing while the pipeline is being executed.
 """
 
 import os, sys
-from glob import glob
 from datetime import datetime
+from glob import glob
 from time import sleep
 
 home='/data/miseq/'
 delay = 3600
 
-def timestamp(msg):
-	# Display the date/time along with a message
-	print '[%s] %s' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), msg)
+def timestamp(msg): print '[%s] %s' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), msg)
 
 while 1:
 	runs = glob('/media/macdatafile/MiSeq/runs/*/needsprocessing')
@@ -37,8 +35,7 @@ while 1:
 	root = runs[0].replace('needsprocessing', '')
 	timestamp ('Processing {}'.format(root))
 	run_name = root.split('/')[-2]
-	if not os.path.exists(home+run_name):
-		os.system('mkdir %s%s' % (home, run_name))
+	if not os.path.exists(home+run_name): os.system('mkdir {}{}'.format(home, run_name))
 	
 	# Extract assay/description/chemistry from SampleSheet.csv
 	infile = open(runs[0].replace('needsprocessing', 'SampleSheet.csv'), 'rU')
@@ -74,19 +71,19 @@ while 1:
 		filename = file.split('/')[-1]
 
 		# Do not process undetermined read files
-		if filename.startswith('Undetermined'):
-			continue
-		
+		if filename.startswith('Undetermined'): continue
 		local_file = home + run_name + '/' + filename
-		timestamp('cp and gunzip %s' % filename)
-		os.system('cp %s %s' % (file, local_file))
-		os.system('gunzip -f %s' % local_file)
+		timestamp('cp and gunzip {}'.format(filename))
+		os.system('cp {} {}'.format(file, local_file))
+		os.system('gunzip -f {}'.format(local_file))
 		nfiles += 1
 
 	# paired-end reads, each sample has two FASTQ files
-	timestamp('spawning MPI processes...')
+	timestamp('Spawning 0_MPI_wrapper ...')
 	load_mpi = "module load openmpi/gnu"
 	script_path = "/usr/local/share/miseq/scripts/0_MPI_wrapper.py"
+
+	# THIS NEEDS TO BE FIXED
 	qCutoff = 20
 	os.system("{}; mpirun -machinefile mfile python {} {} {} {}".format(load_mpi, script_path, home+run_name, mode, qCutoff))
 
@@ -96,21 +93,14 @@ while 1:
 	flag.close()
 	result_path = runs[0].replace('needsprocessing', 'Results')
 
-	# Make a results folder if necessary
+	# Post files to macdatafile
+	timestamp('Posting results to {} ...'.format(result_path))
 	if not os.path.exists(result_path): os.mkdir(result_path)
 
-	# Upload results
-	files = glob(home + run_name + '/*.fasta')
-	files += glob(home + run_name + '/_g2p.csv')
-	files += glob(home + run_name + '/_g2p.csv.consensus')
-	files += glob(home + run_name + '/*.csf')
-	files += glob(home + run_name + '/*.nuc.csv')
-	files += glob(home + run_name + '/*.amino.csv')
-	files += glob(home + run_name + '/*.v3prot')
-	files += glob(home + run_name + '/_nuc_consensus.fasta')
+	#files = glob(home + run_name + '/*.fasta')
+	#files += glob(home + run_name + '/_g2p.csv')
+	#files += glob(home + run_name + '/_g2p.csv.consensus')
 	
-	# Copy the results ontp macdatatile
 	for file in files:
 		filename = file.split('/')[-1]
 		os.system('cp %s %s/%s' % (file, result_path, filename))
-
