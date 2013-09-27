@@ -100,15 +100,11 @@ for refname in refnames:
 # Just for now, keep all the files around!
 sys.exit()
 
-# clean up intermediate BAM files
+# Clean up intermediate bams and sams
 bamfiles = glob(root+'/'+prefix+'.*bam*')
 for bamfile in bamfiles:
-
-	# Spare the consensus sequence
 	if bamfile.endswith('.conseq'): continue
 	os.remove(bamfile)
 
-# clean up intermediate SAM files
-for refname in refsams.iterkeys():
-	os.remove(refsams[refname]['handle'].name)
-
+# Clean up intermediate SAM files
+for refname in refsams.iterkeys(): os.remove(refsams[refname]['handle'].name)
