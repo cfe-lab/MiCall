@@ -91,6 +91,7 @@ while 1:
 	if not os.path.exists(result_path): os.mkdir(result_path)
 
 	# The following determines what files are uploaded
+	files += glob(home + run_name + '/HXB2.nuc_poly.summary')
 	files += glob(home + run_name + '/HXB2.amino_poly.summary')
 
 	for file in files:

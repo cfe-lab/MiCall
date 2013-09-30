@@ -97,9 +97,6 @@ for refname in refnames:
 	samfile = refsams[refname]['handle'].name
 	samfile, confile = remap(f1, f2, samfile, refpath, qCutoff)
 
-# Just for now, keep all the files around!
-sys.exit()
-
 # Clean up intermediate bams and sams
 bamfiles = glob(root+'/'+prefix+'.*bam*')
 for bamfile in bamfiles:

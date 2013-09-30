@@ -4,9 +4,10 @@ Distribute pipeline processes across the cluster.
 
 import os,sys
 from glob import glob
+from generate_hxb2_poly_files import generate_nuc_counts, generate_amino_counts
 from mpi4py import MPI
 from sam2fasta import apply_cigar
-from seqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, translate_nuc
+from seqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict
 from datetime import datetime
 
 my_rank = MPI.COMM_WORLD.Get_rank()
@@ -17,14 +18,14 @@ root = sys.argv[1]                              # Path to folder containing fast
 mode = sys.argv[2]                              # Nextera or Amplicon - from SampleSheet.csv
 qCutoff = int(sys.argv[3])                      # INCORRECT - FIXME
 
-mapping_quality_cutoff = 10
+HXB2_mapping_cutoff = 10
 
 amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*-'
 conB_refpath="/usr/local/share/miseq/refs/cfe"
 hxb2refpath="/usr/local/share/miseq/refs/"      # hxb2_pol_ref.fasta
 
 # Set debug to 1 and modify debug parameters to test development on this pipeline
-debug = 0
+debug = 1
 debug_root = "/data/miseq/0_testing"
 debug_seq = "35759A"
 
@@ -39,6 +40,8 @@ for i in range(len(files)):
 	os.system("python 1_mapping.py {} {} {}".format(refpath, files[i], qCutoff))
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #1 passed\n')
+
+sys.exit()
 
 # For each remapped SAM, generate CSFs (done)
 files = glob(root + '/*.remap.sam')
@@ -175,79 +178,26 @@ MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #7 passed\n')
 
 
-# Extract HXB2 aligned sequences from the HXB2.sam and generate amino poly counts
+# Extract HXB2 aligned sequences from the HXB2.sam and generate amino + nuc poly files
 HXB2_sams = glob(root + '/*.HXB2.sam')
 if debug == 1: HXB2_sams = glob('{}/{}-PR-RT.HIV1B-pol.20.final.sam.20.HXB2.sam'.format(debug_root,debug_seq))
-
 for i in range(len(HXB2_sams)):
 	if i % nprocs != my_rank: continue
-	f = HXB2_sams[i]
-	prefix, region, qCut = f.split('.')[:3]
-	sample = prefix.split("/")[-1]
-	infile = open(f, 'rU')
-	lines = infile.readlines()
+	generate_nuc_counts(HXB2_sams[i],HXB2_mapping_cutoff)
+	generate_amino_counts(HXB2_sams[i],HXB2_mapping_cutoff)
 
-	# Determine where the SAM header ends
-	for start, line in enumerate(lines):
-		if not line.startswith('@'): break
-
-	# For each read (Each alignment line in the SAM), generate the amino sequence and tally amino counts
-	aminos = {}
-	j = start
-	while j < len(lines):
-		qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = lines[j].strip('\n').split('\t')[:11]
-		shift, seq_aligned, qual_aligned = apply_cigar(cigar, seq, qual)
-
-		# Check the bitwise flag and filter out unmapped sequences
-		if int(flag) & 4 == 4: continue
-
-		# Apply a mapping quality filter
-		if int(mapq) < mapping_quality_cutoff: continue
-
-		# Determine ORF offset, translate on the correct ORF, add a left offset to the amino seq
-		ORF = (int(pos)-1) % 3
-		p = translate_nuc(seq_aligned, ORF)
-		amino_offset = (int(pos)-1)/3
-		p = "{}{}".format("?"*amino_offset,p)
-
-		# Iterate through the amino seq and tally the (coordinate,aminos) counts
-		for coord, aa in enumerate(p):
-			if aa in '?': continue
-			if not aminos.has_key(coord): aminos.update({coord:{}})
-			if not aminos[coord].has_key(aa): aminos[coord].update({aa: 0})
-			aminos[coord][aa] += 1
-
-		# Move to next SAM line
-		j += 1
-
-	# For each sample, write amino frequency data to a .amino_poly file
-	print "Making amino matrix: {}".format(f.replace('.HXB2.sam','.HXB2.amino_poly'))
-	amino_poly = open(f.replace('.HXB2.sam','.HXB2.amino_poly'), 'w')
-	keys = aminos.keys()
-	keys.sort()
-	amino_poly.write('Sample,region,AA.pos,' + ','.join(amino_alphabet) + '\n')
-	for k in keys:
-		amino_poly.write("{},{},{}".format(sample,region,str(k+1)))
-		for aa in amino_alphabet: amino_poly.write(",{}".format(aminos[k].get(aa,0)))
-		amino_poly.write('\n')
-	amino_poly.close()
-
-	# Close the SAM
-	infile.close()
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #8 passed\n')
-
 
 
 # Step 4B: Generate an amino summary file
 if my_rank == 0:
 	amino_polys = glob(root + '*.HXB2.amino_poly')
-	amino_summary = root + "HXB2.amino_poly.summary"
+	amino_summary = root + "/HXB2.amino_poly.summary"
 	print "Dumping amino matrix data into {}".format(amino_summary)
-	os.system("echo \"Sample,AA.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,-\" > {}").format(amino_summary)
+	os.system("echo \"Sample,AA.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,-\" > {}".format(amino_summary))
 	for i in range(len(amino_polys)): os.system("tail -n +2 {} >> {}".format(amino_polys[i], amino_summary))
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #9 passed\n')
-
 
 MPI.Finalize()
