@@ -88,7 +88,7 @@ def generate_amino_counts(HXB2_sam,mapping_cutoff=10,debug=0):
 	HXB2_poly_filename = HXB2_sam.replace('.HXB2.sam','.HXB2.amino_poly')
 	amino_poly = open(HXB2_poly_filename, 'w')
 
-	timestamp("Writing amino_poly {}".format(HXB2_poly_filename))
+	print("Writing amino_poly {}".format(HXB2_poly_filename))
 
 	keys = aminos.keys()
 	keys.sort()

@@ -102,7 +102,7 @@ for i in range(len(csf_files)):
 			conseq_filename,fasta_filename, sam_filename,
 			f.replace('.csf', '.csf.bt2_metrics'),
 			f.replace('.csf', '.csf.bt2_unpaired_noalign.fastq'))
-	timestamp("\nMaking final sam: {}".format(command), my_rank, nprocs)
+	timestamp("Making final sam: {}".format(command), my_rank, nprocs)
 	os.system(command)
 	os.remove(fasta_filename)
 MPI.COMM_WORLD.Barrier()
@@ -143,17 +143,17 @@ for i in range(len(final_csfs)):
 		hxb2_reference,fasta_filename, sam_filename,
 		f.replace('.csf', '.csf.bt2_metrics'),
 		f.replace('.csf', '.csf.bt2_unpaired_noalign.fastq'))
-	timestamp("\nMaking HXB2 sam: {}".format(command), my_rank, nprocs)
+	timestamp("Making HXB2 sam: {}".format(command), my_rank, nprocs)
 	os.system(command)
 	os.remove(fasta_filename)
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #7 (HXB2 SAM)\n', my_rank, nprocs)
 
 # Extract HXB2 aligned sequences from the HXB2.sam, generate amino + nuc poly files
-timestamp("\nGenerating poly files from HXB2 sams using mapping cutoff {}".format(HXB2_mapping_cutoff), my_rank, nprocs)
 HXB2_sams = glob(root + '/*.HXB2.sam')
 for i in range(len(HXB2_sams)):
 	if i % nprocs != my_rank: continue
+	timestamp("Generating aa/nuc .poly from {}".format(HXB2_sams[i]))
 	generate_nuc_counts(HXB2_sams[i],HXB2_mapping_cutoff)
 	generate_amino_counts(HXB2_sams[i],HXB2_mapping_cutoff)
 MPI.COMM_WORLD.Barrier()
