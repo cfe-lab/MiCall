@@ -1,5 +1,10 @@
+from datetime import datetime
 import sys, HyPhy, re, math
 import random
+
+def timestamp(msg, my_rank, nprocs):
+	from datetime import datetime
+	print '[{}] (rank={}/{}) {}'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'),my_rank,nprocs,msg)
 
 def convert_csf (csf_handle):
 	"""

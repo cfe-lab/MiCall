@@ -1,16 +1,14 @@
 """
-Persistent monitoring of MiSeq runs folder mounted at /media/macdatafile
+Persistent monitoring of macdatafile for runs that need processing
 
-Within each run folder, a 'needsprocessing' flag will trigger this
-monitoring script, which will then:
-	1) Copy the file over locally
-	2) Unzip it
-	3) Call the pipeline (0_MPI_wrapper.py)
-	4) Upon completion, upload the results back to macdatafile
-	5) Replace the 'needsprocessing' flag with 'processingcomplete'
+Within run folders, a 'needsprocessing' flag triggers this script to:
+	1) Copy + unzip the file from macdatafile to a local disk
+	2) Call the pipeline (0_MPI_wrapper.py)
+	3) Upload results back to macdatafile
+	4) Replace the 'needsprocessing' flag with 'processingcomplete'
 
 Processing will be done in serial on a 'first come first serve' basis:
-no asynchronous processing of multiple runs will be performed
+no asynchronous processing of multiple concurrent runs
 """
 
 import os, sys
@@ -58,7 +56,6 @@ while 1:
 		flag.close()
 		continue
 	
-	
 	# If run is valid, transfer fasta.gz files to cluster and unzip
 	files = glob(root+'Data/Intensities/BaseCalls/*.fastq.gz')
 
@@ -72,13 +69,12 @@ while 1:
 		os.system('gunzip -f {}'.format(local_file))
 
 	# paired-end reads, each sample has two FASTQ files
-	timestamp('Spawning 0_MPI_wrapper ...')
 	load_mpi = "module load openmpi/gnu"
-	script_path = "/usr/local/share/miseq/scripts/0_MPI_wrapper.py"
-
-	# FIXME: THIS NEEDS TO BE FIXED
+	script_path = "/usr/local/share/miseq/development/miseqpipeline/0_MPI_wrapper.py"
 	qCutoff = 20
-	os.system("{}; mpirun -machinefile mfile python {} {} {} {}".format(load_mpi, script_path, home+run_name, mode, qCutoff))
+	command = "{}; mpirun -machinefile mfile python -u {} {} {} {}".format(load_mpi, script_path, home+run_name, mode, qCutoff)
+	timestamp(command)
+	os.system(command)
 
 	# Replace the 'needsprocesing' flag with a 'processed' flag
 	os.remove(runs[0])
@@ -89,10 +85,9 @@ while 1:
 	# Post files to macdatafile
 	timestamp('Posting results to {} ...'.format(result_path))
 	if not os.path.exists(result_path): os.mkdir(result_path)
-
-	# The following determines what files are uploaded
-	files += glob(home + run_name + '/HXB2.nuc_poly.summary')
-	files += glob(home + run_name + '/HXB2.amino_poly.summary')
+	files += glob(home + run_name + '/*.HXB2.sam')
+	files += glob(home + run_name + '/*HXB2.nuc_poly.summary')
+	files += glob(home + run_name + '/*HXB2.amino_poly.summary')
 
 	for file in files:
 		filename = file.split('/')[-1]
