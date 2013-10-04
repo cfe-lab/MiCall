@@ -17,17 +17,24 @@ from glob import glob
 from seqUtils import timestamp
 from time import sleep
 
-home='/data/miseq/'
-delay = 3600
+## settings
+home='/data/miseq/' # where we will write the data
+delay = 3600	# how many seconds to wait until we check the database
+load_mpi = "module load openmpi/gnu"
+script_path = "/usr/local/share/miseq/development/miseqpipeline/0_MPI_wrapper.py"
+qCutoff = 20
 
+
+## main loop
 while 1:
+	# check if any MiSeq folders have been flagged for processing
 	runs = glob('/media/macdatafile/MiSeq/runs/*/needsprocessing')
 	if len(runs) == 0:
 		timestamp('No runs need processing')
 		sleep(delay)
 		continue
 	
-	# If any exist, sort list by runID (run_name)
+	# If any exist, sort list by runID (run_name) and do the first one
 	runs.sort()
 	root = runs[0].replace('needsprocessing', '')
 	timestamp ('Processing {}'.format(root))
@@ -38,6 +45,7 @@ while 1:
 	infile = open(runs[0].replace('needsprocessing', 'SampleSheet.csv'), 'rU')
 	assay, mode, chemistry = '', '', ''
 	for line in infile:
+		# note: assay and chemistry are ALWAYS "Nextera" and "Amplicon", respectively
 		if line.startswith('Assay,'):
 			assay = line.strip('\n').split(',')[1]
 		elif line.startswith('Description,'):
@@ -55,24 +63,25 @@ while 1:
 		flag.close()
 		continue
 	
-	# If run is valid, transfer fasta.gz files to cluster and unzip (Except undetermined reads)
+	# If run is valid, transfer fasta.gz files to cluster and unzip
 	files = glob(root+'Data/Intensities/BaseCalls/*.fastq.gz')
 	for file in files:
 		filename = file.split('/')[-1]
-		if filename.startswith('Undetermined'): continue
+		if filename.startswith('Undetermined'):
+			# skip file containing reads that failed to demultiplex
+			continue
+		
 		local_file = home + run_name + '/' + filename
 		timestamp('cp and gunzip {}'.format(filename))
 		os.system('cp {} {}'.format(file, local_file))
 		os.system('gunzip -f {}'.format(local_file))
 
-	load_mpi = "module load openmpi/gnu"
-	script_path = "/usr/local/share/miseq/development/miseqpipeline/0_MPI_wrapper.py"
-	qCutoff = 20
+	# call MPI wrapper
 	command = "{}; mpirun -machinefile mfile python -u {} {} {} {}".format(load_mpi, script_path, home+run_name, mode, qCutoff)
 	timestamp(command)
 	os.system(command)
 
-	# Replace the 'needsprocesing' flag with a 'processed' flag
+	# Replace the 'needsprocessing' flag with a 'processed' flag
 	os.remove(runs[0])
 	flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
 	flag.close()
