@@ -21,6 +21,8 @@ qCutoff = int(sys.argv[3])			# INCORRECT - FIXME
 conB_refpath="/usr/local/share/miseq/refs/cfe"
 hxb2refpath="/usr/local/share/miseq/refs/"
 
+
+
 # Map and remap each fastq to consensus B
 files = glob(root + '/*R1*.fastq')
 for i in range(len(files)):
@@ -30,6 +32,8 @@ for i in range(len(files)):
 	os.system("python 1_mapping.py {} {} {}".format(refpath, files[i], qCutoff))
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #1 (Prelim + remapping)\n', my_rank, nprocs)
+
+
 
 # For each remapped SAM, generate CSFs (done)
 files = glob(root + '/*.remap.sam')
@@ -42,6 +46,8 @@ for i in range(len(files)):
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #2 (Remap CSF from remap SAM)\n', my_rank, nprocs)
 
+
+
 # For amplicon sequencing runs, compute g2p scores for env-mapped FASTAs
 if mode == 'Amplicon':
 	files = glob(root + '/*env*.fasta')
@@ -51,7 +57,11 @@ if mode == 'Amplicon':
 		timestamp('3_g2p_scoring {}'.format(filename), my_rank, nprocs)
 		os.system('python 3_g2p_scoring.py {}'.format(file))
 MPI.COMM_WORLD.Barrier()
-if my_rank == 0: timestamp('Barrier #3 (G2P - amplicon only)\n', my_rank, nprocs)
+
+if mode == 'Amplicon' and my_rank == 0: timestamp('Barrier #3 (G2P - amplicon only)\n', my_rank, nprocs)
+elif mode != 'Amplicon' and my_rank == 0: timestamp('Barrier #3 (Not an amplicon run - skipped G2P)\n', my_rank, nprocs)
+
+
 
 # Take remapped sam, generate pileup, call pileup2conseq to generate remap conseq, convert to an indexed .bt2
 def consensus_from_remapped_sam(root,ref,samfile,qCutoff=30):
@@ -74,6 +84,8 @@ for i in range(len(remapped_sams)):
 	consensus_from_remapped_sam(root,remap_conseq,remapped_sam,20)
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #4 (Remap conseq)\n', my_rank, nprocs)
+
+
 
 # From remap csf, create remap fastas to be aligned against remap conseq
 csf_files = glob(root + '/*.csf')
@@ -108,6 +120,8 @@ for i in range(len(csf_files)):
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #5 (Final SAM)\n', my_rank, nprocs)
 
+
+
 # From final sam, extract final CSFs
 final_sams = glob(root + '/*.final.sam')
 for i in range(len(final_sams)):
@@ -119,6 +133,8 @@ for i in range(len(final_sams)):
 	os.system(command)
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #6 (CSF from final SAM)\n', my_rank, nprocs)
+
+
 
 # HXB2 align final csfs
 final_csfs = glob(root + '/*.final.sam.20.csf')
@@ -149,27 +165,43 @@ for i in range(len(final_csfs)):
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #7 (HXB2 SAM)\n', my_rank, nprocs)
 
+
+
 # Extract HXB2 aligned sequences from the HXB2.sam, generate amino + nuc poly files
 HXB2_sams = glob(root + '/*.HXB2.sam')
 for i in range(len(HXB2_sams)):
 	if i % nprocs != my_rank: continue
-	timestamp("Generating aa/nuc .poly from {}".format(HXB2_sams[i]))
+	timestamp("Making nuc_poly + amino_poly from {}".format(HXB2_sams[i]), my_rank, nprocs)
 	generate_nuc_counts(HXB2_sams[i],HXB2_mapping_cutoff)
 	generate_amino_counts(HXB2_sams[i],HXB2_mapping_cutoff)
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #8 (Amino/nuc poly)\n', my_rank, nprocs)
 
-# Concatenate nuc + amino poly files into individual summary files
+
+
+
+# Concatenate nuc + amino poly files into aggregate summary files
 if my_rank == 0:
 	nuc_polys = glob(root + '/*.HXB2.nuc_poly')
 	nuc_summary = root + "/HXB2.nuc_poly.summary"
 	os.system("echo \"Sample,region,nuc.pos,G,A,T,C,N,-\" > {}".format(nuc_summary))
 	for i in range(len(nuc_polys)): os.system("tail -n +2 {} >> {}".format(nuc_polys[i], nuc_summary))
-
 	amino_polys = glob(root + '/*.HXB2.amino_poly')
 	amino_summary = root + "/HXB2.amino_poly.summary"
-	os.system("echo \"Sample,AA.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,-\" > {}".format(amino_summary))
+	os.system("echo \"Sample,region,AA.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,-\" > {}".format(amino_summary))
 	for i in range(len(amino_polys)): os.system("tail -n +2 {} >> {}".format(amino_polys[i], amino_summary))
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #9 (Summary files)\n', my_rank, nprocs)
+
+# if my_rank == 0:
+	# Clean up intermediate bams and sams
+	#bamfiles = glob(root+'/'+prefix+'.*bam*')
+	#for bamfile in bamfiles:
+	#       if bamfile.endswith('.conseq'): continue
+	#       os.remove(bamfile)
+
+	# Clean up intermediate SAM files
+	#for refname in refsams.iterkeys(): os.remove(refsams[refname]['handle'].name)
+
+
 MPI.Finalize()

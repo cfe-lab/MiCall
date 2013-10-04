@@ -2,9 +2,47 @@ from datetime import datetime
 import sys, HyPhy, re, math
 import random
 
-def timestamp(msg, my_rank, nprocs):
+def timestamp(msg, my_rank='NA', nprocs='NA'):
 	from datetime import datetime
-	print '[{}] (rank={}/{}) {}'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'),my_rank,nprocs,msg)
+	currTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	if my_rank == 'NA' or nprocs == 'NA': print '[{}] {}'.format(currTime, msg)
+	else: print '[{}] (rank={}/{}) {}'.format(currTime,my_rank,nprocs,msg)
+
+def poly2conseq(poly_file,alphabet='ACDEFGHIKLMNPQRSTVWY*-',minCount=3):
+	"""
+	Given a poly file, and a minimum base cutoff, generate the conseq
+
+	Assumptions: 	poly CSV has (sample, region, coord) followed by
+			each character in the alphabet
+	"""
+
+	import os,sys
+	from glob import glob
+
+	infile = open(poly_file, 'rU')
+	lines = infile.readlines()
+	infile.close()
+
+	# For each coord within the sample-specific amino poly
+	char_freqs = {}
+	conseq = ""
+	for start, line in enumerate(lines):
+
+		# Ignore the poly header
+		if start == 0: continue
+		fields = line.rstrip("\n").split(',')
+		coord = fields[2]
+
+		# Get the char frequency for this coord
+		for i, char in enumerate(alphabet): char_freqs[char] = fields[i+3]
+
+		# And take the max (Find the consensus)
+		max_char = max(char_freqs, key=lambda n: char_freqs[n])
+		if int(char_freqs[max_char]) <= minCount: conseq += 'N'
+		else: conseq += max_char
+
+	return conseq
+
 
 def convert_csf (csf_handle):
 	"""

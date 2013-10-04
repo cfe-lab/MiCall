@@ -85,12 +85,3 @@ for refname in refnames:
 		continue
 	samfile = refsams[refname]['handle'].name
 	samfile, confile = remap(f1, f2, samfile, refpath, 20)
-
-# Clean up intermediate bams and sams
-#bamfiles = glob(root+'/'+prefix+'.*bam*')
-#for bamfile in bamfiles:
-#	if bamfile.endswith('.conseq'): continue
-#	os.remove(bamfile)
-
-# Clean up intermediate SAM files
-#for refname in refsams.iterkeys(): os.remove(refsams[refname]['handle'].name)
