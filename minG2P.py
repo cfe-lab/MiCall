@@ -1,5 +1,5 @@
 """
-just a wrapper for Conan's Ruby script in Python
+Wrapper for Conan's Ruby script in Python
 """
 
 import sys, os, math
@@ -14,4 +14,3 @@ def conan_g2p (aaseq):
 		return (None, None, None)
 	
 	return (g2p, fpr, aligned)
-

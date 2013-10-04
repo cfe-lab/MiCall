@@ -14,12 +14,11 @@ no asynchronous processing of multiple concurrent runs
 import os, sys
 from datetime import datetime
 from glob import glob
+from seqUtils import timestamp
 from time import sleep
 
 home='/data/miseq/'
 delay = 3600
-
-def timestamp(msg): print '[{}] {}'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), msg)
 
 while 1:
 	runs = glob('/media/macdatafile/MiSeq/runs/*/needsprocessing')
@@ -48,18 +47,16 @@ while 1:
 			break
 	infile.close()
 	
-	# mode must be Nextera or Amplicon: if not, mark as an error and proceed
+	# Mode must be Nextera or Amplicon: if not, mark as an error and proceed
 	if mode not in ['Nextera', 'Amplicon']:
-		timestamp('ERROR: Unrecognized mode {} ... skipping'.format(mode))
+		timestamp('Error - \'{}\' is not a recognized mode: skipping'.format(mode))
 		os.remove(runs[0])
-		flag = open(runs[0].replace('needsprocessing', 'needsprocessing_ERROR'), 'w')
+		flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
 		flag.close()
 		continue
 	
-	# If run is valid, transfer fasta.gz files to cluster and unzip
+	# If run is valid, transfer fasta.gz files to cluster and unzip (Except undetermined reads)
 	files = glob(root+'Data/Intensities/BaseCalls/*.fastq.gz')
-
-	# Copy and unzip all files (Except for undetermined reads)
 	for file in files:
 		filename = file.split('/')[-1]
 		if filename.startswith('Undetermined'): continue
@@ -68,7 +65,6 @@ while 1:
 		os.system('cp {} {}'.format(file, local_file))
 		os.system('gunzip -f {}'.format(local_file))
 
-	# paired-end reads, each sample has two FASTQ files
 	load_mpi = "module load openmpi/gnu"
 	script_path = "/usr/local/share/miseq/development/miseqpipeline/0_MPI_wrapper.py"
 	qCutoff = 20
@@ -83,12 +79,14 @@ while 1:
 	result_path = runs[0].replace('needsprocessing', 'Results')
 
 	# Post files to macdatafile
-	timestamp('Posting results to {} ...'.format(result_path))
 	if not os.path.exists(result_path): os.mkdir(result_path)
-	files += glob(home + run_name + '/*.HXB2.sam')
-	files += glob(home + run_name + '/*HXB2.nuc_poly.summary')
-	files += glob(home + run_name + '/*HXB2.amino_poly.summary')
+	results_files = []
+	results_files += glob(home + run_name + '/*.HXB2.sam')
+	results_files += glob(home + run_name + '/HXB2.nuc_poly.summary')
+	results_files += glob(home + run_name + '/HXB2.amino_poly.summary')
 
-	for file in files:
+	for file in results_files:
 		filename = file.split('/')[-1]
-		os.system('cp {} {}/{}'.format(file, result_path, filename))
+		command = 'cp {} {}/{}'.format(file, result_path, filename)
+		timestamp(command)
+		os.system(command)

@@ -146,7 +146,7 @@ for i in range(len(final_csfs)):
 	sam_filename = f.replace('.csf', '.HXB2.sam')
 	hxb2_reference = "{}{}_hxb2.fasta".format(hxb2refpath,region)   # /usr/local/share/miseq/refs/HIV1B-pol_hxb2.fasta
 
-	# From final csf, generate temp final fasta with gaps removed (IE, suitable for HXB2 alignment)
+	# From final csf, generate temp final fasta with gaps removed (Make suitable for HXB2 alignment)
 	infile = open(f, 'rU')
 	fasta, left_gaps, right_gaps = convert_csf(infile)
 	infile.close()
@@ -193,15 +193,15 @@ if my_rank == 0:
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #9 (Summary files)\n', my_rank, nprocs)
 
-# if my_rank == 0:
-	# Clean up intermediate bams and sams
-	#bamfiles = glob(root+'/'+prefix+'.*bam*')
-	#for bamfile in bamfiles:
-	#       if bamfile.endswith('.conseq'): continue
-	#       os.remove(bamfile)
 
-	# Clean up intermediate SAM files
-	#for refname in refsams.iterkeys(): os.remove(refsams[refname]['handle'].name)
+
+# Clean up intermediate files
+# if my_rank == 0:
+	# files_to_delete = []
+	# files_to_delete += glob(root+'/'+prefix+'.*bam*')
+	#for file in files_to_delete:
+	#       os.remove(file)
+
 
 
 MPI.Finalize()

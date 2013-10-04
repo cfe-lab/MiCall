@@ -3,6 +3,11 @@ import sys, HyPhy, re, math
 import random
 
 def timestamp(msg, my_rank='NA', nprocs='NA'):
+	"""
+	A timestamp that works both in an MPI environment and a non-MPI environment.
+	If my_rank or nprocs is not specified, rank information is not displayed.
+	"""
+
 	from datetime import datetime
 	currTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	if my_rank == 'NA' or nprocs == 'NA': print '[{}] {}'.format(currTime, msg)
@@ -10,7 +15,9 @@ def timestamp(msg, my_rank='NA', nprocs='NA'):
 
 def poly2conseq(poly_file,alphabet='ACDEFGHIKLMNPQRSTVWY*-',minCount=3):
 	"""
-	Given a poly file, and a minimum base cutoff, generate the conseq
+	Given a poly file containing either amino or nucleotide data,
+	and a minimum base cutoff, generate the conseq. If the number
+	of chars does not exceed the min base cutoff, an 'N' is reported.
 
 	Assumptions: 	poly CSV has (sample, region, coord) followed by
 			each character in the alphabet
@@ -23,17 +30,17 @@ def poly2conseq(poly_file,alphabet='ACDEFGHIKLMNPQRSTVWY*-',minCount=3):
 	lines = infile.readlines()
 	infile.close()
 
-	# For each coord within the sample-specific amino poly
+	# For each coord within the sample-specific poly
 	char_freqs = {}
 	conseq = ""
 	for start, line in enumerate(lines):
 
 		# Ignore the poly header
 		if start == 0: continue
+
+		# Get the coord, and the char frequency for this coord
 		fields = line.rstrip("\n").split(',')
 		coord = fields[2]
-
-		# Get the char frequency for this coord
 		for i, char in enumerate(alphabet): char_freqs[char] = fields[i+3]
 
 		# And take the max (Find the consensus)
@@ -55,7 +62,7 @@ def convert_csf (csf_handle):
 	fasta = []
 	for line in csf_handle:
 
-		# Header = M01841:18:000000000-A4V8D:1:1111:14650:12016
+		# Header from machine = M01841:18:000000000-A4V8D:1:1111:14650:12016
 		header, offset, seq = line.strip('\n').split(',')
 
 		# Add the leading offset
