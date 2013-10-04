@@ -1,10 +1,14 @@
-import os,sys
+import os, sys
 from sam2fasta import apply_cigar
 from seqUtils import translate_nuc, timestamp
 
-def generate_nuc_counts(HXB2_sam,mapping_cutoff=10,debug=0):
-	"""Generates a .HXB2.nuc_poly file from a .HXB2.sam"""
+def generate_nuc_counts(HXB2_sam, mapping_cutoff=10, debug=0):
+	"""
+	Generates a .HXB2.nuc_poly file from a .HXB2.sam
+	"""
 	nuc_alphabet = 'GATCN-'
+	
+	# parse the filename
 	prefix, region, qCut = HXB2_sam.split('.')[:3]
 	sample = prefix.split("/")[-1]
 	infile = open(HXB2_sam, 'rU')
@@ -44,8 +48,12 @@ def generate_nuc_counts(HXB2_sam,mapping_cutoff=10,debug=0):
 		nuc_poly.write('\n')
 	nuc_poly.close()
 
+
+
 def generate_amino_counts(HXB2_sam,mapping_cutoff=10,debug=0):
-	"""Generates a .HXB2.amino_poly file from a .HXB2.sam"""
+	"""
+	Generates a .HXB2.amino_poly file from a .HXB2.sam
+	"""
 	amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*-'
 	prefix, region, qCut = HXB2_sam.split('.')[:3]
 	sample = prefix.split("/")[-1]
