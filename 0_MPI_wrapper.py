@@ -192,7 +192,7 @@ for i in range(len(final_csfs)):
 	outfile.close()
 
 	# Generate HXB2 sam by aligning final fasta against HXB2
-	command = 'bowtie2 -f --quiet -p 1 -x {} -U {} -S {} --no-unal --met-file {} --un {}'.format(
+	command = 'bowtie2 -f --local -N 1 -D 20 -L 15 --quiet -p 1 -x {} -U {} -S {} --no-unal --met-file {} --un {}'.format(
 		hxb2_reference,fasta_filename, sam_filename,
 		f.replace('.csf', '.csf.bt2_metrics'),
 		f.replace('.csf', '.csf.bt2_unpaired_noalign.fastq'))
