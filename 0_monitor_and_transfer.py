@@ -93,6 +93,8 @@ while 1:
 	results_files += glob(home + run_name + '/*.HXB2.sam')
 	results_files += glob(home + run_name + '/HXB2.nuc_poly.summary')
 	results_files += glob(home + run_name + '/HXB2.amino_poly.summary')
+	# results_files += glob(home + run_name + '/HXB2.nuc_poly.summary.consensus')
+	# results_files += glob(home + run_name + '/HXB2.amino_poly.summary.consensus')
 
 	for file in results_files:
 		filename = file.split('/')[-1]

@@ -134,7 +134,7 @@ if mode == 'Nextera':
 		# -f 	Inputs are fasta	-p 1	Number of alignment threads
 		# -x	bt2 index		-U	Fasta with unpaired reads
 		# -S	samfile output		--un	Where stuff didn't map		--met-file	Metrics output
-		command = 'bowtie2 -f --local -N 1 -D 20 -L 15 --quiet -p 1 -x {} -U {} -S {} --no-unal --met-file {} --un {}'.format(
+		command = 'bowtie2 -f --local --quiet -p 1 -x {} -U {} -S {} --no-unal --met-file {} --un {}'.format(
 				conseq_filename,fasta_filename, sam_filename,
 				f.replace('.csf', '.csf.bt2_metrics'),
 				f.replace('.csf', '.csf.bt2_unpaired_noalign.fastq'))
