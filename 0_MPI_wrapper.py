@@ -13,16 +13,15 @@ my_rank = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()
 
 ## settings
-refpath = '/usr/local/share/miseq/refs/cfe'		# Consensus B refs
-hxb2refpath="/usr/local/share/miseq/refs/" 		# location of HXB2 reference files
-
-HXB2_mapping_cutoff = 10		# read mapping quality cutoff
-
+refpath = '/usr/local/share/miseq/refs/cfe'	# Consensus B refs
+hxb2refpath="/usr/local/share/miseq/refs/" 	# location of HXB2 reference files
+HXB2_mapping_cutoff = 10			# Read mapping quality cutoff
+amino_conseq_cutoff = 10			# Minimum occurences of char before it counts for conseq generation
 
 ## arguments
 root = sys.argv[1]				# Path to folder containing fastqs
 mode = sys.argv[2]				# Nextera or Amplicon - from SampleSheet.csv
-qCutoff = int(sys.argv[3])		# INCORRECT - FIXME
+qCutoff = int(sys.argv[3])			# INCORRECT - FIXME
 
 
 
@@ -221,8 +220,6 @@ MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #8 (Amino/nuc poly)\n', my_rank, nprocs)
 
 
-
-
 # Concatenate nuc + amino poly files into aggregate summary files
 if my_rank == 0:
 	nuc_polys = glob(root + '/*.HXB2.nuc_poly')
@@ -237,14 +234,16 @@ MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #9 (Summary files)\n', my_rank, nprocs)
 
 
-
-# Clean up intermediate files
-# if my_rank == 0:
-	# files_to_delete = []
-	# files_to_delete += glob(root+'/'+prefix+'.*bam*')
-	#for file in files_to_delete:
-	#       os.remove(file)
+# Make HXB2.amino_poly.summary_conseq from from HXB2.amino_poly.summary
+if my_rank == 0:
+	timestamp("Making HXB2.amino_poly.summary")
+	os.system("python amino_conseq_from_summary.py {} {}".format(root + "HXB2.amino_poly.summary", amino_conseq_cutoff)
 
 
-
-MPI.Finalize()
+# Clean up intermediary files
+if my_rank == 0:
+	timestamp("Deleting intermediary files")
+	files_to_delete = []
+	files_to_delete += glob(root+'/.*bam')
+	for file in files_to_delete:
+		os.remove(file)
