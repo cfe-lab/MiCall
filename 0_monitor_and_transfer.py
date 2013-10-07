@@ -21,7 +21,6 @@ from time import sleep
 home='/data/miseq/' # where we will write the data
 delay = 3600	# how many seconds to wait until we check the database
 load_mpi = "module load openmpi/gnu"
-script_path = "/usr/local/share/miseq/development/miseqpipeline/0_MPI_wrapper.py"
 qCutoff = 20
 
 
@@ -77,7 +76,7 @@ while 1:
 		os.system('gunzip -f {}'.format(local_file))
 
 	# call MPI wrapper
-	command = "{}; mpirun -machinefile mfile python -u {} {} {} {}".format(load_mpi, script_path, home+run_name, mode, qCutoff)
+	command = "{}; mpirun -machinefile mfile python -u {} {} {} {}".format(load_mpi, "0_MPI_wrapper.py", home+run_name, mode, qCutoff)
 	timestamp(command)
 	os.system(command)
 

@@ -231,6 +231,7 @@ if my_rank == 0:
 	os.system("echo \"Sample,region,AA.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,-\" > {}".format(amino_summary))
 	for i in range(len(amino_polys)): os.system("tail -n +2 {} >> {}".format(amino_polys[i], amino_summary))
 MPI.COMM_WORLD.Barrier()
+
 if my_rank == 0: timestamp('Barrier #9 (Summary files)\n', my_rank, nprocs)
 
 
@@ -247,3 +248,5 @@ if my_rank == 0:
 	files_to_delete += glob(root+'/.*bam')
 	for file in files_to_delete:
 		os.remove(file)
+
+MPI.finalize()
