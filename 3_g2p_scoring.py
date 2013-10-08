@@ -12,8 +12,8 @@ Output: v3prot files
 import os
 import sys
 
-from seqUtils import *
-from hyphyAlign import *
+from seqUtils import convert_fasta, translate_nuc
+from hyphyAlign import change_settings, get_boundaries, pair_align
 from minG2P import conan_g2p
 
 hyphy = HyPhy._THyPhy (os.getcwd(), 1)
