@@ -89,11 +89,16 @@ while 1:
 	# Post files to macdatafile
 	if not os.path.exists(result_path): os.mkdir(result_path)
 	results_files = []
-	results_files += glob(home + run_name + '/*.HXB2.sam')
-	results_files += glob(home + run_name + '/HXB2.nuc_poly.summary')
-	results_files += glob(home + run_name + '/HXB2.amino_poly.summary')
-	results_files += glob(home + run_name + '/HXB2.nuc_poly.summary.conseq')
-	results_files += glob(home + run_name + '/HXB2.amino_poly.summary.conseq')
+
+	if mode == 'Amplicon':
+		results_files += glob(home + run_name + '/*.v3prot')
+
+	elif mode == 'Nextera':
+		results_files += glob(home + run_name + '/*.HXB2.sam')
+		results_files += glob(home + run_name + '/HXB2.nuc_poly.summary')
+		results_files += glob(home + run_name + '/HXB2.amino_poly.summary')
+		results_files += glob(home + run_name + '/HXB2.nuc_poly.summary.conseq')
+		results_files += glob(home + run_name + '/HXB2.amino_poly.summary.conseq')
 
 	for file in results_files:
 		filename = file.split('/')[-1]

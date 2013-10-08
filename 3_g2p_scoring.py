@@ -20,17 +20,16 @@ hyphy = HyPhy._THyPhy (os.getcwd(), 1)
 change_settings(hyphy) 					# Default settings are for protein alignment
 refseq = translate_nuc(refSeqs['V3, clinical'], 0)	# refSeq is V3 (HXB2: 7110-7217) in nucleotide space
 
-
 # Input must be a fasta file
 f = sys.argv[1]
 if not f.endswith('.fasta'):
 	print 'Expecting filename ending with .fasta extension'
 	sys.exit()
 
-# Load the fasta file into RAM
 filename = f.split('/')[-1]
 prefix = filename.split('.')[0]
 infile = open(f, 'rU')
+
 try:
 	fasta = convert_fasta(infile.readlines())
 except:
@@ -50,7 +49,6 @@ for offset in range(3):
 		best_offset = offset
 		best_score = ascore
 
-
 # For each env sequence, extract the V3 nucleotide sequence
 badfile = open(f.replace('.fasta', '.badV3'), 'w')
 v3nucs = {}
@@ -66,7 +64,6 @@ for header, seq in fasta:
 	v3nuc = apply2nuc(seq[(3*left-best_offset):], v3prot, aref[left:right], 		# use alignment to extract V3 nuc. seq
 					keepIns=True, keepDel=False)
 	
-	
 	# Conditions for dropping data
 	# 1) Censored bases were detected ('N')
 	# 2) V3 didn't start with C, end with C
@@ -79,8 +76,7 @@ for header, seq in fasta:
 			'|'.join(['stopcodon' if '*' in v3prot else '',
 					'lowscore' if ascore < 50 else '',
 					'cystines' if not v3prot.startswith('C') or not v3prot.endswith('C') else '',
-					'ambig' if 'N' in v3nuc else '']),
-			seq))
+					'ambig' if 'N' in v3nuc else '']),seq))
 	else:
 		# This looks like a legitimate V3-encoding sequence
 		# Track the count of each v3nucleotide sequence
@@ -90,9 +86,6 @@ for header, seq in fasta:
 			v3nucs.update({v3nuc: count})
 
 badfile.close()
-
-
-
 
 # Calculate g2p scores for each v3nuc entry
 v3prots = {}
@@ -108,8 +101,6 @@ for v3nuc, count in v3nucs.iteritems():
 	else:
 		# dict within dict - store count and fpr for each sequence
 		v3prots.update({aligned: {'count': count, 'fpr': fpr}})
-
-
 
 # Collect identical V3 amino acid sequences and output
 

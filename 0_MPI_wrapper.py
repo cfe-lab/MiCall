@@ -85,16 +85,16 @@ if mode == 'Amplicon':
 
 MPI.COMM_WORLD.Barrier()
 
-sys.exit()
+if mode == 'Amplicon':
+	if my_rank == 0: timestamp('Barrier #3 (G2P - amplicon only)\n', my_rank, nprocs)
+	MPI.Finalize()
+	sys.exit()
 
-if mode == 'Amplicon' and my_rank == 0: timestamp('Barrier #3 (G2P - amplicon only)\n', my_rank, nprocs)
-elif mode != 'Amplicon' and my_rank == 0: timestamp('Barrier #3 (Not an amplicon run - skipped G2P)\n', my_rank, nprocs)
-
-
+# Proceed with Nextera algorithm
+if my_rank == 0: timestamp('Barrier #3 (Not an amplicon run - skipped G2P)\n', my_rank, nprocs)
 
 # Create remap conseq from remap sam
 remapped_sams = glob(root + '/*.remap.sam')
-
 for i, remapped_sam in enumerate(remapped_sams):
 	if i % nprocs != my_rank:
 		continue
