@@ -7,7 +7,6 @@ def timestamp(msg, my_rank='NA', nprocs='NA'):
 	A timestamp that works both in an MPI environment and a non-MPI environment.
 	If my_rank or nprocs is not specified, rank information is not displayed.
 	"""
-
 	from datetime import datetime
 	currTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	if my_rank == 'NA' or nprocs == 'NA': print '[{}] {}'.format(currTime, msg)

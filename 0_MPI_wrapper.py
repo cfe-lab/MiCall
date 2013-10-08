@@ -6,6 +6,7 @@ import os,sys
 from glob import glob
 from generate_hxb2_poly_files import generate_amino_counts, generate_nuc_counts
 from mpi4py import MPI
+from proportion_x4 import prop_x4
 from sam2fasta import apply_cigar
 from seqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, timestamp
 
@@ -92,7 +93,18 @@ MPI.COMM_WORLD.Barrier()
 # Cleanup / finish the amplicon run
 if mode == 'Amplicon':
 	if my_rank == 0:
-		timestamp('Barrier #3 (G2P - amplicon only) - CLEANING UP!\n', my_rank, nprocs)
+		timestamp('Barrier #3 G2P calculations (Amplicon)\n', my_rank, nprocs)
+
+		# Generate summary of v3 data
+		#summary_file = open(root + '/v3prot.summary', 'w')
+		#v3_files = glob(root + '/*.v3prot')
+		#for i, file in enumerate(v3_files):
+		#	prefix, gene = file.split('.')[:2]	
+		#	total_x4_count, total_count = prop_x4(file)
+		#	proportion_x4 = total_x4_count / total_count
+		#	summary_file.write("{}".format(proportion_x4))
+		#summary_file.close()
+
 		files_to_delete = []
 		files_to_delete += glob(root + '/*.badV3')
 		files_to_delete += glob(root + '/*.bam')
