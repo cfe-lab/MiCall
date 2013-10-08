@@ -22,6 +22,7 @@ if sys.version_info[:2] != (2, 7):
 	sys.exit()
 
 ## settings
+pipeline_version = "1"
 home='/data/miseq/'			# Where we will write the data
 delay = 3600				# Delay between checking Miseq runs
 load_mpi = "module load openmpi/gnu"
@@ -85,7 +86,8 @@ while 1:
 	os.remove(runs[0])
 	flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
 	flag.close()
-	result_path = runs[0].replace('needsprocessing', 'Results')
+
+	result_path = runs[0].replace('needsprocessing', 'Results/version_' + pipeline_version)
 
 	# Post files to macdatafile
 	if not os.path.exists(result_path): os.mkdir(result_path)
