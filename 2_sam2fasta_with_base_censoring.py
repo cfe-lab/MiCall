@@ -5,7 +5,6 @@ Output: <sample>.<region>.remap.sam.<qScore>.fasta
 
 import sys
 import os
-
 import re
 
 p = re.compile('^[-]+')
@@ -16,7 +15,6 @@ def start (s):
 		return len(hits[0])
 	else:
 		return 0
-
 
 from sam2fasta import *
 from seqUtils import *

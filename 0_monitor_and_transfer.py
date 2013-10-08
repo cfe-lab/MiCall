@@ -17,6 +17,10 @@ from glob import glob
 from seqUtils import timestamp
 from time import sleep
 
+if sys.version_info[:2] != (2, 7):
+	print "Monitor requires python 2.7"
+	sys.exit()
+
 ## settings
 home='/data/miseq/'			# Where we will write the data
 delay = 3600				# Delay between checking Miseq runs
@@ -67,11 +71,12 @@ while 1:
 			continue
 		
 		local_file = home + run_name + '/' + filename
-		timestamp('cp and gunzip {}'.format(filename))
-		os.system('cp {} {}'.format(file, local_file))
+		timestamp('rsync and gunzip {}'.format(filename))
+		#os.system('cp {} {}'.format(file, local_file))
+		os.system('rsync -a {} {}'.format(file, local_file))	# rsync should be faster/safer than cp
 		os.system('gunzip -f {}'.format(local_file))
 
-	# call MPI wrapper
+	# Call MPI wrapper
 	command = "{}; mpirun -machinefile mfile python -u {} {} {} {}".format(load_mpi, "0_MPI_wrapper.py", home+run_name, mode, qCutoff)
 	timestamp(command)
 	os.system(command)

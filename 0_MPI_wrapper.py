@@ -9,6 +9,10 @@ from mpi4py import MPI
 from sam2fasta import apply_cigar
 from seqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, timestamp
 
+if sys.version_info[:2] != (2, 7):
+	print "MPI wrapper requires python 2.7"
+	sys.exit()
+
 my_rank = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()
 
@@ -93,6 +97,7 @@ if mode == 'Amplicon':
 		files_to_delete += glob(root + '/*.badV3')
 		files_to_delete += glob(root + '/*.bam')
 		files_to_delete += glob(root + '/*.bt2')
+		files_to_delete += glob(root + '/*.bt2_metrics')
 		files_to_delete += glob(root + '/*.fastq')
 		files_to_delete += glob(root + '/*.pileup')
 		files_to_delete += glob(root + '/*.poly')
