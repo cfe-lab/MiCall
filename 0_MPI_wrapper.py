@@ -237,7 +237,7 @@ if my_rank == 0: timestamp('Barrier #9 (Summary files)\n', my_rank, nprocs)
 # Make HXB2.amino_poly.summary_conseq from from HXB2.amino_poly.summary
 if my_rank == 0:
 	timestamp("Making HXB2.amino_poly.summary")
-	os.system("python amino_conseq_from_summary.py {} {}".format(root + "HXB2.amino_poly.summary", amino_conseq_cutoff)
+	os.system("python amino_conseq_from_summary.py {} {}".format(root + "HXB2.amino_poly.summary", amino_conseq_cutoff))
 
 
 # Clean up intermediary files

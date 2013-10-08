@@ -18,8 +18,8 @@ from seqUtils import timestamp
 from time import sleep
 
 ## settings
-home='/data/miseq/'			# where we will write the data
-delay = 3600				# how many seconds to wait until we check the database
+home='/data/miseq/'			# Where we will write the data
+delay = 3600				# Delay between checking Miseq runs
 load_mpi = "module load openmpi/gnu"
 qCutoff = 20
 
@@ -40,17 +40,13 @@ while 1:
 	run_name = root.split('/')[-2]
 	if not os.path.exists(home+run_name): os.system('mkdir {}{}'.format(home, run_name))
 	
-	# Extract assay/description/chemistry from SampleSheet.csv
+	# Extract description (mode) from SampleSheet.csv
+	# Assay is ALWAYS "Nextera" and chemistry is ALWAYS "Amplicon"
 	infile = open(runs[0].replace('needsprocessing', 'SampleSheet.csv'), 'rU')
-	assay, mode, chemistry = '', '', ''
+	mode = ''
 	for line in infile:
-		# note: assay and chemistry are ALWAYS "Nextera" and "Amplicon", respectively
-		if line.startswith('Assay,'):
-			assay = line.strip('\n').split(',')[1]
-		elif line.startswith('Description,'):
+		if line.startswith('Description,'):
 			mode = line.strip('\n').split(',')[1]
-		elif line.startswith('Chemistry,'):
-			chemistry = line.strip('\n').split(',')[1]
 			break
 	infile.close()
 	
@@ -91,6 +87,7 @@ while 1:
 	results_files = []
 
 	if mode == 'Amplicon':
+		results_files += glob(home + run_name + '/*env*.fasta')
 		results_files += glob(home + run_name + '/*.v3prot')
 
 	elif mode == 'Nextera':
