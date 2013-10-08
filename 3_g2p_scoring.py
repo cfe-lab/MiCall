@@ -13,7 +13,7 @@ import os
 import sys
 
 from seqUtils import convert_fasta, translate_nuc
-from hyphyAlign import change_settings, get_boundaries, pair_align
+from hyphyAlign import apply2nuc, change_settings, get_boundaries, HyPhy, pair_align, refSeqs
 from minG2P import conan_g2p
 
 hyphy = HyPhy._THyPhy (os.getcwd(), 1)

@@ -87,7 +87,7 @@ while 1:
 	results_files = []
 
 	if mode == 'Amplicon':
-		results_files += glob(home + run_name + '/*env*.fasta')
+		results_files += glob(home + run_name + '/*.HIV1B-env.*.fasta')
 		results_files += glob(home + run_name + '/*.v3prot')
 
 	elif mode == 'Nextera':
