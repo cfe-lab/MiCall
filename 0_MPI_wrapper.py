@@ -73,8 +73,6 @@ for i in range(len(files)):
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #2 (Remap CSF from remap SAM)\n', my_rank, nprocs)
 
-
-
 # For amplicon sequencing runs, compute g2p scores for env-mapped FASTAs
 if mode == 'Amplicon':
 	files = glob(root + '/*env*.fasta')
@@ -86,6 +84,8 @@ if mode == 'Amplicon':
 		os.system('python 3_g2p_scoring.py {}'.format(file))
 
 MPI.COMM_WORLD.Barrier()
+
+sys.exit()
 
 if mode == 'Amplicon' and my_rank == 0: timestamp('Barrier #3 (G2P - amplicon only)\n', my_rank, nprocs)
 elif mode != 'Amplicon' and my_rank == 0: timestamp('Barrier #3 (Not an amplicon run - skipped G2P)\n', my_rank, nprocs)
@@ -247,3 +247,5 @@ if my_rank == 0:
 	files_to_delete += glob(root+'/.*bam')
 	for file in files_to_delete:
 		os.remove(file)
+
+MPI.Finalize()
