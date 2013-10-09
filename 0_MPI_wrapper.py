@@ -22,17 +22,17 @@ refpath = '/usr/local/share/miseq/refs/cfe'	# Consensus B refs
 hxb2refpath="/usr/local/share/miseq/refs/" 	# location of HXB2 reference files
 HXB2_mapping_cutoff = 10			# Read mapping quality cutoff
 amino_conseq_cutoff = 10			# Minimum occurences of char before it counts for conseq generation
-
-fpr_cutoff = 3.5				# Cutoff for assuming X4-ness
-mincount = 3					# Minimum occurences of char before it counts in amplicon/v3
+fpr_cutoffs = [3.5]				# Cutoffs for assuming X4-ness
+mincounts = [3]					# Minimum occurences of char before it counts in amplicon/v3
+g2p_alignment_cutoff = 50			# Minimum score of alignment during g2p scoring
 
 ## arguments
 root = sys.argv[1]				# Path to folder containing fastqs
 mode = sys.argv[2]				# Nextera or Amplicon - from SampleSheet.csv
 qCutoff = int(sys.argv[3])			# INCORRECT - FIXME
 
-
-
+log_file = open(root + "/pipeline_output.MPI_rank_{}.log".format(my_rank), "w")
+sys.stderr = log_file
 
 def consensus_from_remapped_sam(root, ref, samfile, qCutoff=30):
 	"""
@@ -88,8 +88,8 @@ if mode == 'Amplicon':
 		if i % nprocs != my_rank:
 			continue
 		filename = files[i].split('/')[-1]
-		timestamp('3_g2p_scoring {}'.format(filename), my_rank, nprocs)
-		os.system('python 3_g2p_scoring.py {}'.format(file))
+		timestamp('3_g2p_scoring {} {}'.format(filename, g2p_alignment_cutoff), my_rank, nprocs)
+		os.system('python 3_g2p_scoring.py {} {}'.format(file, g2p_alignment_cutoff))
 
 MPI.COMM_WORLD.Barrier()
 
@@ -98,16 +98,22 @@ if mode == 'Amplicon':
 	if my_rank == 0:
 		timestamp('Barrier #3 G2P calculations (Amplicon)\n', my_rank, nprocs)
 
-		# Generate summary of v3 data
+		# Read each v3prot file and generate summary of v3 data in v3prot.summary
 		summary_file = open(root + '/v3prot.summary', 'w')
+		summary_file.write("prefix,gene,qCutoff,fpr_cutoff,mincount,proportion_x4\n")
 		v3_files = glob(root + '/*.v3prot')
 		for i, file in enumerate(v3_files):
-			prefix, gene = file.split('.')[:2]	
-			total_x4_count, total_count = prop_x4(file, fpr_cutoff, mincount)
-			proportion_x4 = total_x4_count / total_count
-			summary_file.write("{}".format(proportion_x4))
+			prefix, gene, qCutoff = file.split('.')[:3]
+			for fpr_cutoff in fpr_cutoffs:
+				for mincount in mincounts:
+					total_x4_count, total_count = prop_x4(file, fpr_cutoff, mincount)
+					proportion_x4 = (float(total_x4_count) / float(total_count))*100
+					summary_file.write("{},{},{},{},{},{}\n".format(prefix, gene, qCutoff, fpr_cutoff, mincount, proportion_x4))
 		summary_file.close()
 		timestamp('Generated v3prot.summary file\n', my_rank, nprocs)
+
+		# PERFORM ROWS TO COLUMNS TRANSITION HERE
+		# convert_g2p_to_column_representation.py	
 
 		files_to_delete = []
 		files_to_delete += glob(root + '/*.badV3')
@@ -282,5 +288,5 @@ if my_rank == 0:
 	files_to_delete += glob(root + '/*.pileup')
 	for file in files_to_delete: os.remove(file)
 
+log_file.close()
 MPI.Finalize()
-sys.exit()

@@ -1,30 +1,24 @@
 """
-Generate V3-specific nucleotide sequence from remapped env .fasta file
-Along with G2PFPR score in the header
-
-Input: env-specific fasta
-Output: v3prot files
+Generate V3-specific nucleotide sequence from remapped env .fasta file,
+along with G2PFPR score in the header (Plus the count)
 """
 
-# After remapping, dashes introduced into env sequence due to alignment
-# Strip out dashes at this step
-
-import os
-import sys
-
-from seqUtils import convert_fasta, translate_nuc
+import os,sys
 from hyphyAlign import apply2nuc, change_settings, get_boundaries, HyPhy, pair_align, refSeqs
 from minG2P import conan_g2p
+from seqUtils import convert_fasta, translate_nuc
+
+f = sys.argv[1]
+g2p_alignment_cutoff = sys.argv[2]
+
+# Input must be a fasta file
+if not f.endswith('.fasta'):
+	print 'Expecting filename ending with .fasta extension'
+	sys.exit()
 
 hyphy = HyPhy._THyPhy (os.getcwd(), 1)
 change_settings(hyphy) 					# Default settings are for protein alignment
 refseq = translate_nuc(refSeqs['V3, clinical'], 0)	# refSeq is V3 (HXB2: 7110-7217) in nucleotide space
-
-# Input must be a fasta file
-f = sys.argv[1]
-if not f.endswith('.fasta'):
-	print 'Expecting filename ending with .fasta extension'
-	sys.exit()
 
 filename = f.split('/')[-1]
 prefix = filename.split('.')[0]
@@ -36,7 +30,6 @@ except:
 	print 'failed to convert', f
 	sys.exit()
 infile.close()
-
 
 # Determine offset from the 1st sequence to correct frameshift induced by sample-specific remapping
 seq1 = fasta[0][1].strip("-")
@@ -68,15 +61,15 @@ for header, seq in fasta:
 	# 1) Censored bases were detected ('N')
 	# 2) V3 didn't start with C, end with C
 	# 3) V3 didn't contain an internal stop codon ('*')
-	# 4) Alignment score less than 50
+	# 4) Alignment score less than cutoff
 	
-	if 'N' in v3nuc or not v3prot.startswith('C') or not v3prot.endswith('C') or '*' in v3prot or ascore < 50:
+	if 'N' in v3nuc or not v3prot.startswith('C') or not v3prot.endswith('C') or '*' in v3prot or ascore < g2p_alignment_cutoff:
 		# Screen for bad V3 sequences, provide reason(s)
 		badfile.write('>%s_reason_%s\n%s\n' % (header,
 			'|'.join(['stopcodon' if '*' in v3prot else '',
-					'lowscore' if ascore < 50 else '',
-					'cystines' if not v3prot.startswith('C') or not v3prot.endswith('C') else '',
-					'ambig' if 'N' in v3nuc else '']),seq))
+			'lowscore' if ascore < g2p_alignment_cutoff else '',
+			'cystines' if not v3prot.startswith('C') or not v3prot.endswith('C') else '',
+			'ambig' if 'N' in v3nuc else '']),seq))
 	else:
 		# This looks like a legitimate V3-encoding sequence
 		# Track the count of each v3nucleotide sequence

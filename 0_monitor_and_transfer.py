@@ -11,7 +11,7 @@ Processing will be done in serial on a 'first come first serve' basis:
 no asynchronous processing of multiple concurrent runs
 """
 
-import os, sys
+import os, sys, time
 from datetime import datetime
 from glob import glob
 from seqUtils import timestamp
@@ -28,9 +28,11 @@ delay = 3600				# Delay between checking Miseq runs
 load_mpi = "module load openmpi/gnu"
 qCutoff = 20
 
+log_file_name = "pipeline_output.log"
+
 ## main loop
 while 1:
-	# For now, ignore standard error
+	# For now, ignore standard error (Otherwise timestamp gives duplicate output)
 	sys.stderr = open(os.devnull, 'w')
 
 	# Check if any MiSeq folders have been flagged for processing
@@ -48,7 +50,7 @@ while 1:
 	if not os.path.exists(home+run_name): os.system('mkdir {}{}'.format(home, run_name))
 
 	# Assign standard error to a log file
-	log_file = open(home + run_name + "/pipeline_output.log", "w")
+	log_file = open(home + run_name + "/" + log_file_name, "w")
 	sys.stderr = log_file
 
 	# Extract description (mode) from SampleSheet.csv
@@ -80,7 +82,7 @@ while 1:
 		
 		local_file = home + run_name + '/' + filename
 		timestamp('rsync + gunzip {}'.format(filename))
-		os.system('rsync -a {} {}'.format(file, local_file))	# rsync should be faster/safer than cp
+		os.system('rsync -a {} {}'.format(file, local_file))	# rsync is faster than cp
 		os.system('gunzip -f {}'.format(local_file))
 
 	# Call MPI wrapper
@@ -104,6 +106,7 @@ while 1:
 	if mode == 'Amplicon':
 		results_files += glob(home + run_name + '/*.HIV1B-env.remap.sam')
 		results_files += glob(home + run_name + '/*.v3prot')
+		results_files += glob(home + run_name + '/v3prot.summary')
 
 	elif mode == 'Nextera':
 		results_files += glob(home + run_name + '/*.HXB2.sam')
@@ -120,6 +123,26 @@ while 1:
 		timestamp(command)
 		os.system(command)
 
+	# The run is complete - close the log, post it, re-assign sys.stderr to null
 	log_file.close()
-	os.system('cp {} {}/{}'.format(home + run_name + '/pipeline_output.log', result_path_final, 'pipeline_output.log'))
-	sys.stderr = open(os.devnull, 'w')
+
+	# Merge pipeline_output.MPI_rank_*.log files (+ the monitor log) into one
+	# IE, sort the list "logs" containing (timestamp, line) tuples
+	log_files = glob(home + run_name + '/' + log_file_name)
+	log_files += glob(home + run_name + '/pipeline_output.MPI_rank_*.log')
+	logs = []
+	for log_file in log_files:
+		f = open(log_file, 'r')
+		for line in f.readlines():
+			fields = line.rstrip("\n").split("\t")
+			myDateTime = time.strptime(fields[0], "%Y-%m-%d %H:%M:%S")
+			tuple = (myDateTime, fields[0] + "\t" + fields[1])
+			logs.append(tuple)
+		f.close()
+		os.remove(log_file)
+	logs.sort()
+
+	f = open(home + run_name + '/pipeline_output.txt', 'w')
+	for tuple in logs: f.write("{}\n".format(tuple[1]))
+	f.close()
+	os.system('cp {} {}/{}'.format(home + run_name + '/pipeline_output.txt', result_path_final, 'pipeline_output.txt'))

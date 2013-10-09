@@ -8,12 +8,13 @@ def timestamp(msg, my_rank='NA', nprocs='NA'):
 	If my_rank or nprocs is not specified, rank information is not displayed.
 	"""
 	from datetime import datetime
+
 	currTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	output = ""
-	if my_rank == 'NA' or nprocs == 'NA': output = '[{}] {}'.format(currTime, msg)
-	else: output = '[{}] (rank={}/{}) {}'.format(currTime,my_rank,nprocs,msg)
+	if my_rank == 'NA' or nprocs == 'NA': output = '{}\t{}'.format(currTime, msg)
+	else: output = '{}\t(rank={}/{}) {}'.format(currTime,my_rank,nprocs,msg)
 
-	# Send output to standard out AND standard error
+	# Send output to standard out + standard error (Which is assigned to a log file)
 	print output
 	print >> sys.stderr, output
 
