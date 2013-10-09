@@ -22,12 +22,11 @@ if sys.version_info[:2] != (2, 7):
 	sys.exit()
 
 ## settings
-pipeline_version = "1"
+pipeline_version = "1.0"
 home='/data/miseq/'			# Where we will write the data
 delay = 3600				# Delay between checking Miseq runs
 load_mpi = "module load openmpi/gnu"
 qCutoff = 20
-
 
 ## main loop
 while 1:
@@ -67,13 +66,13 @@ while 1:
 	files = glob(root+'Data/Intensities/BaseCalls/*.fastq.gz')
 	for file in files:
 		filename = file.split('/')[-1]
+
+		# Skip reads that failed to demultiplex
 		if filename.startswith('Undetermined'):
-			# skip file containing reads that failed to demultiplex
 			continue
 		
 		local_file = home + run_name + '/' + filename
-		timestamp('rsync and gunzip {}'.format(filename))
-		#os.system('cp {} {}'.format(file, local_file))
+		timestamp('rsync + gunzip {}'.format(filename))
 		os.system('rsync -a {} {}'.format(file, local_file))	# rsync should be faster/safer than cp
 		os.system('gunzip -f {}'.format(local_file))
 
@@ -87,10 +86,11 @@ while 1:
 	flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
 	flag.close()
 
-	result_path = runs[0].replace('needsprocessing', 'Results/version_' + pipeline_version)
+	result_path = runs[0].replace('needsprocessing', 'Results')
+	result_path_final = result_path + '/version_' + pipeline_version
 
-	# Post files to macdatafile
-	if not os.path.exists(result_path): os.mkdir(result_path)
+	if not os.path.exists(result_path): os.mkdir(result_path)		# Outer results folder
+	if not os.path.exists(result_path_final): os.mkdir(result_path_final)	# Inner version folder
 	results_files = []
 
 	if mode == 'Amplicon':
@@ -104,8 +104,9 @@ while 1:
 		results_files += glob(home + run_name + '/HXB2.nuc_poly.summary.conseq')
 		results_files += glob(home + run_name + '/HXB2.amino_poly.summary.conseq')
 
+	timestamp("Posting {} run to macdatafile".format(mode))
 	for file in results_files:
 		filename = file.split('/')[-1]
-		command = 'cp {} {}/{}'.format(file, result_path, filename)
+		command = 'cp {} {}/{}'.format(file, result_path_final, filename)
 		timestamp(command)
 		os.system(command)
