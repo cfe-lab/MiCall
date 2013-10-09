@@ -8,7 +8,7 @@ Output: summary.X4 (Contains name of file and percent X4)
 """
 from seqUtils import convert_fasta
 
-def prop_x4 (f, cutoff, mincount):
+def prop_x4 (f, cutoff, minCount):
 	infile = open(f, 'rU')
 	fasta = convert_fasta(infile.readlines())
 	infile.close()

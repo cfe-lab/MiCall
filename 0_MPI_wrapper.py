@@ -23,6 +23,9 @@ hxb2refpath="/usr/local/share/miseq/refs/" 	# location of HXB2 reference files
 HXB2_mapping_cutoff = 10			# Read mapping quality cutoff
 amino_conseq_cutoff = 10			# Minimum occurences of char before it counts for conseq generation
 
+fpr_cutoff = 3.5				# Cutoff for assuming X4-ness
+mincount = 3					# Minimum occurences of char before it counts in amplicon/v3
+
 ## arguments
 root = sys.argv[1]				# Path to folder containing fastqs
 mode = sys.argv[2]				# Nextera or Amplicon - from SampleSheet.csv
@@ -90,20 +93,21 @@ if mode == 'Amplicon':
 
 MPI.COMM_WORLD.Barrier()
 
-# Cleanup / finish the amplicon run
+# If this is amplicon, make final proportion X4 summary, clean up files, and exit
 if mode == 'Amplicon':
 	if my_rank == 0:
 		timestamp('Barrier #3 G2P calculations (Amplicon)\n', my_rank, nprocs)
 
 		# Generate summary of v3 data
-		#summary_file = open(root + '/v3prot.summary', 'w')
-		#v3_files = glob(root + '/*.v3prot')
-		#for i, file in enumerate(v3_files):
-		#	prefix, gene = file.split('.')[:2]	
-		#	total_x4_count, total_count = prop_x4(file)
-		#	proportion_x4 = total_x4_count / total_count
-		#	summary_file.write("{}".format(proportion_x4))
-		#summary_file.close()
+		summary_file = open(root + '/v3prot.summary', 'w')
+		v3_files = glob(root + '/*.v3prot')
+		for i, file in enumerate(v3_files):
+			prefix, gene = file.split('.')[:2]	
+			total_x4_count, total_count = prop_x4(file, fpr_cutoff, mincount)
+			proportion_x4 = total_x4_count / total_count
+			summary_file.write("{}".format(proportion_x4))
+		summary_file.close()
+		timestamp('Generated v3prot.summary file\n', my_rank, nprocs)
 
 		files_to_delete = []
 		files_to_delete += glob(root + '/*.badV3')
@@ -113,12 +117,13 @@ if mode == 'Amplicon':
 		files_to_delete += glob(root + '/*.fastq')
 		files_to_delete += glob(root + '/*.pileup')
 		files_to_delete += glob(root + '/*.poly')
-		for file in files_to_delete:
-			os.remove(file)
+		for file in files_to_delete: os.remove(file)
+		timestamp('Cleaned up unnecessary files\n', my_rank, nprocs)
 	MPI.Finalize()
 	sys.exit()
 
-# Proceed with Nextera algorithm
+
+# Otherwise proceed with Nextera algorithm
 if my_rank == 0: timestamp('Barrier #3 (Not an amplicon run - skipped G2P)\n', my_rank, nprocs)
 
 # Create remap conseq from remap sam
@@ -261,19 +266,21 @@ if my_rank == 0:
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #9 (Summary files)\n', my_rank, nprocs)
 
-
 # Make HXB2.amino_poly.summary_conseq from from HXB2.amino_poly.summary
 if my_rank == 0:
 	timestamp("Making HXB2.amino_poly.summary")
 	os.system("python amino_conseq_from_summary.py {} {}".format(root + "HXB2.amino_poly.summary", amino_conseq_cutoff))
-
 
 # Clean up intermediary files
 if my_rank == 0:
 	timestamp("Deleting intermediary files")
 	files_to_delete = []
 	files_to_delete += glob(root+'/.*bam')
-	for file in files_to_delete:
-		os.remove(file)
+	files_to_delete += glob(root + '/*.bt2')
+	files_to_delete += glob(root + '/*.bt2_metrics')
+	files_to_delete += glob(root + '/*.fastq')
+	files_to_delete += glob(root + '/*.pileup')
+	for file in files_to_delete: os.remove(file)
 
 MPI.Finalize()
+sys.exit()

@@ -9,8 +9,14 @@ def timestamp(msg, my_rank='NA', nprocs='NA'):
 	"""
 	from datetime import datetime
 	currTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-	if my_rank == 'NA' or nprocs == 'NA': print '[{}] {}'.format(currTime, msg)
-	else: print '[{}] (rank={}/{}) {}'.format(currTime,my_rank,nprocs,msg)
+	output = ""
+	if my_rank == 'NA' or nprocs == 'NA': output = '[{}] {}'.format(currTime, msg)
+	else: output = '[{}] (rank={}/{}) {}'.format(currTime,my_rank,nprocs,msg)
+
+	# Send output to standard out AND standard error
+	print output
+	print >> sys.stderr, output
+
 
 def poly2conseq(poly_file,alphabet='ACDEFGHIKLMNPQRSTVWY*-',minCount=3):
 	"""

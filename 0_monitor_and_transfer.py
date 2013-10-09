@@ -30,20 +30,27 @@ qCutoff = 20
 
 ## main loop
 while 1:
-	# check if any MiSeq folders have been flagged for processing
+	# For now, ignore standard error
+	sys.stderr = open(os.devnull, 'w')
+
+	# Check if any MiSeq folders have been flagged for processing
 	runs = glob('/media/macdatafile/MiSeq/runs/*/needsprocessing')
 	if len(runs) == 0:
 		timestamp('No runs need processing')
 		sleep(delay)
 		continue
-	
+
 	# If any exist, sort list by runID (run_name) and do the first one
 	runs.sort()
 	root = runs[0].replace('needsprocessing', '')
 	timestamp ('Processing {}'.format(root))
 	run_name = root.split('/')[-2]
 	if not os.path.exists(home+run_name): os.system('mkdir {}{}'.format(home, run_name))
-	
+
+	# Assign standard error to a log file
+	log_file = open(home + run_name + "/pipeline_output.log", "w")
+	sys.stderr = log_file
+
 	# Extract description (mode) from SampleSheet.csv
 	# Assay is ALWAYS "Nextera" and chemistry is ALWAYS "Amplicon"
 	infile = open(runs[0].replace('needsprocessing', 'SampleSheet.csv'), 'rU')
@@ -53,7 +60,7 @@ while 1:
 			mode = line.strip('\n').split(',')[1]
 			break
 	infile.close()
-	
+
 	# Mode must be Nextera or Amplicon: if not, mark as an error and proceed
 	if mode not in ['Nextera', 'Amplicon']:
 		timestamp('Error - \'{}\' is not a recognized mode: skipping'.format(mode))
@@ -91,6 +98,7 @@ while 1:
 
 	if not os.path.exists(result_path): os.mkdir(result_path)		# Outer results folder
 	if not os.path.exists(result_path_final): os.mkdir(result_path_final)	# Inner version folder
+
 	results_files = []
 
 	if mode == 'Amplicon':
@@ -105,8 +113,13 @@ while 1:
 		results_files += glob(home + run_name + '/HXB2.amino_poly.summary.conseq')
 
 	timestamp("Posting {} run to macdatafile".format(mode))
+
 	for file in results_files:
 		filename = file.split('/')[-1]
 		command = 'cp {} {}/{}'.format(file, result_path_final, filename)
 		timestamp(command)
 		os.system(command)
+
+	log_file.close()
+	os.system('cp {} {}/{}'.format(home + run_name + '/pipeline_output.log', result_path_final, 'pipeline_output.log'))
+	sys.stderr = open(os.devnull, 'w')
