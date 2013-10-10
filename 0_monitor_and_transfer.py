@@ -88,7 +88,7 @@ while 1:
 	# Call MPI wrapper
 	command = "{}; mpirun -machinefile mfile python -u {} {} {} {}".format(load_mpi, "0_MPI_wrapper.py", home+run_name, mode, qCutoff)
 	timestamp(command)
-	#os.system(command)
+	os.system(command)
 
 	# Replace the 'needsprocessing' flag with a 'processed' flag
 	os.remove(runs[0])
