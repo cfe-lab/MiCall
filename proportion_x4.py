@@ -10,7 +10,11 @@ from seqUtils import convert_fasta
 
 def prop_x4 (f, cutoff, minCount):
 	infile = open(f, 'rU')
-	fasta = convert_fasta(infile.readlines())
+	try:
+		fasta = convert_fasta(infile.readlines())
+	except:
+		print 'failed to convert', f
+		sys.exit()
 	infile.close()
 
 	total_count = 0

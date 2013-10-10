@@ -88,7 +88,7 @@ while 1:
 	# Call MPI wrapper
 	command = "{}; mpirun -machinefile mfile python -u {} {} {} {}".format(load_mpi, "0_MPI_wrapper.py", home+run_name, mode, qCutoff)
 	timestamp(command)
-	os.system(command)
+	#os.system(command)
 
 	# Replace the 'needsprocessing' flag with a 'processed' flag
 	os.remove(runs[0])
@@ -119,9 +119,10 @@ while 1:
 
 	for file in results_files:
 		filename = file.split('/')[-1]
-		command = 'cp {} {}/{}'.format(file, result_path_final, filename)
+		command = 'rsync -a {} {}/{}'.format(file, result_path_final, filename)
 		timestamp(command)
 		os.system(command)
+
 
 	# The run is complete - close the log, post it, re-assign sys.stderr to null
 	log_file.close()
@@ -134,15 +135,27 @@ while 1:
 	for log_file in log_files:
 		f = open(log_file, 'r')
 		for line in f.readlines():
-			fields = line.rstrip("\n").split("\t")
-			myDateTime = time.strptime(fields[0], "%Y-%m-%d %H:%M:%S")
-			tuple = (myDateTime, fields[0] + "\t" + fields[1])
-			logs.append(tuple)
+			if line.rstrip("\n") == "": continue
+
+			try:
+				fields = line.rstrip("\n").split("\t")
+				myDateTime = time.strptime(fields[0], "%Y-%m-%d %H:%M:%S")
+				tuple = (myDateTime, fields[0] + "\t" + fields[1])
+				logs.append(tuple)
+			except:
+				pass
 		f.close()
 		os.remove(log_file)
 	logs.sort()
 
+	# Create and post the final log file
 	f = open(home + run_name + '/pipeline_output.txt', 'w')
 	for tuple in logs: f.write("{}\n".format(tuple[1]))
 	f.close()
-	os.system('cp {} {}/{}'.format(home + run_name + '/pipeline_output.txt', result_path_final, 'pipeline_output.txt'))
+
+	# Decouple stderr
+	sys.stderr = open(os.devnull, 'w')
+	command = 'rsync -a {} {}/{}'.format(home + run_name + '/pipeline_output.txt', result_path_final, 'pipeline_output.txt')
+	timestamp(command)
+	os.system(command)
+	timestamp("========== {} successfully completed! ==========\n".format(run_name))

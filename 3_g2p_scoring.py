@@ -9,7 +9,7 @@ from minG2P import conan_g2p
 from seqUtils import convert_fasta, translate_nuc
 
 f = sys.argv[1]
-g2p_alignment_cutoff = sys.argv[2]
+g2p_alignment_cutoff = int(sys.argv[2])
 
 # Input must be a fasta file
 if not f.endswith('.fasta'):

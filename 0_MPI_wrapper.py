@@ -64,7 +64,7 @@ for i, file in enumerate(files):
 	os.system("python 1_mapping.py {} {} {}".format(refpath, file, qCutoff))
 
 MPI.COMM_WORLD.Barrier()
-if my_rank == 0: timestamp('Barrier #1 (Prelim + remapping)\n', my_rank, nprocs)
+if my_rank == 0: timestamp('Barrier #1 (Prelim clade B + sample specific remapping)\n', my_rank, nprocs)
 
 
 
@@ -87,10 +87,9 @@ if mode == 'Amplicon':
 	for i, file in enumerate(files):
 		if i % nprocs != my_rank:
 			continue
-		filename = files[i].split('/')[-1]
-		timestamp('3_g2p_scoring {} {}'.format(filename, g2p_alignment_cutoff), my_rank, nprocs)
-		os.system('python 3_g2p_scoring.py {} {}'.format(file, g2p_alignment_cutoff))
-
+		command = 'python 3_g2p_scoring.py {} {}'.format(file, g2p_alignment_cutoff)
+		timestamp(command, my_rank, nprocs)
+		os.system(command)
 MPI.COMM_WORLD.Barrier()
 
 # If this is amplicon, make final proportion X4 summary, clean up files, and exit
@@ -107,7 +106,7 @@ if mode == 'Amplicon':
 			for fpr_cutoff in fpr_cutoffs:
 				for mincount in mincounts:
 					total_x4_count, total_count = prop_x4(file, fpr_cutoff, mincount)
-					proportion_x4 = (float(total_x4_count) / float(total_count))*100
+					proportion_x4 = (float(total_x4_count) / float(total_count)) * 100
 					summary_file.write("{},{},{},{},{},{}\n".format(prefix, gene, qCutoff, fpr_cutoff, mincount, proportion_x4))
 		summary_file.close()
 		timestamp('Generated v3prot.summary file\n', my_rank, nprocs)
