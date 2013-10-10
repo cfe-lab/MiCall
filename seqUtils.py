@@ -9,7 +9,7 @@ def timestamp(msg, my_rank='NA', nprocs='NA'):
 	"""
 	from datetime import datetime
 
-	currTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	currTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 	output = ""
 	if my_rank == 'NA' or nprocs == 'NA': output = '{}\t{}'.format(currTime, msg)
 	else: output = '{}\t(rank={}/{}) {}'.format(currTime,my_rank,nprocs,msg)
@@ -17,6 +17,7 @@ def timestamp(msg, my_rank='NA', nprocs='NA'):
 	# Send output to standard out + standard error (Which is assigned to a log file)
 	print output
 	print >> sys.stderr, output
+	sys.stdout.flush()
 
 
 def poly2conseq(poly_file,alphabet='ACDEFGHIKLMNPQRSTVWY*-',minCount=3):

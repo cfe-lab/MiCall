@@ -82,7 +82,7 @@ while 1:
 		
 		local_file = home + run_name + '/' + filename
 		timestamp('rsync + gunzip {}'.format(filename))
-		os.system('rsync -a {} {}'.format(file, local_file))	# rsync is faster than cp
+		os.system('rsync -a {} {}'.format(file, local_file))
 		os.system('gunzip -f {}'.format(local_file))
 
 	# Call MPI wrapper
@@ -139,7 +139,7 @@ while 1:
 
 			try:
 				fields = line.rstrip("\n").split("\t")
-				myDateTime = time.strptime(fields[0], "%Y-%m-%d %H:%M:%S")
+				myDateTime = datetime.strptime(fields[0], "%Y-%m-%d %H:%M:%S.%f")
 				tuple = (myDateTime, fields[0] + "\t" + fields[1])
 				logs.append(tuple)
 			except:

@@ -28,9 +28,7 @@ def prop_x4 (f, cutoff, minCount):
 			count = int(tokens[tokens.index('count')+1])
 			fpr = float(tokens[tokens.index('fpr')+1])
 		except:
-			print 'ERROR, missing variant, count or fpr in header'
-			print h
-			sys.exit()
+			continue
 	
 		if count < minCount: continue
 		if fpr < cutoff: total_x4_count += count
