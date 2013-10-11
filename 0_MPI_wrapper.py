@@ -65,7 +65,7 @@ for i, file in enumerate(files):
 
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #1 (Prelim clade B + sample specific remapping)\n', my_rank, nprocs)
-
+MPI.COMM_WORLD.Barrier()
 
 
 # For each remapped SAM, generate CSFs (done)
@@ -80,6 +80,7 @@ for i in range(len(files)):
 
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #2 (Remap CSF from remap SAM)\n', my_rank, nprocs)
+MPI.COMM_WORLD.Barrier()
 
 # For amplicon sequencing runs, compute g2p scores for env-mapped FASTAs
 if mode == 'Amplicon':
@@ -91,6 +92,9 @@ if mode == 'Amplicon':
 		timestamp(command, my_rank, nprocs)
 		os.system(command)
 MPI.COMM_WORLD.Barrier()
+
+
+
 
 # If this is amplicon, make final proportion X4 summary, clean up files, and exit
 if mode == 'Amplicon':
@@ -133,7 +137,10 @@ if mode == 'Amplicon':
 
 
 # Otherwise proceed with Nextera algorithm
+MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #3 (Not an amplicon run - skipped G2P)\n', my_rank, nprocs)
+MPI.COMM_WORLD.Barrier()
+
 
 # Create remap conseq from remap sam
 remapped_sams = glob(root + '/*.remap.sam')
@@ -148,6 +155,7 @@ for i, remapped_sam in enumerate(remapped_sams):
 
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #4 (Remap conseq)\n', my_rank, nprocs)
+MPI.COMM_WORLD.Barrier()
 
 
 
@@ -186,7 +194,7 @@ if mode == 'Nextera':
 	
 	MPI.COMM_WORLD.Barrier()
 	if my_rank == 0: timestamp('Barrier #5 (Final SAM)\n', my_rank, nprocs)
-
+	MPI.COMM_WORLD.Barrier()
 
 
 # From final sam, extract final CSFs
@@ -204,8 +212,7 @@ for i, final_sam in enumerate(final_sams):
 
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #6 (CSF from final SAM)\n', my_rank, nprocs)
-
-
+MPI.COMM_WORLD.Barrier()
 
 # HXB2 align final csfs
 final_csfs = glob(root + '/*.final.sam.%d.csf' % qCutoff)
@@ -246,7 +253,7 @@ for i in range(len(final_csfs)):
 
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #7 (HXB2 SAM)\n', my_rank, nprocs)
-
+MPI.COMM_WORLD.Barrier()
 
 
 # Extract HXB2 aligned sequences from the HXB2.sam, generate amino + nuc poly files
@@ -260,7 +267,7 @@ for i in range(len(HXB2_sams)):
 
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #8 (Amino/nuc poly)\n', my_rank, nprocs)
-
+MPI.COMM_WORLD.Barrier()
 
 # Concatenate nuc + amino poly files into aggregate summary files
 if my_rank == 0:
@@ -272,8 +279,10 @@ if my_rank == 0:
 	amino_summary = root + "/HXB2.amino_poly.summary"
 	os.system("echo \"Sample,region,AA.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,-\" > {}".format(amino_summary))
 	for i in range(len(amino_polys)): os.system("tail -n +2 {} >> {}".format(amino_polys[i], amino_summary))
+
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #9 (Summary files)\n', my_rank, nprocs)
+MPI.COMM_WORLD.Barrier()
 
 # Make HXB2.amino_poly.summary_conseq from from HXB2.amino_poly.summary
 if my_rank == 0:
