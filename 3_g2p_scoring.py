@@ -27,7 +27,7 @@ infile = open(f, 'rU')
 try:
 	fasta = convert_fasta(infile.readlines())
 except:
-	print 'failed to convert', f
+	print '{} failed to convert {}'.format(sys.argv[0], f)
 	sys.exit()
 infile.close()
 

@@ -99,7 +99,7 @@ if mode == 'Amplicon':
 
 		# Read each v3prot file and generate summary of v3 data in v3prot.summary
 		summary_file = open(root + '/v3prot.summary', 'w')
-		summary_file.write("sample,gene,qCutoff,fpr_cutoff,mincount,proportion_x4\n")
+		summary_file.write("sample,qCutoff,fpr_cutoff,mincount,proportion_x4\n")
 		v3_files = glob(root + '/*.v3prot')
 		for i, file in enumerate(v3_files):
 			prefix, gene, qCutoff = file.split('.')[:3]
@@ -109,7 +109,7 @@ if mode == 'Amplicon':
 						total_x4_count, total_count = prop_x4(file, fpr_cutoff, mincount)
 						proportion_x4 = (float(total_x4_count) / float(total_count)) * 100
 						sample = prefix.split('/')[-1]
-						summary_file.write("{},{},{},{},{},{}\n".format(sample, gene, qCutoff, fpr_cutoff, mincount, proportion_x4))
+						summary_file.write("{},{},{},{},{}\n".format(sample, qCutoff, fpr_cutoff, mincount, proportion_x4))
 					except:
 						continue
 		summary_file.close()

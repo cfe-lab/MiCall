@@ -71,8 +71,12 @@ for line in infile:
 		for refname in refnames: refsams[refname]['handle'].write(line)
 		continue
 	qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')[:11]
-	refsams[refname]['handle'].write(line)
-	refsams[refname]['count'] += 1
+
+	try:
+		refsams[refname]['handle'].write(line)
+		refsams[refname]['count'] += 1
+	except:
+		print "{} appeared to be an incorrect refname".format(refname)
 infile.close()
 
 for refname in refnames:
