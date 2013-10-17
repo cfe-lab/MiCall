@@ -117,7 +117,7 @@ if mode == 'Amplicon':
 					except:
 						continue
 		summary_file.close()
-		timestamp('Generated v3prot.summary file\n', my_rank, nprocs)
+		timestamp('Generated v3prot.summary file - cleaning up intermediary files...\n', my_rank, nprocs)
 
 		# PERFORM ROWS TO COLUMNS TRANSITION HERE
 		# convert_g2p_to_column_representation.py	
