@@ -22,7 +22,7 @@ if sys.version_info[:2] != (2, 7):
 	sys.exit()
 
 ## settings
-pipeline_version = "1.0"
+pipeline_version = "2.0"
 home='/data/miseq/'			# Where we will write the data
 delay = 3600				# Delay between checking Miseq runs
 load_mpi = "module load openmpi/gnu"
