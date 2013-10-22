@@ -70,6 +70,10 @@ def consensus_from_remapped_sam(root, ref, samfile, qCutoff=30):
 
 # Map and remap each fastq to consensus B
 files = glob(root + '/*R1*.fastq')
+
+# exclude files that were generated to record contaminants
+files = [f for f in files if f.endswith('.Tcontaminants.fastq')]
+
 for i, file in enumerate(files):
 	if i % nprocs != my_rank:
 		continue
