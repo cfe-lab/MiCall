@@ -22,6 +22,7 @@ is_t_primer = (sys.argv[4]=='1')
 
 # report counts to file
 outfile = open(f.replace('.fastq', '.counts'), 'w')
+contam_file = open(f.replace('.fastq', '.Tcontaminants.fastq'), 'w')
 
 
 def remap (f1, f2, samfile, ref, qCutoff=30):
@@ -93,7 +94,7 @@ refsams.update({'*': {'handle': open('%s/%s.unmapped.sam' % (root, prefix), 'w')
 # Then, subdivide the prelim SAM into these region-specific SAMs
 infile = open(samfile, 'rU')
 line_counts = [0, 0]
-missing_t_counts = [0, 0]
+t_counts = [0, 0]
 
 for line in infile:
 	# Copy the SAM header into each file
@@ -104,15 +105,29 @@ for line in infile:
 	qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')[:11]
 	bitinfo = samBitFlag(flag)
 	
-	# Trim T(A) when known to be present due to primer
 	if is_t_primer:
+		# Trim T(A) when known to be present due to primer
 		if bitinfo['is_reverse'] and seq.endswith('A'):
 			seq = seq[:-1]
 		elif not bitinfo['is_reverse'] and seq.startswith('T'):
 			seq = seq[1:]
 		else:
-			missing_t_counts[bitinfo['is_reverse']] += 1
-	
+			t_counts[bitinfo['is_reverse']] += 1 # missing A/T
+			contam_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+			continue
+	else:
+		# look for contaminating T primed reads in non-T run
+		if bitinfo['is_reverse'] and seq.endswith('A') and cigar.endswith('1S'):
+			t_counts[bitinfo['is_reverse']] += 1 # unexpected A
+			contam_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+			continue
+		elif not bitinfo['is_reverse'] and seq.startswith('T') and cigar.startswith('1S'):
+			t_counts[bitinfo['is_reverse']] += 1 # unexpected T
+			contam_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+			continue
+		else:
+			pass
+		
 	# write line out to respective region-specific file
 	try:
 		refsams[refname]['handle'].write(line)
@@ -123,13 +138,14 @@ for line in infile:
 	line_counts[bitinfo['is_reverse']] += 1
 
 infile.close()
+contam_file.close()
 
 
 outfile.write('preliminary map,%d,%d\n' % tuple(line_counts))
 if is_t_primer:
-	outfile.write('missing T,%d,%d\n' % tuple(missing_t_counts))
+	outfile.write('missing T,%d,%d\n' % tuple(t_counts))
 else:
-	outfile.write('missing T,NA,NA\n')
+	outfile.write('unexpected T,%d,%d\n' % tuple(t_counts))
 
 
 for refname in refnames:
