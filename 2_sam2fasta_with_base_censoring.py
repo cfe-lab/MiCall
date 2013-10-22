@@ -1,23 +1,13 @@
 """
 Input: <sample>.<region>.remap.sam files
-Output: <sample>.<region>.remap.sam.<qScore>.fasta
+Output: <sample>.<region>.remap.sam.<qScore>.(fasta|csf)
 """
 
 import sys
 import os
-import re
 
-p = re.compile('^[-]+')
 
-def start (s):
-	hits = p.findall(s)
-	if hits:
-		return len(hits[0])
-	else:
-		return 0
-
-from sam2fasta import *
-from seqUtils import *
+from miseqUtils import *
 
 samfile = sys.argv[1]
 qCutoff = int(sys.argv[2])
@@ -59,7 +49,7 @@ if mode == 'Amplicon':
 	
 elif mode == 'Nextera':
 	# sort reads by gap prefix
-	intermed = [(start(s), h, s) for h, s in fasta]
+	intermed = [(len_gap_prefix(s), h, s) for h, s in fasta]
 	intermed.sort()
 	
 	# output in compact comma-separated FASTA

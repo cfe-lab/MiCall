@@ -1,13 +1,302 @@
 from datetime import datetime
-import sys, HyPhy, re, math
+import sys, re, math
 import random
+
+
+gpfx = re.compile('^[-]+')
+
+def len_gap_prefix (s):
+	"""
+	Find length of gap prefix
+	"""
+	hits = gpfx.findall(s)
+	if hits:
+		return len(hits[0])
+	else:
+		return 0
+
+
+# Matches 1+ occurences of a number, followed by a letter from {MIDNSHPX=}
+cigar_re = re.compile('[0-9]+[MIDNSHPX=]')
+
+def apply_cigar (cigar, seq, qual):
+	"""
+	Parse SAM CIGAR and apply to the SAM nucleotide sequence.
+
+	Input: cigar, sequence, and quality string from SAM.
+	Output: shift (?), sequence with CIGAR incorporated + new quality string
+	"""
+	newseq = ''
+	newqual = ''
+	tokens = cigar_re.findall(cigar)
+	if len(tokens) == 0:
+		return None, None, None
+
+	# Account for removing soft clipped bases on left
+	shift = 0
+	if tokens[0].endswith('S'):
+		shift = int(tokens[0][:-1])
+	
+	left = 0
+	for token in tokens:
+		length = int(token[:-1])
+
+		# Matching sequence: carry it over
+		if token[-1] == 'M':
+			newseq += seq[left:(left+length)]
+			newqual += qual[left:(left+length)]
+			left += length
+
+		# Deletion relative to reference: pad with gaps
+		elif token[-1] == 'D':
+			newseq += '-'*length
+			newqual += 'A' 		# Assign arbitrary score
+
+		# Insertion relative to reference: skip it (excise it)
+		elif token[-1] == 'I':
+			left += length
+			continue
+
+		# Soft clipping leaves the sequence in the SAM - so we should skip it
+		elif token[-1] == 'S':
+			left += length
+			continue
+			
+		else:
+			print "Unable to handle CIGAR token: {} - quitting".format(token)
+			sys.exit()
+
+	# What does shift do?
+	return shift, newseq, newqual
+
+
+def censor_bases (seq, qual, cutoff=10):
+	"""
+	For each base in a nucleotide sequence and quality string,
+	replace a base with an ambiguous character 'N' if its associated
+	quality score falls below a threshold value.
+	"""
+	newseq = ''
+	for i, q in enumerate(qual):
+		if ord(q)-33 >= cutoff:
+			newseq += seq[i]
+		else:
+			newseq += 'N'
+	return newseq
+
+
+def merge_pairs (seq1, seq2):
+	"""
+	Merge two sequences that overlap over some portion (paired-end
+	reads).  Using the positional information in the SAM file, we will
+	know where the sequences lie relative to one another.  In the case 
+	that the base in one read has no complement in the other read 
+	(in partial overlap region), take that base at face value.
+	"""
+	mseq = ''
+	if len(seq1) > len(seq2):
+		seq1, seq2 = seq2, seq1 # swap places
+	
+	for i, c2 in enumerate(seq2):
+		if i < len(seq1):
+			c1 = seq1[i]
+			if c1 == c2:
+				mseq += c1
+			elif c1 in 'ACGT':
+				if c2 in 'N-':
+					mseq += c1
+				else:
+					mseq += 'N' # error
+			elif c2 in 'ACGT':
+				if c1 in 'N-':
+					mseq += c2
+				else:
+					mseq += 'N'
+			else:
+				mseq += 'N'
+		else:
+			# past extent of seq1
+			mseq += c2 
+	return mseq
+
+
+def sam2fasta (infile, cutoff=10, max_prop_N=0.5):
+	"""
+	Parse SAM file contents and return FASTA string.  In the case of
+	a matched set of paired-end reads, merge the reads together into
+	a single sequence.
+	"""
+	fasta = []
+	lines = infile.readlines()
+
+	if len(lines) == 0:
+		return None
+	
+	# Skip top SAM header lines
+	for start, line in enumerate(lines):
+		if not line.startswith('@'):
+			break
+	
+	if start == (len(lines)-1):
+		return None
+	
+	i = start
+	while i < len(lines):
+		qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = lines[i].strip('\n').split('\t')[:11]
+
+		# First read is unmapped
+		if refname == '*' or cigar == '*':
+			i += 1
+			continue
+		
+		pos1 = int(pos)
+		shift, seq1, qual1 = apply_cigar(cigar, seq, qual)
+		if not seq1:
+			i += 1
+			continue
+		
+		seq1 = '-'*pos1 + censor_bases(seq1, qual1, cutoff)
+		
+		# No more lines
+		if (i+1) == len(lines):
+			break
+		
+		# look ahead for matched pair
+		qname2, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = lines[i+1].strip('\n').split('\t')[:11]
+		
+		if qname2 == qname:
+			# this is the second read
+			
+			if refname == '*' or cigar == '*': 
+				# second read is unmapped
+				fasta.append([qname, seq1])
+				i += 2
+				continue
+			
+			pos2 = int(pos)
+			shift, seq2, qual2 = apply_cigar(cigar, seq, qual)
+			if not seq2:
+				# failed to parse CIGAR string
+				fasta.append([qname, seq1])
+				i += 2
+				continue
+			
+			seq2 = '-'*pos2 + censor_bases(seq2, qual2, cutoff)
+			
+			mseq = merge_pairs(seq1, seq2)
+			if mseq.count('N') / float(len(mseq)) < max_prop_N:
+				# output only if sequence is good quality
+				fasta.append([qname, mseq])
+			
+			i += 2
+			continue
+		
+		# ELSE no matched pair
+		fasta.append([qname, seq1])
+		i += 1
+	
+	return fasta
+
+
+def samBitFlag (flag):
+	"""
+	Interpret bitwise flag in SAM field as follows:
+	
+	Flag	Chr	Description
+	=============================================================
+	0x0001	p	the read is paired in sequencing
+	0x0002	P	the read is mapped in a proper pair
+	0x0004	u	the query sequence itself is unmapped
+	0x0008	U	the mate is unmapped
+	0x0010	r	strand of the query (1 for reverse)
+	0x0020	R	strand of the mate
+	0x0040	1	the read is the first read in a pair
+	0x0080	2	the read is the second read in a pair
+	0x0100	s	the alignment is not primary
+	0x0200	f	the read fails platform/vendor quality checks
+	0x0400	d	the read is either a PCR or an optical duplicate
+	"""
+	labels = ['is_paired', 'is_mapped_in_proper_pair', 'is_unmapped', 'mate_is_unmapped', 
+			'is_reverse', 'mate_is_reverse', 'is_first', 'is_second', 'is_secondary_alignment', 
+			'is_failed', 'is_duplicate']
+	
+	binstr = bin(int(flag)).replace('0b', '')
+	# flip the string
+	binstr = binstr[::-1]
+	# if binstr length is shorter than 11, pad the right with zeroes
+	for i in range(len(binstr), 11):
+		binstr += '0'
+	
+	bitflags = list(binstr)
+	res = {}
+	for i, bit in enumerate(bitflags):
+		res.update({labels[i]: bool(int(bit))})
+	
+	return (res)
+
+
+def sampleSheetParser (handle):
+	"""
+	Parse the contents of SampleSheet.csv, convert contents into a 
+	Python dictionary object.
+	"""
+	tag = None
+	get_header = False
+	header = []
+	run_info = {}
+	for line in handle:
+		# parse tags
+		if line.startswith('['):
+			tag = line.strip('\n').strip('[]')
+			if tag == 'Data':
+				get_header = True
+			continue
+		
+		assert tag is not None, 'ERROR: no tag set, mangled SampleSheet.csv'
+		tokens = line.strip('\n').split(',')
+		
+		# process tokens according to tag
+		if tag == 'Header':
+			key, value = tokens
+			run_info.update({key: value})
+			
+		elif tag == 'Data':
+			if not run_info.has_key('Data'):
+				run_info.update({'Data': {}})
+			
+			if get_header:
+				# parse the first line as the header row
+				header = tokens
+				assert 'Sample_Name' in header, 'ERROR: SampleSheet.csv Data header does not include Sample_Name'
+				get_header = False
+				continue
+			
+			sample_name = tokens[header.index('Sample_Name')]
+			index1 = tokens[header.index('index')]
+			index2 = tokens[header.index('index2')]
+			
+			desc = tokens[header.index('Description')]
+			
+			try:
+				research, comments = desc.split()
+				tprimer = (comments.split(':')[-1] == 'TPRIMER')
+			except ValueError:
+				tprimer = False
+			
+			run_info['Data'].update({sample_name: {'index1': index1,
+												'index2': index2,
+												'is_T_primer': tprimer}})
+		else:
+			# ignore other tags
+			pass
+	return run_info
+
 
 def timestamp(msg, my_rank='NA', nprocs='NA'):
 	"""
 	A timestamp that works both in an MPI environment and a non-MPI environment.
 	If my_rank or nprocs is not specified, rank information is not displayed.
 	"""
-	from datetime import datetime
 
 	currTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 	output = ""
@@ -79,6 +368,8 @@ def convert_csf (csf_handle):
 
 	return fasta,left_gap_position,right_gap_position
 
+
+
 def convert_fasta (lines):	
 	blocks = []
 	sequence = ''
@@ -100,6 +391,7 @@ def convert_fasta (lines):
 		print lines
 		raise
 	return blocks
+
 
 
 def fasta2phylip (fasta, handle):
@@ -134,48 +426,6 @@ def convert_phylip (lines):
 	return res
 
 
-def import_seqs (hyphy, path_to_in):
-	# use HyPhy file handler to import sequences
-	
-	#dump = hyphy.ExecuteBF("DataSet ds = ReadDataFile("+os.getcwd()+'/'+path_to_in+");", False)
-	dump = hyphy.ExecuteBF("DataSet ds = ReadDataFile("+path_to_in+");", False)
-	#dump = hyphy.ExecuteBF("DataSet ds = ReadDataFile(\"/Users/art/wip/StanfordV3/_from_abi.fas\");", False)
-	dump = hyphy.ExecuteBF("DataSetFilter dsf = CreateFilter(ds,1);", False)
-	dump = hyphy.ExecuteBF("GetInformation(seqs, dsf)", False)
-	dump = hyphy.ExecuteBF("GetString(hs, dsf, -1);", False)
-	
-	dump = hyphy.ExecuteBF('fprintf(stdout, seqs);', False)
-	hyout = hyphy.GetStdout()
-	seqs = hyout.sData.replace('\n','').replace('{','').replace('}','').replace('"','').replace('?','').split(',')
-	
-	dump = hyphy.ExecuteBF('fprintf(stdout, hs);', False)
-	hyout = hyphy.GetStdout()
-	#hs = hyout.sData.replace('\n','').replace('{','').replace('}','').replace('"','').split(',')
-	try:
-		hs = eval(hyout.sData.replace('{','[').replace('}',']'))
-	except:
-		print 'ERROR: File empty; did you specify an absolute path?'
-		raise
-	hs = hs[0]
-	
-	# re-merge hs and sequences as a dictionary
-	sd = {}
-	for i in range(len(hs)):
-		if 'Standard' in hs[i]:	# drop the consensus sequence from Conan's pipeline
-			continue
-		try:
-			# remove prefix and suffix gaps 
-			# 	and in-frame deletions
-			#sd.update({hs[i]:{'rawseq':seqs[i].strip('-').replace('---','')}})
-			sd.update({hs[i]:{'rawseq':seqs[i]}})
-		except:
-			print "ERROR: Number of sequences does not match number of hs!"
-			print len(hs)
-			print hs
-			print len(seqs)
-			raise
-	
-	return sd
 
 complement_dict = {'A':'T', 'C':'G', 'G':'C', 'T':'A', 
 					'W':'S', 'R':'Y', 'K':'M', 'Y':'R', 'S':'W', 'M':'K',
@@ -276,219 +526,6 @@ def translate_nuc (seq, offset, resolve=False):
 			aa_seq += '?'
 	
 	return aa_seq
-
-
-# =====================================
-
-# when codon sequence contains non-synonymous mixtures (indicated
-#	by '?' in translated sequence) then expand into all
-#	possible residues in a list-object on which scores are applied
-def expand (sd):
-	for h in sd.iterkeys():
-		aaseq = sd[h]['clipped_aa']
-		nucseq = sd[h]['clipped_nuc']
-		sd[h].update({'aa_list':expand_single (aaseq, nucseq)}) 
-		
-	return sd
-
-
-def expand_single (aaseq, nucseq):
-	aa_list = []
-	for pos in range(len(aaseq)):
-		if aaseq[pos] == '?':
-			codon = nucseq[(3*pos):(3*(pos+1))]
-			
-			# leave in-frame codon gaps alone
-			if codon == '---':
-				aa_list.append('-')
-				continue
-			
-			if len(codon) < 3:
-				print 'WARNING: partial codon "'+codon+'" detected in sequence ' + nucseq + ' at codon ' + str(pos)
-				print 'query = ' + aaseq
-				print 'h = ' + h
-				sys.exit()
-			
-			rcodons = [codon]
-			while 1:
-				ok_to_stop = True
-				for rcodon in rcodons:
-					for pos in range(3):
-						if rcodon[pos] in mixture_dict.keys():
-							rcodons.remove(rcodon)
-							for r in mixture_dict[rcodon[pos]]:
-								next_rcodon = rcodon[0:pos] + r + rcodon[(pos+1):]
-								if next_rcodon not in rcodons:
-									rcodons.append(next_rcodon)
-							ok_to_stop = False
-							break	# go to next item in list
-				if ok_to_stop:
-					break
-			
-			resolved_AAs = []
-			for rcodon in rcodons:
-				if codon_dict[rcodon] not in resolved_AAs:
-					resolved_AAs.append(codon_dict[rcodon])
-			
-			if codon.count('-') > 0:
-				aa_list.append('?')
-			else:
-				aa_list.append(resolved_AAs)
-			"""
-			if '-' in codon:
-				if len(resolved_AAs) > 1:
-					# this will have to be imputed
-					# currently '?' contributes no score
-					aa_list.append('?')
-				else:
-					aa_list.append(resolved_AAs[0])
-			else:
-				aa_list.append(resolved_AAs)
-			"""
-		else:
-			aa_list.append(aaseq[pos])
-			
-	return aa_list
-
-
-
-# =======================================================================
-sg_regex = re.compile('[ACGT][N-][ACGT]')
-
-def expand_clonal (sd):
-	for h in sd.iterkeys():
-		query_v3 = sd[h]['clipped_aa']
-		codon_v3 = sd[h]['clipped_nuc']
-		
-		new_seq = ''
-		for pos in range(len(query_v3)):
-			if query_v3[pos] == '?':
-				codon = codon_v3[(3*pos):(3*(pos+1))]
-				
-				# leave in-frame codon gaps alone
-				if codon == '---':
-					new_seq += '-'
-					continue
-				
-				if len(codon) < 3:
-					print 'WARNING: partial codon "'+codon+'" detected in sequence ' + codon_v3 + ' at codon ' + str(pos)
-					print 'query = ' + query_v3
-					print 'h = ' + h
-					sys.exit()
-				
-				rcodons = [codon]
-				while 1:
-					ok_to_stop = True
-					for rcodon in rcodons:
-						for pos in range(3):
-							if rcodon[pos] in mixture_dict.keys():
-								rcodons.remove(rcodon)
-								for r in mixture_dict[rcodon[pos]]:
-									next_rcodon = rcodon[0:pos] + r + rcodon[(pos+1):]
-									if next_rcodon not in rcodons:
-										rcodons.append(next_rcodon)
-								ok_to_stop = False
-								break	# go to next item in list
-					if ok_to_stop:
-						break
-				
-				resolved_AAs = []
-				for rcodon in rcodons:
-					if codon_dict[rcodon] not in resolved_AAs:
-						resolved_AAs.append(codon_dict[rcodon])
-				
-				if len(resolved_AAs) > 1:
-					new_seq += '?'
-				else:
-					new_seq += resolved_AAs[0]
-			else:
-				new_seq += query_v3[pos]
-		
-		sd[h].update({'clipped_aa':new_seq})
-	
-	return sd
-
-def patch_gaps (sd):
-	# For clonal sequences (454), singleton 'N's or '-'s are common.
-	# Rather than ignore these incomplete codons, it is better to resolve
-	# them by one of the following procedures:
-	#	- if the gap is at a synonymous site, then simply replace the 
-	#		ambiguous character '?' with that residue
-	#	- if the gap is at a nonsynonymous site, then resolve it into the
-	#		majority nucleotide and the corresponding residue
-	
-	#  I'm not sure this is the best approach...
-	
-	# generate nucleotide frequency vector
-	seqlen = len(sd.values()[0]['clipped_nuc'])
-	nucfreqs = dict([(x,{'A':0, 'C':0, 'G':0, 'T':0}) for x in range(seqlen)])
-	for h in sd.iterkeys():
-		nucseq = sd[h]['clipped_nuc']
-		for pos in range(seqlen):
-			try:
-				nucfreqs[pos][nucseq[pos]] += 1
-			except:
-				pass
-	
-	# generate majority consensus sequence
-	major_seq = ''
-	for pos in range(seqlen):
-		major_seq += nucfreqs[pos].keys()[nucfreqs[pos].values().index(max(nucfreqs[pos].values()))]
-	
-	for h in sd.iterkeys():
-		nucseq = sd[h]['clipped_nuc']
-		
-		if not sg_regex.findall(nucseq):
-			continue
-		
-		nslist = [x for x in nucseq]
-		
-		# edit a.a. sequence based on resolution of broken codon
-		bad_seq = False
-		for sg in sg_regex.finditer(nucseq):
-			nucpos = sg.start()+1
-			try:
-				nslist[nucpos] = major_seq[nucpos]
-			except:
-				# this is usually caused by a frameshift in the
-				# original sequence that is not handled properly by
-				# the align() function.
-				bad_seq = True
-				break
-		
-		if bad_seq:
-			continue
-		
-		nucseq = ''.join(nslist)
-		sd[h]['clipped_nuc'] = nucseq
-		sd[h]['clipped_aa'] = translate_nuc(nucseq, 0)
-	
-	return sd
-
-
-# =======================================================================
-def aalist_to_str (aa_list):
-	res = ''
-	for pos in range(len(aa_list)):
-		if type(aa_list[pos]) == list:
-			res += '['
-			for char in aa_list[pos]:
-				res += char
-			res += ']'
-		else:
-			res += aa_list[pos]
-	return res
-
-
-# =======================================================================
-
-def gaps2ambig (nucseq):
-	"""
-	Convert all gap characters that are not a proper codon deletion
-	into an ambiguous character.  Meant to operate on a nucleotide
-	sequence that is in reading frame.
-	"""
-	aaseq = translate_nuc(nucseq, 0)
 
 	
 

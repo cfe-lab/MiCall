@@ -11,24 +11,32 @@ Processing will be done in serial on a 'first come first serve' basis:
 no asynchronous processing of multiple concurrent runs
 """
 
+
 import os, sys, time
 from datetime import datetime
 from glob import glob
-from seqUtils import timestamp
+from miseqUtils import timestamp, sampleSheetParser
 from time import sleep
 
 if sys.version_info[:2] != (2, 7):
 	print "Monitor requires python 2.7"
 	sys.exit()
 
+
 ## settings
-pipeline_version = "2.0"
-home='/data/miseq/'			# Where we will write the data
+pipeline_version = "4"
+#home='/data/miseq/'			# Where we will write the data
+home = '/Volumes/Crawlspace/miseq/'
+#macdatafile_mount = '/media/macdatafile/'
+macdatafile_mount = '/Volumes/MACDATAFILE/'
 delay = 3600				# Delay between checking Miseq runs
-load_mpi = "module load openmpi/gnu"
+#load_mpi = "module load openmpi/gnu"
+load_mpi = ''
 qCutoff = 20
 
 log_file_name = "pipeline_output.log"
+
+
 
 ## main loop
 while 1:
@@ -36,7 +44,7 @@ while 1:
 	sys.stderr = open(os.devnull, 'w')
 
 	# Check if any MiSeq folders have been flagged for processing
-	runs = glob('/media/macdatafile/MiSeq/runs/*/needsprocessing')
+	runs = glob(macdatafile_mount + 'MiSeq/runs/*/needsprocessing')
 	if len(runs) == 0:
 		timestamp('No runs need processing')
 		sleep(delay)
@@ -53,15 +61,20 @@ while 1:
 	log_file = open(home + run_name + "/" + log_file_name, "w")
 	sys.stderr = log_file
 
+
+	# copy SampleSheet.csv from NAS to local filesystem
+	remote_file = runs[0].replace('needsprocessing', 'SampleSheet.csv')
+	local_file = home + run_name + '/SampleSheet.csv'
+	os.system('rsync -a {} {}'.format(remote_file, local_file))
+	
+	
 	# Extract description (mode) from SampleSheet.csv
 	# Assay is ALWAYS "Nextera" and chemistry is ALWAYS "Amplicon"
-	infile = open(runs[0].replace('needsprocessing', 'SampleSheet.csv'), 'rU')
-	mode = ''
-	for line in infile:
-		if line.startswith('Description,'):
-			mode = line.strip('\n').split(',')[1]
-			break
+	infile = open(local_file, 'rU')
+	run_info = sampleSheetParser(infile)
+	mode = run_info['Description']
 	infile.close()
+	
 
 	# Mode must be Nextera or Amplicon: if not, mark as an error and proceed
 	if mode not in ['Nextera', 'Amplicon']:
@@ -85,10 +98,12 @@ while 1:
 		os.system('rsync -a {} {}'.format(file, local_file))
 		os.system('gunzip -f {}'.format(local_file))
 
+
 	# Call MPI wrapper
-	command = "{}; mpirun -machinefile mfile python -u {} {} {} {}".format(load_mpi, "0_MPI_wrapper.py", home+run_name, mode, qCutoff)
+	command = "{}; mpirun -machinefile mfile python -u {} {} {}".format(load_mpi, "0_MPI_wrapper.py", home+run_name, qCutoff)
 	timestamp(command)
 	os.system(command)
+
 
 	# Replace the 'needsprocessing' flag with a 'processed' flag
 	os.remove(runs[0])
@@ -159,3 +174,5 @@ while 1:
 	timestamp(command)
 	os.system(command)
 	timestamp("========== {} successfully completed! ==========\n".format(run_name))
+	
+	break

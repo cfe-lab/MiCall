@@ -6,7 +6,7 @@ along with G2PFPR score in the header (Plus the count)
 import os,sys
 from hyphyAlign import apply2nuc, change_settings, get_boundaries, HyPhy, pair_align, refSeqs
 from minG2P import conan_g2p
-from seqUtils import convert_fasta, translate_nuc
+from miseqUtils import convert_fasta, translate_nuc
 
 f = sys.argv[1]
 g2p_alignment_cutoff = int(sys.argv[2])
@@ -63,7 +63,7 @@ for header, seq in fasta:
 	# 3) V3 didn't contain an internal stop codon ('*')
 	# 4) Alignment score less than cutoff
 	
-	if 'N' in v3nuc or not v3prot.startswith('C') or not v3prot.endswith('C') or '*' in v3prot or ascore < g2p_alignment_cutoff or len(v3prot) < 32 or len(vprot) > 40:
+	if 'N' in v3nuc or not v3prot.startswith('C') or not v3prot.endswith('C') or '*' in v3prot or ascore < g2p_alignment_cutoff or len(v3prot) < 32 or len(v3prot) > 40:
 		# Screen for bad V3 sequences, provide reason(s)
 		badfile.write('>%s_reason_%s\n%s\n' % (header,
 			'|'.join(['stopcodon' if '*' in v3prot else '',
