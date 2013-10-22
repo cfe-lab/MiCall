@@ -271,7 +271,7 @@ def sampleSheetParser (handle):
 				get_header = False
 				continue
 			
-			sample_name = tokens[header.index('Sample_Name')]
+			sample_name = tokens[header.index('Sample_Name')].replace('_', '-')
 			index1 = tokens[header.index('index')]
 			index2 = tokens[header.index('index2')]
 			
