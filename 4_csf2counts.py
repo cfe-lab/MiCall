@@ -33,7 +33,7 @@ mode = sys.argv[2]
 assert mode in ['Nextera', 'Amplicon'], 'ERROR: Unrecognized mode (%s) in csf2counts.py' % mode
 
 
-outpath = '/'.join(path.split('/')[:-1]) + filename.replace('.fasta', '') if mode == 'Amplicon' else filename.replace('.csf', '')
+outpath = '/'.join(path.split('/')[:-1]) + '/' + filename.replace('.fasta', '') if mode == 'Amplicon' else filename.replace('.csf', '')
 
 
 # output to files and compute consensus
