@@ -39,7 +39,6 @@ def remap (f1, f2, samfile, ref, qCutoff=30):
 	[samfile] = SAM file containing last mapping
 	[ref] = last reference sequence used to generate SAM file
 	"""
-	print 'remap with %s and %s' % (samfile, ref)
 	
 	bamfile = samfile.replace('.sam', '.bam')
 	confile = bamfile+'.pileup.conseq'
