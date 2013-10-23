@@ -13,6 +13,11 @@ from miseqUtils import samBitFlag
 import subprocess
 
 
+## settings
+REMAP_THRESHOLD = 0.95 # what fraction of the data we should be able to remap
+MAX_REMAPS = 3
+
+
 ## arguments
 refpath = sys.argv[1]
 f = sys.argv[2] # should be an absolute path
@@ -31,21 +36,49 @@ def remap (f1, f2, samfile, ref, qCutoff=30):
 	PILEUP file, and then remap everything to this consensus as a
 	reference sequence.  Returns paths to the SAM output and
 	consensus sequence file.
+	[samfile] = SAM file containing last mapping
+	[ref] = last reference sequence used to generate SAM file
 	"""
+	print 'remap with %s and %s' % (samfile, ref)
+	
 	bamfile = samfile.replace('.sam', '.bam')
 	confile = bamfile+'.pileup.conseq'
-	remapped_sam = samfile.replace('.sam', '.remap.sam')
-
-	os.system('samtools view -bt %s.fasta.fai %s > %s 2>/dev/null' % (ref, samfile, bamfile))
-	os.system('samtools sort %s %s.sorted' % (bamfile, bamfile))
-	os.system('samtools mpileup -A %s.sorted.bam > %s.pileup 2>/dev/null' % (bamfile, bamfile))
-	os.system("python2.7 pileup2conseq_v2.py {}.pileup {}".format(bamfile, qCutoff))
-	os.system('bowtie2-build -q -f %s %s' % (confile, confile))
-	os.system('bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s --no-unal --met-file %s --un %s --un-conc %s' % (confile, 
+	
+	# will overwrite last *.remap.sam file
+	remapped_sam = samfile if samfile.endswith('.remap.sam') else samfile.replace('.sam', '.remap.sam')
+	
+	if ref == refpath:
+		# using the default reference file (first run)
+		cmd = 'samtools view -bt %s.fasta.fai %s > %s 2>/dev/null' % (ref, samfile, bamfile)
+		os.system(cmd) # isolating 'cmd' string for debugging
+	else:
+		# make new samtools index file
+		cmd = 'samtools faidx %s' % ref
+		os.system(cmd) # creates [ref].fai
+		cmd = 'samtools view -bt %s.fai %s > %s 2>/dev/null' % (ref, samfile, bamfile)
+		os.system(cmd)
+	
+	cmd = 'samtools sort %s %s.sorted' % (bamfile, bamfile)
+	os.system(cmd)
+	cmd = 'samtools mpileup -A %s.sorted.bam > %s.pileup 2>/dev/null' % (bamfile, bamfile)
+	os.system(cmd)
+	
+	# create new consensus sequence
+	cmd = 'python2.7 pileup2conseq_v2.py %s.pileup %s' % (bamfile, qCutoff)
+	os.system(cmd)
+	
+	# convert into bowtie2 reference files (*.bt2)
+	cmd = 'bowtie2-build -q -f %s %s' % (confile, confile)
+	os.system(cmd)
+	
+	# map original data to new reference
+	cmd = 'bowtie2 -p 6 --local -x %s -1 %s -2 %s -S %s --no-unal --met-file %s --un %s --un-conc %s' % (confile, 
 			f1, f2, remapped_sam, remapped_sam.replace('.sam', '.bt2_metrics'),
 			remapped_sam.replace('.sam', '.bt2_unpaired_noalign.fastq'), 
-			remapped_sam.replace('.sam', '.bt2_paired_noalign.fastq')))
-	return samfile, confile
+			remapped_sam.replace('.sam', '.bt2_paired_noalign.fastq'))
+	os.system(cmd)
+			
+	return remapped_sam, confile
 
 
 
@@ -69,18 +102,18 @@ f2 = f.replace('R1', 'R2')
 # raw count from FASTQs
 p = subprocess.Popen(['wc', '-l', f], stdout = subprocess.PIPE)
 stdout, stderr = p.communicate()
-count1 = int(stdout.split()[0])
+count1 = int(stdout.split()[0])/4
 
 p = subprocess.Popen(['wc', '-l', f2], stdout = subprocess.PIPE)
 stdout, stderr = p.communicate()
-count2 = int(stdout.split()[0])
+count2 = int(stdout.split()[0])/4
 
-outfile.write('FASTQ,%d,%d\n' % (count1/4, count2/4))
+outfile.write('FASTQ,%d,%d\n' % (count1, count2))
 
 
 # Initial consensus B mapping
 samfile = '{}/{}.prelim.sam'.format(root, prefix)
-command = 'bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s' % (refpath, f1, f2, samfile)
+command = 'bowtie2 -p 6 --local -x %s -1 %s -2 %s -S %s' % (refpath, f1, f2, samfile)
 os.system(command)
 
 
@@ -104,6 +137,10 @@ for line in infile:
 	
 	qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')[:11]
 	bitinfo = samBitFlag(flag)
+	
+	if bitinfo['is_unmapped']:
+		# a read that is not mapped is always is_reverse == False
+		continue
 	
 	if is_t_primer:
 		# Trim T(A) when known to be present due to primer
@@ -156,6 +193,8 @@ for refname in refnames:
 
 # FIXME: Q CUTOFFS NOT WORKING RIGHT NOW
 # Remap fastqs using sample/region specific consensus reference
+total_remap = 0
+
 for refname in refnames:
 	if sum(refsams[refname]['count']) == 0 or refname == 'phiX174' or refname == '*':
 		continue
@@ -163,11 +202,52 @@ for refname in refnames:
 	samfile = refsams[refname]['handle'].name
 	samfile, confile = remap(f1, f2, samfile, refpath, qCutoff)
 	
+	# keep track of file paths
+	refsams[refname].update({'samfile': samfile, 'confile': confile})
+	
 	# get number of reads in each remap
 	p = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE)
 	stdout, stderr = p.communicate()
-	count = int(stdout.split()[0])
-	outfile.write('remap %s,%d\n' % (refname, count/2))
+	count = (int(stdout.split()[0]) - 3) / 2. # first three lines contain comments
+	total_remap += count
+	refsams[refname]['count'][0] = count # reuse dictionary
+	
+	outfile.write('remap %s,%d\n' % (refname, int(count)))
+
+
+# continue to remap if we've failed to map enough reads
+if total_remap / count1 < REMAP_THRESHOLD:
+	break_out = False
+	for iter in range(MAX_REMAPS):
+		total_remap = 0
+		for refname in refnames:
+			if sum(refsams[refname]['count']) == 0 or refname == 'phiX174' or refname == '*':
+				continue
+			
+			samfile = refsams[refname]['samfile']
+			confile = refsams[refname]['confile']
+			samfile, confile = remap(f1, f2, samfile, confile, qCutoff)
+			refsams[refname]['samfile'] = samfile
+			refsams[refname]['confile'] = confile
+			
+			p = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE)
+			stdout, stderr = p.communicate()
+			count = (int(stdout.split()[0]) - 3) / 2. # first three lines contain comments
+			
+			# if number of reads declines with mapping, let's quit
+			if count < refsams[refname]['count'][0]:
+				break_out = True
+				break
+			
+			total_remap += count
+			refsams[refname]['count'][0] = count
+			outfile.write('remap %d %s,%d\n' % (iter, refname, int(count)))
+		
+		if break_out:
+			break
+		
+		if total_remap / count1 >= REMAP_THRESHOLD:
+			break
 
 
 outfile.close()
