@@ -71,7 +71,7 @@ def remap (f1, f2, samfile, ref, qCutoff=30):
 	os.system(cmd)
 	
 	# map original data to new reference
-	cmd = 'bowtie2 -p 6 --local -x %s -1 %s -2 %s -S %s --no-unal --met-file %s --un %s --un-conc %s' % (confile, 
+	cmd = 'bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s --no-unal --met-file %s --un %s --un-conc %s' % (confile, 
 			f1, f2, remapped_sam, remapped_sam.replace('.sam', '.bt2_metrics'),
 			remapped_sam.replace('.sam', '.bt2_unpaired_noalign.fastq'), 
 			remapped_sam.replace('.sam', '.bt2_paired_noalign.fastq'))
@@ -112,7 +112,7 @@ outfile.write('FASTQ,%d,%d\n' % (count1, count2))
 
 # Initial consensus B mapping
 samfile = '{}/{}.prelim.sam'.format(root, prefix)
-command = 'bowtie2 -p 6 --local -x %s -1 %s -2 %s -S %s' % (refpath, f1, f2, samfile)
+command = 'bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s' % (refpath, f1, f2, samfile)
 os.system(command)
 
 
