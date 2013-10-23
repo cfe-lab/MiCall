@@ -8,6 +8,7 @@ Output: summary.X4 (Contains name of file and percent X4)
 """
 from seqUtils import convert_fasta
 
+# Input: a single v3prot file
 def prop_x4 (f, cutoff, minCount):
 	infile = open(f, 'rU')
 	try:
@@ -31,7 +32,7 @@ def prop_x4 (f, cutoff, minCount):
 			continue
 	
 		if count < minCount: continue
-		if fpr < cutoff: total_x4_count += count
+		if fpr <= cutoff: total_x4_count += count
 		total_count += count
 
 	return (total_x4_count, total_count)
