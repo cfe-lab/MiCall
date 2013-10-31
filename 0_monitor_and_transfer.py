@@ -25,13 +25,13 @@ if sys.version_info[:2] != (2, 7):
 
 ## settings
 pipeline_version = "4"
-#home='/data/miseq/'			# Where we will write the data
-home = '/Volumes/Crawlspace/miseq/'
-#macdatafile_mount = '/media/macdatafile/'
-macdatafile_mount = '/Volumes/MACDATAFILE/'
+home='/data/miseq/'			# Where we will write the data
+#home = '/Volumes/Crawlspace/miseq/'
+macdatafile_mount = '/media/macdatafile/'
+#macdatafile_mount = '/Volumes/MACDATAFILE/'
 delay = 3600				# Delay between checking Miseq runs
-#load_mpi = "module load openmpi/gnu"
-load_mpi = ''
+load_mpi = "module load openmpi/gnu"
+#load_mpi = ''
 qCutoff = 20
 
 log_file_name = "pipeline_output.log"
@@ -103,7 +103,6 @@ while 1:
 	command = "{}; mpirun -machinefile mfile python -u {} {} {}".format(load_mpi, "0_MPI_wrapper.py", home+run_name, qCutoff)
 	timestamp(command)
 	os.system(command)
-
 
 	# Replace the 'needsprocessing' flag with a 'processed' flag
 	os.remove(runs[0])

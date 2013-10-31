@@ -1,8 +1,7 @@
 """
 Calculate nucleotide and amino acid counts from a FASTA or CSF file
 """
-import sys
-import os
+import csv,os,sys
 from miseqUtils import *
 from hyphyAlign import *
 
@@ -10,64 +9,50 @@ hyphy = HyPhy._THyPhy (os.getcwd(), 1)
 change_settings(hyphy)
 
 amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
-cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
+cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]		# What cutoffs are these???
 
+# Load in the HXB2 amino reference sequences
+f = open("HXB2_amino_sequences.csv", "rb")
+input_file = csv.reader(f)
+hxb2 = {}
+for row in input_file:
+	region, amino = row
+	hxb2[region] = amino
+f.close()
 
-# HXB2 protein sequences
-hxb2 = {'HIV1B-gag': 'MGARASVLSGGELDRWEKIRLRPGGKKKYKLKHIVWASRELERFAVNPGLLETSEGCRQILGQLQPSLQTGSEELRSLYNTVATLYCVHQRIEIKDTKEALDKIEEEQNKSKKKAQQAAADTGHSNQVSQNYPIVQNIQGQMVHQAISPRTLNAWVKVVEEKAFSPEVIPMFSALSEGATPQDLNTMLNTVGGHQAAMQMLKETINEEAAEWDRVHPVHAGPIAPGQMREPRGSDIAGTTSTLQEQIGWMTNNPPIPVGEIYKRWIILGLNKIVRMYSPTSILDIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNWMTETLLVQNANPDCKTILKALGPAATLEEMMTACQGVGGPGHKARVLAEAMSQVTNSATIMMQRGNFRNQRKIVKCFNCGKEGHTARNCRAPRKKGCWKCGKEGHQMKDCTERQANFLGKIWPSYKGRPGNFLQSRPEPTAPPEESFRSGVETTTPPQKQEPIDKELYPLTSLRSLFGNDPSSQ',
-'HIV1B-pol': 'FFREDLAFLQGKAREFSSEQTRANSPTRRELQVWGRDNNSPSEAGADRQGTVSFNFPQVTLWQRPLVTIKIGGQLKEALLDTGADDTVLEEMSLPGRWKPKMIGGIGGFIKVRQYDQILIEICGHKAIGTVLVGPTPVNIIGRNLLTQIGCTLNFPISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTEMEKEGKISKIGPENPYNTPVFAIKKKDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSVPLDEDFRKYTAFTIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPDIVIYQYMDDLYVGSDLEIGQHRTKIEELRQHLLRWGLTTPDKKHQKEPPFLWMGYELHPDKWTVQPIVLPEKDSWTVNDIQKLVGKLNWASQIYPGIKVRQLCKLLRGTKALTEVIPLTEEAELELAENREILKEPVHGVYYDPSKDLIAEIQKQGQGQWTYQIYQEPFKNLKTGKYARMRGAHTNDVKQLTEAVQKITTESIVIWGKTPKFKLPIQKETWETWWTEYWQATWIPEWEFVNTPPLVKLWYQLEKEPIVGAETFYVDGAANRETKLGKAGYVTNRGRQKVVTLTDTTNQKTELQAIYLALQDSGLEVNIVTDSQYALGIIQAQPDQSESELVNQIIEQLIKKEKVYLAWVPAHKGIGGNEQVDKLVSAGIRKVLFLDGIDKAQDEHEKYHSNWRAMASDFNLPPVVAKEIVASCDKCQLKGEAMHGQVDCSPGIWQLDCTHLEGKVILVAVHVASGYIEAEVIPAETGQETAYFLLKLAGRWPVKTIHTDNGSNFTGATVRAACWWAGIKQEFGIPYNPQSQGVVESMNKELKKIIGQVRDQAEHLKTAVQMAVFIHNFKRKGGIGGYSAGERIVDIIATDIQTKELQKQITKIQNFRVYYRDSRNPLWKGPAKLLWKGEGAVVIQDNSDIKVVPRRKAKIIRDYGKQMAGDDCVASRQDED',
-'HIV1B-prrt': 'PQVTLWQRPLVTIKIGGQLKEALLDTGADDTVLEEMSLPGRWKPKMIGGIGGFIKVRQYDQILIEICGHKAIGTVLVGPTPVNIIGRNLLTQIGCTLNFPISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTEMEKEGKISKIGPENPYNTPVFAIKKKDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSVPLDEDFRKYTAFTIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPDIVIYQYMDDLYVGSDLEIGQHRTKIEELRQHLLRWGLTTPDKKHQKEPPFLWMGYELHPDKWTVQPIVLPEKDSWTVNDIQKLVGKLNWASQIYPGIKVRQLCKLLRGTKALTEVIPLTEEAELELAENREILKEPVHGVYYDPSKDLIAEIQKQGQGQWTYQIYQEPFKNLKTGKYARMRGAHTNDVKQLTEAVQKITTESIVIWGKTPKFKLPIQKETWETWWTEYWQATWIPEWEFVNTPPLVKLWYQLEKEPIVGAETF',
-#'HIV1B-prrt':  'PQVTLWQRPLVTIKIGGQLKEADTGADDTVLNEEMSLPGRWKPKMIGGIGGFIKVRQYDQILIEICGHKAIGTVLVGPTPVNIIGRNLLTQIGCTLNFPISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTEMEKEGKISKIGPENPYNTPVFAIKKKDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSVPLDEDFRKYTAFTIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPDIVIYQYMDDLYVGSDLEIGQHRTKIEELRQHLLRWGLTTPDKKHQKEPPFLWMGYELHPDKWTVQPIVLPEKDSWTVNDIQKLVGKLNWASQIYPGIKVRQLCKLLRGTKALTEVIPLTEEAELELAENREILKEPVHGVYYDPSKDLIAEIQKQGQGQWTYQIYQEPFKNLKTGKYARMRGAHTNDVKQLTEAVQKITTESIVIWGKTPKFKLPIQKETWETWWTEYWQATWIPEWEFVNTPPLVKLWYQLEKEPIVGAETF',
-'HIV1B-vif': 'MENRWQVMIVWQVDRMRIRTWKSLVKHHMYVSGKARGWFYRHHYESPHPRISSEVHIPLGDARLVITTYWGLHTGERDWHLGQGVSIEWRKKRYSTQVDPELADQLIHLYYFDCFSDSAIRKALLGHIVSPRCEYQAGHNKVGSLQYLALAALITPKKIKPPLPSVTKLTEDRWNKPQKTKGHRGSHTMNGH',
-'HIV1B-vpr': 'MEQAPEDQGPQREPHNEWTLELLEELKNEAVRHFPRIWLHGLGQHIYETYGDTWAGVEAIIRILQQLLFIHFQNWVST*QNRRYSTEESKKWSQ*IL',
-'HIV1B-vpu': 'TQPIPIVAIVALVVAIIIAIVVWSIVIIEYRKILRQRKIDRLIDRLIERAEDSGNESEGEISALVEMGVEMGHHAPWDVDDL',
-'HIV1B-env': 'MRVKEKYQHLWRWGWRWGTMLLGMLMICSATEKLWVTVYYGVPVWKEATTTLFCASDAKAYDTEVHNVWATHACVPTDPNPQEVVLVNVTENFNMWKNDMVEQMHEDIISLWDQSLKPCVKLTPLCVSLKCTDLKNDTNTNSSSGRMIMEKGEIKNCSFNISTSIRGKVQKEYAFFYKLDIIPIDNDTTSYKLTSCNTSVITQACPKVSFEPIPIHYCAPAGFAILKCNNKTFNGTGPCTNVSTVQCTHGIRPVVSTQLLLNGSLAEEEVVIRSVNFTDNAKTIIVQLNTSVEINCTRPNNNTRKRIRIQRGPGRAFVTIGKIGNMRQAHCNISRAKWNNTLKQIASKLREQFGNNKTIIFKQSSGGDPEIVTHSFNCGGEFFYCNSTQLFNSTWFNSTWSTEGSNNTEGSDTITLPCRIKQIINMWQKVGKAMYAPPISGQIRCSSNITGLLLTRDGGNSNNESEIFRPGGGDMRDNWRSELYKYKVVKIEPLGVAPTKAKRRVVQREKRAVGIGALFLGFLGAAGSTMGAASMTLTVQARQLLSGIVQQQNNLLRAIEAQQHLLQLTVWGIKQLQARILAVERYLKDQQLLGIWGCSGKLICTTAVPWNASWSNKSLEQIWNHTTWMEWDREINNYTSLIHSLIEESQNQQEKNEQELLELDKWASLWNWFNITNWLWYIKLFIMIVGGLVGLRIVFAVLSIVNRVRQGYSPLSFQTHLPTPRGPDRPEGIEEEGGERDRDRSIRLVNGSLALIWDDLRSLCLFSYHRLRDLLLIVTRIVELLGRRGWEALKYWWNLLQYWSQELKNSAVSLLNATAIAVAEGTDRVIEVVQGACRAIRHIPRRIRQGLERILL',
-'HIV1B-nef': 'MGGKWSKSSVIGWPTVRERMRRAEPAADRVGAASRDLEKHGAITSSNTAATNAACAWLEAQEEEEVGFPVTPQVPLRPMTYKAAVDLSHFLKEKGGLEGLIHSQRRQDILDLWIYHTQGYFPDWQNYTPGPGVRYPLTFGWCYKLVPVEPDKIEEANKGENTSLLHPVSLHGMDDPEREVLEWRFDSRLAFHHVARELHPEYFKNC'}
+# Usage: python 4_csf2counts.py /data/miseq/130814_M01841_0017_000000000-A4526/35869A-PR-RT.HIV1B-pol.0.csf Nextera
+path = sys.argv[1]
+mode = sys.argv[2]
+assert mode in ['Nextera', 'Amplicon'], 'ERROR: Unrecognized mode (%s) in 4_csf2counts.py' % mode
 
-
-path = sys.argv[1] # a fasta or csf file
+root = os.path.dirname(path)
 filename = path.split('/')[-1]
 sample, ref = filename.split('.')[:2]
 
-mode = sys.argv[2]
-assert mode in ['Nextera', 'Amplicon'], 'ERROR: Unrecognized mode (%s) in csf2counts.py' % mode
+if not hxb2.has_key(ref):
+	sys.exit()
+refseq = hxb2[ref]
 
-
-outpath = '/'.join(path.split('/')[:-1]) + '/' + filename.replace('.fasta', '') if mode == 'Amplicon' else filename.replace('.csf', '')
-
+replaceTerm = ".fasta" if mode == "Amplicon" else ".csf"
+outpath = root + '/' + filename.replace(replaceTerm,"")
 
 # output to files and compute consensus
 nucfile = open(outpath+'.nuc.csv', 'w')
-nucfile.write('hxb2.pos,nA,nC,nG,nT\n')
-
 aafile = open(outpath+'.amino.csv', 'w')
-aafile.write('hxb2.pos,' + ','.join(amino_alphabet) + '\n')
-
 confile = open(outpath+'.conseq', 'w')
-
 indelfile = open(outpath+'.indels.csv', 'w')
 
-
-#assert hxb2.has_key(ref), 'Unknown reference sequence, expecting HXB2 gene'
-if not hxb2.has_key(ref):
-	sys.exit()
-
-refseq = hxb2[ref]
-
+nucfile.write('hxb2.pos,nA,nC,nG,nT\n')
+aafile.write('hxb2.pos,' + ','.join(amino_alphabet) + '\n')
 
 infile = open(path, 'rU')
 if mode == 'Nextera':
 	fasta, lefts, rights = convert_csf(infile.readlines())
-elif mode == 'Amplicon':
-	fasta = convert_fasta(infile.readlines())
 else:
-	print 'This should never happen'
-	sys.exit()
-
+	fasta = convert_fasta(infile.readlines())
 infile.close()
 
-
-# use the first read to determine reading frame
+# Use the first read to determine reading frame
 max_score = 0
 best_frame = 0
 for frame in range(3):
@@ -78,25 +63,37 @@ for frame in range(3):
 		best_frame = frame # the reading frame of left = 0
 		max_score = ascore
 
+print "Best ORF = {}".format(best_frame)
 
-# iterate through all reads and count
+# Iterate through reads and count WHAT?
 nucs = {}
 aminos = {}
-pcache = [] # cache for extracting insertions
 
+# Cache protein sequences
+pcache = []
+
+# For each sequence
 for i, (h, s) in enumerate(fasta):
 	left = lefts[h] if mode == 'Nextera' else 0
+
+	# Enumate through the nucleotide sequence
 	for j, nuc in enumerate(s):
+
+		# Start at the offset
 		pos = left + j
+
+		# Increment the nucs dict
 		if not nucs.has_key(pos):
 			nucs.update({pos: {}})
 		if not nucs[pos].has_key(nuc):
 			nucs[pos].update({nuc: 0})
 		nucs[pos][nuc] += 1
-	
+
+	# Translate the nucleotide sequence on the best ORF
 	p = translate_nuc('-'*left + s, best_frame)
 	pcache.append(p)
-	
+
+	# Enumate through the protein sequence
 	for pos, aa in enumerate(p):
 		if aa == '-':
 			continue
@@ -107,9 +104,9 @@ for i, (h, s) in enumerate(fasta):
 			aminos[pos].update({aa: 0})
 		aminos[pos][aa] += 1
 
+print "Finished translating + determining nucleotide/amino counts"
 
-
-# generate AA plurality (max) consensus
+# Generate AA plurality (max) consensus
 keys = aminos.keys()
 keys.sort()
 aa_max = ''
@@ -119,28 +116,25 @@ for pos in keys:
 	intermed.sort(reverse=True)
 	aa_max += intermed[0][1]
 
+print "Generated protein plurality for {}: {}".format(sample,aa_max)
 
-# align consensus against HXB2
+# Align consensus against HXB2
 if ref == 'HIV1B-pol':
 	# use PR-RT as reference instead of full length pol
 	refseq = hxb2['HIV1B-prrt']
-
 aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
 
+print "HXB2 aligned the amino plurality: {}".format(aquery)
 
-# we want to ignore parts of query that fall outside our reference
+# Ignore parts of query that fall outside our reference
 # this will be important for pol since we are using shorter PR-RT as ref
 left, right = get_boundaries(aref)
-
-
-qindex_to_hxb2 = {} # how to map from query to HXB2 coordinates
-
-inserts = [] # keep track of which aa positions are insertions
-
+qindex_to_hxb2 = {}	# Map from query to HXB2 coordinates
+inserts = []		# Leep track of which aa positions are insertions
 qindex = 0
 rindex = 0
 for i in range(len(aref)):
-	# ignore parts of query that do not overlap reference
+	# Ignore parts of query that do not overlap reference
 	if i < left:
 		qindex += 1
 		continue
@@ -161,6 +155,7 @@ for i in range(len(aref)):
 		qindex += 1
 		rindex += 1
 
+print "Determined query-to-hxb2 index: {}".format(qindex_to_hxb2)
 
 # then reiterate through sequences to capture indels
 if len(inserts) > 0:
@@ -254,7 +249,6 @@ for pos in keys:
 			# mixture of length zero, no bases exceed cutoff
 			conseqs[ci] += 'N'
 
-
 # output consensus sequences
 confile.write('>%s_MAX\n%s\n' % (sample, maxcon))
 
@@ -264,6 +258,8 @@ for ci, cutoff in enumerate(cutoffs):
 nucfile.close()
 confile.close()
 
+
+print "Wrote consensus"
 
 # output amino acid counts
 keys = aminos.keys()
@@ -279,6 +275,6 @@ for aapos in keys:
 	aafile.write('%d,%s\n' % (hxb2_pos, 
 		','.join(map(str, [aminos[aapos].get(aa, 0) for aa in amino_alphabet]))))
 	
-
 aafile.close()
 
+print "Wrote amino counts"
