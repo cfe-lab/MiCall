@@ -357,12 +357,12 @@ def convert_csf (csf_handle):
 
 	fasta = []
 	for line in csf_handle:
-
 		# Header from machine = M01841:18:000000000-A4V8D:1:1111:14650:12016
 		header, offset, seq = line.strip('\n').split(',')
 
 		# Add the leading offset
-		fasta.append([header, '-'*int(offset) + seq])
+		#fasta.append([header, '-'*int(offset) + seq])
+		fasta.append([header, seq])
 		left_gap_position[header] = int(offset)
 		right_gap_position[header] = left_gap_position[header] + len(seq)
 
