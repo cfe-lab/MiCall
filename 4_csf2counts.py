@@ -9,15 +9,15 @@ hyphy = HyPhy._THyPhy (os.getcwd(), 1)
 change_settings(hyphy)
 
 amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
-cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]		# What cutoffs are these???
+cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]        # What cutoffs are these???
 
 # Load in the HXB2 amino reference sequences
 f = open("HXB2_amino_sequences.csv", "rb")
 input_file = csv.reader(f)
 hxb2 = {}
 for row in input_file:
-	region, amino = row
-	hxb2[region] = amino
+    region, amino = row
+    hxb2[region] = amino
 f.close()
 
 # Usage: python 4_csf2counts.py /data/miseq/130814_M01841_0017_000000000-A4526/35869A-PR-RT.HIV1B-pol.0.csf Nextera
@@ -32,8 +32,8 @@ assert mode in ['Nextera', 'Amplicon'], 'ERROR: Unrecognized mode (%s) in 4_csf2
 # make the output stem by removing the extension of the filename
 root = '/'.join(path.split('/')[:-1])
 if root == '':
-	# in case script is executed on file in cwd
-	root = '.'
+    # in case script is executed on file in cwd
+    root = '.'
 
 outpath = root + '/' + (filename.replace('.fasta', '') if mode == 'Amplicon' else filename.replace('.csf', ''))
 
@@ -134,8 +134,8 @@ aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
 # Ignore parts of query that fall outside our reference
 # this will be important for pol since we are using shorter PR-RT as ref
 left, right = get_boundaries(aref)
-qindex_to_hxb2 = {}	# Map from query to HXB2 coordinates
-inserts = []		# Leep track of which aa positions are insertions
+qindex_to_hxb2 = {} # Map from query to HXB2 coordinates
+inserts = []        # Leep track of which aa positions are insertions
 qindex = 0
 rindex = 0
 for i in range(len(aref)):
