@@ -86,7 +86,7 @@ for i, file in enumerate(files):
 	is_t_primer = run_info['Data'][sample_name]['is_T_primer']
 	
 	timestamp('1_mapping {} {} {}'.format(refpath, file, qCutoff), my_rank, nprocs)
-	os.system("python 1_mapping.py {} {} {} {}".format(refpath, file, qCutoff, int(is_t_primer)))
+	os.system("python 1_mapping.py {} {} {} {} {}".format(refpath, file, qCutoff, mode, int(is_t_primer)))
 
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #1 (Prelim clade B + sample specific remapping)\n', my_rank, nprocs)
