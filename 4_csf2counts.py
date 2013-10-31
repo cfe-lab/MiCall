@@ -22,17 +22,21 @@ f.close()
 
 # Usage: python 4_csf2counts.py /data/miseq/130814_M01841_0017_000000000-A4526/35869A-PR-RT.HIV1B-pol.0.csf Nextera
 path = sys.argv[1]
-mode = sys.argv[2]
-assert mode in ['Nextera', 'Amplicon'], 'ERROR: Unrecognized mode (%s) in 4_csf2counts.py' % mode
-
-root = os.path.dirname(path)
 filename = path.split('/')[-1]
 sample, ref = filename.split('.')[:2]
 
+mode = sys.argv[2]
+assert mode in ['Nextera', 'Amplicon'], 'ERROR: Unrecognized mode (%s) in 4_csf2counts.py' % mode
+
 
 # make the output stem by removing the extension of the filename
-replaceTerm = ".fasta" if mode == "Amplicon" else ".csf"
-outpath = root + '/' + filename.replace(replaceTerm,"")
+root = '/'.join(path.split('/')[:-1])
+if root == '':
+	# in case script is executed on file in cwd
+	root = '.'
+
+outpath = root + '/' + (filename.replace('.fasta', '') if mode == 'Amplicon' else filename.replace('.csf', ''))
+
 
 # output to files and compute consensus
 nucfile = open(outpath+'.nuc.csv', 'w')
@@ -71,7 +75,7 @@ for frame in range(3):
         best_frame = frame # the reading frame of left = 0
         max_score = ascore
 
-print "Best ORF = {}".format(best_frame)
+#print "Best ORF = {}".format(best_frame)
 
 # Iterate through reads and count WHAT?
 nucs = {}
@@ -104,7 +108,7 @@ for i, (h, s) in enumerate(fasta):
             aminos[pos].update({aa: 0})
         aminos[pos][aa] += 1
 
-print "Finished translating + determining nucleotide/amino counts"
+#print "Finished translating + determining nucleotide/amino counts"
 
 # Generate AA plurality (max) consensus
 keys = aminos.keys()
@@ -116,7 +120,7 @@ for pos in keys:
     intermed.sort(reverse=True)
     aa_max += intermed[0][1]
 
-print "Generated protein plurality for {}: {}".format(sample,aa_max)
+#print "Generated protein plurality for {}: {}".format(sample,aa_max)
 
 # Align consensus against HXB2
 if ref == 'HIV1B-pol':
@@ -125,7 +129,7 @@ if ref == 'HIV1B-pol':
 
 aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
 
-print "HXB2 aligned the amino plurality: {}".format(aquery)
+#print "HXB2 aligned the amino plurality: {}".format(aquery)
 
 # Ignore parts of query that fall outside our reference
 # this will be important for pol since we are using shorter PR-RT as ref
@@ -156,7 +160,7 @@ for i in range(len(aref)):
         qindex += 1
         rindex += 1
 
-print "Determined query-to-hxb2 index: {}".format(qindex_to_hxb2)
+#print "Determined query-to-hxb2 index: {}".format(qindex_to_hxb2)
 
 # then reiterate through sequences to capture indels
 if len(inserts) > 0:
@@ -260,7 +264,7 @@ nucfile.close()
 confile.close()
 
 
-print "Wrote consensus"
+#print "Wrote consensus"
 
 # output amino acid counts
 keys = aminos.keys()
@@ -279,5 +283,5 @@ for aapos in keys:
 
 aafile.close()
 
-print "Wrote amino counts"
+#print "Wrote amino counts"
 
