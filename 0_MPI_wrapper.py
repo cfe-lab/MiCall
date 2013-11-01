@@ -4,7 +4,7 @@ Distribute pipeline processes across the cluster.
 
 import os,sys
 from glob import glob
-from generate_hxb2_poly_files import generate_amino_counts, generate_nuc_counts
+#from generate_hxb2_poly_files import generate_amino_counts, generate_nuc_counts
 from mpi4py import MPI
 from proportion_x4 import prop_x4
 from sam2fasta import apply_cigar
@@ -149,7 +149,7 @@ if mode == 'Amplicon':
 
 
 # generate counts and consensus from FASTA files
-files = glob(root + '/*.fasta' if mode == 'Amplicon' else '/*.csf')
+files = glob(root + ('/*.fasta' if mode == 'Amplicon' else '/*.csf'))
 for i, file in enumerate(files):
 	if i % nprocs != my_rank:
 		continue

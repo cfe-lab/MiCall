@@ -6,7 +6,7 @@ and G2PFPR cutoff.
 Input: HIV1B-env.remap.sam.<qCutoff>.fasta.<minCount>.seq.V3
 Output: summary.X4 (Contains name of file and percent X4)
 """
-from seqUtils import convert_fasta
+from miseqUtils import convert_fasta
 
 # Input: a single v3prot file
 def prop_x4 (f, cutoff, minCount):

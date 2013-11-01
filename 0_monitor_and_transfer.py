@@ -57,6 +57,7 @@ while 1:
 	run_name = root.split('/')[-2]
 	if not os.path.exists(home+run_name): os.system('mkdir {}{}'.format(home, run_name))
 
+
 	# Assign standard error to a log file
 	log_file = open(home + run_name + "/" + log_file_name, "w")
 	sys.stderr = log_file
@@ -97,7 +98,7 @@ while 1:
 		timestamp('rsync + gunzip {}'.format(filename))
 		os.system('rsync -a {} {}'.format(file, local_file))
 		os.system('gunzip -f {}'.format(local_file))
-
+	
 
 	# Call MPI wrapper
 	command = "{}; mpirun -machinefile mfile python -u {} {} {}".format(load_mpi, "0_MPI_wrapper.py", home+run_name, qCutoff)

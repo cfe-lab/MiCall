@@ -247,13 +247,13 @@ def sampleSheetParser (handle):
 	for line in handle:
 		# parse tags
 		if line.startswith('['):
-			tag = line.strip('\n').strip('[]')
+			tag = line.strip('\n').rstrip(',').strip('[]')
 			if tag == 'Data':
 				get_header = True
 			continue
 		
-		assert tag is not None, 'ERROR: no tag set, mangled SampleSheet.csv'
-		tokens = line.strip('\n').split(',')
+		#assert tag is not None, 'ERROR: no tag set, mangled SampleSheet.csv'
+		tokens = line.strip('\n').rstrip(',').split(',')
 		
 		# process tokens according to tag
 		if tag == 'Header':
