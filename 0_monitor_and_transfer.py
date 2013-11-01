@@ -124,12 +124,17 @@ while 1:
 		results_files += glob(home + run_name + '/v3prot.summary')
 
 	elif mode == 'Nextera':
+		"""
 		results_files += glob(home + run_name + '/*.HXB2.sam')
 		results_files += glob(home + run_name + '/HXB2.nuc_poly.summary')
 		results_files += glob(home + run_name + '/HXB2.amino_poly.summary')
 		results_files += glob(home + run_name + '/HXB2.nuc_poly.summary.conseq')
 		results_files += glob(home + run_name + '/HXB2.amino_poly.summary.conseq')
-
+		"""
+		results_files += glob(home + run_name + '/*.counts')
+		results_files += glob(home + run_name + '/*.csv')
+		results_files += [f for f in glob(home + run_name + '/*.conseq') if 'pileup' not in f]
+	
 	timestamp("Posting {} run to macdatafile".format(mode))
 
 	for file in results_files:
@@ -175,4 +180,3 @@ while 1:
 	os.system(command)
 	timestamp("========== {} successfully completed! ==========\n".format(run_name))
 	
-	break
