@@ -40,7 +40,11 @@ outpath = root + '/' + (filename.replace('.fasta', '') if mode == 'Amplicon' els
 
 # output to files and compute consensus
 nucfile = open(outpath+'.nuc.csv', 'w')
+nucfile.write('hxb2.nuc.pos,A,C,G,T\n')
+
 aafile = open(outpath+'.amino.csv', 'w')
+aafile.write('hxb2.aa.pos,%s\n' % ','.join(list(amino_alphabet)))
+
 confile = open(outpath+'.conseq', 'w')
 indelfile = open(outpath+'.indels.csv', 'w')
 
