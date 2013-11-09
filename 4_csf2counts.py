@@ -79,7 +79,7 @@ for frame in range(3):
         best_frame = frame # the reading frame of left = 0
         max_score = ascore
 
-#print "Best ORF = {}".format(best_frame)
+print "Best ORF = %d" % best_frame
 
 # Iterate through reads and count WHAT?
 nucs = {}
@@ -112,6 +112,9 @@ for i, (h, s) in enumerate(fasta):
             aminos[pos].update({aa: 0})
         aminos[pos][aa] += 1
 
+
+
+
 #print "Finished translating + determining nucleotide/amino counts"
 
 # Generate AA plurality (max) consensus
@@ -124,6 +127,8 @@ for pos in keys:
     intermed.sort(reverse=True)
     aa_max += intermed[0][1]
 
+
+
 #print "Generated protein plurality for {}: {}".format(sample,aa_max)
 
 # Align consensus against HXB2
@@ -132,6 +137,7 @@ if ref == 'HIV1B-pol':
     refseq = hxb2['HIV1B-prrt']
 
 aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
+
 
 #print "HXB2 aligned the amino plurality: {}".format(aquery)
 
@@ -205,8 +211,10 @@ conseqs = ['' for cut in cutoffs]
 
 for pos in keys:
     aapos = pos/3
+    """
     if aapos in inserts:
         continue
+    """
     try:
         hxb2_pos = qindex_to_hxb2[aapos] + 1
     except KeyError:
