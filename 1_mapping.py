@@ -94,7 +94,9 @@ infile.close()
 # Path to R1 FASTQ
 root = '/'.join(f.split('/')[:-1])
 filename = f.split('/')[-1]
-prefix = filename.split('.')[0].split('_')[0]
+prefix = filename.split('.')[0]
+sample_name, sample_well = prefix.split('_')[:2]
+prefix = '_'.join([sample_name, sample_well])
 f1 = f
 f2 = f.replace('R1', 'R2')
 
