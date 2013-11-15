@@ -9,7 +9,7 @@ hyphy = HyPhy._THyPhy (os.getcwd(), 1)
 change_settings(hyphy)
 
 amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
-cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]        # What cutoffs are these???
+mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]        # What cutoffs are these???
 
 # Load in the HXB2 amino reference sequences
 f = open("HXB2_amino_sequences.csv", "rb")
@@ -21,16 +21,20 @@ for row in input_file:
 f.close()
 
 if len(sys.argv) < 3:
-	print 'Usage: python 4_csf2counts.py /path/to/.csf|.fasta Nextera|Amplicon'
-	sys.exit()
+    print 'Usage: python 4_csf2counts.py /path/to/.csf|.fasta Nextera|Amplicon'
+    sys.exit()
 
 path = sys.argv[1]
 filename = path.split('/')[-1]
 sample, ref = filename.split('.')[:2]
 
+# CSF/Fasta must be of the format <SAMPLE>.<REGION>.*
+#if ref not in hxb2:
+#    print "{} is not in the HXB2_amino_sequences.csv reference list".format()
+#    sys.exit()
+
 mode = sys.argv[2]
 assert mode in ['Nextera', 'Amplicon'], 'ERROR: Unrecognized mode (%s) in 4_csf2counts.py' % mode
-
 
 # make the output stem by removing the extension of the filename
 root = '/'.join(path.split('/')[:-1])
@@ -43,14 +47,13 @@ outpath = root + '/' + (filename.replace('.fasta', '') if mode == 'Amplicon' els
 
 # output to files and compute consensus
 nucfile = open(outpath+'.nuc.csv', 'w')
-nucfile.write('hxb2.nuc.pos,A,C,G,T\n')
+nucfile.write('query.nuc.pos,hxb2.nuc.pos,A,C,G,T\n')
 
 aafile = open(outpath+'.amino.csv', 'w')
-aafile.write('hxb2.aa.pos,%s\n' % ','.join(list(amino_alphabet)))
+aafile.write('query.aa.pos,hxb2.aa.pos,%s\n' % ','.join(list(amino_alphabet)))
 
 confile = open(outpath+'.conseq', 'w')
 indelfile = open(outpath+'.indels.csv', 'w')
-
 
 #assert hxb2.has_key(ref), 'Unknown reference sequence, expecting HXB2 gene'
 if not hxb2.has_key(ref):
@@ -58,20 +61,17 @@ if not hxb2.has_key(ref):
 
 refseq = hxb2[ref]
 
-
 infile = open(path, 'rU')
 if mode == 'Nextera':
     fasta, lefts, rights = convert_csf(infile.readlines())
 elif mode == 'Amplicon':
     fasta = convert_fasta(infile.readlines())
 else:
-    print 'This should never happen'
     sys.exit()
-
 infile.close()
 
 
-# use the first read to determine reading frame
+# Use the first read to determine reading frame
 max_score = 0
 best_frame = 0
 for frame in range(3):
@@ -91,13 +91,21 @@ aminos = {}
 # Cache protein sequences
 pcache = []
 
-# For each sequence
+# At this point, sequences are aligned against the sample-region
+# specific consensus. Thus, each read in the csf contains an offset
+# with respect to the sample-region specific consensus.
+
+
+# For each sequence in the fasta/csf
 for i, (h, s) in enumerate(fasta):
+
+    # If this is Fasta, there is no offset
     left = lefts[h] if mode == 'Nextera' else 0
 
-    # FASTA headers contain read count in last entry
+    # Headers contain read count in last entry
     count = 1 if mode == 'Nextera' else int(h.split('_')[-1])
 
+    # Update nucleotide counts (with respect to self-coordinate?)
     for j, nuc in enumerate(s):
         pos = left + j
         if not nucs.has_key(pos):
@@ -108,19 +116,16 @@ for i, (h, s) in enumerate(fasta):
     
     p = translate_nuc('-'*left + s, best_frame)
     pcache.append(p)
-    
+
+    # Update amino counts
     for pos, aa in enumerate(p):
         if aa == '-':
             continue
-        #pos = left/3 + j
         if not aminos.has_key(pos):
             aminos.update({pos: {}})
         if not aminos[pos].has_key(aa):
             aminos[pos].update({aa: 0})
         aminos[pos][aa] += count
-
-
-#print "Finished translating + determining nucleotide/amino counts"
 
 # Generate AA plurality (max) consensus
 keys = aminos.keys()
@@ -132,24 +137,18 @@ for pos in keys:
     intermed.sort(reverse=True)
     aa_max += intermed[0][1]
 
-
-
-#print "Generated protein plurality for {}: {}".format(sample,aa_max)
+# Use PRRT instead if this is full length pol
+#if ref == 'HIV1B-pol':
+#    refseq = hxb2['HIV1B-prrt']
 
 # Align consensus against HXB2
-if ref == 'HIV1B-pol':
-    # use PR-RT as reference instead of full length pol
-    refseq = hxb2['HIV1B-prrt']
-
 aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
 
 
-#print "HXB2 aligned the amino plurality: {}".format(aquery)
-
-# Ignore parts of query that fall outside our reference
-# this will be important for pol since we are using shorter PR-RT as ref
+# Ignore parts of query outside our reference
+# This would be important for pol if we used PR-RT as ref instead of pol at this point
 left, right = get_boundaries(aref)
-qindex_to_hxb2 = {} # Map from query to HXB2 coordinates
+qindex_to_hxb2 = {} # Maps query amino to HXB2 amino coordinates
 inserts = []        # Leep track of which aa positions are insertions
 qindex = 0
 rindex = 0
@@ -175,9 +174,7 @@ for i in range(len(aref)):
         qindex += 1
         rindex += 1
 
-#print "Determined query-to-hxb2 index: {}".format(qindex_to_hxb2)
-
-# then reiterate through sequences to capture indels
+# Reiterate through sequences to capture indels
 if len(inserts) > 0:
     indelfile.write('insertion,count\n')
     indel_counts = {}
@@ -208,29 +205,29 @@ indelfile.close()
 
 # output nucleotide and amino acid counts in HXB2 coordinates
 # also output consensus sequences at varying thresholds
-keys = nucs.keys()
-keys.sort()
-codon_pos = 0
-maxcon = ''
-conseqs = ['' for cut in cutoffs]
 
+keys = nucs.keys()	# nucs[self-pos][nuc] = count
+keys.sort()
+maxcon = ''
+conseqs = ['' for cut in mixture_cutoffs]
+
+codon_pos = 0
+
+# For each base coordinate in the query
 for pos in keys:
-    aapos = pos/3
-    """
-    if aapos in inserts:
-        continue
-    """
     try:
+        aapos = pos/3
         hxb2_pos = qindex_to_hxb2[aapos] + 1
     except KeyError:
         continue
-    
+
     codon_pos += 1
     if codon_pos > 2:
         codon_pos = 0
-    
-    nucfile.write('%d,%s\n' % (3*hxb2_pos + codon_pos, 
-        ','.join(map(str, [nucs[pos].get(nuc, 0) for nuc in 'ACGT']))))
+
+    # hxb2_pos is the hxb2 amino position, so base_pos is the hxb2 nucleotide position
+    hxb2_nuc_pos = 3*hxb2_pos + codon_pos
+    nucfile.write('%d,%d,%s\n' % (pos, hxb2_nuc_pos, ','.join(map(str, [nucs[pos].get(nuc, 0) for nuc in 'ACGT']))))
     
     # plurality consensus
     intermed = [(count, nuc) for nuc, count in nucs[pos].iteritems()]
@@ -240,7 +237,7 @@ for pos in keys:
     # consensuses with mixtures determined by frequency cutoff
     total_count = sum([count for count, nuc in intermed])
     
-    for ci, cutoff in enumerate(cutoffs):
+    for ci, cutoff in enumerate(mixture_cutoffs):
         mixture = []
         for count, nuc in intermed:
             if float(count) / total_count > cutoff:
@@ -270,18 +267,13 @@ for pos in keys:
         else:
             # mixture of length zero, no bases exceed cutoff
             conseqs[ci] += 'N'
+nucfile.close()
 
 # output consensus sequences
 confile.write('>%s_MAX\n%s\n' % (sample, maxcon))
-
-for ci, cutoff in enumerate(cutoffs):
+for ci, cutoff in enumerate(mixture_cutoffs):
     confile.write('>%s_%1.3f\n%s\n' % (sample, cutoff, conseqs[ci]))
-
-nucfile.close()
 confile.close()
-
-
-#print "Wrote consensus"
 
 # output amino acid counts
 keys = aminos.keys()
@@ -293,12 +285,5 @@ for aapos in keys:
         hxb2_pos = qindex_to_hxb2[aapos] + 1
     except KeyError:
         continue
-        
-    aafile.write('%d,%s\n' % (hxb2_pos, 
-        ','.join(map(str, [aminos[aapos].get(aa, 0) for aa in amino_alphabet]))))
-    
-
+    aafile.write('%d,%d,%s\n' % (aapos,hxb2_pos, ','.join(map(str, [aminos[aapos].get(aa, 0) for aa in amino_alphabet]))))
 aafile.close()
-
-#print "Wrote amino counts"
-
