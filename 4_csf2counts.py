@@ -20,7 +20,10 @@ for row in input_file:
     hxb2[region] = amino
 f.close()
 
-# Usage: python 4_csf2counts.py /data/miseq/130814_M01841_0017_000000000-A4526/35869A-PR-RT.HIV1B-pol.0.csf Nextera
+if len(sys.argv) < 3:
+	print 'Usage: python 4_csf2counts.py /path/to/.csf|.fasta Nextera|Amplicon'
+	sys.exit()
+
 path = sys.argv[1]
 filename = path.split('/')[-1]
 sample, ref = filename.split('.')[:2]
@@ -91,13 +94,17 @@ pcache = []
 # For each sequence
 for i, (h, s) in enumerate(fasta):
     left = lefts[h] if mode == 'Nextera' else 0
+
+    # FASTA headers contain read count in last entry
+    count = 1 if mode == 'Nextera' else int(h.split('_')[-1])
+
     for j, nuc in enumerate(s):
         pos = left + j
         if not nucs.has_key(pos):
             nucs.update({pos: {}})
         if not nucs[pos].has_key(nuc):
             nucs[pos].update({nuc: 0})
-        nucs[pos][nuc] += 1
+        nucs[pos][nuc] += count
     
     p = translate_nuc('-'*left + s, best_frame)
     pcache.append(p)
@@ -110,9 +117,7 @@ for i, (h, s) in enumerate(fasta):
             aminos.update({pos: {}})
         if not aminos[pos].has_key(aa):
             aminos[pos].update({aa: 0})
-        aminos[pos][aa] += 1
-
-
+        aminos[pos][aa] += count
 
 
 #print "Finished translating + determining nucleotide/amino counts"
