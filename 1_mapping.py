@@ -217,6 +217,7 @@ for refname in refnames:
     refsams[refname]['count'][0] = count # reuse dictionary
     
     outfile.write('remap %s,%d\n' % (refname, int(count)))
+    
 
 
 # continue to remap if we've failed to map enough reads
@@ -225,7 +226,7 @@ if total_remap / count1 < REMAP_THRESHOLD:
     for iter in range(MAX_REMAPS):
         total_remap = 0
         for refname in refnames:
-            if sum(refsams[refname]['count']) == 0 or refname == 'phiX174' or refname == '*':
+            if refsams[refname]['count'][0] == 0 or refname == 'phiX174' or refname == '*':
                 continue
             
             samfile = refsams[refname]['samfile']
