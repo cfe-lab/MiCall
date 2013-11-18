@@ -10,7 +10,12 @@ from miseqUtils import convert_fasta
 # Coordinates are in nucleotide space: start/end are inclusive
 region_slices = [	("PROTEASE", "HIV1B-pol", 1, 297),
 			("PRRT", "HIV1B-pol", 1, 1617),
-			("INTEGRASE", "HIV1B-pol", 1977, 2843)]
+			("INTEGRASE", "HIV1B-pol", 1977, 2843),
+			("P17", "HIV1B-gag", 1, 396),
+			("P24", "HIV1B-gag", 397, 1089),
+			("P2P7P1P6","HIV1B-gag", 1090, 1502),
+			("GP120","HIV1B-env", 1, 1533),
+			("GP41", "HIV1B-env", 1534, 2570)]
 
 if len(sys.argv) != 2:
 	print 'Usage: python {} /path/to/outputs'.format(sys.argv[0])
@@ -33,7 +38,6 @@ for rule in region_slices:
 			lines = f.readlines()
 
 		newFileName = fileName.replace(region,slice)
-
 		dirName = os.path.dirname(path)
 		f = open("{}/{}".format(dirName, newFileName), 'w')
 		for i,line in enumerate(lines):
@@ -44,13 +48,11 @@ for rule in region_slices:
 				f.write("{}\n".format(line))
 				continue
 
+			# Only display regions in the slice
 			query_pos, hxb2_pos = map(int, line.split(",")[:2])
-
-			# Change coordinates, only displaying regions of interest
 			if "nuc.csv" in path:
 				if hxb2_pos < start or hxb2_pos > end: continue
 				region_pos = hxb2_pos - start + 1
-
 			elif "amino.csv" in path:
 				if hxb2_pos < start/3 or hxb2_pos > end/3: continue
 				region_pos = hxb2_pos - start/3
