@@ -45,8 +45,6 @@ mode = run_info['Description'] # Nextera or Amplicon
 log_file = open(root + "/pipeline_output.MPI_rank_{}.log".format(my_rank), "w")
 sys.stderr = log_file
 
-
-
 def consensus_from_remapped_sam(root, ref, samfile, qCutoff=30):
 	"""
 	Take remapped sam, generate pileup, call pileup2conseq to generate 
@@ -64,15 +62,10 @@ def consensus_from_remapped_sam(root, ref, samfile, qCutoff=30):
 	os.system('python pileup2conseq_v2.py {}.pileup {}'.format(bamfile, qCutoff))
 	os.system('bowtie2-build -q -f {} {}'.format(confile, confile))
 
-
-#######################################
-
-
 # Map and remap each fastq to consensus B
 files = glob(root + '/*R1*.fastq')
 
-
-# exclude files that were generated to record contaminants
+# Exclude files generated to record contaminants
 files = [f for f in files if not f.endswith('.Tcontaminants.fastq')]
 
 
@@ -92,7 +85,6 @@ MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #1 (Prelim clade B + sample specific remapping)\n', my_rank, nprocs)
 MPI.COMM_WORLD.Barrier()
 
-
 # For each remapped SAM, generate CSFs (done)
 files = glob(root + '/*.remap.sam')
 for i in range(len(files)):
@@ -107,7 +99,6 @@ MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #2 (Remap CSF from remap SAM)\n', my_rank, nprocs)
 MPI.COMM_WORLD.Barrier()
 
-
 # For amplicon sequencing runs, compute g2p scores for env-mapped FASTAs
 if mode == 'Amplicon':
 	files = glob(root + '/*.HIV1B-env.*.fasta')
@@ -119,7 +110,6 @@ if mode == 'Amplicon':
 		os.system(command)
 
 MPI.COMM_WORLD.Barrier()
-
 
 
 
@@ -146,9 +136,10 @@ if mode == 'Amplicon':
 		summary_file.close()
 		timestamp('Generated v3prot.summary file - cleaning up intermediary files...\n', my_rank, nprocs)
 
+MPI.COMM_WORLD.Barrier()
 
 
-# generate counts and consensus from FASTA files
+# Generate counts + consensus from FASTA/CSFs
 files = glob(root + ('/*.fasta' if mode == 'Amplicon' else '/*.csf'))
 for i, file in enumerate(files):
 	if i % nprocs != my_rank:
@@ -156,16 +147,19 @@ for i, file in enumerate(files):
 	command = 'python 4_csf2counts.py %s %s' % (file, mode)
 	timestamp(command, my_rank, nprocs)
 	os.system(command)
+MPI.COMM_WORLD.Barrier()
 
-
-# Clean up intermediary files
+# Slice outputs + delete intermediary files
 if my_rank == 0:
+	command = 'python 5_slice_outputs.py {}'.format(root)
+	timestamp("Slicing outputs")
+	os.system(command)
+
 	timestamp("Deleting intermediary files")
 	files_to_delete = []
 	files_to_delete += glob(root+'/.*bam')
 	files_to_delete += glob(root + '/*.bt2')
 	files_to_delete += glob(root + '/*.bt2_metrics')
-	#files_to_delete += glob(root + '/*.fastq') # why delete original file?
 	files_to_delete += glob(root + '/*.pileup')
 	files_to_delete += glob(root + '/*.poly')
 	for file in files_to_delete: os.remove(file)
