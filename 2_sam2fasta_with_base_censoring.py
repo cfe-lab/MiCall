@@ -5,13 +5,12 @@ Output: <sample>.<region>.remap.sam.<qScore>.(fasta|csf)
 
 import sys
 import os
-
-
 from miseqUtils import *
 
 samfile = sys.argv[1]
 qCutoff = int(sys.argv[2])
-mode = sys.argv[3]
+HXB2_mapping_cutoff = int(sys.argv[3])
+mode = sys.argv[4]
 
 filename = samfile.split('/')[-1]
 prefix, region = filename.split('.')[:2]
@@ -20,8 +19,8 @@ prefix, region = filename.split('.')[:2]
 # convert SAM to FASTA by parsing CIGAR strings, censoring bases and merging reads
 infile = open(samfile, 'rU')
 
-# Note: sam2fasta has a 3rd argument: the proportion of N's needed before data are dropped (Default = 0.5)
-fasta = sam2fasta(infile, qCutoff)
+# Note: sam2fasta has a 4th argument: the proportion of N's needed before data are dropped (Default = 0.5)
+fasta = sam2fasta(infile, qCutoff, HXB2_mapping_cutoff)
 infile.close()
 
 if fasta is None:

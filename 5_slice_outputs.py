@@ -2,20 +2,20 @@
 Slice 4_csf2counts.py output (Count CSVs + conseq files) into sub-regions.
 """
 
-import os, sys
+import os, sys,time
 from glob import glob
-from miseqUtils import convert_fasta
 
 # Define slices with (Label, region to slice, start, end)
-# Coordinates are in nucleotide space: start/end are inclusive
+# Coordinates are in nucleotide space: start/end are inclusive (Relative to HXB2 aligned sequences)
 region_slices = [	("PROTEASE", "HIV1B-pol", 1, 297),
 			("PRRT", "HIV1B-pol", 1, 1617),
-			("INTEGRASE", "HIV1B-pol", 1977, 2843),
+			("INTEGRASE", "HIV1B-pol", 1978, 2844),
 			("P17", "HIV1B-gag", 1, 396),
 			("P24", "HIV1B-gag", 397, 1089),
 			("P2P7P1P6","HIV1B-gag", 1090, 1502),
 			("GP120","HIV1B-env", 1, 1533),
-			("GP41", "HIV1B-env", 1534, 2570)]
+			("GP41", "HIV1B-env", 1534, 2570),
+			("V3", "HIV1B-env", 887, 993)]
 
 if len(sys.argv) != 2:
 	print 'Usage: python {} /path/to/outputs'.format(sys.argv[0])
@@ -26,7 +26,6 @@ root = sys.argv[1]
 for rule in region_slices:
 	slice, region, start, end = rule
 
-	# STEP 1: CONVERT NUC/AMINO COUNTS
 	files = glob(root + '/*.{}.*nuc.csv'.format(region))
 	files += glob(root + '/*.{}.*amino.csv'.format(region))
 
@@ -39,38 +38,41 @@ for rule in region_slices:
 
 		newFileName = fileName.replace(region,slice)
 		dirName = os.path.dirname(path)
+
 		f = open("{}/{}".format(dirName, newFileName), 'w')
+		f_conseq = open("{}/{}.conseq".format(dirName, newFileName.replace(".csv",".conseq")), 'w')
+		conseq = ""
+
 		for i,line in enumerate(lines):
 			line = line.rstrip("\n")
 
-			# Retain CSV header
+			# Determine dictionary from header
 			if (i == 0):
 				f.write("{}\n".format(line))
+				dictionary = line.split(",")[2:]
 				continue
 
-			# Only display regions in the slice
+			# For nuc.csv, hxb2_pos is in nucleotide space
 			query_pos, hxb2_pos = map(int, line.split(",")[:2])
 			if "nuc.csv" in path:
-				if hxb2_pos < start or hxb2_pos > end: continue
+				if hxb2_pos < start or hxb2_pos > end+1: continue
 				region_pos = hxb2_pos - start + 1
+
+			# For amino.csv, hxb2_pos is in amino space
 			elif "amino.csv" in path:
-				if hxb2_pos < start/3 or hxb2_pos > end/3: continue
-				region_pos = hxb2_pos - start/3
+				if hxb2_pos < (start+2)/3 or hxb2_pos > end/3: continue
+				region_pos = hxb2_pos - (start+2)/3 + 1
 
+			# Generate consensus sequence
 			counts = line.split(",")[2:]
+			max_count = max(map(int,counts))
+			max_char = filter(lambda x: int(x) == max_count, counts)
+			index = counts.index(max_char[0])
+			majority_char = dictionary[index]
+			conseq += majority_char
+
 			f.write("{},{},{}\n".format(query_pos,region_pos,",".join(counts)))
-		f.close()
 
-	# STEP 2: SLICE CONSEQ FILES
-	files = glob(root + '/*.{}.*conseq'.format(region))
-	for path in files:
-		with open(path, 'rU') as f:
-			fasta = convert_fasta(f.readlines())
-
-		fileName = os.path.basename(path)
-		dirName = os.path.dirname(path)
-		newFileName = fileName.replace(region,slice)
-		f = open("{}/{}".format(dirName, newFileName), 'w')
-		for j, (h,s) in enumerate(fasta):
-			f.write(">{}\n{}\n".format(h, s[start:end+1]))
 		f.close()
+		f_conseq.write(">{}_{}\n{}".format(sample, slice, conseq))
+		f_conseq.close()

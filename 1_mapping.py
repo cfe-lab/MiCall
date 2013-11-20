@@ -9,48 +9,43 @@
 
 import os
 import sys
-from miseqUtils import samBitFlag
+from miseqUtils import samBitFlag, timestamp
 import subprocess
 
 
 ## settings
 REMAP_THRESHOLD = 0.95 # what fraction of the data we should be able to remap
 MAX_REMAPS = 3
+DEBUG = 1
 
 
 ## arguments
-refpath = sys.argv[1]
-f = sys.argv[2] # should be an absolute path
+conbrefpath = sys.argv[1]	# ConB reference path
+R1_fastq = sys.argv[2] 		# Absolute path to R1 fastq file
 qCutoff = sys.argv[3]
 mode = sys.argv[4]
 is_t_primer = (sys.argv[5]=='1')
+nprocs = sys.argv[6]		# Give script awareness of MPI rank
+my_rank = sys.argv[7]
 
 
-# report counts to file
-outfile = open(f.replace('.fastq', '.counts'), 'w')
-contam_file = open(f.replace('.fastq', '.Tcontaminants.fastq'), 'w')
-
-
-def remap (f1, f2, samfile, ref, qCutoff=30):
+def remap (R1_fastq, R2_fastq, samfile, ref, qCutoff=30):
     """
-    Generate a sample-specific consensus sequence from a samtools
-    PILEUP file, and then remap everything to this consensus as a
-    reference sequence.  Returns paths to the SAM output and
-    consensus sequence file.
-    [samfile] = SAM file containing last mapping
-    [ref] = last reference sequence used to generate SAM file
+    1) Generate sample-specific consensus from a samtools pileup.
+    2) Remap everything to this consensus as a ref seq
+    3) Returns paths to the SAM output and consensus sequence file
     """
     
     bamfile = samfile.replace('.sam', '.bam')
     confile = bamfile+'.pileup.conseq'
-    
-    # will overwrite last *.remap.sam file
+
+    # Overwrite previous iterations of the remapped sam (Only keep the original specific prelim sam)
     remapped_sam = samfile if samfile.endswith('.remap.sam') else samfile.replace('.sam', '.remap.sam')
-    
-    if ref == refpath:
-        # using the default reference file (first run)
+
+    # If this is the first run, use the default con B reference
+    if ref == conbrefpath:
         cmd = 'samtools view -bt %s.fasta.fai %s > %s 2>/dev/null' % (ref, samfile, bamfile)
-        os.system(cmd) # isolating 'cmd' string for debugging
+        os.system(cmd)
     else:
         # make new samtools index file
         cmd = 'samtools faidx %s' % ref
@@ -73,75 +68,68 @@ def remap (f1, f2, samfile, ref, qCutoff=30):
     
     # map original data to new reference
     cmd = 'bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s --no-unal --met-file %s --un %s --un-conc %s' % (confile, 
-            f1, f2, remapped_sam, remapped_sam.replace('.sam', '.bt2_metrics'),
+            R1_fastq, R2_fastq, remapped_sam, remapped_sam.replace('.sam', '.bt2_metrics'),
             remapped_sam.replace('.sam', '.bt2_unpaired_noalign.fastq'), 
             remapped_sam.replace('.sam', '.bt2_paired_noalign.fastq'))
     os.system(cmd)
             
     return remapped_sam, confile
 
-
-
-# Get region codes from the con B reference fasta headers
-infile = open(refpath+'.fasta', 'rU')
+# Store region codes in con B reference fasta headers in refnames
+conb_ref_fasta = open(conbrefpath+'.fasta', 'rU')
 refnames = []
-for line in infile:
+for line in conb_ref_fasta:
     if line.startswith('>'): refnames.append(line.strip('>\n'))
-infile.close()
+conb_ref_fasta.close()
 
 
+root = '/'.join(R1_fastq.split('/')[:-1])
+filename = os.path.basename(R1_fastq)			# Filename of R1 fastq...
+file_prefix = filename.split('.')[0]			# Has a prefix containing...
+sample_name, sample_well = file_prefix.split('_')[:2]	# Sample name and well
+prefix = '_'.join([sample_name, sample_well])		# Change this prefix to be joined by _ (??)
+count_file = open(R1_fastq.replace('.fastq', '.counts'), 'w')
+R2_fastq = R1_fastq.replace('R1', 'R2')
 
-# Path to R1 FASTQ
-root = '/'.join(f.split('/')[:-1])
-filename = f.split('/')[-1]
-prefix = filename.split('.')[0]
-sample_name, sample_well = prefix.split('_')[:2]
-prefix = '_'.join([sample_name, sample_well])
-f1 = f
-f2 = f.replace('R1', 'R2')
-
-
-# raw count from FASTQs
-p = subprocess.Popen(['wc', '-l', f], stdout = subprocess.PIPE)
+# Determine the number of reads in both (R1 + R2) fastq files, store in the .count file
+p = subprocess.Popen(['wc', '-l', R1_fastq], stdout = subprocess.PIPE)
 stdout, stderr = p.communicate()
-count1 = int(stdout.split()[0])/4
-
-p = subprocess.Popen(['wc', '-l', f2], stdout = subprocess.PIPE)
+total_reads_R1 = int(stdout.split()[0])/4
+p = subprocess.Popen(['wc', '-l', R2_fastq], stdout = subprocess.PIPE)
 stdout, stderr = p.communicate()
-count2 = int(stdout.split()[0])/4
-
-outfile.write('FASTQ,%d,%d\n' % (count1, count2))
-
+total_reads_R2 = int(stdout.split()[0])/4
+count_file.write('Raw FASTQ,R1,%d,R2,%d\n' % (total_reads_R1, total_reads_R2))
 
 # Initial consensus B mapping
-samfile = '{}/{}.prelim.sam'.format(root, prefix)
-command = 'bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s' % (refpath, f1, f2, samfile)
+prelim_samfile = '{}/{}.prelim.sam'.format(root, prefix)
+command = 'bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s' % (conbrefpath, R1_fastq, R2_fastq, prelim_samfile)
 os.system(command)
 
-
-# Create region-specific SAMs
+# Define region-specific SAMs: refsams[refname] points to a nested dict which includes a file handle to each specific SAM
 refsams = {}
 for i, refname in enumerate(refnames):
-    refsams.update({refname: {'handle': open('%s/%s.%s.sam' % (root, prefix, refname), 'w'),'count': [0,0]}})
-refsams.update({'*': {'handle': open('%s/%s.unmapped.sam' % (root, prefix), 'w'),'count': [0,0]}})
+    region_specific_sam = '%s/%s.%s.sam' % (root, prefix, refname)
+    refsams.update({refname: {'sam_file_handle': open(region_specific_sam, 'w'),'count': [0,0]}})
+refsams.update({'*': {'sam_file_handle': open('%s/%s.unmapped.sam' % (root, prefix), 'w'),'count': [0,0]}})
 
-
-# Then, subdivide the prelim SAM into these region-specific SAMs
-infile = open(samfile, 'rU')
+# Subdivide prelim SAMs into region-specific SAMs
+prelim_sam_infile = open(prelim_samfile, 'rU')
 line_counts = [0, 0]
 t_counts = [0, 0]
+contam_file = open(R1_fastq.replace('.fastq', '.Tcontaminants.fastq'), 'w')
 
-for line in infile:
-    # Copy the SAM header into each file
+for line in prelim_sam_infile:
+
+    # Copy the SAM header into each region-specific SAM
     if line.startswith('@'):
-        for refname in refnames: refsams[refname]['handle'].write(line)
+        for refname in refnames: refsams[refname]['sam_file_handle'].write(line)
         continue
-    
+
     qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')[:11]
     bitinfo = samBitFlag(flag)
-    
+
+    # Ignore unmapped reads
     if bitinfo['is_unmapped']:
-        # a read that is not mapped is always is_reverse == False
         continue
     
     if mode == 'Amplicon':
@@ -154,6 +142,8 @@ for line in infile:
                 seq = seq[1:]
             else:
                 t_counts[bitinfo['is_reverse']] += 1 # missing A/T
+
+                # Dump in fastq format to contaminant file
                 contam_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
                 continue
         else:
@@ -169,60 +159,62 @@ for line in infile:
             else:
                 pass
         
-    # write line out to respective region-specific file
+    # Write each line into respective region-specific SAMs
     try:
-        refsams[refname]['handle'].write(line)
+        refsams[refname]['sam_file_handle'].write(line)
         refsams[refname]['count'][bitinfo['is_reverse']] += 1
     except:
         print "{} appeared to be an incorrect refname".format(refname)
-    
+
+    # I think is_reverse identifies R1 reads from R2 in the prelim SAM...? 
     line_counts[bitinfo['is_reverse']] += 1
 
-infile.close()
+prelim_sam_infile.close()
 contam_file.close()
 
+# FIXME: CONFIRM WITH ART IF THIS IS TRUE...?
+# Show the number of reads that made it to preliminary mapping in the count file
+count_file.write('Preliminary map,{},{}\n'.format(line_counts[0], line_counts[1]))
+if is_t_primer: error_type = "Missing T"
+else: error_type = "Unexpected T"
+count_file.write('{} (Detected at prelim map),R1,{},R2,{}\n'.format(error_type, t_counts[0], t_counts[1]))
 
-outfile.write('preliminary map,%d,%d\n' % tuple(line_counts))
-if is_t_primer:
-    outfile.write('missing T,%d,%d\n' % tuple(t_counts))
-else:
-    outfile.write('unexpected T,%d,%d\n' % tuple(t_counts))
-
-
+# Show the reads mapped at preliminary mapping with respect to region
 for refname in refnames:
-    refsams[refname]['handle'].close()
-    outfile.write('prelim %s,%d,%d\n' % (refname, refsams[refname]['count'][0],
-        refsams[refname]['count'][1]))
+    refsams[refname]['sam_file_handle'].close()
+    count_file.write('prelim %s,R1,%d,R2,%d\n' % (refname, refsams[refname]['count'][0],refsams[refname]['count'][1]))
 
-
-# FIXME: Q CUTOFFS NOT WORKING RIGHT NOW
-# Remap fastqs using sample/region specific consensus reference
+# Track the number of reads that have been successfully remapped in total
 total_remap = 0
 
+# Remap the fastqs using sample/region specific conseqs
 for refname in refnames:
+
+    # Completely ignore phiX, unmapped reads, and regions which had no mapping at the prelim mapping stage
+    # FIXME: DO WE WANT TO HAVE A CUTOFF FOR THE NUMBER OF READS MAPPED AT PRELIM MAP?
     if sum(refsams[refname]['count']) == 0 or refname == 'phiX174' or refname == '*':
         continue
+
+    # Run remap on the region-specific sam, and get the remapped sam and consensus pileup used to generate it
+    samfile = refsams[refname]['sam_file_handle'].name
+    samfile, confile = remap(R1_fastq, R2_fastq, samfile, conbrefpath, qCutoff)
     
-    samfile = refsams[refname]['handle'].name
-    samfile, confile = remap(f1, f2, samfile, refpath, qCutoff)
-    
-    # keep track of file paths
+    # Track file paths
     refsams[refname].update({'samfile': samfile, 'confile': confile})
     
-    # get number of reads in each remap
+    # Track the number of mapped reads in each region
     p = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE)
     stdout, stderr = p.communicate()
-    count = (int(stdout.split()[0]) - 3) / 2. # first three lines contain comments
-    total_remap += count
-    refsams[refname]['count'][0] = count # reuse dictionary
-    
-    outfile.write('remap %s,%d\n' % (refname, int(count)))
-    
+    region_specific_count = (int(stdout.split()[0]) - 3) / 2. # First 3 lines contain comments
+    total_remap += region_specific_count
+    refsams[refname]['count'][0] = region_specific_count
+    count_file.write('remap %s,%d\n' % (refname, int(region_specific_count)))
 
-
-# continue to remap if we've failed to map enough reads
-if total_remap / count1 < REMAP_THRESHOLD:
+# Continue to remap if we've failed to map enough total reads
+if total_remap / total_reads_R1 < REMAP_THRESHOLD:
     break_out = False
+
+    # Repeat remapping up to the number of MAX_REMAPS permitted
     for iter in range(MAX_REMAPS):
         total_remap = 0
         for refname in refnames:
@@ -231,28 +223,27 @@ if total_remap / count1 < REMAP_THRESHOLD:
             
             samfile = refsams[refname]['samfile']
             confile = refsams[refname]['confile']
-            samfile, confile = remap(f1, f2, samfile, confile, qCutoff)
+            samfile, confile = remap(R1_fastq, R2_fastq, samfile, confile, qCutoff)
             refsams[refname]['samfile'] = samfile
             refsams[refname]['confile'] = confile
             
+            # Continue to determine the number of reads mapped in this region
             p = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE)
             stdout, stderr = p.communicate()
-            count = (int(stdout.split()[0]) - 3) / 2. # first three lines contain comments
+            region_specific_count = (int(stdout.split()[0]) - 3) / 2.
             
-            # if number of reads declines with mapping, let's quit
-            if count < refsams[refname]['count'][0]:
+            # If number of reads is declining, that's really bad
+            if region_specific_count < refsams[refname]['count'][0]:
                 break_out = True
                 break
             
-            total_remap += count
-            refsams[refname]['count'][0] = count
-            outfile.write('remap %d %s,%d\n' % (iter, refname, int(count)))
-        
-        if break_out:
-            break
-        
-        if total_remap / count1 >= REMAP_THRESHOLD:
+            total_remap += region_specific_count
+            refsams[refname]['count'][0] = region_specific_count
+
+            # Write each remap iteration result to the file
+            count_file.write('remap %d %s,%d\n' % (iter, refname, int(region_specific_count)))
+
+        if break_out or total_remap / total_reads_R1 >= REMAP_THRESHOLD:
             break
 
-
-outfile.close()
+count_file.close()

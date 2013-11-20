@@ -4,7 +4,6 @@ Distribute pipeline processes across the cluster.
 
 import os,sys
 from glob import glob
-#from generate_hxb2_poly_files import generate_amino_counts, generate_nuc_counts
 from mpi4py import MPI
 from proportion_x4 import prop_x4
 from sam2fasta import apply_cigar
@@ -17,35 +16,36 @@ if sys.version_info[:2] != (2, 7):
 my_rank = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()
 
+## Reference sequences
+conbrefpath ='/usr/local/share/miseq/refs/cfe'
+hxb2refpath='/usr/local/share/miseq/refs/'
 
-## settings
-refpath = '/usr/local/share/miseq/refs/cfe'	# Consensus B refs
-hxb2refpath="/usr/local/share/miseq/refs/" 	# location of HXB2 reference files
-HXB2_mapping_cutoff = 10			# Read mapping quality cutoff
-amino_conseq_cutoff = 10			# Minimum occurences of char before it counts for conseq generation
-fpr_cutoffs = [3.5]				# Cutoffs for assuming X4-ness
-mincounts = [3]					# Minimum occurences of char before it counts in amplicon/v3
-g2p_alignment_cutoff = 50			# Minimum score of alignment during g2p scoring
-
-
+## Pipeline parameters
+HXB2_mapping_cutoff = 10	# Read mapping cutoff
+consensus_q_cutoff = 20		# q cutoff for 1_mapping/pileup2conseq conseq generation
+sam2fasta_q_cutoffs = [0,10,15]	# q cutoff for base censoring
+mincounts = [0,50,100,1000]	# Min occurences of read before counting in amplicon/v3 pipeline
+g2p_alignment_cutoff = 50	# Minimum alignment score during g2p scoring
+g2p_fpr_cutoffs = [3.5]		# FPR cutoff for G2P X4
+amino_conseq_cutoff = 10	# Minimum occurences of char before it counts for conseq generation
+				# FIXME: Doesn't appear to be used...!!
 ## arguments
-root = sys.argv[1]				# Path to folder containing fastqs
-qCutoff = int(sys.argv[2])			# INCORRECT - FIXME
+root = sys.argv[1]		# Path to root of folder containing fastqs
 
+
+
+
+# Prepare logs
+log_file = open(root + "/pipeline_output.MPI_rank_{}.log".format(my_rank), "w")
+sys.stderr = log_file
 
 # parse sample sheet
 ssfile = open(root+'/SampleSheet.csv', 'rU')
 run_info = sampleSheetParser(ssfile)
 ssfile.close()
+mode = run_info['Description']			# Nextera or Amplicon
 
-mode = run_info['Description'] # Nextera or Amplicon
-
-
-# prepare logs
-log_file = open(root + "/pipeline_output.MPI_rank_{}.log".format(my_rank), "w")
-sys.stderr = log_file
-
-def consensus_from_remapped_sam(root, ref, samfile, qCutoff=30):
+def consensus_from_remapped_sam(root, ref, samfile, qCutoff=15):
 	"""
 	Take remapped sam, generate pileup, call pileup2conseq to generate 
 	remap conseq, convert to an indexed .bt2 so that it can be used as 
@@ -63,23 +63,24 @@ def consensus_from_remapped_sam(root, ref, samfile, qCutoff=30):
 	os.system('bowtie2-build -q -f {} {}'.format(confile, confile))
 
 # Map and remap each fastq to consensus B
-files = glob(root + '/*R1*.fastq')
+fastq_files = glob(root + '/*R1*.fastq')
 
 # Exclude files generated to record contaminants
-files = [f for f in files if not f.endswith('.Tcontaminants.fastq')]
+fastq_files = [f for f in fastq_files if not f.endswith('.Tcontaminants.fastq')]
 
-
-for i, file in enumerate(files):
+for i, fastq in enumerate(fastq_files):
 	if i % nprocs != my_rank:
 		continue
-	filename = file.split('/')[-1]
-	
-	sample_name = filename.split('_')[0]
-	assert run_info['Data'].has_key(sample_name), 'ERROR: sample name %s not in SampleSheet.csv' % sample_name
+	fastq_filename = fastq.split('/')[-1]
+	sample_name = fastq_filename.split('_')[0]
+	if not run_info['Data'].has_key(sample_name):
+		sys.stderr.write('ERROR: sample name {} (derived from fastq filename) not in SampleSheet.csv'.format(sample_name))
+		sys.exit()
+
 	is_t_primer = run_info['Data'][sample_name]['is_T_primer']
-	
-	timestamp('1_mapping {} {} {}'.format(refpath, file, qCutoff), my_rank, nprocs)
-	os.system("python 1_mapping.py {} {} {} {} {}".format(refpath, file, qCutoff, mode, int(is_t_primer)))
+	command = "python 1_mapping.py {} {} {} {} {} {} {}".format(conbrefpath, fastq, consensus_q_cutoff, mode, int(is_t_primer), my_rank, nprocs)
+	timestamp(command, my_rank, nprocs)
+	os.system(command)
 
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #1 (Prelim clade B + sample specific remapping)\n', my_rank, nprocs)
@@ -91,9 +92,10 @@ for i in range(len(files)):
 	if i % nprocs != my_rank:
 		continue
 	filename = files[i].split('/')[-1]
-	for qcut in [0, 10, 15, 20]:
-		timestamp('2_sam2fasta {} {} {}'.format(filename, qcut, mode), my_rank, nprocs)
-		os.system('python 2_sam2fasta_with_base_censoring.py {} {} {}'.format(files[i], qcut, mode))
+	for qcut in sam2fasta_q_cutoffs:
+		command = 'python 2_sam2fasta_with_base_censoring.py {} {} {} {}'.format(files[i], qcut, HXB2_mapping_cutoff, mode)
+		timestamp('{} {} {}'.format(command, my_rank, nprocs))
+		os.system(command)
 
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #2 (Remap CSF from remap SAM)\n', my_rank, nprocs)
@@ -123,14 +125,15 @@ if mode == 'Amplicon':
 		summary_file.write("sample,q_cutoff,fpr_cutoff,mincount, x4, reads, proportion_x4\n")
 		v3_files = glob(root + '/*.v3prot')
 		for i, file in enumerate(v3_files):
-			prefix, gene, qCutoff = file.split('.')[:3]
-			for fpr_cutoff in fpr_cutoffs:
+			prefix, gene, sam2fasta_q_cutoff = file.split('.')[:3]
+			for fpr_cutoff in g2p_fpr_cutoffs:
 				for mincount in mincounts:
 					try:
 						total_x4_count, total_count = prop_x4(file, fpr_cutoff, mincount)
 						proportion_x4 = (float(total_x4_count) / float(total_count)) * 100
 						sample = prefix.split('/')[-1]
-						summary_file.write("{},{},{},{},{},{},{}\n".format(sample, qCutoff, fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
+						summary_file.write("{},{},{},{},{},{},{}\n".format(sample, sam2fasta_q_cutoff,
+                                                        fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
 					except:
 						continue
 		summary_file.close()

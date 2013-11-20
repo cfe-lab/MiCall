@@ -120,7 +120,7 @@ def merge_pairs (seq1, seq2):
 	return mseq
 
 
-def sam2fasta (infile, cutoff=10, max_prop_N=0.5):
+def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
 	"""
 	Parse SAM file contents and return FASTA string.  In the case of
 	a matched set of paired-end reads, merge the reads together into
@@ -143,6 +143,9 @@ def sam2fasta (infile, cutoff=10, max_prop_N=0.5):
 	i = start
 	while i < len(lines):
 		qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = lines[i].strip('\n').split('\t')[:11]
+
+                if int(mapq) < mapping_cutoff:
+			continue
 
 		# First read is unmapped
 		if refname == '*' or cigar == '*':
@@ -267,7 +270,9 @@ def sampleSheetParser (handle):
 			if get_header:
 				# parse the first line as the header row
 				header = tokens
-				assert 'Sample_Name' in header, 'ERROR: SampleSheet.csv Data header does not include Sample_Name'
+				if not 'Sample_Name' in header:
+					sys.stderr.write("ERROR: SampleSheet.csv Data header does not include Sample_Name")
+					sys.exit()
 				get_header = False
 				continue
 			

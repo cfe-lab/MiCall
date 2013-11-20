@@ -216,16 +216,13 @@ codon_pos = 0
 # For each base coordinate in the query
 for pos in keys:
     try:
-        aapos = pos/3
-        hxb2_pos = qindex_to_hxb2[aapos] + 1
+        aapos = pos/3				# Get the amino position
+        codon_pos = pos % 3
+        hxb2_pos = qindex_to_hxb2[aapos] + 1	# Get the HXB2 based on that amino position
     except KeyError:
         continue
 
-    codon_pos += 1
-    if codon_pos > 2:
-        codon_pos = 0
-
-    # hxb2_pos is the hxb2 amino position, so base_pos is the hxb2 nucleotide position
+    # hxb2_pos is the hxb2 amino position, pos is the hxb2 nucleotide position
     hxb2_nuc_pos = 3*hxb2_pos + codon_pos
     nucfile.write('%d,%d,%s\n' % (pos, hxb2_nuc_pos, ','.join(map(str, [nucs[pos].get(nuc, 0) for nuc in 'ACGT']))))
     
