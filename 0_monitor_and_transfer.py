@@ -97,9 +97,9 @@ while 1:
 		# Skip reads that failed to demultiplex
 		# FIXME: Have this save somewhere specific in a file
 		if filename.startswith('Undetermined'):
-			p = subprocess.Popen(['wc', '-l', path], stdout = subprocess.PIPE)
+			p = subprocess.Popen(['wc', '-l', file], stdout = subprocess.PIPE)
 			stdout, stderr = p.communicate()
-			failed_demultiplexing = (int(stdout.split()[0])/4
+			failed_demultiplexing = (int(stdout.split()[0])/4)
 			timestamp("Run {} had {} reads failing to demultiplex".format(run_name, failed_demultiplexing))
 			continue
 
