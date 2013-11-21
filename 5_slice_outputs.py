@@ -25,7 +25,6 @@ root = sys.argv[1]
 
 for rule in region_slices:
 	slice, region, start, end = rule
-
 	files = glob(root + '/*.{}.*nuc.csv'.format(region))
 	files += glob(root + '/*.{}.*amino.csv'.format(region))
 
@@ -70,7 +69,6 @@ for rule in region_slices:
 			index = counts.index(max_char[0])
 			majority_char = dictionary[index]
 			conseq += majority_char
-
 			f.write("{},{},{}\n".format(query_pos,region_pos,",".join(counts)))
 
 		f.close()

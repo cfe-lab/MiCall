@@ -82,6 +82,8 @@ for i, fastq in enumerate(fastq_files):
 	timestamp(command, my_rank, nprocs)
 	os.system(command)
 
+timestamp(">>>>>>>> Rank {} made it to barrier".format(my_rank))
+
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('Barrier #1 (Prelim clade B + sample specific remapping)\n', my_rank, nprocs)
 MPI.COMM_WORLD.Barrier()
