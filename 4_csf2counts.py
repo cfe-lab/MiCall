@@ -27,14 +27,7 @@ if len(sys.argv) < 3:
 path = sys.argv[1]
 filename = path.split('/')[-1]
 sample, ref = filename.split('.')[:2]
-
-# CSF/Fasta must be of the format <SAMPLE>.<REGION>.*
-#if ref not in hxb2:
-#    print "{} is not in the HXB2_amino_sequences.csv reference list".format()
-#    sys.exit()
-
 mode = sys.argv[2]
-assert mode in ['Nextera', 'Amplicon'], 'ERROR: Unrecognized mode (%s) in 4_csf2counts.py' % mode
 
 # make the output stem by removing the extension of the filename
 root = '/'.join(path.split('/')[:-1])
@@ -43,7 +36,6 @@ if root == '':
     root = '.'
 
 outpath = root + '/' + (filename.replace('.fasta', '') if mode == 'Amplicon' else filename.replace('.csf', ''))
-
 
 # output to files and compute consensus
 nucfile = open(outpath+'.nuc.csv', 'w')
@@ -55,7 +47,6 @@ aafile.write('query.aa.pos,hxb2.aa.pos,%s\n' % ','.join(list(amino_alphabet)))
 confile = open(outpath+'.conseq', 'w')
 indelfile = open(outpath+'.indels.csv', 'w')
 
-#assert hxb2.has_key(ref), 'Unknown reference sequence, expecting HXB2 gene'
 if not hxb2.has_key(ref):
     sys.exit()
 
@@ -81,8 +72,6 @@ for frame in range(3):
     if ascore > max_score:
         best_frame = frame # the reading frame of left = 0
         max_score = ascore
-
-print "Best ORF = %d" % best_frame
 
 # Iterate through reads and count WHAT?
 nucs = {}
@@ -137,16 +126,10 @@ for pos in keys:
     intermed.sort(reverse=True)
     aa_max += intermed[0][1]
 
-# Use PRRT instead if this is full length pol
-#if ref == 'HIV1B-pol':
-#    refseq = hxb2['HIV1B-prrt']
-
 # Align consensus against HXB2
 aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
 
-
 # Ignore parts of query outside our reference
-# This would be important for pol if we used PR-RT as ref instead of pol at this point
 left, right = get_boundaries(aref)
 qindex_to_hxb2 = {} # Maps query amino to HXB2 amino coordinates
 inserts = []        # Leep track of which aa positions are insertions

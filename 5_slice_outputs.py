@@ -39,7 +39,7 @@ for rule in region_slices:
 		dirName = os.path.dirname(path)
 
 		f = open("{}/{}".format(dirName, newFileName), 'w')
-		f_conseq = open("{}/{}.conseq".format(dirName, newFileName.replace(".csv",".conseq")), 'w')
+		f_conseq = open("{}/{}".format(dirName, newFileName.replace(".csv",".conseq")), 'w')
 		conseq = ""
 
 		for i,line in enumerate(lines):

@@ -122,9 +122,8 @@ def merge_pairs (seq1, seq2):
 
 def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
 	"""
-	Parse SAM file contents and return FASTA string.  In the case of
-	a matched set of paired-end reads, merge the reads together into
-	a single sequence.
+	Parse SAM file contents and return FASTA. For matched read pairs,
+	merge the reads together into a single sequence
 	"""
 	fasta = []
 	lines = infile.readlines()
@@ -146,7 +145,7 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
 	while i < len(lines):
 		qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = lines[i].strip('\n').split('\t')[:11]
 
-		# If this read failed to map or has poor mapping quality, skip it
+		# If read failed to map or has poor mapping quality, skip it
 		if refname == '*' or cigar == '*' or int(mapq) < mapping_cutoff:
 			i += 1
 			continue
@@ -185,7 +184,6 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
 				continue
 			
 			seq2 = '-'*pos2 + censor_bases(seq2, qual2, cutoff)
-			
 			mseq = merge_pairs(seq1, seq2)
 
 			# Output only if sequence is good quality
@@ -298,22 +296,12 @@ def sampleSheetParser (handle):
 	return run_info
 
 
-def timestamp(msg, my_rank='NA', nprocs='NA'):
-	"""
-	A timestamp that works both in an MPI environment and a non-MPI environment.
-	If my_rank or nprocs is not specified, rank information is not displayed.
-	"""
-
+def timestamp(msg):
 	currTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-	output = ""
-	if my_rank == 'NA' or nprocs == 'NA': output = '{}\t{}'.format(currTime, msg)
-	else: output = '{}\t(rank={}/{}) {}'.format(currTime,my_rank,nprocs,msg)
-
-	# Send output to standard out + standard error (Which can be assigned to a log file)
+	output = ' {} {}'.format(currTime,msg)
 	print output
-	print >> sys.stderr, output
 	sys.stdout.flush()
-
+	return "{}\n".format(output)
 
 def poly2conseq(poly_file,alphabet='ACDEFGHIKLMNPQRSTVWY*-',minCount=3):
 	"""

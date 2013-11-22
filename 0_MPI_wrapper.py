@@ -33,14 +33,9 @@ amino_conseq_cutoff = 10	# Minimum occurences of char before it counts for conse
 root = sys.argv[1]		# Path to root of folder containing fastqs
 
 
-
-
-# Prepare logs
-log_file = open(root + "/pipeline_output.MPI_rank_{}.log".format(my_rank), "w")
-sys.stderr = log_file
-
 # parse sample sheet
 ssfile = open(root+'/SampleSheet.csv', 'rU')
+
 run_info = sampleSheetParser(ssfile)
 ssfile.close()
 mode = run_info['Description']			# Nextera or Amplicon
@@ -48,7 +43,7 @@ mode = run_info['Description']			# Nextera or Amplicon
 def consensus_from_remapped_sam(root, ref, samfile, qCutoff=15):
 	"""
 	Take remapped sam, generate pileup, call pileup2conseq to generate 
-	remap conseq, convert to an indexed .bt2 so that it can be used as 
+	remap conseq, and convert to indexed .bt2 so that it can be used as 
 	a reference for bowtie2.
 	"""
 	bamfile = samfile.replace('.sam', '.bam')
@@ -69,50 +64,51 @@ fastq_files = glob(root + '/*R1*.fastq')
 fastq_files = [f for f in fastq_files if not f.endswith('.Tcontaminants.fastq')]
 
 for i, fastq in enumerate(fastq_files):
-	if i % nprocs != my_rank:
-		continue
+	if i % nprocs != my_rank: continue
+
 	fastq_filename = fastq.split('/')[-1]
 	sample_name = fastq_filename.split('_')[0]
+
 	if not run_info['Data'].has_key(sample_name):
 		sys.stderr.write('ERROR: sample name {} (derived from fastq filename) not in SampleSheet.csv'.format(sample_name))
 		sys.exit()
 
 	is_t_primer = run_info['Data'][sample_name]['is_T_primer']
 	command = "python 1_mapping.py {} {} {} {} {} {} {}".format(conbrefpath, fastq, consensus_q_cutoff, mode, int(is_t_primer), my_rank, nprocs)
-	timestamp(command, my_rank, nprocs)
+	timestamp(command)
 	os.system(command)
 
-timestamp(">>>>>>>> Rank {} made it to barrier #1".format(my_rank))
+timestamp(">>>>>>>> Made it to barrier #1")
 MPI.COMM_WORLD.Barrier()
-if my_rank == 0: timestamp('Barrier #1 (Prelim clade B + sample specific remapping)\n', my_rank, nprocs)
+if my_rank == 0: timestamp('All processes reached barrier 1 (Prelim clade B + sample specific remapping)\n')
 MPI.COMM_WORLD.Barrier()
 
 # For each remapped SAM, generate CSFs (done)
 files = glob(root + '/*.remap.sam')
 for i in range(len(files)):
-	if i % nprocs != my_rank:
-		continue
+	if i % nprocs != my_rank: continue
 	filename = files[i].split('/')[-1]
+
 	for qcut in sam2fasta_q_cutoffs:
 		command = 'python 2_sam2fasta_with_base_censoring.py {} {} {} {}'.format(files[i], qcut, HXB2_mapping_cutoff, mode)
-		timestamp('{} {} {}'.format(command, my_rank, nprocs))
+		timestamp(command)
 		os.system(command)
 
-timestamp(">>>>>>>> Rank {} made it to barrier #2".format(my_rank))
+timestamp(">>>>>>>> Made it to barrier #2")
 MPI.COMM_WORLD.Barrier()
-if my_rank == 0: timestamp('Barrier #2 (Remap CSF from remap SAM)\n', my_rank, nprocs)
+if my_rank == 0: timestamp('All processes reached barrier #2 (Remap CSF from remap SAM)\n')
 MPI.COMM_WORLD.Barrier()
 
 # For amplicon sequencing runs, compute g2p scores for env-mapped FASTAs
 if mode == 'Amplicon':
 	files = glob(root + '/*.HIV1B-env.*.fasta')
 	for i, file in enumerate(files):
-		if i % nprocs != my_rank:
-			continue
+		if i % nprocs != my_rank: continue
 		command = 'python 3_g2p_scoring.py {} {}'.format(file, g2p_alignment_cutoff)
-		timestamp(command, my_rank, nprocs)
+		timestamp(command)
 		os.system(command)
 
+timestamp(">>>>>>>> Made it to barrier #3")
 MPI.COMM_WORLD.Barrier()
 
 
@@ -120,7 +116,7 @@ MPI.COMM_WORLD.Barrier()
 # If this is amplicon, make final proportion X4 summary, clean up files, and exit
 if mode == 'Amplicon':
 	if my_rank == 0:
-		timestamp('Barrier #3 G2P calculations (Amplicon)\n', my_rank, nprocs)
+		timestamp('Barrier #3 G2P calculations (Amplicon)\n')
 
 		# Read each v3prot file and generate summary of v3 data in v3prot.summary
 		summary_file = open(root + '/v3prot.summary', 'w')
@@ -139,10 +135,9 @@ if mode == 'Amplicon':
 					except:
 						continue
 		summary_file.close()
-		timestamp('Generated v3prot.summary file - cleaning up intermediary files...\n', my_rank, nprocs)
+		timestamp('Generated v3prot.summary file - cleaning up intermediary files...\n')
 
 MPI.COMM_WORLD.Barrier()
-
 
 # Generate counts + consensus from FASTA/CSFs
 files = glob(root + ('/*.fasta' if mode == 'Amplicon' else '/*.csf'))
@@ -150,7 +145,7 @@ for i, file in enumerate(files):
 	if i % nprocs != my_rank:
 		continue
 	command = 'python 4_csf2counts.py %s %s' % (file, mode)
-	timestamp(command, my_rank, nprocs)
+	timestamp(command)
 	os.system(command)
 MPI.COMM_WORLD.Barrier()
 
@@ -169,5 +164,5 @@ if my_rank == 0:
 	files_to_delete += glob(root + '/*.poly')
 	for file in files_to_delete: os.remove(file)
 
-log_file.close()
+MPI.COMM_WORLD.Barrier()
 MPI.Finalize()

@@ -9,7 +9,7 @@
 
 import os
 import sys
-from miseqUtils import samBitFlag, timestamp
+from miseqUtils import samBitFlag
 import subprocess
 
 
