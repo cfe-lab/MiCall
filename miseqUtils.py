@@ -129,6 +129,7 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
 	fasta = []
 	lines = infile.readlines()
 
+	# If this is a completely empty file, return
 	if len(lines) == 0:
 		return None
 	
@@ -136,50 +137,49 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
 	for start, line in enumerate(lines):
 		if not line.startswith('@'):
 			break
-	
-	if start == (len(lines)-1):
+
+	# If this is an empty SAM, return
+	if start == len(lines)-1:
 		return None
 	
 	i = start
 	while i < len(lines):
 		qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = lines[i].strip('\n').split('\t')[:11]
 
-                if int(mapq) < mapping_cutoff:
-			continue
-
-		# First read is unmapped
-		if refname == '*' or cigar == '*':
+		# If this read failed to map or has poor mapping quality, skip it
+		if refname == '*' or cigar == '*' or int(mapq) < mapping_cutoff:
 			i += 1
 			continue
 		
 		pos1 = int(pos)
 		shift, seq1, qual1 = apply_cigar(cigar, seq, qual)
+
 		if not seq1:
 			i += 1
 			continue
-		
+
 		seq1 = '-'*pos1 + censor_bases(seq1, qual1, cutoff)
 		
 		# No more lines
 		if (i+1) == len(lines):
 			break
 		
-		# look ahead for matched pair
+		# Look ahead in the SAM for matching read
 		qname2, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = lines[i+1].strip('\n').split('\t')[:11]
 		
 		if qname2 == qname:
-			# this is the second read
-			
+
+			# Second read failed to map
 			if refname == '*' or cigar == '*': 
-				# second read is unmapped
 				fasta.append([qname, seq1])
 				i += 2
 				continue
 			
 			pos2 = int(pos)
 			shift, seq2, qual2 = apply_cigar(cigar, seq, qual)
+
+			# Failed to parse CIGAR
 			if not seq2:
-				# failed to parse CIGAR string
 				fasta.append([qname, seq1])
 				i += 2
 				continue
@@ -187,8 +187,9 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
 			seq2 = '-'*pos2 + censor_bases(seq2, qual2, cutoff)
 			
 			mseq = merge_pairs(seq1, seq2)
+
+			# Output only if sequence is good quality
 			if mseq.count('N') / float(len(mseq)) < max_prop_N:
-				# output only if sequence is good quality
 				fasta.append([qname, mseq])
 			
 			i += 2
@@ -308,7 +309,7 @@ def timestamp(msg, my_rank='NA', nprocs='NA'):
 	if my_rank == 'NA' or nprocs == 'NA': output = '{}\t{}'.format(currTime, msg)
 	else: output = '{}\t(rank={}/{}) {}'.format(currTime,my_rank,nprocs,msg)
 
-	# Send output to standard out + standard error (Which is assigned to a log file)
+	# Send output to standard out + standard error (Which can be assigned to a log file)
 	print output
 	print >> sys.stderr, output
 	sys.stdout.flush()

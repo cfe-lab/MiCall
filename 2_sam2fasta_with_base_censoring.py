@@ -1,12 +1,7 @@
-"""
-Input: <sample>.<region>.remap.sam files
-Output: <sample>.<region>.remap.sam.<qScore>.(fasta|csf)
-"""
+import os,sys
+from miseqUtils import sam2fasta
 
-import sys
-import os
-from miseqUtils import *
-
+#python 2_sam2fasta_with_base_censoring.py /data/miseq/131119_M01841_0041_000000000-A5EPY/F00113-V3LOOP_S86.HIV1B-env.remap.sam 0 10 Amplicon
 samfile = sys.argv[1]
 qCutoff = int(sys.argv[2])
 HXB2_mapping_cutoff = int(sys.argv[3])
@@ -15,46 +10,39 @@ mode = sys.argv[4]
 filename = samfile.split('/')[-1]
 prefix, region = filename.split('.')[:2]
 
-
-# convert SAM to FASTA by parsing CIGAR strings, censoring bases and merging reads
 infile = open(samfile, 'rU')
-
-# Note: sam2fasta has a 4th argument: the proportion of N's needed before data are dropped (Default = 0.5)
-fasta = sam2fasta(infile, qCutoff, HXB2_mapping_cutoff)
+fasta = sam2fasta(infile, qCutoff, HXB2_mapping_cutoff, 0.5)
 infile.close()
 
-if fasta is None:
-	sys.exit()
-
-
+# If Amplicon, generate FASTA
 if mode == 'Amplicon':
-	# collate identical sequences
+
+	# Compress identical sequences
 	d = {}
 	for h, s in fasta:
 		if d.has_key(s):
 			d[s] += 1
 		else:
 			d.update({s: 1})
-	
-	# sort sequences by count
+
+	# Sort sequences by count and save to a FASTA
 	intermed = [(count, s) for s, count in d.iteritems()]
 	intermed.sort(reverse=True)
-	
-	ofname = '.'.join(map(str, [samfile.replace('.remap.sam', ''), qCutoff, 'fasta']))
-	outfile = open(ofname, 'w')
-	for i, (count, seq) in enumerate(intermed):
-		outfile.write('>%s_variant_%d_count_%d\n%s\n' % (prefix, i, count, seq))
-	outfile.close()
-	
+	fasta_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), qCutoff, 'fasta']))
+
+	with open(fasta_filename, 'w') as outfile:
+		for i, (count, seq) in enumerate(intermed):
+			outfile.write('>%s_variant_%d_count_%d\n%s\n' % (prefix, i, count, seq))
+
+# If Nextera, generate CSF	
 elif mode == 'Nextera':
-	# sort reads by gap prefix
+
+	# Sort reads by gap prefix
 	intermed = [(len_gap_prefix(s), h, s) for h, s in fasta]
 	intermed.sort()
 	
-	# output in compact comma-separated FASTA
-	ofname = '.'.join(map(str, [samfile.replace('.remap.sam', ''), qCutoff, 'csf']))
-	outfile = open(ofname, 'w')
-	for (gp, h, seq) in intermed:
-		outfile.write('%s,%d,%s\n' % (h, gp, seq.strip('-')))
-	
-	outfile.close()
+	csf_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), qCutoff, 'csf']))
+
+	with open(csf_filename, 'w') as outfile:
+		for (gp, h, seq) in intermed:
+			outfile.write('%s,%d,%s\n' % (h, gp, seq.strip('-')))
