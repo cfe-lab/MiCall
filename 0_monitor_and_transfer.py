@@ -1,161 +1,143 @@
 """
-Persistent monitoring of macdatafile for runs that need processing
-
-Within run folders, a 'needsprocessing' flag triggers this script to:
-	1) Copy + unzip the file from macdatafile to a local disk
+Persistent monitoring of macdatafile for runs needing processing.
+Within run folders, a 'needsprocessing' flag triggers this script:
+	1) Copy + unzip fastqs to the local disk
 	2) Call the pipeline (0_MPI_wrapper.py)
 	3) Upload results back to macdatafile
-	4) Replace the 'needsprocessing' flag with 'processingcomplete'
+	4) Replace the 'needsprocessing' flag with 'processed'
 
-Processing will be done in serial on a 'first come first serve' basis:
-no asynchronous processing of multiple concurrent runs
+Processing is done in serial on most recent runs first.
 """
 
-import os, sys, time
+import os, subprocess, sys, time
 from datetime import datetime
 from glob import glob
-from seqUtils import timestamp
+from miseqUtils import timestamp, sampleSheetParser
 from time import sleep
 
 if sys.version_info[:2] != (2, 7):
-	print "Monitor requires python 2.7"
+	timestamp("Monitor requires python 2.7")
 	sys.exit()
 
 ## settings
-pipeline_version = "2.0"
-home='/data/miseq/'			# Where we will write the data
-delay = 3600				# Delay between checking Miseq runs
-load_mpi = "module load openmpi/gnu"
-qCutoff = 20
+home='/data/miseq/'		# Local path for writing data
+delay = 3600			# Delay for polling macdatafile for unprocessed runs
+pipeline_version = "4.1"
+macdatafile_mount = '/media/macdatafile/'
 
-log_file_name = "pipeline_output.log"
+def set_run_as_processed(runpath):
+	os.remove(runpath)
+	flag = open(runpath.replace('needsprocessing', 'processed'), 'w')
+	flag.close()
 
-## main loop
+# Monitor continuously checks for MiSeq folders flagged for processing
 while 1:
-	# For now, ignore standard error (Otherwise timestamp gives duplicate output)
-	sys.stderr = open(os.devnull, 'w')
-
-	# Check if any MiSeq folders have been flagged for processing
-	runs = glob('/media/macdatafile/MiSeq/runs/*/needsprocessing')
+	runs = glob(macdatafile_mount + 'MiSeq/runs/*/needsprocessing')
 	if len(runs) == 0:
 		timestamp('No runs need processing')
 		sleep(delay)
 		continue
 
-	# If any exist, sort list by runID (run_name) and do the first one
+	# Process recent runs first
 	runs.sort()
+	runs.reverse()
 	root = runs[0].replace('needsprocessing', '')
-	timestamp ('Processing {}'.format(root))
 	run_name = root.split('/')[-2]
-	if not os.path.exists(home+run_name): os.system('mkdir {}{}'.format(home, run_name))
 
-	# Assign standard error to a log file
-	log_file = open(home + run_name + "/" + log_file_name, "w")
-	sys.stderr = log_file
+	# Create folder locally on cluster as temp space
+	if not os.path.exists(home+run_name):
+		command = 'mkdir {}{}'.format(home, run_name)
+		subprocess.call(command, shell=True, stdin=subprocess.PIPE, stdout = subprocess.PIPE)
 
-	# Extract description (mode) from SampleSheet.csv
-	# Assay is ALWAYS "Nextera" and chemistry is ALWAYS "Amplicon"
-	infile = open(runs[0].replace('needsprocessing', 'SampleSheet.csv'), 'rU')
-	mode = ''
-	for line in infile:
-		if line.startswith('Description,'):
-			mode = line.strip('\n').split(',')[1]
-			break
-	infile.close()
+	# Start a processing log
+	log_file = home + run_name + '/pipeline_output.txt'
+	pipeline_output = open(log_file, "wb")
+	pipeline_output.write(timestamp('Processing {}'.format(root)))
 
-	# Mode must be Nextera or Amplicon: if not, mark as an error and proceed
-	if mode not in ['Nextera', 'Amplicon']:
-		timestamp('Error - \'{}\' is not a recognized mode: skipping'.format(mode))
-		os.remove(runs[0])
-		flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
-		flag.close()
+	# Copy SampleSheet.csv from macdatafile to cluster
+	remote_file = runs[0].replace('needsprocessing', 'SampleSheet.csv')
+	local_file = home + run_name + '/SampleSheet.csv'
+	command = 'rsync -a {} {}'.format(remote_file, local_file)
+	pipeline_output.write(timestamp(command))
+	p = subprocess.call(command, shell=True, stdin=subprocess.PIPE, stdout = subprocess.PIPE)
+
+	try:
+		infile = open(local_file, 'rU')
+		run_info = sampleSheetParser(infile)
+		mode = run_info['Description']
+		infile.close()
+	except:
+		message = "!!!!!!!!!! Error parsing sample sheet - SKIPPING RUN !!!!!!!!!!"
+		pipeline_output.write(timestamp(message))
+		set_run_as_processed(runs[0])
 		continue
-	
-	# If run is valid, transfer fasta.gz files to cluster and unzip
+
+	if mode not in ['Nextera', 'Amplicon']:
+		message = "Error - {} is not a recognized mode: skipping'.format(mode)"
+		pipeline_output.write(timestamp(message))
+		set_run_as_processed(runs[0])
+		continue
+
+	# Run appears valid - copy fastq.gz files to cluster and unzip
 	files = glob(root+'Data/Intensities/BaseCalls/*.fastq.gz')
 	for file in files:
 		filename = file.split('/')[-1]
 
-		# Skip reads that failed to demultiplex
+		# Report number of reads failing to demultiplex in the log
 		if filename.startswith('Undetermined'):
+			output = subprocess.check_output(['wc', '-l', file])
+			failed_demultiplexing = output.split(" ")[0]
+			message= "{} reads failed to demultiplex in {} for run {}".format(failed_demultiplexing, filename, run_name)
+			pipeline_output.write(timestamp(message))
 			continue
-		
+
 		local_file = home + run_name + '/' + filename
-		timestamp('rsync + gunzip {}'.format(filename))
-		os.system('rsync -a {} {}'.format(file, local_file))
-		os.system('gunzip -f {}'.format(local_file))
+		command = 'rsync -a {} {}; gunzip -f {};'.format(file, local_file, local_file)
+		pipeline_output.write(timestamp(command))
+		subprocess.call(command, shell=True, stdin=subprocess.PIPE, stdout = subprocess.PIPE)
 
-	# Call MPI wrapper
-	command = "{}; mpirun -machinefile mfile python -u {} {} {} {}".format(load_mpi, "0_MPI_wrapper.py", home+run_name, mode, qCutoff)
-	timestamp(command)
-	os.system(command)
+	# Open file handle to the end of the current log
+	read_output = open(log_file, "rb").read()
+	
+	# 0_MPI_wrapper will write standard output / standard error to the log (-tag-output displays MPI rank)
+	command = "module load openmpi/gnu; mpirun -tag-output -machinefile mfile python -u {} {}".format("0_MPI_wrapper.py", home+run_name)
+	p = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout = pipeline_output)
+	pipeline_output.write(timestamp(command))
 
-	# Replace the 'needsprocessing' flag with a 'processed' flag
-	os.remove(runs[0])
-	flag = open(runs[0].replace('needsprocessing', 'processed'), 'w')
-	flag.close()
+	# Poll log every second for additional output and display it to the console
+	while True:
+		sleep(1)
+		if p.poll() == 0: break
+		sys.stdout.write(read_output.read())
+	read_output.close()
 
+	# Determine path to upload results (Denote the pipeline version in this path)
 	result_path = runs[0].replace('needsprocessing', 'Results')
 	result_path_final = result_path + '/version_' + pipeline_version
+	if not os.path.exists(result_path): os.mkdir(result_path)
+	if not os.path.exists(result_path_final): os.mkdir(result_path_final)
 
-	if not os.path.exists(result_path): os.mkdir(result_path)		# Outer results folder
-	if not os.path.exists(result_path_final): os.mkdir(result_path_final)	# Inner version folder
-
+	# Determine which results files to post to macdatafile
 	results_files = []
-
 	if mode == 'Amplicon':
-		results_files += glob(home + run_name + '/*.HIV1B-env.remap.sam')
 		results_files += glob(home + run_name + '/*.v3prot')
 		results_files += glob(home + run_name + '/v3prot.summary')
-
-	elif mode == 'Nextera':
-		results_files += glob(home + run_name + '/*.HXB2.sam')
-		results_files += glob(home + run_name + '/HXB2.nuc_poly.summary')
-		results_files += glob(home + run_name + '/HXB2.amino_poly.summary')
-		results_files += glob(home + run_name + '/HXB2.nuc_poly.summary.conseq')
-		results_files += glob(home + run_name + '/HXB2.amino_poly.summary.conseq')
-
+	results_files += glob(home + run_name + '/*.counts')
+	results_files += glob(home + run_name + '/*.csv')
+	results_files += [f for f in glob(home + run_name + '/*.conseq') if 'pileup' not in f]
 	timestamp("Posting {} run to macdatafile".format(mode))
 
+	# Copy the chosen results
 	for file in results_files:
 		filename = file.split('/')[-1]
 		command = 'rsync -a {} {}/{}'.format(file, result_path_final, filename)
-		timestamp(command)
-		os.system(command)
+		pipeline_output.write(timestamp(command))
+		subprocess.call(command, shell=True, stdin=subprocess.PIPE, stdout = subprocess.PIPE)
 
-
-	# The run is complete - close the log, post it, re-assign sys.stderr to null
-	log_file.close()
-
-	# Merge pipeline_output.MPI_rank_*.log files (+ the monitor log) into one
-	# IE, sort the list "logs" containing (timestamp, line) tuples
-	log_files = glob(home + run_name + '/' + log_file_name)
-	log_files += glob(home + run_name + '/pipeline_output.MPI_rank_*.log')
-	logs = []
-	for log_file in log_files:
-		f = open(log_file, 'r')
-		for line in f.readlines():
-			if line.rstrip("\n") == "": continue
-
-			try:
-				fields = line.rstrip("\n").split("\t")
-				myDateTime = datetime.strptime(fields[0], "%Y-%m-%d %H:%M:%S.%f")
-				tuple = (myDateTime, fields[0] + "\t" + fields[1])
-				logs.append(tuple)
-			except:
-				pass
-		f.close()
-		os.remove(log_file)
-	logs.sort()
-
-	# Create and post the final log file
-	f = open(home + run_name + '/pipeline_output.txt', 'w')
-	for tuple in logs: f.write("{}\n".format(tuple[1]))
-	f.close()
-
-	# Decouple stderr
-	sys.stderr = open(os.devnull, 'w')
-	command = 'rsync -a {} {}/{}'.format(home + run_name + '/pipeline_output.txt', result_path_final, 'pipeline_output.txt')
-	timestamp(command)
-	os.system(command)
-	timestamp("========== {} successfully completed! ==========\n".format(run_name))
+	# Finally, copy the log file
+	command = 'rsync -a {} {}/{}'.format(log_file, result_path_final, os.path.basename(log_file))
+	p = subprocess.call(command, shell=True, stdin=subprocess.PIPE, stdout = subprocess.PIPE)
+ 	set_run_as_processed(runs[0])
+	pipeline_output.write(timestamp(command))
+	pipeline_output.write(timestamp("========== {} successfully completed! ==========\n".format(run_name)))
+	pipeline_output.close()

@@ -12,7 +12,7 @@ Apparently quality strings do not include scores for indels:
 
 import sys
 import re
-from seqUtils import ambig_dict
+from miseqUtils import ambig_dict
 
 qCutoff = int(sys.argv[2])
 ambig_dict['ACGT'] = 'N'

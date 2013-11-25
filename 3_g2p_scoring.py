@@ -6,7 +6,7 @@ along with G2PFPR score in the header (Plus the count)
 import os,sys
 from hyphyAlign import apply2nuc, change_settings, get_boundaries, HyPhy, pair_align, refSeqs
 from minG2P import conan_g2p
-from seqUtils import convert_fasta, translate_nuc
+from miseqUtils import convert_fasta, translate_nuc
 
 f = sys.argv[1]
 g2p_alignment_cutoff = int(sys.argv[2])
