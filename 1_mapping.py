@@ -12,12 +12,10 @@ import sys
 from miseqUtils import samBitFlag
 import subprocess
 
-
 ## settings
 REMAP_THRESHOLD = 0.95 # what fraction of the data we should be able to remap
 MAX_REMAPS = 3
 DEBUG = 1
-
 
 ## arguments
 conbrefpath = sys.argv[1]	# ConB reference path

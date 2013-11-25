@@ -1,7 +1,8 @@
 import os,sys
 from miseqUtils import sam2fasta
 
-#python 2_sam2fasta_with_base_censoring.py /data/miseq/131119_M01841_0041_000000000-A5EPY/F00113-V3LOOP_S86.HIV1B-env.remap.sam 0 10 Amplicon
+max_prop_N = 0.5
+
 samfile = sys.argv[1]
 qCutoff = int(sys.argv[2])
 HXB2_mapping_cutoff = int(sys.argv[3])
@@ -11,7 +12,7 @@ filename = samfile.split('/')[-1]
 prefix, region = filename.split('.')[:2]
 
 infile = open(samfile, 'rU')
-fasta = sam2fasta(infile, qCutoff, HXB2_mapping_cutoff, 0.5)
+fasta = sam2fasta(infile, qCutoff, HXB2_mapping_cutoff, max_prop_N)
 infile.close()
 
 # If Amplicon, generate FASTA

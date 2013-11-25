@@ -7,7 +7,7 @@ from glob import glob
 from mpi4py import MPI
 from proportion_x4 import prop_x4
 from sam2fasta import apply_cigar
-from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, timestamp, sampleSheetParser
+from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, sampleSheetParser, timestamp
 
 if sys.version_info[:2] != (2, 7):
 	print "MPI wrapper requires python 2.7"
@@ -35,10 +35,9 @@ root = sys.argv[1]		# Path to root of folder containing fastqs
 
 # parse sample sheet
 ssfile = open(root+'/SampleSheet.csv', 'rU')
-
 run_info = sampleSheetParser(ssfile)
 ssfile.close()
-mode = run_info['Description']			# Nextera or Amplicon
+mode = run_info['Description']
 
 def consensus_from_remapped_sam(root, ref, samfile, qCutoff=15):
 	"""
@@ -78,7 +77,7 @@ for i, fastq in enumerate(fastq_files):
 	timestamp(command)
 	os.system(command)
 
-timestamp(">>>>>>>> Made it to barrier #1")
+timestamp("Arrived at barrier #1")
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('All processes reached barrier 1 (Prelim clade B + sample specific remapping)\n')
 MPI.COMM_WORLD.Barrier()
@@ -94,7 +93,7 @@ for i in range(len(files)):
 		timestamp(command)
 		os.system(command)
 
-timestamp(">>>>>>>> Made it to barrier #2")
+timestamp("Arrived at barrier #2")
 MPI.COMM_WORLD.Barrier()
 if my_rank == 0: timestamp('All processes reached barrier #2 (Remap CSF from remap SAM)\n')
 MPI.COMM_WORLD.Barrier()
@@ -108,7 +107,7 @@ if mode == 'Amplicon':
 		timestamp(command)
 		os.system(command)
 
-timestamp(">>>>>>>> Made it to barrier #3")
+timestamp("Arrived at barrier #3")
 MPI.COMM_WORLD.Barrier()
 
 
@@ -131,7 +130,7 @@ if mode == 'Amplicon':
 						proportion_x4 = (float(total_x4_count) / float(total_count)) * 100
 						sample = prefix.split('/')[-1]
 						summary_file.write("{},{},{},{},{},{},{}\n".format(sample, sam2fasta_q_cutoff,
-                                                        fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
+								fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
 					except:
 						continue
 		summary_file.close()
