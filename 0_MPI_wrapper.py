@@ -1,13 +1,11 @@
 """
-Distribute pipeline processes across the cluster.
+Process a run in an MPI/distributed manner.
 """
 
-import os,sys
+import os,subprocess,sys
 from glob import glob
+from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, prop_x4, sampleSheetParser, timestamp
 from mpi4py import MPI
-from proportion_x4 import prop_x4
-from sam2fasta import apply_cigar
-from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, sampleSheetParser, timestamp
 
 if sys.version_info[:2] != (2, 7):
 	print "MPI wrapper requires python 2.7"
@@ -20,24 +18,22 @@ nprocs = MPI.COMM_WORLD.Get_size()
 conbrefpath ='/usr/local/share/miseq/refs/cfe'
 hxb2refpath='/usr/local/share/miseq/refs/'
 
-## Pipeline parameters
-HXB2_mapping_cutoff = 10	# Read mapping cutoff
-consensus_q_cutoff = 20		# q cutoff for 1_mapping/pileup2conseq conseq generation
-sam2fasta_q_cutoffs = [0,10,15]	# q cutoff for base censoring
-mincounts = [0,50,100,1000]	# Min occurences of read before counting in amplicon/v3 pipeline
+## General parameters
+read_mapping_cutoff = 10	# bowtie2 read mapping cutoff
+consensus_q_cutoff = 20		# Min Q for base to contribute to conseq generation (1_mapping/pileup2conseq)
+REMAP_THRESHOLD = 0.95		# Fraction of fastq reads successfully mapped to be considered acceptable
+MAX_REMAPS = 3			# Number of remapping attempts if below REMAP_THRESHOLD
+sam2fasta_q_cutoffs = [0,10,15]	# q cutoff for base censoring (sam2fasta)
+max_prop_N = 0.5		# Max proportion of censored bases allowed in a sequence (sam2fasta)
+
+## V3 specific parameters
 g2p_alignment_cutoff = 50	# Minimum alignment score during g2p scoring
 g2p_fpr_cutoffs = [3.5]		# FPR cutoff for G2P X4
-amino_conseq_cutoff = 10	# Minimum occurences of char before it counts for conseq generation
-				# FIXME: Doesn't appear to be used...!!
-## arguments
-root = sys.argv[1]		# Path to root of folder containing fastqs
+mincounts = [0,50,100,1000]	# Min read counts before counting in amplicon/v3 pipeline
 
+## Arguments
+root = sys.argv[1]		# Path on local cluster containing fastqs/SampleSheet.csv
 
-# parse sample sheet
-ssfile = open(root+'/SampleSheet.csv', 'rU')
-run_info = sampleSheetParser(ssfile)
-ssfile.close()
-mode = run_info['Description']
 
 def consensus_from_remapped_sam(root, ref, samfile, qCutoff=15):
 	"""
@@ -47,24 +43,38 @@ def consensus_from_remapped_sam(root, ref, samfile, qCutoff=15):
 	"""
 	bamfile = samfile.replace('.sam', '.bam')
 	confile = bamfile+'.pileup.conseq'
-	
 	os.system('samtools view -bt {}.fasta.fai {} > {} 2>/dev/null'.format(ref, samfile, bamfile))
 	os.system('samtools sort {} {}.sorted'.format(bamfile, bamfile))
 	os.system('samtools mpileup -A {}.sorted.bam > {}.pileup 2>/dev/null'.format(bamfile, bamfile))
-	
-	# From pileup, generate poly + conseq
 	os.system('python pileup2conseq_v2.py {}.pileup {}'.format(bamfile, qCutoff))
 	os.system('bowtie2-build -q -f {} {}'.format(confile, confile))
 
-# Map and remap each fastq to consensus B
-fastq_files = glob(root + '/*R1*.fastq')
+# Parse sample sheet
+with open(root+'/SampleSheet.csv', 'rU') as ssfile:
+	run_info = sampleSheetParser(ssfile)
+	mode = run_info['Description']
 
-# Exclude files generated to record contaminants
+# Print pipeline parameters to the pipeline log
+if my_rank == 0:
+	timestamp("PIPELINE PARAMETERS:")
+	timestamp("Minimum mapping score while parsing SAM files: {}".format(read_mapping_cutoff))
+	timestamp("Min Q for base to contribute to conseq generation: {}".format(consensus_q_cutoff))
+	timestamp("Fraction of fastq reads successfully mapped to be considered acceptable: {}".format(REMAP_THRESHOLD))
+	timestamp("Max number of remapping attempts: {}".format(MAX_REMAPS))
+	timestamp("Base censoring cutoff (sam2fasta): {}".format(sam2fasta_q_cutoffs))
+	timestamp("Max proportion censored bases allowed (sam2fasta): {}".format(max_prop_N))
+
+	if mode == "Amplicon":
+		timestamp("Mininum G2P alignment score: {}".format(g2p_alignment_cutoff))
+		timestamp("G2P FPR cutoff for X4/R5 tropism: {}".format(g2p_fpr_cutoffs))
+		timestamp("Minimum read count to contribute to proportion X4: {}".format(mincounts))
+
+# Map and remap raw fastqs to con B (exclude files generated to record contaminants)
+fastq_files = glob(root + '/*R1*.fastq')
 fastq_files = [f for f in fastq_files if not f.endswith('.Tcontaminants.fastq')]
 
 for i, fastq in enumerate(fastq_files):
 	if i % nprocs != my_rank: continue
-
 	fastq_filename = fastq.split('/')[-1]
 	sample_name = fastq_filename.split('_')[0]
 
@@ -73,13 +83,18 @@ for i, fastq in enumerate(fastq_files):
 		sys.exit()
 
 	is_t_primer = run_info['Data'][sample_name]['is_T_primer']
-	command = "python 1_mapping.py {} {} {} {} {} {} {}".format(conbrefpath, fastq, consensus_q_cutoff, mode, int(is_t_primer), my_rank, nprocs)
+
+	command = "python 1_mapping.py {} {} {} {} {} {} {}".format(conbrefpath, fastq, consensus_q_cutoff, mode,
+				int(is_t_primer), REMAP_THRESHOLD, MAX_REMAPS)
 	timestamp(command)
-	os.system(command)
+	p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	stdout, stderr = p.communicate()
+	if stdout != "": sys.stdout.write("{}\n".format(stdout))
+	if stderr != "": sys.stderr.write("{}\n".format(stderr))
 
 timestamp("Arrived at barrier #1")
 MPI.COMM_WORLD.Barrier()
-if my_rank == 0: timestamp('All processes reached barrier 1 (Prelim clade B + sample specific remapping)\n')
+if my_rank == 0: timestamp('All processes reached barrier #1\n')
 MPI.COMM_WORLD.Barrier()
 
 # For each remapped SAM, generate CSFs (done)
@@ -89,13 +104,16 @@ for i in range(len(files)):
 	filename = files[i].split('/')[-1]
 
 	for qcut in sam2fasta_q_cutoffs:
-		command = 'python 2_sam2fasta_with_base_censoring.py {} {} {} {}'.format(files[i], qcut, HXB2_mapping_cutoff, mode)
+		command = 'python 2_sam2fasta_with_base_censoring.py {} {} {} {} {}'.format(files[i], qcut, read_mapping_cutoff, mode, max_prop_N)
 		timestamp(command)
-		os.system(command)
+		p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		stdout, stderr = p.communicate()
+		if stdout != "": sys.stdout.write("{}\n".format(stdout))
+		if stderr != "": sys.stderr.write("{}\n".format(stderr))
 
 timestamp("Arrived at barrier #2")
 MPI.COMM_WORLD.Barrier()
-if my_rank == 0: timestamp('All processes reached barrier #2 (Remap CSF from remap SAM)\n')
+if my_rank == 0: timestamp('All processes reached barrier #2\n')
 MPI.COMM_WORLD.Barrier()
 
 # For amplicon sequencing runs, compute g2p scores for env-mapped FASTAs
@@ -105,7 +123,10 @@ if mode == 'Amplicon':
 		if i % nprocs != my_rank: continue
 		command = 'python 3_g2p_scoring.py {} {}'.format(file, g2p_alignment_cutoff)
 		timestamp(command)
-		os.system(command)
+		p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		stdout, stderr = p.communicate()
+		if stdout != "": sys.stdout.write("{}\n".format(stdout))
+		if stderr != "": sys.stderr.write("{}\n".format(stderr))
 
 timestamp("Arrived at barrier #3")
 MPI.COMM_WORLD.Barrier()
@@ -135,7 +156,6 @@ if mode == 'Amplicon':
 						continue
 		summary_file.close()
 		timestamp('Generated v3prot.summary file - cleaning up intermediary files...\n')
-
 MPI.COMM_WORLD.Barrier()
 
 # Generate counts + consensus from FASTA/CSFs
@@ -145,14 +165,20 @@ for i, file in enumerate(files):
 		continue
 	command = 'python 4_csf2counts.py %s %s' % (file, mode)
 	timestamp(command)
-	os.system(command)
+	p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	stdout, stderr = p.communicate()
+	if stdout != "": sys.stdout.write("{}\n".format(stdout))
+	if stderr != "": sys.stderr.write("{}\n".format(stderr))
 MPI.COMM_WORLD.Barrier()
 
 # Slice outputs + delete intermediary files
 if my_rank == 0:
 	command = 'python 5_slice_outputs.py {}'.format(root)
-	timestamp("Slicing outputs")
-	os.system(command)
+	timestamp(command)
+	p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	stdout, stderr = p.communicate()
+	if stdout != "": sys.stdout.write("{}\n".format(stdout))
+	if stderr != "": sys.stderr.write("{}\n".format(stderr))
 
 	timestamp("Deleting intermediary files")
 	files_to_delete = []

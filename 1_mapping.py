@@ -1,31 +1,22 @@
 """
-0) Report raw counts for FASTQs
-1) Map fastq reads to consensus B reference sequences
-    --> Results stored in prelim.sam
-2) Split the prelim.sam into region-specific SAMs
-3) Make a sample/region specific consensus
-4) Remap fastq reads against sample/region specific references
+1) Report raw fastq read counts
+2) Map fastq reads to consensus B reference sequences (Store in prelim.sam)
+3) Split prelim.sam into region-specific SAMs
+4) Make a sample/region specific consensus
+5) Remap fastq reads against sample/region specific references
 """
 
-import os
-import sys
+import os,subprocess,sys
 from miseqUtils import samBitFlag
-import subprocess
 
-## settings
-REMAP_THRESHOLD = 0.95 # what fraction of the data we should be able to remap
-MAX_REMAPS = 3
-DEBUG = 1
-
-## arguments
-conbrefpath = sys.argv[1]	# ConB reference path
-R1_fastq = sys.argv[2] 		# Absolute path to R1 fastq file
-qCutoff = sys.argv[3]
+## Arguments
+conbrefpath = sys.argv[1]             # Consensus B reference path
+R1_fastq = sys.argv[2]                # Absolute path to R1 fastq file
+qCutoff = sys.argv[3]                 # Q cutoff for pileup2conseq
 mode = sys.argv[4]
-is_t_primer = (sys.argv[5]=='1')
-nprocs = sys.argv[6]		# Give script awareness of MPI rank
-my_rank = sys.argv[7]
-
+is_t_primer = (sys.argv[5]=='1')      # Used for contamination detection
+REMAP_THRESHOLD = float(sys.argv[6])  # Minimum tolerated fraction of mapped fastq reads
+MAX_REMAPS = int(sys.argv[7])         # Number of attempts at remapping before giving up
 
 def remap (R1_fastq, R2_fastq, samfile, ref, qCutoff=30):
     """
@@ -50,21 +41,24 @@ def remap (R1_fastq, R2_fastq, samfile, ref, qCutoff=30):
         os.system(cmd) # creates [ref].fai
         cmd = 'samtools view -bt %s.fai %s > %s 2>/dev/null' % (ref, samfile, bamfile)
         os.system(cmd)
-    
+
+    # Sort the bam file by leftmost position on the reference assembly
     cmd = 'samtools sort %s %s.sorted' % (bamfile, bamfile)
     os.system(cmd)
+
+    # Make a pileup from the sorted bam
     cmd = 'samtools mpileup -A %s.sorted.bam > %s.pileup 2>/dev/null' % (bamfile, bamfile)
     os.system(cmd)
     
-    # create new consensus sequence
+    # Create new consensus sequence from the pileup
     cmd = 'python2.7 pileup2conseq_v2.py %s.pileup %s' % (bamfile, qCutoff)
     os.system(cmd)
     
-    # convert into bowtie2 reference files (*.bt2)
+    # Convert consensus into bowtie2 reference files (*.bt2)
     cmd = 'bowtie2-build -q -f %s %s' % (confile, confile)
     os.system(cmd)
     
-    # map original data to new reference
+    # Map original fastq reads to new reference
     cmd = 'bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s --no-unal --met-file %s --un %s --un-conc %s' % (confile, 
             R1_fastq, R2_fastq, remapped_sam, remapped_sam.replace('.sam', '.bt2_metrics'),
             remapped_sam.replace('.sam', '.bt2_unpaired_noalign.fastq'), 
@@ -73,14 +67,15 @@ def remap (R1_fastq, R2_fastq, samfile, ref, qCutoff=30):
             
     return remapped_sam, confile
 
+
+
 # Store region codes in con B reference fasta headers in refnames
-conb_ref_fasta = open(conbrefpath+'.fasta', 'rU')
-refnames = []
-for line in conb_ref_fasta:
-    if line.startswith('>'): refnames.append(line.strip('>\n'))
-conb_ref_fasta.close()
+with open(conbrefpath+'.fasta', 'rU') as conb_ref_fasta:
+    refnames = []
+    for line in conb_ref_fasta:
+        if line.startswith('>'): refnames.append(line.strip('>\n'))
 
-
+# Deduce R1/R2 file pairing
 root = '/'.join(R1_fastq.split('/')[:-1])
 filename = os.path.basename(R1_fastq)			# Filename of R1 fastq...
 file_prefix = filename.split('.')[0]			# Has a prefix containing...
@@ -118,18 +113,21 @@ contam_file = open(R1_fastq.replace('.fastq', '.Tcontaminants.fastq'), 'w')
 
 for line in prelim_sam_infile:
 
-    # Copy the SAM header into each region-specific SAM
+    # Copy the original SAM header into each region-specific SAM
     if line.startswith('@'):
         for refname in refnames: refsams[refname]['sam_file_handle'].write(line)
         continue
 
+    # SAM documentation explains what these fields mean - http://samtools.sourceforge.net/SAMv1.pdf
     qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')[:11]
+
+    # SAM bitwise flag variable specifies whether read is paired, successfully mapped, etc
     bitinfo = samBitFlag(flag)
 
     # Ignore unmapped reads
     if bitinfo['is_unmapped']:
         continue
-    
+
     if mode == 'Amplicon':
         # filter T contaminants
         if is_t_primer:
@@ -189,7 +187,6 @@ total_remap = 0
 for refname in refnames:
 
     # Completely ignore phiX, unmapped reads, and regions which had no mapping at the prelim mapping stage
-    # FIXME: DO WE WANT TO HAVE A CUTOFF FOR THE NUMBER OF READS MAPPED AT PRELIM MAP?
     if sum(refsams[refname]['count']) == 0 or refname == 'phiX174' or refname == '*':
         continue
 

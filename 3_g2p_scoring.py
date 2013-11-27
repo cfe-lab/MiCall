@@ -6,30 +6,28 @@ along with G2PFPR score in the header (Plus the count)
 import os,sys
 from hyphyAlign import apply2nuc, change_settings, get_boundaries, HyPhy, pair_align, refSeqs
 from minG2P import conan_g2p
-from miseqUtils import convert_fasta, translate_nuc
+from miseqUtils import convert_fasta, timestamp, translate_nuc
 
 f = sys.argv[1]
 g2p_alignment_cutoff = int(sys.argv[2])
 
-# Input must be a fasta file
 if not f.endswith('.fasta'):
-	print 'Expecting filename ending with .fasta extension'
+	timestamp('Expecting filename ending with .fasta extension\n')
 	sys.exit()
+
+filename = f.split('/')[-1]
+prefix = filename.split('.')[0]
 
 hyphy = HyPhy._THyPhy (os.getcwd(), 1)
 change_settings(hyphy) 					# Default settings are for protein alignment
 refseq = translate_nuc(refSeqs['V3, clinical'], 0)	# refSeq is V3 (HXB2: 7110-7217) in nucleotide space
 
-filename = f.split('/')[-1]
-prefix = filename.split('.')[0]
-infile = open(f, 'rU')
-
-try:
-	fasta = convert_fasta(infile.readlines())
-except:
-	print '{} failed to convert {}'.format(sys.argv[0], f)
-	sys.exit()
-infile.close()
+with open(f, 'rU') as infile:
+	try:
+		fasta = convert_fasta(infile.readlines())
+	except:
+		timestamp('{} failed to convert {}\n'.format(sys.argv[0], f))
+		sys.exit()
 
 # Determine offset from the 1st sequence to correct frameshift induced by sample-specific remapping
 seq1 = fasta[0][1].strip("-")
@@ -54,30 +52,23 @@ for header, seq in fasta:
 	left, right = get_boundaries(aref)		# Get left/right boundaries of V3 protein
 	v3prot = aquery[left:right]			# Extract V3 protein
 	
-	v3nuc = apply2nuc(seq[(3*left-best_offset):], v3prot, aref[left:right], 		# use alignment to extract V3 nuc. seq
+	v3nuc = apply2nuc(seq[(3*left-best_offset):], v3prot, aref[left:right], 	# Use alignment to extract V3 nuc seq
 					keepIns=True, keepDel=False)
 	
-	# Conditions for dropping data
-	# 1) Censored bases were detected ('N')
-	# 2) V3 didn't start with C, end with C
-	# 3) V3 didn't contain an internal stop codon ('*')
-	# 4) Alignment score less than cutoff
-	
+	# Consider the following reads as 'bad': those with a censored base ('N'), a protein sequence that doesn't start/end with C,
+	# contains an internal stop, has a poor alignment score, or is not of the length 32-40
 	if 'N' in v3nuc or not v3prot.startswith('C') or not v3prot.endswith('C') or '*' in v3prot or ascore < g2p_alignment_cutoff or len(v3prot) < 32 or len(v3prot) > 40:
-		# Screen for bad V3 sequences, provide reason(s)
 		badfile.write('>%s_reason_%s\n%s\n' % (header,
 			'|'.join(['stopcodon' if '*' in v3prot else '',
 			'lowscore' if ascore < g2p_alignment_cutoff else '',
 			'cystines' if not v3prot.startswith('C') or not v3prot.endswith('C') else '',
 			'ambig' if 'N' in v3nuc else '']),seq))
 	else:
-		# This looks like a legitimate V3-encoding sequence
-		# Track the count of each v3nucleotide sequence
+		# Track the count of each v3 nucleotide sequence
 		if v3nucs.has_key(v3nuc):
 			v3nucs[v3nuc] += count
 		else:
 			v3nucs.update({v3nuc: count})
-
 badfile.close()
 
 # Calculate g2p scores for each v3nuc entry
@@ -92,19 +83,17 @@ for v3nuc, count in v3nucs.iteritems():
 	if v3prots.has_key(aligned):
 		v3prots[aligned]['count'] += count
 	else:
-		# dict within dict - store count and fpr for each sequence
+		# Dict within dict - store count and fpr for each sequence
 		v3prots.update({aligned: {'count': count, 'fpr': fpr}})
 
 # Collect identical V3 amino acid sequences and output
-
 # Extract the protein sequence and it's count
 # k: protein sequence, v: dict mapping to 'count' and 'fpr'
 intermed = [(v['count'], k) for k, v in v3prots.iteritems()]
 intermed.sort(reverse=True)
 
 # Write a file with the sample (prefix?), rank, count, fpr, and sequence
-v3protfile = open(f.replace('.fasta', '.v3prot'), 'w')
-for i, (count, v3prot) in enumerate(intermed):
-	fpr = v3prots[v3prot]['fpr']
-	v3protfile.write('>%s_variant_%d_count_%d_fpr_%s\n%s\n' % (prefix, i, count, fpr, v3prot))
-v3protfile.close()
+with open(f.replace('.fasta', '.v3prot'), 'w') as v3protfile:
+	for i, (count, v3prot) in enumerate(intermed):
+		fpr = v3prots[v3prot]['fpr']
+		v3protfile.write('>%s_variant_%d_count_%d_fpr_%s\n%s\n' % (prefix, i, count, fpr, v3prot))

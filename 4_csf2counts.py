@@ -4,32 +4,34 @@ Calculate nucleotide and amino acid counts from a FASTA or CSF file
 import csv,os,sys
 from miseqUtils import *
 from hyphyAlign import *
+# from hyphyAlign import change_settings, pair_align
+# from miseqUtils import convert_csf, convert_fasta, translate_nuc
 
 hyphy = HyPhy._THyPhy (os.getcwd(), 1)
 change_settings(hyphy)
 
 amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
-mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]        # What cutoffs are these???
-
-# Load in the HXB2 amino reference sequences
-f = open("HXB2_amino_sequences.csv", "rb")
-input_file = csv.reader(f)
-hxb2 = {}
-for row in input_file:
-    region, amino = row
-    hxb2[region] = amino
-f.close()
+mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]        # FIXME: Parameterize these
 
 if len(sys.argv) < 3:
-    print 'Usage: python 4_csf2counts.py /path/to/.csf|.fasta Nextera|Amplicon'
+    timestamp('Proper usage - python 4_csf2counts.py /path/to/(csf|fasta) Nextera|Amplicon')
     sys.exit()
 
 path = sys.argv[1]
 filename = path.split('/')[-1]
 sample, ref = filename.split('.')[:2]
 mode = sys.argv[2]
+mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 
-# make the output stem by removing the extension of the filename
+# Load HXB2 amino reference sequences
+with open("HXB2_amino_sequences.csv", "rb") as f:
+    input_file = csv.reader(f)
+    hxb2 = {}
+    for row in input_file:
+        region, amino = row
+        hxb2[region] = amino
+
+# Make the output stem by removing the extension of the filename
 root = '/'.join(path.split('/')[:-1])
 if root == '':
     # in case script is executed on file in cwd
@@ -41,9 +43,6 @@ outpath = root + '/' + (filename.replace('.fasta', '') if mode == 'Amplicon' els
 nucfile = open(outpath+'.nuc.csv', 'w')
 nucfile.write('query.nuc.pos,hxb2.nuc.pos,A,C,G,T\n')
 
-aafile = open(outpath+'.amino.csv', 'w')
-aafile.write('query.aa.pos,hxb2.aa.pos,%s\n' % ','.join(list(amino_alphabet)))
-
 confile = open(outpath+'.conseq', 'w')
 indelfile = open(outpath+'.indels.csv', 'w')
 
@@ -52,14 +51,13 @@ if not hxb2.has_key(ref):
 
 refseq = hxb2[ref]
 
-infile = open(path, 'rU')
-if mode == 'Nextera':
-    fasta, lefts, rights = convert_csf(infile.readlines())
-elif mode == 'Amplicon':
-    fasta = convert_fasta(infile.readlines())
-else:
-    sys.exit()
-infile.close()
+with open(path, 'rU') as infile:
+    if mode == 'Nextera':
+        fasta, lefts, rights = convert_csf(infile.readlines())
+    elif mode == 'Amplicon':
+        fasta = convert_fasta(infile.readlines())
+    else:
+        sys.exit()
 
 
 # Use the first read to determine reading frame
@@ -76,14 +74,11 @@ for frame in range(3):
 # Iterate through reads and count WHAT?
 nucs = {}
 aminos = {}
-
-# Cache protein sequences
-pcache = []
+pcache = []    # Cache protein sequences
 
 # At this point, sequences are aligned against the sample-region
 # specific consensus. Thus, each read in the csf contains an offset
 # with respect to the sample-region specific consensus.
-
 
 # For each sequence in the fasta/csf
 for i, (h, s) in enumerate(fasta):
@@ -255,15 +250,16 @@ for ci, cutoff in enumerate(mixture_cutoffs):
     confile.write('>%s_%1.3f\n%s\n' % (sample, cutoff, conseqs[ci]))
 confile.close()
 
-# output amino acid counts
-keys = aminos.keys()
-keys.sort()
-for aapos in keys:
-    if aapos in inserts:
-        continue
-    try:
-        hxb2_pos = qindex_to_hxb2[aapos] + 1
-    except KeyError:
-        continue
-    aafile.write('%d,%d,%s\n' % (aapos,hxb2_pos, ','.join(map(str, [aminos[aapos].get(aa, 0) for aa in amino_alphabet]))))
-aafile.close()
+# Output amino acid counts
+with open(outpath+'.amino.csv', 'w') as aafile:
+    aafile.write('query.aa.pos,hxb2.aa.pos,%s\n' % ','.join(list(amino_alphabet)))
+    keys = aminos.keys()
+    keys.sort()
+    for aapos in keys:
+        if aapos in inserts:
+            continue
+        try:
+            hxb2_pos = qindex_to_hxb2[aapos] + 1
+        except KeyError:
+            continue
+        aafile.write('%d,%d,%s\n' % (aapos,hxb2_pos, ','.join(map(str, [aminos[aapos].get(aa, 0) for aa in amino_alphabet]))))
