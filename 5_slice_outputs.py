@@ -1,9 +1,10 @@
 """
-Slice 4_csf2counts.py output (Count CSVs + conseq files) into sub-regions.
+Slice matrix output of previous step (Count CSVs) into sub-regions.
 """
 
-import os, sys,time
+import os,sys,time
 from glob import glob
+from miseqUtils import timestamp
 
 # Define slices with (Label, region to slice, start, end)
 # Coordinates are in nucleotide space: start/end are inclusive (Relative to HXB2 aligned sequences)
@@ -23,11 +24,13 @@ if len(sys.argv) != 2:
 
 root = sys.argv[1]
 
+# For each region slice rule
 for rule in region_slices:
 	slice, region, start, end = rule
 	files = glob(root + '/*.{}.*nuc.csv'.format(region))
 	files += glob(root + '/*.{}.*amino.csv'.format(region))
 
+	# Get all nuc/amino files containing the region to be sliced
 	for path in files:
 		fileName = os.path.basename(path)
 		sample,old_region = fileName.split(".")[:2]
@@ -37,15 +40,19 @@ for rule in region_slices:
 
 		newFileName = fileName.replace(region,slice)
 		dirName = os.path.dirname(path)
+		slice_filename = "{}/{}".format(dirName, newFileName)
+		f = open(slice_filename, 'w')
+		conseq_filename = "{}/{}".format(dirName, newFileName.replace(".csv",".conseq"))
+		f_conseq = open(conseq_filename, 'w')
 
-		f = open("{}/{}".format(dirName, newFileName), 'w')
-		f_conseq = open("{}/{}".format(dirName, newFileName.replace(".csv",".conseq")), 'w')
 		conseq = ""
+		is_empty = True
 
+		# For each line in the frequency matrix file
 		for i,line in enumerate(lines):
 			line = line.rstrip("\n")
 
-			# Determine dictionary from header
+			# First, extract character dictionary from header
 			if (i == 0):
 				f.write("{}\n".format(line))
 				dictionary = line.split(",")[2:]
@@ -62,6 +69,9 @@ for rule in region_slices:
 				if hxb2_pos < (start+2)/3 or hxb2_pos > end/3: continue
 				region_pos = hxb2_pos - (start+2)/3 + 1
 
+			# If we reached this point, the slice contains data
+			is_empty = False
+
 			# Generate consensus sequence
 			counts = line.split(",")[2:]
 			max_count = max(map(int,counts))
@@ -71,6 +81,12 @@ for rule in region_slices:
 			conseq += majority_char
 			f.write("{},{},{}\n".format(query_pos,region_pos,",".join(counts)))
 
+		# Close the new slice matrix, and write the consensus sequence of it
 		f.close()
 		f_conseq.write(">{}_{}\n{}".format(sample, slice, conseq))
 		f_conseq.close()
+
+		# If slice contains no data, delete it
+		if is_empty:
+			os.remove(slice_filename)
+			os.remove(conseq_filename)

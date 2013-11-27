@@ -6,9 +6,7 @@ import random
 gpfx = re.compile('^[-]+')
 
 def len_gap_prefix (s):
-	"""
-	Find length of gap prefix
-	"""
+	"""Find length of gap prefix"""
 	hits = gpfx.findall(s)
 	if hits:
 		return len(hits[0])
@@ -186,7 +184,7 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
 			seq2 = '-'*pos2 + censor_bases(seq2, qual2, cutoff)
 			mseq = merge_pairs(seq1, seq2)
 
-			# Output only if sequence is good quality
+			# Sequence must not have too many censored bases
 			if mseq.count('N') / float(len(mseq)) < max_prop_N:
 				fasta.append([qname, mseq])
 			
@@ -296,12 +294,43 @@ def sampleSheetParser (handle):
 	return run_info
 
 
-def timestamp(msg):
-	currTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-	output = ' {} {}'.format(currTime,msg)
+def timestamp(message):
+	curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+	output = ' {} {}'.format(curr_time,message)
 	print output
 	sys.stdout.flush()
 	return "{}\n".format(output)
+
+def prop_x4 (v3prot_path, fpr_cutoff, min_count):
+	"""Determine proportion X4 from v3prot file"""
+
+	with open(v3prot_path, 'rU') as infile:
+		try:
+			fasta = convert_fasta(infile.readlines())
+		except:
+			print "failed to convert {}".format(v3prot_path)
+			sys.exit()
+	total_count = 0 
+	total_x4_count = 0 
+
+	# Example header: F00309-IL_variant_0_count_27_fpr_4.0
+	for h, s in fasta:
+		try:
+			tokens = h.split('_')
+			variant = int(tokens[tokens.index('variant')+1])
+			count = int(tokens[tokens.index('count')+1])
+			fpr = float(tokens[tokens.index('fpr')+1])
+		except:
+			continue
+
+		if count < min_count:
+			continue
+		if fpr <= fpr_cutoff:
+			total_x4_count += count
+
+		total_count += count
+
+	return (total_x4_count, total_count)
 
 def poly2conseq(poly_file,alphabet='ACDEFGHIKLMNPQRSTVWY*-',minCount=3):
 	"""
@@ -353,9 +382,6 @@ def convert_csf (csf_handle):
 	for line in csf_handle:
 		# Header from machine = M01841:18:000000000-A4V8D:1:1111:14650:12016
 		header, offset, seq = line.strip('\n').split(',')
-
-		# Add the leading offset
-		#fasta.append([header, '-'*int(offset) + seq])
 		fasta.append([header, seq])
 		left_gap_position[header] = int(offset)
 		right_gap_position[header] = left_gap_position[header] + len(seq)
