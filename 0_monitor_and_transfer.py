@@ -25,7 +25,7 @@ if sys.version_info[:2] != (2, 7):
 ## Settings
 home='/data/miseq/'		# Local path on cluster for writing data
 delay = 3600			# Delay for polling macdatafile for unprocessed runs
-pipeline_version = "4.3"
+pipeline_version = "4.4"
 macdatafile_mount = '/media/macdatafile/'
 
 def mark_run_as_processed(runpath):
@@ -116,11 +116,11 @@ while 1:
 		if stderr != "": logging.warn(stderr)
 
 	# Create log where 0_MPI_wrapper will write it's output
-	MPI_log_path = home + run_name + '/0_MPI_wrapper_output.log'
+	MPI_log_path = home + run_name + '/MPI_wrapper_output.log'
 	MPI_wrapper_log = open(MPI_log_path, "w")
 
 	# stdout/stderr of 0_MPI_wrapper concatenates to the log file (It includes stderr due to -tag-output)
-	command = "module load openmpi/gnu; mpirun -tag-output -machinefile mfile python -u {} {}".format("0_MPI_wrapper.py", home+run_name)
+	command = "module load openmpi/gnu; mpirun -tag-output -machinefile mfile python -u {} {}".format("1_MPI_wrapper.py", home+run_name)
 	p = subprocess.Popen(command, shell=True, stdout = MPI_wrapper_log, stderr = MPI_wrapper_log)
 	logging.info(command)
 

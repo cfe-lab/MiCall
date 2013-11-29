@@ -261,7 +261,7 @@ def system_call(command):
 	logger.debug(command)
 	os.system(command)
 
-def remap (R1_fastq, R2_fastq, samfile, ref, original_con_b, qCutoff=30):
+def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=30):
 	""" 
 	1) Generate sample-specific consensus from a samtools pileup.
 	2) Remap everything to this consensus as a ref seq
@@ -273,13 +273,13 @@ def remap (R1_fastq, R2_fastq, samfile, ref, original_con_b, qCutoff=30):
 	logger = logging.getLogger()
 
 	bamfile = samfile.replace('.sam', '.bam')
-	confile = bamfile+'.pileup.conseq'
+	confile = "{}.pileup.conseq".format(bamfile)
 
 	# Overwrite previous iterations of the remapped sam (Only keep the original specific prelim sam)
 	remapped_sam = samfile if samfile.endswith('.remap.sam') else samfile.replace('.sam', '.remap.sam')
 
-	# If this is the first run, use the default con B reference
-	if ref == original_con_b:
+	# If this is the first run, use the static reference
+	if ref == original_reference:
 		system_call('samtools view -bt {}.fasta.fai {} > {} 2>/dev/null'.format(ref, samfile, bamfile))
 	else:
 		# Make new samtools index file (Creates [ref].fai)
@@ -293,7 +293,7 @@ def remap (R1_fastq, R2_fastq, samfile, ref, original_con_b, qCutoff=30):
 	system_call('samtools mpileup -A {}.sorted.bam > {}.pileup 2>/dev/null'.format(bamfile, bamfile))
 	
 	# Create new consensus sequence from the pileup
-	system_call('python2.7 pileup2conseq_v2.py {}.pileup {}'.format(bamfile, qCutoff))
+	system_call('python2.7 pileup2conseq_v2.py {}.pileup {}'.format(bamfile, conseq_qCutoff))
 	
 	# Convert consensus into bowtie2 reference files (*.bt2)
 	system_call('bowtie2-build -q -f {} {}'.format(confile, confile))
@@ -308,29 +308,24 @@ def remap (R1_fastq, R2_fastq, samfile, ref, original_con_b, qCutoff=30):
 	return remapped_sam, confile
 
 
-def mapping(conbrefpath, R1_fastq, qCutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS):
+def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS):
 	"""
-	conbrefpath	Absolute path to the reference sequences used during original mapping
+	refpath		Absolute path to static reference sequences used during original mapping
 	R1_fastq	Absolute path to R1 fastq file
-	qCutoff		Cutoff for pileup2conseq (NOT FOR SAM2FASTA)
-	is_t_primer	Contamination detection
-	REMAP_THRESHOLD	Minimum efficiency of mapping fastq reads
-	MAX_REMAPS	Number of attempts at remapping before giving up
+	conseq_qCutoff	Q-cutoff for determining if a base contributes to the consensus in pileup2conseq
+	is_t_primer	Used to detect contaminants from previous runs (FIXME: REMOVE?)
+	REMAP_THRESHOLD	Efficiency of read mapping at which we stop bothering to perform additional remapping
+	MAX_REMAPS	Number of extra attempts at remapping before giving up
 	"""
-
-	import logging,os,subprocess,sys
+	import logging, os, subprocess, sys
 	from miseqUtils import samBitFlag
 	from miseq_modules import system_call
 
-	original_con_b = conbrefpath
 	logger = logging.getLogger()
-
-	is_t_primer = is_t_primer=='1'
-	REMAP_THRESHOLD = float(REMAP_THRESHOLD)
-	MAX_REMAPS = int(MAX_REMAPS)
+	original_reference = refpath		# Path to the original reference sequence
 
 	# Store region codes in con B reference fasta headers in refnames
-	with open(conbrefpath+'.fasta', 'rU') as conb_ref_fasta:
+	with open(refpath+'.fasta', 'rU') as conb_ref_fasta:
 		refnames = []
 		for line in conb_ref_fasta:
 			if line.startswith('>'): refnames.append(line.strip('>\n'))
@@ -354,7 +349,7 @@ def mapping(conbrefpath, R1_fastq, qCutoff, mode, is_t_primer, REMAP_THRESHOLD, 
 
 	# Initial consensus B mapping
 	prelim_samfile = '{}/{}.prelim.sam'.format(root, prefix)
-	system_call('bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s' % (conbrefpath, R1_fastq, R2_fastq, prelim_samfile))
+	system_call('bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s' % (refpath, R1_fastq, R2_fastq, prelim_samfile))
 
 	# Define region-specific SAMs: refsams[refname] points to a nested dict which includes a file handle to each specific SAM
 	refsams = {}
@@ -420,7 +415,7 @@ def mapping(conbrefpath, R1_fastq, qCutoff, mode, is_t_primer, REMAP_THRESHOLD, 
 		except:
 			print "{} appeared to be an incorrect refname".format(refname)
 
-		# I think is_reverse identifies R1 reads from R2 in the prelim SAM...? 
+		# FIXME: Does this identify R1 reads from R2 in the prelim SAM...? 
 		line_counts[bitinfo['is_reverse']] += 1
 
 	prelim_sam_infile.close()
@@ -443,22 +438,21 @@ def mapping(conbrefpath, R1_fastq, qCutoff, mode, is_t_primer, REMAP_THRESHOLD, 
 	# Remap the fastqs using sample/region specific conseqs
 	for refname in refnames:
 
-		# Completely ignore phiX, unmapped reads, and regions which had no mapping at the prelim mapping stage
+		# Ignore phiX, unmapped reads, and regions which had no mapping at the prelim mapping stage
 		if sum(refsams[refname]['count']) == 0 or refname == 'phiX174' or refname == '*':
 			continue
 
 		# Run remap on the region-specific sam, and get the remapped sam and consensus pileup used to generate it
 		samfile = refsams[refname]['sam_file_handle'].name
 
-		logging.info("remap({},{},{},{},{},{})".format(R1_fastq, R2_fastq, samfile, conbrefpath, original_con_b, qCutoff))
-		samfile, confile = remap(R1_fastq, R2_fastq, samfile, conbrefpath, original_con_b, qCutoff)
+		logging.info("remap({},{},{},{},{},{})".format(R1_fastq, R2_fastq, samfile, refpath, original_reference, conseq_qCutoff))
+		samfile, confile = remap(R1_fastq, R2_fastq, samfile, refpath, original_reference, conseq_qCutoff)
 	
 		# Track file paths
 		refsams[refname].update({'samfile': samfile, 'confile': confile})
 	
 		# Track the number of mapped reads in each region
-		p = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE)
-		stdout, stderr = p.communicate()
+		stdout, stderr = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
 		region_specific_count = (int(stdout.split()[0]) - 3) / 2. # First 3 lines contain comments
 		total_remap += region_specific_count
 		refsams[refname]['count'][0] = region_specific_count
@@ -477,13 +471,12 @@ def mapping(conbrefpath, R1_fastq, qCutoff, mode, is_t_primer, REMAP_THRESHOLD, 
 			
 				samfile = refsams[refname]['samfile']
 				confile = refsams[refname]['confile']
-				samfile, confile = remap(R1_fastq, R2_fastq, samfile, confile, original_con_b, qCutoff)
+				samfile, confile = remap(R1_fastq, R2_fastq, samfile, confile, original_reference, conseq_qCutoff)
 				refsams[refname]['samfile'] = samfile
 				refsams[refname]['confile'] = confile
 			
 				# Continue to determine the number of reads mapped in this region
-				p = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE)
-				stdout, stderr = p.communicate()
+				stdout, stderr = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
 				region_specific_count = (int(stdout.split()[0]) - 3) / 2.
 				
 				# If number of reads is declining, that's really bad
@@ -502,36 +495,34 @@ def mapping(conbrefpath, R1_fastq, qCutoff, mode, is_t_primer, REMAP_THRESHOLD, 
 
 	count_file.close()
 	
-def g2p_scoring(f, g2p_alignment_cutoff):
+def g2p_scoring(input_path, g2p_alignment_cutoff):
 	"""
 	Generate V3-specific nucleotide sequence from remapped env .fasta file,
 	along with G2PFPR score in the header (Plus the count)
 	"""
 
-	import os,sys
+	import logging,os,sys
 	from hyphyAlign import apply2nuc, change_settings, get_boundaries, HyPhy, pair_align, refSeqs
 	from minG2P import conan_g2p
 	from miseqUtils import convert_fasta, timestamp, translate_nuc
 
-	if not f.endswith('.fasta'):
-		timestamp('Expecting filename ending with .fasta extension\n')
+	logger = logging.getLogger()
+	hyphy = HyPhy._THyPhy (os.getcwd(), 1)			# HyPhy is used for alignment
+	change_settings(hyphy)					# Configure scoring matrix / gap penalties
+	refseq = translate_nuc(refSeqs['V3, clinical'], 0)	# The V3 reference sequence is NON-STANDARD: talk to Guin
+
+	if not input_path.endswith('.fasta'):
+		logging.error("{} doesn't end in .fasta")
 		sys.exit()
 	
-	filename = f.split('/')[-1]
-	prefix = filename.split('.')[0]
-	
-	hyphy = HyPhy._THyPhy (os.getcwd(), 1)
-	change_settings(hyphy) 					# Default settings are for protein alignment
-	refseq = translate_nuc(refSeqs['V3, clinical'], 0)	# refSeq is V3 (HXB2: 7110-7217) in nucleotide space
-
-	with open(f, 'rU') as infile:
+	with open(input_path, 'rU') as infile:
 		try:
 			fasta = convert_fasta(infile.readlines())
 		except:
-			timestamp('{} failed to convert {}\n'.format(sys.argv[0], f))
+			logging.error('g2p_scoring(): {} not a valid fasta file'.format(input_path))
 			sys.exit()
 	
-	# Determine offset from the 1st sequence to correct frameshift induced by sample-specific remapping
+	# Determine offset from 1st sequence to correct frameshift induced by sample-specific remapping
 	seq1 = fasta[0][1].strip("-")
 	best_offset = 0
 	best_score = -999
@@ -543,28 +534,25 @@ def g2p_scoring(f, g2p_alignment_cutoff):
 			best_score = ascore
 
 	# For each env sequence, extract the V3 nucleotide sequence
-	badfile = open(f.replace('.fasta', '.badV3'), 'w')
+	badfile = open(input_path.replace('.fasta', '.badV3'), 'w')
 	v3nucs = {}
-	
 	for header, seq in fasta:
 		count = int(header.split('_')[-1])
-		seq = seq.replace("-","")			# Strip dashes at flanking regions generated by alignment
-		aaEnvSeq = translate_nuc(seq, best_offset)	# Translate env on the correct offset (ORF)
+		seq = seq.replace("-","")					# Strip dashes at flanking regions generated by alignment
+		aaEnvSeq = translate_nuc(seq, best_offset)			# Translate env on correct ORF
 		aquery, aref, ascore = pair_align(hyphy, refseq, aaEnvSeq)
-		left, right = get_boundaries(aref)		# Get left/right boundaries of V3 protein
-		v3prot = aquery[left:right]			# Extract V3 protein
+		left, right = get_boundaries(aref)				# Get left/right boundaries of V3 protein
+		v3prot = aquery[left:right]					# Extract V3 protein
+		v3nuc = apply2nuc(seq[(3*left-best_offset):], v3prot,		# Use alignment to extract V3 nuc seq
+				aref[left:right], keepIns=True, keepDel=False)
 		
-		v3nuc = apply2nuc(seq[(3*left-best_offset):], v3prot, aref[left:right], 	# Use alignment to extract V3 nuc seq
-						keepIns=True, keepDel=False)
-		
-		# Consider the following reads as 'bad': those with a censored base ('N'), a protein sequence that doesn't start/end with C,
-		# contains an internal stop, has a poor alignment score, or is not of the length 32-40
+		# Drop V3 data that don't satisfy quality control
 		if 'N' in v3nuc or not v3prot.startswith('C') or not v3prot.endswith('C') or '*' in v3prot or ascore < g2p_alignment_cutoff or len(v3prot) < 32 or len(v3prot) > 40:
 			badfile.write('>%s_reason_%s\n%s\n' % (header,
-				'|'.join(['stopcodon' if '*' in v3prot else '',
-				'lowscore' if ascore < g2p_alignment_cutoff else '',
-				'cystines' if not v3prot.startswith('C') or not v3prot.endswith('C') else '',
-				'ambig' if 'N' in v3nuc else '']),seq))
+				'|'.join(['stopcodon' if '*' in v3prot else '',					# V3 can't have internal stop codon
+				'lowscore' if ascore < g2p_alignment_cutoff else '',				# The G2P alignment can't be poor
+				'cystines' if not v3prot.startswith('C') or not v3prot.endswith('C') else '',	# V3 must start/end with C
+				'ambig' if 'N' in v3nuc else '']),seq))						# There must be no unknown bases
 		else:
 			# Track the count of each v3 nucleotide sequence
 			if v3nucs.has_key(v3nuc):
@@ -573,7 +561,7 @@ def g2p_scoring(f, g2p_alignment_cutoff):
 				v3nucs.update({v3nuc: count})
 	badfile.close()
 	
-	# Calculate g2p scores for each v3nuc entry
+	# Calculate g2p scores for each v3 nuc sequence
 	v3prots = {}
 	for v3nuc, count in v3nucs.iteritems():
 		g2p, fpr, aligned = conan_g2p(v3nuc)
@@ -595,24 +583,20 @@ def g2p_scoring(f, g2p_alignment_cutoff):
 	intermed.sort(reverse=True)
 	
 	# Write a file with the sample (prefix?), rank, count, fpr, and sequence
-	with open(f.replace('.fasta', '.v3prot'), 'w') as v3protfile:
+	v3prot_path = input_path.replace('.fasta', '.v3prot')
+	with open(v3prot_path, 'w') as v3protfile:
 		for i, (count, v3prot) in enumerate(intermed):
 			fpr = v3prots[v3prot]['fpr']
 			v3protfile.write('>%s_variant_%d_count_%d_fpr_%s\n%s\n' % (prefix, i, count, fpr, v3prot))
 
-def sam2fasta_with_base_censoring(samfile, qCutoff, HXB2_mapping_cutoff, mode, max_prop_N):
+def sam2fasta_with_base_censoring(samfile, censoring_qCutoff, HXB2_mapping_cutoff, mode, max_prop_N):
 	"""
 	From a SAM file, create a FASTA file for Amplicon runs, or CSF
 	files for Nextera runs. Both output formats can be thought of as
 	simplified representations of the original SAM.
 	"""
-
 	import os, sys
 	from miseqUtils import len_gap_prefix, sam2fasta
-
-	qCutoff = int(qCutoff)
-	HXB2_mapping_cutoff = int(HXB2_mapping_cutoff)
-	max_prop_N = float(max_prop_N)
 
 	# Extract sample (prefix) and region
 	filename = samfile.split('/')[-1]
@@ -620,7 +604,7 @@ def sam2fasta_with_base_censoring(samfile, qCutoff, HXB2_mapping_cutoff, mode, m
 
 	# Convert SAM to fasta-structured variable
 	with open(samfile, 'rU') as infile:
-		fasta = sam2fasta(infile, qCutoff, HXB2_mapping_cutoff, max_prop_N)
+		fasta = sam2fasta(infile, censoring_qCutoff, HXB2_mapping_cutoff, max_prop_N)
 
 	# Send warning to standard out if sam2fasta didn't return anything
 	if fasta == None:
@@ -641,7 +625,7 @@ def sam2fasta_with_base_censoring(samfile, qCutoff, HXB2_mapping_cutoff, mode, m
 		# Sort the fasta by read count and write the fasta to disk
 		intermed = [(count, s) for s, count in d.iteritems()]
 		intermed.sort(reverse=True)
-		fasta_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), qCutoff, 'fasta']))
+		fasta_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), censoring_qCutoff, 'fasta']))
 		with open(fasta_filename, 'w') as outfile:
 			for i, (count, seq) in enumerate(intermed):
 				outfile.write('>%s_variant_%d_count_%d\n%s\n' % (prefix, i, count, seq))
@@ -652,30 +636,21 @@ def sam2fasta_with_base_censoring(samfile, qCutoff, HXB2_mapping_cutoff, mode, m
 		# Sort csf by left-gap prefix: the offset of the read relative to the ref seq
 		intermed = [(len_gap_prefix(s), h, s) for h, s in fasta]
 		intermed.sort()
-		csf_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), qCutoff, 'csf']))
+		csf_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), censoring_qCutoff, 'csf']))
 		with open(csf_filename, 'w') as outfile:
 			for (gp, h, seq) in intermed:
 				outfile.write('%s,%d,%s\n' % (h, gp, seq.strip('-')))
 
-def slice_outputs(root):
+def slice_outputs(root, region_slices):
 	"""
-	Slice matrix output of previous step (Count CSVs) into sub-regions.
+	Slice matrix output of previous step (*.nuc|amino.count.csv) into sub-regions.
 	"""
 
-	import os,sys,time
+	import os, sys, time
 	from glob import glob
 	
-	# Define slices with (Label, region to slice, start, end)
 	# Coordinates are in nucleotide space: start/end are inclusive (Relative to HXB2 aligned sequences)
-	region_slices = [	("PROTEASE", "HIV1B-pol", 1, 297),
-				("PRRT", "HIV1B-pol", 1, 1617),
-				("INTEGRASE", "HIV1B-pol", 1978, 2844),
-				("P17", "HIV1B-gag", 1, 396),
-				("P24", "HIV1B-gag", 397, 1089),
-				("P2P7P1P6","HIV1B-gag", 1090, 1502),
-				("GP120","HIV1B-env", 1, 1533),
-				("GP41", "HIV1B-env", 1534, 2570),
-				("V3", "HIV1B-env", 887, 993)]
+	# Ex: region_slices = [("PROTEASE", "HIV1B-pol", 1, 297), ("V3", "HIV1B-env", 887, 993)]
 	
 	# For each region slice rule
 	for rule in region_slices:
