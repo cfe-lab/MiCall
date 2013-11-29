@@ -1,16 +1,13 @@
 """
-0) Report raw counts for FASTQs
-1) Map fastq reads to consensus B reference sequences
-    --> Results stored in prelim.sam
-2) Split the prelim.sam into region-specific SAMs
-3) Make a sample/region specific consensus
-4) Remap fastq reads against sample/region specific references
+1) Report raw fastq read counts
+2) Map fastq reads to consensus B reference sequences (Store in prelim.sam)
+3) Split prelim.sam into region-specific SAMs
+4) Make a sample/region specific consensus
+5) Remap fastq reads against sample/region specific references
 """
 
-import os
-import sys
+import os,subprocess,sys
 from miseqUtils import samBitFlag
-import subprocess
 
 ## Arguments
 conbrefpath = sys.argv[1]             # Consensus B reference path
@@ -73,11 +70,10 @@ def remap (R1_fastq, R2_fastq, samfile, ref, qCutoff=30):
 
 
 # Store region codes in con B reference fasta headers in refnames
-conb_ref_fasta = open(conbrefpath+'.fasta', 'rU')
-refnames = []
-for line in conb_ref_fasta:
-    if line.startswith('>'): refnames.append(line.strip('>\n'))
-conb_ref_fasta.close()
+with open(conbrefpath+'.fasta', 'rU') as conb_ref_fasta:
+    refnames = []
+    for line in conb_ref_fasta:
+        if line.startswith('>'): refnames.append(line.strip('>\n'))
 
 # Deduce R1/R2 file pairing
 root = '/'.join(R1_fastq.split('/')[:-1])

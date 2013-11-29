@@ -15,6 +15,9 @@ from glob import glob
 from miseqUtils import timestamp, sampleSheetParser
 from time import sleep
 
+import logging
+from miseq_logging import init_logging
+
 if sys.version_info[:2] != (2, 7):
 	timestamp("Monitor requires python 2.7")
 	sys.exit()
@@ -22,7 +25,7 @@ if sys.version_info[:2] != (2, 7):
 ## Settings
 home='/data/miseq/'		# Local path on cluster for writing data
 delay = 3600			# Delay for polling macdatafile for unprocessed runs
-pipeline_version = "4.1"
+pipeline_version = "4.3"
 macdatafile_mount = '/media/macdatafile/'
 
 def mark_run_as_processed(runpath):
@@ -31,6 +34,11 @@ def mark_run_as_processed(runpath):
 # Continuously look for MiSeq folders flagged as needing processing
 while 1:
 	runs = glob(macdatafile_mount + 'MiSeq/runs/*/needsprocessing')
+
+	# FIXME DEBUG
+	runs = glob(macdatafile_mount + 'MiSeq/runs/0_testing_amplicon/needsprocessing')
+	# DEBUG FIXME
+
 	if len(runs) == 0:
 		timestamp('No runs need processing')
 		sleep(delay)
@@ -38,7 +46,11 @@ while 1:
 
 	# Process most recently generated run and work backwards
 	runs.sort()
-	runs.reverse()
+
+	# FIXME DEBUG
+	#runs.reverse()
+	# DEBUG FIXME
+
 	curr_run = runs[0]
 	root = curr_run.replace('needsprocessing', '')
 	run_name = root.split('/')[-2]
@@ -49,31 +61,37 @@ while 1:
 		subprocess.call(command, shell=True, stdin=subprocess.PIPE, stdout = subprocess.PIPE)
 
 	# Record all standard input / output to the pipeline log
-	log_file = home + run_name + '/pipeline_output.txt'
-	pipeline_output = open(log_file, "wb")
-	pipeline_output.write(timestamp('===== Processing {} with pipeline version {} ====='.format(root, pipeline_version)))
+	log_file = home + run_name + '/monitor_output.txt'
+	try:
+		logger = init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
+		logger.info('===== Processing {} with pipeline version {} ====='.format(root, pipeline_version))
+	except:
+		print "!!! CANNOT INITIATE LOGGING - PIPELINE HALTING RIGHT NOW !!!"
+		sys.exit()
 
 	# Copy SampleSheet.csv from macdatafile to the cluster
 	remote_file = curr_run.replace('needsprocessing', 'SampleSheet.csv')
 	local_file = home + run_name + '/SampleSheet.csv'
 	command = 'rsync -a {} {}'.format(remote_file, local_file)
-	pipeline_output.write(timestamp(command))
-	subprocess.call(command, shell=True, stdin=subprocess.PIPE, stdout = subprocess.PIPE)
+	logging.info(command)
+
+	stdout, stderr = subprocess.Popen(command, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+	if stdout != "": logging.info(stdout)
+	if stderr != "": logging.warn(stderr)
 
 	try:
-		infile = open(local_file, 'rU')
-		run_info = sampleSheetParser(infile)
-		mode = run_info['Description']
-		infile.close()
+		with open(local_file, 'rU') as sample_sheet:
+			run_info = sampleSheetParser(sample_sheet)
+			mode = run_info['Description']
 	except:
 		message = "ERROR: Couldn't parse sample sheet - SKIPPING RUN"
-		pipeline_output.write(timestamp(message))
+		logging.error(message)
 		mark_run_as_processed(curr_run)
 		continue
 
 	if mode not in ['Nextera', 'Amplicon']:
 		message = "Error - {} is not a recognized mode: skipping'.format(mode)".format(mode)
-		pipeline_output.write(timestamp(message))
+		logging.error(message)
 		mark_run_as_processed(curr_run)
 		continue
 
@@ -87,29 +105,35 @@ while 1:
 			output = subprocess.check_output(['wc', '-l', file])
 			failed_demultiplexing = output.split(" ")[0]
 			message= "{} reads failed to demultiplex in {} for run {}".format(failed_demultiplexing, filename, run_name)
-			pipeline_output.write(timestamp(message))
+			logging.info(message)
 			continue
 
 		local_file = home + run_name + '/' + filename
 		command = 'rsync -a {} {}; gunzip -f {};'.format(file, local_file, local_file)
-		pipeline_output.write(timestamp(command))
-		subprocess.call(command, shell=True, stdin=subprocess.PIPE, stdout = subprocess.PIPE)
+		logging.info(command)
+		stdout, stderr = subprocess.Popen(command, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+		if stdout != "": logging.info(stdout) 
+		if stderr != "": logging.warn(stderr)
 
-	# Direct a file handle to the end of the current log
-	read_output = open(log_file, "rb")
-	read_output.read()
-	
-	# stdout/stderr of 0_MPI_wrapper concatenates to the end of the log (It includes stderr due to -tag-output)
+	# Create log where 0_MPI_wrapper will write it's output
+	MPI_log_path = home + run_name + '/0_MPI_wrapper_output.log'
+	MPI_wrapper_log = open(MPI_log_path, "w")
+
+	# stdout/stderr of 0_MPI_wrapper concatenates to the log file (It includes stderr due to -tag-output)
 	command = "module load openmpi/gnu; mpirun -tag-output -machinefile mfile python -u {} {}".format("0_MPI_wrapper.py", home+run_name)
-	p = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout = pipeline_output)
-	pipeline_output.write(timestamp(command))
+	p = subprocess.Popen(command, shell=True, stdout = MPI_wrapper_log, stderr = MPI_wrapper_log)
+	logging.info(command)
 
-	# Continuously poll the log (stdout/stderr of 0_MPI_wrapper) and display any new output to console
-	while True:
+	# Poll the log (stdout/stderr of 0_MPI_wrapper) and display additional output to console
+	with open(MPI_log_path, 'r') as f:
+		MPI_wrapper_log.flush()
 		sleep(1)
-		if p.poll() == 0: break
-		sys.stdout.write(read_output.read())
-	read_output.close()
+		sys.stdout.write(f.read())
+		while True:
+			sleep(1)
+			if p.poll() == 0: break
+			sys.stdout.write(f.read())
+	MPI_wrapper_log.close()
 
 	# Determine where to upload results (Denote version number in path)
 	result_path = curr_run.replace('needsprocessing', 'Results')
@@ -127,17 +151,18 @@ while 1:
 	results_files += [f for f in glob(home + run_name + '/*.conseq') if 'pileup' not in f]
 
 	# Copy the selected files over
-	pipeline_output.write(timestamp("Posting {} run to macdatafile".format(mode)))
+	logging.info("Posting {} run to macdatafile".format(mode))
 	for file in results_files:
 		filename = file.split('/')[-1]
 		command = 'rsync -a {} {}/{}'.format(file, result_path_final, filename)
-		pipeline_output.write(timestamp(command))
-		subprocess.call(command, shell=True, stdin=subprocess.PIPE, stdout = subprocess.PIPE)
+		logging.info(command)
+		stdout, stderr = subprocess.Popen(command, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+		if stdout != "": logging.info(stdout)
+		if stderr != "": logging.warn(stderr)
 
 	# Lastly, close the log and copy it over: this run is done
 	command = 'rsync -a {} {}/{}'.format(log_file, result_path_final, os.path.basename(log_file))
-	pipeline_output.write(timestamp(command))
-	pipeline_output.write(timestamp("===== {} successfully completed! (Closing log) =====\n".format(run_name)))
-	pipeline_output.close()
-	subprocess.call(command, shell=True, stdin=subprocess.PIPE, stdout = subprocess.PIPE)
- 	mark_run_as_processed(curr_run)
+	logging.info(command)
+	logging.info("===== {} successfully completed! (Closing log) =====\n".format(run_name))
+	subprocess.call(command, shell=True)
+	mark_run_as_processed(curr_run)

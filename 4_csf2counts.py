@@ -21,6 +21,7 @@ path = sys.argv[1]
 filename = path.split('/')[-1]
 sample, ref = filename.split('.')[:2]
 mode = sys.argv[2]
+mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 
 # Load HXB2 amino reference sequences
 with open("HXB2_amino_sequences.csv", "rb") as f:

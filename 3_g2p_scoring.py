@@ -62,7 +62,7 @@ for header, seq in fasta:
 			'|'.join(['stopcodon' if '*' in v3prot else '',
 			'lowscore' if ascore < g2p_alignment_cutoff else '',
 			'cystines' if not v3prot.startswith('C') or not v3prot.endswith('C') else '',
-			'ambig' if 'N' in v3nuc else '']),seq))
+			'N_in_v3nuc' if 'N' in v3nuc else '']),seq))
 	else:
 		# Track the count of each v3 nucleotide sequence
 		if v3nucs.has_key(v3nuc):
