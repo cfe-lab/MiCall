@@ -6,6 +6,9 @@ def csf2counts (path,mode,mixture_cutoffs):
 	import csv,HyPhy,os,sys
 	from hyphyAlign import change_settings, get_boundaries, pair_align
 	from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, translate_nuc
+
+	# FIXME: PARAMETERIZE THIS TO BE CONTROLLED FROM 1_MPI_WRAPPER
+	amino_reference_sequence = "csf2counts_amino_sequences.csv"
 	
 	hyphy = HyPhy._THyPhy (os.getcwd(), 1)
 	change_settings(hyphy)
@@ -14,8 +17,8 @@ def csf2counts (path,mode,mixture_cutoffs):
 	filename = path.split('/')[-1]
 	sample, ref = filename.split('.')[:2]
 	
-	# Load HXB2 amino reference sequences
-	with open("HXB2_amino_sequences.csv", "rb") as f:
+	# Load HXB2 amino reference sequences (FIXME: FIX DOCUMENTATION TO INCLUDE HCV1A-H77)
+	with open(amino_reference_sequence, "rb") as f:
 		input_file = csv.reader(f)
 		hxb2 = {}
 		for row in input_file:
@@ -295,7 +298,7 @@ def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=
 	# Create new consensus sequence from the pileup
 	system_call('python2.7 pileup2conseq_v2.py {}.pileup {}'.format(bamfile, conseq_qCutoff))
 	
-	# Convert consensus into bowtie2 reference files (*.bt2)
+	# Convert consensus into bowtie2 reference files (Creates 6 files of *.bt2)
 	system_call('bowtie2-build -q -f {} {}'.format(confile, confile))
 	
 	# Map original fastq reads to new reference

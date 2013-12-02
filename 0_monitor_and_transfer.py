@@ -25,7 +25,7 @@ if sys.version_info[:2] != (2, 7):
 ## Settings
 home='/data/miseq/'		# Local path on cluster for writing data
 delay = 3600			# Delay for polling macdatafile for unprocessed runs
-pipeline_version = "4.4"
+pipeline_version = "4.4-HCV-AWARE"
 macdatafile_mount = '/media/macdatafile/'
 
 def mark_run_as_processed(runpath):
@@ -36,7 +36,7 @@ while 1:
 	runs = glob(macdatafile_mount + 'MiSeq/runs/*/needsprocessing')
 
 	# FIXME DEBUG
-	runs = glob(macdatafile_mount + 'MiSeq/runs/0_testing_amplicon/needsprocessing')
+	# runs = glob(macdatafile_mount + 'MiSeq/runs/0_testing_amplicon/needsprocessing')
 	# DEBUG FIXME
 
 	if len(runs) == 0:
@@ -48,7 +48,7 @@ while 1:
 	runs.sort()
 
 	# FIXME DEBUG
-	#runs.reverse()
+	runs.reverse()
 	# DEBUG FIXME
 
 	curr_run = runs[0]

@@ -22,7 +22,6 @@ nprocs = MPI.COMM_WORLD.Get_size()
 
 ## Reference sequences
 conbrefpath ='/usr/local/share/miseq/refs/cfe'
-hxb2refpath='/usr/local/share/miseq/refs/'
 
 ## General parameters
 read_mapping_cutoff = 10		# Minimum read mapping quality
