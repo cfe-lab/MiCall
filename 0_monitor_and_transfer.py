@@ -23,42 +23,38 @@ if sys.version_info[:2] != (2, 7):
 	sys.exit()
 
 ## Settings
-home='/data/miseq/'		# Local path on cluster for writing data
-delay = 3600			# Delay for polling macdatafile for unprocessed runs
 pipeline_version = "4.4-HCV-AWARE"
+delay = 3600					# Delay for polling macdatafile for unprocessed runs
+home='/data/miseq/'				# Local path on cluster for writing data
 macdatafile_mount = '/media/macdatafile/'
-
-def mark_run_as_processed(runpath):
-	os.rename(runpath, runpath.replace('needsprocessing', 'processed'))
 
 # Continuously look for MiSeq folders flagged as needing processing
 while 1:
+
+	# Of the runs marked as needsprocessing, process those not processed by the current version of the pipeline
 	runs = glob(macdatafile_mount + 'MiSeq/runs/*/needsprocessing')
+	runs_needing_processing = []
+	for run in runs:
+		result_path = '{}/version_{}'.format(run.replace('needsprocessing', 'Results'), pipeline_version)
+		if not os.path.exists(result_path):
+			runs_needing_processing.append(run)
 
-	# FIXME DEBUG
-	# runs = glob(macdatafile_mount + 'MiSeq/runs/0_testing_amplicon/needsprocessing')
-	# DEBUG FIXME
-
-	if len(runs) == 0:
+	if len(runs_needing_processing) == 0:
 		timestamp('No runs need processing')
 		sleep(delay)
 		continue
 
 	# Process most recently generated run and work backwards
-	runs.sort()
-
-	# FIXME DEBUG
-	runs.reverse()
-	# DEBUG FIXME
-
-	curr_run = runs[0]
+	runs_needing_processing.sort()
+	runs_needing_processing.reverse()
+	curr_run = runs_needing_processing[0]
 	root = curr_run.replace('needsprocessing', '')
 	run_name = root.split('/')[-2]
 
 	# Make folder on the cluster for intermediary files
 	if not os.path.exists(home+run_name):
 		command = 'mkdir {}{}'.format(home, run_name)
-		subprocess.call(command, shell=True, stdin=subprocess.PIPE, stdout = subprocess.PIPE)
+		subprocess.call(command, shell=True)
 
 	# Record all standard input / output to the pipeline log
 	log_file = home + run_name + '/monitor_output.txt'
@@ -86,13 +82,11 @@ while 1:
 	except:
 		message = "ERROR: Couldn't parse sample sheet - SKIPPING RUN"
 		logging.error(message)
-		mark_run_as_processed(curr_run)
 		continue
 
 	if mode not in ['Nextera', 'Amplicon']:
 		message = "Error - {} is not a recognized mode: skipping'.format(mode)".format(mode)
 		logging.error(message)
-		mark_run_as_processed(curr_run)
 		continue
 
 	# Run appears valid - copy fastq.gz files to cluster and unzip
@@ -135,7 +129,6 @@ while 1:
 			sys.stdout.write(f.read())
 	MPI_wrapper_log.close()
 
-	# Determine where to upload results (Denote version number in path)
 	result_path = curr_run.replace('needsprocessing', 'Results')
 	result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
 	if not os.path.exists(result_path): os.mkdir(result_path)
@@ -165,4 +158,3 @@ while 1:
 	logging.info(command)
 	logging.info("===== {} successfully completed! (Closing log) =====\n".format(run_name))
 	subprocess.call(command, shell=True)
-	mark_run_as_processed(curr_run)

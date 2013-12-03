@@ -21,7 +21,7 @@ my_rank = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()
 
 ## Reference sequences
-conbrefpath ='/usr/local/share/miseq/refs/cfe'
+mapping_ref_path = '/usr/local/share/miseq/refs/cfe'
 
 ## General parameters
 read_mapping_cutoff = 10		# Minimum read mapping quality
@@ -46,7 +46,7 @@ region_slices = [("PROTEASE", "HIV1B-pol", 1, 297), ("PRRT", "HIV1B-pol", 1, 161
 ## Arguments
 root = sys.argv[1]			# Path on local cluster containing fastqs/SampleSheet.csv
 
-# Each MPI process will have a separate log file which contains maximal (DEBUG) information
+# Each MPI process will have a separate log file which contains highly detailed (DEBUG-level) information
 log_file = "{}/rank_{}.log".format(root, my_rank)
 logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
 
@@ -93,8 +93,8 @@ for i, fastq in enumerate(fastq_files):
 	is_t_primer = run_info['Data'][sample_name]['is_T_primer']
 
 	# Map fastq reads to a static reference, generate sample specific consensus, remap reads to specific consensus
-	logging.info("mapping({}, {}, {}, {}, {}, {}, {})".format(conbrefpath, fastq, consensus_q_cutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS))
-	mapping(conbrefpath, fastq, consensus_q_cutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS)
+	logging.info("mapping({}, {}, {}, {}, {}, {}, {})".format(mapping_ref_path, fastq, consensus_q_cutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS))
+	mapping(mapping_ref_path, fastq, consensus_q_cutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS)
 
 logger.debug("Arrived at barrier #2")
 MPI.COMM_WORLD.Barrier()

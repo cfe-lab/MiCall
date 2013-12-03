@@ -299,7 +299,7 @@ def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=
 	system_call('python2.7 pileup2conseq_v2.py {}.pileup {}'.format(bamfile, conseq_qCutoff))
 	
 	# Convert consensus into bowtie2 reference files (Creates 6 files of *.bt2)
-	system_call('bowtie2-build -q -f {} {}'.format(confile, confile))
+	system_call('bowtie2-build -f -q {} {}'.format(confile, confile))
 	
 	# Map original fastq reads to new reference
 	cmd = 'bowtie2 --quiet -p 1 --local -x {} -1 {} -2 {} -S {} --no-unal --met-file {} --un {} --un-conc {}'.format(confile,
@@ -327,10 +327,10 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 	logger = logging.getLogger()
 	original_reference = refpath		# Path to the original reference sequence
 
-	# Store region codes in con B reference fasta headers in refnames
-	with open(refpath+'.fasta', 'rU') as conb_ref_fasta:
+	# Store region codes of static reference fasta in refnames (ConB for HIV, H77 for HCV)
+	with open(refpath+'.fasta', 'rU') as ref_fasta:
 		refnames = []
-		for line in conb_ref_fasta:
+		for line in ref_fasta:
 			if line.startswith('>'): refnames.append(line.strip('>\n'))
 
 	# Deduce R1/R2 file pairing
@@ -462,16 +462,20 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 		count_file.write('remap %s,%d\n' % (refname, int(region_specific_count)))
 
 	# Continue to remap if we've failed to map enough total reads
-	if total_remap / total_reads_R1 < REMAP_THRESHOLD:
+	mapping_efficiency = total_remap / total_reads_R1
+	if mapping_efficiency < REMAP_THRESHOLD:
 		break_out = False
+		logger.info("Poor mapping for {} (Mapping efficiency: {}) - trying additional remapping".format(sample_name, mapping_efficiency))
 
 		# Repeat remapping up to the number of MAX_REMAPS permitted
 		for iter in range(MAX_REMAPS):
+			logger.debug("Additional remapping for {} (iteration #{})".format(sample_name, iter))
+
 			total_remap = 0
 			for refname in refnames:
 				if refsams[refname]['count'][0] == 0 or refname == 'phiX174' or refname == '*':
 					continue
-			
+
 				samfile = refsams[refname]['samfile']
 				confile = refsams[refname]['confile']
 				samfile, confile = remap(R1_fastq, R2_fastq, samfile, confile, original_reference, conseq_qCutoff)
@@ -482,8 +486,8 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 				stdout, stderr = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
 				region_specific_count = (int(stdout.split()[0]) - 3) / 2.
 				
-				# If number of reads is declining, that's really bad
 				if region_specific_count < refsams[refname]['count'][0]:
+					logger.warn("Remapping for {} resulting in LESS reads - halting iterative remapping".format(sample_name))
 					break_out = True
 					break
 			
@@ -592,14 +596,16 @@ def g2p_scoring(input_path, g2p_alignment_cutoff):
 			fpr = v3prots[v3prot]['fpr']
 			v3protfile.write('>%s_variant_%d_count_%d_fpr_%s\n%s\n' % (prefix, i, count, fpr, v3prot))
 
-def sam2fasta_with_base_censoring(samfile, censoring_qCutoff, HXB2_mapping_cutoff, mode, max_prop_N):
+def sam2fasta_with_base_censoring(samfile, censoring_qCutoff, mapping_cutoff, mode, max_prop_N):
 	"""
 	From a SAM file, create a FASTA file for Amplicon runs, or CSF
 	files for Nextera runs. Both output formats can be thought of as
 	simplified representations of the original SAM.
 	"""
-	import os, sys
+	import logging, os, sys
 	from miseqUtils import len_gap_prefix, sam2fasta
+
+	logger = logging.getLogger()
 
 	# Extract sample (prefix) and region
 	filename = samfile.split('/')[-1]
@@ -607,11 +613,12 @@ def sam2fasta_with_base_censoring(samfile, censoring_qCutoff, HXB2_mapping_cutof
 
 	# Convert SAM to fasta-structured variable
 	with open(samfile, 'rU') as infile:
-		fasta = sam2fasta(infile, censoring_qCutoff, HXB2_mapping_cutoff, max_prop_N)
+		logging.debug("sam2fasta({}, {}, {}, {})".format(infile, censoring_qCutoff, mapping_cutoff, max_prop_N))
+		fasta = sam2fasta(infile, censoring_qCutoff, mapping_cutoff, max_prop_N)
 
 	# Send warning to standard out if sam2fasta didn't return anything
 	if fasta == None:
-		print("WARNING (sam2fasta): {} likely empty or invalid - halting".format(samfile))
+		logging.warn("{} likely empty or invalid - halting sam2fasta".format(samfile))
 		sys.exit()
 
 	# For Amplicon runs, generate a (compressed) fasta file
@@ -628,6 +635,7 @@ def sam2fasta_with_base_censoring(samfile, censoring_qCutoff, HXB2_mapping_cutof
 		# Sort the fasta by read count and write the fasta to disk
 		intermed = [(count, s) for s, count in d.iteritems()]
 		intermed.sort(reverse=True)
+
 		fasta_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), censoring_qCutoff, 'fasta']))
 		with open(fasta_filename, 'w') as outfile:
 			for i, (count, seq) in enumerate(intermed):
