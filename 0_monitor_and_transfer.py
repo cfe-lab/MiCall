@@ -31,7 +31,7 @@ macdatafile_mount = '/media/macdatafile/'
 # Continuously look for MiSeq folders flagged as needing processing
 while 1:
 
-	# Of the runs marked as needsprocessing, process those not processed by the current version of the pipeline
+	# From runs marked needsprocessing, process those unprocessed by the current pipeline version
 	runs = glob(macdatafile_mount + 'MiSeq/runs/*/needsprocessing')
 	runs_needing_processing = []
 	for run in runs:

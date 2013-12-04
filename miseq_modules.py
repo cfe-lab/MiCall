@@ -1,262 +1,275 @@
-def csf2counts (path,mode,mixture_cutoffs):
+def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/share/miseq/development/miseqpipeline/csf2counts_amino_sequences.csv"):
 	"""
-	Calculate nucleotide and amino acid counts from a FASTA or CSF file
+	Calculate nucleotide and amino acid counts from a FASTA/CSF
 	"""
 
-	import csv,HyPhy,os,sys
+	import csv,logging,HyPhy,os,sys
 	from hyphyAlign import change_settings, get_boundaries, pair_align
 	from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, translate_nuc
 
-	# FIXME: PARAMETERIZE THIS TO BE CONTROLLED FROM 1_MPI_WRAPPER
-	amino_reference_sequence = "csf2counts_amino_sequences.csv"
-	
+	logger = logging.getLogger()
 	hyphy = HyPhy._THyPhy (os.getcwd(), 1)
 	change_settings(hyphy)
 	amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
 	
-	filename = path.split('/')[-1]
+	filename = os.path.basename(path)
+	root = os.path.dirname(path) if os.path.dirname(path) != '' else '.'
+
+	# The file always starts with a period-delimited sample and region (Ex: F00844-V3LOOP_S68.HIV1B-env.0.fasta)
 	sample, ref = filename.split('.')[:2]
 	
-	# Load HXB2 amino reference sequences (FIXME: FIX DOCUMENTATION TO INCLUDE HCV1A-H77)
+	# Store amino reference sequences in refseqs to which we will coordinate normalize our samples
 	with open(amino_reference_sequence, "rb") as f:
 		input_file = csv.reader(f)
-		hxb2 = {}
+		refseqs = {}
 		for row in input_file:
 			region, amino = row
-			hxb2[region] = amino
-	
-	# Make the output stem by removing the extension of the filename
-	root = '/'.join(path.split('/')[:-1])
-	if root == '':
-		# in case script is executed on file in cwd
-		root = '.'
-	
-	outpath = root + '/' + (filename.replace('.fasta', '') if mode == 'Amplicon' else filename.replace('.csf', ''))
-	
-	# output to files and compute consensus
-	nucfile = open(outpath+'.nuc.csv', 'w')
-	nucfile.write('query.nuc.pos,hxb2.nuc.pos,A,C,G,T\n')
-	
-	confile = open(outpath+'.conseq', 'w')
-	indelfile = open(outpath+'.indels.csv', 'w')
-	
-	if not hxb2.has_key(ref):
-		sys.exit()
-	
-	refseq = hxb2[ref]
-	
+			refseqs[region] = amino
+
+	# Bookkeeping: determine filenames for outputs
+	file_prefix = filename.replace('.fasta', '') if mode == 'Amplicon' else filename.replace('.csf', '')
+	outpath = "{}/{}".format(root, file_prefix)
+
+	# If we have no reference sequence, we can't align the input sequences
+	if not refseqs.has_key(ref):
+		logger.error("No reference for {} - halting csf2counts".format(ref))
+		return
+	refseq = refseqs[ref]
+
+	# Read the input file
 	with open(path, 'rU') as infile:
 		if mode == 'Nextera':
 			fasta, lefts, rights = convert_csf(infile.readlines())
 		elif mode == 'Amplicon':
 			fasta = convert_fasta(infile.readlines())
 		else:
-			sys.exit()
+			logger.error("{} is an unsupported mode - halting csf2counts".format(mode))
+			return
 	
-	
-	# Use the first read to determine reading frame
+	# Look at the first read to determine the correct protein ORF
 	max_score = 0
 	best_frame = 0
-	for frame in range(3):
-		prefix = ('-'*lefts[fasta[0][0]] if mode == 'Nextera' else '')
-		p = translate_nuc(prefix + fasta[0][1], frame)
+	possible_ORFs = [0, 1, 2]
+	for frame in possible_ORFs:
+		first_entry = fasta[0]
+		header, seq = first_entry[0], first_entry[1]
+		prefix = ('-'*lefts[header] if mode == 'Nextera' else '')
+		p = translate_nuc(prefix + seq, frame)
 		aquery, aref, ascore = pair_align(hyphy, refseq, p)
 		if ascore > max_score:
-			best_frame = frame # the reading frame of left = 0
+			best_frame = frame
 			max_score = ascore
 	
-	# Iterate through reads and count WHAT?
-	nucs = {}
-	aminos = {}
+	nuc_counts = {}	# Store base counts for each self-consensus coordinate
+	aa_counts = {}	# Store amino counts for each self-consensus coordinate
 	pcache = []	# Cache protein sequences
-	
-	# At this point, sequences are aligned against the sample-region
-	# specific consensus. Thus, each read in the csf contains an offset
-	# with respect to the sample-region specific consensus.
+
+	# CSF/Fasta sequences are aligned against the sample-region specific
+	# consensus: so the CSF offset is with respect to self-consensus
 	
 	# For each sequence in the fasta/csf
 	for i, (h, s) in enumerate(fasta):
 	
-		# If this is Fasta, there is no offset
-		left = lefts[h] if mode == 'Nextera' else 0
+		left = lefts[h] if mode == 'Nextera' else 0			# Fasta have no offsets...
+		count = 1 if mode == 'Nextera' else int(h.split('_')[-1])	# But do have read counts
 	
-		# Headers contain read count in last entry
-		count = 1 if mode == 'Nextera' else int(h.split('_')[-1])
-	
-		# Update nucleotide counts (with respect to self-coordinate?)
+		# Update nucleotide counts for self-consensus coordinate space
 		for j, nuc in enumerate(s):
 			pos = left + j
-			if not nucs.has_key(pos):
-				nucs.update({pos: {}})
-			if not nucs[pos].has_key(nuc):
-				nucs[pos].update({nuc: 0})
-			nucs[pos][nuc] += count
+			if not nuc_counts.has_key(pos):
+				nuc_counts.update({pos: {}})
+			if not nuc_counts[pos].has_key(nuc):
+				nuc_counts[pos].update({nuc: 0})
+			nuc_counts[pos][nuc] += count
 		
 		p = translate_nuc('-'*left + s, best_frame)
 		pcache.append(p)
 	
-		# Update amino counts
+		# Update amino counts for self-consensus coordinate space
 		for pos, aa in enumerate(p):
 			if aa == '-':
 				continue
-			if not aminos.has_key(pos):
-				aminos.update({pos: {}})
-			if not aminos[pos].has_key(aa):
-				aminos[pos].update({aa: 0})
-			aminos[pos][aa] += count
+			if not aa_counts.has_key(pos):
+				aa_counts.update({pos: {}})
+			if not aa_counts[pos].has_key(aa):
+				aa_counts[pos].update({aa: 0})
+			aa_counts[pos][aa] += count
 	
-	# Generate AA plurality (max) consensus
-	keys = aminos.keys()
+	logger.debug("Generating plurality amino consensus")
+	keys = aa_counts.keys()
 	keys.sort()
 	aa_max = ''
-	
+
+	# Amino plurality consensus (Used for query to reference coordinate mapping only)
 	for pos in keys:
-		intermed = [(v, k) for k, v in aminos[pos].iteritems()]
+		intermed = [(aa_count, amino) for amino, aa_count in aa_counts[pos].iteritems()]
 		intermed.sort(reverse=True)
 		aa_max += intermed[0][1]
 	
-	# Align consensus against HXB2
+	logger.debug("Aligning plurality consensus against reference")
 	aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
 	
-	# Ignore parts of query outside our reference
-	left, right = get_boundaries(aref)
-	qindex_to_hxb2 = {} # Maps query amino to HXB2 amino coordinates
-	inserts = []		# Leep track of which aa positions are insertions
-	qindex = 0
-	rindex = 0
-	for i in range(len(aref)):
-		# ignore parts of query that do not overlap reference
+	left, right = get_boundaries(aref)	# Get coords of first/last non-gap character
+	qindex_to_refcoord = {} 		# Maps query amino to refseq amino coordinates
+	inserts = []				# Keep track of which aa positions are insertions
+
+	qindex = 0				# Tracks where we are in the query
+	rindex = 0				# Tracks where we are in the reference
+	ref_coords = range(len(aref))
+	logger.debug("Generating consensus coordinate to reference coordinate mapping")
+
+	# For every position on the reference, create a mapping with the query
+	for i in ref_coords:
+
+		# Ignore parts of the alignment extending beyond the reference itself
 		if i < left:
 			qindex += 1
 			continue
+
 		if i >= right:
 			break
-		
+
+		# A gap in the reference is an insertion in the query
 		if aref[i] == '-':
-			# insertion in query
-			inserts.append(qindex)
-			qindex += 1
+			inserts.append(qindex)	# Store insert location in query coordinate space
+			qindex += 1		# Track along the query
+
+		# Deletions in the query
 		elif aquery[i] == '-':
-			# deletion in query
-			# do not increment qindex
-			rindex += 1
+			rindex += 1		# No need to store inserts, as they are already in the query
 			continue
+
+		# Normal case: tracking forward on both sequences
 		else:
-			qindex_to_hxb2.update({qindex: rindex})
+			qindex_to_refcoord.update({qindex: rindex})
 			qindex += 1
 			rindex += 1
 	
-	# Reiterate through sequences to capture indels
+	# If there are inserts in the query, write them to the indels file
 	if len(inserts) > 0:
-		indelfile.write('insertion,count\n')
-		indel_counts = {}
-		
-		for p in pcache:
-			ins_str = str(inserts[0])
-			last_i = -1
-			for i in inserts:
-				if last_i > -1 and i - last_i > 1:
-					# end of a contiguous indel
-					ins_str += ',%d' % i
-				try:
-					ins_str += p[i]
-				except IndexError:
-					break
-				last_i = i
+		with open("{}.indels.csv".format(outpath), 'w') as indelfile:
+			indelfile.write('insertion,count\n')
+			indel_counts = {}
 			
-			if not indel_counts.has_key(ins_str):
-				indel_counts.update({ins_str: 0})
+			for p in pcache:
+				ins_str = str(inserts[0])
+				last_i = -1
+				for i in inserts:
+					if last_i > -1 and i - last_i > 1:
+						# end of a contiguous indel
+						ins_str += ',%d' % i
+					try:
+						ins_str += p[i]
+					except IndexError:
+						break
+					last_i = i
 			
-			indel_counts[ins_str] += 1
+				if not indel_counts.has_key(ins_str):
+					indel_counts.update({ins_str: 0})
+			
+				indel_counts[ins_str] += 1
 		
-		for ins_str, count in indel_counts.iteritems():
-			indelfile.write('%s,%d\n' % (ins_str, count))
+			for ins_str, count in indel_counts.iteritems():
+				indelfile.write('%s,%d\n' % (ins_str, count))
 	
-	indelfile.close()
-	
-	
-	# output nucleotide and amino acid counts in HXB2 coordinates
-	# also output consensus sequences at varying thresholds
-	
-	keys = nucs.keys()	# nucs[self-pos][nuc] = count
-	keys.sort()
+	# Initialize initial (blank) consensus sequence for each mixture rule
 	maxcon = ''
 	conseqs = ['' for cut in mixture_cutoffs]
-	
-	codon_pos = 0
-	
-	# For each base coordinate in the query
-	for pos in keys:
+	query_codon_pos = 0
+	keys = nuc_counts.keys()        # nucs[self-coord][nuc] = count
+	keys.sort()
+
+	nucfile = open("{}.nuc.csv".format(outpath), 'w')
+	nucfile.write("query.nuc.pos,refSeq.nuc.pos,A,C,G,T\n")
+
+	# Output counts in the reference coordinate space (Along with consensus sequences)
+	for query_nuc_pos in keys:
+
+		nucleotide_counts = [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']
+		nucleotide_counts_string = ','.join(map(str, nucleotide_counts))
+
+		# Convert query index into reference index
 		try:
-			aapos = pos/3				# Get the amino position
-			codon_pos = pos % 3
-			hxb2_pos = qindex_to_hxb2[aapos] + 1	# Get the HXB2 based on that amino position
+			query_aa_pos = query_nuc_pos / 3
+			query_codon_pos = query_nuc_pos % 3
+			ref_aa_pos = qindex_to_refcoord[query_aa_pos] + 1		# ref_aa_pos is 1-based
+			ref_nuc_pos = 3*ref_aa_pos + query_codon_pos
 		except KeyError:
+			logger.error("No query/reference coordinate mapping for query amino coordinate {}".format(query_aa_pos))
 			continue
-	
-		# hxb2_pos is the hxb2 amino position, pos is the hxb2 nucleotide position
-		hxb2_nuc_pos = 3*hxb2_pos + codon_pos
-		nucfile.write('%d,%d,%s\n' % (pos, hxb2_nuc_pos, ','.join(map(str, [nucs[pos].get(nuc, 0) for nuc in 'ACGT']))))
+
+		# Write the results to the nucleotide csv file
+		nucfile.write("{},{},{}\n".format(query_nuc_pos, ref_nuc_pos, nucleotide_counts_string))
 		
-		# plurality consensus
-		intermed = [(count, nuc) for nuc, count in nucs[pos].iteritems()]
+		# Determine the nucleotide plurality consensus (For final output)
+		intermed = [(count, nuc) for nuc, count in nuc_counts[query_nuc_pos].iteritems()]
 		intermed.sort(reverse=True)
 		maxcon += intermed[0][1]
 		
-		# consensuses with mixtures determined by frequency cutoff
+		# Determine the number of bases in total at this query position
 		total_count = sum([count for count, nuc in intermed])
-		
-		for ci, cutoff in enumerate(mixture_cutoffs):
+
+		for ci, mixture_cutoff in enumerate(mixture_cutoffs):
 			mixture = []
+
+			# If a base is greater than the proportion cutoff, the base contributes
 			for count, nuc in intermed:
-				if float(count) / total_count > cutoff:
+				if float(count) / total_count > mixture_cutoff:
 					mixture.append(nuc)
-			
+
+			# If an N exists with other bases, those bases take precedence
 			if 'N' in mixture:
 				if len(mixture) > 1:
 					mixture.remove('N')
 				else:
-					# completely ambiguous
 					conseqs[ci] += 'N'
+					logger.warning("N was the majority base found at position {} - this is strange".format(query_nuc_pos))
 					continue
-			
+
+			# If there is a gap, but also bases, those bases take precedence
 			if '-' in mixture:
 				if len(mixture) > 1:
 					mixture.remove('-')
 				else:
 					conseqs[ci] += '-'
 					continue
-			
-			# encode nucleotide mixture
+
+			# Attach mixture (If one exists) to the conseq with appropriate mixture cutoff rule
 			if len(mixture) > 1:
 				mixture.sort()
 				conseqs[ci] += ambig_dict[''.join(mixture)]
 			elif len(mixture) == 1:
 				conseqs[ci] += mixture[0]
 			else:
-				# mixture of length zero, no bases exceed cutoff
+				# Mixture of length zero, no bases exceed cutoff
 				conseqs[ci] += 'N'
 	nucfile.close()
-	
-	# output consensus sequences
-	confile.write('>%s_MAX\n%s\n' % (sample, maxcon))
-	for ci, cutoff in enumerate(mixture_cutoffs):
-		confile.write('>%s_%1.3f\n%s\n' % (sample, cutoff, conseqs[ci]))
-	confile.close()
+
+	# Consensus sequences
+	with open("{}.conseq".format(outpath), 'w') as confile:
+		confile.write('>%s_MAX\n%s\n' % (sample, maxcon))
+		for ci, cutoff in enumerate(mixture_cutoffs):
+			confile.write('>%s_%1.3f\n%s\n' % (sample, cutoff, conseqs[ci]))
 	
 	# Output amino acid counts
-	with open(outpath+'.amino.csv', 'w') as aafile:
-		aafile.write('query.aa.pos,hxb2.aa.pos,%s\n' % ','.join(list(amino_alphabet)))
-		keys = aminos.keys()
+	with open("{}.amino.csv".format(outpath), 'w') as aafile:
+		aafile.write("query.aa.pos,refseq.aa.pos,{}\n".format(','.join(list(amino_alphabet))))
+		keys = aa_counts.keys()
 		keys.sort()
 		for aapos in keys:
+
+			# If this is an insert in the query, ignore it
 			if aapos in inserts:
 				continue
+
 			try:
-				hxb2_pos = qindex_to_hxb2[aapos] + 1
+				ref_aa_pos = qindex_to_refcoord[aapos] + 1
+				aa_counts_string = ','.join(map(str, [aa_counts[aapos].get(aa, 0) for aa in amino_alphabet]))
+				aafile.write('{},{},{}\n'.format(aapos,ref_aa_pos, aa_counts_string)))
+
 			except KeyError:
+				logger.error("No query reference index available for {}".format(aapos))
 				continue
-			aafile.write('%d,%d,%s\n' % (aapos,hxb2_pos, ','.join(map(str, [aminos[aapos].get(aa, 0) for aa in amino_alphabet]))))
 
 def system_call(command):
 	import logging, os
@@ -520,14 +533,14 @@ def g2p_scoring(input_path, g2p_alignment_cutoff):
 
 	if not input_path.endswith('.fasta'):
 		logging.error("{} doesn't end in .fasta")
-		sys.exit()
+		return
 	
 	with open(input_path, 'rU') as infile:
 		try:
 			fasta = convert_fasta(infile.readlines())
 		except:
 			logging.error('g2p_scoring(): {} not a valid fasta file'.format(input_path))
-			sys.exit()
+			return
 	
 	# Determine offset from 1st sequence to correct frameshift induced by sample-specific remapping
 	seq1 = fasta[0][1].strip("-")
@@ -619,7 +632,7 @@ def sam2fasta_with_base_censoring(samfile, censoring_qCutoff, mapping_cutoff, mo
 	# Send warning to standard out if sam2fasta didn't return anything
 	if fasta == None:
 		logging.warn("{} likely empty or invalid - halting sam2fasta".format(samfile))
-		sys.exit()
+		return
 
 	# For Amplicon runs, generate a (compressed) fasta file
 	if mode == 'Amplicon':

@@ -114,6 +114,8 @@ logger.debug("Arrived at barrier #3")
 MPI.COMM_WORLD.Barrier()
 
 # For amplicon runs, compute V3 g2p scores from HIV1B-env fasta files
+# FIXME: In the long run, we will be mixing Nextera with Amplicon runs, and we will need to
+# convert HIV1B-env CSF files into compressed fasta files...
 if mode == 'Amplicon':
 	files = glob(root + '/*.HIV1B-env.*.fasta')
 	for i, file in enumerate(files):
