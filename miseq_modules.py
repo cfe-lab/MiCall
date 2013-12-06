@@ -3,7 +3,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	Calculate nucleotide and amino acid counts from a FASTA/CSF
 	"""
 
-	import csv,logging,HyPhy,os,sys
+	import csv, logging, HyPhy, os, sys
 	from hyphyAlign import change_settings, get_boundaries, pair_align
 	from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, translate_nuc
 
@@ -15,7 +15,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	filename = os.path.basename(path)
 	root = os.path.dirname(path) if os.path.dirname(path) != '' else '.'
 
-	# The file always starts with a period-delimited sample and region (Ex: F00844-V3LOOP_S68.HIV1B-env.0.fasta)
+	# CSF/FASTA contains sample + region in filename (Ex: F00844-V3LOOP_S68.HIV1B-env.0.fasta)
 	sample, ref = filename.split('.')[:2]
 	
 	# Store amino reference sequences in refseqs to which we will coordinate normalize our samples
@@ -59,6 +59,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 		if ascore > max_score:
 			best_frame = frame
 			max_score = ascore
+	logger.debug("Best ORF={} (For sample {} region {})".format(best_frame, sample, ref))
 	
 	nuc_counts = {}	# Store base counts for each self-consensus coordinate
 	aa_counts = {}	# Store amino counts for each self-consensus coordinate
@@ -69,11 +70,12 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	
 	# For each sequence in the fasta/csf
 	for i, (h, s) in enumerate(fasta):
+
+		# Determine the offset (If Nextera - for fasta, there's no offset)
+		left = lefts[h] if mode == 'Nextera' else 0
+		count = 1 if mode == 'Nextera' else int(h.split('_')[-1])
 	
-		left = lefts[h] if mode == 'Nextera' else 0			# Fasta have no offsets...
-		count = 1 if mode == 'Nextera' else int(h.split('_')[-1])	# But do have read counts
-	
-		# Update nucleotide counts for self-consensus coordinate space
+		# Determine nuc counts for self-consensus coordinate space
 		for j, nuc in enumerate(s):
 			pos = left + j
 			if not nuc_counts.has_key(pos):
@@ -95,7 +97,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 				aa_counts[pos].update({aa: 0})
 			aa_counts[pos][aa] += count
 	
-	logger.debug("Generating plurality amino consensus")
+	logger.debug("Generating plurality amino consensus from {}".format(filename))
 	keys = aa_counts.keys()
 	keys.sort()
 	aa_max = ''
@@ -106,7 +108,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 		intermed.sort(reverse=True)
 		aa_max += intermed[0][1]
 	
-	logger.debug("Aligning plurality consensus against reference")
+	logger.debug("Aligning plurality consensus against reference from {}".format(filename))
 	aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
 	
 	left, right = get_boundaries(aref)	# Get coords of first/last non-gap character
@@ -116,7 +118,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	qindex = 0				# Tracks where we are in the query
 	rindex = 0				# Tracks where we are in the reference
 	ref_coords = range(len(aref))
-	logger.debug("Generating consensus coordinate to reference coordinate mapping")
+	logger.debug("Generating consensus coordinate to reference coordinate mapping from {}".format(filename))
 
 	# For every position on the reference, create a mapping with the query
 	for i in ref_coords:
@@ -126,7 +128,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 			qindex += 1
 			continue
 
-		if i >= right:
+		elif i >= right:
 			break
 
 		# A gap in the reference is an insertion in the query
@@ -136,7 +138,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 		# Deletions in the query
 		elif aquery[i] == '-':
-			rindex += 1		# No need to store inserts, as they are already in the query
+			rindex += 1		# No need to separately store deletions: they are already in the query
 			continue
 
 		# Normal case: tracking forward on both sequences
@@ -145,7 +147,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 			qindex += 1
 			rindex += 1
 	
-	# If there are inserts in the query, write them to the indels file
+	# If there are inserts, write them to the indels file
 	if len(inserts) > 0:
 		with open("{}.indels.csv".format(outpath), 'w') as indelfile:
 			indelfile.write('insertion,count\n')
@@ -195,7 +197,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 			ref_aa_pos = qindex_to_refcoord[query_aa_pos] + 1		# ref_aa_pos is 1-based
 			ref_nuc_pos = 3*ref_aa_pos + query_codon_pos
 		except KeyError:
-			logger.error("No query/reference coordinate mapping for query amino coordinate {}".format(query_aa_pos))
+			logger.debug("No query-ref mapping available for query amino coordinate {} ({})".format(query_aa_pos, filename))
 			continue
 
 		# Write the results to the nucleotide csv file
@@ -223,7 +225,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 					mixture.remove('N')
 				else:
 					conseqs[ci] += 'N'
-					logger.warning("N was the majority base found at position {} - this is strange".format(query_nuc_pos))
+					logger.debug("N was the majority base at position {} - {} (mixture_cutoff = {})".format(query_nuc_pos, filename, mixture_cutoff))
 					continue
 
 			# If there is a gap, but also bases, those bases take precedence
@@ -243,6 +245,9 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 			else:
 				# Mixture of length zero, no bases exceed cutoff
 				conseqs[ci] += 'N'
+
+			# The consensus is aligned against SELF
+
 	nucfile.close()
 
 	# Consensus sequences
@@ -265,17 +270,17 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 			try:
 				ref_aa_pos = qindex_to_refcoord[aapos] + 1
 				aa_counts_string = ','.join(map(str, [aa_counts[aapos].get(aa, 0) for aa in amino_alphabet]))
-				aafile.write('{},{},{}\n'.format(aapos,ref_aa_pos, aa_counts_string)))
+				aafile.write('{},{},{}\n'.format(aapos,ref_aa_pos, aa_counts_string))
 
 			except KeyError:
-				logger.error("No query reference index available for {}".format(aapos))
+				logger.debug("No query-ref mapping available for aapos={} ({})".format(aapos, filename))
 				continue
 
 def system_call(command):
-	import logging, os
+	import logging, subprocess
 	logger = logging.getLogger()
 	logger.debug(command)
-	os.system(command)
+	subprocess.call(command, shell=True)
 
 def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=30):
 	""" 
@@ -287,7 +292,6 @@ def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=
 	from miseq_modules import system_call
 
 	logger = logging.getLogger()
-
 	bamfile = samfile.replace('.sam', '.bam')
 	confile = "{}.pileup.conseq".format(bamfile)
 
@@ -370,7 +374,7 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 	# Define region-specific SAMs: refsams[refname] points to a nested dict which includes a file handle to each specific SAM
 	refsams = {}
 	for i, refname in enumerate(refnames):
-		region_specific_sam = '%s/%s.%s.sam' % (root, prefix, refname)
+		region_specific_sam = "{}/{}.{}.sam".format(root, prefix, refname)
 		refsams.update({refname: {'sam_file_handle': open(region_specific_sam, 'w'),'count': [0,0]}})
 	refsams.update({'*': {'sam_file_handle': open('%s/%s.unmapped.sam' % (root, prefix), 'w'),'count': [0,0]}})
 
@@ -460,7 +464,6 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 
 		# Run remap on the region-specific sam, and get the remapped sam and consensus pileup used to generate it
 		samfile = refsams[refname]['sam_file_handle'].name
-
 		logging.info("remap({},{},{},{},{},{})".format(R1_fastq, R2_fastq, samfile, refpath, original_reference, conseq_qCutoff))
 		samfile, confile = remap(R1_fastq, R2_fastq, samfile, refpath, original_reference, conseq_qCutoff)
 	
@@ -510,9 +513,13 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 				# Write each remap iteration result to the file
 				count_file.write('remap %d %s,%d\n' % (iter, refname, int(region_specific_count)))
 
-			if break_out or total_remap / total_reads_R1 >= REMAP_THRESHOLD:
+			mapping_efficiency = total_remap / total_reads_R1
+			logger.debug("Mapping efficiency for {} is now {}".format(sample_name, mapping_efficiency))
+			if break_out or mapping_efficiency >= REMAP_THRESHOLD:
 				break
 
+	else:
+		logger.info("{} had acceptable mapping efficiency ({})".format(sample_name, mapping_efficiency))
 	count_file.close()
 	
 def g2p_scoring(input_path, g2p_alignment_cutoff):
@@ -526,20 +533,23 @@ def g2p_scoring(input_path, g2p_alignment_cutoff):
 	from minG2P import conan_g2p
 	from miseqUtils import convert_fasta, timestamp, translate_nuc
 
+	filename = os.path.basename(input_path)
+	prefix = filename.split('.')[0]
+
 	logger = logging.getLogger()
 	hyphy = HyPhy._THyPhy (os.getcwd(), 1)			# HyPhy is used for alignment
 	change_settings(hyphy)					# Configure scoring matrix / gap penalties
 	refseq = translate_nuc(refSeqs['V3, clinical'], 0)	# The V3 reference sequence is NON-STANDARD: talk to Guin
 
 	if not input_path.endswith('.fasta'):
-		logging.error("{} doesn't end in .fasta")
+		logger.error("{} doesn't end in .fasta")
 		return
-	
+
 	with open(input_path, 'rU') as infile:
 		try:
 			fasta = convert_fasta(infile.readlines())
 		except:
-			logging.error('g2p_scoring(): {} not a valid fasta file'.format(input_path))
+			logger.error('g2p_scoring(): {} not a valid fasta file'.format(input_path))
 			return
 	
 	# Determine offset from 1st sequence to correct frameshift induced by sample-specific remapping
@@ -596,18 +606,16 @@ def g2p_scoring(input_path, g2p_alignment_cutoff):
 			# Dict within dict - store count and fpr for each sequence
 			v3prots.update({aligned: {'count': count, 'fpr': fpr}})
 	
-	# Collect identical V3 amino acid sequences and output
-	# Extract the protein sequence and it's count
-	# k: protein sequence, v: dict mapping to 'count' and 'fpr'
-	intermed = [(v['count'], k) for k, v in v3prots.iteritems()]
+	# Collect v3 prot sequences and their output (v is a dict mapping to count and fpr)
+	intermed = [(v['count'], v3prot) for v3prot, v in v3prots.iteritems()]
 	intermed.sort(reverse=True)
 	
-	# Write a file with the sample (prefix?), rank, count, fpr, and sequence
+	# For this sample, write a v3prot file containing the prefix, sequence, rank, count, and fpr
 	v3prot_path = input_path.replace('.fasta', '.v3prot')
 	with open(v3prot_path, 'w') as v3protfile:
 		for i, (count, v3prot) in enumerate(intermed):
 			fpr = v3prots[v3prot]['fpr']
-			v3protfile.write('>%s_variant_%d_count_%d_fpr_%s\n%s\n' % (prefix, i, count, fpr, v3prot))
+			v3protfile.write(">{}_variant_{}_count_{}_fpr_{}\n{}\n".format(prefix, i, count, fpr, v3prot))
 
 def sam2fasta_with_base_censoring(samfile, censoring_qCutoff, mapping_cutoff, mode, max_prop_N):
 	"""
@@ -637,16 +645,16 @@ def sam2fasta_with_base_censoring(samfile, censoring_qCutoff, mapping_cutoff, mo
 	# For Amplicon runs, generate a (compressed) fasta file
 	if mode == 'Amplicon':
 
-		# Store identical sequences as a single FASTA entry with count data in the header
+		# Collapse fasta with respect to unique reads into d - forget sam read names (qname)
 		d = {}
-		for h, s in fasta:
-			if d.has_key(s):
-				d[s] += 1
+		for qname, seq in fasta:
+			if d.has_key(seq):
+				d[seq] += 1
 			else:
-				d.update({s: 1})
+				d.update({seq: 1})
 
-		# Sort the fasta by read count and write the fasta to disk
-		intermed = [(count, s) for s, count in d.iteritems()]
+		# Sort d by read count
+		intermed = [(count, seq) for seq, count in d.iteritems()]
 		intermed.sort(reverse=True)
 
 		fasta_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), censoring_qCutoff, 'fasta']))

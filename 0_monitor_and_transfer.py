@@ -23,16 +23,27 @@ if sys.version_info[:2] != (2, 7):
 	sys.exit()
 
 ## Settings
-pipeline_version = "4.4-HCV-AWARE"
+pipeline_version = "4.4-HCV-EXPERIMENTAL"
 delay = 3600					# Delay for polling macdatafile for unprocessed runs
 home='/data/miseq/'				# Local path on cluster for writing data
 macdatafile_mount = '/media/macdatafile/'
+
+def post_files(files, destination):
+	for file in files:
+		filename = os.path.basename(file)
+		command = 'rsync -a {} {}/{}'.format(file, destination, os.path.basename(file))
+		logging.debug(command)
+		stdout, stderr = subprocess.Popen(command, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+		if stdout != "": logging.info(stdout)
+		if stderr != "": logging.warn(stderr)
 
 # Continuously look for MiSeq folders flagged as needing processing
 while 1:
 
 	# From runs marked needsprocessing, process those unprocessed by the current pipeline version
-	runs = glob(macdatafile_mount + 'MiSeq/runs/*/needsprocessing')
+	#runs = glob(macdatafile_mount + 'MiSeq/runs/*/needsprocessing')
+	runs = glob(macdatafile_mount + 'MiSeq/runs/0_testing_amplicon/needsprocessing')
+
 	runs_needing_processing = []
 	for run in runs:
 		result_path = '{}/version_{}'.format(run.replace('needsprocessing', 'Results'), pipeline_version)
@@ -45,16 +56,14 @@ while 1:
 		continue
 
 	# Process most recently generated run and work backwards
-	runs_needing_processing.sort()
-	runs_needing_processing.reverse()
+	runs_needing_processing.sort(reverse=True)
 	curr_run = runs_needing_processing[0]
 	root = curr_run.replace('needsprocessing', '')
 	run_name = root.split('/')[-2]
 
 	# Make folder on the cluster for intermediary files
 	if not os.path.exists(home+run_name):
-		command = 'mkdir {}{}'.format(home, run_name)
-		subprocess.call(command, shell=True)
+		os.mkdir(home+run_name)
 
 	# Record all standard input / output to the pipeline log
 	log_file = home + run_name + '/monitor_output.txt'
@@ -62,22 +71,21 @@ while 1:
 		logger = init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
 		logger.info('===== Processing {} with pipeline version {} ====='.format(root, pipeline_version))
 	except:
-		print "!!! CANNOT INITIATE LOGGING - PIPELINE HALTING RIGHT NOW !!!"
+		print "!!! CANNOT INITIATE LOGGING - PIPELINE HALTING NOW !!!"
 		sys.exit()
 
 	# Copy SampleSheet.csv from macdatafile to the cluster
 	remote_file = curr_run.replace('needsprocessing', 'SampleSheet.csv')
 	local_file = home + run_name + '/SampleSheet.csv'
 	command = 'rsync -a {} {}'.format(remote_file, local_file)
-	logging.info(command)
-
+	logging.debug(command)
 	stdout, stderr = subprocess.Popen(command, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
 	if stdout != "": logging.info(stdout)
 	if stderr != "": logging.warn(stderr)
 
 	try:
 		with open(local_file, 'rU') as sample_sheet:
-			run_info = sampleSheetParser(sample_sheet)
+			run_info = sampleSheetParser(sample_sheet)		# Check comments field for T_PRIMER
 			mode = run_info['Description']
 	except:
 		message = "ERROR: Couldn't parse sample sheet - SKIPPING RUN"
@@ -92,13 +100,13 @@ while 1:
 	# Run appears valid - copy fastq.gz files to cluster and unzip
 	files = glob(root+'Data/Intensities/BaseCalls/*.fastq.gz')
 	for file in files:
-		filename = file.split('/')[-1]
+		filename = os.path.basename(file)
 
 		# Report number of reads failing to demultiplex to the log
 		if filename.startswith('Undetermined'):
 			output = subprocess.check_output(['wc', '-l', file])
 			failed_demultiplexing = output.split(" ")[0]
-			message= "{} reads failed to demultiplex in {} for run {}".format(failed_demultiplexing, filename, run_name)
+			message = "{} reads failed to demultiplex in {} for run {}".format(failed_demultiplexing, filename, run_name)
 			logging.info(message)
 			continue
 
@@ -109,52 +117,53 @@ while 1:
 		if stdout != "": logging.info(stdout) 
 		if stderr != "": logging.warn(stderr)
 
-	# Create log where 0_MPI_wrapper will write it's output
+	# Store the output of 1_MPI_wrapper in a log, and poll it so we can continuously display output to console
 	MPI_log_path = home + run_name + '/MPI_wrapper_output.log'
-	MPI_wrapper_log = open(MPI_log_path, "w")
+	with open(MPI_log_path, "w") as MPI_wrapper_log:
 
-	# stdout/stderr of 0_MPI_wrapper concatenates to the log file (It includes stderr due to -tag-output)
-	command = "module load openmpi/gnu; mpirun -tag-output -machinefile mfile python -u {} {}".format("1_MPI_wrapper.py", home+run_name)
-	p = subprocess.Popen(command, shell=True, stdout = MPI_wrapper_log, stderr = MPI_wrapper_log)
-	logging.info(command)
+		# stdout/stderr of 0_MPI_wrapper concatenates to the log file (It includes stderr due to -tag-output)
+		command = "module load openmpi/gnu; mpirun -tag-output -machinefile mfile python -u {} {}".format("1_MPI_wrapper.py", home+run_name)
+		p = subprocess.Popen(command, shell=True, stdout = MPI_wrapper_log, stderr = MPI_wrapper_log)
+		logging.info(command)
 
-	# Poll the log (stdout/stderr of 0_MPI_wrapper) and display additional output to console
-	with open(MPI_log_path, 'r') as f:
-		MPI_wrapper_log.flush()
-		sleep(1)
-		sys.stdout.write(f.read())
-		while True:
+		# Poll the log (stdout/stderr of 0_MPI_wrapper) and display additional output to console
+		with open(MPI_log_path, 'r') as f:
+			MPI_wrapper_log.flush()
 			sleep(1)
-			if p.poll() == 0: break
 			sys.stdout.write(f.read())
-	MPI_wrapper_log.close()
+			while True:
+				sleep(1)
+				sys.stdout.write(f.read())
+				if p.poll() == 0: break
 
+	# Determine output paths
 	result_path = curr_run.replace('needsprocessing', 'Results')
 	result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
+	log_path = '{}/logs'.format(result_path_final)
+	conseq_path = '{}/consensus_sequences'.format(result_path_final)
+	frequencies_path = '{}/frequencies'.format(result_path_final)
+
+	# Create folders if needed
 	if not os.path.exists(result_path): os.mkdir(result_path)
 	if not os.path.exists(result_path_final): os.mkdir(result_path_final)
+	if not os.path.exists(log_path): os.mkdir(log_path)
+	if not os.path.exists(conseq_path): os.mkdir(conseq_path)
+	if not os.path.exists(frequencies_path): os.mkdir(frequencies_path)
 
-	# Determine which results files to post to macdatafile
-	results_files = []
+	# Post files to appropriate sub-folders
+	logging.info("Posting results to {}".format(result_path))
 	if mode == 'Amplicon':
-		results_files += glob(home + run_name + '/*.v3prot')
-		results_files += glob(home + run_name + '/v3prot.summary')
-	results_files += glob(home + run_name + '/*.counts')
-	results_files += glob(home + run_name + '/*.csv')
-	results_files += [f for f in glob(home + run_name + '/*.conseq') if 'pileup' not in f]
+		v3_path = '{}/v3_tropism'.format(result_path_final)
+		if not os.path.exists(v3_path): os.mkdir(v3_path)
+		post_files(glob(home + run_name + '/*.v3prot'), v3_path)
+		post_files(glob(home + run_name + '/v3_tropism_summary.txt'), v3_path)
+	post_files(glob(home + run_name + '/*.counts'), log_path)
+	post_files(glob(home + run_name + '/*.log'), log_path)
+	post_files([f for f in glob(home + run_name + '/*.conseq') if 'pileup' not in f], conseq_path)
+	post_files(glob(home + run_name + '/*.csv'), frequencies_path)
 
-	# Copy the selected files over
-	logging.info("Posting {} run to macdatafile".format(mode))
-	for file in results_files:
-		filename = file.split('/')[-1]
-		command = 'rsync -a {} {}/{}'.format(file, result_path_final, filename)
-		logging.info(command)
-		stdout, stderr = subprocess.Popen(command, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
-		if stdout != "": logging.info(stdout)
-		if stderr != "": logging.warn(stderr)
-
-	# Lastly, close the log and copy it over: this run is done
-	command = 'rsync -a {} {}/{}'.format(log_file, result_path_final, os.path.basename(log_file))
-	logging.info(command)
+	# Close the log and copy it over: this run is now done
+	command = 'rsync -a {} {}/{}'.format(log_file, log_path, os.path.basename(log_file))
+	logging.debug(command)
 	logging.info("===== {} successfully completed! (Closing log) =====\n".format(run_name))
 	subprocess.call(command, shell=True)

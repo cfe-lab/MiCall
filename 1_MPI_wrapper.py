@@ -1,14 +1,13 @@
 """
-1_MPI_Wrapper essentially performs the full MiSeq pipeline - both the general Amplicon and Nextera,
-along with the V3-specific HIV co-receptor tropism prediction.
+1_MPI_Wrapper performs the full MiSeq pipeline - both the general Amplicon and Nextera,
+along with the V3-specific tropism prediction.
 
-First, the sample sheet is parsed to determine if this is an Amplicon or Nextera run. Then, fastq
-reads are mapped against HIV/HCV/HLA genes to determine what regions these reads come from.
-
-Frequency by coordinate data are then generated in the context of a standard coordinate system: for
-example, HXB2 in HIV and H77 for HCV.
-
-HIV1B-env sequences are also subject to a viral tropism scoring using the G2P algorithm.
+HIGH LEVEL SUMMARY
+1) Sample sheet is parsed to determine if this is an Amplicon or Nextera run.
+2) Fastq reads are mapped against reference sequences to determine their region.
+3) Frequencies of each amino per coordinate is determined, and re-expressed
+   in a reference coordinate system (HXB2 for HIV, H77 for HCV).
+4) HIV1B-env sequences are also scored for viral tropism using the G2P algorithm.
 """
 
 import logging, miseq_logging, os, subprocess, sys
@@ -20,8 +19,12 @@ from miseq_modules import csf2counts, g2p_scoring, mapping, remap, sam2fasta_wit
 my_rank = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()
 
+## Arguments
+root = sys.argv[1]                      # Local cluster path containing fastqs + SampleSheet.csv
+
 ## Reference sequences
 mapping_ref_path = '/usr/local/share/miseq/refs/cfe'
+final_alignment_ref_path = "/usr/local/share/miseq/development/miseqpipeline/csf2counts_amino_sequences.csv"
 
 ## General parameters
 read_mapping_cutoff = 10		# Minimum read mapping quality
@@ -37,16 +40,12 @@ g2p_alignment_cutoff = 50		# Minimum alignment score during g2p scoring
 g2p_fpr_cutoffs = [3.0,3.5,4.0,5.0]	# FPR cutoff for G2P X4
 mincounts = [0,50,100,1000]		# Min read counts before counting in amplicon/v3 pipeline
 
-# Define slices with (Label, region to slice, start, end)
-# Coordinates are in nucleotide space: start/end are inclusive (Relative to HXB2 aligned sequences)
+# Define (Label, region sliceed, start, end) slices; coords in nucleotide HXB2 space, start/end are inclusive
 region_slices = [("PROTEASE", "HIV1B-pol", 1, 297), ("PRRT", "HIV1B-pol", 1, 1617), ("INTEGRASE", "HIV1B-pol", 1978, 2844),
 		 ("P17", "HIV1B-gag", 1, 396), ("P24", "HIV1B-gag", 397, 1089), ("P2P7P1P6","HIV1B-gag", 1090, 1502),
 		 ("GP120","HIV1B-env", 1, 1533), ("GP41", "HIV1B-env", 1534, 2570), ("V3", "HIV1B-env", 887, 993)]
 
-## Arguments
-root = sys.argv[1]			# Path on local cluster containing fastqs/SampleSheet.csv
-
-# Each MPI process will have a separate log file which contains highly detailed (DEBUG-level) information
+# Each MPI process will have a rank_X.log file containing highly detailed (debug-level) information
 log_file = "{}/rank_{}.log".format(root, my_rank)
 logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
 
@@ -87,8 +86,8 @@ for i, fastq in enumerate(fastq_files):
 	sample_name = fastq_filename.split('_')[0]
 
 	if not run_info['Data'].has_key(sample_name):
-		logger.error('ERROR: sample name {} (derived from fastq filename) not in SampleSheet.csv'.format(sample_name))
-		sys.exit()
+		logger.error('{} not in SampleSheet.csv - cannot initiate mapping for this sample'.format(sample_name))
+		continue
 
 	is_t_primer = run_info['Data'][sample_name]['is_T_primer']
 
@@ -132,7 +131,7 @@ MPI.COMM_WORLD.Barrier()
 if mode == 'Amplicon' and my_rank == 0:
 
 	# For each v3prot file (Denoting the base censoring q cutoff used in the filename)
-	with open(root + '/v3prot.summary', 'w') as summary_file:
+	with open("{}/v3_tropism_summary.txt".format(root), 'w') as summary_file:
 		summary_file.write("sample,q_cutoff,fpr_cutoff,mincount, x4, reads, proportion_x4\n")
 		v3_files = glob(root + '/*.v3prot')
 		for i, file in enumerate(v3_files):
@@ -161,10 +160,21 @@ files = glob(root + ('/*.fasta' if mode == 'Amplicon' else '/*.csf'))
 # Determine the nucleotide/amino counts, along with the consensus, in HXB2/H77 space
 for i, file in enumerate(files):
 	if i % nprocs != my_rank: continue
-	logging.info("csf2counts({},{})".format(file,mode))
-	csf2counts(file,mode,consensus_mixture_cutoffs)
+	logging.info("csf2counts({},{},{},{})".format(file,mode,consensus_mixture_cutoffs,final_alignment_ref_path))
+	csf2counts(file,mode,consensus_mixture_cutoffs,final_alignment_ref_path)
 logging.debug("Arrived at barrier #6")
 MPI.COMM_WORLD.Barrier()
+
+# Remove empty files from csf2counts
+if my_rank == 0:
+	files = glob(root + '/*.csv')
+	files += glob (root + '*.conseq')
+	for file in files:
+		stdout, stderr = subprocess.Popen(['wc', '-l', file], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+		num_lines = int(stdout.split()[0])
+		if num_lines == 0:
+			logging.debug("Removing empty file {}".format(file))
+			os.remove(file)
 
 # Represent count output with respect to different region codes (Ex: V3 in env)
 if my_rank == 0:

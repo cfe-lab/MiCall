@@ -285,9 +285,7 @@ def sampleSheetParser (handle):
 			except ValueError:
 				tprimer = False
 			
-			run_info['Data'].update({sample_name: {'index1': index1,
-												'index2': index2,
-												'is_T_primer': tprimer}})
+			run_info['Data'].update({sample_name: {'index1': index1,'index2': index2,'is_T_primer': tprimer}})
 		else:
 			# ignore other tags
 			pass
