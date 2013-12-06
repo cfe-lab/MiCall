@@ -371,19 +371,21 @@ def poly2conseq(poly_file,alphabet='ACDEFGHIKLMNPQRSTVWY*-',minCount=3):
 
 def convert_csf (csf_handle):
 	"""
-	Extract the header, offset, and seq from the csf, return a list of
-	[header, seq] tuples of decompressed sequence data.
+	Extract the qname (read name), offset, and seq from the csf, return a list of
+	[qname, seq] tuples of decompressed sequence data.
+
+	Note, for Amplicon, qname will be "AMP"
 	"""
 	left_gap_position = {}
 	right_gap_position = {}
 
 	fasta = []
 	for line in csf_handle:
-		# Header from machine = M01841:18:000000000-A4V8D:1:1111:14650:12016
-		header, offset, seq = line.strip('\n').split(',')
-		fasta.append([header, seq])
-		left_gap_position[header] = int(offset)
-		right_gap_position[header] = left_gap_position[header] + len(seq)
+		fields = line.strip('\n').split(',')
+		qname, offset, seq = fields[0], fields[1], fields[2]
+		fasta.append([qname, seq])
+		left_gap_position[qname] = int(offset)
+		right_gap_position[qname] = left_gap_position[qname] + len(seq)
 
 	return fasta,left_gap_position,right_gap_position
 

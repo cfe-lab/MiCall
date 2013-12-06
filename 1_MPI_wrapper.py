@@ -38,24 +38,24 @@ consensus_mixture_cutoffs = [0.01,0.02,0.05,0.1,0.2,0.25]	# Proportion threshold
 ## V3 specific parameters
 g2p_alignment_cutoff = 50		# Minimum alignment score during g2p scoring
 g2p_fpr_cutoffs = [3.0,3.5,4.0,5.0]	# FPR cutoff for G2P X4
-mincounts = [0,50,100,1000]		# Min read counts before counting in amplicon/v3 pipeline
+v3_mincounts = [0,50,100,1000]		# Min read counts before counting in amplicon/v3 pipeline
 
 # Define (Label, region sliceed, start, end) slices; coords in nucleotide HXB2 space, start/end are inclusive
 region_slices = [("PROTEASE", "HIV1B-pol", 1, 297), ("PRRT", "HIV1B-pol", 1, 1617), ("INTEGRASE", "HIV1B-pol", 1978, 2844),
 		 ("P17", "HIV1B-gag", 1, 396), ("P24", "HIV1B-gag", 397, 1089), ("P2P7P1P6","HIV1B-gag", 1090, 1502),
 		 ("GP120","HIV1B-env", 1, 1533), ("GP41", "HIV1B-env", 1534, 2570), ("V3", "HIV1B-env", 887, 993)]
 
-# Each MPI process will have a rank_X.log file containing highly detailed (debug-level) information
+# Each MPI process will have a rank_X.log file containing detailed (debug-level) information
 log_file = "{}/rank_{}.log".format(root, my_rank)
 logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
 
-# Parse sample sheet
+# Parse sample sheet to determine the mode
 with open(root+'/SampleSheet.csv', 'rU') as ssfile:
 	logger.debug("sampleSheetParser({})".format(ssfile))
 	run_info = sampleSheetParser(ssfile)
 	mode = run_info['Description']
 
-# Print pipeline parameters to the log
+# Record pipeline parameters
 if my_rank == 0:
 	logger.info("===== Pipeline parameters =====")
 	logger.info("Minimum read mapping score while parsing SAM files: {}".format(read_mapping_cutoff))
@@ -68,7 +68,7 @@ if my_rank == 0:
 	if mode == "Amplicon":
 		logger.info("Mininum G2P alignment score: {}".format(g2p_alignment_cutoff))
 		logger.info("G2P FPR cutoff for X4/R5 tropism: {}".format(g2p_fpr_cutoffs))
-		logger.info("Minimum read count to contribute to proportion X4: {}".format(mincounts))
+		logger.info("Minimum read count to contribute to proportion X4: {}".format(v3_mincounts))
 	logger.info("Region slices: {}".format(region_slices))
 	logger.info("===== End of pipeline parameters =====")
 
@@ -113,7 +113,7 @@ for i in range(len(files)):
 logger.debug("Arrived at barrier #3")
 MPI.COMM_WORLD.Barrier()
 
-# For amplicon runs, compute V3 g2p scores from HIV1B-env csf
+# Compute V3 tropism scores if applicable
 if mode == 'Amplicon':
 	files = glob(root + '/*.HIV1B-env.*.csf')
 	for i, csf_file in enumerate(files):
@@ -121,7 +121,7 @@ if mode == 'Amplicon':
 
 		# For each HIV1B-env csf, generate a v3prot file
 		logger.info("g2p_scoring({},{})".format(csf_file, g2p_alignment_cutoff))
-		g2p_scoring(file, g2p_alignment_cutoff)
+		g2p_scoring(csf_file, g2p_alignment_cutoff)
 
 logging.debug("Arrived at barrier #4")
 MPI.COMM_WORLD.Barrier()
@@ -138,7 +138,7 @@ if mode == 'Amplicon' and my_rank == 0:
 
 			# Determine the proportion x4 under different FPR cutoffs and min counts
 			for fpr_cutoff in g2p_fpr_cutoffs:
-				for mincount in mincounts:
+				for mincount in v3_mincounts:
 					try:
 						total_x4_count, total_count = prop_x4(file, fpr_cutoff, mincount)
 						logging.debug("{}, {} = prop_x4({},{},{})".format(total_x4_count, total_count, file, fpr_cutoff, mincount))
@@ -148,15 +148,12 @@ if mode == 'Amplicon' and my_rank == 0:
 								fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
 					except:
 						continue
-
-	logging.info('Generated v3prot.summary file')
+	logging.info('Generated v3_tropism_summary.txt')
 logging.debug("Arrived at barrier #5")
 MPI.COMM_WORLD.Barrier()
 
-# From each fasta/csf file
-files = glob(root + ('/*.fasta' if mode == 'Amplicon' else '/*.csf'))
-
-# Determine the nucleotide/amino counts, along with the consensus, in HXB2/H77 space
+# Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
+files = glob(root + '/*.csf')
 for i, file in enumerate(files):
 	if i % nprocs != my_rank: continue
 	logging.info("csf2counts({},{},{},{})".format(file,mode,consensus_mixture_cutoffs,final_alignment_ref_path))
@@ -167,7 +164,7 @@ MPI.COMM_WORLD.Barrier()
 # Remove empty files from csf2counts
 if my_rank == 0:
 	files = glob(root + '/*.csv')
-	files += glob (root + '*.conseq')
+	files += glob (root + '/*.conseq')
 	for file in files:
 		stdout, stderr = subprocess.Popen(['wc', '-l', file], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
 		num_lines = int(stdout.split()[0])

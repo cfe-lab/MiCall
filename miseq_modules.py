@@ -11,6 +11,10 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	hyphy = HyPhy._THyPhy (os.getcwd(), 1)
 	change_settings(hyphy)
 	amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
+
+	if mode != 'Amplicon' and mode != 'Nextera':
+		logger.error("{} is an unsupported mode - halting csf2counts".format(mode))
+		return	
 	
 	filename = os.path.basename(path)
 	root = os.path.dirname(path) if os.path.dirname(path) != '' else '.'
@@ -38,13 +42,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 	# Read the input file
 	with open(path, 'rU') as infile:
-		if mode == 'Nextera':
-			fasta, lefts, rights = convert_csf(infile.readlines())
-		elif mode == 'Amplicon':
-			fasta = convert_fasta(infile.readlines())
-		else:
-			logger.error("{} is an unsupported mode - halting csf2counts".format(mode))
-			return
+		fasta, lefts, rights = convert_csf(infile.readlines())
 	
 	# Look at the first read to determine the correct protein ORF
 	max_score = 0
@@ -73,7 +71,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 		# Determine the offset (If Nextera - for fasta, there's no offset)
 		left = lefts[h] if mode == 'Nextera' else 0
-		count = 1 if mode == 'Nextera' else int(h.split('_')[-1])
+		count = 1 if mode == 'Amplicon' else int(h.split('_')[-1])
 	
 		# Determine nuc counts for self-consensus coordinate space
 		for j, nuc in enumerate(s):
