@@ -3,6 +3,7 @@ import sys, re, math
 import random
 
 
+# Matches the size of the left-gap induced by alignment
 gpfx = re.compile('^[-]+')
 
 def len_gap_prefix (s):

@@ -14,7 +14,7 @@ import logging, miseq_logging, os, subprocess, sys
 from glob import glob
 from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, prop_x4, sampleSheetParser
 from mpi4py import MPI
-from miseq_modules import csf2counts, g2p_scoring, mapping, remap, sam2fasta_with_base_censoring, slice_outputs
+from miseq_modules import csf2counts, g2p_scoring, mapping, remap, sam2csf_with_base_censoring, slice_outputs
 
 my_rank = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()
@@ -31,8 +31,8 @@ read_mapping_cutoff = 10		# Minimum read mapping quality
 consensus_q_cutoff = 20			# Min Q for base to contribute to conseq generation (1_mapping/pileup2conseq)
 REMAP_THRESHOLD = 0.95			# Fraction of fastq reads successfully mapped to be considered acceptable
 MAX_REMAPS = 3				# Number of remapping attempts if below REMAP_THRESHOLD
-sam2fasta_q_cutoffs = [0,10,15]		# q cutoff for base censoring (sam2fasta)
-max_prop_N = 0.5			# Max proportion of censored bases allowed in a sequence (sam2fasta)
+sam2csf_q_cutoffs = [0,10,15]		# q cutoff for base censoring (sam2csf)
+max_prop_N = 0.5			# Max proportion of censored bases allowed in a sequence (sam2csf)
 consensus_mixture_cutoffs = [0.01,0.02,0.05,0.1,0.2,0.25]	# Proportion thresholds for mixtures in the consensus
 
 ## V3 specific parameters
@@ -62,8 +62,8 @@ if my_rank == 0:
 	logger.info("Min Q for base to contribute to conseq generation: {}".format(consensus_q_cutoff))
 	logger.info("Fraction of fastq reads successfully mapped to be considered acceptable: {}".format(REMAP_THRESHOLD))
 	logger.info("Max number of remapping attempts: {}".format(MAX_REMAPS))
-	logger.info("Base censoring cutoff (sam2fasta): {}".format(sam2fasta_q_cutoffs))
-	logger.info("Max proportion censored bases allowed (sam2fasta): {}".format(max_prop_N))
+	logger.info("Base censoring cutoff (sam2csf): {}".format(sam2csf_q_cutoffs))
+	logger.info("Max proportion censored bases allowed (sam2csf): {}".format(max_prop_N))
 	logger.info("Base proportion needed to count towards a consensus sequence mixture: {}".format(consensus_mixture_cutoffs))
 	if mode == "Amplicon":
 		logger.info("Mininum G2P alignment score: {}".format(g2p_alignment_cutoff))
@@ -104,24 +104,23 @@ for i in range(len(files)):
 	if i % nprocs != my_rank: continue
 	filename = files[i].split('/')[-1]
 
-	# Generate a fasta or csf file under different q cutoff base censoring rules (Store the q cutoff used in the filename)
-	for qcut in sam2fasta_q_cutoffs:
-		logger.info("sam2fasta_with_base_censoring({}, {}, {}, {}, {})".format(files[i], qcut, read_mapping_cutoff, mode, max_prop_N))
-		sam2fasta_with_base_censoring(files[i], qcut, read_mapping_cutoff, mode, max_prop_N)
+	# Generate csf with different q cutoff censoring rules (Store cutoff used in filename)
+	# For Amplicon, csf is sorted by read prevalence, by Nextera, csf is sorted by left-offset
+	for qcut in sam2csf_q_cutoffs:
+		logger.info("sam2csf_with_base_censoring({}, {}, {}, {}, {})".format(files[i], qcut, read_mapping_cutoff, mode, max_prop_N))
+		sam2csf_with_base_censoring(files[i], qcut, read_mapping_cutoff, mode, max_prop_N)
 
 logger.debug("Arrived at barrier #3")
 MPI.COMM_WORLD.Barrier()
 
-# For amplicon runs, compute V3 g2p scores from HIV1B-env fasta files
-# FIXME: In the long run, we will be mixing Nextera with Amplicon runs, and we will need to
-# convert HIV1B-env CSF files into compressed fasta files...
+# For amplicon runs, compute V3 g2p scores from HIV1B-env csf
 if mode == 'Amplicon':
-	files = glob(root + '/*.HIV1B-env.*.fasta')
-	for i, file in enumerate(files):
+	files = glob(root + '/*.HIV1B-env.*.csf')
+	for i, csf_file in enumerate(files):
 		if i % nprocs != my_rank: continue
 
-		# For each HIV1B-env fasta, generate a v3prot file
-		logger.info("g2p_scoring({},{})".format(file, g2p_alignment_cutoff))
+		# For each HIV1B-env csf, generate a v3prot file
+		logger.info("g2p_scoring({},{})".format(csf_file, g2p_alignment_cutoff))
 		g2p_scoring(file, g2p_alignment_cutoff)
 
 logging.debug("Arrived at barrier #4")
@@ -135,7 +134,7 @@ if mode == 'Amplicon' and my_rank == 0:
 		summary_file.write("sample,q_cutoff,fpr_cutoff,mincount, x4, reads, proportion_x4\n")
 		v3_files = glob(root + '/*.v3prot')
 		for i, file in enumerate(v3_files):
-			prefix, gene, sam2fasta_q_cutoff = file.split('.')[:3]
+			prefix, gene, sam2csf_q_cutoff = file.split('.')[:3]
 
 			# Determine the proportion x4 under different FPR cutoffs and min counts
 			for fpr_cutoff in g2p_fpr_cutoffs:
@@ -145,7 +144,7 @@ if mode == 'Amplicon' and my_rank == 0:
 						logging.debug("{}, {} = prop_x4({},{},{})".format(total_x4_count, total_count, file, fpr_cutoff, mincount))
 						proportion_x4 = (float(total_x4_count) / float(total_count)) * 100
 						sample = prefix.split('/')[-1]
-						summary_file.write("{},{},{},{},{},{},{}\n".format(sample, sam2fasta_q_cutoff,
+						summary_file.write("{},{},{},{},{},{},{}\n".format(sample, sam2csf_q_cutoff,
 								fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
 					except:
 						continue
