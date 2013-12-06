@@ -18,8 +18,10 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	
 	filename = os.path.basename(path)
 	root = os.path.dirname(path) if os.path.dirname(path) != '' else '.'
+	file_prefix = filename.replace('.fasta', '') if mode == 'Amplicon' else filename.replace('.csf', '') 
+	outpath = "{}/{}".format(root, file_prefix)
 
-	# CSF/FASTA contains sample + region in filename (Ex: F00844-V3LOOP_S68.HIV1B-env.0.fasta)
+	# CSF contains sample + region in filename (Ex: F00844-V3LOOP_S68.HIV1B-env.0.csf)
 	sample, ref = filename.split('.')[:2]
 	
 	# Store amino reference sequences in refseqs to which we will coordinate normalize our samples
@@ -29,10 +31,6 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 		for row in input_file:
 			region, amino = row
 			refseqs[region] = amino
-
-	# Bookkeeping: determine filenames for outputs
-	file_prefix = filename.replace('.fasta', '') if mode == 'Amplicon' else filename.replace('.csf', '')
-	outpath = "{}/{}".format(root, file_prefix)
 
 	# If we have no reference sequence, we can't align the input sequences
 	if not refseqs.has_key(ref):

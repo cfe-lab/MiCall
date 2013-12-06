@@ -241,6 +241,10 @@ def sampleSheetParser (handle):
 	Parse the contents of SampleSheet.csv, convert contents into a 
 	Python dictionary object.
 	"""
+
+	# FIXME: Conan is going to start annotating samples as either amplicon or nextera
+	# We may need to change this code to handle this
+
 	tag = None
 	get_header = False
 	header = []

@@ -12,9 +12,9 @@ HIGH LEVEL SUMMARY
 
 import logging, miseq_logging, os, subprocess, sys
 from glob import glob
-from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, prop_x4, sampleSheetParser
+from miseqUtils import prop_x4, sampleSheetParser
 from mpi4py import MPI
-from miseq_modules import csf2counts, g2p_scoring, mapping, remap, sam2csf_with_base_censoring, slice_outputs
+from miseq_modules import csf2counts, g2p_scoring, mapping, sam2csf_with_base_censoring, slice_outputs
 
 my_rank = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()
@@ -23,7 +23,7 @@ nprocs = MPI.COMM_WORLD.Get_size()
 root = sys.argv[1]                      # Local cluster path containing fastqs + SampleSheet.csv
 
 ## Reference sequences
-mapping_ref_path = '/usr/local/share/miseq/refs/cfe'
+mapping_ref_path = "/usr/local/share/miseq/refs/cfe"
 final_alignment_ref_path = "/usr/local/share/miseq/development/miseqpipeline/csf2counts_amino_sequences.csv"
 
 ## General parameters
@@ -41,7 +41,7 @@ g2p_fpr_cutoffs = [3.0,3.5,4.0,5.0]	# FPR cutoff for G2P X4
 v3_mincounts = [0,50,100,1000]		# Min read counts before counting in amplicon/v3 pipeline
 
 # Define (Label, region sliceed, start, end) slices; coords in nucleotide HXB2 space, start/end are inclusive
-region_slices = [("PROTEASE", "HIV1B-pol", 1, 297), ("PRRT", "HIV1B-pol", 1, 1617), ("INTEGRASE", "HIV1B-pol", 1978, 2844),
+region_slices = [("PROTEASE", "HIV1B-pol-2253-5093", 1, 297), ("INTEGRASE", "HIV1B-pol-2253-5093", 1978, 2844),
 		 ("P17", "HIV1B-gag", 1, 396), ("P24", "HIV1B-gag", 397, 1089), ("P2P7P1P6","HIV1B-gag", 1090, 1502),
 		 ("GP120","HIV1B-env", 1, 1533), ("GP41", "HIV1B-env", 1534, 2570), ("V3", "HIV1B-env", 887, 993)]
 

@@ -85,7 +85,9 @@ while 1:
 
 	try:
 		with open(local_file, 'rU') as sample_sheet:
-			run_info = sampleSheetParser(sample_sheet)		# Check comments field for T_PRIMER
+
+			# FIXME: Denote each sample as amplicon or nextera
+			run_info = sampleSheetParser(sample_sheet)
 			mode = run_info['Description']
 	except:
 		message = "ERROR: Couldn't parse sample sheet - SKIPPING RUN"
