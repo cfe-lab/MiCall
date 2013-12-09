@@ -9,21 +9,19 @@ Within run folders, a 'needsprocessing' flag triggers this script:
 Processing is done in serial on most recent runs first.
 """
 
-import os, subprocess, sys, time
+import logging, os, subprocess, sys, time
 from datetime import datetime
 from glob import glob
 from miseqUtils import timestamp, sampleSheetParser
-from time import sleep
-
-import logging
 from miseq_logging import init_logging
+from time import sleep
 
 if sys.version_info[:2] != (2, 7):
 	timestamp("Monitor requires python 2.7")
 	sys.exit()
 
 ## Settings
-pipeline_version = "4.4-HCV-EXPERIMENTAL"
+pipeline_version = "4.4b-HCV-EXPERIMENTAL"
 delay = 3600					# Delay for polling macdatafile for unprocessed runs
 home='/data/miseq/'				# Local path on cluster for writing data
 macdatafile_mount = '/media/macdatafile/'
@@ -31,9 +29,9 @@ macdatafile_mount = '/media/macdatafile/'
 def post_files(files, destination):
 	for file in files:
 		filename = os.path.basename(file)
-		command = 'rsync -a {} {}/{}'.format(file, destination, os.path.basename(file))
+		command = ['rsync', '-a', file, '{}/{}'.format(destination, os.path.basename(file))]
 		logging.debug(command)
-		stdout, stderr = subprocess.Popen(command, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+		stdout, stderr = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
 		if stdout != "": logging.info(stdout)
 		if stderr != "": logging.warn(stderr)
 
@@ -77,9 +75,10 @@ while 1:
 	# Copy SampleSheet.csv from macdatafile to the cluster
 	remote_file = curr_run.replace('needsprocessing', 'SampleSheet.csv')
 	local_file = home + run_name + '/SampleSheet.csv'
-	command = 'rsync -a {} {}'.format(remote_file, local_file)
+
+	command = ['rsync', '-a', remote_file, local_file]
 	logging.debug(command)
-	stdout, stderr = subprocess.Popen(command, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+	stdout, stderr = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
 	if stdout != "": logging.info(stdout)
 	if stderr != "": logging.warn(stderr)
 
@@ -113,15 +112,22 @@ while 1:
 			continue
 
 		local_file = home + run_name + '/' + filename
-		command = 'rsync -a {} {}; gunzip -f {};'.format(file, local_file, local_file)
+
+		command = ['rsync', '-a', file, local_file]
 		logging.info(command)
-		stdout, stderr = subprocess.Popen(command, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+		stdout, stderr = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+                if stdout != "": logging.info(stdout) 
+                if stderr != "": logging.warn(stderr)
+
+		command = ['gunzip', '-f', local_file]
+		logging.info(command)
+		stdout, stderr = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
 		if stdout != "": logging.info(stdout) 
 		if stderr != "": logging.warn(stderr)
 
 	# Store the output of 1_MPI_wrapper in a log, and poll it so we can continuously display output to console
 	MPI_log_path = home + run_name + '/MPI_wrapper_output.log'
-	with open(MPI_log_path, "w") as MPI_wrapper_log:
+	with open(MPI_log_path, "wb") as MPI_wrapper_log:
 
 		# stdout/stderr of 0_MPI_wrapper concatenates to the log file (It includes stderr due to -tag-output)
 		command = "module load openmpi/gnu; mpirun -tag-output -machinefile mfile python -u {} {}".format("1_MPI_wrapper.py", home+run_name)
@@ -129,7 +135,7 @@ while 1:
 		logging.info(command)
 
 		# Poll the log (stdout/stderr of 0_MPI_wrapper) and display additional output to console
-		with open(MPI_log_path, 'r') as f:
+		with open(MPI_log_path, 'rb') as f:
 			MPI_wrapper_log.flush()
 			sleep(1)
 			sys.stdout.write(f.read())
@@ -165,7 +171,7 @@ while 1:
 	post_files(glob(home + run_name + '/*.csv'), frequencies_path)
 
 	# Close the log and copy it over: this run is now done
-	command = 'rsync -a {} {}/{}'.format(log_file, log_path, os.path.basename(log_file))
+	command = ['rsync', '-a', log_file, '{}/{}'.format(log_path, os.path.basename(log_file))]
 	logging.debug(command)
 	logging.info("===== {} successfully completed! (Closing log) =====\n".format(run_name))
-	subprocess.call(command, shell=True)
+	subprocess.call(command)

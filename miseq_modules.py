@@ -1,6 +1,6 @@
 def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/share/miseq/development/miseqpipeline/csf2counts_amino_sequences.csv"):
 	"""
-	Calculate nucleotide and amino acid counts from a FASTA/CSF
+	Calculate nucleotide and amino acid counts from a CSF.
 	"""
 
 	import csv, logging, HyPhy, os, sys
@@ -12,19 +12,18 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	change_settings(hyphy)
 	amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
 
-	if mode != 'Amplicon' and mode != 'Nextera':
-		logger.error("{} is an unsupported mode - halting csf2counts".format(mode))
-		return	
+	if mode not in ['Amplicon', 'Nextera']:
+		return logger.error("{} is an unsupported mode - halting csf2counts".format(mode))
 	
 	filename = os.path.basename(path)
 	root = os.path.dirname(path) if os.path.dirname(path) != '' else '.'
-	file_prefix = filename.replace('.fasta', '') if mode == 'Amplicon' else filename.replace('.csf', '') 
+	file_prefix = filename.replace('.csf', '') 
 	outpath = "{}/{}".format(root, file_prefix)
 
-	# CSF contains sample + region in filename (Ex: F00844-V3LOOP_S68.HIV1B-env.0.csf)
+	# CSF contains sample + region in filename (Ex: F00844_S68.HIV1B-env.0.csf)
 	sample, ref = filename.split('.')[:2]
 	
-	# Store amino reference sequences in refseqs to which we will coordinate normalize our samples
+	# Amino reference sequences in refseqs is used to coordinate normalize our samples
 	with open(amino_reference_sequence, "rb") as f:
 		input_file = csv.reader(f)
 		refseqs = {}
@@ -34,11 +33,10 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 	# If we have no reference sequence, we can't align the input sequences
 	if not refseqs.has_key(ref):
-		logger.error("No reference for {} - halting csf2counts".format(ref))
-		return
+		return logger.error("No reference for {} - halting csf2counts".format(ref))
 	refseq = refseqs[ref]
 
-	# Read the input file
+	# Load the CSF: fasta contains (header, seq) tuples
 	with open(path, 'rU') as infile:
 		fasta, lefts, rights = convert_csf(infile.readlines())
 	
@@ -65,14 +63,16 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	# consensus: so the CSF offset is with respect to self-consensus
 	
 	# For each sequence in the fasta/csf
-	for i, (h, s) in enumerate(fasta):
+	for i, (header, seq) in enumerate(fasta):
 
 		# Determine the offset (If Nextera - for fasta, there's no offset)
-		left = lefts[h] if mode == 'Nextera' else 0
-		count = 1 if mode == 'Amplicon' else int(h.split('_')[-1])
+		left = lefts[header] if mode == 'Nextera' else 0
+
+		# Each Nextera read is unique - amplicons store count information in the CSF
+		count = 1 if mode == 'Nextera' else int(header.split('_')[1])
 	
 		# Determine nuc counts for self-consensus coordinate space
-		for j, nuc in enumerate(s):
+		for j, nuc in enumerate(seq):
 			pos = left + j
 			if not nuc_counts.has_key(pos):
 				nuc_counts.update({pos: {}})
@@ -80,7 +80,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 				nuc_counts[pos].update({nuc: 0})
 			nuc_counts[pos][nuc] += count
 		
-		p = translate_nuc('-'*left + s, best_frame)
+		p = translate_nuc('-'*left + seq, best_frame)
 		pcache.append(p)
 	
 		# Update amino counts for self-consensus coordinate space
@@ -477,7 +477,7 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 	mapping_efficiency = total_remap / total_reads_R1
 	if mapping_efficiency < REMAP_THRESHOLD:
 		break_out = False
-		logger.info("Poor mapping for {} (Mapping efficiency: {}) - trying additional remapping".format(sample_name, mapping_efficiency))
+		logger.info("Poor mapping for {} (Mapping efficiency: {:.2%}) - trying additional remapping".format(sample_name, mapping_efficiency))
 
 		# Repeat remapping up to the number of MAX_REMAPS permitted
 		for iter in range(MAX_REMAPS):
@@ -510,20 +510,22 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 				count_file.write('remap %d %s,%d\n' % (iter, refname, int(region_specific_count)))
 
 			mapping_efficiency = total_remap / total_reads_R1
-			logger.debug("Mapping efficiency for {} is now {}".format(sample_name, mapping_efficiency))
+			logger.debug("Mapping efficiency for {} is now {:.3}".format(sample_name, mapping_efficiency))
 			if break_out or mapping_efficiency >= REMAP_THRESHOLD:
 				break
 
 	else:
-		logger.info("{} had acceptable mapping efficiency ({})".format(sample_name, mapping_efficiency))
+		logger.info("{} had acceptable mapping efficiency ({:.2%})".format(sample_name, mapping_efficiency))
 	count_file.close()
 	
 def g2p_scoring(csf_path, g2p_alignment_cutoff):
 	"""
-	Take an env CSF and generates a v3prot file: a fasta-like file
-	containing G2P FPR and prevalence of each read in the header.
+	Take an env (amplicon) CSF and generate a v3prot file.
 
-	PRE: This is an amplicon run - the CSF must have 5 columns.
+	Header: contains the G2P FPR and read count
+	Sequence: protein aligned V3
+
+	The CSF must be from an amplicon run: column 1 must contain the rank + count.
 	"""
 
 	import logging,os,sys
@@ -539,15 +541,13 @@ def g2p_scoring(csf_path, g2p_alignment_cutoff):
 	refseq = translate_nuc(refSeqs['V3, clinical'], 0)	# V3 ref seq is NON-STANDARD: talk to Guin
 
 	if csf_filename.find("HIV1B-env") == -1 or not csf_path.endswith('.csf'):
-		logger.error("{} is not an HIV1B-env CSF file")
-		return
+		return logger.error("{} is not an HIV1B-env CSF file")
 
-	# Store CSF data in a fasta-like datastructure called sequences
+	# Store CSF in fasta-like variable called sequences
 	sequences = []
 	with open(csf_path, 'rU') as csf_file:
 		for line in csf_file:
-			mode, left_offset, seq_no_gaps, rank, count = line.strip("\n").split(",")
-			header = "{}_{}".format(rank, count)
+			header, left_offset, seq_no_gaps  = line.strip("\n").split(",")
 			sequences.append((header, seq_no_gaps))
 	
 	# Determine offset from 1st sequence to correct frameshift induced by sample-specific remapping
@@ -618,8 +618,11 @@ def g2p_scoring(csf_path, g2p_alignment_cutoff):
 
 def sam2csf_with_base_censoring(samfile, censoring_qCutoff, mapping_cutoff, mode, max_prop_N):
 	"""
-	From a path to a SAM, create a 5-column CSF for Amplicon runs, or a
-	3-column CSF for Nextera runs.
+	From a path to a SAM, create a comma-delimited, 3-column CSF file.
+
+	Column 1: Either the rank + count for amplicon, or qname for Nextera
+	Column 2: Left-offset of the read
+	Column 3: Gap-stripped sequence (Alignment data is lost)
 	"""
 
 	import logging, os, sys
@@ -638,30 +641,29 @@ def sam2csf_with_base_censoring(samfile, censoring_qCutoff, mapping_cutoff, mode
 
 	# Send warning to standard out if sam2fasta didn't return anything
 	if fasta == None:
-		logging.warn("{} likely empty or invalid - halting sam2fasta".format(samfile))
-		return
+		return logging.warn("{} likely empty or invalid - halting sam2fasta".format(samfile))
 
 	csf_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), censoring_qCutoff, 'csf']))
 
-	# Amplicon: store counts in CSF; compress by sequence and drop read names (qname)
+	# Amplicon: store rank + read counts in column 1 of CSF (drop individual read qnames)
 	if mode == 'Amplicon':
 
-		# Collapse fasta with respect to unique reads into d - individual read names are lost (qname)
+		# Collapse fasta with respect to unique reads into d
 		d = {}
 		for qname, seq in fasta:
 			if d.has_key(seq): d[seq] += 1
 			else: d.update({seq: 1})
 
-		# Sort d by read count
+		# Sort d by read count and store in intermed
 		intermed = [(count, len_gap_prefix(seq), seq) for seq, count in d.iteritems()]
 		intermed.sort(reverse=True)
 
-		# CSF from Amplicon runs have the first 3 columns, plus 2 additional columns for rank and count
+		# Write CSF to disk
 		with open(csf_filename, 'w') as outfile:
 			for rank, (count, left_offset, seq) in enumerate(intermed):
-				outfile.write('{},{},{},{},{}\n'.format("AMP", left_offset, seq.strip('-'), rank, count))
+				outfile.write('{}_{},{},{}\n'.format(rank, count, left_offset, seq.strip('-')))
 
-	# For Nextera runs, write a csf file (Our proprietary format)
+	# Nextera: store read qname in column 1 of CSF
 	elif mode == 'Nextera':
 
 		# Sort csf by left-gap prefix: the offset of the read relative to the ref seq

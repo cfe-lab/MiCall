@@ -330,10 +330,10 @@ def prop_x4 (v3prot_path, fpr_cutoff, min_count):
 			continue
 		if fpr <= fpr_cutoff:
 			total_x4_count += count
-
 		total_count += count
 
-	return (total_x4_count, total_count)
+	proportion_X4 = (float(total_x4_count) / float(total_count)) * 100
+	return (proportion_X4, total_x4_count, total_count)
 
 def poly2conseq(poly_file,alphabet='ACDEFGHIKLMNPQRSTVWY*-',minCount=3):
 	"""
@@ -375,10 +375,8 @@ def poly2conseq(poly_file,alphabet='ACDEFGHIKLMNPQRSTVWY*-',minCount=3):
 
 def convert_csf (csf_handle):
 	"""
-	Extract the qname (read name), offset, and seq from the csf, return a list of
-	[qname, seq] tuples of decompressed sequence data.
-
-	Note, for Amplicon, qname will be "AMP"
+	Extract header, offset, and seq from the CSF.
+	The header is qname for Nextera, and rank_count for Amplicon.
 	"""
 	left_gap_position = {}
 	right_gap_position = {}
@@ -386,10 +384,10 @@ def convert_csf (csf_handle):
 	fasta = []
 	for line in csf_handle:
 		fields = line.strip('\n').split(',')
-		qname, offset, seq = fields[0], fields[1], fields[2]
-		fasta.append([qname, seq])
-		left_gap_position[qname] = int(offset)
-		right_gap_position[qname] = left_gap_position[qname] + len(seq)
+		CSF_header, offset, seq = fields[0], fields[1], fields[2]
+		fasta.append([CSF_header, seq])
+		left_gap_position[CSF_header] = int(offset)
+		right_gap_position[CSF_header] = left_gap_position[CSF_header] + len(seq)
 
 	return fasta,left_gap_position,right_gap_position
 

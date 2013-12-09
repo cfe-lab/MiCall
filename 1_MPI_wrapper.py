@@ -10,11 +10,9 @@ HIGH LEVEL SUMMARY
 4) HIV1B-env sequences are also scored for viral tropism using the G2P algorithm.
 """
 
-import logging, miseq_logging, os, subprocess, sys
+import logging, miseq_logging, miseq_modules, miseqUtils, os, subprocess, sys
 from glob import glob
-from miseqUtils import prop_x4, sampleSheetParser
 from mpi4py import MPI
-from miseq_modules import csf2counts, g2p_scoring, mapping, sam2csf_with_base_censoring, slice_outputs
 
 my_rank = MPI.COMM_WORLD.Get_rank()
 nprocs = MPI.COMM_WORLD.Get_size()
@@ -52,7 +50,7 @@ logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, cons
 # Parse sample sheet to determine the mode
 with open(root+'/SampleSheet.csv', 'rU') as ssfile:
 	logger.debug("sampleSheetParser({})".format(ssfile))
-	run_info = sampleSheetParser(ssfile)
+	run_info = miseqUtils.sampleSheetParser(ssfile)
 	mode = run_info['Description']
 
 # Record pipeline parameters
@@ -70,7 +68,7 @@ if my_rank == 0:
 		logger.info("G2P FPR cutoff for X4/R5 tropism: {}".format(g2p_fpr_cutoffs))
 		logger.info("Minimum read count to contribute to proportion X4: {}".format(v3_mincounts))
 	logger.info("Region slices: {}".format(region_slices))
-	logger.info("===== End of pipeline parameters =====")
+	logger.info("===============================")
 
 logger.debug("Arrived at barrier #1")
 MPI.COMM_WORLD.Barrier()
@@ -93,7 +91,7 @@ for i, fastq in enumerate(fastq_files):
 
 	# Map fastq reads to a static reference, generate sample specific consensus, remap reads to specific consensus
 	logging.info("mapping({}, {}, {}, {}, {}, {}, {})".format(mapping_ref_path, fastq, consensus_q_cutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS))
-	mapping(mapping_ref_path, fastq, consensus_q_cutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS)
+	miseq_modules.mapping(mapping_ref_path, fastq, consensus_q_cutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS)
 
 logger.debug("Arrived at barrier #2")
 MPI.COMM_WORLD.Barrier()
@@ -108,7 +106,7 @@ for i in range(len(files)):
 	# For Amplicon, csf is sorted by read prevalence, by Nextera, csf is sorted by left-offset
 	for qcut in sam2csf_q_cutoffs:
 		logger.info("sam2csf_with_base_censoring({}, {}, {}, {}, {})".format(files[i], qcut, read_mapping_cutoff, mode, max_prop_N))
-		sam2csf_with_base_censoring(files[i], qcut, read_mapping_cutoff, mode, max_prop_N)
+		miseq_modules.sam2csf_with_base_censoring(files[i], qcut, read_mapping_cutoff, mode, max_prop_N)
 
 logger.debug("Arrived at barrier #3")
 MPI.COMM_WORLD.Barrier()
@@ -121,7 +119,7 @@ if mode == 'Amplicon':
 
 		# For each HIV1B-env csf, generate a v3prot file
 		logger.info("g2p_scoring({},{})".format(csf_file, g2p_alignment_cutoff))
-		g2p_scoring(csf_file, g2p_alignment_cutoff)
+		miseq_modules.g2p_scoring(csf_file, g2p_alignment_cutoff)
 
 logging.debug("Arrived at barrier #4")
 MPI.COMM_WORLD.Barrier()
@@ -130,7 +128,7 @@ MPI.COMM_WORLD.Barrier()
 if mode == 'Amplicon' and my_rank == 0:
 
 	# For each v3prot file (Denoting the base censoring q cutoff used in the filename)
-	with open("{}/v3_tropism_summary.txt".format(root), 'w') as summary_file:
+	with open("{}/v3_tropism_summary.txt".format(root), 'wb') as summary_file:
 		summary_file.write("sample,q_cutoff,fpr_cutoff,mincount, x4, reads, proportion_x4\n")
 		v3_files = glob(root + '/*.v3prot')
 		for i, file in enumerate(v3_files):
@@ -140,11 +138,11 @@ if mode == 'Amplicon' and my_rank == 0:
 			for fpr_cutoff in g2p_fpr_cutoffs:
 				for mincount in v3_mincounts:
 					try:
-						total_x4_count, total_count = prop_x4(file, fpr_cutoff, mincount)
-						logging.debug("{}, {} = prop_x4({},{},{})".format(total_x4_count, total_count, file, fpr_cutoff, mincount))
-						proportion_x4 = (float(total_x4_count) / float(total_count)) * 100
 						sample = prefix.split('/')[-1]
-						summary_file.write("{},{},{},{},{},{},{}\n".format(sample, sam2csf_q_cutoff,
+						proportion_x4, total_x4_count, total_count = miseqUtils.prop_x4(file, fpr_cutoff, mincount)
+						logging.debug("{}, {}, {} = prop_x4({},{},{})".format(proportion_x4, total_x4_count,
+								total_count, file, fpr_cutoff, mincount))
+						summary_file.write("{},{},{},{},{},{},{:.3}\n".format(sample, sam2csf_q_cutoff,
 								fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
 					except:
 						continue
@@ -157,7 +155,7 @@ files = glob(root + '/*.csf')
 for i, file in enumerate(files):
 	if i % nprocs != my_rank: continue
 	logging.info("csf2counts({},{},{},{})".format(file,mode,consensus_mixture_cutoffs,final_alignment_ref_path))
-	csf2counts(file,mode,consensus_mixture_cutoffs,final_alignment_ref_path)
+	miseq_modules.csf2counts(file,mode,consensus_mixture_cutoffs,final_alignment_ref_path)
 logging.debug("Arrived at barrier #6")
 MPI.COMM_WORLD.Barrier()
 
@@ -175,7 +173,7 @@ if my_rank == 0:
 # Represent count output with respect to different region codes (Ex: V3 in env)
 if my_rank == 0:
 	logging.info("slice_outputs({})".format(root))
-	slice_outputs(root, region_slices)
+	miseq_modules.slice_outputs(root, region_slices)
 
 # Delete files on the local cluster that don't need to be kept
 if my_rank == 0:
