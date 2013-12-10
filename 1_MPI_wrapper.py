@@ -48,9 +48,9 @@ log_file = "{}/rank_{}.log".format(root, my_rank)
 logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
 
 # Parse sample sheet to determine the mode
-with open(root+'/SampleSheet.csv', 'rU') as ssfile:
-	logger.debug("sampleSheetParser({})".format(ssfile))
-	run_info = miseqUtils.sampleSheetParser(ssfile)
+with open(root+'/SampleSheet.csv', 'rU') as sample_sheet:
+	logger.debug("sampleSheetParser({})".format(sample_sheet))
+	run_info = miseqUtils.sampleSheetParser(sample_sheet)
 	mode = run_info['Description']
 
 # Record pipeline parameters

@@ -324,7 +324,7 @@ def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=
 	return remapped_sam, confile
 
 
-def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS):
+def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS, num_threads=1):
 	"""
 	refpath		Absolute path to static reference sequences used during original mapping
 	R1_fastq	Absolute path to R1 fastq file
@@ -365,7 +365,7 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 
 	# Initial consensus B mapping
 	prelim_samfile = '{}/{}.prelim.sam'.format(root, prefix)
-	system_call('bowtie2 --quiet -p 1 --local -x %s -1 %s -2 %s -S %s' % (refpath, R1_fastq, R2_fastq, prelim_samfile))
+	system_call('bowtie2 --quiet -p {} --local -x {} -1 {} -2 {} -S {}'.format(num_threads, refpath, R1_fastq, R2_fastq, prelim_samfile))
 
 	# Define region-specific SAMs: refsams[refname] points to a nested dict which includes a file handle to each specific SAM
 	refsams = {}
@@ -509,7 +509,7 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 				# Write each remap iteration result to the file
 				count_file.write('remap %d %s,%d\n' % (iter, refname, int(region_specific_count)))
 
-			mapping_efficiency = total_remap / total_reads_R1
+			mapping_efficiency = float(total_remap / total_reads_R1)
 			logger.debug("Mapping efficiency for {} is now {:.3}".format(sample_name, mapping_efficiency))
 			if break_out or mapping_efficiency >= REMAP_THRESHOLD:
 				break
