@@ -278,7 +278,7 @@ def system_call(command):
 	logger.debug(command)
 	subprocess.call(command, shell=True)
 
-def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=30):
+def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=30, num_threads=1):
 	""" 
 	1) Generate sample-specific consensus from a samtools pileup.
 	2) Remap everything to this consensus as a ref seq
@@ -315,8 +315,8 @@ def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=
 	system_call('bowtie2-build -f -q {} {}'.format(confile, confile))
 	
 	# Map original fastq reads to new reference
-	cmd = 'bowtie2 --quiet -p 1 --local -x {} -1 {} -2 {} -S {} --no-unal --met-file {} --un {} --un-conc {}'.format(confile,
-			R1_fastq, R2_fastq, remapped_sam, remapped_sam.replace('.sam', '.bt2_metrics'),
+	cmd = 'bowtie2 --quiet -p {} --local -x {} -1 {} -2 {} -S {} --no-unal --met-file {} --un {} --un-conc {}'.format(num_threads,
+			confile, R1_fastq, R2_fastq, remapped_sam, remapped_sam.replace('.sam', '.bt2_metrics'),
 			remapped_sam.replace('.sam', '.bt2_unpaired_noalign.fastq'), 
 			remapped_sam.replace('.sam', '.bt2_paired_noalign.fastq'))
 	system_call(cmd)
@@ -461,7 +461,7 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 		# Run remap on the region-specific sam, and get the remapped sam and consensus pileup used to generate it
 		samfile = refsams[refname]['sam_file_handle'].name
 		logging.info("remap({},{},{},{},{},{})".format(R1_fastq, R2_fastq, samfile, refpath, original_reference, conseq_qCutoff))
-		samfile, confile = remap(R1_fastq, R2_fastq, samfile, refpath, original_reference, conseq_qCutoff)
+		samfile, confile = remap(R1_fastq, R2_fastq, samfile, refpath, original_reference, conseq_qCutoff, num_threads)
 	
 		# Track file paths
 		refsams[refname].update({'samfile': samfile, 'confile': confile})
@@ -490,7 +490,7 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 
 				samfile = refsams[refname]['samfile']
 				confile = refsams[refname]['confile']
-				samfile, confile = remap(R1_fastq, R2_fastq, samfile, confile, original_reference, conseq_qCutoff)
+				samfile, confile = remap(R1_fastq, R2_fastq, samfile, confile, original_reference, conseq_qCutoff, num_threads)
 				refsams[refname]['samfile'] = samfile
 				refsams[refname]['confile'] = confile
 			
