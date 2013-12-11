@@ -37,7 +37,7 @@ fastq_files = [f for f in fastq_files if not f.endswith('.Tcontaminants.fastq')]
 for fastq in fastq_files:
 	fastq_filename = os.path.basename(fastq)
 	sample_name = fastq_filename.split('_')[0]
-	command = "python STEP_ONE_MODULE_CALL.py {} {} {} {} {} {} {} {}".format(mapping_ref_path,
+	command = "python STEP_1_MAPPING.py {} {} {} {} {} {} {} {}".format(mapping_ref_path,
 			fastq, consensus_q_cutoff, mode, is_t_primer, min_mapping_efficiency, max_remaps, bowtie_threads)
 	queue_request = mapping_factory.queue_work(command, log_file, log_file)
 	if queue_request:
@@ -61,7 +61,7 @@ for file in glob(root + '/*.remap.sam'):
 	# Generate csf with different q cutoff censoring rules (Store cutoff used in filename)
 	# For Amplicon, csf sorted by read prevalence, for Nextera, csf sorted by left-offset
 	for qcut in sam2csf_q_cutoffs:
-		command = "python STEP_TWO_MODULE_CALL.py {} {} {} {} {}".format(file, qcut, read_mapping_cutoff, mode, max_prop_N)
+		command = "python STEP_2_SAM2CSF.py {} {} {} {} {}".format(file, qcut, read_mapping_cutoff, mode, max_prop_N)
 		queue_request = single_thread_factory.queue_work(command, log_file, log_file)
 		if queue_request:
 			p, command = queue_request
@@ -70,11 +70,13 @@ factory_barrier(single_thread_factory)
 
 # g2p parameters
 g2p_alignment_cutoff = 50
+g2p_fpr_cutoffs = [3.0,3.5,4.0,5.0]
+v3_mincounts = [0,50,100,1000]
 
 # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
 if mode == 'Amplicon':
 	for env_csf_file in glob(root + '/*.HIV1B-env.*.csf'):
-		command = "python STEP_THREE_MODULE_CALL.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
+		command = "python STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
 		queue_request = single_thread_factory.queue_work(command, log_file, log_file)
 		if queue_request:
 			p, command = queue_request
@@ -103,7 +105,7 @@ final_alignment_ref_path = "/usr/local/share/miseq/development/miseqpipeline/csf
 
 # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
 for csf_file in glob(root + '/*.csf'):
-	command = "python STEP_FOUR_MODULE_CALL.py {} {} {} {}".format(csf_file,mode,consensus_mixture_cutoffs,final_alignment_ref_path)
+	command = "python STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file,mode,consensus_mixture_cutoffs,final_alignment_ref_path)
 	queue_request = single_thread_factory.queue_work(command, log_file, log_file)
 	if queue_request:
 		p, command = queue_request
