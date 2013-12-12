@@ -3,7 +3,7 @@ sys.path.append('/usr/local/share/fifo_scheduler')
 from fifo_scheduler import Factory
 from glob import glob
 
-# Input parameters
+# Control parameters from MONITOR
 root = "/data/miseq/130711_M01841_0010_000000000-A3TCY"		# root = sys.argv[1]
 mode = "Amplicon"						# mode = sys.argv[2]
 is_t_primer = False						# is_t_primer = sys.argv[3]
@@ -13,12 +13,12 @@ log_file = "{}/pipeline_output.log".format(root)
 logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
 
 # Mapping parameters
+mapping_factory_resources = [("bpsh -1", 1), ("bpsh 0", 1), ("bpsh 1", 2), ("bpsh 2", 2)]
 mapping_ref_path = "/usr/local/share/miseq/refs/cfe"
 bowtie_threads = 8                      # Bowtie performance roughly scales with number of threads
 min_mapping_efficiency = 0.95		# Fraction of fastq reads mapped needed
 max_remaps = 3				# Number of remapping attempts if mapping efficiency unsatisfied
 consensus_q_cutoff = 20                 # Min Q for base to contribute to conseq (pileup2conseq)
-mapping_factory_resources = [("bpsh -1", 1), ("bpsh 0", 1), ("bpsh 1", 2), ("bpsh 2", 2)]
 
 # sam2csf parameters
 sam2csf_q_cutoffs = [0,10,15]		# Q-cutoff for base censoring
@@ -31,8 +31,8 @@ g2p_fpr_cutoffs = [3.0,3.5,4.0,5.0]	# FPR cutoff to determine R5/X4 tropism
 v3_mincounts = [0,50,100,1000]		# Min number of reads to contribute to %X4 calculation
 
 # csf2counts parameters
-consensus_mixture_cutoffs = "0.01,0.02,0.05,0.1,0.2,0.25"
-final_alignment_ref_path = "/usr/local/share/miseq/development/miseqpipeline/csf2counts_amino_sequences.csv"
+consensus_mixture_cutoffs = [0.01,0.02,0.05,0.1,0.2,0.25]
+final_alignment_ref_path = "/usr/local/share/miseq/refs/csf2counts_amino_refseqs.csv"
 
 # File extensions to delete at the end of the run
 file_extensions_to_delete = ['bam', 'bt2', 'bt2_metrics', 'fastq', 'pileup', 'pileup.conseq', 'poly']
@@ -117,7 +117,8 @@ if mode == 'Amplicon':
 for csf_file in glob(root + '/*.csf'):
 
 	# Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
-	command = "python STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file,mode,consensus_mixture_cutoffs,final_alignment_ref_path)
+	mixture_cutoffs = ",".join(map(str,consensus_mixture_cutoffs))
+	command = "python STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file,mode,mixture_cutoffs,final_alignment_ref_path)
 	queue_request = single_thread_factory.queue_work(command, log_file, log_file)
 	if queue_request:
 		p, command = queue_request
