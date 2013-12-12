@@ -5,8 +5,6 @@ from glob import glob
 
 # Control parameters from MONITOR
 root = "/data/miseq/130711_M01841_0010_000000000-A3TCY"		# root = sys.argv[1]
-mode = "Amplicon"						# mode = sys.argv[2]
-is_t_primer = False						# is_t_primer = sys.argv[3]
 
 # Logging parameters
 log_file = "{}/pipeline_output.log".format(root)
@@ -48,6 +46,12 @@ def factory_barrier(my_factory):
 		time.sleep(1)
 	return
 
+# Parse sample sheet to determine the mode
+with open(root+'/SampleSheet.csv', 'rU') as sample_sheet:
+	logger.debug("sampleSheetParser({})".format(sample_sheet))
+	run_info = miseqUtils.sampleSheetParser(sample_sheet)
+	mode = run_info['Description']
+
 # Mapping factory suitable for multi-thread jobs (4 processes * 8 threads / job = 32 cores allocated)
 mapping_factory = Factory(mapping_factory_resources)
 
@@ -57,6 +61,12 @@ fastq_files = [f for f in fastq_files if not f.endswith('.Tcontaminants.fastq')]
 for fastq in fastq_files:
 	fastq_filename = os.path.basename(fastq)
 	sample_name = fastq_filename.split('_')[0]
+
+	if not run_info['Data'].has_key(sample_name):
+		logger.error('{} not in SampleSheet.csv - cannot initiate mapping for this sample'.format(sample_name))
+		continue
+	is_t_primer = run_info['Data'][sample_name]['is_T_primer']
+
 	command = "python STEP_1_MAPPING.py {} {} {} {} {} {} {} {}".format(mapping_ref_path,
 			fastq, consensus_q_cutoff, mode, is_t_primer, min_mapping_efficiency, max_remaps, bowtie_threads)
 	queue_request = mapping_factory.queue_work(command, log_file, log_file)
