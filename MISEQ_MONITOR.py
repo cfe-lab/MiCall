@@ -12,7 +12,7 @@ if sys.version_info[:2] != (2, 7):
 	raise Exception("Python 2.7 not detected")
 
 ## Settings
-pipeline_version = "4.5b-scheduler"
+pipeline_version = "4.6"
 delay = 3600					# Delay for polling macdatafile for unprocessed runs
 home='/data/miseq/'				# Local path on cluster for writing data
 macdatafile_mount = '/media/macdatafile/'
@@ -69,11 +69,11 @@ while 1:
 			run_info = miseqUtils.sampleSheetParser(sample_sheet)
 			mode = run_info['Description']
 	except:
-		logging.error("Couldn't parse sample sheet: skipping run")
+		logger.error("Couldn't parse sample sheet: skipping run")
 		continue
 
 	if mode not in ['Nextera', 'Amplicon']:
-		logging.error("{} not a valid mode: skipping run".format(mode))
+		logger.error("{} not a valid mode: skipping run".format(mode))
 		continue
 
 	# Copy fastq.gz files to the cluster and unzip them
@@ -87,7 +87,7 @@ while 1:
 		if filename.startswith('Undetermined'):
 			output = execute_command(['wc', '-l', local_file.replace('.gz', '')])
 			failed_demultiplexing = output.split(" ")[0]
-			logging.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
+			logger.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
 			os.remove(local_file.replace('.gz', ''))
 			continue
 
@@ -98,7 +98,7 @@ while 1:
 		# Standard out/error concatenates to the log
 		command = ['python', '-u', 'MISEQ_PIPELINE.py', home+run_name]
 		p = subprocess.Popen(command, stdout = PIPELINE_log, stderr = PIPELINE_log)
-		logging.info(" ".join(command))
+		logger.info(" ".join(command))
 
 		# Poll the log of MISEQ_PIPELINE.py and display output to console as it appears
 		with open(pipeline_log_path, 'rb') as cursor:
@@ -135,6 +135,6 @@ while 1:
 	post_files(glob(home + run_name + '/*.csv'), frequencies_path)
 
 	# Close the log and copy it to macdatafile
-	logging.info("===== {} successfully completed! =====\n".format(run_name))
+	logger.info("===== {} successfully completed! =====\n".format(run_name))
 	logging.shutdown()
 	execute_command(['rsync', '-a', log_file, '{}/{}'.format(log_path, os.path.basename(log_file))])

@@ -611,6 +611,7 @@ def g2p_scoring(csf_path, g2p_alignment_cutoff):
 	
 	# For this sample, write a v3prot file containing the prefix, sequence, rank, count, and fpr
 	v3prot_path = csf_path.replace('.csf', '.v3prot')
+	logger.info("Writing results to {}".format(v3prot_path))
 	with open(v3prot_path, 'w') as v3protfile:
 		for i, (count, v3prot) in enumerate(intermed):
 			fpr = v3prots[v3prot]['fpr']
