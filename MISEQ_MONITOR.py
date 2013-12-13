@@ -1,4 +1,5 @@
 """
+MISEQ_MONITOR.py
 1) For runs flagged 'needsprocessing' + copy/unzip fastqs to local disk
 2) Call the pipeline (MISEQ_PIPELINE.py)
 3) Upload results back to macdatafile
@@ -11,7 +12,7 @@ if sys.version_info[:2] != (2, 7):
 	raise Exception("Python 2.7 not detected")
 
 ## Settings
-pipeline_version = "4.5-fifo-scheduler"
+pipeline_version = "4.5b-scheduler"
 delay = 3600					# Delay for polling macdatafile for unprocessed runs
 home='/data/miseq/'				# Local path on cluster for writing data
 macdatafile_mount = '/media/macdatafile/'
@@ -28,7 +29,7 @@ def post_files(files, destination):
 
 # Process runs marked as 'needsprocessing' not already processed by the current version of the pipeline
 while 1:
-	runs = glob(macdatafile_mount + 'MiSeq/runs/*A3TCY/needsprocessing')
+	runs = glob(macdatafile_mount + 'MiSeq/runs/*/needsprocessing')
 	runs_needing_processing = []
 	for run in runs:
 		result_path = '{}/version_{}'.format(run.replace('needsprocessing', 'Results'), pipeline_version)
@@ -86,14 +87,15 @@ while 1:
 		if filename.startswith('Undetermined'):
 			output = execute_command(['wc', '-l', local_file.replace('.gz', '')])
 			failed_demultiplexing = output.split(" ")[0]
-			logging.info("{} reads failed to demultiplex in {}".format(failed_demultiplexing, filename))
+			logging.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
+			os.remove(local_file.replace('.gz', ''))
 			continue
 
 	# Store output of MISEQ_PIPELINE.py in a log + poll continuously to display output to console
 	pipeline_log_path = home + run_name + '/MISEQ_PIPELINE_OUTPUT.log'
 	with open(pipeline_log_path, "wb") as PIPELINE_log:
 
-		# Standard out/error concatenates to the log (stdout/stderr delineated due to -tag-output option)
+		# Standard out/error concatenates to the log
 		command = ['python', '-u', 'MISEQ_PIPELINE.py', home+run_name]
 		p = subprocess.Popen(command, stdout = PIPELINE_log, stderr = PIPELINE_log)
 		logging.info(" ".join(command))
