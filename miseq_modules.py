@@ -85,6 +85,8 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	
 		# Update amino counts for self-consensus coordinate space
 		for pos, aa in enumerate(p):
+
+			# WHY ARE WE GETTING RID OF THE DASH?
 			if aa == '-':
 				continue
 			if not aa_counts.has_key(pos):

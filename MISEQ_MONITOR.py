@@ -17,6 +17,13 @@ delay = 3600					# Delay for polling macdatafile for unprocessed runs
 home='/data/miseq/'				# Local path on cluster for writing data
 macdatafile_mount = '/media/macdatafile/'
 
+# File flags
+NEEDS_PROCESSING = 'needsprocessing'
+ERROR_PROCESSING = 'errorprocessing'
+
+def mark_run_as_disabled(curr_run):
+	open(curr_run.replace(NEEDS_PROCESSING, ERROR_PROCESSING), 'w').close()
+
 def execute_command(command):
 	logger.info(" ".join(command))
 	stdout, stderr = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
@@ -27,12 +34,16 @@ def post_files(files, destination):
 	for file in files:
 		execute_command(['rsync', '-a', file, '{}/{}'.format(destination, os.path.basename(file))])
 
-# Process runs marked as 'needsprocessing' not already processed by the current version of the pipeline
+# Process runs flagged for processing not already processed by this version of the pipeline
 while 1:
-	runs = glob(macdatafile_mount + 'MiSeq/runs/*/needsprocessing')
+	runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
 	runs_needing_processing = []
 	for run in runs:
-		result_path = '{}/version_{}'.format(run.replace('needsprocessing', 'Results'), pipeline_version)
+		result_path = '{}/version_{}'.format(run.replace(NEEDS_PROCESSING, 'Results'), pipeline_version)
+
+		if os.path.exists(run.replace(NEEDS_PROCESSING, ERROR_PROCESSING)):
+			continue
+
 		if not os.path.exists(result_path):
 			runs_needing_processing.append(run)
 
@@ -44,7 +55,7 @@ while 1:
 	# Process most recently generated run and work backwards
 	runs_needing_processing.sort(reverse=True)
 	curr_run = runs_needing_processing[0]
-	root = curr_run.replace('needsprocessing', '')
+	root = curr_run.replace(NEEDS_PROCESSING, '')
 	run_name = root.split('/')[-2]
 
 	# Make folder on the cluster for intermediary files
@@ -59,8 +70,8 @@ while 1:
 	except:
 		raise Exception("Could not create logging file - halting")
 
-	# SampleSheet.csv will be needed to determine the mode and T-primer
-	remote_file = curr_run.replace('needsprocessing', 'SampleSheet.csv')
+	# SampleSheet.csv needed to determine the mode and sample T-primer
+	remote_file = curr_run.replace(NEEDS_PROCESSING, 'SampleSheet.csv')
 	local_file = home + run_name + '/SampleSheet.csv'
 	execute_command(['rsync', '-a', remote_file, local_file])
 
@@ -69,11 +80,13 @@ while 1:
 			run_info = miseqUtils.sampleSheetParser(sample_sheet)
 			mode = run_info['Description']
 	except:
-		logger.error("Couldn't parse sample sheet: skipping run")
+		logger.error("Can't parse sample sheet: skipping run and marking with {}".format(ERROR_PROCESSING))
+		mark_run_as_disabled(curr_run)
 		continue
 
 	if mode not in ['Nextera', 'Amplicon']:
-		logger.error("{} not a valid mode: skipping run".format(mode))
+		logger.error("{} not a valid mode: skipping run and marking with {}".format(mode, ERROR_PROCESSING))
+		mark_run_as_disabled(curr_run)
 		continue
 
 	# Copy fastq.gz files to the cluster and unzip them
@@ -112,14 +125,15 @@ while 1:
 				sys.stdout.write(cursor.read())
 
 	# Determine output paths
-	result_path = curr_run.replace('needsprocessing', 'Results')
+	result_path = curr_run.replace(NEEDS_PROCESSING, 'Results')
 	result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
 	log_path = '{}/logs'.format(result_path_final)
+	counts_path = '{}/counts'.format(log_path)
 	conseq_path = '{}/consensus_sequences'.format(result_path_final)
 	frequencies_path = '{}/frequencies'.format(result_path_final)
 
 	# Create sub-folders if needed
-	for path in [result_path, result_path_final, log_path, conseq_path, frequencies_path]:
+	for path in [result_path, result_path_final, log_path, counts_path, conseq_path, frequencies_path]:
 		if not os.path.exists(path): os.mkdir(path)
 
 	# Post files to each appropriate sub-folder
@@ -129,12 +143,12 @@ while 1:
 		if not os.path.exists(v3_path): os.mkdir(v3_path)
 		post_files(glob(home + run_name + '/*.v3prot'), v3_path)
 		post_files(glob(home + run_name + '/v3_tropism_summary.txt'), v3_path)
-	post_files(glob(home + run_name + '/*.counts'), log_path)
+	post_files(glob(home + run_name + '/*.counts'), counts_path)
 	post_files(glob(home + run_name + '/*.log'), log_path)
 	post_files([f for f in glob(home + run_name + '/*.conseq') if 'pileup' not in f], conseq_path)
 	post_files(glob(home + run_name + '/*.csv'), frequencies_path)
 
 	# Close the log and copy it to macdatafile
-	logger.info("===== {} successfully completed! =====\n".format(run_name))
+	logger.info("===== {} successfully completed! =====".format(run_name))
 	logging.shutdown()
 	execute_command(['rsync', '-a', log_file, '{}/{}'.format(log_path, os.path.basename(log_file))])

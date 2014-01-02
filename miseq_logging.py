@@ -21,6 +21,7 @@ class Timestamp(logging.Formatter):
 def init_logging_console_only(log_level=logging.DEBUG):
 	import logging,sys
         logger = logging.getLogger()
+	logger.handlers = []				# Clear previous handlers
         logger.setLevel(logging.DEBUG)
 	console_logger = logging.StreamHandler(sys.stdout)
 	console_logger.setLevel(log_level)
@@ -40,8 +41,8 @@ def init_logging(logging_path, file_log_level=logging.DEBUG, console_log_level=l
 	import logging,sys
 
 	logger = logging.getLogger()
+	logger.handlers = []				# Clear previous handlers
 	logger.setLevel(logging.DEBUG)
-
 	# Logging will go to 2 different places (The console and a log file)
 	file_logger = logging.FileHandler(logging_path)
 	file_logger.setLevel(file_log_level)
@@ -70,9 +71,14 @@ def collate_logs(path, extension, final_log):
 	for log_path in glob("{}/*.{}".format(path, extension)):
 		with open(log_path, "r") as f:
 			for line in f:
-				date_string = line.split(" - ")[0]
-				date_time = datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S.%f")
-				logs.append((date_time, line))
+
+				# FIXME: We are LOSING improperly formed logs - we need to retain them
+				try:
+					date_string = line.split(" - ")[0]
+					date_time = datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S.%f")
+					logs.append((date_time, line))
+				except:
+					pass
 		os.remove(log_path)
 
 	with open("{}/{}".format(path, final_log), "w") as collated_log:

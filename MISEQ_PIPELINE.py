@@ -10,9 +10,9 @@ log_file = "{}/pipeline_output.log".format(root)
 logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
 
 # Mapping parameters
-mapping_factory_resources = [("bpsh -1", 1), ("bpsh 0", 1), ("bpsh 1", 2), ("bpsh 2", 2)]
+mapping_factory_resources = [("bpsh -1", 5), ("bpsh 0", 5), ("bpsh 1", 7), ("bpsh 2", 7)]
 mapping_ref_path = "/usr/local/share/miseq/refs/cfe"
-bowtie_threads = 8                      # Bowtie performance roughly scales with number of threads
+bowtie_threads = 4                      # Bowtie performance roughly scales with number of threads
 min_mapping_efficiency = 0.95		# Fraction of fastq reads mapped needed
 max_remaps = 3				# Number of remapping attempts if mapping efficiency unsatisfied
 consensus_q_cutoff = 20                 # Min Q for base to contribute to conseq (pileup2conseq)
@@ -75,10 +75,8 @@ factory_barrier(mapping_factory)
 logger.info("Collating *.mapping.log files")
 miseq_logging.collate_logs(root, "mapping.log", "mapping.log")
 
-# FIXME: Collate mapping.log files into one log
-
 # Make factory more suitable for single thread jobs (64 cores allocated)
-single_thread_resources = [("bpsh -1", 16), ("bpsh 0", 16), ("bpsh 1", 16), ("bpsh 2", 16)] 
+single_thread_resources = [("bpsh -1", 16), ("bpsh 0", 16), ("bpsh 1", 24), ("bpsh 2", 24)] 
 single_thread_factory = Factory(single_thread_resources)
 
 ### Begin sam2csf
