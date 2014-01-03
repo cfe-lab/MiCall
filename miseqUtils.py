@@ -311,8 +311,8 @@ def prop_x4 (v3prot_path, fpr_cutoff, min_count):
 		try:
 			fasta = convert_fasta(infile.readlines())
 		except:
-			print "failed to convert {}".format(v3prot_path)
-			sys.exit()
+			raise Exception("Failed to convert {}".format(v3prot_path))
+
 	total_count = 0 
 	total_x4_count = 0 
 

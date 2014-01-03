@@ -68,19 +68,24 @@ def collate_logs(path, extension, final_log):
 	from glob import glob
 
 	logs = []
+	malformed_lines = []
+
 	for log_path in glob("{}/*.{}".format(path, extension)):
 		with open(log_path, "r") as f:
 			for line in f:
-
-				# FIXME: We are LOSING improperly formed logs - we need to retain them
 				try:
 					date_string = line.split(" - ")[0]
 					date_time = datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S.%f")
 					logs.append((date_time, line))
 				except:
-					pass
+					malformed_lines.append("Malformed line in {}: {}".format(log_path, line))
 		os.remove(log_path)
 
-	with open("{}/{}".format(path, final_log), "w") as collated_log:
+	logs.sort()
+	with open("{}/{}".format(path, final_log), "w") as collated_logs:
 		for date_time, message in logs:
-			collated_log.write(message)
+			collated_logs.write(message)
+
+	with open("{}/{}_UNCOLLATABLE.log".format(path, final_log), "w") as uncollatable_logs:
+		for message in malformed_lines:
+			uncollatable_logs.write(message)

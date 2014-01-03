@@ -1,7 +1,7 @@
 """
 MISEQ_MONITOR.py
-1) For runs flagged 'needsprocessing' + copy/unzip fastqs to local disk
-2) Call the pipeline (MISEQ_PIPELINE.py)
+1) For runs flagged 'needsprocessing' (And no error flag), unzip fastqs to local disk
+2) Process the run by clling MISEQ_PIPELINE.py
 3) Upload results back to macdatafile
 """
 

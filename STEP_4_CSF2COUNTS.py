@@ -1,5 +1,7 @@
 import logging, miseq_logging, miseq_modules, os, sys
 
+# python STEP_4_CSF2COUNTS.py /data/miseq/131127_M01841_0042_000000000-A5F9R/11DTGXT-INT_S30.HIV1B-pol-2253-5093.0.csf Nextera 0.2 /usr/local/share/miseq/refs/csf2counts_amino_refseqs.csv
+
 file = sys.argv[1]
 mode = sys.argv[2]
 consensus_mixture_cutoffs = map(float,(sys.argv[3].split(",")))

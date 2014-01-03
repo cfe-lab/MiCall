@@ -1,6 +1,6 @@
 def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/share/miseq/development/miseqpipeline/csf2counts_amino_sequences.csv"):
 	"""
-	Calculate nucleotide and amino acid counts from a CSF.
+	Calculate HXB2-aligned nucleotide and amino acid counts from a CSF.
 	"""
 
 	import csv, logging, HyPhy, os, sys
@@ -33,28 +33,41 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 	# If we have no reference sequence, we can't align the input sequences
 	if not refseqs.has_key(ref):
-		return logger.error("No reference for {} - halting csf2counts".format(ref))
+		logger.error("No reference for {} - halting csf2counts".format(ref))
+		return
 	refseq = refseqs[ref]
 
 	# Load the CSF: fasta contains (header, seq) tuples
 	with open(path, 'rU') as infile:
 		fasta, lefts, rights = convert_csf(infile.readlines())
-	
-	# Look at the first read to determine the correct protein ORF
-	max_score = 0
-	best_frame = 0
-	possible_ORFs = [0, 1, 2]
-	for frame in possible_ORFs:
-		first_entry = fasta[0]
-		header, seq = first_entry[0], first_entry[1]
-		prefix = ('-'*lefts[header] if mode == 'Nextera' else '')
-		p = translate_nuc(prefix + seq, frame)
-		aquery, aref, ascore = pair_align(hyphy, refseq, p)
-		if ascore > max_score:
-			best_frame = frame
-			max_score = ascore
-	logger.debug("Best ORF={} (For sample {} region {})".format(best_frame, sample, ref))
-	
+
+	# CSFs come from SAMs, the result of self-alignment. The reads
+	# Are now out of frame - we use the first read to determine the ORF correction.
+	frame_evidence = {}
+
+	# Look at five sequences instead of 1 and vote on the best ORF
+	for read_index in range(5):
+		header, seq = fasta[read_index]
+		max_score = 0
+		best_ORF = 0
+		possible_ORFs = [0, 1, 2]
+
+		# Determine the best ORF for this read
+		for frame in possible_ORFs:
+			prefix = ('-'*lefts[header] if mode == 'Nextera' else '')
+			p = translate_nuc(prefix + seq, frame)
+			aquery, aref, ascore = pair_align(hyphy, refseq, p)
+			if ascore > max_score:
+				best_ORF = frame
+				max_score = ascore
+
+		if frame in frame_evidence.keys():
+			frame_evidence[best_ORF] += 1
+		else:
+			frame_evidence[best_ORF] = 1
+
+	best_frame = max(frame_evidence, key=lambda n: frame_evidence[n])
+
 	nuc_counts = {}	# Store base counts for each self-consensus coordinate
 	aa_counts = {}	# Store amino counts for each self-consensus coordinate
 	pcache = []	# Cache protein sequences

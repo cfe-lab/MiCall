@@ -9,8 +9,8 @@ root = sys.argv[1]			# MONITOR parameter: Location of fastq files to process
 log_file = "{}/pipeline_output.log".format(root)
 logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
 
-# Mapping parameters
-mapping_factory_resources = [("bpsh -1", 5), ("bpsh 0", 5), ("bpsh 1", 7), ("bpsh 2", 7)]
+# Mapping parameters (Each worker will use 4 CPUs each)
+mapping_factory_resources = [("bpsh -1", 6), ("bpsh 0", 6), ("bpsh 1", 8), ("bpsh 2", 8)]
 mapping_ref_path = "/usr/local/share/miseq/refs/cfe"
 bowtie_threads = 4                      # Bowtie performance roughly scales with number of threads
 min_mapping_efficiency = 0.95		# Fraction of fastq reads mapped needed
@@ -75,8 +75,8 @@ factory_barrier(mapping_factory)
 logger.info("Collating *.mapping.log files")
 miseq_logging.collate_logs(root, "mapping.log", "mapping.log")
 
-# Make factory more suitable for single thread jobs (64 cores allocated)
-single_thread_resources = [("bpsh -1", 16), ("bpsh 0", 16), ("bpsh 1", 24), ("bpsh 2", 24)] 
+# This factory is allocated with resources with single threaded applications in mind
+single_thread_resources = [("bpsh -1", 24), ("bpsh 0", 24), ("bpsh 1", 32), ("bpsh 2", 32)] 
 single_thread_factory = Factory(single_thread_resources)
 
 ### Begin sam2csf
@@ -127,7 +127,7 @@ if mode == 'Amplicon':
 						summary_file.write("{},{},{},{},{},{},{:.3}\n".format(sample, sam2csf_q_cutoff,
 								fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
 					except:
-						continue
+						logger.warn("miseqUtils.prop_x4({}) threw an exception".format(file))
 
 ### Begin csf2counts
 for csf_file in glob(root + '/*.csf'):
