@@ -43,7 +43,8 @@ def init_logging(logging_path, file_log_level=logging.DEBUG, console_log_level=l
 	logger = logging.getLogger()
 	logger.handlers = []				# Clear previous handlers
 	logger.setLevel(logging.DEBUG)
-	# Logging will go to 2 different places (The console and a log file)
+
+	# Logging will go to 2 different places (Console + log file)
 	file_logger = logging.FileHandler(logging_path)
 	file_logger.setLevel(file_log_level)
 	console_logger = logging.StreamHandler(sys.stdout)

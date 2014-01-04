@@ -9,6 +9,7 @@ min_mapping_efficiency = float(sys.argv[6])	# Fraction of fastq reads mapped nee
 max_remaps = int(sys.argv[7])			# Number of remapping attempts if mapping efficiency unsatisfied
 bowtie_threads = int(sys.argv[8])		# Bowtie performance scales linearly with number of threads
 
+# Start logging but only to standard out - this will get cught by the outer call?
 logger = miseq_logging.init_logging_console_only(logging.INFO)
 logger.info("pid {}: miseq_modules.mapping({})".format(os.getpid(),fastq))
 miseq_modules.mapping(mapping_ref_path, fastq, consensus_q_cutoff, mode, is_t_primer, min_mapping_efficiency, max_remaps, bowtie_threads)
