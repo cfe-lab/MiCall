@@ -71,7 +71,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 	nuc_counts = {}	# Base counts by self-consensus coordinate
 	aa_counts = {}	# Amino counts by self-consensus coordinate
-	pcache = []	# Cache protein sequences
+	pcache = []		# Cache protein sequences
 
 
 	# CSF reads aligned against self-consensus: offset is with respect to self
@@ -100,13 +100,15 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 		for pos, aa in enumerate(p):
 
-			# Prevent dashes from offset from contributing as a dash
-			if aa == '-':
-				continue
-
-			# Why not do this instead?
-			# if pos <= left or pos >= right:
+			# Do not store gap information
+			#if aa == '-':
 			#	continue
+
+			aa_left = (left + best_frame) / 3
+			aa_right = (rights[header] + left + best_frame) / 3
+
+			if pos <= aa_left or pos >= aa_right:
+				continue
 
 			if pos not in aa_counts:
 				aa_counts.update({pos: {}})
@@ -131,31 +133,29 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	logger.debug("Aligned reference sequence = {}".format(aref))
 
 	qindex_to_refcoord = {} 		# Query <-> reference coordinate mapping
-	inserts = []				# Keep track of which aa positions are insertions
-	qindex = 0				# Where we are in the query?
-	rindex = 0				# Where we are in the reference?
+	inserts = []					# Keep track of which aa positions are insertions
+	qindex = 0						# Where we are in the query?
+	rindex = 0						# Where we are in the reference?
 	ref_coords = range(len(aref))
 
-	# For every position on the reference, create a mapping with the query
+	# For each coordinate on the reference, create a mapping to the query
 	for i in ref_coords:
 
-		# Ignore parts of query outside (flanking) the reference
+		# Do not consider parts of the query outside of the reference
 		if i < left:
 			qindex += 1
-			continue
 
 		elif i >= right:
 			break
 
-		# A gap in the reference is an insertion in the query
-		if aref[i] == '-':
+		# A gap in the reference is an insertion in the query which we want to skip in the mapping
+		elif aref[i] == '-':
 			inserts.append(qindex)	# Store insert location in query coordinate space
-			qindex += 1		# Track along the query
+			qindex += 1				# Track along the query
 
-		# Deletions in the query
+		# If theres a gap in the query we are only effectively tracking along the pre-alignment reference
 		elif aquery[i] == '-':
-			rindex += 1		# No need to separately store deletions: they are already in the query
-			continue
+			rindex += 1
 
 		# Normal case: tracking forward on both sequences
 		else:
@@ -276,19 +276,22 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 		for aa_pos in aa_coords:
 
+			if aa_pos >= 48 and aa_pos <= 88:
+				print "{},{}".format(aa_pos, qindex_to_refcoord[aa_pos])
+				print aa_counts[aa_pos]
+
 			# Ignore query inserts
 			if aa_pos in inserts:
 				logger.debug("{} is an insert - ignoring".format(aa_pos))
 				continue
 
 			try:
-				ref_aa_pos = qindex_to_refcoord[aa_pos] + 1
+				ref_aa_pos = qindex_to_refcoord[aa_pos] + 1		# FIXME: DO WE NEED TO ADD 1?
 				aa_counts_string = ','.join(map(str, [aa_counts[aa_pos].get(aa, 0) for aa in amino_alphabet]))
 				aafile.write('{},{},{}\n'.format(aa_pos,ref_aa_pos, aa_counts_string))
 
 			except KeyError:
 				logger.debug("No query-ref mapping available for aapos={} ({})".format(aa_pos, filename))
-				continue
 
 def system_call(command):
 	import logging, subprocess

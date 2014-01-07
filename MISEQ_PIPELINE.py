@@ -12,18 +12,18 @@ logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, cons
 # Mapping parameters (Each worker will use 4 CPUs each)
 mapping_factory_resources = [("bpsh -1", 6), ("bpsh 0", 6), ("bpsh 1", 8), ("bpsh 2", 8)]
 mapping_ref_path = "/usr/local/share/miseq/refs/cfe"
-bowtie_threads = 4                      # Bowtie performance roughly scales with number of threads
+bowtie_threads = 4                  # Bowtie performance roughly scales with number of threads
 min_mapping_efficiency = 0.95		# Fraction of fastq reads mapped needed
-max_remaps = 3				# Number of remapping attempts if mapping efficiency unsatisfied
-consensus_q_cutoff = 20                 # Min Q for base to contribute to conseq (pileup2conseq)
+max_remaps = 3						# Number of remapping attempts if mapping efficiency unsatisfied
+consensus_q_cutoff = 20             # Min Q for base to contribute to conseq (pileup2conseq)
 
 # sam2csf parameters
 sam2csf_q_cutoffs = [0,10,15]		# Q-cutoff for base censoring
-max_prop_N = 0.5			# Drop reads with more censored bases than this proportion
-read_mapping_cutoff = 10		# Minimum bowtie read mapping quality
+max_prop_N = 0.5					# Drop reads with more censored bases than this proportion
+read_mapping_cutoff = 10			# Minimum bowtie read mapping quality
 
 # g2p parameters (Amplicon only)
-g2p_alignment_cutoff = 50		# Minimum alignment score during g2p scoring
+g2p_alignment_cutoff = 50			# Minimum alignment score during g2p scoring
 g2p_fpr_cutoffs = [3.0,3.5,4.0,5.0]	# FPR cutoff to determine R5/X4 tropism
 v3_mincounts = [0,50,100,1000]		# Min number of reads to contribute to %X4 calculation
 
@@ -32,7 +32,8 @@ conseq_mixture_cutoffs = [0.01,0.02,0.05,0.1,0.2,0.25]
 final_alignment_ref_path = "/usr/local/share/miseq/refs/csf2counts_amino_refseqs.csv"
 
 # Intermediary files to delete when done processing this run
-file_extensions_to_delete = ['bam', 'bt2', 'bt2_metrics', 'fastq', 'pileup', 'pileup.conseq', 'poly']
+#file_extensions_to_delete = ['bam', 'bt2', 'bt2_metrics', 'fastq', 'pileup', 'pileup.conseq', 'poly']
+file_extensions_to_delete = ['bam', 'bt2', 'bt2_metrics', 'fastq', 'poly']
 
 def factory_barrier(my_factory):
 	"""Wait until factory completes queued jobs"""
