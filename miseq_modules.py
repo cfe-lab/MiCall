@@ -9,17 +9,18 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 	logger = logging.getLogger()
 	hyphy = HyPhy._THyPhy (os.getcwd(), 1)
-	change_settings(hyphy)
+	change_settings(hyphy) # default
 	amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
 
 	if mode not in ['Amplicon', 'Nextera']:
 		return logger.error("{} is an unsupported mode - halting csf2counts".format(mode))
 	
+	# set up file paths
 	filename = os.path.basename(path)
 	root = os.path.dirname(path) if os.path.dirname(path) != '' else '.'
 	file_prefix = filename.replace('.csf', '') 
-	outpath = "{}/{}".format(root, file_prefix)
-
+	outpath = root+'/'+file_prefix#"{}/{}".format(root, file_prefix)
+	
 	# CSF contains sample + region in filename (Ex: F00844_S68.HIV1B-env.0.csf)
 	sample, ref = filename.split('.')[:2]
 	
@@ -67,9 +68,9 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 			frame_evidence[best_ORF] = 1
 
 	best_frame = max(frame_evidence, key=lambda n: frame_evidence[n])
-	logging.debug("Best ORF = {}".format(best_frame))
+	logging.debug('Best ORF = %d' % best_frame)#logging.debug("Best ORF = {}".format(best_frame))
 
-	nuc_counts = {}	# Base counts by self-consensus coordinate
+	nuc_counts = {} # Base counts by self-consensus coordinate
 	aa_counts = {}	# Amino counts by self-consensus coordinate
 	pcache = []		# Cache protein sequences
 
@@ -97,42 +98,46 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 		# Determine amino counts with respect to self-consensus coordinates
 		p = translate_nuc('-'*left + seq, best_frame)
 		pcache.append(p)
-
+		
+		# boundaries of read in amino acid space
+		aa_left = (left + best_frame) / 3
+		aa_right = (rights[header] + left + best_frame) / 3
+		
 		for pos, aa in enumerate(p):
-
 			# Do not store gap information
 			#if aa == '-':
 			#	continue
-
-			aa_left = (left + best_frame) / 3
-			aa_right = (rights[header] + left + best_frame) / 3
-
-			if pos <= aa_left or pos >= aa_right:
+			if pos < aa_left or pos >= aa_right:
 				continue
-
 			if pos not in aa_counts:
 				aa_counts.update({pos: {}})
 			if aa not in aa_counts[pos]:
 				aa_counts[pos].update({aa: 0})
 			aa_counts[pos][aa] += count
+	
 
 	# Generate amino plurality consensus for query to reference coordinate mapping
 	aa_coords = aa_counts.keys()
 	aa_coords.sort()
+	
 	aa_max = ''
-	for pos in aa_coords:
-		intermed = [(aa_count, amino) for amino, aa_count in aa_counts[pos].iteritems()]
-		intermed.sort(reverse=True)
-		aa_max += intermed[0][1]
-	logger.debug("Amino plurality consensus = {}".format(aa_max))
+	for pos in range(min(aa_coords), max(aa_coords)+1):
+		if pos in aa_coords:
+			intermed = [(aa_count, amino) for amino, aa_count in aa_counts[pos].iteritems()]
+			intermed.sort(reverse=True)
+			aa_max += intermed[0][1]
+		else:
+			aa_max += '*'
+			
+	logger.debug('Amino plurality consensus = ' + aa_max)#logger.debug("Amino plurality consensus = {}".format(aa_max))
 
 	aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
 	left, right = get_boundaries(aref)	# Coords of first/last non-gap character
 
-	logger.debug("Aligned amino plurality conseq = {}".format(aquery))
-	logger.debug("Aligned reference sequence = {}".format(aref))
+	logger.debug('Aligned amino plurality conseq = ' + aquery)#logger.debug("Aligned amino plurality conseq = {}".format(aquery))
+	logger.debug('Aligned reference sequence = ' + aref)#logger.debug("Aligned reference sequence = {}".format(aref))
 
-	qindex_to_refcoord = {} 		# Query <-> reference coordinate mapping
+	qindex_to_refcoord = {}			# Query <-> reference coordinate mapping
 	inserts = []					# Keep track of which aa positions are insertions
 	qindex = 0						# Where we are in the query?
 	rindex = 0						# Where we are in the reference?
@@ -159,16 +164,19 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 		# Normal case: tracking forward on both sequences
 		else:
-			qindex_to_refcoord[qindex] = rindex	#qindex_to_refcoord.update({qindex: rindex})
+			qindex_to_refcoord[qindex] = rindex #qindex_to_refcoord.update({qindex: rindex})
 			qindex += 1
 			rindex += 1
-
-	logger.debug("qindex_to_refcoord {}".format(qindex_to_refcoord))
+		
+		#print i, rindex, aref[i], qindex, aquery[i]
+	
+	
+	logger.debug('qindex_to_refcoord: ' + str(qindex_to_refcoord))#"qindex_to_refcoord {}".format(qindex_to_refcoord))
 
 
 	# Write inserts to an indels.csv file
 	if len(inserts) > 0:
-		with open("{}.indels.csv".format(outpath), 'w') as indelfile:
+		with open(outpath+".indels.csv", 'w') as indelfile:
 			indelfile.write('insertion,count\n')
 			indel_counts = {}
 			for p in pcache:
@@ -193,11 +201,11 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	maxcon = ''
 	conseqs = ['' for cut in mixture_cutoffs]
 	query_codon_pos = 0
-	nuc_coords = nuc_counts.keys()        # nucs[self-coord][nuc] = count
+	nuc_coords = nuc_counts.keys()		  # nucs[self-coord][nuc] = count
 	nuc_coords.sort()
 
 	# Output nucleotide counts in reference coordinate space to nuc.csv files
-	nucfile = open("{}.nuc.csv".format(outpath), 'w')
+	nucfile = open(outpath+'.nuc.csv', 'w')#open("{}.nuc.csv".format(outpath), 'w')
 	nucfile.write("query.nuc.pos,refSeq.nuc.pos,A,C,G,T\n")
 
 	for query_nuc_pos in nuc_coords:
@@ -210,10 +218,12 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 			query_codon_pos = query_nuc_pos % 3
 			ref_aa_pos = qindex_to_refcoord[query_aa_pos] + 1
 			ref_nuc_pos = 3*ref_aa_pos + query_codon_pos
-			nucfile.write("{},{},{}\n".format(query_nuc_pos, ref_nuc_pos, nucleotide_counts_string))
+			nucfile.write(','.join(map(str, [query_nuc_pos, ref_nuc_pos, nucleotide_counts_string])))#"{},{},{}\n".format(query_nuc_pos, ref_nuc_pos, nucleotide_counts_string))
+			nucfile.write('\n')
 
 		except KeyError:
-			logger.debug("No coordinate mapping for query nuc {} / amino {} ({})".format(query_nuc_pos, query_aa_pos, filename))
+			#logger.debug("No coordinate mapping for query nuc {} / amino {} ({})".format(query_nuc_pos, query_aa_pos, filename))
+			logger.debug('No coordinate mapping for query nuc %d / amino %d (%s)' % (query_nuc_pos, query_aa_pos, filename))
 			continue
 
 
@@ -239,7 +249,8 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 					mixture.remove('N')
 				else:
 					conseqs[ci] += 'N'
-					logger.debug("N was the majority base at position {} - {} (mixture_cutoff = {})".format(query_nuc_pos, filename, mixture_cutoff))
+					#logger.debug("N was the majority base at position {} - {} (mixture_cutoff = {})".format(query_nuc_pos, filename, mixture_cutoff))
+					logger.debug("N was the majority base at position %d - %s (mixture_cutoff = %f)" % (query_nuc_pos, filename, mixture_cutoff))
 					continue
 
 			# If there is a gap, but also bases, those bases take precedence
@@ -262,36 +273,35 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	nucfile.close()
 
 	# Store self-aligned plurality amino sequences in .conseq files
-	with open("{}.conseq".format(outpath), 'w') as confile:
+	#with open("{}.conseq".format(outpath), 'w') as confile:
+	with open(outpath+'.conseq', 'w') as confile:
 		confile.write('>%s_MAX\n%s\n' % (sample, maxcon))
 		for ci, cutoff in enumerate(mixture_cutoffs):
 			confile.write('>%s_%1.3f\n%s\n' % (sample, cutoff, conseqs[ci]))
 	
+	
 	# Write amino acid counts in reference coordinate space in amino.csv files
-	with open("{}.amino.csv".format(outpath), 'w') as aafile:
-		aafile.write("query.aa.pos,refseq.aa.pos,{}\n".format(','.join(list(amino_alphabet))))
+	#with open("{}.amino.csv".format(outpath), 'w') as aafile:
+	with open(outpath+".amino.csv", 'w') as aafile:
+		aafile.write("query.aa.pos,refseq.aa.pos,%s\n" % (','.join(list(amino_alphabet))))
 
-		aa_coords = aa_counts.keys()
-		aa_coords.sort()
-
-		for aa_pos in aa_coords:
-
-			if aa_pos >= 48 and aa_pos <= 88:
-				print "{},{}".format(aa_pos, qindex_to_refcoord[aa_pos])
-				print aa_counts[aa_pos]
-
+		for qindex, ref_aa_pos in qindex_to_refcoord.iteritems(): 
+			# adjust for assembly offset
+			aa_pos = qindex + min(aa_coords)
+			
 			# Ignore query inserts
 			if aa_pos in inserts:
-				logger.debug("{} is an insert - ignoring".format(aa_pos))
+				logger.debug("%d is an insert - ignoring" % (aa_pos))
 				continue
 
 			try:
-				ref_aa_pos = qindex_to_refcoord[aa_pos] + 1		# FIXME: DO WE NEED TO ADD 1?
+				#ref_aa_pos = qindex_to_refcoord[aa_pos] + 1	 # FIXME: DO WE NEED TO ADD 1?
 				aa_counts_string = ','.join(map(str, [aa_counts[aa_pos].get(aa, 0) for aa in amino_alphabet]))
-				aafile.write('{},{},{}\n'.format(aa_pos,ref_aa_pos, aa_counts_string))
+				# note that we are subtracting the minimum aa_counts key 
+				aafile.write('%d,%d,%s\n' % (aa_pos, ref_aa_pos+1, aa_counts_string))
 
 			except KeyError:
-				logger.debug("No query-ref mapping available for aapos={} ({})".format(aa_pos, filename))
+				logger.debug("No query-ref mapping available for aapos=%d (%s)" % (aa_pos, filename))
 
 def system_call(command):
 	import logging, subprocess
@@ -350,8 +360,8 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 	refpath		Absolute path to static reference sequences used during original mapping
 	R1_fastq	Absolute path to R1 fastq file
 	conseq_qCutoff	Q-cutoff for determining if a base contributes to the consensus in pileup2conseq
-	is_t_primer	Used to detect contaminants from previous runs (FIXME: REMOVE?)
-	REMAP_THRESHOLD	Efficiency of read mapping at which we stop bothering to perform additional remapping
+	is_t_primer Used to detect contaminants from previous runs (FIXME: REMOVE?)
+	REMAP_THRESHOLD Efficiency of read mapping at which we stop bothering to perform additional remapping
 	MAX_REMAPS	Number of extra attempts at remapping before giving up
 	"""
 	import logging, os, subprocess, sys
