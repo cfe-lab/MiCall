@@ -9,7 +9,8 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 	logger = logging.getLogger()
 	hyphy = HyPhy._THyPhy (os.getcwd(), 1)
-	change_settings(hyphy) # default
+	change_settings(hyphy) # default gap open penalty 40(20), extension penalty 10(5) - we may need to change these
+	
 	amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
 
 	if mode not in ['Amplicon', 'Nextera']:
@@ -54,8 +55,8 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 		possible_ORFs = [0, 1, 2]
 
 		# Determine the best ORF for this read
+		prefix = ('-'*lefts[header] if mode == 'Nextera' else '')
 		for frame in possible_ORFs:
-			prefix = ('-'*lefts[header] if mode == 'Nextera' else '')
 			p = translate_nuc(prefix + seq, frame)
 			aquery, aref, ascore = pair_align(hyphy, refseq, p)
 			if ascore > max_score:
@@ -127,8 +128,8 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 			intermed.sort(reverse=True)
 			aa_max += intermed[0][1]
 		else:
-			aa_max += '*'
-			
+			aa_max += '?' # no coverage but not a gap
+	
 	logger.debug('Amino plurality consensus = ' + aa_max)#logger.debug("Amino plurality consensus = {}".format(aa_max))
 
 	aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
@@ -203,6 +204,9 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	query_codon_pos = 0
 	nuc_coords = nuc_counts.keys()		  # nucs[self-coord][nuc] = count
 	nuc_coords.sort()
+	
+	# account for assembly offset due to extra bases in sample-specific consensus
+	nuc_assembly_offset = min(lefts.values())
 
 	# Output nucleotide counts in reference coordinate space to nuc.csv files
 	nucfile = open(outpath+'.nuc.csv', 'w')#open("{}.nuc.csv".format(outpath), 'w')
@@ -214,11 +218,14 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 
 		# Convert nucleotide query index into reference index
 		try:
-			query_aa_pos = query_nuc_pos / 3
-			query_codon_pos = query_nuc_pos % 3
-			ref_aa_pos = qindex_to_refcoord[query_aa_pos] + 1
+			# best frame is adjusted by shift from query to assembly coordinates
+			adjustment = best_frame - (3 - nuc_assembly_offset%3)%3
+			query_aa_pos = (query_nuc_pos - nuc_assembly_offset + adjustment) / 3
+			query_codon_pos = (query_nuc_pos - nuc_assembly_offset + adjustment) % 3
+			ref_aa_pos = qindex_to_refcoord[query_aa_pos]
 			ref_nuc_pos = 3*ref_aa_pos + query_codon_pos
-			nucfile.write(','.join(map(str, [query_nuc_pos, ref_nuc_pos, nucleotide_counts_string])))#"{},{},{}\n".format(query_nuc_pos, ref_nuc_pos, nucleotide_counts_string))
+			
+			nucfile.write(','.join(map(str, [query_nuc_pos+1, ref_nuc_pos+1, nucleotide_counts_string])))#"{},{},{}\n".format(query_nuc_pos, ref_nuc_pos, nucleotide_counts_string))
 			nucfile.write('\n')
 
 		except KeyError:
