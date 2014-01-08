@@ -12,7 +12,7 @@ if sys.version_info[:2] != (2, 7):
 	raise Exception("Python 2.7 not detected")
 
 ## Settings
-pipeline_version = "4.6"
+pipeline_version = "4.7"
 delay = 3600					# Delay for polling macdatafile for unprocessed runs
 home='/data/miseq/'				# Local path on cluster for writing data
 macdatafile_mount = '/media/macdatafile/'
