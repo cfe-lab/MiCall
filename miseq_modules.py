@@ -430,11 +430,6 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 
 		# SAM bitwise flag variable specifies whether read is paired, successfully mapped, etc
 		bitinfo = samBitFlag(flag)
-
-		# Ignore unmapped reads
-		if bitinfo['is_unmapped']:
-			continue
-
 		if mode == 'Amplicon':
 			# filter T contaminants
 			if is_t_primer:
@@ -491,7 +486,10 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 
 	# Remap the fastqs using sample/region specific conseqs
 	for refname in refnames:
-
+		if refname == '*':
+			# don't attempt to remap reads from the unmapped SAM file
+			continue
+		
 		# Ignore phiX, unmapped reads, and regions which had no mapping at the prelim mapping stage
 		if sum(refsams[refname]['count']) == 0 or refname == 'phiX174' or refname == '*':
 			continue
