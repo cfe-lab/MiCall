@@ -12,7 +12,7 @@ if sys.version_info[:2] != (2, 7):
 	raise Exception("Python 2.7 not detected")
 
 ## Settings
-pipeline_version = "4.7"
+pipeline_version = "4.7b-collated-results"
 delay = 3600					# Delay for polling macdatafile for unprocessed runs
 home='/data/miseq/'				# Local path on cluster for writing data
 macdatafile_mount = '/media/macdatafile/'
@@ -36,7 +36,12 @@ def post_files(files, destination):
 
 # Process runs flagged for processing not already processed by this version of the pipeline
 while 1:
+
 	runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
+
+	# OVERRIDE FOR MANUAL TESTING
+	runs = glob(macdatafile_mount + 'MiSeq/runs/140124_M01841_0050_000000000-A64F5/{}'.format(NEEDS_PROCESSING))
+
 	runs_needing_processing = []
 	for run in runs:
 		result_path = '{}/version_{}'.format(run.replace(NEEDS_PROCESSING, 'Results'), pipeline_version)
@@ -129,11 +134,9 @@ while 1:
 	result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
 	log_path = '{}/logs'.format(result_path_final)
 	counts_path = '{}/counts'.format(log_path)
-	conseq_path = '{}/consensus_sequences'.format(result_path_final)
-	frequencies_path = '{}/frequencies'.format(result_path_final)
 
 	# Create sub-folders if needed
-	for path in [result_path, result_path_final, log_path, counts_path, conseq_path, frequencies_path]:
+	for path in [result_path, result_path_final, log_path, counts_path]:
 		if not os.path.exists(path): os.mkdir(path)
 
 	# Post files to each appropriate sub-folder
@@ -145,8 +148,9 @@ while 1:
 		post_files(glob(home + run_name + '/v3_tropism_summary.txt'), v3_path)
 	post_files(glob(home + run_name + '/*.counts'), counts_path)
 	post_files(glob(home + run_name + '/*.log'), log_path)
-	post_files([f for f in glob(home + run_name + '/*.conseq') if 'pileup' not in f], conseq_path)
-	post_files(glob(home + run_name + '/*.csv'), frequencies_path)
+	post_files(glob(home + run_name + '/collated_conseqs.csv'), result_path_final)
+	post_files(glob(home + run_name + '/amino_frequencies.csv'), result_path_final)
+	post_files(glob(home + run_name + '/nucleotide_frequencies.csv'), result_path_final)
 
 	# Close the log and copy it to macdatafile
 	logger.info("===== {} successfully completed! =====".format(run_name))

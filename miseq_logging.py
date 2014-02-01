@@ -20,9 +20,9 @@ class Timestamp(logging.Formatter):
 
 def init_logging_console_only(log_level=logging.DEBUG):
 	import logging,sys
-        logger = logging.getLogger()
+	logger = logging.getLogger()
 	logger.handlers = []				# Clear previous handlers
-        logger.setLevel(logging.DEBUG)
+	logger.setLevel(logging.DEBUG)
 	console_logger = logging.StreamHandler(sys.stdout)
 	console_logger.setLevel(log_level)
 	formatter = Timestamp('%(asctime)s - [%(levelname)s] %(message)s', datefmt="%Y-%m-%d %H:%M:%S.%f")

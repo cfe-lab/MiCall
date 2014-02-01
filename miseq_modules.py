@@ -1,3 +1,56 @@
+def collate_conseqs(run_path,output_path):
+	"""
+	Collate .conseq files into a single CSV summary file.
+	"""
+	import glob,os
+	from miseqUtils import convert_fasta
+
+	files = [f for f in glob.glob("{}/*.conseq".format(run_path)) if 'pileup' not in f]
+
+	with open(output_path,"w") as f_out:
+		f_out.write("sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n")
+
+		for path in files:
+			prefix = (os.path.basename(path)).rstrip(".conseq")
+			sample, region, q = prefix.split(".")
+
+			with open(path,"r") as f:
+				fasta = convert_fasta(f.readlines())
+
+			for header, sequence in fasta:
+				fasta_sample, s_number, consensus_percentage = header.split("_")
+				f_out.write("{},{},{},{},{},{}\n".format(fasta_sample,region,q,s_number,consensus_percentage,sequence))
+
+def collate_frequencies (run_path,output_path,type):
+	"""
+	Collate amino/nuc .freq files into a single summary file.
+	"""
+	import glob,os
+
+	if type == "amino":
+		file_extension = "amino.freqs"
+		header = "sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*"
+	elif type == "nuc":
+		file_extension = "nuc.freqs"
+		header = "sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T"
+	else:
+		raise Exception("Incorrect type parameter")
+
+	with open(output_path, "w") as f_out:
+		f_out.write("{}\n".format(header))
+		for path in glob.glob("{}/*.{}".format(run_path,file_extension)):
+
+			# Eliminate end of the filename
+			prefix = (os.path.basename(path)).rstrip(".{}".format(file_extension))
+			sample, region, q = prefix.split(".")
+			with open(path,"r") as f:
+				lines = f.readlines()
+
+			for j, line in enumerate(lines):
+				if j == 0:
+					continue
+				f_out.write("{},{},{},{}\n".format(sample, region, q, line.rstrip("\n")))
+
 def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/share/miseq/refs/csf2counts_amino_refseqs.csv"):
 	"""
 	Calculate HXB2-aligned nucleotide and amino acid counts from a CSF.
@@ -209,7 +262,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	nuc_assembly_offset = min(lefts.values())
 
 	# Output nucleotide counts in reference coordinate space to nuc.csv files
-	nucfile = open(outpath+'.nuc.csv', 'w')#open("{}.nuc.csv".format(outpath), 'w')
+	nucfile = open(outpath+'.nuc.freqs', 'w')#open("{}.nuc.csv".format(outpath), 'w')
 	nucfile.write("query.nuc.pos,refSeq.nuc.pos,A,C,G,T\n")
 
 	for query_nuc_pos in nuc_coords:
@@ -289,7 +342,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 	
 	# Write amino acid counts in reference coordinate space in amino.csv files
 	#with open("{}.amino.csv".format(outpath), 'w') as aafile:
-	with open(outpath+".amino.csv", 'w') as aafile:
+	with open(outpath+".amino.freqs", 'w') as aafile:
 		aafile.write("query.aa.pos,refseq.aa.pos,%s\n" % (','.join(list(amino_alphabet))))
 
 		for qindex, ref_aa_pos in qindex_to_refcoord.iteritems(): 
