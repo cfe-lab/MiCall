@@ -11,7 +11,7 @@ logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, cons
 
 # Mapping parameters (Each worker will use 4 CPUs each)
 mapping_factory_resources = [("bpsh -1", 6), ("bpsh 0", 6), ("bpsh 1", 8), ("bpsh 2", 8)]
-mapping_ref_path = "/usr/local/share/miseq/refs/cfe"
+mapping_ref_path = "reference_sequences/cfe"
 bowtie_threads = 4                  # Bowtie performance roughly scales with number of threads
 min_mapping_efficiency = 0.95		# Fraction of fastq reads mapped needed
 max_remaps = 3						# Number of remapping attempts if mapping efficiency unsatisfied
@@ -29,7 +29,7 @@ v3_mincounts = [0,50,100,1000]		# Min number of reads to contribute to %X4 calcu
 
 # csf2counts parameters
 conseq_mixture_cutoffs = [0.01,0.02,0.05,0.1,0.2,0.25]
-final_alignment_ref_path = "/usr/local/share/miseq/refs/csf2counts_amino_refseqs.csv"
+final_alignment_ref_path = "reference_sequences/csf2counts_amino_refseqs.csv"
 
 # Intermediary files to delete when done processing this run
 # FIXME: Delete .freqs and .conseq files when ready
