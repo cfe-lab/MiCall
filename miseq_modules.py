@@ -1,842 +1,858 @@
 def collate_conseqs(run_path,output_path):
-	"""
-	Collate .conseq files into a single CSV summary file.
-	"""
-	import glob,os
-	from miseqUtils import convert_fasta
+    """
+    Collate .conseq files into a single CSV summary file.
+    """
+    import glob,os
+    from miseqUtils import convert_fasta
 
-	files = [f for f in glob.glob("{}/*.conseq".format(run_path)) if 'pileup' not in f]
+    files = [f for f in glob.glob("{}/*.conseq".format(run_path)) if 'pileup' not in f]
 
-	with open(output_path,"w") as f_out:
-		f_out.write("sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n")
+    with open(output_path,"w") as f_out:
+        f_out.write("sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n")
 
-		for path in files:
-			prefix = (os.path.basename(path)).rstrip(".conseq")
-			sample, region, q = prefix.split(".")
+        for path in files:
+            prefix = (os.path.basename(path)).rstrip(".conseq")
+            sample, region, q = prefix.split(".")
 
-			with open(path,"r") as f:
-				fasta = convert_fasta(f.readlines())
+            with open(path,"r") as f:
+                fasta = convert_fasta(f.readlines())
 
-			for header, sequence in fasta:
-				fasta_sample, s_number, consensus_percentage = header.split("_")
-				f_out.write("{},{},{},{},{},{}\n".format(fasta_sample,region,q,s_number,consensus_percentage,sequence))
+            for header, sequence in fasta:
+                fasta_sample, s_number, consensus_percentage = header.split("_")
+                f_out.write("{},{},{},{},{},{}\n".format(fasta_sample,region,q,s_number,consensus_percentage,sequence))
 
 def collate_frequencies (run_path,output_path,type):
-	"""
-	Collate amino/nuc .freq files into a single summary file.
-	"""
-	import glob,os
+    """
+    Collate amino/nuc .freq files into a single summary file.
+    """
+    import glob,os
 
-	if type == "amino":
-		file_extension = "amino.freqs"
-		header = "sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*"
-	elif type == "nuc":
-		file_extension = "nuc.freqs"
-		header = "sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T"
-	else:
-		raise Exception("Incorrect type parameter")
+    if type == "amino":
+        file_extension = "amino.freqs"
+        header = "sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*"
+    elif type == "nuc":
+        file_extension = "nuc.freqs"
+        header = "sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T"
+    else:
+        raise Exception("Incorrect type parameter")
 
-	with open(output_path, "w") as f_out:
-		f_out.write("{}\n".format(header))
-		for path in glob.glob("{}/*.{}".format(run_path,file_extension)):
+    with open(output_path, "w") as f_out:
+        f_out.write("{}\n".format(header))
+        for path in glob.glob("{}/*.{}".format(run_path,file_extension)):
 
-			# Eliminate end of the filename
-			prefix = (os.path.basename(path)).rstrip(".{}".format(file_extension))
-			sample, region, q = prefix.split(".")
-			with open(path,"r") as f:
-				lines = f.readlines()
+            # Eliminate end of the filename
+            prefix = (os.path.basename(path)).rstrip(".{}".format(file_extension))
+            sample, region, q = prefix.split(".")
+            with open(path,"r") as f:
+                lines = f.readlines()
 
-			for j, line in enumerate(lines):
-				if j == 0:
-					continue
-				f_out.write("{},{},{},{}\n".format(sample, region, q, line.rstrip("\n")))
+            for j, line in enumerate(lines):
+                if j == 0:
+                    continue
+                f_out.write("{},{},{},{}\n".format(sample, region, q, line.rstrip("\n")))
 
 def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/share/miseq/refs/csf2counts_amino_refseqs.csv"):
-	"""
-	Calculate HXB2-aligned nucleotide and amino acid counts from a CSF.
-	"""
+    """
+    Calculate HXB2-aligned nucleotide and amino acid counts from a CSF.
+    """
 
-	import csv, logging, HyPhy, os, sys
-	from hyphyAlign import change_settings, get_boundaries, pair_align
-	from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, translate_nuc
+    import csv, logging, HyPhy, os, sys
+    from hyphyAlign import change_settings, get_boundaries, pair_align
+    from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, translate_nuc
 
-	logger = logging.getLogger()
-	hyphy = HyPhy._THyPhy (os.getcwd(), 1)
-	change_settings(hyphy) # default gap open penalty 40(20), extension penalty 10(5) - we may need to change these
-	
-	amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
+    logger = logging.getLogger()
+    hyphy = HyPhy._THyPhy (os.getcwd(), 1)
+    change_settings(hyphy) # default gap open penalty 40(20), extension penalty 10(5) - we may need to change these
 
-	if mode not in ['Amplicon', 'Nextera']:
-		return logger.error("{} is an unsupported mode - halting csf2counts".format(mode))
-	
-	# set up file paths
-	filename = os.path.basename(path)
-	root = os.path.dirname(path) if os.path.dirname(path) != '' else '.'
-	file_prefix = filename.replace('.csf', '') 
-	outpath = root+'/'+file_prefix#"{}/{}".format(root, file_prefix)
-	
-	# CSF contains sample + region in filename (Ex: F00844_S68.HIV1B-env.0.csf)
-	sample, ref = filename.split('.')[:2]
-	
-	# Amino reference sequences in refseqs is used to coordinate normalize our samples
-	with open(amino_reference_sequence, "rb") as f:
-		input_file = csv.reader(f)
-		refseqs = {}
-		for row in input_file:
-			region, amino = row
-			refseqs[region] = amino
+    amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
 
-	# If we have no reference sequence, we can't align the input sequences
-	if ref not in refseqs:
-		logger.error("No reference for {} - halting csf2counts".format(ref))
-		return
+    if mode not in ['Amplicon', 'Nextera']:
+        return logger.error("{} is an unsupported mode - halting csf2counts".format(mode))
 
-	refseq = refseqs[ref]
+    # set up file paths
+    filename = os.path.basename(path)
+    root = os.path.dirname(path) if os.path.dirname(path) != '' else '.'
+    file_prefix = filename.replace('.csf', '')
+    outpath = root+'/'+file_prefix#"{}/{}".format(root, file_prefix)
 
-	# Load CSF (CSF header, offset, sequence) into fasta data structure
-	with open(path, 'rU') as infile:
-		fasta, lefts, rights = convert_csf(infile.readlines())
+    # CSF contains sample + region in filename (Ex: F00844_S68.HIV1B-env.0.csf)
+    sample, ref = filename.split('.')[:2]
 
-	# CSFs come from SAMs, from self-alignment. Reads are out of frame.
-	frame_evidence = {}
+    # Amino reference sequences in refseqs is used to coordinate normalize our samples
+    with open(amino_reference_sequence, "rb") as f:
+        input_file = csv.reader(f)
+        refseqs = {}
+        for row in input_file:
+            region, amino = row
+            refseqs[region] = amino
 
-	# Look at first five reads in the CSF and vote on the correct ORF
-	for read_index in range(5):
-		header, seq = fasta[read_index]
-		max_score = 0
-		best_ORF = 0
-		possible_ORFs = [0, 1, 2]
+    # If we have no reference sequence, we can't align the input sequences
+    if ref not in refseqs:
+        logger.error("No reference for {} - halting csf2counts".format(ref))
+        return
 
-		# Determine the best ORF for this read
-		prefix = ('-'*lefts[header] if mode == 'Nextera' else '')
-		for frame in possible_ORFs:
-			p = translate_nuc(prefix + seq, frame)
-			aquery, aref, ascore = pair_align(hyphy, refseq, p)
-			if ascore > max_score:
-				best_ORF = frame
-				max_score = ascore
+    refseq = refseqs[ref]
 
-		if frame in frame_evidence:
-			frame_evidence[best_ORF] += 1
-		else:
-			frame_evidence[best_ORF] = 1
+    # Load CSF (CSF header, offset, sequence) into fasta data structure
+    with open(path, 'rU') as infile:
+        fasta, lefts, rights = convert_csf(infile.readlines())
 
-	best_frame = max(frame_evidence, key=lambda n: frame_evidence[n])
-	logging.debug('Best ORF = %d' % best_frame)#logging.debug("Best ORF = {}".format(best_frame))
+    # CSFs come from SAMs, from self-alignment. Reads are out of frame.
+    frame_evidence = {}
 
-	nuc_counts = {} # Base counts by self-consensus coordinate
-	aa_counts = {}	# Amino counts by self-consensus coordinate
-	pcache = []		# Cache protein sequences
+    # Look at first five reads in the CSF and vote on the correct ORF
+    for read_index in range(5):
+        header, seq = fasta[read_index]
+        max_score = 0
+        best_ORF = 0
+        possible_ORFs = [0, 1, 2]
 
+        # Determine the best ORF for this read
+        prefix = ('-'*lefts[header] if mode == 'Nextera' else '')
+        for frame in possible_ORFs:
+            p = translate_nuc(prefix + seq, frame)
+            aquery, aref, ascore = pair_align(hyphy, refseq, p)
+            if ascore > max_score:
+                best_ORF = frame
+                max_score = ascore
 
-	# CSF reads aligned against self-consensus: offset is with respect to self
-	
-	# For each sequence in the csf
-	for i, (header, seq) in enumerate(fasta):
+        if frame in frame_evidence:
+            frame_evidence[best_ORF] += 1
+        else:
+            frame_evidence[best_ORF] = 1
 
-		# Determine the offset (Amplicon runs have no offset)
-		left = lefts[header] if mode == 'Nextera' else 0
+    best_frame = max(frame_evidence, key=lambda n: frame_evidence[n])
+    logging.debug('Best ORF = %d' % best_frame)#logging.debug("Best ORF = {}".format(best_frame))
 
-		# Amplicons store read counts in the CSF header
-		count = 1 if mode == 'Nextera' else int(header.split('_')[1])
-	
-		# Determine nuc counts with respect to self-consensus coordinates
-		for j, nuc in enumerate(seq):
-			pos = left + j
-			if pos not in nuc_counts:
-				nuc_counts.update({pos: {}})
-			if nuc not in nuc_counts[pos]:
-				nuc_counts[pos].update({nuc: 0})
-			nuc_counts[pos][nuc] += count
-
-		# Determine amino counts with respect to self-consensus coordinates
-		p = translate_nuc('-'*left + seq, best_frame)
-		pcache.append(p)
-		
-		# boundaries of read in amino acid space
-		aa_left = (left + best_frame) / 3
-		aa_right = (rights[header] + left + best_frame) / 3
-		
-		for pos, aa in enumerate(p):
-			# Do not store gap information
-			#if aa == '-':
-			#	continue
-			if pos < aa_left or pos >= aa_right:
-				continue
-			if pos not in aa_counts:
-				aa_counts.update({pos: {}})
-			if aa not in aa_counts[pos]:
-				aa_counts[pos].update({aa: 0})
-			aa_counts[pos][aa] += count
-	
-
-	# Generate amino plurality consensus for query to reference coordinate mapping
-	aa_coords = aa_counts.keys()
-	aa_coords.sort()
-	
-	aa_max = ''
-	for pos in range(min(aa_coords), max(aa_coords)+1):
-		if pos in aa_coords:
-			intermed = [(aa_count, amino) for amino, aa_count in aa_counts[pos].iteritems()]
-			intermed.sort(reverse=True)
-			aa_max += intermed[0][1]
-		else:
-			aa_max += '?' # no coverage but not a gap
-	
-	logger.debug('Amino plurality consensus = ' + aa_max)#logger.debug("Amino plurality consensus = {}".format(aa_max))
-
-	aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
-	left, right = get_boundaries(aref)	# Coords of first/last non-gap character
-
-	logger.debug('Aligned amino plurality conseq = ' + aquery)#logger.debug("Aligned amino plurality conseq = {}".format(aquery))
-	logger.debug('Aligned reference sequence = ' + aref)#logger.debug("Aligned reference sequence = {}".format(aref))
-
-	qindex_to_refcoord = {}			# Query <-> reference coordinate mapping
-	inserts = []					# Keep track of which aa positions are insertions
-	qindex = 0						# Where we are in the query?
-	rindex = 0						# Where we are in the reference?
-	ref_coords = range(len(aref))
-
-	# For each coordinate on the reference, create a mapping to the query
-	for i in ref_coords:
-
-		# Do not consider parts of the query outside of the reference
-		if i < left:
-			qindex += 1
-
-		elif i >= right:
-			break
-
-		# A gap in the reference is an insertion in the query which we want to skip in the mapping
-		elif aref[i] == '-':
-			inserts.append(qindex)	# Store insert location in query coordinate space
-			qindex += 1				# Track along the query
-
-		# If theres a gap in the query we are only effectively tracking along the pre-alignment reference
-		elif aquery[i] == '-':
-			rindex += 1
-
-		# Normal case: tracking forward on both sequences
-		else:
-			qindex_to_refcoord[qindex] = rindex #qindex_to_refcoord.update({qindex: rindex})
-			qindex += 1
-			rindex += 1
-		
-		#print i, rindex, aref[i], qindex, aquery[i]
-	
-	
-	logger.debug('qindex_to_refcoord: ' + str(qindex_to_refcoord))#"qindex_to_refcoord {}".format(qindex_to_refcoord))
+    nuc_counts = {} # Base counts by self-consensus coordinate
+    aa_counts = {}	# Amino counts by self-consensus coordinate
+    pcache = []		# Cache protein sequences
 
 
-	# Write inserts to an indels.csv file
-	if len(inserts) > 0:
-		with open(outpath+".indels.csv", 'w') as indelfile:
-			indelfile.write('insertion,count\n')
-			indel_counts = {}
-			for p in pcache:
-				ins_str = str(inserts[0])
-				last_i = -1
-				for i in inserts:
-					if last_i > -1 and i - last_i > 1:
-						# end of a contiguous indel
-						ins_str += ',%d' % i
-					try:
-						ins_str += p[i]
-					except IndexError:
-						break
-					last_i = i
-				if not indel_counts.has_key(ins_str):
-					indel_counts.update({ins_str: 0})
-				indel_counts[ins_str] += 1
-			for ins_str, count in indel_counts.iteritems():
-				indelfile.write('%s,%d\n' % (ins_str, count))
-	
-	# Initialize initial (blank) consensus sequence for each mixture rule
-	maxcon = ''
-	conseqs = ['' for cut in mixture_cutoffs]
-	query_codon_pos = 0
-	nuc_coords = nuc_counts.keys()		  # nucs[self-coord][nuc] = count
-	nuc_coords.sort()
-	
-	# account for assembly offset due to extra bases in sample-specific consensus
-	nuc_assembly_offset = min(lefts.values())
+    # CSF reads aligned against self-consensus: offset is with respect to self
 
-	# Output nucleotide counts in reference coordinate space to nuc.csv files
-	nucfile = open(outpath+'.nuc.freqs', 'w')#open("{}.nuc.csv".format(outpath), 'w')
-	nucfile.write("query.nuc.pos,refSeq.nuc.pos,A,C,G,T\n")
+    # For each sequence in the csf
+    for i, (header, seq) in enumerate(fasta):
 
-	for query_nuc_pos in nuc_coords:
-		nucleotide_counts = [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']
-		nucleotide_counts_string = ','.join(map(str, nucleotide_counts))
+        # Determine the offset (Amplicon runs have no offset)
+        left = lefts[header] if mode == 'Nextera' else 0
 
-		# Convert nucleotide query index into reference index
-		try:
-			# best frame is adjusted by shift from query to assembly coordinates
-			adjustment = best_frame - (3 - nuc_assembly_offset%3)%3
-			query_aa_pos = (query_nuc_pos - nuc_assembly_offset + adjustment) / 3
-			query_codon_pos = (query_nuc_pos - nuc_assembly_offset + adjustment) % 3
-			ref_aa_pos = qindex_to_refcoord[query_aa_pos]
-			ref_nuc_pos = 3*ref_aa_pos + query_codon_pos
-			
-			nucfile.write(','.join(map(str, [query_nuc_pos+1, ref_nuc_pos+1, nucleotide_counts_string])))#"{},{},{}\n".format(query_nuc_pos, ref_nuc_pos, nucleotide_counts_string))
-			nucfile.write('\n')
+        # Amplicons store read counts in the CSF header
+        count = 1 if mode == 'Nextera' else int(header.split('_')[1])
 
-		except KeyError:
-			#logger.debug("No coordinate mapping for query nuc {} / amino {} ({})".format(query_nuc_pos, query_aa_pos, filename))
-			logger.debug('No coordinate mapping for query nuc %d / amino %d (%s)' % (query_nuc_pos, query_aa_pos, filename))
-			continue
+        # Determine nuc counts with respect to self-consensus coordinates
+        for j, nuc in enumerate(seq):
+            pos = left + j
+            if pos not in nuc_counts:
+                nuc_counts.update({pos: {}})
+            if nuc not in nuc_counts[pos]:
+                nuc_counts[pos].update({nuc: 0})
+            nuc_counts[pos][nuc] += count
+
+        # Determine amino counts with respect to self-consensus coordinates
+        p = translate_nuc('-'*left + seq, best_frame)
+        pcache.append(p)
+
+        # boundaries of read in amino acid space
+        aa_left = (left + best_frame) / 3
+        aa_right = (rights[header] + left + best_frame) / 3
+
+        for pos, aa in enumerate(p):
+            # Do not store gap information
+            #if aa == '-':
+            #	continue
+            if pos < aa_left or pos >= aa_right:
+                continue
+            if pos not in aa_counts:
+                aa_counts.update({pos: {}})
+            if aa not in aa_counts[pos]:
+                aa_counts[pos].update({aa: 0})
+            aa_counts[pos][aa] += count
 
 
-		# Store self-aligned nucleotide plurality conseqs
-		intermed = [(count, nuc) for nuc, count in nuc_counts[query_nuc_pos].iteritems()]
-		intermed.sort(reverse=True)
-		maxcon += intermed[0][1]
-		
-		# Determine the number of bases in total at this query position
-		total_count = sum([count for count, nuc in intermed])
+    # Generate amino plurality consensus for query to reference coordinate mapping
+    aa_coords = aa_counts.keys()
+    aa_coords.sort()
 
-		for ci, mixture_cutoff in enumerate(mixture_cutoffs):
-			mixture = []
+    aa_max = ''
+    for pos in range(min(aa_coords), max(aa_coords)+1):
+        if pos in aa_coords:
+            intermed = [(aa_count, amino) for amino, aa_count in aa_counts[pos].iteritems()]
+            intermed.sort(reverse=True)
+            aa_max += intermed[0][1]
+        else:
+            aa_max += '?' # no coverage but not a gap
 
-			# If a base is greater than the proportion cutoff, the base contributes
-			for count, nuc in intermed:
-				if float(count) / total_count > mixture_cutoff:
-					mixture.append(nuc)
+    logger.debug('Amino plurality consensus = ' + aa_max)#logger.debug("Amino plurality consensus = {}".format(aa_max))
 
-			# If an N exists with other bases, those bases take precedence
-			if 'N' in mixture:
-				if len(mixture) > 1:
-					mixture.remove('N')
-				else:
-					conseqs[ci] += 'N'
-					#logger.debug("N was the majority base at position {} - {} (mixture_cutoff = {})".format(query_nuc_pos, filename, mixture_cutoff))
-					logger.debug("N was the majority base at position %d - %s (mixture_cutoff = %f)" % (query_nuc_pos, filename, mixture_cutoff))
-					continue
+    aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
+    left, right = get_boundaries(aref)	# Coords of first/last non-gap character
 
-			# If there is a gap, but also bases, those bases take precedence
-			if '-' in mixture:
-				if len(mixture) > 1:
-					mixture.remove('-')
-				else:
-					conseqs[ci] += '-'
-					continue
+    logger.debug('Aligned amino plurality conseq = ' + aquery)#logger.debug("Aligned amino plurality conseq = {}".format(aquery))
+    logger.debug('Aligned reference sequence = ' + aref)#logger.debug("Aligned reference sequence = {}".format(aref))
 
-			# Attach mixture (If one exists) to the conseq with appropriate mixture cutoff rule
-			if len(mixture) > 1:
-				mixture.sort()
-				conseqs[ci] += ambig_dict[''.join(mixture)]
-			elif len(mixture) == 1:
-				conseqs[ci] += mixture[0]
-			else:
-				# Mixture of length zero, no bases exceed cutoff
-				conseqs[ci] += 'N'
-	nucfile.close()
+    qindex_to_refcoord = {}			# Query <-> reference coordinate mapping
+    inserts = []					# Keep track of which aa positions are insertions
+    qindex = 0						# Where we are in the query?
+    rindex = 0						# Where we are in the reference?
+    ref_coords = range(len(aref))
 
-	# Store self-aligned plurality amino sequences in .conseq files
-	#with open("{}.conseq".format(outpath), 'w') as confile:
-	with open(outpath+'.conseq', 'w') as confile:
-		confile.write('>%s_MAX\n%s\n' % (sample, maxcon))
-		for ci, cutoff in enumerate(mixture_cutoffs):
-			confile.write('>%s_%1.3f\n%s\n' % (sample, cutoff, conseqs[ci]))
-	
-	
-	# Write amino acid counts in reference coordinate space in amino.csv files
-	#with open("{}.amino.csv".format(outpath), 'w') as aafile:
-	with open(outpath+".amino.freqs", 'w') as aafile:
-		aafile.write("query.aa.pos,refseq.aa.pos,%s\n" % (','.join(list(amino_alphabet))))
+    # For each coordinate on the reference, create a mapping to the query
+    for i in ref_coords:
 
-		for qindex, ref_aa_pos in qindex_to_refcoord.iteritems(): 
-			# adjust for assembly offset
-			aa_pos = qindex + min(aa_coords)
-			
-			# Ignore query inserts
-			if aa_pos in inserts:
-				logger.debug("%d is an insert - ignoring" % (aa_pos))
-				continue
+        # Do not consider parts of the query outside of the reference
+        if i < left:
+            qindex += 1
 
-			try:
-				#ref_aa_pos = qindex_to_refcoord[aa_pos] + 1	 # FIXME: DO WE NEED TO ADD 1?
-				aa_counts_string = ','.join(map(str, [aa_counts[aa_pos].get(aa, 0) for aa in amino_alphabet]))
-				# note that we are subtracting the minimum aa_counts key 
-				aafile.write('%d,%d,%s\n' % (aa_pos, ref_aa_pos+1, aa_counts_string))
+        elif i >= right:
+            break
 
-			except KeyError:
-				logger.debug("No query-ref mapping available for aapos=%d (%s)" % (aa_pos, filename))
+        # A gap in the reference is an insertion in the query which we want to skip in the mapping
+        elif aref[i] == '-':
+            inserts.append(qindex)	# Store insert location in query coordinate space
+            qindex += 1				# Track along the query
+
+        # If theres a gap in the query we are only effectively tracking along the pre-alignment reference
+        elif aquery[i] == '-':
+            rindex += 1
+
+        # Normal case: tracking forward on both sequences
+        else:
+            qindex_to_refcoord[qindex] = rindex #qindex_to_refcoord.update({qindex: rindex})
+            qindex += 1
+            rindex += 1
+
+        #print i, rindex, aref[i], qindex, aquery[i]
+
+
+    logger.debug('qindex_to_refcoord: ' + str(qindex_to_refcoord))#"qindex_to_refcoord {}".format(qindex_to_refcoord))
+
+
+    # Write inserts to an indels.csv file
+    if len(inserts) > 0:
+        with open(outpath+".indels.csv", 'w') as indelfile:
+            indelfile.write('insertion,count\n')
+            indel_counts = {}
+            for p in pcache:
+                ins_str = str(inserts[0])
+                last_i = -1
+                for i in inserts:
+                    if last_i > -1 and i - last_i > 1:
+                        # end of a contiguous indel
+                        ins_str += ',%d' % i
+                    try:
+                        ins_str += p[i]
+                    except IndexError:
+                        break
+                    last_i = i
+                if not indel_counts.has_key(ins_str):
+                    indel_counts.update({ins_str: 0})
+                indel_counts[ins_str] += 1
+            for ins_str, count in indel_counts.iteritems():
+                indelfile.write('%s,%d\n' % (ins_str, count))
+
+    # Initialize initial (blank) consensus sequence for each mixture rule
+    maxcon = ''
+    conseqs = ['' for cut in mixture_cutoffs]
+    query_codon_pos = 0
+    nuc_coords = nuc_counts.keys()		  # nucs[self-coord][nuc] = count
+    nuc_coords.sort()
+
+    # account for assembly offset due to extra bases in sample-specific consensus
+    nuc_assembly_offset = min(lefts.values())
+
+    # Output nucleotide counts in reference coordinate space to nuc.csv files
+    nucfile = open(outpath+'.nuc.freqs', 'w')#open("{}.nuc.csv".format(outpath), 'w')
+    nucfile.write("query.nuc.pos,refSeq.nuc.pos,A,C,G,T\n")
+
+    for query_nuc_pos in nuc_coords:
+        nucleotide_counts = [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']
+        nucleotide_counts_string = ','.join(map(str, nucleotide_counts))
+
+        # Convert nucleotide query index into reference index
+        try:
+            # best frame is adjusted by shift from query to assembly coordinates
+            adjustment = best_frame - (3 - nuc_assembly_offset%3)%3
+            query_aa_pos = (query_nuc_pos - nuc_assembly_offset + adjustment) / 3
+            query_codon_pos = (query_nuc_pos - nuc_assembly_offset + adjustment) % 3
+            ref_aa_pos = qindex_to_refcoord[query_aa_pos]
+            ref_nuc_pos = 3*ref_aa_pos + query_codon_pos
+
+            nucfile.write(','.join(map(str, [query_nuc_pos+1, ref_nuc_pos+1, nucleotide_counts_string])))#"{},{},{}\n".format(query_nuc_pos, ref_nuc_pos, nucleotide_counts_string))
+            nucfile.write('\n')
+
+        except KeyError:
+            #logger.debug("No coordinate mapping for query nuc {} / amino {} ({})".format(query_nuc_pos, query_aa_pos, filename))
+            logger.debug('No coordinate mapping for query nuc %d / amino %d (%s)' % (query_nuc_pos, query_aa_pos, filename))
+            continue
+
+
+        # Store self-aligned nucleotide plurality conseqs
+        intermed = [(count, nuc) for nuc, count in nuc_counts[query_nuc_pos].iteritems()]
+        intermed.sort(reverse=True)
+        maxcon += intermed[0][1]
+
+        # Determine the number of bases in total at this query position
+        total_count = sum([count for count, nuc in intermed])
+
+        for ci, mixture_cutoff in enumerate(mixture_cutoffs):
+            mixture = []
+
+            # If a base is greater than the proportion cutoff, the base contributes
+            for count, nuc in intermed:
+                if float(count) / total_count > mixture_cutoff:
+                    mixture.append(nuc)
+
+            # If an N exists with other bases, those bases take precedence
+            if 'N' in mixture:
+                if len(mixture) > 1:
+                    mixture.remove('N')
+                else:
+                    conseqs[ci] += 'N'
+                    #logger.debug("N was the majority base at position {} - {} (mixture_cutoff = {})".format(query_nuc_pos, filename, mixture_cutoff))
+                    logger.debug("N was the majority base at position %d - %s (mixture_cutoff = %f)" % (query_nuc_pos, filename, mixture_cutoff))
+                    continue
+
+            # If there is a gap, but also bases, those bases take precedence
+            if '-' in mixture:
+                if len(mixture) > 1:
+                    mixture.remove('-')
+                else:
+                    conseqs[ci] += '-'
+                    continue
+
+            # Attach mixture (If one exists) to the conseq with appropriate mixture cutoff rule
+            if len(mixture) > 1:
+                mixture.sort()
+                conseqs[ci] += ambig_dict[''.join(mixture)]
+            elif len(mixture) == 1:
+                conseqs[ci] += mixture[0]
+            else:
+                # Mixture of length zero, no bases exceed cutoff
+                conseqs[ci] += 'N'
+    nucfile.close()
+
+    # Store self-aligned plurality amino sequences in .conseq files
+    #with open("{}.conseq".format(outpath), 'w') as confile:
+    with open(outpath+'.conseq', 'w') as confile:
+        confile.write('>%s_MAX\n%s\n' % (sample, maxcon))
+        for ci, cutoff in enumerate(mixture_cutoffs):
+            confile.write('>%s_%1.3f\n%s\n' % (sample, cutoff, conseqs[ci]))
+
+
+    # Write amino acid counts in reference coordinate space in amino.csv files
+    #with open("{}.amino.csv".format(outpath), 'w') as aafile:
+    with open(outpath+".amino.freqs", 'w') as aafile:
+        aafile.write("query.aa.pos,refseq.aa.pos,%s\n" % (','.join(list(amino_alphabet))))
+
+        for qindex, ref_aa_pos in qindex_to_refcoord.iteritems():
+            # adjust for assembly offset
+            aa_pos = qindex + min(aa_coords)
+
+            # Ignore query inserts
+            if aa_pos in inserts:
+                logger.debug("%d is an insert - ignoring" % (aa_pos))
+                continue
+
+            try:
+                #ref_aa_pos = qindex_to_refcoord[aa_pos] + 1	 # FIXME: DO WE NEED TO ADD 1?
+                aa_counts_string = ','.join(map(str, [aa_counts[aa_pos].get(aa, 0) for aa in amino_alphabet]))
+                # note that we are subtracting the minimum aa_counts key
+                aafile.write('%d,%d,%s\n' % (aa_pos, ref_aa_pos+1, aa_counts_string))
+
+            except KeyError:
+                logger.debug("No query-ref mapping available for aapos=%d (%s)" % (aa_pos, filename))
 
 def system_call(command):
-	import logging, subprocess
-	logger = logging.getLogger()
-	logger.debug(command)
-	subprocess.call(command, shell=True)
+    import logging, subprocess
+    logger = logging.getLogger()
+    logger.debug(command)
+    subprocess.call(command, shell=True)
 
 def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=30, num_threads=1):
-	""" 
-	1) Generate sample-specific consensus from a samtools pileup.
-	2) Remap everything to this consensus as a ref seq
-	3) Returns paths to the SAM output and consensus sequence file
-	"""
-	import logging
-	from miseq_modules import system_call
+    """
+    1) Generate sample-specific consensus from a samtools pileup.
+    2) Remap everything to this consensus as a ref seq
+    3) Returns paths to the SAM output and consensus sequence file
+    """
+    import logging
+    from miseq_modules import system_call
+    from miseqUtils import pileup_to_conseq
 
-	logger = logging.getLogger()
-	bamfile = samfile.replace('.sam', '.bam')
-	confile = "{}.pileup.conseq".format(bamfile)
+    logger = logging.getLogger()
+    bamfile = samfile.replace('.sam', '.bam')
+    #confile = "{}.pileup.conseq".format(bamfile)
 
-	# Overwrite previous iterations of the remapped sam (Only keep the original specific prelim sam)
-	remapped_sam = samfile if samfile.endswith('.remap.sam') else samfile.replace('.sam', '.remap.sam')
+    # Overwrite previous iterations of the remapped sam (Only keep the original specific prelim sam)
+    remapped_sam = samfile if samfile.endswith('.remap.sam') else samfile.replace('.sam', '.remap.sam')
 
-	# If this is the first run, use the static reference
-	if ref == original_reference:
-		system_call('samtools view -bt {}.fasta.fai {} > {} 2>/dev/null'.format(ref, samfile, bamfile))
-	else:
-		# Make new samtools index file (Creates [ref].fai)
-		system_call('samtools faidx {}'.format(ref))
-		system_call('samtools view -bt {}.fai {} > {} 2>/dev/null'.format(ref, samfile, bamfile))
+    # If this is the first run, use the static reference
+    if ref == original_reference:
+        system_call('samtools view -bt {}.fasta.fai {} > {} 2>/dev/null'.format(ref, samfile, bamfile))
+    else:
+        # Make new samtools index file (Creates [ref].fai)
+        system_call('samtools faidx {}'.format(ref))
+        system_call('samtools view -bt {}.fai {} > {} 2>/dev/null'.format(ref, samfile, bamfile))
 
-	# Sort the bam file by leftmost position on the reference assembly
-	system_call('samtools sort {} {}.sorted'.format(bamfile, bamfile))
+    # Sort the bam file by leftmost position on the reference assembly
+    system_call('samtools sort {} {}.sorted'.format(bamfile, bamfile))
 
-	# Make a pileup from the sorted bam
-	system_call('samtools mpileup -A {}.sorted.bam > {}.pileup 2>/dev/null'.format(bamfile, bamfile))
-	
-	# Create new consensus sequence from the pileup
-	system_call('python2.7 pileup2conseq_v2.py {}.pileup {}'.format(bamfile, conseq_qCutoff))
-	
-	# Convert consensus into bowtie2 reference files (Creates 6 files of *.bt2)
-	system_call('bowtie2-build -f -q {} {}'.format(confile, confile))
-	
-	# Map original fastq reads to new reference
-	cmd = 'bowtie2 --quiet -p {} --local -x {} -1 {} -2 {} -S {} --no-unal --met-file {} --un {} --un-conc {}'.format(num_threads,
-			confile, R1_fastq, R2_fastq, remapped_sam, remapped_sam.replace('.sam', '.bt2_metrics'),
-			remapped_sam.replace('.sam', '.bt2_unpaired_noalign.fastq'), 
-			remapped_sam.replace('.sam', '.bt2_paired_noalign.fastq'))
-	system_call(cmd)
-	
-	return remapped_sam, confile
+    # Make a pileup from the sorted bam
+    system_call('samtools mpileup -A {}.sorted.bam > {}.pileup 2>/dev/null'.format(bamfile, bamfile))
+
+    # Create new consensus sequence from the pileup
+    #system_call('python2.7 pileup2conseq_v2.py {}.pileup {}'.format(bamfile, conseq_qCutoff))
+    confile = pileup_to_conseq(bamfile+'.pileup', conseq_qCutoff)
+
+    # Convert consensus into bowtie2 reference files (Creates 6 files of *.bt2)
+    system_call('bowtie2-build -f -q {} {}'.format(confile, confile))
+
+    # Map original fastq reads to new reference
+    cmd = 'bowtie2 --quiet -p {} --local -x {} -1 {} -2 {} -S {} --no-unal --met-file {} --un {} --un-conc {}'.format(num_threads,
+            confile, R1_fastq, R2_fastq, remapped_sam, remapped_sam.replace('.sam', '.bt2_metrics'),
+            remapped_sam.replace('.sam', '.bt2_unpaired_noalign.fastq'),
+            remapped_sam.replace('.sam', '.bt2_paired_noalign.fastq'))
+    system_call(cmd)
+
+    return remapped_sam, confile
 
 
-def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS, num_threads=1):
-	"""
-	refpath		Absolute path to static reference sequences used during original mapping
-	R1_fastq	Absolute path to R1 fastq file
-	conseq_qCutoff	Q-cutoff for determining if a base contributes to the consensus in pileup2conseq
-	is_t_primer Used to detect contaminants from previous runs (FIXME: REMOVE?)
-	REMAP_THRESHOLD Efficiency of read mapping at which we stop bothering to perform additional remapping
-	MAX_REMAPS	Number of extra attempts at remapping before giving up
-	"""
-	import logging, os, subprocess, sys
-	from miseqUtils import samBitFlag
-	from miseq_modules import system_call
+def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOLD, MAX_REMAPS, num_threads=1, filter_t_contaminants=False):
+    """
+    refpath		Absolute path to static reference sequences used during original mapping
+    R1_fastq	Absolute path to R1 fastq file
+    conseq_qCutoff	Q-cutoff for determining if a base contributes to the consensus in pileup2conseq
+    is_t_primer Used to detect contaminants from previous runs (FIXME: REMOVE?)
+    REMAP_THRESHOLD Efficiency of read mapping at which we stop bothering to perform additional remapping
+    MAX_REMAPS	Number of extra attempts at remapping before giving up
+    """
+    import logging, os, subprocess, sys
+    from miseqUtils import samBitFlag
+    from miseq_modules import system_call
 
-	logger = logging.getLogger()
-	original_reference = refpath		# Path to the original reference sequence
+    logger = logging.getLogger()
+    original_reference = refpath		# Path to the original reference sequence
 
-	# Store region codes of static reference fasta in refnames (ConB for HIV, H77 for HCV)
-	with open(refpath+'.fasta', 'rU') as ref_fasta:
-		refnames = []
-		for line in ref_fasta:
-			if line.startswith('>'): refnames.append(line.strip('>\n'))
+    # Store region codes of static reference fasta in refnames (ConB for HIV, H77 for HCV)
+    with open(refpath+'.fasta', 'rU') as ref_fasta:
+        refnames = []
+        for line in ref_fasta:
+            if line.startswith('>'): refnames.append(line.strip('>\n'))
 
-	# Deduce R1/R2 file pairing
-	root = '/'.join(R1_fastq.split('/')[:-1])
-	filename = os.path.basename(R1_fastq)			# Filename of R1 fastq...
-	file_prefix = filename.split('.')[0]			# Has a prefix containing...
-	sample_name, sample_well = file_prefix.split('_')[:2]	# Sample name and well
-	prefix = '_'.join([sample_name, sample_well])		# Change this prefix to be joined by _ (??)
-	count_file = open(R1_fastq.replace('.fastq', '.counts'), 'w')
-	R2_fastq = R1_fastq.replace('R1', 'R2')
+    # Deduce R1/R2 file pairing
+    root = '/'.join(R1_fastq.split('/')[:-1])
+    filename = os.path.basename(R1_fastq)			# Filename of R1 fastq...
+    file_prefix = filename.split('.')[0]			# Has a prefix containing...
+    sample_name, sample_well = file_prefix.split('_')[:2]	# Sample name and well
+    prefix = '_'.join([sample_name, sample_well])		# Change this prefix to be joined by _ (??)
+    count_file = open(R1_fastq.replace('.fastq', '.counts'), 'w')
+    R2_fastq = R1_fastq.replace('R1', 'R2')
 
-	# Determine the number of reads in both (R1 + R2) fastq files, store in the .count file
-	stdout, stderr = subprocess.Popen(['wc', '-l', R1_fastq], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
-	total_reads_R1 = int(stdout.split()[0])/4
-	stdout, stderr = subprocess.Popen(['wc', '-l', R2_fastq], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
-	total_reads_R2 = int(stdout.split()[0])/4
-	logger.debug("{} R1 and {} R2 reads in {} and {}".format(total_reads_R1, total_reads_R2, R1_fastq, R2_fastq))
-	count_file.write('Raw FASTQ,R1,%d,R2,%d\n' % (total_reads_R1, total_reads_R2))
+    # Determine the number of reads in both (R1 + R2) fastq files, store in the .count file
+    stdout, stderr = subprocess.Popen(['wc', '-l', R1_fastq], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+    total_reads_R1 = int(stdout.split()[0])/4
+    stdout, stderr = subprocess.Popen(['wc', '-l', R2_fastq], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+    total_reads_R2 = int(stdout.split()[0])/4
+    logger.debug("{} R1 and {} R2 reads in {} and {}".format(total_reads_R1, total_reads_R2, R1_fastq, R2_fastq))
+    count_file.write('Raw FASTQ,R1,%d,R2,%d\n' % (total_reads_R1, total_reads_R2))
 
-	# Initial consensus B mapping
-	prelim_samfile = '{}/{}.prelim.sam'.format(root, prefix)
-	system_call('bowtie2 --quiet -p {} --local -x {} -1 {} -2 {} -S {}'.format(num_threads, refpath, R1_fastq, R2_fastq, prelim_samfile))
+    # Initial consensus B mapping
+    prelim_samfile = '{}/{}.prelim.sam'.format(root, prefix)
+    system_call('bowtie2 --quiet -p {} --local -x {} -1 {} -2 {} -S {}'.format(num_threads, refpath, R1_fastq, R2_fastq, prelim_samfile))
 
-	# Define region-specific SAMs: refsams[refname] points to a nested dict which includes a file handle to each specific SAM
-	refsams = {}
-	for i, refname in enumerate(refnames):
-		region_specific_sam = "{}/{}.{}.sam".format(root, prefix, refname)
-		refsams.update({refname: {'sam_file_handle': open(region_specific_sam, 'w'),'count': [0,0]}})
-	refsams.update({'*': {'sam_file_handle': open('%s/%s.unmapped.sam' % (root, prefix), 'w'),'count': [0,0]}})
+    # Define region-specific SAMs: refsams[refname] points to a nested dict which includes a file handle to each specific SAM
+    refsams = {}
+    for i, refname in enumerate(refnames):
+        region_specific_sam = "{}/{}.{}.sam".format(root, prefix, refname)
+        refsams.update({refname: {'sam_file_handle': open(region_specific_sam, 'w'),'count': [0,0]}})
+    refsams.update({'*': {'sam_file_handle': open('%s/%s.unmapped.sam' % (root, prefix), 'w'),'count': [0,0]}})
 
-	# Subdivide prelim SAMs into region-specific SAMs
-	prelim_sam_infile = open(prelim_samfile, 'rU')
-	line_counts = [0, 0]
-	t_counts = [0, 0]
-	contam_file = open(R1_fastq.replace('.fastq', '.Tcontaminants.fastq'), 'w')
+    # Subdivide prelim SAMs into region-specific SAMs
+    prelim_sam_infile = open(prelim_samfile, 'rU')
+    line_counts = [0, 0]
+    if filter_t_contaminants:
+        t_counts = [0, 0]
+        contam_file = open(R1_fastq.replace('.fastq', '.Tcontaminants.fastq'), 'w')
 
-	for line in prelim_sam_infile:
+    for line in prelim_sam_infile:
 
-		# Copy the original SAM header into each region-specific SAM
-		if line.startswith('@'):
-			for refname in refnames: refsams[refname]['sam_file_handle'].write(line)
-			continue
+        # Copy the original SAM header into each region-specific SAM
+        if line.startswith('@'):
+            for refname in refnames: refsams[refname]['sam_file_handle'].write(line)
+            continue
 
-		# SAM documentation explains what these fields mean - http://samtools.sourceforge.net/SAMv1.pdf
-		qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')[:11]
+        # SAM documentation explains what these fields mean - http://samtools.sourceforge.net/SAMv1.pdf
+        qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')[:11]
 
-		# SAM bitwise flag variable specifies whether read is paired, successfully mapped, etc
-		bitinfo = samBitFlag(flag)
-		if mode == 'Amplicon':
-			# filter T contaminants
-			if is_t_primer:
-				# Trim T(A) when known to be present due to primer
-				if bitinfo['is_reverse'] and seq.endswith('A'):
-					seq = seq[:-1]
-				elif not bitinfo['is_reverse'] and seq.startswith('T'):
-					seq = seq[1:]
-				else:
-					t_counts[bitinfo['is_reverse']] += 1 # missing A/T
-					# Dump in fastq format to contaminant file
-					contam_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
-					continue
+        # SAM bitwise flag variable specifies whether read is paired, successfully mapped, etc
+        bitinfo = samBitFlag(flag)
+        if mode == 'Amplicon' and filter_t_contaminants:
+            # filter T contaminants
+                if is_t_primer:
+                    # Trim T(A) when known to be present due to primer
+                    if bitinfo['is_reverse'] and seq.endswith('A'):
+                        seq = seq[:-1]
+                    elif not bitinfo['is_reverse'] and seq.startswith('T'):
+                        seq = seq[1:]
+                    else:
+                        t_counts[bitinfo['is_reverse']] += 1 # missing A/T
+                        # Dump in fastq format to contaminant file
+                        contam_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+                        continue
 
-			else:
-				# look for contaminating T primed reads in non-T run
-				if bitinfo['is_reverse'] and seq.endswith('A') and cigar.endswith('1S'):
-					t_counts[bitinfo['is_reverse']] += 1 # unexpected A
-					contam_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
-					continue
-				elif not bitinfo['is_reverse'] and seq.startswith('T') and cigar.startswith('1S'):
-					t_counts[bitinfo['is_reverse']] += 1 # unexpected T
-					contam_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
-					continue
-				else:
-					pass
-		
-		# Write each line into respective region-specific SAMs
-		try:
-			refsams[refname]['sam_file_handle'].write(line)
-			refsams[refname]['count'][bitinfo['is_reverse']] += 1
-		except:
-			print "{} appeared to be an incorrect refname".format(refname)
+                else:
+                    # look for contaminating T primed reads in non-T run
+                    if bitinfo['is_reverse'] and seq.endswith('A') and cigar.endswith('1S'):
+                        t_counts[bitinfo['is_reverse']] += 1 # unexpected A
+                        contam_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+                        continue
+                    elif not bitinfo['is_reverse'] and seq.startswith('T') and cigar.startswith('1S'):
+                        t_counts[bitinfo['is_reverse']] += 1 # unexpected T
+                        contam_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+                        continue
+                    else:
+                        pass
 
-		# FIXME: Does this identify R1 reads from R2 in the prelim SAM...? 
-		line_counts[bitinfo['is_reverse']] += 1
+        # Write each line into respective region-specific SAMs
+        try:
+            refsams[refname]['sam_file_handle'].write(line)
+            refsams[refname]['count'][bitinfo['is_reverse']] += 1
+        except:
+            print "{} appeared to be an incorrect refname".format(refname)
 
-	prelim_sam_infile.close()
-	contam_file.close()
+        # FIXME: Does this identify R1 reads from R2 in the prelim SAM...?
+        line_counts[bitinfo['is_reverse']] += 1
 
-	# Show the number of reads that made it to preliminary mapping in the count file
-	count_file.write('Preliminary map,{},{}\n'.format(line_counts[0], line_counts[1]))
-	if is_t_primer: error_type = "Missing T"
-	else: error_type = "Unexpected T"
-	count_file.write('{} (Detected at prelim map),R1,{},R2,{}\n'.format(error_type, t_counts[0], t_counts[1]))
+    prelim_sam_infile.close()
+    if filter_t_contaminants:
+        contam_file.close()
 
-	# Show the reads mapped at preliminary mapping with respect to region
-	for refname in refnames:
-		refsams[refname]['sam_file_handle'].close()
-		count_file.write('prelim %s,R1,%d,R2,%d\n' % (refname, refsams[refname]['count'][0],refsams[refname]['count'][1]))
+    # Show the number of reads that made it to preliminary mapping in the count file
+    count_file.write('Preliminary map,{},{}\n'.format(line_counts[0], line_counts[1]))
+    if filter_t_contaminants:
+        if is_t_primer: error_type = "Missing T"
+        else: error_type = "Unexpected T"
+        count_file.write('{} (Detected at prelim map),R1,{},R2,{}\n'.format(error_type, t_counts[0], t_counts[1]))
 
-	# Track the number of reads that have been successfully remapped in total
-	total_remap = 0
+    # Show the reads mapped at preliminary mapping with respect to region
+    for refname in refnames:
+        refsams[refname]['sam_file_handle'].close()
+        count_file.write('prelim %s,R1,%d,R2,%d\n' % (refname, refsams[refname]['count'][0],refsams[refname]['count'][1]))
 
-	# Remap the fastqs using sample/region specific conseqs
-	for refname in refnames:
-		if refname == '*':
-			# don't attempt to remap reads from the unmapped SAM file
-			continue
-		
-		# Ignore phiX, unmapped reads, and regions which had no mapping at the prelim mapping stage
-		if sum(refsams[refname]['count']) == 0 or refname == 'phiX174' or refname == '*':
-			continue
+    # Track the number of reads that have been successfully remapped in total
+    total_remap = 0
 
-		# Run remap on the region-specific sam, and get the remapped sam and consensus pileup used to generate it
-		samfile = refsams[refname]['sam_file_handle'].name
-		logging.info("remap({},{},{},{},{},{})".format(R1_fastq, R2_fastq, samfile, refpath, original_reference, conseq_qCutoff))
-		samfile, confile = remap(R1_fastq, R2_fastq, samfile, refpath, original_reference, conseq_qCutoff, num_threads)
-	
-		# Track file paths
-		refsams[refname].update({'samfile': samfile, 'confile': confile})
-	
-		# Track the number of mapped reads in each region
-		stdout, stderr = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
-		region_specific_count = (int(stdout.split()[0]) - 3) / 2. # First 3 lines contain comments
-		total_remap += region_specific_count
-		refsams[refname]['count'][0] = region_specific_count
-		count_file.write('remap %s,%d\n' % (refname, int(region_specific_count)))
+    # Remap the fastqs using sample/region specific conseqs
+    for refname in refnames:
+        if refname == '*':
+            # don't attempt to remap reads from the unmapped SAM file
+            continue
 
-	# Continue to remap if we've failed to map enough total reads
-	mapping_efficiency = total_remap / total_reads_R1
-	if mapping_efficiency < REMAP_THRESHOLD:
-		break_out = False
-		logger.info("Poor mapping for {} (Mapping efficiency: {:.2%}) - trying additional remapping".format(sample_name, mapping_efficiency))
+        # Ignore phiX, unmapped reads, and regions which had no mapping at the prelim mapping stage
+        if sum(refsams[refname]['count']) == 0 or refname == 'phiX174' or refname == '*':
+            continue
 
-		# Repeat remapping up to the number of MAX_REMAPS permitted
-		for iter in range(MAX_REMAPS):
-			logger.debug("Additional remapping for {} (iteration #{})".format(sample_name, iter))
+        # Run remap on the region-specific sam, and get the remapped sam and consensus pileup used to generate it
+        samfile = refsams[refname]['sam_file_handle'].name
+        logging.info("remap({},{},{},{},{},{})".format(R1_fastq, R2_fastq, samfile, refpath, original_reference, conseq_qCutoff))
+        samfile, confile = remap(R1_fastq, R2_fastq, samfile, refpath, original_reference, conseq_qCutoff, num_threads)
 
-			total_remap = 0
-			for refname in refnames:
-				if refsams[refname]['count'][0] == 0 or refname == 'phiX174' or refname == '*':
-					continue
+        # Track file paths
+        refsams[refname].update({'samfile': samfile, 'confile': confile})
 
-				samfile = refsams[refname]['samfile']
-				confile = refsams[refname]['confile']
-				samfile, confile = remap(R1_fastq, R2_fastq, samfile, confile, original_reference, conseq_qCutoff, num_threads)
-				refsams[refname]['samfile'] = samfile
-				refsams[refname]['confile'] = confile
-			
-				# Continue to determine the number of reads mapped in this region
-				stdout, stderr = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
-				region_specific_count = (int(stdout.split()[0]) - 3) / 2.
-				
-				if region_specific_count < refsams[refname]['count'][0]:
-					logger.warn("Remapping for {} resulting in LESS reads - halting iterative remapping".format(sample_name))
-					break_out = True
-					break
-			
-				total_remap += region_specific_count
-				refsams[refname]['count'][0] = region_specific_count
+        # Track the number of mapped reads in each region
+        stdout, stderr = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+        region_specific_count = (int(stdout.split()[0]) - 3) / 2. # First 3 lines contain comments
+        total_remap += region_specific_count
+        refsams[refname]['count'][0] = region_specific_count
+        count_file.write('remap %s,%d\n' % (refname, int(region_specific_count)))
 
-				# Write each remap iteration result to the file
-				count_file.write('remap %d %s,%d\n' % (iter, refname, int(region_specific_count)))
+    # Continue to remap if we've failed to map enough total reads
+    mapping_efficiency = total_remap / total_reads_R1
+    if mapping_efficiency < REMAP_THRESHOLD:
+        break_out = False
+        logger.info("Poor mapping for {} (Mapping efficiency: {:.2%}) - trying additional remapping".format(sample_name, mapping_efficiency))
 
-			mapping_efficiency = float(total_remap / total_reads_R1)
-			logger.debug("Mapping efficiency for {} is now {:.3}".format(sample_name, mapping_efficiency))
-			if break_out or mapping_efficiency >= REMAP_THRESHOLD:
-				break
+        # Repeat remapping up to the number of MAX_REMAPS permitted
+        for iter in range(MAX_REMAPS):
+            logger.debug("Additional remapping for {} (iteration #{})".format(sample_name, iter))
 
-	else:
-		logger.info("{} had acceptable mapping efficiency ({:.2%})".format(sample_name, mapping_efficiency))
-	count_file.close()
-	
+            total_remap = 0
+            for refname in refnames:
+                if refsams[refname]['count'][0] == 0 or refname == 'phiX174' or refname == '*':
+                    continue
+
+                samfile = refsams[refname]['samfile']
+                confile = refsams[refname]['confile']
+                samfile, confile = remap(R1_fastq, R2_fastq, samfile, confile, original_reference, conseq_qCutoff, num_threads)
+                refsams[refname]['samfile'] = samfile
+                refsams[refname]['confile'] = confile
+
+                # Continue to determine the number of reads mapped in this region
+                stdout, stderr = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+                region_specific_count = (int(stdout.split()[0]) - 3) / 2.
+
+                if region_specific_count < refsams[refname]['count'][0]:
+                    logger.warn("Remapping for {} resulting in LESS reads - halting iterative remapping".format(sample_name))
+                    break_out = True
+                    break
+
+                total_remap += region_specific_count
+                refsams[refname]['count'][0] = region_specific_count
+
+                # Write each remap iteration result to the file
+                count_file.write('remap %d %s,%d\n' % (iter, refname, int(region_specific_count)))
+
+            mapping_efficiency = float(total_remap / total_reads_R1)
+            logger.debug("Mapping efficiency for {} is now {:.3}".format(sample_name, mapping_efficiency))
+            if break_out or mapping_efficiency >= REMAP_THRESHOLD:
+                break
+
+    else:
+        logger.info("{} had acceptable mapping efficiency ({:.2%})".format(sample_name, mapping_efficiency))
+    count_file.close()
+
 def g2p_scoring(csf_path, g2p_alignment_cutoff):
-	"""
-	Take an env (amplicon) CSF and generate a v3prot file.
+    """
+    Take an env (amplicon) CSF and generate a v3prot file.
 
-	Header: contains the G2P FPR and read count
-	Sequence: protein aligned V3
+    Header: contains the G2P FPR and read count
+    Sequence: protein aligned V3
 
-	The CSF must be from an amplicon run: column 1 must contain the rank + count.
-	"""
+    The CSF must be from an amplicon run: column 1 must contain the rank + count.
+    """
 
-	import logging,os,sys
-	from hyphyAlign import apply2nuc, change_settings, get_boundaries, HyPhy, pair_align, refSeqs
-	from minG2P import conan_g2p
-	from miseqUtils import translate_nuc
+    import logging,os,sys
+    from hyphyAlign import apply2nuc, change_settings, get_boundaries, HyPhy, pair_align, refSeqs
+    from minG2P import conan_g2p
+    from miseqUtils import translate_nuc
 
-	csf_filename = os.path.basename(csf_path)
-	prefix = csf_filename.split('.')[0]
-	logger = logging.getLogger()
-	hyphy = HyPhy._THyPhy (os.getcwd(), 1)			# HyPhy is used for alignment
-	change_settings(hyphy)					# Configure scoring matrix / gap penalties
-	refseq = translate_nuc(refSeqs['V3, clinical'], 0)	# V3 ref seq is NON-STANDARD: talk to Guin
+    csf_filename = os.path.basename(csf_path)
+    prefix = csf_filename.split('.')[0]
+    logger = logging.getLogger()
+    hyphy = HyPhy._THyPhy (os.getcwd(), 1)			# HyPhy is used for alignment
+    change_settings(hyphy)					# Configure scoring matrix / gap penalties
+    refseq = translate_nuc(refSeqs['V3, clinical'], 0)	# V3 ref seq is NON-STANDARD: talk to Guin
 
-	if csf_filename.find("HIV1B-env") == -1 or not csf_path.endswith('.csf'):
-		return logger.error("{} is not an HIV1B-env CSF file")
+    if csf_filename.find("HIV1B-env") == -1 or not csf_path.endswith('.csf'):
+        return logger.error("{} is not an HIV1B-env CSF file")
 
-	# Store CSF in fasta-like variable called sequences
-	sequences = []
-	with open(csf_path, 'rU') as csf_file:
-		for line in csf_file:
-			header, left_offset, seq_no_gaps  = line.strip("\n").split(",")
-			sequences.append((header, seq_no_gaps))
-	
-	# Determine offset from 1st sequence to correct frameshift induced by sample-specific remapping
-	seq1 = sequences[0][1].strip("-")
-	best_offset = 0
-	best_score = -999
-	possible_ORFs = [0, 1, 2]
-	for offset in possible_ORFs:
-		aaEnvSeq = translate_nuc(seq1, offset)
-		aquery, aref, ascore = pair_align(hyphy, refseq, aaEnvSeq)
-		if ascore > best_score:
-			best_offset = offset
-			best_score = ascore
+    # Store CSF in fasta-like variable called sequences
+    sequences = []
+    with open(csf_path, 'rU') as csf_file:
+        for line in csf_file:
+            header, left_offset, seq_no_gaps  = line.strip("\n").split(",")
+            sequences.append((header, seq_no_gaps))
 
-	# For each env sequence, extract the V3 nucleotide sequence
-	badfile = open(csf_path.replace('.csf', '.badV3'), 'w')
-	v3nucs = {}
-	for header, seq in sequences:
-		count = int(header.split('_')[-1])
-		seq = seq.replace("-","")					# Strip dashes at flanking regions generated by alignment
-		aaEnvSeq = translate_nuc(seq, best_offset)			# Translate env on correct ORF
-		aquery, aref, ascore = pair_align(hyphy, refseq, aaEnvSeq)
-		left, right = get_boundaries(aref)				# Get left/right boundaries of V3 protein
-		v3prot = aquery[left:right]					# Extract V3 protein
-		v3nuc = apply2nuc(seq[(3*left-best_offset):], v3prot,		# Use alignment to extract V3 nuc seq
-				aref[left:right], keepIns=True, keepDel=False)
-		
-		# Drop V3 data that don't satisfy quality control
-		if 'N' in v3nuc or not v3prot.startswith('C') or not v3prot.endswith('C') or '*' in v3prot or ascore < g2p_alignment_cutoff or len(v3prot) < 32 or len(v3prot) > 40:
-			badfile.write('>%s_reason_%s\n%s\n' % (header,
-				'|'.join(['stopcodon' if '*' in v3prot else '',					# V3 can't have internal stop codon
-				'lowscore' if ascore < g2p_alignment_cutoff else '',				# The G2P alignment can't be poor
-				'cystines' if not v3prot.startswith('C') or not v3prot.endswith('C') else '',	# V3 must start/end with C
-				'ambig' if 'N' in v3nuc else '']),seq))						# There must be no unknown bases
-		else:
-			# Track the count of each v3 nucleotide sequence
-			if v3nucs.has_key(v3nuc):
-				v3nucs[v3nuc] += count
-			else:
-				v3nucs.update({v3nuc: count})
-	badfile.close()
-	
-	# Calculate g2p scores for each v3 nuc sequence
-	v3prots = {}
-	for v3nuc, count in v3nucs.iteritems():
-		g2p, fpr, aligned = conan_g2p(v3nuc)
-	
-		if g2p is None:
-			continue
-	
-		# Track the count of each protein sequence
-		if v3prots.has_key(aligned):
-			v3prots[aligned]['count'] += count
-		else:
-			# Dict within dict - store count and fpr for each sequence
-			v3prots.update({aligned: {'count': count, 'fpr': fpr}})
-	
-	# Collect v3 prot sequences and their output (v is a dict mapping to count and fpr)
-	intermed = [(v['count'], v3prot) for v3prot, v in v3prots.iteritems()]
-	intermed.sort(reverse=True)
-	
-	# For this sample, write a v3prot file containing the prefix, sequence, rank, count, and fpr
-	v3prot_path = csf_path.replace('.csf', '.v3prot')
-	logger.info("Writing results to {}".format(v3prot_path))
-	with open(v3prot_path, 'w') as v3protfile:
-		for i, (count, v3prot) in enumerate(intermed):
-			fpr = v3prots[v3prot]['fpr']
-			v3protfile.write(">{}_variant_{}_count_{}_fpr_{}\n{}\n".format(prefix, i, count, fpr, v3prot))
+    # Determine offset from 1st sequence to correct frameshift induced by sample-specific remapping
+    seq1 = sequences[0][1].strip("-")
+    best_offset = 0
+    best_score = -999
+    possible_ORFs = [0, 1, 2]
+    for offset in possible_ORFs:
+        aaEnvSeq = translate_nuc(seq1, offset)
+        aquery, aref, ascore = pair_align(hyphy, refseq, aaEnvSeq)
+        if ascore > best_score:
+            best_offset = offset
+            best_score = ascore
+
+    # For each env sequence, extract the V3 nucleotide sequence
+    badfile = open(csf_path.replace('.csf', '.badV3'), 'w')
+    v3nucs = {}
+    for header, seq in sequences:
+        count = int(header.split('_')[-1])
+        seq = seq.replace("-","")					# Strip dashes at flanking regions generated by alignment
+        aaEnvSeq = translate_nuc(seq, best_offset)			# Translate env on correct ORF
+        aquery, aref, ascore = pair_align(hyphy, refseq, aaEnvSeq)
+        left, right = get_boundaries(aref)				# Get left/right boundaries of V3 protein
+        v3prot = aquery[left:right]					# Extract V3 protein
+        v3nuc = apply2nuc(seq[(3*left-best_offset):], v3prot,		# Use alignment to extract V3 nuc seq
+                aref[left:right], keepIns=True, keepDel=False)
+
+        # Drop V3 data that don't satisfy quality control
+        if 'N' in v3nuc or not v3prot.startswith('C') or not v3prot.endswith('C') or '*' in v3prot or ascore < g2p_alignment_cutoff or len(v3prot) < 32 or len(v3prot) > 40:
+            badfile.write('>%s_reason_%s\n%s\n' % (header,
+                '|'.join(['stopcodon' if '*' in v3prot else '',					# V3 can't have internal stop codon
+                'lowscore' if ascore < g2p_alignment_cutoff else '',				# The G2P alignment can't be poor
+                'cystines' if not v3prot.startswith('C') or not v3prot.endswith('C') else '',	# V3 must start/end with C
+                'ambig' if 'N' in v3nuc else '']),seq))						# There must be no unknown bases
+        else:
+            # Track the count of each v3 nucleotide sequence
+            if v3nucs.has_key(v3nuc):
+                v3nucs[v3nuc] += count
+            else:
+                v3nucs.update({v3nuc: count})
+    badfile.close()
+
+    # Calculate g2p scores for each v3 nuc sequence
+    v3prots = {}
+    for v3nuc, count in v3nucs.iteritems():
+        g2p, fpr, aligned = conan_g2p(v3nuc)
+
+        if g2p is None:
+            continue
+
+        # Track the count of each protein sequence
+        if v3prots.has_key(aligned):
+            v3prots[aligned]['count'] += count
+        else:
+            # Dict within dict - store count and fpr for each sequence
+            v3prots.update({aligned: {'count': count, 'fpr': fpr}})
+
+    # Collect v3 prot sequences and their output (v is a dict mapping to count and fpr)
+    intermed = [(v['count'], v3prot) for v3prot, v in v3prots.iteritems()]
+    intermed.sort(reverse=True)
+
+    # For this sample, write a v3prot file containing the prefix, sequence, rank, count, and fpr
+    v3prot_path = csf_path.replace('.csf', '.v3prot')
+    logger.info("Writing results to {}".format(v3prot_path))
+    with open(v3prot_path, 'w') as v3protfile:
+        for i, (count, v3prot) in enumerate(intermed):
+            fpr = v3prots[v3prot]['fpr']
+            v3protfile.write(">{}_variant_{}_count_{}_fpr_{}\n{}\n".format(prefix, i, count, fpr, v3prot))
 
 def sam2csf_with_base_censoring(samfile, censoring_qCutoff, mapping_cutoff, mode, max_prop_N):
-	"""
-	From a path to a SAM, create a comma-delimited, 3-column CSF file.
+    """
+    From a path to a SAM, create a comma-delimited, 3-column CSF file.
 
-	Column 1: Either the rank + count for amplicon, or qname for Nextera
-	Column 2: Left-offset of the read
-	Column 3: Gap-stripped sequence (Alignment data is lost)
-	"""
+    Column 1: Either the rank + count for amplicon, or qname for Nextera
+    Column 2: Left-offset of the read
+    Column 3: Gap-stripped sequence (Alignment data is lost)
+    """
 
-	import logging, os, sys
-	from miseqUtils import len_gap_prefix, sam2fasta
+    import logging, os, sys
+    from miseqUtils import len_gap_prefix, sam2fasta
 
-	logger = logging.getLogger()
+    logger = logging.getLogger()
 
-	# Extract sample (prefix) and region
-	filename = samfile.split('/')[-1]
-	prefix, region = filename.split('.')[:2]
+    # Extract sample (prefix) and region
+    filename = samfile.split('/')[-1]
+    prefix, region = filename.split('.')[:2]
 
-	# Convert SAM to fasta-structured variable
-	with open(samfile, 'rU') as infile:
-		logging.debug("sam2fasta({}, {}, {}, {})".format(infile, censoring_qCutoff, mapping_cutoff, max_prop_N))
-		fasta = sam2fasta(infile, censoring_qCutoff, mapping_cutoff, max_prop_N)
+    # Convert SAM to fasta-structured variable
+    with open(samfile, 'rU') as infile:
+        logging.debug("sam2fasta({}, {}, {}, {})".format(infile, censoring_qCutoff, mapping_cutoff, max_prop_N))
+        fasta = sam2fasta(infile, censoring_qCutoff, mapping_cutoff, max_prop_N)
 
-	# Send warning to standard out if sam2fasta didn't return anything
-	if fasta == None:
-		return logging.warn("{} likely empty or invalid - halting sam2fasta".format(samfile))
+    # Send warning to standard out if sam2fasta didn't return anything
+    if fasta == None:
+        return logging.warn("{} likely empty or invalid - halting sam2fasta".format(samfile))
 
-	csf_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), censoring_qCutoff, 'csf']))
+    csf_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), censoring_qCutoff, 'csf']))
 
-	# Amplicon: store rank + read counts in column 1 of CSF (drop individual read qnames)
-	if mode == 'Amplicon':
+    # Amplicon: store rank + read counts in column 1 of CSF (drop individual read qnames)
+    if mode == 'Amplicon':
 
-		# Collapse fasta with respect to unique reads into d
-		d = {}
-		for qname, seq in fasta:
-			if d.has_key(seq): d[seq] += 1
-			else: d.update({seq: 1})
+        # Collapse fasta with respect to unique reads into d
+        d = {}
+        for qname, seq in fasta:
+            if d.has_key(seq): d[seq] += 1
+            else: d.update({seq: 1})
 
-		# Sort d by read count and store in intermed
-		intermed = [(count, len_gap_prefix(seq), seq) for seq, count in d.iteritems()]
-		intermed.sort(reverse=True)
+        # Sort d by read count and store in intermed
+        intermed = [(count, len_gap_prefix(seq), seq) for seq, count in d.iteritems()]
+        intermed.sort(reverse=True)
 
-		# Write CSF to disk
-		with open(csf_filename, 'w') as outfile:
-			for rank, (count, left_offset, seq) in enumerate(intermed):
-				outfile.write('{}_{},{},{}\n'.format(rank, count, left_offset, seq.strip('-')))
+        # Write CSF to disk
+        with open(csf_filename, 'w') as outfile:
+            for rank, (count, left_offset, seq) in enumerate(intermed):
+                outfile.write('{}_{},{},{}\n'.format(rank, count, left_offset, seq.strip('-')))
 
-	# Nextera: store read qname in column 1 of CSF
-	elif mode == 'Nextera':
+    # Nextera: store read qname in column 1 of CSF
+    elif mode == 'Nextera':
 
-		# Sort csf by left-gap prefix: the offset of the read relative to the ref seq
-		intermed = [(len_gap_prefix(seq), qname, seq) for qname, seq in fasta]
-		intermed.sort()
-		with open(csf_filename, 'w') as outfile:
-			for (left_offset, qname, seq) in intermed:
-				outfile.write("{},{},{}\n".format(qname, left_offset, seq.strip('-')))
+        # Sort csf by left-gap prefix: the offset of the read relative to the ref seq
+        intermed = [(len_gap_prefix(seq), qname, seq) for qname, seq in fasta]
+        intermed.sort()
+        with open(csf_filename, 'w') as outfile:
+            for (left_offset, qname, seq) in intermed:
+                outfile.write("{},{},{}\n".format(qname, left_offset, seq.strip('-')))
 
 def slice_outputs(root, region_slices):
-	"""
-	Slice matrix output of previous step (*.nuc|amino.count.csv) into sub-regions.
-	"""
+    """
+    Slice matrix output of previous step (*.nuc|amino.count.csv) into sub-regions.
+    """
 
-	import os, sys, time
-	from glob import glob
-	
-	# Coordinates are in nucleotide space: start/end are inclusive (Relative to HXB2 aligned sequences)
-	# Ex: region_slices = [("PROTEASE", "HIV1B-pol", 1, 297), ("V3", "HIV1B-env", 887, 993)]
-	
-	# For each region slice rule
-	for rule in region_slices:
-		slice, region, start, end = rule
-		files = glob(root + '/*.{}.*nuc.csv'.format(region))
-		files += glob(root + '/*.{}.*amino.csv'.format(region))
-	
-		# Get all nuc/amino files containing the region to be sliced
-		for path in files:
-			fileName = os.path.basename(path)
-			sample,old_region = fileName.split(".")[:2]
-	
-			with open(path, 'rU') as f:
-				lines = f.readlines()
-	
-			newFileName = fileName.replace(region,slice)
-			dirName = os.path.dirname(path)
-			slice_filename = "{}/{}".format(dirName, newFileName)
-			f = open(slice_filename, 'w')
-			conseq_filename = "{}/{}".format(dirName, newFileName.replace(".csv",".conseq"))
-			f_conseq = open(conseq_filename, 'w')
-	
-			conseq = ""
-			is_empty = True
-	
-			# For each line in the frequency matrix file
-			for i,line in enumerate(lines):
-				line = line.rstrip("\n")
-	
-				# First, extract character dictionary from header
-				if (i == 0):
-					f.write("{}\n".format(line))
-					dictionary = line.split(",")[2:]
-					continue
-	
-				# For nuc.csv, hxb2_pos is in nucleotide space
-				query_pos, hxb2_pos = map(int, line.split(",")[:2])
-				if "nuc.csv" in path:
-					if hxb2_pos < start or hxb2_pos > end+1: continue
-					region_pos = hxb2_pos - start + 1
-	
-				# For amino.csv, hxb2_pos is in amino space
-				elif "amino.csv" in path:
-					if hxb2_pos < (start+2)/3 or hxb2_pos > end/3: continue
-					region_pos = hxb2_pos - (start+2)/3 + 1
-	
-				# If we reached this point, the slice contains data
-				is_empty = False
-	
-				# Generate consensus sequence
-				counts = line.split(",")[2:]
-				max_count = max(map(int,counts))
-				max_char = filter(lambda x: int(x) == max_count, counts)
-				index = counts.index(max_char[0])
-				majority_char = dictionary[index]
-				conseq += majority_char
-				f.write("{},{},{}\n".format(query_pos,region_pos,",".join(counts)))
-	
-			# Close the new slice matrix, and write the consensus sequence of it
-			f.close()
-			f_conseq.write(">{}_{}\n{}".format(sample, slice, conseq))
-			f_conseq.close()
-	
-			# If slice contains no data, delete it
-			if is_empty:
-				os.remove(slice_filename)
-				os.remove(conseq_filename)
+    import os, sys, time
+    from glob import glob
+
+    # Coordinates are in nucleotide space: start/end are inclusive (Relative to HXB2 aligned sequences)
+    # Ex: region_slices = [("PROTEASE", "HIV1B-pol", 1, 297), ("V3", "HIV1B-env", 887, 993)]
+
+    # For each region slice rule
+    for rule in region_slices:
+        slice, region, start, end = rule
+        files = glob(root + '/*.{}.*nuc.csv'.format(region))
+        files += glob(root + '/*.{}.*amino.csv'.format(region))
+
+        # Get all nuc/amino files containing the region to be sliced
+        for path in files:
+            fileName = os.path.basename(path)
+            sample,old_region = fileName.split(".")[:2]
+
+            with open(path, 'rU') as f:
+                lines = f.readlines()
+
+            newFileName = fileName.replace(region,slice)
+            dirName = os.path.dirname(path)
+            slice_filename = "{}/{}".format(dirName, newFileName)
+            f = open(slice_filename, 'w')
+            conseq_filename = "{}/{}".format(dirName, newFileName.replace(".csv",".conseq"))
+            f_conseq = open(conseq_filename, 'w')
+
+            conseq = ""
+            is_empty = True
+
+            # For each line in the frequency matrix file
+            for i,line in enumerate(lines):
+                line = line.rstrip("\n")
+
+                # First, extract character dictionary from header
+                if (i == 0):
+                    f.write("{}\n".format(line))
+                    dictionary = line.split(",")[2:]
+                    continue
+
+                # For nuc.csv, hxb2_pos is in nucleotide space
+                query_pos, hxb2_pos = map(int, line.split(",")[:2])
+                if "nuc.csv" in path:
+                    if hxb2_pos < start or hxb2_pos > end+1: continue
+                    region_pos = hxb2_pos - start + 1
+
+                # For amino.csv, hxb2_pos is in amino space
+                elif "amino.csv" in path:
+                    if hxb2_pos < (start+2)/3 or hxb2_pos > end/3: continue
+                    region_pos = hxb2_pos - (start+2)/3 + 1
+
+                # If we reached this point, the slice contains data
+                is_empty = False
+
+                # Generate consensus sequence
+                counts = line.split(",")[2:]
+                max_count = max(map(int,counts))
+                max_char = filter(lambda x: int(x) == max_count, counts)
+                index = counts.index(max_char[0])
+                majority_char = dictionary[index]
+                conseq += majority_char
+                f.write("{},{},{}\n".format(query_pos,region_pos,",".join(counts)))
+
+            # Close the new slice matrix, and write the consensus sequence of it
+            f.close()
+            f_conseq.write(">{}_{}\n{}".format(sample, slice, conseq))
+            f_conseq.close()
+
+            # If slice contains no data, delete it
+            if is_empty:
+                os.remove(slice_filename)
+                os.remove(conseq_filename)
+
+def make_run_reference_db (root):
+    """
+    Use consensus sequences generated from pileups to make a bowtie2 database.
+    """
+    from glob import glob
+    files = glob(root+'/*.pileup.conseq')
+
+
+
+

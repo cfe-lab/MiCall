@@ -32,8 +32,8 @@ polyfile.write('Position,A,C,G,T,N\n')
 prefix = sys.argv[1].split('/')[-1].split('_')[0]
 
 if report_indels:
-	indelfile = open(sys.argv[1]+'.indels', 'w')
-	indelfile.write('Position,indel,count\n')
+    indelfile = open(sys.argv[1]+'.indels', 'w')
+    indelfile.write('Position,indel,count\n')
 
 conseq = ''
 freq_minor = [0.25, 0.1, 0.05, 0.01]
@@ -43,112 +43,112 @@ to_skip = 0
 # For each line in the pileup (For a given coordinate in the reference)
 for ii, line in enumerate(infile):
 
-	# Account for majority deletion in previous lines
-	if to_skip > 0:
-		to_skip -= 1
-		continue
+    # Account for majority deletion in previous lines
+    if to_skip > 0:
+        to_skip -= 1
+        continue
 
-	# Extract out pileup features
-	label, pos, en, depth, astr, qstr = line.strip('\n').split('\t')
-	pos = int(pos)
-	
-	alist = []	# alist stores all bases at a given coordinate
-	qlist = []
-	i = 0		# Current index for astr
-	j = 0		# Current indel for qstr
+    # Extract out pileup features
+    label, pos, en, depth, astr, qstr = line.strip('\n').split('\t')
+    pos = int(pos)
 
-	# For each position in astr (The main feature list in the pileup)
-	while i < len(astr):
+    alist = []	# alist stores all bases at a given coordinate
+    qlist = []
+    i = 0		# Current index for astr
+    j = 0		# Current indel for qstr
 
-		if astr[i] == '^':
-			# '^' marks the start of a new read. Ex: "^7G" means a read starts
-			# with the first base of 'G' with a quality character of '7'
-			# ASCII code of the quality character minus 33 gives the Q-score
-			q = ord(qstr[j])-33
+    # For each position in astr (The main feature list in the pileup)
+    while i < len(astr):
 
-			if q >= qCutoff:
-				alist.append(astr[i+2])
-			else:
-				alist.append('N')
-			qlist.append(q)
+        if astr[i] == '^':
+            # '^' marks the start of a new read. Ex: "^7G" means a read starts
+            # with the first base of 'G' with a quality character of '7'
+            # ASCII code of the quality character minus 33 gives the Q-score
+            q = ord(qstr[j])-33
 
-			# Traverse 3 characters in astr
-			i += 3
-			j += 1
+            if q >= qCutoff:
+                alist.append(astr[i+2])
+            else:
+                alist.append('N')
+            qlist.append(q)
 
-		elif astr[i] in '*$':
-			# '*' represents a deleted base
-			# '$' indicates the end of a read
-			i += 1
+            # Traverse 3 characters in astr
+            i += 3
+            j += 1
 
-		else:
-			# Look ahead for insertion/deletions relative to the reference in astr
-			if i < len(astr)-1 and astr[i+1] in '+-':
-				# returns match at start of string
-				m = indels_re.match(astr[i+1:])
-				
-				# number of characters to look ahead
-				indel_len = int(m.group().strip('+-'))
-				left = i+1 + len(m.group())
-				insertion = astr[left:(left+indel_len)]
-				
-				q = ord(qstr[j])-33
-				base = astr[i].upper() if q >= qCutoff else 'N'
-				
-				token = base + m.group() + insertion
-				alist.append(token)
-				qlist.append(q)
-				
-				# update indices
-				i += len(token)
-				j += 1
-				
-			else:
-				# no indel ahead
-				q = ord(qstr[j])-33
-				base = astr[i].upper() if q >= qCutoff else 'N'
-				alist.append(base)
-				qlist.append(q)
-				j += 1
-				i += 1
-	
-	# Is this dominated by an insertion or deletion?
-	insertions = [x for x in alist if '+' in x]
-	deletions = [x for x in alist if '-' in x]
-	non_indel = sum([alist.count(nuc) for nuc in 'ACGT'])
-	
-	if len(insertions) > non_indel:
-		intermed = [(insertions.count(token), token) for token in set(insertions)]
-		intermed.sort(reverse=True)
-		
-		# add most frequent insertion to consensus
-		count, token = intermed[0]
-		m = indels_re.findall(token)[0] # \+[0-9]+
-		
-		conseq += token[0] + token[1+len(m):]
-		continue
-		
-	if len(deletions) > non_indel:
-		# skip this line and the next N lines as necessary
-		intermed = [(deletions.count(token), token) for token in set(deletions)]
-		intermed.sort(reverse=True)
-		count, token = intermed[0]
-		
-		m = indels_re.findall(token)[0]
-		to_skip = int(m.strip('-')) - 1 # omitting this line counts as one
-		continue
+        elif astr[i] in '*$':
+            # '*' represents a deleted base
+            # '$' indicates the end of a read
+            i += 1
 
-	# For this coordinate (line in the pileup), alist now contains all characters that occured
-	counts = [(nuc, alist.count(nuc)) for nuc in 'ACGTN']
+        else:
+            # Look ahead for insertion/deletions relative to the reference in astr
+            if i < len(astr)-1 and astr[i+1] in '+-':
+                # returns match at start of string
+                m = indels_re.match(astr[i+1:])
 
-	# Write results to the poly file
-	polyfile.write("{},{},{},{},{},{}\n".format(
-		ii,alist.count('A'), alist.count('C'), alist.count('G'), alist.count('T'),alist.count('N')))
+                # number of characters to look ahead
+                indel_len = int(m.group().strip('+-'))
+                left = i+1 + len(m.group())
+                insertion = astr[left:(left+indel_len)]
 
-	# Store in intermed so we can take the majority base
-	intermed = [(v,k) for k, v in counts]
-	intermed.sort(reverse=True)	
-	conseq += intermed[0][1]
+                q = ord(qstr[j])-33
+                base = astr[i].upper() if q >= qCutoff else 'N'
+
+                token = base + m.group() + insertion
+                alist.append(token)
+                qlist.append(q)
+
+                # update indices
+                i += len(token)
+                j += 1
+
+            else:
+                # no indel ahead
+                q = ord(qstr[j])-33
+                base = astr[i].upper() if q >= qCutoff else 'N'
+                alist.append(base)
+                qlist.append(q)
+                j += 1
+                i += 1
+
+    # Is this dominated by an insertion or deletion?
+    insertions = [x for x in alist if '+' in x]
+    deletions = [x for x in alist if '-' in x]
+    non_indel = sum([alist.count(nuc) for nuc in 'ACGT'])
+
+    if len(insertions) > non_indel:
+        intermed = [(insertions.count(token), token) for token in set(insertions)]
+        intermed.sort(reverse=True)
+
+        # add most frequent insertion to consensus
+        count, token = intermed[0]
+        m = indels_re.findall(token)[0] # \+[0-9]+
+
+        conseq += token[0] + token[1+len(m):]
+        continue
+
+    if len(deletions) > non_indel:
+        # skip this line and the next N lines as necessary
+        intermed = [(deletions.count(token), token) for token in set(deletions)]
+        intermed.sort(reverse=True)
+        count, token = intermed[0]
+
+        m = indels_re.findall(token)[0]
+        to_skip = int(m.strip('-')) - 1 # omitting this line counts as one
+        continue
+
+    # For this coordinate (line in the pileup), alist now contains all characters that occured
+    counts = [(nuc, alist.count(nuc)) for nuc in 'ACGTN']
+
+    # Write results to the poly file
+    polyfile.write("{},{},{},{},{},{}\n".format(
+        ii,alist.count('A'), alist.count('C'), alist.count('G'), alist.count('T'),alist.count('N')))
+
+    # Store in intermed so we can take the majority base
+    intermed = [(v,k) for k, v in counts]
+    intermed.sort(reverse=True)
+    conseq += intermed[0][1]
 
 polyfile.close()
 
