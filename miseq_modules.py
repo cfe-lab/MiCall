@@ -568,7 +568,13 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
         count_file.write('remap %s,%d\n' % (refname, int(region_specific_count)))
 
     # Continue to remap if we've failed to map enough total reads
-    mapping_efficiency = total_remap / total_reads_R1
+    if total_reads_R1 > 0:
+        mapping_efficiency = total_remap / total_reads_R1 
+    else:
+        logger.info("Abort mapping on empty FASTQ file")
+        count_file.close()
+        return
+    
     if mapping_efficiency < REMAP_THRESHOLD:
         break_out = False
         logger.info("Poor mapping for {} (Mapping efficiency: {:.2%}) - trying additional remapping".format(sample_name, mapping_efficiency))
