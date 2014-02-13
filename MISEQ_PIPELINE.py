@@ -1,7 +1,6 @@
 from settings import *
 
 import logging, miseq_logging, miseq_modules, miseqUtils, os, subprocess, sys, time
-#sys.path.append('/usr/local/share/fifo_scheduler')
 sys.path.append(path_to_fifo_scheduler)
 from fifo_scheduler import Factory
 from glob import glob
@@ -34,7 +33,6 @@ with open(root+'/SampleSheet.csv', 'rU') as sample_sheet:
     logger.debug("sampleSheetParser({})".format(sample_sheet))
     run_info = miseqUtils.sampleSheetParser(sample_sheet)
     mode = run_info['Description']
-
 
 ### Begin Mapping
 fastq_files = glob(root + '/*R1*.fastq')
@@ -74,9 +72,9 @@ factory_barrier(single_thread_factory)
 logger.info("Collating *.sam2csf.*.log files")
 miseq_logging.collate_logs(root, "sam2csf.*.log", "sam2csf.log")
 
-
 ### Begin g2p (For Amplicon)
 if mode == 'Amplicon':
+
     # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
     for env_csf_file in glob(root + '/*.HIV1B-env.*.csf'):
         command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
@@ -103,8 +101,9 @@ if mode == 'Amplicon':
                         proportion_x4, total_x4_count, total_count = miseqUtils.prop_x4(file, fpr_cutoff, mincount)
                         summary_file.write("{},{},{},{},{},{},{:.3}\n".format(sample, sam2csf_q_cutoff,
                                 fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
-                    except:
-                        logger.warn("miseqUtils.prop_x4({}) threw an exception".format(file))
+                        logger.info("Successfully parsed {}".format(file))
+                    except Exception as e:
+                        logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
 
 
 ### Begin csf2counts

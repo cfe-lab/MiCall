@@ -30,9 +30,16 @@ def post_files(files, destination):
 
 # Process runs flagged for processing not already processed by this version of the pipeline
 while True:
-    runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
-    # OVERRIDE FOR MANUAL TESTING
-    # runs = glob(macdatafile_mount + 'MiSeq/runs/140127_M01841_0051_000000000-A64E4/{}'.format(NEEDS_PROCESSING))
+
+    #runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
+
+    # MANUAL OVERRIDE
+    runs = glob(macdatafile_mount + 'MiSeq/runs/130628_M01841_0007_000000000-A3TCN/{}'.format(NEEDS_PROCESSING))
+    runs += glob(macdatafile_mount + 'MiSeq/runs/140129_M01841_0052_000000000-A64EM/{}'.format(NEEDS_PROCESSING))
+    runs += glob(macdatafile_mount + 'MiSeq/runs/140201_M01841_0053_000000000-A64E1/{}'.format(NEEDS_PROCESSING))
+    runs += glob(macdatafile_mount + 'MiSeq/runs/140205_M01841_0054_000000000-A64DU/{}'.format(NEEDS_PROCESSING))
+    runs += glob(macdatafile_mount + 'MiSeq/runs/140207_M01841_0055_000000000-A64ED/{}'.format(NEEDS_PROCESSING))
+
 
     runs_needing_processing = []
     for run in runs:
@@ -64,8 +71,8 @@ while True:
     try:
         logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
         logger.info('===== Processing {} with pipeline version {} ====='.format(root, pipeline_version))
-    except:
-        raise Exception("Could not create logging file - halting")
+    except Exception as e:
+        raise Exception("Couldn't setup logging (init_logging() threw exception '{}') - HALTING NOW!".format(str(e)))
 
     # SampleSheet.csv needed to determine the mode and sample T-primer
     remote_file = curr_run.replace(NEEDS_PROCESSING, 'SampleSheet.csv')
@@ -76,8 +83,8 @@ while True:
         with open(local_file, 'rU') as sample_sheet:
             run_info = miseqUtils.sampleSheetParser(sample_sheet)
             mode = run_info['Description']
-    except:
-        logger.error("Can't parse sample sheet: skipping run and marking with {}".format(ERROR_PROCESSING))
+    except Exception as e:
+        logger.error("Exception thrown while parsing sample sheet: '{}' - skipping run and marking with flag '{}'".format(str(e),ERROR_PROCESSING))
         mark_run_as_disabled(curr_run)
         continue
 
@@ -107,9 +114,9 @@ while True:
         # if local copy of unzipped fastq exists, skip
         if os.path.exists(local_file.replace('.gz', '')):
             continue
+
         execute_command(['rsync', '-a', gz_file, local_file])
         execute_command(['gunzip', '-f', local_file])
-
 
     # Store output of MISEQ_PIPELINE.py in a log + poll continuously to display output to console
     pipeline_log_path = home + run_name + '/MISEQ_PIPELINE_OUTPUT.log'

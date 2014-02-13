@@ -116,7 +116,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
                 best_ORF = frame
                 max_score = ascore
 
-        if frame in frame_evidence:
+        if best_ORF in frame_evidence:
             frame_evidence[best_ORF] += 1
         else:
             frame_evidence[best_ORF] = 1

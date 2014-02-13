@@ -307,11 +307,14 @@ def timestamp(message):
 def prop_x4 (v3prot_path, fpr_cutoff, min_count):
     """Determine proportion X4 from v3prot file"""
 
+    import logging
+
     with open(v3prot_path, 'rU') as infile:
         try:
+            logging.info("Reading {}".format(v3prot_path))
             fasta = convert_fasta(infile.readlines())
-        except:
-            raise Exception("Failed to convert {}".format(v3prot_path))
+        except Exception as e:
+            raise Exception("convert_fasta threw exception '{}'".format(str(e)))
 
     total_count = 0
     total_x4_count = 0
@@ -411,8 +414,7 @@ def convert_fasta (lines):
     try:
         blocks.append([h,sequence])	# handle last entry
     except:
-        print lines
-        raise
+        raise Exception("convert_fasta(): Error appending to blocks [{},{}]".format(h, sequence))
     return blocks
 
 
