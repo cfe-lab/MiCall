@@ -31,7 +31,7 @@ def post_files(files, destination):
 # Process runs flagged for processing not already processed by this version of the pipeline
 while True:
 
-    #runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
+    runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
 
     # MANUAL OVERRIDE
     #runs = glob(macdatafile_mount + 'MiSeq/runs/130628_M01841_0007_000000000-A3TCN/{}'.format(NEEDS_PROCESSING))
@@ -39,7 +39,11 @@ while True:
     #runs += glob(macdatafile_mount + 'MiSeq/runs/140201_M01841_0053_000000000-A64E1/{}'.format(NEEDS_PROCESSING))
     #runs += glob(macdatafile_mount + 'MiSeq/runs/140205_M01841_0054_000000000-A64DU/{}'.format(NEEDS_PROCESSING))
     #runs += glob(macdatafile_mount + 'MiSeq/runs/140207_M01841_0055_000000000-A64ED/{}'.format(NEEDS_PROCESSING))
-    runs = glob(macdatafile_mount + 'MiSeq/runs/131104_M01841_0038_000000000-A5EPF/{}'.format(NEEDS_PROCESSING))
+
+    # MANUAL OVERRIDE FOR GUIN
+    #runs = glob(macdatafile_mount + 'MiSeq/runs/131216_M01841_0044_000000000-A5F9J/{}'.format(NEEDS_PROCESSING))
+    #runs += glob(macdatafile_mount + 'MiSeq/runs/140129_M01841_0052_000000000-A64EM/{}'.format(NEEDS_PROCESSING))
+    #runs += glob(macdatafile_mount + 'MiSeq/runs/140201_M01841_0053_000000000-A64E1/{}'.format(NEEDS_PROCESSING))
 
     runs_needing_processing = []
     for run in runs:

@@ -92,30 +92,43 @@ def merge_pairs (seq1, seq2):
     that the base in one read has no complement in the other read
     (in partial overlap region), take that base at face value.
     """
+    import logging
+
     mseq = ''
     if len(seq1) > len(seq2):
-        seq1, seq2 = seq2, seq1 # swap places
+        seq1, seq2 = seq2, seq1
+
+    agreement = 0
+    disagreements = 0
+    overruled = 0
 
     for i, c2 in enumerate(seq2):
         if i < len(seq1):
             c1 = seq1[i]
             if c1 == c2:
                 mseq += c1
+                agreement += 1
             elif c1 in 'ACGT':
                 if c2 in 'N-':
                     mseq += c1
+                    overruled += 1
                 else:
-                    mseq += 'N' # error
+                    mseq += 'N'
+                    disagreements += 1
             elif c2 in 'ACGT':
                 if c1 in 'N-':
                     mseq += c2
+                    overruled += 1
                 else:
                     mseq += 'N'
+                    disagreements += 1
             else:
                 mseq += 'N'
         else:
-            # past extent of seq1
             mseq += c2
+
+    logging.debug("Agreement: {} Disagreements: {} Overruled: {}".format(agreement,disagreements,overruled))
+
     return mseq
 
 
@@ -183,6 +196,8 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
                 continue
 
             seq2 = '-'*pos2 + censor_bases(seq2, qual2, cutoff)
+
+            # agreement,disagreements,overruled are QC data from merge_pairs
             mseq = merge_pairs(seq1, seq2)
 
             # Sequence must not have too many censored bases
