@@ -775,80 +775,88 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
     A pileup file stores each aligned read for each position with respect to reference.
     [infile] should be an absolute or relative path.
     """
-    indels_re = re.compile('\+[0-9]+|-[0-9]+')	# Matches a '+' or '-' followed by 1+ numbers
+    import logging,re,sys
+
+    indels_re = re.compile('\+[0-9]+|\-[0-9]+')	# Matches '+' or '-' followed by 1+ numbers
     conseq = ''
     to_skip = 0
 
     # For each line in the pileup (For a given coordinate in the reference)
     infile = open(path_to_pileup, 'rU')
     for line in infile:
+
         # Account for majority deletion in previous lines
         if to_skip > 0:
             to_skip -= 1
             continue
 
-        # Extract out pileup features
+        # Extract pileup features
         label, pos, en, depth, astr, qstr = line.strip('\n').split('\t')
         pos = int(pos)
-        alist = []	# alist stores all bases at a given coordinate
-        qlist = []
-        i = 0		# Current index for astr
-        j = 0		# Current indel for qstr
+        alist = []  # alist stores all bases at a given coordinate
+        i = 0       # Current index for astr
+        j = 0       # Current index for qstr
 
-        # For each position in astr (The main feature list in the pileup)
+        # WARNING: THE SAM FORMAT DIVERGES FROM THE SOURCEFORGE DOCUMENTATION
+        # BRIEFLY, INSTEAD OF "." TO MEAN "MATCH" THE BASE IS NOW PLACED DIRECTLY
+        # INSIDE OF THE FEATURE STRING (SO, THE REF BASE HAS NO REAL MEANING)
+
+        # For each position in astr (Main pileup feature list)
         while i < len(astr):
-            if astr[i] == '^':
-                # '^' marks the start of a new read. Ex: "^7G" means a read starts
-                # with the first base of 'G' with a quality character of '7'
-                # ASCII code of the quality character minus 33 gives the Q-score
-                q = ord(qstr[j])-33
-                if q >= qCutoff:
-                    alist.append(astr[i+2])
-                else:
-                    alist.append('N')
-                qlist.append(q)
 
-                # Traverse 3 characters in astr
+            # '^' means this is a new read: ^7G means the new read starts with
+            # 'G' with a quality of asc(7)-33 = 37-33 = 4 (ASCII code - 33 gives Q)
+            if astr[i] == '^':
+                q = ord(qstr[j])-33
+                base = astr[i+2] if q >= qCutoff else 'N'
+                alist.append(base)
                 i += 3
                 j += 1
 
+            # '*' represents a deleted base
+            # '$' represents the end of a read
             elif astr[i] in '*$':
-                # '*' represents a deleted base
-                # '$' indicates the end of a read
                 i += 1
 
             else:
-                # Look ahead for insertion/deletions relative to the reference in astr
+                # "+[0-9]+[ACGTN]+" denotes an insertion ("-[0-9]+[ACGTN]+" denotes deletion)
+                # Ex: +2AG means there is an insert of "AG"
                 if i < len(astr)-1 and astr[i+1] in '+-':
-                    # returns match at start of string
+
+                    # From "+2AG...." extract out "+2"
+                    # (re.match searches only BEGINNING of string)
                     m = indels_re.match(astr[i+1:])
 
-                    # number of characters to look ahead
+                    # Get the length of the indel ("2" from "+2")
                     indel_len = int(m.group().strip('+-'))
+
+                    # If this were "+19AGGACCA" then len would evaluate to 3
+                    # So, left is exactly the index, plus the +- sign, plus the
+                    # number of digits related to the size of this indel
                     left = i+1 + len(m.group())
+
+                    # The insertion characters start from left and proceeds to left+len
                     insertion = astr[left:(left+indel_len)]
 
                     q = ord(qstr[j])-33
                     base = astr[i].upper() if q >= qCutoff else 'N'
 
+                    # Ex token: A+3tgt
                     token = base + m.group() + insertion
                     alist.append(token)
-                    qlist.append(q)
 
-                    # update indices
                     i += len(token)
                     j += 1
 
                 else:
-                    # no indel ahead
+                    # Operative case: sequence matches reference (And no indel ahead)
                     q = ord(qstr[j])-33
                     base = astr[i].upper() if q >= qCutoff else 'N'
                     alist.append(base)
-                    qlist.append(q)
-                    j += 1
                     i += 1
+                    j += 1
 
-        # Is this dominated by an insertion or deletion?
+        # Is this position dominated by an insertion or deletion?
         insertions = [x for x in alist if '+' in x]
         deletions = [x for x in alist if '-' in x]
         non_indel = sum([alist.count(nuc) for nuc in 'ACGT'])
@@ -857,10 +865,9 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
             intermed = [(insertions.count(token), token) for token in set(insertions)]
             intermed.sort(reverse=True)
 
-            # add most frequent insertion to consensus
+            # Add most frequent insertion to consensus
             count, token = intermed[0]
             m = indels_re.findall(token)[0] # \+[0-9]+
-
             conseq += token[0] + token[1+len(m):]
             continue
 
@@ -888,5 +895,7 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
     confile = open(outpath, 'w')
     confile.write(">{}\n{}\n".format(prefix, conseq))
     confile.close()
+
+    logging.info("Conseq: {}".format(conseq))
 
     return outpath

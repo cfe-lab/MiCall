@@ -34,12 +34,12 @@ while True:
     #runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
 
     # MANUAL OVERRIDE
-    runs = glob(macdatafile_mount + 'MiSeq/runs/130628_M01841_0007_000000000-A3TCN/{}'.format(NEEDS_PROCESSING))
-    runs += glob(macdatafile_mount + 'MiSeq/runs/140129_M01841_0052_000000000-A64EM/{}'.format(NEEDS_PROCESSING))
-    runs += glob(macdatafile_mount + 'MiSeq/runs/140201_M01841_0053_000000000-A64E1/{}'.format(NEEDS_PROCESSING))
-    runs += glob(macdatafile_mount + 'MiSeq/runs/140205_M01841_0054_000000000-A64DU/{}'.format(NEEDS_PROCESSING))
-    runs += glob(macdatafile_mount + 'MiSeq/runs/140207_M01841_0055_000000000-A64ED/{}'.format(NEEDS_PROCESSING))
-
+    #runs = glob(macdatafile_mount + 'MiSeq/runs/130628_M01841_0007_000000000-A3TCN/{}'.format(NEEDS_PROCESSING))
+    #runs += glob(macdatafile_mount + 'MiSeq/runs/140129_M01841_0052_000000000-A64EM/{}'.format(NEEDS_PROCESSING))
+    #runs += glob(macdatafile_mount + 'MiSeq/runs/140201_M01841_0053_000000000-A64E1/{}'.format(NEEDS_PROCESSING))
+    #runs += glob(macdatafile_mount + 'MiSeq/runs/140205_M01841_0054_000000000-A64DU/{}'.format(NEEDS_PROCESSING))
+    #runs += glob(macdatafile_mount + 'MiSeq/runs/140207_M01841_0055_000000000-A64ED/{}'.format(NEEDS_PROCESSING))
+    runs = glob(macdatafile_mount + 'MiSeq/runs/131104_M01841_0038_000000000-A5EPF/{}'.format(NEEDS_PROCESSING))
 
     runs_needing_processing = []
     for run in runs:
@@ -99,15 +99,15 @@ while True:
 
         # Report number of reads failing to demultiplex to the log
         if filename.startswith('Undetermined'):
-            if filename.endswith('_L001_R2_001.fastq.gz'):
+            #if filename.endswith('_L001_R2_001.fastq.gz'):
                 # the second file will have exactly the same number of lines
-                continue
+            #    continue
             # do word count directly on stream redirected from gunzip
-            p1 = subprocess.Popen(['gunzip', '-c', gz_file], stdout=subprocess.PIPE)
-            p2 = subprocess.Popen(['wc', '-l'], stdin=p1.stdout, stdout=subprocess.PIPE)
-            output = p2.communicate()[0]
-            failed_demultiplexing = output.strip(' \n')
-            logger.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
+            #p1 = subprocess.Popen(['gunzip', '-c', gz_file], stdout=subprocess.PIPE)
+            #p2 = subprocess.Popen(['wc', '-l'], stdin=p1.stdout, stdout=subprocess.PIPE)
+            #output = p2.communicate()[0]
+            #failed_demultiplexing = output.strip(' \n')
+            #logger.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
             continue
 
         local_file = home + run_name + '/' + filename

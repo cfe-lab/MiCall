@@ -75,7 +75,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
     file_prefix = filename.replace('.csf', '')
     outpath = root+'/'+file_prefix#"{}/{}".format(root, file_prefix)
 
-    # CSF contains sample + region in filename (Ex: F00844_S68.HIV1B-env.0.csf)
+    # CSF contains sample + region in filename (Ex: F00844_S68.HIV1B-pol.0.csf)
     sample, ref = filename.split('.')[:2]
 
     # Amino reference sequences in refseqs is used to coordinate normalize our samples
@@ -97,17 +97,19 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
     with open(path, 'rU') as infile:
         fasta, lefts, rights = convert_csf(infile.readlines())
 
-    # CSFs come from SAMs, from self-alignment. Reads are out of frame.
+    # CSFs come from self-alignment derived SAMs: the reads are out of frame.
     frame_evidence = {}
+    for frame in range(3):
+        frame_evidence[frame] = 0
 
-    # Look at first five reads in the CSF and vote on the correct ORF
+    # Look at first five reads in CSF and vote on correct ORF
     for read_index in range(5):
         header, seq = fasta[read_index]
-        max_score = 0
+        max_score = -999
         best_ORF = 0
         possible_ORFs = [0, 1, 2]
 
-        # Determine the best ORF for this read
+        # Determine best ORF for this read
         prefix = ('-'*lefts[header] if mode == 'Nextera' else '')
         for frame in possible_ORFs:
             p = translate_nuc(prefix + seq, frame)
@@ -116,10 +118,8 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
                 best_ORF = frame
                 max_score = ascore
 
-        if best_ORF in frame_evidence:
-            frame_evidence[best_ORF] += 1
-        else:
-            frame_evidence[best_ORF] = 1
+        # Read provides 1 of 5 votes for best ORF
+        frame_evidence[best_ORF] += 1
 
     best_frame = max(frame_evidence, key=lambda n: frame_evidence[n])
     logging.debug('Best ORF = %d' % best_frame)#logging.debug("Best ORF = {}".format(best_frame))
@@ -402,7 +402,9 @@ def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=
 
     # Create new consensus sequence from the pileup
     #system_call('python2.7 pileup2conseq_v2.py {}.pileup {}'.format(bamfile, conseq_qCutoff))
-    confile = pileup_to_conseq(bamfile+'.pileup', conseq_qCutoff)
+    pileup_file = bamfile + '.pileup'
+    logging.info("pileup_to_conseq({},{})".format(pileup_file, conseq_qCutoff))
+    confile = pileup_to_conseq(pileup_file, conseq_qCutoff)
 
     # Convert consensus into bowtie2 reference files (Creates 6 files of *.bt2)
     system_call('bowtie2-build -f -q {} {}'.format(confile, confile))
@@ -571,13 +573,13 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
     if total_reads_R1 > 0:
         mapping_efficiency = total_remap / total_reads_R1 
     else:
-        logger.info("Abort mapping on empty FASTQ file")
+        logger.info("Empty fastq: aborting mapping")
         count_file.close()
         return
     
     if mapping_efficiency < REMAP_THRESHOLD:
         break_out = False
-        logger.info("Poor mapping for {} (Mapping efficiency: {:.2%}) - trying additional remapping".format(sample_name, mapping_efficiency))
+        logger.info("Poor remapping efficiency for {} of {:.2%} - trying more iterations".format(sample_name, mapping_efficiency))
 
         # Repeat remapping up to the number of MAX_REMAPS permitted
         for iter in range(MAX_REMAPS):
@@ -598,8 +600,11 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
                 stdout, stderr = subprocess.Popen(['wc', '-l', samfile], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
                 region_specific_count = (int(stdout.split()[0]) - 3) / 2.
 
+
+                # FIXME: Something is breaking here... coverage goes from 85% to 0%!
                 if region_specific_count < refsams[refname]['count'][0]:
-                    logger.warn("Remapping for {} resulting in LESS reads - halting iterative remapping".format(sample_name))
+                    logger.warn("Remapping for {} region {} resulting in LESS reads ({:.2%} vs {:.2%}) - halting iterative remapping".format(
+                        sample_name, refname, float(region_specific_count / total_reads_R1), float(refsams[refname]['count'][0] / total_reads_R1)))
                     break_out = True
                     break
 
@@ -610,12 +615,12 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
                 count_file.write('remap %d %s,%d\n' % (iter, refname, int(region_specific_count)))
 
             mapping_efficiency = float(total_remap / total_reads_R1)
-            logger.debug("Mapping efficiency for {} is now {:.3}".format(sample_name, mapping_efficiency))
+            logger.info("Mapping efficiency for {} is now {:.2%}".format(sample_name, mapping_efficiency))
             if break_out or mapping_efficiency >= REMAP_THRESHOLD:
                 break
 
     else:
-        logger.info("{} had acceptable mapping efficiency ({:.2%})".format(sample_name, mapping_efficiency))
+        logger.info("{} had acceptable remap efficiency ({:.2%})".format(sample_name, mapping_efficiency))
     count_file.close()
 
 def g2p_scoring(csf_path, g2p_alignment_cutoff):

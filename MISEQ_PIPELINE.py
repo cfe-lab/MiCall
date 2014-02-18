@@ -29,10 +29,14 @@ def factory_barrier(my_factory):
 
 
 # Parse sample sheet to determine mode + T primer state for each sample
-with open(root+'/SampleSheet.csv', 'rU') as sample_sheet:
-    logger.debug("sampleSheetParser({})".format(sample_sheet))
-    run_info = miseqUtils.sampleSheetParser(sample_sheet)
-    mode = run_info['Description']
+if len(sys.argv) == 3:
+    mode = sys.argv[2]
+    run_info = None
+else:
+    with open(root+'/SampleSheet.csv', 'rU') as sample_sheet:
+        logger.debug("sampleSheetParser({})".format(sample_sheet))
+        run_info = miseqUtils.sampleSheetParser(sample_sheet)
+        mode = run_info['Description']
 
 ### Begin Mapping
 fastq_files = glob(root + '/*R1*.fastq')
@@ -40,10 +44,10 @@ fastq_files = [f for f in fastq_files if not f.endswith('.Tcontaminants.fastq')]
 for fastq in fastq_files:
     fastq_filename = os.path.basename(fastq)
     sample_name = fastq_filename.split('_')[0]
-    if not run_info['Data'].has_key(sample_name):
+    if run_info and not run_info['Data'].has_key(sample_name):
         logger.error('{} not in SampleSheet.csv - cannot initiate mapping for this sample'.format(sample_name))
         continue
-    is_t_primer = run_info['Data'][sample_name]['is_T_primer']
+    is_t_primer = run_info['Data'][sample_name]['is_T_primer'] if run_info else '0'
     command = "python2.7 STEP_1_MAPPING.py {} {} {} {} {} {} {} {}".format(mapping_ref_path,
             fastq, consensus_q_cutoff, mode, is_t_primer, min_mapping_efficiency, max_remaps, bowtie_threads)
     log_path = "{}.mapping.log".format(fastq)
@@ -101,7 +105,6 @@ if mode == 'Amplicon':
                         proportion_x4, total_x4_count, total_count = miseqUtils.prop_x4(file, fpr_cutoff, mincount)
                         summary_file.write("{},{},{},{},{},{},{:.3}\n".format(sample, sam2csf_q_cutoff,
                                 fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
-                        logger.info("Successfully parsed {}".format(file))
                     except Exception as e:
                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
 
