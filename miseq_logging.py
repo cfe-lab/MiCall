@@ -87,6 +87,7 @@ def collate_logs(path, extension, final_log):
         for date_time, message in logs:
             collated_logs.write(message)
 
-    with open("{}/{}_UNCOLLATABLE.log".format(path, final_log), "w") as uncollatable_logs:
-        for message in malformed_lines:
-            uncollatable_logs.write(message)
+    if malformed_lines:
+        with open("{}/{}_UNCOLLATABLE.log".format(path, final_log), "w") as uncollatable_logs:
+            for message in malformed_lines:
+                uncollatable_logs.write(message)
