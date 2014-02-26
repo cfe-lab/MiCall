@@ -107,27 +107,22 @@ def merge_pairs (seq1, seq2):
             c1 = seq1[i]
             if c1 == c2:
                 mseq += c1
-                agreement += 1
             elif c1 in 'ACGT':
                 if c2 in 'N-':
                     mseq += c1
-                    overruled += 1
                 else:
                     mseq += 'N'
-                    disagreements += 1
             elif c2 in 'ACGT':
                 if c1 in 'N-':
                     mseq += c2
-                    overruled += 1
                 else:
                     mseq += 'N'
-                    disagreements += 1
             else:
                 mseq += 'N'
         else:
             mseq += c2
 
-    logging.debug("Agreement: {} Disagreements: {} Overruled: {}".format(agreement,disagreements,overruled))
+    #logging.info("DEBUGGING MERGE...\nSEQ1: {}\nSEQ2: {}\nmseq: {}".format(seq1,seq2,mseq))
 
     return mseq
 

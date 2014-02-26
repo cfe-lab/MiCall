@@ -59,7 +59,6 @@ factory_barrier(mapping_factory)
 logger.info("Collating *.mapping.log files")
 miseq_logging.collate_logs(root, "mapping.log", "mapping.log")
 
-
 ### Begin sam2csf
 for file in glob(root + '/*.remap.sam'):
     filename = file.split('/')[-1]
