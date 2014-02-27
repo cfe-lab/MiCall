@@ -75,11 +75,45 @@ factory_barrier(single_thread_factory)
 logger.info("Collating *.sam2csf.*.log files")
 miseq_logging.collate_logs(root, "sam2csf.*.log", "sam2csf.log")
 
+
+
+### Begin csf2counts
+for csf_file in glob(root + '/*.csf'):
+    if csf_file.endswith('.clean.csf') or csf_file.endswith('.contam.csf'):
+        # in case this has been re-run
+        continue
+    # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
+    mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
+    command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file,mode,mixture_cutoffs,final_alignment_ref_path)
+    log_path = "{}.csf2counts.log".format(csf_file)
+    queue_request = single_thread_factory.queue_work(command, log_path, log_path)
+    if queue_request:
+        p, command = queue_request
+        logger.info("pID {}: {}".format(p.pid, command))
+
+factory_barrier(single_thread_factory)
+
+
+### Begin cross-contamination filter
+logger.info('Filtering for cross-contamination')
+
+for qcut in sam2csf_q_cutoffs:
+    command = 'python2.7 FILTER_CONTAMINANTS.py %s %d %d' % (root, qcut, bowtie_threads)
+    log_path = 'filtering.log'
+    queue_request = single_thread_factory.queue_work(command, log_path, log_path)
+    if queue_request:
+        p, command = queue_request
+        logger.info('pID {}: {}'.format(p.pid, command))
+
+factory_barrier(single_thread_factory)
+
+
+
 ### Begin g2p (For Amplicon)
 if mode == 'Amplicon':
 
     # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
-    for env_csf_file in glob(root + '/*.HIV1B-env.*.csf'):
+    for env_csf_file in glob(root + '/*.HIV1B-env.*.clean.csf'):
         command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
         log_path = "{}.g2p.log".format(env_csf_file)
         queue_request = single_thread_factory.queue_work(command, log_path, log_path)
@@ -107,10 +141,8 @@ if mode == 'Amplicon':
                     except Exception as e:
                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
 
-
-### Begin csf2counts
-for csf_file in glob(root + '/*.csf'):
-
+### Repeat csf2counts
+for csf_file in glob(root + '/*.clean.csf'):
     # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
     mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
     command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file,mode,mixture_cutoffs,final_alignment_ref_path)
@@ -119,6 +151,7 @@ for csf_file in glob(root + '/*.csf'):
     if queue_request:
         p, command = queue_request
         logger.info("pID {}: {}".format(p.pid, command))
+
 factory_barrier(single_thread_factory)
 logger.info("Collating csf2counts.log files")
 miseq_logging.collate_logs(root, "csf2counts.log", "csf2counts.log")
@@ -140,6 +173,7 @@ miseq_modules.collate_conseqs(root,collated_conseq_path)
 # Represent count output with respect to different region codes (Ex: V3 in env)
 #logging.info("slice_outputs({})".format(root))
 #miseq_modules.slice_outputs(root, region_slices)
+
 
 # Delete files on the local cluster that don't need to be kept
 logger.info("Deleting intermediary files")

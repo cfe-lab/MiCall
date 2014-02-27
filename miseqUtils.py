@@ -634,61 +634,22 @@ def majority_consensus (fasta, threshold = 0.5, alphabet='ACGT', ambig_char = 'N
     [threshold] = percentage of column that most common character must exceed
     [alphabet] = recognized character states
     """
-
-    """
-    res = ''
-    if len(alphabet) == 0: alphabet = set(fasta[0][1])
-    columns = transpose_fasta(fasta)
-    for col in columns:
-        cset = set(col)
-        if len(cset) == 1:
-            c = cset.pop()
-            if c not in alphabet: res += ambig_char
-            else: res += c
-        else:
-            counts = [(col.count(c), c) for c in cset if c in alphabet]
-            if len(counts) == 0:
-                res += ambig_char
-                continue
-            counts.sort(reverse=True) # descending order
-            max_count, max_char = counts[0]
-            if max_count / float(len(fasta)) > threshold: res += max_char
-            else: res += ambig_char
-    return res
-    """
-
     consen = []
     columns = transpose_fasta(fasta)
-    seqs = [s for h, s in fasta]
-
     for column in columns:
         consen.append(consensus(column, alphabet=alphabet, resolve=False))
-
     newseq = "".join(consen)
-
-    """
-    # Resolve missing data.
-    # Proper indels start and end in-frame.
-    indel_ptn = re.compile("(.{3})*?(?P<indel>(\?{3})+)")
-    indels = []
-    for match in indel_ptn.finditer(newseq):
-        indels.extend(range(*match.span("indel")))
-
-    for column in range(len(consen)):
-        if consen[column] == "?" and column not in indels:
-            consen[column] = consensus(column, resolve=True)
-
-    return "".join(consen)
-    """
     return newseq
 
 
 # =======================================================================
-"""
-transpose_fasta - return an array of alignment columns
-"""
+
 def transpose_fasta (fasta):
-    # some checks to make sure the right kind of object is being sent
+    """
+    Returns an array of alignment columns.
+    some checks to make sure the right kind of object is being sent
+    """
+    #
     if type(fasta) is not list:
         return None
     if type(fasta[0]) is not list or len(fasta[0]) != 2:
@@ -715,8 +676,8 @@ def untranspose_fasta(tfasta):
 
 
 
-"""
-entropy_from_fasta
+def entropy_from_fasta (fasta, alphabet = 'ACGT', counts = None):
+    """
     Calculate the mean entropy over columns of an alignment
     passed as a FASTA object (list of lists).
     Defaults to the nucleotide alphabet.
@@ -731,9 +692,7 @@ entropy_from_fasta
     fasta = convert_fasta(infile.readlines())
     infile.close()
     counts = [int(h.split('_')[1]) for h, s in fasta]
-
-"""
-def entropy_from_fasta (fasta, alphabet = 'ACGT', counts = None):
+    """
     columns = transpose_fasta (fasta)
     ents = []
     for col in columns:
@@ -909,3 +868,25 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
     logging.info("Conseq: {}".format(conseq))
 
     return outpath
+
+
+def parse_fasta (handle):
+    """
+    Read lines from a FASTA file and return as a list of
+    header, sequence tuples.
+    """
+    res = []
+    sequence = ''
+    for line in handle:
+        if line.startswith('$'): # skip annotations
+            continue
+        elif line.startswith('>') or line.startswith('#'):
+            if len(sequence) > 0:
+                res.append((h, sequence))
+                sequence = ''   # reset containers
+            h = line.lstrip('>#').rstrip('\n')
+        else:
+            sequence += line.strip('\n')
+
+    res.append((h, sequence)) # handle last entry
+    return res
