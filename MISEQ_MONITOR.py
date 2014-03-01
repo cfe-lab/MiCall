@@ -5,7 +5,8 @@ MISEQ_MONITOR.py
 3) Upload results back to macdatafile
 """
 from settings import *
-pipeline_version = '5.1-Updated-Refs-RUNNING-AT-Q30'
+#pipeline_version = '5.1-Updated-Refs-RUNNING-AT-Q30'
+pipeline_version = '5.2'
 
 import logging, miseq_logging, miseqUtils, os, subprocess, sys, time
 from glob import glob
