@@ -43,11 +43,12 @@ fastq_files = glob(root + '/*R1*.fastq')
 fastq_files = [f for f in fastq_files if not f.endswith('.Tcontaminants.fastq')]
 for fastq in fastq_files:
     fastq_filename = os.path.basename(fastq)
-    sample_name = fastq_filename.split('_')[0]
-    if run_info and not run_info['Data'].has_key(sample_name):
-        logger.error('{} not in SampleSheet.csv - cannot initiate mapping for this sample'.format(sample_name))
+    sample_name, sample_number = fastq_filename.split('_')[:2]
+    key = sample_name + '_' + sample_number
+    if run_info and not run_info['Data'].has_key(key):
+        logger.error('{} not in SampleSheet.csv - cannot initiate mapping for this sample'.format(key))
         continue
-    is_t_primer = run_info['Data'][sample_name]['is_T_primer'] if run_info else '0'
+    is_t_primer = run_info['Data'][key]['is_T_primer'] if run_info else '0'
     command = "python2.7 STEP_1_MAPPING.py {} {} {} {} {} {} {} {}".format(mapping_ref_path,
             fastq, consensus_q_cutoff, mode, is_t_primer, min_mapping_efficiency, max_remaps, bowtie_threads)
     log_path = "{}.mapping.log".format(fastq)
