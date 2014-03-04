@@ -262,15 +262,19 @@ def sampleSheetParser (handle):
     """
     Parse the contents of SampleSheet.csv, convert contents into a
     Python dictionary object.
+    Samples are tracked by sample name and sample number (e.g., S9).
+    This is to distinguish replicates of the same sample.
     """
 
     # FIXME: Conan is going to start annotating samples as either amplicon or nextera
-    # We may need to change this code to handle this
+    # FIXME: We may need to change this code to handle this
 
     tag = None
     get_header = False
-    header = []
-    run_info = {}
+    header = [] # store Data block column labels
+    sample_number = 1 # 1-indexing
+    run_info = {} # return object
+
     for line in handle:
         # parse tags
         if line.startswith('['):
@@ -279,15 +283,17 @@ def sampleSheetParser (handle):
                 get_header = True
             continue
 
-        #assert tag is not None, 'ERROR: no tag set, mangled SampleSheet.csv'
-        tokens = line.strip('\n').rstrip(',').split(',')
+        # else not a tag line, parse contents
+        tokens = line.strip('\n').split(',')
 
-        # process tokens according to tag
+        # process tokens according to current tag
         if tag == 'Header':
-            key, value = tokens
+            # inside [Header] block
+            key, value = tokens[:2]
             run_info.update({key: value})
 
         elif tag == 'Data':
+            # inside [Data] block
             if not run_info.has_key('Data'):
                 run_info.update({'Data': {}})
 
@@ -300,19 +306,55 @@ def sampleSheetParser (handle):
                 get_header = False
                 continue
 
-            sample_name = tokens[header.index('Sample_Name')].replace('_', '-').replace(';','-')
             index1 = tokens[header.index('index')]
             index2 = tokens[header.index('index2')]
 
+            # parse Sample_Name field
+            filename = tokens[header.index('Sample_Name')]
+            clean_filename = re.sub('[_.;]', '-', filename)
+            clean_filename += '_S%d' % sample_number # should correspond to FASTQ filename
+
+            run_info['Data'].update({clean_filename: {'index1': index1,
+                                                      'index2': index2}})
+
+            # parse Description field
+            # FIXME: currently this is partitioned by sub-samples (semi-colon delimited)
+            # FIXME: but the pipeline does not support differential handling of sub-samples
+
             desc = tokens[header.index('Description')]
+            desc_fields = desc.split() # whitespace-delimited
+            for desc_field in desc_fields:
+                desc_field_label = desc_field.split(':')[0]
+                desc_subfields = desc_field.replace(desc_field_label+':', '').split(';')
 
-            try:
-                research, comments = desc.split()
-                tprimer = (comments.split(':')[-1] == 'TPRIMER')
-            except ValueError:
-                tprimer = False
+                for desc_subfield in desc_subfields:
+                    desc_subfield_tokens = desc_subfield.split(':')
+                    sample_name = desc_subfield_tokens[0]
+                    clean_sample_name = re.sub('[_.]', '-', sample_name)
 
-            run_info['Data'].update({sample_name: {'index1': index1,'index2': index2,'is_T_primer': tprimer}})
+                    if desc_field_label == 'Research':
+                        is_research = (desc_subfield_tokens[1] == 'TRUE')
+                        # would have been keying by clean_sample_name here and below
+                        run_info['Data'][clean_filename].update({
+                            'research': is_research,
+                            'is_T_primer': 'TPRIMER' in desc_subfield_tokens})
+
+                    if desc_field_label == 'Disablecontamcheck':
+                        run_info['Data'][clean_filename].update({'disable_contamination_check': (desc_subfield_tokens[-1]=='TRUE')})
+
+                    if desc_field_label == 'Comments':
+                        run_info['Data'][clean_filename].update({'comments': desc_subfield_tokens[-1]})
+
+                if not run_info['Data'][clean_filename].has_key('disable_contamination_check'):
+                    # 'Disablecontamcheck' subfield not always under Description
+                    # default to contamination check active
+                    run_info['Data'][clean_filename].update({'disable_contamination_check': False})
+
+                # FIXME: for the time being, apply ONLY first sub-sample description to entire sample
+                break
+
+            sample_number += 1
+
         else:
             # ignore other tags
             pass
@@ -646,61 +688,22 @@ def majority_consensus (fasta, threshold = 0.5, alphabet='ACGT', ambig_char = 'N
     [threshold] = percentage of column that most common character must exceed
     [alphabet] = recognized character states
     """
-
-    """
-    res = ''
-    if len(alphabet) == 0: alphabet = set(fasta[0][1])
-    columns = transpose_fasta(fasta)
-    for col in columns:
-        cset = set(col)
-        if len(cset) == 1:
-            c = cset.pop()
-            if c not in alphabet: res += ambig_char
-            else: res += c
-        else:
-            counts = [(col.count(c), c) for c in cset if c in alphabet]
-            if len(counts) == 0:
-                res += ambig_char
-                continue
-            counts.sort(reverse=True) # descending order
-            max_count, max_char = counts[0]
-            if max_count / float(len(fasta)) > threshold: res += max_char
-            else: res += ambig_char
-    return res
-    """
-
     consen = []
     columns = transpose_fasta(fasta)
-    seqs = [s for h, s in fasta]
-
     for column in columns:
         consen.append(consensus(column, alphabet=alphabet, resolve=False))
-
     newseq = "".join(consen)
-
-    """
-    # Resolve missing data.
-    # Proper indels start and end in-frame.
-    indel_ptn = re.compile("(.{3})*?(?P<indel>(\?{3})+)")
-    indels = []
-    for match in indel_ptn.finditer(newseq):
-        indels.extend(range(*match.span("indel")))
-
-    for column in range(len(consen)):
-        if consen[column] == "?" and column not in indels:
-            consen[column] = consensus(column, resolve=True)
-
-    return "".join(consen)
-    """
     return newseq
 
 
 # =======================================================================
-"""
-transpose_fasta - return an array of alignment columns
-"""
+
 def transpose_fasta (fasta):
-    # some checks to make sure the right kind of object is being sent
+    """
+    Returns an array of alignment columns.
+    some checks to make sure the right kind of object is being sent
+    """
+    #
     if type(fasta) is not list:
         return None
     if type(fasta[0]) is not list or len(fasta[0]) != 2:
@@ -727,8 +730,8 @@ def untranspose_fasta(tfasta):
 
 
 
-"""
-entropy_from_fasta
+def entropy_from_fasta (fasta, alphabet = 'ACGT', counts = None):
+    """
     Calculate the mean entropy over columns of an alignment
     passed as a FASTA object (list of lists).
     Defaults to the nucleotide alphabet.
@@ -743,9 +746,7 @@ entropy_from_fasta
     fasta = convert_fasta(infile.readlines())
     infile.close()
     counts = [int(h.split('_')[1]) for h, s in fasta]
-
-"""
-def entropy_from_fasta (fasta, alphabet = 'ACGT', counts = None):
+    """
     columns = transpose_fasta (fasta)
     ents = []
     for col in columns:
@@ -921,3 +922,25 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
     logging.info("Conseq: {}".format(conseq))
 
     return outpath
+
+
+def parse_fasta (handle):
+    """
+    Read lines from a FASTA file and return as a list of
+    header, sequence tuples.
+    """
+    res = []
+    sequence = ''
+    for line in handle:
+        if line.startswith('$'): # skip annotations
+            continue
+        elif line.startswith('>') or line.startswith('#'):
+            if len(sequence) > 0:
+                res.append((h, sequence))
+                sequence = ''   # reset containers
+            h = line.lstrip('>#').rstrip('\n')
+        else:
+            sequence += line.strip('\n')
+
+    res.append((h, sequence)) # handle last entry
+    return res

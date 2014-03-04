@@ -44,4 +44,4 @@ conseq_mixture_cutoffs = [0.01,0.02,0.05,0.1,0.2,0.25]
 final_alignment_ref_path = mapping_ref_path.replace('/cfe', '/csf2counts_amino_refseqs.csv')
 
 # Intermediary files to delete when done processing this run
-file_extensions_to_delete = ['bam', 'bt2', 'bt2_metrics', 'pileup']
+file_extensions_to_delete = ['bam', 'bt2', 'bt2_metrics', 'pileup', 'filtering.sam', 'csf.fa']

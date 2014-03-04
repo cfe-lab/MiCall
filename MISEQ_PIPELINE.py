@@ -45,17 +45,12 @@ fastq_files = glob(root + '/*R1*.fastq')
 fastq_files = [f for f in fastq_files if not f.endswith('.Tcontaminants.fastq')]
 for fastq in fastq_files:
     fastq_filename = os.path.basename(fastq)
-    sample_name = fastq_filename.split('_')[0]
-
-    # TEMPORARILY DISABLE FOR MOTIVATE
-    """
-    if run_info and not run_info['Data'].has_key(sample_name):
-        logger.error('{} not in SampleSheet.csv - cannot initiate mapping for this sample'.format(sample_name))
+    sample_name, sample_number = fastq_filename.split('_')[:2]
+    key = sample_name + '_' + sample_number
+    if run_info and not run_info['Data'].has_key(key):
+        logger.error('{} not in SampleSheet.csv - cannot initiate mapping for this sample'.format(key))
         continue
-    """
-    #is_t_primer = run_info['Data'][sample_name]['is_T_primer'] if run_info else '0'
-    is_t_primer = 0
-
+    is_t_primer = run_info['Data'][key]['is_T_primer'] if run_info else '0'
     command = "python2.7 STEP_1_MAPPING.py {} {} {} {} {} {} {} {}".format(mapping_ref_path,
             fastq, consensus_q_cutoff, mode, is_t_primer, min_mapping_efficiency, max_remaps, bowtie_threads)
     log_path = "{}.mapping.log".format(fastq)
@@ -83,11 +78,45 @@ factory_barrier(single_thread_factory)
 logger.info("Collating *.sam2csf.*.log files")
 miseq_logging.collate_logs(root, "sam2csf.*.log", "sam2csf.log")
 
+
+
+### Begin csf2counts
+for csf_file in glob(root + '/*.csf'):
+    if csf_file.endswith('.clean.csf') or csf_file.endswith('.contam.csf'):
+        # in case this has been re-run
+        continue
+    # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
+    mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
+    command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file,mode,mixture_cutoffs,final_alignment_ref_path)
+    log_path = "{}.csf2counts.log".format(csf_file)
+    queue_request = single_thread_factory.queue_work(command, log_path, log_path)
+    if queue_request:
+        p, command = queue_request
+        logger.info("pID {}: {}".format(p.pid, command))
+
+factory_barrier(single_thread_factory)
+
+
+### Begin cross-contamination filter
+logger.info('Filtering for cross-contamination')
+
+for qcut in sam2csf_q_cutoffs:
+    command = 'python2.7 FILTER_CONTAMINANTS.py %s %d %d' % (root, qcut, bowtie_threads)
+    log_path = 'filtering.log'
+    queue_request = single_thread_factory.queue_work(command, log_path, log_path)
+    if queue_request:
+        p, command = queue_request
+        logger.info('pID {}: {}'.format(p.pid, command))
+
+factory_barrier(single_thread_factory)
+
+
+
 ### Begin g2p (For Amplicon)
 if mode == 'Amplicon':
 
     # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
-    for env_csf_file in glob(root + '/*.HIV1B-env.*.csf'):
+    for env_csf_file in glob(root + '/*.HIV1B-env.*.clean.csf'):
         command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
         log_path = "{}.g2p.log".format(env_csf_file)
         queue_request = single_thread_factory.queue_work(command, log_path, log_path)
@@ -115,10 +144,8 @@ if mode == 'Amplicon':
                     except Exception as e:
                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
 
-"""
-### Begin csf2counts
-for csf_file in glob(root + '/*.csf'):
-
+### Repeat csf2counts
+for csf_file in glob(root + '/*.clean.csf'):
     # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
     mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
     command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file,mode,mixture_cutoffs,final_alignment_ref_path)
@@ -127,6 +154,7 @@ for csf_file in glob(root + '/*.csf'):
     if queue_request:
         p, command = queue_request
         logger.info("pID {}: {}".format(p.pid, command))
+
 factory_barrier(single_thread_factory)
 logger.info("Collating csf2counts.log files")
 miseq_logging.collate_logs(root, "csf2counts.log", "csf2counts.log")
@@ -149,6 +177,7 @@ miseq_modules.collate_conseqs(root,collated_conseq_path)
 #logging.info("slice_outputs({})".format(root))
 #miseq_modules.slice_outputs(root, region_slices)
 """
+
 
 # Delete files on the local cluster that don't need to be kept
 logger.info("Deleting intermediary files")

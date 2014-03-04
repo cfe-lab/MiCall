@@ -12,7 +12,7 @@ def collate_conseqs(run_path,output_path):
 
         for path in files:
             prefix = (os.path.basename(path)).rstrip(".conseq")
-            sample, region, q = prefix.split(".")
+            sample, region, q = prefix.split(".")[:3]
 
             with open(path,"r") as f:
                 fasta = convert_fasta(f.readlines())
@@ -42,7 +42,7 @@ def collate_frequencies (run_path,output_path,type):
 
             # Eliminate end of the filename
             prefix = (os.path.basename(path)).rstrip(".{}".format(file_extension))
-            sample, region, q = prefix.split(".")
+            sample, region, q = prefix.split(".")[:3]
             with open(path,"r") as f:
                 lines = f.readlines()
 
@@ -97,13 +97,18 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
     with open(path, 'rU') as infile:
         fasta, lefts, rights = convert_csf(infile.readlines())
 
+    if len(fasta) == 0:
+        # skip empty file
+        logger.error('{} is an empty file'.format(filename))
+        return
+
     # CSFs come from self-alignment derived SAMs: the reads are out of frame.
     frame_evidence = {}
     for frame in range(3):
         frame_evidence[frame] = 0
 
     # Look at first five reads in CSF and vote on correct ORF
-    for read_index in range(5):
+    for read_index in range(min(5, len(fasta))): # make this robust to having fewer than 5 reads
         header, seq = fasta[read_index]
         max_score = -999
         best_ORF = 0
@@ -447,7 +452,8 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
     file_prefix = filename.split('.')[0]			# Has a prefix containing...
     sample_name, sample_well = file_prefix.split('_')[:2]	# Sample name and well
     prefix = '_'.join([sample_name, sample_well])		# Change this prefix to be joined by _ (??)
-    count_file = open(R1_fastq.replace('.fastq', '.counts'), 'w')
+    #count_file = open(R1_fastq.replace('.fastq', '.counts'), 'w')
+    count_file = open('%s/%s.counts' % (root, prefix), 'w')
     R2_fastq = R1_fastq.replace('R1', 'R2')
 
     # Determine the number of reads in both (R1 + R2) fastq files, store in the .count file
@@ -646,7 +652,7 @@ def g2p_scoring(csf_path, g2p_alignment_cutoff):
     refseq = translate_nuc(refSeqs['V3, clinical'], 0)	# V3 ref seq is NON-STANDARD: talk to Guin
 
     if csf_filename.find("HIV1B-env") == -1 or not csf_path.endswith('.csf'):
-        return logger.error("{} is not an HIV1B-env CSF file")
+        return logger.error("{} is not an HIV1B-env CSF file".format(csf_filename))
 
     # Store CSF in fasta-like variable called sequences
     sequences = []
@@ -654,6 +660,10 @@ def g2p_scoring(csf_path, g2p_alignment_cutoff):
         for line in csf_file:
             header, left_offset, seq_no_gaps  = line.strip("\n").split(",")
             sequences.append((header, seq_no_gaps))
+
+    if len(sequences) == 0:
+        # skip empty file
+        return logger.error('%s is an empty file' % csf_filename)
 
     # Determine offset from 1st sequence to correct frameshift induced by sample-specific remapping
     seq1 = sequences[0][1].strip("-")
@@ -858,12 +868,107 @@ def slice_outputs(root, region_slices):
                 os.remove(slice_filename)
                 os.remove(conseq_filename)
 
-def make_run_reference_db (root):
+
+def filter_cross_contaminants (root, qcutoff, dbname = 'sample_references', num_threads=1):
     """
-    Use consensus sequences generated from pileups to make a bowtie2 database.
+    Use sample-specific consensus sequences to make a bowtie2 database.
+    Do this in a region-specific manner, otherwise contamination
+    screening is meaningless.  Apply bowtie2 (without local alignment)
+    to CSF outputs by converting the latter into FASTA and use the
+    newly-generated database as a reference set.
+    Report the numbers of cross-contaminants in *.counts file (as in mapping()).
     """
     from glob import glob
-    files = glob(root+'/*.pileup.conseq')
+    from miseqUtils import parse_fasta, sampleSheetParser
+
+
+    # parse sample sheet
+    with open(root+'/SampleSheet.csv', 'rU') as sample_sheet:
+        run_info = sampleSheetParser(sample_sheet)
+
+    files = glob(root+'/*.%d.conseq' % qcutoff)
+    assert len(files) > 0, 'No *.conseq files found with qcutoff (%f)' % qcutoff
+
+    regions = set([f.split('/')[-1].split('.')[-3] for f in files])
+
+    for region in regions:
+        outfile = open('%s/%s.%s.fas' % (root, dbname, region), 'w')
+        for f in files:
+            if region not in f.split('/')[-1]:
+                continue
+            handle = open(f, 'rU')
+            fasta = parse_fasta(handle)
+            handle.close()
+
+            for h, s in fasta:
+                if h.endswith('_MAX') and len(s) > 0:
+                    outfile.write('>%s\n%s\n' % (h.replace('_MAX', ''), s))
+
+        outfile.close()
+
+        # generate .bt2 files
+        system_call('bowtie2-build -f -q %s/%s.%s.fas %s/%s.%s' % (root, dbname, region,
+                                                                   root, dbname, region))
+
+        # screen all CSF files
+        csf_files = glob(root+'/*.%s.%d.csf' % (region, qcutoff))
+        for csf_file in csf_files:
+            filename = csf_file.split('/')[-1]
+            print filename
+            sample_name = filename.split('.')[0] # includes S number
+
+            # check whether this sample should be excluded from filtering
+            if run_info['Data'][sample_name]['disable_contamination_check']:
+                # simply copy *.csf to *.clean.csf
+                system_call('cp %s %s' % (csf_file, csf_file.replace('.csf', '.clean.csf')))
+                continue
+
+            sam_file = csf_file.replace('.csf', '.filtering.sam')
+
+            # export contents of CSF into FASTA file, storing counts in header
+            fasta_file = csf_file.replace('.csf', '.csf.fa')
+            output_handle = open(fasta_file, 'w')
+            handle = open(csf_file, 'rU')
+            for line in handle:
+                label, offset, seq = line.strip('\n').split(',') # label contains count
+                output_handle.write('>%s+%s\n%s\n' % (label, offset, seq))
+            handle.close()
+            output_handle.close()
+
+            # note -f flag to indicate FASTA input
+            system_call('bowtie2 --quiet -p %d -x %s/%s.%s -f -U %s -S %s' %
+                        (num_threads, root, dbname, region, fasta_file, sam_file))
+
+            # partition results into new CSF file and contaminant file
+            clean_file = open(csf_file.replace('.csf', '.clean.csf'), 'w')
+            contam_file = open(csf_file.replace('.csf', '.contam.csf'), 'w')
+            handle = open(sam_file, 'rU')
+            n_clean = 0
+            n_contam = 0
+            for line in handle:
+                if line.startswith('@'):
+                    continue
+                qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')[:11]
+                label, offset = qname.split('+')
+
+                if refname == sample_name:
+                    clean_file.write(','.join([label, offset, seq]))
+                    clean_file.write('\n')
+                    n_clean += 1
+                else:
+                    contam_file.write(','.join([label, offset, refname, mapq, seq]))
+                    contam_file.write('\n')
+                    n_contam += 1
+
+            clean_file.close()
+            contam_file.close()
+
+            # append results to file generated by mapping()
+            count_file = open('%s/%s.counts' % (root, sample_name), 'a')
+            count_file.write('cross-contamination filter %s,%d,%d,%d\n' % (region, qcutoff, n_clean, n_contam))
+            count_file.close()
+
+
 
 
 
