@@ -724,7 +724,8 @@ def g2p_scoring(csf_path, g2p_alignment_cutoff):
 
 def sam2csf_with_base_censoring(samfile, censoring_qCutoff, mapping_cutoff, mode, max_prop_N):
     """
-    From a path to a SAM, create a comma-delimited, 3-column CSF file.
+    From a path to a remapped SAM containing paired reads, create a comma-delimited,
+    3-column CSF file with the merged, censored sequence.
 
     Column 1: Either the rank + count for amplicon, or qname for Nextera
     Column 2: Left-offset of the read

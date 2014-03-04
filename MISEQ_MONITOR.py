@@ -5,7 +5,7 @@ MISEQ_MONITOR.py
 3) Upload results back to macdatafile
 """
 from settings import *
-pipeline_version = '5.1-Updated-Refs-RUNNING-AT-Q30'
+pipeline_version = '5.1-Updated-Refs'
 
 import logging, miseq_logging, miseqUtils, os, subprocess, sys, time
 from glob import glob
@@ -33,8 +33,7 @@ while True:
 
     #runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
 
-    # MANUAL OVERRIDE FOR GUIN
-    runs = glob(macdatafile_mount + 'MiSeq/runs/140217_M01841_0058_000000000-A64LT/{}'.format(NEEDS_PROCESSING))
+    runs = glob(macdatafile_mount + 'MiSeq/runs/140214_M01841_0057_000000000-A64L9/{}'.format(NEEDS_PROCESSING))
 
     runs_needing_processing = []
     for run in runs:

@@ -49,7 +49,7 @@ def apply_cigar (cigar, seq, qual):
         # Deletion relative to reference: pad with gaps
         elif token[-1] == 'D':
             newseq += '-'*length
-            newqual += 'A' 		# Assign arbitrary score
+            newqual += ' '*length 		# Assign fake placeholder score (Q=-1)
 
         # Insertion relative to reference: skip it (excise it)
         elif token[-1] == 'I':
@@ -65,26 +65,9 @@ def apply_cigar (cigar, seq, qual):
             print "Unable to handle CIGAR token: {} - quitting".format(token)
             sys.exit()
 
-    # What does shift do?
     return shift, newseq, newqual
 
-
-def censor_bases (seq, qual, cutoff=10):
-    """
-    For each base in a nucleotide sequence and quality string,
-    replace a base with an ambiguous character 'N' if its associated
-    quality score falls below a threshold value.
-    """
-    newseq = ''
-    for i, q in enumerate(qual):
-        if ord(q)-33 >= cutoff:
-            newseq += seq[i]
-        else:
-            newseq += 'N'
-    return newseq
-
-
-def merge_pairs (seq1, seq2):
+def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
     """
     Merge two sequences that overlap over some portion (paired-end
     reads).  Using the positional information in the SAM file, we will
@@ -95,34 +78,59 @@ def merge_pairs (seq1, seq2):
     import logging
 
     mseq = ''
+
     if len(seq1) > len(seq2):
         seq1, seq2 = seq2, seq1
-
-    agreement = 0
-    disagreements = 0
-    overruled = 0
+        qual1, qual2 = qual2, qual1 # FIXME: quality strings must be concordant
 
     for i, c2 in enumerate(seq2):
+
+        # FIXME: Track the q-score of each base at each position
+        q2 = ord(qual2[i])-33
+
         if i < len(seq1):
+
             c1 = seq1[i]
-            if c1 == c2:
+            q1 = ord(qual1[i])-33
+
+            # Gaps are given the lowest q-rank (q = -1) but are NOT N-censored
+            if c1 == '-' and c2 == '-':
+                mseq += '-'
+
+            # NOT SURE IF THESE NEXT 3 CASES MAKE SENSE
+            elif q1 is None and q2 is None:
+                mseq += 'N'
+
+            elif q2 is None and q1 is not None and q1 > q_cutoff:
+                mseq += seq1[i]
+
+            elif q1 is None and q2 is not None and q2 > q_cutoff:
+                mseq += seq2[i]
+
+            # Reads agree and one has sufficient confidence
+            elif c1 == c2 and q1 > q_cutoff or q2 > q_cutoff:
                 mseq += c1
-            elif c1 in 'ACGT':
-                if c2 in 'N-':
-                    mseq += c1
-                else:
-                    mseq += 'N'
-            elif c2 in 'ACGT':
-                if c1 in 'N-':
-                    mseq += c2
-                else:
-                    mseq += 'N'
+
+            # Reads disagree but both have too similar a confidence
+            elif abs(q2-q1) < minimum_q_delta:
+                mseq += 'N'
+
+            # Sequences disagree with differing confidence: take the high confidence
+            elif q1 > q2 and q1 > q_cutoff:
+                mseq += c1
+
+            elif q2 > q1 and q2 > q_cutoff:
+                mseq += c2
+
+            # Not sure if I've missed any cases - for now, drop these cases....
             else:
                 mseq += 'N'
-        else:
-            mseq += c2
 
-    #logging.info("DEBUGGING MERGE...\nSEQ1: {}\nSEQ2: {}\nmseq: {}".format(seq1,seq2,mseq))
+        else:
+            if q2 > q_cutoff:
+                mseq += c2
+            else:
+                mseq += 'N'
 
     return mseq
 
@@ -164,7 +172,10 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
             i += 1
             continue
 
-        seq1 = '-'*pos1 + censor_bases(seq1, qual1, cutoff)
+        #seq1 = '-'*pos1 + censor_bases(seq1, qual1, cutoff)
+        seq1 = '-'*pos1 + seq1     # FIXME: We no longer censor bases up front
+        qual1 = '-'*pos1 + qual1    # FIXME: Give quality string the same offset
+
 
         # No more lines
         if (i+1) == len(lines):
@@ -190,10 +201,11 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
                 i += 2
                 continue
 
-            seq2 = '-'*pos2 + censor_bases(seq2, qual2, cutoff)
+            #seq2 = '-'*pos2 + censor_bases(seq2, qual2, cutoff)
+            seq2 = '-'*pos2 + seq2      # FIXME: We no longer censor bases up front
+            qual2 = '-'*pos2 + qual2     # FIXME: Give quality string the same offset
 
-            # agreement,disagreements,overruled are QC data from merge_pairs
-            mseq = merge_pairs(seq1, seq2)
+            mseq = merge_pairs(seq1, seq2, qual1, qual2, cutoff)    # FIXME: We now feed these quality data into merge_pairs
 
             # Sequence must not have too many censored bases
             if mseq.count('N') / float(len(mseq)) < max_prop_N:

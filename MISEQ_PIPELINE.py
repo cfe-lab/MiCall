@@ -15,7 +15,6 @@ root = sys.argv[1]			# MONITOR parameter: Location of fastq files to process
 log_file = "{}/pipeline_output.log".format(root)
 logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
 
-
 def factory_barrier(my_factory):
     """Wait until factory completes queued jobs"""
     while True:
@@ -27,7 +26,7 @@ def factory_barrier(my_factory):
         time.sleep(1)
     return
 
-
+"""
 # Parse sample sheet to determine mode + T primer state for each sample
 if len(sys.argv) == 3:
     mode = sys.argv[2]
@@ -37,6 +36,9 @@ else:
         logger.debug("sampleSheetParser({})".format(sample_sheet))
         run_info = miseqUtils.sampleSheetParser(sample_sheet)
         mode = run_info['Description']
+"""
+
+mode = "Amplicon"
 
 ### Begin Mapping
 fastq_files = glob(root + '/*R1*.fastq')
@@ -44,10 +46,16 @@ fastq_files = [f for f in fastq_files if not f.endswith('.Tcontaminants.fastq')]
 for fastq in fastq_files:
     fastq_filename = os.path.basename(fastq)
     sample_name = fastq_filename.split('_')[0]
+
+    # TEMPORARILY DISABLE FOR MOTIVATE
+    """
     if run_info and not run_info['Data'].has_key(sample_name):
         logger.error('{} not in SampleSheet.csv - cannot initiate mapping for this sample'.format(sample_name))
         continue
-    is_t_primer = run_info['Data'][sample_name]['is_T_primer'] if run_info else '0'
+    """
+    #is_t_primer = run_info['Data'][sample_name]['is_T_primer'] if run_info else '0'
+    is_t_primer = 0
+
     command = "python2.7 STEP_1_MAPPING.py {} {} {} {} {} {} {} {}".format(mapping_ref_path,
             fastq, consensus_q_cutoff, mode, is_t_primer, min_mapping_efficiency, max_remaps, bowtie_threads)
     log_path = "{}.mapping.log".format(fastq)
@@ -107,7 +115,7 @@ if mode == 'Amplicon':
                     except Exception as e:
                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
 
-
+"""
 ### Begin csf2counts
 for csf_file in glob(root + '/*.csf'):
 
@@ -140,6 +148,7 @@ miseq_modules.collate_conseqs(root,collated_conseq_path)
 # Represent count output with respect to different region codes (Ex: V3 in env)
 #logging.info("slice_outputs({})".format(root))
 #miseq_modules.slice_outputs(root, region_slices)
+"""
 
 # Delete files on the local cluster that don't need to be kept
 logger.info("Deleting intermediary files")
