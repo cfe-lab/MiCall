@@ -74,22 +74,26 @@ def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
     know where the sequences lie relative to one another.  In the case
     that the base in one read has no complement in the other read
     (in partial overlap region), take that base at face value.
+
+    q_cutoff =          minimum quality score to accept base call
+    minimum_q_delta =   minimum difference in quality scores between mates
+                        above which we take the higher quality base, and
+                        below which both bases are discarded.
     """
     import logging
 
-    mseq = ''
+    mseq = ''   # the merged sequence
 
     if len(seq1) > len(seq2):
+        # require seq2 to be the longer string, if strings are unequal lengths
         seq1, seq2 = seq2, seq1
         qual1, qual2 = qual2, qual1 # FIXME: quality strings must be concordant
 
     for i, c2 in enumerate(seq2):
-
         # FIXME: Track the q-score of each base at each position
-        q2 = ord(qual2[i])-33
+        q2 = ord(qual2[i])-33   # ASCII to integer conversion, error prob. = 10^(-q2/10)
 
         if i < len(seq1):
-
             c1 = seq1[i]
             q1 = ord(qual1[i])-33
 
@@ -97,41 +101,33 @@ def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
             if c1 == '-' and c2 == '-':
                 mseq += '-'
 
-            # NOT SURE IF THESE NEXT 3 CASES MAKE SENSE
-            elif q1 is None and q2 is None:
-                mseq += 'N'
-
-            elif q2 is None and q1 is not None and q1 > q_cutoff:
-                mseq += seq1[i]
-
-            elif q1 is None and q2 is not None and q2 > q_cutoff:
-                mseq += seq2[i]
-
-            # Reads agree and one has sufficient confidence
-            elif c1 == c2 and q1 > q_cutoff or q2 > q_cutoff:
-                mseq += c1
-
-            # Reads disagree but both have too similar a confidence
-            elif abs(q2-q1) < minimum_q_delta:
-                mseq += 'N'
-
-            # Sequences disagree with differing confidence: take the high confidence
-            elif q1 > q2 and q1 > q_cutoff:
-                mseq += c1
-
-            elif q2 > q1 and q2 > q_cutoff:
-                mseq += c2
-
-            # Not sure if I've missed any cases - for now, drop these cases....
+            # Reads agree and at least one has sufficient confidence
+            if c1 == c2:
+                if q1 > q_cutoff or q2 > q_cutoff:
+                    mseq += c1
+                else:
+                    # neither base is confident
+                    mseq += 'N'
             else:
-                mseq += 'N'
-
+                # reads disagree
+                if abs(q2 - q1) >= minimum_q_delta:
+                    # given one base has substantially higher quality than the other
+                    if q1 > max(q2, q_cutoff):
+                        mseq += c1
+                    elif q2 > max(q1, q_cutoff):
+                        mseq += c2
+                    else:
+                        # neither quality score is sufficiently high
+                        mseq += 'N'
+                else:
+                    # discordant bases are too similar in confidence to choose
+                    mseq += 'N'
         else:
+            # no mate in other read
             if q2 > q_cutoff:
                 mseq += c2
             else:
                 mseq += 'N'
-
     return mseq
 
 
@@ -150,7 +146,7 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
     # Skip top SAM header lines
     for start, line in enumerate(lines):
         if not line.startswith('@'):
-            break
+            break   # exit loop with [start] equal to index of first line of data
 
     # If this is an empty SAM, return
     if start == len(lines)-1:
@@ -166,9 +162,11 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
             continue
 
         pos1 = int(pos)
+        # shift = offset of read start from reference start
         shift, seq1, qual1 = apply_cigar(cigar, seq, qual)
 
         if not seq1:
+            # failed to parse CIGAR string
             i += 1
             continue
 
@@ -185,9 +183,8 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
         qname2, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = lines[i+1].strip('\n').split('\t')[:11]
 
         if qname2 == qname:
-
-            # Second read failed to map
             if refname == '*' or cigar == '*':
+                # Second read failed to map - add unpaired read to FASTA and skip this line
                 fasta.append([qname, seq1])
                 i += 2
                 continue
@@ -195,8 +192,8 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
             pos2 = int(pos)
             shift, seq2, qual2 = apply_cigar(cigar, seq, qual)
 
-            # Failed to parse CIGAR
             if not seq2:
+                # Failed to parse CIGAR
                 fasta.append([qname, seq1])
                 i += 2
                 continue
@@ -208,6 +205,7 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
             mseq = merge_pairs(seq1, seq2, qual1, qual2, cutoff)    # FIXME: We now feed these quality data into merge_pairs
 
             # Sequence must not have too many censored bases
+            # TODO: garbage reads should probably be reported
             if mseq.count('N') / float(len(mseq)) < max_prop_N:
                 fasta.append([qname, mseq])
 
