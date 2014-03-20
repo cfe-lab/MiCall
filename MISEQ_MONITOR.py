@@ -6,7 +6,7 @@ MISEQ_MONITOR.py
 """
 from settings import *
 
-pipeline_version = '5.2'
+pipeline_version = '5.3'
 
 import logging, miseq_logging, miseqUtils, os, subprocess, sys, time
 from glob import glob
@@ -33,6 +33,10 @@ def post_files(files, destination):
 while True:
 
     runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
+
+	# OVERRIDE
+    runs = glob(macdatafile_mount + 'MiSeq/runs/140212_M01841_0056_000000000-A64G4/{}'.format(NEEDS_PROCESSING))
+
     runs_needing_processing = []
     for run in runs:
         result_path = '{}/version_{}'.format(run.replace(NEEDS_PROCESSING, 'Results'), pipeline_version)

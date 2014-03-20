@@ -1,3 +1,20 @@
+def collate_counts(run_path,output_path):
+    """
+    Collate .counts files into a single CSV summary file.
+    """
+    import glob,os
+
+    with open(output_path, "w") as collated_file:
+        for count_file in [f for f in glob.glob("{}/*.counts".format(run_path))]:
+            prefix = (os.path.basename(count_file)).rstrip(".counts")
+
+            with open(count_file,"r") as f_in:
+                for i, line in enumerate(f_in.readlines()):
+                    if i == 0:
+                        continue
+
+                    collated_file.write("{},{}".format(prefix,line))
+
 def collate_conseqs(run_path,output_path):
     """
     Collate .conseq files into a single CSV summary file.

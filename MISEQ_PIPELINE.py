@@ -168,8 +168,13 @@ collated_conseq_path = "{}/collated_conseqs.csv".format(root)
 logger.info("collate_conseqs({},{})".format(root,collated_conseq_path))
 miseq_modules.collate_conseqs(root,collated_conseq_path)
 
+# Collate counts files
+collated_counts_path = "{}/collated_counts.csv".format(root)
+logger.info("collate_counts({},{})".format(root,collated_conseq_path))
+miseq_modules.collate_counts(root,collated_conseq_path)
+
 # Generate coverage maps
-command = ["python","generate_coverage_plots.py","{}/amino_frequencies.csv".format(root),"{}/coverage_maps".format(root)]
+command = ["python","generate_coverage_plots.py",collated_amino_freqs_path,"{}/coverage_maps".format(root)]
 subprocess.call(command, shell=True)
 
 # Delete files on the local cluster that don't need to be kept
