@@ -26,8 +26,6 @@ def factory_barrier(my_factory):
         time.sleep(1)
     return
 
-"""
-# Parse sample sheet to determine mode + T primer state for each sample
 if len(sys.argv) == 3:
     mode = sys.argv[2]
     run_info = None
@@ -36,9 +34,6 @@ else:
         logger.debug("sampleSheetParser({})".format(sample_sheet))
         run_info = miseqUtils.sampleSheetParser(sample_sheet)
         mode = run_info['Description']
-"""
-
-mode = "Amplicon"
 
 ### Begin Mapping
 fastq_files = glob(root + '/*R1*.fastq')
@@ -173,11 +168,9 @@ collated_conseq_path = "{}/collated_conseqs.csv".format(root)
 logger.info("collate_conseqs({},{})".format(root,collated_conseq_path))
 miseq_modules.collate_conseqs(root,collated_conseq_path)
 
-# Represent count output with respect to different region codes (Ex: V3 in env)
-#logging.info("slice_outputs({})".format(root))
-#miseq_modules.slice_outputs(root, region_slices)
-"""
-
+# Generate coverage maps
+command = ["python","generate_coverage_plots.py","{}/amino_frequencies.csv".format(root),"{}/coverage_maps".format(root)]
+subprocess.call(command, shell=True)
 
 # Delete files on the local cluster that don't need to be kept
 logger.info("Deleting intermediary files")

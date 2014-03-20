@@ -32,10 +32,7 @@ def post_files(files, destination):
 # Process runs flagged for processing not already processed by this version of the pipeline
 while True:
 
-    #runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
-
-    runs = glob(macdatafile_mount + 'MiSeq/runs/140214_M01841_0057_000000000-A64L9/{}'.format(NEEDS_PROCESSING))
-
+    runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
     runs_needing_processing = []
     for run in runs:
         result_path = '{}/version_{}'.format(run.replace(NEEDS_PROCESSING, 'Results'), pipeline_version)
@@ -52,7 +49,7 @@ while True:
         continue
 
     # Process most recently generated run and work backwards
-    #runs_needing_processing.sort(reverse=True)
+    runs_needing_processing.sort(reverse=True)
     curr_run = runs_needing_processing[0]
     root = curr_run.replace(NEEDS_PROCESSING, '')
     run_name = root.split('/')[-2]
