@@ -4,16 +4,15 @@ MISEQ_MONITOR.py
 2) Process the run by clling MISEQ_PIPELINE.py
 3) Upload results back to macdatafile
 """
-from settings import *
 
 pipeline_version = '5.3'
 
 import logging, miseq_logging, miseqUtils, os, subprocess, sys, time
+from settings import *
 from glob import glob
 
 if sys.version_info[:2] != (2, 7):
     raise Exception("Python 2.7 not detected")
-
 
 def mark_run_as_disabled(curr_run):
     open(curr_run.replace(NEEDS_PROCESSING, ERROR_PROCESSING), 'w').close()
@@ -139,9 +138,10 @@ while True:
     result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
     log_path = '{}/logs'.format(result_path_final)
     counts_path = '{}/counts'.format(log_path)
+    coverage_maps_path = '{}/coverage_maps'.format(result_path_final)
 
     # Create sub-folders if needed
-    for path in [result_path, result_path_final, log_path, counts_path]:
+    for path in [result_path, result_path_final, log_path, counts_path, coverage_maps_path]:
         if not os.path.exists(path): os.mkdir(path)
 
     # Post files to each appropriate sub-folder
@@ -151,11 +151,14 @@ while True:
         if not os.path.exists(v3_path): os.mkdir(v3_path)
         post_files(glob(home + run_name + '/*.v3prot'), v3_path)
         post_files(glob(home + run_name + '/v3_tropism_summary.txt'), v3_path)
-    post_files(glob(home + run_name + '/*.counts'), counts_path)
+
+    #post_files(glob(home + run_name + '/*.counts'), counts_path)
     post_files(glob(home + run_name + '/*.log'), log_path)
+    post_files(glob(home + run_name + '/collated_counts.csv'), counts_path)
     post_files(glob(home + run_name + '/collated_conseqs.csv'), result_path_final)
     post_files(glob(home + run_name + '/amino_frequencies.csv'), result_path_final)
     post_files(glob(home + run_name + '/nucleotide_frequencies.csv'), result_path_final)
+    post_files(glob(home + run_name + '/coverage_maps/*.png'), coverage_maps_path)
 
     # Close the log and copy it to macdatafile
     logger.info("===== {} successfully completed! =====".format(run_name))

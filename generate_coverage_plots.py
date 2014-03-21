@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 
-import csv,os,sys
+import csv,os,shutil,sys
 
 if len(sys.argv) != 3:
 	print "Syntax: {} [PATH_TO_AMINO_CSV] [PATH_TO_IMAGES_FOLDER]".format(sys.argv[0])
@@ -38,11 +38,8 @@ for sample in set([x["sample"] for x in my_rows]):
 						coverage += int(row[aa])
 					f_out.write("{},{}\n".format(row['refseq.aa.pos'],coverage))
 
-			# Call the R script on the temp csv, then remove it
+			# Call the R script on the temp csv, then move the png into place and remove the temp csv
 			png_file = csv_tmp_file.replace(".csv", ".png")
 			os.system("/usr/bin/env Rscript coverage_plot.R {} {} {} {} {}".format(csv_tmp_file, sample, region, q, png_file))
 			os.remove(csv_tmp_file)
-
-			# Move png to specified images folder
-			print "{}/{}".format(images_folder.rstrip("/"),png_file)
-			os.rename(png_file, "{}/{}".format(images_folder.rstrip("/"),png_file))
+			shutil.move(png_file, "{}/{}".format(images_folder.rstrip("/"),png_file))
