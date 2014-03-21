@@ -27,6 +27,9 @@ for sample in set([x["sample"] for x in my_rows]):
 
 			dataset = [x for x in my_rows if x["sample"] == sample and x["region"] == region and x["q-cutoff"] == q]
 			dataset.sort(key=lambda row: int(row['refseq.aa.pos']))
+
+
+			# FIXME: MAKE THIS MORE ROBUST AND HAVE FILES WRITTEN IN SOME SAFER FOLDER
 			csv_tmp_file = "{}_{}_{}.csv".format(sample,region,q)
 
 			# Write temp CSV file for R for this (sample, region, q-cutoff)

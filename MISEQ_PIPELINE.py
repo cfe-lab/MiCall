@@ -97,7 +97,7 @@ logger.info('Filtering for cross-contamination')
 
 for qcut in sam2csf_q_cutoffs:
     command = 'python2.7 FILTER_CONTAMINANTS.py %s %d %d' % (root, qcut, bowtie_threads)
-    log_path = 'filtering.log'
+    log_path = root + '/filtering.log'
     queue_request = single_thread_factory.queue_work(command, log_path, log_path)
     if queue_request:
         p, command = queue_request
@@ -163,12 +163,12 @@ collated_nuc_freqs_path = "{}/nucleotide_frequencies.csv".format(root)
 logger.info("collate_frequencies({},{},{})".format(root,collated_nuc_freqs_path,"nuc"))
 miseq_modules.collate_frequencies(root,collated_nuc_freqs_path, "nuc")
 
-# Collate lines from csf2counts-derived conseq files
+# Collate consensus sequences from csf2counts-derived conseq files
 collated_conseq_path = "{}/collated_conseqs.csv".format(root)
 logger.info("collate_conseqs({},{})".format(root,collated_conseq_path))
 miseq_modules.collate_conseqs(root,collated_conseq_path)
 
-# Collate counts files
+# Collate read mapping efficiency from counts files
 collated_counts_path = "{}/collated_counts.csv".format(root)
 logger.info("collate_counts({},{})".format(root,collated_counts_path))
 miseq_modules.collate_counts(root,collated_counts_path)
@@ -178,7 +178,7 @@ command = ["python","generate_coverage_plots.py",collated_amino_freqs_path,"{}/c
 logger.info(command)
 subprocess.call(command)
 
-# Delete files on the local cluster that don't need to be kept
+# Delete local files on the cluster that shouldn't be stored
 logger.info("Deleting intermediary files")
 for extension in file_extensions_to_delete:
     for file in glob("{}/*.{}".format(root, extension)):

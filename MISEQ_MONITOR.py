@@ -1,8 +1,8 @@
 """
 MISEQ_MONITOR.py
-1) For runs flagged 'needsprocessing' (And no error flag), unzip fastqs to local disk
-2) Process the run by clling MISEQ_PIPELINE.py
-3) Upload results back to macdatafile
+1) For runs flagged 'needsprocessing' that have not yet been processed, copy fastqs to local disk
+2) Process the run by calling MISEQ_PIPELINE.py
+3) Upload results to the network drive
 """
 
 pipeline_version = '5.3'
@@ -32,8 +32,6 @@ def post_files(files, destination):
 while True:
 
     runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
-
-	# OVERRIDE
     runs = glob(macdatafile_mount + 'MiSeq/runs/140212_M01841_0056_000000000-A64G4/{}'.format(NEEDS_PROCESSING))
 
     runs_needing_processing = []
@@ -105,8 +103,8 @@ while True:
             #logger.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
             continue
 
+		# If a local copy of the unzipped fastq exists, skip this step
         local_file = home + run_name + '/' + filename
-        # if local copy of unzipped fastq exists, skip
         if os.path.exists(local_file.replace('.gz', '')):
             continue
 
@@ -137,24 +135,22 @@ while True:
     result_path = curr_run.replace(NEEDS_PROCESSING, 'Results')
     result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
     log_path = '{}/logs'.format(result_path_final)
-    counts_path = '{}/counts'.format(log_path)
     coverage_maps_path = '{}/coverage_maps'.format(result_path_final)
 
     # Create sub-folders if needed
-    for path in [result_path, result_path_final, log_path, counts_path, coverage_maps_path]:
+    for path in [result_path, result_path_final, log_path, coverage_maps_path]:
         if not os.path.exists(path): os.mkdir(path)
 
-    # Post files to each appropriate sub-folder
+    # Post files to appropriate sub-folders
     logging.info("Posting results to {}".format(result_path))
     if mode == 'Amplicon':
         v3_path = '{}/v3_tropism'.format(result_path_final)
         if not os.path.exists(v3_path): os.mkdir(v3_path)
         post_files(glob(home + run_name + '/*.v3prot'), v3_path)
-        post_files(glob(home + run_name + '/v3_tropism_summary.txt'), v3_path)
+        post_files(glob(home + run_name + '/v3_tropism_summary.txt'), result_path_final)
 
-    #post_files(glob(home + run_name + '/*.counts'), counts_path)
     post_files(glob(home + run_name + '/*.log'), log_path)
-    post_files(glob(home + run_name + '/collated_counts.csv'), counts_path)
+    post_files(glob(home + run_name + '/collated_counts.csv'), result_path_final)
     post_files(glob(home + run_name + '/collated_conseqs.csv'), result_path_final)
     post_files(glob(home + run_name + '/amino_frequencies.csv'), result_path_final)
     post_files(glob(home + run_name + '/nucleotide_frequencies.csv'), result_path_final)
