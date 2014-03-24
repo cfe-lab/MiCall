@@ -154,6 +154,7 @@ factory_barrier(single_thread_factory)
 logger.info("Collating csf2counts.log files")
 miseq_logging.collate_logs(root, "csf2counts.log", "csf2counts.log")
 
+
 # Collate lines from csf2counts-derived frequency files
 collated_amino_freqs_path = "{}/amino_frequencies.csv".format(root)
 logger.info("collate_frequencies({},{},{})".format(root,collated_amino_freqs_path,"amino"))
@@ -173,9 +174,14 @@ collated_counts_path = "{}/collated_counts.csv".format(root)
 logger.info("collate_counts({},{})".format(root,collated_counts_path))
 miseq_modules.collate_counts(root,collated_counts_path)
 
-# Generate coverage maps
+# Generate coverage maps (For clean and unclean data...)
 command = ["python","generate_coverage_plots.py",collated_amino_freqs_path,"{}/coverage_maps".format(root)]
-logger.info(command)
+logger.info(" ".join(command))
+subprocess.call(command)
+
+collated_clean_amino_freqs_path = "{}/amino_cleaned_frequencies.csv".format(root)
+command = ["python","generate_coverage_plots.py",collated_clean_amino_freqs_path,"{}/coverage_maps".format(root)]
+logger.info(" ".join(command))
 subprocess.call(command)
 
 # Delete local files on the cluster that shouldn't be stored

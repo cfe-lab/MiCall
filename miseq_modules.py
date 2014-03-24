@@ -49,11 +49,27 @@ def collate_frequencies (run_path,output_path,type):
     else:
         raise Exception("Incorrect type parameter")
 
+    # Summarize uncleaned freqs
+    with open(output_path, "w") as f_out:
+        f_out.write("{}\n".format(header))
+        for path in [x for x in glob.glob("{}/*.{}".format(run_path,file_extension)) if "clean.{}".format(file_extension) not in x]:
+            prefix = (os.path.basename(path)).rstrip(".{}".format(file_extension))
+            sample, region, q = prefix.split(".")[:3]
+            with open(path,"r") as f:
+                lines = f.readlines()
+
+            for j, line in enumerate(lines):
+                if j == 0:
+                    continue
+                f_out.write("{},{},{},{}\n".format(sample, region, q, line.rstrip("\n")))
+
+    # Summarize clean freqs
+    file_extension = "clean.{}".format(file_extension)
+
+    output_path = output_path.replace("_frequencies.csv", "_cleaned_frequencies.csv")
     with open(output_path, "w") as f_out:
         f_out.write("{}\n".format(header))
         for path in glob.glob("{}/*.{}".format(run_path,file_extension)):
-
-            # Eliminate end of the filename
             prefix = (os.path.basename(path)).rstrip(".{}".format(file_extension))
             sample, region, q = prefix.split(".")[:3]
             with open(path,"r") as f:

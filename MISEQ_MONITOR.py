@@ -18,7 +18,7 @@ def mark_run_as_disabled(curr_run):
     open(curr_run.replace(NEEDS_PROCESSING, ERROR_PROCESSING), 'w').close()
 
 def execute_command(command):
-    logger.info(" ".join(command))
+    #logger.info(" ".join(command))
     stdout, stderr = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
     if stderr != "": logging.warn(stderr)
     return stdout
@@ -32,7 +32,7 @@ def post_files(files, destination):
 while True:
 
     runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
-    runs = glob(macdatafile_mount + 'MiSeq/runs/140212_M01841_0056_000000000-A64G4/{}'.format(NEEDS_PROCESSING))
+    #runs = glob(macdatafile_mount + 'MiSeq/runs/140212_M01841_0056_000000000-A64G4/{}'.format(NEEDS_PROCESSING))
 
     runs_needing_processing = []
     for run in runs:
@@ -150,10 +150,7 @@ while True:
         post_files(glob(home + run_name + '/v3_tropism_summary.txt'), result_path_final)
 
     post_files(glob(home + run_name + '/*.log'), log_path)
-    post_files(glob(home + run_name + '/collated_counts.csv'), result_path_final)
-    post_files(glob(home + run_name + '/collated_conseqs.csv'), result_path_final)
-    post_files(glob(home + run_name + '/amino_frequencies.csv'), result_path_final)
-    post_files(glob(home + run_name + '/nucleotide_frequencies.csv'), result_path_final)
+    post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
     post_files(glob(home + run_name + '/coverage_maps/*.png'), coverage_maps_path)
 
     # Close the log and copy it to macdatafile
