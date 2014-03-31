@@ -400,7 +400,7 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
 def system_call(command):
     import logging, subprocess
     logger = logging.getLogger()
-    logger.debug(command)
+    logger.info(command)
     subprocess.call(command, shell=True)
 
 def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=30, num_threads=1):

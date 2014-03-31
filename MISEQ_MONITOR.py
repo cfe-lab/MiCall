@@ -5,7 +5,7 @@ MISEQ_MONITOR.py
 3) Upload results to the network drive
 """
 
-pipeline_version = '5.3'
+pipeline_version = '5.3.1b-UPDATED-BOWTIE'
 
 import logging, miseq_logging, miseqUtils, os, subprocess, sys, time
 from settings import *
@@ -18,7 +18,7 @@ def mark_run_as_disabled(curr_run):
     open(curr_run.replace(NEEDS_PROCESSING, ERROR_PROCESSING), 'w').close()
 
 def execute_command(command):
-    #logger.info(" ".join(command))
+    logger.info(" ".join(command))
     stdout, stderr = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
     if stderr != "": logging.warn(stderr)
     return stdout
@@ -31,8 +31,12 @@ def post_files(files, destination):
 # Process runs flagged for processing not already processed by this version of the pipeline
 while True:
 
-    runs = glob(macdatafile_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
-    #runs = glob(macdatafile_mount + 'MiSeq/runs/140212_M01841_0056_000000000-A64G4/{}'.format(NEEDS_PROCESSING))
+    runs = glob(rawdata_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
+    #runs = glob(rawdata_mount + 'MiSeq/runs/140127_M01841_0051_000000000-A64E4/{}'.format(NEEDS_PROCESSING))
+    #runs += glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
+    #runs += glob(rawdata_mount + 'MiSeq/runs/131112_M01841_0040_000000000-A5F9H/{}'.format(NEEDS_PROCESSING))
+    #runs += glob(rawdata_mount + 'MiSeq/runs/131101_M01841_0037_000000000-A5F9E/{}'.format(NEEDS_PROCESSING))
+    #runs = glob(rawdata_mount + 'MiSeq/runs/0_testing_amplicon/{}'.format(NEEDS_PROCESSING))
 
     runs_needing_processing = []
     for run in runs:
@@ -72,6 +76,12 @@ while True:
     local_file = home + run_name + '/SampleSheet.csv'
     execute_command(['rsync', '-a', remote_file, local_file])
 
+    # Delete raw tiffs from this run
+    logger.info("Deleting tiffs from {}Images/Focus/L001/*".format(root))
+    for tiff in glob("{}Images/Focus/L001/*/*.tif".format(root)):
+        log.info("os.remove({})".format(tiff))
+        os.remove(tiff)
+
     try:
         with open(local_file, 'rU') as sample_sheet:
             run_info = miseqUtils.sampleSheetParser(sample_sheet)
@@ -92,15 +102,17 @@ while True:
 
         # Report number of reads failing to demultiplex to the log
         if filename.startswith('Undetermined'):
-            #if filename.endswith('_L001_R2_001.fastq.gz'):
-                # the second file will have exactly the same number of lines
-            #    continue
-            # do word count directly on stream redirected from gunzip
-            #p1 = subprocess.Popen(['gunzip', '-c', gz_file], stdout=subprocess.PIPE)
-            #p2 = subprocess.Popen(['wc', '-l'], stdin=p1.stdout, stdout=subprocess.PIPE)
-            #output = p2.communicate()[0]
-            #failed_demultiplexing = output.strip(' \n')
-            #logger.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
+
+            # Second file has the same number of lines - don't bother
+            if filename.endswith('_L001_R2_001.fastq.gz'):
+                continue
+
+            # Do word count directly on stream redirected from gunzip
+            p1 = subprocess.Popen(['gunzip', '-c', gz_file], stdout=subprocess.PIPE)
+            p2 = subprocess.Popen(['wc', '-l'], stdin=p1.stdout, stdout=subprocess.PIPE)
+            output = p2.communicate()[0]
+            failed_demultiplexing = output.strip(' \n')
+            logger.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
             continue
 
 		# If a local copy of the unzipped fastq exists, skip this step
@@ -147,13 +159,15 @@ while True:
         v3_path = '{}/v3_tropism'.format(result_path_final)
         if not os.path.exists(v3_path): os.mkdir(v3_path)
         post_files(glob(home + run_name + '/*.v3prot'), v3_path)
-        post_files(glob(home + run_name + '/v3_tropism_summary.txt'), result_path_final)
 
     post_files(glob(home + run_name + '/*.log'), log_path)
     post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
     post_files(glob(home + run_name + '/coverage_maps/*.png'), coverage_maps_path)
 
-    # Close the log and copy it to macdatafile
+
+
+
+    # Close the log and copy it to rawdata
     logger.info("===== {} successfully completed! =====".format(run_name))
     logging.shutdown()
     execute_command(['rsync', '-a', log_file, '{}/{}'.format(log_path, os.path.basename(log_file))])

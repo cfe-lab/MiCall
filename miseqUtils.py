@@ -171,8 +171,8 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
             continue
 
         #seq1 = '-'*pos1 + censor_bases(seq1, qual1, cutoff)
-        seq1 = '-'*pos1 + seq1     # FIXME: We no longer censor bases up front
-        qual1 = '-'*pos1 + qual1    # FIXME: Give quality string the same offset
+        seq1 = '-'*(pos1-1) + seq1     # FIXME: We no longer censor bases up front
+        qual1 = '!'*(pos1-1) + qual1    # FIXME: Give quality string the same offset
 
 
         # No more lines
@@ -199,8 +199,8 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
                 continue
 
             #seq2 = '-'*pos2 + censor_bases(seq2, qual2, cutoff)
-            seq2 = '-'*pos2 + seq2      # FIXME: We no longer censor bases up front
-            qual2 = '-'*pos2 + qual2     # FIXME: Give quality string the same offset
+            seq2 = '-'*(pos2-1) + seq2      # FIXME: We no longer censor bases up front
+            qual2 = '!'*(pos2-1) + qual2     # FIXME: Give quality string the same offset
 
             mseq = merge_pairs(seq1, seq2, qual1, qual2, cutoff)    # FIXME: We now feed these quality data into merge_pairs
 

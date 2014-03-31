@@ -105,10 +105,20 @@ for qcut in sam2csf_q_cutoffs:
 
 factory_barrier(single_thread_factory)
 
-
-
 ### Begin g2p (For Amplicon)
 if mode == 'Amplicon':
+
+    # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
+    for env_csf_file in [x for x in glob(root + '/*.HIV1B-env.*.csf') if "clean" not in x and "contam" not in x]:
+        command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
+        log_path = "{}.g2p.log".format(env_csf_file)
+        queue_request = single_thread_factory.queue_work(command, log_path, log_path)
+        if queue_request:
+            p, command = queue_request
+            logger.info("pID {}: {}".format(p.pid, command))
+    factory_barrier(single_thread_factory)
+    logger.info("Collating *.g2p.log files")
+    miseq_logging.collate_logs(root, "g2p.log", "g2p.log")
 
     # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
     for env_csf_file in glob(root + '/*.HIV1B-env.*.clean.csf'):
@@ -123,9 +133,9 @@ if mode == 'Amplicon':
     miseq_logging.collate_logs(root, "g2p.log", "g2p.log")
 
     # Summarize the v3prot files in v3_tropism_summary.txt
-    with open("{}/v3_tropism_summary.txt".format(root), 'wb') as summary_file:
+    with open("{}/v3_tropism_summary.csv".format(root), 'wb') as summary_file:
         summary_file.write("sample,q_cutoff,fpr_cutoff,min_count,total_x4,total_reads,proportion_x4\n")
-        for file in glob(root + '/*.v3prot'):
+        for file in [x for x in glob(root + '/*.v3prot') if '.clean.v3prot' not in x]:
             prefix, gene, sam2csf_q_cutoff = file.split('.')[:3]
 
             # Determine proportion x4 under different FPR cutoffs / min counts
@@ -138,6 +148,25 @@ if mode == 'Amplicon':
                                 fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
                     except Exception as e:
                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
+
+    # Summarize the v3prot files in v3_tropism_summary.txt
+    with open("{}/v3_tropism_summary_clean.csv".format(root), 'wb') as summary_file:
+        summary_file.write("sample,q_cutoff,fpr_cutoff,min_count,total_x4,total_reads,proportion_x4\n")
+        for file in glob(root + '/*.clean.v3prot'): 
+            prefix, gene, sam2csf_q_cutoff = file.split('.')[:3]
+
+            # Determine proportion x4 under different FPR cutoffs / min counts
+            for fpr_cutoff in g2p_fpr_cutoffs:
+                for mincount in v3_mincounts:
+                    try:
+                        sample = prefix.split('/')[-1]
+                        proportion_x4, total_x4_count, total_count = miseqUtils.prop_x4(file, fpr_cutoff, mincount)
+                        summary_file.write("{},{},{},{},{},{},{:.3}\n".format(sample, sam2csf_q_cutoff,
+                                fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
+                    except Exception as e:
+                        logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
+
+
 
 ### Repeat csf2counts
 for csf_file in glob(root + '/*.clean.csf'):
@@ -189,6 +218,6 @@ logger.info("Deleting intermediary files")
 for extension in file_extensions_to_delete:
     for file in glob("{}/*.{}".format(root, extension)):
         logging.debug("os.remove({})".format(file))
-        os.remove(file)
+        #os.remove(file)
 
 logging.shutdown()
