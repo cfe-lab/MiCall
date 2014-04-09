@@ -40,9 +40,9 @@ This will document the installation steps for Eclipse with PyDev on Ubuntu, adap
 12. Choose Clone URI, and paste this URI: 192.168.69.159:/usr/local/git/miseqpipeline.git
 13. Get the user and password from your supervisor.
 14. Take all the branches, and select dev as your initial branch.
-15. Select import existing projects.
+15. Select import existing projects, and finish the import.
+15. Download the source tarball from the [latest release of bowtie2][bowtie2].
 16. Create a data folder somewhere on your workstation, like ~/data. Create subdirectories called miseq and RAW_DATA.
-17. Start Windows Explorer by typing Windows-E, right click on your network, and choose Map network drive....
 18. Connect to the shared drive [using CIFS][cifs] and mount smb://192.168.68.144/RAW_DATA as /media/RAW_DATA.
 19. Navigate down to /media/RAW_DATA/MiSeq/runs, pick a recent folder, and make sure it has a file named needsprocessing.
 20. Copy SampleSheet.csv to a sample run folder under your local RAW_DATA folder.
@@ -59,4 +59,5 @@ This will document the installation steps for Eclipse with PyDev on Ubuntu, adap
 
 [eclipse]: https://www.eclipse.org/downloads/
 [pydev]: http://pydev.org/updates
+[bowtie2]: https://github.com/BenLangmead/bowtie2/releases
 [cifs]: https://wiki.ubuntu.com/MountWindowsSharesPermanently
