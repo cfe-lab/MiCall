@@ -1,8 +1,10 @@
 Setting up a developer workstation
 ==================================
 
-This will document the installation steps for Eclipse with PyDev on Ubuntu, adapt as needed to your preferred IDE or operating system.
+This will document the installation steps to get the miseq pipeline running locally on your workstation.
+The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferred IDE or operating system.
 
+1. Check that you are running a 64-bit operating system, or bowtie2 won't work. Check About this Computer under the gear menu.
 1. Check the version of Java you have installed:
 
         java -version
@@ -41,7 +43,30 @@ This will document the installation steps for Eclipse with PyDev on Ubuntu, adap
 13. Get the user and password from your supervisor.
 14. Take all the branches, and select dev as your initial branch.
 15. Select import existing projects, and finish the import.
-15. Download the source tarball from the [latest release of bowtie2][bowtie2].
+15. Download the latest version of [bowtie2's binaries for Linux][bowtie2].
+15. Right click and choose Expand Here. Change the folder owner to root, move it to /opt, and add it to the path.
+
+        chmod g-w -R bowtie2-2.2.1
+        sudo chown root:root -R bowtie2-2.2.1
+        sudo mv bowtie2-2.2.1 /opt
+        sudo vi /etc/environment # add :/opt/bowtie2-2.2.1 and logout/login
+        bowtie2 --version # smoke test
+
+16. Before you can build samtools, you will need these libraries:
+
+        sudo apt-get install zlib1g-dev libncurses5-dev
+
+16. Download the latest version of the [source for samtools][samtools].
+16. Extract the files, and follow the instructions in the INSTALL file. Copy the samtools executable to /usr/bin.
+16. Before you can build HyPhy, you will need these libraries:
+
+        sudo apt-get install build-essential python-dev libcurl4-openssl-dev libcrypto++-dev libssl-dev
+
+16. Download the latest [source for HyPhy][hyphy]. Right click the zip file and choose Expand Here. Then run the setup script:
+
+        cd ~/Downloads/hyphy-master/src/lib
+        sudo python setup.py install
+
 16. Create a data folder somewhere on your workstation, like ~/data. Create subdirectories called miseq and RAW_DATA.
 18. Connect to the shared drive [using CIFS][cifs] and mount smb://192.168.68.144/RAW_DATA as /media/RAW_DATA.
 19. Navigate down to /media/RAW_DATA/MiSeq/runs, pick a recent folder, and make sure it has a file named needsprocessing.
@@ -50,7 +75,9 @@ This will document the installation steps for Eclipse with PyDev on Ubuntu, adap
 22. Select all the .fastq.gz files you copied, right click, and choose Extract Here.
 22. Delete the compressed versions of the files.
 22. Copy settings_default.py to settings.py, and open it for editing.
-23. Point macdatafile_mount at your local RAW_DATA folder, replace all the bpsh strings with empty strings, and set mapping_ref_path to "reference_sequences/cfe".
+23. Point macdatafile_mount at your local RAW_DATA folder, and set mapping_ref_path to "reference_sequences/cfe".
+24. Set both mapping_factory_resources and single_thread_resources to [("", 2)]
+25. If you want to reduce the combinations that run, remove all but the first value in g2p_fpr_cutoffs, v3_mincounts, conseq_mixture_cutoffs. Remove all but 10 from sam2csf_q_cutoffs.
 26. Open the MISEQ_PIPELINE.py file, and type Ctrl-F11 to try and run it. It will fail.
 27. From the Run menu, choose Run Configurations....
 28. Go to the Arguments tab, and type the path to the sample run folder you created above.
@@ -59,5 +86,7 @@ This will document the installation steps for Eclipse with PyDev on Ubuntu, adap
 
 [eclipse]: https://www.eclipse.org/downloads/
 [pydev]: http://pydev.org/updates
-[bowtie2]: https://github.com/BenLangmead/bowtie2/releases
+[bowtie2]: http://sourceforge.net/projects/bowtie-bio/files/bowtie2/
+[samtools]: http://sourceforge.net/projects/samtools/files/
+[hyphy]: https://github.com/veg/hyphy
 [cifs]: https://wiki.ubuntu.com/MountWindowsSharesPermanently
