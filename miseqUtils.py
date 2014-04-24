@@ -80,6 +80,7 @@ def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
                         above which we take the higher quality base, and
                         below which both bases are discarded.
     """
+    # FIXME: N-N-N- prefix due to inproper handling of high Q cutoff
     import logging
 
     mseq = ''   # the merged sequence
@@ -803,6 +804,8 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
     to_skip = 0
 
     # For each line in the pileup (For a given coordinate in the reference)
+    last_pos = 0
+
     infile = open(path_to_pileup, 'rU')
     for line in infile:
 
@@ -814,6 +817,13 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
         # Extract pileup features
         label, pos, en, depth, astr, qstr = line.strip('\n').split('\t')
         pos = int(pos)
+
+        # check if we have skipped a position in reference
+        if pos-1 > last_pos:
+            conseq += 'N' * (pos - last_pos - 1)
+
+        last_pos = pos
+
         alist = []  # alist stores all bases at a given coordinate
         i = 0       # Current index for astr
         j = 0       # Current index for qstr

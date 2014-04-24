@@ -80,7 +80,9 @@ def collate_frequencies (run_path,output_path,type):
                     continue
                 f_out.write("{},{},{},{}\n".format(sample, region, q, line.rstrip("\n")))
 
-def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/share/miseq/refs/csf2counts_amino_refseqs.csv"):
+
+def csf2counts(path, mode, mixture_cutoffs,
+               amino_reference_sequence="/usr/local/share/miseq/refs/csf2counts_amino_refseqs.csv"):
     """
     Calculate HXB2-aligned nucleotide and amino acid counts from a CSF.
     """
@@ -131,32 +133,27 @@ def csf2counts (path,mode,mixture_cutoffs,amino_reference_sequence="/usr/local/s
         logger.error('{} is an empty file'.format(filename))
         return
 
-    # CSFs come from self-alignment derived SAMs: the reads are out of frame.
-    frame_evidence = {}
+    # use *.bam.pileup.conseq to determine reading frame
+    try:
+        handle = open(root+'/'+sample+'.'+ref+'.bam.pileup.conseq', 'rU')
+    except:
+        logger.error('No sample/region-specific consensus sequence for %s, %s' % (sample, ref))
+        return
+
+    pileup_conseq = convert_fasta(handle.readlines())[0][1]
+    handle.close()
+
+    max_score = -999
+    best_frame = 0
     for frame in range(3):
-        frame_evidence[frame] = 0
+        p = translate_nuc(pileup_conseq, frame)
+        aquery, aref, ascore = pair_align(hyphy, refseq, p)
+        if ascore > max_score:
+            best_frame = frame
+            max_score = ascore
 
-    # Look at first five reads in CSF and vote on correct ORF
-    for read_index in range(min(5, len(fasta))): # make this robust to having fewer than 5 reads
-        header, seq = fasta[read_index]
-        max_score = -999
-        best_ORF = 0
-        possible_ORFs = [0, 1, 2]
-
-        # Determine best ORF for this read
-        prefix = ('-'*lefts[header] if mode == 'Nextera' else '')
-        for frame in possible_ORFs:
-            p = translate_nuc(prefix + seq, frame)
-            aquery, aref, ascore = pair_align(hyphy, refseq, p)
-            if ascore > max_score:
-                best_ORF = frame
-                max_score = ascore
-
-        # Read provides 1 of 5 votes for best ORF
-        frame_evidence[best_ORF] += 1
-
-    best_frame = max(frame_evidence, key=lambda n: frame_evidence[n])
-    logging.debug('Best ORF = %d' % best_frame)#logging.debug("Best ORF = {}".format(best_frame))
+    logging.debug('Best ORF = %d' % best_frame)
+    #logging.debug("Best ORF = {}".format(best_frame))
 
     nuc_counts = {} # Base counts by self-consensus coordinate
     aa_counts = {}	# Amino counts by self-consensus coordinate
@@ -463,17 +460,24 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
     MAX_REMAPS	Number of extra attempts at remapping before giving up
     """
     import logging, os, subprocess, sys
-    from miseqUtils import samBitFlag
+    from miseqUtils import samBitFlag, parse_fasta
     from miseq_modules import system_call
+    import re
+
+    soft_clip = re.compile('^[0-9]+S')  # CIGAR string starts with soft clip
 
     logger = logging.getLogger()
     original_reference = refpath		# Path to the original reference sequence
 
     # Store region codes of static reference fasta in refnames (ConB for HIV, H77 for HCV)
-    with open(refpath+'.fasta', 'rU') as ref_fasta:
-        refnames = []
-        for line in ref_fasta:
-            if line.startswith('>'): refnames.append(line.strip('>\n'))
+    refseq_lengths = {}
+    refnames = []
+    handle = open(refpath+'.fasta', 'rU')
+    ref_fasta = parse_fasta(handle)
+    for h, s in ref_fasta:
+        refnames.append(h)
+        refseq_lengths.update({h: len(s)})
+
 
     # Deduce R1/R2 file pairing
     root = '/'.join(R1_fastq.split('/')[:-1])
@@ -520,6 +524,16 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 
         # SAM documentation explains what these fields mean - http://samtools.sourceforge.net/SAMv1.pdf
         qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')[:11]
+
+
+        # TODO: remove soft clips that extend beyond boundaries of the reference
+        if int(pos) == 0:
+            matches = soft_clip.findall(cigar)
+            if len(matches) > 0:
+                clip_length = int(matches[0].rstrip('S'))
+
+        if refname != '*' and int(pos) == refseq_lengths[refname]: # FIXME: adjust for zero-index?
+            pass
 
         # SAM bitwise flag variable specifies whether read is paired, successfully mapped, etc
         bitinfo = samBitFlag(flag)
