@@ -92,7 +92,7 @@ for csf_file in glob(root + '/*.csf'):
 
 factory_barrier(single_thread_factory)
 
-"""
+
 ### Begin cross-contamination filter
 logger.info('Filtering for cross-contamination')
 
@@ -150,7 +150,7 @@ for csf_file in glob(root + '/*.clean.csf'):
     if queue_request:
         p, command = queue_request
         logger.info("pID {}: {}".format(p.pid, command))
-"""
+
 
 factory_barrier(single_thread_factory)
 logger.info("Collating csf2counts.log files")
