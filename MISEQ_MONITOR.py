@@ -5,7 +5,7 @@ MISEQ_MONITOR.py
 3) Upload results to the network drive
 """
 
-pipeline_version = '5.3.1b-UPDATED-BOWTIE'
+pipeline_version = '5.3-RERUNc'
 
 import logging, miseq_logging, miseqUtils, os, subprocess, sys, time
 from settings import *
@@ -36,7 +36,7 @@ while True:
     #runs += glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
     #runs += glob(rawdata_mount + 'MiSeq/runs/131112_M01841_0040_000000000-A5F9H/{}'.format(NEEDS_PROCESSING))
     #runs += glob(rawdata_mount + 'MiSeq/runs/131101_M01841_0037_000000000-A5F9E/{}'.format(NEEDS_PROCESSING))
-    #runs = glob(rawdata_mount + 'MiSeq/runs/0_testing_amplicon/{}'.format(NEEDS_PROCESSING))
+    #runs = glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
 
     runs_needing_processing = []
     for run in runs:
@@ -77,10 +77,10 @@ while True:
     execute_command(['rsync', '-a', remote_file, local_file])
 
     # Delete raw tiffs from this run
-    logger.info("Deleting tiffs from {}Images/Focus/L001/*".format(root))
-    for tiff in glob("{}Images/Focus/L001/*/*.tif".format(root)):
-        log.info("os.remove({})".format(tiff))
-        os.remove(tiff)
+    # logger.info("Deleting tiffs from {}Images/Focus/L001/*".format(root))
+    #for tiff in glob("{}Images/Focus/L001/*/*.tif".format(root)):
+    #    log.info("os.remove({})".format(tiff))
+    #    os.remove(tiff)
 
     try:
         with open(local_file, 'rU') as sample_sheet:

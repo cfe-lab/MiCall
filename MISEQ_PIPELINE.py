@@ -91,7 +91,6 @@ for csf_file in glob(root + '/*.csf'):
 
 factory_barrier(single_thread_factory)
 
-
 ### Begin cross-contamination filter
 logger.info('Filtering for cross-contamination')
 

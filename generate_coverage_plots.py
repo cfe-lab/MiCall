@@ -20,37 +20,28 @@ with open(amino_freq_csv, "r") as f:
 if not os.access(images_folder, os.F_OK):
 	os.mkdir(images_folder)
 
-# amino_cleaned_frequencies.csv
-
 # Get all coordinates for one group of data (A particular sample, region, q-cutoff combination)
 for sample in set([x["sample"] for x in my_rows]):
 	for region in set([x["region"] for x in my_rows if x["sample"] == sample]):
 		for q in set([x["q-cutoff"] for x in my_rows if x["sample"] == sample and x["region"] == region]):
-
 			dataset = [x for x in my_rows if x["sample"] == sample and x["region"] == region and x["q-cutoff"] == q]
 			dataset.sort(key=lambda row: int(row['refseq.aa.pos']))
 
-			# FIXME: MAKE MORE ROBUST, HAVE FILES WRITTEN ON SAFE PATH
-			csv_tmp_file = "{}_{}_{}.csv".format(sample,region,q)
+			# Write temp CSV file R for this (sample, region, q-cutoff)
+			csv_file = "{}_{}_{}.csv".format(sample,region,q)
 			if "_cleaned_" in amino_freq_csv:
-				csv_tmp_file = "{}_{}".format("CLEAN", os.path.basename(csv_tmp_file))
-
-			# Write temp CSV file for R for this (sample, region, q-cutoff)
-			with open(csv_tmp_file,"wb") as f_out:
+				csv_file = "CLEAN_{}".format(csv_file)
+			csv_path = "/tmp/{}".format(csv_file)
+			with open(csv_path,"wb") as f_out:
 				f_out.write("refseq.aa.pos,coverage\n")
 				for row in dataset:
-
-					if int(row['refseq.aa.pos']) < 180 or int(row['refseq.aa.pos']) > 380:
-						continue
-
 					coverage = 0
 					for aa in "ACDEFGHIKLMNPQRSTVWY*":
 						coverage += int(row[aa])
-
 					f_out.write("{},{}\n".format(row['refseq.aa.pos'],coverage))
 
-			# Call the R script on the temp csv, then move the png into place and remove the temp csv
-			png_file = csv_tmp_file.replace(".csv", ".png")
-			os.system("/usr/bin/env Rscript coverage_plot.R {} {} {} {} {}".format(csv_tmp_file, sample, region, q, png_file))
-			os.remove(csv_tmp_file)
-			shutil.move(png_file, "{}/{}".format(images_folder.rstrip("/"),png_file))
+			# Call the R script on the temp csv, then move the png into place + remove the temp csv
+			png_path = csv_path.replace(".csv", ".png")
+			os.system("/usr/bin/env Rscript coverage_plot.R {} {} {} {} {}".format(csv_path, sample, region, q, png_path))
+			os.remove(csv_path)
+			shutil.move(png_path, "{}/{}".format(images_folder.rstrip("/"),png_path))
