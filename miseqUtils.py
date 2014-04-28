@@ -80,6 +80,7 @@ def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
                         above which we take the higher quality base, and
                         below which both bases are discarded.
     """
+    # FIXME: N-N-N- prefix due to inproper handling of high Q cutoff
     import logging
 
     mseq = ''   # the merged sequence
@@ -87,7 +88,7 @@ def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
     if len(seq1) > len(seq2):
         # require seq2 to be the longer string, if strings are unequal lengths
         seq1, seq2 = seq2, seq1
-        qual1, qual2 = qual2, qual1 # FIXME: quality strings must be concordant
+        qual1, qual2 = qual2, qual1  # FIXME: quality strings must be concordant
 
     for i, c2 in enumerate(seq2):
         # FIXME: Track the q-score of each base at each position
@@ -100,6 +101,7 @@ def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
             # Gaps are given the lowest q-rank (q = -1) but are NOT N-censored
             if c1 == '-' and c2 == '-':
                 mseq += '-'
+                continue
 
             # Reads agree and at least one has sufficient confidence
             if c1 == c2:
@@ -136,85 +138,48 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
     Parse SAM file contents and return FASTA. For matched read pairs,
     merge the reads together into a single sequence
     """
-    fasta = []
-    lines = infile.readlines()
 
-    # If this is a completely empty file, return
-    if len(lines) == 0:
-        return None
+    # build dictionary of paired reads
+    data = {}
+    for line in infile:
+        if line.startswith('@'):
+            # skip SAM header line
+            continue
 
-    # Skip top SAM header lines
-    for start, line in enumerate(lines):
-        if not line.startswith('@'):
-            break   # exit loop with [start] equal to index of first line of data
+        qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')[:11]
 
-    # If this is an empty SAM, return
-    if start == len(lines)-1:
-        return None
-
-    i = start
-    while i < len(lines):
-        qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = lines[i].strip('\n').split('\t')[:11]
-
-        # If read failed to map or has poor mapping quality, skip it
         if refname == '*' or cigar == '*' or int(mapq) < mapping_cutoff:
-            i += 1
+            # skip reads that failed to map
             continue
 
-        pos1 = int(pos)
-        # shift = offset of read start from reference start
+        if qname not in data:
+            data.update({qname: []})
+
         shift, seq1, qual1 = apply_cigar(cigar, seq, qual)
+        pos1 = int(pos)
+        seq2 = '-'*(pos1-1) + seq1  # pad sequence on left
+        qual2 = '!'*(pos1-1) + qual1
+        data[qname].append((seq2, qual2))
 
-        if not seq1:
-            # failed to parse CIGAR string
-            i += 1
-            continue
+    infile.close()
 
-        #seq1 = '-'*pos1 + censor_bases(seq1, qual1, cutoff)
-        seq1 = '-'*(pos1-1) + seq1     # FIXME: We no longer censor bases up front
-        qual1 = '!'*(pos1-1) + qual1    # FIXME: Give quality string the same offset
+    # convert to FASTA by merging mate pairs
+    fasta = []
+    for qname in data.iterkeys():
+        if len(data[qname]) > 1:
+            seq1, qual1 = data[qname][0]
+            seq2, qual2 = data[qname][1]
+            mseq = merge_pairs(seq1, seq2, qual1, qual2, cutoff)
 
-
-        # No more lines
-        if (i+1) == len(lines):
-            break
-
-        # Look ahead in the SAM for matching read
-        qname2, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = lines[i+1].strip('\n').split('\t')[:11]
-
-        if qname2 == qname:
-            if refname == '*' or cigar == '*':
-                # Second read failed to map - add unpaired read to FASTA and skip this line
-                fasta.append([qname, seq1])
-                i += 2
+            # exclude merged pairs that introduce too many N's
+            prop_N = mseq.count('N') / float(len(mseq.strip('-')))
+            if prop_N > max_prop_N:
                 continue
 
-            pos2 = int(pos)
-            shift, seq2, qual2 = apply_cigar(cigar, seq, qual)
-
-            if not seq2:
-                # Failed to parse CIGAR
-                fasta.append([qname, seq1])
-                i += 2
-                continue
-
-            #seq2 = '-'*pos2 + censor_bases(seq2, qual2, cutoff)
-            seq2 = '-'*(pos2-1) + seq2      # FIXME: We no longer censor bases up front
-            qual2 = '!'*(pos2-1) + qual2     # FIXME: Give quality string the same offset
-
-            mseq = merge_pairs(seq1, seq2, qual1, qual2, cutoff)    # FIXME: We now feed these quality data into merge_pairs
-
-            # Sequence must not have too many censored bases
-            # TODO: garbage reads should probably be reported
-            if mseq.count('N') / float(len(mseq)) < max_prop_N:
-                fasta.append([qname, mseq])
-
-            i += 2
-            continue
-
-        # ELSE no matched pair
-        fasta.append([qname, seq1])
-        i += 1
+            fasta.append([qname, mseq])
+        else:
+            # unpaired, just copy over sequence
+            fasta.append([qname, data[qname][0][0]])
 
     return fasta
 
@@ -803,6 +768,8 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
     to_skip = 0
 
     # For each line in the pileup (For a given coordinate in the reference)
+    last_pos = 0
+
     infile = open(path_to_pileup, 'rU')
     for line in infile:
 
@@ -814,6 +781,13 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
         # Extract pileup features
         label, pos, en, depth, astr, qstr = line.strip('\n').split('\t')
         pos = int(pos)
+
+        # check if we have skipped a position in reference
+        if pos-1 > last_pos:
+            conseq += 'N' * (pos - last_pos - 1)
+
+        last_pos = pos
+
         alist = []  # alist stores all bases at a given coordinate
         i = 0       # Current index for astr
         j = 0       # Current index for qstr
