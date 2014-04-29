@@ -32,6 +32,7 @@ for sample in set([x["sample"] for x in my_rows]):
 			if "_cleaned_" in amino_freq_csv:
 				csv_file = "CLEAN_{}".format(csv_file)
 			csv_path = "/tmp/{}".format(csv_file)
+
 			with open(csv_path,"wb") as f_out:
 				f_out.write("refseq.aa.pos,coverage\n")
 				for row in dataset:
@@ -42,6 +43,8 @@ for sample in set([x["sample"] for x in my_rows]):
 
 			# Call the R script on the temp csv, then move the png into place + remove the temp csv
 			png_path = csv_path.replace(".csv", ".png")
-			os.system("/usr/bin/env Rscript coverage_plot.R {} {} {} {} {}".format(csv_path, sample, region, q, png_path))
+			command = "/usr/bin/env Rscript coverage_plot.R {} {} {} {} {}".format(csv_path, sample, region, q, png_path)
+			os.system(command)
 			os.remove(csv_path)
-			shutil.move(png_path, "{}/{}".format(images_folder.rstrip("/"),png_path))
+			png_destination = "{}/{}".format(images_folder.rstrip("/"),os.path.basename(png_path))
+			shutil.move(png_path, png_destination)
