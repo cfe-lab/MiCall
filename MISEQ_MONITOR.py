@@ -30,21 +30,18 @@ def post_files(files, destination):
 
 # Process runs flagged for processing not already processed by this version of the pipeline
 while True:
-
     runs = glob(rawdata_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
-    #runs = glob(rawdata_mount + 'MiSeq/runs/140127_M01841_0051_000000000-A64E4/{}'.format(NEEDS_PROCESSING))
-    #runs += glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
-    #runs += glob(rawdata_mount + 'MiSeq/runs/131112_M01841_0040_000000000-A5F9H/{}'.format(NEEDS_PROCESSING))
-    #runs += glob(rawdata_mount + 'MiSeq/runs/131101_M01841_0037_000000000-A5F9E/{}'.format(NEEDS_PROCESSING))
     #runs = glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
 
     runs_needing_processing = []
     for run in runs:
         result_path = '{}/version_{}'.format(run.replace(NEEDS_PROCESSING, 'Results'), pipeline_version)
 
+        # FIXME: what does this mean?
         if os.path.exists(run.replace(NEEDS_PROCESSING, ERROR_PROCESSING)):
             continue
 
+        # if version-matched Results folder already exists, then do not re-process
         if not os.path.exists(result_path):
             runs_needing_processing.append(run)
 
@@ -71,7 +68,7 @@ while True:
     except Exception as e:
         raise Exception("Couldn't setup logging (init_logging() threw exception '{}') - HALTING NOW!".format(str(e)))
 
-    # SampleSheet.csv needed to determine the mode and sample T-primer
+    # transfer SampleSheet.csv
     remote_file = curr_run.replace(NEEDS_PROCESSING, 'SampleSheet.csv')
     local_file = home + run_name + '/SampleSheet.csv'
     execute_command(['rsync', '-a', remote_file, local_file])
@@ -84,6 +81,7 @@ while True:
 
     try:
         with open(local_file, 'rU') as sample_sheet:
+            # parse run information from SampleSheet
             run_info = miseqUtils.sampleSheetParser(sample_sheet)
             mode = run_info['Description']
     except Exception as e:
@@ -97,7 +95,7 @@ while True:
         continue
 
     # Copy fastq.gz files to the cluster and unzip them
-    for gz_file in glob(root+'Data/Intensities/BaseCalls/*.fastq.gz'):
+    for gz_file in glob(root+'Data/Intensities/BaseCalls/*R?_001.fastq.gz'):
         filename = os.path.basename(gz_file)
 
         # Report number of reads failing to demultiplex to the log
@@ -115,13 +113,22 @@ while True:
             logger.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
             continue
 
-        # If a local copy of the unzipped fastq exists, skip this step
+
         local_file = home + run_name + '/' + filename
+
         if os.path.exists(local_file.replace('.gz', '')):
+            # If a local copy of the unzipped fastq exists, skip to next file
             continue
 
+        if os.path.exists(local_file):
+            # a local copy of gzipped FASTQ exists, just decompress and skip
+            execute_command(['gunzip', '-f', local_file])
+            continue
+
+        # otherwise, transfer fastq.gz file and unzip
         execute_command(['rsync', '-a', gz_file, local_file])
         execute_command(['gunzip', '-f', local_file])
+
 
     # Store output of MISEQ_PIPELINE.py in a log + poll continuously to display output to console
     pipeline_log_path = home + run_name + '/MISEQ_PIPELINE_OUTPUT.log'
@@ -165,9 +172,8 @@ while True:
     post_files(glob(home + run_name + '/coverage_maps/*.png'), coverage_maps_path)
 
 
-
-
     # Close the log and copy it to rawdata
     logger.info("===== {} successfully completed! =====".format(run_name))
     logging.shutdown()
     execute_command(['rsync', '-a', log_file, '{}/{}'.format(log_path, os.path.basename(log_file))])
+    
