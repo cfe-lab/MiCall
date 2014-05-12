@@ -232,6 +232,8 @@ def csf2counts(path, mode, mixture_cutoffs,
     rindex = 0						# Where we are in the reference?
     ref_coords = range(len(aref))
 
+    logger.debug("Making qindex_to_refcoord")
+
     # For each coordinate on the reference, create a mapping to the query
     for i in ref_coords:
 
@@ -297,6 +299,7 @@ def csf2counts(path, mode, mixture_cutoffs,
     nuc_assembly_offset = min(lefts.values())
 
     # Output nucleotide counts in reference coordinate space to nuc.csv files
+    logging.debug("Making {}".format(outpath+'.nuc.freqs'))
     nucfile = open(outpath+'.nuc.freqs', 'w')#open("{}.nuc.csv".format(outpath), 'w')
     nucfile.write("query.nuc.pos,refSeq.nuc.pos,A,C,G,T\n")
 
@@ -317,7 +320,6 @@ def csf2counts(path, mode, mixture_cutoffs,
             nucfile.write('\n')
 
         except KeyError:
-            #logger.debug("No coordinate mapping for query nuc {} / amino {} ({})".format(query_nuc_pos, query_aa_pos, filename))
             logger.debug('No coordinate mapping for query nuc %d / amino %d (%s)' % (query_nuc_pos, query_aa_pos, filename))
             continue
 

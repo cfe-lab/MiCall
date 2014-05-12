@@ -35,6 +35,7 @@ else:
         run_info = miseqUtils.sampleSheetParser(sample_sheet)
         mode = run_info['Description']
 
+"""
 ### Begin Mapping
 fastq_files = glob(root + '/*R1*.fastq')
 fastq_files = [f for f in fastq_files if not f.endswith('.Tcontaminants.fastq')]
@@ -91,7 +92,6 @@ for csf_file in glob(root + '/*.csf'):
         logger.info("pID {}: {}".format(p.pid, command))
 
 factory_barrier(single_thread_factory)
-
 
 ### Begin cross-contamination filter
 logger.info('Filtering for cross-contamination')
@@ -168,9 +168,11 @@ if mode == 'Amplicon':
                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
 
 
+"""
 
 ### Repeat csf2counts
-for csf_file in glob(root + '/*.clean.csf'):
+#for csf_file in [x for x in glob(root + '/*.csf') if 'clean.csf' not in x and 'contam.csf' not in x]:
+for csf_file in [x for x in glob(root + '/*F00062*.csf') if 'clean.csf' not in x and 'contam.csf' not in x]:
     # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
     mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
     command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file,mode,mixture_cutoffs,final_alignment_ref_path)
@@ -180,11 +182,9 @@ for csf_file in glob(root + '/*.clean.csf'):
         p, command = queue_request
         logger.info("pID {}: {}".format(p.pid, command))
 
-
 factory_barrier(single_thread_factory)
 logger.info("Collating csf2counts.log files")
 miseq_logging.collate_logs(root, "csf2counts.log", "csf2counts.log")
-
 
 # Collate lines from csf2counts-derived frequency files
 collated_amino_freqs_path = "{}/amino_frequencies.csv".format(root)
@@ -206,6 +206,10 @@ logger.info("collate_counts({},{})".format(root,collated_counts_path))
 miseq_modules.collate_counts(root,collated_counts_path)
 
 # Generate coverage maps (For clean and unclean data...)
+path = "{}/coverage_maps".format(root)
+if not os.path.exists(path):
+    os.mkdir(path)
+
 command = ["python2.7","generate_coverage_plots.py",collated_amino_freqs_path,"{}/coverage_maps".format(root)]
 logger.info(" ".join(command))
 subprocess.call(command)
