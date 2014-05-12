@@ -140,19 +140,23 @@ def csf2counts(path, mode, mixture_cutoffs,
         logger.error('No sample/region-specific consensus sequence for %s, %s' % (sample, ref))
         return
 
-    pileup_conseq = convert_fasta(handle.readlines())[0][1]
+    pileup_conseq = convert_fasta(handle.readlines())[0][1].upper()
+    #print pileup_conseq
     handle.close()
 
     max_score = -999
     best_frame = 0
+    best_alignment = None
     for frame in range(3):
         p = translate_nuc(pileup_conseq, frame)
         aquery, aref, ascore = pair_align(hyphy, refseq, p)
         if ascore > max_score:
             best_frame = frame
             max_score = ascore
+            best_alignment = aquery, aref
 
     logging.debug('Best ORF = %d' % best_frame)
+    #print best_alignment
     #logging.debug("Best ORF = {}".format(best_frame))
 
     nuc_counts = {} # Base counts by self-consensus coordinate

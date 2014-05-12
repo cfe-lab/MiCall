@@ -780,10 +780,10 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
 
         # Extract pileup features
         label, pos, en, depth, astr, qstr = line.strip('\n').split('\t')
-        pos = int(pos)
+        pos = int(pos)  # position in the pileup, 1-index
 
         # check if we have skipped a position in reference
-        if pos-1 > last_pos:
+        if (pos - last_pos) > 1:
             conseq += 'N' * (pos - last_pos - 1)
 
         last_pos = pos
@@ -850,6 +850,14 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
                     alist.append(base)
                     i += 1
                     j += 1
+
+        ## DEBUGGING
+        #atypes = set(alist)
+        #intermed = []
+        #for atype in atypes:
+        #    intermed.append((alist.count(atype), atype))
+        #intermed.sort(reverse=True)
+        #print pos, ','.join(map(lambda x: '%s:%d' % (x[1], x[0]), intermed))
 
         # Is this position dominated by an insertion or deletion?
         insertions = [x for x in alist if '+' in x]

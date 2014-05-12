@@ -5,8 +5,8 @@ MISEQ_MONITOR.py
 3) Upload results to the network drive
 """
 
-pipeline_version = '5.3g-single-sample'
-
+#pipeline_version = '5.3g-single-sample'
+pipeline_version = '5.4'
 import logging, miseq_logging, miseqUtils, os, subprocess, sys, time
 from settings import *
 from glob import glob
@@ -31,12 +31,12 @@ def post_files(files, destination):
 # Process runs flagged for processing not already processed by this version of the pipeline
 while True:
 
-    #runs = glob(rawdata_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
+    runs = glob(rawdata_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
     #runs = glob(rawdata_mount + 'MiSeq/runs/140127_M01841_0051_000000000-A64E4/{}'.format(NEEDS_PROCESSING))
     #runs += glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
     #runs += glob(rawdata_mount + 'MiSeq/runs/131112_M01841_0040_000000000-A5F9H/{}'.format(NEEDS_PROCESSING))
     #runs += glob(rawdata_mount + 'MiSeq/runs/131101_M01841_0037_000000000-A5F9E/{}'.format(NEEDS_PROCESSING))
-    runs = glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
+    #runs = glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
 
     runs_needing_processing = []
     for run in runs:
@@ -115,7 +115,7 @@ while True:
             logger.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
             continue
 
-		# If a local copy of the unzipped fastq exists, skip this step
+        # If a local copy of the unzipped fastq exists, skip this step
         local_file = home + run_name + '/' + filename
         if os.path.exists(local_file.replace('.gz', '')):
             continue
