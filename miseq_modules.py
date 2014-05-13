@@ -321,7 +321,7 @@ def csf2counts(path, mode, mixture_cutoffs,
             qindex += 1
             rindex += 1
 
-        print i, rindex, aref[i], qindex, aquery[i]
+        #print i, rindex, aref[i], qindex, aquery[i]
 
 
     logger.debug('qindex_to_refcoord: ' + str(qindex_to_refcoord))#"qindex_to_refcoord {}".format(qindex_to_refcoord))
@@ -1025,7 +1025,7 @@ def filter_cross_contaminants (root, qcutoff, dbname = 'sample_references', num_
         csf_files = glob(root+'/*.%s.%d.csf' % (region, qcutoff))
         for csf_file in csf_files:
             filename = csf_file.split('/')[-1]
-            print filename
+            #print filename
             sample_name = filename.split('.')[0] # includes S number
 
             # check whether this sample should be excluded from filtering

@@ -5,9 +5,6 @@ MISEQ_MONITOR.py
 3) Upload results to the network drive
 """
 
-#pipeline_version = '5.3g-single-sample'
-pipeline_version = '5.4'
-
 import logging
 import miseq_logging
 import miseqUtils
@@ -18,9 +15,6 @@ import time
 
 from settings import *
 from glob import glob
-
-
-class MiseqMonitor
 
 
 if sys.version_info[:2] != (2, 7):
@@ -181,9 +175,14 @@ while True:
             if not os.path.exists(v3_path): os.mkdir(v3_path)
             post_files(glob(home + run_name + '/*.v3prot'), v3_path)
 
+            nuc_path = result_path_final + '/nuc'
+            if not os.path.exists(nuc_path): os.mkdir(nuc_path)
+            post_files(glob(home + run_name + '/*.nuc'), nuc_path)
+
         post_files(glob(home + run_name + '/*.log'), log_path)
         post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
         post_files(glob(home + run_name + '/coverage_maps/*.png'), coverage_maps_path)
+
 
 
     # Close the log and copy it to rawdata

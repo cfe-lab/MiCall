@@ -233,10 +233,11 @@ logger.info(" ".join(command))
 subprocess.call(command)
 
 # Delete local files on the cluster that shouldn't be stored
-logger.info("Deleting intermediary files")
-for extension in file_extensions_to_delete:
-    for file in glob("{}/*.{}".format(root, extension)):
-        logging.debug("os.remove({})".format(file))
-        os.remove(file)
+if production:
+    logger.info("Deleting intermediary files")
+    for extension in file_extensions_to_delete:
+        for file in glob("{}/*.{}".format(root, extension)):
+            logging.debug("os.remove({})".format(file))
+            os.remove(file)
 
 logging.shutdown()
