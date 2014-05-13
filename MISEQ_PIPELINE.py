@@ -37,8 +37,7 @@ else:
 
 
 ### Begin Mapping
-fastq_files = glob(root + '/*R1*.fastq')
-fastq_files = [f for f in fastq_files if not f.endswith('.Tcontaminants.fastq')]
+fastq_files = glob(root + '/*_R1_001.fastq')
 for fastq in fastq_files:
     fastq_filename = os.path.basename(fastq)
     sample_name, sample_number = fastq_filename.split('_')[:2]
@@ -184,8 +183,7 @@ if mode == 'Amplicon':
 
 
 ### Repeat csf2counts
-#for csf_file in [x for x in glob(root + '/*.csf') if 'clean.csf' not in x and 'contam.csf' not in x]:
-for csf_file in [x for x in glob(root + '/*F00062*.csf') if 'clean.csf' not in x and 'contam.csf' not in x]:
+for csf_file in [x for x in glob(root + '/*.csf') if 'clean.csf' not in x and 'contam.csf' not in x]:
     # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
     mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
     command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file,mode,mixture_cutoffs,final_alignment_ref_path)
