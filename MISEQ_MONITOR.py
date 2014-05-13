@@ -49,8 +49,10 @@ while True:
             continue
 
         # if version-matched Results folder already exists, then do not re-process
-        if not os.path.exists(result_path):
-            runs_needing_processing.append(run)
+        if os.path.exists(result_path) and production:
+            continue
+
+        runs_needing_processing.append(run)
 
     if not runs_needing_processing:
         logging.info('No runs need processing')
