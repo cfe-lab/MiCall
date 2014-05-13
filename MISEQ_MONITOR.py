@@ -7,9 +7,21 @@ MISEQ_MONITOR.py
 
 #pipeline_version = '5.3g-single-sample'
 pipeline_version = '5.4'
-import logging, miseq_logging, miseqUtils, os, subprocess, sys, time
+
+import logging
+import miseq_logging
+import miseqUtils
+import os
+import subprocess
+import sys
+import time
+
 from settings import *
 from glob import glob
+
+
+class MiseqMonitor
+
 
 if sys.version_info[:2] != (2, 7):
     raise Exception("Python 2.7 not detected")
@@ -30,6 +42,7 @@ def post_files(files, destination):
 
 # Process runs flagged for processing not already processed by this version of the pipeline
 while True:
+    # flag indicates that Illumina MiseqReporter has completed pre-processing, files available on NAS
     runs = glob(rawdata_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
     #runs = glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
 
@@ -150,30 +163,30 @@ while True:
                 PIPELINE_log.flush()
                 sys.stdout.write(cursor.read())
 
-    # Determine output paths
-    result_path = curr_run.replace(NEEDS_PROCESSING, 'Results')
-    result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
-    log_path = '{}/logs'.format(result_path_final)
-    coverage_maps_path = '{}/coverage_maps'.format(result_path_final)
+    if production:
+        # Determine output paths
+        result_path = curr_run.replace(NEEDS_PROCESSING, 'Results')
+        result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
+        log_path = '{}/logs'.format(result_path_final)
+        coverage_maps_path = '{}/coverage_maps'.format(result_path_final)
 
-    # Create sub-folders if needed
-    for path in [result_path, result_path_final, log_path, coverage_maps_path]:
-        if not os.path.exists(path): os.mkdir(path)
+        # Create sub-folders if needed
+        for path in [result_path, result_path_final, log_path, coverage_maps_path]:
+            if not os.path.exists(path): os.mkdir(path)
 
-    # Post files to appropriate sub-folders
-    logging.info("Posting results to {}".format(result_path))
-    if mode == 'Amplicon':
-        v3_path = '{}/v3_tropism'.format(result_path_final)
-        if not os.path.exists(v3_path): os.mkdir(v3_path)
-        post_files(glob(home + run_name + '/*.v3prot'), v3_path)
+        # Post files to appropriate sub-folders
+        logging.info("Posting results to {}".format(result_path))
+        if mode == 'Amplicon':
+            v3_path = '{}/v3_tropism'.format(result_path_final)
+            if not os.path.exists(v3_path): os.mkdir(v3_path)
+            post_files(glob(home + run_name + '/*.v3prot'), v3_path)
 
-    post_files(glob(home + run_name + '/*.log'), log_path)
-    post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
-    post_files(glob(home + run_name + '/coverage_maps/*.png'), coverage_maps_path)
+        post_files(glob(home + run_name + '/*.log'), log_path)
+        post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
+        post_files(glob(home + run_name + '/coverage_maps/*.png'), coverage_maps_path)
 
 
     # Close the log and copy it to rawdata
     logger.info("===== {} successfully completed! =====".format(run_name))
     logging.shutdown()
     execute_command(['rsync', '-a', log_file, '{}/{}'.format(log_path, os.path.basename(log_file))])
-    

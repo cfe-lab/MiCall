@@ -3,6 +3,8 @@ settings_default.py
 To make pipeline portable, allow user to specify
 """
 
+production = False  # set this to True to push results to NAS
+
 # MISEQ_MONITOR settings
 delay = 3600            # Delay for polling macdatafile for unprocessed runs
 home = '/data/miseq/'   # Local path on cluster for writing data
@@ -43,5 +45,9 @@ conseq_mixture_cutoffs = [0.01,0.02,0.05,0.1,0.2,0.25]
 #final_alignment_ref_path = "/usr/local/share/miseq/refs/csf2counts_amino_refseqs.csv"
 final_alignment_ref_path = mapping_ref_path.replace('/cfe', '/csf2counts_amino_refseqs.csv')
 
+final_nuc_align_ref_path = mapping_ref_path.replace('/cfe', '/csf_to_fasta_by_nucref.csv')
+
 # Intermediary files to delete when done processing this run
 file_extensions_to_delete = ['bam', 'bt2', 'bt2_metrics', 'pileup', 'filtering.sam', 'csf.fa']
+
+

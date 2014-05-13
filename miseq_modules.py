@@ -81,13 +81,78 @@ def collate_frequencies (run_path,output_path,type):
                 f_out.write("{},{},{},{}\n".format(sample, region, q, line.rstrip("\n")))
 
 
+def csf2nuc(path, nuc_reference_file, min_avg_score=2.):
+    """
+    Generate a FASTA where reads have been aligned and trimmed to some
+    nucleotide reference sequence.  FASTA headers contain index and count
+    of reads.
+    """
+    import os, csv, logging, HyPhy, hyphyAlign
+    logger = logging.getLogger()
+
+    hyphy = HyPhy._THyPhy(os.getcwd(), 1)
+    hyphyAlign.change_settings(hyphy, alphabet=hyphyAlign.nucAlphabet,
+                               scoreMatrix=hyphyAlign.nucScoreMatrix,
+                               gapOpen=20, gapOpen2=20,
+                               gapExtend=10, gapExtend2=10,
+                               noTerminalPenalty=1)
+
+    # set up file paths
+    root = os.path.dirname(path)
+    if root == '':
+        root = '.'
+
+    filename = os.path.basename(path)
+    if not filename.endswith('.csf'):
+        return logger.error('{} is not a CSF file - exiting csf_to_fasta'.format(path))
+    file_prefix = filename.replace('.csf', '')
+    outpath = root+'/'+file_prefix
+
+    sample, ref = filename.split('.')[:2]
+
+    # parse nucleotide reference sequences
+    refseqs = {}
+    with open(nuc_reference_file, 'rb') as f:
+        rows = csv.reader(f)
+        for region, variant, subregion, sequence in rows:
+            if region not in refseqs:
+                refseqs.update({region: {}})
+            # region should correspond to CfE reference notation
+            refseqs[region][subregion] = sequence
+
+    # prepare output files
+    outfiles = {}
+    for subregion in refseqs[ref].iterkeys():
+        handle = open(outpath+'.'+subregion+'.nuc', 'w')
+        handle.write('>Reference_%s_%s\n%s\n' % (ref, subregion, refseqs[region][subregion]))
+        outfiles.update({subregion: handle})
+
+
+    with open(path, 'rU') as f:
+        rows = csv.reader(f, delimiter=',')
+
+        # use pairwise alignment to reference to trim CSF reads
+        for header, offset, seq in rows:
+            for subregion, refseq in refseqs[ref].iteritems():
+                aquery, aref, ascore = hyphyAlign.pair_align(hyphy, refseq, seq)
+                if float(ascore)/len(aref) < min_avg_score:
+                    continue
+                left, right = hyphyAlign.get_boundaries(aref)
+                outfiles[subregion].write('>%s\n%s\n' % (header, aquery[left:right]))
+
+    for handle in outfiles.itervalues():
+        handle.close()
+
+
+
 def csf2counts(path, mode, mixture_cutoffs,
                amino_reference_sequence="/usr/local/share/miseq/refs/csf2counts_amino_refseqs.csv"):
     """
     Calculate HXB2-aligned nucleotide and amino acid counts from a CSF.
+    Assumes that there is a consistent reading frame over the entire alignment.
     """
 
-    import csv, logging, HyPhy, os, sys
+    import csv, logging, HyPhy, os
     from hyphyAlign import change_settings, get_boundaries, pair_align
     from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, translate_nuc
 
@@ -153,11 +218,8 @@ def csf2counts(path, mode, mixture_cutoffs,
         if ascore > max_score:
             best_frame = frame
             max_score = ascore
-            best_alignment = aquery, aref
 
     logging.debug('Best ORF = %d' % best_frame)
-    #print best_alignment
-    #logging.debug("Best ORF = {}".format(best_frame))
 
     nuc_counts = {} # Base counts by self-consensus coordinate
     aa_counts = {}	# Amino counts by self-consensus coordinate
@@ -259,7 +321,7 @@ def csf2counts(path, mode, mixture_cutoffs,
             qindex += 1
             rindex += 1
 
-        #print i, rindex, aref[i], qindex, aquery[i]
+        print i, rindex, aref[i], qindex, aquery[i]
 
 
     logger.debug('qindex_to_refcoord: ' + str(qindex_to_refcoord))#"qindex_to_refcoord {}".format(qindex_to_refcoord))
@@ -321,7 +383,7 @@ def csf2counts(path, mode, mixture_cutoffs,
 
         except KeyError:
             logger.debug('No coordinate mapping for query nuc %d / amino %d (%s)' % (query_nuc_pos, query_aa_pos, filename))
-            continue
+            raise
 
 
         # Store self-aligned nucleotide plurality conseqs
