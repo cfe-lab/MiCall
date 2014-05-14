@@ -130,7 +130,7 @@ def csf2nuc(path, nuc_reference_file, min_avg_score=2.):
     for subregion in refseqs[ref].iterkeys():
         handle = open(outpath+'.'+subregion+'.nuc', 'w')
         handle.write('>Reference_%s_%s\n%s\n' % (ref, subregion, refseqs[region][subregion]))
-        outfiles.update({subregion: handle})
+        outfiles.update({subregion: {'handle': handle, 'count': 0}})
 
 
     with open(path, 'rU') as f:
@@ -142,16 +142,20 @@ def csf2nuc(path, nuc_reference_file, min_avg_score=2.):
                 aquery, aref, ascore = hyphyAlign.pair_align(hyphy, refseq, seq)
                 if float(ascore)/len(aref) < min_avg_score:
                     continue
+
                 left, right = hyphyAlign.get_boundaries(aref)
-                outfiles[subregion].write('>%s\n%s\n' % (header, aquery[left:right]))
+                outfiles[subregion]['handle'].write('>%s\n%s\n' % (header, aquery[left:right]))
+                outfiles[subregion]['count'] += 1
 
-    for handle in outfiles.itervalues():
-        handle.close()
+    for val in outfiles.itervalues():
+        val['handle'].close()
+        if val['count'] == 0:
+            # empty file except for reference sequence, delete
+            os.remove(val['handle'].name)
 
 
 
-def csf2counts(path, mode, mixture_cutoffs,
-               amino_reference_sequence="/usr/local/share/miseq/refs/csf2counts_amino_refseqs.csv"):
+def csf2counts(path, mode, mixture_cutoffs, amino_reference_sequence):
     """
     Calculate HXB2-aligned nucleotide and amino acid counts from a CSF.
     Assumes that there is a consistent reading frame over the entire alignment.
@@ -388,7 +392,7 @@ def csf2counts(path, mode, mixture_cutoffs,
 
         except KeyError:
             logger.debug('No coordinate mapping for query nuc %d / amino %d (%s)' % (query_nuc_pos, query_aa_pos, filename))
-            raise
+            continue
 
 
         # Store self-aligned nucleotide plurality conseqs

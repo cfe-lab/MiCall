@@ -190,4 +190,7 @@ while True:
     # Close the log and copy it to rawdata
     logger.info("===== {} successfully completed! =====".format(run_name))
     logging.shutdown()
-    execute_command(['rsync', '-a', log_file, '{}/{}'.format(log_path, os.path.basename(log_file))])
+
+    if production:
+        execute_command(['rsync', '-a', log_file, '{}/{}'.format(log_path, os.path.basename(log_file))])
+
