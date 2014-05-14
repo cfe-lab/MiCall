@@ -108,6 +108,7 @@ def csf2nuc(path, nuc_reference_file, min_avg_score=2.):
     file_prefix = filename.replace('.csf', '')
     outpath = root+'/'+file_prefix
 
+    # 'ref' corresponds to one of the target/region-specific references, e.g., HIV1-nef
     sample, ref = filename.split('.')[:2]
 
     # parse nucleotide reference sequences
@@ -119,6 +120,10 @@ def csf2nuc(path, nuc_reference_file, min_avg_score=2.):
                 refseqs.update({region: {}})
             # region should correspond to CfE reference notation
             refseqs[region][subregion] = sequence
+
+    if ref not in refseqs:
+        # no nuc ref specified for this region
+        return
 
     # prepare output files
     outfiles = {}

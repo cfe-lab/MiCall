@@ -11,7 +11,7 @@ production = False  # set this to True to push results to NAS
 delay = 3600            # Delay for polling macdatafile for unprocessed runs
 home = '/data/miseq/'   # Local path on cluster for writing data
 #macdatafile_mount = '/media/macdatafile/'    # where NAS is mounted locally
-macdatafile_mount = '/media/RAW_DATA/'
+rawdata_mount = '/media/RAW_DATA/'
 
 NEEDS_PROCESSING = 'needsprocessing'    # File flags
 ERROR_PROCESSING = 'errorprocessing'
