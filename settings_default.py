@@ -14,18 +14,20 @@ base_path += 'production/' if production else 'development/'
 # Local path for writing data
 home = '/data/miseq/'
 
+
+## FIFO settings
+path_to_fifo_scheduler = '/usr/local/share/fifo_scheduler'
+mapping_factory_resources = [("bpsh -1", 6), ("bpsh 0", 6), ("bpsh 1", 8), ("bpsh 2", 8)]
+
+# This factory is allocated with resources with single threaded applications in mind
+single_thread_resources = [("bpsh -1", 24), ("bpsh 0", 24), ("bpsh 1", 32), ("bpsh 2", 32)]
+
+
 ## MISEQ_MONITOR settings
 delay = 3600            # Delay for polling macdatafile for unprocessed runs
 rawdata_mount = '/media/RAW_DATA/'
 NEEDS_PROCESSING = 'needsprocessing'    # File flags
 ERROR_PROCESSING = 'errorprocessing'
-
-
-## MISEQ_PIPELINE settings
-path_to_fifo_scheduler = '/usr/local/share/fifo_scheduler'
-mapping_factory_resources = [("bpsh -1", 6), ("bpsh 0", 6), ("bpsh 1", 8), ("bpsh 2", 8)]
-# This factory is allocated with resources with single threaded applications in mind
-single_thread_resources = [("bpsh -1", 24), ("bpsh 0", 24), ("bpsh 1", 32), ("bpsh 2", 32)]
 
 
 ## Mapping parameters
