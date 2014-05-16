@@ -852,6 +852,7 @@ def g2p_scoring(csf_path, g2p_alignment_cutoff):
             fpr = v3prots[v3prot]['fpr']
             v3protfile.write(">{}_variant_{}_count_{}_fpr_{}\n{}\n".format(prefix, i, count, fpr, v3prot))
 
+
 def sam2csf_with_base_censoring(samfile, censoring_qCutoff, mapping_cutoff, mode, max_prop_N):
     """
     From a path to a remapped SAM containing paired reads, create a comma-delimited,
@@ -861,54 +862,50 @@ def sam2csf_with_base_censoring(samfile, censoring_qCutoff, mapping_cutoff, mode
     Column 2: Left-offset of the read
     Column 3: Gap-stripped sequence (Alignment data is lost)
     """
-
-    import logging, os, sys
+    import logging
     from miseqUtils import len_gap_prefix, sam2fasta
 
-    logger = logging.getLogger()
-
-    # Extract sample (prefix) and region
     filename = samfile.split('/')[-1]
     prefix, region = filename.split('.')[:2]
 
-    # Convert SAM to fasta-structured variable
-    with open(samfile, 'rU') as infile:
-        logging.debug("sam2fasta({}, {}, {}, {})".format(infile, censoring_qCutoff, mapping_cutoff, max_prop_N))
-        fasta = sam2fasta(infile, censoring_qCutoff, mapping_cutoff, max_prop_N)
-
-    # Send warning to standard out if sam2fasta didn't return anything
-    if fasta == None:
-        return logging.warn("{} likely empty or invalid - halting sam2fasta".format(samfile))
-
     csf_filename = '.'.join(map(str,[samfile.replace('.remap.sam', ''), censoring_qCutoff, 'csf']))
 
-    # Amplicon: store rank + read counts in column 1 of CSF (drop individual read qnames)
-    if mode == 'Amplicon':
+    with open(samfile, 'rU') as handle:
+        fasta = sam2fasta(handle, censoring_qCutoff, mapping_cutoff, max_prop_N)
 
-        # Collapse fasta with respect to unique reads into d
-        d = {}
-        for qname, seq in fasta:
-            if d.has_key(seq): d[seq] += 1
-            else: d.update({seq: 1})
+        if mode == 'Amplicon':
+            # compress identical reads
+            d = {}
+            for qname, seq in fasta:
+                if d.has_key(seq):
+                    d[seq] += 1
+                    continue
+                d.update({seq: 1})
 
-        # Sort d by read count and store in intermed
-        intermed = [(count, len_gap_prefix(seq), seq) for seq, count in d.iteritems()]
-        intermed.sort(reverse=True)
+            if len(d) == 0:
+                # empty SAM file or no qualified reads
+                return logging.warn("{} likely empty or invalid - halting sam2fasta".format(samfile))
 
-        # Write CSF to disk
-        with open(csf_filename, 'w') as outfile:
-            for rank, (count, left_offset, seq) in enumerate(intermed):
-                outfile.write('{}_{},{},{}\n'.format(rank, count, left_offset, seq.strip('-')))
+            # sort by read count in decreasing order
+            intermed = [(count, len_gap_prefix(seq), seq) for seq, count in d.iteritems()]
+            intermed.sort(reverse=True)
 
-    # Nextera: store read qname in column 1 of CSF
-    elif mode == 'Nextera':
+            # Write CSF to disk
+            with open(csf_filename, 'w') as outfile:
+                for rank, (count, left_offset, seq) in enumerate(intermed):
+                    outfile.write('{}_{},{},{}\n'.format(rank, count, left_offset, seq.strip('-')))
 
-        # Sort csf by left-gap prefix: the offset of the read relative to the ref seq
-        intermed = [(len_gap_prefix(seq), qname, seq) for qname, seq in fasta]
-        intermed.sort()
-        with open(csf_filename, 'w') as outfile:
-            for (left_offset, qname, seq) in intermed:
-                outfile.write("{},{},{}\n".format(qname, left_offset, seq.strip('-')))
+        elif mode == 'Nextera':
+            # Sort csf by left-gap prefix: the offset of the read relative to the ref seq
+            intermed = [(len_gap_prefix(seq), qname, seq) for qname, seq in fasta]
+            intermed.sort()
+            with open(csf_filename, 'w') as outfile:
+                for (left_offset, qname, seq) in intermed:
+                    outfile.write("{},{},{}\n".format(qname, left_offset, seq.strip('-')))
+
+        else:
+            return logging.warn("ERROR: Unrecognized mode {} in miseqUtils.sam2csf()".format(mode))
+
 
 def slice_outputs(root, region_slices):
     """
