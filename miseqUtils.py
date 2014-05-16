@@ -136,14 +136,13 @@ def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
 def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
     """
     Parse SAM file contents and return FASTA. For matched read pairs,
-    merge the reads together into a single sequence
+    merge the reads together into a single sequence.  Returns a
+    generator that yields name and sequence tuples.
     """
+    cached_reads = {}
 
-    # build dictionary of paired reads
-    data = {}
     for line in infile:
         if line.startswith('@'):
-            # skip SAM header line
             continue
 
         qname, flag, refname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')[:11]
@@ -152,36 +151,31 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
             # skip reads that failed to map
             continue
 
-        if qname not in data:
-            data.update({qname: []})
-
+        # process sequence and quality strings
         shift, seq1, qual1 = apply_cigar(cigar, seq, qual)
         pos1 = int(pos)
         seq2 = '-'*(pos1-1) + seq1  # pad sequence on left
         qual2 = '!'*(pos1-1) + qual1
-        data[qname].append((seq2, qual2))
 
-    infile.close()
+        if qname not in cached_reads:
+            cached_reads.update({qname: (seq2, qual2)})
+            continue
 
-    # convert to FASTA by merging mate pairs
-    fasta = []
-    for qname in data.iterkeys():
-        if len(data[qname]) > 1:
-            seq1, qual1 = data[qname][0]
-            seq2, qual2 = data[qname][1]
-            mseq = merge_pairs(seq1, seq2, qual1, qual2, cutoff)
+        # otherwise we have a matched pair
+        seq1, qual1 = cached_reads.pop(qname)
+        mseq = merge_pairs(seq1, seq2, qual1, qual2, cutoff)
 
-            # exclude merged pairs that introduce too many N's
-            prop_N = mseq.count('N') / float(len(mseq.strip('-')))
-            if prop_N > max_prop_N:
-                continue
+        # exclude merged pairs that introduce too many N's
+        prop_N = mseq.count('N') / float(len(mseq.strip('-')))
+        if prop_N > max_prop_N:
+            continue
 
-            fasta.append([qname, mseq])
-        else:
-            # unpaired, just copy over sequence
-            fasta.append([qname, data[qname][0][0]])
+        yield (qname, mseq)
 
-    return fasta
+    # now output unpaired reads
+    for qname, (seq, qual) in cached_reads.iteritems():
+        yield (qname, seq)
+
 
 
 def samBitFlag (flag):
@@ -763,7 +757,7 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
     """
     import logging,re,sys
 
-    indels_re = re.compile('\+[0-9]+|\-[0-9]+')	# Matches '+' or '-' followed by 1+ numbers
+    indel_re = re.compile('[+-][0-9]+')
     conseq = ''
     to_skip = 0
 
@@ -796,99 +790,82 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
         # BRIEFLY, INSTEAD OF "." TO MEAN "MATCH" THE BASE IS NOW PLACED DIRECTLY
         # INSIDE OF THE FEATURE STRING (SO, THE REF BASE HAS NO REAL MEANING)
 
-        # For each position in astr (Main pileup feature list)
+        # Partition pileup string into individual tokens
         while i < len(astr):
-
-            # '^' means this is a new read: ^7G means the new read starts with
-            # 'G' with a quality of asc(7)-33 = 37-33 = 4 (ASCII code - 33 gives Q)
             if astr[i] == '^':
+                # '^' indicates a new read; "^7G" means the new read has
+                # a read mapping quality of ord('7')-33 = 22, and the first
+                # base is 'G'
                 q = ord(qstr[j])-33
                 base = astr[i+2] if q >= qCutoff else 'N'
-                alist.append(base)
+                alist.append(base.upper())
                 i += 3
                 j += 1
 
-            # '*' represents a deleted base
-            # '$' represents the end of a read
-            elif astr[i] in '*$':
+            elif astr[i] in '*':
+                # deleted base in read from previous position
+                alist.append('-')
                 i += 1
 
-            else:
-                # "+[0-9]+[ACGTN]+" denotes an insertion ("-[0-9]+[ACGTN]+" denotes deletion)
-                # Ex: +2AG means there is an insert of "AG"
-                if i < len(astr)-1 and astr[i+1] in '+-':
+            elif astr[i] == '$':
+                # end of a read, ignore
+                i += 1
 
-                    # From "+2AG...." extract out "+2"
-                    # (re.match searches only BEGINNING of string)
-                    m = indels_re.match(astr[i+1:])
+            elif i < len(astr)-1 and astr[i+1] in '+-':
+                # look ahead to identify an insertion token
+                # e.g., "A+2AG"
+                m = indel_re.match(astr[i+1:])
 
-                    # Get the length of the indel ("2" from "+2")
-                    indel_len = int(m.group().strip('+-'))
+                # Get the length of the indel ("2" from "+2")
+                indel_len = int(m.group().strip('+-'))
 
-                    # If this were "+19AGGACCA" then len would evaluate to 3
-                    # So, left is exactly the index, plus the +- sign, plus the
-                    # number of digits related to the size of this indel
-                    left = i+1 + len(m.group())
+                # If this were "+19AGGACCA" then len would evaluate to 3
+                # So, left is exactly the index, plus the +- sign, plus the
+                # number of digits related to the size of this indel
+                left = i+1 + len(m.group())
 
-                    # The insertion characters start from left and proceeds to left+len
-                    insertion = astr[left:(left+indel_len)]
+                # The insertion characters start from left and proceeds to left+len
+                insertion = astr[left:(left+indel_len)]
 
-                    q = ord(qstr[j])-33
-                    base = astr[i].upper() if q >= qCutoff else 'N'
+                q = ord(qstr[j])-33
+                base = astr[i].upper() if q >= qCutoff else 'N'
 
-                    # Ex token: A+3tgt
-                    token = base + m.group() + insertion
+                # Ex token: A/+3/tgt
+                token = base + m.group() + insertion.upper()
+
+                if astr[i+1] == '+':
                     alist.append(token)
-
-                    i += len(token)
-                    j += 1
-
                 else:
-                    # Operative case: sequence matches reference (And no indel ahead)
-                    q = ord(qstr[j])-33
-                    base = astr[i].upper() if q >= qCutoff else 'N'
                     alist.append(base)
-                    i += 1
-                    j += 1
 
-        ## DEBUGGING
-        #atypes = set(alist)
-        #intermed = []
-        #for atype in atypes:
-        #    intermed.append((alist.count(atype), atype))
-        #intermed.sort(reverse=True)
-        #print pos, ','.join(map(lambda x: '%s:%d' % (x[1], x[0]), intermed))
+                i += len(token)
+                j += 1
 
-        # Is this position dominated by an insertion or deletion?
-        insertions = [x for x in alist if '+' in x]
-        deletions = [x for x in alist if '-' in x]
-        non_indel = sum([alist.count(nuc) for nuc in 'ACGT'])
+            else:
+                # Operative case: sequence matches reference (And no indel ahead)
+                q = ord(qstr[j])-33
+                base = astr[i].upper() if q >= qCutoff else 'N'
+                alist.append(base)
+                i += 1
+                j += 1
 
-        if len(insertions) > non_indel:
-            intermed = [(insertions.count(token), token) for token in set(insertions)]
-            intermed.sort(reverse=True)
-
-            # Add most frequent insertion to consensus
-            count, token = intermed[0]
-            m = indels_re.findall(token)[0] # \+[0-9]+
-            conseq += token[0] + token[1+len(m):]
-            continue
-
-        if len(deletions) > non_indel:
-            # skip this line and the next N lines as necessary
-            intermed = [(deletions.count(token), token) for token in set(deletions)]
-            intermed.sort(reverse=True)
-            count, token = intermed[0]
-
-            m = indels_re.findall(token)[0]
-            to_skip = int(m.strip('-')) - 1 # omitting this line counts as one
-            continue
-
-        # For this coordinate (line in the pileup), alist now contains all characters that occured
-        counts = [(nuc, alist.count(nuc)) for nuc in 'ACGTN']
-        intermed = [(v,k) for k, v in counts] # Store in intermed so we can take the majority base
+        atypes = set(alist)
+        intermed = []
+        for atype in atypes:
+            intermed.append((alist.count(atype), atype))
         intermed.sort(reverse=True)
-        conseq += intermed[0][1]
+
+        print pos, ','.join(map(lambda x: '%s:%d' % (x[1], x[0]), intermed))
+
+        token = intermed[0][1]
+        if '+' in token:
+            m = indel_re.findall(token)[0] # \+[0-9]+
+            conseq += token[0] + token[1+len(m):]
+        elif token == '-':
+            # by not appending anything to 'conseq', we communicate the deletion state
+            pass
+        else:
+            conseq += token
 
     infile.close()
 
