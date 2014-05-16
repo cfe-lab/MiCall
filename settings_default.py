@@ -3,7 +3,7 @@ settings_default.py
 To make pipeline portable, allow user to specify
 """
 
-pipeline_version = '6'
+pipeline_version = '6.1'
 
 production = False  # set this to True to push results to NAS
 
