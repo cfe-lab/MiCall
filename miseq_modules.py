@@ -518,10 +518,8 @@ def remap (R1_fastq, R2_fastq, samfile, ref, original_reference, conseq_qCutoff=
     system_call('bowtie2-build -f -q {} {}'.format(confile, confile))
 
     # Map original fastq reads to new reference
-    cmd = 'bowtie2 --quiet -p {} --local -x {} -1 {} -2 {} -S {} --no-unal --met-file {} --un {} --un-conc {}'.format(num_threads,
-            confile, R1_fastq, R2_fastq, remapped_sam, remapped_sam.replace('.sam', '.bt2_metrics'),
-            remapped_sam.replace('.sam', '.bt2_unpaired_noalign.fastq'),
-            remapped_sam.replace('.sam', '.bt2_paired_noalign.fastq'))
+    cmd = 'bowtie2 --quiet -p {} --local -x {} -1 {} -2 {} -S {} --no-unal'.format(num_threads,
+            confile, R1_fastq, R2_fastq, remapped_sam)
     system_call(cmd)
 
     return remapped_sam, confile

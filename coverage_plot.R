@@ -18,7 +18,7 @@ png(file=file_out, width=500, height=500, type="cairo")
 
 # set up plot region
 par(mar=c(5,6,4,2))
-plot(NA, xlim=c(1,length(data$refseq.aa.pos)), ylim=c(100,1000000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
+plot(NA, xlim=c(1,max(data$refseq.aa.pos)), ylim=c(100,1000000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
 
 
 main_title = paste(sample, "\n[", region, "] q>=", q_cutoff, sep="")

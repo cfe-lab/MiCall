@@ -855,7 +855,7 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
             intermed.append((alist.count(atype), atype))
         intermed.sort(reverse=True)
 
-        print pos, ','.join(map(lambda x: '%s:%d' % (x[1], x[0]), intermed))
+        #print pos, ','.join(map(lambda x: '%s:%d' % (x[1], x[0]), intermed))
 
         token = intermed[0][1]
         if '+' in token:
