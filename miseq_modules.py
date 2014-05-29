@@ -88,6 +88,7 @@ def csf2nuc(path, nuc_reference_file, min_avg_score=2.):
     of reads.
     """
     import os, csv, logging, HyPhy, hyphyAlign
+    from miseqUtils import parse_csf
     logger = logging.getLogger()
 
     hyphy = HyPhy._THyPhy(os.getcwd(), 1)
@@ -132,17 +133,17 @@ def csf2nuc(path, nuc_reference_file, min_avg_score=2.):
         handle.write('>Reference_%s_%s\n%s\n' % (ref, subregion, refseqs[region][subregion]))
         outfiles.update({subregion: {'handle': handle, 'count': 0}})
 
-
+    # do quick and dirty alignment of each read
     with open(path, 'rU') as f:
-        rows = csv.reader(f, delimiter=',')
-
-        # use pairwise alignment to reference to trim CSF reads
-        for header, offset, seq in rows:
+        csf = parse_csf(f, mode)
+        for items in csf:
+            header, seq = items[:2]
             for subregion, refseq in refseqs[ref].iteritems():
                 aquery, aref, ascore = hyphyAlign.pair_align(hyphy, refseq, seq)
                 if float(ascore)/len(aref) < min_avg_score:
                     continue
 
+                # output portion of read that overlaps this subregion
                 left, right = hyphyAlign.get_boundaries(aref)
                 outfiles[subregion]['handle'].write('>%s\n%s\n' % (header, aquery[left:right]))
                 outfiles[subregion]['count'] += 1
@@ -163,7 +164,7 @@ def csf2counts(path, mode, mixture_cutoffs, amino_reference_sequence):
 
     import csv, logging, HyPhy, os
     from hyphyAlign import change_settings, get_boundaries, pair_align
-    from miseqUtils import ambig_dict, convert_csf, convert_fasta, mixture_dict, translate_nuc
+    from miseqUtils import ambig_dict, parse_csf, convert_fasta, mixture_dict, translate_nuc
 
     logger = logging.getLogger()
     hyphy = HyPhy._THyPhy (os.getcwd(), 1)
@@ -178,7 +179,7 @@ def csf2counts(path, mode, mixture_cutoffs, amino_reference_sequence):
     filename = os.path.basename(path)
     root = os.path.dirname(path) if os.path.dirname(path) != '' else '.'
     file_prefix = filename.replace('.csf', '')
-    outpath = root+'/'+file_prefix#"{}/{}".format(root, file_prefix)
+    outpath = "{}/{}".format(root, file_prefix)
 
     # CSF contains sample + region in filename (Ex: F00844_S68.HIV1B-pol.0.csf)
     sample, ref = filename.split('.')[:2]
@@ -198,29 +199,17 @@ def csf2counts(path, mode, mixture_cutoffs, amino_reference_sequence):
 
     refseq = refseqs[ref]
 
-    # Load CSF (CSF header, offset, sequence) into fasta data structure
-    with open(path, 'rU') as infile:
-        fasta, lefts, rights = convert_csf(infile.readlines())
-
-    if len(fasta) == 0:
-        # skip empty file
-        logger.error('{} is an empty file'.format(filename))
-        return
-
-    # use *.bam.pileup.conseq to determine reading frame
+    # load region- and sample-specific reference
     try:
-        handle = open(root+'/'+sample+'.'+ref+'.bam.pileup.conseq', 'rU')
+        with open(root+'/'+sample+'.'+ref+'.bam.pileup.conseq', 'rU') as handle:
+            pileup_conseq = convert_fasta(handle.readlines())[0][1].upper()
     except:
         logger.error('No sample/region-specific consensus sequence for %s, %s' % (sample, ref))
         return
 
-    pileup_conseq = convert_fasta(handle.readlines())[0][1].upper()
-    #print pileup_conseq
-    handle.close()
-
+    # use reference to determine reading frame
     max_score = -999
     best_frame = 0
-    best_alignment = None
     for frame in range(3):
         p = translate_nuc(pileup_conseq, frame)
         aquery, aref, ascore = pair_align(hyphy, refseq, p)
@@ -236,50 +225,51 @@ def csf2counts(path, mode, mixture_cutoffs, amino_reference_sequence):
 
 
     # CSF reads aligned against self-consensus: offset is with respect to self
+    # Load CSF (CSF header, offset, sequence) into fasta data structure
+    min_left = 1e6
+    with open(path, 'rU') as f:
+        csf = parse_csf(f, mode)
+        for header, seq, count, left, right in csf:
+            if left < min_left:
+                min_left = left
 
-    # For each sequence in the csf
-    for i, (header, seq) in enumerate(fasta):
+            # Determine nuc counts with respect to self-consensus coordinates
+            for j, nuc in enumerate(seq):
+                pos = left + j
+                if pos not in nuc_counts:
+                    nuc_counts.update({pos: {}})
+                if nuc not in nuc_counts[pos]:
+                    nuc_counts[pos].update({nuc: 0})
+                nuc_counts[pos][nuc] += count
 
-        # Determine the offset (Amplicon runs have no offset)
-        left = lefts[header] if mode == 'Nextera' else 0
+            # Determine amino counts with respect to self-consensus coordinates
+            p = translate_nuc('-'*left + seq, best_frame)
+            pcache.append(p)
 
-        # Amplicons store read counts in the CSF header
-        count = 1 if mode == 'Nextera' else int(header.split('_')[1])
+            # boundaries of read in amino acid space
+            aa_left = (left + best_frame) / 3
+            aa_right = (right + left + best_frame) / 3
 
-        # Determine nuc counts with respect to self-consensus coordinates
-        for j, nuc in enumerate(seq):
-            pos = left + j
-            if pos not in nuc_counts:
-                nuc_counts.update({pos: {}})
-            if nuc not in nuc_counts[pos]:
-                nuc_counts[pos].update({nuc: 0})
-            nuc_counts[pos][nuc] += count
+            for pos, aa in enumerate(p):
+                # Do not store gap information
+                #if aa == '-':
+                #	continue
+                if pos < aa_left or pos >= aa_right:
+                    continue
+                if pos not in aa_counts:
+                    aa_counts.update({pos: {}})
+                if aa not in aa_counts[pos]:
+                    aa_counts[pos].update({aa: 0})
+                aa_counts[pos][aa] += count
 
-        # Determine amino counts with respect to self-consensus coordinates
-        p = translate_nuc('-'*left + seq, best_frame)
-        pcache.append(p)
-
-        # boundaries of read in amino acid space
-        aa_left = (left + best_frame) / 3
-        aa_right = (rights[header] + left + best_frame) / 3
-
-        for pos, aa in enumerate(p):
-            # Do not store gap information
-            #if aa == '-':
-            #	continue
-            if pos < aa_left or pos >= aa_right:
-                continue
-            if pos not in aa_counts:
-                aa_counts.update({pos: {}})
-            if aa not in aa_counts[pos]:
-                aa_counts[pos].update({aa: 0})
-            aa_counts[pos][aa] += count
-
+    if len(nuc_counts) == 0:
+        # skip empty file
+        logger.error('{} is an empty file'.format(filename))
+        return
 
     # Generate amino plurality consensus for query to reference coordinate mapping
     aa_coords = aa_counts.keys()
     aa_coords.sort()
-
     aa_max = ''
     for pos in range(min(aa_coords), max(aa_coords)+1):
         if pos in aa_coords:
@@ -287,16 +277,17 @@ def csf2counts(path, mode, mixture_cutoffs, amino_reference_sequence):
             intermed.sort(reverse=True)
             aa_max += intermed[0][1]
         else:
-            aa_max += '?' # no coverage but not a gap
+            aa_max += '?'  # no coverage but not a gap
 
-    logger.debug('Amino plurality consensus = ' + aa_max)#logger.debug("Amino plurality consensus = {}".format(aa_max))
+    logger.debug("Amino plurality consensus = {}".format(aa_max))
 
     aquery, aref, ascore = pair_align(hyphy, refseq, aa_max)
     left, right = get_boundaries(aref)	# Coords of first/last non-gap character
 
-    logger.debug('Aligned amino plurality conseq = ' + aquery)#logger.debug("Aligned amino plurality conseq = {}".format(aquery))
-    logger.debug('Aligned reference sequence = ' + aref)#logger.debug("Aligned reference sequence = {}".format(aref))
+    logger.debug("Aligned amino plurality conseq = {}".format(aquery))
+    logger.debug("Aligned reference sequence = {}".format(aref))
 
+    ## Generate coordinate map to HXB2 reference
     qindex_to_refcoord = {}			# Query <-> reference coordinate mapping
     inserts = []					# Keep track of which aa positions are insertions
     qindex = 0						# Where we are in the query?
@@ -307,34 +298,25 @@ def csf2counts(path, mode, mixture_cutoffs, amino_reference_sequence):
 
     # For each coordinate on the reference, create a mapping to the query
     for i in ref_coords:
-
         # Do not consider parts of the query outside of the reference
         if i < left:
             qindex += 1
-
         elif i >= right:
             break
-
         # A gap in the reference is an insertion in the query which we want to skip in the mapping
         elif aref[i] == '-':
-            inserts.append(qindex)	# Store insert location in query coordinate space
+            inserts.append(qindex)  # Store insert location in query coordinate space
             qindex += 1				# Track along the query
-
         # If theres a gap in the query we are only effectively tracking along the pre-alignment reference
         elif aquery[i] == '-':
             rindex += 1
-
         # Normal case: tracking forward on both sequences
         else:
-            qindex_to_refcoord[qindex] = rindex #qindex_to_refcoord.update({qindex: rindex})
+            qindex_to_refcoord[qindex] = rindex
             qindex += 1
             rindex += 1
 
-        #print i, rindex, aref[i], qindex, aquery[i]
-
-
     logger.debug('qindex_to_refcoord: ' + str(qindex_to_refcoord))#"qindex_to_refcoord {}".format(qindex_to_refcoord))
-
 
     # Write inserts to an indels.csv file
     if len(inserts) > 0:
@@ -367,7 +349,7 @@ def csf2counts(path, mode, mixture_cutoffs, amino_reference_sequence):
     nuc_coords.sort()
 
     # account for assembly offset due to extra bases in sample-specific consensus
-    nuc_assembly_offset = min(lefts.values())
+    nuc_assembly_offset = min_left
 
     # Output nucleotide counts in reference coordinate space to nuc.csv files
     logging.debug("Making {}".format(outpath+'.nuc.freqs'))

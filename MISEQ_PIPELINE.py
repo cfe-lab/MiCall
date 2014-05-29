@@ -35,8 +35,14 @@ else:
         run_info = miseqUtils.sampleSheetParser(sample_sheet)
         mode = run_info['Description']
 
-
+#########################
 ### Begin Mapping
+
+logger.info('Removing old SAM files')
+old_sam_files = glob(root+'/*.sam')
+for f in old_sam_files:
+    os.remove(f)
+
 fastq_files = glob(root + '/*_R1_001.fastq')
 for fastq in fastq_files:
     fastq_filename = os.path.basename(fastq)
@@ -57,7 +63,14 @@ factory_barrier(mapping_factory)
 logger.info("Collating *.mapping.log files")
 miseq_logging.collate_logs(root, "mapping.log", "mapping.log")
 
+########################
 ### Begin sam2csf
+
+logger.info('Removing old CSF files')
+old_csf_files = glob(root+'/*.csf')
+for f in old_csf_files:
+    os.remove(f)
+
 for file in glob(root + '/*.remap.sam'):
     filename = file.split('/')[-1]
     # Generate csf with different q cutoff censoring rules
@@ -74,11 +87,15 @@ logger.info("Collating *.sam2csf.*.log files")
 miseq_logging.collate_logs(root, "sam2csf.*.log", "sam2csf.log")
 
 
-
+#######################
 ### Begin csf2counts
+
+logger.info('Removing old *.indel.csv')
 for csf_file in glob(root + '/*.csf'):
-    if csf_file.endswith('.clean.csf') or csf_file.endswith('.contam.csf'):
-        # in case this has been re-run
+    filename = os.path.basename(csf_file)
+    sample, region, qcut, extension = filename.split('.')
+    if int(qcut) not in sam2csf_q_cutoffs:
+        # prevent this step from processing leftover CSF files
         continue
 
     # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
@@ -102,7 +119,7 @@ for csf_file in glob(root + '/*.csf'):
 factory_barrier(single_thread_factory)
 
 
-
+"""
 ### Begin cross-contamination filter
 logger.info('Filtering for cross-contamination')
 
@@ -117,7 +134,7 @@ for qcut in sam2csf_q_cutoffs:
 
 
 factory_barrier(single_thread_factory)
-
+"""
 
 ### Begin g2p (For Amplicon)
 if mode == 'Amplicon':
@@ -152,7 +169,7 @@ if mode == 'Amplicon':
                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
 
     # REPEAT for CSF files that have been filtered for putative cross-contaminants
-
+    """
     for env_csf_file in glob(root + '/*.HIV1B-env.*.clean.csf'):
         command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
         log_path = "{}.g2p.log".format(env_csf_file)
@@ -179,9 +196,11 @@ if mode == 'Amplicon':
                                 fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
                     except Exception as e:
                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
+    """
 
 
 ### Repeat csf2counts
+"""
 for csf_file in [x for x in glob(root + '/*.csf') if 'clean.csf' not in x and 'contam.csf' not in x]:
     # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
     mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
@@ -191,6 +210,7 @@ for csf_file in [x for x in glob(root + '/*.csf') if 'clean.csf' not in x and 'c
     if queue_request:
         p, command = queue_request
         logger.info("pID {}: {}".format(p.pid, command))
+"""
 
 factory_barrier(single_thread_factory)
 logger.info("Collating csf2counts.log files")
@@ -220,14 +240,17 @@ path = "{}/coverage_maps".format(root)
 if not os.path.exists(path):
     os.mkdir(path)
 
-command = ["python2.7","generate_coverage_plots.py",collated_amino_freqs_path,"{}/coverage_maps".format(root)]
+#command = ["python2.7","generate_coverage_plots.py",collated_amino_freqs_path,"{}/coverage_maps".format(root)]
+command = ['Rscript', 'coverage_plots.R', collated_amino_freqs_path, root+'/coverage_maps/']
 logger.info(" ".join(command))
 subprocess.call(command)
 
+"""
 collated_clean_amino_freqs_path = "{}/amino_cleaned_frequencies.csv".format(root)
 command = ["python2.7","generate_coverage_plots.py",collated_clean_amino_freqs_path,"{}/coverage_maps".format(root)]
 logger.info(" ".join(command))
 subprocess.call(command)
+"""
 
 # Delete local files on the cluster that shouldn't be stored
 if production:
