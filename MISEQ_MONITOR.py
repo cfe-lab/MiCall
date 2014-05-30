@@ -177,9 +177,9 @@ while True:
             if not os.path.exists(v3_path): os.mkdir(v3_path)
             post_files(glob(home + run_name + '/*.v3prot'), v3_path)
 
-            nuc_path = result_path_final + '/nuc'
-            if not os.path.exists(nuc_path): os.mkdir(nuc_path)
-            post_files(glob(home + run_name + '/*.nuc'), nuc_path)
+        nuc_path = result_path_final + '/nuc'
+        if not os.path.exists(nuc_path): os.mkdir(nuc_path)
+        post_files(glob(home + run_name + '/*.nuc'), nuc_path)
 
         post_files(glob(home + run_name + '/*.log'), log_path)
         post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
