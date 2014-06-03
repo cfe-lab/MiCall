@@ -34,7 +34,7 @@ def collate_conseqs(run_path,output_path):
                 fasta_sample, s_number, consensus_percentage = header.split("_")
                 f_out.write("{},{},{},{},{},{}\n".format(fasta_sample,region,q,s_number,consensus_percentage,sequence))
 
-def collate_frequencies (run_path,output_path,type):
+def collate_frequencies (run_path, output_path, type):
     """
     Collate amino/nuc .freq files into a single summary file.
     """
@@ -81,7 +81,7 @@ def collate_frequencies (run_path,output_path,type):
                 f_out.write("{},{},{},{}\n".format(sample, region, q, line.rstrip("\n")))
 
 
-def csf2nuc(path, nuc_reference_file, min_avg_score=2.):
+def csf2nuc(path, mode, nuc_reference_file, min_avg_score=2.):
     """
     Generate a FASTA where reads have been aligned and trimmed to some
     nucleotide reference sequence.  FASTA headers contain index and count

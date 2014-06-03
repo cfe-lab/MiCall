@@ -147,7 +147,7 @@ for csf_file in glob(root + '/*.csf'):
         logger.info("pID {}: {}".format(p.pid, command))
 
     # Generate compressed FASTAs
-    command = 'python2.7 STEP_5_CSF2NUC.py %s %s' % (csf_file, final_nuc_align_ref_path)
+    command = 'python2.7 STEP_5_CSF2NUC.py %s %s %s' % (csf_file, mode, final_nuc_align_ref_path)
     queue_request = single_thread_factory.queue_work(command, log_path, log_path)
     if queue_request:
         p, command = queue_request
