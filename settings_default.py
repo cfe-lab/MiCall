@@ -3,9 +3,10 @@ settings_default.py
 To make pipeline portable, allow user to specify
 """
 
-pipeline_version = '6.1'
+pipeline_version = '6.2'
 
 production = False  # set this to True to push results to NAS
+filter_cross_contaminants = False
 
 ## Modify this path to your pipeline directory
 base_path = '/usr/local/share/miseq/'
@@ -62,5 +63,3 @@ final_nuc_align_ref_path = mapping_ref_path.replace('/cfe', '/csf_to_fasta_by_nu
 # Intermediary files to delete when done processing this run (production only)
 file_extensions_to_delete = ['bam', 'bt2', 'bt2_metrics', 'pileup', 'sam',
                              'filtering.sam', 'csf.fa']
-
-

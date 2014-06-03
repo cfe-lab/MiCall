@@ -80,7 +80,7 @@ def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
                         above which we take the higher quality base, and
                         below which both bases are discarded.
     """
-    # FIXME: N-N-N- prefix due to inproper handling of high Q cutoff
+    # FIXME: N-N-N- prefix due to improper handling of high Q cutoff
     import logging
 
     mseq = ''   # the merged sequence
@@ -155,7 +155,7 @@ def sam2fasta (infile, cutoff=10, mapping_cutoff = 5, max_prop_N=0.5):
         shift, seq1, qual1 = apply_cigar(cigar, seq, qual)
         pos1 = int(pos)
         seq2 = '-'*(pos1-1) + seq1  # pad sequence on left
-        qual2 = '!'*(pos1-1) + qual1
+        qual2 = '!'*(pos1-1) + qual1  # assign lowest quality to gap prefix so it doesn't override mate
 
         if qname not in cached_reads:
             cached_reads.update({qname: (seq2, qual2)})
@@ -397,24 +397,22 @@ def poly2conseq(poly_file,alphabet='ACDEFGHIKLMNPQRSTVWY*-',minCount=3):
     return conseq
 
 
-def convert_csf (csf_handle):
+def parse_csf(csf_handle, mode):
     """
     Extract header, offset, and seq from the CSF.
     The header is qname for Nextera, and rank_count for Amplicon.
     """
-    left_gap_position = {}
-    right_gap_position = {}
+    import csv
+    rows = csv.reader(csf_handle, delimiter=',')
+    for header, offset, seq in rows:
+        if mode == 'Nextera':
+            count = 1
+        else:
+            index, count = map(int, header.split('_'))
 
-    fasta = []
-    for line in csf_handle:
-        fields = line.strip('\n').split(',')
-        CSF_header, offset, seq = fields[0], fields[1], fields[2]
-        fasta.append([CSF_header, seq])
-        left_gap_position[CSF_header] = int(offset)
-        right_gap_position[CSF_header] = left_gap_position[CSF_header] + len(seq)
-
-    return fasta,left_gap_position,right_gap_position
-
+        left = int(offset)
+        right = left + len(seq)
+        yield header, seq, count, left, right
 
 
 def convert_fasta (lines):	
@@ -855,7 +853,7 @@ def pileup_to_conseq (path_to_pileup, qCutoff):
             intermed.append((alist.count(atype), atype))
         intermed.sort(reverse=True)
 
-        print pos, ','.join(map(lambda x: '%s:%d' % (x[1], x[0]), intermed))
+        #print pos, ','.join(map(lambda x: '%s:%d' % (x[1], x[0]), intermed))
 
         token = intermed[0][1]
         if '+' in token:

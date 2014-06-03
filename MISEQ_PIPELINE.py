@@ -35,8 +35,14 @@ else:
         run_info = miseqUtils.sampleSheetParser(sample_sheet)
         mode = run_info['Description']
 
-
+#########################
 ### Begin Mapping
+
+logger.info('Removing old SAM files')
+old_sam_files = glob(root+'/*.sam')
+for f in old_sam_files:
+    os.remove(f)
+
 fastq_files = glob(root + '/*_R1_001.fastq')
 for fastq in fastq_files:
     fastq_filename = os.path.basename(fastq)
@@ -57,7 +63,14 @@ factory_barrier(mapping_factory)
 logger.info("Collating *.mapping.log files")
 miseq_logging.collate_logs(root, "mapping.log", "mapping.log")
 
+########################
 ### Begin sam2csf
+
+logger.info('Removing old CSF files')
+old_csf_files = glob(root+'/*.csf')
+for f in old_csf_files:
+    os.remove(f)
+
 for file in glob(root + '/*.remap.sam'):
     filename = file.split('/')[-1]
     # Generate csf with different q cutoff censoring rules
@@ -74,62 +87,18 @@ logger.info("Collating *.sam2csf.*.log files")
 miseq_logging.collate_logs(root, "sam2csf.*.log", "sam2csf.log")
 
 
-
-### Begin csf2counts
-for csf_file in glob(root + '/*.csf'):
-    if csf_file.endswith('.clean.csf') or csf_file.endswith('.contam.csf'):
-        # in case this has been re-run
-        continue
-
-    # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
-    mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
-    command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file, mode, mixture_cutoffs,
-                                                                  final_alignment_ref_path)
-    log_path = "{}.csf2counts.log".format(csf_file)
-    queue_request = single_thread_factory.queue_work(command, log_path, log_path)
-    if queue_request:
-        p, command = queue_request
-        logger.info("pID {}: {}".format(p.pid, command))
-
-    # Generate compressed FASTAs
-    if mode == 'Amplicon':
-        command = 'python2.7 STEP_5_CSF2NUC.py %s %s' % (csf_file, final_nuc_align_ref_path)
-        queue_request = single_thread_factory.queue_work(command, log_path, log_path)
-        if queue_request:
-            p, command = queue_request
-            logger.info("pID {}: {}".format(p.pid, command))
-
-factory_barrier(single_thread_factory)
-
-
-
-### Begin cross-contamination filter
-logger.info('Filtering for cross-contamination')
-
-for qcut in sam2csf_q_cutoffs:
-    command = 'python2.7 FILTER_CONTAMINANTS.py %s %d %d' % (root, qcut, bowtie_threads)
-    log_path = root + '/filtering.log'
-    queue_request = single_thread_factory.queue_work(command, log_path, log_path)
-    if queue_request:
-        p, command = queue_request
-        logger.info('pID {}: {}'.format(p.pid, command))
-    # yields *.clean.csf and *.contam.csf
-
-
-factory_barrier(single_thread_factory)
-
-
-### Begin g2p (For Amplicon)
+###############################
+### Begin g2p (For Amplicon covering HIV-1 env only!)
 if mode == 'Amplicon':
-
     # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
-    for env_csf_file in [x for x in glob(root + '/*.HIV1B-env.*.csf') if "clean" not in x and "contam" not in x]:
+    for env_csf_file in [x for x in glob(root + '/*.HIV1B-env.*.csf')]:
         command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
         log_path = "{}.g2p.log".format(env_csf_file)
         queue_request = single_thread_factory.queue_work(command, log_path, log_path)
         if queue_request:
             p, command = queue_request
             logger.info("pID {}: {}".format(p.pid, command))
+
     factory_barrier(single_thread_factory)
     logger.info("Collating *.g2p.log files")
     miseq_logging.collate_logs(root, "g2p.log", "g2p.log")
@@ -151,8 +120,89 @@ if mode == 'Amplicon':
                     except Exception as e:
                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
 
-    # REPEAT for CSF files that have been filtered for putative cross-contaminants
 
+#######################
+### Begin csf2counts
+
+logger.info('Removing old *.indels.csv, *.nuc.freqs, and *.amino.freqs')
+map(lambda f: os.remove(f), glob('*.indels.csv'))
+map(lambda f: os.remove(f), glob('*.nuc.freqs'))
+map(lambda f: os.remove(f), glob('*.amino.freqs'))
+
+for csf_file in glob(root + '/*.csf'):
+    filename = os.path.basename(csf_file)
+    sample, region, qcut, extension = filename.split('.')
+    if int(qcut) not in sam2csf_q_cutoffs:
+        # prevent this step from processing leftover CSF files
+        continue
+
+    # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
+    mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
+    command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file, mode, mixture_cutoffs,
+                                                                  final_alignment_ref_path)
+    log_path = "{}.csf2counts.log".format(csf_file)
+    queue_request = single_thread_factory.queue_work(command, log_path, log_path)
+    if queue_request:
+        p, command = queue_request
+        logger.info("pID {}: {}".format(p.pid, command))
+
+    # Generate compressed FASTAs
+    command = 'python2.7 STEP_5_CSF2NUC.py %s %s' % (csf_file, final_nuc_align_ref_path)
+    queue_request = single_thread_factory.queue_work(command, log_path, log_path)
+    if queue_request:
+        p, command = queue_request
+        logger.info("pID {}: {}".format(p.pid, command))
+
+factory_barrier(single_thread_factory)
+
+
+#########################
+### Collate results files
+logger.info("Collating csf2counts.log files")
+miseq_logging.collate_logs(root, "csf2counts.log", "csf2counts.log")
+
+collated_amino_freqs_path = "{}/amino_frequencies.csv".format(root)
+logger.info("collate_frequencies({},{},{})".format(root, collated_amino_freqs_path, "amino"))
+miseq_modules.collate_frequencies(root, collated_amino_freqs_path, "amino")
+
+collated_nuc_freqs_path = "{}/nucleotide_frequencies.csv".format(root)
+logger.info("collate_frequencies({},{},{})".format(root, collated_nuc_freqs_path, "nuc"))
+miseq_modules.collate_frequencies(root, collated_nuc_freqs_path, "nuc")
+
+collated_conseq_path = "{}/collated_conseqs.csv".format(root)
+logger.info("collate_conseqs({},{})".format(root, collated_conseq_path))
+miseq_modules.collate_conseqs(root, collated_conseq_path)
+
+collated_counts_path = "{}/collated_counts.csv".format(root)
+logger.info("collate_counts({},{})".format(root, collated_counts_path))
+miseq_modules.collate_counts(root, collated_counts_path)
+
+coverage_map_path = "{}/coverage_maps".format(root)
+if not os.path.exists(coverage_map_path):
+    os.mkdir(coverage_map_path)
+
+# generate coverage plots
+command = ['Rscript', 'coverage_plots.R', collated_amino_freqs_path, coverage_map_path]
+logger.info(" ".join(command))
+subprocess.call(command)
+
+###############################
+### (optional) filter for cross-contamination
+if filter_cross_contaminants:
+    logger.info('Filtering for cross-contamination')
+
+    for qcut in sam2csf_q_cutoffs:
+        command = 'python2.7 FILTER_CONTAMINANTS.py %s %d %d' % (root, qcut, bowtie_threads)
+        log_path = root + '/filtering.log'
+        queue_request = single_thread_factory.queue_work(command, log_path, log_path)
+        if queue_request:
+            p, command = queue_request
+            logger.info('pID {}: {}'.format(p.pid, command))
+        # yields *.clean.csf and *.contam.csf
+
+    factory_barrier(single_thread_factory)
+
+    # re-do g2p scoring
     for env_csf_file in glob(root + '/*.HIV1B-env.*.clean.csf'):
         command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
         log_path = "{}.g2p.log".format(env_csf_file)
@@ -166,7 +216,7 @@ if mode == 'Amplicon':
 
     with open("{}/v3_tropism_summary_clean.csv".format(root), 'wb') as summary_file:
         summary_file.write("sample,q_cutoff,fpr_cutoff,min_count,total_x4,total_reads,proportion_x4\n")
-        for file in glob(root + '/*.clean.v3prot'): 
+        for file in glob(root + '/*.clean.v3prot'):
             prefix, gene, sam2csf_q_cutoff = file.split('.')[:3]
 
             # Determine proportion x4 under different FPR cutoffs / min counts
@@ -175,60 +225,34 @@ if mode == 'Amplicon':
                     try:
                         sample = prefix.split('/')[-1]
                         proportion_x4, total_x4_count, total_count = miseqUtils.prop_x4(file, fpr_cutoff, mincount)
-                        summary_file.write("{},{},{},{},{},{},{:.3}\n".format(sample, sam2csf_q_cutoff,
-                                fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
+                        summary_file.write("{},{},{},{},{},{},{:.3}\n".format(
+                            sample, sam2csf_q_cutoff, fpr_cutoff, mincount, total_x4_count,
+                            total_count, proportion_x4
+                        ))
                     except Exception as e:
                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
 
+    # regenerate counts
+    for csf_file in glob(root + '/*.clean.csf'):
+        mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
+        command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(
+            csf_file, mode, mixture_cutoffs, final_alignment_ref_path
+        )
+        log_path = "{}.csf2counts.log".format(csf_file)
+        queue_request = single_thread_factory.queue_work(command, log_path, log_path)
+        if queue_request:
+            p, command = queue_request
+            logger.info("pID {}: {}".format(p.pid, command))
 
-### Repeat csf2counts
-for csf_file in [x for x in glob(root + '/*.csf') if 'clean.csf' not in x and 'contam.csf' not in x]:
-    # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
-    mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
-    command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file,mode,mixture_cutoffs,final_alignment_ref_path)
-    log_path = "{}.csf2counts.log".format(csf_file)
-    queue_request = single_thread_factory.queue_work(command, log_path, log_path)
-    if queue_request:
-        p, command = queue_request
-        logger.info("pID {}: {}".format(p.pid, command))
+    factory_barrier(single_thread_factory)
 
-factory_barrier(single_thread_factory)
-logger.info("Collating csf2counts.log files")
-miseq_logging.collate_logs(root, "csf2counts.log", "csf2counts.log")
+    collated_clean_amino_freqs_path = "{}/amino_cleaned_frequencies.csv".format(root)
+    command = ["python2.7","generate_coverage_plots.py",collated_clean_amino_freqs_path,"{}/coverage_maps".format(root)]
+    logger.info(" ".join(command))
+    subprocess.call(command)
 
-# Collate lines from csf2counts-derived frequency files
-collated_amino_freqs_path = "{}/amino_frequencies.csv".format(root)
-logger.info("collate_frequencies({},{},{})".format(root,collated_amino_freqs_path,"amino"))
-miseq_modules.collate_frequencies(root,collated_amino_freqs_path, "amino")
 
-collated_nuc_freqs_path = "{}/nucleotide_frequencies.csv".format(root)
-logger.info("collate_frequencies({},{},{})".format(root,collated_nuc_freqs_path,"nuc"))
-miseq_modules.collate_frequencies(root,collated_nuc_freqs_path, "nuc")
-
-# Collate consensus sequences from csf2counts-derived conseq files
-collated_conseq_path = "{}/collated_conseqs.csv".format(root)
-logger.info("collate_conseqs({},{})".format(root,collated_conseq_path))
-miseq_modules.collate_conseqs(root,collated_conseq_path)
-
-# Collate read mapping efficiency from counts files
-collated_counts_path = "{}/collated_counts.csv".format(root)
-logger.info("collate_counts({},{})".format(root,collated_counts_path))
-miseq_modules.collate_counts(root,collated_counts_path)
-
-# Generate coverage maps (For clean and unclean data...)
-path = "{}/coverage_maps".format(root)
-if not os.path.exists(path):
-    os.mkdir(path)
-
-command = ["python2.7","generate_coverage_plots.py",collated_amino_freqs_path,"{}/coverage_maps".format(root)]
-logger.info(" ".join(command))
-subprocess.call(command)
-
-collated_clean_amino_freqs_path = "{}/amino_cleaned_frequencies.csv".format(root)
-command = ["python2.7","generate_coverage_plots.py",collated_clean_amino_freqs_path,"{}/coverage_maps".format(root)]
-logger.info(" ".join(command))
-subprocess.call(command)
-
+###########################
 # Delete local files on the cluster that shouldn't be stored
 if production:
     logger.info("Deleting intermediary files")
