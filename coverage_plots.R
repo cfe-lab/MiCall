@@ -27,7 +27,7 @@ alphabet <- c('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', '
 
 data$coverage <- apply(data[ , which(is.element(names(data), alphabet))], 1, sum)
 
-coverage <- split(data[,which(is.element(names(data), c('refseq.aa.pos', 'q.cutoff', 'coverage')))], f=list(data$region, data$sample))
+coverage <- split(data[,which(is.element(names(data), c('refseq.aa.pos', 'q.cutoff', 'coverage')))], f=list(data$region, data$sample), drop=TRUE)
 
 for (i in 1:length(coverage)) {
 	label <- names(coverage)[i]
@@ -41,7 +41,7 @@ for (i in 1:length(coverage)) {
 	# set up plot
 	png(file=paste(out_path, filename, sep=''), width=400, height=300, type='cairo')
 	par(family='sans', cex=1, mar=c(5,5,1,1))
-	plot(NA, xlim=c(1,max(df$refseq.aa.pos)), ylim=c(100,200000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
+	plot(NA, xlim=c(1,max(df$refseq.aa.pos)), ylim=c(1,200000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
 
 	#main_title = paste(sample, "\n[", region, "] q>=", qcut, sep="")
 	title(xlab="Reference coordinates", font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
@@ -60,10 +60,11 @@ for (i in 1:length(coverage)) {
 	# draw minimum coverage line
 	abline(h = min.coverage, lty=2)
 	axis(1)
-	axis(2, at=c(1E2, 1E3, 1E4, 1E5), labels=c('100', '1000', '10,000', '100,000'), las=2)
+	axis(2, at=c(1E1, 1E2, 1E3, 1E4, 1E5), labels=c('10', '100', '1000', '10,000', '100,000'), las=2)
 	box()
 	
-	legend(x=0, y=1e3, legend=paste('q=', cutoffs, sep=''), col=rainbow(length(cutoffs), v=0.8), lty=1, lwd=2, bty='n')
+	legend(x=0, y=1, legend=paste('q=', cutoffs, sep=''), col=rainbow(length(cutoffs), v=0.8), lty=1, lwd=2, bty='n', yjust=0)
+	text(x=max(df$refseq.aa.pos)/2, y=190000, label=paste(sample, region), cex=0.7, col='grey30', adj=c(0.5, 0.5))
 	
 	garbage <- dev.off()
 }
