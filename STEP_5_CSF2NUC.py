@@ -7,5 +7,5 @@ mode = sys.argv[2]
 ref_path = sys.argv[3]
 
 logger.info("pid {}: miseq_modules.csf2nuc({},{},{})".format(os.getpid(), file, mode, ref_path))
-miseq_modules.csf2nuc(file, ref_path)
+miseq_modules.csf2nuc(file, mode, ref_path)
 logging.shutdown()
