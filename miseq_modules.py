@@ -556,7 +556,7 @@ def mapping(refpath, R1_fastq, conseq_qCutoff, mode, is_t_primer, REMAP_THRESHOL
 
     # Initial consensus B mapping
     prelim_samfile = '{}/{}.prelim.sam'.format(root, prefix)
-    system_call('bowtie2 --quiet -p {} --local -x {} -1 {} -2 {} -S {}'.format(num_threads, refpath, R1_fastq, R2_fastq, prelim_samfile))
+    system_call('bowtie2 --quiet -p {} --local -x {} -1 {} -2 {} -S {} --no-unal'.format(num_threads, refpath, R1_fastq, R2_fastq, prelim_samfile))
 
     # Define region-specific SAMs: refsams[refname] points to a nested dict which includes a file handle to each specific SAM
     refsams = {}

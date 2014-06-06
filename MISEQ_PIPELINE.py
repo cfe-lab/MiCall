@@ -35,6 +35,7 @@ else:
         run_info = miseqUtils.sampleSheetParser(sample_sheet)
         mode = run_info['Description']
 
+
 #########################
 ### Begin Mapping
 
@@ -178,8 +179,13 @@ logger.info("collate_counts({},{})".format(root, collated_counts_path))
 miseq_modules.collate_counts(root, collated_counts_path)
 
 coverage_map_path = "{}/coverage_maps".format(root)
-if not os.path.exists(coverage_map_path):
+if os.path.exists(coverage_map_path):
+    # wipe out previous contents
+    for png_file in glob(coverage_map_path+'/*.png'):
+        os.remove(png_file)
+else:
     os.mkdir(coverage_map_path)
+
 
 # generate coverage plots
 command = ['Rscript', 'coverage_plots.R', collated_amino_freqs_path, coverage_map_path]
@@ -258,6 +264,8 @@ if production:
     logger.info("Deleting intermediary files")
     for extension in file_extensions_to_delete:
         for file in glob("{}/*.{}".format(root, extension)):
+            if any([file.endswith(ext2) for ext2 in file_extensions_to_keep]):
+                continue
             logging.debug("os.remove({})".format(file))
             os.remove(file)
 
