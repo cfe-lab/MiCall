@@ -4,7 +4,7 @@
 Shipyard-style MiSeq pipeline, step 2
 Takes preliminary SAM as CSV input.  Iterative re-mapping of reads from
 original FASTQ files.
-
+Also report the number of reads mapped before and after processing.
 Dependencies:
     bowtie2-build
     bowtie2-align
@@ -222,7 +222,7 @@ while n_remaps < max_remaps:
     n_remaps += 1
     mapping_efficiency = sum(map_counts.values()) / float(raw_count)
     if mapping_efficiency > min_mapping_efficiency:
-        break
+        break  # a sufficient fraction of raw data has been mapped
 
 fnull.close()
 
@@ -232,7 +232,11 @@ for refname in refnames:
     stat_file.write('remap %s,%d\n' % (refname, map_counts[refname]))
     handle = open(refname+'.sam', 'rU')
     for line in handle:
-        outfile.write(line.replace('\t', ','))
+        if line.startswith('@'):
+            continue  # omit SAM header lines
+        items = line.strip('\n').split('\t')[:11]
+        items[2] = refname  # replace '0' due to passing conseq to bowtie2-build on cmd line
+        outfile.write(','.join(items) + '\n')
     handle.close()
 
 outfile.close()
