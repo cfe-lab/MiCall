@@ -129,6 +129,7 @@ while True:
             # If a local copy of the unzipped fastq exists, skip to next file
             continue
 
+        # TODO: Is this check necessary? rsync does the same check, plus a content check.
         if os.path.exists(local_file):
             # a local copy of gzipped FASTQ exists, just decompress and skip
             execute_command(['gunzip', '-f', local_file])
@@ -144,6 +145,8 @@ while True:
     with open(pipeline_log_path, "wb") as PIPELINE_log:
 
         # Standard out/error concatenates to the log
+        #TODO: use sys.executable instead of 'python2.7'.
+        #TODO: use pipes instead of tailing the file?
         command = ['python2.7', '-u', 'MISEQ_PIPELINE.py', home+run_name]
         p = subprocess.Popen(command, stdout = PIPELINE_log, stderr = PIPELINE_log)
         logger.info(" ".join(command))
@@ -151,6 +154,7 @@ while True:
         # Poll the log of MISEQ_PIPELINE.py and display output to console as it appears
         with open(pipeline_log_path, 'rb') as cursor:
             while True:
+                #TODO: Check for != None, because nonzero return code will cause infinite loop.
                 if p.poll() == 0:
                     PIPELINE_log.flush()
                     sys.stdout.write(cursor.read())
