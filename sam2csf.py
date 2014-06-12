@@ -126,12 +126,12 @@ if not os.path.exists(output_path) and output_path != '':
     sys.exit(1)
 
 
-cached_reads = {}  # for mate pairing
 handle = open(args.sam_csv, 'rU')
 outfile = open(args.output_csv, 'w')
 
 for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
     aligned = dict([(qcut, {}) for qcut in sam2csf_q_cutoffs])
+    cached_reads = {}  # for mate pairing
     for line in group:
         if refname == '0':
             print line

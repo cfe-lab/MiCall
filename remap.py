@@ -99,8 +99,9 @@ parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
 parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
 parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
 parser.add_argument('ref', help='<input> initial set of references in FASTA format')
-parser.add_argument('stats_csv', help='<output> CSV containing numbers of mapped reads')
 parser.add_argument('output_csv', help='<output> CSV containing remap output (modified SAM)')
+parser.add_argument('stats_csv', help='<output> CSV containing numbers of mapped reads')
+parser.add_argument('conseq_csv', help='<output> CSV containing mapping consensus sequences')
 
 args = parser.parse_args()
 
@@ -121,15 +122,11 @@ except OSError:
     raise
 
 # check that the output paths are valid
-output_path = os.path.split(args.output_csv)[0]
-if not os.path.exists(output_path) and output_path != '':
-    print 'Output path does not exist:', output_path
-    sys.exit(1)
-
-output_path = os.path.split(args.stats_csv)[0]
-if not os.path.exists(output_path) and output_path != '':
-    print 'Stats output path does not exist:', output_path
-    sys.exit(1)
+for path in [args.output_csv, args.stats_csv, args.conseq_csv]:
+    output_path = os.path.split(path)[0]
+    if not os.path.exists(output_path) and output_path != '':
+        print 'Output path does not exist:', output_path
+        sys.exit(1)
 
 
 # get the raw read count
@@ -167,6 +164,8 @@ fnull = open(os.devnull, 'w')
 frozen = []  # which regions to stop re-mapping
 tmpfile = 'temp.sam'  # temporary bowtie2-align output
 
+conseqs = {}
+
 while n_remaps < max_remaps:
     if len(frozen) == len(refnames):
         # every region is frozen
@@ -194,10 +193,10 @@ while n_remaps < max_remaps:
 
         # pileup to consensus sequence
         with open(bamfile+'.pileup', 'rU') as f:
-            conseq = pileup_to_conseq(f, consensus_q_cutoff)
+            conseqs[refname] = pileup_to_conseq(f, consensus_q_cutoff)
 
         # consensus to *.bt2
-        p = subprocess.Popen(['bowtie2-build', '-c', '-q', conseq, refname])
+        p = subprocess.Popen(['bowtie2-build', '-c', '-q', conseqs[refname], refname])
         p.wait()
 
         # map raw data to new reference - overwrite SAM file
@@ -226,10 +225,13 @@ while n_remaps < max_remaps:
 
 fnull.close()
 
-# combine SAM files into single CSV output
-outfile = open(args.output_csv, 'w')
+
+seqfile = open(args.conseq_csv, 'w')  # record consensus sequences for later use
+outfile = open(args.output_csv, 'w')  # combine SAM files into single CSV output
+
 for refname in refnames:
     stat_file.write('remap %s,%d\n' % (refname, map_counts[refname]))
+    seqfile.write('%s,%s\n' % (refname, conseqs[refname]))
     handle = open(refname+'.sam', 'rU')
     for line in handle:
         if line.startswith('@'):
@@ -241,3 +243,4 @@ for refname in refnames:
 
 outfile.close()
 stat_file.close()
+seqfile.close()

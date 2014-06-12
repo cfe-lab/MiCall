@@ -197,17 +197,18 @@ for region, group in groupby(infile, lambda x: x.split(',')[0]):
                 continue
             aa_max += '?'  # no coverage but not a gap
 
+
+        # map to reference coordinates by aligning consensus
         aquery, aref, ascore = pair_align(hyphy, refseqs[region], aa_max)
         left, right = get_boundaries(aref)	# Coords of first/last non-gap character
 
-        qindex_to_refcoord = {}			# Query <-> reference coordinate mapping
-        inserts = []					# Keep track of which aa positions are insertions
-        qindex = 0						# Where we are in the query?
-        rindex = 0						# Where we are in the reference?
-        ref_coords = range(len(aref))
+        qindex_to_refcoord = {}
+        inserts = []
+        qindex = 0
+        rindex = 0
 
         # For each coordinate on the reference, create a mapping to the query
-        for i in ref_coords:
+        for i in range(len(aref)):
             # Do not consider parts of the query outside of the reference
             if i < left:
                 qindex += 1
