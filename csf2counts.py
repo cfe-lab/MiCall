@@ -80,7 +80,7 @@ def translate(seq, offset):
     return aa_seq
 
 
-parser = argparse.ArgumentParser('Iterative remapping of bowtie2 by reference.')
+parser = argparse.ArgumentParser('Post-processing of short-read alignments.')
 
 parser.add_argument('input_csf', help='<input> aligned CSF input')
 parser.add_argument('input_conseq', help='<input> consensus sequences from remapping step')

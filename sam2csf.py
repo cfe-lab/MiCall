@@ -107,7 +107,7 @@ def len_gap_prefix(s):
     return 0
 
 
-parser = argparse.ArgumentParser('Iterative remapping of bowtie2 by reference.')
+parser = argparse.ArgumentParser('Conversion of SAM data into aligned format.')
 
 parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
 parser.add_argument('output_csv', help='<output> CSV containing cleaned and merged reads')
