@@ -12,16 +12,19 @@ Dependencies: settings.py (derived from settings_default.py)
 """
 
 import argparse
-import subprocess
 import os
+import shutil
+import subprocess
 import sys
+import tempfile
 
-from settings import *  # settings.py is a CodeResourceDependency
+import settings  # settings.py is a CodeResourceDependency
 
 parser = argparse.ArgumentParser('Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
 
 parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
 parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
+parser.add_argument('ref', help='<input> initial set of references in FASTA format')
 parser.add_argument('sam_csv', help='<output> CSV containing bowtie2 output (modified SAM)')
 
 # TODO: pass number of threads and --local to bowtie2 as a CodeResourceDependency
@@ -44,42 +47,57 @@ if not os.path.exists(args.fastq2):
     print 'No FASTQ found at', args.fastq2
     sys.exit(1)
 
+if not os.path.exists(args.ref):
+    print 'No reference sequences found at', args.ref
+    sys.exit(1)
+
 # check that the SAM output path is valid
 output_path = os.path.split(args.sam_csv)[0]
 if not os.path.exists(output_path) and output_path != '':
     print 'SAM output path does not exist:', output_path
     sys.exit(1)
 
-# check that the stats output path is valid
-output_path = os.path.split(args.stats_csv)[0]
-if not os.path.exists(output_path) and output_path != '':
-    print 'stats output path does not exist:', output_path
-    sys.exit(1)
+# Create a temp folder to hold the reference sequences.
+referencesFolder = tempfile.mkdtemp(prefix='tmpReferences')
 
-# do preliminary mapping
-output = {}
 try:
+    referenceFilenameTemplate = os.path.join(referencesFolder, 'reference')
+    p = subprocess.check_call(['bowtie2-build',
+                               '--quiet', 
+                               '-f', 
+                               args.ref,
+                               referenceFilenameTemplate])
+    
+    # do preliminary mapping
+    output = {}
+    
     # stream output from bowtie2
-    p = subprocess.Popen(['bowtie2', '--quiet', '-x', mapping_ref_path, '-1', args.fastq1, '-2', args.fastq2,
-                          '--no-unal', '--local', '-p', str(bowtie_threads)],
-                         stdout=subprocess.PIPE)
-    for line in p.stdout:
-        if line.startswith('@'):
-            # skip header line
-            continue
-        refname = line.split('\t')[2]  # read was mapped to this reference
-        if not refname in output:
-            output.update({refname: []})
-        output[refname].append('\t'.join(line.split('\t')[:11]))  # discard optional items
-
-    p.stdout.close()
-except:
-    raise
+    bowtie_args = ['bowtie2', 
+                   '--quiet', 
+                   '-x', referenceFilenameTemplate, 
+                   '-1', args.fastq1, 
+                   '-2', args.fastq2, 
+                   '--no-unal', 
+                   '--local', 
+                   '-p', str(settings.bowtie_threads)]
+    p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
+    with p.stdout:
+        for line in p.stdout:
+            if line.startswith('@'):
+                # skip header line
+                continue
+            refname = line.split('\t')[2]  # read was mapped to this reference
+            if not refname in output:
+                output.update({refname: []})
+            output[refname].append('\t'.join(line.split('\t')[:11]))  # discard optional items
+            
+    if p.returncode:
+        raise subprocess.CalledProcessError(p.returncode, bowtie_args)
+finally:
+    shutil.rmtree(referencesFolder)
 
 # lines grouped by refname
-outfile = open(args.sam_csv, 'w')
-for refname, lines in output.iteritems():
-    for line in lines:
-        outfile.write(line.replace('\t', ',') + '\n')
-
-outfile.close()
+with open(args.sam_csv, 'w') as outfile:
+    for refname, lines in output.iteritems():
+        for line in lines:
+            outfile.write(line.replace('\t', ',') + '\n')
