@@ -81,7 +81,10 @@ def pileup_to_conseq (handle, qCutoff):
         for atype in atypes:
             intermed.append((alist.count(atype), atype))
         intermed.sort(reverse=True)
-        token = intermed[0][1]
+        if intermed:
+            token = intermed[0][1]
+        else:
+            token = 'N'
         if '+' in token:
             m = indel_re.findall(token)[0] # \+[0-9]+
             conseq += token[0] + token[1+len(m):]
@@ -114,9 +117,29 @@ if not os.path.exists(args.fastq2):
     print 'No FASTQ found at', args.fastq2
     sys.exit(1)
 
+def redirect_call(args, outpath):
+    """ Launch a subprocess with a list of command-line arguments, and raise
+    an exception if the return code is not zero.
+    @param args: A list of arguments to pass to subprocess.Popen().
+    @param outpath: a filename that stdout should be redirected to. If you 
+    don't need to redirect the output, then just use subprocess.check_call().
+    """
+    with open(outpath, 'w') as outfile:
+        p = subprocess.Popen(args, stdout=outfile)
+        p.wait()
+        if p.returncode:
+            raise subprocess.CalledProcessError(p.returncode, args)
+
+def count_file_lines(path):
+    """ Run the wc command to count lines in a file, as shown here:
+    https://gist.github.com/zed/0ac760859e614cd03652
+    """
+    wc_output = subprocess.check_output(['wc', '-l', path])
+    return int(wc_output.split()[0])
+
 # check that we have access to bowtie2
 try:
-    p = subprocess.Popen(['bowtie2', '-h'], stdout=subprocess.PIPE)
+    redirect_call(['bowtie2', '-h'], os.devnull)
 except OSError:
     print 'bowtie2 not found; check if it is installed and in $PATH\n'
     raise
@@ -130,8 +153,7 @@ for path in [args.output_csv, args.stats_csv, args.conseq_csv]:
 
 
 # get the raw read count
-p = subprocess.Popen(['wc', '-l', args.fastq1], stdout=subprocess.PIPE)
-raw_count = int(p.stdout.readline().split()[0]) / 2  # 4 lines per record in FASTQ, paired
+raw_count = count_file_lines(args.fastq1) / 2  # 4 lines per record in FASTQ, paired
 
 stat_file = open(args.stats_csv, 'w')
 stat_file.write('raw,%d\n' % raw_count)
@@ -160,7 +182,6 @@ for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
 ref = args.ref
 n_remaps = 0
 mapping_efficiency = float(prelim_count) / raw_count
-fnull = open(os.devnull, 'w')
 frozen = []  # which regions to stop re-mapping
 tmpfile = 'temp.sam'  # temporary bowtie2-align output
 
@@ -180,34 +201,26 @@ while n_remaps < max_remaps:
         bamfile = refname+'.bam'
 
         # convert SAM to BAM
-        with open(bamfile, 'w') as f:
-            p = subprocess.Popen(['samtools', 'view', '-b', '-T', ref, samfile], stdout=f, stderr=fnull)
-            p.wait()
-        p = subprocess.Popen(['samtools', 'sort', bamfile, refname])  # overwrite
-        p.wait()
+        redirect_call(['samtools', 'view', '-b', '-T', ref, samfile], bamfile)
+        subprocess.check_call(['samtools', 'sort', bamfile, refname])  # overwrite
 
         # BAM to pileup
-        with open(bamfile+'.pileup', 'w') as f:
-            p = subprocess.Popen(['samtools', 'mpileup', '-A', bamfile], stdout=f, stderr=fnull)
-            p.wait()
+        pileup_path = bamfile+'.pileup'
+        redirect_call(['samtools', 'mpileup', '-A', bamfile], pileup_path)
 
         # pileup to consensus sequence
-        with open(bamfile+'.pileup', 'rU') as f:
+        with open(pileup_path, 'rU') as f:
             conseqs[refname] = pileup_to_conseq(f, consensus_q_cutoff)
 
         # consensus to *.bt2
-        p = subprocess.Popen(['bowtie2-build', '-c', '-q', conseqs[refname], refname])
-        p.wait()
+        subprocess.check_call(['bowtie2-build', '-c', '-q', conseqs[refname], refname])
 
-        # map raw data to new reference - overwrite SAM file
-        p = subprocess.Popen(['bowtie2-align', '--quiet', '-p', str(bowtie_threads), '--local',
+        subprocess.check_call(['bowtie2', '--quiet', '-p', str(bowtie_threads), '--local',
                               '-x', refname, '-1', args.fastq1, '-2', args.fastq2,
-                              '--no-unal', '-S', tmpfile], stdout=fnull)
-        p.wait()
+                              '--no-unal', '-S', tmpfile])
 
         # how many reads did we map?
-        p = subprocess.Popen(['wc', '-l', tmpfile], stdout=subprocess.PIPE)
-        count = int(p.stdout.readline().split()[0])
+        count = count_file_lines(tmpfile)
 
         if count <= map_counts[refname]:
             # failed to improve the number of mapped reads
@@ -222,8 +235,6 @@ while n_remaps < max_remaps:
     mapping_efficiency = sum(map_counts.values()) / float(raw_count)
     if mapping_efficiency > min_mapping_efficiency:
         break  # a sufficient fraction of raw data has been mapped
-
-fnull.close()
 
 
 seqfile = open(args.conseq_csv, 'w')  # record consensus sequences for later use
