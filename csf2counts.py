@@ -84,6 +84,7 @@ parser = argparse.ArgumentParser('Post-processing of short-read alignments.')
 
 parser.add_argument('input_csf', help='<input> aligned CSF input')
 parser.add_argument('input_conseq', help='<input> consensus sequences from remapping step')
+parser.add_argument('input_amino_ref', help='<input> amino acid reference sequences')
 parser.add_argument('output_nuc', help='<output> CSV containing nucleotide frequencies')
 parser.add_argument('output_amino', help='<output> CSV containing amino frequencies')
 parser.add_argument('output_indels', help='<output> CSV containing insertions')
@@ -91,9 +92,14 @@ parser.add_argument('output_conseq', help='<output> CSV containing consensus seq
 
 args = parser.parse_args()
 
+# check that the amino acid reference input exists
+if not os.path.exists(args.input_amino_ref):
+    print 'No input amino reference sequences found at', args.input_amino_ref
+    sys.exit(1)
+
 # read in amino acid reference sequences from file
 refseqs = {}
-with open(final_alignment_ref_path, 'rU') as handle:
+with open(args.input_amino_ref, 'rU') as handle:
     header = handle.next()
     for line in handle:
         region, aaseq = line.strip('\n').split(',')
@@ -119,7 +125,7 @@ with open(args.input_conseq, 'rU') as f:
     for line in f:
         region, conseq = line.strip('\n').split(',')
         if region not in refseqs:
-            print 'No reference in', final_alignment_ref_path, 'for', region
+            print 'No reference in', args.input_amino_ref, 'for', region
             continue
         refseq = refseqs[region]  # protein sequence
 
@@ -218,8 +224,13 @@ for region, group in groupby(infile, lambda x: x.split(',')[0]):
             elif aref[i] == '-':
                 inserts.append(qindex)  # Store insert location in query coordinate space
                 qindex += 1				# Track along the query
-            # If theres a gap in the query we are only effectively tracking along the pre-alignment reference
+            # If there's a gap in the query we are only effectively tracking along the pre-alignment reference
             elif aquery[i] == '-':
+                rindex += 1
+            elif aquery[i] == '?':
+                # consensus '?' is fully ambiguous position, gap spanned by mated pair
+                # this is a position we want to ignore
+                qindex += 1
                 rindex += 1
             # Normal case: tracking forward on both sequences
             else:
@@ -290,7 +301,7 @@ for region, group in groupby(infile, lambda x: x.split(',')[0]):
                 elif len(mixture) == 1:
                     conseqs[cut] += mixture[0]
                 else:
-                    conseqs[ci] += 'N'
+                    conseqs[cut] += 'N'
 
         confile.write('%s,%s,MAX,%s\n' % (region, qcut, maxcon))
         for cut, conseq in conseqs.iteritems():
