@@ -18,8 +18,15 @@ if (substr(out_path, l, l) != '/') {
 	out_path <- paste(out_path, '/', sep='')
 }
 
+
+# load key positions file
+key.pos <- read.csv(file='key_positions.csv', header=FALSE)
+names(key.pos) <- c('target', 'pos')
+
+
 data <- read.csv(file=input_csv, header=TRUE, sep=',')
 
+# the input CSV should look like this:
 #sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
 #50955ARPT-HCV-49537A-INT-PR-RT_S16,HCV1A-H77-core,0,0,1,0,0,0,0,0,0,0,3,0,0,1542,0,0,0,0,0,0,0,0,0,0
 
@@ -27,8 +34,10 @@ alphabet <- c('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', '
 
 data$coverage <- apply(data[ , which(is.element(names(data), alphabet))], 1, sum)
 
+# partition AA frequency table by sample and region
 coverage <- split(data[,which(is.element(names(data), c('refseq.aa.pos', 'q.cutoff', 'coverage')))], f=list(data$region, data$sample), drop=TRUE)
 
+# loop through partitions
 for (i in 1:length(coverage)) {
 	label <- names(coverage)[i]
 	tokens <- strsplit(label, split='\\.')[[1]]
@@ -42,11 +51,16 @@ for (i in 1:length(coverage)) {
 	png(file=paste(out_path, filename, sep=''), width=400, height=300, type='cairo')
 	par(family='sans', cex=1, mar=c(5,5,1,1))
 	plot(NA, xlim=c(1,max(df$refseq.aa.pos)), ylim=c(1,200000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
+	title(xlab="Reference coordinates (AA)", font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
 
-	#main_title = paste(sample, "\n[", region, "] q>=", qcut, sep="")
-	title(xlab="Reference coordinates", font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
-	#title(ylab='Coverage', cex.lab=1.5, line=4)
+	# indicate key positions for this region
+	temp <- key.pos$pos[key.pos$target==region]
+	#points(temp, rep(min.coverage, length(temp)), pch=8, cex=1.5)
+	for (pos in temp) {
+		rect(pos, 500, pos+1, 2e3, col='red', border=NA)
+	}
 
+	# draw trend lines for each quality score cutoff
 	cutoffs <- sort(as.integer(levels(as.factor(df$q.cutoff))))
 	for (j in 1:length(cutoffs)) {
 		q.cut <- cutoffs[j]

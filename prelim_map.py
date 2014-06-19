@@ -50,12 +50,6 @@ if not os.path.exists(output_path) and output_path != '':
     print 'SAM output path does not exist:', output_path
     sys.exit(1)
 
-# check that the stats output path is valid
-output_path = os.path.split(args.stats_csv)[0]
-if not os.path.exists(output_path) and output_path != '':
-    print 'stats output path does not exist:', output_path
-    sys.exit(1)
-
 # do preliminary mapping
 output = {}
 try:

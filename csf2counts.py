@@ -227,8 +227,10 @@ for region, group in groupby(infile, lambda x: x.split(',')[0]):
                 qindex += 1
                 rindex += 1
 
-        # output amino acid frequencies
-        for qindex, refcoord in qindex_to_refcoord.iteritems():
+        # output amino acid frequencies (sorted by AA coordinate)
+        intermed = [(k, v) for k, v in qindex_to_refcoord.iteritems()]
+        intermed.sort()
+        for qindex, refcoord in intermed:
             aa_pos = qindex + min(aa_coords)
             if aa_pos in inserts:
                 continue

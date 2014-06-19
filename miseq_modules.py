@@ -435,7 +435,10 @@ def csf2counts(path, mode, mixture_cutoffs, amino_reference_sequence):
     with open(outpath+".amino.freqs", 'w') as aafile:
         aafile.write("query.aa.pos,refseq.aa.pos,%s\n" % (','.join(list(amino_alphabet))))
 
-        for qindex, ref_aa_pos in qindex_to_refcoord.iteritems():
+        # output rows in ascending order
+        intermed = [(k,v) for k, v in qindex_to_refcoord.iteritems()]
+        intermed.sort()
+        for qindex, ref_aa_pos in intermed:
             # adjust for assembly offset
             aa_pos = qindex + min(aa_coords)
 
