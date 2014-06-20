@@ -1,30 +1,36 @@
 #!/usr/bin/env Rscript
 
-min.coverage = 1000
-syntax_error = "Correct syntax: ./coverage_plot.R <input CSV> <output path>"
+# parameters
+min.coverage <- 1000
+
+
+syntax.error = "Correct syntax: ./coverage_plot.R <input CSV> <output path>"
 args <- commandArgs(TRUE)
 
-if (length(args) != 2) { stop(syntax_error) }
-input_csv = args[1]
-out_path = args[2]
+if (length(args) != 2) { stop(syntax.error) }
+input.csv <- args[1]
+out.path <- args[2]
 
-if (!file.exists(out_path)) {
+if (!file.exists(out.path)) {
 	stop('output path does not exist')
 }
 
 # check for trailing directory separator
-l <- nchar(out_path)
-if (substr(out_path, l, l) != '/') {
-	out_path <- paste(out_path, '/', sep='')
+l <- nchar(out.path)
+if (substr(out.path, l, l) != '/') {
+	out.path <- paste(out.path, '/', sep='')
 }
-
 
 # load key positions file
 key.pos <- read.csv(file='key_positions.csv', header=FALSE)
 names(key.pos) <- c('target', 'pos')
 
 
-data <- read.csv(file=input_csv, header=TRUE, sep=',')
+# path to CSV file for reporting minimum coverages at key positions
+output.csv <- paste(out.path, 'minimum_coverage_at_keys.csv', sep='')
+output <- {}
+
+data <- read.csv(file=input.csv, header=TRUE, sep=',')
 
 # the input CSV should look like this:
 #sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
@@ -48,7 +54,7 @@ for (i in 1:length(coverage)) {
 	filename <- paste(sample, region, 'png', sep='.')
 	
 	# set up plot
-	png(file=paste(out_path, filename, sep=''), width=400, height=300, type='cairo')
+	png(file=paste(out.path, filename, sep=''), width=400, height=300, type='cairo')
 	par(family='sans', cex=1, mar=c(5,5,1,1))
 	plot(NA, xlim=c(1,max(df$refseq.aa.pos)), ylim=c(1,200000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
 	title(xlab="Reference coordinates (AA)", font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
@@ -64,11 +70,19 @@ for (i in 1:length(coverage)) {
 	cutoffs <- sort(as.integer(levels(as.factor(df$q.cutoff))))
 	for (j in 1:length(cutoffs)) {
 		q.cut <- cutoffs[j]
-		lines(x = df$refseq.aa.pos[df$q.cutoff == q.cut], 
-			y = df$coverage[df$q.cutoff==q.cut], 
+		df2 <- df[df$q.cutoff == q.cut, ]
+		lines(x = df2$refseq.aa.pos, 
+			y = df2$coverage, 
 			col=rainbow(length(cutoffs), v=0.8)[j],
 			lwd=2
 		)
+		# determine minimum coverage at key positions
+		key.coverage <- df2$coverage[is.element(df2$refseq.aa.pos, temp)]
+		if (length(key.coverage) > 0) {
+			output <- rbind(output, c(sample, region, q.cut, min(key.coverage), temp[which.min(key.coverage)]))
+		} else {
+			output <- rbind(output, c(sample, region, q.cut, NA, NA))
+		}
 	}
 
 	# draw minimum coverage line
@@ -82,3 +96,9 @@ for (i in 1:length(coverage)) {
 	
 	garbage <- dev.off()
 }
+
+
+# output minimum coverage at key positions
+output <- as.data.frame(output)
+names(output) <- c('sample', 'region', 'q.cut', 'min.coverage', 'which.key.pos')
+write.csv(output, file=output.csv, quote=FALSE, row.names=FALSE)
