@@ -502,8 +502,8 @@ extern "C" VALUE align_it(VALUE self, VALUE standard, VALUE seq, VALUE gap_init_
 {
    init_pairscore(1, 1);
 
-   string* seqa = new string(RSTRING(standard)->ptr);
-   string* seqb = new string(RSTRING(seq)->ptr);
+   string* seqa = new string(RSTRING_PTR(standard));
+   string* seqb = new string(RSTRING_PTR(seq));
    trim(seqa);
 	trim(seqb);
    degap(seqa);
@@ -526,8 +526,8 @@ extern "C" VALUE align_it_aa(VALUE self, VALUE standard, VALUE seq, VALUE gap_in
 {
    init_pairscore_aa(4, -2);
 
-   string* seqa = new string(RSTRING(standard)->ptr);
-   string* seqb = new string(RSTRING(seq)->ptr);
+   string* seqa = new string(RSTRING_PTR(standard));
+   string* seqb = new string(RSTRING_PTR(seq));
    trim(seqa);
 	trim(seqb);
    degap(seqa);
