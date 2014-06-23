@@ -8,7 +8,7 @@ Also report the number of reads mapped before and after processing.
 Dependencies:
     bowtie2-build
     bowtie2-align
-    samtools
+    samtools (with mpileup modified to take higher max per-file depth)
     settings.py
 """
 
@@ -20,6 +20,7 @@ import sys
 import re
 
 indel_re = re.compile('[+-][0-9]+')
+max_pileup_depth = 2**16
 
 from settings import *  # settings.py is a CodeResourceDependency
 
@@ -152,6 +153,11 @@ for path in [args.output_csv, args.stats_csv, args.conseq_csv]:
         sys.exit(1)
 
 
+# generate initial *.faidx file
+ref = args.ref
+subprocess.check_call(['samtools', 'faidx', ref])
+
+
 # get the raw read count
 raw_count = count_file_lines(args.fastq1) / 2  # 4 lines per record in FASTQ, paired
 
@@ -178,8 +184,8 @@ for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
     map_counts.update({refname: count})
     tmpfile.close()
 
+
 # settings for iterative remapping
-ref = args.ref
 n_remaps = 0
 mapping_efficiency = float(prelim_count) / raw_count
 frozen = []  # which regions to stop re-mapping
@@ -199,22 +205,28 @@ while n_remaps < max_remaps:
 
         samfile = refname+'.sam'
         bamfile = refname+'.bam'
+        confile = refname+'.conseq'
 
         # convert SAM to BAM
-        redirect_call(['samtools', 'view', '-b', '-T', ref, samfile], bamfile)
+        redirect_call(['samtools', 'view', '-b', '-T', confile if refname in conseqs else ref, samfile], bamfile)
         subprocess.check_call(['samtools', 'sort', bamfile, refname])  # overwrite
 
         # BAM to pileup
         pileup_path = bamfile+'.pileup'
-        redirect_call(['samtools', 'mpileup', '-A', bamfile], pileup_path)
+        redirect_call(['samtools', 'mpileup', '-d', max_pileup_depth, '-A', bamfile], pileup_path)
 
         # pileup to consensus sequence
         with open(pileup_path, 'rU') as f:
             conseqs[refname] = pileup_to_conseq(f, consensus_q_cutoff)
 
+        # generate *.faidx for later calls to samtools-view
+        handle = open(refname+'.conseq', 'w')
+        handle.write('>%s\n%s\n' % (refname, conseqs[refname]))
+        handle.close()
+        subprocess.check_call(['samtools', 'faidx', confile])
+
         # consensus to *.bt2
         subprocess.check_call(['bowtie2-build', '-c', '-q', conseqs[refname], refname])
-
         subprocess.check_call(['bowtie2', '--quiet', '-p', str(bowtie_threads), '--local',
                               '-x', refname, '-1', args.fastq1, '-2', args.fastq2,
                               '--no-unal', '-S', tmpfile])
