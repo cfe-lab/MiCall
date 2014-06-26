@@ -36,33 +36,40 @@ else:
         mode = run_info['Description']
 
 
-#########################
-### Begin Mapping
-
-logger.info('Removing old SAM files')
-old_sam_files = glob(root+'/*.sam')
-for f in old_sam_files:
-    os.remove(f)
+# Preliminary map
 
 fastq_files = glob(root + '/*_R1_001.fastq')
-for fastq in fastq_files:
-    fastq_filename = os.path.basename(fastq)
+for fastq1 in fastq_files:
+    fastq_filename = os.path.basename(fastq1)
+    fastq2 = '%s/%s' % (root, fastq_filename.replace('_R1_', '_R2_'))
+
+    # verify this sample is in SampleSheet.csv
     sample_name, sample_number = fastq_filename.split('_')[:2]
     key = sample_name + '_' + sample_number
     if run_info and not run_info['Data'].has_key(key):
         logger.error('{} not in SampleSheet.csv - cannot initiate mapping for this sample'.format(key))
         continue
-    is_t_primer = run_info['Data'][key]['is_T_primer'] if run_info else '0'
-    command = "python2.7 STEP_1_MAPPING.py {} {} {} {} {} {} {} {}".format(mapping_ref_path,
-            fastq, consensus_q_cutoff, mode, is_t_primer, min_mapping_efficiency, max_remaps, bowtie_threads)
+
+    command = 'python prelim_map.py %s %s %s.fasta %s/%s.prelim.csv' % (fastq1, fastq2,
+                                                                        mapping_ref_path,
+                                                                        root, key)
+
     log_path = "{}.mapping.log".format(fastq)
     queue_request = mapping_factory.queue_work(command, log_path, log_path)
     if queue_request:
         p, command = queue_request
         logger.info("pID {}: {}".format(p.pid, command))
+
 factory_barrier(mapping_factory)
 logger.info("Collating *.mapping.log files")
 miseq_logging.collate_logs(root, "mapping.log", "mapping.log")
+
+
+# Iterative re-mapping
+prelim_files = glob(root + '/*.prelim.csv')
+for prelim_file in prelim_files:
+
+
 
 ########################
 ### Begin sam2csf
