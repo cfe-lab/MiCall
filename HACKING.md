@@ -36,11 +36,9 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
 7. Click the Quick Auto-Config button.
 8. From the File menu, choose Import.... Navigate down to Git: Projects from Git.
 9. Choose Clone URI, and paste this URI: https://github.com/emartin-cfe/fifo_scheduler.git
-10. Use the defaults, and select the new project wizard with a PyDev project.
-11. Change the folder to point at the new fifo_scheduler folder created by git, and finish the import.
+10. Use the defaults, select import existing projects, and finish the import.
 11. From the File menu, choose Import.... Navigate down to Git: Projects from Git.
-12. Choose Clone URI, and paste this URI: 192.168.69.159:/usr/local/git/miseqpipeline.git
-13. Get the user and password from your supervisor.
+12. Choose Clone URI, and paste this URI: https://github.com/ArtPoon/MiseqPipeline.git
 14. Take all the branches, and select dev as your initial branch.
 15. Select import existing projects, and finish the import.
 15. Download the latest version of [bowtie2's binaries for Linux][bowtie2].
