@@ -17,6 +17,16 @@ import itertools
 import hyphyAlign
 import os
 
+
+parser = argparse.ArgumentParser('Clip out sub-regions from MiSeq read alignments.')
+
+parser.add_argument('input_csv', help='<input> CSV containing aligned and merged reads.')
+parser.add_argument('ref_csv', help='<input> CSV containing sub-region nucleotide reference sequences.')
+parser.add_argument('output_csv', help='<output> CSV containing clipped sequences')
+
+args = parser.parse_args()
+
+
 hyphy = hyphyAlign.HyPhy._THyPhy(os.getcwd(), 1)
 hyphyAlign.change_settings(hyphy, alphabet=hyphyAlign.nucAlphabet,
                            scoreMatrix=hyphyAlign.nucScoreMatrix,
@@ -30,14 +40,6 @@ min_avg_score = 2.
 
 
 def main():
-    parser = argparse.ArgumentParser('Clip out sub-regions from MiSeq read alignments.')
-
-    parser.add_argument('input_csv', help='<input> CSV containing aligned and merged reads.')
-    parser.add_argument('ref_csv', help='<input> CSV containing sub-region nucleotide reference sequences.')
-    parser.add_argument('output_csv', help='<output> CSV containing clipped sequences')
-
-    args = parser.parse_args()
-
     # load reference sequences
     refseqs = {}
     with open(args.ref_csv, 'rb') as f:
