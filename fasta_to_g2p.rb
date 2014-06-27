@@ -16,9 +16,9 @@ g2p.matrix
 CSV [Ruby module]
 =end
 
-require 'CSV'
+require 'csv'
 require './pssm_lib'
-require 'Bio'
+require 'bio'
 
 f = File.open(ARGV[1], mode='w') # write-only
 
@@ -47,7 +47,7 @@ CSV.foreach(ARGV[0]) do |row|
   prot = dna.translate
   
   # sanity check 1 - bounded by cysteines
-  if !prot.starts_with?('C') || !prot.ends_with?('C')
+  if !prot.match(/^C/) || !prot.match(/C$/)
     f.write("#{qcut},#{rank},#{count},,,,cysteines\n")
     next
   end
