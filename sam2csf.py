@@ -19,8 +19,15 @@ import os
 import sys
 import itertools
 from settings import *
-
 import re
+
+
+parser = argparse.ArgumentParser('Conversion of SAM data into aligned format.')
+parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
+parser.add_argument('output_csv', help='<output> CSV containing cleaned and merged reads')
+args = parser.parse_args()
+
+
 cigar_re = re.compile('[0-9]+[MIDNSHPX=]')  # CIGAR token
 gpfx = re.compile('^[-]+')  # length of gap prefix
 
@@ -107,71 +114,68 @@ def len_gap_prefix(s):
     return 0
 
 
-parser = argparse.ArgumentParser('Conversion of SAM data into aligned format.')
+def main():
+    # check that the inputs exist
+    if not os.path.exists(args.sam_csv):
+        print 'No input CSV found at', args.sam_csv
+        sys.exit(1)
 
-parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
-parser.add_argument('output_csv', help='<output> CSV containing cleaned and merged reads')
-
-args = parser.parse_args()
-
-# check that the inputs exist
-if not os.path.exists(args.sam_csv):
-    print 'No input CSV found at', args.sam_csv
-    sys.exit(1)
-
-# check that the output paths are valid
-output_path = os.path.split(args.output_csv)[0]
-if not os.path.exists(output_path) and output_path != '':
-    print 'Output path does not exist:', output_path
-    sys.exit(1)
+    # check that the output paths are valid
+    output_path = os.path.split(args.output_csv)[0]
+    if not os.path.exists(output_path) and output_path != '':
+        print 'Output path does not exist:', output_path
+        sys.exit(1)
 
 
-handle = open(args.sam_csv, 'rU')
-outfile = open(args.output_csv, 'w')
+    handle = open(args.sam_csv, 'rU')
+    outfile = open(args.output_csv, 'w')
 
-for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
-    aligned = dict([(qcut, {}) for qcut in sam2csf_q_cutoffs])
-    cached_reads = {}  # for mate pairing
-    for line in group:
-        if refname == '0':
-            print line
-            sys.exit()
+    for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
+        aligned = dict([(qcut, {}) for qcut in sam2csf_q_cutoffs])
+        cached_reads = {}  # for mate pairing
+        for line in group:
+            if refname == '0':
+                print line
+                sys.exit()
 
-        qname, flag, refname2, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split(',')
-        if cigar == '*' or int(mapq) < read_mapping_cutoff:
-            continue
-
-        shift, seq1, qual1 = apply_cigar(cigar, seq, qual)
-        pos1 = int(pos)-1
-        seq2 = '-'*pos1 + seq1  # pad sequence on left
-        qual2 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
-
-        if qname not in cached_reads:
-            cached_reads.update({qname: (seq2, qual2)})
-            continue
-
-        # otherwise we have a matched pair
-        seq1, qual1 = cached_reads.pop(qname)
-        for qcut in sam2csf_q_cutoffs:
-            mseq = merge_pairs(seq1, seq2, qual1, qual2, qcut)
-            prop_N = mseq.count('N') / float(len(mseq.strip('-')))
-            if prop_N > max_prop_N:
-                # merged read is too messy
+            qname, flag, refname2, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split(',')
+            if cigar == '*' or int(mapq) < read_mapping_cutoff:
                 continue
 
-            if mseq in aligned[qcut]:
-                aligned[qcut][mseq] += 1  # compress identical sequences
-            else:
-                aligned[qcut].update({mseq: 1})
+            shift, seq1, qual1 = apply_cigar(cigar, seq, qual)
+            pos1 = int(pos)-1
+            seq2 = '-'*pos1 + seq1  # pad sequence on left
+            qual2 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
 
-    # output compressed data
-    for qcut, data in aligned.iteritems():
-        # sort variants by count
-        intermed = [(count, len_gap_prefix(s), s) for s, count in data.iteritems()]
-        intermed.sort(reverse=True)
-        for rank, (count, offset, seq) in enumerate(intermed):
-            outfile.write(','.join(map(str, [refname, qcut, rank, count, offset, seq.strip('-')])))
-            outfile.write('\n')
+            if qname not in cached_reads:
+                cached_reads.update({qname: (seq2, qual2)})
+                continue
 
-handle.close()
-outfile.close()
+            # otherwise we have a matched pair
+            seq1, qual1 = cached_reads.pop(qname)
+            for qcut in sam2csf_q_cutoffs:
+                mseq = merge_pairs(seq1, seq2, qual1, qual2, qcut)
+                prop_N = mseq.count('N') / float(len(mseq.strip('-')))
+                if prop_N > max_prop_N:
+                    # merged read is too messy
+                    continue
+
+                if mseq in aligned[qcut]:
+                    aligned[qcut][mseq] += 1  # compress identical sequences
+                else:
+                    aligned[qcut].update({mseq: 1})
+
+        # output compressed data
+        for qcut, data in aligned.iteritems():
+            # sort variants by count
+            intermed = [(count, len_gap_prefix(s), s) for s, count in data.iteritems()]
+            intermed.sort(reverse=True)
+            for rank, (count, offset, seq) in enumerate(intermed):
+                outfile.write(','.join(map(str, [refname, qcut, rank, count, offset, seq.strip('-')])))
+                outfile.write('\n')
+
+    handle.close()
+    outfile.close()
+
+if __name__ == '__main__':
+    main()

@@ -20,17 +20,17 @@ import tempfile
 
 import settings  # settings.py is a CodeResourceDependency
 
+parser = argparse.ArgumentParser('Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
+
+parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
+parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
+parser.add_argument('ref', help='<input> initial set of references in FASTA format')
+parser.add_argument('sam_csv', help='<output> CSV containing bowtie2 output (modified SAM)')
+
+args = parser.parse_args()
+
+
 def main():
-    parser = argparse.ArgumentParser('Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
-
-    parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
-    parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-    parser.add_argument('ref', help='<input> initial set of references in FASTA format')
-    parser.add_argument('sam_csv', help='<output> CSV containing bowtie2 output (modified SAM)')
-
-    # TODO: pass number of threads and --local to bowtie2 as a CodeResourceDependency
-    args = parser.parse_args()
-
     # check that we have access to bowtie2
     try:
         p = subprocess.Popen(['bowtie2', '-h'], stdout=subprocess.PIPE)
