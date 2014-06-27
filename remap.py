@@ -37,6 +37,9 @@ args = parser.parse_args()
 indel_re = re.compile('[+-][0-9]+')
 max_pileup_depth = str(2**16)
 
+## settings.py is a CodeResourceDependency
+#from settings import bowtie_threads, consensus_q_cutoff, max_remaps, \
+#    min_mapping_efficiency
 
 def pileup_to_conseq (handle, qCutoff):
     conseq = ''
@@ -47,7 +50,8 @@ def pileup_to_conseq (handle, qCutoff):
             to_skip -= 1
             continue
 
-        label, pos, en, depth, astr, qstr = line.strip('\n').split('\t')
+        #label, pos, en, depth, astr, qstr
+        _,      pos, _,  _,     astr, qstr = line.strip('\n').split('\t')
         pos = int(pos)  # position in the pileup, 1-index
         if (pos - last_pos) > 1:
             conseq += 'N' * (pos - last_pos - 1)

@@ -20,6 +20,7 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
         java -version
 
 3. Check the version of Python you have installed:
+
         python --version
 
 4. If the Python version is lower than 2.7, then install it:
@@ -33,7 +34,7 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
 6. Launch Eclipse. From the Help menu, choose either Eclipse Marketplace... or Install New Software....
 7. In the marketplace, just type PyDev and search. In the install wizard, use the [PyDev update site][pydev].
 7. After installing PyDev, open Window: Preferences. Navigate down to PyDev: Interpreters: Python Interpreter. 
-7. Click the Quick Auto-Config button.
+7. Click the Quick Auto-Config button. Click OK.
 8. From the File menu, choose Import.... Navigate down to Git: Projects from Git.
 9. Choose Clone URI, and paste this URI: https://github.com/emartin-cfe/fifo_scheduler.git
 10. Use the defaults, select import existing projects, and finish the import.
@@ -42,7 +43,7 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
 14. Take all the branches, and select dev as your initial branch.
 15. Select import existing projects, and finish the import.
 15. Download the latest version of [bowtie2's binaries for Linux][bowtie2].
-15. Right click and choose Expand Here. Change the folder owner to root, move it to /opt, and add it to the path.
+15. Right click and choose Extract Here. Change the folder owner to root, move it to /opt, and add it to the path.
 
         chmod g-w -R bowtie2-2.2.1
         sudo chown root:root -R bowtie2-2.2.1
@@ -65,7 +66,30 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
         cd ~/Downloads/hyphy-master/src/lib
         sudo python setup.py install
 
-16. Create a data folder somewhere on your workstation, like ~/data. Create subdirectories called miseq and RAW_DATA.
+    You can test it out if you like.
+
+        cd Examples/Python
+        python BasicHyPhy.py # Just check that there are no obvious errors.
+
+16. Install Ruby for the fasta2g2p step. Check what version you have:
+
+        ruby -v
+
+17. If you don't have version 1.8.6, install Ruby Version Manager, and Ruby 1.8.6.
+        sudo apt-get install curl
+        curl -sSL https://get.rvm.io | bash -s stable
+        # exit, then start a new shell so rvm will work
+        sudo ls
+        rvm requirements
+        rvm install 1.8.6
+        gem install bio
+        
+17. Build the alignment library.
+
+        cd ~/git/MiseqPipeline
+        ./build_alignment.sh
+
+17. Create a data folder somewhere on your workstation, like ~/data. Create subdirectories called miseq and RAW_DATA.
 18. Connect to the shared drive [using CIFS][cifs] and mount smb://192.168.68.144/RAW_DATA as /media/RAW_DATA.
 19. Navigate down to /media/RAW_DATA/MiSeq/runs, pick a recent folder, and make sure it has a file named needsprocessing.
 20. Copy SampleSheet.csv to a sample run folder under your local RAW_DATA folder.
