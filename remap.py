@@ -18,8 +18,10 @@ import os
 import itertools
 import sys
 import re
-from settings import *  # settings.py is a CodeResourceDependency
 
+# settings.py is a CodeResourceDependency
+from settings import bowtie_threads, consensus_q_cutoff, max_remaps, \
+    min_mapping_efficiency
 
 parser = argparse.ArgumentParser('Iterative remapping of bowtie2 by reference.')
 
@@ -37,9 +39,6 @@ args = parser.parse_args()
 indel_re = re.compile('[+-][0-9]+')
 max_pileup_depth = str(2**16)
 
-## settings.py is a CodeResourceDependency
-#from settings import bowtie_threads, consensus_q_cutoff, max_remaps, \
-#    min_mapping_efficiency
 
 def pileup_to_conseq (handle, qCutoff):
     conseq = ''
