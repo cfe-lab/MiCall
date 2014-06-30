@@ -3,7 +3,6 @@ Perform pairwise alignment of sequence against a reference using the
 HyPhy shared library function AlignSequences().
 """
 
-import HyPhy
 import re
 
 

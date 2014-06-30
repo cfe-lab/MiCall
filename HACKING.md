@@ -89,6 +89,15 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
         cd ~/git/MiseqPipeline
         ./build_alignment.sh
 
+17. From the Help menu in Eclipse, choose Eclipse Marketplace…
+17. Search for Ruby, and install Ruby (DLTK).
+17. From the Window menu, select Preferences. Navigate down to Ruby: Interpreters.
+17. Click Add... and browse for the Interpreter executable. Look under your
+    `.rvm` folder for a path like this:
+    
+        ~/.rvm/rubies/ruby-1.8.6-p420/bin/ruby
+
+17. For Interpreter arguments, type `-rubygems`.
 17. Create a data folder somewhere on your workstation, like ~/data. Create subdirectories called miseq and RAW_DATA.
 18. Connect to the shared drive [using CIFS][cifs] and mount smb://192.168.68.144/RAW_DATA as /media/RAW_DATA.
 19. Navigate down to /media/RAW_DATA/MiSeq/runs, pick a recent folder, and make sure it has a file named needsprocessing.
@@ -99,7 +108,23 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
 22. Copy settings_default.py to settings.py, and open it for editing.
 23. Point macdatafile_mount at your local RAW_DATA folder, and set mapping_ref_path to "reference_sequences/cfe".
 24. Set both mapping_factory_resources and single_thread_resources to [("", 2)]
-25. If you want to reduce the combinations that run, remove all but the first value in g2p_fpr_cutoffs, v3_mincounts, conseq_mixture_cutoffs. Remove all but 10 from sam2csf_q_cutoffs.
+25. If you want to reduce the combinations that run, remove all but the first 
+    value in g2p_fpr_cutoffs, v3_mincounts, conseq_mixture_cutoffs. Remove all 
+    but 10 from sam2csf_q_cutoffs.
+25. Copy or create a symbolic link for two fastq files in the working directory.
+    The files should be a matched pair: forward and reverse. Call them 
+    `read1.fastq` and `read2.fastq`.
+25. Try the launch configurations. They are saved in the `working` directory,
+    but you should see them if you open the Run menu and choose Run
+    configurations.... If you want to run all steps at once, skip down to the 
+    MISEQ_PIPELINE.py file, otherwise try launching each step in the following
+    order:
+    * `prelim_map.py`
+    * `remap.py`
+    * `sam2csf.py`
+    * `csf2counts.py`
+    * `fasta_to_g2p.rb`
+    * All together: `MISEQ_PIPELINE.py`.
 26. Open the MISEQ_PIPELINE.py file, and type Ctrl-F11 to try and run it. It will fail.
 27. From the Run menu, choose Run Configurations....
 28. Go to the Arguments tab, and type the path to the sample run folder you created above.

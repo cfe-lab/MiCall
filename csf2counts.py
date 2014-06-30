@@ -14,13 +14,14 @@ Dependencies:
 """
 
 import argparse
-import os
-import sys
 from itertools import groupby
-from settings import *
-from hyphyAlign import *
+import os
 import re
+import sys
 
+import HyPhy
+from hyphyAlign import change_settings, get_boundaries, pair_align
+from settings import conseq_mixture_cutoffs
 
 parser = argparse.ArgumentParser('Post-processing of short-read alignments.')
 
@@ -35,7 +36,7 @@ parser.add_argument('output_conseq', help='<output> CSV containing consensus seq
 args = parser.parse_args()
 
 
-hyphy = HyPhy._THyPhy (os.getcwd(), 1)
+hyphy = HyPhy._THyPhy (os.getcwd(), 1)  # @UndefinedVariable
 change_settings(hyphy)
 
 
@@ -106,6 +107,7 @@ def coordinate_map(aquery, aref):
     inserts = []
     qindex = 0
     rindex = 0
+    left, right = get_boundaries(aref)    # Coords of first/last non-gap character
 
     # For each coordinate on the reference, create a mapping to the query
     for i in range(len(aref)):
@@ -144,7 +146,7 @@ def main():
     # read in amino acid reference sequences from file
     refseqs = {}
     with open(args.input_amino_ref, 'rU') as handle:
-        header = handle.next()
+        handle.next() # Skip header
         for line in handle:
             region, aaseq = line.strip('\n').split(',')
             refseqs.update({region: aaseq})
@@ -203,7 +205,7 @@ def main():
 
             total_count = 0
             for line in group2:
-                region2, qcut2, rank, count, offset, seq = line.strip('\n').split(',')
+                _, _, _, count, offset, seq = line.strip('\n').split(',')
                 offset = int(offset)
                 count = int(count)
                 total_count += count  # track the total number of aligned and merged reads, given QCUT
@@ -251,8 +253,7 @@ def main():
 
 
             # map to reference coordinates by aligning consensus
-            aquery, aref, ascore = pair_align(hyphy, refseqs[region], aa_max)
-            left, right = get_boundaries(aref)	# Coords of first/last non-gap character
+            aquery, aref, _ = pair_align(hyphy, refseqs[region], aa_max)
             qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
 
             # output amino acid frequencies (sorted by AA coordinate)
