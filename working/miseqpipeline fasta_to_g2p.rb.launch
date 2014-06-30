@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.dltk.ruby.launching.RubyLaunchConfigurationType">
+<stringAttribute key="mainScript" value="fasta_to_g2p.rb"/>
+<stringAttribute key="nature" value="org.eclipse.dltk.ruby.core.nature"/>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/miseqpipeline/fasta_to_g2p.rb"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="process_factory_id" value="org.eclipse.dltk.launching.scriptProcessFactory"/>
+<stringAttribute key="project" value="miseqpipeline"/>
+<stringAttribute key="scriptArguments" value="${workspace_loc:miseqpipeline}/working/csf.csv ${workspace_loc:miseqpipeline}/working/scored.csv"/>
+</launchConfiguration>

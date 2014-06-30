@@ -1,5 +1,7 @@
 /settings.py
 *.pyc
+*.so
+*.fai
 *~
 working/*
 !working/*.launch
