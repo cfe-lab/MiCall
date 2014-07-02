@@ -3,6 +3,7 @@
 	<name>miseqpipeline</name>
 	<comment></comment>
 	<projects>
+		<project>fifo_scheduler</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

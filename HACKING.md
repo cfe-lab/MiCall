@@ -125,10 +125,6 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
     * `csf2counts.py`
     * `fasta_to_g2p.rb`
     * All together: `MISEQ_PIPELINE.py`.
-26. Open the MISEQ_PIPELINE.py file, and type Ctrl-F11 to try and run it. It will fail.
-27. From the Run menu, choose Run Configurations....
-28. Go to the Arguments tab, and type the path to the sample run folder you created above.
-29. Click the Run button.
 ... to be continued ...
 
 [eclipse]: https://www.eclipse.org/downloads/
