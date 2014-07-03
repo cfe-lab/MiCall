@@ -13,7 +13,10 @@ class Job:
 		self.standard_error = standard_error
 		self.standard_output_f = None
 		self.standard_error_f = None
-
+		
+	def __repr__(self):
+		return "Job(%r)" % self.shell_command
+		
 	def teardown(self):
 		if self.standard_output_f is not None: self.standard_output_f.close()
 		if self.standard_error_f is not None: self.standard_error_f.close()
@@ -40,8 +43,18 @@ class Job_Queue:
 
 class Worker:
 
-	def __init__(self, resource):
+	def __init__(self, resource="", stderr=None):
+		""" Create a worker object that can launch one process at a time.
+		
+		@param resource: A special command that will prefix each process
+		command. For example, ssh or bpsh can be used to launch processes on
+		another host.
+		@param stderr: An open file if you want to redirect error reports. If
+		this is None, then sys.stderr will be used.
+		"""
+		
 		self.resource_allocated = resource
+		self.stderr = stderr
 		self.process = None
 		self.curr_job = None
 
@@ -57,11 +70,15 @@ class Worker:
 
 			# If previous process terminated with non-zero exit code, report it and clear worker for work
 			if returncode != 0:
+				stderr = self.stderr if self.stderr is not None else sys.stderr
 				import datetime
 				curr_datetime = datetime.datetime.now()
 				formatted_datetime = curr_datetime.strftime("%Y-%m-%d %H:%M:%S.%f")
-				sys.stderr.write("{} - pid {} returned non-zero exit code '{}' from command '{}'\n".format(formatted_datetime,
-						self.process.pid, returncode, self.curr_job.shell_command))
+				stderr.write(
+					"{} - non-zero exit code {} from command '{}'\n".format(
+						formatted_datetime,
+						returncode, 
+						self.curr_job.shell_command))
 				self.process = None
 
 			return True
@@ -75,7 +92,10 @@ class Worker:
 			pass
 
 	def start_job(self,job):
-		"""Run command using resource + open unbuffered files and pipe stdout/error to them"""
+		"""Run a job's command, and open files to receive stdout/error.
+		
+		Prefix command with resource, and return (process, full command).
+		"""
 
 		if not self.available_for_work(): raise Exception('Worker currently allocated')
 
@@ -85,8 +105,8 @@ class Worker:
 		command = "{} {}".format(self.resource_allocated, job.shell_command)
 
 		# If job standard in/out is specified to be sent to a file, do so - else default to sys stdout/stderr
-		job.standard_out_f = open(job.standard_output, "a", 0) if job.standard_output != None else sys.stdout
-		job.standard_error_f = open(job.standard_error, "a", 0) if job.standard_error != None else sys.stderr
+		job.standard_out_f = open(job.standard_output, "a", 0) if job.standard_output != None else None
+		job.standard_error_f = open(job.standard_error, "a", 0) if job.standard_error != None else None
 
 		# We use subprocess but the pipeline still expects shell=True access for bash operators (>, >>, |, etc)
 		# FIXME: Change to shell=False but only after the pipeline has been migrated
@@ -100,20 +120,36 @@ class Worker:
 class Factory:
 	"""Factories have a queue of jobs and workers to work on them"""	
 
-	def __init__(self, assigned_resources=[]):
+	def __init__(self, assigned_resources=[], stderr=None):
+		""" Create a factory with the requested resources.
+		
+		@param assigned_resources: a list of (resource, worker_count) tuples.
+		resource is passed to each worker, and may be the empty string if there
+		are no special requirements for launching jobs.
+		@param stderr: lets you redirect any error messages *from the workers*
+		"""
 		self.workers = []
 		self.jobs = Job_Queue()
 
 		for resource, number in assigned_resources:
 			for _ in range(number):
-				self.hire_worker(resource)
+				self.hire_worker(resource, stderr=stderr)
 
-	def hire_worker(self,resource):
-		"""Give factory additional resources"""
-		self.workers.append(Worker(resource))
+	def hire_worker(self, resource, stderr=None):
+		"""Give factory one extra worker.
+		
+		@param resource: passed to the worker, may be the empty string if there
+		are no special requirements for launching jobs.
+		@param stderr: lets you redirect any error messages *from the workers*
+		"""
+		self.workers.append(Worker(resource, stderr=stderr))
 
 	def queue_work(self, shell_command, standard_out=None, standard_error=None):
-		"""Start a job if a worker is available, else add it to the queue"""
+		"""Start a job if a worker is available, else add it to the queue.
+		
+		If the job is started, this will return (process, full command), 
+		otherwise it will return None.
+		"""
 		new_job = Job(shell_command, standard_out, standard_error)
 		for worker in self.workers:
 			if worker.available_for_work():
@@ -121,7 +157,11 @@ class Factory:
 		self.jobs.add_job(new_job)
 
 	def supervise(self):
-		"""Assigns idling workers to outstanding jobs"""
+		"""Assigns idling workers to outstanding jobs.
+		
+		Returns a list of (process, full command) pairs for any jobs that were
+		started.
+		"""
 		processes = []
 		for worker in self.workers:
 			if worker.available_for_work() and self.jobs.jobs_outstanding():
