@@ -5,16 +5,25 @@ from cStringIO import StringIO
 import os
 import time
 
+def purge_files(*filenames):
+    for filename in filenames:
+        try:
+            os.remove(filename)
+        except OSError:
+            pass
+    
 class JobTest(unittest.TestCase):
     OUT_FILE = "working/test_out.log"
     ERROR_FILE = "working/test_error.log"
     
     def setUp(self):
+        purge_files(self.OUT_FILE, self.ERROR_FILE)
         self.open_files = []
     
     def tearDown(self):
         for f in self.open_files:
             f.close()
+        purge_files(self.OUT_FILE, self.ERROR_FILE)
     
     def test_init(self):
         job = Job("python -c pass", self.OUT_FILE, self.ERROR_FILE)
@@ -72,10 +81,10 @@ class WorkerTest(unittest.TestCase):
     ERROR_FILE = 'working/test_error.log'
     
     def setUp(self):
-        try:
-            os.remove(self.OUT_FILE)
-        except OSError:
-            pass
+        purge_files(self.OUT_FILE, self.ERROR_FILE)
+        
+    def tearDown(self):        
+        purge_files(self.OUT_FILE, self.ERROR_FILE)        
         
     def test_start_job(self):
         command = """python -c "print('Hello, World!')" """
@@ -156,7 +165,7 @@ class WorkerTest(unittest.TestCase):
         job = Job('python -c pass')
         worker = Worker()
          
-        process, _ = worker.start_job(job)        
+        process, _ = worker.start_job(job)
         process.wait()
 
         worker.clean_terminate()
@@ -205,3 +214,24 @@ class FactoryTest(unittest.TestCase):
             time.sleep(0.1)
         
         self.assertIs(result2, None) # result when queuing to busy factory
+    
+    def test_wait(self):
+        notified_commands = StringIO()
+        expected_commands = """\
+ python -c "import time; time.sleep(0.5)"
+ python -c "x = 1"
+ python -c "x = 2"
+"""
+        def callback(process, command):
+            notified_commands.write(command + "\n")
+            
+        factory = Factory([("", 1)], launch_callback=callback)
+        
+        factory.queue_work('python -c "import time; time.sleep(0.5)"')
+        factory.queue_work('python -c "x = 1"')
+        factory.queue_work('python -c "x = 2"')
+        
+        sleep_seconds = 0.1
+        factory.wait(sleep_seconds)
+        
+        self.assertEquals(notified_commands.getvalue(), expected_commands)
