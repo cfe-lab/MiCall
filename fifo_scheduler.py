@@ -1,5 +1,6 @@
 import atexit, subprocess, sys
 from Queue import Queue
+import time
 
 class Job:
 	"""
@@ -120,16 +121,20 @@ class Worker:
 class Factory:
 	"""Factories have a queue of jobs and workers to work on them"""	
 
-	def __init__(self, assigned_resources=[], stderr=None):
+	def __init__(self, assigned_resources=[], stderr=None, launch_callback=None):
 		""" Create a factory with the requested resources.
 		
 		@param assigned_resources: a list of (resource, worker_count) tuples.
 		resource is passed to each worker, and may be the empty string if there
 		are no special requirements for launching jobs.
-		@param stderr: lets you redirect any error messages *from the workers*
+		@param stderr: A file object that lets you redirect any error messages 
+		*from the workers*, not from the jobs.
+		@param launch_callback: A callback method that is called with a
+		(process, command) pair every time a job is started.
 		"""
 		self.workers = []
 		self.jobs = Job_Queue()
+		self.launch_callback = launch_callback
 
 		for resource, number in assigned_resources:
 			for _ in range(number):
@@ -153,7 +158,10 @@ class Factory:
 		new_job = Job(shell_command, standard_out, standard_error)
 		for worker in self.workers:
 			if worker.available_for_work():
-				return worker.start_job(new_job)
+				process, command = worker.start_job(new_job)
+				if self.launch_callback:
+					self.launch_callback(process, command)
+				return process, command
 		self.jobs.add_job(new_job)
 
 	def supervise(self):
@@ -165,9 +173,23 @@ class Factory:
 		processes = []
 		for worker in self.workers:
 			if worker.available_for_work() and self.jobs.jobs_outstanding():
-				process_spawned = worker.start_job(self.jobs.get_next_job())
-				processes.append(process_spawned)
+				process, command = worker.start_job(self.jobs.get_next_job())
+				if self.launch_callback:
+					self.launch_callback(process, command)
+				processes.append((process, command))
 		return processes
+	
+	def wait(self, sleep_seconds=1):
+		"""Wait for all queued jobs to complete.
+		
+		@param callback: method that will be called with the process and 
+		command of each job that is started.
+		"""
+		while True:
+			self.supervise()
+			if self.completely_idle():
+				break
+			time.sleep(sleep_seconds)
 
 	def completely_idle(self):
 		"""True if no jobs remain and no worker is working"""
