@@ -1,6 +1,6 @@
 
 from glob import glob
-import logging, os, subprocess, sys, time
+import logging, os, subprocess, sys
 
 from collate import collate_frequencies, collate_conseqs, collate_counts
 import miseq_logging
@@ -17,26 +17,20 @@ from settings import bowtie_threads, conseq_mixture_cutoffs, \
 sys.path.append(path_to_fifo_scheduler)
 from fifo_scheduler import Factory
 
+def launch_callback(command):
+    logger.info("Launching {!r}".format(command))
+
 # Mapping factory suitable for multi-thread jobs (4 processes * 8 threads / job = 32 cores allocated)
-mapping_factory = Factory(mapping_factory_resources)
-single_thread_factory = Factory(single_thread_resources)
+mapping_factory = Factory(mapping_factory_resources,
+                          launch_callback=launch_callback)
+single_thread_factory = Factory(single_thread_resources,
+                                launch_callback=launch_callback)
 
 root = sys.argv[1]			# MONITOR parameter: Location of fastq files to process
 
 # Logging parameters
 log_file = "{}/pipeline_output.log".format(root)
 logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
-
-def factory_barrier(my_factory):
-    """Wait until factory completes queued jobs"""
-    while True:
-        processes_spawned = my_factory.supervise()
-        if processes_spawned:
-            for p, command in processes_spawned:
-                logger.info("pID {}: {}".format(p.pid, command))
-        if my_factory.completely_idle(): break
-        time.sleep(1)
-    return
 
 if len(sys.argv) == 3:
     mode = sys.argv[2]
@@ -81,12 +75,9 @@ for sample_info in fastq_samples:
         sample_info.output_root)
   
     log_path = "{}.mapping.log".format(sample_info.fastq1)
-    queue_request = mapping_factory.queue_work(command, log_path, log_path)
-    if queue_request:
-        p, command = queue_request
-        logger.info("pID {}: {}".format(p.pid, command))
-  
-factory_barrier(mapping_factory)
+    mapping_factory.queue_work(command, log_path, log_path)
+
+mapping_factory.wait()
 
 # Iterative re-mapping
 for sample_info in fastq_samples:
@@ -101,12 +92,9 @@ for sample_info in fastq_samples:
         sample_info.output_root)
 
     log_path = "{}.mapping.log".format(sample_info.fastq1)
-    queue_request = mapping_factory.queue_work(command, log_path, log_path)
-    if queue_request:
-        p, command = queue_request
-        logger.info("pID {}: {}".format(p.pid, command))
+    mapping_factory.queue_work(command, log_path, log_path)
 
-factory_barrier(mapping_factory)
+mapping_factory.wait()
 logger.info("Collating *.mapping.log files")
 miseq_logging.collate_logs(root, "mapping.log", "mapping.log")
 
@@ -128,11 +116,8 @@ for f in glob(root + '/*.remap.sam'):
         # CSFs are sorted by read prevalence for Amplicon and left-offset for Nextera
         command = "python2.7 STEP_2_SAM2CSF.py {} {} {} {} {}".format(f, qcut, read_mapping_cutoff, mode, max_prop_N)
         log_path = "{}.sam2csf.{}.log".format(f, qcut)
-        queue_request = single_thread_factory.queue_work(command, log_path, log_path)
-        if queue_request:
-            p, command = queue_request
-            logger.info("pID {}: {}".format(p.pid, command))
-factory_barrier(single_thread_factory)
+        single_thread_factory.queue_work(command, log_path, log_path)
+single_thread_factory.wait()
 logger.info("Collating *.sam2csf.*.log files")
 miseq_logging.collate_logs(root, "sam2csf.*.log", "sam2csf.log")
 
@@ -144,12 +129,9 @@ if mode == 'Amplicon':
     for env_csf_file in [x for x in glob(root + '/*.HIV1B-env.*.csf')]:
         command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
         log_path = "{}.g2p.log".format(env_csf_file)
-        queue_request = single_thread_factory.queue_work(command, log_path, log_path)
-        if queue_request:
-            p, command = queue_request
-            logger.info("pID {}: {}".format(p.pid, command))
+        single_thread_factory.queue_work(command, log_path, log_path)
 
-    factory_barrier(single_thread_factory)
+    single_thread_factory.wait()
     logger.info("Collating *.g2p.log files")
     miseq_logging.collate_logs(root, "g2p.log", "g2p.log")
 
@@ -191,19 +173,13 @@ for csf_file in glob(root + '/*.csf'):
     command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file, mode, mixture_cutoffs,
                                                                   final_alignment_ref_path)
     log_path = "{}.csf2counts.log".format(csf_file)
-    queue_request = single_thread_factory.queue_work(command, log_path, log_path)
-    if queue_request:
-        p, command = queue_request
-        logger.info("pID {}: {}".format(p.pid, command))
+    single_thread_factory.queue_work(command, log_path, log_path)
 
     # Generate compressed FASTAs
     command = 'python2.7 STEP_5_CSF2NUC.py %s %s %s' % (csf_file, mode, final_nuc_align_ref_path)
-    queue_request = single_thread_factory.queue_work(command, log_path, log_path)
-    if queue_request:
-        p, command = queue_request
-        logger.info("pID {}: {}".format(p.pid, command))
+    single_thread_factory.queue_work(command, log_path, log_path)
 
-factory_barrier(single_thread_factory)
+single_thread_factory.wait()
 
 
 #########################
@@ -249,23 +225,17 @@ if filter_cross_contaminants:
     for qcut in sam2csf_q_cutoffs:
         command = 'python2.7 FILTER_CONTAMINANTS.py %s %d %d' % (root, qcut, bowtie_threads)
         log_path = root + '/filtering.log'
-        queue_request = single_thread_factory.queue_work(command, log_path, log_path)
-        if queue_request:
-            p, command = queue_request
-            logger.info('pID {}: {}'.format(p.pid, command))
+        single_thread_factory.queue_work(command, log_path, log_path)
         # yields *.clean.csf and *.contam.csf
 
-    factory_barrier(single_thread_factory)
+    single_thread_factory.wait()
 
     # re-do g2p scoring
     for env_csf_file in glob(root + '/*.HIV1B-env.*.clean.csf'):
         command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
         log_path = "{}.g2p.log".format(env_csf_file)
-        queue_request = single_thread_factory.queue_work(command, log_path, log_path)
-        if queue_request:
-            p, command = queue_request
-            logger.info("pID {}: {}".format(p.pid, command))
-    factory_barrier(single_thread_factory)
+        single_thread_factory.queue_work(command, log_path, log_path)
+    single_thread_factory.wait()
     logger.info("Collating *.g2p.log files")
     miseq_logging.collate_logs(root, "g2p.log", "g2p.log")
 
@@ -294,12 +264,9 @@ if filter_cross_contaminants:
             csf_file, mode, mixture_cutoffs, final_alignment_ref_path
         )
         log_path = "{}.csf2counts.log".format(csf_file)
-        queue_request = single_thread_factory.queue_work(command, log_path, log_path)
-        if queue_request:
-            p, command = queue_request
-            logger.info("pID {}: {}".format(p.pid, command))
+        single_thread_factory.queue_work(command, log_path, log_path)
 
-    factory_barrier(single_thread_factory)
+    single_thread_factory.wait()
 
     collated_clean_amino_freqs_path = "{}/amino_cleaned_frequencies.csv".format(root)
     command = ["python2.7","generate_coverage_plots.py",collated_clean_amino_freqs_path,"{}/coverage_maps".format(root)]
