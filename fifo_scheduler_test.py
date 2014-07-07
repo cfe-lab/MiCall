@@ -5,6 +5,7 @@ import time
 import unittest
 
 from fifo_scheduler import Factory, Job, Worker
+from testfixtures.logcapture import LogCapture
 
 def purge_files(*filenames):
     for filename in filenames:
@@ -158,13 +159,17 @@ class FactoryTest(unittest.TestCase):
 
         exception_message = None
         try:
-            factory.wait()
+            with LogCapture() as log:
+                factory.wait()
             
             self.fail("Should have thrown")
         except CalledProcessError as e:
             exception_message = str(e)
          
         self.assertEquals(exception_message, expected_error)
+        log.check(('fifo_scheduler', 
+                   'ERROR', 
+                   """Command ' python -c "exit(1)"' returned non-zero exit status 1"""))
     
     def test_parallel(self):
         notified_commands = []

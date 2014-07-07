@@ -3,6 +3,9 @@ import subprocess, sys
 from multiprocessing.pool import ThreadPool
 import threading
 import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Job:
 	"""
@@ -73,8 +76,7 @@ class Worker:
 				stderr.close()
 		
 class Factory:
-	"""Factories have a queue of jobs and workers to work on them"""	
-
+	"""Factories have a queue of jobs and workers to work on them"""
 	def __init__(self, assigned_resources=[], launch_callback=None):
 		""" Create a factory with the requested resources.
 		
@@ -133,4 +135,6 @@ class Factory:
 			try:
 				result.get()
 			except Exception as e:
+				if toRaise is not None:
+					logger.error(str(toRaise), exc_info=1)
 				toRaise = e
