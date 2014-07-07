@@ -1,8 +1,8 @@
-import datetime
-from Queue import Queue
+from Queue import Queue, Empty
 import subprocess, sys
 from multiprocessing.pool import ThreadPool
 import threading
+import traceback
 
 class Job:
 	"""
@@ -19,20 +19,17 @@ class Job:
 		return "Job(%r)" % self.shell_command
 		
 class Worker:
-	def __init__(self, resource="", stderr=None, launch_callback=None):
+	def __init__(self, resource="", launch_callback=None):
 		""" Create a worker object that can launch one process at a time.
 		
 		@param resource: A special command that will prefix each process
 		command. For example, ssh or bpsh can be used to launch processes on
 		another host.
-		@param stderr: An open file if you want to redirect error reports. If
-		this is None, then sys.stderr will be used.
 		@param launch_callback: a method that will be called with the full
 		command just before it is launched.
 		"""
 		
 		self.resource_allocated = resource
-		self.stderr = stderr
 		self.launch_callback = launch_callback
 
 	def run_job(self, job):
@@ -49,66 +46,56 @@ class Worker:
 		
 		try:
 			if self.launch_callback is not None:
-				self.launch_callback(command)
+				try:
+					self.launch_callback(command)
+				except:
+					etype, value, _ = sys.exc_info()
+					original_message = traceback.format_exception_only(
+						etype, 
+						value)[-1].strip()
+					message = "Failed callback for {!r}. {}".format(
+						command,
+						original_message)
+					raise RuntimeError(message)
 			
 			# We use subprocess but the pipeline still expects shell=True
 			# access for bash operators (>, >>, |, etc)
 			# FIXME: Change to shell=False but only after the pipeline has been migrated
-			try:
-				returncode = subprocess.check_call(
-					command, 
-					shell=True,
-					stdout=stdout,
-					stderr=stderr)
-				return returncode
-			except subprocess.CalledProcessError as e:
-				self._report_error(e)
-				raise
+			return subprocess.check_call(
+				command, 
+				shell=True,
+				stdout=stdout,
+				stderr=stderr)
 		finally:
 			if stdout is not None:
 				stdout.close()
 			if stderr is not None:
 				stderr.close()
-				
-	def _report_error(self, exception):
-		stderr = self.stderr if self.stderr is not None else sys.stderr
-		curr_datetime = datetime.datetime.now()
-		formatted_datetime = curr_datetime.strftime("%Y-%m-%d %H:%M:%S.%f")
-		stderr.write(
-            "{} - {}\n".format(
-                formatted_datetime,
-                exception))
 		
 class Factory:
 	"""Factories have a queue of jobs and workers to work on them"""	
 
-	def __init__(self, assigned_resources=[], stderr=None, launch_callback=None):
+	def __init__(self, assigned_resources=[], launch_callback=None):
 		""" Create a factory with the requested resources.
 		
 		@param assigned_resources: a list of (resource, worker_count) tuples.
 		resource is passed to each worker, and may be the empty string if there
 		are no special requirements for launching jobs.
-		@param stderr: A file object that lets you redirect any error messages 
-		*from the workers*, not from the jobs.
 		@param launch_callback: A callback method that is called with a
 		(process, command) pair every time a job is started.
 		"""
 		self.workers = []
+		self.workerQueue = Queue()
+		self.results = Queue()
 		self.local_data = threading.local()
 
 		for resource, number in assigned_resources:
 			for _ in range(number):
-				self.workers.append(Worker(
-					resource,
-					stderr=stderr,
-					launch_callback=launch_callback))
-		self._create_pool()
-		
-	def _create_pool(self):
-		queue = Queue()
-		for worker in self.workers:
-			queue.put(worker)
-		self.workerQueue = queue
+				worker = Worker(
+				    resource, 
+				    launch_callback=launch_callback)
+				self.workers.append(worker)
+				self.workerQueue.put(worker)
 		self.pool = ThreadPool(len(self.workers))
 
 	def queue_work(self, shell_command, standard_out=None, standard_error=None):
@@ -119,19 +106,31 @@ class Factory:
 		and successful() will return True if the return code was zero.
 		"""
 		job = Job(shell_command, standard_out, standard_error)
-		return self.pool.apply_async(self._run_job, (job,))
+		result = self.pool.apply_async(self._run_job, (job, ))
+		self.results.put(result)
+		return result
 	
 	def _run_job(self, job):
 		if not hasattr(self.local_data, 'worker'):
 			self.local_data.worker = self.workerQueue.get()
 		return self.local_data.worker.run_job(job)
 
-	def wait(self, sleep_seconds=1):
-		"""Wait for all queued jobs to complete.
+	def wait(self):
+		"""Wait for all queued jobs to complete and check for failures.
 		
-		No new jobs can be queued while this method is waiting, and it's not
-		safe to have two threads waiting on the same factory object."""
+		Raise the last exception encountered, with any other exceptions logged
+		at the error level."""
 		
-		self.pool.close()
-		self.pool.join()
-		self._create_pool()
+		toRaise = None
+		while True:
+			is_blocking = False
+			try:
+				result = self.results.get(is_blocking)
+			except Empty:
+				if toRaise is None:
+					return
+				raise toRaise
+			try:
+				result.get()
+			except Exception as e:
+				toRaise = e

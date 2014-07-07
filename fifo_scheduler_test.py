@@ -6,8 +6,6 @@ import unittest
 
 from fifo_scheduler import Factory, Job, Worker
 
-#TODO: deal with exceptions in launch_callback (just log them?)
-
 def purge_files(*filenames):
     for filename in filenames:
         try:
@@ -86,21 +84,16 @@ class WorkerTest(unittest.TestCase):
          
     def test_zero_return(self):
         job = Job('python -c "exit(0)"')
-        expected_error = ""
-        stderr = StringIO()
-        worker = Worker(stderr=stderr)
+        worker = Worker()
         
         returncode = worker.run_job(job)
         
         self.assertEqual(returncode, 0)
-        error = stderr.getvalue()
-        self.assertEquals(error, expected_error)
          
     def test_nonzero_return(self):
         job = Job('python -c "exit(1)"')
         expected_error = """Command ' python -c "exit(1)"' returned non-zero exit status 1"""
-        stderr = StringIO()
-        worker = Worker(stderr=stderr)
+        worker = Worker()
         
         exception_message = None
         try:
@@ -110,10 +103,7 @@ class WorkerTest(unittest.TestCase):
         except CalledProcessError as e:
             exception_message = str(e)
          
-        error = stderr.getvalue().strip()
-        error_tail = error[-len(expected_error):]
-        self.assertEquals(error_tail, expected_error)
-        self.assertEquals(exception_message, error_tail)
+        self.assertEquals(exception_message, expected_error)
 
 class FactoryTest(unittest.TestCase):
     def test_init(self):
@@ -142,6 +132,39 @@ class FactoryTest(unittest.TestCase):
         factory.wait()
         
         self.assertEquals(notified_commands.getvalue(), expected_commands)
+    
+    def test_wait_nonzero(self):
+        expected_error = """Command ' python -c "exit(1)"' returned non-zero exit status 1"""
+        factory = Factory([("", 1)])
+        
+        factory.queue_work('python -c "exit(1)"')
+
+        exception_message = None
+        try:
+            factory.wait()
+            
+            self.fail("Should have thrown")
+        except CalledProcessError as e:
+            exception_message = str(e)
+         
+        self.assertEquals(exception_message, expected_error)
+    
+    def test_wait_multiple_nonzero(self):
+        expected_error = """Command ' python -c "exit(2)"' returned non-zero exit status 2"""
+        factory = Factory([("", 1)])
+        
+        factory.queue_work('python -c "exit(1)"')
+        factory.queue_work('python -c "exit(2)"')
+
+        exception_message = None
+        try:
+            factory.wait()
+            
+            self.fail("Should have thrown")
+        except CalledProcessError as e:
+            exception_message = str(e)
+         
+        self.assertEquals(exception_message, expected_error)
     
     def test_parallel(self):
         notified_commands = []
@@ -178,3 +201,42 @@ class FactoryTest(unittest.TestCase):
         returncode = async_result.get()
         
         self.assertEquals(returncode, 0)
+
+    def test_result_nonzero(self):
+        expected_error = """Command ' python -c "exit(1)"' returned non-zero exit status 1"""
+        factory = Factory([("", 1)])
+        
+        async_result = factory.queue_work('python -c "exit(1)"')
+
+        exception_message = None
+        try:
+            async_result.get()
+            
+            self.fail("Should have thrown")
+        except CalledProcessError as e:
+            exception_message = str(e)
+         
+        self.assertEquals(exception_message, expected_error)
+
+    def test_failing_callback(self):
+        command = 'python -c pass'
+        expected_message = (
+            "Failed callback for ' python -c pass'. KeyError: 'missing_key'")
+
+        def failing_callback(command):
+            a = {}
+            a['x'] = a['missing_key']
+            
+        factory = Factory([("", 1)], launch_callback=failing_callback)
+        
+        factory.queue_work(command)
+        
+        exception_message = None
+        try:
+            factory.wait()
+            
+            self.fail("Should have thrown")
+        except RuntimeError as e:
+            exception_message = str(e)
+        
+        self.assertEquals(exception_message, expected_message)

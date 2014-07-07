@@ -26,6 +26,11 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
 4. If the Python version is lower than 2.7, then install it:
         
         sudo apt-get install python2.7
+        
+4. Install pip the Python package manager and the testfixtures package for Python:
+
+        sudo apt-get install python-pip
+        sudo pip install testfixtures
 
 5. Install Eclipse, although you might prefer a more recent version from the [Eclipse web site][eclipse]:
 
