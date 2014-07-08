@@ -15,7 +15,7 @@ from settings import bowtie_threads, conseq_mixture_cutoffs, \
     sam2csf_q_cutoffs, single_thread_resources, v3_mincounts
     
 sys.path.append(path_to_fifo_scheduler)
-from fifo_scheduler import Factory
+from fifo_scheduler import Factory, Job
 
 def launch_callback(command):
     logger.info("Launching {!r}".format(command))
@@ -68,31 +68,32 @@ for fastq in fastq_files:
     
 # Preliminary map
 for sample_info in fastq_samples:
-    command = 'python prelim_map.py %s %s %s.fasta %s.prelim.csv' % (
-        sample_info.fastq1, 
-        sample_info.fastq2,
-        mapping_ref_path,
-        sample_info.output_root)
-  
     log_path = "{}.mapping.log".format(sample_info.fastq1)
-    mapping_factory.queue_work(command, log_path, log_path)
+    mapping_factory.queue_job(Job(script='prelim_map.py',
+                                  helpers=('settings.py',
+                                           mapping_ref_path + '.fasta'),
+                                  args=(sample_info.fastq1,
+                                        sample_info.fastq2,
+                                        sample_info.output_root + '.prelim.csv'),
+                                  stdout=log_path,
+                                  stderr=log_path))
 
 mapping_factory.wait()
 
 # Iterative re-mapping
 for sample_info in fastq_samples:
-    command = ('python remap.py %s %s %s.prelim.csv %s.fasta ' +
-        '%s.output.csv %s.stats.csv %s.conseq.csv') % (
-        sample_info.fastq1, 
-        sample_info.fastq2,
-        sample_info.output_root,
-        mapping_ref_path,
-        sample_info.output_root,
-        sample_info.output_root,
-        sample_info.output_root)
-
     log_path = "{}.mapping.log".format(sample_info.fastq1)
-    mapping_factory.queue_work(command, log_path, log_path)
+    mapping_factory.queue_job(Job(script='remap.py',
+                                  helpers=('settings.py',
+                                           mapping_ref_path + '.fasta'),
+                                  args=(sample_info.fastq1, 
+                                        sample_info.fastq2,
+                                        sample_info.output_root + '.prelim.csv',
+                                        sample_info.output_root + '.output.csv',
+                                        sample_info.output_root + '.stats.csv',
+                                        sample_info.output_root + '.conseq.csv'),
+                                  stdout=log_path,
+                                  stderr=log_path))
 
 mapping_factory.wait()
 logger.info("Collating *.mapping.log files")

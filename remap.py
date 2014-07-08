@@ -23,118 +23,23 @@ import re
 from settings import bowtie_threads, consensus_q_cutoff, max_remaps, \
     min_mapping_efficiency
 
-parser = argparse.ArgumentParser('Iterative remapping of bowtie2 by reference.')
-
-parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
-parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
-parser.add_argument('ref', help='<input> initial set of references in FASTA format')
-parser.add_argument('output_csv', help='<output> CSV containing remap output (modified SAM)')
-parser.add_argument('stats_csv', help='<output> CSV containing numbers of mapped reads')
-parser.add_argument('conseq_csv', help='<output> CSV containing mapping consensus sequences')
-
-args = parser.parse_args()
-
-
+    
 indel_re = re.compile('[+-][0-9]+')
-max_pileup_depth = str(2**16)
-
-
-def pileup_to_conseq (handle, qCutoff):
-    conseq = ''
-    to_skip = 0
-    last_pos = 0
-    for line in handle:
-        if to_skip > 0:
-            to_skip -= 1
-            continue
-
-        #label, pos, en, depth, astr, qstr
-        _,      pos, _,  _,     astr, qstr = line.strip('\n').split('\t')
-        pos = int(pos)  # position in the pileup, 1-index
-        if (pos - last_pos) > 1:
-            conseq += 'N' * (pos - last_pos - 1)
-        last_pos = pos
-        alist = []  # alist stores all bases at a given coordinate
-        i = 0       # Current index for astr
-        j = 0       # Current index for qstr
-
-        while i < len(astr):
-            if astr[i] == '^':
-                q = ord(qstr[j])-33
-                base = astr[i+2] if q >= qCutoff else 'N'
-                alist.append(base.upper())
-                i += 3
-                j += 1
-            elif astr[i] in '*':
-                alist.append('-')
-                i += 1
-            elif astr[i] == '$':
-                i += 1
-            elif i < len(astr)-1 and astr[i+1] in '+-':
-                m = indel_re.match(astr[i+1:])
-                indel_len = int(m.group().strip('+-'))
-                left = i+1 + len(m.group())
-                insertion = astr[left:(left+indel_len)]
-                q = ord(qstr[j])-33
-                base = astr[i].upper() if q >= qCutoff else 'N'
-                token = base + m.group() + insertion.upper()
-                if astr[i+1] == '+':
-                    alist.append(token)
-                else:
-                    alist.append(base)
-                i += len(token)
-                j += 1
-            else:
-                # Operative case: sequence matches reference (And no indel ahead)
-                q = ord(qstr[j])-33
-                base = astr[i].upper() if q >= qCutoff else 'N'
-                alist.append(base)
-                i += 1
-                j += 1
-
-        atypes = set(alist)
-        intermed = []
-        for atype in atypes:
-            intermed.append((alist.count(atype), atype))
-        intermed.sort(reverse=True)
-        if intermed:
-            token = intermed[0][1]
-        else:
-            token = 'N'
-        if '+' in token:
-            m = indel_re.findall(token)[0] # \+[0-9]+
-            conseq += token[0] + token[1+len(m):]
-        elif token == '-':
-            pass
-        else:
-            conseq += token
-    handle.close()
-    return conseq
-
-
-def redirect_call(args, outpath):
-    """ Launch a subprocess with a list of command-line arguments, and raise
-    an exception if the return code is not zero.
-    @param args: A list of arguments to pass to subprocess.Popen().
-    @param outpath: a filename that stdout should be redirected to. If you 
-    don't need to redirect the output, then just use subprocess.check_call().
-    """
-    with open(outpath, 'w') as outfile:
-        p = subprocess.Popen(args, stdout=outfile)
-        p.wait()
-        if p.returncode:
-            raise subprocess.CalledProcessError(p.returncode, args)
-
-def count_file_lines(path):
-    """ Run the wc command to count lines in a file, as shown here:
-    https://gist.github.com/zed/0ac760859e614cd03652
-    """
-    wc_output = subprocess.check_output(['wc', '-l', path])
-    return int(wc_output.split()[0])
-
 
 def main():
+    parser = argparse.ArgumentParser('Iterative remapping of bowtie2 by reference.')
+    
+    parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
+    parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
+    parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
+    parser.add_argument('output_csv', help='<output> CSV containing remap output (modified SAM)')
+    parser.add_argument('stats_csv', help='<output> CSV containing numbers of mapped reads')
+    parser.add_argument('conseq_csv', help='<output> CSV containing mapping consensus sequences')
+    
+    args = parser.parse_args()
+    
+    max_pileup_depth = str(2**16)
+    
     # check that the inputs exist
     if not os.path.exists(args.fastq1):
         print 'No FASTQ found at', args.fastq1
@@ -159,8 +64,17 @@ def main():
             sys.exit(1)
 
     # generate initial *.faidx file
-    ref = args.ref
-    subprocess.check_call(['samtools', 'faidx', ref])
+    is_ref_found = False
+    possible_refs = ('cfe.fasta', '../reference_sequences/cfe.fasta')
+    for ref in possible_refs:
+        if not os.path.isfile(ref):
+            continue
+        is_ref_found = True
+        subprocess.check_call(['samtools', 'faidx', ref])
+        break
+    if not is_ref_found:
+        raise RuntimeError('No reference sequences found in {!r}'.format(
+            possible_refs))
 
     # get the raw read count
     raw_count = count_file_lines(args.fastq1) / 2  # 4 lines per record in FASTQ, paired
@@ -269,6 +183,100 @@ def main():
     outfile.close()
     stat_file.close()
     seqfile.close()
+
+def pileup_to_conseq (handle, qCutoff):
+    conseq = ''
+    to_skip = 0
+    last_pos = 0
+    for line in handle:
+        if to_skip > 0:
+            to_skip -= 1
+            continue
+
+        #label, pos, en, depth, astr, qstr
+        _,      pos, _,  _,     astr, qstr = line.strip('\n').split('\t')
+        pos = int(pos)  # position in the pileup, 1-index
+        if (pos - last_pos) > 1:
+            conseq += 'N' * (pos - last_pos - 1)
+        last_pos = pos
+        alist = []  # alist stores all bases at a given coordinate
+        i = 0       # Current index for astr
+        j = 0       # Current index for qstr
+
+        while i < len(astr):
+            if astr[i] == '^':
+                q = ord(qstr[j])-33
+                base = astr[i+2] if q >= qCutoff else 'N'
+                alist.append(base.upper())
+                i += 3
+                j += 1
+            elif astr[i] in '*':
+                alist.append('-')
+                i += 1
+            elif astr[i] == '$':
+                i += 1
+            elif i < len(astr)-1 and astr[i+1] in '+-':
+                m = indel_re.match(astr[i+1:])
+                indel_len = int(m.group().strip('+-'))
+                left = i+1 + len(m.group())
+                insertion = astr[left:(left+indel_len)]
+                q = ord(qstr[j])-33
+                base = astr[i].upper() if q >= qCutoff else 'N'
+                token = base + m.group() + insertion.upper()
+                if astr[i+1] == '+':
+                    alist.append(token)
+                else:
+                    alist.append(base)
+                i += len(token)
+                j += 1
+            else:
+                # Operative case: sequence matches reference (And no indel ahead)
+                q = ord(qstr[j])-33
+                base = astr[i].upper() if q >= qCutoff else 'N'
+                alist.append(base)
+                i += 1
+                j += 1
+
+        atypes = set(alist)
+        intermed = []
+        for atype in atypes:
+            intermed.append((alist.count(atype), atype))
+        intermed.sort(reverse=True)
+        if intermed:
+            token = intermed[0][1]
+        else:
+            token = 'N'
+        if '+' in token:
+            m = indel_re.findall(token)[0] # \+[0-9]+
+            conseq += token[0] + token[1+len(m):]
+        elif token == '-':
+            pass
+        else:
+            conseq += token
+    handle.close()
+    return conseq
+
+
+def redirect_call(args, outpath):
+    """ Launch a subprocess with a list of command-line arguments, and raise
+    an exception if the return code is not zero.
+    @param args: A list of arguments to pass to subprocess.Popen().
+    @param outpath: a filename that stdout should be redirected to. If you 
+    don't need to redirect the output, then just use subprocess.check_call().
+    """
+    with open(outpath, 'w') as outfile:
+        p = subprocess.Popen(args, stdout=outfile)
+        p.wait()
+        if p.returncode:
+            raise subprocess.CalledProcessError(p.returncode, args)
+
+def count_file_lines(path):
+    """ Run the wc command to count lines in a file, as shown here:
+    https://gist.github.com/zed/0ac760859e614cd03652
+    """
+    wc_output = subprocess.check_output(['wc', '-l', path])
+    return int(wc_output.split()[0])
+
 
 
 if __name__ == '__main__':

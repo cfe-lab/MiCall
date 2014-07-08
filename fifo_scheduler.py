@@ -4,6 +4,10 @@ from multiprocessing.pool import ThreadPool
 import threading
 import traceback
 import logging
+from sys import exc_info
+import os
+import tempfile
+import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -13,15 +17,40 @@ class Job:
     If file paths are undefined, outputs default to the console.
     """
 
-    def __init__(self, shell_command, standard_output=None, standard_error=None):
+    def __init__(self,
+                 shell_command=None,
+                 stdout=None,
+                 stderr=None,
+                 script=None,
+                 helpers=[],
+                 args=[]):
+        """ Create a new job definition.
+        
+        @param shell_command: a simple shell command that does not need to be
+        executed in a new folder. Either pass this or script, not both.
+        @param stdout: a file path to redirect standard output to
+        @param stderr: a file path to redirect standard error to
+        @param script: an executable script that needs to be executed in a new
+        folder. A temporary folder will be created and used as the current
+        directory.
+        @param helpers: a sequence of helper files, like libraries or data
+        files. These files will be copied into the temporary folder with the
+        script.
+        @param args: a sequence of arguments to pass to the script
+        """
         self.shell_command = shell_command
-        self.standard_output = standard_output
-        self.standard_error = standard_error
+        self.script = script
+        self.stdout = stdout
+        self.stderr = stderr
+        self.helpers = helpers[:]
+        self.args = args[:]
         
     def __repr__(self):
         return "Job(%r)" % self.shell_command
         
 class Worker:
+    WORKING_PATH = 'working'
+    
     def __init__(self, resource="", launch_callback=None):
         """ Create a worker object that can launch one process at a time.
         
@@ -35,19 +64,34 @@ class Worker:
         self.resource_allocated = resource
         self.launch_callback = launch_callback
 
+        if not os.path.isdir(self.WORKING_PATH):
+            os.mkdir(self.WORKING_PATH)
+
     def run_job(self, job):
         """Run a job's command, and open files to receive stdout/error.
         
         Prefix command with resource.
         """
         
-        command = "{} {}".format(self.resource_allocated, job.shell_command)
-        
         # If job standard in/out is specified to be sent to a file, do so - else default to sys stdout/stderr
-        stdout = open(job.standard_output, "a", 0) if job.standard_output != None else None
-        stderr = open(job.standard_error, "a", 0) if job.standard_error != None else None
+        stdout = open(job.stdout, "a", 0) if job.stdout != None else None
+        stderr = open(job.stderr, "a", 0) if job.stderr != None else None
+        tempdir = None
         
         try:
+            if job.shell_command is not None:
+                shell_command = job.shell_command
+            else:
+                tempdir = tempfile.mkdtemp(dir=self.WORKING_PATH)
+                shutil.copy2(job.script, tempdir)
+                shell_command = os.path.join('.', os.path.basename(job.script))
+                for helper in job.helpers:
+                    shutil.copy2(helper, tempdir)
+                for arg in job.args:
+                    shell_command += ' ' + arg
+    
+            command = "{} {}".format(self.resource_allocated, shell_command)
+            
             if self.launch_callback is not None:
                 try:
                     self.launch_callback(command)
@@ -67,6 +111,7 @@ class Worker:
             return subprocess.check_call(
                 command, 
                 shell=True,
+                cwd=tempdir,
                 stdout=stdout,
                 stderr=stderr)
         finally:
@@ -74,6 +119,8 @@ class Worker:
                 stdout.close()
             if stderr is not None:
                 stderr.close()
+            if tempdir is not None:
+                shutil.rmtree(tempdir)
         
 class Factory:
     """Factories have a queue of jobs and workers to work on them"""
@@ -90,7 +137,7 @@ class Factory:
         self.workerQueue = Queue()
         self.results = Queue()
         self.local_data = threading.local()
-
+        
         for resource, number in assigned_resources:
             for _ in range(number):
                 worker = Worker(
@@ -100,18 +147,29 @@ class Factory:
                 self.workerQueue.put(worker)
         self.pool = ThreadPool(len(self.workers))
 
+
     def queue_work(self, shell_command, standard_out=None, standard_error=None):
-        """Submit a job to the pool of workers.
+        """Submit a command to the pool of workers.
         
         Returns a multiprocessing.pool.AsyncResult object. Calling get() on
         that object will return 0 or raise a subprocess.CalledProcessError, 
         and successful() will return True if the return code was zero.
         """
         job = Job(shell_command, standard_out, standard_error)
+        result = self.queue_job(job)
+        return result
+    
+    def queue_job(self, job):
+        """Submit a job to the pool of workers.
+        
+        Returns a multiprocessing.pool.AsyncResult object. Calling get() on
+        that object will return 0 or raise a subprocess.CalledProcessError, 
+        and successful() will return True if the return code was zero.
+        """
         result = self.pool.apply_async(self._run_job, (job, ))
         self.results.put(result)
         return result
-    
+
     def _run_job(self, job):
         if not hasattr(self.local_data, 'worker'):
             self.local_data.worker = self.workerQueue.get()
@@ -123,18 +181,19 @@ class Factory:
         Raise the last exception encountered, with any other exceptions logged
         at the error level."""
         
-        toRaise = None
+        to_raise = None
         while True:
             is_blocking = False
             try:
                 result = self.results.get(is_blocking)
             except Empty:
-                if toRaise is None:
+                if to_raise is None:
                     return
-                raise toRaise
+                etype, value, tb = to_raise
+                raise etype, value, tb
             try:
                 result.get()
-            except Exception as e:
-                if toRaise is not None:
-                    logger.error(str(toRaise), exc_info=1)
-                toRaise = e
+            except:
+                if to_raise is not None:
+                    logger.error(str(to_raise[1]), exc_info=to_raise)
+                to_raise = exc_info()

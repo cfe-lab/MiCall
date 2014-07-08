@@ -13,30 +13,26 @@ Dependencies: settings.py (derived from settings_default.py)
 
 import argparse
 import os
-import shutil
 import subprocess
 import sys
-import tempfile
 
 import settings  # settings.py is a CodeResourceDependency
 
-parser = argparse.ArgumentParser('Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
-
-parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
-parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-parser.add_argument('ref', help='<input> initial set of references in FASTA format')
-parser.add_argument('sam_csv', help='<output> CSV containing bowtie2 output (modified SAM)')
-
-args = parser.parse_args()
-
-
 def main():
+    parser = argparse.ArgumentParser('Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
+    
+    parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
+    parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
+    parser.add_argument('sam_csv', help='<output> CSV containing bowtie2 output (modified SAM)')
+    
+    args = parser.parse_args()
+
+
     # check that we have access to bowtie2
     try:
-        p = subprocess.Popen(['bowtie2', '-h'], stdout=subprocess.PIPE)
+        subprocess.check_output(['bowtie2', '-h'])
     except OSError:
-        print 'bowtie2 not found; check if it is installed and in $PATH\n'
-        raise
+        raise RuntimeError('bowtie2 not found; check if it is installed and in $PATH\n')
 
     # check that the inputs exist
     if not os.path.exists(args.fastq1):
@@ -47,54 +43,56 @@ def main():
         print 'No FASTQ found at', args.fastq2
         sys.exit(1)
 
-    if not os.path.exists(args.ref):
-        print 'No reference sequences found at', args.ref
-        sys.exit(1)
-
     # check that the SAM output path is valid
     output_path = os.path.split(args.sam_csv)[0]
     if not os.path.exists(output_path) and output_path != '':
         print 'SAM output path does not exist:', output_path
         sys.exit(1)
 
-    # Create a temp folder to hold the reference sequences.
-    references_folder = tempfile.mkdtemp(prefix='tmpReferences')
+    # generate initial reference files
+    is_ref_found = False
+    possible_refs = ('cfe.fasta', '../reference_sequences/cfe.fasta')
+    for ref in possible_refs:
+        if not os.path.isfile(ref):
+            continue
+        is_ref_found = True
+        subprocess.check_call(['samtools', 'faidx', ref])
+        break
+    if not is_ref_found:
+        raise RuntimeError('No reference sequences found in {!r}'.format(
+            possible_refs))
+    reffile_template = 'reference'
+    subprocess.check_call(['bowtie2-build',
+                           '--quiet',
+                           '-f',
+                           ref,
+                           reffile_template])
 
-    try:
-        reffile_template = os.path.join(references_folder, 'reference')
-        p = subprocess.check_call(['bowtie2-build',
-                                   '--quiet',
-                                   '-f',
-                                   args.ref,
-                                   reffile_template])
+    # do preliminary mapping
+    output = {}
 
-        # do preliminary mapping
-        output = {}
+    # stream output from bowtie2
+    bowtie_args = ['bowtie2',
+                   '--quiet',
+                   '-x', reffile_template,
+                   '-1', args.fastq1,
+                   '-2', args.fastq2,
+                   '--no-unal',
+                   '--local',
+                   '-p', str(settings.bowtie_threads)]
+    p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
+    with p.stdout:
+        for line in p.stdout:
+            if line.startswith('@'):
+                # skip header line
+                continue
+            refname = line.split('\t')[2]  # read was mapped to this reference
+            if not refname in output:
+                output.update({refname: []})
+            output[refname].append('\t'.join(line.split('\t')[:11]))  # discard optional items
 
-        # stream output from bowtie2
-        bowtie_args = ['bowtie2',
-                       '--quiet',
-                       '-x', reffile_template,
-                       '-1', args.fastq1,
-                       '-2', args.fastq2,
-                       '--no-unal',
-                       '--local',
-                       '-p', str(settings.bowtie_threads)]
-        p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
-        with p.stdout:
-            for line in p.stdout:
-                if line.startswith('@'):
-                    # skip header line
-                    continue
-                refname = line.split('\t')[2]  # read was mapped to this reference
-                if not refname in output:
-                    output.update({refname: []})
-                output[refname].append('\t'.join(line.split('\t')[:11]))  # discard optional items
-
-        if p.returncode:
-            raise subprocess.CalledProcessError(p.returncode, bowtie_args)
-    finally:
-        shutil.rmtree(references_folder)
+    if p.returncode:
+        raise subprocess.CalledProcessError(p.returncode, bowtie_args)
 
     # lines grouped by refname
     with open(args.sam_csv, 'w') as outfile:
