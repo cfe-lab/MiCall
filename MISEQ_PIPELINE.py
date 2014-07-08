@@ -10,8 +10,8 @@ from settings import bowtie_threads, conseq_mixture_cutoffs, \
     file_extensions_to_delete, file_extensions_to_keep, \
     filter_cross_contaminants, final_alignment_ref_path, \
     final_nuc_align_ref_path, g2p_alignment_cutoff, g2p_fpr_cutoffs, \
-    mapping_factory_resources, mapping_ref_path, max_prop_N, \
-    path_to_fifo_scheduler, production, read_mapping_cutoff,\
+    mapping_factory_resources, mapping_ref_path, \
+    path_to_fifo_scheduler, production, \
     sam2csf_q_cutoffs, single_thread_resources, v3_mincounts
     
 sys.path.append(path_to_fifo_scheduler)
@@ -99,8 +99,6 @@ mapping_factory.wait()
 logger.info("Collating *.mapping.log files")
 miseq_logging.collate_logs(root, "mapping.log", "mapping.log")
 
-logger.info('Done.')
-exit()
 
 ########################
 ### Begin sam2csf
@@ -110,18 +108,20 @@ old_csf_files = glob(root+'/*.csf')
 for f in old_csf_files:
     os.remove(f)
 
-for f in glob(root + '/*.remap.sam'):
-    filename = f.split('/')[-1]
-    # Generate csf with different q cutoff censoring rules
-    for qcut in sam2csf_q_cutoffs:
-        # CSFs are sorted by read prevalence for Amplicon and left-offset for Nextera
-        command = "python2.7 STEP_2_SAM2CSF.py {} {} {} {} {}".format(f, qcut, read_mapping_cutoff, mode, max_prop_N)
-        log_path = "{}.sam2csf.{}.log".format(f, qcut)
-        single_thread_factory.queue_work(command, log_path, log_path)
+for sample_info in fastq_samples:
+    log_path = "{}.sam2csf.log".format(sample_info.fastq1)
+    single_thread_factory.queue_job(Job(script='sam2csf.py',
+                                        helpers=('settings.py', ),
+                                        args=(sample_info.output_root + '.prelim.csv',
+                                              sample_info.output_root + '.csf'),
+                                        stdout=log_path,
+                                        stderr=log_path))
 single_thread_factory.wait()
 logger.info("Collating *.sam2csf.*.log files")
-miseq_logging.collate_logs(root, "sam2csf.*.log", "sam2csf.log")
+miseq_logging.collate_logs(root, "sam2csf.log", "sam2csf.log")
 
+logger.info('Done.')
+exit()
 
 ###############################
 ### Begin g2p (For Amplicon covering HIV-1 env only!)

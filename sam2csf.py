@@ -18,9 +18,9 @@ import argparse
 import os
 import sys
 import itertools
-from settings import *
 import re
 
+from settings import max_prop_N, read_mapping_cutoff, sam2csf_q_cutoffs
 
 parser = argparse.ArgumentParser('Conversion of SAM data into aligned format.')
 parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
@@ -138,11 +138,11 @@ def main():
                 print line
                 sys.exit()
 
-            qname, flag, refname2, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split(',')
+            qname, _, _, pos, mapq, cigar, _, _, _, seq, qual = line.strip('\n').split(',')
             if cigar == '*' or int(mapq) < read_mapping_cutoff:
                 continue
 
-            shift, seq1, qual1 = apply_cigar(cigar, seq, qual)
+            _, seq1, qual1 = apply_cigar(cigar, seq, qual)
             pos1 = int(pos)-1
             seq2 = '-'*pos1 + seq1  # pad sequence on left
             qual2 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
