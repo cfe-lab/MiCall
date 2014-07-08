@@ -9,7 +9,7 @@ from sample_sheet_parser import sampleSheetParser
 from settings import bowtie_threads, conseq_mixture_cutoffs, \
     file_extensions_to_delete, file_extensions_to_keep, \
     filter_cross_contaminants, final_alignment_ref_path, \
-    final_nuc_align_ref_path, g2p_alignment_cutoff, g2p_fpr_cutoffs, \
+    g2p_alignment_cutoff, g2p_fpr_cutoffs, \
     mapping_factory_resources, mapping_ref_path, \
     path_to_fifo_scheduler, production, \
     sam2csf_q_cutoffs, single_thread_resources, v3_mincounts
@@ -90,7 +90,7 @@ for sample_info in fastq_samples:
                                         sample_info.fastq2,
                                         sample_info.output_root + '.prelim.csv',
                                         sample_info.output_root + '.output.csv',
-                                        sample_info.output_root + '.stats.csv',
+                                        sample_info.output_root + '.counts',
                                         sample_info.output_root + '.conseq.csv'),
                                   stdout=log_path,
                                   stderr=log_path))
@@ -113,75 +113,45 @@ for sample_info in fastq_samples:
     single_thread_factory.queue_job(Job(script='sam2csf.py',
                                         helpers=('settings.py', ),
                                         args=(sample_info.output_root + '.prelim.csv',
-                                              sample_info.output_root + '.csf'),
+                                              sample_info.output_root + '.csf.csv'),
                                         stdout=log_path,
                                         stderr=log_path))
 single_thread_factory.wait()
 logger.info("Collating *.sam2csf.*.log files")
 miseq_logging.collate_logs(root, "sam2csf.log", "sam2csf.log")
 
-logger.info('Done.')
-exit()
-
 ###############################
 ### Begin g2p (For Amplicon covering HIV-1 env only!)
 if mode == 'Amplicon':
     # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
-    for env_csf_file in [x for x in glob(root + '/*.HIV1B-env.*.csf')]:
-        command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
-        log_path = "{}.g2p.log".format(env_csf_file)
-        single_thread_factory.queue_work(command, log_path, log_path)
+    for sample_info in fastq_samples:
+        log_path = "{}.g2p.log".format(sample_info.fastq1)
+        single_thread_factory.queue_job(Job(script='fasta_to_g2p.rb',
+                                            args=(sample_info.output_root + '.csf.csv',
+                                                  sample_info.output_root + '.g2p.csv'),
+                                            stdout=log_path,
+                                            stderr=log_path))
 
     single_thread_factory.wait()
     logger.info("Collating *.g2p.log files")
     miseq_logging.collate_logs(root, "g2p.log", "g2p.log")
 
-    # Summarize the v3prot files in v3_tropism_summary.txt
-    with open("{}/v3_tropism_summary.csv".format(root), 'wb') as summary_file:
-        summary_file.write("sample,q_cutoff,fpr_cutoff,min_count,total_x4,total_reads,proportion_x4\n")
-        for f in [x for x in glob(root + '/*.v3prot') if '.clean.v3prot' not in x]:
-            prefix, gene, sam2csf_q_cutoff = f.split('.')[:3]
-
-            # Determine proportion x4 under different FPR cutoffs / min counts
-            for fpr_cutoff in g2p_fpr_cutoffs:
-                for mincount in v3_mincounts:
-                    try:
-                        sample = prefix.split('/')[-1]
-                        proportion_x4, total_x4_count, total_count = prop_x4(f, fpr_cutoff, mincount)
-                        summary_file.write("{},{},{},{},{},{},{:.3}\n".format(sample, sam2csf_q_cutoff,
-                                fpr_cutoff, mincount, total_x4_count, total_count, proportion_x4))
-                    except Exception as e:
-                        logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
-
-
 #######################
 ### Begin csf2counts
 
-logger.info('Removing old *.indels.csv, *.nuc.freqs, and *.amino.freqs')
-map(lambda f: os.remove(f), glob('*.indels.csv'))
-map(lambda f: os.remove(f), glob('*.nuc.freqs'))
-map(lambda f: os.remove(f), glob('*.amino.freqs'))
-
-for csf_file in glob(root + '/*.csf'):
-    filename = os.path.basename(csf_file)
-    sample, region, qcut, extension = filename.split('.')
-    if int(qcut) not in sam2csf_q_cutoffs:
-        # prevent this step from processing leftover CSF files
-        continue
-
-    # Determine nucleotide/amino counts, along with the consensus, in HXB2/H77 space
-    mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
-    command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(csf_file, mode, mixture_cutoffs,
-                                                                  final_alignment_ref_path)
-    log_path = "{}.csf2counts.log".format(csf_file)
-    single_thread_factory.queue_work(command, log_path, log_path)
-
-    # Generate compressed FASTAs
-    command = 'python2.7 STEP_5_CSF2NUC.py %s %s %s' % (csf_file, mode, final_nuc_align_ref_path)
-    single_thread_factory.queue_work(command, log_path, log_path)
-
+for sample_info in fastq_samples:
+    log_path = "{}.csf2counts.log".format(sample_info.fastq1)
+    single_thread_factory.queue_job(Job(script='csf2counts.py',
+                                        helpers=('reference_sequences/csf2counts_amino_refseqs.csv', ),
+                                        args=(sample_info.output_root + '.csf.csv',
+                                              sample_info.output_root + '.conseq.csv',
+                                              sample_info.output_root + '.nuc.freqs',
+                                              sample_info.output_root + '.amino.freqs',
+                                              sample_info.output_root + '.output_indels.csv',
+                                              sample_info.output_root + '.conseq'),
+                                        stdout=log_path,
+                                        stderr=log_path))
 single_thread_factory.wait()
-
 
 #########################
 ### Collate results files
@@ -212,6 +182,9 @@ if os.path.exists(coverage_map_path):
 else:
     os.mkdir(coverage_map_path)
 
+
+print 'Done.'
+exit(0)
 
 # generate coverage plots
 command = ['Rscript', 'coverage_plots.R', collated_amino_freqs_path, coverage_map_path]

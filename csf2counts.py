@@ -27,7 +27,6 @@ parser = argparse.ArgumentParser('Post-processing of short-read alignments.')
 
 parser.add_argument('input_csf', help='<input> aligned CSF input')
 parser.add_argument('input_conseq', help='<input> consensus sequences from remapping step')
-parser.add_argument('input_amino_ref', help='<input> amino acid reference sequences')
 parser.add_argument('output_nuc', help='<output> CSV containing nucleotide frequencies')
 parser.add_argument('output_amino', help='<output> CSV containing amino frequencies')
 parser.add_argument('output_indels', help='<output> CSV containing insertions')
@@ -139,13 +138,20 @@ def coordinate_map(aquery, aref):
 
 def main():
     # check that the amino acid reference input exists
-    if not os.path.exists(args.input_amino_ref):
-        print 'No input amino reference sequences found at', args.input_amino_ref
-        sys.exit(1)
+    is_ref_found = False
+    possible_refs = ('csf2counts_amino_refseqs.csv', 'reference_sequences/csf2counts_amino_refseqs.csv')
+    for amino_ref in possible_refs:
+        if not os.path.isfile(amino_ref):
+            continue
+        is_ref_found = True
+        break
+    if not is_ref_found:
+        raise RuntimeError('No reference sequences found in {!r}'.format(
+            possible_refs))
 
     # read in amino acid reference sequences from file
     refseqs = {}
-    with open(args.input_amino_ref, 'rU') as handle:
+    with open(amino_ref, 'rU') as handle:
         handle.next() # Skip header
         for line in handle:
             region, aaseq = line.strip('\n').split(',')
@@ -171,7 +177,7 @@ def main():
         for line in f:
             region, conseq = line.strip('\n').split(',')
             if region not in refseqs:
-                print 'No reference in', args.input_amino_ref, 'for', region
+                print 'No reference in', amino_ref, 'for', region
                 continue
             refseq = refseqs[region]  # protein sequence
 
@@ -330,7 +336,7 @@ def main():
 
             confile.write('%s,%s,MAX,%s\n' % (region, qcut, maxcon))
             for cut, conseq in conseqs.iteritems():
-                confile.write('%s,%s,%d,%1.3f,%s\n' % (region, qcut, total_count, cut, conseq))
+                confile.write('%s,%s,%1.3f,%s\n' % (region, qcut, cut, conseq))
 
             # convert insertion coordinates into contiguous ranges
             if len(inserts) == 0:

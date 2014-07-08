@@ -1,4 +1,3 @@
-from prop_x4 import convert_fasta
 def collate_counts(run_path,output_path):
     """
     Collate .counts files into a single CSV summary file.
@@ -25,14 +24,17 @@ def collate_conseqs(run_path,output_path):
 
         for path in files:
             prefix = (os.path.basename(path)).rstrip(".conseq")
-            _, region, q = prefix.split(".")[:3]
-
+            sample = prefix.split(".")[0]
+            sname, snum = sample.split('_')
             with open(path,"r") as f:
-                fasta = convert_fasta(f.readlines())
-
-            for header, sequence in fasta:
-                fasta_sample, s_number, consensus_percentage = header.split("_")
-                f_out.write("{},{},{},{},{},{}\n".format(fasta_sample,region,q,s_number,consensus_percentage,sequence))
+                for line in f:
+                    region, qcut, cut, conseq = line.split(',')
+                    f_out.write(','.join((sname,
+                                          region,
+                                          qcut,
+                                          snum,
+                                          cut,
+                                          conseq)) + '\n')
 
 def collate_frequencies (run_path, output_path, output_type):
     """
@@ -54,14 +56,12 @@ def collate_frequencies (run_path, output_path, output_type):
         f_out.write("{}\n".format(header))
         for path in [x for x in glob.glob("{}/*.{}".format(run_path,file_extension)) if "clean.{}".format(file_extension) not in x]:
             prefix = (os.path.basename(path)).rstrip(".{}".format(file_extension))
-            sample, region, q = prefix.split(".")[:3]
+            sample = prefix.split(".")[0]
             with open(path,"r") as f:
                 lines = f.readlines()
 
-            for j, line in enumerate(lines):
-                if j == 0:
-                    continue
-                f_out.write("{},{},{},{}\n".format(sample, region, q, line.rstrip("\n")))
+            for line in lines:
+                f_out.write("{},{}\n".format(sample, line.rstrip("\n")))
 
     # Summarize clean freqs
     file_extension = "clean.{}".format(file_extension)
