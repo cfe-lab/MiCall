@@ -73,7 +73,7 @@ def sampleSheetParser (handle):
             run_info['Data'][clean_filename].update({'Disablecontamcheck': False})
             run_info['Data'][clean_filename].update({'Research': True})
             run_info['Data'][clean_filename].update({'Chemistry': run_info['Assay']})
-            run_info['sample_sheet_verison'] = sample_sheet_version 
+            run_info['sample_sheet_version'] = sample_sheet_version
 
             # parse Description field
             # FIXME: currently this is partitioned by sub-samples (semi-colon delimited)
