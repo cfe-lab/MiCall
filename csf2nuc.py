@@ -13,21 +13,21 @@ Dependencies:
 
 import argparse
 import csv
+import HyPhy
 import itertools
-import hyphyAlign
 import os
 
+import hyphyAlign
 
 parser = argparse.ArgumentParser('Clip out sub-regions from MiSeq read alignments.')
 
 parser.add_argument('input_csv', help='<input> CSV containing aligned and merged reads.')
-parser.add_argument('ref_csv', help='<input> CSV containing sub-region nucleotide reference sequences.')
 parser.add_argument('output_csv', help='<output> CSV containing clipped sequences')
 
 args = parser.parse_args()
 
 
-hyphy = hyphyAlign.HyPhy._THyPhy(os.getcwd(), 1)
+hyphy = HyPhy._THyPhy(os.getcwd(), 1)  # @UndefinedVariable
 hyphyAlign.change_settings(hyphy, alphabet=hyphyAlign.nucAlphabet,
                            scoreMatrix=hyphyAlign.nucScoreMatrix,
                            gapOpen=20, gapOpen2=20,
@@ -41,10 +41,21 @@ min_avg_score = 2.
 
 def main():
     # load reference sequences
+    is_ref_found = False
+    possible_refs = ('csf_to_fasta_by_nucref.csv', 'reference_sequences/csf_to_fasta_by_nucref.csv')
+    for ref in possible_refs:
+        if not os.path.isfile(ref):
+            continue
+        is_ref_found = True
+        break
+    if not is_ref_found:
+        raise RuntimeError('No reference sequences found in {!r}'.format(
+            possible_refs))
+
     refseqs = {}
-    with open(args.ref_csv, 'rb') as f:
+    with open(ref, 'rb') as f:
         rows = csv.reader(f)
-        for region, variant, subregion, sequence in rows:
+        for region, _variant, subregion, sequence in rows:
             if region not in refseqs:
                 refseqs.update({region: {}})
             refseqs[region][subregion] = sequence
@@ -59,7 +70,7 @@ def main():
         for qcut, group2 in itertools.groupby(group, lambda x: x.split(',')[1]):
             fasta = dict([(subregion, {}) for subregion in refseqs[refname].iterkeys()])
             for line in group2:
-                refname_, qcut_, index, count, offset, seq = line.strip('\n').split(',')
+                _refname, _qcut, index, count, _offset, seq = line.strip('\n').split(',')
                 for subregion, refseq in refseqs[refname].iteritems():
                     aquery, aref, ascore = hyphyAlign.pair_align(hyphy, refseq, seq)
                     if float(ascore) / len(refseq) < min_avg_score:

@@ -6,9 +6,9 @@ from collate import collate_frequencies, collate_conseqs, collate_counts
 import miseq_logging
 from sample_sheet_parser import sampleSheetParser
 from settings import file_extensions_to_delete, file_extensions_to_keep, \
+    final_alignment_ref_path, final_nuc_align_ref_path, \
     mapping_factory_resources, mapping_ref_path, \
-    path_to_fifo_scheduler, production, \
-    single_thread_resources
+    path_to_fifo_scheduler, production, single_thread_resources
     
 sys.path.append(path_to_fifo_scheduler)
 from fifo_scheduler import Factory, Job
@@ -21,6 +21,7 @@ mapping_factory = Factory(mapping_factory_resources,
                           launch_callback=launch_callback)
 single_thread_factory = Factory(single_thread_resources,
                                 launch_callback=launch_callback)
+#TODO: Do we need to set the working directory for the factories?
 
 root = sys.argv[1]			# MONITOR parameter: Location of fastq files to process
 
@@ -138,7 +139,7 @@ if mode == 'Amplicon':
 for sample_info in fastq_samples:
     log_path = "{}.csf2counts.log".format(sample_info.fastq1)
     single_thread_factory.queue_job(Job(script='csf2counts.py',
-                                        helpers=('reference_sequences/csf2counts_amino_refseqs.csv', ),
+                                        helpers=(final_alignment_ref_path, ),
                                         args=(sample_info.output_root + '.csf.csv',
                                               sample_info.output_root + '.conseq.csv',
                                               sample_info.output_root + '.nuc.freqs',
@@ -147,9 +148,18 @@ for sample_info in fastq_samples:
                                               sample_info.output_root + '.conseq'),
                                         stdout=log_path,
                                         stderr=log_path))
-single_thread_factory.wait()
+    
+# No dependency between csf2counts and csf2nuc, so no need to wait for factory
+for sample_info in fastq_samples:
+    log_path = "{}.csf2nuc.log".format(sample_info.fastq1)
+    single_thread_factory.queue_job(Job(script='csf2nuc.py',
+                                        helpers=(final_nuc_align_ref_path, ),
+                                        args=(sample_info.output_root + '.csf.csv',
+                                              sample_info.output_root + '.nuc2.csv'), #TODO: extension?
+                                        stdout=log_path,
+                                        stderr=log_path))
 
-#TODO: Add csf2nuc.py calls
+single_thread_factory.wait()
 
 #########################
 ### Collate results files
@@ -163,6 +173,8 @@ collate_frequencies(root, collated_amino_freqs_path, "amino")
 collated_nuc_freqs_path = "{}/nucleotide_frequencies.csv".format(root)
 logger.info("collate_frequencies({},{},{})".format(root, collated_nuc_freqs_path, "nuc"))
 collate_frequencies(root, collated_nuc_freqs_path, "nuc")
+
+# TODO: collate output from csf2nuc.py?
 
 collated_conseq_path = "{}/collated_conseqs.csv".format(root)
 logger.info("collate_conseqs({},{})".format(root, collated_conseq_path))
