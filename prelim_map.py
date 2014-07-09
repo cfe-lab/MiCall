@@ -12,11 +12,15 @@ Dependencies: settings.py (derived from settings_default.py)
 """
 
 import argparse
+import logging
 import os
 import subprocess
 import sys
 
+import miseq_logging
 import settings  # settings.py is a CodeResourceDependency
+
+logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 
 def main():
     parser = argparse.ArgumentParser('Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
@@ -36,17 +40,17 @@ def main():
 
     # check that the inputs exist
     if not os.path.exists(args.fastq1):
-        print 'No FASTQ found at', args.fastq1
+        logger.error('No FASTQ found at %s', args.fastq1)
         sys.exit(1)
 
     if not os.path.exists(args.fastq2):
-        print 'No FASTQ found at', args.fastq2
+        logger.error('No FASTQ found at %s', args.fastq2)
         sys.exit(1)
 
     # check that the SAM output path is valid
     output_path = os.path.split(args.sam_csv)[0]
     if not os.path.exists(output_path) and output_path != '':
-        print 'SAM output path does not exist:', output_path
+        logger.error('SAM output path does not exist: %s', output_path)
         sys.exit(1)
 
     # generate initial reference files
@@ -56,17 +60,17 @@ def main():
         if not os.path.isfile(ref):
             continue
         is_ref_found = True
-        subprocess.check_call(['samtools', 'faidx', ref])
+        log_call(['samtools', 'faidx', ref])
         break
     if not is_ref_found:
         raise RuntimeError('No reference sequences found in {!r}'.format(
             possible_refs))
     reffile_template = 'reference'
-    subprocess.check_call(['bowtie2-build',
-                           '--quiet',
-                           '-f',
-                           ref,
-                           reffile_template])
+    log_call(['bowtie2-build',
+              '--quiet',
+              '-f',
+              ref,
+              reffile_template])
 
     # do preliminary mapping
     output = {}
@@ -99,6 +103,20 @@ def main():
         for refname, lines in output.iteritems():
             for line in lines:
                 outfile.write(line.replace('\t', ',') + '\n')
+
+
+def log_call(args, format_string='%s'):
+    """ Launch a subprocess, and log any output to the debug logger.
+    
+    Raise an exception if the return code is not zero. This assumes only a
+    small amount of output, and holds it all in memory before logging it.
+    @param args: A list of arguments to pass to subprocess.Popen().
+    @param format_string: A template for the debug message that will have each
+    line of output formatted with it.
+    """
+    output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+    for line in output.splitlines():
+        logger.debug(format_string, line)
 
 if __name__ == '__main__':
     main()

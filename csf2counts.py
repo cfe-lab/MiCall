@@ -14,13 +14,15 @@ Dependencies:
 """
 
 import argparse
+import HyPhy
 from itertools import groupby
+import logging
 import os
 import re
 import sys
 
-import HyPhy
 from hyphyAlign import change_settings, get_boundaries, pair_align
+import miseq_logging
 from settings import conseq_mixture_cutoffs
 
 parser = argparse.ArgumentParser('Post-processing of short-read alignments.')
@@ -34,6 +36,7 @@ parser.add_argument('output_conseq', help='<output> CSV containing consensus seq
 
 args = parser.parse_args()
 
+logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 
 hyphy = HyPhy._THyPhy (os.getcwd(), 1)  # @UndefinedVariable
 change_settings(hyphy)
@@ -159,14 +162,14 @@ def main():
 
     # check that the inputs exist
     if not os.path.exists(args.input_csf):
-        print 'No input CSF found at', args.input_csf
+        logger.error('No input CSF found at ' + args.input_csf)
         sys.exit(1)
 
     # check that the output paths are valid
     for path in [args.output_nuc, args.output_amino, args.output_indels, args.output_conseq]:
         output_path = os.path.split(path)[0]
         if not os.path.exists(output_path) and output_path != '':
-            print 'Output path does not exist:', output_path
+            logger.error('Output path does not exist: ' + output_path)
             sys.exit(1)
 
     # determine reading frames based on region-specific consensus sequences
@@ -177,7 +180,10 @@ def main():
         for line in f:
             region, conseq = line.strip('\n').split(',')
             if region not in refseqs:
-                print 'No reference in', amino_ref, 'for', region
+                logger.warn('No reference in {} for {} reading {}'.format(
+                    amino_ref, 
+                    region,
+                    args.input_conseq))
                 continue
             refseq = refseqs[region]  # protein sequence
 
@@ -287,7 +293,11 @@ def main():
                     ref_aa_pos = qindex_to_refcoord[query_aa_pos]
                     ref_nuc_pos = 3*ref_aa_pos + query_codon_pos
                 except:
-                    print 'No coordinate mapping for query nuc %d (amino %d)' % (query_nuc_pos, query_aa_pos)
+                    logger.warn(
+                        'No coordinate mapping for query nuc %d (amino %d) in %s' % (
+                            query_nuc_pos,
+                            query_aa_pos,
+                            args.input_csf))
                     continue
 
                 outstr = ','.join(map(str, [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']))

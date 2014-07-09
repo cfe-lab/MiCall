@@ -19,7 +19,7 @@ class Timestamp(logging.Formatter):
         return s
 
 def init_logging_console_only(log_level=logging.DEBUG):
-    import logging,sys
+    import sys
     logger = logging.getLogger()
     logger.handlers = []				# Clear previous handlers
     logger.setLevel(logging.DEBUG)
@@ -38,7 +38,7 @@ def init_logging(logging_path, file_log_level=logging.DEBUG, console_log_level=l
     The logging_level is assumed to be at the DEBUG level, but can be set to:
     logging.DEBUG, logging.INFO, logging.WARN, logging.ERROR, logging.CRITICAL
     """
-    import logging,sys
+    import sys
 
     logger = logging.getLogger()
     logger.handlers = []				# Clear previous handlers
@@ -87,7 +87,12 @@ def collate_logs(path, extension, final_log):
         for date_time, message in logs:
             collated_logs.write(message)
 
-    if malformed_lines:
-        with open("{}/{}_UNCOLLATABLE.log".format(path, final_log), "w") as uncollatable_logs:
-            for message in malformed_lines:
-                uncollatable_logs.write(message)
+    # This takes care of the scenario where the last run had some uncollatable
+    # entries, but this run has none. It will write an empty file, then erase
+    # it.
+    uncollatable_path = "{}/{}_UNCOLLATABLE.log".format(path, final_log)
+    with open(uncollatable_path, "w") as uncollatable_logs:
+        for message in malformed_lines:
+            uncollatable_logs.write(message)
+    if not malformed_lines:
+        os.remove(uncollatable_path)
