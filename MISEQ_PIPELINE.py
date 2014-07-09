@@ -4,15 +4,11 @@ import logging, os, subprocess, sys
 
 from collate import collate_frequencies, collate_conseqs, collate_counts
 import miseq_logging
-from prop_x4 import prop_x4
 from sample_sheet_parser import sampleSheetParser
-from settings import bowtie_threads, conseq_mixture_cutoffs, \
-    file_extensions_to_delete, file_extensions_to_keep, \
-    filter_cross_contaminants, final_alignment_ref_path, \
-    g2p_alignment_cutoff, g2p_fpr_cutoffs, \
+from settings import file_extensions_to_delete, file_extensions_to_keep, \
     mapping_factory_resources, mapping_ref_path, \
     path_to_fifo_scheduler, production, \
-    sam2csf_q_cutoffs, single_thread_resources, v3_mincounts
+    single_thread_resources
     
 sys.path.append(path_to_fifo_scheduler)
 from fifo_scheduler import Factory, Job
@@ -74,7 +70,7 @@ for sample_info in fastq_samples:
                                            mapping_ref_path + '.fasta'),
                                   args=(sample_info.fastq1,
                                         sample_info.fastq2,
-                                        sample_info.output_root + '.prelim.csv'),
+                                        sample_info.output_root + '.prelim.sam'),
                                   stdout=log_path,
                                   stderr=log_path))
 
@@ -88,7 +84,7 @@ for sample_info in fastq_samples:
                                            mapping_ref_path + '.fasta'),
                                   args=(sample_info.fastq1, 
                                         sample_info.fastq2,
-                                        sample_info.output_root + '.prelim.csv',
+                                        sample_info.output_root + '.prelim.sam',
                                         sample_info.output_root + '.output.csv',
                                         sample_info.output_root + '.counts',
                                         sample_info.output_root + '.conseq.csv'),
@@ -112,7 +108,7 @@ for sample_info in fastq_samples:
     log_path = "{}.sam2csf.log".format(sample_info.fastq1)
     single_thread_factory.queue_job(Job(script='sam2csf.py',
                                         helpers=('settings.py', ),
-                                        args=(sample_info.output_root + '.prelim.csv',
+                                        args=(sample_info.output_root + '.prelim.sam',
                                               sample_info.output_root + '.csf.csv'),
                                         stdout=log_path,
                                         stderr=log_path))
@@ -153,6 +149,8 @@ for sample_info in fastq_samples:
                                         stderr=log_path))
 single_thread_factory.wait()
 
+#TODO: Add csf2nuc.py calls
+
 #########################
 ### Collate results files
 logger.info("Collating csf2counts.log files")
@@ -183,75 +181,76 @@ else:
     os.mkdir(coverage_map_path)
 
 
-print 'Done.'
-exit(0)
-
 # generate coverage plots
 command = ['Rscript', 'coverage_plots.R', collated_amino_freqs_path, coverage_map_path]
 logger.info(" ".join(command))
-subprocess.call(command)
+subprocess.check_call(command)
+
 
 ###############################
 ### (optional) filter for cross-contamination
-if filter_cross_contaminants:
-    logger.info('Filtering for cross-contamination')
-
-    for qcut in sam2csf_q_cutoffs:
-        command = 'python2.7 FILTER_CONTAMINANTS.py %s %d %d' % (root, qcut, bowtie_threads)
-        log_path = root + '/filtering.log'
-        single_thread_factory.queue_work(command, log_path, log_path)
-        # yields *.clean.csf and *.contam.csf
-
-    single_thread_factory.wait()
-
-    # re-do g2p scoring
-    for env_csf_file in glob(root + '/*.HIV1B-env.*.clean.csf'):
-        command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
-        log_path = "{}.g2p.log".format(env_csf_file)
-        single_thread_factory.queue_work(command, log_path, log_path)
-    single_thread_factory.wait()
-    logger.info("Collating *.g2p.log files")
-    miseq_logging.collate_logs(root, "g2p.log", "g2p.log")
-
-    with open("{}/v3_tropism_summary_clean.csv".format(root), 'wb') as summary_file:
-        summary_file.write("sample,q_cutoff,fpr_cutoff,min_count,total_x4,total_reads,proportion_x4\n")
-        for f in glob(root + '/*.clean.v3prot'):
-            prefix, gene, sam2csf_q_cutoff = f.split('.')[:3]
-
-            # Determine proportion x4 under different FPR cutoffs / min counts
-            for fpr_cutoff in g2p_fpr_cutoffs:
-                for mincount in v3_mincounts:
-                    try:
-                        sample = prefix.split('/')[-1]
-                        proportion_x4, total_x4_count, total_count = prop_x4(f, fpr_cutoff, mincount)
-                        summary_file.write("{},{},{},{},{},{},{:.3}\n".format(
-                            sample, sam2csf_q_cutoff, fpr_cutoff, mincount, total_x4_count,
-                            total_count, proportion_x4
-                        ))
-                    except Exception as e:
-                        logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
-
-    # regenerate counts
-    for csf_file in glob(root + '/*.clean.csf'):
-        mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
-        command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(
-            csf_file, mode, mixture_cutoffs, final_alignment_ref_path
-        )
-        log_path = "{}.csf2counts.log".format(csf_file)
-        single_thread_factory.queue_work(command, log_path, log_path)
-
-    single_thread_factory.wait()
-
-    collated_clean_amino_freqs_path = "{}/amino_cleaned_frequencies.csv".format(root)
-    command = ["python2.7","generate_coverage_plots.py",collated_clean_amino_freqs_path,"{}/coverage_maps".format(root)]
-    logger.info(" ".join(command))
-    subprocess.call(command)
+#TODO: Should we put this back in or remove it completely?
+# if filter_cross_contaminants:
+#     logger.info('Filtering for cross-contamination')
+# 
+#     for qcut in sam2csf_q_cutoffs:
+#         command = 'python2.7 FILTER_CONTAMINANTS.py %s %d %d' % (root, qcut, bowtie_threads)
+#         log_path = root + '/filtering.log'
+#         single_thread_factory.queue_work(command, log_path, log_path)
+#         # yields *.clean.csf and *.contam.csf
+# 
+#     single_thread_factory.wait()
+# 
+#     # re-do g2p scoring
+#     for env_csf_file in glob(root + '/*.HIV1B-env.*.clean.csf'):
+#         command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
+#         log_path = "{}.g2p.log".format(env_csf_file)
+#         single_thread_factory.queue_work(command, log_path, log_path)
+#     single_thread_factory.wait()
+#     logger.info("Collating *.g2p.log files")
+#     miseq_logging.collate_logs(root, "g2p.log", "g2p.log")
+# 
+#     with open("{}/v3_tropism_summary_clean.csv".format(root), 'wb') as summary_file:
+#         summary_file.write("sample,q_cutoff,fpr_cutoff,min_count,total_x4,total_reads,proportion_x4\n")
+#         for f in glob(root + '/*.clean.v3prot'):
+#             prefix, gene, sam2csf_q_cutoff = f.split('.')[:3]
+# 
+#             # Determine proportion x4 under different FPR cutoffs / min counts
+#             for fpr_cutoff in g2p_fpr_cutoffs:
+#                 for mincount in v3_mincounts:
+#                     try:
+#                         sample = prefix.split('/')[-1]
+#                         proportion_x4, total_x4_count, total_count = prop_x4(f, fpr_cutoff, mincount)
+#                         summary_file.write("{},{},{},{},{},{},{:.3}\n".format(
+#                             sample, sam2csf_q_cutoff, fpr_cutoff, mincount, total_x4_count,
+#                             total_count, proportion_x4
+#                         ))
+#                     except Exception as e:
+#                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
+# 
+#     # regenerate counts
+#     for csf_file in glob(root + '/*.clean.csf'):
+#         mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
+#         command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(
+#             csf_file, mode, mixture_cutoffs, final_alignment_ref_path
+#         )
+#         log_path = "{}.csf2counts.log".format(csf_file)
+#         single_thread_factory.queue_work(command, log_path, log_path)
+# 
+#     single_thread_factory.wait()
+# 
+#     collated_clean_amino_freqs_path = "{}/amino_cleaned_frequencies.csv".format(root)
+#     command = ["python2.7","generate_coverage_plots.py",collated_clean_amino_freqs_path,"{}/coverage_maps".format(root)]
+#     logger.info(" ".join(command))
+#     subprocess.call(command)
 
 
 ###########################
 # Delete local files on the cluster that shouldn't be stored
 if production:
     logger.info("Deleting intermediary files")
+    # TODO: a bunch of these files are created in the temporary folders that now 
+    # get deleted. Do we still need this?
     for extension in file_extensions_to_delete:
         for f in glob("{}/*.{}".format(root, extension)):
             if any([f.endswith(ext2) for ext2 in file_extensions_to_keep]):

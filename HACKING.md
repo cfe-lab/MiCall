@@ -103,11 +103,44 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
         ~/.rvm/rubies/ruby-1.8.6-p420/bin/ruby
 
 17. For Interpreter arguments, type `-rubygems`.
-17. Create a data folder somewhere on your workstation, like ~/data. Create subdirectories called miseq and RAW_DATA.
-18. Connect to the shared drive [using CIFS][cifs] and mount smb://192.168.68.144/RAW_DATA as /media/RAW_DATA.
-19. Navigate down to /media/RAW_DATA/MiSeq/runs, pick a recent folder, and make sure it has a file named needsprocessing.
-20. Copy SampleSheet.csv to a sample run folder under your local RAW_DATA folder.
-21. Navigate down to Data\Intensities\BaseCalls, and copy a few of the .fastq.gz files to your sample run folder.
+17. Install R. The last two commands are run in the R console, and you should
+    check the [StatET installation page][statet] to see exactly which version
+    of the rj package is compatible with the version of StatET you are going to
+    install.
+
+        sudo apt-get install r-base r-base-dev
+        sudo R
+        install.packages(c("rj", "rj.gd"), repos="http://download.walware.de/rj-2.0")
+        q()
+
+    [statet]: http://www.walware.de/it/statet/installation.mframe
+
+17. Launch Eclipse. For some reason, you can't currently install StatET from the
+    Eclipse Marketplace, so from the Help menu, choose Install New Software....
+17. Go to the [StatET installation page][statet], and find the update site for
+    your version of Eclipse. Paste that address in the install wizard, and 
+    select the StatET for R component. Finish the installation.
+18. From the Window menu, choose Preferences. Navigate down to StatET: 
+    Run/Debug: R Environments.
+19. Click the Add... button.
+20. Next to the Location (R_HOME) field, press the + button, and choose Try
+    find automatically. It should find the R you just installed.
+21. Click the Detect Default Properties/Settings button. Click OK. Click OK.
+22. If you want an R console, open the Run menu, and choose 
+    Run Configurations.... Select R Console and click the add button. Click Run.
+22. To run an R script with command-line arguments, modify the R console 
+    configuration by setting the working directory and adding this to the 
+    Options/Arguments field with whatever CSV file name was created by the
+    previous step:
+    
+        --args /path/to/amino_frequencies.csv /path/to/coverage_maps
+    
+    Then you can use `source("coverage_plots.R")` in the console to launch it.
+22. Create a data folder somewhere on your workstation, like ~/data. Create subdirectories called miseq and RAW_DATA.
+22. Connect to the shared drive [using CIFS][cifs] and mount smb://192.168.68.144/RAW_DATA as /media/RAW_DATA.
+22. Navigate down to /media/RAW_DATA/MiSeq/runs, pick a recent folder, and make sure it has a file named needsprocessing.
+22. Copy SampleSheet.csv to a sample run folder under your local RAW_DATA folder.
+22. Navigate down to Data\Intensities\BaseCalls, and copy a few of the .fastq.gz files to your sample run folder.
 22. Select all the .fastq.gz files you copied, right click, and choose Extract Here.
 22. Delete the compressed versions of the files.
 22. Copy settings_default.py to settings.py, and open it for editing.
