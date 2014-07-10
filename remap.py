@@ -13,17 +13,19 @@ Dependencies:
 """
 
 import argparse
-import subprocess
-import os
 import itertools
-import sys
+import logging
+import os
 import re
+import subprocess
+import sys
 
-# settings.py is a CodeResourceDependency
+# These are both CodeResourceDependencies
+import miseq_logging
 from settings import bowtie_threads, consensus_q_cutoff, max_remaps, \
     min_mapping_efficiency
 
-    
+logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 
 def main():
@@ -42,25 +44,25 @@ def main():
     
     # check that the inputs exist
     if not os.path.exists(args.fastq1):
-        print 'No FASTQ found at', args.fastq1
+        logger.error('No FASTQ found at', args.fastq1)
         sys.exit(1)
 
     if not os.path.exists(args.fastq2):
-        print 'No FASTQ found at', args.fastq2
+        logger.error('No FASTQ found at', args.fastq2)
         sys.exit(1)
 
     # check that we have access to bowtie2
     try:
         redirect_call(['bowtie2', '-h'], os.devnull)
     except OSError:
-        print 'bowtie2 not found; check if it is installed and in $PATH\n'
-        raise
+        logger.error('bowtie2 not found; check if it is installed and in $PATH\n')
+        sys.exit(1)
 
     # check that the output paths are valid
     for path in [args.output_csv, args.stats_csv, args.conseq_csv]:
         output_path = os.path.split(path)[0]
         if not os.path.exists(output_path) and output_path != '':
-            print 'Output path does not exist:', output_path
+            logger.error('Output path does not exist: %s', output_path)
             sys.exit(1)
 
     # generate initial *.faidx file
@@ -70,7 +72,7 @@ def main():
         if not os.path.isfile(ref):
             continue
         is_ref_found = True
-        subprocess.check_call(['samtools', 'faidx', ref])
+        log_call(['samtools', 'faidx', ref])
         break
     if not is_ref_found:
         raise RuntimeError('No reference sequences found in {!r}'.format(
@@ -125,7 +127,7 @@ def main():
             # convert SAM to BAM
             redirect_call(['samtools', 'view', '-b', '-T', confile if refname in conseqs else ref, samfile], bamfile)
 
-            subprocess.check_call(['samtools', 'sort', bamfile, refname])  # overwrite
+            log_call(['samtools', 'sort', bamfile, refname])  # overwrite
 
             # BAM to pileup
             pileup_path = bamfile+'.pileup'
@@ -139,13 +141,24 @@ def main():
             handle = open(refname+'.conseq', 'w')
             handle.write('>%s\n%s\n' % (refname, conseqs[refname]))
             handle.close()
-            subprocess.check_call(['samtools', 'faidx', confile])
+            log_call(['samtools', 'faidx', confile])
 
             # consensus to *.bt2
-            subprocess.check_call(['bowtie2-build', '-c', '-q', conseqs[refname], refname])
-            subprocess.check_call(['bowtie2', '--quiet', '-p', str(bowtie_threads), '--local',
-                                  '-x', refname, '-1', args.fastq1, '-2', args.fastq2,
-                                  '--no-unal', '-S', tmpfile])
+            log_call(['bowtie2-build', '-c', '-q', conseqs[refname], refname])
+            log_call(['bowtie2',
+                      '--quiet',
+                      '-p',
+                      str(bowtie_threads),
+                      '--local',
+                      '-x',
+                      refname,
+                      '-1',
+                      args.fastq1,
+                      '-2',
+                      args.fastq2,
+                      '--no-unal',
+                      '-S',
+                      tmpfile])
 
             # how many reads did we map?
             count = count_file_lines(tmpfile) - 3  # ignore SAM header
@@ -257,18 +270,36 @@ def pileup_to_conseq (handle, qCutoff):
     return conseq
 
 
-def redirect_call(args, outpath):
-    """ Launch a subprocess with a list of command-line arguments, and raise
-    an exception if the return code is not zero.
+def redirect_call(args, outpath, format_string='%s'):
+    """ Launch a subprocess, and redirect the output to a file.
+    
+    Raise an exception if the return code is not zero.
+    Standard error is logged to the debug logger.
     @param args: A list of arguments to pass to subprocess.Popen().
     @param outpath: a filename that stdout should be redirected to. If you 
     don't need to redirect the output, then just use subprocess.check_call().
+    @param format_string: A template for the debug message that will have each
+    line of standard error formatted with it.
     """
     with open(outpath, 'w') as outfile:
-        p = subprocess.Popen(args, stdout=outfile)
-        p.wait()
+        p = subprocess.Popen(args, stdout=outfile, stderr=subprocess.PIPE)
+        for line in p.stderr:
+            logger.debug(format_string, line.rstrip())
         if p.returncode:
             raise subprocess.CalledProcessError(p.returncode, args)
+
+def log_call(args, format_string='%s'):
+    """ Launch a subprocess, and log any output to the debug logger.
+    
+    Raise an exception if the return code is not zero. This assumes only a
+    small amount of output, and holds it all in memory before logging it.
+    @param args: A list of arguments to pass to subprocess.Popen().
+    @param format_string: A template for the debug message that will have each
+    line of output formatted with it.
+    """
+    output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+    for line in output.splitlines():
+        logger.debug(format_string, line)
 
 def count_file_lines(path):
     """ Run the wc command to count lines in a file, as shown here:
