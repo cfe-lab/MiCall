@@ -14,7 +14,7 @@ import tarfile
 import time
 
 import miseq_logging
-from sample_sheet_parser import sampleSheetParser
+from sample_sheet_parser import sample_sheet_parser
 from settings import delay, ERROR_PROCESSING, home, NEEDS_PROCESSING,\
     pipeline_version, production, rawdata_mount
 
@@ -103,7 +103,7 @@ while True:
     try:
         with open(local_file, 'rU') as sample_sheet:
             # parse run information from SampleSheet
-            run_info = sampleSheetParser(sample_sheet)
+            run_info = sample_sheet_parser(sample_sheet)
             mode = run_info['Description']
     except Exception as e:
         mark_run_as_disabled(

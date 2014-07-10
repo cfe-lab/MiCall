@@ -5,7 +5,7 @@ import logging, os, sys
 
 from collate import collate_frequencies, collate_conseqs, collate_counts
 import miseq_logging
-from sample_sheet_parser import sampleSheetParser
+from sample_sheet_parser import sample_sheet_parser
 from settings import file_extensions_to_delete, file_extensions_to_keep, \
     final_alignment_ref_path, final_nuc_align_ref_path, \
     mapping_factory_resources, mapping_ref_path, \
@@ -35,8 +35,8 @@ if len(sys.argv) == 3:
     run_info = None
 else:
     with open(root+'/SampleSheet.csv', 'rU') as sample_sheet:
-        logger.debug("sampleSheetParser({})".format(sample_sheet))
-        run_info = sampleSheetParser(sample_sheet)
+        logger.debug("sample_sheet_parser({})".format(sample_sheet))
+        run_info = sample_sheet_parser(sample_sheet)
         mode = run_info['Description']
 
 
