@@ -126,6 +126,8 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
 20. Next to the Location (R_HOME) field, press the + button, and choose Try
     find automatically. It should find the R you just installed.
 21. Click the Detect Default Properties/Settings button. Click OK. Click OK.
+22. From the Window menu, choose Preferences. Navigate down to 
+    StatET: R Code Formatting. Change the policy to use spaces. Click OK.
 22. If you want an R console, open the Run menu, and choose 
     Run Configurations.... Select R Console and click the add button. Click Run.
 22. To run an R script with command-line arguments, modify the R console 
