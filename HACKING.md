@@ -163,7 +163,12 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
     * `csf2counts.py`
     * `fasta_to_g2p.rb`
     * All together: `MISEQ_PIPELINE.py`.
-... to be continued ...
+26. Run the unit tests. Either run them from Eclipse, or run them from the
+    command line like this:
+
+        cd ~/git/MiseqPipeline
+        python -m unittest discover -p *_test.py
+        
 
 [eclipse]: https://www.eclipse.org/downloads/
 [pydev]: http://pydev.org/updates

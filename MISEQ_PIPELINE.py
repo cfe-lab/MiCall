@@ -1,6 +1,7 @@
+#!/usr/bin/env python
 
 from glob import glob
-import logging, os, subprocess, sys
+import logging, os, sys
 
 from collate import collate_frequencies, collate_conseqs, collate_counts
 import miseq_logging
@@ -184,20 +185,17 @@ collated_counts_path = "{}/collated_counts.csv".format(root)
 logger.info("collate_counts({},{})".format(root, collated_counts_path))
 collate_counts(root, collated_counts_path)
 
-coverage_map_path = "{}/coverage_maps".format(root)
-if os.path.exists(coverage_map_path):
-    # wipe out previous contents
-    for png_file in glob(coverage_map_path+'/*.png'):
-        os.remove(png_file)
-else:
-    os.mkdir(coverage_map_path)
+coverage_map_path = "{}/coverage_maps.tar".format(root)
+coverage_score_path = "{}/coverage_scores.csv".format(root)
 
 
 # generate coverage plots
-command = ['Rscript', 'coverage_plots.R', collated_amino_freqs_path, coverage_map_path]
-logger.info(" ".join(command))
-subprocess.check_call(command)
-
+single_thread_factory.queue_job(Job(script='coverage_plots.R',
+                                    helpers=('key_positions.csv', ),
+                                    args=(collated_amino_freqs_path,
+                                          coverage_map_path,
+                                          coverage_score_path)))
+single_thread_factory.wait()
 
 ###############################
 ### (optional) filter for cross-contamination

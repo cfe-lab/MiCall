@@ -1,33 +1,32 @@
 #!/usr/bin/env Rscript
 
+# Command line expects these arguments:
+# 1. input file name (amino frequencies CSV)
+# 2. output maps archive (tar file where coverage maps will be written)
+# 3. output scores (count scores CSV)
+
+# Other dependency: key_positions.csv
+# Working files are created in the current directory.
+
 # parameters
 min.coverage <- 1000
 
 
-syntax.error = "Correct syntax: ./coverage_plot.R <input CSV> <output path>"
+syntax.error = "Correct syntax: ./coverage_plot.R <input CSV> <output maps tar> <output scores CSV>"
 args <- commandArgs(TRUE)
 
-if (length(args) != 2) { stop(syntax.error) }
+if (length(args) != 3) { stop(syntax.error) }
 input.csv <- args[1]
-out.path <- args[2]
+output.maps <- args[2]
+output.csv <- args[3]
 
-if (!file.exists(out.path)) {
-	stop('output path does not exist')
-}
-
-# check for trailing directory separator
-l <- nchar(out.path)
-if (substr(out.path, l, l) != '/') {
-	out.path <- paste(out.path, '/', sep='')
-}
+dir.create('coverage_maps')
 
 # load key positions file
 key.pos <- read.csv(file='key_positions.csv', header=FALSE)
 names(key.pos) <- c('target', 'pos')
 
 
-# path to CSV file for reporting minimum coverages at key positions
-output.csv <- paste(out.path, 'minimum_coverage_at_keys.csv', sep='')
 output <- {}
 
 data <- read.csv(file=input.csv, header=TRUE, sep=',')
@@ -51,10 +50,10 @@ for (i in 1:length(coverage)) {
 	sample <- tokens[2]
 	
 	df <- coverage[[i]]
-	filename <- paste(sample, region, 'png', sep='.')
+	filename <- file.path('coverage_maps', paste(sample, region, 'png', sep='.'))
 	
 	# set up plot
-	png(file=paste(out.path, filename, sep=''), width=400, height=300, type='cairo')
+	png(file=filename, width=400, height=300, type='cairo')
 	par(family='sans', cex=1, mar=c(5,5,1,1))
 	plot(NA, xlim=c(1,max(df$refseq.aa.pos)), ylim=c(1,200000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
 	title(xlab="Reference coordinates (AA)", font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
@@ -77,10 +76,18 @@ for (i in 1:length(coverage)) {
 			lwd=2
 		)
 		# determine minimum coverage at key positions
+		# TODO: Add on-score and off-score
 		key.coverage <- df2$coverage[is.element(df2$refseq.aa.pos, temp)]
 		if (length(key.coverage) > 0) {
-			output <- rbind(output, c(sample, region, q.cut, min(key.coverage), temp[which.min(key.coverage)]))
+		    min.coverage <- min(key.coverage)
+			output <- rbind(output, c(
+			     sample, 
+			     region, 
+			     q.cut, 
+			     min.coverage, 
+			     temp[which.min(key.coverage)]))
 		} else {
+		    # TODO: Is this useful? Should we only output entries with data?
 			output <- rbind(output, c(sample, region, q.cut, NA, NA))
 		}
 	}
@@ -97,8 +104,17 @@ for (i in 1:length(coverage)) {
 	garbage <- dev.off()
 }
 
+tar(output.maps, 'coverage_maps')
 
 # output minimum coverage at key positions
 output <- as.data.frame(output)
-names(output) <- c('sample', 'region', 'q.cut', 'min.coverage', 'which.key.pos')
+names(output) <- c(
+    'sample',
+    'region',
+    'q.cut',
+    'min.coverage',
+    'which.key.pos')
+# TODO: Add these columns
+#    'on.score',
+#    'off.score')
 write.csv(output, file=output.csv, quote=FALSE, row.names=FALSE)
