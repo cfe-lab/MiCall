@@ -1,7 +1,8 @@
-import re
-import sys
+#! /usr/bin/env python
 
-def sampleSheetParser (handle):
+import re
+
+def sample_sheet_parser (handle):
     """
     Parse the contents of SampleSheet.csv, convert contents into a
     Python dictionary object.
@@ -48,8 +49,7 @@ def sampleSheetParser (handle):
                 # parse the first line as the header row
                 header = tokens
                 if not 'Sample_Name' in header:
-                    sys.stderr.write("ERROR: SampleSheet.csv Data header does not include Sample_Name")
-                    sys.exit()
+                    raise ValueError("sample sheet data header does not include Sample_Name")
                 get_header = False
                 continue
 
@@ -67,18 +67,24 @@ def sampleSheetParser (handle):
             clean_filename = re.sub('[_.;]', '-', filename)
             clean_filename += '_S%d' % sample_number # should correspond to FASTQ filename
 
-            run_info['Data'].update({clean_filename: {'index1': index1,
-                                                      'index2': index2}})
-            run_info['Data'][clean_filename].update({'comments': ''})
-            run_info['Data'][clean_filename].update({'Disablecontamcheck': False})
-            run_info['Data'][clean_filename].update({'Research': True})
-            run_info['Data'][clean_filename].update({'Chemistry': run_info['Assay']})
+            # July 9, 2014: also want to keep track of the *original*
+            # Sample_Name as it appeared in the sample sheet.
+            # July 10, 2014: clean up to fix some naming problems.
+            run_info['Data'].update(
+                {clean_filename: {
+                    "index1": index1,
+                    "index2": index2,
+                    "comments": "",
+                    "disable_contamination_check": False,
+                    "research": True,
+                    "chemistry": run_info["Assay"],
+                    "orig_sample_name": filename
+                }})
             run_info['sample_sheet_version'] = sample_sheet_version
 
-            # parse Description field
-            # FIXME: currently this is partitioned by sub-samples (semi-colon delimited)
-            # FIXME: but the pipeline does not support differential handling of sub-samples
-            # Done - ckw
+            # Parse Description field.  This uses some version-specific
+            # code to handle version 1 (where semicolons and underscores were used)
+            # to version 2 (where tildes and hashes are used).
 
             desc = tokens[header.index('Description')]
             desc_fields = desc.split() # whitespace-delimited
@@ -113,13 +119,8 @@ def sampleSheetParser (handle):
                     if desc_field_label == 'Comments':
                         run_info['Data'][clean_filename].update({'comments': desc_subfield_tokens[-1]})
 
-                if not run_info['Data'][clean_filename].has_key('disable_contamination_check'):
-                    # 'Disablecontamcheck' subfield not always under Description
-                    # default to contamination check active
-                    run_info['Data'][clean_filename].update({'disable_contamination_check': False})
-
-                # FIXME: for the time being, apply ONLY first sub-sample description to entire sample
-                break
+                    # FIXME: for the time being, apply ONLY first sub-sample description to entire sample
+                    break
 
             
             #Okay, lets populate the datasplit based on the data entry. 
@@ -140,9 +141,11 @@ def sampleSheetParser (handle):
                 entry.update({'index2' : index2})
                 entry.update({'sample_number' : 'S%d' % sample_number })
                 entry.update({'chemistry' : run_info['Assay']})
-                entry.update({'disable_contam_check' : False})
+                entry.update({'disable_contamination_check' : False})
                 entry.update({'research' : True})
                 entry.update({'comments' : ''})
+                entry.update({"orig_sample_name": filename})
+                entry.update({"is_T_primer": run_info["Data"][clean_filename]["is_T_primer"]})
                 
                 for desc_field in desc_fields:
                     name,value,tmp = None,None,None
@@ -179,3 +182,17 @@ def sampleSheetParser (handle):
             # ignore other tags
             pass
     return run_info
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Read a sample sheet")
+    parser.add_argument("samplesheet")
+    args = parser.parse_args()
+
+    with open(args.samplesheet, "rb") as f:
+        ss = sample_sheet_parser(f)
+        print(ss)
+
+if __name__ == "__main__":
+    main()
