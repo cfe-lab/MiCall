@@ -80,15 +80,57 @@ for (i in 1:length(coverage)) {
         key.coverage <- df2$coverage[is.element(df2$refseq.aa.pos, temp)]
         if (length(key.coverage) > 0) {
             min.coverage <- min(key.coverage)
+            if (min.coverage > 100) {
+                off.score <- -3
+            }
+            else if (min.coverage > 10) {
+                off.score <- -2
+            }
+            else if (min.coverage > 0) {
+                off.score <- -1
+            }
+            else {
+                off.score <- 0
+            }
+            if (substring(region, 1, 4) == 'HLA-') {
+                if (min.coverage > 100) {
+                    on.score <- 4
+                }
+                else if (min.coverage > 10) {
+                    on.score <- 3
+                }
+                else if (min.coverage > 0) {
+                    on.score <- 2
+                }
+                else {
+                    on.score <- 1
+                }
+            }
+            else {
+                if (min.coverage > 1000) {
+                    on.score <- 4
+                }
+                else if (min.coverage > 100) {
+                    on.score <- 3
+                }
+                else if (min.coverage > 0) {
+                    on.score <- 2
+                }
+                else {
+                    on.score <- 1
+                }
+            }
             output <- rbind(output, c(
                             sample, 
                             region, 
                             q.cut, 
                             min.coverage, 
-                            temp[which.min(key.coverage)]))
+                            temp[which.min(key.coverage)],
+                            off.score,
+                            on.score))
         } else {
             # TODO: Is this useful? Should we only output entries with data?
-            output <- rbind(output, c(sample, region, q.cut, NA, NA))
+            output <- rbind(output, c(sample, region, q.cut, NA, NA, NA, NA))
         }
     }
     
@@ -113,8 +155,7 @@ names(output) <- c(
         'region',
         'q.cut',
         'min.coverage',
-        'which.key.pos')
-# TODO: Add these columns
-#    'on.score',
-#    'off.score')
+        'which.key.pos',
+        'off.score',
+        'on.score')
 write.csv(output, file=output.csv, quote=FALSE, row.names=FALSE)
