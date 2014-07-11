@@ -128,25 +128,29 @@ def sample_sheet_parser (handle):
             if(sample_sheet_version == 2):
                 delimiter = '#'
             for sampproj in filename.split(delimiter):
-                entry = {}
+                # July 11, 2014: we don't want to change the above too much in fear
+                # of breaking backwards-compatibility, but here we can insert some
+                # more stuff into the dictionary.
+
+                # Start with a copy of the dictionary we defined above and punch it up with
+                # some more details.
+                entry = dict(run_info["Data"][clean_filename])
                 delimiter = '_'
                 if(sample_sheet_version == 2):
                     delimiter = '~'
                 
                 tmp = sampproj.split(delimiter)
+                # We need to update some parts of this.  In particular note that
+                # the data is being split up by sample when there are multiple
+                # samples in the same row.
                 entry.update({'sample' : tmp[0]})
                 entry.update({'project' : tmp[1]})
                 entry.update({'filename' : clean_filename})
-                entry.update({'index1' : index1})
-                entry.update({'index2' : index2})
                 entry.update({'sample_number' : 'S%d' % sample_number })
-                entry.update({'chemistry' : run_info['Assay']})
-                entry.update({'disable_contamination_check' : False})
-                entry.update({'research' : True})
-                entry.update({'comments' : ''})
-                entry.update({"orig_sample_name": filename})
-                entry.update({"is_T_primer": run_info["Data"][clean_filename]["is_T_primer"]})
-                
+
+                # Now, because we've split by sample, we must also split the stuff in
+                # the description field up and change the values in entry
+                # appropriately.
                 for desc_field in desc_fields:
                     name,value,tmp = None,None,None
                     if(sample_sheet_version == 1):
