@@ -124,7 +124,12 @@ if mode == 'Amplicon':
     # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
     for sample_info in fastq_samples:
         log_path = "{}.g2p.log".format(sample_info.fastq1)
-        single_thread_factory.queue_job(Job(script='fasta_to_g2p.rb',
+        single_thread_factory.queue_job(Job(script='fasta_to_g2p.sh',
+                                            helpers=('fasta_to_g2p.rb',
+                                                     'pssm_lib.rb',
+                                                     'alignment.so',
+                                                     'g2p.matrix',
+                                                     'g2p_fpr.txt'),
                                             args=(sample_info.output_root + '.csf.csv',
                                                   sample_info.output_root + '.g2p.csv'),
                                             stdout=log_path,

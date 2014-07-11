@@ -80,45 +80,21 @@ for (i in 1:length(coverage)) {
         key.coverage <- df2$coverage[is.element(df2$refseq.aa.pos, temp)]
         if (length(key.coverage) > 0) {
             min.coverage <- min(key.coverage)
-            if (min.coverage > 100) {
-                off.score <- -3
-            }
-            else if (min.coverage > 10) {
-                off.score <- -2
-            }
-            else if (min.coverage > 0) {
-                off.score <- -1
-            }
-            else {
-                off.score <- 0
-            }
+            off.score <- as.character(cut(
+                    min.coverage,
+                    c(-Inf, 0, 10, 100, Inf),
+                    labels=c(0, -1, -2, -3)))
             if (substring(region, 1, 4) == 'HLA-') {
-                if (min.coverage > 100) {
-                    on.score <- 4
-                }
-                else if (min.coverage > 10) {
-                    on.score <- 3
-                }
-                else if (min.coverage > 0) {
-                    on.score <- 2
-                }
-                else {
-                    on.score <- 1
-                }
+                on.score <- as.character(cut(
+                        min.coverage,
+                        c(-Inf, 0, 10, 100, Inf),
+                        labels=c(1, 2, 3, 4)))
             }
             else {
-                if (min.coverage > 1000) {
-                    on.score <- 4
-                }
-                else if (min.coverage > 100) {
-                    on.score <- 3
-                }
-                else if (min.coverage > 0) {
-                    on.score <- 2
-                }
-                else {
-                    on.score <- 1
-                }
+                on.score <- as.character(cut(
+                        min.coverage,
+                        c(-Inf, 0, 100, 1000, Inf),
+                        labels=c(1, 2, 3, 4)))
             }
             output <- rbind(output, c(
                             sample, 
