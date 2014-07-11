@@ -446,6 +446,9 @@ def load_matrix(label)
       File.exists?("#{__FILE__.gsub('pssm_lib.rb', '')}/#{label}.matrix") ? "#{__FILE__.gsub('pssm_lib.rb', '')}/#{label}.matrix" : nil
     end
     filename = filename.delete_if{|a| a==nil}.sort[0]
+    if(filename == nil)
+      raise "File not found in path: #{label}.matrix"
+    end
     matrix = nil
     File.open(filename) do |file|
         file.each_line do |line|

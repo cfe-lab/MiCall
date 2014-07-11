@@ -1,10 +1,11 @@
+#!/usr/bin/env python
 
 from glob import glob
-import logging, os, subprocess, sys
+import logging, os, sys
 
 from collate import collate_frequencies, collate_conseqs, collate_counts
 import miseq_logging
-from sample_sheet_parser import sampleSheetParser
+from sample_sheet_parser import sample_sheet_parser
 from settings import file_extensions_to_delete, file_extensions_to_keep, \
     final_alignment_ref_path, final_nuc_align_ref_path, \
     mapping_factory_resources, mapping_ref_path, \
@@ -34,8 +35,8 @@ if len(sys.argv) == 3:
     run_info = None
 else:
     with open(root+'/SampleSheet.csv', 'rU') as sample_sheet:
-        logger.debug("sampleSheetParser({})".format(sample_sheet))
-        run_info = sampleSheetParser(sample_sheet)
+        logger.debug("sample_sheet_parser({})".format(sample_sheet))
+        run_info = sample_sheet_parser(sample_sheet)
         mode = run_info['Description']
 
 
@@ -123,7 +124,12 @@ if mode == 'Amplicon':
     # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
     for sample_info in fastq_samples:
         log_path = "{}.g2p.log".format(sample_info.fastq1)
-        single_thread_factory.queue_job(Job(script='fasta_to_g2p.rb',
+        single_thread_factory.queue_job(Job(script='fasta_to_g2p.sh',
+                                            helpers=('fasta_to_g2p.rb',
+                                                     'pssm_lib.rb',
+                                                     'alignment.so',
+                                                     'g2p.matrix',
+                                                     'g2p_fpr.txt'),
                                             args=(sample_info.output_root + '.csf.csv',
                                                   sample_info.output_root + '.g2p.csv'),
                                             stdout=log_path,
@@ -184,20 +190,17 @@ collated_counts_path = "{}/collated_counts.csv".format(root)
 logger.info("collate_counts({},{})".format(root, collated_counts_path))
 collate_counts(root, collated_counts_path)
 
-coverage_map_path = "{}/coverage_maps".format(root)
-if os.path.exists(coverage_map_path):
-    # wipe out previous contents
-    for png_file in glob(coverage_map_path+'/*.png'):
-        os.remove(png_file)
-else:
-    os.mkdir(coverage_map_path)
+coverage_map_path = "{}/coverage_maps.tar".format(root)
+coverage_score_path = "{}/coverage_scores.csv".format(root)
 
 
 # generate coverage plots
-command = ['Rscript', 'coverage_plots.R', collated_amino_freqs_path, coverage_map_path]
-logger.info(" ".join(command))
-subprocess.check_call(command)
-
+single_thread_factory.queue_job(Job(script='coverage_plots.R',
+                                    helpers=('key_positions.csv', ),
+                                    args=(collated_amino_freqs_path,
+                                          coverage_map_path,
+                                          coverage_score_path)))
+single_thread_factory.wait()
 
 ###############################
 ### (optional) filter for cross-contamination

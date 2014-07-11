@@ -5,23 +5,38 @@ MISEQ_MONITOR.py
 3) Upload results to the network drive
 """
 
+from glob import glob
 import logging
-import miseq_logging
-import miseqUtils
 import os
 import subprocess
 import sys
+import tarfile
 import time
 
-from settings import *
-from glob import glob
+import miseq_logging
+from sample_sheet_parser import sample_sheet_parser
+from settings import delay, ERROR_PROCESSING, home, NEEDS_PROCESSING,\
+    pipeline_version, production, rawdata_mount
 
 
 if sys.version_info[:2] != (2, 7):
     raise Exception("Python 2.7 not detected")
 
-def mark_run_as_disabled(curr_run):
-    open(curr_run.replace(NEEDS_PROCESSING, ERROR_PROCESSING), 'w').close()
+def init_logging(log_file):
+    try:
+        logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
+    except Exception as e:
+        raise Exception("Couldn't setup logging (init_logging() threw exception '{}') - HALTING NOW!".format(str(e)))
+    return logger
+
+def mark_run_as_disabled(root, message):
+    """ Mark a run that failed, so it won't be processed again. """
+    logger.error(message + " - skipping run " + root)
+    with open(root + ERROR_PROCESSING, 'w') as f:
+        f.write(message)
+
+def is_marked_as_disabled(run):
+    return os.path.exists(run.replace(NEEDS_PROCESSING, ERROR_PROCESSING))
 
 def execute_command(command):
     logger.info(" ".join(command))
@@ -30,12 +45,13 @@ def execute_command(command):
     return stdout
 
 def post_files(files, destination):
-    for file in files:
-        execute_command(['rsync', '-a', file, '{}/{}'.format(destination, os.path.basename(file))])
+    for f in files:
+        execute_command(['rsync', '-a', f, '{}/{}'.format(destination, os.path.basename(f))])
 
 
 # Process runs flagged for processing not already processed by this version of the pipeline
 while True:
+    logger = init_logging(home + '/MISEQ_MONITOR_OUTPUT.log')
     # flag indicates that Illumina MiseqReporter has completed pre-processing, files available on NAS
     runs = glob(rawdata_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
     #runs = glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
@@ -44,8 +60,7 @@ while True:
     for run in runs:
         result_path = '{}/version_{}'.format(run.replace(NEEDS_PROCESSING, 'Results'), pipeline_version)
 
-        # FIXME: what does this mean?
-        if os.path.exists(run.replace(NEEDS_PROCESSING, ERROR_PROCESSING)):
+        if is_marked_as_disabled(run):
             continue
 
         # if version-matched Results folder already exists, then do not re-process
@@ -55,7 +70,7 @@ while True:
         runs_needing_processing.append(run)
 
     if not runs_needing_processing:
-        logging.info('No runs need processing')
+        logger.info('No runs need processing')
         time.sleep(delay)
         continue
 
@@ -71,11 +86,8 @@ while True:
 
     # Record standard input / output of monitor
     log_file = home + run_name + '/MISEQ_MONITOR_OUTPUT.log'
-    try:
-        logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
-        logger.info('===== Processing {} with pipeline version {} ====='.format(root, pipeline_version))
-    except Exception as e:
-        raise Exception("Couldn't setup logging (init_logging() threw exception '{}') - HALTING NOW!".format(str(e)))
+    logger = init_logging(log_file)
+    logger.info('===== Processing {} with pipeline version {} ====='.format(root, pipeline_version))
 
     # transfer SampleSheet.csv
     remote_file = curr_run.replace(NEEDS_PROCESSING, 'SampleSheet.csv')
@@ -91,20 +103,25 @@ while True:
     try:
         with open(local_file, 'rU') as sample_sheet:
             # parse run information from SampleSheet
-            run_info = miseqUtils.sampleSheetParser(sample_sheet)
+            run_info = sample_sheet_parser(sample_sheet)
             mode = run_info['Description']
     except Exception as e:
-        logger.error("Exception thrown while parsing sample sheet: '{}' - skipping run and marking with flag '{}'".format(str(e),ERROR_PROCESSING))
-        mark_run_as_disabled(curr_run)
+        mark_run_as_disabled(
+            root,
+            "Parsing sample sheet failed: '{}'".format(e))
         continue
 
     if mode not in ['Nextera', 'Amplicon']:
-        logger.error("{} not a valid mode: skipping run and marking with {}".format(mode, ERROR_PROCESSING))
-        mark_run_as_disabled(curr_run)
+        mark_run_as_disabled(root, "{} not a valid mode".format(mode))
         continue
 
     # Copy fastq.gz files to the cluster and unzip them
-    for gz_file in glob(root+'Data/Intensities/BaseCalls/*R?_001.fastq.gz'):
+    gz_files = glob(root + 'Data/Intensities/BaseCalls/*R?_001.fastq.gz')
+    if not gz_files:
+        mark_run_as_disabled(root, "No data files found")
+        continue
+    
+    for gz_file in gz_files:
         filename = os.path.basename(gz_file)
 
         # Report number of reads failing to demultiplex to the log
@@ -129,12 +146,6 @@ while True:
             # If a local copy of the unzipped fastq exists, skip to next file
             continue
 
-        # TODO: Is this check necessary? rsync does the same check, plus a content check.
-        if os.path.exists(local_file):
-            # a local copy of gzipped FASTQ exists, just decompress and skip
-            execute_command(['gunzip', '-f', local_file])
-            continue
-
         # otherwise, transfer fastq.gz file and unzip
         execute_command(['rsync', '-a', gz_file, local_file])
         execute_command(['gunzip', '-f', local_file])
@@ -145,33 +156,21 @@ while True:
     with open(pipeline_log_path, "wb") as PIPELINE_log:
 
         # Standard out/error concatenates to the log
-        #TODO: use sys.executable instead of 'python2.7'.
-        #TODO: use pipes instead of tailing the file?
-        command = ['python2.7', '-u', 'MISEQ_PIPELINE.py', home+run_name]
-        p = subprocess.Popen(command, stdout = PIPELINE_log, stderr = PIPELINE_log)
-        logger.info(" ".join(command))
-
-        # Poll the log of MISEQ_PIPELINE.py and display output to console as it appears
-        with open(pipeline_log_path, 'rb') as cursor:
-            while True:
-                #TODO: Check for != None, because nonzero return code will cause infinite loop.
-                if p.poll() == 0:
-                    PIPELINE_log.flush()
-                    sys.stdout.write(cursor.read())
-                    break
-                time.sleep(1)
-                PIPELINE_log.flush()
-                sys.stdout.write(cursor.read())
+        logger.info("Launching pipeline for %s%s", home, run_name)
+        try:
+            subprocess.check_call(['./MISEQ_PIPELINE.py', home+run_name])
+        except Exception as e:
+            mark_run_as_disabled(root, "MISEQ_PIPELINE.py failed: '{}'".format(e))
+            continue
 
     if production:
         # Determine output paths
         result_path = curr_run.replace(NEEDS_PROCESSING, 'Results')
         result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
         log_path = '{}/logs'.format(result_path_final)
-        coverage_maps_path = '{}/coverage_maps'.format(result_path_final)
 
         # Create sub-folders if needed
-        for path in [result_path, result_path_final, log_path, coverage_maps_path]:
+        for path in [result_path, result_path_final, log_path]:
             if not os.path.exists(path): os.mkdir(path)
 
         # Post files to appropriate sub-folders
@@ -187,7 +186,8 @@ while True:
 
         post_files(glob(home + run_name + '/*.log'), log_path)
         post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
-        post_files(glob(home + run_name + '/coverage_maps/*.png'), coverage_maps_path)
+        with tarfile.open(home + run_name + '/coverage_maps.tar') as tar:
+            tar.extractall(result_path_final)
 
 
 
