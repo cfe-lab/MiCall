@@ -64,3 +64,8 @@ final_nuc_align_ref_path = mapping_ref_path.replace('/cfe', '/csf_to_fasta_by_nu
 file_extensions_to_delete = ['bam', 'bt2', 'bt2_metrics', 'pileup', 'sam',
                              'filtering.sam', 'csf.fa']
 file_extensions_to_keep = ['prelim.sam']
+
+# Default database user and password.
+oracle_uploader = "FILLINUSERNAME"
+oracle_uploader_pass = "****"
+oracle_db = "FILLINDBNAME"
