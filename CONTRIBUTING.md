@@ -111,7 +111,17 @@ The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferre
         rvm requirements
         rvm install 1.8.6
         gem install bio
-        
+
+17. It sounds like executable-hooks is installed with Ruby 1.8.6, even though
+    it is incompatible. It causes the warning: `parenthesize argument(s) for 
+    future version`. Follow the removal instructions from
+    [the bug report][rvm-bug]. The first command complains a lot, but it seems
+    to work.
+
+        executable-hooks-uninstaller
+        rvm @global do gem uninstall -ax rubygems-bundler executable-hooks bundler-unload
+
+    [rvm-bug]: https://github.com/wayneeseguin/rvm/issues/2325        
 17. Build the alignment library.
 
         cd ~/git/MiseqPipeline

@@ -151,17 +151,13 @@ while True:
         execute_command(['gunzip', '-f', local_file])
 
 
-    # Store output of MISEQ_PIPELINE.py in a log + poll continuously to display output to console
-    pipeline_log_path = home + run_name + '/MISEQ_PIPELINE_OUTPUT.log'
-    with open(pipeline_log_path, "wb") as PIPELINE_log:
-
-        # Standard out/error concatenates to the log
-        logger.info("Launching pipeline for %s%s", home, run_name)
-        try:
-            subprocess.check_call(['./MISEQ_PIPELINE.py', home+run_name])
-        except Exception as e:
-            mark_run_as_disabled(root, "MISEQ_PIPELINE.py failed: '{}'".format(e))
-            continue
+    # Standard out/error concatenates to the log
+    logger.info("Launching pipeline for %s%s", home, run_name)
+    try:
+        subprocess.check_call(['./MISEQ_PIPELINE.py', home+run_name])
+        logger.info("===== {} successfully completed! =====".format(run_name))
+    except Exception as e:
+        mark_run_as_disabled(root, "MISEQ_PIPELINE.py failed: '{}'".format(e))
 
     if production:
         # Determine output paths
@@ -186,13 +182,14 @@ while True:
 
         post_files(glob(home + run_name + '/*.log'), log_path)
         post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
-        with tarfile.open(home + run_name + '/coverage_maps.tar') as tar:
-            tar.extractall(result_path_final)
-
+        tar_path = home + run_name + '/coverage_maps.tar'
+        if os.path.isfile(tar_path):
+            with tarfile.open(tar_path) as tar:
+                tar.extractall(result_path_final)
 
 
     # Close the log and copy it to rawdata
-    logger.info("===== {} successfully completed! =====".format(run_name))
+    logger.info("===== {} file transfer completed =====".format(run_name))
     logging.shutdown()
 
     if production:
