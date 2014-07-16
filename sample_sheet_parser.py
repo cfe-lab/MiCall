@@ -10,16 +10,18 @@ def sample_sheet_parser (handle):
     This is to distinguish replicates of the same sample.
     """
 
-    # FIXME: Conan is going to start annotating samples as either amplicon or nextera
-    # FIXME: We may need to change this code to handle this
-    # Done - ckw
-
     tag = None
     get_header = False
     header = [] # store Data block column labels
     sample_number = 1 # 1-indexing
     run_info = {} # return object
     sample_sheet_version = None #Version 1 is there we used underscores and semicolons, version 2 we use tilde's and hashes
+    sample_delimiter_v1 = ';' # Between multiple samples in one well
+    project_delimiter_v1 = '_' # Between the sample and project names
+    sample_delimiter_v2 = '---'
+    project_delimiter_v2 = '--'
+    sample_delimiter = sample_delimiter_v1
+    project_delimiter = project_delimiter_v1
 
     for line in handle:
         # parse tags
@@ -27,7 +29,7 @@ def sample_sheet_parser (handle):
             tag = line.strip('\n').rstrip(',').strip('[]')
             if tag == 'Data':
                 get_header = True
-            continue
+            continue # pragma: no cover (because of optimizer)
 
         # else not a tag line, parse contents
         tokens = line.strip('\n').split(',')
@@ -58,11 +60,18 @@ def sample_sheet_parser (handle):
 
             # parse Sample_Name field
             filename = tokens[header.index('Sample_Name')]
-            if(sample_sheet_version == None and ('#' in filename or '~' in filename)):
+            if(sample_sheet_version == None and 
+               (sample_delimiter_v2 in filename or 
+                project_delimiter_v2 in filename)):
+                
                 sample_sheet_version = 2
-            elif(sample_sheet_version == None and ('_' in filename or ';' in filename)):
+                sample_delimiter = sample_delimiter_v2
+                project_delimiter = project_delimiter_v2
+            elif(sample_sheet_version == None and
+                 (sample_delimiter_v1 in filename or
+                  project_delimiter_v1 in filename)):
+                
                 sample_sheet_version = 1
-            
                 
             clean_filename = re.sub('[_.;]', '-', filename)
             clean_filename += '_S%d' % sample_number # should correspond to FASTQ filename
@@ -90,19 +99,16 @@ def sample_sheet_parser (handle):
             desc_fields = desc.split() # whitespace-delimited
             for desc_field in desc_fields:
                 desc_field_label = desc_field.split(':')[0] #research/chemistry/comments/disable_contam_check
-                delimiter = ';'
-                if(sample_sheet_version == 2):
-                    delimiter = '#'
-                desc_subfields = desc_field.replace(desc_field_label+':', '').split(delimiter)
+                desc_subfields = desc_field.replace(desc_field_label+':', '').split(sample_delimiter)
                 
                 for desc_subfield in desc_subfields:
                     desc_subfield_tokens = desc_subfield.split(':')
                     if(sample_sheet_version == 2): #for compatibility
-                        desc_subfield_tokens = [desc_subfield.split('~')[0] + '~' + desc_subfield.split('~')[1], desc_subfield.split('~')[2]]
+                        sample, project, value = desc_subfield.split(project_delimiter)
+                        desc_subfield_tokens = [
+                            sample + project_delimiter + project, 
+                            value]
                     
-                    sample_name = desc_subfield_tokens[0]
-                    clean_sample_name = re.sub('[_.]', '-', sample_name)
-
                     if desc_field_label == 'Research':
                         is_research = (desc_subfield_tokens[1] == 'TRUE')
                         # would have been keying by clean_sample_name here and below
@@ -124,10 +130,7 @@ def sample_sheet_parser (handle):
 
             
             #Okay, lets populate the datasplit based on the data entry. 
-            delimiter = ';'
-            if(sample_sheet_version == 2):
-                delimiter = '#'
-            for sampproj in filename.split(delimiter):
+            for sampproj in filename.split(sample_delimiter):
                 # July 11, 2014: we don't want to change the above too much in fear
                 # of breaking backwards-compatibility, but here we can insert some
                 # more stuff into the dictionary.
@@ -135,11 +138,8 @@ def sample_sheet_parser (handle):
                 # Start with a copy of the dictionary we defined above and punch it up with
                 # some more details.
                 entry = dict(run_info["Data"][clean_filename])
-                delimiter = '_'
-                if(sample_sheet_version == 2):
-                    delimiter = '~'
                 
-                tmp = sampproj.split(delimiter)
+                tmp = sampproj.split(project_delimiter)
                 # We need to update some parts of this.  In particular note that
                 # the data is being split up by sample when there are multiple
                 # samples in the same row.
@@ -156,18 +156,18 @@ def sample_sheet_parser (handle):
                     if(sample_sheet_version == 1):
                         name = desc_field.split(':')[0] #slice #actually this is wrong...
                         value = desc_field.replace(name + ':','')
-                        tmp = value.split(';')
+                        tmp = value.split(sample_delimiter_v1)
                     elif(sample_sheet_version == 2):
                         name,value = desc_field.split(':')
-                        tmp = value.split('#')
+                        tmp = value.split(sample_delimiter_v2)
                     
                     for elem in tmp:
                         samp, proj, val = None, None, None
                         if(sample_sheet_version == 1):
                             sj, val = elem.split(':')
-                            samp, proj = sj.split('_')
+                            samp, proj = sj.split(project_delimiter_v1)
                         elif(sample_sheet_version == 2):
-                            samp, proj, val = elem.split('~')
+                            samp, proj, val = elem.split(project_delimiter_v2)
                         
                         if(samp == entry['sample'] and proj == entry['project']):
                             if(name == 'Research'):
@@ -182,9 +182,6 @@ def sample_sheet_parser (handle):
                 run_info['DataSplit'].append(entry)
             
             sample_number += 1
-        else:
-            # ignore other tags
-            pass
     return run_info
 
 def main():

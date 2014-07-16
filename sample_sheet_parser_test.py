@@ -159,10 +159,10 @@ Chemistry,Amplicon
 [Settings]
 [Data]
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
-CFEidentifier-Sample3~Proj3,Sample3~Proj3,11-Jul-2014_testing,N/A,AAAAAAAA,CCCCCCCC,11-Jul-2014_testing,Research:Sample3~Proj3~TRUE Comments:Sample3~Proj3~thisiscommentthree Disablecontamcheck:Sample3~Proj3~FALSE,
-CFEidentifier-Sample4~Proj4,Sample4~Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTTTTTTT,11-Jul-2014_testing,Research:Sample4~Proj4~FALSE Comments:Sample4~Proj4~thisiscommentfour Chemistry:Sample4~Proj4~BreakingBad Disablecontamcheck:Sample4~Proj4~TRUE,
+CFEidentifier-Sample3--Proj3,Sample3--Proj3,11-Jul-2014_testing,N/A,AAAAAAAA,CCCCCCCC,11-Jul-2014_testing,Research:Sample3--Proj3--TRUE Comments:Sample3--Proj3--thisiscommentthree Disablecontamcheck:Sample3--Proj3--FALSE,
+CFEidentifier-Sample4--Proj4,Sample4--Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTTTTTTT,11-Jul-2014_testing,Research:Sample4--Proj4--FALSE Comments:Sample4--Proj4--thisiscommentfour Chemistry:Sample4--Proj4--BreakingBad Disablecontamcheck:Sample4--Proj4--TRUE,
 """
-    clean_filenames = ["Sample3~Proj3_S1", "Sample4~Proj4_S2"]
+    clean_filenames = ["Sample3--Proj3_S1", "Sample4--Proj4_S2"]
 
     def setUp(self):
         self.ss = sample_sheet_parser(StringIO.StringIO(self.stub_sample_sheet))
@@ -209,7 +209,7 @@ CFEidentifier-Sample4~Proj4,Sample4~Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTTTT
                         "disable_contamination_check": False,
                         "research": True,
                         "chemistry": "Nextera",
-                        "orig_sample_name": "Sample3~Proj3",
+                        "orig_sample_name": "Sample3--Proj3",
                         "is_T_primer": False
                     },
                 self.clean_filenames[1]:
@@ -220,7 +220,7 @@ CFEidentifier-Sample4~Proj4,Sample4~Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTTTT
                         "disable_contamination_check": True,
                         "research": False,
                         "chemistry": "BreakingBad",
-                        "orig_sample_name": "Sample4~Proj4",
+                        "orig_sample_name": "Sample4--Proj4",
                         "is_T_primer": False
                     }
             }
@@ -236,7 +236,7 @@ CFEidentifier-Sample4~Proj4,Sample4~Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTTTT
                 {
                     "sample": "Sample3",
                     "project": "Proj3",
-                    "filename": "Sample3~Proj3_S1",
+                    "filename": "Sample3--Proj3_S1",
                     "index1": "AAAAAAAA",
                     "index2": "CCCCCCCC",
                     "sample_number": "S1",
@@ -244,13 +244,13 @@ CFEidentifier-Sample4~Proj4,Sample4~Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTTTT
                     "disable_contamination_check": False,
                     "research": True,
                     "comments": "thisiscommentthree",
-                    "orig_sample_name": "Sample3~Proj3",
+                    "orig_sample_name": "Sample3--Proj3",
                     "is_T_primer": False,
                 },
                 {
                     "sample": "Sample4",
                     "project": "Proj4",
-                    "filename": "Sample4~Proj4_S2",
+                    "filename": "Sample4--Proj4_S2",
                     "index1": "GGGGGGGG",
                     "index2": "TTTTTTTT",
                     "sample_number": "S2",
@@ -258,7 +258,7 @@ CFEidentifier-Sample4~Proj4,Sample4~Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTTTT
                     "disable_contamination_check": True,
                     "research": False,
                     "comments": "thisiscommentfour",
-                    "orig_sample_name": "Sample4~Proj4",
+                    "orig_sample_name": "Sample4--Proj4",
                     "is_T_primer": False
                 }
             ]
@@ -435,10 +435,10 @@ Chemistry,Amplicon
 [Settings]
 [Data]
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
-CFEidentifier-Sample1~Proj1#Sample2~Proj2,Sample1~Proj1#Sample2~Proj2,11-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,11-Jul-2014_testing,Research:Sample1~Proj1~TRUE#Sample2~Proj2~FALSE Comments:Sample1~Proj1~thisiscommentone#Sample2~Proj2~thisiscommenttwo Disablecontamcheck:Sample1~Proj1~FALSE#Sample2~Proj2~TRUE,
-CFEidentifier_Sample3~Proj3#Sample4~Proj4,Sample3~Proj3#Sample4~Proj4,11-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,11-Jul-2014_testing,Research:Sample3~Proj3~FALSE#Sample4~Proj4~FALSE Comments:Sample3~Proj3~thisiscommentthree#Sample4~Proj4~thisiscommentfour Chemistry:Sample3~Proj3~BreakingBad#Sample4~Proj4~MrWizard Disablecontamcheck:Sample3~Proj3~TRUE#Sample4~Proj4~TRUE,
+CFEidentifier-Sample1--Proj1---Sample2--Proj2,Sample1--Proj1---Sample2--Proj2,11-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,11-Jul-2014_testing,Research:Sample1--Proj1--TRUE---Sample2--Proj2--FALSE Comments:Sample1--Proj1--thisiscommentone---Sample2--Proj2--thisiscommenttwo Disablecontamcheck:Sample1--Proj1--FALSE---Sample2--Proj2--TRUE,
+CFEidentifier_Sample3--Proj3---Sample4--Proj4,Sample3--Proj3---Sample4--Proj4,11-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,11-Jul-2014_testing,Research:Sample3--Proj3--FALSE---Sample4--Proj4--FALSE Comments:Sample3--Proj3--thisiscommentthree---Sample4--Proj4--thisiscommentfour Chemistry:Sample3--Proj3--BreakingBad---Sample4--Proj4--MrWizard Disablecontamcheck:Sample3--Proj3--TRUE---Sample4--Proj4--TRUE,
 """
-    clean_filenames = ["Sample1~Proj1#Sample2~Proj2_S1", "Sample3~Proj3#Sample4~Proj4_S2"]
+    clean_filenames = ["Sample1--Proj1---Sample2--Proj2_S1", "Sample3--Proj3---Sample4--Proj4_S2"]
 
     def setUp(self):
         self.ss = sample_sheet_parser(StringIO.StringIO(self.stub_sample_sheet))
@@ -485,7 +485,7 @@ CFEidentifier_Sample3~Proj3#Sample4~Proj4,Sample3~Proj3#Sample4~Proj4,11-Jul-201
                         "disable_contamination_check": False,
                         "research": True,
                         "chemistry": "Nextera",
-                        "orig_sample_name": "Sample1~Proj1#Sample2~Proj2",
+                        "orig_sample_name": "Sample1--Proj1---Sample2--Proj2",
                         "is_T_primer": False
                     },
                 self.clean_filenames[1]:
@@ -496,7 +496,7 @@ CFEidentifier_Sample3~Proj3#Sample4~Proj4,Sample3~Proj3#Sample4~Proj4,11-Jul-201
                         "disable_contamination_check": True,
                         "research": False,
                         "chemistry": "BreakingBad",
-                        "orig_sample_name": "Sample3~Proj3#Sample4~Proj4",
+                        "orig_sample_name": "Sample3--Proj3---Sample4--Proj4",
                         "is_T_primer": False
                     }
             }
@@ -512,7 +512,7 @@ CFEidentifier_Sample3~Proj3#Sample4~Proj4,Sample3~Proj3#Sample4~Proj4,11-Jul-201
                 {
                     "sample": "Sample1",
                     "project": "Proj1",
-                    "filename": "Sample1~Proj1#Sample2~Proj2_S1",
+                    "filename": "Sample1--Proj1---Sample2--Proj2_S1",
                     "index1": "ACGTACGT",
                     "index2": "TGCATGCA",
                     "sample_number": "S1",
@@ -520,13 +520,13 @@ CFEidentifier_Sample3~Proj3#Sample4~Proj4,Sample3~Proj3#Sample4~Proj4,11-Jul-201
                     "disable_contamination_check": False,
                     "research": True,
                     "comments": "thisiscommentone",
-                    "orig_sample_name": "Sample1~Proj1#Sample2~Proj2",
+                    "orig_sample_name": "Sample1--Proj1---Sample2--Proj2",
                     "is_T_primer": False,
                 },
                 {
                     "sample": "Sample2",
                     "project": "Proj2",
-                    "filename": "Sample1~Proj1#Sample2~Proj2_S1",
+                    "filename": "Sample1--Proj1---Sample2--Proj2_S1",
                     "index1": "ACGTACGT",
                     "index2": "TGCATGCA",
                     "sample_number": "S1",
@@ -534,13 +534,13 @@ CFEidentifier_Sample3~Proj3#Sample4~Proj4,Sample3~Proj3#Sample4~Proj4,11-Jul-201
                     "disable_contamination_check": True,
                     "research": False,
                     "comments": "thisiscommenttwo",
-                    "orig_sample_name": "Sample1~Proj1#Sample2~Proj2",
+                    "orig_sample_name": "Sample1--Proj1---Sample2--Proj2",
                     "is_T_primer": False,
                 },
                 {
                     "sample": "Sample3",
                     "project": "Proj3",
-                    "filename": "Sample3~Proj3#Sample4~Proj4_S2",
+                    "filename": "Sample3--Proj3---Sample4--Proj4_S2",
                     "index1": "AAAAGGGG",
                     "index2": "CCCCTTTT",
                     "sample_number": "S2",
@@ -548,13 +548,13 @@ CFEidentifier_Sample3~Proj3#Sample4~Proj4,Sample3~Proj3#Sample4~Proj4,11-Jul-201
                     "disable_contamination_check": True,
                     "research": False,
                     "comments": "thisiscommentthree",
-                    "orig_sample_name": "Sample3~Proj3#Sample4~Proj4",
+                    "orig_sample_name": "Sample3--Proj3---Sample4--Proj4",
                     "is_T_primer": False
                 },
                 {
                     "sample": "Sample4",
                     "project": "Proj4",
-                    "filename": "Sample3~Proj3#Sample4~Proj4_S2",
+                    "filename": "Sample3--Proj3---Sample4--Proj4_S2",
                     "index1": "AAAAGGGG",
                     "index2": "CCCCTTTT",
                     "sample_number": "S2",
@@ -562,7 +562,7 @@ CFEidentifier_Sample3~Proj3#Sample4~Proj4,Sample3~Proj3#Sample4~Proj4,11-Jul-201
                     "disable_contamination_check": True,
                     "research": False,
                     "comments": "thisiscommentfour",
-                    "orig_sample_name": "Sample3~Proj3#Sample4~Proj4",
+                    "orig_sample_name": "Sample3--Proj3---Sample4--Proj4",
                     "is_T_primer": False
                 }
             ]
