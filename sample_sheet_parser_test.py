@@ -569,8 +569,13 @@ CFEidentifier_Sample3--Proj3---Sample4--Proj4,Sample3--Proj3---Sample4--Proj4,11
         )
 
 
-class NoSampleNameTest(unittest.TestCase):
-    stub_sample_sheet = """
+class OtherTest(unittest.TestCase):
+    def test_no_sample_name(self):
+        """
+        Throws an exception if the Data portion has no Sample_Name column.
+        """
+        
+        stub_sample_sheet = """
 [Header]
 IEMFileVersion,3
 Investigator Name,RL
@@ -590,12 +595,37 @@ There,Is,No,Sample,Name
 A,B,C,D,E
 """
 
-    def test_no_sample_name(self):
-        """
-        Throws an exception if the Data portion has no Sample_Name column.
-        """
         self.assertRaisesRegexp(
             ValueError,
             "sample sheet data header does not include Sample_Name",
-            lambda: sample_sheet_parser(StringIO.StringIO(self.stub_sample_sheet))
+            lambda: sample_sheet_parser(StringIO.StringIO(stub_sample_sheet))
         )
+
+    def test_extra_commas(self):
+        """
+        Throws an exception if the Data portion has no Sample_Name column.
+        """
+         
+        stub_sample_sheet = """
+[Header],,,,,,,
+IEMFileVersion,3,,,,,,,
+Investigator Name,RL,,,,,,,
+Project Name,10-Jul-2014,,,,,,,
+Experiment Name,10-Jul-2014,,,,,,,
+Date,07/10/2014,,,,,,,
+Workflow,GenerateFASTQ,,,,,,,
+Assay,Nextera,,,,,,,
+Description,Nextera,,,,,,,
+Chemistry,Amplicon,,,,,,,
+[Reads],,,,,,,
+251,,,,,,,
+251,,,,,,,
+[Settings],,,,,,,
+[Data],,,,,,,
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
+CFEidentifier-Sample1_Proj1,Sample1_Proj1,10-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,10-Jul-2014_testing,Research:Sample1_Proj1:TRUE Comments:Sample1_Proj1:thisiscommentone Disablecontamcheck:Sample1_Proj1:FALSE,
+CFEidentifier_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,10-Jul-2014_testing,Research:Sample2_Proj2:FALSE Comments:Sample2_Proj2:thisiscommenttwo Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
+"""
+ 
+        ss = sample_sheet_parser(StringIO.StringIO(stub_sample_sheet))
+        self.assertEquals(ss["Experiment Name"], "10-Jul-2014")

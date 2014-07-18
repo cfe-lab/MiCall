@@ -24,15 +24,16 @@ def sample_sheet_parser (handle):
     project_delimiter = project_delimiter_v1
 
     for line in handle:
+        stripped_line = line.rstrip('\n,')
         # parse tags
-        if line.startswith('['):
-            tag = line.strip('\n').rstrip(',').strip('[]')
+        if stripped_line.startswith('['):
+            tag = stripped_line.strip('[]')
             if tag == 'Data':
                 get_header = True
             continue # pragma: no cover (because of optimizer)
 
         # else not a tag line, parse contents
-        tokens = line.strip('\n').split(',')
+        tokens = stripped_line.split(',')
 
         # process tokens according to current tag
         if tag == 'Header':

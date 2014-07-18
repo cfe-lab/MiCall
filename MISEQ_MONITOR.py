@@ -17,6 +17,7 @@ import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
 from settings import delay, ERROR_PROCESSING, home, NEEDS_PROCESSING,\
     pipeline_version, production, rawdata_mount
+import update_oracle
 
 
 if sys.version_info[:2] != (2, 7):
@@ -170,7 +171,7 @@ while True:
             if not os.path.exists(path): os.mkdir(path)
 
         # Post files to appropriate sub-folders
-        logging.info("Posting results to {}".format(result_path))
+        logger.info("Posting results to {}".format(result_path_final))
         if mode == 'Amplicon':
             v3_path = '{}/v3_tropism'.format(result_path_final)
             if not os.path.exists(v3_path): os.mkdir(v3_path)
@@ -186,6 +187,8 @@ while True:
         if os.path.isfile(tar_path):
             with tarfile.open(tar_path) as tar:
                 tar.extractall(result_path_final)
+        
+        update_oracle.process_folder(result_path_final, logger)
 
 
     # Close the log and copy it to rawdata
