@@ -65,6 +65,12 @@ for (i in 1:length(coverage)) {
         rect(pos, 500, pos+1, 2e3, col='red', border=NA)
     }
     
+    if (length(temp) == 0) {
+        # TODO: How do I know the actual size of the reference sequence?
+        # TODO: Why does the reference position start at 1?
+        temp = seq(max(df$refseq.aa.pos))
+    }
+    
     # draw trend lines for each quality score cutoff
     cutoffs <- sort(as.integer(levels(as.factor(df$q.cutoff))))
     for (j in 1:length(cutoffs)) {
@@ -76,7 +82,6 @@ for (i in 1:length(coverage)) {
                 lwd=2
         )
         # determine minimum coverage at key positions
-        # TODO: Add on-score and off-score
         key.coverage <- df2$coverage[is.element(df2$refseq.aa.pos, temp)]
         if (length(key.coverage) > 0) {
             min.coverage <- min(key.coverage)
@@ -104,14 +109,15 @@ for (i in 1:length(coverage)) {
                             temp[which.min(key.coverage)],
                             off.score,
                             on.score))
+            
+            # draw minimum coverage line
+            abline(h = min.coverage, lty=2)
         } else {
             # TODO: Is this useful? Should we only output entries with data?
-            output <- rbind(output, c(sample, region, q.cut, NA, NA, NA, NA))
+            output <- rbind(output, c(sample, region, q.cut, NA, NA, 0, 1))
         }
     }
     
-    # draw minimum coverage line
-    abline(h = min.coverage, lty=2)
     axis(1)
     axis(2, at=c(1E1, 1E2, 1E3, 1E4, 1E5), labels=c('10', '100', '1000', '10,000', '100,000'), las=2)
     box()
