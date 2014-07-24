@@ -8,9 +8,6 @@
 # Other dependency: key_positions.csv
 # Working files are created in the current directory.
 
-# parameters
-min.coverage <- 1000
-
 
 syntax.error = "Correct syntax: ./coverage_plot.R <input CSV> <output maps tar> <output scores CSV>"
 args <- commandArgs(TRUE)
@@ -70,6 +67,14 @@ for (i in 1:length(coverage)) {
         # TODO: Why does the reference position start at 1?
         temp = seq(max(df$refseq.aa.pos))
     }
+    if (substring(region, 1, 4) == 'HLA-') {
+        good.coverage <- 100
+        coverage.levels <- c(-Inf, 0, 10, good.coverage, Inf)
+    }
+    else {
+        good.coverage <- 1000
+        coverage.levels <- c(-Inf, 0, 100, good.coverage, Inf)
+    }
     
     # draw trend lines for each quality score cutoff
     cutoffs <- sort(as.integer(levels(as.factor(df$q.cutoff))))
@@ -81,6 +86,7 @@ for (i in 1:length(coverage)) {
                 col=rainbow(length(cutoffs), v=0.8)[j],
                 lwd=2
         )
+        
         # determine minimum coverage at key positions
         key.coverage <- df2$coverage[is.element(df2$refseq.aa.pos, temp)]
         if (length(key.coverage) > 0) {
@@ -89,18 +95,10 @@ for (i in 1:length(coverage)) {
                     min.coverage,
                     c(-Inf, 0, 10, 100, Inf),
                     labels=c(0, -1, -2, -3)))
-            if (substring(region, 1, 4) == 'HLA-') {
-                on.score <- as.character(cut(
-                        min.coverage,
-                        c(-Inf, 0, 10, 100, Inf),
-                        labels=c(1, 2, 3, 4)))
-            }
-            else {
-                on.score <- as.character(cut(
-                        min.coverage,
-                        c(-Inf, 0, 100, 1000, Inf),
-                        labels=c(1, 2, 3, 4)))
-            }
+            on.score <- as.character(cut(
+                    min.coverage,
+                    coverage.levels,
+                    labels=c(1, 2, 3, 4)))
             output <- rbind(output, c(
                             sample, 
                             region, 
@@ -109,14 +107,14 @@ for (i in 1:length(coverage)) {
                             temp[which.min(key.coverage)],
                             off.score,
                             on.score))
-            
-            # draw minimum coverage line
-            abline(h = min.coverage, lty=2)
         } else {
             # TODO: Is this useful? Should we only output entries with data?
             output <- rbind(output, c(sample, region, q.cut, NA, NA, 0, 1))
         }
     }
+    
+    # draw required coverage line
+    abline(h = good.coverage, lty=2)
     
     axis(1)
     axis(2, at=c(1E1, 1E2, 1E3, 1E4, 1E5), labels=c('10', '100', '1000', '10,000', '100,000'), las=2)
