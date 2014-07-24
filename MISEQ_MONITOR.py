@@ -161,38 +161,43 @@ while True:
         mark_run_as_disabled(root, "MISEQ_PIPELINE.py failed: '{}'".format(e))
 
     if production:
-        # Determine output paths
-        result_path = curr_run.replace(NEEDS_PROCESSING, 'Results')
-        result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
-        log_path = '{}/logs'.format(result_path_final)
+        try:
+            # Determine output paths
+            result_path = curr_run.replace(NEEDS_PROCESSING, 'Results')
+            result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
+            log_path = '{}/logs'.format(result_path_final)
+    
+            # Create sub-folders if needed
+            for path in [result_path, result_path_final, log_path]:
+                if not os.path.exists(path): os.mkdir(path)
+    
+            # Post files to appropriate sub-folders
+            logger.info("Posting results to {}".format(result_path_final))
+            if mode == 'Amplicon':
+                v3_path = '{}/v3_tropism'.format(result_path_final)
+                if not os.path.exists(v3_path): os.mkdir(v3_path)
+                post_files(glob(home + run_name + '/*.v3prot'), v3_path)
+    
+            nuc_path = result_path_final + '/nuc'
+            if not os.path.exists(nuc_path): os.mkdir(nuc_path)
+            post_files(glob(home + run_name + '/*.nuc'), nuc_path)
+    
+            post_files(glob(home + run_name + '/*.log'), log_path)
+            post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
+            tar_path = home + run_name + '/coverage_maps.tar'
+            if os.path.isfile(tar_path):
+                with tarfile.open(tar_path) as tar:
+                    tar.extractall(result_path_final)
+            
+            update_oracle.process_folder(result_path_final, logger)
+            
+            # Close the log and copy it to rawdata
+            logger.info("===== %s file transfer completed =====", run_name)
+        except:
+            logger.error('Failed to post pipeline results for %r.', 
+                         run_name, 
+                         exc_info=True)
 
-        # Create sub-folders if needed
-        for path in [result_path, result_path_final, log_path]:
-            if not os.path.exists(path): os.mkdir(path)
-
-        # Post files to appropriate sub-folders
-        logger.info("Posting results to {}".format(result_path_final))
-        if mode == 'Amplicon':
-            v3_path = '{}/v3_tropism'.format(result_path_final)
-            if not os.path.exists(v3_path): os.mkdir(v3_path)
-            post_files(glob(home + run_name + '/*.v3prot'), v3_path)
-
-        nuc_path = result_path_final + '/nuc'
-        if not os.path.exists(nuc_path): os.mkdir(nuc_path)
-        post_files(glob(home + run_name + '/*.nuc'), nuc_path)
-
-        post_files(glob(home + run_name + '/*.log'), log_path)
-        post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
-        tar_path = home + run_name + '/coverage_maps.tar'
-        if os.path.isfile(tar_path):
-            with tarfile.open(tar_path) as tar:
-                tar.extractall(result_path_final)
-        
-        update_oracle.process_folder(result_path_final, logger)
-
-
-    # Close the log and copy it to rawdata
-    logger.info("===== {} file transfer completed =====".format(run_name))
     logging.shutdown()
 
     if production:
