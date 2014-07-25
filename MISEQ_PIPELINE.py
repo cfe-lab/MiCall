@@ -111,7 +111,8 @@ for sample_info in fastq_samples:
     single_thread_factory.queue_job(Job(script='sam2csf.py',
                                         helpers=('settings.py', ),
                                         args=(sample_info.output_root + '.prelim.sam',
-                                              sample_info.output_root + '.csf.csv'),
+                                              sample_info.output_root + '.csf.csv',
+                                              sample_info.output_root + '.failed.csv'),
                                         stdout=log_path,
                                         stderr=log_path))
 single_thread_factory.wait()

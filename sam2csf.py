@@ -25,6 +25,7 @@ from settings import max_prop_N, read_mapping_cutoff, sam2csf_q_cutoffs
 parser = argparse.ArgumentParser('Conversion of SAM data into aligned format.')
 parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
 parser.add_argument('output_csv', help='<output> CSV containing cleaned and merged reads')
+parser.add_argument('failed_csv', help='<output> CSV containing reads that failed to merge')
 args = parser.parse_args()
 
 
@@ -129,6 +130,7 @@ def main():
 
     handle = open(args.sam_csv, 'rU')
     outfile = open(args.output_csv, 'w')
+    failfile = open(args.failed_csv, 'w')
 
     for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
         aligned = dict([(qcut, {}) for qcut in sam2csf_q_cutoffs])
@@ -158,6 +160,7 @@ def main():
                 prop_N = mseq.count('N') / float(len(mseq.strip('-')))
                 if prop_N > max_prop_N:
                     # merged read is too messy
+                    failfile.write(','.join(map(str, [qname, qcut, seq1, qual1, seq2, qual2, prop_N, mseq])))
                     continue
 
                 if mseq in aligned[qcut]:
@@ -176,6 +179,7 @@ def main():
 
     handle.close()
     outfile.close()
+    failfile.close()
 
 if __name__ == '__main__':
     main()
