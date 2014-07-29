@@ -70,6 +70,7 @@ for sample_info in fastq_samples:
     log_path = "{}.mapping.log".format(sample_info.fastq1)
     mapping_factory.queue_job(Job(script='prelim_map.py',
                                   helpers=('settings.py',
+                                           'miseq_logging.py',
                                            mapping_ref_path + '.fasta'),
                                   args=(sample_info.fastq1,
                                         sample_info.fastq2,
@@ -84,6 +85,7 @@ for sample_info in fastq_samples:
     log_path = "{}.mapping.log".format(sample_info.fastq1)
     mapping_factory.queue_job(Job(script='remap.py',
                                   helpers=('settings.py',
+                                           'miseq_logging.py',
                                            mapping_ref_path + '.fasta'),
                                   args=(sample_info.fastq1, 
                                         sample_info.fastq2,
@@ -147,7 +149,8 @@ if mode == 'Amplicon':
 for sample_info in fastq_samples:
     log_path = "{}.csf2counts.log".format(sample_info.fastq1)
     single_thread_factory.queue_job(Job(script='csf2counts.py',
-                                        helpers=(final_alignment_ref_path, ),
+                                        helpers=(final_alignment_ref_path,
+                                                 'miseq_logging.py'),
                                         args=(sample_info.output_root + '.aligned.csv',
                                               sample_info.output_root + '.remap_conseq.csv',
                                               sample_info.output_root + '.nuc.csv',
