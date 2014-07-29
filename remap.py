@@ -67,7 +67,9 @@ def main():
 
     # generate initial *.faidx file
     is_ref_found = False
-    possible_refs = ('cfe.fasta', '../reference_sequences/cfe.fasta')
+    possible_refs = glob('*.fasta')
+    if not possible_refs:
+        possible_refs = [settings.mapping_ref_path]
     for ref in possible_refs:
         if not os.path.isfile(ref):
             continue
@@ -76,7 +78,7 @@ def main():
         break
     if not is_ref_found:
         raise RuntimeError('No reference sequences found in {!r}'.format(
-            possible_refs))
+            ['*.fasta', settings.mapping_ref_path]))
 
     # get the raw read count
     raw_count = count_file_lines(args.fastq1) / 2  # 4 lines per record in FASTQ, paired
