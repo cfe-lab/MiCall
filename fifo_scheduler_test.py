@@ -7,6 +7,7 @@ import unittest
 from fifo_scheduler import Factory, Job, Worker
 from testfixtures.logcapture import LogCapture
 import stat
+from shutil import rmtree
 
 def purge_files(*filenames):
     for filename in filenames:
@@ -43,12 +44,15 @@ class WorkerTest(unittest.TestCase):
                  HELPER_FILE,
                  SCRIPT_FILE,
                  'working.txt']
+    ALTERNATE_WORKING_PATH = 'alternate'
      
     def setUp(self):
         purge_files(*self.ALL_FILES)
+        os.mkdir(self.ALTERNATE_WORKING_PATH)
          
     def tearDown(self):        
         purge_files(*self.ALL_FILES)
+        rmtree(self.ALTERNATE_WORKING_PATH)
     
     def assertFileContents(self, filename, expectedContents):
         with open(filename, "r") as f:
@@ -234,6 +238,91 @@ print helper.greet('Bob')
                            stdout=self.OUT_FILE))
         
         self.assertFileContents(self.OUT_FILE, expected_output)
+        
+    def test_working_path_default(self):
+        expected_path = os.path.join(os.getcwd(), Worker.DEFAULT_WORKING_PATH)
+        self.prepareFileContents(
+            self.SCRIPT_FILE,
+            """\
+#!/usr/bin/env python
+
+import os
+
+print os.getcwd()
+""",
+            mode=stat.S_IRWXU)
+        job = Job(script=self.SCRIPT_FILE,
+                  stdout=self.OUT_FILE)
+
+        worker = Worker()
+        worker.run_job(job)
+        
+        with open(self.OUT_FILE, 'rU') as f:
+            actual_path = f.read()
+        actual_parent = os.path.dirname(actual_path)
+        
+        self.assertEquals(actual_parent, expected_path)
+        
+    def test_working_path_alternate(self):
+        expected_path = os.path.join(os.getcwd(), self.ALTERNATE_WORKING_PATH)
+        self.prepareFileContents(
+            self.SCRIPT_FILE,
+            """\
+#!/usr/bin/env python
+
+import os
+
+print os.getcwd()
+""",
+            mode=stat.S_IRWXU)
+        job = Job(script=self.SCRIPT_FILE,
+                  stdout=self.OUT_FILE)
+
+        worker = Worker(working_path=self.ALTERNATE_WORKING_PATH)
+        worker.run_job(job)
+        
+        with open(self.OUT_FILE, 'rU') as f:
+            actual_path = f.read()
+        actual_parent = os.path.dirname(actual_path)
+        
+        self.assertEquals(actual_parent, expected_path)
+        
+    def test_temp_folder_deleted(self):
+        self.prepareFileContents(
+            self.SCRIPT_FILE,
+            """\
+#!/usr/bin/env python
+
+pass
+""",
+            mode=stat.S_IRWXU)
+        job = Job(script=self.SCRIPT_FILE)
+
+        worker = Worker(working_path=self.ALTERNATE_WORKING_PATH)
+        worker.run_job(job)
+        
+        remaining_files = os.listdir(self.ALTERNATE_WORKING_PATH)
+        
+        self.assertEquals(remaining_files, [])
+        
+    def test_temp_folder_not_deleted(self):
+        self.prepareFileContents(
+            self.SCRIPT_FILE,
+            """\
+#!/usr/bin/env python
+
+pass
+""",
+            mode=stat.S_IRWXU)
+        job = Job(script=self.SCRIPT_FILE)
+
+        worker = Worker(working_path=self.ALTERNATE_WORKING_PATH,
+                        are_temp_folders_deleted=False)
+        worker.run_job(job)
+        
+        remaining_files = os.listdir(self.ALTERNATE_WORKING_PATH)
+        
+        self.assertEqual(len(remaining_files), 1)
 
     def test_script_args(self):
         self.prepareFileContents(

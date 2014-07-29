@@ -76,6 +76,9 @@ def sample_sheet_parser (handle):
                 
             clean_filename = re.sub('[_.;]', '-', filename)
             clean_filename += '_S%d' % sample_number # should correspond to FASTQ filename
+            
+            sample_id = tokens[header.index('Sample_ID')]
+            tags = sample_id.split('_')[3]
 
             # July 9, 2014: also want to keep track of the *original*
             # Sample_Name as it appeared in the sample sheet.
@@ -88,7 +91,8 @@ def sample_sheet_parser (handle):
                     "disable_contamination_check": False,
                     "research": True,
                     "chemistry": run_info["Assay"],
-                    "orig_sample_name": filename
+                    "orig_sample_name": filename,
+                    "tags": tags
                 }})
             run_info['sample_sheet_version'] = sample_sheet_version
 

@@ -49,9 +49,13 @@ class Job:
         return "Job(%r)" % self.shell_command
         
 class Worker:
-    WORKING_PATH = 'working'
+    DEFAULT_WORKING_PATH = 'working'
     
-    def __init__(self, resource="", launch_callback=None):
+    def __init__(self,
+                 resource="",
+                 launch_callback=None,
+                 working_path=None,
+                 are_temp_folders_deleted=True):
         """ Create a worker object that can launch one process at a time.
         
         @param resource: A special command that will prefix each process
@@ -59,13 +63,23 @@ class Worker:
         another host.
         @param launch_callback: a method that will be called with the full
         command just before it is launched.
+        @param working_path: A path where temporary folders can be created for
+        each script that gets launched. Pass None to use the default working
+        path.
+        @param are_temp_folders_deleted: True if the worker should delete the
+        temporary folder it creates for each script.
         """
         
         self.resource_allocated = resource
         self.launch_callback = launch_callback
+        self.are_temp_folders_deleted = are_temp_folders_deleted
+        if working_path is None:
+            self.working_path = self.DEFAULT_WORKING_PATH
+        else:
+            self.working_path = working_path
 
-        if not os.path.isdir(self.WORKING_PATH):
-            os.mkdir(self.WORKING_PATH)
+        if not os.path.isdir(self.working_path):
+            os.mkdir(self.working_path)
 
     def run_job(self, job):
         """Run a job's command, and open files to receive stdout/error.
@@ -82,7 +96,7 @@ class Worker:
             if job.shell_command is not None:
                 shell_command = job.shell_command
             else:
-                tempdir = tempfile.mkdtemp(dir=self.WORKING_PATH)
+                tempdir = tempfile.mkdtemp(dir=self.working_path)
                 shutil.copy2(job.script, tempdir)
                 shell_command = os.path.join('.', os.path.basename(job.script))
                 for helper in job.helpers:
@@ -119,12 +133,16 @@ class Worker:
                 stdout.close()
             if stderr is not None:
                 stderr.close()
-            if tempdir is not None:
+            if tempdir is not None and self.are_temp_folders_deleted:
                 shutil.rmtree(tempdir)
         
 class Factory:
     """Factories have a queue of jobs and workers to work on them"""
-    def __init__(self, assigned_resources=[], launch_callback=None):
+    def __init__(self,
+                 assigned_resources=[],
+                 launch_callback=None,
+                 working_path=None,
+                 are_temp_folders_deleted=True):
         """ Create a factory with the requested resources.
         
         @param assigned_resources: a list of (resource, worker_count) tuples.
@@ -132,6 +150,11 @@ class Factory:
         are no special requirements for launching jobs.
         @param launch_callback: A callback method that is called with a
         (process, command) pair every time a job is started.
+        @param working_path: A path where temporary folders can be created for
+        each script that gets launched. Pass None to use the default working
+        path from the Worker class.
+        @param are_temp_folders_deleted: True if each worker should delete the
+        temporary folder it creates for each script.
         """
         self.workers = []
         self.workerQueue = Queue()
@@ -142,7 +165,9 @@ class Factory:
             for _ in range(number):
                 worker = Worker(
                     resource, 
-                    launch_callback=launch_callback)
+                    launch_callback=launch_callback,
+                    working_path=working_path,
+                    are_temp_folders_deleted=are_temp_folders_deleted)
                 self.workers.append(worker)
                 self.workerQueue.put(worker)
         self.pool = ThreadPool(len(self.workers))

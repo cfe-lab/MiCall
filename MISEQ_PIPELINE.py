@@ -6,25 +6,26 @@ import logging, os, sys
 from collate import collate_frequencies, collate_conseqs, collate_counts
 import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
-from settings import file_extensions_to_delete, file_extensions_to_keep, \
-    final_alignment_ref_path, final_nuc_align_ref_path, \
-    mapping_factory_resources, mapping_ref_path, \
-    path_to_fifo_scheduler, production, single_thread_resources
+from settings import final_alignment_ref_path, final_nuc_align_ref_path, \
+    are_temp_folders_deleted, mapping_factory_resources, mapping_ref_path, \
+    single_thread_resources
     
-sys.path.append(path_to_fifo_scheduler)
 from fifo_scheduler import Factory, Job
 
 def launch_callback(command):
     logger.info("Launching {!r}".format(command))
 
+root = sys.argv[1]			# MONITOR parameter: Location of fastq files to process
+
 # Mapping factory suitable for multi-thread jobs (4 processes * 8 threads / job = 32 cores allocated)
 mapping_factory = Factory(mapping_factory_resources,
-                          launch_callback=launch_callback)
+                          launch_callback=launch_callback,
+                          working_path=root,
+                          are_temp_folders_deleted=are_temp_folders_deleted)
 single_thread_factory = Factory(single_thread_resources,
-                                launch_callback=launch_callback)
-#TODO: Do we need to set the working directory for the factories?
-
-root = sys.argv[1]			# MONITOR parameter: Location of fastq files to process
+                                launch_callback=launch_callback,
+                                working_path=root,
+                                are_temp_folders_deleted=are_temp_folders_deleted)
 
 # Logging parameters
 log_file = "{}/pipeline_output.log".format(root)
@@ -72,7 +73,7 @@ for sample_info in fastq_samples:
                                            mapping_ref_path + '.fasta'),
                                   args=(sample_info.fastq1,
                                         sample_info.fastq2,
-                                        sample_info.output_root + '.prelim.sam'),
+                                        sample_info.output_root + '.prelim.csv'),
                                   stdout=log_path,
                                   stderr=log_path))
 
@@ -86,10 +87,10 @@ for sample_info in fastq_samples:
                                            mapping_ref_path + '.fasta'),
                                   args=(sample_info.fastq1, 
                                         sample_info.fastq2,
-                                        sample_info.output_root + '.prelim.sam',
-                                        sample_info.output_root + '.output.csv',
-                                        sample_info.output_root + '.counts',
-                                        sample_info.output_root + '.conseq.csv'),
+                                        sample_info.output_root + '.prelim.csv',
+                                        sample_info.output_root + '.remap.csv',
+                                        sample_info.output_root + '.remap_counts.csv',
+                                        sample_info.output_root + '.remap_conseq.csv'),
                                   stdout=log_path,
                                   stderr=log_path))
 
@@ -110,8 +111,8 @@ for sample_info in fastq_samples:
     log_path = "{}.sam2csf.log".format(sample_info.fastq1)
     single_thread_factory.queue_job(Job(script='sam2csf.py',
                                         helpers=('settings.py', ),
-                                        args=(sample_info.output_root + '.prelim.sam',
-                                              sample_info.output_root + '.csf.csv',
+                                        args=(sample_info.output_root + '.remap.csv',
+                                              sample_info.output_root + '.aligned.csv',
                                               sample_info.output_root + '.failed.csv'),
                                         stdout=log_path,
                                         stderr=log_path))
@@ -131,7 +132,7 @@ if mode == 'Amplicon':
                                                      'alignment.so',
                                                      'g2p.matrix',
                                                      'g2p_fpr.txt'),
-                                            args=(sample_info.output_root + '.csf.csv',
+                                            args=(sample_info.output_root + '.aligned.csv',
                                                   sample_info.output_root + '.g2p.csv'),
                                             stdout=log_path,
                                             stderr=log_path))
@@ -147,12 +148,12 @@ for sample_info in fastq_samples:
     log_path = "{}.csf2counts.log".format(sample_info.fastq1)
     single_thread_factory.queue_job(Job(script='csf2counts.py',
                                         helpers=(final_alignment_ref_path, ),
-                                        args=(sample_info.output_root + '.csf.csv',
-                                              sample_info.output_root + '.conseq.csv',
-                                              sample_info.output_root + '.nuc.freqs',
-                                              sample_info.output_root + '.amino.freqs',
-                                              sample_info.output_root + '.output_indels.csv',
-                                              sample_info.output_root + '.conseq'),
+                                        args=(sample_info.output_root + '.aligned.csv',
+                                              sample_info.output_root + '.remap_conseq.csv',
+                                              sample_info.output_root + '.nuc.csv',
+                                              sample_info.output_root + '.amino.csv',
+                                              sample_info.output_root + '.indels.csv',
+                                              sample_info.output_root + '.conseq.csv'),
                                         stdout=log_path,
                                         stderr=log_path))
     
@@ -161,8 +162,8 @@ for sample_info in fastq_samples:
     log_path = "{}.csf2nuc.log".format(sample_info.fastq1)
     single_thread_factory.queue_job(Job(script='csf2nuc.py',
                                         helpers=(final_nuc_align_ref_path, ),
-                                        args=(sample_info.output_root + '.csf.csv',
-                                              sample_info.output_root + '.nuc2.csv'), #TODO: extension?
+                                        args=(sample_info.output_root + '.aligned.csv',
+                                              sample_info.output_root + '.nuc_variants.csv'),
                                         stdout=log_path,
                                         stderr=log_path))
 
@@ -180,8 +181,6 @@ collate_frequencies(root, collated_amino_freqs_path, "amino")
 collated_nuc_freqs_path = "{}/nucleotide_frequencies.csv".format(root)
 logger.info("collate_frequencies({},{},{})".format(root, collated_nuc_freqs_path, "nuc"))
 collate_frequencies(root, collated_nuc_freqs_path, "nuc")
-
-# TODO: collate output from csf2nuc.py?
 
 collated_conseq_path = "{}/collated_conseqs.csv".format(root)
 logger.info("collate_conseqs({},{})".format(root, collated_conseq_path))
@@ -205,7 +204,7 @@ single_thread_factory.wait()
 
 ###############################
 ### (optional) filter for cross-contamination
-#TODO: Should we put this back in or remove it completely?
+#TODO: Once the rest of the pipeline stabilizes, try filtering again
 # if filter_cross_contaminants:
 #     logger.info('Filtering for cross-contamination')
 # 
@@ -259,19 +258,5 @@ single_thread_factory.wait()
 #     command = ["python2.7","generate_coverage_plots.py",collated_clean_amino_freqs_path,"{}/coverage_maps".format(root)]
 #     logger.info(" ".join(command))
 #     subprocess.call(command)
-
-
-###########################
-# Delete local files on the cluster that shouldn't be stored
-if production:
-    logger.info("Deleting intermediary files")
-    # TODO: a bunch of these files are created in the temporary folders that now 
-    # get deleted. Do we still need this?
-    for extension in file_extensions_to_delete:
-        for f in glob("{}/*.{}".format(root, extension)):
-            if any([f.endswith(ext2) for ext2 in file_extensions_to_keep]):
-                continue
-            logging.debug("os.remove({})".format(f))
-            os.remove(f)
 
 logging.shutdown()

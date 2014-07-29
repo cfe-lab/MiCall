@@ -3,7 +3,7 @@ settings_default.py
 To make pipeline portable, allow user to specify
 """
 
-pipeline_version = '6.2'
+pipeline_version = '6.3'
 
 production = False  # set this to True to push results to NAS
 filter_cross_contaminants = False
@@ -17,7 +17,7 @@ home = '/data/miseq/'
 
 
 ## FIFO settings
-path_to_fifo_scheduler = '/usr/local/share/fifo_scheduler'
+are_temp_folders_deleted = True # Should FIFO scheduler clean up working folders?
 mapping_factory_resources = [("bpsh -1", 6), ("bpsh 0", 6), ("bpsh 1", 8), ("bpsh 2", 8)]
 
 # This factory is allocated with resources with single threaded applications in mind
@@ -60,12 +60,7 @@ conseq_mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 final_alignment_ref_path = mapping_ref_path.replace('/cfe', '/csf2counts_amino_refseqs.csv')
 final_nuc_align_ref_path = mapping_ref_path.replace('/cfe', '/csf_to_fasta_by_nucref.csv')
 
-# Intermediary files to delete when done processing this run (production only)
-file_extensions_to_delete = ['bam', 'bt2', 'bt2_metrics', 'pileup', 'sam',
-                             'filtering.sam', 'csf.fa']
-file_extensions_to_keep = ['prelim.sam']
-
 # Default database user and password.
 oracle_uploader = "FILLINUSERNAME"
 oracle_uploader_pass = "****"
-oracle_db = "FILLINDBNAME"
+oracle_db = "//192.168.X.Y:port/DBname"
