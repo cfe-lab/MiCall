@@ -149,8 +149,10 @@ if mode == 'Amplicon':
 for sample_info in fastq_samples:
     log_path = "{}.csf2counts.log".format(sample_info.fastq1)
     single_thread_factory.queue_job(Job(script='csf2counts.py',
-                                        helpers=(final_alignment_ref_path,
-                                                 'miseq_logging.py'),
+                                        helpers=('settings.py',
+                                                 final_alignment_ref_path,
+                                                 'miseq_logging.py',
+                                                 'hyphyAlign.py'),
                                         args=(sample_info.output_root + '.aligned.csv',
                                               sample_info.output_root + '.remap_conseq.csv',
                                               sample_info.output_root + '.nuc.csv',
@@ -164,7 +166,8 @@ for sample_info in fastq_samples:
 for sample_info in fastq_samples:
     log_path = "{}.csf2nuc.log".format(sample_info.fastq1)
     single_thread_factory.queue_job(Job(script='csf2nuc.py',
-                                        helpers=(final_nuc_align_ref_path, ),
+                                        helpers=(final_nuc_align_ref_path,
+                                                 'hyphyAlign.py'),
                                         args=(sample_info.output_root + '.aligned.csv',
                                               sample_info.output_root + '.nuc_variants.csv'),
                                         stdout=log_path,
