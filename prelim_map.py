@@ -12,6 +12,7 @@ Dependencies: settings.py (derived from settings_default.py)
 """
 
 import argparse
+from glob import glob
 import logging
 import os
 import subprocess
