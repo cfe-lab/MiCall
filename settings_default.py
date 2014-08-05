@@ -16,12 +16,12 @@ base_path += 'production/' if production else 'development/'
 home = '/data/miseq/'
 
 
-## FIFO settings
-are_temp_folders_deleted = True # Should FIFO scheduler clean up working folders?
-mapping_factory_resources = [("bpsh -1", 6), ("bpsh 0", 6), ("bpsh 1", 8), ("bpsh 2", 8)]
+are_temp_folders_deleted = True # Should FIFO worker clean up working folders?
 
-# This factory is allocated with resources with single threaded applications in mind
-single_thread_resources = [("bpsh -1", 24), ("bpsh 0", 24), ("bpsh 1", 32), ("bpsh 2", 32)]
+# Scheduling processes: these should be a multiple of the total number of slots
+# in your hostfile.
+mapping_processes = 29
+counting_processes = 145
 
 
 ## MISEQ_MONITOR settings

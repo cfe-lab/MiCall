@@ -184,7 +184,7 @@ R
 
 MPI
 ---
-1. Install Open MPI
+1. Install Open MPI.
 
     sudo apt-get install openmpi-bin
     

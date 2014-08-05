@@ -5,8 +5,8 @@ def collate_counts(run_path,output_path):
     import glob,os
 
     with open(output_path, "w") as collated_file:
-        for count_file in [f for f in glob.glob("{}/*.counts".format(run_path))]:
-            prefix = (os.path.basename(count_file)).rstrip(".counts")
+        for count_file in [f for f in glob.glob("{}/*.remap_counts.csv".format(run_path))]:
+            prefix = (os.path.basename(count_file))[:-len('.remap_counts.csv')]
             with open(count_file,"r") as f_in:
                 for _, line in enumerate(f_in.readlines()):
                     collated_file.write("{},{}".format(prefix,line))

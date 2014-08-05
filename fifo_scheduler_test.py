@@ -80,6 +80,36 @@ class WorkerTest(unittest.TestCase):
         worker = Worker()
           
         worker.run_job(job)        
+
+    def test_stderr(self):
+        command = """python -c "import sys; sys.exit('Goodbye, World!')" """
+        job = Job(command, 
+                  stdout=self.OUT_FILE, 
+                  stderr=self.ERROR_FILE)
+        worker = Worker()
+        
+        with self.assertRaisesRegexp(
+                CalledProcessError,
+                'Command.*sys\.exit.* returned non-zero exit status 1'):
+            
+            worker.run_job(job)
+        
+        self.assertFileContents(self.ERROR_FILE, "Goodbye, World!\n")
+
+    def test_stderr_combined_with_stdout(self):
+        command = """python -c "import sys; print('Hello, World!'); sys.exit('Goodbye, World!')" """
+        job = Job(command, 
+                  stdout=self.OUT_FILE, 
+                  stderr=self.OUT_FILE)
+        worker = Worker()
+        
+        with self.assertRaisesRegexp(
+                CalledProcessError,
+                'Command.*sys\.exit.* returned non-zero exit status 1'):
+            
+            worker.run_job(job)
+        
+        self.assertFileContents(self.OUT_FILE, "Hello, World!\nGoodbye, World!\n")
          
     def test_callback(self):
         self.actual_command = None

@@ -1,45 +1,42 @@
 #!/usr/bin/env python
 
+import argparse
 from glob import glob
-import logging, os, sys
+import logging, os
 
 from collate import collate_frequencies, collate_conseqs, collate_counts
+from fifo_scheduler import Job, Worker
 import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
 from settings import final_alignment_ref_path, final_nuc_align_ref_path, \
-    are_temp_folders_deleted, mapping_factory_resources, mapping_ref_path, \
-    single_thread_resources
+    are_temp_folders_deleted, mapping_ref_path
+from mpi4py import MPI
+
+def parseOptions(comm_world):
+    parser = argparse.ArgumentParser(
+        description='Process all the samples in a single run folder.')
     
-from fifo_scheduler import Factory, Job
-
-def launch_callback(command):
-    logger.info("Launching {!r}".format(command))
-
-root = sys.argv[1]			# MONITOR parameter: Location of fastq files to process
-
-# Mapping factory suitable for multi-thread jobs (4 processes * 8 threads / job = 32 cores allocated)
-mapping_factory = Factory(mapping_factory_resources,
-                          launch_callback=launch_callback,
-                          working_path=root,
-                          are_temp_folders_deleted=are_temp_folders_deleted)
-single_thread_factory = Factory(single_thread_resources,
-                                launch_callback=launch_callback,
-                                working_path=root,
-                                are_temp_folders_deleted=are_temp_folders_deleted)
-
-# Logging parameters
-log_file = "{}/pipeline_output.log".format(root)
-logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
-
-if len(sys.argv) == 3:
-    mode = sys.argv[2]
-    run_info = None
-else:
-    with open(root+'/SampleSheet.csv', 'rU') as sample_sheet:
-        logger.debug("sample_sheet_parser({})".format(sample_sheet))
-        run_info = sample_sheet_parser(sample_sheet)
-        mode = run_info['Description']
-
+    parser.add_argument('run_folder',
+                        help='Path to sample fastq files and SampleSheet.csv')
+    parser.add_argument('mode',
+                        help='Amplicon or Nextera, default from sample sheet',
+                        nargs=argparse.OPTIONAL)
+    parser.add_argument('--phase', '-p',
+                        help='Phase to execute: mapping, counting, plotting, or all',
+                        default='all')
+    
+    # Rank 0 process parses the arguments, complains about errors, 
+    # then broadcasts the parsed arguments (or None) to all other ranks.
+    args = None
+    try:
+        if comm_world.Get_rank() == 0:
+            args = parser.parse_args()
+    finally:
+        args = comm_world.bcast(args, root=0)
+    
+    if args is None:
+        exit(0)
+    return args
 
 class SampleInfo(object):
     def __init__(self, fastq1):
@@ -51,162 +48,211 @@ class SampleInfo(object):
         self.key = sample_name + '_' + sample_number
         self.output_root = os.path.join(dirname, self.key)
         
-fastq_samples = []
-fastq_files = glob(root + '/*_R1_001.fastq')
-for fastq in fastq_files:
-    sample_info = SampleInfo(fastq)
-
-    # verify this sample is in SampleSheet.csv
-    if run_info and not run_info['Data'].has_key(sample_info.key):
-        logger.error(
-            '{} not in SampleSheet.csv - cannot map this sample'.format(
-                sample_info.key))
-        continue
-
-    fastq_samples.append(sample_info)
-    
-# Preliminary map
-for sample_info in fastq_samples:
-    log_path = "{}.mapping.log".format(sample_info.fastq1)
-    mapping_factory.queue_job(Job(script='prelim_map.py',
-                                  helpers=('settings.py',
-                                           'miseq_logging.py',
-                                           mapping_ref_path + '.fasta'),
-                                  args=(sample_info.fastq1,
-                                        sample_info.fastq2,
-                                        sample_info.output_root + '.prelim.csv'),
-                                  stdout=log_path,
-                                  stderr=log_path))
-
-mapping_factory.wait()
-
-# Iterative re-mapping
-for sample_info in fastq_samples:
-    log_path = "{}.mapping.log".format(sample_info.fastq1)
-    mapping_factory.queue_job(Job(script='remap.py',
-                                  helpers=('settings.py',
-                                           'miseq_logging.py',
-                                           mapping_ref_path + '.fasta'),
-                                  args=(sample_info.fastq1, 
-                                        sample_info.fastq2,
-                                        sample_info.output_root + '.prelim.csv',
-                                        sample_info.output_root + '.remap.csv',
-                                        sample_info.output_root + '.remap_counts.csv',
-                                        sample_info.output_root + '.remap_conseq.csv'),
-                                  stdout=log_path,
-                                  stderr=log_path))
-
-mapping_factory.wait()
-logger.info("Collating *.mapping.log files")
-miseq_logging.collate_logs(root, "mapping.log", "mapping.log")
-
-
-########################
-### Begin sam2csf
-
-logger.info('Removing old CSF files')
-old_csf_files = glob(root+'/*.csf')
-for f in old_csf_files:
-    os.remove(f)
-
-for sample_info in fastq_samples:
-    log_path = "{}.sam2csf.log".format(sample_info.fastq1)
-    single_thread_factory.queue_job(Job(script='sam2csf.py',
-                                        helpers=('settings.py', ),
-                                        args=(sample_info.output_root + '.remap.csv',
-                                              sample_info.output_root + '.aligned.csv',
-                                              sample_info.output_root + '.failed.csv'),
-                                        stdout=log_path,
-                                        stderr=log_path))
-single_thread_factory.wait()
-logger.info("Collating *.sam2csf.*.log files")
-miseq_logging.collate_logs(root, "sam2csf.log", "sam2csf.log")
-
-###############################
-### Begin g2p (For Amplicon covering HIV-1 env only!)
-if mode == 'Amplicon':
-    # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
+def map_samples(fastq_samples, worker):
+    # Preliminary map
     for sample_info in fastq_samples:
-        log_path = "{}.g2p.log".format(sample_info.fastq1)
-        single_thread_factory.queue_job(Job(script='fasta_to_g2p.sh',
-                                            helpers=('fasta_to_g2p.rb',
-                                                     'pssm_lib.rb',
-                                                     'alignment.so',
-                                                     'g2p.matrix',
-                                                     'g2p_fpr.txt'),
+        log_path = "{}.mapping.log".format(sample_info.fastq1)
+        worker.run_job(Job(script='prelim_map.py',
+                           helpers=('settings.py',
+                                    'miseq_logging.py',
+                                    mapping_ref_path + '.fasta'),
+                           args=(sample_info.fastq1,
+                                 sample_info.fastq2,
+                                 sample_info.output_root + '.prelim.csv'),
+                           stdout=log_path,
+                           stderr=log_path))
+    
+    # Iterative re-mapping
+    for sample_info in fastq_samples:
+        log_path = "{}.mapping.log".format(sample_info.fastq1)
+        worker.run_job(Job(script='remap.py',
+                                      helpers=('settings.py',
+                                               'miseq_logging.py',
+                                               mapping_ref_path + '.fasta'),
+                                      args=(sample_info.fastq1, 
+                                            sample_info.fastq2,
+                                            sample_info.output_root + '.prelim.csv',
+                                            sample_info.output_root + '.remap.csv',
+                                            sample_info.output_root + '.remap_counts.csv',
+                                            sample_info.output_root + '.remap_conseq.csv'),
+                                      stdout=log_path,
+                                      stderr=log_path))
+
+def count_samples(fastq_samples, worker, args):
+    ########################
+    ### Begin sam2csf
+    
+    
+    for sample_info in fastq_samples:
+        log_path = "{}.sam2csf.log".format(sample_info.fastq1)
+        worker.run_job(Job(script='sam2csf.py',
+                                            helpers=('settings.py', ),
+                                            args=(sample_info.output_root + '.remap.csv',
+                                                  sample_info.output_root + '.aligned.csv',
+                                                  sample_info.output_root + '.failed.csv'),
+                                            stdout=log_path,
+                                            stderr=log_path))
+    
+    ###############################
+    ### Begin g2p (For Amplicon covering HIV-1 env only!)
+    if args.mode == 'Amplicon':
+        # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
+        for sample_info in fastq_samples:
+            log_path = "{}.g2p.log".format(sample_info.fastq1)
+            worker.run_job(Job(script='fasta_to_g2p.sh',
+                                                helpers=('fasta_to_g2p.rb',
+                                                         'pssm_lib.rb',
+                                                         'alignment.so',
+                                                         'g2p.matrix',
+                                                         'g2p_fpr.txt'),
+                                                args=(sample_info.output_root + '.aligned.csv',
+                                                      sample_info.output_root + '.g2p.csv'),
+                                                stdout=log_path,
+                                                stderr=log_path))
+    
+    
+    #######################
+    ### Begin csf2counts
+    
+    for sample_info in fastq_samples:
+        log_path = "{}.csf2counts.log".format(sample_info.fastq1)
+        worker.run_job(Job(script='csf2counts.py',
+                                            helpers=('settings.py',
+                                                     final_alignment_ref_path,
+                                                     'miseq_logging.py',
+                                                     'hyphyAlign.py'),
                                             args=(sample_info.output_root + '.aligned.csv',
-                                                  sample_info.output_root + '.g2p.csv'),
+                                                  sample_info.output_root + '.remap_conseq.csv',
+                                                  sample_info.output_root + '.nuc.csv',
+                                                  sample_info.output_root + '.amino.csv',
+                                                  sample_info.output_root + '.indels.csv',
+                                                  sample_info.output_root + '.conseq.csv'),
+                                            stdout=log_path,
+                                            stderr=log_path))
+        
+    # No dependency between csf2counts and csf2nuc, so no need to wait for factory
+    for sample_info in fastq_samples:
+        log_path = "{}.csf2nuc.log".format(sample_info.fastq1)
+        worker.run_job(Job(script='csf2nuc.py',
+                                            helpers=(final_nuc_align_ref_path,
+                                                     'hyphyAlign.py'),
+                                            args=(sample_info.output_root + '.aligned.csv',
+                                                  sample_info.output_root + '.nuc_variants.csv'),
                                             stdout=log_path,
                                             stderr=log_path))
 
-    single_thread_factory.wait()
-    logger.info("Collating *.g2p.log files")
-    miseq_logging.collate_logs(root, "g2p.log", "g2p.log")
-
-#######################
-### Begin csf2counts
-
-for sample_info in fastq_samples:
-    log_path = "{}.csf2counts.log".format(sample_info.fastq1)
-    single_thread_factory.queue_job(Job(script='csf2counts.py',
-                                        helpers=('settings.py',
-                                                 final_alignment_ref_path,
-                                                 'miseq_logging.py',
-                                                 'hyphyAlign.py'),
-                                        args=(sample_info.output_root + '.aligned.csv',
-                                              sample_info.output_root + '.remap_conseq.csv',
-                                              sample_info.output_root + '.nuc.csv',
-                                              sample_info.output_root + '.amino.csv',
-                                              sample_info.output_root + '.indels.csv',
-                                              sample_info.output_root + '.conseq.csv'),
-                                        stdout=log_path,
-                                        stderr=log_path))
+def collate_results(args, logger):
+    logger.info("Collating *.mapping.log files")
+    miseq_logging.collate_logs(args.run_folder, "mapping.log", "mapping.log")
     
-# No dependency between csf2counts and csf2nuc, so no need to wait for factory
-for sample_info in fastq_samples:
-    log_path = "{}.csf2nuc.log".format(sample_info.fastq1)
-    single_thread_factory.queue_job(Job(script='csf2nuc.py',
-                                        helpers=(final_nuc_align_ref_path,
-                                                 'hyphyAlign.py'),
-                                        args=(sample_info.output_root + '.aligned.csv',
-                                              sample_info.output_root + '.nuc_variants.csv'),
-                                        stdout=log_path,
-                                        stderr=log_path))
-
-single_thread_factory.wait()
-
-#########################
-### Collate results files
-logger.info("Collating csf2counts.log files")
-miseq_logging.collate_logs(root, "csf2counts.log", "csf2counts.log")
-
-collated_amino_freqs_path = "{}/amino_frequencies.csv".format(root)
-logger.info("collate_frequencies({},{},{})".format(root, collated_amino_freqs_path, "amino"))
-collate_frequencies(root, collated_amino_freqs_path, "amino")
-
-collated_nuc_freqs_path = "{}/nucleotide_frequencies.csv".format(root)
-logger.info("collate_frequencies({},{},{})".format(root, collated_nuc_freqs_path, "nuc"))
-collate_frequencies(root, collated_nuc_freqs_path, "nuc")
-
-collated_conseq_path = "{}/collated_conseqs.csv".format(root)
-logger.info("collate_conseqs({},{})".format(root, collated_conseq_path))
-collate_conseqs(root, collated_conseq_path)
-
-collated_counts_path = "{}/collated_counts.csv".format(root)
-logger.info("collate_counts({},{})".format(root, collated_counts_path))
-collate_counts(root, collated_counts_path)
-
-coverage_map_path = "{}/coverage_maps.tar".format(root)
-coverage_score_path = "{}/coverage_scores.csv".format(root)
+    logger.info("Collating *.sam2csf.*.log files")
+    miseq_logging.collate_logs(args.run_folder, "sam2csf.log", "sam2csf.log")
+    
+    logger.info("Collating *.g2p.log files")
+    miseq_logging.collate_logs(args.run_folder, "g2p.log", "g2p.log")
+    
+    logger.info("Collating csf2counts.log files")
+    miseq_logging.collate_logs(args.run_folder,
+                               "csf2counts.log",
+                               "csf2counts.log")
+    
+    collated_amino_freqs_path = "{}/amino_frequencies.csv".format(args.run_folder)
+    logger.info("collate_frequencies({},{},{})".format(args.run_folder,
+                                                       collated_amino_freqs_path,
+                                                       "amino"))
+    collate_frequencies(args.run_folder, collated_amino_freqs_path, "amino")
+    
+    collated_nuc_freqs_path = "{}/nucleotide_frequencies.csv".format(args.run_folder)
+    logger.info("collate_frequencies({},{},{})".format(args.run_folder,
+                                                       collated_nuc_freqs_path,
+                                                       "nuc"))
+    collate_frequencies(args.run_folder, collated_nuc_freqs_path, "nuc")
+    
+    collated_conseq_path = "{}/collated_conseqs.csv".format(args.run_folder)
+    logger.info("collate_conseqs({},{})".format(args.run_folder,
+                                                collated_conseq_path))
+    collate_conseqs(args.run_folder, collated_conseq_path)
+    
+    collated_counts_path = "{}/collated_counts.csv".format(args.run_folder)
+    logger.info("collate_counts({},{})".format(args.run_folder,
+                                               collated_counts_path))
+    collate_counts(args.run_folder, collated_counts_path)
+    
+    return collated_amino_freqs_path
 
 
-# generate coverage plots
-single_thread_factory.queue_job(Job(script='coverage_plots.R',
-                                    helpers=('key_positions.csv', ),
-                                    args=(collated_amino_freqs_path,
-                                          coverage_map_path,
-                                          coverage_score_path)))
-single_thread_factory.wait()
+def generate_coverage_plots(collated_amino_freqs_path, worker, args):
+    coverage_map_path = "{}/coverage_maps.tar".format(args.run_folder)
+    coverage_score_path = "{}/coverage_scores.csv".format(args.run_folder)
+
+    worker.run_job(Job(script='coverage_plots.R',
+                       helpers=('key_positions.csv', ),
+                       args=(collated_amino_freqs_path,
+                             coverage_map_path,
+                             coverage_score_path)))
+
+def main():
+    comm = MPI.COMM_WORLD
+    process_rank = comm.Get_rank()
+    process_count = comm.Get_size()
+    
+    args = parseOptions(comm)
+    log_file = "{}/pipeline{}.log".format(args.run_folder, process_rank)
+    logger = miseq_logging.init_logging(log_file,
+                                        file_log_level=logging.DEBUG,
+                                        console_log_level=logging.INFO)
+    logger.info('Start processing run %s, rank %d',
+                args.run_folder,
+                process_rank)
+    
+    if args.mode is not None:
+        run_info = None
+    else:
+        with open(args.run_folder+'/SampleSheet.csv', 'rU') as sample_sheet:
+            logger.debug("sample_sheet_parser({})".format(sample_sheet))
+            run_info = sample_sheet_parser(sample_sheet)
+            args.mode = run_info['Description']
+
+    fastq_samples = []
+    fastq_files = glob(args.run_folder + '/*_R1_001.fastq')
+    for i, fastq in enumerate(fastq_files):
+        if i % process_count != process_rank:
+            # skip samples that are assigned to other worker processes
+            continue
+        
+        sample_info = SampleInfo(fastq)
+    
+        # verify this sample is in SampleSheet.csv
+        if run_info and not run_info['Data'].has_key(sample_info.key):
+            logger.error(
+                '{} not in SampleSheet.csv - cannot map this sample'.format(
+                    sample_info.key))
+            continue
+    
+        fastq_samples.append(sample_info)
+    
+    def launch_callback(command):
+        logger.info("Launching {!r}".format(command))
+
+    worker = Worker(launch_callback=launch_callback,
+                    working_path=args.run_folder,
+                    are_temp_folders_deleted=are_temp_folders_deleted)
+    
+    if args.phase in ('mapping', 'all'):
+        map_samples(fastq_samples, worker)
+    
+    if args.phase in ('counting', 'all'):
+        count_samples(fastq_samples, worker, args)
+    
+    if args.phase in ('summarizing', 'all') and process_rank == 0:
+        collated_amino_freqs_path = collate_results(args, logger)
+        
+        generate_coverage_plots(collated_amino_freqs_path, worker, args)
+    
+    logger.info('Finish processing run %s, rank %d',
+                args.run_folder,
+                process_rank)
+    
 
 ###############################
 ### (optional) filter for cross-contamination
@@ -265,4 +311,5 @@ single_thread_factory.wait()
 #     logger.info(" ".join(command))
 #     subprocess.call(command)
 
-logging.shutdown()
+if __name__ == '__main__':
+    main()
