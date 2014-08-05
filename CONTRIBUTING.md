@@ -205,16 +205,22 @@ Test data
 Running the code
 ----------------
 1. Copy settings_default.py to settings.py, and open it for editing.
-2. Point `rawdata_mount` at your local RAW_DATA folder.
-3. Set `base_path` to './', and comment out the next line with the production/development extensions.
-4. Set both mapping_factory_resources and single_thread_resources to [("", 2)]
-5. If you want to reduce the combinations that run, remove all but the first 
+2. Set `base_path` to './', and comment out the next line with the
+   production/development extensions.
+3. Point `home` at your local data/miseq folder.
+4. Change `counting_processes` to match the number of processors on your
+   computer, and set `mapping_processes` to be that number divided by four.
+5. Point `rawdata_mount` at your local RAW_DATA folder.
+6. If you want to reduce the combinations that run, remove all but the first 
     value in g2p_fpr_cutoffs, v3_mincounts, conseq_mixture_cutoffs. Remove all 
-    but 10 from sam2csf_q_cutoffs.
-6. Copy or create a symbolic link for two fastq files in the working directory.
+    but 15 from sam2csf_q_cutoffs.
+7. Set the Oracle connection information.
+8. Copy hostfile_default to hostfile, and open it for editing.
+9. You probably just want to uncomment the localhost line.
+10. Copy or create a symbolic link for two fastq files in the working directory.
     The files should be a matched pair: forward and reverse. Call them 
     `read1.fastq` and `read2.fastq`.
-7. Try the launch configurations. They are saved in the `working` directory,
+11. Try the launch configurations. They are saved in the `working` directory,
     but you should see them if you open the Run menu and choose Run
     configurations.... If you want to run all steps at once, skip down to the 
     MISEQ_PIPELINE.py file, otherwise try launching each step in the following
@@ -225,7 +231,7 @@ Running the code
     * `csf2counts.py`
     * `fasta_to_g2p.rb`
     * All together: `MISEQ_PIPELINE.py`.
-8. Run the unit tests. Either run them from Eclipse, or run them from the
+12. Run the unit tests. Either run them from Eclipse, or run them from the
     command line like this:
 
         cd ~/git/MiseqPipeline

@@ -51,7 +51,7 @@ class SampleInfo(object):
 def map_samples(fastq_samples, worker):
     # Preliminary map
     for sample_info in fastq_samples:
-        log_path = "{}.mapping.log".format(sample_info.fastq1)
+        log_path = "{}.mapping.log".format(sample_info.output_root)
         worker.run_job(Job(script='prelim_map.py',
                            helpers=('settings.py',
                                     'miseq_logging.py',
@@ -64,19 +64,19 @@ def map_samples(fastq_samples, worker):
     
     # Iterative re-mapping
     for sample_info in fastq_samples:
-        log_path = "{}.mapping.log".format(sample_info.fastq1)
+        log_path = "{}.mapping.log".format(sample_info.output_root)
         worker.run_job(Job(script='remap.py',
-                                      helpers=('settings.py',
-                                               'miseq_logging.py',
-                                               mapping_ref_path + '.fasta'),
-                                      args=(sample_info.fastq1, 
-                                            sample_info.fastq2,
-                                            sample_info.output_root + '.prelim.csv',
-                                            sample_info.output_root + '.remap.csv',
-                                            sample_info.output_root + '.remap_counts.csv',
-                                            sample_info.output_root + '.remap_conseq.csv'),
-                                      stdout=log_path,
-                                      stderr=log_path))
+                           helpers=('settings.py',
+                                    'miseq_logging.py',
+                                    mapping_ref_path + '.fasta'),
+                           args=(sample_info.fastq1, 
+                                 sample_info.fastq2,
+                                 sample_info.output_root + '.prelim.csv',
+                                 sample_info.output_root + '.remap.csv',
+                                 sample_info.output_root + '.remap_counts.csv',
+                                 sample_info.output_root + '.remap_conseq.csv'),
+                           stdout=log_path,
+                           stderr=log_path))
 
 def count_samples(fastq_samples, worker, args):
     ########################
@@ -84,62 +84,61 @@ def count_samples(fastq_samples, worker, args):
     
     
     for sample_info in fastq_samples:
-        log_path = "{}.sam2csf.log".format(sample_info.fastq1)
+        log_path = "{}.sam2csf.log".format(sample_info.output_root)
         worker.run_job(Job(script='sam2csf.py',
-                                            helpers=('settings.py', ),
-                                            args=(sample_info.output_root + '.remap.csv',
-                                                  sample_info.output_root + '.aligned.csv',
-                                                  sample_info.output_root + '.failed.csv'),
-                                            stdout=log_path,
-                                            stderr=log_path))
+                           helpers=('settings.py', ),
+                           args=(sample_info.output_root + '.remap.csv',
+                                 sample_info.output_root + '.aligned.csv',
+                                 sample_info.output_root + '.failed.csv'),
+                           stdout=log_path,
+                           stderr=log_path))
     
     ###############################
     ### Begin g2p (For Amplicon covering HIV-1 env only!)
     if args.mode == 'Amplicon':
         # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
         for sample_info in fastq_samples:
-            log_path = "{}.g2p.log".format(sample_info.fastq1)
+            log_path = "{}.g2p.log".format(sample_info.output_root)
             worker.run_job(Job(script='fasta_to_g2p.sh',
-                                                helpers=('fasta_to_g2p.rb',
-                                                         'pssm_lib.rb',
-                                                         'alignment.so',
-                                                         'g2p.matrix',
-                                                         'g2p_fpr.txt'),
-                                                args=(sample_info.output_root + '.aligned.csv',
-                                                      sample_info.output_root + '.g2p.csv'),
-                                                stdout=log_path,
-                                                stderr=log_path))
+                               helpers=('fasta_to_g2p.rb',
+                                        'pssm_lib.rb',
+                                        'alignment.so',
+                                        'g2p.matrix',
+                                        'g2p_fpr.txt'),
+                               args=(sample_info.output_root + '.aligned.csv',
+                                     sample_info.output_root + '.g2p.csv'),
+                               stdout=log_path,
+                               stderr=log_path))
     
     
     #######################
     ### Begin csf2counts
     
     for sample_info in fastq_samples:
-        log_path = "{}.csf2counts.log".format(sample_info.fastq1)
+        log_path = "{}.csf2counts.log".format(sample_info.output_root)
         worker.run_job(Job(script='csf2counts.py',
-                                            helpers=('settings.py',
-                                                     final_alignment_ref_path,
-                                                     'miseq_logging.py',
-                                                     'hyphyAlign.py'),
-                                            args=(sample_info.output_root + '.aligned.csv',
-                                                  sample_info.output_root + '.remap_conseq.csv',
-                                                  sample_info.output_root + '.nuc.csv',
-                                                  sample_info.output_root + '.amino.csv',
-                                                  sample_info.output_root + '.indels.csv',
-                                                  sample_info.output_root + '.conseq.csv'),
-                                            stdout=log_path,
-                                            stderr=log_path))
+                           helpers=('settings.py',
+                                    final_alignment_ref_path,
+                                    'miseq_logging.py',
+                                    'hyphyAlign.py'),
+                           args=(sample_info.output_root + '.aligned.csv',
+                                 sample_info.output_root + '.remap_conseq.csv',
+                                 sample_info.output_root + '.nuc.csv',
+                                 sample_info.output_root + '.amino.csv',
+                                 sample_info.output_root + '.indels.csv',
+                                 sample_info.output_root + '.conseq.csv'),
+                           stdout=log_path,
+                           stderr=log_path))
         
-    # No dependency between csf2counts and csf2nuc, so no need to wait for factory
     for sample_info in fastq_samples:
-        log_path = "{}.csf2nuc.log".format(sample_info.fastq1)
+        log_path = "{}.csf2nuc.log".format(sample_info.output_root)
         worker.run_job(Job(script='csf2nuc.py',
-                                            helpers=(final_nuc_align_ref_path,
-                                                     'hyphyAlign.py'),
-                                            args=(sample_info.output_root + '.aligned.csv',
-                                                  sample_info.output_root + '.nuc_variants.csv'),
-                                            stdout=log_path,
-                                            stderr=log_path))
+                           helpers=(final_nuc_align_ref_path,
+                                    'hyphyAlign.py'),
+                           args=(sample_info.output_root + '.aligned.csv',
+                                 sample_info.output_root + '.nuc_variants.csv'),
+                           stdout=log_path,
+                           stderr=log_path))
 
 def collate_results(args, logger):
     logger.info("Collating *.mapping.log files")
@@ -155,6 +154,9 @@ def collate_results(args, logger):
     miseq_logging.collate_logs(args.run_folder,
                                "csf2counts.log",
                                "csf2counts.log")
+    
+    logger.info("Collating csf2nuc.log files")
+    miseq_logging.collate_logs(args.run_folder, "csf2nuc.log", "csf2nuc.log")
     
     collated_amino_freqs_path = "{}/amino_frequencies.csv".format(args.run_folder)
     logger.info("collate_frequencies({},{},{})".format(args.run_folder,

@@ -20,8 +20,8 @@ are_temp_folders_deleted = True # Should FIFO worker clean up working folders?
 
 # Scheduling processes: these should be a multiple of the total number of slots
 # in your hostfile.
-mapping_processes = 29
-counting_processes = 145
+mapping_processes = 38
+counting_processes = 152
 
 
 ## MISEQ_MONITOR settings
