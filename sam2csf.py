@@ -161,6 +161,7 @@ def main():
                 if prop_N > max_prop_N:
                     # merged read is too messy
                     failfile.write(','.join(map(str, [qname, qcut, seq1, qual1, seq2, qual2, prop_N, mseq])))
+                    failfile.write('\n')
                     continue
 
                 if mseq in aligned[qcut]:
