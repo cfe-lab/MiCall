@@ -155,7 +155,7 @@ while True:
     # Standard out/error concatenates to the log
     logger.info("Launching pipeline for %s%s", home, run_name)
     try:
-        subprocess.check_call(['./MISEQ_PIPELINE.py', home+run_name])
+        subprocess.check_call(['./run_processor.py', home+run_name])
         logger.info("===== {} successfully completed! =====".format(run_name))
     except Exception as e:
         mark_run_as_disabled(root, "MISEQ_PIPELINE.py failed: '{}'".format(e))

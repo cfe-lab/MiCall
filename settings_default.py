@@ -3,7 +3,7 @@ settings_default.py
 To make pipeline portable, allow user to specify
 """
 
-pipeline_version = '6.2'
+pipeline_version = '6.3'
 
 production = False  # set this to True to push results to NAS
 filter_cross_contaminants = False
@@ -16,12 +16,12 @@ base_path += 'production/' if production else 'development/'
 home = '/data/miseq/'
 
 
-## FIFO settings
-path_to_fifo_scheduler = '/usr/local/share/fifo_scheduler'
-mapping_factory_resources = [("bpsh -1", 6), ("bpsh 0", 6), ("bpsh 1", 8), ("bpsh 2", 8)]
+are_temp_folders_deleted = True # Should FIFO worker clean up working folders?
 
-# This factory is allocated with resources with single threaded applications in mind
-single_thread_resources = [("bpsh -1", 24), ("bpsh 0", 24), ("bpsh 1", 32), ("bpsh 2", 32)]
+# Scheduling processes: these should be a multiple of the total number of slots
+# in your hostfile.
+mapping_processes = 29
+counting_processes = 145
 
 
 ## MISEQ_MONITOR settings
@@ -37,7 +37,8 @@ ERROR_PROCESSING = 'errorprocessing'
 ## Mapping parameters
 
 # location of .bt2 files
-mapping_ref_path = base_path + 'reference_sequences/cfe'
+ref_path = base_path + 'reference_sequences/'
+mapping_ref_path = ref_path + 'cfe'
 
 bowtie_threads = 4              # Bowtie performance roughly scales with number of threads
 min_mapping_efficiency = 0.95   # Fraction of fastq reads mapped needed
@@ -57,15 +58,10 @@ v3_mincounts = [0, 50, 100, 1000]       # Min number of reads to contribute to %
 
 ## csf2counts parameters
 conseq_mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
-final_alignment_ref_path = mapping_ref_path.replace('/cfe', '/csf2counts_amino_refseqs.csv')
-final_nuc_align_ref_path = mapping_ref_path.replace('/cfe', '/csf_to_fasta_by_nucref.csv')
-
-# Intermediary files to delete when done processing this run (production only)
-file_extensions_to_delete = ['bam', 'bt2', 'bt2_metrics', 'pileup', 'sam',
-                             'filtering.sam', 'csf.fa']
-file_extensions_to_keep = ['prelim.sam']
+final_alignment_ref_path = ref_path + 'csf2counts_amino_refseqs.csv'
+final_nuc_align_ref_path = ref_path + 'csf_to_fasta_by_nucref.csv'
 
 # Default database user and password.
 oracle_uploader = "FILLINUSERNAME"
 oracle_uploader_pass = "****"
-oracle_db = "FILLINDBNAME"
+oracle_db = "//192.168.X.Y:port/DBname"

@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 
 """
 Shipyard-style MiSeq pipeline, step 3

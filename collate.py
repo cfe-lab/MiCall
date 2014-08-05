@@ -5,30 +5,30 @@ def collate_counts(run_path,output_path):
     import glob,os
 
     with open(output_path, "w") as collated_file:
-        for count_file in [f for f in glob.glob("{}/*.counts".format(run_path))]:
-            prefix = (os.path.basename(count_file)).rstrip(".counts")
+        for count_file in [f for f in glob.glob("{}/*.remap_counts.csv".format(run_path))]:
+            prefix = (os.path.basename(count_file))[:-len('.remap_counts.csv')]
             with open(count_file,"r") as f_in:
                 for _, line in enumerate(f_in.readlines()):
                     collated_file.write("{},{}".format(prefix,line))
 
 def collate_conseqs(run_path,output_path):
     """
-    Collate .conseq files into a single CSV summary file.
+    Collate .conseq.csv files into a single CSV summary file.
     """
     import glob,os
 
-    files = [f for f in glob.glob("{}/*.conseq".format(run_path)) if 'pileup' not in f]
+    files = glob.glob("{}/*.conseq.csv".format(run_path))
 
     with open(output_path,"w") as f_out:
         f_out.write("sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n")
 
         for path in files:
-            prefix = (os.path.basename(path)).rstrip(".conseq")
+            prefix = (os.path.basename(path)).rstrip(".conseq.csv")
             sample = prefix.split(".")[0]
             sname, snum = sample.split('_')
             with open(path,"r") as f:
                 for line in f:
-                    region, qcut, cut, conseq = line.split(',')
+                    region, qcut, cut, conseq = line.rstrip().split(',')
                     f_out.write(','.join((sname,
                                           region,
                                           qcut,
@@ -43,10 +43,10 @@ def collate_frequencies (run_path, output_path, output_type):
     import glob,os
 
     if output_type == "amino":
-        file_extension = "amino.freqs"
+        file_extension = "amino.csv"
         header = "sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*"
     elif output_type == "nuc":
-        file_extension = "nuc.freqs"
+        file_extension = "nuc.csv"
         header = "sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T"
     else:
         raise Exception("Incorrect output_type parameter")

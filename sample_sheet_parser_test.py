@@ -34,8 +34,8 @@ Chemistry,Amplicon
 [Settings]
 [Data]
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
-CFEidentifier-Sample1_Proj1,Sample1_Proj1,10-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,10-Jul-2014_testing,Research:Sample1_Proj1:TRUE Comments:Sample1_Proj1:thisiscommentone Disablecontamcheck:Sample1_Proj1:FALSE,
-CFEidentifier_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,10-Jul-2014_testing,Research:Sample2_Proj2:FALSE Comments:Sample2_Proj2:thisiscommenttwo Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
+CFE_SomeId_10-Jul-2014_N501-N701_Sample1_Proj1,Sample1_Proj1,10-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,10-Jul-2014_testing,Research:Sample1_Proj1:TRUE Comments:Sample1_Proj1:thisiscommentone Disablecontamcheck:Sample1_Proj1:FALSE,
+CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,10-Jul-2014_testing,Research:Sample2_Proj2:FALSE Comments:Sample2_Proj2:thisiscommenttwo Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 """
     clean_filenames = ["Sample1-Proj1_S1", "Sample2-Proj2_S2"]
 
@@ -80,6 +80,7 @@ CFEidentifier_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,CCCCT
                     {
                         "index1": "ACGTACGT",
                         "index2": "TGCATGCA",
+                        "tags": "N501-N701",
                         "comments": "thisiscommentone",
                         "disable_contamination_check": False,
                         "research": True,
@@ -91,6 +92,7 @@ CFEidentifier_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,CCCCT
                     {
                         "index1": "AAAAGGGG",
                         "index2": "CCCCTTTT",
+                        "tags": "N501-N702",
                         "comments": "thisiscommenttwo",
                         "disable_contamination_check": True,
                         "research": False,
@@ -113,6 +115,7 @@ CFEidentifier_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,CCCCT
                     "sample": "Sample1",
                     "project": "Proj1",
                     "filename": "Sample1-Proj1_S1",
+                    "tags": "N501-N701",
                     "index1": "ACGTACGT",
                     "index2": "TGCATGCA",
                     "sample_number": "S1",
@@ -127,6 +130,7 @@ CFEidentifier_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,CCCCT
                     "sample": "Sample2",
                     "project": "Proj2",
                     "filename": "Sample2-Proj2_S2",
+                    "tags": "N501-N702",
                     "index1": "AAAAGGGG",
                     "index2": "CCCCTTTT",
                     "sample_number": "S2",
@@ -159,8 +163,8 @@ Chemistry,Amplicon
 [Settings]
 [Data]
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
-CFEidentifier-Sample3--Proj3,Sample3--Proj3,11-Jul-2014_testing,N/A,AAAAAAAA,CCCCCCCC,11-Jul-2014_testing,Research:Sample3--Proj3--TRUE Comments:Sample3--Proj3--thisiscommentthree Disablecontamcheck:Sample3--Proj3--FALSE,
-CFEidentifier-Sample4--Proj4,Sample4--Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTTTTTTT,11-Jul-2014_testing,Research:Sample4--Proj4--FALSE Comments:Sample4--Proj4--thisiscommentfour Chemistry:Sample4--Proj4--BreakingBad Disablecontamcheck:Sample4--Proj4--TRUE,
+CFE_SomeId_11-Jul-2014_N501-N703_Sample3--Proj3,Sample3--Proj3,11-Jul-2014_testing,N/A,AAAAAAAA,CCCCCCCC,11-Jul-2014_testing,Research:Sample3--Proj3--TRUE Comments:Sample3--Proj3--thisiscommentthree Disablecontamcheck:Sample3--Proj3--FALSE,
+CFE_SomeId_11-Jul-2014_N501-N704_Sample4--Proj4,Sample4--Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTTTTTTT,11-Jul-2014_testing,Research:Sample4--Proj4--FALSE Comments:Sample4--Proj4--thisiscommentfour Chemistry:Sample4--Proj4--BreakingBad Disablecontamcheck:Sample4--Proj4--TRUE,
 """
     clean_filenames = ["Sample3--Proj3_S1", "Sample4--Proj4_S2"]
 
@@ -205,6 +209,7 @@ CFEidentifier-Sample4--Proj4,Sample4--Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTT
                     {
                         "index1": "AAAAAAAA",
                         "index2": "CCCCCCCC",
+                        "tags": "N501-N703",
                         "comments": "thisiscommentthree",
                         "disable_contamination_check": False,
                         "research": True,
@@ -216,6 +221,7 @@ CFEidentifier-Sample4--Proj4,Sample4--Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTT
                     {
                         "index1": "GGGGGGGG",
                         "index2": "TTTTTTTT",
+                        "tags": "N501-N704",
                         "comments": "thisiscommentfour",
                         "disable_contamination_check": True,
                         "research": False,
@@ -245,6 +251,7 @@ CFEidentifier-Sample4--Proj4,Sample4--Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTT
                     "research": True,
                     "comments": "thisiscommentthree",
                     "orig_sample_name": "Sample3--Proj3",
+                    "tags": "N501-N703",
                     "is_T_primer": False,
                 },
                 {
@@ -259,6 +266,7 @@ CFEidentifier-Sample4--Proj4,Sample4--Proj4,11-Jul-2014_testing,N/A,GGGGGGGG,TTT
                     "research": False,
                     "comments": "thisiscommentfour",
                     "orig_sample_name": "Sample4--Proj4",
+                    "tags": "N501-N704",
                     "is_T_primer": False
                 }
             ]
@@ -283,8 +291,8 @@ Chemistry,Amplicon
 [Settings]
 [Data]
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
-CFEidentifier-Sample1_Proj1;Sample2_Proj2,Sample1_Proj1;Sample2_Proj2,11-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,11-Jul-2014_testing,Research:Sample1_Proj1:TRUE;Sample2_Proj2:FALSE Comments:Sample1_Proj1:thisiscommentone;Sample2_Proj2:thisiscommenttwo Disablecontamcheck:Sample1_Proj1:FALSE;Sample2_Proj2:TRUE,
-CFEidentifier_Sample3_Proj3;Sample4_Proj4,Sample3_Proj3;Sample4_Proj4,11-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,11-Jul-2014_testing,Research:Sample3_Proj3:FALSE;Sample4_Proj4:FALSE Comments:Sample3_Proj3:thisiscommentthree;Sample4_Proj4:thisiscommentfour Chemistry:Sample3_Proj3:BreakingBad;Sample4_Proj4:MrWizard Disablecontamcheck:Sample3_Proj3:TRUE;Sample4_Proj4:TRUE,
+CFE_SomeId_11-Jul-2014_N501-N701_Sample1_Proj1;CFE_SomeId_11-Jul-2014_N501-N701_Sample2_Proj2,Sample1_Proj1;Sample2_Proj2,11-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,11-Jul-2014_testing,Research:Sample1_Proj1:TRUE;Sample2_Proj2:FALSE Comments:Sample1_Proj1:thisiscommentone;Sample2_Proj2:thisiscommenttwo Disablecontamcheck:Sample1_Proj1:FALSE;Sample2_Proj2:TRUE,
+CFE_SomeId_11-Jul-2014_N501-N702_Sample3_Proj3;CFE_SomeId_11-Jul-2014_N501-N702_Sample4_Proj4,Sample3_Proj3;Sample4_Proj4,11-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,11-Jul-2014_testing,Research:Sample3_Proj3:FALSE;Sample4_Proj4:FALSE Comments:Sample3_Proj3:thisiscommentthree;Sample4_Proj4:thisiscommentfour Chemistry:Sample3_Proj3:BreakingBad;Sample4_Proj4:MrWizard Disablecontamcheck:Sample3_Proj3:TRUE;Sample4_Proj4:TRUE,
 """
     clean_filenames = ["Sample1-Proj1-Sample2-Proj2_S1", "Sample3-Proj3-Sample4-Proj4_S2"]
 
@@ -329,6 +337,7 @@ CFEidentifier_Sample3_Proj3;Sample4_Proj4,Sample3_Proj3;Sample4_Proj4,11-Jul-201
                     {
                         "index1": "ACGTACGT",
                         "index2": "TGCATGCA",
+                        "tags": "N501-N701",
                         "comments": "thisiscommentone",
                         "disable_contamination_check": False,
                         "research": True,
@@ -340,6 +349,7 @@ CFEidentifier_Sample3_Proj3;Sample4_Proj4,Sample3_Proj3;Sample4_Proj4,11-Jul-201
                     {
                         "index1": "AAAAGGGG",
                         "index2": "CCCCTTTT",
+                        "tags": "N501-N702",
                         "comments": "thisiscommentthree",
                         "disable_contamination_check": True,
                         "research": False,
@@ -369,6 +379,7 @@ CFEidentifier_Sample3_Proj3;Sample4_Proj4,Sample3_Proj3;Sample4_Proj4,11-Jul-201
                     "research": True,
                     "comments": "thisiscommentone",
                     "orig_sample_name": "Sample1_Proj1;Sample2_Proj2",
+                    "tags": "N501-N701",
                     "is_T_primer": False,
                 },
                 {
@@ -383,6 +394,7 @@ CFEidentifier_Sample3_Proj3;Sample4_Proj4,Sample3_Proj3;Sample4_Proj4,11-Jul-201
                     "research": False,
                     "comments": "thisiscommenttwo",
                     "orig_sample_name": "Sample1_Proj1;Sample2_Proj2",
+                    "tags": "N501-N701",
                     "is_T_primer": False,
                 },
                 {
@@ -397,6 +409,7 @@ CFEidentifier_Sample3_Proj3;Sample4_Proj4,Sample3_Proj3;Sample4_Proj4,11-Jul-201
                     "research": False,
                     "comments": "thisiscommentthree",
                     "orig_sample_name": "Sample3_Proj3;Sample4_Proj4",
+                    "tags": "N501-N702",
                     "is_T_primer": False
                 },
                 {
@@ -411,6 +424,7 @@ CFEidentifier_Sample3_Proj3;Sample4_Proj4,Sample3_Proj3;Sample4_Proj4,11-Jul-201
                     "research": False,
                     "comments": "thisiscommentfour",
                     "orig_sample_name": "Sample3_Proj3;Sample4_Proj4",
+                    "tags": "N501-N702",
                     "is_T_primer": False
                 }
             ]
@@ -435,8 +449,8 @@ Chemistry,Amplicon
 [Settings]
 [Data]
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
-CFEidentifier-Sample1--Proj1---Sample2--Proj2,Sample1--Proj1---Sample2--Proj2,11-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,11-Jul-2014_testing,Research:Sample1--Proj1--TRUE---Sample2--Proj2--FALSE Comments:Sample1--Proj1--thisiscommentone---Sample2--Proj2--thisiscommenttwo Disablecontamcheck:Sample1--Proj1--FALSE---Sample2--Proj2--TRUE,
-CFEidentifier_Sample3--Proj3---Sample4--Proj4,Sample3--Proj3---Sample4--Proj4,11-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,11-Jul-2014_testing,Research:Sample3--Proj3--FALSE---Sample4--Proj4--FALSE Comments:Sample3--Proj3--thisiscommentthree---Sample4--Proj4--thisiscommentfour Chemistry:Sample3--Proj3--BreakingBad---Sample4--Proj4--MrWizard Disablecontamcheck:Sample3--Proj3--TRUE---Sample4--Proj4--TRUE,
+CFE_SomeId_11-Jul-2014_N501-N701_Sample1--Proj1---CFE_SomeId_11-Jul-2014_N501-N701_Sample2--Proj2,Sample1--Proj1---Sample2--Proj2,11-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,11-Jul-2014_testing,Research:Sample1--Proj1--TRUE---Sample2--Proj2--FALSE Comments:Sample1--Proj1--thisiscommentone---Sample2--Proj2--thisiscommenttwo Disablecontamcheck:Sample1--Proj1--FALSE---Sample2--Proj2--TRUE,
+CFE_SomeId_11-Jul-2014_N501-N702_Sample3--Proj3---CFE_SomeId_11-Jul-2014_N501-N702_Sample4--Proj4,Sample3--Proj3---Sample4--Proj4,11-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,11-Jul-2014_testing,Research:Sample3--Proj3--FALSE---Sample4--Proj4--FALSE Comments:Sample3--Proj3--thisiscommentthree---Sample4--Proj4--thisiscommentfour Chemistry:Sample3--Proj3--BreakingBad---Sample4--Proj4--MrWizard Disablecontamcheck:Sample3--Proj3--TRUE---Sample4--Proj4--TRUE,
 """
     clean_filenames = ["Sample1--Proj1---Sample2--Proj2_S1", "Sample3--Proj3---Sample4--Proj4_S2"]
 
@@ -481,6 +495,7 @@ CFEidentifier_Sample3--Proj3---Sample4--Proj4,Sample3--Proj3---Sample4--Proj4,11
                     {
                         "index1": "ACGTACGT",
                         "index2": "TGCATGCA",
+                        "tags": "N501-N701",
                         "comments": "thisiscommentone",
                         "disable_contamination_check": False,
                         "research": True,
@@ -492,6 +507,7 @@ CFEidentifier_Sample3--Proj3---Sample4--Proj4,Sample3--Proj3---Sample4--Proj4,11
                     {
                         "index1": "AAAAGGGG",
                         "index2": "CCCCTTTT",
+                        "tags": "N501-N702",
                         "comments": "thisiscommentthree",
                         "disable_contamination_check": True,
                         "research": False,
@@ -521,6 +537,7 @@ CFEidentifier_Sample3--Proj3---Sample4--Proj4,Sample3--Proj3---Sample4--Proj4,11
                     "research": True,
                     "comments": "thisiscommentone",
                     "orig_sample_name": "Sample1--Proj1---Sample2--Proj2",
+                    "tags": "N501-N701",
                     "is_T_primer": False,
                 },
                 {
@@ -535,6 +552,7 @@ CFEidentifier_Sample3--Proj3---Sample4--Proj4,Sample3--Proj3---Sample4--Proj4,11
                     "research": False,
                     "comments": "thisiscommenttwo",
                     "orig_sample_name": "Sample1--Proj1---Sample2--Proj2",
+                    "tags": "N501-N701",
                     "is_T_primer": False,
                 },
                 {
@@ -549,6 +567,7 @@ CFEidentifier_Sample3--Proj3---Sample4--Proj4,Sample3--Proj3---Sample4--Proj4,11
                     "research": False,
                     "comments": "thisiscommentthree",
                     "orig_sample_name": "Sample3--Proj3---Sample4--Proj4",
+                    "tags": "N501-N702",
                     "is_T_primer": False
                 },
                 {
@@ -563,6 +582,7 @@ CFEidentifier_Sample3--Proj3---Sample4--Proj4,Sample3--Proj3---Sample4--Proj4,11
                     "research": False,
                     "comments": "thisiscommentfour",
                     "orig_sample_name": "Sample3--Proj3---Sample4--Proj4",
+                    "tags": "N501-N702",
                     "is_T_primer": False
                 }
             ]
@@ -623,8 +643,8 @@ Chemistry,Amplicon,,,,,,,
 [Settings],,,,,,,
 [Data],,,,,,,
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
-CFEidentifier-Sample1_Proj1,Sample1_Proj1,10-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,10-Jul-2014_testing,Research:Sample1_Proj1:TRUE Comments:Sample1_Proj1:thisiscommentone Disablecontamcheck:Sample1_Proj1:FALSE,
-CFEidentifier_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,10-Jul-2014_testing,Research:Sample2_Proj2:FALSE Comments:Sample2_Proj2:thisiscommenttwo Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
+CFE_SomeId_10-Jul-2014_N501-N701_Sample1_Proj1,Sample1_Proj1,10-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,10-Jul-2014_testing,Research:Sample1_Proj1:TRUE Comments:Sample1_Proj1:thisiscommentone Disablecontamcheck:Sample1_Proj1:FALSE,
+CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,10-Jul-2014_testing,Research:Sample2_Proj2:FALSE Comments:Sample2_Proj2:thisiscommenttwo Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 """
  
         ss = sample_sheet_parser(StringIO.StringIO(stub_sample_sheet))
