@@ -25,9 +25,10 @@ def parseOptions():
 
 
 
-def check_mpi_version():
+def check_mpi_version(prefix):
     try:
-        return subprocess.check_output(['mpirun', '-V'],
+        return subprocess.check_output(prefix + 'mpirun -V',
+                                       shell=True,
                                        stderr=subprocess.STDOUT)
     except:
         etype, value, _tb = sys.exc_info()
@@ -47,11 +48,12 @@ def main():
         os.remove(f)
         
     # Check for Open MPI
+    prefix = ''
     expected_version = 'Open MPI'
-    version = check_mpi_version()
+    version = check_mpi_version(prefix)
     if not expected_version in version:
-        subprocess.check_call(['module', 'load', 'openmpi/gnu'])
-        version = check_mpi_version()
+        prefix = 'module load openmpi/gnu && '
+        version = check_mpi_version(prefix)
         if not expected_version in version:
             sys.exit("Couldn't find Open MPI:\n{}".format(version))
     
@@ -66,20 +68,23 @@ def main():
         mapping_args.append(args.mode)
     mapping_args.append('--phase')
     mapping_args.append('mapping')
+    mapping_command = prefix + ' '.join(mapping_args)
     
     counting_args = mapping_args[:]
     counting_args[2] = str(settings.counting_processes)
     counting_args[-1] = 'counting'
+    counting_command = prefix + ' '.join(counting_args)
     
     summarizing_args = mapping_args[:]
     summarizing_args[2] = '1' # Only one process does the summary
     summarizing_args[-1] = 'summarizing'
+    summarizing_command = prefix + ' '.join(summarizing_args)
     
-    subprocess.check_call(mapping_args)
+    subprocess.check_call(mapping_command, shell=True)
 
-    subprocess.check_call(counting_args)
+    subprocess.check_call(counting_command, shell=True)
 
-    subprocess.check_call(summarizing_args)
+    subprocess.check_call(summarizing_command, shell=True)
     
     logger.info('Finished processing run %s', args.run_folder)
 
