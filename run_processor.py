@@ -5,10 +5,11 @@ from glob import glob
 import logging
 import os
 import subprocess
+import sys
+import traceback
 
 import miseq_logging
 import settings
-import sys
 
 def parseOptions():
     parser = argparse.ArgumentParser(
@@ -25,11 +26,12 @@ def parseOptions():
 
 
 def check_mpi_version():
-    p = subprocess.Popen(['mpirun', '-V'],
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.STDOUT)
-    version, _ = p.communicate()
-    return version
+    try:
+        return subprocess.check_output(['mpirun', '-V'],
+                                       stderr=subprocess.STDOUT)
+    except:
+        etype, value, _tb = sys.exc_info()
+        return traceback.format_exception_only(etype, value)
 
 def main():
     args = parseOptions()
