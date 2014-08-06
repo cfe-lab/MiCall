@@ -1,0 +1,17 @@
+[Header]
+IEMFileVersion,3
+Investigator Name,DK
+Project Name,23-Jan-2014
+Experiment Name,23-Jan-2014
+Date,01/23/2014
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,Nextera
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Settings]
+[Data]
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
+CFE_MS1_23-Jan-2014_N501-N701_1234A_V3LOOP_nopid,1234A_V3LOOP,23-Jan-2014,N/A,TAAGGCGA,TAGATCGC,23-Jan-2014,Research:1234A_V3LOOP:FALSE Comments:1234A_V3LOOP: Disablecontamcheck:1234A_V3LOOP:FALSE,

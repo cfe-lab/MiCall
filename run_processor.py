@@ -10,6 +10,7 @@ import traceback
 
 import miseq_logging
 import settings
+import shutil
 
 def parseOptions():
     parser = argparse.ArgumentParser(
@@ -42,10 +43,14 @@ def main():
                                         console_log_level=logging.INFO)
     
     logger.info('Start processing run %s', args.run_folder)
-    logger.info('Removing old CSF files')
-    old_csf_files = glob(args.run_folder+'/*.aligned.csv')
-    for f in old_csf_files:
-        os.remove(f)
+    logger.info('Removing old working files')
+    old_files = glob(args.run_folder+'/*')
+    for f in old_files:
+        if not f.endswith('.fastq') and not f.endswith('SampleSheet.csv'):
+            if os.path.isdir(f):
+                shutil.rmtree(f)
+            else:
+                os.remove(f)
         
     # Check for Open MPI
     prefix = ''
