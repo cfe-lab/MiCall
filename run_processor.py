@@ -8,6 +8,7 @@ import subprocess
 
 import miseq_logging
 import settings
+import sys
 
 def parseOptions():
     parser = argparse.ArgumentParser(
@@ -34,6 +35,12 @@ def main():
     old_csf_files = glob(args.run_folder+'/*.aligned.csv')
     for f in old_csf_files:
         os.remove(f)
+        
+    # Check for Open MPI
+    version = subprocess.check_output(['mpirun', '-V'],
+                                      stderr=subprocess.STDOUT)
+    if not 'Open MPI' in version:
+        sys.exit("Couldn't find Open MPI:\n{}".format(version))
     
     mapping_args = ['mpirun', 
                     '-np', 

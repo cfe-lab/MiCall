@@ -49,6 +49,7 @@ def post_files(files, destination):
     for f in files:
         execute_command(['rsync', '-a', f, '{}/{}'.format(destination, os.path.basename(f))])
 
+processed_runs = set()
 
 # Process runs flagged for processing not already processed by this version of the pipeline
 while True:
@@ -65,13 +66,19 @@ while True:
             continue
 
         # if version-matched Results folder already exists, then do not re-process
-        if os.path.exists(result_path) and production:
-            continue
+        if production:
+            if os.path.exists(result_path):
+                continue
+        else:
+            if run in processed_runs:
+                continue
 
         runs_needing_processing.append(run)
 
     if not runs_needing_processing:
         logger.info('No runs need processing')
+        if not production:
+            break
         time.sleep(delay)
         continue
 
@@ -160,7 +167,9 @@ while True:
     except Exception as e:
         mark_run_as_disabled(root, "MISEQ_PIPELINE.py failed: '{}'".format(e))
 
-    if production:
+    if not production:
+        processed_runs.add(curr_run)
+    else:
         try:
             # Determine output paths
             result_path = curr_run.replace(NEEDS_PROCESSING, 'Results')
