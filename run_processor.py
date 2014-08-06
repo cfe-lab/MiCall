@@ -25,7 +25,10 @@ def parseOptions():
 
 
 def check_mpi_version():
-    version = subprocess.check_output(['mpirun', '-V'], stderr=subprocess.STDOUT)
+    p = subprocess.Popen(['mpirun', '-V'],
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT)
+    version, _ = p.communicate()
     return version
 
 def main():
