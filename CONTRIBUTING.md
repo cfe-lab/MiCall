@@ -194,13 +194,16 @@ MPI
     
 Test data
 ---------
-1. Create a data folder somewhere on your workstation, like ~/data. Create subdirectories called miseq and RAW_DATA.
-2. Connect to the shared drive [using CIFS][cifs] and mount smb://192.168.68.144/RAW_DATA as /media/RAW_DATA.
-3. Navigate down to /media/RAW_DATA/MiSeq/runs, pick a recent folder, and make sure it has a file named needsprocessing.
-4. Copy SampleSheet.csv to a sample run folder under your local RAW_DATA folder.
-5. Navigate down to Data\Intensities\BaseCalls, and copy a few of the .fastq.gz files to your sample run folder.
-6. Select all the .fastq.gz files you copied, right click, and choose Extract Here.
-7. Delete the compressed versions of the files.
+1. Create a data folder somewhere on your workstation, like ~/data. Create
+   subdirectories called miseq and RAW_DATA. Add folders RAW_DATA/MiSeq/runs.
+2. Connect to the shared drive [using CIFS][cifs] and mount 
+   smb://192.168.68.144/RAW_DATA as /media/RAW_DATA.
+3. Navigate down to /media/RAW_DATA/MiSeq/runs, pick a recent folder, and make
+   sure it has a file named needsprocessing.
+4. Copy SampleSheet.csv to a sample run folder under your local
+   RAW_DATA/MiSeq/runs folder.
+5. Navigate down to Data\Intensities\BaseCalls, and copy a few of the .fastq.gz
+   files to your sample run folder.
 
 Running the code
 ----------------
@@ -217,20 +220,21 @@ Running the code
 7. Set the Oracle connection information.
 8. Copy hostfile_default to hostfile, and open it for editing.
 9. You probably just want to uncomment the localhost line.
-10. Copy or create a symbolic link for two fastq files in the working directory.
-    The files should be a matched pair: forward and reverse. Call them 
-    `read1.fastq` and `read2.fastq`.
+10. Copy two fastq.gz files to the working directory.
+    The files should be a matched pair: forward and reverse. Extract the fastq
+    files, and rename them to `read1.fastq` and `read2.fastq`.
 11. Try the launch configurations. They are saved in the `working` directory,
     but you should see them if you open the Run menu and choose Run
     configurations.... If you want to run all steps at once, skip down to the 
-    MISEQ_PIPELINE.py file, otherwise try launching each step in the following
+    MISEQ_MONITOR.py file, otherwise try launching each step in the following
     order:
     * `prelim_map.py`
     * `remap.py`
     * `sam2csf.py`
     * `csf2counts.py`
     * `fasta_to_g2p.rb`
-    * All together: `MISEQ_PIPELINE.py`.
+    * All together: `MISEQ_MONITOR.py`, once you've run it once, you can run
+    `sample_pipeline.py` with it pointed to a run's working folder.
 12. Run the unit tests. Either run them from Eclipse, or run them from the
     command line like this:
 

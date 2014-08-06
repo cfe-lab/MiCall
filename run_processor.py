@@ -23,6 +23,11 @@ def parseOptions():
     return parser.parse_args()
 
 
+
+def check_mpi_version():
+    version = subprocess.check_output(['mpirun', '-V'], stderr=subprocess.STDOUT)
+    return version
+
 def main():
     args = parseOptions()
     log_file = "{}/run.log".format(args.run_folder)
@@ -37,10 +42,13 @@ def main():
         os.remove(f)
         
     # Check for Open MPI
-    version = subprocess.check_output(['mpirun', '-V'],
-                                      stderr=subprocess.STDOUT)
-    if not 'Open MPI' in version:
-        sys.exit("Couldn't find Open MPI:\n{}".format(version))
+    expected_version = 'Open MPI'
+    version = check_mpi_version()
+    if not expected_version in version:
+        subprocess.check_call(['module', 'load', 'openmpi/gnu'])
+        version = check_mpi_version()
+        if not expected_version in version:
+            sys.exit("Couldn't find Open MPI:\n{}".format(version))
     
     mapping_args = ['mpirun', 
                     '-np', 
