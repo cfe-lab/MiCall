@@ -93,24 +93,6 @@ def count_samples(fastq_samples, worker, args):
                            stdout=log_path,
                            stderr=log_path))
     
-    ###############################
-    ### Begin g2p (For Amplicon covering HIV-1 env only!)
-    if args.mode == 'Amplicon':
-        # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
-        for sample_info in fastq_samples:
-            log_path = "{}.g2p.log".format(sample_info.output_root)
-            worker.run_job(Job(script='fasta_to_g2p.sh',
-                               helpers=('fasta_to_g2p.rb',
-                                        'pssm_lib.rb',
-                                        'alignment.so',
-                                        'g2p.matrix',
-                                        'g2p_fpr.txt'),
-                               args=(sample_info.output_root + '.aligned.csv',
-                                     sample_info.output_root + '.g2p.csv'),
-                               stdout=log_path,
-                               stderr=log_path))
-    
-    
     #######################
     ### Begin csf2counts
     
@@ -140,7 +122,30 @@ def count_samples(fastq_samples, worker, args):
                            stdout=log_path,
                            stderr=log_path))
 
-def collate_results(args, logger):
+def collate_results(fastq_samples, worker, args, logger):
+    
+    #TODO: Move fasta_to_g2p back to count_samples().
+    # We have to make it thread safe before it can go there.
+    # Running it single threaded adds roughly an hour to a typical run.
+    # Remove fastq_samples and worker parameters when it moves.
+    
+    ###############################
+    ### Begin g2p (For Amplicon covering HIV-1 env only!)
+    if args.mode == 'Amplicon':
+        # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
+        for sample_info in fastq_samples:
+            log_path = "{}.g2p.log".format(sample_info.output_root)
+            worker.run_job(Job(script='fasta_to_g2p.sh',
+                               helpers=('fasta_to_g2p.rb',
+                                        'pssm_lib.rb',
+                                        'alignment.so',
+                                        'g2p.matrix',
+                                        'g2p_fpr.txt'),
+                               args=(sample_info.output_root + '.aligned.csv',
+                                     sample_info.output_root + '.g2p.csv'),
+                               stdout=log_path,
+                               stderr=log_path))
+    
     logger.info("Collating *.mapping.log files")
     miseq_logging.collate_logs(args.run_folder, "mapping.log", "mapping.log")
     
@@ -247,7 +252,10 @@ def main():
         count_samples(fastq_samples, worker, args)
     
     if args.phase in ('summarizing', 'all') and process_rank == 0:
-        collated_amino_freqs_path = collate_results(args, logger)
+        collated_amino_freqs_path = collate_results(fastq_samples,
+                                                    worker,
+                                                    args,
+                                                    logger)
         
         generate_coverage_plots(collated_amino_freqs_path, worker, args)
     
