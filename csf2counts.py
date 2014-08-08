@@ -25,16 +25,17 @@ from hyphyAlign import change_settings, get_boundaries, pair_align
 import miseq_logging
 import settings
 
-parser = argparse.ArgumentParser('Post-processing of short-read alignments.')
-
-parser.add_argument('input_csf', help='<input> aligned CSF input')
-parser.add_argument('input_conseq', help='<input> consensus sequences from remapping step')
-parser.add_argument('output_nuc', help='<output> CSV containing nucleotide frequencies')
-parser.add_argument('output_amino', help='<output> CSV containing amino frequencies')
-parser.add_argument('output_indels', help='<output> CSV containing insertions')
-parser.add_argument('output_conseq', help='<output> CSV containing consensus sequences')
-
-args = parser.parse_args()
+def parseArgs():
+    parser = argparse.ArgumentParser('Post-processing of short-read alignments.')
+    
+    parser.add_argument('input_csf', help='<input> aligned CSF input')
+    parser.add_argument('input_conseq', help='<input> consensus sequences from remapping step')
+    parser.add_argument('output_nuc', help='<output> CSV containing nucleotide frequencies')
+    parser.add_argument('output_amino', help='<output> CSV containing amino frequencies')
+    parser.add_argument('output_indels', help='<output> CSV containing insertions')
+    parser.add_argument('output_conseq', help='<output> CSV containing consensus sequences')
+    
+    return parser.parse_args()
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 
@@ -139,7 +140,47 @@ def coordinate_map(aquery, aref):
     return qindex_to_refcoord, inserts
 
 
+
+def write_amino_frequencies(aafile,
+                            amino_counts,
+                            qindex_to_refcoord,
+                            inserts,
+                            refseqs,
+                            region,
+                            qcut):
+    """ Write a summary of the amino acid distribution at each position in the
+    reference sequence.
+    
+    @param aafile: an open file that the summary will be written to
+    @param amino_counts: {aa_pos: {aa: count}} a dictionary keyed by the amino
+    acid position. To calculate the amino acid position, take the position
+    within the consensus sequence and add the offset of where the start of the
+    consensus sequence maps to the reference sequence. Each entry is a
+    dictionary keyed by amino acid letter and containing the number of times
+    each amino acid was read at that position.
+    @param qindex_to_refcoord: {qindex: refcoord} maps coordinates from the
+    consensus sequence (query) to the reference sequence
+    @param inserts: a list of indexes for positions in the consensus sequence
+    that are inserts relative to the reference sequence
+    @param refseqs: {region: sequence} maps from region name to amino acid 
+    sequence
+    @param region: the name of the region being processed
+    @param qcut: the quality cutoff score that was used to map the consensus
+    sequence
+    """
+    # output amino acid frequencies (sorted by AA coordinate)
+    intermed = [(k, v) for k, v in qindex_to_refcoord.iteritems()]
+    intermed.sort()
+    for qindex, refcoord in intermed:
+        aa_pos = qindex + min(amino_counts.keys())
+        if aa_pos in inserts:
+            continue
+        outstr = ','.join(map(str, [amino_counts[aa_pos].get(aa, 0) for aa in amino_alphabet]))
+        aafile.write('%s,%s,%d,%d,%s\n' % (region, qcut, aa_pos, refcoord + 1, outstr))
+
 def main():
+    args = parseArgs()
+    
     # check that the amino acid reference input exists
     is_ref_found = False
     
@@ -270,15 +311,13 @@ def main():
             aquery, aref, _ = pair_align(hyphy, refseqs[region], aa_max)
             qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
 
-            # output amino acid frequencies (sorted by AA coordinate)
-            intermed = [(k, v) for k, v in qindex_to_refcoord.iteritems()]
-            intermed.sort()
-            for qindex, refcoord in intermed:
-                aa_pos = qindex + min(aa_coords)
-                if aa_pos in inserts:
-                    continue
-                outstr = ','.join(map(str, [amino_counts[aa_pos].get(aa, 0) for aa in amino_alphabet]))
-                aafile.write('%s,%s,%d,%d,%s\n' % (region, qcut, aa_pos, refcoord+1, outstr))
+            write_amino_frequencies(aafile,
+                                    amino_counts,
+                                    qindex_to_refcoord,
+                                    inserts,
+                                    refseqs,
+                                    region,
+                                    qcut)
 
             # output nucleotide frequencies and consensus sequences
             nuc_coords = nuc_counts.keys()
