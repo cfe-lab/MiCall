@@ -18,6 +18,7 @@ import itertools
 import os
 
 import hyphyAlign
+import settings
 
 parser = argparse.ArgumentParser('Clip out sub-regions from MiSeq read alignments.')
 
@@ -42,7 +43,8 @@ min_avg_score = 2.
 def main():
     # load reference sequences
     is_ref_found = False
-    possible_refs = ('csf_to_fasta_by_nucref.csv', 'reference_sequences/csf_to_fasta_by_nucref.csv')
+    possible_refs = (os.path.basename(settings.final_nuc_align_ref_path),
+                     settings.final_nuc_align_ref_path)
     for ref in possible_refs:
         if not os.path.isfile(ref):
             continue

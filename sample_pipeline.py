@@ -9,7 +9,7 @@ from fifo_scheduler import Job, Worker
 import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
 from settings import final_alignment_ref_path, final_nuc_align_ref_path, \
-    are_temp_folders_deleted, mapping_ref_path
+    are_temp_folders_deleted, mapping_ref_path, base_path
 from mpi4py import MPI
 
 def parseOptions(comm_world):
@@ -52,9 +52,9 @@ def map_samples(fastq_samples, worker):
     # Preliminary map
     for sample_info in fastq_samples:
         log_path = "{}.mapping.log".format(sample_info.output_root)
-        worker.run_job(Job(script='prelim_map.py',
-                           helpers=('settings.py',
-                                    'miseq_logging.py',
+        worker.run_job(Job(script=base_path + 'prelim_map.py',
+                           helpers=(base_path + 'settings.py',
+                                    base_path + 'miseq_logging.py',
                                     mapping_ref_path + '.fasta'),
                            args=(sample_info.fastq1,
                                  sample_info.fastq2,
@@ -65,9 +65,9 @@ def map_samples(fastq_samples, worker):
     # Iterative re-mapping
     for sample_info in fastq_samples:
         log_path = "{}.mapping.log".format(sample_info.output_root)
-        worker.run_job(Job(script='remap.py',
-                           helpers=('settings.py',
-                                    'miseq_logging.py',
+        worker.run_job(Job(script=base_path + 'remap.py',
+                           helpers=(base_path + 'settings.py',
+                                    base_path + 'miseq_logging.py',
                                     mapping_ref_path + '.fasta'),
                            args=(sample_info.fastq1, 
                                  sample_info.fastq2,
@@ -85,8 +85,8 @@ def count_samples(fastq_samples, worker, args):
     
     for sample_info in fastq_samples:
         log_path = "{}.sam2csf.log".format(sample_info.output_root)
-        worker.run_job(Job(script='sam2csf.py',
-                           helpers=('settings.py', ),
+        worker.run_job(Job(script=base_path + 'sam2csf.py',
+                           helpers=(base_path + 'settings.py', ),
                            args=(sample_info.output_root + '.remap.csv',
                                  sample_info.output_root + '.aligned.csv',
                                  sample_info.output_root + '.failed.csv'),
@@ -98,11 +98,11 @@ def count_samples(fastq_samples, worker, args):
     
     for sample_info in fastq_samples:
         log_path = "{}.csf2counts.log".format(sample_info.output_root)
-        worker.run_job(Job(script='csf2counts.py',
-                           helpers=('settings.py',
+        worker.run_job(Job(script=base_path + 'csf2counts.py',
+                           helpers=(base_path + 'settings.py',
                                     final_alignment_ref_path,
-                                    'miseq_logging.py',
-                                    'hyphyAlign.py'),
+                                    base_path + 'miseq_logging.py',
+                                    base_path + 'hyphyAlign.py'),
                            args=(sample_info.output_root + '.aligned.csv',
                                  sample_info.output_root + '.remap_conseq.csv',
                                  sample_info.output_root + '.nuc.csv',
@@ -114,9 +114,9 @@ def count_samples(fastq_samples, worker, args):
         
     for sample_info in fastq_samples:
         log_path = "{}.csf2nuc.log".format(sample_info.output_root)
-        worker.run_job(Job(script='csf2nuc.py',
+        worker.run_job(Job(script=base_path + 'csf2nuc.py',
                            helpers=(final_nuc_align_ref_path,
-                                    'hyphyAlign.py'),
+                                    base_path + 'hyphyAlign.py'),
                            args=(sample_info.output_root + '.aligned.csv',
                                  sample_info.output_root + '.nuc_variants.csv'),
                            stdout=log_path,
@@ -135,12 +135,12 @@ def collate_results(fastq_samples, worker, args, logger):
         # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
         for sample_info in fastq_samples:
             log_path = "{}.g2p.log".format(sample_info.output_root)
-            worker.run_job(Job(script='fasta_to_g2p.sh',
-                               helpers=('fasta_to_g2p.rb',
-                                        'pssm_lib.rb',
-                                        'alignment.so',
-                                        'g2p.matrix',
-                                        'g2p_fpr.txt'),
+            worker.run_job(Job(script=base_path + 'fasta_to_g2p.sh',
+                               helpers=(base_path + 'fasta_to_g2p.rb',
+                                        base_path + 'pssm_lib.rb',
+                                        base_path + 'alignment.so',
+                                        base_path + 'g2p.matrix',
+                                        base_path + 'g2p_fpr.txt'),
                                args=(sample_info.output_root + '.aligned.csv',
                                      sample_info.output_root + '.g2p.csv'),
                                stdout=log_path,
@@ -192,8 +192,8 @@ def generate_coverage_plots(collated_amino_freqs_path, worker, args):
     coverage_map_path = "{}/coverage_maps.tar".format(args.run_folder)
     coverage_score_path = "{}/coverage_scores.csv".format(args.run_folder)
 
-    worker.run_job(Job(script='coverage_plots.R',
-                       helpers=('key_positions.csv', ),
+    worker.run_job(Job(script=base_path + 'coverage_plots.R',
+                       helpers=(base_path + 'key_positions.csv', ),
                        args=(collated_amino_freqs_path,
                              coverage_map_path,
                              coverage_score_path)))

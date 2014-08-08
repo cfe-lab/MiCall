@@ -24,11 +24,12 @@ import settings  # settings.py is a CodeResourceDependency
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 
 def main():
-    parser = argparse.ArgumentParser('Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
+    parser = argparse.ArgumentParser(
+        description='Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
     
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-    parser.add_argument('sam_csv', help='<output> CSV containing bowtie2 output (modified SAM)')
+    parser.add_argument('prelim_csv', help='<output> CSV containing preliminary mapping from bowtie2 (modified SAM)')
     
     args = parser.parse_args()
 
@@ -49,7 +50,7 @@ def main():
         sys.exit(1)
 
     # check that the SAM output path is valid
-    output_path = os.path.split(args.sam_csv)[0]
+    output_path = os.path.split(args.prelim_csv)[0]
     if not os.path.exists(output_path) and output_path != '':
         logger.error('SAM output path does not exist: %s', output_path)
         sys.exit(1)
@@ -58,7 +59,7 @@ def main():
     is_ref_found = False
     possible_refs = glob('*.fasta')
     if not possible_refs:
-        possible_refs = [settings.mapping_ref_path]
+        possible_refs = [settings.mapping_ref_path + '.fasta']
     for ref in possible_refs:
         if not os.path.isfile(ref):
             continue
@@ -66,8 +67,9 @@ def main():
         log_call(['samtools', 'faidx', ref])
         break
     if not is_ref_found:
+        possible_refs.insert(0, '*.fasta')
         raise RuntimeError('No reference sequences found in {!r}'.format(
-            ['*.fasta', settings.mapping_ref_path]))
+            possible_refs))
     reffile_template = 'reference'
     log_call(['bowtie2-build',
               '--quiet',
@@ -102,7 +104,7 @@ def main():
         raise subprocess.CalledProcessError(p.returncode, bowtie_args)
 
     # lines grouped by refname
-    with open(args.sam_csv, 'w') as outfile:
+    with open(args.prelim_csv, 'w') as outfile:
         for refname, lines in output.iteritems():
             for line in lines:
                 outfile.write(line.replace('\t', ',') + '\n')

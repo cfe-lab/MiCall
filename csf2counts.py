@@ -23,7 +23,7 @@ import sys
 
 from hyphyAlign import change_settings, get_boundaries, pair_align
 import miseq_logging
-from settings import conseq_mixture_cutoffs
+import settings
 
 parser = argparse.ArgumentParser('Post-processing of short-read alignments.')
 
@@ -142,7 +142,9 @@ def coordinate_map(aquery, aref):
 def main():
     # check that the amino acid reference input exists
     is_ref_found = False
-    possible_refs = ('csf2counts_amino_refseqs.csv', 'reference_sequences/csf2counts_amino_refseqs.csv')
+    
+    possible_refs = (os.path.basename(settings.final_alignment_ref_path),
+                     settings.final_alignment_ref_path)
     for amino_ref in possible_refs:
         if not os.path.isfile(amino_ref):
             continue
@@ -282,7 +284,7 @@ def main():
             nuc_coords = nuc_counts.keys()
             nuc_coords.sort()
             maxcon = ''
-            conseqs = dict([(cut, '') for cut in conseq_mixture_cutoffs])
+            conseqs = dict([(cut, '') for cut in settings.conseq_mixture_cutoffs])
 
             for query_nuc_pos in nuc_coords:
                 # FIXME: there MUST be a better way to do this :-P
@@ -311,7 +313,7 @@ def main():
                 maxcon += intermed[0][1]  # plurality consensus
 
                 total_count = sum([count for count, nuc in intermed])
-                for cut in conseq_mixture_cutoffs:
+                for cut in settings.conseq_mixture_cutoffs:
                     mixture = []
                     # filter for nucleotides that pass frequency cutoff
                     for count, nuc in intermed:

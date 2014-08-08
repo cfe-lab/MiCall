@@ -23,8 +23,8 @@ import sys
 
 # These are both CodeResourceDependencies
 import miseq_logging
-from settings import bowtie_threads, consensus_q_cutoff, max_remaps, \
-    min_mapping_efficiency
+from settings import bowtie_threads, consensus_q_cutoff, mapping_ref_path,\
+    max_remaps, min_mapping_efficiency
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
@@ -70,7 +70,7 @@ def main():
     is_ref_found = False
     possible_refs = glob('*.fasta')
     if not possible_refs:
-        possible_refs = [settings.mapping_ref_path]
+        possible_refs = [mapping_ref_path + '.fasta']
     for ref in possible_refs:
         if not os.path.isfile(ref):
             continue
@@ -78,8 +78,9 @@ def main():
         log_call(['samtools', 'faidx', ref])
         break
     if not is_ref_found:
+        possible_refs.insert(0, '*.fasta')
         raise RuntimeError('No reference sequences found in {!r}'.format(
-            ['*.fasta', settings.mapping_ref_path]))
+            possible_refs))
 
     # get the raw read count
     raw_count = count_file_lines(args.fastq1) / 2  # 4 lines per record in FASTQ, paired
