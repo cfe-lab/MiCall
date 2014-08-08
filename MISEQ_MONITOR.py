@@ -33,8 +33,9 @@ def init_logging(log_file):
 def mark_run_as_disabled(root, message):
     """ Mark a run that failed, so it won't be processed again. """
     logger.error(message + " - skipping run " + root)
-    with open(root + ERROR_PROCESSING, 'w') as f:
-        f.write(message)
+    if production:
+        with open(root + ERROR_PROCESSING, 'w') as f:
+            f.write(message)
 
 def is_marked_as_disabled(run):
     return os.path.exists(run.replace(NEEDS_PROCESSING, ERROR_PROCESSING))
