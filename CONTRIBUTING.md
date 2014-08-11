@@ -215,7 +215,7 @@ Running the code
     command line like this:
 
         cd ~/git/MiseqPipeline
-        python -m unittest discover -p *_test.py
+        python -m unittest discover -p '*_test.py'
     
 Test data
 ---------

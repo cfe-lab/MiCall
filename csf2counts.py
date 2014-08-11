@@ -173,8 +173,7 @@ def write_amino_frequencies(aafile,
     intermed.sort()
     for qindex, refcoord in intermed:
         aa_pos = qindex + min(amino_counts.keys())
-        if aa_pos in inserts:
-            continue
+        assert aa_pos not in inserts, aa_pos
         outstr = ','.join(map(str, [amino_counts[aa_pos].get(aa, 0) for aa in amino_alphabet]))
         aafile.write('%s,%s,%d,%d,%s\n' % (region, qcut, aa_pos, refcoord + 1, outstr))
 
