@@ -168,14 +168,50 @@ def write_amino_frequencies(aafile,
     @param qcut: the quality cutoff score that was used to map the consensus
     sequence
     """
-    # output amino acid frequencies (sorted by AA coordinate)
-    intermed = [(k, v) for k, v in qindex_to_refcoord.iteritems()]
-    intermed.sort()
-    for qindex, refcoord in intermed:
-        aa_pos = qindex + min(amino_counts.keys())
-        assert aa_pos not in inserts, aa_pos
-        outstr = ','.join(map(str, [amino_counts[aa_pos].get(aa, 0) for aa in amino_alphabet]))
-        aafile.write('%s,%s,%d,%d,%s\n' % (region, qcut, aa_pos, refcoord + 1, outstr))
+#     print('{!r}\n\n{!r}\n\n{!r}\n\n'.format(amino_counts, qindex_to_refcoord, inserts))
+    if not amino_counts:
+        return
+    qindex = 0
+    query_offset = min(amino_counts.keys())
+    query_end = max(qindex_to_refcoord.keys())
+      
+    for refcoord in range(len(refseqs[region])):
+        while True:
+            # Skip over any inserts
+            aa_pos = qindex + query_offset
+            if aa_pos not in inserts:
+                break
+            assert aa_pos not in qindex_to_refcoord, aa_pos
+            qindex += 1
+        
+        while True:
+            # Skip over any gaps in the query consensus sequence
+            mapped_coord = qindex_to_refcoord.get(qindex)
+            if mapped_coord is not None or qindex >= query_end:
+                break
+            qindex += 1
+ 
+        if mapped_coord == refcoord:
+            counts = [amino_counts[aa_pos].get(aa, 0)
+                      for aa in amino_alphabet]
+            aa_pos_str = str(aa_pos)
+            qindex += 1
+        else:
+            counts = [0 for aa in amino_alphabet]
+            aa_pos_str = ''
+        outstr = ','.join(map(str, counts))
+        aafile.write('%s,%s,%s,%d,%s\n' % (region,
+                                           qcut,
+                                           aa_pos_str,
+                                           refcoord + 1,
+                                           outstr))
+#     intermed = [(k, v) for k, v in qindex_to_refcoord.iteritems()]
+#     intermed.sort()
+#     for qindex, refcoord in intermed:
+#         aa_pos = qindex + min(amino_counts.keys())
+#         assert aa_pos not in inserts, aa_pos
+#         outstr = ','.join(map(str, [amino_counts[aa_pos].get(aa, 0) for aa in amino_alphabet]))
+#         aafile.write('%s,%s,%d,%d,%s\n' % (region, qcut, aa_pos, refcoord + 1, outstr))
 
 def main():
     args = parseArgs()
