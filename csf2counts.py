@@ -26,7 +26,8 @@ import miseq_logging
 import settings
 
 def parseArgs():
-    parser = argparse.ArgumentParser('Post-processing of short-read alignments.')
+    parser = argparse.ArgumentParser(
+        description='Post-processing of short-read alignments.')
     
     parser.add_argument('input_csf', help='<input> aligned CSF input')
     parser.add_argument('input_conseq', help='<input> consensus sequences from remapping step')

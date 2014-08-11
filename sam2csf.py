@@ -22,7 +22,8 @@ import re
 
 from settings import max_prop_N, read_mapping_cutoff, sam2csf_q_cutoffs
 
-parser = argparse.ArgumentParser('Conversion of SAM data into aligned format.')
+parser = argparse.ArgumentParser(
+    description='Conversion of SAM data into aligned format.')
 parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
 parser.add_argument('output_csv', help='<output> CSV containing cleaned and merged reads')
 parser.add_argument('failed_csv', help='<output> CSV containing reads that failed to merge')

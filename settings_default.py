@@ -1,6 +1,5 @@
 """
-settings_default.py
-To make pipeline portable, allow user to specify
+To make pipeline portable, allow user to specify local paths and thread counts.
 """
 
 pipeline_version = '6.3'

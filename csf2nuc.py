@@ -20,7 +20,8 @@ import os
 import hyphyAlign
 import settings
 
-parser = argparse.ArgumentParser('Clip out sub-regions from MiSeq read alignments.')
+parser = argparse.ArgumentParser(
+    description='Clip out sub-regions from MiSeq read alignments.')
 
 parser.add_argument('input_csv', help='<input> CSV containing aligned and merged reads.')
 parser.add_argument('output_csv', help='<output> CSV containing clipped sequences')

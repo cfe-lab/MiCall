@@ -30,7 +30,8 @@ logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 
 def main():
-    parser = argparse.ArgumentParser('Iterative remapping of bowtie2 by reference.')
+    parser = argparse.ArgumentParser(
+        description='Iterative remapping of bowtie2 by reference.')
     
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
