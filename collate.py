@@ -1,8 +1,9 @@
+import glob, os
+
 def collate_counts(run_path,output_path):
     """
     Collate .counts files into a single CSV summary file.
     """
-    import glob,os
 
     with open(output_path, "w") as collated_file:
         for count_file in [f for f in glob.glob("{}/*.remap_counts.csv".format(run_path))]:
@@ -15,7 +16,6 @@ def collate_conseqs(run_path,output_path):
     """
     Collate .conseq.csv files into a single CSV summary file.
     """
-    import glob,os
 
     files = glob.glob("{}/*.conseq.csv".format(run_path))
 
@@ -40,7 +40,6 @@ def collate_frequencies (run_path, output_path, output_type):
     """
     Collate amino/nuc .freq files into a single summary file.
     """
-    import glob,os
 
     if output_type == "amino":
         file_extension = "amino.csv"
@@ -79,3 +78,24 @@ def collate_frequencies (run_path, output_path, output_type):
                 if j == 0:
                     continue
                 f_out.write("{},{},{},{}\n".format(sample, region, q, line.rstrip("\n")))
+
+def collate_labeled_files(pattern, output_path):
+    """ Collate files that are already labeled on each row.
+    
+    Just remove redundant headers and concatenate all the files together.
+    @param pattern: search pattern for all the files to collate
+    @param param: output_path the path to write the results to
+    """
+    with open(output_path, 'w') as fout:
+        is_header_written = False
+        filenames = glob.glob(pattern)
+        filenames.sort()
+        for filename in filenames:
+            with open(filename, 'rU') as fin:
+                for i, line in enumerate(fin):
+                    if i == 0:
+                        if not is_header_written:
+                            fout.write(line)
+                            is_header_written = True
+                    else:
+                        fout.write(line)

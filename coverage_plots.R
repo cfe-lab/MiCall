@@ -63,8 +63,6 @@ for (i in 1:length(coverage)) {
     }
     
     if (length(temp) == 0) {
-        # TODO: How do I know the actual size of the reference sequence?
-        # TODO: Why does the reference position start at 1?
         temp = seq(max(df$refseq.aa.pos))
     }
     if (substring(region, 1, 4) == 'HLA-') {

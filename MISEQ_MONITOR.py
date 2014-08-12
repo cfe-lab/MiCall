@@ -16,7 +16,7 @@ import time
 import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
 from settings import delay, ERROR_PROCESSING, home, NEEDS_PROCESSING,\
-    pipeline_version, production, rawdata_mount
+    pipeline_version, production, rawdata_mount, base_path
 import update_oracle
 
 
@@ -163,7 +163,8 @@ while True:
     # Standard out/error concatenates to the log
     logger.info("Launching pipeline for %s%s", home, run_name)
     try:
-        subprocess.check_call(['./run_processor.py', home+run_name])
+        subprocess.check_call([os.path.join(base_path, 'run_processor.py'),
+                               home+run_name])
         logger.info("===== {} successfully completed! =====".format(run_name))
     except Exception as e:
         mark_run_as_disabled(root, "MISEQ_PIPELINE.py failed: '{}'".format(e))
@@ -194,8 +195,7 @@ while True:
     
             post_files(glob(home + run_name + '/*.log'), log_path)
             post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
-            tar_path = home + run_name + '/coverage_maps.tar'
-            if os.path.isfile(tar_path):
+            for tar_path in glob(home + run_name + '/*.coverage_maps.tar'):
                 with tarfile.open(tar_path) as tar:
                     tar.extractall(result_path_final)
             

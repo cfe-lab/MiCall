@@ -4,7 +4,8 @@ import argparse
 from glob import glob
 import logging, os
 
-from collate import collate_frequencies, collate_conseqs, collate_counts
+from collate import collate_frequencies, collate_conseqs, collate_counts, \
+    collate_labeled_files
 from fifo_scheduler import Job, Worker
 import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
@@ -122,6 +123,16 @@ def count_samples(fastq_samples, worker, args):
                                  sample_info.output_root + '.nuc_variants.csv'),
                            stdout=log_path,
                            stderr=log_path))
+        
+    for sample_info in fastq_samples:
+        log_path = "{}.coverage.log".format(sample_info.output_root)
+        worker.run_job(Job(script=base_path + 'coverage_plots.R',
+                           helpers=(base_path + 'key_positions.csv', ),
+                           args=(sample_info.output_root + '.amino.csv',
+                                 sample_info.output_root + '.coverage_maps.tar',
+                                 sample_info.output_root + '.coverage_scores.csv'),
+                           stdout=log_path,
+                           stderr=log_path))
 
 def collate_results(fastq_samples, worker, args, logger):
     
@@ -165,10 +176,9 @@ def collate_results(fastq_samples, worker, args, logger):
     miseq_logging.collate_logs(args.run_folder, "csf2nuc.log", "csf2nuc.log")
     
     collated_amino_freqs_path = "{}/amino_frequencies.csv".format(args.run_folder)
-    logger.info("collate_frequencies({},{},{})".format(args.run_folder,
-                                                       collated_amino_freqs_path,
-                                                       "amino"))
-    collate_frequencies(args.run_folder, collated_amino_freqs_path, "amino")
+    logger.info("Collating amino frequency files")
+    collate_labeled_files(os.path.join(args.run_folder, '*.amino.csv'),
+                          collated_amino_freqs_path)
     
     collated_nuc_freqs_path = "{}/nucleotide_frequencies.csv".format(args.run_folder)
     logger.info("collate_frequencies({},{},{})".format(args.run_folder,
@@ -186,18 +196,9 @@ def collate_results(fastq_samples, worker, args, logger):
                                                collated_counts_path))
     collate_counts(args.run_folder, collated_counts_path)
     
-    return collated_amino_freqs_path
-
-
-def generate_coverage_plots(collated_amino_freqs_path, worker, args):
-    coverage_map_path = "{}/coverage_maps.tar".format(args.run_folder)
-    coverage_score_path = "{}/coverage_scores.csv".format(args.run_folder)
-
-    worker.run_job(Job(script=base_path + 'coverage_plots.R',
-                       helpers=(base_path + 'key_positions.csv', ),
-                       args=(collated_amino_freqs_path,
-                             coverage_map_path,
-                             coverage_score_path)))
+    logger.info("Collating coverage scores")
+    collate_labeled_files(os.path.join(args.run_folder, '*.coverage_scores.csv'),
+                          os.path.join(args.run_folder, 'coverage_scores.csv'))
 
 def main():
     comm = MPI.COMM_WORLD
@@ -253,12 +254,7 @@ def main():
         count_samples(fastq_samples, worker, args)
     
     if args.phase in ('summarizing', 'all') and process_rank == 0:
-        collated_amino_freqs_path = collate_results(fastq_samples,
-                                                    worker,
-                                                    args,
-                                                    logger)
-        
-        generate_coverage_plots(collated_amino_freqs_path, worker, args)
+        collate_results(fastq_samples, worker, args, logger)
     
     logger.info('Finish processing run %s, rank %d',
                 args.run_folder,
