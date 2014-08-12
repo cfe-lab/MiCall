@@ -140,85 +140,88 @@ def coordinate_map(aquery, aref):
 
     return qindex_to_refcoord, inserts
 
-
-
-def write_amino_frequencies(aafile,
-                            sample_name,
-                            amino_counts,
-                            qindex_to_refcoord,
-                            inserts,
-                            refseqs,
-                            region,
-                            qcut):
-    """ Write a summary of the amino acid distribution at each position in the
-    reference sequence.
-    
-    @param aafile: an open file that the summary will be written to
-    @param sample_name: the name of the sample to go in the first column
-    @param amino_counts: {aa_pos: {aa: count}} a dictionary keyed by the amino
-    acid position. To calculate the amino acid position, take the position
-    within the consensus sequence and add the offset of where the start of the
-    consensus sequence maps to the reference sequence. Each entry is a
-    dictionary keyed by amino acid letter and containing the number of times
-    each amino acid was read at that position.
-    @param qindex_to_refcoord: {qindex: refcoord} maps coordinates from the
-    consensus sequence (query) to the reference sequence
-    @param inserts: a list of indexes for positions in the consensus sequence
-    that are inserts relative to the reference sequence
-    @param refseqs: {region: sequence} maps from region name to amino acid 
-    sequence
-    @param region: the name of the region being processed
-    @param qcut: the quality cutoff score that was used to map the consensus
-    sequence
-    """
-#     print('{!r}\n\n{!r}\n\n{!r}\n\n'.format(amino_counts, qindex_to_refcoord, inserts))
-    if not amino_counts:
-        return
-
-    aafile.write('sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,'
-                 'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*\n')
-    qindex = 0
-    query_offset = min(amino_counts.keys())
-    query_end = max(qindex_to_refcoord.keys())
-      
-    for refcoord in range(len(refseqs[region])):
-        while True:
-            # Skip over any inserts
-            aa_pos = qindex + query_offset
-            if aa_pos not in inserts:
-                break
-            assert aa_pos not in qindex_to_refcoord, aa_pos
-            qindex += 1
+class AminoFrequencyWriter(object):
+    def __init__(self, aafile, sample_name, refseqs):
+        """ Initialize a writer object.
         
-        while True:
-            # Skip over any gaps in the query consensus sequence
-            mapped_coord = qindex_to_refcoord.get(qindex)
-            if mapped_coord is not None or qindex >= query_end:
-                break
-            qindex += 1
- 
-        if mapped_coord == refcoord:
-            counts = [amino_counts[aa_pos].get(aa, 0)
-                      for aa in amino_alphabet]
-            aa_pos_str = str(aa_pos)
-            qindex += 1
-        else:
-            counts = [0 for aa in amino_alphabet]
-            aa_pos_str = ''
-        outstr = ','.join(map(str, counts))
-        aafile.write('%s,%s,%s,%s,%d,%s\n' % (sample_name,
-                                              region,
-                                              qcut,
-                                              aa_pos_str,
-                                              refcoord + 1,
-                                              outstr))
-#     intermed = [(k, v) for k, v in qindex_to_refcoord.iteritems()]
-#     intermed.sort()
-#     for qindex, refcoord in intermed:
-#         aa_pos = qindex + min(amino_counts.keys())
-#         assert aa_pos not in inserts, aa_pos
-#         outstr = ','.join(map(str, [amino_counts[aa_pos].get(aa, 0) for aa in amino_alphabet]))
-#         aafile.write('%s,%s,%d,%d,%s\n' % (region, qcut, aa_pos, refcoord + 1, outstr))
+        @param aafile: an open file that the summary will be written to
+        @param sample_name: the name of the sample to go in the first column
+        @param refseqs: {region: sequence} maps from region name to amino acid 
+        sequence
+        """
+        self.aafile = aafile
+        self.sample_name = sample_name
+        self.refseqs = refseqs
+        self.is_header_written = False
+        
+    def write(self,
+              region,
+              qcut,
+              qindex_to_refcoord,
+              amino_counts,
+              inserts):
+        """ Write a summary of the amino acid distribution at each position in
+        the reference sequence.
+        
+        @param region: the name of the region being processed
+        @param qcut: the quality cutoff score that was used to map the consensus
+        sequence
+        @param qindex_to_refcoord: {qindex: refcoord} maps coordinates from the
+        consensus sequence (query) to the reference sequence
+        @param amino_counts: {aa_pos: {aa: count}} a dictionary keyed by the amino
+        acid position. To calculate the amino acid position, take the position
+        within the consensus sequence and add the offset of where the start of the
+        consensus sequence maps to the reference sequence. Each entry is a
+        dictionary keyed by amino acid letter and containing the number of times
+        each amino acid was read at that position.
+        @param inserts: a list of indexes for positions in the consensus sequence
+        that are inserts relative to the reference sequence
+        """
+
+        if not amino_counts:
+            return
+    
+        if not self.is_header_written:
+            self.aafile.write(
+                'sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,'
+                'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*\n')
+            self.is_header_written = True
+            
+        qindex = 0
+        query_offset = min(amino_counts.keys())
+        query_end = max(qindex_to_refcoord.keys())
+          
+        for refcoord in range(len(self.refseqs[region])):
+            while True:
+                # Skip over any inserts
+                aa_pos = qindex + query_offset
+                if aa_pos not in inserts:
+                    break
+                assert aa_pos not in qindex_to_refcoord, aa_pos
+                qindex += 1
+            
+            while True:
+                # Skip over any gaps in the query consensus sequence
+                mapped_coord = qindex_to_refcoord.get(qindex)
+                if mapped_coord is not None or qindex >= query_end:
+                    break
+                qindex += 1
+     
+            if mapped_coord == refcoord:
+                counts = [amino_counts[aa_pos].get(aa, 0)
+                          for aa in amino_alphabet]
+                aa_pos_str = str(aa_pos)
+                qindex += 1
+            else:
+                counts = [0 for aa in amino_alphabet]
+                aa_pos_str = ''
+            outstr = ','.join(map(str, counts))
+            self.aafile.write('%s,%s,%s,%s,%d,%s\n' % (self.sample_name,
+                                                       region,
+                                                       qcut,
+                                                       aa_pos_str,
+                                                       refcoord + 1,
+                                                       outstr))
 
 def main():
     args = parseArgs()
@@ -289,6 +292,8 @@ def main():
     nucfile = open(args.output_nuc, 'w')
     confile = open(args.output_conseq, 'w')
     indelfile = open(args.output_indels, 'w')
+    sample_name = os.path.basename(args.output_amino).split('.')[0]
+    amino_writer = AminoFrequencyWriter(aafile, sample_name, refseqs)
 
     for region, group in groupby(infile, lambda x: x.split(',')[0]):
         if region not in refseqs:
@@ -353,13 +358,11 @@ def main():
             aquery, aref, _ = pair_align(hyphy, refseqs[region], aa_max)
             qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
 
-            write_amino_frequencies(aafile,
-                                    amino_counts,
-                                    qindex_to_refcoord,
-                                    inserts,
-                                    refseqs,
-                                    region,
-                                    qcut)
+            amino_writer.write(region,
+                               qcut,
+                               qindex_to_refcoord,
+                               amino_counts,
+                               inserts)
 
             # output nucleotide frequencies and consensus sequences
             nuc_coords = nuc_counts.keys()
