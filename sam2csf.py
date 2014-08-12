@@ -58,6 +58,18 @@ def apply_cigar (cigar, seq, qual):
             newqual += ' '*length  # Assign fake placeholder score (Q=-1)
         # Insertion relative to reference: skip it (excise it)
         elif token[-1] == 'I':
+            if length % 3 > 0:
+                # insertion length is not divisible by 3
+                left += length
+                continue
+
+            its_quals = qual[left:(left+length)]
+            qpass = map(lambda x: ord(x)-33 >= settings.insert_qcutoff, its_quals)
+            if all(qpass):
+                # require the entire insert sequence to be of high quality
+                newseq += seq[left:(left+length)]
+                newqual += qual[left:(left+length)]
+
             left += length
             continue
         # Soft clipping leaves the sequence in the SAM - so we should skip it

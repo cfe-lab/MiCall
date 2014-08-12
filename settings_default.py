@@ -49,6 +49,7 @@ consensus_q_cutoff = 20         # Min Q for base to contribute to conseq (pileup
 sam2csf_q_cutoffs = [0, 10, 15]  # Q-cutoff for base censoring
 max_prop_N = 0.5                 # Drop reads with more censored bases than this proportion
 read_mapping_cutoff = 10         # Minimum bowtie read mapping quality
+insert_qcutoff = 20              # minimum Q score for an insertion polymorphism to pass
 
 ## g2p parameters (Amplicon only)
 g2p_alignment_cutoff = 50               # Minimum alignment score during g2p scoring
