@@ -6,6 +6,7 @@ import csf2counts
 class Csf2CountsTest(unittest.TestCase):
     def setUp(self):
         self.aafile = StringIO.StringIO()
+        self.sample_name = 'E1234_S1'
         self.amino_counts = {}
         self.qindex_to_refcoord = {}
         self.inserts = []
@@ -17,6 +18,7 @@ class Csf2CountsTest(unittest.TestCase):
         expected_text = ''
         
         csf2counts.write_amino_frequencies(self.aafile,
+                                           self.sample_name,
                                            self.amino_counts,
                                            self.qindex_to_refcoord,
                                            self.inserts,
@@ -31,13 +33,15 @@ class Csf2CountsTest(unittest.TestCase):
         self.assertEqual(len(self.amino_counts), len(self.refseqs[self.region]))
         self.qindex_to_refcoord = {0:0, 1:1, 2:2}
         expected_text = """\
-R1,15,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
-R1,15,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0
-R1,15,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+E1234_S1,R1,15,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
+E1234_S1,R1,15,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0
+E1234_S1,R1,15,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
 """
 
         
         csf2counts.write_amino_frequencies(self.aafile,
+                                           self.sample_name,
                                            self.amino_counts,
                                            self.qindex_to_refcoord,
                                            self.inserts,
@@ -51,13 +55,15 @@ R1,15,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
         self.amino_counts = {1: {'R': 1}, 2: {'S': 1}}
         self.qindex_to_refcoord = {0:1, 1:2}
         expected_text = """\
-R1,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1,15,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0
-R1,15,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+E1234_S1,R1,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1,15,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0
+E1234_S1,R1,15,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
 """
 
         
         csf2counts.write_amino_frequencies(self.aafile,
+                                           self.sample_name,
                                            self.amino_counts,
                                            self.qindex_to_refcoord,
                                            self.inserts,
@@ -71,13 +77,15 @@ R1,15,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
         self.amino_counts = {0: {'Q': 1}, 1: {'R': 1}}
         self.qindex_to_refcoord = {0:0, 1:1}
         expected_text = """\
-R1,15,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
-R1,15,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0
-R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+E1234_S1,R1,15,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
+E1234_S1,R1,15,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0
+E1234_S1,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         
         csf2counts.write_amino_frequencies(self.aafile,
+                                           self.sample_name,
                                            self.amino_counts,
                                            self.qindex_to_refcoord,
                                            self.inserts,
@@ -95,13 +103,15 @@ R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         self.qindex_to_refcoord = {0:0, 2:1, 3:2}
         self.inserts = [1]
         expected_text = """\
-R1,15,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
-R1,15,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0
-R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+E1234_S1,R1,15,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
+E1234_S1,R1,15,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0
+E1234_S1,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
 """
 
         
         csf2counts.write_amino_frequencies(self.aafile,
+                                           self.sample_name,
                                            self.amino_counts,
                                            self.qindex_to_refcoord,
                                            self.inserts,
@@ -115,13 +125,15 @@ R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
         self.amino_counts = {0: {'Q': 1}, 1: {'S': 1}}
         self.qindex_to_refcoord = {0:0, 1:2}
         expected_text = """\
-R1,15,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
-R1,15,,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1,15,1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+E1234_S1,R1,15,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
+E1234_S1,R1,15,,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1,15,1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
 """
 
         
         csf2counts.write_amino_frequencies(self.aafile,
+                                           self.sample_name,
                                            self.amino_counts,
                                            self.qindex_to_refcoord,
                                            self.inserts,
@@ -135,12 +147,14 @@ R1,15,1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
         self.amino_counts = {0: {'Q': 1}, 2: {'S': 1}}
         self.qindex_to_refcoord = {0:0, 2:2}
         expected_text = """\
-R1,15,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
-R1,15,,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1,15,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+E1234_S1,R1,15,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
+E1234_S1,R1,15,,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1,15,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
 """
         
         csf2counts.write_amino_frequencies(self.aafile,
+                                           self.sample_name,
                                            self.amino_counts,
                                            self.qindex_to_refcoord,
                                            self.inserts,

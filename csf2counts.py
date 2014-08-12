@@ -143,6 +143,7 @@ def coordinate_map(aquery, aref):
 
 
 def write_amino_frequencies(aafile,
+                            sample_name,
                             amino_counts,
                             qindex_to_refcoord,
                             inserts,
@@ -153,6 +154,7 @@ def write_amino_frequencies(aafile,
     reference sequence.
     
     @param aafile: an open file that the summary will be written to
+    @param sample_name: the name of the sample to go in the first column
     @param amino_counts: {aa_pos: {aa: count}} a dictionary keyed by the amino
     acid position. To calculate the amino acid position, take the position
     within the consensus sequence and add the offset of where the start of the
@@ -172,6 +174,9 @@ def write_amino_frequencies(aafile,
 #     print('{!r}\n\n{!r}\n\n{!r}\n\n'.format(amino_counts, qindex_to_refcoord, inserts))
     if not amino_counts:
         return
+
+    aafile.write('sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,'
+                 'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*\n')
     qindex = 0
     query_offset = min(amino_counts.keys())
     query_end = max(qindex_to_refcoord.keys())
@@ -201,11 +206,12 @@ def write_amino_frequencies(aafile,
             counts = [0 for aa in amino_alphabet]
             aa_pos_str = ''
         outstr = ','.join(map(str, counts))
-        aafile.write('%s,%s,%s,%d,%s\n' % (region,
-                                           qcut,
-                                           aa_pos_str,
-                                           refcoord + 1,
-                                           outstr))
+        aafile.write('%s,%s,%s,%s,%d,%s\n' % (sample_name,
+                                              region,
+                                              qcut,
+                                              aa_pos_str,
+                                              refcoord + 1,
+                                              outstr))
 #     intermed = [(k, v) for k, v in qindex_to_refcoord.iteritems()]
 #     intermed.sort()
 #     for qindex, refcoord in intermed:
