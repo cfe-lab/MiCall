@@ -299,6 +299,7 @@ def main():
     amino_writer = AminoFrequencyWriter(aafile, sample_name, refseqs)
     
     infile.readline() # skip header
+    nucfile.write('sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
 
     for region, group in groupby(infile, lambda x: x.split(',')[0]):
         if region not in refseqs:
@@ -392,7 +393,7 @@ def main():
                     continue
 
                 outstr = ','.join(map(str, [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']))
-                nucfile.write('%s,%s,' % (region, qcut))
+                nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
                 nucfile.write(','.join(map(str, [query_nuc_pos+1, ref_nuc_pos+1, outstr])))
                 nucfile.write('\n')
 

@@ -4,7 +4,7 @@ import argparse
 from glob import glob
 import logging, os
 
-from collate import collate_frequencies, collate_conseqs, collate_labeled_files
+from collate import collate_conseqs, collate_labeled_files
 from fifo_scheduler import Job, Worker
 import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
@@ -174,12 +174,6 @@ def collate_results(fastq_samples, worker, args, logger):
     logger.info("Collating csf2nuc.log files")
     miseq_logging.collate_logs(args.run_folder, "csf2nuc.log", "csf2nuc.log")
     
-    collated_nuc_freqs_path = "{}/nucleotide_frequencies.csv".format(args.run_folder)
-    logger.info("collate_frequencies({},{},{})".format(args.run_folder,
-                                                       collated_nuc_freqs_path,
-                                                       "nuc"))
-    collate_frequencies(args.run_folder, collated_nuc_freqs_path, "nuc")
-    
     collated_conseq_path = "{}/collated_conseqs.csv".format(args.run_folder)
     logger.info("collate_conseqs({},{})".format(args.run_folder,
                                                 collated_conseq_path))
@@ -187,7 +181,8 @@ def collate_results(fastq_samples, worker, args, logger):
     
     files_to_collate = (('coverage_scores.csv', None),
                         ('collated_counts.csv', '*.remap_counts.csv'),
-                        ('amino_frequencies.csv', '*.amino.csv'))
+                        ('amino_frequencies.csv', '*.amino.csv'),
+                        ('nucleotide_frequencies.csv', '*.nuc.csv'))
     
     for target_file, pattern in files_to_collate:
         logger.info("Collating {}".format(target_file))
