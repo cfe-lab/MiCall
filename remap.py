@@ -97,6 +97,8 @@ def main():
 
     # group CSV stream by first item
     with open(args.prelim_csv, 'rU') as handle:
+        handle.readline() # skip header
+        
         prelim_count = 0
         map_counts = {}
         refnames = []

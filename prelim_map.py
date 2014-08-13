@@ -105,6 +105,8 @@ def main():
 
     # lines grouped by refname
     with open(args.prelim_csv, 'w') as outfile:
+        outfile.write('qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n')
+        
         for refname, lines in output.iteritems():
             for line in lines:
                 outfile.write(line.replace('\t', ',') + '\n')
