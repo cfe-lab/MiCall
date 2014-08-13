@@ -29,12 +29,12 @@ def parseArgs():
     parser = argparse.ArgumentParser(
         description='Post-processing of short-read alignments.')
     
-    parser.add_argument('input_csf', help='<input> aligned CSF input')
-    parser.add_argument('input_conseq', help='<input> consensus sequences from remapping step')
-    parser.add_argument('output_nuc', help='<output> CSV containing nucleotide frequencies')
-    parser.add_argument('output_amino', help='<output> CSV containing amino frequencies')
-    parser.add_argument('output_indels', help='<output> CSV containing insertions')
-    parser.add_argument('output_conseq', help='<output> CSV containing consensus sequences')
+    parser.add_argument('aligned_csv', help='<input> aligned CSF input')
+    parser.add_argument('remap_conseq', help='<input> consensus sequences from remapping step')
+    parser.add_argument('nuc_csv', help='<output> CSV containing nucleotide frequencies')
+    parser.add_argument('amino_csv', help='<output> CSV containing amino frequencies')
+    parser.add_argument('indels_csv', help='<output> CSV containing insertions')
+    parser.add_argument('conseq', help='<output> CSV containing consensus sequences')
     
     return parser.parse_args()
 
@@ -249,12 +249,12 @@ def main():
             refseqs.update({region: aaseq})
 
     # check that the inputs exist
-    if not os.path.exists(args.input_csf):
-        logger.error('No input CSF found at ' + args.input_csf)
+    if not os.path.exists(args.aligned_csv):
+        logger.error('No input CSF found at ' + args.aligned_csv)
         sys.exit(1)
 
     # check that the output paths are valid
-    for path in [args.output_nuc, args.output_amino, args.output_indels, args.output_conseq]:
+    for path in [args.nuc_csv, args.amino_csv, args.indels_csv, args.conseq]:
         output_path = os.path.split(path)[0]
         if not os.path.exists(output_path) and output_path != '':
             logger.error('Output path does not exist: ' + output_path)
@@ -264,14 +264,18 @@ def main():
     # FIXME: this might not be necessary - all offset 0?
     conseqs = {}
     best_frames = {}
-    with open(args.input_conseq, 'rU') as f:
-        for line in f:
-            region, conseq = line.strip('\n').split(',')
+    sample_name = ''
+    with open(args.remap_conseq, 'rU') as f:
+        for i, line in enumerate(f):
+            if i == 0:
+                #skip header
+                continue
+            sample_name, region, conseq = line.strip('\n').split(',')
             if region not in refseqs:
                 logger.warn('No reference in {} for {} reading {}'.format(
                     amino_ref, 
                     region,
-                    args.input_conseq))
+                    args.remap_conseq))
                 continue
             refseq = refseqs[region]  # protein sequence
 
@@ -287,12 +291,11 @@ def main():
 
 
     # for each region, quality cutoff
-    infile = open(args.input_csf, 'rU')
-    aafile = open(args.output_amino, 'w')
-    nucfile = open(args.output_nuc, 'w')
-    confile = open(args.output_conseq, 'w')
-    indelfile = open(args.output_indels, 'w')
-    sample_name = os.path.basename(args.output_amino).split('.')[0]
+    infile = open(args.aligned_csv, 'rU')
+    aafile = open(args.amino_csv, 'w')
+    nucfile = open(args.nuc_csv, 'w')
+    confile = open(args.conseq, 'w')
+    indelfile = open(args.indels_csv, 'w')
     amino_writer = AminoFrequencyWriter(aafile, sample_name, refseqs)
 
     for region, group in groupby(infile, lambda x: x.split(',')[0]):
@@ -383,7 +386,7 @@ def main():
                         'No coordinate mapping for query nuc %d (amino %d) in %s' % (
                             query_nuc_pos,
                             query_aa_pos,
-                            args.input_csf))
+                            args.aligned_csv))
                     continue
 
                 outstr = ','.join(map(str, [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']))

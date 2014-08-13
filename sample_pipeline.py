@@ -4,8 +4,7 @@ import argparse
 from glob import glob
 import logging, os
 
-from collate import collate_frequencies, collate_conseqs, collate_counts, \
-    collate_labeled_files
+from collate import collate_frequencies, collate_conseqs, collate_labeled_files
 from fifo_scheduler import Job, Worker
 import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
@@ -191,14 +190,15 @@ def collate_results(fastq_samples, worker, args, logger):
                                                 collated_conseq_path))
     collate_conseqs(args.run_folder, collated_conseq_path)
     
-    collated_counts_path = "{}/collated_counts.csv".format(args.run_folder)
-    logger.info("collate_counts({},{})".format(args.run_folder,
-                                               collated_counts_path))
-    collate_counts(args.run_folder, collated_counts_path)
+    files_to_collate = (('coverage_scores.csv', None),
+                        ('collated_counts.csv', '*.remap_counts.csv'))
     
-    logger.info("Collating coverage scores")
-    collate_labeled_files(os.path.join(args.run_folder, '*.coverage_scores.csv'),
-                          os.path.join(args.run_folder, 'coverage_scores.csv'))
+    for target_file, pattern in files_to_collate:
+        logger.info("Collating {}".format(target_file))
+        if pattern is None:
+            pattern = '*.' + target_file
+        collate_labeled_files(os.path.join(args.run_folder, pattern),
+                              os.path.join(args.run_folder, target_file))
 
 def main():
     comm = MPI.COMM_WORLD
