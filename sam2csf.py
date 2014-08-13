@@ -20,12 +20,13 @@ import sys
 import itertools
 import re
 
-from settings import max_prop_N, read_mapping_cutoff, sam2csf_q_cutoffs
+from settings import insert_qcutoff, max_prop_N, read_mapping_cutoff, \
+     sam2csf_q_cutoffs
 
 parser = argparse.ArgumentParser(
     description='Conversion of SAM data into aligned format.')
-parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
-parser.add_argument('output_csv', help='<output> CSV containing cleaned and merged reads')
+parser.add_argument('remap_csv', help='<input> SAM output of bowtie2 in CSV format')
+parser.add_argument('aligned_csv', help='<output> CSV containing cleaned and merged reads')
 parser.add_argument('failed_csv', help='<output> CSV containing reads that failed to merge')
 args = parser.parse_args()
 
@@ -64,7 +65,7 @@ def apply_cigar (cigar, seq, qual):
                 continue
 
             its_quals = qual[left:(left+length)]
-            qpass = map(lambda x: ord(x)-33 >= settings.insert_qcutoff, its_quals)
+            qpass = map(lambda x: ord(x)-33 >= insert_qcutoff, its_quals)
             if all(qpass):
                 # require the entire insert sequence to be of high quality
                 newseq += seq[left:(left+length)]
@@ -130,20 +131,23 @@ def len_gap_prefix(s):
 
 def main():
     # check that the inputs exist
-    if not os.path.exists(args.sam_csv):
-        print 'No input CSV found at', args.sam_csv
+    if not os.path.exists(args.remap_csv):
+        print 'No input CSV found at', args.remap_csv
         sys.exit(1)
 
     # check that the output paths are valid
-    output_path = os.path.split(args.output_csv)[0]
+    output_path = os.path.split(args.aligned_csv)[0]
     if not os.path.exists(output_path) and output_path != '':
         print 'Output path does not exist:', output_path
         sys.exit(1)
 
 
-    handle = open(args.sam_csv, 'rU')
-    outfile = open(args.output_csv, 'w')
+    handle = open(args.remap_csv, 'rU')
+    outfile = open(args.aligned_csv, 'w')
     failfile = open(args.failed_csv, 'w')
+    
+    handle.readline() # skip header
+    outfile.write('refname, qcut, rank, count, offset, seq\n')
 
     for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
         aligned = dict([(qcut, {}) for qcut in sam2csf_q_cutoffs])

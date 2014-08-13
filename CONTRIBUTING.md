@@ -8,7 +8,8 @@ Java, Python, and Oracle
 ------------------------
 1. Check that you are running a 64-bit operating system, or bowtie2 won't work.
    Check About this Computer under the gear menu.
-2. Check the version of Java you have installed:
+2. If you want to edit Python code using PyDev and Eclipse, you will need to
+   install Java. Check the version of Java you have installed:
 
         java -version
  

@@ -23,8 +23,8 @@ import settings
 parser = argparse.ArgumentParser(
     description='Clip out sub-regions from MiSeq read alignments.')
 
-parser.add_argument('input_csv', help='<input> CSV containing aligned and merged reads.')
-parser.add_argument('output_csv', help='<output> CSV containing clipped sequences')
+parser.add_argument('aligned_csv', help='<input> CSV containing aligned and merged reads.')
+parser.add_argument('nuc_variants', help='<output> CSV containing clipped sequences')
 
 args = parser.parse_args()
 
@@ -63,8 +63,10 @@ def main():
                 refseqs.update({region: {}})
             refseqs[region][subregion] = sequence
 
-    handle = open(args.input_csv, 'rb')
-    outfile = open(args.output_csv, 'w')
+    handle = open(args.aligned_csv, 'rb')
+    outfile = open(args.nuc_variants, 'w')
+    
+    handle.readline() # skip header
 
     for refname, group in itertools.groupby(handle, lambda x: x.split(',')[0]):
         if refname not in refseqs:
@@ -93,6 +95,7 @@ def main():
                     outfile.write('%s,%s,%s,%d,%d,%s\n' % (refname, qcut, subregion, index, count, seq))
 
     handle.close()
+    outfile.close()
 
 
 if __name__ == '__main__':

@@ -29,16 +29,20 @@ from settings import bowtie_threads, consensus_q_cutoff, mapping_ref_path,\
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 
+def calculate_sample_name(fastq_filepath):
+    filename = os.path.basename(fastq_filepath)
+    return '_'.join(filename.split('_')[:2])
+
 def main():
     parser = argparse.ArgumentParser(
         description='Iterative remapping of bowtie2 by reference.')
     
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-    parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
-    parser.add_argument('output_csv', help='<output> CSV containing remap output (modified SAM)')
-    parser.add_argument('stats_csv', help='<output> CSV containing numbers of mapped reads')
-    parser.add_argument('conseq_csv', help='<output> CSV containing mapping consensus sequences')
+    parser.add_argument('prelim_csv', help='<input> CSV containing preliminary map output (modified SAM)')
+    parser.add_argument('remap_csv', help='<output> CSV containing remap output (modified SAM)')
+    parser.add_argument('remap_counts_csv', help='<output> CSV containing numbers of mapped reads')
+    parser.add_argument('remap_conseq_csv', help='<output> CSV containing mapping consensus sequences')
     
     args = parser.parse_args()
     
@@ -61,7 +65,7 @@ def main():
         sys.exit(1)
 
     # check that the output paths are valid
-    for path in [args.output_csv, args.stats_csv, args.conseq_csv]:
+    for path in [args.remap_csv, args.remap_counts_csv, args.remap_conseq_csv]:
         output_path = os.path.split(path)[0]
         if not os.path.exists(output_path) and output_path != '':
             logger.error('Output path does not exist: %s', output_path)
@@ -86,11 +90,15 @@ def main():
     # get the raw read count
     raw_count = count_file_lines(args.fastq1) / 2  # 4 lines per record in FASTQ, paired
 
-    stat_file = open(args.stats_csv, 'w')
-    stat_file.write('raw,%d\n' % raw_count)
+    sample_name = calculate_sample_name(args.fastq1)
+    stat_file = open(args.remap_counts_csv, 'w')
+    stat_file.write('sample_name,type,count\n')
+    stat_file.write('%s,raw,%d\n' % (sample_name, raw_count))
 
     # group CSV stream by first item
-    with open(args.sam_csv, 'rU') as handle:
+    with open(args.prelim_csv, 'rU') as handle:
+        handle.readline() # skip header
+        
         prelim_count = 0
         map_counts = {}
         refnames = []
@@ -103,7 +111,7 @@ def main():
                 tmpfile.write('\t'.join(line.split(',')))
                 prelim_count += 1
                 count += 1
-            stat_file.write('prelim %s,%d\n' % (refname, count))
+            stat_file.write('%s,prelim %s,%d\n' % (sample_name, refname, count))
             map_counts.update({refname: count})
             tmpfile.close()
 
@@ -183,12 +191,17 @@ def main():
             break  # a sufficient fraction of raw data has been mapped
 
 
-    seqfile = open(args.conseq_csv, 'w')  # record consensus sequences for later use
-    outfile = open(args.output_csv, 'w')  # combine SAM files into single CSV output
+    seqfile = open(args.remap_conseq_csv, 'w')  # record consensus sequences for later use
+    outfile = open(args.remap_csv, 'w')  # combine SAM files into single CSV output
+    
+    seqfile.write('sample_name,region,sequence\n')
+    outfile.write('qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n')
 
     for refname in refnames:
-        stat_file.write('remap %s,%d\n' % (refname, map_counts[refname]))
-        seqfile.write('%s,%s\n' % (refname, conseqs[refname]))
+        stat_file.write('%s,remap %s,%d\n' % (sample_name,
+                                              refname,
+                                              map_counts[refname]))
+        seqfile.write('%s,%s,%s\n' % (sample_name, refname, conseqs[refname]))
         handle = open(refname+'.sam', 'rU')
         for line in handle:
             if line.startswith('@'):

@@ -25,6 +25,7 @@ f = File.open(ARGV[1], mode='w') # write-only
 CSV.foreach(ARGV[0]) do |row|
   region, qcut, rank, count, offset, seq = row
   if region != 'V3LOOP'
+    # skip header and other regions
     next
   end
   
