@@ -34,14 +34,14 @@ def apply_cigar (cigar, seq, qual)
         return Nil, Nil, Nil
     end
     shift = 0
-    if tokens[0].end_with?('S')
+    if tokens[0][-1,1] == 'S'
         shift = tokens[0][0..-2].to_i
     end
     left = 0
     tokens.each { |token|
         length = token[0..-2].to_i
         right = left + length - 1
-        operation = token[-1]
+        operation = token[-1,1]
         if operation == 'M'
             newseq += seq[left..right]
             newqual += qual[left..right]
@@ -54,8 +54,8 @@ def apply_cigar (cigar, seq, qual)
                 left += length
                 next
             end
-            its_quals = qual[left..right].each_char.to_a
-            if its_quals.map{|c| c.ord-33 >= QMIN}.all?
+            its_quals = qual[left..right].unpack('C*') # array of ASCII codes
+            if its_quals.map{|asc| asc-33 >= QMIN}.all?
                 newseq += seq[left..right]
                 newqual += qual[left..right]
             end
@@ -65,7 +65,7 @@ def apply_cigar (cigar, seq, qual)
             left += length
             next
         else
-            puts 'Unable to handle operation'
+            puts 'Unable to handle operation #{operation}'
         end
     }
     return shift, newseq, newqual
@@ -78,11 +78,17 @@ def merge_pairs (seq1, seq2, qual1, qual2)
       qual1, qual2 = qual2, qual1
     end
     i = 0
-    seq2.each_char { |c2| 
-        q2 = qual2[i].ord - 33
+    qual1_ints = qual1.unpack('C*')
+    qual2_ints = qual2.unpack('C*')
+    qual1_ints.map! {|x| x - 33}
+    qual2_ints.map! {|x| x - 33}
+    
+    seq2.each_byte { |b2|
+        c2 = b2.chr
+        q2 = qual2_ints[i]
         if i < seq1.length
-            c1 = seq1[i]
-            q1 = qual1[i].ord - 33
+            c1 = seq1[i,1]
+            q1 = qual1_ints[i]
             if c1 == '-' and c2 == '-'
                 mseq += '-'
                 next
@@ -132,8 +138,8 @@ merged = Hash.new # tabulate merged sequence variants
 
 CSV.foreach(ARGV[0]) do |row|
     qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = row
-    #region, qcut, rank, count, offset, seq = row
     if rname != 'V3LOOP'
+        # uninteresting region or the header row
         next
     end
     shift, seq1, qual1 = apply_cigar(cigar, seq, qual)
@@ -149,7 +155,7 @@ CSV.foreach(ARGV[0]) do |row|
         
         seqlen = (mseq.delete '-').length
         if (mseq.count 'N') > (0.5*seqlen)
-            # if more than 20% of sequence is garbage
+            # if more than 50% of sequence is garbage
             next
         end
         
@@ -175,6 +181,12 @@ sorted.each do |s, count|
     seq = s.delete '-'
     if s.length % 3 != 0
         f.write("#{rank},#{count},,,,notdiv3\n")
+        next
+    end
+    
+    if seq.length == 0
+      f.write("#{rank},#{count},,,,zerolength\n")
+      next
     end
     
     dna = Bio::Sequence.auto(seq)
