@@ -174,11 +174,6 @@ def collate_results(fastq_samples, worker, args, logger):
     logger.info("Collating csf2nuc.log files")
     miseq_logging.collate_logs(args.run_folder, "csf2nuc.log", "csf2nuc.log")
     
-    collated_amino_freqs_path = "{}/amino_frequencies.csv".format(args.run_folder)
-    logger.info("Collating amino frequency files")
-    collate_labeled_files(os.path.join(args.run_folder, '*.amino.csv'),
-                          collated_amino_freqs_path)
-    
     collated_nuc_freqs_path = "{}/nucleotide_frequencies.csv".format(args.run_folder)
     logger.info("collate_frequencies({},{},{})".format(args.run_folder,
                                                        collated_nuc_freqs_path,
@@ -191,7 +186,8 @@ def collate_results(fastq_samples, worker, args, logger):
     collate_conseqs(args.run_folder, collated_conseq_path)
     
     files_to_collate = (('coverage_scores.csv', None),
-                        ('collated_counts.csv', '*.remap_counts.csv'))
+                        ('collated_counts.csv', '*.remap_counts.csv'),
+                        ('amino_frequencies.csv', '*.amino.csv'))
     
     for target_file, pattern in files_to_collate:
         logger.info("Collating {}".format(target_file))

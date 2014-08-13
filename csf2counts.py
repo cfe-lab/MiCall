@@ -297,6 +297,8 @@ def main():
     confile = open(args.conseq, 'w')
     indelfile = open(args.indels_csv, 'w')
     amino_writer = AminoFrequencyWriter(aafile, sample_name, refseqs)
+    
+    infile.readline() # skip header
 
     for region, group in groupby(infile, lambda x: x.split(',')[0]):
         if region not in refseqs:
