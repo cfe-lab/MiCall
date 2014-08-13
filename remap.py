@@ -193,6 +193,7 @@ def main():
     outfile = open(args.remap_csv, 'w')  # combine SAM files into single CSV output
     
     seqfile.write('sample_name,region,sequence\n')
+    outfile.write('qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n')
 
     for refname in refnames:
         stat_file.write('%s,remap %s,%d\n' % (sample_name,
