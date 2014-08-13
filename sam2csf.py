@@ -147,7 +147,8 @@ def main():
     failfile = open(args.failed_csv, 'w')
     
     handle.readline() # skip header
-    outfile.write('refname, qcut, rank, count, offset, seq\n')
+    outfile.write('refname,qcut,rank,count,offset,seq\n')
+    failfile.write('qname,qcut,seq1,qual1,seq2,qual2,prop_N,mseq\n')
 
     for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
         aligned = dict([(qcut, {}) for qcut in sam2csf_q_cutoffs])

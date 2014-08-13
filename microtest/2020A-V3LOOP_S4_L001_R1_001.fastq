@@ -1,17 +1,16 @@
-@Example forward read 1 (starts at second codon, inserts extra codon after first two)
+@Example_read_1_(starts_at_second_codon_and_inserts_extra_codon_after_first_two)
 ACAAGAACACCCAACAACAATACAAGAAAAAG
 +
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-@Example forward read 2
+@Example_read_2
 ACAAGAACACCCAACAACAATACAAGAAAAAG
 +
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-@Example forward read 3
+@Example_read_3
 ACAAGAACACCCAACAACAATACAAGAAAAAG
 +
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-@Example forward read 4
+@Example_read_4
 ACAAGAACACCCAACAACAATACAAGAAAAAG
 +
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-

@@ -1,17 +1,16 @@
-@Example forward read 1 - This sample is missing coverage of the first codon.
+@Example_read_1_-_This_sample_is_missing_coverage_of_the_first_codon.
 ACAAGACCCAACAACAATACAAGAAAAAG
 +
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-@Example forward read 2
+@Example_read_2
 ACAAGACCCAACAACAATACAAGAAAAAG
 +
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-@Example forward read 3
+@Example_read_3
 ACAAGACCCAACAACAATACAAGAAAAAG
 +
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-@Example forward read 4
+@Example_read_4
 ACAAGACCCAACAACAATACAAGAAAAAG
 +
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-
