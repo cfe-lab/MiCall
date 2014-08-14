@@ -1,28 +1,4 @@
-import glob, os
-
-def collate_conseqs(run_path,output_path):
-    """
-    Collate .conseq.csv files into a single CSV summary file.
-    """
-
-    files = glob.glob("{}/*.conseq.csv".format(run_path))
-
-    with open(output_path,"w") as f_out:
-        f_out.write("sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n")
-
-        for path in files:
-            prefix = (os.path.basename(path)).rstrip(".conseq.csv")
-            sample = prefix.split(".")[0]
-            sname, snum = sample.split('_')
-            with open(path,"r") as f:
-                for line in f:
-                    region, qcut, cut, conseq = line.rstrip().split(',')
-                    f_out.write(','.join((sname,
-                                          region,
-                                          qcut,
-                                          snum,
-                                          cut,
-                                          conseq)) + '\n')
+import glob
 
 #TODO: This can probably be deleted. Wait until we revisit cross-contamination filter to be sure.
 # def collate_frequencies (run_path, output_path, output_type):

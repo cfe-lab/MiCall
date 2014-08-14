@@ -4,7 +4,7 @@ import argparse
 from glob import glob
 import logging, os
 
-from collate import collate_conseqs, collate_labeled_files
+from collate import collate_labeled_files
 from fifo_scheduler import Job, Worker
 import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
@@ -174,15 +174,11 @@ def collate_results(fastq_samples, worker, args, logger):
     logger.info("Collating csf2nuc.log files")
     miseq_logging.collate_logs(args.run_folder, "csf2nuc.log", "csf2nuc.log")
     
-    collated_conseq_path = "{}/collated_conseqs.csv".format(args.run_folder)
-    logger.info("collate_conseqs({},{})".format(args.run_folder,
-                                                collated_conseq_path))
-    collate_conseqs(args.run_folder, collated_conseq_path)
-    
     files_to_collate = (('coverage_scores.csv', None),
                         ('collated_counts.csv', '*.remap_counts.csv'),
                         ('amino_frequencies.csv', '*.amino.csv'),
-                        ('nucleotide_frequencies.csv', '*.nuc.csv'))
+                        ('nucleotide_frequencies.csv', '*.nuc.csv'),
+                        ('collated_conseqs.csv', '*.conseq.csv'))
     
     for target_file, pattern in files_to_collate:
         logger.info("Collating {}".format(target_file))

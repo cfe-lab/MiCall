@@ -300,6 +300,9 @@ def main():
     
     infile.readline() # skip header
     nucfile.write('sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
+    indelfile.write('region,qcut,left,insert,count\n')
+    confile.write('sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
+    sample_name_base, sample_snum = sample_name.split('_', 1)
 
     for region, group in groupby(infile, lambda x: x.split(',')[0]):
         if region not in refseqs:
@@ -436,9 +439,18 @@ def main():
                         # no characters left - I don't think this outcome is possible
                         conseqs[cut] += 'N'
 
-            confile.write('%s,%s,MAX,%s\n' % (region, qcut, maxcon))
+            confile.write('%s,%s,%s,%s,MAX,%s\n' % (sample_name_base,
+                                                    region,
+                                                    qcut,
+                                                    sample_snum,
+                                                    maxcon))
             for cut, conseq in conseqs.iteritems():
-                confile.write('%s,%s,%1.3f,%s\n' % (region, qcut, cut, conseq))
+                confile.write('%s,%s,%s,%s,%1.3f,%s\n' % (sample_name_base,
+                                                          region,
+                                                          qcut,
+                                                          sample_snum,
+                                                          cut,
+                                                          conseq))
 
             # convert insertion coordinates into contiguous ranges
             if len(inserts) == 0:
