@@ -67,6 +67,7 @@ def main():
     outfile = open(args.nuc_variants, 'w')
     
     handle.readline() # skip header
+    outfile.write('refname,qcut,subregion,index,count,seq\n')
 
     for refname, group in itertools.groupby(handle, lambda x: x.split(',')[0]):
         if refname not in refseqs:
