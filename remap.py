@@ -43,6 +43,8 @@ def main():
     parser.add_argument('remap_csv', help='<output> CSV containing remap output (modified SAM)')
     parser.add_argument('remap_counts_csv', help='<output> CSV containing numbers of mapped reads')
     parser.add_argument('remap_conseq_csv', help='<output> CSV containing mapping consensus sequences')
+    parser.add_argument('unmapped1', help='<output> FASTQ R1 of reads that failed to map to any region')
+    parser.add_argument('unmapped2', help='<output> FASTQ R2 of reads that failed to map to any region')
     
     args = parser.parse_args()
     
@@ -190,7 +192,9 @@ def main():
         if mapping_efficiency > min_mapping_efficiency:
             break  # a sufficient fraction of raw data has been mapped
 
+    mapped = {}  # track which reads have been mapped to a region
 
+    # generate outputs
     seqfile = open(args.remap_conseq_csv, 'w')  # record consensus sequences for later use
     outfile = open(args.remap_csv, 'w')  # combine SAM files into single CSV output
     
@@ -202,18 +206,48 @@ def main():
                                               refname,
                                               map_counts[refname]))
         seqfile.write('%s,%s,%s\n' % (sample_name, refname, conseqs[refname]))
+        # transfer contents of last SAM file to CSV
         handle = open(refname+'.sam', 'rU')
         for line in handle:
             if line.startswith('@'):
                 continue  # omit SAM header lines
             items = line.strip('\n').split('\t')[:11]
+            qname = items[0]
+            if qname not in mapped:
+                mapped.update({qname: 0})
+            mapped[qname] += 1  # track how many times this read has mapped to a region
             items[2] = refname  # replace '0' due to passing conseq to bowtie2-build on cmd line
             outfile.write(','.join(items) + '\n')
         handle.close()
 
     outfile.close()
-    stat_file.close()
     seqfile.close()
+
+    # screen raw data for reads that have not mapped to any region
+    outfile = open(args.unmapped1, 'w')
+    n_unmapped = 0
+    with open(args.fastq1, 'rU') as f:
+        # http://stackoverflow.com/questions/1657299/how-do-i-read-two-lines-from-a-file-at-a-time-using-python
+        for ident, seq, opt, qual in itertools.izip_longest(*[f]*4):
+            qname = ident.lstrip('@').rstrip('\n').split()[0]
+            if qname not in mapped:
+                outfile.write(''.join([ident, seq, opt, qual]))
+                n_unmapped += 1
+    outfile.close()
+
+    # report number of unmapped reads
+    stat_file.write('%s,unmapped,%d\n' % (sample_name, n_unmapped))
+    stat_file.close()
+
+    # write out the other pair
+    outfile = open(args.unmapped2, 'w')
+    with open(args.fastq2, 'rU') as f:
+        for ident, seq, opt, qual in itertools.izip_longest(*[f]*4):
+            qname = ident.lstrip('@').rstrip('\n').split()[0]
+            if qname not in mapped:
+                outfile.write(''.join([ident, seq, opt, qual]))
+    outfile.close()
+
 
 def pileup_to_conseq (handle, qCutoff):
     conseq = ''
