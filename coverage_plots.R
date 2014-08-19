@@ -20,7 +20,7 @@ output.csv <- args[3]
 dir.create('coverage_maps')
 
 # load key positions file
-key.pos <- read.csv(file='key_positions.csv', header=FALSE)
+key.pos <- read.csv(file='key_positions.csv', header=TRUE)
 names(key.pos) <- c('target', 'pos')
 
 
