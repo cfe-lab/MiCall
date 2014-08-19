@@ -33,6 +33,42 @@ def calculate_sample_name(fastq_filepath):
     filename = os.path.basename(fastq_filepath)
     return '_'.join(filename.split('_')[:2])
 
+def parse_bitflag (flag):
+    """
+    Interpret bitwise flag in SAM field as follows:
+
+    Flag    Chr Description
+    =============================================================
+    0x0001  p   the read is paired in sequencing
+    0x0002  P   the read is mapped in a proper pair
+    0x0004  u   the query sequence itself is unmapped
+    0x0008  U   the mate is unmapped
+    0x0010  r   strand of the query (1 for reverse)
+    0x0020  R   strand of the mate
+    0x0040  1   the read is the first read in a pair
+    0x0080  2   the read is the second read in a pair
+    0x0100  s   the alignment is not primary
+    0x0200  f   the read fails platform/vendor quality checks
+    0x0400  d   the read is either a PCR or an optical duplicate
+    """
+    labels = ['is_paired', 'is_mapped_in_proper_pair', 'is_unmapped', 'mate_is_unmapped',
+            'is_reverse', 'mate_is_reverse', 'is_first', 'is_second', 'is_secondary_alignment',
+            'is_failed', 'is_duplicate']
+
+    binstr = bin(int(flag)).replace('0b', '')
+    # flip the string
+    binstr = binstr[::-1]
+    # if binstr length is shorter than 11, pad the right with zeroes
+    for i in range(len(binstr), 11):
+        binstr += '0'
+
+    bitflags = list(binstr)
+    res = {}
+    for i, bit in enumerate(bitflags):
+        res.update({labels[i]: bool(int(bit))})
+
+    return (res)
+
 def main():
     parser = argparse.ArgumentParser(
         description='Iterative remapping of bowtie2 by reference.')
@@ -99,8 +135,7 @@ def main():
 
     # group CSV stream by first item
     with open(args.prelim_csv, 'rU') as handle:
-        handle.readline() # skip header
-        
+        handle.readline()  # skip header
         prelim_count = 0
         map_counts = {}
         refnames = []
@@ -213,9 +248,15 @@ def main():
                 continue  # omit SAM header lines
             items = line.strip('\n').split('\t')[:11]
             qname = items[0]
+            bits = parse_bitflag(items[1])
+
             if qname not in mapped:
                 mapped.update({qname: 0})
-            mapped[qname] += 1  # track how many times this read has mapped to a region
+
+            # track how many times this read has mapped to a region with integer value
+            # 0(00) = neither; 2(10) = forward only; 1(01) = reverse only; 3(11) both
+            mapped[qname] += (2 if bits['is_first'] else 1)
+
             items[2] = refname  # replace '0' due to passing conseq to bowtie2-build on cmd line
             outfile.write(','.join(items) + '\n')
         handle.close()
@@ -230,7 +271,19 @@ def main():
         # http://stackoverflow.com/questions/1657299/how-do-i-read-two-lines-from-a-file-at-a-time-using-python
         for ident, seq, opt, qual in itertools.izip_longest(*[f]*4):
             qname = ident.lstrip('@').rstrip('\n').split()[0]
-            if qname not in mapped:
+            if qname not in mapped or mapped[qname] < 2:
+                # forward read not mapped
+                outfile.write(''.join([ident, seq, opt, qual]))
+                n_unmapped += 1
+    outfile.close()
+
+    # write out the other pair
+    outfile = open(args.unmapped2, 'w')
+    with open(args.fastq2, 'rU') as f:
+        for ident, seq, opt, qual in itertools.izip_longest(*[f]*4):
+            qname = ident.lstrip('@').rstrip('\n').split()[0]
+            if qname not in mapped or mapped[qname] % 2 == 0:
+                # reverse read not mapped
                 outfile.write(''.join([ident, seq, opt, qual]))
                 n_unmapped += 1
     outfile.close()
@@ -238,15 +291,6 @@ def main():
     # report number of unmapped reads
     stat_file.write('%s,unmapped,%d\n' % (sample_name, n_unmapped))
     stat_file.close()
-
-    # write out the other pair
-    outfile = open(args.unmapped2, 'w')
-    with open(args.fastq2, 'rU') as f:
-        for ident, seq, opt, qual in itertools.izip_longest(*[f]*4):
-            qname = ident.lstrip('@').rstrip('\n').split()[0]
-            if qname not in mapped:
-                outfile.write(''.join([ident, seq, opt, qual]))
-    outfile.close()
 
 
 def pileup_to_conseq (handle, qCutoff):
