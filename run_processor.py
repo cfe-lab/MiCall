@@ -44,13 +44,17 @@ def main():
     
     logger.info('Start processing run %s', args.run_folder)
     logger.info('Removing old working files')
-    excluded_files = ('.fastq', 'SampleSheet.csv', '.launch')
+    excluded_files = ('.fastq',
+                      'SampleSheet.csv',
+                      '.launch',
+                      'MISEQ_MONITOR_OUTPUT.log')
     old_files = glob(args.run_folder+'/*')
     for f in old_files:
         is_excluded = False
         for ending in excluded_files:
             if f.endswith(ending):
-                is_excluded = True
+                is_excluded = not (f.endswith('unmapped1.fastq') or
+                                   f.endswith('unmapped2.fastq'))
                 break
         if not is_excluded:
             if os.path.isdir(f):

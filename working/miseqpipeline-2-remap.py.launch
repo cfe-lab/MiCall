@@ -8,7 +8,7 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:miseqpipeline/remap.py}"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_OTHER_WORKING_DIRECTORY" value="${workspace_loc:miseqpipeline}/working"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="${workspace_loc:miseqpipeline}/microtest/2010A-V3LOOP_S3_L001_R1_001.fastq ${workspace_loc:miseqpipeline}/microtest/2010A-V3LOOP_S3_L001_R2_001.fastq ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.prelim.csv ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.remap.csv ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.remap_counts.csv ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.remap_conseq.csv"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="${workspace_loc:miseqpipeline}/microtest/2010A-V3LOOP_S3_L001_R1_001.fastq ${workspace_loc:miseqpipeline}/microtest/2010A-V3LOOP_S3_L001_R2_001.fastq ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.prelim.csv ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.remap.csv ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.remap_counts.csv ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.remap_conseq.csv ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.unmapped1.fastq ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.unmapped2.fastq"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:miseqpipeline}/working"/>
 <stringAttribute key="org.python.pydev.debug.ATTR_INTERPRETER" value="__default"/>
 <stringAttribute key="org.python.pydev.debug.ATTR_PROJECT" value="miseqpipeline"/>

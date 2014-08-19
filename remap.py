@@ -88,11 +88,11 @@ def main():
     
     # check that the inputs exist
     if not os.path.exists(args.fastq1):
-        logger.error('No FASTQ found at', args.fastq1)
+        logger.error('No FASTQ found at %s', args.fastq1)
         sys.exit(1)
 
     if not os.path.exists(args.fastq2):
-        logger.error('No FASTQ found at', args.fastq2)
+        logger.error('No FASTQ found at %s', args.fastq2)
         sys.exit(1)
 
     # check that we have access to bowtie2

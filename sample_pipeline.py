@@ -76,8 +76,7 @@ def map_samples(fastq_samples, worker):
                                  sample_info.output_root + '.remap_counts.csv',
                                  sample_info.output_root + '.remap_conseq.csv',
                                  sample_info.output_root + '.unmapped1.fastq',
-                                 sample_info.output_root + '.unmapped2.fastq'
-                                ),
+                                 sample_info.output_root + '.unmapped2.fastq'),
                            stdout=log_path,
                            stderr=log_path))
 
@@ -159,6 +158,10 @@ def collate_results(fastq_samples, worker, args, logger):
                                      sample_info.output_root + '.g2p.csv'),
                                stdout=log_path,
                                stderr=log_path))
+            
+    results_folder = os.path.join(args.run_folder, 'results')
+    if not os.path.isdir(results_folder):
+        os.mkdir(results_folder)
     
     logger.info("Collating *.mapping.log files")
     miseq_logging.collate_logs(args.run_folder, "mapping.log", "mapping.log")
@@ -177,18 +180,22 @@ def collate_results(fastq_samples, worker, args, logger):
     logger.info("Collating csf2nuc.log files")
     miseq_logging.collate_logs(args.run_folder, "csf2nuc.log", "csf2nuc.log")
     
-    files_to_collate = (('coverage_scores.csv', None),
-                        ('collated_counts.csv', '*.remap_counts.csv'),
-                        ('amino_frequencies.csv', '*.amino.csv'),
+    files_to_collate = (('amino_frequencies.csv', '*.amino.csv'),
+                        ('collated_conseqs.csv', '*.conseq.csv'),
+                        ('coverage_scores.csv', None),
+                        ('failed.csv', None),
+                        ('g2p.csv', None),
+                        ('indels.csv', None),
                         ('nucleotide_frequencies.csv', '*.nuc.csv'),
-                        ('collated_conseqs.csv', '*.conseq.csv'))
+                        ('nuc_variants.csv', None),
+                        ('collated_counts.csv', '*.remap_counts.csv'))
     
     for target_file, pattern in files_to_collate:
         logger.info("Collating {}".format(target_file))
         if pattern is None:
             pattern = '*.' + target_file
         collate_labeled_files(os.path.join(args.run_folder, pattern),
-                              os.path.join(args.run_folder, target_file))
+                              os.path.join(results_folder, target_file))
 
 def main():
     comm = MPI.COMM_WORLD
@@ -235,7 +242,8 @@ def main():
 
     worker = Worker(launch_callback=launch_callback,
                     working_path=args.run_folder,
-                    are_temp_folders_deleted=are_temp_folders_deleted)
+                    are_temp_folders_deleted=are_temp_folders_deleted,
+                    logger=logger)
     
     if args.phase in ('mapping', 'all'):
         map_samples(fastq_samples, worker)

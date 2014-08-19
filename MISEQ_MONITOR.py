@@ -51,10 +51,12 @@ def post_files(files, destination):
         execute_command(['rsync', '-a', f, '{}/{}'.format(destination, os.path.basename(f))])
 
 processed_runs = set()
+logger = None
 
 # Process runs flagged for processing not already processed by this version of the pipeline
 while True:
-    logger = init_logging(home + '/MISEQ_MONITOR_OUTPUT.log')
+    if logger is None:
+        logger = init_logging(home + '/MISEQ_MONITOR_OUTPUT.log')
     # flag indicates that Illumina MiseqReporter has completed pre-processing, files available on NAS
     runs = glob(rawdata_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
     #runs = glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
@@ -176,25 +178,24 @@ while True:
             # Determine output paths
             result_path = curr_run.replace(NEEDS_PROCESSING, 'Results')
             result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
-            log_path = '{}/logs'.format(result_path_final)
-    
-            # Create sub-folders if needed
-            for path in [result_path, result_path_final, log_path]:
-                if not os.path.exists(path): os.mkdir(path)
     
             # Post files to appropriate sub-folders
             logger.info("Posting results to {}".format(result_path_final))
-            if mode == 'Amplicon':
-                v3_path = '{}/v3_tropism'.format(result_path_final)
-                if not os.path.exists(v3_path): os.mkdir(v3_path)
-                post_files(glob(home + run_name + '/*.v3prot'), v3_path)
-    
-            nuc_path = result_path_final + '/nuc'
-            if not os.path.exists(nuc_path): os.mkdir(nuc_path)
-            post_files(glob(home + run_name + '/*.nuc'), nuc_path)
-    
-            post_files(glob(home + run_name + '/*.log'), log_path)
-            post_files([x for x in glob(home + run_name + '/*.csv') if 'indel' not in x], result_path_final)
+            file_sets = [# (pattern, destination)
+                         ('results/*', None),
+                         ('*.log', 'logs'),
+                         ('*.unmapped?.fastq', 'unmapped')]
+            
+            for pattern, destination in file_sets:
+                destination_path = (
+                    os.path.join(result_path_final, destination)
+                    if destination
+                    else result_path_final)
+                full_pattern = os.path.join(home, run_name, pattern)
+                if not os.path.isdir(destination_path):
+                    os.mkdir(destination_path)
+                post_files(glob(full_pattern), destination_path)
+                    
             for tar_path in glob(home + run_name + '/*.coverage_maps.tar'):
                 with tarfile.open(tar_path) as tar:
                     tar.extractall(result_path_final)
@@ -207,9 +208,7 @@ while True:
             logger.error('Failed to post pipeline results for %r.', 
                          run_name, 
                          exc_info=True)
+            mark_run_as_disabled(root, "Failed to post pipeline results")
 
     logging.shutdown()
-
-    if production:
-        execute_command(['rsync', '-a', log_file, '{}/{}'.format(log_path, os.path.basename(log_file))])
-
+    logger = None
