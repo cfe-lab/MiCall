@@ -74,7 +74,10 @@ def map_samples(fastq_samples, worker):
                                  sample_info.output_root + '.prelim.csv',
                                  sample_info.output_root + '.remap.csv',
                                  sample_info.output_root + '.remap_counts.csv',
-                                 sample_info.output_root + '.remap_conseq.csv'),
+                                 sample_info.output_root + '.remap_conseq.csv',
+                                 sample_info.output_root + '.unmapped1.fastq',
+                                 sample_info.output_root + '.unmapped2.fastq'
+                                ),
                            stdout=log_path,
                            stderr=log_path))
 
