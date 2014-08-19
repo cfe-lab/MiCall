@@ -186,6 +186,8 @@ while True:
                          ('*.log', 'logs'),
                          ('*.unmapped?.fastq', 'unmapped')]
             
+            if not os.path.isdir(result_path):
+                os.mkdir(result_path)
             for pattern, destination in file_sets:
                 destination_path = (
                     os.path.join(result_path_final, destination)

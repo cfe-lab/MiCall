@@ -36,6 +36,9 @@ alphabet <- c('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', '
 
 data$coverage <- apply(data[ , which(is.element(names(data), alphabet))], 1, sum)
 
+# zeroes don't show up on a log plot, so we mark no coverage at 0.1
+data$coverage <- sapply(data$coverage, function(x) max(x, 0.1))
+
 # partition AA frequency table by sample and region
 coverage <- split(data[,which(is.element(names(data), c('refseq.aa.pos', 'q.cutoff', 'coverage')))], f=list(data$region, data$sample), drop=TRUE)
 
@@ -89,8 +92,9 @@ for (i in 1:length(coverage)) {
         key.coverage <- df2$coverage[is.element(df2$refseq.aa.pos, temp)]
         if (length(key.coverage) > 0) {
             min.coverage <- min(key.coverage)
+            max.coverage <- max(df2$coverage)
             off.score <- as.character(cut(
-                    min.coverage,
+                    max.coverage,
                     c(-Inf, 0, 10, 100, Inf),
                     labels=c(0, -1, -2, -3)))
             on.score <- as.character(cut(
