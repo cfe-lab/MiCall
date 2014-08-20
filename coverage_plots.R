@@ -20,8 +20,23 @@ output.csv <- args[3]
 dir.create('coverage_maps')
 
 # load key positions file
-key.pos <- read.csv(file='key_positions.csv', header=TRUE)
-names(key.pos) <- c('target', 'pos')
+key.pos.ranges <- read.csv(file='key_positions.csv', header=TRUE)
+key.pos <- split(key.pos.ranges, f=key.pos.ranges$region)
+for (region in names(key.pos)) {
+    ranges <- key.pos[[region]]
+    positions <- vector()
+    for (i in seq(length=length(ranges$ref_pos_start))) {
+        ref_pos_start <- ranges$ref_pos_start[i]
+        ref_pos_end <- ranges$ref_pos_end[i]
+        if (is.na(ref_pos_end)) {
+            positions <- append(positions, ref_pos_start)
+        }
+        else {
+            positions <- append(positions, ref_pos_start:ref_pos_end)
+        }
+    }
+    key.pos[[region]] <- positions
+}
 
 output.columns <- c(
         'sample',
@@ -66,10 +81,10 @@ for (i in seq(length=length(coverage))) {
     title(xlab="Reference coordinates (AA)", font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
     
     # indicate key positions for this region
-    temp <- key.pos$pos[key.pos$target==region]
+    temp <- key.pos[[region]]
     #points(temp, rep(min.coverage, length(temp)), pch=8, cex=1.5)
     for (pos in temp) {
-        rect(pos, 500, pos+1, 2e3, col='red', border=NA)
+        rect(pos-0.5, 500, pos+0.5, 2e3, col='red', border=NA)
     }
     
     if (length(temp) == 0) {
