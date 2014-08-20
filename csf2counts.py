@@ -151,7 +151,9 @@ class AminoFrequencyWriter(object):
         self.aafile = aafile
         self.sample_name = sample_name
         self.refseqs = refseqs
-        self.is_header_written = False
+        self.aafile.write(
+            'sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,'
+            'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*\n')
         
     def write(self,
               region,
@@ -180,12 +182,6 @@ class AminoFrequencyWriter(object):
         if not amino_counts:
             return
     
-        if not self.is_header_written:
-            self.aafile.write(
-                'sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,'
-                'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*\n')
-            self.is_header_written = True
-            
         qindex = 0
         query_offset = min(amino_counts.keys())
         query_end = max(qindex_to_refcoord.keys())
@@ -273,7 +269,9 @@ def main():
     nucfile.write('sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
     indelfile.write('region,qcut,left,insert,count\n')
     confile.write('sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
-    sample_name_base, sample_snum = sample_name.split('_', 1)
+    sample_name_base, sample_snum = (sample_name.split('_', 1)
+                                     if sample_name
+                                     else ('', ''))
 
     for region, group in groupby(infile, lambda x: x.split(',')[0]):
         if region not in refseqs:

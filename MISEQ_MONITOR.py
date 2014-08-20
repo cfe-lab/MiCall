@@ -30,12 +30,15 @@ def init_logging(log_file):
         raise Exception("Couldn't setup logging (init_logging() threw exception '{}') - HALTING NOW!".format(str(e)))
     return logger
 
-def mark_run_as_disabled(root, message):
+def mark_run_as_disabled(root, message, *args, **kwargs):
     """ Mark a run that failed, so it won't be processed again. """
-    logger.error(message + " - skipping run " + root)
+    failure_message = message + " - skipping run " + root
+    logger.error(failure_message, *args, **kwargs)
     if production:
         with open(root + ERROR_PROCESSING, 'w') as f:
             f.write(message)
+    
+    return failure_message
 
 def is_marked_as_disabled(run):
     return os.path.exists(run.replace(NEEDS_PROCESSING, ERROR_PROCESSING))
@@ -52,11 +55,22 @@ def post_files(files, destination):
 
 processed_runs = set()
 logger = None
+failure_message = None
 
 # Process runs flagged for processing not already processed by this version of the pipeline
 while True:
+    if failure_message is not None:
+        # We're still logging to a run folder that failed.
+        logging.shutdown()
+        logger = None
+        
     if logger is None:
         logger = init_logging(home + '/MISEQ_MONITOR_OUTPUT.log')
+    
+    if failure_message is not None:
+        logger.error(failure_message)
+        failure_message = None
+        
     # flag indicates that Illumina MiseqReporter has completed pre-processing, files available on NAS
     runs = glob(rawdata_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
     #runs = glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
@@ -96,6 +110,8 @@ while True:
         os.mkdir(home+run_name)
 
     # Record standard input / output of monitor
+    logger.info('Starting run %s', root)
+    logging.shutdown()
     log_file = home + run_name + '/MISEQ_MONITOR_OUTPUT.log'
     logger = init_logging(log_file)
     logger.info('===== Processing {} with pipeline version {} ====='.format(root, pipeline_version))
@@ -117,19 +133,21 @@ while True:
             run_info = sample_sheet_parser(sample_sheet)
             mode = run_info['Description']
     except Exception as e:
-        mark_run_as_disabled(
+        failure_message = mark_run_as_disabled(
             root,
-            "Parsing sample sheet failed: '{}'".format(e))
+            "Parsing sample sheet failed", exc_info=True)
         continue
 
     if mode not in ['Nextera', 'Amplicon']:
-        mark_run_as_disabled(root, "{} not a valid mode".format(mode))
+        failure_message = mark_run_as_disabled(
+            root,
+            "{} not a valid mode".format(mode))
         continue
 
     # Copy fastq.gz files to the cluster and unzip them
     gz_files = glob(root + 'Data/Intensities/BaseCalls/*R?_001.fastq.gz')
     if not gz_files:
-        mark_run_as_disabled(root, "No data files found")
+        failure_message = mark_run_as_disabled(root, "No data files found")
         continue
     
     for gz_file in gz_files:
@@ -167,9 +185,12 @@ while True:
     try:
         subprocess.check_call([os.path.join(base_path, 'run_processor.py'),
                                home+run_name])
-        logger.info("===== {} successfully completed! =====".format(run_name))
+        logger.info("===== {} successfully processed! =====".format(run_name))
     except Exception as e:
-        mark_run_as_disabled(root, "MISEQ_PIPELINE.py failed: '{}'".format(e))
+        failure_message = mark_run_as_disabled(
+            root,
+            "MISEQ_PIPELINE.py failed: '{}'".format(e))
+        continue
 
     if not production:
         processed_runs.add(curr_run)
@@ -210,7 +231,9 @@ while True:
             logger.error('Failed to post pipeline results for %r.', 
                          run_name, 
                          exc_info=True)
-            mark_run_as_disabled(root, "Failed to post pipeline results")
+            failure_message = mark_run_as_disabled(
+                root,
+                "Failed to post pipeline results")
 
     logging.shutdown()
     logger = None

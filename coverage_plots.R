@@ -23,8 +23,15 @@ dir.create('coverage_maps')
 key.pos <- read.csv(file='key_positions.csv', header=TRUE)
 names(key.pos) <- c('target', 'pos')
 
-
-output <- {}
+output.columns <- c(
+        'sample',
+        'region',
+        'q.cut',
+        'min.coverage',
+        'which.key.pos',
+        'off.score',
+        'on.score')
+output <- matrix(nrow=0, ncol=length(output.columns), dimnames=list(NULL, output.columns))
 
 data <- read.csv(file=input.csv, header=TRUE, sep=',')
 
@@ -43,7 +50,7 @@ data$coverage <- sapply(data$coverage, function(x) max(x, 0.1))
 coverage <- split(data[,which(is.element(names(data), c('refseq.aa.pos', 'q.cutoff', 'coverage')))], f=list(data$region, data$sample), drop=TRUE)
 
 # loop through partitions
-for (i in 1:length(coverage)) {
+for (i in seq(length=length(coverage))) {
     label <- names(coverage)[i]
     tokens <- strsplit(label, split='\\.')[[1]]
     region <- tokens[1]
@@ -131,13 +138,4 @@ for (i in 1:length(coverage)) {
 tar(output.maps, 'coverage_maps')
 
 # output minimum coverage at key positions
-output <- as.data.frame(output)
-names(output) <- c(
-        'sample',
-        'region',
-        'q.cut',
-        'min.coverage',
-        'which.key.pos',
-        'off.score',
-        'on.score')
-write.csv(output, file=output.csv, quote=FALSE, row.names=FALSE)
+write.csv(as.data.frame(output), file=output.csv, quote=FALSE, row.names=FALSE)

@@ -16,7 +16,9 @@ class Csf2CountsTest(unittest.TestCase):
         self.qcut = 15
         
     def testUnmappedRegion(self):
-        expected_text = ''
+        expected_text = """\
+sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+"""
         
         self.writer.write(region='R1',
                           qcut=15,
