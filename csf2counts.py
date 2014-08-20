@@ -30,7 +30,6 @@ def parseArgs():
         description='Post-processing of short-read alignments.')
     
     parser.add_argument('aligned_csv', help='<input> aligned CSF input')
-    parser.add_argument('remap_conseq', help='<input> consensus sequences from remapping step')
     parser.add_argument('nuc_csv', help='<output> CSV containing nucleotide frequencies')
     parser.add_argument('amino_csv', help='<output> CSV containing amino frequencies')
     parser.add_argument('indels_csv', help='<output> CSV containing insertions')
@@ -260,35 +259,7 @@ def main():
             logger.error('Output path does not exist: ' + output_path)
             sys.exit(1)
 
-    # determine reading frames based on region-specific consensus sequences
-    # FIXME: this might not be necessary - all offset 0?
-    conseqs = {}
-    best_frames = {}
-    sample_name = ''
-    with open(args.remap_conseq, 'rU') as f:
-        for i, line in enumerate(f):
-            if i == 0:
-                #skip header
-                continue
-            sample_name, region, conseq = line.strip('\n').split(',')
-            if region not in refseqs:
-                logger.warn('No reference in {} for {} reading {}'.format(
-                    amino_ref, 
-                    region,
-                    args.remap_conseq))
-                continue
-            refseq = refseqs[region]  # protein sequence
-
-            # determine reading frame based on sample/region consensus
-            best_score = -1e5
-            for frame in range(3):
-                p = translate(conseq, frame)
-                #score = align.localds(refseq, p, mat, -20, -5, penalize_end_gaps=False, score_only=True)
-                aquery, aref, score = pair_align(hyphy, refseq, p)
-                if score > best_score:
-                    best_frames[region] = frame
-                    best_score = score
-
+    sample_name = os.path.basename(args.aligned_csv).split('.')[0]
 
     # for each region, quality cutoff
     infile = open(args.aligned_csv, 'rU')
@@ -333,14 +304,14 @@ def main():
                         nuc_counts[pos].update({nuc: 0})
                     nuc_counts[pos][nuc] += count
 
-                p = translate('-'*offset + seq, best_frames[region])
+                p = translate('-'*offset + seq, 0)
                 if p not in pcache:
                     # retain linkage info for reporting insertions
                     pcache.update({p: 0})
                 pcache[p] += count
 
-                left = (offset + best_frames[region]) / 3
-                right = (offset + len(seq) + best_frames[region]) / 3
+                left = offset / 3
+                right = (offset + len(seq)) / 3
 
                 for pos in range(left, right):
                     if pos not in amino_counts:
@@ -365,6 +336,7 @@ def main():
 
             # map to reference coordinates by aligning consensus
             aquery, aref, _ = pair_align(hyphy, refseqs[region], aa_max)
+            print region, aquery, aref
             qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
 
             amino_writer.write(region,
@@ -382,7 +354,7 @@ def main():
             for query_nuc_pos in nuc_coords:
                 # FIXME: there MUST be a better way to do this :-P
                 try:
-                    adjustment = best_frames[region] - (3 - min_offset%3)%3
+                    adjustment = -(3 - min_offset%3)%3
                     query_aa_pos = (query_nuc_pos - min_offset + adjustment) / 3
                     query_codon_pos = (query_nuc_pos - min_offset + adjustment) % 3
                     ref_aa_pos = qindex_to_refcoord[query_aa_pos]

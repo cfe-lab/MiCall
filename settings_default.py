@@ -52,6 +52,7 @@ read_mapping_cutoff = 10         # Minimum bowtie read mapping quality
 insert_qcutoff = 20              # minimum Q score for an insertion polymorphism to pass
 
 ## g2p parameters (Amplicon only)
+alignment_lib = 'alignment.so'
 g2p_alignment_cutoff = 50               # Minimum alignment score during g2p scoring
 g2p_fpr_cutoffs = [3.0, 3.5, 4.0, 5.0]  # FPR cutoff to determine R5/X4 tropism
 v3_mincounts = [0, 50, 100, 1000]       # Min number of reads to contribute to %X4 calculation

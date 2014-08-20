@@ -9,7 +9,7 @@ from fifo_scheduler import Job, Worker
 import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
 from settings import final_alignment_ref_path, final_nuc_align_ref_path, \
-    are_temp_folders_deleted, mapping_ref_path, base_path
+    are_temp_folders_deleted, mapping_ref_path, base_path, alignment_lib
 from mpi4py import MPI
 
 def parseOptions(comm_world):
@@ -106,7 +106,6 @@ def count_samples(fastq_samples, worker, args):
                                     base_path + 'miseq_logging.py',
                                     base_path + 'hyphyAlign.py'),
                            args=(sample_info.output_root + '.aligned.csv',
-                                 sample_info.output_root + '.remap_conseq.csv',
                                  sample_info.output_root + '.nuc.csv',
                                  sample_info.output_root + '.amino.csv',
                                  sample_info.output_root + '.indels.csv',
@@ -151,7 +150,7 @@ def collate_results(fastq_samples, worker, args, logger):
             worker.run_job(Job(script=base_path + 'sam_g2p.sh',
                                helpers=(base_path + 'sam_g2p.rb',
                                         base_path + 'pssm_lib.rb',
-                                        base_path + 'alignment.so',
+                                        base_path + alignment_lib,
                                         base_path + 'g2p.matrix',
                                         base_path + 'g2p_fpr.txt'),
                                args=(sample_info.output_root + '.remap.csv',
