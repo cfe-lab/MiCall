@@ -29,6 +29,16 @@ class JobTest(unittest.TestCase):
         job = Job("python -c pass", self.OUT_FILE, self.ERROR_FILE)
 
         self.assertEquals(repr(job), "Job('python -c pass')")
+
+class MockLogger(object):
+    def __init__(self):
+        self.log = StringIO()
+        
+    def error(self, message):
+        self.log.write('[ERROR] - {}\n'.format(message))
+        
+    def getLog(self):
+        return self.log.getvalue()
         
 class WorkerTest(unittest.TestCase):
     IN_FILE = 'working/test_in.log'
@@ -110,6 +120,22 @@ class WorkerTest(unittest.TestCase):
             worker.run_job(job)
         
         self.assertFileContents(self.OUT_FILE, "Hello, World!\nGoodbye, World!\n")
+
+    def test_stderr_logged(self):
+        command = """python -c "import sys; sys.exit('Goodbye, World!')" """
+        expected_log = "[ERROR] - Goodbye, World!\n"
+        logger = MockLogger()
+        job = Job(command, 
+                  stdout=self.OUT_FILE, 
+                  stderr=self.ERROR_FILE)
+        worker = Worker(logger=logger)
+        
+        try:
+            worker.run_job(job)
+        except CalledProcessError:
+            pass
+        
+        self.assertEqual(logger.getLog(), expected_log)
          
     def test_callback(self):
         self.actual_command = None

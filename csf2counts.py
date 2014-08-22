@@ -23,18 +23,19 @@ import sys
 
 from hyphyAlign import change_settings, get_boundaries, pair_align
 import miseq_logging
-from settings import conseq_mixture_cutoffs
+import settings
 
-parser = argparse.ArgumentParser('Post-processing of short-read alignments.')
-
-parser.add_argument('input_csf', help='<input> aligned CSF input')
-parser.add_argument('input_conseq', help='<input> consensus sequences from remapping step')
-parser.add_argument('output_nuc', help='<output> CSV containing nucleotide frequencies')
-parser.add_argument('output_amino', help='<output> CSV containing amino frequencies')
-parser.add_argument('output_indels', help='<output> CSV containing insertions')
-parser.add_argument('output_conseq', help='<output> CSV containing consensus sequences')
-
-args = parser.parse_args()
+def parseArgs():
+    parser = argparse.ArgumentParser(
+        description='Post-processing of short-read alignments.')
+    
+    parser.add_argument('aligned_csv', help='<input> aligned CSF input')
+    parser.add_argument('nuc_csv', help='<output> CSV containing nucleotide frequencies')
+    parser.add_argument('amino_csv', help='<output> CSV containing amino frequencies')
+    parser.add_argument('indels_csv', help='<output> CSV containing insertions')
+    parser.add_argument('conseq', help='<output> CSV containing consensus sequences')
+    
+    return parser.parse_args()
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 
@@ -138,11 +139,93 @@ def coordinate_map(aquery, aref):
 
     return qindex_to_refcoord, inserts
 
+class AminoFrequencyWriter(object):
+    def __init__(self, aafile, sample_name, refseqs):
+        """ Initialize a writer object.
+        
+        @param aafile: an open file that the summary will be written to
+        @param sample_name: the name of the sample to go in the first column
+        @param refseqs: {region: sequence} maps from region name to amino acid 
+        sequence
+        """
+        self.aafile = aafile
+        self.sample_name = sample_name
+        self.refseqs = refseqs
+        self.aafile.write(
+            'sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,'
+            'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*\n')
+        
+    def write(self,
+              region,
+              qcut,
+              qindex_to_refcoord,
+              amino_counts,
+              inserts):
+        """ Write a summary of the amino acid distribution at each position in
+        the reference sequence.
+        
+        @param region: the name of the region being processed
+        @param qcut: the quality cutoff score that was used to map the consensus
+        sequence
+        @param qindex_to_refcoord: {qindex: refcoord} maps coordinates from the
+        consensus sequence (query) to the reference sequence
+        @param amino_counts: {aa_pos: {aa: count}} a dictionary keyed by the amino
+        acid position. To calculate the amino acid position, take the position
+        within the consensus sequence and add the offset of where the start of the
+        consensus sequence maps to the reference sequence. Each entry is a
+        dictionary keyed by amino acid letter and containing the number of times
+        each amino acid was read at that position.
+        @param inserts: a list of indexes for positions in the consensus sequence
+        that are inserts relative to the reference sequence
+        """
+
+        if not amino_counts:
+            return
+    
+        qindex = 0
+        query_offset = min(amino_counts.keys())
+        query_end = max(qindex_to_refcoord.keys())
+          
+        for refcoord in range(len(self.refseqs[region])):
+            while True:
+                # Skip over any inserts
+                aa_pos = qindex + query_offset
+                if aa_pos not in inserts:
+                    break
+                assert aa_pos not in qindex_to_refcoord, aa_pos
+                qindex += 1
+            
+            while True:
+                # Skip over any gaps in the query consensus sequence
+                mapped_coord = qindex_to_refcoord.get(qindex)
+                if mapped_coord is not None or qindex >= query_end:
+                    break
+                qindex += 1
+     
+            if mapped_coord == refcoord:
+                counts = [amino_counts[aa_pos].get(aa, 0)
+                          for aa in amino_alphabet]
+                aa_pos_str = str(aa_pos)
+                qindex += 1
+            else:
+                counts = [0 for aa in amino_alphabet]
+                aa_pos_str = ''
+            outstr = ','.join(map(str, counts))
+            self.aafile.write('%s,%s,%s,%s,%d,%s\n' % (self.sample_name,
+                                                       region,
+                                                       qcut,
+                                                       aa_pos_str,
+                                                       refcoord + 1,
+                                                       outstr))
 
 def main():
+    args = parseArgs()
+    
     # check that the amino acid reference input exists
     is_ref_found = False
-    possible_refs = ('csf2counts_amino_refseqs.csv', 'reference_sequences/csf2counts_amino_refseqs.csv')
+    
+    possible_refs = (os.path.basename(settings.final_alignment_ref_path),
+                     settings.final_alignment_ref_path)
     for amino_ref in possible_refs:
         if not os.path.isfile(amino_ref):
             continue
@@ -161,49 +244,34 @@ def main():
             refseqs.update({region: aaseq})
 
     # check that the inputs exist
-    if not os.path.exists(args.input_csf):
-        logger.error('No input CSF found at ' + args.input_csf)
+    if not os.path.exists(args.aligned_csv):
+        logger.error('No input CSF found at ' + args.aligned_csv)
         sys.exit(1)
 
     # check that the output paths are valid
-    for path in [args.output_nuc, args.output_amino, args.output_indels, args.output_conseq]:
+    for path in [args.nuc_csv, args.amino_csv, args.indels_csv, args.conseq]:
         output_path = os.path.split(path)[0]
         if not os.path.exists(output_path) and output_path != '':
             logger.error('Output path does not exist: ' + output_path)
             sys.exit(1)
 
-    # determine reading frames based on region-specific consensus sequences
-    # FIXME: this might not be necessary - all offset 0?
-    conseqs = {}
-    best_frames = {}
-    with open(args.input_conseq, 'rU') as f:
-        for line in f:
-            region, conseq = line.strip('\n').split(',')
-            if region not in refseqs:
-                logger.warn('No reference in {} for {} reading {}'.format(
-                    amino_ref, 
-                    region,
-                    args.input_conseq))
-                continue
-            refseq = refseqs[region]  # protein sequence
-
-            # determine reading frame based on sample/region consensus
-            best_score = -1e5
-            for frame in range(3):
-                p = translate(conseq, frame)
-                #score = align.localds(refseq, p, mat, -20, -5, penalize_end_gaps=False, score_only=True)
-                aquery, aref, score = pair_align(hyphy, refseq, p)
-                if score > best_score:
-                    best_frames[region] = frame
-                    best_score = score
-
+    sample_name = os.path.basename(args.aligned_csv).split('.')[0]
 
     # for each region, quality cutoff
-    infile = open(args.input_csf, 'rU')
-    aafile = open(args.output_amino, 'w')
-    nucfile = open(args.output_nuc, 'w')
-    confile = open(args.output_conseq, 'w')
-    indelfile = open(args.output_indels, 'w')
+    infile = open(args.aligned_csv, 'rU')
+    aafile = open(args.amino_csv, 'w')
+    nucfile = open(args.nuc_csv, 'w')
+    confile = open(args.conseq, 'w')
+    indelfile = open(args.indels_csv, 'w')
+    amino_writer = AminoFrequencyWriter(aafile, sample_name, refseqs)
+    
+    infile.readline() # skip header
+    nucfile.write('sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
+    indelfile.write('region,qcut,left,insert,count\n')
+    confile.write('sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
+    sample_name_base, sample_snum = (sample_name.split('_', 1)
+                                     if sample_name
+                                     else ('', ''))
 
     for region, group in groupby(infile, lambda x: x.split(',')[0]):
         if region not in refseqs:
@@ -234,14 +302,14 @@ def main():
                         nuc_counts[pos].update({nuc: 0})
                     nuc_counts[pos][nuc] += count
 
-                p = translate('-'*offset + seq, best_frames[region])
+                p = translate('-'*offset + seq, 0)
                 if p not in pcache:
                     # retain linkage info for reporting insertions
                     pcache.update({p: 0})
                 pcache[p] += count
 
-                left = (offset + best_frames[region]) / 3
-                right = (offset + len(seq) + best_frames[region]) / 3
+                left = offset / 3
+                right = (offset + len(seq)) / 3
 
                 for pos in range(left, right):
                     if pos not in amino_counts:
@@ -266,28 +334,25 @@ def main():
 
             # map to reference coordinates by aligning consensus
             aquery, aref, _ = pair_align(hyphy, refseqs[region], aa_max)
+            print region, aquery, aref
             qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
 
-            # output amino acid frequencies (sorted by AA coordinate)
-            intermed = [(k, v) for k, v in qindex_to_refcoord.iteritems()]
-            intermed.sort()
-            for qindex, refcoord in intermed:
-                aa_pos = qindex + min(aa_coords)
-                if aa_pos in inserts:
-                    continue
-                outstr = ','.join(map(str, [amino_counts[aa_pos].get(aa, 0) for aa in amino_alphabet]))
-                aafile.write('%s,%s,%d,%d,%s\n' % (region, qcut, aa_pos, refcoord+1, outstr))
+            amino_writer.write(region,
+                               qcut,
+                               qindex_to_refcoord,
+                               amino_counts,
+                               inserts)
 
             # output nucleotide frequencies and consensus sequences
             nuc_coords = nuc_counts.keys()
             nuc_coords.sort()
             maxcon = ''
-            conseqs = dict([(cut, '') for cut in conseq_mixture_cutoffs])
+            conseqs = dict([(cut, '') for cut in settings.conseq_mixture_cutoffs])
 
             for query_nuc_pos in nuc_coords:
                 # FIXME: there MUST be a better way to do this :-P
                 try:
-                    adjustment = best_frames[region] - (3 - min_offset%3)%3
+                    adjustment = -(3 - min_offset%3)%3
                     query_aa_pos = (query_nuc_pos - min_offset + adjustment) / 3
                     query_codon_pos = (query_nuc_pos - min_offset + adjustment) % 3
                     ref_aa_pos = qindex_to_refcoord[query_aa_pos]
@@ -297,11 +362,11 @@ def main():
                         'No coordinate mapping for query nuc %d (amino %d) in %s' % (
                             query_nuc_pos,
                             query_aa_pos,
-                            args.input_csf))
+                            args.aligned_csv))
                     continue
 
                 outstr = ','.join(map(str, [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']))
-                nucfile.write('%s,%s,' % (region, qcut))
+                nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
                 nucfile.write(','.join(map(str, [query_nuc_pos+1, ref_nuc_pos+1, outstr])))
                 nucfile.write('\n')
 
@@ -311,7 +376,7 @@ def main():
                 maxcon += intermed[0][1]  # plurality consensus
 
                 total_count = sum([count for count, nuc in intermed])
-                for cut in conseq_mixture_cutoffs:
+                for cut in settings.conseq_mixture_cutoffs:
                     mixture = []
                     # filter for nucleotides that pass frequency cutoff
                     for count, nuc in intermed:
@@ -344,9 +409,18 @@ def main():
                         # no characters left - I don't think this outcome is possible
                         conseqs[cut] += 'N'
 
-            confile.write('%s,%s,MAX,%s\n' % (region, qcut, maxcon))
+            confile.write('%s,%s,%s,%s,MAX,%s\n' % (sample_name_base,
+                                                    region,
+                                                    qcut,
+                                                    sample_snum,
+                                                    maxcon))
             for cut, conseq in conseqs.iteritems():
-                confile.write('%s,%s,%1.3f,%s\n' % (region, qcut, cut, conseq))
+                confile.write('%s,%s,%s,%s,%1.3f,%s\n' % (sample_name_base,
+                                                          region,
+                                                          qcut,
+                                                          sample_snum,
+                                                          cut,
+                                                          conseq))
 
             # convert insertion coordinates into contiguous ranges
             if len(inserts) == 0:

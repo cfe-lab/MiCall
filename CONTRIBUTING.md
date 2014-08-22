@@ -8,7 +8,8 @@ Java, Python, and Oracle
 ------------------------
 1. Check that you are running a 64-bit operating system, or bowtie2 won't work.
    Check About this Computer under the gear menu.
-2. Check the version of Java you have installed:
+2. If you want to edit Python code using PyDev and Eclipse, you will need to
+   install Java. Check the version of Java you have installed:
 
         java -version
  
@@ -191,9 +192,37 @@ MPI
 2. Install mpi4py.
 
     sudo apt-get install python-mpi4py
+
+Running the code
+----------------
+1. Copy settings_default.py to settings.py, and open it for editing.
+2. Set `base_path` to '../', and comment out the next line with the
+   production/development extensions.
+3. Change `counting_processes` to match the number of processors on your
+   computer, and set `mapping_processes` to be that number divided by four.
+4. If you want to reduce the combinations that run, remove all but the first 
+    value in g2p_fpr_cutoffs, v3_mincounts, conseq_mixture_cutoffs. Remove all 
+    but 15 from sam2csf_q_cutoffs.
+5. Copy hostfile_default to hostfile, and open it for editing.
+6. You probably just want to uncomment the localhost line.
+7. Try the launch configurations. They are saved in the `working` directory,
+    but you should see them if you open the Run menu and choose Run
+    configurations.... If you want to run all steps at once, skip to the next
+    step, otherwise go through the numbered launch configurations in order.
+8. Copy all the files from the microtest folder to the working folder.
+9. Run the sample_pipeline or run_processor launch configurations. They will
+    process all the sample files in the working folder. 
+12. Run the unit tests. Either run them from Eclipse, or run them from the
+    command line like this:
+
+        cd ~/git/MiseqPipeline
+        python -m unittest discover -p '*_test.py'
     
 Test data
 ---------
+If you want to run MISEQ_MONITOR.py, you have to set up data folders for raw
+data and for the working folders.
+
 1. Create a data folder somewhere on your workstation, like ~/data. Create
    subdirectories called miseq and RAW_DATA. Add folders RAW_DATA/MiSeq/runs.
 2. Connect to the shared drive [using CIFS][cifs] and mount 
@@ -204,43 +233,13 @@ Test data
    RAW_DATA/MiSeq/runs folder.
 5. Navigate down to Data\Intensities\BaseCalls, and copy a few of the .fastq.gz
    files to your sample run folder.
+6. Open settings.py for editing.
+7. Point `home` at your local data/miseq folder.
+8. Point `rawdata_mount` at your local RAW_DATA folder.
+9. Set the Oracle connection information to a test database where you can upload
+   sequence data.
+10. Run MISEQ_MONITOR.py, it doesn't take any arguments.
 
-Running the code
-----------------
-1. Copy settings_default.py to settings.py, and open it for editing.
-2. Set `base_path` to './', and comment out the next line with the
-   production/development extensions.
-3. Point `home` at your local data/miseq folder.
-4. Change `counting_processes` to match the number of processors on your
-   computer, and set `mapping_processes` to be that number divided by four.
-5. Point `rawdata_mount` at your local RAW_DATA folder.
-6. If you want to reduce the combinations that run, remove all but the first 
-    value in g2p_fpr_cutoffs, v3_mincounts, conseq_mixture_cutoffs. Remove all 
-    but 15 from sam2csf_q_cutoffs.
-7. Set the Oracle connection information.
-8. Copy hostfile_default to hostfile, and open it for editing.
-9. You probably just want to uncomment the localhost line.
-10. Copy two fastq.gz files to the working directory.
-    The files should be a matched pair: forward and reverse. Extract the fastq
-    files, and rename them to `read1.fastq` and `read2.fastq`.
-11. Try the launch configurations. They are saved in the `working` directory,
-    but you should see them if you open the Run menu and choose Run
-    configurations.... If you want to run all steps at once, skip down to the 
-    MISEQ_MONITOR.py file, otherwise try launching each step in the following
-    order:
-    * `prelim_map.py`
-    * `remap.py`
-    * `sam2csf.py`
-    * `csf2counts.py`
-    * `fasta_to_g2p.rb`
-    * All together: `MISEQ_MONITOR.py`, once you've run it once, you can run
-    `sample_pipeline.py` with it pointed to a run's working folder.
-12. Run the unit tests. Either run them from Eclipse, or run them from the
-    command line like this:
-
-        cd ~/git/MiseqPipeline
-        python -m unittest discover -p *_test.py
-        
 
 [eclipse]: https://www.eclipse.org/downloads/
 [pydev]: http://pydev.org/updates

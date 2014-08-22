@@ -44,9 +44,20 @@ def main():
     
     logger.info('Start processing run %s', args.run_folder)
     logger.info('Removing old working files')
+    excluded_files = ('.fastq',
+                      'SampleSheet.csv',
+                      '.launch',
+                      'MISEQ_MONITOR_OUTPUT.log',
+                      'run.log')
     old_files = glob(args.run_folder+'/*')
     for f in old_files:
-        if not f.endswith('.fastq') and not f.endswith('SampleSheet.csv'):
+        is_excluded = False
+        for ending in excluded_files:
+            if f.endswith(ending):
+                is_excluded = not (f.endswith('unmapped1.fastq') or
+                                   f.endswith('unmapped2.fastq'))
+                break
+        if not is_excluded:
             if os.path.isdir(f):
                 shutil.rmtree(f)
             else:
@@ -66,8 +77,8 @@ def main():
                     '-np', 
                     str(settings.mapping_processes), 
                     '--hostfile', 
-                    'hostfile', 
-                    './sample_pipeline.py',
+                    settings.base_path + 'hostfile', 
+                    settings.base_path + 'sample_pipeline.py',
                     args.run_folder]
     if args.mode is not None:
         mapping_args.append(args.mode)

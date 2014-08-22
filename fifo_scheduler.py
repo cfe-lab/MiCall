@@ -8,6 +8,7 @@ from sys import exc_info
 import os
 import tempfile
 import shutil
+import collections
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,8 @@ class Worker:
                  resource="",
                  launch_callback=None,
                  working_path=None,
-                 are_temp_folders_deleted=True):
+                 are_temp_folders_deleted=True,
+                 logger=None):
         """ Create a worker object that can launch one process at a time.
         
         @param resource: A special command that will prefix each process
@@ -68,11 +70,13 @@ class Worker:
         path.
         @param are_temp_folders_deleted: True if the worker should delete the
         temporary folder it creates for each script.
+        @param logger: if set, error output will be logged here.
         """
         
         self.resource_allocated = resource
         self.launch_callback = launch_callback
         self.are_temp_folders_deleted = are_temp_folders_deleted
+        self.logger = logger
         if working_path is None:
             self.working_path = self.DEFAULT_WORKING_PATH
         else:
@@ -81,10 +85,11 @@ class Worker:
         if not os.path.isdir(self.working_path):
             os.mkdir(self.working_path)
 
-    def run_job(self, job):
+    def run_job_unlogged(self, job):
         """Run a job's command, and open files to receive stdout/error.
         
-        Prefix command with resource.
+        Prefix command with resource. Call run_job() if you want to log the
+        tail of stderr when a job fails.
         """
         
         # If job standard in/out is specified to be sent to a file, do so - else default to sys stdout/stderr
@@ -135,7 +140,20 @@ class Worker:
                 stderr.close()
             if tempdir is not None and self.are_temp_folders_deleted:
                 shutil.rmtree(tempdir)
-        
+    
+    def run_job(self, job):
+        """Run a job's command, and log the tail of stderr when a job fails.
+        """
+        try:
+            return self.run_job_unlogged(job)
+        except:
+            if job.stderr != None and self.logger != None:
+                with open(job.stderr, 'rU') as error_file:
+                    lines = collections.deque(error_file, maxlen=10)
+                    for line in lines:
+                        self.logger.error(line.strip())
+            raise
+                
 class Factory:
     """Factories have a queue of jobs and workers to work on them"""
     def __init__(self,

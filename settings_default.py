@@ -1,6 +1,5 @@
 """
-settings_default.py
-To make pipeline portable, allow user to specify
+To make pipeline portable, allow user to specify local paths and thread counts.
 """
 
 pipeline_version = '6.3'
@@ -50,8 +49,10 @@ consensus_q_cutoff = 20         # Min Q for base to contribute to conseq (pileup
 sam2csf_q_cutoffs = [0, 10, 15]  # Q-cutoff for base censoring
 max_prop_N = 0.5                 # Drop reads with more censored bases than this proportion
 read_mapping_cutoff = 10         # Minimum bowtie read mapping quality
+insert_qcutoff = 20              # minimum Q score for an insertion polymorphism to pass
 
 ## g2p parameters (Amplicon only)
+alignment_lib = 'alignment.so'
 g2p_alignment_cutoff = 50               # Minimum alignment score during g2p scoring
 g2p_fpr_cutoffs = [3.0, 3.5, 4.0, 5.0]  # FPR cutoff to determine R5/X4 tropism
 v3_mincounts = [0, 50, 100, 1000]       # Min number of reads to contribute to %X4 calculation

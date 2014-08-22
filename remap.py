@@ -23,21 +23,64 @@ import sys
 
 # These are both CodeResourceDependencies
 import miseq_logging
-from settings import bowtie_threads, consensus_q_cutoff, max_remaps, \
-    min_mapping_efficiency
+from settings import bowtie_threads, consensus_q_cutoff, mapping_ref_path,\
+    max_remaps, min_mapping_efficiency
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 
+def calculate_sample_name(fastq_filepath):
+    filename = os.path.basename(fastq_filepath)
+    return '_'.join(filename.split('_')[:2])
+
+def parse_bitflag (flag):
+    """
+    Interpret bitwise flag in SAM field as follows:
+
+    Flag    Chr Description
+    =============================================================
+    0x0001  p   the read is paired in sequencing
+    0x0002  P   the read is mapped in a proper pair
+    0x0004  u   the query sequence itself is unmapped
+    0x0008  U   the mate is unmapped
+    0x0010  r   strand of the query (1 for reverse)
+    0x0020  R   strand of the mate
+    0x0040  1   the read is the first read in a pair
+    0x0080  2   the read is the second read in a pair
+    0x0100  s   the alignment is not primary
+    0x0200  f   the read fails platform/vendor quality checks
+    0x0400  d   the read is either a PCR or an optical duplicate
+    """
+    labels = ['is_paired', 'is_mapped_in_proper_pair', 'is_unmapped', 'mate_is_unmapped',
+            'is_reverse', 'mate_is_reverse', 'is_first', 'is_second', 'is_secondary_alignment',
+            'is_failed', 'is_duplicate']
+
+    binstr = bin(int(flag)).replace('0b', '')
+    # flip the string
+    binstr = binstr[::-1]
+    # if binstr length is shorter than 11, pad the right with zeroes
+    for i in range(len(binstr), 11):
+        binstr += '0'
+
+    bitflags = list(binstr)
+    res = {}
+    for i, bit in enumerate(bitflags):
+        res.update({labels[i]: bool(int(bit))})
+
+    return (res)
+
 def main():
-    parser = argparse.ArgumentParser('Iterative remapping of bowtie2 by reference.')
+    parser = argparse.ArgumentParser(
+        description='Iterative remapping of bowtie2 by reference.')
     
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-    parser.add_argument('sam_csv', help='<input> SAM output of bowtie2 in CSV format')
-    parser.add_argument('output_csv', help='<output> CSV containing remap output (modified SAM)')
-    parser.add_argument('stats_csv', help='<output> CSV containing numbers of mapped reads')
-    parser.add_argument('conseq_csv', help='<output> CSV containing mapping consensus sequences')
+    parser.add_argument('prelim_csv', help='<input> CSV containing preliminary map output (modified SAM)')
+    parser.add_argument('remap_csv', help='<output> CSV containing remap output (modified SAM)')
+    parser.add_argument('remap_counts_csv', help='<output> CSV containing numbers of mapped reads')
+    parser.add_argument('remap_conseq_csv', help='<output> CSV containing mapping consensus sequences')
+    parser.add_argument('unmapped1', help='<output> FASTQ R1 of reads that failed to map to any region')
+    parser.add_argument('unmapped2', help='<output> FASTQ R2 of reads that failed to map to any region')
     
     args = parser.parse_args()
     
@@ -45,11 +88,11 @@ def main():
     
     # check that the inputs exist
     if not os.path.exists(args.fastq1):
-        logger.error('No FASTQ found at', args.fastq1)
+        logger.error('No FASTQ found at %s', args.fastq1)
         sys.exit(1)
 
     if not os.path.exists(args.fastq2):
-        logger.error('No FASTQ found at', args.fastq2)
+        logger.error('No FASTQ found at %s', args.fastq2)
         sys.exit(1)
 
     # check that we have access to bowtie2
@@ -60,7 +103,7 @@ def main():
         sys.exit(1)
 
     # check that the output paths are valid
-    for path in [args.output_csv, args.stats_csv, args.conseq_csv]:
+    for path in [args.remap_csv, args.remap_counts_csv, args.remap_conseq_csv]:
         output_path = os.path.split(path)[0]
         if not os.path.exists(output_path) and output_path != '':
             logger.error('Output path does not exist: %s', output_path)
@@ -70,7 +113,7 @@ def main():
     is_ref_found = False
     possible_refs = glob('*.fasta')
     if not possible_refs:
-        possible_refs = [settings.mapping_ref_path]
+        possible_refs = [mapping_ref_path + '.fasta']
     for ref in possible_refs:
         if not os.path.isfile(ref):
             continue
@@ -78,17 +121,21 @@ def main():
         log_call(['samtools', 'faidx', ref])
         break
     if not is_ref_found:
+        possible_refs.insert(0, '*.fasta')
         raise RuntimeError('No reference sequences found in {!r}'.format(
-            ['*.fasta', settings.mapping_ref_path]))
+            possible_refs))
 
     # get the raw read count
     raw_count = count_file_lines(args.fastq1) / 2  # 4 lines per record in FASTQ, paired
 
-    stat_file = open(args.stats_csv, 'w')
-    stat_file.write('raw,%d\n' % raw_count)
+    sample_name = calculate_sample_name(args.fastq1)
+    stat_file = open(args.remap_counts_csv, 'w')
+    stat_file.write('sample_name,type,count\n')
+    stat_file.write('%s,raw,%d\n' % (sample_name, raw_count))
 
     # group CSV stream by first item
-    with open(args.sam_csv, 'rU') as handle:
+    with open(args.prelim_csv, 'rU') as handle:
+        handle.readline()  # skip header
         prelim_count = 0
         map_counts = {}
         refnames = []
@@ -101,7 +148,7 @@ def main():
                 tmpfile.write('\t'.join(line.split(',')))
                 prelim_count += 1
                 count += 1
-            stat_file.write('prelim %s,%d\n' % (refname, count))
+            stat_file.write('%s,prelim %s,%d\n' % (sample_name, refname, count))
             map_counts.update({refname: count})
             tmpfile.close()
 
@@ -180,25 +227,71 @@ def main():
         if mapping_efficiency > min_mapping_efficiency:
             break  # a sufficient fraction of raw data has been mapped
 
+    mapped = {}  # track which reads have been mapped to a region
 
-    seqfile = open(args.conseq_csv, 'w')  # record consensus sequences for later use
-    outfile = open(args.output_csv, 'w')  # combine SAM files into single CSV output
+    # generate outputs
+    seqfile = open(args.remap_conseq_csv, 'w')  # record consensus sequences for later use
+    outfile = open(args.remap_csv, 'w')  # combine SAM files into single CSV output
+    
+    seqfile.write('sample_name,region,sequence\n')
+    outfile.write('qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n')
 
     for refname in refnames:
-        stat_file.write('remap %s,%d\n' % (refname, map_counts[refname]))
-        seqfile.write('%s,%s\n' % (refname, conseqs[refname]))
+        stat_file.write('%s,remap %s,%d\n' % (sample_name,
+                                              refname,
+                                              map_counts[refname]))
+        seqfile.write('%s,%s,%s\n' % (sample_name, refname, conseqs[refname]))
+        # transfer contents of last SAM file to CSV
         handle = open(refname+'.sam', 'rU')
         for line in handle:
             if line.startswith('@'):
                 continue  # omit SAM header lines
             items = line.strip('\n').split('\t')[:11]
+            qname = items[0]
+            bits = parse_bitflag(items[1])
+
+            if qname not in mapped:
+                mapped.update({qname: 0})
+
+            # track how many times this read has mapped to a region with integer value
+            # 0(00) = neither; 2(10) = forward only; 1(01) = reverse only; 3(11) both
+            mapped[qname] += (2 if bits['is_first'] else 1)
+
             items[2] = refname  # replace '0' due to passing conseq to bowtie2-build on cmd line
             outfile.write(','.join(items) + '\n')
         handle.close()
 
     outfile.close()
-    stat_file.close()
     seqfile.close()
+
+    # screen raw data for reads that have not mapped to any region
+    outfile = open(args.unmapped1, 'w')
+    n_unmapped = 0
+    with open(args.fastq1, 'rU') as f:
+        # http://stackoverflow.com/questions/1657299/how-do-i-read-two-lines-from-a-file-at-a-time-using-python
+        for ident, seq, opt, qual in itertools.izip_longest(*[f]*4):
+            qname = ident.lstrip('@').rstrip('\n').split()[0]
+            if qname not in mapped or mapped[qname] < 2:
+                # forward read not mapped
+                outfile.write(''.join([ident, seq, opt, qual]))
+                n_unmapped += 1
+    outfile.close()
+
+    # write out the other pair
+    outfile = open(args.unmapped2, 'w')
+    with open(args.fastq2, 'rU') as f:
+        for ident, seq, opt, qual in itertools.izip_longest(*[f]*4):
+            qname = ident.lstrip('@').rstrip('\n').split()[0]
+            if qname not in mapped or mapped[qname] % 2 == 0:
+                # reverse read not mapped
+                outfile.write(''.join([ident, seq, opt, qual]))
+                n_unmapped += 1
+    outfile.close()
+
+    # report number of unmapped reads
+    stat_file.write('%s,unmapped,%d\n' % (sample_name, n_unmapped))
+    stat_file.close()
+
 
 def pileup_to_conseq (handle, qCutoff):
     conseq = ''
