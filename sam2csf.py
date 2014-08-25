@@ -23,12 +23,14 @@ import re
 from settings import insert_qcutoff, max_prop_N, read_mapping_cutoff, \
      sam2csf_q_cutoffs
 
-parser = argparse.ArgumentParser(
-    description='Conversion of SAM data into aligned format.')
-parser.add_argument('remap_csv', help='<input> SAM output of bowtie2 in CSV format')
-parser.add_argument('aligned_csv', help='<output> CSV containing cleaned and merged reads')
-parser.add_argument('failed_csv', help='<output> CSV containing reads that failed to merge')
-args = parser.parse_args()
+def parseArgs():
+    parser = argparse.ArgumentParser(
+        description='Conversion of SAM data into aligned format.')
+    parser.add_argument('remap_csv', help='<input> SAM output of bowtie2 in CSV format')
+    parser.add_argument('aligned_csv', help='<output> CSV containing cleaned and merged reads')
+    parser.add_argument('failed_csv', help='<output> CSV containing reads that failed to merge')
+    
+    return parser.parse_args()
 
 
 cigar_re = re.compile('[0-9]+[MIDNSHPX=]')  # CIGAR token
@@ -128,8 +130,25 @@ def len_gap_prefix(s):
         return len(hits[0])
     return 0
 
+class RemapReader(object):
+    
+    def __init__(self, remap_file):
+        self.remap_file = remap_file
+        
+    def _get_key(self, line):
+        fields = line.split(',')
+        return (fields[0], fields[3])
+    
+    def read_groups(self):
+        self.remap_file.readline() # skip header
+        for key, group in itertools.groupby(self.remap_file, self._get_key):
+            sample_name, refname = key
+            yield sample_name, refname, group
+        
 
 def main():
+    args = parseArgs()
+    
     # check that the inputs exist
     if not os.path.exists(args.remap_csv):
         print 'No input CSV found at', args.remap_csv
@@ -146,11 +165,11 @@ def main():
     outfile = open(args.aligned_csv, 'w')
     failfile = open(args.failed_csv, 'w')
     
-    handle.readline() # skip header
-    outfile.write('refname,qcut,rank,count,offset,seq\n')
-    failfile.write('qname,qcut,seq1,qual1,seq2,qual2,prop_N,mseq\n')
+    reader = RemapReader(handle)
+    outfile.write('sample,refname,qcut,rank,count,offset,seq\n')
+    failfile.write('sample,qname,qcut,seq1,qual1,seq2,qual2,prop_N,mseq\n')
 
-    for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
+    for sample_name, refname, group in reader.read_groups():
         aligned = dict([(qcut, {}) for qcut in sam2csf_q_cutoffs])
         cached_reads = {}  # for mate pairing
         for line in group:
@@ -158,7 +177,7 @@ def main():
                 print line
                 sys.exit()
 
-            qname, _, _, pos, mapq, cigar, _, _, _, seq, qual = line.strip('\n').split(',')
+            _, qname, _, _, pos, mapq, cigar, _, _, _, seq, qual = line.strip('\n').split(',')
             if cigar == '*' or int(mapq) < read_mapping_cutoff:
                 continue
 
@@ -178,7 +197,15 @@ def main():
                 prop_N = mseq.count('N') / float(len(mseq.strip('-')))
                 if prop_N > max_prop_N:
                     # merged read is too messy
-                    failfile.write(','.join(map(str, [qname, qcut, seq1, qual1, seq2, qual2, prop_N, mseq])))
+                    failfile.write(','.join(map(str, [sample_name,
+                                                      qname,
+                                                      qcut,
+                                                      seq1,
+                                                      qual1,
+                                                      seq2,
+                                                      qual2,
+                                                      prop_N,
+                                                      mseq])))
                     failfile.write('\n')
                     continue
 
@@ -193,7 +220,13 @@ def main():
             intermed = [(count, len_gap_prefix(s), s) for s, count in data.iteritems()]
             intermed.sort(reverse=True)
             for rank, (count, offset, seq) in enumerate(intermed):
-                outfile.write(','.join(map(str, [refname, qcut, rank, count, offset, seq.strip('-')])))
+                outfile.write(','.join(map(str, [sample_name,
+                                                 refname,
+                                                 qcut,
+                                                 rank,
+                                                 count,
+                                                 offset,
+                                                 seq.strip('-')])))
                 outfile.write('\n')
 
     handle.close()
