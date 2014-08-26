@@ -8,6 +8,9 @@ Reports nucleotide and amino acid frequencies by reference coordinates.
 Outputs consensus sequences in same coordinate system.
 This assumes a consistent reading frame across the entire region.
 
+Outputs nucleotide counts for HLA-B in nucleotide frequencies file.
+This does not assume any reading frame (because of a frameshift in HLA-B).
+
 Dependencies:
     settings.py
     hyphyAlign.py
@@ -218,6 +221,111 @@ class AminoFrequencyWriter(object):
                                                        refcoord + 1,
                                                        outstr))
 
+def make_counts(region, group2):
+    """
+    Generate nucleotide and amino acid frequencies from CSV file grouping
+     by region and quality cutoff.
+    """
+    nuc_counts = {}
+    amino_counts = {}
+    pcache = {}
+
+    min_offset = 1e6
+    total_count = 0  # track the total number of aligned and merged reads, given QCUT
+
+    for line in group2:
+        _, _, _, _, count, offset, seq = line.strip('\n').split(',')
+        offset = int(offset)
+        count = int(count)
+        total_count += count
+        seq = seq.upper()
+
+        if offset < min_offset:
+            min_offset = offset
+
+        for i, nuc in enumerate(seq):
+            pos = offset + i
+            if pos not in nuc_counts:
+                nuc_counts.update({pos: {}})
+            if nuc not in nuc_counts[pos]:
+                nuc_counts[pos].update({nuc: 0})
+            nuc_counts[pos][nuc] += count
+
+        if region.startswith('HLA-'):
+            continue
+
+        p = translate('-'*offset + seq, 0)
+        if p not in pcache:
+            # retain linkage info for reporting insertions
+            pcache.update({p: 0})
+        pcache[p] += count
+
+        left = offset / 3
+        right = (offset + len(seq)) / 3
+
+        for pos in range(left, right):
+            if pos not in amino_counts:
+                amino_counts.update({pos: {}})
+            aa = p[pos]
+            if aa not in amino_counts[pos]:
+                amino_counts[pos].update({aa: 0})
+            amino_counts[pos][aa] += count
+
+    return nuc_counts, amino_counts, pcache, min_offset
+
+
+def make_consensus(nuc_counts):
+    """
+    Generate consensus sequences from nucleotide frequency data
+    at varying frequency cutoffs.
+    """
+    nuc_coords = nuc_counts.keys()
+    nuc_coords.sort()  # iterate over positions in ascending order
+    conseqs = dict([(cut, '') for cut in settings.conseq_mixture_cutoffs])
+    conseqs.update({'MAX': ''})
+
+    for query_nuc_pos in nuc_coords:
+        intermed = [(count, nuc) for nuc, count in nuc_counts[query_nuc_pos].iteritems()]
+        intermed.sort(reverse=True)
+        conseqs['MAX'] += intermed[0][1]  # plurality consensus
+
+        total_count = sum([count for count, nuc in intermed])
+        for cut in settings.conseq_mixture_cutoffs:
+            mixture = []
+            # filter for nucleotides that pass frequency cutoff
+            for count, nuc in intermed:
+                if float(count) / total_count > cut:
+                    mixture.append(nuc)
+
+            if 'N' in mixture:
+                if len(mixture) > 1:
+                    # N always overruled by any nucleotide (gap handled below)
+                    mixture.remove('N')
+                else:
+                    conseqs[cut] += 'N'
+                    continue
+
+            if '-' in mixture:
+                if len(mixture) > 1:
+                    # gap always overruled by nucleotide
+                    mixture.remove('-')
+                else:
+                    conseqs[cut] += '-'
+                    continue
+
+            if len(mixture) > 1:
+                mixture.sort()
+                conseqs[cut] += ambig_dict[''.join(mixture)]
+            elif len(mixture) == 1:
+                # no ambiguity
+                conseqs[cut] += mixture[0]
+            else:
+                # no characters left - I don't think this outcome is possible
+                conseqs[cut] += 'N'
+
+    return conseqs
+
+
 def main():
     args = parseArgs()
     
@@ -255,8 +363,6 @@ def main():
             logger.error('Output path does not exist: ' + output_path)
             sys.exit(1)
 
-    sample_name = os.path.basename(args.aligned_csv).split('.')[0]
-
     # for each region, quality cutoff
     infile = open(args.aligned_csv, 'rU')
     aafile = open(args.amino_csv, 'w')
@@ -278,148 +384,79 @@ def main():
             continue
         for qcut, group2 in groupby(group, lambda x: x.split(',')[2]):
             # gather nucleotide, amino frequencies
-            nuc_counts = {}
-            amino_counts = {}
-            pcache = {}
-            min_offset = 1e6
+            nuc_counts, amino_counts, pcache, min_offset = make_counts(region, group2)
 
-            total_count = 0
-            for line in group2:
-                _, _, _, _, count, offset, seq = line.strip('\n').split(',')
-                offset = int(offset)
-                count = int(count)
-                total_count += count  # track the total number of aligned and merged reads, given QCUT
-                seq = seq.upper()
-
-                if offset < min_offset:
-                    min_offset = offset
-
-                for i, nuc in enumerate(seq):
-                    pos = offset + i
-                    if pos not in nuc_counts:
-                        nuc_counts.update({pos: {}})
-                    if nuc not in nuc_counts[pos]:
-                        nuc_counts[pos].update({nuc: 0})
-                    nuc_counts[pos][nuc] += count
-
-                p = translate('-'*offset + seq, 0)
-                if p not in pcache:
-                    # retain linkage info for reporting insertions
-                    pcache.update({p: 0})
-                pcache[p] += count
-
-                left = offset / 3
-                right = (offset + len(seq)) / 3
-
-                for pos in range(left, right):
-                    if pos not in amino_counts:
-                        amino_counts.update({pos: {}})
-                    aa = p[pos]
-                    if aa not in amino_counts[pos]:
-                        amino_counts[pos].update({aa: 0})
-                    amino_counts[pos][aa] += count
-
-            # make amino consensus from frequencies
-            aa_coords = amino_counts.keys()
-            aa_coords.sort()
-            aa_max = ''
-            for pos in range(min(aa_coords), max(aa_coords) +1):
-                if pos in aa_coords:
-                    intermed = [(count, amino) for amino, count in amino_counts[pos].iteritems()]
-                    intermed.sort(reverse=True)
-                    aa_max += intermed[0][1]
-                    continue
-                aa_max += '?'  # no coverage but not a gap
-
-
-            # map to reference coordinates by aligning consensus
-            aquery, aref, _ = pair_align(hyphy, refseqs[region], aa_max)
-            qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
-
-            amino_writer.write(sample_name,
-                               region,
-                               qcut,
-                               qindex_to_refcoord,
-                               amino_counts,
-                               inserts)
-
-            # output nucleotide frequencies and consensus sequences
-            nuc_coords = nuc_counts.keys()
-            nuc_coords.sort()
-            maxcon = ''
-            conseqs = dict([(cut, '') for cut in settings.conseq_mixture_cutoffs])
-
-            for query_nuc_pos in nuc_coords:
-                # FIXME: there MUST be a better way to do this :-P
-                try:
-                    adjustment = -(3 - min_offset%3)%3
-                    query_aa_pos = (query_nuc_pos - min_offset + adjustment) / 3
-                    query_codon_pos = (query_nuc_pos - min_offset + adjustment) % 3
-                    ref_aa_pos = qindex_to_refcoord[query_aa_pos]
-                    ref_nuc_pos = 3*ref_aa_pos + query_codon_pos
-                except:
-                    logger.warn(
-                        'No coordinate mapping for query nuc %d (amino %d) in %s' % (
-                            query_nuc_pos,
-                            query_aa_pos,
-                            args.aligned_csv))
-                    continue
-
-                outstr = ','.join(map(str, [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']))
-                nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
-                nucfile.write(','.join(map(str, [query_nuc_pos+1, ref_nuc_pos+1, outstr])))
-                nucfile.write('\n')
-
-                # append to consensus sequences
-                intermed = [(count, nuc) for nuc, count in nuc_counts[query_nuc_pos].iteritems()]
-                intermed.sort(reverse=True)
-                maxcon += intermed[0][1]  # plurality consensus
-
-                total_count = sum([count for count, nuc in intermed])
-                for cut in settings.conseq_mixture_cutoffs:
-                    mixture = []
-                    # filter for nucleotides that pass frequency cutoff
-                    for count, nuc in intermed:
-                        if float(count) / total_count > cut:
-                            mixture.append(nuc)
-
-                    if 'N' in mixture:
-                        if len(mixture) > 1:
-                            # N always overruled by any nucleotide (gap handled below)
-                            mixture.remove('N')
-                        else:
-                            conseqs[cut] += 'N'
-                            continue
-
-                    if '-' in mixture:
-                        if len(mixture) > 1:
-                            # gap always overruled by nucleotide
-                            mixture.remove('-')
-                        else:
-                            conseqs[cut] += '-'
-                            continue
-
-                    if len(mixture) > 1:
-                        mixture.sort()
-                        conseqs[cut] += ambig_dict[''.join(mixture)]
-                    elif len(mixture) == 1:
-                        # no ambiguity
-                        conseqs[cut] += mixture[0]
+            if region.startswith('HLA-'):
+                nuc_coords = nuc_counts.keys()
+                left = min(nuc_coords)
+                right = max(nuc_coords)
+                for pos in range(left, right+1):
+                    nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
+                    if pos in nuc_counts:
+                        outstr = ','.join(map(str, [nuc_counts[pos].get(nuc, 0) for nuc in 'ACGT']))
                     else:
-                        # no characters left - I don't think this outcome is possible
-                        conseqs[cut] += 'N'
+                        outstr = '0,0,0,0'
+                    nucfile.write(','.join(map(str, [pos+1, '', outstr])))
+                    nucfile.write('\n')
 
-            confile.write('%s,%s,%s,%s,MAX,%s\n' % (sample_name_base,
-                                                    region,
-                                                    qcut,
-                                                    sample_snum,
-                                                    maxcon))
+            else:
+                # make amino consensus from frequencies
+                aa_coords = amino_counts.keys()
+                aa_coords.sort()
+                aa_max = ''
+                for pos in range(min(aa_coords), max(aa_coords) +1):
+                    if pos in aa_coords:
+                        intermed = [(count, amino) for amino, count in amino_counts[pos].iteritems()]
+                        intermed.sort(reverse=True)
+                        aa_max += intermed[0][1]
+                        continue
+                    aa_max += '?'  # no coverage but not a gap
+
+
+                # map to reference coordinates by aligning consensus
+                aquery, aref, _ = pair_align(hyphy, refseqs[region], aa_max)
+                qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
+
+                amino_writer.write(sample_name,
+                                   region,
+                                   qcut,
+                                   qindex_to_refcoord,
+                                   amino_counts,
+                                   inserts)
+
+                # output nucleotide frequencies and consensus sequences
+                nuc_coords = nuc_counts.keys()
+                nuc_coords.sort()
+
+                for query_nuc_pos in nuc_coords:
+                    # FIXME: there MUST be a better way to do this :-P
+                    try:
+                        adjustment = -(3 - min_offset%3)%3
+                        query_aa_pos = (query_nuc_pos - min_offset + adjustment) / 3
+                        query_codon_pos = (query_nuc_pos - min_offset + adjustment) % 3
+                        ref_aa_pos = qindex_to_refcoord[query_aa_pos]
+                        ref_nuc_pos = 3*ref_aa_pos + query_codon_pos
+                    except:
+                        logger.warn(
+                            'No coordinate mapping for query nuc %d (amino %d) in %s' % (
+                                query_nuc_pos,
+                                query_aa_pos,
+                                args.aligned_csv))
+                        continue
+
+                    outstr = ','.join(map(str, [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']))
+                    nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
+                    nucfile.write(','.join(map(str, [query_nuc_pos+1, ref_nuc_pos+1, outstr])))
+                    nucfile.write('\n')
+
+            # output consensus sequences
+            conseqs = make_consensus(nuc_counts)
             for cut, conseq in conseqs.iteritems():
-                confile.write('%s,%s,%s,%s,%1.3f,%s\n' % (sample_name_base,
+                confile.write('%s,%s,%s,%s,%s,%s\n' % (sample_name_base,
                                                           region,
                                                           qcut,
                                                           sample_snum,
-                                                          cut,
+                                                          str(cut),
                                                           conseq))
 
             # convert insertion coordinates into contiguous ranges

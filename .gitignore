@@ -6,3 +6,4 @@
 *~
 working/*
 !working/*.launch
+*.bt2
