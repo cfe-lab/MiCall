@@ -181,11 +181,17 @@ def main():
 
             # BAM to pileup
             pileup_path = bamfile+'.pileup'
-            redirect_call(['samtools', 'mpileup', '-d', max_pileup_depth, '-A', bamfile], pileup_path)
+            redirect_call(['samtools', 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
 
             # pileup to consensus sequence
             with open(pileup_path, 'rU') as f:
                 conseqs[refname] = pileup_to_conseq(f, consensus_q_cutoff)
+
+            if len(conseqs[refname]) == 0:
+                # failed to generate consensus from this pileup
+                # usually because no reads passed filter
+                frozen.append(refname)
+                continue
 
             # generate *.faidx for later calls to samtools-view
             handle = open(refname+'.conseq', 'w')
@@ -294,6 +300,22 @@ def main():
 
 
 def pileup_to_conseq (handle, qCutoff):
+    """
+    Generate a consensus sequence from a samtools pileup file.
+    Each line in a pileup file corresponds to a nucleotide position in the
+     reference.
+    Tokens are interpreted as follows:
+    ^               start of read
+    $               end of read
+    +[1-9]+[ACGT]+  insertion relative to ref of length \1 and substring \2
+    -[1-9]+N+  deletion relative to ref of length \1 and substring \2
+    *               placeholder for deleted base
+
+    FIXME: this cannot handle combinations of insertions (e.g., 1I3M2I)
+    because a pileup loses all linkage information.  For now we have to
+    restrict all insertions to those divisible by 3 to enforce a reading
+    frame.
+    """
     conseq = ''
     to_skip = 0
     last_pos = 0
@@ -351,13 +373,18 @@ def pileup_to_conseq (handle, qCutoff):
         for atype in atypes:
             intermed.append((alist.count(atype), atype))
         intermed.sort(reverse=True)
+
         if intermed:
             token = intermed[0][1]
         else:
             token = 'N'
+
         if '+' in token:
             m = indel_re.findall(token)[0] # \+[0-9]+
-            conseq += token[0] + token[1+len(m):]
+            conseq += token[0]
+            if len(m) % 3 == 0:
+                # only add insertions that retain reading frame
+                conseq += token[1+len(m):]
         elif token == '-':
             pass
         else:
