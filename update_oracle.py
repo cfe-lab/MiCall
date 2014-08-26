@@ -28,7 +28,7 @@ def parse_args():
     args = parser.parse_args()
     return args, parser
 
-def insert_records(conseqs_file,
+def insert_conseq_records(conseqs_file,
                    version,
                    target_regions,
                    ok_sample_regions,
@@ -136,6 +136,78 @@ values  (
                       "seq": curr_seq,
                       "ok_for_release": ok_for_release})
 
+def insert_hla_records(sample_file, runid, version, conn):
+    """
+    Insert HLA-B sequence records
+    
+    @param sample_file: open file that holds the variant info
+    @param runid: the run id to insert all records under
+    @param version: the current version of the pipeline.
+    @param conn: the database connection. All changes will be committed before
+        this method returns.
+    """
+    
+    insert_statement = """
+insert
+into LAB_MISEQ_HLA_B_SEQ (
+    id,
+    run_id,
+    samplename,
+    testcode,
+    pipelineversion,
+    exon,
+    qcutoff,
+    ind,
+    cnt,
+    string,
+    enterdate
+)
+values (
+    lab_miseq_hla_b_seq_seq.nextval,
+    :runid,
+    :samplename,
+    :testcode,
+    :pipelineversion,
+    :exon,
+    :qcutoff,
+    :ind,
+    :cnt,
+    :string,
+    SYSDATE
+)
+"""
+
+    expected_exon_prefix = 'exon'
+    curs = conn.cursor()
+    try:
+        rows = csv.DictReader(sample_file)
+        for row in rows:
+            if row['refname'] != 'HLA-B':
+                continue
+                
+            sample_name = row['sample']
+            exon = row['subregion']
+            if exon.startswith(expected_exon_prefix):
+                exon_number = int(exon[len(expected_exon_prefix):])
+            else:
+                raise ValueError('Unexpected exon {!r}', exon)
+            qcutoff = row['qcut']
+            ind = row['index']
+            cnt = row['count']
+            curr_seq = row['seq']
+    
+            curs.execute(insert_statement, {'runid': runid,
+                                            'samplename': sample_name,
+                                            'testcode': None,
+                                            'pipelineversion': version,
+                                            'exon': exon_number,
+                                            'qcutoff': qcutoff,
+                                            'ind': ind,
+                                            'cnt': cnt,
+                                            'string': curr_seq})
+        conn.commit()
+    finally:
+        curs.close()
 
 
 def clean_runname(runname):
@@ -208,68 +280,80 @@ def find_target_regions(curs, runname):
             target_regions.add((tag, region))
     return target_regions
 
-def check_existing_data(curs, runid, logger):
-    """ Check if there is already data for runid in the table.
+def check_existing_data(conn, sample_sheet, logger):
+    """ Find the run id, and check for existing detail records.
     
-    Delete it if there is any.
+    Delete the detail records if there are any.
+    @param conn: open database connection
+    @param sample_sheet: parsed data from the sample sheet
+    @param logger: for reporting any existing records
     """
     
-    sql = """
+    conseq_sql = """
     DELETE
     FROM   lab_miseq_conseq
     WHERE  runid = :runid
     """
-    curs.execute(sql, {'runid': runid})
-    if curs.rowcount > 0:
-        logger.warn('Deleted {} existing records for run id {}'.format(
-            curs.rowcount,
-            runid))
+    hla_sql = """
+    DELETE
+    FROM   lab_miseq_hla_b_seq
+    WHERE  run_id = :runid
+    """
+    curs = conn.cursor()
+    try:
+        runid = find_runid(curs, sample_sheet["Experiment Name"])
+        curs.execute(conseq_sql, {'runid': runid})
+        total_rowcount = curs.rowcount
+        curs.execute(hla_sql, {'runid': runid})
+        total_rowcount += curs.rowcount
+        if total_rowcount > 0:
+            logger.warn('Deleted {} existing records for run id {}'.format(
+                total_rowcount,
+                runid))
+        conn.commit()
+    finally:
+        curs.close()
+        
+    return runid
 
 
 def upload_conseqs_to_Oracle(conseqs_file,
+                             runid,
                              sample_sheet,
                              ok_sample_regions,
                              version,
                              logger,
-                             user=settings.oracle_uploader,
-                             password=settings.oracle_uploader_pass,
-                             dbname=settings.oracle_db):
+                             conn):
     """
     Parses a Pipeline-produced conseq file and uploads to Oracle.
 
     By default the Oracle user is specified in settings_default.py.
     @param conseqs_file: An open file that contains the consensus sequences
         from the counts2csf step for all samples in the run.
-    @param sample_sheet: The data from the sample sheet.
+    @param sample_sheet: The data parsed from the sample sheet.
     @param ok_sample_regions: A set of (sample_name, region, qcut) tuples that
         were given a good score by the pipeline.
     @param version: the current version of the pipeline.
     @param logger: the logger to record events in.
-    @param user: database user
-    @param password: database password
-    @param dbname: database instance name
+    @param conn: database connection. All changes will be committed before this
+        method returns.
     """
     
-    conn = DB.connect(user, password, dbname)
     curs = conn.cursor()
     try:
-        runid = find_runid(curs, sample_sheet["Experiment Name"])
         target_regions = find_target_regions(curs, 
                                              sample_sheet["Experiment Name"])
         
-        check_existing_data(curs, runid, logger)
-    
-        insert_records(conseqs_file,
+        insert_conseq_records(conseqs_file,
                        version,
                        target_regions,
                        ok_sample_regions,
                        sample_sheet,
                        curs,
                        runid)
+        conn.commit()
     finally:
         curs.close()
-        conn.commit()
-        conn.close()
 
 
 def load_ok_sample_regions(result_folder):
@@ -286,6 +370,7 @@ def load_ok_sample_regions(result_folder):
 def process_folder(result_folder, logger):
     logger.info('Uploading data to Oracle from {}'.format(result_folder))
     collated_conseqs = os.path.join(result_folder, 'collated_conseqs.csv')
+    nuc_variants = os.path.join(result_folder, 'nuc_variants.csv')
     all_results_path, _ = os.path.split(result_folder)
     run_path, _ = os.path.split(all_results_path)
     sample_sheet_file = os.path.join(run_path, "SampleSheet.csv")
@@ -293,13 +378,25 @@ def process_folder(result_folder, logger):
         sample_sheet = sample_sheet_parser.sample_sheet_parser(f)
         
     ok_sample_regions = load_ok_sample_regions(result_folder)
+    
+    conn = DB.connect(settings.oracle_uploader,
+                      settings.oracle_uploader_pass,
+                      settings.oracle_db)
+    try:
+        runid = check_existing_data(conn, sample_sheet, logger)
 
-    with open(collated_conseqs, "rU") as f:
-        upload_conseqs_to_Oracle(f,
-                                 sample_sheet,
-                                 ok_sample_regions,
-                                 settings.pipeline_version,
-                                 logger)
+        with open(collated_conseqs, "rU") as f:
+            upload_conseqs_to_Oracle(f,
+                                     runid,
+                                     sample_sheet,
+                                     ok_sample_regions,
+                                     settings.pipeline_version,
+                                     logger,
+                                     conn)
+        with open(nuc_variants, "rU") as f:
+            insert_hla_records(f, runid, settings.pipeline_version, conn)
+    finally:
+        conn.close()
 
 
 def main():
