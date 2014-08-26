@@ -334,7 +334,6 @@ def main():
 
             # map to reference coordinates by aligning consensus
             aquery, aref, _ = pair_align(hyphy, refseqs[region], aa_max)
-            print region, aquery, aref
             qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
 
             amino_writer.write(sample_name,

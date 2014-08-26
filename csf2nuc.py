@@ -67,16 +67,23 @@ def main():
     outfile = open(args.nuc_variants, 'w')
     
     handle.readline() # skip header
-    outfile.write('refname,qcut,subregion,index,count,seq\n')
+    outfile.write('sample,refname,qcut,subregion,index,count,seq\n')
 
-    for refname, group in itertools.groupby(handle, lambda x: x.split(',')[0]):
+    for key, group in itertools.groupby(handle, lambda x: x.split(',')[0:2]):
+        sample_name, refname = key
         if refname not in refseqs:
             continue
 
-        for qcut, group2 in itertools.groupby(group, lambda x: x.split(',')[1]):
+        for qcut, group2 in itertools.groupby(group, lambda x: x.split(',')[2]):
             fasta = dict([(subregion, {}) for subregion in refseqs[refname].iterkeys()])
             for line in group2:
-                _refname, _qcut, index, count, _offset, seq = line.strip('\n').split(',')
+                (_sample_name,
+                 _refname,
+                 _qcut,
+                 index,
+                 count,
+                 _offset,
+                 seq) = line.strip('\n').split(',')
                 for subregion, refseq in refseqs[refname].iteritems():
                     aquery, aref, ascore = hyphyAlign.pair_align(hyphy, refseq, seq)
                     if float(ascore) / len(refseq) < min_avg_score:
@@ -93,7 +100,13 @@ def main():
                 intermed = [(count, seq) for seq, count in fasta[subregion].iteritems()]
                 intermed.sort(reverse=True)  # descending order
                 for index, (count, seq) in enumerate(intermed):
-                    outfile.write('%s,%s,%s,%d,%d,%s\n' % (refname, qcut, subregion, index, count, seq))
+                    outfile.write('%s,%s,%s,%s,%d,%d,%s\n' % (sample_name,
+                                                              refname,
+                                                              qcut,
+                                                              subregion,
+                                                              index,
+                                                              count,
+                                                              seq))
 
     handle.close()
     outfile.close()
