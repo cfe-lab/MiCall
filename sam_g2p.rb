@@ -148,25 +148,20 @@ CSV.foreach(ARGV[0]) do |row|
     seq2 = '-'*pos1 + seq1 # pad the sequence
     qual2 = '!'*pos1 + qual1
     
-    if pairs.has_key?(qname) # merge reads
-        seq1 = pairs[qname]['seq'] # retrieve from cache
-        qual1 = pairs[qname]['qual']
-        
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
-        
-        seqlen = (mseq.delete '-').length
-        if (mseq.count 'N') > (0.5*seqlen)
-            # if more than 50% of sequence is garbage
-            next
-        end
-        
-        if merged.has_key?(mseq)
-            merged[mseq] += 1
-        else
-            merged[mseq] = 1
-        end
+    pair = pairs[qname]
+    if pair == nil
+      # cache this read
+      pairs[qname] = {'seq'=>seq2, 'qual'=>qual2}
     else
-        pairs[qname] = {'seq'=>seq2, 'qual'=>qual2} # cache this read
+      # merge reads
+      pairs.delete(qname)
+      seq1 = pair['seq'] # retrieve from cache
+      qual1 = pair['qual']
+      
+      mseq = merge_pairs(seq1, seq2, qual1, qual2)
+      
+      count = merged.fetch(mseq, 0)
+      merged[mseq] = count + 1
     end
 end  
 
@@ -181,6 +176,12 @@ sorted.each do |s, count|
     rank += 1
     prefix = "#{sample_name},#{rank},#{count}"
     seq = s.delete '-'
+    if (seq.count 'N') > (0.5*seq.length)
+        # if more than 50% of sequence is garbage
+        f.write("#{prefix},,,,low quality\n")
+        next
+    end
+    
     if s.length % 3 != 0
         f.write("#{prefix},,,,notdiv3\n")
         next
