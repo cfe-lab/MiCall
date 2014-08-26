@@ -129,6 +129,7 @@ def count_samples(fastq_samples, worker, args):
         worker.run_job(Job(script=base_path + 'coverage_plots.R',
                            helpers=(base_path + 'key_positions.csv', ),
                            args=(sample_info.output_root + '.amino.csv',
+                                 sample_info.output_root + '.nuc.csv',
                                  sample_info.output_root + '.coverage_maps.tar',
                                  sample_info.output_root + '.coverage_scores.csv'),
                            stdout=log_path,
