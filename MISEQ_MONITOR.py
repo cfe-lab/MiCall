@@ -8,6 +8,7 @@ MISEQ_MONITOR.py
 from glob import glob
 import logging
 import os
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -15,8 +16,8 @@ import time
 
 import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
-from settings import delay, ERROR_PROCESSING, home, NEEDS_PROCESSING,\
-    pipeline_version, production, rawdata_mount, base_path
+from settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
+    NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, base_path
 import update_oracle
 
 
@@ -30,10 +31,17 @@ def init_logging(log_file):
         raise Exception("Couldn't setup logging (init_logging() threw exception '{}') - HALTING NOW!".format(str(e)))
     return logger
 
-def mark_run_as_disabled(root, message, *args, **kwargs):
-    """ Mark a run that failed, so it won't be processed again. """
+def mark_run_as_disabled(root, message, exc_info=None):
+    """ Mark a run that failed, so it won't be processed again.
+    
+    @param root: path to the run folder that had an error
+    @param message: a description of the error
+    @param exc_info: details about the error's exception in the standard tuple,
+        True to look up the current exception, or None if there is no exception
+        to report
+    """
     failure_message = message + " - skipping run " + root
-    logger.error(failure_message, *args, **kwargs)
+    logger.error(failure_message, exc_info=exc_info)
     if production:
         with open(root + ERROR_PROCESSING, 'w') as f:
             f.write(message)
@@ -42,6 +50,15 @@ def mark_run_as_disabled(root, message, *args, **kwargs):
 
 def is_marked_as_disabled(run):
     return os.path.exists(run.replace(NEEDS_PROCESSING, ERROR_PROCESSING))
+
+def mark_run_as_done(results_folder):
+    """ Mark a run that has completed its processing.
+    
+    @param results_folder: path to the results folder
+    """
+    if production:
+        with open(os.path.join(results_folder, DONE_PROCESSING), 'w'):
+            pass # Leave the file empty
 
 def execute_command(command):
     logger.info(" ".join(command))
@@ -68,6 +85,7 @@ while True:
         logger = init_logging(home + '/MISEQ_MONITOR_OUTPUT.log')
     
     if failure_message is not None:
+        # Log it here again, now logging to home folder's log file.
         logger.error(failure_message)
         failure_message = None
         
@@ -77,15 +95,23 @@ while True:
 
     runs_needing_processing = []
     for run in runs:
-        result_path = '{}/version_{}'.format(run.replace(NEEDS_PROCESSING, 'Results'), pipeline_version)
+        root = os.path.dirname(run)
+        result_path = os.path.join(root,
+                                   'Results',
+                                   'version_{}'.format(pipeline_version))
+        done_path = os.path.join(result_path, DONE_PROCESSING)
 
         if is_marked_as_disabled(run):
             continue
 
-        # if version-matched Results folder already exists, then do not re-process
+        # if doneprocessing file already exists, then do not re-process
         if production:
-            if os.path.exists(result_path):
+            if os.path.exists(done_path):
                 continue
+            if os.path.exists(result_path):
+                # Not done, but results folder exists. Assume it's incomplete,
+                # delete it, and rerun.
+                shutil.rmtree(result_path)
         else:
             if run in processed_runs:
                 continue
@@ -135,7 +161,8 @@ while True:
     except Exception as e:
         failure_message = mark_run_as_disabled(
             root,
-            "Parsing sample sheet failed", exc_info=True)
+            "Parsing sample sheet failed",
+            exc_info=True)
         continue
 
     if mode not in ['Nextera', 'Amplicon']:
@@ -225,15 +252,14 @@ while True:
             
             update_oracle.process_folder(result_path_final, logger)
             
-            # Close the log and copy it to rawdata
+            mark_run_as_done(result_path_final)
+            
             logger.info("===== %s file transfer completed =====", run_name)
         except:
-            logger.error('Failed to post pipeline results for %r.', 
-                         run_name, 
-                         exc_info=True)
             failure_message = mark_run_as_disabled(
                 root,
-                "Failed to post pipeline results")
+                "Failed to post pipeline results",
+                exc_info=True)
 
     logging.shutdown()
     logger = None
