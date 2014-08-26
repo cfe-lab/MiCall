@@ -267,7 +267,7 @@ def main():
     
     infile.readline() # skip header
     nucfile.write('sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
-    indelfile.write('region,qcut,left,insert,count\n')
+    indelfile.write('sample,region,qcut,left,insert,count\n')
     confile.write('sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
     
     for key, group in groupby(infile, lambda x: x.split(',')[0:2]):
@@ -276,7 +276,7 @@ def main():
         
         if region not in refseqs:
             continue
-        for qcut, group2 in groupby(group, lambda x: x.split(',')[1]):
+        for qcut, group2 in groupby(group, lambda x: x.split(',')[2]):
             # gather nucleotide, amino frequencies
             nuc_counts = {}
             amino_counts = {}
@@ -452,7 +452,12 @@ def main():
             # record insertions to CSV
             for left in indel_counts.iterkeys():
                 for insert in indel_counts[left].iterkeys():
-                    indelfile.write('%s,%s,%d,%s,%d\n' % (region, qcut, left, insert, count))
+                    indelfile.write('%s,%s,%s,%d,%s,%d\n' % (sample_name,
+                                                             region,
+                                                             qcut,
+                                                             left,
+                                                             insert,
+                                                             count))
 
     infile.close()
     aafile.close()
