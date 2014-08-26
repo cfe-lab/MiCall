@@ -135,9 +135,10 @@ end
 # convert file contents into hash
 pairs = Hash.new  # cache read for pairing
 merged = Hash.new # tabulate merged sequence variants
+sample_name = ''
 
 CSV.foreach(ARGV[0]) do |row|
-    qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = row
+    sample_name, qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = row
     if rname != 'V3LOOP'
         # uninteresting region or the header row
         next
@@ -173,19 +174,20 @@ sorted = merged.sort_by {|k,v| v}.reverse  # sort by count in descending order
 
 # apply g2p algorithm to merged reads
 f = File.open(ARGV[1], mode='w') # write-only
-f.write("rank,count,g2p,fpr,aligned,error\n")  # CSV header
+f.write("sample,rank,count,g2p,fpr,aligned,error\n")  # CSV header
 
 rank = 0
 sorted.each do |s, count|
     rank += 1
+    prefix = "#{sample_name},#{rank},#{count}"
     seq = s.delete '-'
     if s.length % 3 != 0
-        f.write("#{rank},#{count},,,,notdiv3\n")
+        f.write("#{prefix},,,,notdiv3\n")
         next
     end
     
     if seq.length == 0
-      f.write("#{rank},#{count},,,,zerolength\n")
+      f.write("#{prefix},,,,zerolength\n")
       next
     end
     
@@ -194,32 +196,32 @@ sorted.each do |s, count|
 
     # sanity check 1 - bounded by cysteines
     if !prot.match(/^C/) || !prot.match(/C$/)
-        f.write("#{rank},#{count},,,#{prot},cysteines\n")
+        f.write("#{prefix},,,#{prot},cysteines\n")
         next
     end
 
     # sanity check 2 - no ambiguous codons
     if prot.count('X') > 0
-        f.write("#{rank},#{count},,,#{prot},ambiguous\n")
+        f.write("#{prefix},,,#{prot},ambiguous\n")
         next
     end
 
     # sanity check 3 - no stop codons
     if prot.count('*') > 0
-        f.write("#{rank},#{count},,,#{prot},stop codons\n")
+        f.write("#{prefix},,,#{prot},stop codons\n")
         next
     end
 
     # sanity check 4 - V3 length in range 32-40 inclusive
     if prot.length < 32 || prot.length > 40
-        f.write("#{rank},#{count},,,#{prot},length\n")
+        f.write("#{prefix},,,#{prot},length\n")
         next
     end
 
     score, aligned = run_g2p(seq, $std_v3_g2p, load_matrix('g2p'))
     aligned2 = aligned.flatten * ""
     fpr = g2p_to_fpr(score)
-    f.write("#{rank},#{count},#{score},#{fpr},#{aligned2},\n")
+    f.write("#{prefix},#{score},#{fpr},#{aligned2},\n")
 end
 
 f.close()
