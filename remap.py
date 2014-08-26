@@ -239,14 +239,14 @@ def main():
     seqfile = open(args.remap_conseq_csv, 'w')  # record consensus sequences for later use
     outfile = open(args.remap_csv, 'w')  # combine SAM files into single CSV output
     
-    seqfile.write('sample_name,region,sequence\n')
-    outfile.write('qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n')
+    seqfile.write('region,sequence\n')
+    outfile.write('sample_name,qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n')
 
     for refname in refnames:
         stat_file.write('%s,remap %s,%d\n' % (sample_name,
                                               refname,
                                               map_counts[refname]))
-        seqfile.write('%s,%s,%s\n' % (sample_name, refname, conseqs[refname]))
+        seqfile.write('%s,%s\n' % (refname, conseqs[refname]))
         # transfer contents of last SAM file to CSV
         handle = open(refname+'.sam', 'rU')
         for line in handle:
@@ -264,6 +264,7 @@ def main():
             mapped[qname] += (2 if bits['is_first'] else 1)
 
             items[2] = refname  # replace '0' due to passing conseq to bowtie2-build on cmd line
+            items.insert(0, sample_name)
             outfile.write(','.join(items) + '\n')
         handle.close()
 

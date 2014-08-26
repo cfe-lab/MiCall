@@ -47,7 +47,8 @@ def main():
     excluded_files = ('.fastq',
                       'SampleSheet.csv',
                       '.launch',
-                      'MISEQ_MONITOR_OUTPUT.log')
+                      'MISEQ_MONITOR_OUTPUT.log',
+                      'run.log')
     old_files = glob(args.run_folder+'/*')
     for f in old_files:
         is_excluded = False

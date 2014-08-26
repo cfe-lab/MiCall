@@ -140,20 +140,21 @@ def coordinate_map(aquery, aref):
     return qindex_to_refcoord, inserts
 
 class AminoFrequencyWriter(object):
-    def __init__(self, aafile, sample_name, refseqs):
+    def __init__(self, aafile, refseqs):
         """ Initialize a writer object.
         
         @param aafile: an open file that the summary will be written to
-        @param sample_name: the name of the sample to go in the first column
         @param refseqs: {region: sequence} maps from region name to amino acid 
         sequence
         """
         self.aafile = aafile
-        self.sample_name = sample_name
         self.refseqs = refseqs
-        self.is_header_written = False
+        self.aafile.write(
+            'sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,'
+            'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*\n')
         
     def write(self,
+              sample_name,
               region,
               qcut,
               qindex_to_refcoord,
@@ -162,6 +163,7 @@ class AminoFrequencyWriter(object):
         """ Write a summary of the amino acid distribution at each position in
         the reference sequence.
         
+        @param sample_name: the name of the sample to go in the first column.
         @param region: the name of the region being processed
         @param qcut: the quality cutoff score that was used to map the consensus
         sequence
@@ -180,12 +182,6 @@ class AminoFrequencyWriter(object):
         if not amino_counts:
             return
     
-        if not self.is_header_written:
-            self.aafile.write(
-                'sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,'
-                'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*\n')
-            self.is_header_written = True
-            
         qindex = 0
         query_offset = min(amino_counts.keys())
         query_end = max(qindex_to_refcoord.keys())
@@ -215,7 +211,7 @@ class AminoFrequencyWriter(object):
                 counts = [0 for aa in amino_alphabet]
                 aa_pos_str = ''
             outstr = ','.join(map(str, counts))
-            self.aafile.write('%s,%s,%s,%s,%d,%s\n' % (self.sample_name,
+            self.aafile.write('%s,%s,%s,%s,%d,%s\n' % (sample_name,
                                                        region,
                                                        qcut,
                                                        aa_pos_str,
@@ -267,18 +263,20 @@ def main():
     nucfile = open(args.nuc_csv, 'w')
     confile = open(args.conseq, 'w')
     indelfile = open(args.indels_csv, 'w')
-    amino_writer = AminoFrequencyWriter(aafile, sample_name, refseqs)
+    amino_writer = AminoFrequencyWriter(aafile, refseqs)
     
     infile.readline() # skip header
     nucfile.write('sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
-    indelfile.write('region,qcut,left,insert,count\n')
+    indelfile.write('sample,region,qcut,left,insert,count\n')
     confile.write('sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
-    sample_name_base, sample_snum = sample_name.split('_', 1)
-
-    for region, group in groupby(infile, lambda x: x.split(',')[0]):
+    
+    for key, group in groupby(infile, lambda x: x.split(',')[0:2]):
+        sample_name, region = key
+        sample_name_base, sample_snum = sample_name.split('_', 1)
+        
         if region not in refseqs:
             continue
-        for qcut, group2 in groupby(group, lambda x: x.split(',')[1]):
+        for qcut, group2 in groupby(group, lambda x: x.split(',')[2]):
             # gather nucleotide, amino frequencies
             nuc_counts = {}
             amino_counts = {}
@@ -287,7 +285,7 @@ def main():
 
             total_count = 0
             for line in group2:
-                _, _, _, count, offset, seq = line.strip('\n').split(',')
+                _, _, _, _, count, offset, seq = line.strip('\n').split(',')
                 offset = int(offset)
                 count = int(count)
                 total_count += count  # track the total number of aligned and merged reads, given QCUT
@@ -336,10 +334,10 @@ def main():
 
             # map to reference coordinates by aligning consensus
             aquery, aref, _ = pair_align(hyphy, refseqs[region], aa_max)
-            print region, aquery, aref
             qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
 
-            amino_writer.write(region,
+            amino_writer.write(sample_name,
+                               region,
                                qcut,
                                qindex_to_refcoord,
                                amino_counts,
@@ -453,7 +451,12 @@ def main():
             # record insertions to CSV
             for left in indel_counts.iterkeys():
                 for insert in indel_counts[left].iterkeys():
-                    indelfile.write('%s,%s,%d,%s,%d\n' % (region, qcut, left, insert, count))
+                    indelfile.write('%s,%s,%s,%d,%s,%d\n' % (sample_name,
+                                                             region,
+                                                             qcut,
+                                                             left,
+                                                             insert,
+                                                             count))
 
     infile.close()
     aafile.close()
