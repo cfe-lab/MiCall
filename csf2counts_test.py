@@ -274,13 +274,25 @@ E1234_S1,R1,15,2,D,1
         
         self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())
         
-    def ignoreInsertWithOffset(self):
+    def testInsertWithOffset(self):
         expected_text = """\
 sample,region,qcut,left,insert,count
 E1234_S1,R1,15,2,D,1
 """
         
-        self.writer.add_read(offset_sequence='-CDEF', count=1)
-        self.writer.write(inserts=[1])
+        self.writer.add_read(offset_sequence='-CDEFG', count=1)
+        self.writer.write(inserts=[1], min_offset=1)
+        
+        self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())
+        
+    def testTwoInsertsWithOffset(self):
+        expected_text = """\
+sample,region,qcut,left,insert,count
+E1234_S1,R1,15,2,D,1
+E1234_S1,R1,15,4,F,1
+"""
+        
+        self.writer.add_read(offset_sequence='-CDEFG', count=1)
+        self.writer.write(inserts=[1, 3], min_offset=1)
         
         self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())

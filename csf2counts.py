@@ -184,14 +184,18 @@ class IndelWriter(object):
             # retain linkage info for reporting insertions
             self.pcache.update({p: 0})
         self.pcache[p] += count
-        if self.sample_name == '2020A-GP41_S4':
-            print count, offset_sequence
         
-    def write(self, inserts):
+    def write(self, inserts, min_offset=0):
         """ Write any insert ranges to the file.
         
         Sequence data comes from the reads that were added to the current group.
-        @param inserts: indexes into the non-blank characters of the reads.
+        @param inserts: indexes into the non-blank characters of the reads. For
+            example, if all the reads had at least two leading dashes, then you
+            will need to add two to all the insert indexes to find the correct
+            position within the reads.
+        @param min_offset: the minimum offset from all the reads. Add this to
+            the indexes in inserts to find the actual indexes of the inserted
+            characters in the read strings.
         """
         if len(inserts) == 0:
             return
@@ -204,10 +208,10 @@ class IndelWriter(object):
             index = inserts[i]
             if index - last_index > 1:
                 # skipped an index
-                insert_ranges.append((left, last_index+1))
+                insert_ranges.append((left+min_offset, last_index+1+min_offset))
                 left = index
             last_index = index
-        insert_ranges.append((left, last_index+1))
+        insert_ranges.append((left+min_offset, last_index+1+min_offset))
 
         # enumerate indels by popping out all AA sub-string variants
         indel_counts = {}
@@ -519,6 +523,8 @@ def main():
                                    qindex_to_refcoord,
                                    amino_counts,
                                    inserts)
+    
+                indel_writer.write(inserts, min_offset)
 
                 # output nucleotide frequencies and consensus sequences
                 nuc_coords = nuc_counts.keys()
@@ -554,8 +560,6 @@ def main():
                                                           sample_snum,
                                                           str(cut),
                                                           conseq))
-
-            indel_writer.write(inserts)
 
     infile.close()
     aafile.close()
