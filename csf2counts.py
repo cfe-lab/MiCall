@@ -201,36 +201,33 @@ class IndelWriter(object):
             return
 
         # convert insertion coordinates into contiguous ranges
-        left = inserts[0]
-        last_index = left
         insert_ranges = []
-        for i in range(1, len(inserts)):
-            index = inserts[i]
-            if index - last_index > 1:
-                # skipped an index
-                insert_ranges.append((left+min_offset, last_index+1+min_offset))
-                left = index
-            last_index = index
-        insert_ranges.append((left+min_offset, last_index+1+min_offset))
+        for insert in inserts:
+            adjusted = insert + min_offset
+            if not insert_ranges or adjusted != insert_ranges[-1][1]:
+                # just starting or we hit a gap
+                insert_ranges.append([adjusted, adjusted + 1])
+            else:
+                insert_ranges[-1][1] += 1
 
         # enumerate indels by popping out all AA sub-string variants
-        indel_counts = {}
+        indel_counts = {} # {left: {insert_seq: count}}
         for left, right in insert_ranges:
-            indel_counts.update({left: {}})
+            current_counts = {}
+            indel_counts[left] = current_counts
             for p, count in self.pcache.iteritems():
-                insert = p[left:right]
-                if insert not in indel_counts[left]:
-                    indel_counts[left].update({insert: 0})
-                indel_counts[left][insert] += count
+                insert_seq = p[left:right]
+                current_count = current_counts.get(insert_seq, 0)
+                current_counts[insert_seq] = current_count + count
 
         # record insertions to CSV
-        for left in indel_counts.iterkeys():
-            for insert in indel_counts[left].iterkeys():
+        for left, counts in indel_counts.iteritems():
+            for insert_seq, count in counts.iteritems():
                 self.indelfile.write('%s,%s,%s,%d,%s,%d\n' % (self.sample_name,
                                                               self.region,
                                                               self.qcut,
                                                               left,
-                                                              insert,
+                                                              insert_seq,
                                                               count))
 
 class AminoFrequencyWriter(object):
