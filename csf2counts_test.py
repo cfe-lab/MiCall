@@ -308,3 +308,27 @@ E1234_S1,R1,15,2,D,2
         self.writer.write(inserts=[2])
         
         self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())
+
+    def testDifferentInserts(self):
+        expected_text = """\
+sample,region,qcut,left,insert,count
+E1234_S1,R1,15,2,D,2
+E1234_S1,R1,15,2,F,3
+"""
+        
+        self.writer.add_read(offset_sequence='ACDEF', count=2)
+        self.writer.add_read(offset_sequence='ACFEF', count=3)
+        self.writer.write(inserts=[2])
+        
+        self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())
+
+    def testMulticharacterInsert(self):
+        expected_text = """\
+sample,region,qcut,left,insert,count
+E1234_S1,R1,15,2,DE,1
+"""
+        
+        self.writer.add_read(offset_sequence='ACDEF', count=1)
+        self.writer.write(inserts=[2,3])
+        
+        self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())
