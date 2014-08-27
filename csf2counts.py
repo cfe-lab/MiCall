@@ -104,10 +104,19 @@ def translate(seq, offset):
 def coordinate_map(aquery, aref):
     """
     Generate coordinate map of query sequence to a reference.
-    Returns map as dictionary object, and a list of non-reference
-    positions due to insertions in query.  Note this is not simply
-    implied by lack of query position as key in dictionary, because
-    ambiguous positions are also ignored.
+    
+    @param aquery: amino acid sequence from the sample
+    @param aref: reference amino acid sequence
+    @return: (qindex_to_refcoord, inserts) All indexes in the return values
+        are indexes into trimmed versions of aquery and aref. They are 
+        calculated by counting all non-dash characters. So the index of 'R' in
+        '--AC-RA--' is 2 because we don't count the dashes.
+        The first item maps indexes in aquery to the corresponding indexes in
+        aref.
+        The second item is a list of indexes in aquery that are not mapped to
+        anything in aref due to insertions in aquery. Note this is not simply
+        implied by lack of a query position as a key in the dictionary, because
+        ambiguous positions are also ignored.
     """
     qindex_to_refcoord = {}
     inserts = []
@@ -141,6 +150,85 @@ def coordinate_map(aquery, aref):
             rindex += 1
 
     return qindex_to_refcoord, inserts
+
+class IndelWriter(object):
+    def __init__(self, indelfile):
+        """ Initialize a writer object.
+        
+        @param indelfile: an open file that the data will be written to
+        """
+        self.indelfile = indelfile
+        self.indelfile.write('sample,region,qcut,left,insert,count\n')
+    
+    def start_group(self, sample_name, region, qcut):
+        """ Start a new group of reads.
+        
+        @param sample_name: the name of the sample these reads came from
+        @param region: the name of the region these reads mapped to
+        @param qcut: the quality cut off used for these reads
+        """
+        self.sample_name = sample_name
+        self.region = region
+        self.qcut = qcut
+        self.pcache = {}
+    
+    def add_read(self, offset_sequence, count):
+        """ Add a read to the group.
+        
+        @param offset_sequence: the sequence of the read that has had dashes
+            added to offset it into the reference coordinates
+        @param count: the number of times this sequence was read
+        """
+        p = offset_sequence
+        if p not in self.pcache:
+            # retain linkage info for reporting insertions
+            self.pcache.update({p: 0})
+        self.pcache[p] += count
+        
+    def write(self, inserts, min_offset=0):
+        """ Write any insert ranges to the file.
+        
+        Sequence data comes from the reads that were added to the current group.
+        @param inserts: indexes into the non-blank characters of the reads. For
+            example, if all the reads had at least two leading dashes, then you
+            will need to add two to all the insert indexes to find the correct
+            position within the reads.
+        @param min_offset: the minimum offset from all the reads. Add this to
+            the indexes in inserts to find the actual indexes of the inserted
+            characters in the read strings.
+        """
+        if len(inserts) == 0:
+            return
+
+        # convert insertion coordinates into contiguous ranges
+        insert_ranges = []
+        for insert in inserts:
+            adjusted = insert + min_offset
+            if not insert_ranges or adjusted != insert_ranges[-1][1]:
+                # just starting or we hit a gap
+                insert_ranges.append([adjusted, adjusted + 1])
+            else:
+                insert_ranges[-1][1] += 1
+
+        # enumerate indels by popping out all AA sub-string variants
+        indel_counts = {} # {left: {insert_seq: count}}
+        for left, right in insert_ranges:
+            current_counts = {}
+            indel_counts[left] = current_counts
+            for p, count in self.pcache.iteritems():
+                insert_seq = p[left:right]
+                current_count = current_counts.get(insert_seq, 0)
+                current_counts[insert_seq] = current_count + count
+
+        # record insertions to CSV
+        for left, counts in indel_counts.iteritems():
+            for insert_seq, count in counts.iteritems():
+                self.indelfile.write('%s,%s,%s,%d,%s,%d\n' % (self.sample_name,
+                                                              self.region,
+                                                              self.qcut,
+                                                              left,
+                                                              insert_seq,
+                                                              count))
 
 class AminoFrequencyWriter(object):
     def __init__(self, aafile, refseqs):
@@ -221,14 +309,23 @@ class AminoFrequencyWriter(object):
                                                        refcoord + 1,
                                                        outstr))
 
-def make_counts(region, group2):
+def make_counts(region, group2, indel_writer):
     """
     Generate nucleotide and amino acid frequencies from CSV file grouping
      by region and quality cutoff.
+     
+    @param region: the region these lines are from
+    @param group2: the lines from the CSV file that describe the reads
+    @param indel_writer: this needs to receive each read so it can report the
+        contents of any insertions.
+    @return (nuc_counts, amino_counts, min_offset) a tuple with the following:
+        nuc_counts is a dictionary of dictionaries {position: {nucleotide: count}}
+        amino_counts is the same, but for amino acids {position: {acid: count}}
+        min_offset is the minimum offset seen in all the reads. The positions
+        in nuc_counts and amino_counts already include the offsets. 
     """
     nuc_counts = {}
     amino_counts = {}
-    pcache = {}
 
     min_offset = 1e6
     total_count = 0  # track the total number of aligned and merged reads, given QCUT
@@ -255,10 +352,7 @@ def make_counts(region, group2):
             continue
 
         p = translate('-'*offset + seq, 0)
-        if p not in pcache:
-            # retain linkage info for reporting insertions
-            pcache.update({p: 0})
-        pcache[p] += count
+        indel_writer.add_read(p, count)
 
         left = offset / 3
         right = (offset + len(seq)) / 3
@@ -271,7 +365,7 @@ def make_counts(region, group2):
                 amino_counts[pos].update({aa: 0})
             amino_counts[pos][aa] += count
 
-    return nuc_counts, amino_counts, pcache, min_offset
+    return nuc_counts, amino_counts, min_offset
 
 
 def make_consensus(nuc_counts):
@@ -370,10 +464,10 @@ def main():
     confile = open(args.conseq, 'w')
     indelfile = open(args.indels_csv, 'w')
     amino_writer = AminoFrequencyWriter(aafile, refseqs)
+    indel_writer = IndelWriter(indelfile)
     
     infile.readline() # skip header
     nucfile.write('sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
-    indelfile.write('sample,region,qcut,left,insert,count\n')
     confile.write('sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
     
     for key, group in groupby(infile, lambda x: x.split(',')[0:2]):
@@ -384,7 +478,10 @@ def main():
             continue
         for qcut, group2 in groupby(group, lambda x: x.split(',')[2]):
             # gather nucleotide, amino frequencies
-            nuc_counts, amino_counts, pcache, min_offset = make_counts(region, group2)
+            indel_writer.start_group(sample_name, region, qcut)
+            nuc_counts, amino_counts, min_offset = make_counts(region,
+                                                               group2,
+                                                               indel_writer)
 
             if region.startswith('HLA-'):
                 nuc_coords = nuc_counts.keys()
@@ -423,6 +520,8 @@ def main():
                                    qindex_to_refcoord,
                                    amino_counts,
                                    inserts)
+    
+                indel_writer.write(inserts, min_offset)
 
                 # output nucleotide frequencies and consensus sequences
                 nuc_coords = nuc_counts.keys()
@@ -458,42 +557,6 @@ def main():
                                                           sample_snum,
                                                           str(cut),
                                                           conseq))
-
-            # convert insertion coordinates into contiguous ranges
-            if len(inserts) == 0:
-                continue
-
-            left = inserts[0]
-            last_index = left
-            insert_ranges = []
-            for i in range(1, len(inserts)):
-                index = inserts[i]
-                if index - last_index > 1:
-                    # skipped an index
-                    insert_ranges.append((left, last_index+1))
-                    left = index
-                last_index = index
-            insert_ranges.append((left, last_index+1))
-
-            # enumerate indels by popping out all AA sub-string variants
-            indel_counts = {}
-            for left, right in insert_ranges:
-                indel_counts.update({left: {}})
-                for p, count in pcache.iteritems():
-                    insert = p[left:right]
-                    if insert not in indel_counts[left]:
-                        indel_counts[left].update({insert: 0})
-                    indel_counts[left][insert] += count
-
-            # record insertions to CSV
-            for left in indel_counts.iterkeys():
-                for insert in indel_counts[left].iterkeys():
-                    indelfile.write('%s,%s,%s,%d,%s,%d\n' % (sample_name,
-                                                             region,
-                                                             qcut,
-                                                             left,
-                                                             insert,
-                                                             count))
 
     infile.close()
     aafile.close()

@@ -3,16 +3,11 @@ import unittest
 
 import csf2counts
 
-class Csf2CountsTest(unittest.TestCase):
+class AminoWriterTest(unittest.TestCase):
     def setUp(self):
         self.writer = csf2counts.AminoFrequencyWriter(aafile=StringIO.StringIO(),
                                                       refseqs = {'R1': 'XXX',
                                                                  'R2': 'YYYY'})
-        self.amino_counts = {}
-        self.qindex_to_refcoord = {}
-        self.inserts = []
-        self.region = 'R1'
-        self.qcut = 15
         
     def testUnmappedRegion(self):
         expected_text = """\
@@ -160,3 +155,156 @@ E1234_S1,R2,15,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
                           inserts=[])
         
         self.assertEqual(self.writer.aafile.getvalue(), expected_text)
+
+class CoordinateMapTest(unittest.TestCase):
+    def testStraightMapping(self):
+        query_sequence =     'CTRPNNN'
+        reference_sequence = 'CTRPNNN'
+        expected_inserts = []
+        expected_mapping = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6}
+        
+        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+            query_sequence,
+            reference_sequence)
+        
+        self.assertEqual(qindex_to_refcoord, expected_mapping)
+        self.assertEqual(inserts, expected_inserts)
+        
+    def testInsertion(self):
+        query_sequence =     'CTNPRPNNN'
+        reference_sequence = 'CT--RPNNN'
+        expected_inserts = [2, 3]
+        expected_mapping = {0:0, 1:1, 4:2, 5:3, 6:4, 7:5, 8:6}
+        
+        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+            query_sequence,
+            reference_sequence)
+        
+        self.assertEqual(expected_mapping, qindex_to_refcoord)
+        self.assertEqual(expected_inserts, inserts)
+        
+    def testDeletion(self):
+        query_sequence =     'CT--NNN'
+        reference_sequence = 'CTRPNNN'
+        expected_inserts = []
+        expected_mapping = {0:0, 1:1, 2:4, 3:5, 4:6}
+        
+        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+            query_sequence,
+            reference_sequence)
+        
+        self.assertEqual(expected_mapping, qindex_to_refcoord)
+        self.assertEqual(expected_inserts, inserts)
+        
+    def testDeletionAndInsertion(self):
+        query_sequence =     'CT--NNCPN'
+        reference_sequence = 'CTRPNN--N'
+        expected_inserts = [4, 5] # note that these are the non-blank indexes
+        expected_mapping = {0:0, 1:1, 2:4, 3:5, 6:6}
+        
+        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+            query_sequence,
+            reference_sequence)
+        
+        self.assertEqual(qindex_to_refcoord, expected_mapping)
+        self.assertEqual(inserts, expected_inserts)
+        
+    def testQueryStartsBeforeReference(self):
+        query_sequence =     'NPCTRPNNN'
+        reference_sequence = '--CTRPNNN'
+        expected_inserts = []
+        expected_mapping = {2:0, 3:1, 4:2, 5:3, 6:4, 7:5, 8:6}
+        
+        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+            query_sequence,
+            reference_sequence)
+        
+        self.assertEqual(expected_mapping, qindex_to_refcoord)
+        self.assertEqual(expected_inserts, inserts)
+        
+    def testQueryEndsAfterReference(self):
+        query_sequence =     'CTRPNNNNP'
+        reference_sequence = 'CTRPNNN--'
+        expected_inserts = []
+        expected_mapping = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6}
+        
+        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+            query_sequence,
+            reference_sequence)
+        
+        self.assertEqual(expected_mapping, qindex_to_refcoord)
+        self.assertEqual(expected_inserts, inserts)
+        
+    def testAmbiguous(self):
+        query_sequence =     'CT?PNNN'
+        reference_sequence = 'CTRPNNN'
+        expected_inserts = []
+        expected_mapping = {0:0, 1:1, 3:3, 4:4, 5:5, 6:6}
+        
+        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+            query_sequence,
+            reference_sequence)
+        
+        self.assertEqual(qindex_to_refcoord, expected_mapping)
+        self.assertEqual(inserts, expected_inserts)
+
+class IndelWriterTest(unittest.TestCase):
+    def setUp(self):
+        self.writer = csf2counts.IndelWriter(indelfile=StringIO.StringIO())
+        self.writer.start_group(sample_name='E1234_S1', region='R1', qcut=15)
+        
+    def testNoInserts(self):
+        expected_text = """\
+sample,region,qcut,left,insert,count
+"""
+        
+        self.writer.add_read(offset_sequence='ACDEF', count=1)
+        self.writer.write(inserts=[])
+        
+        self.assertEqual(expected_text, self.writer.indelfile.getvalue())
+        
+    def testInsert(self):
+        expected_text = """\
+sample,region,qcut,left,insert,count
+E1234_S1,R1,15,2,D,1
+"""
+        
+        self.writer.add_read(offset_sequence='ACDEF', count=1)
+        self.writer.write(inserts=[2])
+        
+        self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())
+        
+    def testInsertWithOffset(self):
+        expected_text = """\
+sample,region,qcut,left,insert,count
+E1234_S1,R1,15,2,D,1
+"""
+        
+        self.writer.add_read(offset_sequence='-CDEFG', count=1)
+        self.writer.write(inserts=[1], min_offset=1)
+        
+        self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())
+        
+    def testTwoInsertsWithOffset(self):
+        expected_text = """\
+sample,region,qcut,left,insert,count
+E1234_S1,R1,15,2,D,1
+E1234_S1,R1,15,4,F,1
+"""
+        
+        self.writer.add_read(offset_sequence='-CDEFG', count=1)
+        self.writer.write(inserts=[1, 3], min_offset=1)
+        
+        self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())
+
+    def testInsertsWithVariants(self):
+        expected_text = """\
+sample,region,qcut,left,insert,count
+E1234_S1,R1,15,2,D,2
+"""
+        
+        self.writer.add_read(offset_sequence='ACDEF', count=1)
+        self.writer.add_read(offset_sequence='AFDEF', count=1)
+        self.writer.write(inserts=[2])
+        
+        self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())

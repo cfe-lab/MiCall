@@ -157,43 +157,46 @@ for (i in seq(length=length(coverage))) {
 region <- 'HLA-B'
 data <- read.csv(file=nuc.csv, header=TRUE, sep=',')
 data <- data[data$region == 'HLA-B', ]
-alphabet <- c('A', 'C', 'G', 'T')
-
-data$coverage <- apply(data[ , which(is.element(names(data), alphabet))], 1, sum)
-data$coverage <- sapply(data$coverage, function(x) max(x, 0.1))
-
-good.coverage <- 100
-coverage.levels <- c(-Inf, 0, 10, good.coverage, Inf)
+if (length(data$query.nuc.pos)) {
+    alphabet <- c('A', 'C', 'G', 'T')
+    sample <- data$sample[1]
+    
+    data$coverage <- apply(data[ , which(is.element(names(data), alphabet))], 1, sum)
+    data$coverage <- sapply(data$coverage, function(x) max(x, 0.1))
+    
+    good.coverage <- 100
+    coverage.levels <- c(-Inf, 0, 10, good.coverage, Inf)
+            
+    filename <- file.path('coverage_maps', paste(sample, region, 'png', sep='.'))
+    
+    # set up plot
+    png(file=filename, width=400, height=300, type='cairo')
+    par(family='sans', cex=1, mar=c(5,5,1,1))
+    plot(NA, xlim=c(1,max(data$query.nuc.pos)), ylim=c(1,200000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
+    title(xlab="Reference coordinates (bp)", font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
+    
+    cutoffs <- sort(as.integer(levels(as.factor(data$q.cutoff))))
+    for (j in 1:length(cutoffs)) {
+        q.cut <- cutoffs[j]
+        df2 <- data[data$q.cutoff == q.cut, ]
+        lines(x = df2$query.nuc.pos, 
+                y = df2$coverage, 
+                col=rainbow(length(cutoffs), v=0.8)[j],
+                lwd=2
+        )
+    }
+    
+    abline(h = good.coverage, lty=2)
+    
+    axis(1)
+    axis(2, at=c(1E1, 1E2, 1E3, 1E4, 1E5), labels=c('10', '100', '1000', '10,000', '100,000'), las=2)
+    box()
         
-filename <- file.path('coverage_maps', paste(sample, region, 'png', sep='.'))
-
-# set up plot
-png(file=filename, width=400, height=300, type='cairo')
-par(family='sans', cex=1, mar=c(5,5,1,1))
-plot(NA, xlim=c(1,max(data$query.nuc.pos)), ylim=c(1,200000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
-title(xlab="Reference coordinates (bp)", font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
-
-cutoffs <- sort(as.integer(levels(as.factor(df$q.cutoff))))
-for (j in 1:length(cutoffs)) {
-    q.cut <- cutoffs[j]
-    df2 <- data[data$q.cutoff == q.cut, ]
-    lines(x = df2$query.nuc.pos, 
-            y = df2$coverage, 
-            col=rainbow(length(cutoffs), v=0.8)[j],
-            lwd=2
-    )
+    legend(x=0, y=1, legend=paste('q=', cutoffs, sep=''), col=rainbow(length(cutoffs), v=0.8), lty=1, lwd=2, bty='n', yjust=0)
+    text(x=max(data$query.nuc.pos)/2, y=190000, label=paste(sample, region), cex=0.7, col='grey30', adj=c(0.5, 0.5))
+        
+    garbage <- dev.off()
 }
-
-abline(h = good.coverage, lty=2)
-
-axis(1)
-axis(2, at=c(1E1, 1E2, 1E3, 1E4, 1E5), labels=c('10', '100', '1000', '10,000', '100,000'), las=2)
-box()
-    
-legend(x=0, y=1, legend=paste('q=', cutoffs, sep=''), col=rainbow(length(cutoffs), v=0.8), lty=1, lwd=2, bty='n', yjust=0)
-text(x=max(data$query.nuc.pos)/2, y=190000, label=paste(sample, region), cex=0.7, col='grey30', adj=c(0.5, 0.5))
-    
-garbage <- dev.off()
 
 # package outputs
 tar(output.maps, 'coverage_maps')
