@@ -387,10 +387,14 @@ def pileup_to_conseq (handle, qCutoff):
                 # only add insertions that retain reading frame
                 conseq += token[1+len(m):]
         elif token == '-':
-            pass
+            conseq += '-'
         else:
             conseq += token
     handle.close()
+
+    # remove in-frame deletions (multiples of 3), if any
+    pat = re.compile('[ACGT](---)+[ACGT]')
+    conseq = re.sub(pat, r'\g<1>\g<3>', conseq)
     return conseq
 
 
