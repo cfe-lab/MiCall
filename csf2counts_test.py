@@ -171,7 +171,7 @@ sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
         self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
         
     def testWithoutReference(self):
-        # A region with no nucleotide reference, like HLA.
+        # A region with no amino reference, like HLA.
         expected_text = """\
 sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
 E1234_S1,R3,15,1,,1,2,0,0
@@ -187,7 +187,6 @@ E1234_S1,R3,15,2,,0,0,0,3
         self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
         
     def testWithReference(self):
-        # A region with no nucleotide reference, like HLA.
         expected_text = """\
 sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
 E1234_S1,R1,15,1,1,1,2,0,0
@@ -199,13 +198,30 @@ E1234_S1,R1,15,2,2,0,0,0,3
                           qcut=15,
                           nuc_counts={0: {'A': 1, 'C': 2},
                                       1: {'T': 3}},
-                          qindex_to_refcoord={0: 0, 1: 1},
+                          qindex_to_refcoord={0: 0},
                           min_offset=0)
         
         self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
         
-    def testWithOffset(self):
-        # A region with no nucleotide reference, like HLA.
+    def testOffsetWithoutReference(self):
+        # A region with no amino reference, like HLA.
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R3,15,6,,1,2,0,0
+E1234_S1,R3,15,7,,0,0,0,3
+"""
+        
+        self.writer.write(sample_name = 'E1234_S1',
+                          region='R3',
+                          qcut=15,
+                          nuc_counts={5: {'A': 1, 'C': 2},
+                                      6: {'T': 3}})
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        
+    def testOffsetWithReference(self):
+        # No coverage at the start of the reference, and first codon starts
+        # with its second nucleotide. The partial codon is output.
         expected_text = """\
 sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
 E1234_S1,R1,15,7,7,0,0,1,0
@@ -223,6 +239,43 @@ E1234_S1,R1,15,9,9,1,0,0,0
                                       8: {'A': 1}},
                           qindex_to_refcoord={1: 2},
                           min_offset=4)
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        
+    def testGapWithoutReference(self):
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R3,15,1,,1,2,0,0
+E1234_S1,R3,15,2,,0,0,0,3
+E1234_S1,R3,15,3,,0,0,0,0
+E1234_S1,R3,15,4,,0,0,3,0
+"""
+        
+        self.writer.write(sample_name = 'E1234_S1',
+                          region='R3',
+                          qcut=15,
+                          nuc_counts={0: {'A': 1, 'C': 2},
+                                      1: {'T': 3},
+                                      3: {'G': 3}})
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        
+    def testGapWithReference(self):
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R1,15,1,1,1,2,0,0
+E1234_S1,R1,15,2,2,0,0,0,3
+E1234_S1,R1,15,4,4,0,0,3,0
+"""
+        
+        self.writer.write(sample_name = 'E1234_S1',
+                          region='R1',
+                          qcut=15,
+                          nuc_counts={0: {'A': 1, 'C': 2},
+                                      1: {'T': 3},
+                                      3: {'G': 3}},
+                          qindex_to_refcoord={0: 0, 1: 1},
+                          min_offset=0)
         
         self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
 
