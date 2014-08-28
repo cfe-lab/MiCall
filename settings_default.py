@@ -46,8 +46,8 @@ max_remaps = 3                  # Number of remapping attempts if mapping effici
 consensus_q_cutoff = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 
 
-## sam2csf parameters
-sam2csf_q_cutoffs = [0, 10, 15]  # Q-cutoff for base censoring
+## sam2aln parameters
+sam2aln_q_cutoffs = [0, 10, 15]  # Q-cutoff for base censoring
 max_prop_N = 0.5                 # Drop reads with more censored bases than this proportion
 read_mapping_cutoff = 10         # Minimum bowtie read mapping quality
 insert_qcutoff = 20              # minimum Q score for an insertion polymorphism to pass
@@ -58,10 +58,10 @@ g2p_alignment_cutoff = 50               # Minimum alignment score during g2p sco
 g2p_fpr_cutoffs = [3.0, 3.5, 4.0, 5.0]  # FPR cutoff to determine R5/X4 tropism
 v3_mincounts = [0, 50, 100, 1000]       # Min number of reads to contribute to %X4 calculation
 
-## csf2counts parameters
+## aln2counts parameters
 conseq_mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
-final_alignment_ref_path = ref_path + 'csf2counts_amino_refseqs.csv'
-final_nuc_align_ref_path = ref_path + 'csf_to_fasta_by_nucref.csv'
+final_alignment_ref_path = ref_path + 'aln2counts_amino_refseqs.csv'
+final_nuc_align_ref_path = ref_path + 'aln_to_fasta_by_nucref.csv'
 
 # Default database user and password.
 oracle_uploader = "FILLINUSERNAME"

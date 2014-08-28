@@ -82,12 +82,12 @@ def map_samples(fastq_samples, worker):
 
 def count_samples(fastq_samples, worker, args):
     ########################
-    ### Begin sam2csf
+    ### Begin sam2aln
     
     
     for sample_info in fastq_samples:
-        log_path = "{}.sam2csf.log".format(sample_info.output_root)
-        worker.run_job(Job(script=base_path + 'sam2csf.py',
+        log_path = "{}.sam2aln.log".format(sample_info.output_root)
+        worker.run_job(Job(script=base_path + 'sam2aln.py',
                            helpers=(base_path + 'settings.py', ),
                            args=(sample_info.output_root + '.remap.csv',
                                  sample_info.output_root + '.aligned.csv',
@@ -97,11 +97,11 @@ def count_samples(fastq_samples, worker, args):
                            stderr=log_path))
     
     #######################
-    ### Begin csf2counts
+    ### Begin aln2counts
     
     for sample_info in fastq_samples:
-        log_path = "{}.csf2counts.log".format(sample_info.output_root)
-        worker.run_job(Job(script=base_path + 'csf2counts.py',
+        log_path = "{}.alncounts.log".format(sample_info.output_root)
+        worker.run_job(Job(script=base_path + 'aln2counts.py',
                            helpers=(base_path + 'settings.py',
                                     final_alignment_ref_path,
                                     base_path + 'miseq_logging.py',
@@ -115,8 +115,8 @@ def count_samples(fastq_samples, worker, args):
                            stderr=log_path))
         
     for sample_info in fastq_samples:
-        log_path = "{}.csf2nuc.log".format(sample_info.output_root)
-        worker.run_job(Job(script=base_path + 'csf2nuc.py',
+        log_path = "{}.aln2nuc.log".format(sample_info.output_root)
+        worker.run_job(Job(script=base_path + 'aln2nuc.py',
                            helpers=(base_path + 'settings.py',
                                     final_nuc_align_ref_path,
                                     base_path + 'hyphyAlign.py'),
@@ -146,7 +146,7 @@ def collate_results(fastq_samples, worker, args, logger):
     ###############################
     ### Begin g2p (For Amplicon covering HIV-1 env only!)
     if args.mode == 'Amplicon':
-        # Compute g2p V3 tropism scores from HIV1B-env csf files and store in v3prot files
+        # Compute g2p V3 tropism scores from HIV1B-env aln files and store in v3prot files
         for sample_info in fastq_samples:
             log_path = "{}.g2p.log".format(sample_info.output_root)
             worker.run_job(Job(script=base_path + 'sam_g2p.sh',
@@ -167,19 +167,19 @@ def collate_results(fastq_samples, worker, args, logger):
     logger.info("Collating *.mapping.log files")
     miseq_logging.collate_logs(args.run_folder, "mapping.log", "mapping.log")
     
-    logger.info("Collating *.sam2csf.*.log files")
-    miseq_logging.collate_logs(args.run_folder, "sam2csf.log", "sam2csf.log")
+    logger.info("Collating *.sam2aln.*.log files")
+    miseq_logging.collate_logs(args.run_folder, "sam2aln.log", "sam2aln.log")
     
     logger.info("Collating *.g2p.log files")
     miseq_logging.collate_logs(args.run_folder, "g2p.log", "g2p.log")
     
-    logger.info("Collating csf2counts.log files")
+    logger.info("Collating aln2counts.log files")
     miseq_logging.collate_logs(args.run_folder,
-                               "csf2counts.log",
-                               "csf2counts.log")
+                               "aln2counts.log",
+                               "aln2counts.log")
     
-    logger.info("Collating csf2nuc.log files")
-    miseq_logging.collate_logs(args.run_folder, "csf2nuc.log", "csf2nuc.log")
+    logger.info("Collating aln2nuc.log files")
+    miseq_logging.collate_logs(args.run_folder, "aln2nuc.log", "aln2nuc.log")
     
     files_to_collate = (('amino_frequencies.csv', '*.amino.csv'),
                         ('collated_conseqs.csv', '*.conseq.csv'),
@@ -266,18 +266,18 @@ def main():
 # if filter_cross_contaminants:
 #     logger.info('Filtering for cross-contamination')
 # 
-#     for qcut in sam2csf_q_cutoffs:
+#     for qcut in sam2aln_q_cutoffs:
 #         command = 'python2.7 FILTER_CONTAMINANTS.py %s %d %d' % (root, qcut, bowtie_threads)
 #         log_path = root + '/filtering.log'
 #         single_thread_factory.queue_work(command, log_path, log_path)
-#         # yields *.clean.csf and *.contam.csf
+#         # yields *.clean.aln and *.contam.aln
 # 
 #     single_thread_factory.wait()
 # 
 #     # re-do g2p scoring
-#     for env_csf_file in glob(root + '/*.HIV1B-env.*.clean.csf'):
-#         command = "python2.7 STEP_3_G2P.py {} {}".format(env_csf_file, g2p_alignment_cutoff)
-#         log_path = "{}.g2p.log".format(env_csf_file)
+#     for env_aln_file in glob(root + '/*.HIV1B-env.*.clean.aln'):
+#         command = "python2.7 STEP_3_G2P.py {} {}".format(env_aln_file, g2p_alignment_cutoff)
+#         log_path = "{}.g2p.log".format(env_aln_file)
 #         single_thread_factory.queue_work(command, log_path, log_path)
 #     single_thread_factory.wait()
 #     logger.info("Collating *.g2p.log files")
@@ -286,7 +286,7 @@ def main():
 #     with open("{}/v3_tropism_summary_clean.csv".format(root), 'wb') as summary_file:
 #         summary_file.write("sample,q_cutoff,fpr_cutoff,min_count,total_x4,total_reads,proportion_x4\n")
 #         for f in glob(root + '/*.clean.v3prot'):
-#             prefix, gene, sam2csf_q_cutoff = f.split('.')[:3]
+#             prefix, gene, sam2aln_q_cutoff = f.split('.')[:3]
 # 
 #             # Determine proportion x4 under different FPR cutoffs / min counts
 #             for fpr_cutoff in g2p_fpr_cutoffs:
@@ -295,19 +295,19 @@ def main():
 #                         sample = prefix.split('/')[-1]
 #                         proportion_x4, total_x4_count, total_count = prop_x4(f, fpr_cutoff, mincount)
 #                         summary_file.write("{},{},{},{},{},{},{:.3}\n".format(
-#                             sample, sam2csf_q_cutoff, fpr_cutoff, mincount, total_x4_count,
+#                             sample, sam2aln_q_cutoff, fpr_cutoff, mincount, total_x4_count,
 #                             total_count, proportion_x4
 #                         ))
 #                     except Exception as e:
 #                         logger.warn("miseqUtils.prop_x4() threw exception '{}'".format(str(e)))
 # 
 #     # regenerate counts
-#     for csf_file in glob(root + '/*.clean.csf'):
+#     for aln_file in glob(root + '/*.clean.aln'):
 #         mixture_cutoffs = ",".join(map(str,conseq_mixture_cutoffs))
 #         command = "python2.7 STEP_4_CSF2COUNTS.py {} {} {} {}".format(
-#             csf_file, mode, mixture_cutoffs, final_alignment_ref_path
+#             aln_file, mode, mixture_cutoffs, final_alignment_ref_path
 #         )
-#         log_path = "{}.csf2counts.log".format(csf_file)
+#         log_path = "{}.aln2counts.log".format(aln_file)
 #         single_thread_factory.queue_work(command, log_path, log_path)
 # 
 #     single_thread_factory.wait()

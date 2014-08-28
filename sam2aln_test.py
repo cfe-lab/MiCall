@@ -1,7 +1,7 @@
 import unittest
 import StringIO
 
-import sam2csf
+import sam2aln
 
 
 class RemapReaderTest(unittest.TestCase):
@@ -17,7 +17,7 @@ sample_name,qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
 1234A,Example_read_2,147,INT,1,44,32M,=,1,-32,TGTACAAGACCCAACAACAATACAAGAAAAAG,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 """)
         
-        reader = sam2csf.RemapReader(remap_file)
+        reader = sam2aln.RemapReader(remap_file)
         sample_names = []
         regions = []
         for sample_name, region, _group in reader.read_groups():

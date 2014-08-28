@@ -1,11 +1,11 @@
 import StringIO
 import unittest
 
-import csf2counts
+import aln2counts
 
 class AminoWriterTest(unittest.TestCase):
     def setUp(self):
-        self.writer = csf2counts.AminoFrequencyWriter(aafile=StringIO.StringIO(),
+        self.writer = aln2counts.AminoFrequencyWriter(aafile=StringIO.StringIO(),
                                                       refseqs = {'R1': 'XXX',
                                                                  'R2': 'YYYY'})
         
@@ -163,7 +163,7 @@ class CoordinateMapTest(unittest.TestCase):
         expected_inserts = []
         expected_mapping = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6}
         
-        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+        qindex_to_refcoord, inserts = aln2counts.coordinate_map(
             query_sequence,
             reference_sequence)
         
@@ -176,7 +176,7 @@ class CoordinateMapTest(unittest.TestCase):
         expected_inserts = [2, 3]
         expected_mapping = {0:0, 1:1, 4:2, 5:3, 6:4, 7:5, 8:6}
         
-        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+        qindex_to_refcoord, inserts = aln2counts.coordinate_map(
             query_sequence,
             reference_sequence)
         
@@ -189,7 +189,7 @@ class CoordinateMapTest(unittest.TestCase):
         expected_inserts = []
         expected_mapping = {0:0, 1:1, 2:4, 3:5, 4:6}
         
-        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+        qindex_to_refcoord, inserts = aln2counts.coordinate_map(
             query_sequence,
             reference_sequence)
         
@@ -202,7 +202,7 @@ class CoordinateMapTest(unittest.TestCase):
         expected_inserts = [4, 5] # note that these are the non-blank indexes
         expected_mapping = {0:0, 1:1, 2:4, 3:5, 6:6}
         
-        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+        qindex_to_refcoord, inserts = aln2counts.coordinate_map(
             query_sequence,
             reference_sequence)
         
@@ -215,7 +215,7 @@ class CoordinateMapTest(unittest.TestCase):
         expected_inserts = []
         expected_mapping = {2:0, 3:1, 4:2, 5:3, 6:4, 7:5, 8:6}
         
-        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+        qindex_to_refcoord, inserts = aln2counts.coordinate_map(
             query_sequence,
             reference_sequence)
         
@@ -228,7 +228,7 @@ class CoordinateMapTest(unittest.TestCase):
         expected_inserts = []
         expected_mapping = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6}
         
-        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+        qindex_to_refcoord, inserts = aln2counts.coordinate_map(
             query_sequence,
             reference_sequence)
         
@@ -241,7 +241,7 @@ class CoordinateMapTest(unittest.TestCase):
         expected_inserts = []
         expected_mapping = {0:0, 1:1, 3:3, 4:4, 5:5, 6:6}
         
-        qindex_to_refcoord, inserts = csf2counts.coordinate_map(
+        qindex_to_refcoord, inserts = aln2counts.coordinate_map(
             query_sequence,
             reference_sequence)
         
@@ -250,7 +250,7 @@ class CoordinateMapTest(unittest.TestCase):
 
 class IndelWriterTest(unittest.TestCase):
     def setUp(self):
-        self.writer = csf2counts.IndelWriter(indelfile=StringIO.StringIO())
+        self.writer = aln2counts.IndelWriter(indelfile=StringIO.StringIO())
         self.writer.start_group(sample_name='E1234_S1', region='R1', qcut=15)
         
     def testNoInserts(self):

@@ -21,7 +21,7 @@ import itertools
 import re
 
 from settings import insert_qcutoff, max_prop_N, read_mapping_cutoff, \
-     sam2csf_q_cutoffs
+     sam2aln_q_cutoffs
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -43,7 +43,8 @@ def apply_cigar (cigar, seq, qual):
     Use CIGAR string (Compact Idiosyncratic Gapped Alignment Report) in SAM data
     to apply soft clips, insertions, and deletions to the read sequence.
     Any insertions relative to the sample consensus sequence are discarded to
-    enforce a strict pairwise alignment.
+    enforce a strict pairwise alignment, and returned separately in a
+    dict object.
     """
     newseq = ''
     newqual = ''
@@ -69,14 +70,7 @@ def apply_cigar (cigar, seq, qual):
             newqual += ' '*length  # Assign fake placeholder score (Q=-1)
         # Insertion relative to reference: skip it (excise it)
         elif token[-1] == 'I':
-            if length % 3 == 0:
-                # report insertions separately
-                its_quals = qual[left:(left+length)]
-                qpass = map(lambda x: ord(x)-33 >= insert_qcutoff, its_quals)
-                if all(qpass):
-                    # require the entire insert sequence to be of high quality
-                    insertions.update({left: (seq[left:(left+length)], qual[left:(left+length)])})
-
+            insertions.update({left: (seq[left:(left+length)], qual[left:(left+length)])})
             left += length
             continue
         # Soft clipping leaves the sequence in the SAM - so we should skip it
@@ -181,7 +175,7 @@ def main():
     failfile.write('sample,qname,qcut,seq1,qual1,seq2,qual2,prop_N,mseq\n')
 
     for sample_name, refname, group in reader.read_groups():
-        aligned = dict([(qcut, {}) for qcut in sam2csf_q_cutoffs])
+        aligned = dict([(qcut, {}) for qcut in sam2aln_q_cutoffs])
         cached_reads = {}  # for mate pairing
         for line in group:
             if refname == '0':
@@ -208,7 +202,7 @@ def main():
 
             # otherwise we have a matched pair
             seq1, qual1 = cached_reads.pop(qname)
-            for qcut in sam2csf_q_cutoffs:
+            for qcut in sam2aln_q_cutoffs:
                 mseq = merge_pairs(seq1, seq2, qual1, qual2, qcut)
                 prop_N = mseq.count('N') / float(len(mseq.strip('-')))
                 if prop_N > max_prop_N:

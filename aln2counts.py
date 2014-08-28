@@ -2,7 +2,7 @@
 
 """
 Shipyard-style MiSeq pipeline, post-processing 1
-Takes aligned CSV as input (produced by sam2csf).
+Takes aligned CSV as input (produced by sam2aln).
 Re-aligns sequence variants to lab standard references (e.g., HXB2).
 Reports nucleotide and amino acid frequencies by reference coordinates.
 Outputs consensus sequences in same coordinate system.
