@@ -278,6 +278,27 @@ E1234_S1,R1,15,4,4,0,0,3,0
                           min_offset=0)
         
         self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        
+    def testInsertionWithReference(self):
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R1,15,1,1,1,2,0,0
+E1234_S1,R1,15,2,2,0,0,0,3
+E1234_S1,R1,15,3,3,0,2,0,0
+E1234_S1,R1,15,4,7,0,0,3,0
+"""
+        
+        self.writer.write(sample_name = 'E1234_S1',
+                          region='R1',
+                          qcut=15,
+                          nuc_counts={0: {'A': 1, 'C': 2},
+                                      1: {'T': 3},
+                                      2: {'C': 2},
+                                      3: {'G': 3}},
+                          qindex_to_refcoord={0: 0, 1: 2},
+                          min_offset=0)
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
 
 class CoordinateMapTest(unittest.TestCase):
     def testStraightMapping(self):
