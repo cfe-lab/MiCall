@@ -161,8 +161,10 @@ class NucleotideFrequencyWriterTest(unittest.TestCase):
     def setUp(self):
         self.writer = aln2counts.NucleotideFrequencyWriter(
             nucfile=StringIO.StringIO(),
-            amino_ref_seqs = {'R1': 'XXX',
-                              'R2': 'YYYY'})
+            amino_ref_seqs = {'R1': 'EE', # contents irrelevant, length matters
+                              'R2': 'EEE'},
+            nuc_ref_seqs = {'R3': 'AAA',
+                            'R4': 'AAAAAAAAA'}) # contents irrelevant, length matters
         
     def testNoWrites(self):
         expected_text = """\
@@ -177,6 +179,7 @@ sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
 sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
 E1234_S1,R3,15,1,,1,2,0,0
 E1234_S1,R3,15,2,,0,0,0,3
+E1234_S1,R3,15,3,,0,0,0,0
 """
         
         self.writer.write(sample_name = 'E1234_S1',
@@ -192,6 +195,10 @@ E1234_S1,R3,15,2,,0,0,0,3
 sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
 E1234_S1,R1,15,1,1,1,2,0,0
 E1234_S1,R1,15,2,2,0,0,0,3
+E1234_S1,R1,15,,3,0,0,0,0
+E1234_S1,R1,15,,4,0,0,0,0
+E1234_S1,R1,15,,5,0,0,0,0
+E1234_S1,R1,15,,6,0,0,0,0
 """
         
         self.writer.write(sample_name = 'E1234_S1',
@@ -208,12 +215,19 @@ E1234_S1,R1,15,2,2,0,0,0,3
         # A region with no amino reference, like HLA.
         expected_text = """\
 sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
-E1234_S1,R3,15,6,,1,2,0,0
-E1234_S1,R3,15,7,,0,0,0,3
+E1234_S1,R4,15,1,,0,0,0,0
+E1234_S1,R4,15,2,,0,0,0,0
+E1234_S1,R4,15,3,,0,0,0,0
+E1234_S1,R4,15,4,,0,0,0,0
+E1234_S1,R4,15,5,,0,0,0,0
+E1234_S1,R4,15,6,,1,2,0,0
+E1234_S1,R4,15,7,,0,0,0,3
+E1234_S1,R4,15,8,,0,0,0,0
+E1234_S1,R4,15,9,,0,0,0,0
 """
         
         self.writer.write(sample_name = 'E1234_S1',
-                          region='R3',
+                          region='R4',
                           qcut=15,
                           nuc_counts={5: {'A': 1, 'C': 2},
                                       6: {'T': 3}})
@@ -225,14 +239,20 @@ E1234_S1,R3,15,7,,0,0,0,3
         # with its second nucleotide. The partial codon is output.
         expected_text = """\
 sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
-E1234_S1,R1,15,7,7,0,0,1,0
-E1234_S1,R1,15,8,8,0,0,1,0
-E1234_S1,R1,15,9,9,1,0,0,0
+E1234_S1,R2,15,,1,0,0,0,0
+E1234_S1,R2,15,,2,0,0,0,0
+E1234_S1,R2,15,,3,0,0,0,0
+E1234_S1,R2,15,,4,0,0,0,0
+E1234_S1,R2,15,,5,0,0,0,0
+E1234_S1,R2,15,,6,0,0,0,0
+E1234_S1,R2,15,7,7,0,0,1,0
+E1234_S1,R2,15,8,8,0,0,1,0
+E1234_S1,R2,15,9,9,1,0,0,0
 """
         
         with LogCapture() as log:
             self.writer.write(sample_name = 'E1234_S1',
-                              region='R1',
+                              region='R2',
                               qcut=15,
                               nuc_counts={4: {'T': 1},
                                           5: {'G': 1},
@@ -253,14 +273,19 @@ E1234_S1,R1,15,9,9,1,0,0,0
     def testGapWithoutReference(self):
         expected_text = """\
 sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
-E1234_S1,R3,15,1,,1,2,0,0
-E1234_S1,R3,15,2,,0,0,0,3
-E1234_S1,R3,15,3,,0,0,0,0
-E1234_S1,R3,15,4,,0,0,3,0
+E1234_S1,R4,15,1,,1,2,0,0
+E1234_S1,R4,15,2,,0,0,0,3
+E1234_S1,R4,15,3,,0,0,0,0
+E1234_S1,R4,15,4,,0,0,3,0
+E1234_S1,R4,15,5,,0,0,0,0
+E1234_S1,R4,15,6,,0,0,0,0
+E1234_S1,R4,15,7,,0,0,0,0
+E1234_S1,R4,15,8,,0,0,0,0
+E1234_S1,R4,15,9,,0,0,0,0
 """
         
         self.writer.write(sample_name = 'E1234_S1',
-                          region='R3',
+                          region='R4',
                           qcut=15,
                           nuc_counts={0: {'A': 1, 'C': 2},
                                       1: {'T': 3},
@@ -273,7 +298,10 @@ E1234_S1,R3,15,4,,0,0,3,0
 sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
 E1234_S1,R1,15,1,1,1,2,0,0
 E1234_S1,R1,15,2,2,0,0,0,3
+E1234_S1,R1,15,,3,0,0,0,0
 E1234_S1,R1,15,4,4,0,0,3,0
+E1234_S1,R1,15,,5,0,0,0,0
+E1234_S1,R1,15,,6,0,0,0,0
 """
         
         self.writer.write(sample_name = 'E1234_S1',
@@ -290,14 +318,19 @@ E1234_S1,R1,15,4,4,0,0,3,0
     def testInsertionWithReference(self):
         expected_text = """\
 sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
-E1234_S1,R1,15,1,1,1,2,0,0
-E1234_S1,R1,15,2,2,0,0,0,3
-E1234_S1,R1,15,3,3,0,2,0,0
-E1234_S1,R1,15,4,7,0,0,3,0
+E1234_S1,R2,15,1,1,1,2,0,0
+E1234_S1,R2,15,2,2,0,0,0,3
+E1234_S1,R2,15,3,3,0,2,0,0
+E1234_S1,R2,15,,4,0,0,0,0
+E1234_S1,R2,15,,5,0,0,0,0
+E1234_S1,R2,15,,6,0,0,0,0
+E1234_S1,R2,15,4,7,0,0,3,0
+E1234_S1,R2,15,,8,0,0,0,0
+E1234_S1,R2,15,,9,0,0,0,0
 """
         
         self.writer.write(sample_name = 'E1234_S1',
-                          region='R1',
+                          region='R2',
                           qcut=15,
                           nuc_counts={0: {'A': 1, 'C': 2},
                                       1: {'T': 3},

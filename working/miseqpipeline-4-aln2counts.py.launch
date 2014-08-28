@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.python.pydev.debug.regularLaunchConfigurationType">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/miseqpipeline/csf2counts.py"/>
+<listEntry value="/miseqpipeline/aln2counts.py"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:miseqpipeline/csf2counts.py}"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:miseqpipeline/aln2counts.py}"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_OTHER_WORKING_DIRECTORY" value="${workspace_loc:miseqpipeline}/working"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.aligned.csv ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.nuc.csv ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.amino.csv ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.indels.csv ${workspace_loc:miseqpipeline}/working/2010A-V3LOOP_S3.conseq.csv"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:miseqpipeline}/working"/>
