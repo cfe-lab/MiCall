@@ -3,7 +3,7 @@ import unittest
 
 import aln2counts
 
-class AminoWriterTest(unittest.TestCase):
+class AminoFrequencyWriterTest(unittest.TestCase):
     def setUp(self):
         self.writer = aln2counts.AminoFrequencyWriter(aafile=StringIO.StringIO(),
                                                       refseqs = {'R1': 'XXX',
@@ -21,7 +21,7 @@ sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,
                           amino_counts={},
                           inserts=[])
         
-        self.assertEqual(self.writer.aafile.getvalue(), expected_text)
+        self.assertMultiLineEqual(expected_text, self.writer.aafile.getvalue())
         
     def testWriteAminosFullRegion(self):
         expected_text = """\
@@ -38,7 +38,7 @@ E1234_S1,R1,15,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
                           amino_counts={0: {'Q': 1}, 1: {'R': 1}, 2: {'S': 1}},
                           inserts=[])
         
-        self.assertEqual(self.writer.aafile.getvalue(), expected_text)
+        self.assertMultiLineEqual(expected_text, self.writer.aafile.getvalue())
         
     def testWriteAminosEndOfRegion(self):
         expected_text = """\
@@ -55,7 +55,7 @@ E1234_S1,R1,15,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
                           amino_counts={1: {'R': 1}, 2: {'S': 1}},
                           inserts=[])
         
-        self.assertEqual(self.writer.aafile.getvalue(), expected_text)
+        self.assertMultiLineEqual(expected_text, self.writer.aafile.getvalue())
         
     def testWriteAminosStartOfRegion(self):
         expected_text = """\
@@ -72,7 +72,7 @@ E1234_S1,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                           amino_counts={0: {'Q': 1}, 1: {'R': 1}},
                           inserts=[])
         
-        self.assertEqual(self.writer.aafile.getvalue(), expected_text)
+        self.assertMultiLineEqual(expected_text, self.writer.aafile.getvalue())
         
     def testWriteAminosWithInsert(self):
         expected_text = """\
@@ -92,7 +92,7 @@ E1234_S1,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
                                         3: {'S': 1}},
                           inserts=[1])
         
-        self.assertEqual(self.writer.aafile.getvalue(), expected_text)
+        self.assertMultiLineEqual(expected_text, self.writer.aafile.getvalue())
         
     def testWriteAminosWithDeletion(self):
         expected_text = """\
@@ -109,7 +109,7 @@ E1234_S1,R1,15,1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
                           amino_counts={0: {'Q': 1}, 1: {'S': 1}},
                           inserts=[])
         
-        self.assertEqual(self.writer.aafile.getvalue(), expected_text)
+        self.assertMultiLineEqual(expected_text, self.writer.aafile.getvalue())
         
     def testWriteAminosWithGap(self):
         expected_text = """\
@@ -126,7 +126,7 @@ E1234_S1,R1,15,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
                           amino_counts={0: {'Q': 1}, 2: {'S': 1}},
                           inserts=[])
         
-        self.assertEqual(self.writer.aafile.getvalue(), expected_text)
+        self.assertMultiLineEqual(expected_text, self.writer.aafile.getvalue())
 
         
     def testWriteAminosTwoRegions(self):
@@ -154,7 +154,151 @@ E1234_S1,R2,15,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
                           amino_counts={0: {'T': 1}, 1: {'S': 1}, 2: {'R': 1}, 3: {'Q': 1}},
                           inserts=[])
         
-        self.assertEqual(self.writer.aafile.getvalue(), expected_text)
+        self.assertMultiLineEqual(expected_text, self.writer.aafile.getvalue())
+
+class NucleotideFrequencyWriterTest(unittest.TestCase):
+    def setUp(self):
+        self.writer = aln2counts.NucleotideFrequencyWriter(
+            nucfile=StringIO.StringIO(),
+            amino_ref_seqs = {'R1': 'XXX',
+                              'R2': 'YYYY'})
+        
+    def testNoWrites(self):
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+"""
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        
+    def testWithoutReference(self):
+        # A region with no amino reference, like HLA.
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R3,15,1,,1,2,0,0
+E1234_S1,R3,15,2,,0,0,0,3
+"""
+        
+        self.writer.write(sample_name = 'E1234_S1',
+                          region='R3',
+                          qcut=15,
+                          nuc_counts={0: {'A': 1, 'C': 2},
+                                      1: {'T': 3}})
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        
+    def testWithReference(self):
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R1,15,1,1,1,2,0,0
+E1234_S1,R1,15,2,2,0,0,0,3
+"""
+        
+        self.writer.write(sample_name = 'E1234_S1',
+                          region='R1',
+                          qcut=15,
+                          nuc_counts={0: {'A': 1, 'C': 2},
+                                      1: {'T': 3}},
+                          qindex_to_refcoord={0: 0},
+                          min_offset=0)
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        
+    def testOffsetWithoutReference(self):
+        # A region with no amino reference, like HLA.
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R3,15,6,,1,2,0,0
+E1234_S1,R3,15,7,,0,0,0,3
+"""
+        
+        self.writer.write(sample_name = 'E1234_S1',
+                          region='R3',
+                          qcut=15,
+                          nuc_counts={5: {'A': 1, 'C': 2},
+                                      6: {'T': 3}})
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        
+    def testOffsetWithReference(self):
+        # No coverage at the start of the reference, and first codon starts
+        # with its second nucleotide. The partial codon is output.
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R1,15,7,7,0,0,1,0
+E1234_S1,R1,15,8,8,0,0,1,0
+E1234_S1,R1,15,9,9,1,0,0,0
+"""
+        
+        self.writer.write(sample_name = 'E1234_S1',
+                          region='R1',
+                          qcut=15,
+                          nuc_counts={4: {'T': 1},
+                                      5: {'G': 1},
+                                      6: {'G': 1},
+                                      7: {'G': 1},
+                                      8: {'A': 1}},
+                          qindex_to_refcoord={1: 2},
+                          min_offset=4)
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        
+    def testGapWithoutReference(self):
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R3,15,1,,1,2,0,0
+E1234_S1,R3,15,2,,0,0,0,3
+E1234_S1,R3,15,3,,0,0,0,0
+E1234_S1,R3,15,4,,0,0,3,0
+"""
+        
+        self.writer.write(sample_name = 'E1234_S1',
+                          region='R3',
+                          qcut=15,
+                          nuc_counts={0: {'A': 1, 'C': 2},
+                                      1: {'T': 3},
+                                      3: {'G': 3}})
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        
+    def testGapWithReference(self):
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R1,15,1,1,1,2,0,0
+E1234_S1,R1,15,2,2,0,0,0,3
+E1234_S1,R1,15,4,4,0,0,3,0
+"""
+        
+        self.writer.write(sample_name = 'E1234_S1',
+                          region='R1',
+                          qcut=15,
+                          nuc_counts={0: {'A': 1, 'C': 2},
+                                      1: {'T': 3},
+                                      3: {'G': 3}},
+                          qindex_to_refcoord={0: 0, 1: 1},
+                          min_offset=0)
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        
+    def testInsertionWithReference(self):
+        expected_text = """\
+sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R1,15,1,1,1,2,0,0
+E1234_S1,R1,15,2,2,0,0,0,3
+E1234_S1,R1,15,3,3,0,2,0,0
+E1234_S1,R1,15,4,7,0,0,3,0
+"""
+        
+        self.writer.write(sample_name = 'E1234_S1',
+                          region='R1',
+                          qcut=15,
+                          nuc_counts={0: {'A': 1, 'C': 2},
+                                      1: {'T': 3},
+                                      2: {'C': 2},
+                                      3: {'G': 3}},
+                          qindex_to_refcoord={0: 0, 1: 2},
+                          min_offset=0)
+        
+        self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
 
 class CoordinateMapTest(unittest.TestCase):
     def testStraightMapping(self):
@@ -306,5 +450,29 @@ E1234_S1,R1,15,2,D,2
         self.writer.add_read(offset_sequence='ACDEF', count=1)
         self.writer.add_read(offset_sequence='AFDEF', count=1)
         self.writer.write(inserts=[2])
+        
+        self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())
+
+    def testDifferentInserts(self):
+        expected_text = """\
+sample,region,qcut,left,insert,count
+E1234_S1,R1,15,2,D,2
+E1234_S1,R1,15,2,F,3
+"""
+        
+        self.writer.add_read(offset_sequence='ACDEF', count=2)
+        self.writer.add_read(offset_sequence='ACFEF', count=3)
+        self.writer.write(inserts=[2])
+        
+        self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())
+
+    def testMulticharacterInsert(self):
+        expected_text = """\
+sample,region,qcut,left,insert,count
+E1234_S1,R1,15,2,DE,1
+"""
+        
+        self.writer.add_read(offset_sequence='ACDEF', count=1)
+        self.writer.write(inserts=[2,3])
         
         self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())

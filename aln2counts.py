@@ -309,6 +309,89 @@ class AminoFrequencyWriter(object):
                                                        refcoord + 1,
                                                        outstr))
 
+class NucleotideFrequencyWriter(object):
+    def __init__(self, nucfile, amino_ref_seqs):
+        """ Initialize a writer object.
+        
+        @param nucfile: an open file that the summary will be written to
+        @param refseqs: {region: sequence} maps from region name to amino acid 
+        sequence
+        """
+        self.nucfile = nucfile
+        self.amino_ref_seqs = amino_ref_seqs
+        self.nucfile.write(
+            'sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
+        
+    def write(self,
+              sample_name,
+              region,
+              qcut,
+              nuc_counts,
+              qindex_to_refcoord=None,
+              min_offset=0):
+        """ Write a summary of the nucleotide distribution at each position in
+        the reference sequence.
+        
+        If there is no reference sequence for the region, as in HLA regions,
+        just use the positions in the query sequence.
+        
+        @param sample_name: the name of the sample to go in the first column.
+        @param region: the name of the region being processed
+        @param qcut: the quality cutoff score that was used to map the consensus
+         sequence
+
+        @param nuc_counts: {pos: {nuc: count}} a dictionary keyed by the
+         nucleotide position. To calculate the nucleotide position, take the
+         position within the consensus sequence and add the offset of where the
+         start of the consensus sequence maps to the reference sequence. Each
+         entry is a dictionary keyed by nucleotide letter and containing the
+         number of times each nucleotide was read at that position.
+
+        @param qindex_to_refcoord: {qindex: refcoord} maps amino acid
+         coordinates from the consensus sequence (query) to the reference
+         sequence. May also be None if the region has no amino reference.
+
+        @param min_offset: the minimum nucleotide offset that was seen among
+         all the reads when aligning them to the reference sequence.
+        """
+
+        if region not in self.amino_ref_seqs:
+            # a region like HLA
+            nuc_coords = nuc_counts.keys()
+            left = min(nuc_coords)
+            right = max(nuc_coords)
+            for pos in range(left, right+1):
+                self.nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
+                if pos in nuc_counts:
+                    outstr = ','.join(map(str, [nuc_counts[pos].get(nuc, 0) for nuc in 'ACGT']))
+                else:
+                    outstr = '0,0,0,0'
+                self.nucfile.write(','.join(map(str, [pos+1, '', outstr])))
+                self.nucfile.write('\n')
+        else:
+            # output nucleotide frequencies and consensus sequences
+            nuc_coords = nuc_counts.keys()
+            nuc_coords.sort()
+
+            for query_nuc_pos in nuc_coords:
+                # query AA numbering starts at first complete codon, 0-index
+                query_aa_pos = query_nuc_pos/3 - min_offset/3
+                try:
+                    ref_aa_pos = qindex_to_refcoord[query_aa_pos]  # retrieve AA position from coordinate map
+                except:
+                    logger.warn(
+                        'No coordinate mapping for query nuc %d (amino %d) in %s' % (
+                            query_nuc_pos,
+                            query_aa_pos,
+                            sample_name))
+                    continue
+                ref_nuc_pos = 3 * ref_aa_pos + (query_nuc_pos % 3)
+
+                outstr = ','.join(map(str, [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']))
+                self.nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
+                self.nucfile.write(','.join(map(str, [query_nuc_pos+1, ref_nuc_pos+1, outstr])))
+                self.nucfile.write('\n')
+
 def make_counts(region, group2, indel_writer):
     """
     Generate nucleotide and amino acid frequencies from CSV file grouping
@@ -326,7 +409,7 @@ def make_counts(region, group2, indel_writer):
         amino_counts is the same, but for amino acids {position: {acid: count}}
             Its coordinate system is the sample consensus (amino).
         min_offset is the minimum offset seen in all the reads. The positions
-        in nuc_counts and amino_counts already include the offsets. 
+            in nuc_counts and amino_counts already include the offsets.
     """
     nuc_counts = {}
     amino_counts = {}
@@ -375,7 +458,10 @@ def make_counts(region, group2, indel_writer):
 def make_consensus(nuc_counts):
     """
     Generate consensus sequences from nucleotide frequency data
-    at varying frequency cutoffs.
+    at varying frequency cutoffs.  Returns dict keyed by
+    frequency cutoff for determining consensus.
+    MAX = plurality-rule consensus.
+    Nucleotide mixtures are encoded by IUPAC symbols.
     """
     nuc_coords = nuc_counts.keys()
     nuc_coords.sort()  # iterate over positions in ascending order
@@ -468,17 +554,17 @@ def main():
     confile = open(args.conseq, 'w')
     indelfile = open(args.indels_csv, 'w')
     amino_writer = AminoFrequencyWriter(aafile, refseqs)
+    nuc_writer = NucleotideFrequencyWriter(nucfile, refseqs)
     indel_writer = IndelWriter(indelfile)
     
     infile.readline() # skip header
-    nucfile.write('sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
     confile.write('sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
     
     for key, group in groupby(infile, lambda x: x.split(',')[0:2]):
         sample_name, region = key
         sample_name_base, sample_snum = sample_name.split('_', 1)
         
-        if region not in refseqs:
+        if region not in refseqs and not region.startswith('HLA-'):
             continue
         for qcut, group2 in groupby(group, lambda x: x.split(',')[2]):
             # gather nucleotide, amino frequencies
@@ -487,19 +573,8 @@ def main():
                                                                group2,
                                                                indel_writer)
 
-            if region.startswith('HLA-'):
-                nuc_coords = nuc_counts.keys()
-                left = min(nuc_coords)
-                right = max(nuc_coords)
-                for pos in range(left, right+1):
-                    nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
-                    if pos in nuc_counts:
-                        outstr = ','.join(map(str, [nuc_counts[pos].get(nuc, 0) for nuc in 'ACGT']))
-                    else:
-                        outstr = '0,0,0,0'
-                    nucfile.write(','.join(map(str, [pos+1, '', outstr])))
-                    nucfile.write('\n')
-
+            if region not in refseqs:
+                nuc_writer.write(sample_name, region, qcut, nuc_counts)
             else:
                 # make amino consensus from frequencies
                 aa_coords = amino_counts.keys()
@@ -527,26 +602,12 @@ def main():
     
                 indel_writer.write(inserts, min_offset)
 
-                # output nucleotide frequencies and consensus sequences
-                nuc_coords = nuc_counts.keys()  # coordinate system of sample consensus
-                nuc_coords.sort()
-                for query_nuc_pos in nuc_coords:
-                    query_aa_pos = query_nuc_pos / 3
-                    try:
-                        ref_aa_pos = qindex_to_refcoord[query_aa_pos]  # retrieve AA position from coordinate map
-                    except:
-                        logger.warn(
-                            'No coordinate mapping for query nuc %d (amino %d) in %s' % (
-                                query_nuc_pos,
-                                query_aa_pos,
-                                args.aligned_csv))
-                        continue
-                    ref_nuc_pos = 3 * ref_aa_pos + (query_nuc_pos % 3)
-
-                    outstr = ','.join(map(str, [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']))
-                    nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
-                    nucfile.write(','.join(map(str, [query_nuc_pos+1, ref_nuc_pos+1, outstr])))
-                    nucfile.write('\n')
+                nuc_writer.write(sample_name,
+                                 region,
+                                 qcut,
+                                 nuc_counts,
+                                 qindex_to_refcoord,
+                                 min_offset)
 
             # output consensus sequences
             conseqs = make_consensus(nuc_counts)

@@ -13,11 +13,71 @@
 syntax.error = "Correct syntax: ./coverage_plot.R <amino CSV> <nuc CSV> <output maps tar> <output scores CSV>"
 args <- commandArgs(TRUE)
 
-if (length(args) != 4) { stop(syntax.error) }
+if (length(args) != 4) {
+    stop(syntax.error)
+}
 input.csv <- args[1]
 nuc.csv <- args[2]
 output.maps <- args[3]
-output.csv <- args[4]
+scores.csv <- args[4]
+
+record.score <- function(
+        scores,
+        data,
+        region.key.pos,
+        coverage.levels,
+        sample, 
+        region, 
+        q.cut) {
+    # Add a row of scores to the scores matrix.
+    #
+    # scores - a matrix that holds data to write out to the scores file.
+    # data - A data frame with the following columns:
+    #	refseq.aa.pos - the position in the reference sequence
+    #	coverage - the coverage at that position by combining all reads
+    # region.key.pos - a vector of key positions within the region. If it is
+    #	empty, treat all positions as key.
+    # coverage.levels - a vector of four coverage levels that are thresholds
+    #	for the four different scores in on-target regions.
+    # sample - the sample name
+    # region - the region name
+    # q.cut - the quality cutoff used for this data
+    # Returns scores with a new row added.
+    all.coverage <- data$coverage
+    if (length(region.key.pos) == 0) {
+        key.coverage <- all.coverage
+        min.pos <- which.min(key.coverage)
+    }
+    else {
+        key.coverage <- all.coverage[is.element(
+                        data$refseq.aa.pos,
+                        region.key.pos)]
+        min.pos <- region.key.pos[which.min(key.coverage)]
+    }
+    
+    if (length(key.coverage) > 0) {
+        min.coverage <- min(key.coverage)
+        max.coverage <- max(all.coverage)
+        off.score <- as.character(cut(
+                max.coverage,
+                c(-Inf, 0, 10, 100, Inf),
+                labels=c(0, -1, -2, -3)))
+        on.score <- as.character(cut(
+                min.coverage,
+                coverage.levels,
+                labels=c(1, 2, 3, 4)))
+        scores <- rbind(scores, c(
+                        sample, 
+                        region, 
+                        q.cut, 
+                        min.coverage, 
+                        min.pos,
+                        off.score,
+                        on.score))
+    } else {
+        scores <- rbind(scores, c(sample, region, q.cut, NA, NA, 0, 1))
+    }
+}
 
 dir.create('coverage_maps')
 
@@ -27,7 +87,7 @@ key.pos <- split(key.pos.ranges, f=key.pos.ranges$region)
 for (region in names(key.pos)) {
     ranges <- key.pos[[region]]
     positions <- vector()
-    for (i in seq(length=length(ranges$ref_pos_start))) {
+    for (i in seq_along(ranges$ref_pos_start)) {
         ref_pos_start <- ranges$ref_pos_start[i]
         ref_pos_end <- ranges$ref_pos_end[i]
         if (is.na(ref_pos_end)) {
@@ -40,7 +100,7 @@ for (region in names(key.pos)) {
     key.pos[[region]] <- positions
 }
 
-output.columns <- c(
+scores.columns <- c(
         'sample',
         'region',
         'q.cut',
@@ -48,7 +108,7 @@ output.columns <- c(
         'which.key.pos',
         'off.score',
         'on.score')
-output <- matrix(nrow=0, ncol=length(output.columns), dimnames=list(NULL, output.columns))
+scores <- matrix(nrow=0, ncol=length(scores.columns), dimnames=list(NULL, scores.columns))
 
 data <- read.csv(file=input.csv, header=TRUE, sep=',')
 
@@ -60,14 +120,13 @@ alphabet <- c('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', '
 
 data$coverage <- apply(data[ , which(is.element(names(data), alphabet))], 1, sum)
 
-# zeroes don't show up on a log plot, so we mark no coverage at 0.1
-data$coverage <- sapply(data$coverage, function(x) max(x, 0.1))
-
 # partition AA frequency table by sample and region
 coverage <- split(data[,which(is.element(names(data), c('refseq.aa.pos', 'q.cutoff', 'coverage')))], f=list(data$region, data$sample), drop=TRUE)
+good.coverage <- 1000
+coverage.levels <- c(-Inf, 0, 100, good.coverage, Inf)
 
 # loop through partitions
-for (i in seq(length=length(coverage))) {
+for (i in seq_along(coverage)) {
     label <- names(coverage)[i]
     tokens <- strsplit(label, split='\\.')[[1]]
     region <- tokens[1]
@@ -83,22 +142,8 @@ for (i in seq(length=length(coverage))) {
     title(xlab="Reference coordinates (AA)", font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
     
     # indicate key positions for this region
-    temp <- key.pos[[region]]
-    #points(temp, rep(min.coverage, length(temp)), pch=8, cex=1.5)
-    for (pos in temp) {
+    for (pos in key.pos[[region]]) {
         rect(pos-0.5, 500, pos+0.5, 2e3, col='red', border=NA)
-    }
-    
-    if (length(temp) == 0) {
-        temp = seq(max(df$refseq.aa.pos))
-    }
-    if (substring(region, 1, 4) == 'HLA-') {
-        good.coverage <- 100
-        coverage.levels <- c(-Inf, 0, 10, good.coverage, Inf)
-    }
-    else {
-        good.coverage <- 1000
-        coverage.levels <- c(-Inf, 0, 100, good.coverage, Inf)
     }
     
     # draw trend lines for each quality score cutoff
@@ -106,37 +151,23 @@ for (i in seq(length=length(coverage))) {
     for (j in 1:length(cutoffs)) {
         q.cut <- cutoffs[j]
         df2 <- df[df$q.cutoff == q.cut, ]
+        
+        # zeroes don't show up on a log plot, so we plot no coverage at 0.1
         lines(x = df2$refseq.aa.pos, 
-                y = df2$coverage, 
+                y = sapply(df2$coverage, function(x) max(x, 0.1)), 
                 col=rainbow(length(cutoffs), v=0.8)[j],
                 lwd=2
         )
         
         # determine minimum coverage at key positions
-        key.coverage <- df2$coverage[is.element(df2$refseq.aa.pos, temp)]
-        if (length(key.coverage) > 0) {
-            min.coverage <- min(key.coverage)
-            max.coverage <- max(df2$coverage)
-            off.score <- as.character(cut(
-                    max.coverage,
-                    c(-Inf, 0, 10, 100, Inf),
-                    labels=c(0, -1, -2, -3)))
-            on.score <- as.character(cut(
-                    min.coverage,
-                    coverage.levels,
-                    labels=c(1, 2, 3, 4)))
-            output <- rbind(output, c(
-                            sample, 
-                            region, 
-                            q.cut, 
-                            min.coverage, 
-                            temp[which.min(key.coverage)],
-                            off.score,
-                            on.score))
-        } else {
-            # TODO: Is this useful? Should we only output entries with data?
-            output <- rbind(output, c(sample, region, q.cut, NA, NA, 0, 1))
-        }
+        scores <- record.score(
+                scores,
+                df2,
+                key.pos[[region]],
+                coverage.levels,
+                sample,
+                region,
+                q.cut)
     }
     
     # draw required coverage line
@@ -155,8 +186,8 @@ for (i in seq(length=length(coverage))) {
 
 # now handle nucleotide coverage for HLA-B (3,337 bp)
 region <- 'HLA-B'
-data <- read.csv(file=nuc.csv, header=TRUE, sep=',')
-data <- data[data$region == 'HLA-B', ]
+data <- read.csv(file=nuc.csv, header=TRUE, sep=',', stringsAsFactors=FALSE)
+data <- data[data$region == region, ]
 if (length(data$query.nuc.pos)) {
     alphabet <- c('A', 'C', 'G', 'T')
     sample <- data$sample[1]
@@ -184,6 +215,16 @@ if (length(data$query.nuc.pos)) {
                 col=rainbow(length(cutoffs), v=0.8)[j],
                 lwd=2
         )
+        
+        # determine minimum coverage at key positions
+        scores <- record.score(
+                scores,
+                df2,
+                seq_len(0), # no key positions, use whole region
+                coverage.levels,
+                sample,
+                region,
+                q.cut)
     }
     
     abline(h = good.coverage, lty=2)
@@ -203,4 +244,4 @@ tar(output.maps, 'coverage_maps')
 
 
 # output minimum coverage at key positions
-write.csv(as.data.frame(output), file=output.csv, quote=FALSE, row.names=FALSE)
+write.csv(as.data.frame(scores), file=scores.csv, quote=FALSE, row.names=FALSE)
