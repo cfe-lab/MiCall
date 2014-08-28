@@ -75,7 +75,7 @@ def apply_cigar (cigar, seq, qual):
                 qpass = map(lambda x: ord(x)-33 >= insert_qcutoff, its_quals)
                 if all(qpass):
                     # require the entire insert sequence to be of high quality
-                    insertions.update({left: seq[left:(left+length)]})
+                    insertions.update({left: (seq[left:(left+length)], qual[left:(left+length)])})
 
             left += length
             continue
@@ -177,7 +177,7 @@ def main():
     
     reader = RemapReader(handle)
     outfile.write('sample,refname,qcut,rank,count,offset,seq\n')
-    insert_file.write('sample,qname,refname,pos,insert\n')
+    insert_file.write('sample,qname,refname,pos,insert,qual\n')
     failfile.write('sample,qname,qcut,seq1,qual1,seq2,qual2,prop_N,mseq\n')
 
     for sample_name, refname, group in reader.read_groups():
@@ -192,11 +192,13 @@ def main():
             if cigar == '*' or int(mapq) < read_mapping_cutoff:
                 continue
 
-            _, seq1, qual1, inserts = apply_cigar(cigar, seq, qual)
-            for left, insert in inserts.iteritems():
-                insert_file.write('%s,%s,%s,%d,%s\n' % (sample_name, qname, refname, left, insert))
+            pos1 = int(pos)-1  # convert 1-index to 0-index
 
-            pos1 = int(pos)-1
+            # report insertions relative to sample consensus
+            _, seq1, qual1, inserts = apply_cigar(cigar, seq, qual)
+            for left, (iseq, iqual) in inserts.iteritems():
+                insert_file.write('%s,%s,%s,%d,%s,%s\n' % (sample_name, qname, refname, pos1+left, iseq, iqual))
+
             seq2 = '-'*pos1 + seq1  # pad sequence on left
             qual2 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
 

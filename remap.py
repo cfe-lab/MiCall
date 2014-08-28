@@ -203,18 +203,14 @@ def main():
             log_call(['bowtie2-build', '-c', '-q', conseqs[refname], refname])
             log_call(['bowtie2',
                       '--quiet',
-                      '-p',
-                      str(bowtie_threads),
-                      '--local',
-                      '-x',
-                      refname,
-                      '-1',
-                      args.fastq1,
-                      '-2',
-                      args.fastq2,
+                      '-p', str(bowtie_threads),
+                      '--local',  # allow some characters on ends to not participate in map
+                      '-x', refname,
+                      '-1', args.fastq1,
+                      '-2', args.fastq2,
                       '--no-unal',
-                      '-S',
-                      tmpfile])
+                      '-S', tmpfile]  # output
+            )
 
             # how many reads did we map?
             count = count_file_lines(tmpfile) - 3  # ignore SAM header
