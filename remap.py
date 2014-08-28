@@ -393,7 +393,7 @@ def pileup_to_conseq (handle, qCutoff):
     handle.close()
 
     # remove in-frame deletions (multiples of 3), if any
-    pat = re.compile('[ACGT](---)+[ACGT]')
+    pat = re.compile('([ACGT])(---)+([ACGT])')
     conseq = re.sub(pat, r'\g<1>\g<3>', conseq)
     return conseq
 

@@ -28,6 +28,7 @@ def parseArgs():
         description='Conversion of SAM data into aligned format.')
     parser.add_argument('remap_csv', help='<input> SAM output of bowtie2 in CSV format')
     parser.add_argument('aligned_csv', help='<output> CSV containing cleaned and merged reads')
+    parser.add_argument('insert_csv', help='<output> CSV containing insertions relative to sample consensus')
     parser.add_argument('failed_csv', help='<output> CSV containing reads that failed to merge')
     
     return parser.parse_args()
@@ -38,8 +39,15 @@ gpfx = re.compile('^[-]+')  # length of gap prefix
 
 
 def apply_cigar (cigar, seq, qual):
+    """
+    Use CIGAR string (Compact Idiosyncratic Gapped Alignment Report) in SAM data
+    to apply soft clips, insertions, and deletions to the read sequence.
+    Any insertions relative to the sample consensus sequence are discarded to
+    enforce a strict pairwise alignment.
+    """
     newseq = ''
     newqual = ''
+    insertions = {}
     tokens = cigar_re.findall(cigar)
     if len(tokens) == 0:
         return None, None, None
@@ -61,17 +69,13 @@ def apply_cigar (cigar, seq, qual):
             newqual += ' '*length  # Assign fake placeholder score (Q=-1)
         # Insertion relative to reference: skip it (excise it)
         elif token[-1] == 'I':
-            if length % 3 > 0:
-                # insertion length is not divisible by 3
-                left += length
-                continue
-
-            its_quals = qual[left:(left+length)]
-            qpass = map(lambda x: ord(x)-33 >= insert_qcutoff, its_quals)
-            if all(qpass):
-                # require the entire insert sequence to be of high quality
-                newseq += seq[left:(left+length)]
-                newqual += qual[left:(left+length)]
+            if length % 3 == 0:
+                # report insertions separately
+                its_quals = qual[left:(left+length)]
+                qpass = map(lambda x: ord(x)-33 >= insert_qcutoff, its_quals)
+                if all(qpass):
+                    # require the entire insert sequence to be of high quality
+                    insertions.update({left: seq[left:(left+length)]})
 
             left += length
             continue
@@ -82,10 +86,15 @@ def apply_cigar (cigar, seq, qual):
         else:
             print "Unable to handle CIGAR token: {} - quitting".format(token)
             sys.exit()
-    return shift, newseq, newqual
+
+    return shift, newseq, newqual, insertions
 
 
 def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
+    """
+    Combine paired-end reads into a single sequence by managing discordant
+    base calls on the basis of quality scores.
+    """
     mseq = ''
     # force second read to be longest of the two
     if len(seq1) > len(seq2):
@@ -163,10 +172,12 @@ def main():
 
     handle = open(args.remap_csv, 'rU')
     outfile = open(args.aligned_csv, 'w')
+    insert_file = open(args.insert_csv, 'w')
     failfile = open(args.failed_csv, 'w')
     
     reader = RemapReader(handle)
     outfile.write('sample,refname,qcut,rank,count,offset,seq\n')
+    insert_file.write('sample,qname,refname,pos,insert\n')
     failfile.write('sample,qname,qcut,seq1,qual1,seq2,qual2,prop_N,mseq\n')
 
     for sample_name, refname, group in reader.read_groups():
@@ -181,7 +192,10 @@ def main():
             if cigar == '*' or int(mapq) < read_mapping_cutoff:
                 continue
 
-            _, seq1, qual1 = apply_cigar(cigar, seq, qual)
+            _, seq1, qual1, inserts = apply_cigar(cigar, seq, qual)
+            for left, insert in inserts.iteritems():
+                insert_file.write('%s,%s,%s,%d,%s\n' % (sample_name, qname, refname, left, insert))
+
             pos1 = int(pos)-1
             seq2 = '-'*pos1 + seq1  # pad sequence on left
             qual2 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
@@ -232,6 +246,7 @@ def main():
     handle.close()
     outfile.close()
     failfile.close()
+    insert_file.close()
 
 if __name__ == '__main__':
     main()

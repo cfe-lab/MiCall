@@ -91,6 +91,7 @@ def count_samples(fastq_samples, worker, args):
                            helpers=(base_path + 'settings.py', ),
                            args=(sample_info.output_root + '.remap.csv',
                                  sample_info.output_root + '.aligned.csv',
+                                 sample_info.output_root + '.insert.csv',
                                  sample_info.output_root + '.failed.csv'),
                            stdout=log_path,
                            stderr=log_path))

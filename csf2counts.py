@@ -313,14 +313,18 @@ def make_counts(region, group2, indel_writer):
     """
     Generate nucleotide and amino acid frequencies from CSV file grouping
      by region and quality cutoff.
-     
+
     @param region: the region these lines are from
     @param group2: the lines from the CSV file that describe the reads
     @param indel_writer: this needs to receive each read so it can report the
         contents of any insertions.
     @return (nuc_counts, amino_counts, min_offset) a tuple with the following:
         nuc_counts is a dictionary of dictionaries {position: {nucleotide: count}}
+            Its coordinate system is the sample consensus (nucleotide).
+            If the leftmost read is downstream of the start of the reading frame,
+            the smallest key of nuc_counts will be non-zero.
         amino_counts is the same, but for amino acids {position: {acid: count}}
+            Its coordinate system is the sample consensus (amino).
         min_offset is the minimum offset seen in all the reads. The positions
         in nuc_counts and amino_counts already include the offsets. 
     """
@@ -341,7 +345,7 @@ def make_counts(region, group2, indel_writer):
             min_offset = offset
 
         for i, nuc in enumerate(seq):
-            pos = offset + i
+            pos = offset + i  # position relative to start of sample consensus (reading frame)
             if pos not in nuc_counts:
                 nuc_counts.update({pos: {}})
             if nuc not in nuc_counts[pos]:
@@ -524,17 +528,12 @@ def main():
                 indel_writer.write(inserts, min_offset)
 
                 # output nucleotide frequencies and consensus sequences
-                nuc_coords = nuc_counts.keys()
+                nuc_coords = nuc_counts.keys()  # coordinate system of sample consensus
                 nuc_coords.sort()
-
                 for query_nuc_pos in nuc_coords:
-                    # FIXME: there MUST be a better way to do this :-P
+                    query_aa_pos = query_nuc_pos / 3
                     try:
-                        adjustment = -(3 - min_offset%3)%3
-                        query_aa_pos = (query_nuc_pos - min_offset + adjustment) / 3
-                        query_codon_pos = (query_nuc_pos - min_offset + adjustment) % 3
-                        ref_aa_pos = qindex_to_refcoord[query_aa_pos]
-                        ref_nuc_pos = 3*ref_aa_pos + query_codon_pos
+                        ref_aa_pos = qindex_to_refcoord[query_aa_pos]  # retrieve AA position from coordinate map
                     except:
                         logger.warn(
                             'No coordinate mapping for query nuc %d (amino %d) in %s' % (
@@ -542,6 +541,7 @@ def main():
                                 query_aa_pos,
                                 args.aligned_csv))
                         continue
+                    ref_nuc_pos = 3 * ref_aa_pos + (query_nuc_pos % 3)
 
                     outstr = ','.join(map(str, [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']))
                     nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
