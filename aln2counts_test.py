@@ -2,6 +2,7 @@ import StringIO
 import unittest
 
 import aln2counts
+from testfixtures.logcapture import LogCapture
 
 class AminoFrequencyWriterTest(unittest.TestCase):
     def setUp(self):
@@ -229,18 +230,25 @@ E1234_S1,R1,15,8,8,0,0,1,0
 E1234_S1,R1,15,9,9,1,0,0,0
 """
         
-        self.writer.write(sample_name = 'E1234_S1',
-                          region='R1',
-                          qcut=15,
-                          nuc_counts={4: {'T': 1},
-                                      5: {'G': 1},
-                                      6: {'G': 1},
-                                      7: {'G': 1},
-                                      8: {'A': 1}},
-                          qindex_to_refcoord={1: 2},
-                          min_offset=4)
+        with LogCapture() as log:
+            self.writer.write(sample_name = 'E1234_S1',
+                              region='R1',
+                              qcut=15,
+                              nuc_counts={4: {'T': 1},
+                                          5: {'G': 1},
+                                          6: {'G': 1},
+                                          7: {'G': 1},
+                                          8: {'A': 1}},
+                              qindex_to_refcoord={1: 2},
+                              min_offset=4)
         
         self.assertMultiLineEqual(expected_text, self.writer.nucfile.getvalue())
+        log.check(('root',
+                   'WARNING',
+                   "No coordinate mapping for query nuc 4 (amino 0) in E1234_S1"),
+                  ('root',
+                   'WARNING',
+                   "No coordinate mapping for query nuc 5 (amino 0) in E1234_S1"))
         
     def testGapWithoutReference(self):
         expected_text = """\
@@ -476,3 +484,85 @@ E1234_S1,R1,15,2,DE,1
         self.writer.write(inserts=[2,3])
         
         self.assertMultiLineEqual(expected_text, self.writer.indelfile.getvalue())
+
+class TranslateTest(unittest.TestCase):
+    def testSingleCodon(self):
+        nucs = 'TTT'
+        offset = 0
+        expected_aminos = 'F'
+
+        aminos = aln2counts.translate(nucs, offset)
+        
+        self.assertEqual(expected_aminos, aminos)
+        
+    def testPartialCodon(self):
+        nucs = 'TTTC'
+        offset = 0
+        expected_aminos = 'F'
+
+        aminos = aln2counts.translate(nucs, offset)
+        
+        self.assertEqual(expected_aminos, aminos)
+        
+    def testTwoCodons(self):
+        nucs = 'TTTCCT'
+        offset = 0
+        expected_aminos = 'FP'
+
+        aminos = aln2counts.translate(nucs, offset)
+        
+        self.assertEqual(expected_aminos, aminos)
+        
+    def testSingleDashAmbiguous(self):
+        nucs = '-TT'
+        offset = 0
+        expected_aminos = '?'
+
+        aminos = aln2counts.translate(nucs, offset)
+        
+        self.assertEqual(expected_aminos, aminos)
+        
+    def testSingleDashUnambiguous(self):
+        nucs = 'CG-' # CGA, CGC, CGG, CGT all map to R
+        offset = 0
+        expected_aminos = 'R'
+
+        aminos = aln2counts.translate(nucs, offset)
+        
+        self.assertEqual(expected_aminos, aminos)
+        
+    def testTwoDashes(self):
+        nucs = '--T'
+        offset = 0
+        expected_aminos = '?'
+
+        aminos = aln2counts.translate(nucs, offset)
+        
+        self.assertEqual(expected_aminos, aminos)
+        
+    def testThreeDashes(self):
+        nucs = '---'
+        offset = 0
+        expected_aminos = '-'
+
+        aminos = aln2counts.translate(nucs, offset)
+        
+        self.assertEqual(expected_aminos, aminos)
+        
+    def testAmbiguousBasesThatAreSynonyms(self):
+        nucs = 'TTY' # TTC or TTT: both map to F
+        offset = 0
+        expected_aminos = 'F'
+
+        aminos = aln2counts.translate(nucs, offset)
+        
+        self.assertEqual(expected_aminos, aminos)
+        
+    def testTwoAmbiguousBasesThatAreSynonyms(self):
+        nucs = 'MGR' # CGA, CGG, AGA, or AGG: all map to R
+        offset = 0
+        expected_aminos = '?'
+
+        aminos = aln2counts.translate(nucs, offset)
+        
+        self.assertEqual(expected_aminos, aminos)

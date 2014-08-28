@@ -240,6 +240,46 @@ data and for the working folders.
    sequence data.
 10. Run MISEQ_MONITOR.py, it doesn't take any arguments.
 
+Releases
+--------
+This section assumes you already have a working server up and running, and you
+just want to publish a new release. If you're setting up a new server, follow
+similar steps to setting up a development workstation. Follow these steps:
+1. Make sure the code works in your development environment. Run all the unit
+    tests as described above, process the microtest data set, and process a full
+    run. Check the logs for errors.
+2. Determine what version number should be used next. Update the version number
+    in `settings_default.py` if it hasn't been updated already, commit, and push.
+3. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y
+    matches the version you used in `settings_default.py`.
+4. Get the code from Github into the server's development environment.
+        ssh user@server
+        cd /usr/local/share/miseq/development/
+        git fetch
+        git checkout tags/vX.Y
+5. Check if you need to set any new settings by running
+    `diff settings_default.py settings.py`. You will probably need to modify
+    the version number, at least. Make sure that `production = False`.
+6. Run the same tests as you did in your own development environment, or at
+    least one full run of data.
+7. Stop the `MISEQ_MONITOR.py` process.
+        ssh user@server
+        ps aux|grep MISEQ_MONITOR.py
+        kill -9 <process id from grep output>
+8. Get the code from Github into the server's production environment.
+        ssh user@server
+        cd /usr/local/share/miseq/production/
+        git fetch
+        git checkout tags/vX.Y
+9. Review the settings just as you did in the development environment, but make
+    sure that `production = True`.
+10. Start the monitor, and tail the log to see that it begins processing all the
+    runs with the new version of the pipeline.
+        cd /usr/local/share/miseq/production/
+        ./MISEQ_MONITOR.py &
+        tail -f /data/miseq/MISEQ_MONITOR_OUTPUT.log
+11. Close the milestone for this release, create one for the next release, and
+    decide which issues you will include in that milestone.
 
 [eclipse]: https://www.eclipse.org/downloads/
 [pydev]: http://pydev.org/updates
@@ -247,3 +287,4 @@ data and for the working folders.
 [samtools]: http://sourceforge.net/projects/samtools/files/
 [hyphy]: https://github.com/veg/hyphy
 [cifs]: https://wiki.ubuntu.com/MountWindowsSharesPermanently
+[release]: https://help.github.com/categories/85/articles
