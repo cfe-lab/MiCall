@@ -247,8 +247,8 @@ just want to publish a new release. If you're setting up a new server, follow
 similar steps to setting up a development workstation. Follow these steps:
 1. Make sure the code works in your development environment. Run all the unit
     tests as described above, process the microtest data set, and process a full
-    run. Check the logs for errors. Also check that all the issues in the
-    current milestone are closed.
+    run using MISEQ_MONITOR.py. Check the logs for errors. Also check that all
+    the issues in the current milestone are closed.
 2. Determine what version number should be used next. Update the version number
     in `settings_default.py` if it hasn't been updated already, commit, and push.
 3. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y
@@ -263,6 +263,8 @@ similar steps to setting up a development workstation. Follow these steps:
     the version number, at least. Make sure that `production = False`.
 6. Run the same tests as you did in your own development environment, or at
     least one full run of data.
+        cd /usr/local/share/miseq/development/
+        ./run_processor.py /data/miseq/YYMMDD*
 7. Stop the `MISEQ_MONITOR.py` process.
         ssh user@server
         ps aux|grep MISEQ_MONITOR.py
