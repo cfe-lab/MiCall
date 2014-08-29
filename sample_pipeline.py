@@ -100,7 +100,7 @@ def count_samples(fastq_samples, worker, args):
     ### Begin aln2counts
     
     for sample_info in fastq_samples:
-        log_path = "{}.alncounts.log".format(sample_info.output_root)
+        log_path = "{}.aln2counts.log".format(sample_info.output_root)
         worker.run_job(Job(script=base_path + 'aln2counts.py',
                            helpers=(base_path + 'settings.py',
                                     final_alignment_ref_path,
