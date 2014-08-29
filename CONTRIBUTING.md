@@ -272,7 +272,7 @@ similar steps to setting up a development workstation. Follow these steps:
 8. Get the code from Github into the server's production environment.
         ssh user@server
         cd /usr/local/share/miseq/production/
-        git fetch
+        git fetch github
         git checkout tags/vX.Y
 9. Review the settings just as you did in the development environment, but make
     sure that `production = True`.
