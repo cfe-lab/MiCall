@@ -263,8 +263,7 @@ similar steps to setting up a development workstation. Follow these steps:
     the version number, at least. Make sure that `production = False`, and the
     process counts are half the production values. Do the same comparison of
     `hostfile`.
-6. Run the same tests as you did in your own development environment, or at
-    least one full run of data.
+6. Process one full run of data.
         cd /usr/local/share/miseq/development/
         ./run_processor.py /data/miseq/YYMMDD*
 7. Stop the `MISEQ_MONITOR.py` process after you check that it's not processing
