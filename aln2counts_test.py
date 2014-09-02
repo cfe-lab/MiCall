@@ -599,3 +599,176 @@ class TranslateTest(unittest.TestCase):
         aminos = aln2counts.translate(nucs, offset)
         
         self.assertEqual(expected_aminos, aminos)
+
+class MakeConsensusTest(unittest.TestCase):
+    def testNoMixes(self):
+        nuc_counts = {0: {'A': 1},
+                      1: {'C': 1},
+                      2: {'T': 1},
+                      3: {'G': 1}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ACTG',
+                            '0.100': 'ACTG'}
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testMixed(self):
+        nuc_counts = {0: {'A': 3},
+                      1: {'C': 2, 'T': 1},
+                      2: {'T': 3},
+                      3: {'G': 3}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ACTG',
+                            '0.100': 'AYTG'} # Y is a mix of C and T
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testMixedThree(self):
+        nuc_counts = {0: {'A': 4},
+                      1: {'C': 2, 'T': 1, 'G': 1},
+                      2: {'T': 4},
+                      3: {'G': 4}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ACTG',
+                            '0.100': 'ABTG'} # B is a mix of T, G, and C
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testMixedAll(self):
+        nuc_counts = {0: {'A': 5},
+                      1: {'C': 2, 'T': 1, 'G': 1, 'A': 1},
+                      2: {'T': 5},
+                      3: {'G': 5}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ACTG',
+                            '0.100': 'ANTG'} # All four are reported as N
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testCutoff(self):
+        nuc_counts = {0: {'A': 3},
+                      1: {'C': 2, 'T': 1},
+                      2: {'T': 3},
+                      3: {'G': 3}}
+        conseq_mixture_cutoffs = [0.1, 0.5]
+        expected_conseqs = {'MAX': 'ACTG',
+                            '0.100': 'AYTG', # Y is a mix of C and T
+                            '0.500': 'ACTG'} # T was below the cutoff
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testMixedWithPoorQuality(self):
+        nuc_counts = {0: {'A': 3},
+                      1: {'N': 2, 'T': 1},
+                      2: {'T': 3},
+                      3: {'G': 3}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ATTG',
+                            '0.100': 'ATTG'} # N always overruled
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testMixedWithGap(self):
+        nuc_counts = {0: {'A': 3},
+                      1: {'-': 2, 'T': 1},
+                      2: {'T': 3},
+                      3: {'G': 3}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ATTG',
+                            '0.100': 'ATTG'} # dash always overruled
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testMixedWithGapAndPoorQuality(self):
+        nuc_counts = {0: {'A': 6},
+                      1: {'N': 3, '-': 2, 'T': 1},
+                      2: {'T': 6},
+                      3: {'G': 6}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ATTG',
+                            '0.100': 'ATTG'}
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testPoorQualityOnly(self):
+        nuc_counts = {0: {'A': 1},
+                      1: {'N': 1},
+                      2: {'T': 1},
+                      3: {'G': 1}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ANTG',
+                            '0.100': 'ANTG'}
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testMixedGapAndPoorQualityOnly(self):
+        nuc_counts = {0: {'A': 5},
+                      1: {'N': 3, '-': 2},
+                      2: {'T': 5},
+                      3: {'G': 5}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ANTG',
+                            '0.100': 'ANTG'}
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testAllBelowCutoff(self):
+        nuc_counts = {0: {'A': 300},
+                      1: {'C': 101, 'T': 100, 'G': 99},
+                      2: {'T': 300},
+                      3: {'G': 300}}
+        conseq_mixture_cutoffs = [0.5]
+        expected_conseqs = {'MAX': 'ACTG',
+                            '0.500': 'ANTG'}
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testMissingPositions(self):
+        """ Missing positions are ignored in the consensus sequence. """
+        nuc_counts = {0: {'A': 1},
+                      1: {'C': 1},
+                      2: {'T': 1},
+                      4: {'G': 1}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ACTG',
+                            '0.100': 'ACTG'}
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testOrdering(self):
+        """ Position keys are sorted. """
+        nuc_counts = {2: {'A': 1},
+                      3: {'C': 1},
+                      4: {'T': 1},
+                      100: {'G': 1}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ACTG',
+                            '0.100': 'ACTG'}
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)

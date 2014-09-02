@@ -69,7 +69,9 @@ mixture_regex = re.compile('[WRKYSMBDHVN-]')
 mixture_dict = {'W':'AT', 'R':'AG', 'K':'GT', 'Y':'CT', 'S':'CG',
                 'M':'AC', 'V':'AGC', 'H':'ATC', 'D':'ATG',
                 'B':'TGC', 'N':'ATGC', '-':'ATGC'}
-ambig_dict = dict(("".join(sorted(v)), k) for k, v in mixture_dict.iteritems())
+ambig_dict = dict(("".join(sorted(v)), k)
+                  for k, v in mixture_dict.iteritems()
+                  if k != '-')
 
 
 def translate(seq, offset):
@@ -481,58 +483,64 @@ def make_counts(region, group2, indel_writer):
 
     return nuc_counts, amino_counts, min_offset
 
+def name_mixture(cutoff):
+    """ Format the cutoff fraction as a string to name the mixture. """
+    
+    return '{:0.3f}'.format(cutoff)    
 
-def make_consensus(nuc_counts):
-    """
-    Generate consensus sequences from nucleotide frequency data
-    at varying frequency cutoffs.  Returns dict keyed by
-    frequency cutoff for determining consensus.
-    MAX = plurality-rule consensus.
-    Nucleotide mixtures are encoded by IUPAC symbols.
+def make_consensus(nuc_counts, conseq_mixture_cutoffs):
+    """ Make consensus sequences from nucleotide frequencies at many cut offs.
+    
+    @param nuc_counts: {pos: {nuc: count}} a dictionary keyed by the
+         nucleotide position. To calculate the nucleotide position, take the
+         position within the consensus sequence and add the offset of where the
+         start of the consensus sequence maps to the reference sequence. Each
+         entry is a dictionary keyed by nucleotide letter and containing the
+         number of times each nucleotide was read at that position.
+    @param conseq_mixture_cutoffs: the minimum fraction of reads at a position
+        that a nucleotide must be found in for it to be considered.
+    @return: {cutoff: seq} a dictionary where each entry has a key of the
+        mixture cutoff name, and the value is the consensus sequence. The
+        mixture cutoff name is either 'MAX' for the consensus sequence where
+        each position holds the most common nucleotide, or it is the cutoff
+        fraction formatted to three decimal places. For example, '0.020'.
+        Nucleotide mixtures are encoded by IUPAC symbols.
     """
     nuc_coords = nuc_counts.keys()
     nuc_coords.sort()  # iterate over positions in ascending order
-    conseqs = dict([(cut, '') for cut in settings.conseq_mixture_cutoffs])
+    conseqs = dict([(name_mixture(cut), '') for cut in conseq_mixture_cutoffs])
     conseqs.update({'MAX': ''})
 
     for query_nuc_pos in nuc_coords:
         intermed = [(count, nuc) for nuc, count in nuc_counts[query_nuc_pos].iteritems()]
         intermed.sort(reverse=True)
+        
+        # Remove gaps and low quality reads if there is anything else.
+        for i in reversed(range(len(intermed))):
+            _count, nuc = intermed[i]
+            if nuc in ('N', '-') and len(intermed) > 1:
+                intermed.pop(i)
+        
         conseqs['MAX'] += intermed[0][1]  # plurality consensus
 
         total_count = sum([count for count, nuc in intermed])
-        for cut in settings.conseq_mixture_cutoffs:
+        for cut in conseq_mixture_cutoffs:
             mixture = []
+            mixture_name = name_mixture(cut)
             # filter for nucleotides that pass frequency cutoff
             for count, nuc in intermed:
                 if float(count) / total_count > cut:
                     mixture.append(nuc)
 
-            if 'N' in mixture:
-                if len(mixture) > 1:
-                    # N always overruled by any nucleotide (gap handled below)
-                    mixture.remove('N')
-                else:
-                    conseqs[cut] += 'N'
-                    continue
-
-            if '-' in mixture:
-                if len(mixture) > 1:
-                    # gap always overruled by nucleotide
-                    mixture.remove('-')
-                else:
-                    conseqs[cut] += '-'
-                    continue
-
             if len(mixture) > 1:
                 mixture.sort()
-                conseqs[cut] += ambig_dict[''.join(mixture)]
+                conseqs[mixture_name] += ambig_dict[''.join(mixture)]
             elif len(mixture) == 1:
                 # no ambiguity
-                conseqs[cut] += mixture[0]
+                conseqs[mixture_name] += mixture[0]
             else:
-                # no characters left - I don't think this outcome is possible
-                conseqs[cut] += 'N'
+                # all reads were below the cutoff
+                conseqs[mixture_name] += 'N'
 
     return conseqs
 
@@ -654,7 +662,8 @@ def main():
                                  min_offset)
 
             # output consensus sequences
-            conseqs = make_consensus(nuc_counts)
+            conseqs = make_consensus(nuc_counts,
+                                     settings.conseq_mixture_cutoffs)
             for cut, conseq in conseqs.iteritems():
                 confile.write('%s,%s,%s,%s,%s,%s\n' % (sample_name_base,
                                                           region,
