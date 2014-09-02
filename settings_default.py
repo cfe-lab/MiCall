@@ -47,7 +47,7 @@ consensus_q_cutoff = 20         # Min Q for base to contribute to conseq (pileup
 
 
 ## sam2aln parameters
-sam2aln_q_cutoffs = [0, 10, 15]  # Q-cutoff for base censoring
+sam2aln_q_cutoffs = [15]  # Q-cutoff for base censoring
 max_prop_N = 0.5                 # Drop reads with more censored bases than this proportion
 read_mapping_cutoff = 10         # Minimum bowtie read mapping quality
 insert_qcutoff = 20              # minimum Q score for an insertion polymorphism to pass
@@ -61,7 +61,7 @@ v3_mincounts = [0, 50, 100, 1000]       # Min number of reads to contribute to %
 ## aln2counts parameters
 conseq_mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 final_alignment_ref_path = ref_path + 'aln2counts_amino_refseqs.csv'
-final_nuc_align_ref_path = ref_path + 'aln_to_fasta_by_nucref.csv'
+final_nuc_align_ref_path = ref_path + 'aln2nuc_refseqs.csv'
 
 # Default database user and password.
 oracle_uploader = "FILLINUSERNAME"

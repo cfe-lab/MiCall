@@ -100,10 +100,11 @@ def count_samples(fastq_samples, worker, args):
     ### Begin aln2counts
     
     for sample_info in fastq_samples:
-        log_path = "{}.alncounts.log".format(sample_info.output_root)
+        log_path = "{}.aln2counts.log".format(sample_info.output_root)
         worker.run_job(Job(script=base_path + 'aln2counts.py',
                            helpers=(base_path + 'settings.py',
                                     final_alignment_ref_path,
+                                    mapping_ref_path + '.fasta',
                                     base_path + 'miseq_logging.py',
                                     base_path + 'hyphyAlign.py'),
                            args=(sample_info.output_root + '.aligned.csv',
@@ -186,6 +187,7 @@ def collate_results(fastq_samples, worker, args, logger):
                         ('coverage_scores.csv', None),
                         ('failed.csv', None),
                         ('g2p.csv', None),
+                        ('insert.csv', None),
                         ('indels.csv', None),
                         ('nucleotide_frequencies.csv', '*.nuc.csv'),
                         ('nuc_variants.csv', None),

@@ -69,7 +69,9 @@ mixture_regex = re.compile('[WRKYSMBDHVN-]')
 mixture_dict = {'W':'AT', 'R':'AG', 'K':'GT', 'Y':'CT', 'S':'CG',
                 'M':'AC', 'V':'AGC', 'H':'ATC', 'D':'ATG',
                 'B':'TGC', 'N':'ATGC', '-':'ATGC'}
-ambig_dict = dict(("".join(sorted(v)), k) for k, v in mixture_dict.iteritems())
+ambig_dict = dict(("".join(sorted(v)), k)
+                  for k, v in mixture_dict.iteritems()
+                  if k != '-')
 
 
 def translate(seq, offset):
@@ -310,18 +312,28 @@ class AminoFrequencyWriter(object):
                                                        outstr))
 
 class NucleotideFrequencyWriter(object):
-    def __init__(self, nucfile, amino_ref_seqs):
+    def __init__(self, nucfile, amino_ref_seqs, nuc_ref_seqs):
         """ Initialize a writer object.
         
         @param nucfile: an open file that the summary will be written to
-        @param refseqs: {region: sequence} maps from region name to amino acid 
-        sequence
+        @param amino_ref_seqs: {region: sequence} maps from region name to 
+            amino acid sequence
+        @param nuc_ref_seqs: {region: sequence} maps from region name to
+            nucleotide sequence
         """
         self.nucfile = nucfile
         self.amino_ref_seqs = amino_ref_seqs
+        self.nuc_ref_seqs = nuc_ref_seqs
         self.nucfile.write(
             'sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
         
+
+    def _write_counts(self, sample_name, region, qcut, counts, query_display_pos, ref_display_pos):
+        self.nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
+        outstr = ','.join(map(str, [counts.get(nuc, 0) for nuc in 'ACGT']))
+        self.nucfile.write(','.join(map(str, (query_display_pos, ref_display_pos, outstr))))
+        self.nucfile.write('\n')
+
     def write(self,
               sample_name,
               region,
@@ -355,21 +367,22 @@ class NucleotideFrequencyWriter(object):
          all the reads when aligning them to the reference sequence.
         """
 
-        if region not in self.amino_ref_seqs:
+        no_counts = {}
+        amino_ref_seq = self.amino_ref_seqs.get(region)
+        if amino_ref_seq is None:
             # a region like HLA
-            nuc_coords = nuc_counts.keys()
-            left = min(nuc_coords)
-            right = max(nuc_coords)
-            for pos in range(left, right+1):
-                self.nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
-                if pos in nuc_counts:
-                    outstr = ','.join(map(str, [nuc_counts[pos].get(nuc, 0) for nuc in 'ACGT']))
-                else:
-                    outstr = '0,0,0,0'
-                self.nucfile.write(','.join(map(str, [pos+1, '', outstr])))
-                self.nucfile.write('\n')
+            nuc_ref_seq = self.nuc_ref_seqs[region]
+            for pos in range(len(nuc_ref_seq)):
+                counts = nuc_counts.get(pos, no_counts)
+                self._write_counts(sample_name,
+                                   region,
+                                   qcut,
+                                   counts,
+                                   pos + 1,
+                                   '')
         else:
             # output nucleotide frequencies and consensus sequences
+            last_ref_nuc_pos = -1
             nuc_coords = nuc_counts.keys()
             nuc_coords.sort()
 
@@ -386,11 +399,27 @@ class NucleotideFrequencyWriter(object):
                             sample_name))
                     continue
                 ref_nuc_pos = 3 * ref_aa_pos + (query_nuc_pos % 3)
-
-                outstr = ','.join(map(str, [nuc_counts[query_nuc_pos].get(nuc, 0) for nuc in 'ACGT']))
-                self.nucfile.write('%s,%s,%s,' % (sample_name, region, qcut))
-                self.nucfile.write(','.join(map(str, [query_nuc_pos+1, ref_nuc_pos+1, outstr])))
-                self.nucfile.write('\n')
+                while last_ref_nuc_pos+1 < ref_nuc_pos:
+                    last_ref_nuc_pos += 1
+                    self._write_counts(sample_name,
+                                       region,
+                                       qcut,
+                                       no_counts,
+                                       '',
+                                       last_ref_nuc_pos+1)
+                
+                counts = nuc_counts[query_nuc_pos]
+                self._write_counts(sample_name, region, qcut, counts, query_nuc_pos+1, ref_nuc_pos+1)
+                last_ref_nuc_pos = ref_nuc_pos
+                
+            while last_ref_nuc_pos+1 < len(amino_ref_seq)*3:
+                last_ref_nuc_pos += 1
+                self._write_counts(sample_name,
+                                   region,
+                                   qcut,
+                                   no_counts,
+                                   '',
+                                   last_ref_nuc_pos+1)
 
 def make_counts(region, group2, indel_writer):
     """
@@ -454,87 +483,110 @@ def make_counts(region, group2, indel_writer):
 
     return nuc_counts, amino_counts, min_offset
 
+def name_mixture(cutoff):
+    """ Format the cutoff fraction as a string to name the mixture. """
+    
+    return '{:0.3f}'.format(cutoff)    
 
-def make_consensus(nuc_counts):
-    """
-    Generate consensus sequences from nucleotide frequency data
-    at varying frequency cutoffs.  Returns dict keyed by
-    frequency cutoff for determining consensus.
-    MAX = plurality-rule consensus.
-    Nucleotide mixtures are encoded by IUPAC symbols.
+def make_consensus(nuc_counts, conseq_mixture_cutoffs):
+    """ Make consensus sequences from nucleotide frequencies at many cut offs.
+    
+    @param nuc_counts: {pos: {nuc: count}} a dictionary keyed by the
+         nucleotide position. To calculate the nucleotide position, take the
+         position within the consensus sequence and add the offset of where the
+         start of the consensus sequence maps to the reference sequence. Each
+         entry is a dictionary keyed by nucleotide letter and containing the
+         number of times each nucleotide was read at that position.
+    @param conseq_mixture_cutoffs: the minimum fraction of reads at a position
+        that a nucleotide must be found in for it to be considered.
+    @return: {cutoff: seq} a dictionary where each entry has a key of the
+        mixture cutoff name, and the value is the consensus sequence. The
+        mixture cutoff name is either 'MAX' for the consensus sequence where
+        each position holds the most common nucleotide, or it is the cutoff
+        fraction formatted to three decimal places. For example, '0.020'.
+        Nucleotide mixtures are encoded by IUPAC symbols.
     """
     nuc_coords = nuc_counts.keys()
     nuc_coords.sort()  # iterate over positions in ascending order
-    conseqs = dict([(cut, '') for cut in settings.conseq_mixture_cutoffs])
+    conseqs = dict([(name_mixture(cut), '') for cut in conseq_mixture_cutoffs])
     conseqs.update({'MAX': ''})
 
     for query_nuc_pos in nuc_coords:
         intermed = [(count, nuc) for nuc, count in nuc_counts[query_nuc_pos].iteritems()]
         intermed.sort(reverse=True)
+        
+        # Remove gaps and low quality reads if there is anything else.
+        for i in reversed(range(len(intermed))):
+            _count, nuc = intermed[i]
+            if nuc in ('N', '-') and len(intermed) > 1:
+                intermed.pop(i)
+        
         conseqs['MAX'] += intermed[0][1]  # plurality consensus
 
         total_count = sum([count for count, nuc in intermed])
-        for cut in settings.conseq_mixture_cutoffs:
+        for cut in conseq_mixture_cutoffs:
             mixture = []
+            mixture_name = name_mixture(cut)
             # filter for nucleotides that pass frequency cutoff
             for count, nuc in intermed:
                 if float(count) / total_count > cut:
                     mixture.append(nuc)
 
-            if 'N' in mixture:
-                if len(mixture) > 1:
-                    # N always overruled by any nucleotide (gap handled below)
-                    mixture.remove('N')
-                else:
-                    conseqs[cut] += 'N'
-                    continue
-
-            if '-' in mixture:
-                if len(mixture) > 1:
-                    # gap always overruled by nucleotide
-                    mixture.remove('-')
-                else:
-                    conseqs[cut] += '-'
-                    continue
-
             if len(mixture) > 1:
                 mixture.sort()
-                conseqs[cut] += ambig_dict[''.join(mixture)]
+                conseqs[mixture_name] += ambig_dict[''.join(mixture)]
             elif len(mixture) == 1:
                 # no ambiguity
-                conseqs[cut] += mixture[0]
+                conseqs[mixture_name] += mixture[0]
             else:
-                # no characters left - I don't think this outcome is possible
-                conseqs[cut] += 'N'
+                # all reads were below the cutoff
+                conseqs[mixture_name] += 'N'
 
     return conseqs
 
-
-def main():
-    args = parseArgs()
-    
-    # check that the amino acid reference input exists
+def read_references(possible_ref_files):
+    # check that the reference input exists
     is_ref_found = False
-    
-    possible_refs = (os.path.basename(settings.final_alignment_ref_path),
-                     settings.final_alignment_ref_path)
-    for amino_ref in possible_refs:
-        if not os.path.isfile(amino_ref):
+    for ref_file in possible_ref_files:
+        if not os.path.isfile(ref_file):
             continue
         is_ref_found = True
         break
     if not is_ref_found:
         raise RuntimeError('No reference sequences found in {!r}'.format(
-            possible_refs))
+            possible_ref_files))
 
     # read in amino acid reference sequences from file
     refseqs = {}
-    with open(amino_ref, 'rU') as handle:
-        handle.next() # Skip header
-        for line in handle:
-            region, aaseq = line.strip('\n').split(',')
-            refseqs.update({region: aaseq})
+    with open(ref_file, 'rU') as handle:
+        for line_number, line in enumerate(handle):
+            stripped_line = line.rstrip('\n')
+            if line_number == 0:
+                is_multiline = stripped_line.startswith('>')
+                if not is_multiline:
+                    continue
+            if not is_multiline:
+                region, seq = stripped_line.split(',')
+                refseqs[region] = seq
+            elif line_number % 2 == 0:
+                region = stripped_line[1:]
+            else:
+                # second line of multiline entry holds sequence
+                refseqs[region] = stripped_line
+    return refseqs
 
+def main():
+    args = parseArgs()
+    
+    
+    amino_ref_seqs = read_references((
+        os.path.basename(settings.final_alignment_ref_path),
+        settings.final_alignment_ref_path))
+    nuc_ref_file = settings.mapping_ref_path + '.fasta'
+    nuc_ref_seqs = read_references((
+        os.path.basename(nuc_ref_file),
+        nuc_ref_file))
+    
     # check that the inputs exist
     if not os.path.exists(args.aligned_csv):
         logger.error('No input CSF found at ' + args.aligned_csv)
@@ -553,8 +605,8 @@ def main():
     nucfile = open(args.nuc_csv, 'w')
     confile = open(args.conseq, 'w')
     indelfile = open(args.indels_csv, 'w')
-    amino_writer = AminoFrequencyWriter(aafile, refseqs)
-    nuc_writer = NucleotideFrequencyWriter(nucfile, refseqs)
+    amino_writer = AminoFrequencyWriter(aafile, amino_ref_seqs)
+    nuc_writer = NucleotideFrequencyWriter(nucfile, amino_ref_seqs, nuc_ref_seqs)
     indel_writer = IndelWriter(indelfile)
     
     infile.readline() # skip header
@@ -564,7 +616,7 @@ def main():
         sample_name, region = key
         sample_name_base, sample_snum = sample_name.split('_', 1)
         
-        if region not in refseqs and not region.startswith('HLA-'):
+        if region not in amino_ref_seqs and not region.startswith('HLA-'):
             continue
         for qcut, group2 in groupby(group, lambda x: x.split(',')[2]):
             # gather nucleotide, amino frequencies
@@ -573,7 +625,7 @@ def main():
                                                                group2,
                                                                indel_writer)
 
-            if region not in refseqs:
+            if region not in amino_ref_seqs:
                 nuc_writer.write(sample_name, region, qcut, nuc_counts)
             else:
                 # make amino consensus from frequencies
@@ -590,7 +642,7 @@ def main():
 
 
                 # map to reference coordinates by aligning consensus
-                aquery, aref, _ = pair_align(hyphy, refseqs[region], aa_max)
+                aquery, aref, _ = pair_align(hyphy, amino_ref_seqs[region], aa_max)
                 qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
 
                 amino_writer.write(sample_name,
@@ -610,7 +662,8 @@ def main():
                                  min_offset)
 
             # output consensus sequences
-            conseqs = make_consensus(nuc_counts)
+            conseqs = make_consensus(nuc_counts,
+                                     settings.conseq_mixture_cutoffs)
             for cut, conseq in conseqs.iteritems():
                 confile.write('%s,%s,%s,%s,%s,%s\n' % (sample_name_base,
                                                           region,
