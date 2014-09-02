@@ -33,8 +33,11 @@ record.score <- function(
     #
     # scores - a matrix that holds data to write out to the scores file.
     # data - A data frame with the following columns:
-    #	refseq.aa.pos - the position in the reference sequence
+    #	refseq.aa.pos - the position in the amino acid reference sequence
+    #   query.nuc.pos - the position in the nucleotide reference sequence
     #	coverage - the coverage at that position by combining all reads
+    #	If the amino acid position column is empty, the nucleotide column
+    #	will be used instead.
     # region.key.pos - a vector of key positions within the region. If it is
     #	empty, treat all positions as key.
     # coverage.levels - a vector of four coverage levels that are thresholds
@@ -49,8 +52,14 @@ record.score <- function(
         min.pos <- which.min(key.coverage)
     }
     else {
+        if (length(data$refseq.aa.pos) != 0) {
+            positions <- data$refseq.aa.pos
+        }
+        else {
+            positions <- data$query.nuc.pos
+        }
         key.coverage <- all.coverage[is.element(
-                        data$refseq.aa.pos,
+                        positions,
                         region.key.pos)]
         min.pos <- region.key.pos[which.min(key.coverage)]
     }
@@ -76,6 +85,39 @@ record.score <- function(
                         on.score))
     } else {
         scores <- rbind(scores, c(sample, region, q.cut, NA, NA, 0, 1))
+    }
+}
+
+prepare.plot <- function(
+        xlim,
+        x.label,
+        good.coverage,
+        sample,
+        region,
+        region.key.pos) {
+    # Draw the frame of a plot, along with the key positions.
+    #
+    # xlim - the maximum value of the x axis
+    # x.label - the label text for the x axis
+    # good.coverage - the minimum coverage that is considered good
+    # sample - sample name
+    # region - region name
+    # region.key.pos - vector holding all key positions in the region
+    filename <- file.path('coverage_maps', paste(sample, region, 'png', sep='.'))
+    
+    # set up plot
+    png(file=filename, width=400, height=300, type='cairo')
+    par(family='sans', cex=1, mar=c(5,5,1,1))
+    plot(NA, xlim=c(1,xlim), ylim=c(1,200000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
+    title(xlab=x.label, font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
+    
+    # indicate key positions for this region
+    for (pos in region.key.pos) {
+        rect(
+                pos-0.505, good.coverage/2,
+                pos+0.505, good.coverage*2,
+                col='red',
+                border=NA)
     }
 }
 
@@ -133,18 +175,15 @@ for (i in seq_along(coverage)) {
     sample <- tokens[2]
     
     df <- coverage[[i]]
-    filename <- file.path('coverage_maps', paste(sample, region, 'png', sep='.'))
-    
-    # set up plot
-    png(file=filename, width=400, height=300, type='cairo')
-    par(family='sans', cex=1, mar=c(5,5,1,1))
-    plot(NA, xlim=c(1,max(df$refseq.aa.pos)), ylim=c(1,200000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
-    title(xlab="Reference coordinates (AA)", font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
-    
-    # indicate key positions for this region
-    for (pos in key.pos[[region]]) {
-        rect(pos-0.5, 500, pos+0.5, 2e3, col='red', border=NA)
-    }
+    xlim <- max(df$refseq.aa.pos)
+    x.label <- "Reference coordinates (AA)"
+    prepare.plot(
+            xlim,
+            x.label,
+            good.coverage,
+            sample,
+            region,
+            key.pos[[region]])
     
     # draw trend lines for each quality score cutoff
     cutoffs <- sort(as.integer(levels(as.factor(df$q.cutoff))))
@@ -184,7 +223,7 @@ for (i in seq_along(coverage)) {
 }
 
 
-# now handle nucleotide coverage for HLA-B (3,337 bp)
+# now handle nucleotide coverage for HLA-B (nucleotide sequence, not amino)
 region <- 'HLA-B'
 data <- read.csv(file=nuc.csv, header=TRUE, sep=',', stringsAsFactors=FALSE)
 data <- data[data$region == region, ]
@@ -193,25 +232,27 @@ if (length(data$query.nuc.pos)) {
     sample <- data$sample[1]
     
     data$coverage <- apply(data[ , which(is.element(names(data), alphabet))], 1, sum)
-    data$coverage <- sapply(data$coverage, function(x) max(x, 0.1))
     
     good.coverage <- 100
     coverage.levels <- c(-Inf, 0, 10, good.coverage, Inf)
-            
-    filename <- file.path('coverage_maps', paste(sample, region, 'png', sep='.'))
     
-    # set up plot
-    png(file=filename, width=400, height=300, type='cairo')
-    par(family='sans', cex=1, mar=c(5,5,1,1))
-    plot(NA, xlim=c(1,max(data$query.nuc.pos)), ylim=c(1,200000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
-    title(xlab="Reference coordinates (bp)", font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
+    xlim <- max(data$query.nuc.pos)
+    x.label <- "Reference coordinates (bp)"
+    prepare.plot(
+            xlim,
+            x.label,
+            good.coverage,
+            sample,
+            region,
+            key.pos[[region]])
     
     cutoffs <- sort(as.integer(levels(as.factor(data$q.cutoff))))
     for (j in 1:length(cutoffs)) {
         q.cut <- cutoffs[j]
         df2 <- data[data$q.cutoff == q.cut, ]
+        # zeroes don't show up on a log plot, so we plot no coverage at 0.1
         lines(x = df2$query.nuc.pos, 
-                y = df2$coverage, 
+                y = sapply(df2$coverage, function(x) max(x, 0.1)), 
                 col=rainbow(length(cutoffs), v=0.8)[j],
                 lwd=2
         )
@@ -220,7 +261,7 @@ if (length(data$query.nuc.pos)) {
         scores <- record.score(
                 scores,
                 df2,
-                seq_len(0), # no key positions, use whole region
+                key.pos[[region]],
                 coverage.levels,
                 sample,
                 region,

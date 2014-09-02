@@ -1,5 +1,5 @@
-region,ref_pos_start,ref_pos_end
-PR,10,11
+region,ref_pos_start,ref_pos_end,comment
+PR,10,11,These regions specify amino acid positions
 PR,20
 PR,23,24
 PR,30
@@ -66,3 +66,5 @@ HCV1A-H77-NS3,170
 V3LOOP,1,14
 V3LOOP,17,36
 HCV1A-H77-NS5b,1,551
+HLA-B,486,755,This region specifies nucleotide positions
+HLA-B,1002,1277
