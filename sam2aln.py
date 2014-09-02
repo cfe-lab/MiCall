@@ -183,7 +183,7 @@ def main():
     
     reader = RemapReader(handle)
     outfile.write('sample,refname,qcut,rank,count,offset,seq\n')
-    insert_file.write('sample,qname,readnum,refname,pos,insert,qual\n')
+    insert_file.write('sample,qname,fwd_rev,refname,pos,insert,qual\n')
     failfile.write('sample,qname,qcut,seq1,qual1,seq2,qual2,prop_N,mseq\n')
 
     for sample_name, refname, group in reader.read_groups():
@@ -203,7 +203,7 @@ def main():
             # report insertions relative to sample consensus
             _, seq1, qual1, inserts = apply_cigar(cigar, seq, qual)
             for left, (iseq, iqual) in inserts.iteritems():
-                insert_file.write('%s,%s,%d,%s,%d,%s,%s\n' % (sample_name, qname, int(is_first_read(bitflag)),
+                insert_file.write('%s,%s,%s,%s,%d,%s,%s\n' % (sample_name, qname, 'F' if is_first_read(bitflag) else 'R',
                                                               refname, pos1+left, iseq, iqual))
 
             seq2 = '-'*pos1 + seq1  # pad sequence on left
