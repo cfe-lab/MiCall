@@ -148,6 +148,19 @@ class RemapReader(object):
             sample_name, refname = key
             yield sample_name, refname, group
         
+def is_first_read (flag):
+    """
+    Interpret bitwise flag from SAM field.
+    Returns True or False indicating whether the read is the first read in a pair.
+    """
+    binstr = bin(int(flag)).replace('0b', '')
+    # flip the string
+    binstr = binstr[::-1]
+    # if binstr length is shorter than 11, pad the right with zeroes
+    for i in range(len(binstr), 11):
+        binstr += '0'
+    # 7th position (index 6) indicates if read is the first in a pair
+    return bool(int(binstr[6]))
 
 def main():
     args = parseArgs()
@@ -171,7 +184,7 @@ def main():
     
     reader = RemapReader(handle)
     outfile.write('sample,refname,qcut,rank,count,offset,seq\n')
-    insert_file.write('sample,qname,refname,pos,insert,qual\n')
+    insert_file.write('sample,qname,readnum,refname,pos,insert,qual\n')
     failfile.write('sample,qname,qcut,seq1,qual1,seq2,qual2,prop_N,mseq\n')
 
     for sample_name, refname, group in reader.read_groups():
@@ -182,7 +195,7 @@ def main():
                 print line
                 sys.exit()
 
-            _, qname, _, _, pos, mapq, cigar, _, _, _, seq, qual = line.strip('\n').split(',')
+            _, qname, bitflag, _, pos, mapq, cigar, _, _, _, seq, qual = line.strip('\n').split(',')
             if cigar == '*' or int(mapq) < read_mapping_cutoff:
                 continue
 
@@ -191,7 +204,8 @@ def main():
             # report insertions relative to sample consensus
             _, seq1, qual1, inserts = apply_cigar(cigar, seq, qual)
             for left, (iseq, iqual) in inserts.iteritems():
-                insert_file.write('%s,%s,%s,%d,%s,%s\n' % (sample_name, qname, refname, pos1+left, iseq, iqual))
+                insert_file.write('%s,%s,%d,%s,%d,%s,%s\n' % (sample_name, qname, int(is_first_read(bitflag)),
+                                                              refname, pos1+left, iseq, iqual))
 
             seq2 = '-'*pos1 + seq1  # pad sequence on left
             qual2 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
