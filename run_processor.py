@@ -41,68 +41,70 @@ def main():
     logger = miseq_logging.init_logging(log_file,
                                         file_log_level=logging.DEBUG,
                                         console_log_level=logging.INFO)
-    
     logger.info('Start processing run %s', args.run_folder)
-    logger.info('Removing old working files')
-    excluded_files = ('.fastq',
-                      'SampleSheet.csv',
-                      '.launch',
-                      'MISEQ_MONITOR_OUTPUT.log',
-                      'run.log')
-    old_files = glob(args.run_folder+'/*')
-    for f in old_files:
-        is_excluded = False
-        for ending in excluded_files:
-            if f.endswith(ending):
-                is_excluded = not (f.endswith('unmapped1.fastq') or
-                                   f.endswith('unmapped2.fastq'))
-                break
-        if not is_excluded:
-            if os.path.isdir(f):
-                shutil.rmtree(f)
-            else:
-                os.remove(f)
-        
-    # Check for Open MPI
-    prefix = ''
-    expected_version = 'Open MPI'
-    version = check_mpi_version(prefix)
-    if not expected_version in version:
-        prefix = 'module load openmpi/gnu && '
+    try:
+        logger.info('Removing old working files')
+        excluded_files = ('.fastq',
+                          'SampleSheet.csv',
+                          '.launch',
+                          'MISEQ_MONITOR_OUTPUT.log',
+                          'run.log')
+        old_files = glob(args.run_folder+'/*')
+        for f in old_files:
+            is_excluded = False
+            for ending in excluded_files:
+                if f.endswith(ending):
+                    is_excluded = not (f.endswith('unmapped1.fastq') or
+                                       f.endswith('unmapped2.fastq'))
+                    break
+            if not is_excluded:
+                if os.path.isdir(f):
+                    shutil.rmtree(f)
+                else:
+                    os.remove(f)
+            
+        # Check for Open MPI
+        prefix = ''
+        expected_version = 'Open MPI'
         version = check_mpi_version(prefix)
         if not expected_version in version:
-            sys.exit("Couldn't find Open MPI:\n{}".format(version))
+            prefix = 'module load openmpi/gnu && '
+            version = check_mpi_version(prefix)
+            if not expected_version in version:
+                sys.exit("Couldn't find Open MPI:\n{}".format(version))
+        
+        mapping_args = ['mpirun', 
+                        '-np', 
+                        str(settings.mapping_processes), 
+                        '--hostfile', 
+                        settings.base_path + 'hostfile', 
+                        settings.base_path + 'sample_pipeline.py',
+                        args.run_folder]
+        if args.mode is not None:
+            mapping_args.append(args.mode)
+        mapping_args.append('--phase')
+        mapping_args.append('mapping')
+        mapping_command = prefix + ' '.join(mapping_args)
+        
+        counting_args = mapping_args[:]
+        counting_args[2] = str(settings.counting_processes)
+        counting_args[-1] = 'counting'
+        counting_command = prefix + ' '.join(counting_args)
+        
+        summarizing_args = mapping_args[:]
+        summarizing_args[2] = '1' # Only one process does the summary
+        summarizing_args[-1] = 'summarizing'
+        summarizing_command = prefix + ' '.join(summarizing_args)
+        
+        subprocess.check_call(mapping_command, shell=True)
     
-    mapping_args = ['mpirun', 
-                    '-np', 
-                    str(settings.mapping_processes), 
-                    '--hostfile', 
-                    settings.base_path + 'hostfile', 
-                    settings.base_path + 'sample_pipeline.py',
-                    args.run_folder]
-    if args.mode is not None:
-        mapping_args.append(args.mode)
-    mapping_args.append('--phase')
-    mapping_args.append('mapping')
-    mapping_command = prefix + ' '.join(mapping_args)
+        subprocess.check_call(counting_command, shell=True)
     
-    counting_args = mapping_args[:]
-    counting_args[2] = str(settings.counting_processes)
-    counting_args[-1] = 'counting'
-    counting_command = prefix + ' '.join(counting_args)
-    
-    summarizing_args = mapping_args[:]
-    summarizing_args[2] = '1' # Only one process does the summary
-    summarizing_args[-1] = 'summarizing'
-    summarizing_command = prefix + ' '.join(summarizing_args)
-    
-    subprocess.check_call(mapping_command, shell=True)
-
-    subprocess.check_call(counting_command, shell=True)
-
-    subprocess.check_call(summarizing_command, shell=True)
-    
-    logger.info('Finished processing run %s', args.run_folder)
+        subprocess.check_call(summarizing_command, shell=True)
+        
+        logger.info('Finished processing run %s', args.run_folder)
+    except:
+        logger.error('Failed to process run %s', args.run_folder, exc_info=True)
 
 if __name__ == '__main__':
     main()
