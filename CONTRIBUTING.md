@@ -252,7 +252,9 @@ similar steps to setting up a development workstation. Follow these steps:
 2. Determine what version number should be used next. Update the version number
     in `settings_default.py` if it hasn't been updated already, commit, and push.
 3. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y
-    matches the version you used in `settings_default.py`.
+    matches the version you used in `settings_default.py`. If you have to redo
+    a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
+    so on.
 4. Get the code from Github into the server's development environment.
         ssh user@server
         cd /usr/local/share/miseq/development/

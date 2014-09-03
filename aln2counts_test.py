@@ -653,6 +653,19 @@ class MakeConsensusTest(unittest.TestCase):
         
         self.assertDictEqual(expected_conseqs, conseqs)
 
+    def testMixedMax(self):
+        nuc_counts = {0: {'A': 5},
+                      1: {'C': 2, 'T': 2, 'G': 1},
+                      2: {'T': 5},
+                      3: {'G': 5}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'AYTG', # C and T tie for max, mix is Y
+                            '0.100': 'ABTG'} # C, T, and G mix is B
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
     def testCutoff(self):
         nuc_counts = {0: {'A': 3},
                       1: {'C': 2, 'T': 1},
@@ -662,6 +675,20 @@ class MakeConsensusTest(unittest.TestCase):
         expected_conseqs = {'MAX': 'ACTG',
                             '0.100': 'AYTG', # Y is a mix of C and T
                             '0.500': 'ACTG'} # T was below the cutoff
+        
+        conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testCutoffBoundary(self):
+        # T is at cutoff in position 1, then below cutoff in position 2
+        nuc_counts = {0: {'A': 9950},
+                      1: {'C': 9000, 'T': 1000},
+                      2: {'C': 9001, 'T':  999},
+                      3: {'G': 9799}}
+        conseq_mixture_cutoffs = [0.1]
+        expected_conseqs = {'MAX': 'ACCG',
+                            '0.100': 'AYCG'}
         
         conseqs = aln2counts.make_consensus(nuc_counts, conseq_mixture_cutoffs)
         

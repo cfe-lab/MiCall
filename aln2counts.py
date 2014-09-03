@@ -45,6 +45,7 @@ logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 hyphy = HyPhy._THyPhy (os.getcwd(), 1)  # @UndefinedVariable
 change_settings(hyphy)
 
+MAX_CUTOFF = 'MAX'
 
 amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
 
@@ -483,9 +484,11 @@ def make_counts(region, group2, indel_writer):
 
     return nuc_counts, amino_counts, min_offset
 
-def name_mixture(cutoff):
-    """ Format the cutoff fraction as a string to name the mixture. """
+def format_cutoff(cutoff):
+    """ Format the cutoff fraction as a string to use as a name. """
     
+    if cutoff == MAX_CUTOFF:
+        return cutoff
     return '{:0.3f}'.format(cutoff)    
 
 def make_consensus(nuc_counts, conseq_mixture_cutoffs):
@@ -504,12 +507,14 @@ def make_consensus(nuc_counts, conseq_mixture_cutoffs):
         mixture cutoff name is either 'MAX' for the consensus sequence where
         each position holds the most common nucleotide, or it is the cutoff
         fraction formatted to three decimal places. For example, '0.020'.
-        Nucleotide mixtures are encoded by IUPAC symbols.
+        Nucleotide mixtures are encoded by IUPAC symbols, and the most common
+        nucleotide can be a mixture if there is a tie.
     """
     nuc_coords = nuc_counts.keys()
     nuc_coords.sort()  # iterate over positions in ascending order
-    conseqs = dict([(name_mixture(cut), '') for cut in conseq_mixture_cutoffs])
-    conseqs.update({'MAX': ''})
+    all_cutoffs = [MAX_CUTOFF]
+    all_cutoffs.extend(conseq_mixture_cutoffs)
+    conseqs = dict([(format_cutoff(cut), '') for cut in all_cutoffs])
 
     for query_nuc_pos in nuc_coords:
         intermed = [(count, nuc) for nuc, count in nuc_counts[query_nuc_pos].iteritems()]
@@ -521,26 +526,27 @@ def make_consensus(nuc_counts, conseq_mixture_cutoffs):
             if nuc in ('N', '-') and len(intermed) > 1:
                 intermed.pop(i)
         
-        conseqs['MAX'] += intermed[0][1]  # plurality consensus
-
         total_count = sum([count for count, nuc in intermed])
-        for cut in conseq_mixture_cutoffs:
+        for cut in all_cutoffs:
             mixture = []
-            mixture_name = name_mixture(cut)
+            min_count = (intermed[0][0]
+                         if cut == MAX_CUTOFF
+                         else total_count * cut)
             # filter for nucleotides that pass frequency cutoff
             for count, nuc in intermed:
-                if float(count) / total_count > cut:
+                if count >= min_count:
                     mixture.append(nuc)
 
             if len(mixture) > 1:
                 mixture.sort()
-                conseqs[mixture_name] += ambig_dict[''.join(mixture)]
+                consensus = ambig_dict[''.join(mixture)]
             elif len(mixture) == 1:
                 # no ambiguity
-                conseqs[mixture_name] += mixture[0]
+                consensus = mixture[0]
             else:
                 # all reads were below the cutoff
-                conseqs[mixture_name] += 'N'
+                consensus = 'N'
+            conseqs[format_cutoff(cut)] += consensus
 
     return conseqs
 
