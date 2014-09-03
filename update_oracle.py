@@ -293,18 +293,24 @@ def check_existing_data(conn, sample_sheet, logger):
     DELETE
     FROM   lab_miseq_conseq
     WHERE  runid = :runid
+    AND    pipelineversion = :pipelineversion
     """
     hla_sql = """
     DELETE
     FROM   lab_miseq_hla_b_seq
     WHERE  run_id = :runid
+    AND    pipelineversion = :pipelineversion
     """
     curs = conn.cursor()
     try:
         runid = find_runid(curs, sample_sheet["Experiment Name"])
-        curs.execute(conseq_sql, {'runid': runid})
+        curs.execute(conseq_sql,
+                     {'runid': runid,
+                      'pipelineversion': settings.pipeline_version})
         total_rowcount = curs.rowcount
-        curs.execute(hla_sql, {'runid': runid})
+        curs.execute(hla_sql,
+                     {'runid': runid,
+                      'pipelineversion': settings.pipeline_version})
         total_rowcount += curs.rowcount
         if total_rowcount > 0:
             logger.warn('Deleted {} existing records for run id {}'.format(
