@@ -37,6 +37,7 @@ def parseArgs():
     parser.add_argument('amino_csv', help='<output> CSV containing amino frequencies')
     parser.add_argument('indels_csv', help='<output> CSV containing insertions')
     parser.add_argument('conseq', help='<output> CSV containing consensus sequences')
+    parser.add_argument('failed_align_csv', help='<output> CSV containing any sequences that failed to align')
     
     return parser.parse_args()
 
@@ -599,7 +600,11 @@ def main():
         sys.exit(1)
 
     # check that the output paths are valid
-    for path in [args.nuc_csv, args.amino_csv, args.indels_csv, args.conseq]:
+    for path in [args.nuc_csv,
+                 args.amino_csv,
+                 args.indels_csv,
+                 args.conseq,
+                 args.failed_align_csv]:
         output_path = os.path.split(path)[0]
         if not os.path.exists(output_path) and output_path != '':
             logger.error('Output path does not exist: ' + output_path)
@@ -611,12 +616,14 @@ def main():
     nucfile = open(args.nuc_csv, 'w')
     confile = open(args.conseq, 'w')
     indelfile = open(args.indels_csv, 'w')
+    failfile = open(args.failed_align_csv, 'w')
     amino_writer = AminoFrequencyWriter(aafile, amino_ref_seqs)
     nuc_writer = NucleotideFrequencyWriter(nucfile, amino_ref_seqs, nuc_ref_seqs)
     indel_writer = IndelWriter(indelfile)
     
     infile.readline() # skip header
     confile.write('sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
+    failfile.write('sample,region,qcut,queryseq,refseq\n')
     
     for key, group in groupby(infile, lambda x: x.split(',')[0:2]):
         sample_name, region = key
@@ -651,21 +658,28 @@ def main():
                 aquery, aref, _ = pair_align(hyphy, amino_ref_seqs[region], aa_max)
                 qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
 
-                amino_writer.write(sample_name,
-                                   region,
-                                   qcut,
-                                   qindex_to_refcoord,
-                                   amino_counts,
-                                   inserts)
+                if not qindex_to_refcoord:
+                    failfile.write(','.join((sample_name,
+                                             region,
+                                             qcut,
+                                             aquery,
+                                             aref)) + '\n')
+                else:
+                    amino_writer.write(sample_name,
+                                       region,
+                                       qcut,
+                                       qindex_to_refcoord,
+                                       amino_counts,
+                                       inserts)
     
-                indel_writer.write(inserts, min_offset)
+                    indel_writer.write(inserts, min_offset)
 
-                nuc_writer.write(sample_name,
-                                 region,
-                                 qcut,
-                                 nuc_counts,
-                                 qindex_to_refcoord,
-                                 min_offset)
+                    nuc_writer.write(sample_name,
+                                     region,
+                                     qcut,
+                                     nuc_counts,
+                                     qindex_to_refcoord,
+                                     min_offset)
 
             # output consensus sequences
             conseqs = make_consensus(nuc_counts,
@@ -680,7 +694,10 @@ def main():
 
     infile.close()
     aafile.close()
+    nucfile.close()
+    confile.close()
     indelfile.close()
+    failfile.close()
 
 if __name__ == '__main__':
     main()

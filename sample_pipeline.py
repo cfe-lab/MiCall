@@ -92,7 +92,7 @@ def count_samples(fastq_samples, worker, args):
                            args=(sample_info.output_root + '.remap.csv',
                                  sample_info.output_root + '.aligned.csv',
                                  sample_info.output_root + '.insert.csv',
-                                 sample_info.output_root + '.failed.csv'),
+                                 sample_info.output_root + '.failed_read.csv'),
                            stdout=log_path,
                            stderr=log_path))
     
@@ -111,7 +111,8 @@ def count_samples(fastq_samples, worker, args):
                                  sample_info.output_root + '.nuc.csv',
                                  sample_info.output_root + '.amino.csv',
                                  sample_info.output_root + '.indels.csv',
-                                 sample_info.output_root + '.conseq.csv'),
+                                 sample_info.output_root + '.conseq.csv',
+                                 sample_info.output_root + '.failed_align.csv'),
                            stdout=log_path,
                            stderr=log_path))
         
@@ -185,7 +186,8 @@ def collate_results(fastq_samples, worker, args, logger):
     files_to_collate = (('amino_frequencies.csv', '*.amino.csv'),
                         ('collated_conseqs.csv', '*.conseq.csv'),
                         ('coverage_scores.csv', None),
-                        ('failed.csv', None),
+                        ('failed_align.csv', None),
+                        ('failed_read.csv', None),
                         ('g2p.csv', None),
                         ('insert.csv', None),
                         ('indels.csv', None),
