@@ -119,6 +119,7 @@ Ruby
         rvm requirements
         rvm install 1.8.6
         gem install bio
+        gem install fastercsv
 
 3. It sounds like executable-hooks is installed with Ruby 1.8.6, even though
     it is incompatible. It causes the warning: `parenthesize argument(s) for 

@@ -18,7 +18,7 @@ g2p.matrix
 CSV [Ruby module]
 =end
 
-require 'csv'
+require 'faster_csv'
 require './pssm_lib'
 require 'bio'
 
@@ -137,7 +137,7 @@ pairs = Hash.new  # cache read for pairing
 merged = Hash.new # tabulate merged sequence variants
 sample_name = ''
 
-CSV.foreach(ARGV[0]) do |row|
+FasterCSV.foreach(ARGV[0]) do |row|
     sample_name, qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = row
     if rname != 'V3LOOP'
         # uninteresting region or the header row
