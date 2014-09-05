@@ -53,11 +53,11 @@ Java, Python, and Oracle
         sudo vi /etc/profile.d/oracle.sh # Add the next line:
         export ORACLE_HOME=/usr/lib/oracle/12.1/client64
 
-    [oracle]: https://help.ubuntu.com/community/Oracle%20Instant%20Client
-
 9. To use Oracle from Python, you will need the cx_Oracle package.
 
         sudo env ORACLE_HOME=$ORACLE_HOME pip install cx_Oracle
+
+[oracle]: https://help.ubuntu.com/community/Oracle%20Instant%20Client
 
 Eclipse
 -------
@@ -73,6 +73,9 @@ Eclipse
 7. Choose Clone URI, and paste this URI: https://github.com/ArtPoon/MiseqPipeline.git
 8. Take all the branches, and select dev as your initial branch.
 9. Select import existing projects, and finish the import.
+
+[eclipse]: https://www.eclipse.org/downloads/
+[pydev]: http://pydev.org/updates
 
 Bowtie, Samtools, and Hyphy
 ---------------------------
@@ -105,6 +108,10 @@ Bowtie, Samtools, and Hyphy
         cd Examples/Python
         python BasicHyPhy.py # Just check that there are no obvious errors.
 
+[bowtie2]: http://sourceforge.net/projects/bowtie-bio/files/bowtie2/
+[samtools]: http://sourceforge.net/projects/samtools/files/
+[hyphy]: https://github.com/veg/hyphy
+
 Ruby
 ----
 1. Install Ruby for the fasta2g2p step. Check what version you have:
@@ -112,6 +119,7 @@ Ruby
         ruby -v
 
 2. If you don't have version 1.8.6, install Ruby Version Manager, and Ruby 1.8.6.
+
         sudo apt-get install curl
         curl -sSL https://get.rvm.io | bash -s stable
         # exit, then start a new shell so rvm will work
@@ -130,7 +138,6 @@ Ruby
         executable-hooks-uninstaller
         rvm @global do gem uninstall -ax rubygems-bundler executable-hooks bundler-unload
 
-    [rvm-bug]: https://github.com/wayneeseguin/rvm/issues/2325        
 4. Build the alignment library.
 
         cd ~/git/MiseqPipeline
@@ -146,6 +153,8 @@ Ruby
 
 9. For Interpreter arguments, type `-rubygems`.
 
+[rvm-bug]: https://github.com/wayneeseguin/rvm/issues/2325
+
 R
 -
 1. Install R. The last two commands are run in the R console, and you should
@@ -157,8 +166,6 @@ R
         sudo R
         install.packages(c("rj", "rj.gd"), repos="http://download.walware.de/rj-2.0")
         q()
-
-    [statet]: http://www.walware.de/it/statet/installation.mframe
 
 2. Launch Eclipse. For some reason, you can't currently install StatET from the
     Eclipse Marketplace, so from the Help menu, choose Install New Software....
@@ -183,6 +190,8 @@ R
         --args /path/to/amino_frequencies.csv /path/to/coverage_maps
     
     Then you can use `source("coverage_plots.R")` in the console to launch it.
+
+[statet]: http://www.walware.de/it/statet/installation.mframe
 
 MPI
 ---
@@ -241,11 +250,14 @@ data and for the working folders.
    sequence data.
 10. Run MISEQ_MONITOR.py, it doesn't take any arguments.
 
+[cifs]: https://wiki.ubuntu.com/MountWindowsSharesPermanently
+
 Releases
 --------
 This section assumes you already have a working server up and running, and you
 just want to publish a new release. If you're setting up a new server, follow
 similar steps to setting up a development workstation. Follow these steps:
+
 1. Make sure the code works in your development environment. Run all the unit
     tests as described above, process the microtest data set, and process a full
     run using MISEQ_MONITOR.py. Check the logs for errors. Also check that all
@@ -290,10 +302,4 @@ similar steps to setting up a development workstation. Follow these steps:
 11. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
 
-[eclipse]: https://www.eclipse.org/downloads/
-[pydev]: http://pydev.org/updates
-[bowtie2]: http://sourceforge.net/projects/bowtie-bio/files/bowtie2/
-[samtools]: http://sourceforge.net/projects/samtools/files/
-[hyphy]: https://github.com/veg/hyphy
-[cifs]: https://wiki.ubuntu.com/MountWindowsSharesPermanently
 [release]: https://help.github.com/categories/85/articles
