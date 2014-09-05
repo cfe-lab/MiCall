@@ -138,13 +138,6 @@ def count_samples(fastq_samples, worker, args):
                            stdout=log_path,
                            stderr=log_path))
 
-def collate_results(fastq_samples, worker, args, logger):
-    
-    #TODO: Move fasta_to_g2p back to count_samples().
-    # We have to make it thread safe before it can go there.
-    # Running it single threaded adds roughly an hour to a typical run.
-    # Remove fastq_samples and worker parameters when it moves.
-    
     ###############################
     ### Begin g2p (For Amplicon covering HIV-1 env only!)
     if args.mode == 'Amplicon':
@@ -162,6 +155,8 @@ def collate_results(fastq_samples, worker, args, logger):
                                stdout=log_path,
                                stderr=log_path))
             
+def collate_results(fastq_samples, worker, args, logger):
+    
     results_folder = os.path.join(args.run_folder, 'results')
     if not os.path.isdir(results_folder):
         os.mkdir(results_folder)
