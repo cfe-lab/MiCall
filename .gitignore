@@ -8,3 +8,8 @@
 working/*
 !working/*.launch
 *.bt2
+microtest/*.csv
+microtest/*.log
+microtest/tmp*
+microtest/*.tar
+microtest/*.unmapped?.fastq
