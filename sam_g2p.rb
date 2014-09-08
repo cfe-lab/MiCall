@@ -18,12 +18,12 @@ g2p.matrix
 CSV [Ruby module]
 =end
 
-require 'faster_csv'
+require 'csv'
 require './pssm_lib'
 require 'bio'
 
-QMIN = 20
-QCUT = 10
+QMIN = 20   # minimum base quality within insertions
+QCUT = 10   # minimum base quality to not be censored
 QDELTA = 5
 
 def apply_cigar (cigar, seq, qual)
@@ -50,12 +50,14 @@ def apply_cigar (cigar, seq, qual)
             newseq += '-'*length
             newqual += ' '*length
         elsif operation == 'I'
-            if length % 3 > 0
-                left += length
-                next
-            end
+            #if length % 3 > 0 
+            #    # reject insertions of length not divisible by 3
+            #    left += length
+            #    next
+            #end
             its_quals = qual[left..right].unpack('C*') # array of ASCII codes
             if its_quals.map{|asc| asc-33 >= QMIN}.all?
+                # accept only high quality insertions
                 newseq += seq[left..right]
                 newqual += qual[left..right]
             end
@@ -131,13 +133,13 @@ end
 
 
 
+## convert file contents into hash to collect identical variants
 
-# convert file contents into hash
 pairs = Hash.new  # cache read for pairing
 merged = Hash.new # tabulate merged sequence variants
 sample_name = ''
 
-FasterCSV.foreach(ARGV[0]) do |row|
+CSV.foreach(ARGV[0]) do |row|
     sample_name, qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = row
     if rname != 'V3LOOP'
         # uninteresting region or the header row
@@ -167,7 +169,7 @@ end
 
 sorted = merged.sort_by {|k,v| v}.reverse  # sort by count in descending order
 
-# apply g2p algorithm to merged reads
+## apply g2p algorithm to merged reads
 f = File.open(ARGV[1], mode='w') # write-only
 f.write("sample,rank,count,g2p,fpr,aligned,error\n")  # CSV header
 
@@ -220,10 +222,15 @@ sorted.each do |s, count|
     end
 
     score, aligned = run_g2p(seq, $std_v3_g2p, load_matrix('g2p'))
-    aligned2 = aligned.flatten * ""
+    begin
+        aligned2 = aligned.flatten * ""
+    rescue
+        # sequence failed to align
+        f.write("#{prefix},#{score},,,failed to align\n")
+        next
+    end
     fpr = g2p_to_fpr(score)
     f.write("#{prefix},#{score},#{fpr},#{aligned2},\n")
 end
 
 f.close()
-

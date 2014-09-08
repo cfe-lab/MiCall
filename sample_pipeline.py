@@ -138,22 +138,19 @@ def count_samples(fastq_samples, worker, args):
                            stdout=log_path,
                            stderr=log_path))
 
-    ###############################
-    ### Begin g2p (For Amplicon covering HIV-1 env only!)
-    if args.mode == 'Amplicon':
-        # Compute g2p V3 tropism scores from HIV1B-env aln files and store in v3prot files
-        for sample_info in fastq_samples:
-            log_path = "{}.g2p.log".format(sample_info.output_root)
-            worker.run_job(Job(script=base_path + 'sam_g2p.sh',
-                               helpers=(base_path + 'sam_g2p.rb',
-                                        base_path + 'pssm_lib.rb',
-                                        base_path + alignment_lib,
-                                        base_path + 'g2p.matrix',
-                                        base_path + 'g2p_fpr.txt'),
-                               args=(sample_info.output_root + '.remap.csv',
-                                     sample_info.output_root + '.g2p.csv'),
-                               stdout=log_path,
-                               stderr=log_path))
+    for sample_info in fastq_samples:
+        log_path = "{}.g2p.log".format(sample_info.output_root)
+        worker.run_job(Job(script=base_path + 'sam_g2p.sh',
+                           helpers=(base_path + 'sam_g2p.rb',
+                                    base_path + 'pssm_lib.rb',
+                                    base_path + alignment_lib,
+                                    base_path + 'g2p.matrix',
+                                    base_path + 'g2p_fpr.txt'),
+                           args=(sample_info.output_root + '.remap.csv',
+                                 sample_info.output_root + '.g2p.csv'),
+                           stdout=log_path,
+                           stderr=log_path))
+
             
 def collate_results(fastq_samples, worker, args, logger):
     
