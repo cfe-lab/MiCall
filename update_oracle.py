@@ -184,6 +184,10 @@ values (
         for row in rows:
             if row['refname'] != 'HLA-B':
                 continue
+            ind = int(row['index'])
+            if ind >= 10:
+                # Only want to upload the ten most common variants.
+                continue
                 
             sample_name = row['sample']
             exon = row['subregion']
@@ -192,7 +196,6 @@ values (
             else:
                 raise ValueError('Unexpected exon {!r}', exon)
             qcutoff = row['qcut']
-            ind = row['index']
             cnt = row['count']
             curr_seq = row['seq']
     
