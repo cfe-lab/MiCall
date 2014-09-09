@@ -133,7 +133,6 @@ def main():
 
     # settings for iterative remapping
     n_remaps = 0
-    mapping_efficiency = float(prelim_count) / raw_count
     frozen = []  # which regions to stop re-mapping
     tmpfile = 'temp.sam'  # temporary bowtie2-align output
 
