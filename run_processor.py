@@ -105,6 +105,7 @@ def main():
         logger.info('Finished processing run %s', args.run_folder)
     except:
         logger.error('Failed to process run %s', args.run_folder, exc_info=True)
+        exit(1)
 
 if __name__ == '__main__':
     main()
