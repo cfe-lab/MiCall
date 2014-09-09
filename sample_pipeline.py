@@ -128,17 +128,6 @@ def count_samples(fastq_samples, worker, args):
                            stderr=log_path))
         
     for sample_info in fastq_samples:
-        log_path = "{}.coverage.log".format(sample_info.output_root)
-        worker.run_job(Job(script=base_path + 'coverage_plots.R',
-                           helpers=(base_path + 'key_positions.csv', ),
-                           args=(sample_info.output_root + '.amino.csv',
-                                 sample_info.output_root + '.nuc.csv',
-                                 sample_info.output_root + '.coverage_maps.tar',
-                                 sample_info.output_root + '.coverage_scores.csv'),
-                           stdout=log_path,
-                           stderr=log_path))
-
-    for sample_info in fastq_samples:
         log_path = "{}.g2p.log".format(sample_info.output_root)
         worker.run_job(Job(script=base_path + 'sam_g2p.sh',
                            helpers=(base_path + 'sam_g2p.rb',
@@ -154,6 +143,18 @@ def count_samples(fastq_samples, worker, args):
             
 def collate_results(fastq_samples, worker, args, logger):
     
+    #TODO: Move this back to count_samples() after fixing issue #110.
+    for sample_info in fastq_samples:
+        log_path = "{}.coverage.log".format(sample_info.output_root)
+        worker.run_job(Job(script=base_path + 'coverage_plots.R',
+                           helpers=(base_path + 'key_positions.csv', ),
+                           args=(sample_info.output_root + '.amino.csv',
+                                 sample_info.output_root + '.nuc.csv',
+                                 sample_info.output_root + '.coverage_maps.tar',
+                                 sample_info.output_root + '.coverage_scores.csv'),
+                           stdout=log_path,
+                           stderr=log_path))
+
     results_folder = os.path.join(args.run_folder, 'results')
     if not os.path.isdir(results_folder):
         os.mkdir(results_folder)
