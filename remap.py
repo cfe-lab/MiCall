@@ -33,20 +33,13 @@ def calculate_sample_name(fastq_filepath):
     filename = os.path.basename(fastq_filepath)
     return '_'.join(filename.split('_')[:2])
 
-def is_first_read (flag):
+def is_first_read(flag):
     """
     Interpret bitwise flag from SAM field.
     Returns True or False indicating whether the read is the first read in a pair.
     """
-    binstr = bin(int(flag)).replace('0b', '')
-    # flip the string
-    binstr = binstr[::-1]
-    # if binstr length is shorter than 11, pad the right with zeroes
-    for i in range(len(binstr), 11):
-        binstr += '0'
-    # 7th position (index 6) indicates if read is the first in a pair
-    return bool(int(binstr[6]))
-
+    IS_FIRST_SEGMENT = 0x40
+    return (int(flag) & IS_FIRST_SEGMENT) != 0
 
 def main():
     parser = argparse.ArgumentParser(
