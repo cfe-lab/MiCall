@@ -45,16 +45,62 @@ def choose_samples(args):
         with open(sample_sheet_file, 'rU') as f:
             sample_sheet = sample_sheet_parser(f)
         for sample_name in sample_sheet['Data'].iterkeys():
-            sample_names.append((run, sample_name))
+            files_exist = (
+                os.path.isfile(calculate_data_file_path(run, sample_name, 1)) and
+                os.path.isfile(calculate_data_file_path(run, sample_name, 2)))
+            if files_exist:
+                sample_names.append((run, sample_name))
     
     sample_names = random.sample(sample_names, args.sample_count)
     sample_names.sort()
     return sample_names
 
+
+def calculate_data_file_path(run, sample_name, read_number):
+    read_file = '{}_L001_R{}_001.fastq.gz'.format(sample_name, read_number)
+    read_path = os.path.join(run,
+                             'Data',
+                             'Intensities',
+                             'BaseCalls',
+                             read_file)
+    return read_path
+
+
+def create_target_run():
+    name_count = 1
+    while True:
+        run_name = 'potpourri_test'
+        if name_count > 1:
+            run_name = '{}_{}'.format(run_name, name_count)
+        target_run = os.path.join(settings.rawdata_mount,
+                                  'MiSeq', 
+                                  'runs', 
+                                  run_name)
+        if not os.path.exists(target_run):
+            break
+        name_count += 1
+    
+    os.makedirs(os.path.join(target_run, 'Data', 'Intensities', 'BaseCalls'))
+    return target_run
+
 def main():
     args = parseOptions()
     random.seed(args.seed)
+    
+    target_run = create_target_run()
+    print 'Creating run {} with seed {}'.format(target_run, args.seed)
+    
     sample_names = choose_samples(args)
-    for run, sample_name in sample_names:
-        print run, sample_name
+    for sample_number, (run, sample_name) in enumerate(sample_names, start=1):
+        for read_number in (1, 2):
+            read_path = calculate_data_file_path(run, sample_name, read_number)
+            name_parts = sample_name.split('_')
+            name_parts[-1] = 'S{}'.format(sample_number)
+            new_sample_name = '_'.join(name_parts)
+            target_path = calculate_data_file_path(target_run,
+                                                   new_sample_name,
+                                                   read_number)
+            os.symlink(read_path, target_path)
+    
+    print 'Done.'
 main()
