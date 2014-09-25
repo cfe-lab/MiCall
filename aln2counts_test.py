@@ -546,6 +546,15 @@ class TranslateTest(unittest.TestCase):
         
         self.assertEqual(expected_aminos, aminos)
         
+    def testOffset(self):
+        nucs = "TTTCCT"
+        offset = 3
+        expected_aminos = "-FP"
+        
+        aminos = aln2counts.translate(nucs, offset)
+        
+        self.assertEqual(expected_aminos, aminos)
+        
     def testSingleDashAmbiguous(self):
         nucs = '-TT'
         offset = 0

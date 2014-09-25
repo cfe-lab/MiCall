@@ -22,7 +22,6 @@ from itertools import groupby
 import logging
 import os
 import re
-import sys
 
 from hyphyAlign import change_settings, get_boundaries, pair_align
 import miseq_logging
@@ -32,12 +31,24 @@ def parseArgs():
     parser = argparse.ArgumentParser(
         description='Post-processing of short-read alignments.')
     
-    parser.add_argument('aligned_csv', help='<input> aligned CSF input')
-    parser.add_argument('nuc_csv', help='<output> CSV containing nucleotide frequencies')
-    parser.add_argument('amino_csv', help='<output> CSV containing amino frequencies')
-    parser.add_argument('indels_csv', help='<output> CSV containing insertions')
-    parser.add_argument('conseq', help='<output> CSV containing consensus sequences')
-    parser.add_argument('failed_align_csv', help='<output> CSV containing any sequences that failed to align')
+    parser.add_argument('aligned_csv',
+                        type=argparse.FileType('rU'),
+                        help='aligned CSF input')
+    parser.add_argument('nuc_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing nucleotide frequencies')
+    parser.add_argument('amino_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing amino frequencies')
+    parser.add_argument('indels_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing insertions')
+    parser.add_argument('conseq_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing consensus sequences')
+    parser.add_argument('failed_align_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing any sequences that failed to align')
     
     return parser.parse_args()
 
@@ -356,10 +367,11 @@ class NucleotideFrequencyWriter(object):
 
         @param nuc_counts: {pos: {nuc: count}} a dictionary keyed by the
          nucleotide position. To calculate the nucleotide position, take the
-         position within the consensus sequence and add the offset of where the
-         start of the consensus sequence maps to the reference sequence. Each
-         entry is a dictionary keyed by nucleotide letter and containing the
-         number of times each nucleotide was read at that position.
+         zero-based position within the consensus sequence and add the offset
+         of where the start of the consensus sequence maps to the reference
+         sequence. Each entry is a dictionary keyed by nucleotide letter and
+         containing the number of times each nucleotide was read at that
+         position.
 
         @param qindex_to_refcoord: {qindex: refcoord} maps amino acid
          coordinates from the consensus sequence (query) to the reference
@@ -497,10 +509,11 @@ def make_consensus(nuc_counts, conseq_mixture_cutoffs):
     
     @param nuc_counts: {pos: {nuc: count}} a dictionary keyed by the
          nucleotide position. To calculate the nucleotide position, take the
-         position within the consensus sequence and add the offset of where the
-         start of the consensus sequence maps to the reference sequence. Each
-         entry is a dictionary keyed by nucleotide letter and containing the
-         number of times each nucleotide was read at that position.
+         zero-based position within the consensus sequence and add the offset
+         of where the start of the consensus sequence maps to the reference
+         sequence. Each entry is a dictionary keyed by nucleotide letter and
+         containing the number of times each nucleotide was read at that
+         position.
     @param conseq_mixture_cutoffs: the minimum fraction of reads at a position
         that a nucleotide must be found in for it to be considered.
     @return: {cutoff: seq} a dictionary where each entry has a key of the
@@ -594,38 +607,16 @@ def main():
         os.path.basename(nuc_ref_file),
         nuc_ref_file))
     
-    # check that the inputs exist
-    if not os.path.exists(args.aligned_csv):
-        logger.error('No input CSF found at ' + args.aligned_csv)
-        sys.exit(1)
-
-    # check that the output paths are valid
-    for path in [args.nuc_csv,
-                 args.amino_csv,
-                 args.indels_csv,
-                 args.conseq,
-                 args.failed_align_csv]:
-        output_path = os.path.split(path)[0]
-        if not os.path.exists(output_path) and output_path != '':
-            logger.error('Output path does not exist: ' + output_path)
-            sys.exit(1)
-
     # for each region, quality cutoff
-    infile = open(args.aligned_csv, 'rU')
-    aafile = open(args.amino_csv, 'w')
-    nucfile = open(args.nuc_csv, 'w')
-    confile = open(args.conseq, 'w')
-    indelfile = open(args.indels_csv, 'w')
-    failfile = open(args.failed_align_csv, 'w')
-    amino_writer = AminoFrequencyWriter(aafile, amino_ref_seqs)
-    nuc_writer = NucleotideFrequencyWriter(nucfile, amino_ref_seqs, nuc_ref_seqs)
-    indel_writer = IndelWriter(indelfile)
+    amino_writer = AminoFrequencyWriter(args.amino_csv, amino_ref_seqs)
+    nuc_writer = NucleotideFrequencyWriter(args.nuc_csv, amino_ref_seqs, nuc_ref_seqs)
+    indel_writer = IndelWriter(args.indels_csv)
     
-    infile.readline() # skip header
-    confile.write('sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
-    failfile.write('sample,region,qcut,queryseq,refseq\n')
+    args.aligned_csv.readline() # skip header
+    args.conseq_csv.write('sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
+    args.failed_align_csv.write('sample,region,qcut,queryseq,refseq\n')
     
-    for key, group in groupby(infile, lambda x: x.split(',')[0:2]):
+    for key, group in groupby(args.aligned_csv, lambda x: x.split(',')[0:2]):
         sample_name, region = key
         sample_name_base, sample_snum = sample_name.split('_', 1)
         
@@ -659,11 +650,11 @@ def main():
                 qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
 
                 if not qindex_to_refcoord:
-                    failfile.write(','.join((sample_name,
-                                             region,
-                                             qcut,
-                                             aquery,
-                                             aref)) + '\n')
+                    args.failed_align_csv.write(','.join((sample_name,
+                                                          region,
+                                                          qcut,
+                                                          aquery,
+                                                          aref)) + '\n')
                 else:
                     amino_writer.write(sample_name,
                                        region,
@@ -685,19 +676,19 @@ def main():
             conseqs = make_consensus(nuc_counts,
                                      settings.conseq_mixture_cutoffs)
             for cut, conseq in conseqs.iteritems():
-                confile.write('%s,%s,%s,%s,%s,%s\n' % (sample_name_base,
-                                                          region,
-                                                          qcut,
-                                                          sample_snum,
-                                                          str(cut),
-                                                          conseq))
+                args.conseq_csv.write('%s,%s,%s,%s,%s,%s\n' % (sample_name_base,
+                                                               region,
+                                                               qcut,
+                                                               sample_snum,
+                                                               str(cut),
+                                                               conseq))
 
-    infile.close()
-    aafile.close()
-    nucfile.close()
-    confile.close()
-    indelfile.close()
-    failfile.close()
+    args.aligned_csv.close()
+    args.amino_csv.close()
+    args.nuc_csv.close()
+    args.conseq_csv.close()
+    args.indels_csv.close()
+    args.failed_align_csv.close()
 
 if __name__ == '__main__':
     main()
