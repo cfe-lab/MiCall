@@ -1,0 +1,265 @@
+{
+  "projects": {
+    "PR": {
+      "regions": [
+        {
+          "coordinate_region": "PR amino",
+          "key_positions": [
+            {
+              "end_pos": 11,
+              "start_pos": 10
+            },
+            {
+              "end_pos": null,
+              "start_pos": 20
+            },
+            {
+              "end_pos": 24,
+              "start_pos": 23
+            },
+            {
+              "end_pos": 33,
+              "start_pos": 32
+            },
+            {
+              "end_pos": null,
+              "start_pos": 30
+            },
+            {
+              "end_pos": null,
+              "start_pos": 35
+            },
+            {
+              "end_pos": null,
+              "start_pos": 43
+            },
+            {
+              "end_pos": 48,
+              "start_pos": 46
+            },
+            {
+              "end_pos": null,
+              "start_pos": 50
+            },
+            {
+              "end_pos": 54,
+              "start_pos": 53
+            },
+            {
+              "end_pos": null,
+              "start_pos": 58
+            },
+            {
+              "end_pos": null,
+              "start_pos": 71
+            },
+            {
+              "end_pos": 74,
+              "start_pos": 73
+            },
+            {
+              "end_pos": null,
+              "start_pos": 76
+            },
+            {
+              "end_pos": 84,
+              "start_pos": 82
+            },
+            {
+              "end_pos": 90,
+              "start_pos": 88
+            }
+          ],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region": "PR nuc"
+        }
+      ]
+    },
+    "RT": {
+      "regions": [
+        {
+          "coordinate_region": "RT amino",
+          "key_positions": [
+            {
+              "end_pos": 41,
+              "start_pos": 40
+            },
+            {
+              "end_pos": null,
+              "start_pos": 44
+            },
+            {
+              "end_pos": null,
+              "start_pos": 62
+            },
+            {
+              "end_pos": 71,
+              "start_pos": 65
+            },
+            {
+              "end_pos": 75,
+              "start_pos": 74
+            },
+            {
+              "end_pos": null,
+              "start_pos": 77
+            },
+            {
+              "end_pos": null,
+              "start_pos": 90
+            },
+            {
+              "end_pos": null,
+              "start_pos": 98
+            },
+            {
+              "end_pos": 101,
+              "start_pos": 100
+            },
+            {
+              "end_pos": null,
+              "start_pos": 103
+            },
+            {
+              "end_pos": null,
+              "start_pos": 106
+            },
+            {
+              "end_pos": null,
+              "start_pos": 108
+            },
+            {
+              "end_pos": 116,
+              "start_pos": 115
+            },
+            {
+              "end_pos": null,
+              "start_pos": 138
+            },
+            {
+              "end_pos": null,
+              "start_pos": 151
+            },
+            {
+              "end_pos": null,
+              "start_pos": 179
+            },
+            {
+              "end_pos": null,
+              "start_pos": 181
+            },
+            {
+              "end_pos": null,
+              "start_pos": 184
+            },
+            {
+              "end_pos": null,
+              "start_pos": 188
+            },
+            {
+              "end_pos": null,
+              "start_pos": 190
+            },
+            {
+              "end_pos": null,
+              "start_pos": 210
+            },
+            {
+              "end_pos": null,
+              "start_pos": 215
+            },
+            {
+              "end_pos": null,
+              "start_pos": 225
+            },
+            {
+              "end_pos": null,
+              "start_pos": 227
+            },
+            {
+              "end_pos": null,
+              "start_pos": 230
+            },
+            {
+              "end_pos": null,
+              "start_pos": 236
+            },
+            {
+              "end_pos": null,
+              "start_pos": 238
+            },
+            {
+              "end_pos": null,
+              "start_pos": 318
+            },
+            {
+              "end_pos": null,
+              "start_pos": 348
+            }
+          ],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region": "RT nuc"
+        }
+      ]
+    }
+  },
+  "regions": {
+    "PR amino": {
+      "is_reference_nucleotides": false,
+      "reference": [
+        "PQVTLWQRPLVTIKIGGQLKEALLDTGADDTVLEEMSLPGRWKPKMIGGIGGFIKVRQYDQILIE",
+        "ICGHKAIGTVLVGPTPVNIIGRNLLTQIGCTLNF"
+      ]
+    },
+    "PR nuc": {
+      "is_reference_nucleotides": true,
+      "reference": [
+        "CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGC",
+        "TCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAAC",
+        "CAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAA",
+        "ATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAG",
+        "AAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTT"
+      ]
+    },
+    "RT amino": {
+      "is_reference_nucleotides": false,
+      "reference": [
+        "PISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTEMEKEGKISKIGPENPYNTPVFAIKK",
+        "KDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSVPLDEDFRKYTAF",
+        "TIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPDIVIYQYMDDLYVGSDLEI",
+        "GQHRTKIEELRQHLLRWGLTTPDKKHQKEPPFLWMGYELHPDKWTVQPIVLPEKDSWTVNDIQKL",
+        "VGKLNWASQIYPGIKVRQLCKLLRGTKALTEVIPLTEEAELELAENREILKEPVHGVYYDPSKDL",
+        "IAEIQKQGQGQWTYQIYQEPFKNLKTGKYARMRGAHTNDVKQLTEAVQKITTESIVIWGKTPKFK",
+        "LPIQKETWETWWTEYWQATWIPEWEFVNTPPLVKLWYQLEKEPIVGAETF"
+      ]
+    },
+    "RT nuc": {
+      "is_reference_nucleotides": true,
+      "reference": [
+        "CCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAA",
+        "ACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGG",
+        "AAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAA",
+        "AAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTT",
+        "CTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTAC",
+        "TGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTT",
+        "ACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGG",
+        "ATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAAC",
+        "AAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATA",
+        "GGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACC",
+        "AGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAAT",
+        "GGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTA",
+        "GTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACT",
+        "CCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGG",
+        "CAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTA",
+        "ATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAA",
+        "AAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAA",
+        "CAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAA",
+        "CTGCCCATACAAAAGGAAACATGGGAAACA"
+      ]
+    }
+  }
+}

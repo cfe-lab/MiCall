@@ -31,10 +31,11 @@ Java, Python, and Oracle
         
         sudo apt-get install python2.7
         
-7. Install pip the Python package manager and the testfixtures package for Python:
+7. Install pip the Python package manager and a couple of packages for Python:
 
         sudo apt-get install python-pip
         sudo pip install testfixtures
+        sudo pip install requests
 
 8.  Install [Oracle Instant Client][oracle]. Use the basic lite version, and 
     test that sqlplus works. You will probably have to follow the steps to set 
