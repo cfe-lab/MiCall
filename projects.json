@@ -18,12 +18,12 @@
               "start_pos": 23
             },
             {
-              "end_pos": 33,
-              "start_pos": 32
-            },
-            {
               "end_pos": null,
               "start_pos": 30
+            },
+            {
+              "end_pos": 33,
+              "start_pos": 32
             },
             {
               "end_pos": null,
@@ -172,6 +172,14 @@
             },
             {
               "end_pos": null,
+              "start_pos": 219
+            },
+            {
+              "end_pos": null,
+              "start_pos": 221
+            },
+            {
+              "end_pos": null,
               "start_pos": 225
             },
             {
@@ -209,14 +217,14 @@
   },
   "regions": {
     "PR amino": {
-      "is_reference_nucleotides": false,
+      "is_nucleotide": false,
       "reference": [
         "PQVTLWQRPLVTIKIGGQLKEALLDTGADDTVLEEMSLPGRWKPKMIGGIGGFIKVRQYDQILIE",
         "ICGHKAIGTVLVGPTPVNIIGRNLLTQIGCTLNF"
       ]
     },
     "PR nuc": {
-      "is_reference_nucleotides": true,
+      "is_nucleotide": true,
       "reference": [
         "CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGC",
         "TCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAAC",
@@ -226,7 +234,7 @@
       ]
     },
     "RT amino": {
-      "is_reference_nucleotides": false,
+      "is_nucleotide": false,
       "reference": [
         "PISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTEMEKEGKISKIGPENPYNTPVFAIKK",
         "KDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSVPLDEDFRKYTAF",
@@ -238,7 +246,7 @@
       ]
     },
     "RT nuc": {
-      "is_reference_nucleotides": true,
+      "is_nucleotide": true,
       "reference": [
         "CCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAA",
         "ACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGG",

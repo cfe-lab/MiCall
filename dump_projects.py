@@ -9,7 +9,8 @@ def main():
         response = session.post(settings.qai_path + "/account/login",
                                 data={'user_login': settings.qai_user,
                                       'user_password': settings.qai_password})
-        if response.status_code != 200:
+        # Would be nice to check response code, but it's always 200
+        if 'loginform' in response.text:
             exit('Login failed, check qai_user in settings.py')
         
         regions = session.get(settings.qai_path + "/lab_miseq_regions.json?mode=dump",
