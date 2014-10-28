@@ -87,7 +87,7 @@ ambig_dict = dict(("".join(sorted(v)), k)
                   if k != '-')
 
 
-def translate(seq, offset):
+def translate(seq, offset=0):
     seq = '-'*offset + seq
     aa_seq = ''
     for codon_site in xrange(0, len(seq), 3):
@@ -115,7 +115,308 @@ def translate(seq, offset):
             aa_seq += '?'
     return aa_seq
 
+class SequenceReport(object):
+    """ Hold the data for several reports related to a sample's genetic sequence.
+    
+    To use a report object, read a group of aligned reads that mapped to a
+    single region, and then write out all the reports for that region.
+    """
+    def __init__(self,
+                 insert_writer,
+                 seed_refs,
+                 coordinate_refs,
+                 conseq_mixture_cutoffs):
+        """ Create an object instance.
+        
+        @param insert_writer: InsertionWriter object that will track reads and
+            write out any insertions relative to the coordinate reference.
+        @param seed_refs: {name: sequence} dictionary of seed reference
+            sequences. Used to determine length of sequence when no coordinate
+            reference is available.
+        @param coordinate_refs: {name: sequence} dictionary of coordinate
+            reference sequences.
+        @param conseq_mixture_cutoffs: a list of cutoff fractions used to
+            determine what portion a variant must exceed before it will be
+            included as a mixture in the consensus.
+        """
+        self.insert_writer = insert_writer
+        self.seed_refs = seed_refs
+        self.coordinate_refs = coordinate_refs
+        self.conseq_mixture_cutoffs = list(conseq_mixture_cutoffs)
+        self.conseq_mixture_cutoffs.insert(0, MAX_CUTOFF)
+        
+    def read(self, aligned_reads):
+        """ Reset all the counters, and read a new section of aligned reads.
+        
+        A section must have the same sample name, region, and qcut on all lines.
+        """
+        self.seed_aminos = []
+        self.report_aminos = []
+        self.inserts = set()
+        self.consensus = ''
+        for line in aligned_reads:
+            (self.sample_name,
+             self.region,
+             self.qcut,
+             _rank,
+             count,
+             offset,
+             nuc_seq) = line.rstrip().split(',')
+            offset = int(offset)
+            count = int(count)
+            if not self.seed_aminos:
+                self.insert_writer.start_group(self.sample_name,
+                                              self.region,
+                                              self.qcut)
 
+            offset_nuc_seq = '-' * offset + nuc_seq
+            # pad to a codon boundary
+            offset_nuc_seq += '-' * ((3 - (len(offset_nuc_seq) % 3)) % 3)
+            start = offset - (offset % 3)
+            for nuc_pos in range(start, len(offset_nuc_seq), 3):
+                codon_index = nuc_pos / 3
+                while len(self.seed_aminos) <= codon_index:
+                    self.seed_aminos.append(SeedAmino(len(self.seed_aminos)))
+                codon = offset_nuc_seq[nuc_pos:nuc_pos+3]
+                self.seed_aminos[codon_index].count_nucleotides(codon, count)
+            #TODO: avoid translating twice
+            self.insert_writer.add_read(translate(offset_nuc_seq.upper()),
+                                        count)
+        
+        if not self.seed_aminos:
+            self.coordinate_ref = None
+        else:
+            self.consensus = ''.join([seed_amino.get_consensus()
+                                      for seed_amino in self.seed_aminos])
+            
+            self.coordinate_ref = self.coordinate_refs.get(self.region)
+            if self.coordinate_ref is None:
+                seed_ref = self.seed_refs[self.region]
+                while len(self.seed_aminos)*3 < len(seed_ref):
+                    self.seed_aminos.append(SeedAmino(len(self.seed_aminos)))
+        
+        if self.coordinate_ref is not None:
+            # map to reference coordinates by aligning consensus
+            aquery, aref, _score = pair_align(hyphy,
+                                              self.coordinate_ref,
+                                              self.consensus)
+            consensus_index = ref_index = 0
+            self.inserts = set(range(len(self.consensus)))
+            empty_seed_amino = SeedAmino(None)
+            is_aligned = False
+            for i in range(len(aref)):
+                if (consensus_index >= len(self.consensus) or
+                    aquery[i] != self.consensus[consensus_index]):
+                    
+                    seed_amino = empty_seed_amino
+                else:
+                    seed_amino = self.seed_aminos[consensus_index]
+                    consensus_index += 1
+                if (ref_index < len(self.coordinate_ref) and
+                    aref[i] == self.coordinate_ref[ref_index]):
+                    
+                    self.report_aminos.append(ReportAmino(seed_amino, ref_index+1))
+                    if seed_amino.consensus_index is not None:
+                        self.inserts.remove(seed_amino.consensus_index)
+                        is_aligned = True
+                    ref_index += 1
+            if not is_aligned:
+                self.report_aminos = []
+    
+    def write_amino_header(self, amino_file):
+        amino_file.write(
+            'sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,' +
+            'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*\n')
+    
+    def write_amino_counts(self, amino_file):
+        for report_amino in self.report_aminos:
+            seed_amino = report_amino.seed_amino
+            query_pos = (str(seed_amino.consensus_index + 1)
+                         if seed_amino.consensus_index is not None
+                         else '')
+            amino_file.write(','.join((self.sample_name,
+                                       self.region,
+                                       self.qcut,
+                                       query_pos,
+                                       str(report_amino.position),
+                                       seed_amino.get_report())) + '\n')
+
+    def write_nuc_header(self, nuc_file):
+        nuc_file.write(
+            'sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
+        
+    def write_nuc_counts(self, nuc_file):
+        def write_counts(seed_amino, report_amino):
+            for i, seed_nuc in enumerate(seed_amino.nucleotides):
+                query_pos = (str(i + 3*seed_amino.consensus_index + 1)
+                             if seed_amino.consensus_index is not None
+                             else '')
+                ref_pos = (str(i + 3*report_amino.position - 2)
+                           if report_amino is not None
+                           else '')
+                nuc_file.write(','.join((self.sample_name,
+                                         self.region,
+                                         self.qcut,
+                                         query_pos,
+                                         ref_pos,
+                                         seed_nuc.get_report())) + '\n')
+        if self.coordinate_ref is None:
+            for seed_amino in self.seed_aminos:
+                write_counts(seed_amino, None)
+        else:
+            for report_amino in self.report_aminos:
+                write_counts(report_amino.seed_amino, report_amino)
+                
+    def write_consensus_header(self, conseq_file):
+        conseq_file.write(
+            'sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
+    
+    def write_consensus(self, conseq_file):
+        sample_name_base, sample_snum = self.sample_name.split('_', 1)
+        for mixture_cutoff in self.conseq_mixture_cutoffs:
+            consensus = ''
+            for seed_amino in self.seed_aminos:
+                for seed_nuc in seed_amino.nucleotides:
+                    consensus += seed_nuc.get_consensus(mixture_cutoff)
+            conseq_file.write('%s,%s,%s,%s,%s,%s\n' % (sample_name_base,
+                                                       self.region,
+                                                       self.qcut,
+                                                       sample_snum,
+                                                       format_cutoff(mixture_cutoff),
+                                                       consensus))
+    
+    def write_failure_header(self, fail_file):
+        fail_file.write('sample,region,qcut,queryseq,refseq\n')
+    
+    def write_failure(self, fail_file):
+        if self.coordinate_ref is not None and not self.report_aminos:
+            fail_file.write(','.join((self.sample_name,
+                                      self.region,
+                                      self.qcut,
+                                      self.consensus,
+                                      self.coordinate_ref)) + '\n')
+    
+    def write_insertions(self):
+        self.insert_writer.write(self.inserts)
+    
+class SeedAmino(object):
+    def __init__(self, consensus_index):
+        self.consensus_index = consensus_index
+        self.counts = {}
+        self.nucleotides = [SeedNucleotide() for _ in range(3)]
+        
+    def count_nucleotides(self, nuc_seq, count):
+        """ Record a set of reads at this position in the seed reference.
+        @param nuc_seq: a string of three nucleotides that were read at this
+        position
+        @param count: the number of times they were read
+        """
+        amino = translate(nuc_seq.upper())
+        prev_count = self.counts.get(amino, 0)
+        self.counts[amino] = prev_count + count
+        for i in range(3):
+            self.nucleotides[i].count_nucleotides(nuc_seq[i], count)
+    
+    def get_report(self):
+        """ Build a report string with the counts of each amino acid.
+        
+        Report how many times each amino acid was seen in count_nucleotides().
+        @return: comma-separated list of counts in the same order as the
+        amino_alphabet list
+        """
+        return ','.join([str(self.counts.get(amino, 0))
+                         for amino in amino_alphabet])
+        
+    def get_consensus(self):
+        """ Find the amino acid that was seen most often in count_nucleotides().
+        
+        If there is a tie, just pick one of the tied amino acids.
+        @return: the letter of the most common amino acid
+        """
+        max_count = 0
+        consensus = None
+        for amino, count in self.counts.iteritems():
+            if count > max_count:
+                consensus = amino
+                max_count = count
+        return '-' if consensus is None else consensus
+
+class SeedNucleotide(object):
+    def __init__(self):
+        self.counts = {}
+        
+    def count_nucleotides(self, nuc_seq, count):
+        """ Record a set of reads at this position in the seed reference.
+        @param nuc_seq: a single nucleotide letter that was read at this
+        position
+        @param count: the number of times it was read
+        """
+        if nuc_seq == 'n':
+            "Represents gap between forward and reverse read, ignore."
+        else:
+            prev_count = self.counts.get(nuc_seq, 0)
+            self.counts[nuc_seq] = prev_count + count
+    
+    def get_report(self):
+        """ Build a report string with the counts of each nucleotide.
+        
+        Report how many times each nucleotide was seen in count_nucleotides().
+        @return: comma-separated list of counts for A, C, G, and T.
+        """
+        return ','.join(map(str, [self.counts.get(nuc, 0) for nuc in 'ACGT']))
+    
+    def get_consensus(self, mixture_cutoff):
+        """ Choose consensus nucleotide or mixture from the counts.
+        
+        @param conseq_mixture_cutoffs: the minimum fraction of reads
+            that a nucleotide must be found in for it to be considered,
+            or MAX_CUTOFF to consider only the most common nucleotide.
+        @return: The letter for the consensus nucleotide or mixture.
+            Nucleotide mixtures are encoded by IUPAC symbols, and the most common
+            nucleotide can be a mixture if there is a tie.
+        """
+        if not self.counts:
+            return ''
+        
+        intermed = [(count, nuc) for nuc, count in self.counts.iteritems()]
+        intermed.sort(reverse=True)
+        
+        # Remove gaps and low quality reads if there is anything else.
+        for i in reversed(range(len(intermed))):
+            _count, nuc = intermed[i]
+            if nuc in ('N', '-') and len(intermed) > 1:
+                intermed.pop(i)
+        
+        total_count = sum([count for count, nuc in intermed])
+        mixture = []
+        min_count = (intermed[0][0]
+                     if mixture_cutoff == MAX_CUTOFF
+                     else total_count * mixture_cutoff)
+        # filter for nucleotides that pass frequency cutoff
+        for count, nuc in intermed:
+            if count >= min_count:
+                mixture.append(nuc)
+
+        if len(mixture) > 1:
+            mixture.sort()
+            consensus = ambig_dict[''.join(mixture)]
+        elif len(mixture) == 1:
+            # no ambiguity
+            consensus = mixture[0]
+        else:
+            # all reads were below the cutoff
+            consensus = 'N'
+        return consensus
+
+class ReportAmino(object):
+    def __init__(self, seed_amino, position):
+        """ Create a new instance.
+        
+        @param seed_amino: Counts for the 
+        """
+        self.seed_amino = seed_amino
+        self.position = position
+        
 def coordinate_map(aquery, aref):
     """
     Generate coordinate map of query sequence to a reference.
@@ -166,14 +467,14 @@ def coordinate_map(aquery, aref):
 
     return qindex_to_refcoord, inserts
 
-class IndelWriter(object):
-    def __init__(self, indelfile):
+class InsertionWriter(object):
+    def __init__(self, insert_file):
         """ Initialize a writer object.
         
-        @param indelfile: an open file that the data will be written to
+        @param insert_file: an open file that the data will be written to
         """
-        self.indelfile = indelfile
-        self.indelfile.write('sample,region,qcut,left,insert,count\n')
+        self.insert_file = insert_file
+        self.insert_file.write('sample,region,qcut,left,insert,count\n')
     
     def start_group(self, sample_name, region, qcut):
         """ Start a new group of reads.
@@ -191,7 +492,7 @@ class IndelWriter(object):
         """ Add a read to the group.
         
         @param offset_sequence: the sequence of the read that has had dashes
-            added to offset it into the reference coordinates
+            added to offset it into the consensus sequence coordinates
         @param count: the number of times this sequence was read
         """
         p = offset_sequence
@@ -200,32 +501,29 @@ class IndelWriter(object):
             self.pcache.update({p: 0})
         self.pcache[p] += count
         
-    def write(self, inserts, min_offset=0):
+    def write(self, inserts):
         """ Write any insert ranges to the file.
         
         Sequence data comes from the reads that were added to the current group.
-        @param inserts: indexes into the non-blank characters of the reads. For
-            example, if all the reads had at least two leading dashes, then you
-            will need to add two to all the insert indexes to find the correct
-            position within the reads.
-        @param min_offset: the minimum offset from all the reads. Add this to
-            the indexes in inserts to find the actual indexes of the inserted
-            characters in the read strings.
+        @param inserts: indexes of positions in the reads that should be
+            reported as insertions.
         """
         if len(inserts) == 0:
             return
+        
+        inserts = list(inserts)
+        inserts.sort()
 
         # convert insertion coordinates into contiguous ranges
         insert_ranges = []
         for insert in inserts:
-            adjusted = insert + min_offset
-            if not insert_ranges or adjusted != insert_ranges[-1][1]:
+            if not insert_ranges or insert != insert_ranges[-1][1]:
                 # just starting or we hit a gap
-                insert_ranges.append([adjusted, adjusted + 1])
+                insert_ranges.append([insert, insert + 1])
             else:
                 insert_ranges[-1][1] += 1
 
-        # enumerate indels by popping out all AA sub-string variants
+        # enumerate insertions by popping out all AA sub-string variants
         indel_counts = {} # {left: {insert_seq: count}}
         for left, right in insert_ranges:
             current_counts = {}
@@ -238,12 +536,12 @@ class IndelWriter(object):
         # record insertions to CSV
         for left, counts in indel_counts.iteritems():
             for insert_seq, count in counts.iteritems():
-                self.indelfile.write('%s,%s,%s,%d,%s,%d\n' % (self.sample_name,
-                                                              self.region,
-                                                              self.qcut,
-                                                              left,
-                                                              insert_seq,
-                                                              count))
+                self.insert_file.write('%s,%s,%s,%d,%s,%d\n' % (self.sample_name,
+                                                                self.region,
+                                                                self.qcut,
+                                                                left+1,
+                                                                insert_seq,
+                                                                count))
 
 class AminoFrequencyWriter(object):
     def __init__(self, aafile, refseqs):
@@ -607,81 +905,27 @@ def main():
         os.path.basename(nuc_ref_file),
         nuc_ref_file))
     
-    # for each region, quality cutoff
-    amino_writer = AminoFrequencyWriter(args.amino_csv, amino_ref_seqs)
-    nuc_writer = NucleotideFrequencyWriter(args.nuc_csv, amino_ref_seqs, nuc_ref_seqs)
-    indel_writer = IndelWriter(args.indels_csv)
+    indel_writer = InsertionWriter(args.indels_csv)
     
     args.aligned_csv.readline() # skip header
-    args.conseq_csv.write('sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
-    args.failed_align_csv.write('sample,region,qcut,queryseq,refseq\n')
     
-    for key, group in groupby(args.aligned_csv, lambda x: x.split(',')[0:2]):
-        sample_name, region = key
-        sample_name_base, sample_snum = sample_name.split('_', 1)
+    report = SequenceReport(indel_writer,
+                            nuc_ref_seqs,
+                            amino_ref_seqs,
+                            settings.conseq_mixture_cutoffs)
+    report.write_amino_header(args.amino_csv)
+    report.write_consensus_header(args.conseq_csv)
+    report.write_failure_header(args.failed_align_csv)
+    report.write_nuc_header(args.nuc_csv)
+    for _key, aligned_reads in groupby(args.aligned_csv,
+                                       lambda x: x.split(',')[0:3]):
+        report.read(aligned_reads)
         
-        if region not in amino_ref_seqs and not region.startswith('HLA-'):
-            continue
-        for qcut, group2 in groupby(group, lambda x: x.split(',')[2]):
-            # gather nucleotide, amino frequencies
-            indel_writer.start_group(sample_name, region, qcut)
-            nuc_counts, amino_counts, min_offset = make_counts(region,
-                                                               group2,
-                                                               indel_writer)
-
-            if region not in amino_ref_seqs:
-                nuc_writer.write(sample_name, region, qcut, nuc_counts)
-            else:
-                # make amino consensus from frequencies
-                aa_coords = amino_counts.keys()
-                aa_coords.sort()
-                aa_max = ''
-                for pos in range(min(aa_coords), max(aa_coords) +1):
-                    if pos in aa_coords:
-                        intermed = [(count, amino) for amino, count in amino_counts[pos].iteritems()]
-                        intermed.sort(reverse=True)
-                        aa_max += intermed[0][1]
-                        continue
-                    aa_max += '?'  # no coverage but not a gap
-
-
-                # map to reference coordinates by aligning consensus
-                aquery, aref, _ = pair_align(hyphy, amino_ref_seqs[region], aa_max)
-                qindex_to_refcoord, inserts = coordinate_map(aquery, aref)
-
-                if not qindex_to_refcoord:
-                    args.failed_align_csv.write(','.join((sample_name,
-                                                          region,
-                                                          qcut,
-                                                          aquery,
-                                                          aref)) + '\n')
-                else:
-                    amino_writer.write(sample_name,
-                                       region,
-                                       qcut,
-                                       qindex_to_refcoord,
-                                       amino_counts,
-                                       inserts)
-    
-                    indel_writer.write(inserts, min_offset)
-
-                    nuc_writer.write(sample_name,
-                                     region,
-                                     qcut,
-                                     nuc_counts,
-                                     qindex_to_refcoord,
-                                     min_offset)
-
-            # output consensus sequences
-            conseqs = make_consensus(nuc_counts,
-                                     settings.conseq_mixture_cutoffs)
-            for cut, conseq in conseqs.iteritems():
-                args.conseq_csv.write('%s,%s,%s,%s,%s,%s\n' % (sample_name_base,
-                                                               region,
-                                                               qcut,
-                                                               sample_snum,
-                                                               str(cut),
-                                                               conseq))
+        report.write_amino_counts(args.amino_csv)
+        report.write_consensus(args.conseq_csv)
+        report.write_failure(args.failed_align_csv)
+        report.write_insertions()
+        report.write_nuc_counts(args.nuc_csv)
 
     args.aligned_csv.close()
     args.amino_csv.close()
