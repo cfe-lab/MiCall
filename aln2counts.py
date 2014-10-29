@@ -40,9 +40,9 @@ def parseArgs():
     parser.add_argument('amino_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing amino frequencies')
-    parser.add_argument('indels_csv',
+    parser.add_argument('coord_ins_csv',
                         type=argparse.FileType('w'),
-                        help='CSV containing insertions')
+                        help='CSV containing insertions relative to coordinate reference')
     parser.add_argument('conseq_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing consensus sequences')
@@ -524,17 +524,17 @@ class InsertionWriter(object):
                 insert_ranges[-1][1] += 1
 
         # enumerate insertions by popping out all AA sub-string variants
-        indel_counts = {} # {left: {insert_seq: count}}
+        insert_counts = {} # {left: {insert_seq: count}}
         for left, right in insert_ranges:
             current_counts = {}
-            indel_counts[left] = current_counts
+            insert_counts[left] = current_counts
             for p, count in self.pcache.iteritems():
                 insert_seq = p[left:right]
                 current_count = current_counts.get(insert_seq, 0)
                 current_counts[insert_seq] = current_count + count
 
         # record insertions to CSV
-        for left, counts in indel_counts.iteritems():
+        for left, counts in insert_counts.iteritems():
             for insert_seq, count in counts.iteritems():
                 self.insert_file.write('%s,%s,%s,%d,%s,%d\n' % (self.sample_name,
                                                                 self.region,
@@ -905,11 +905,11 @@ def main():
         os.path.basename(nuc_ref_file),
         nuc_ref_file))
     
-    indel_writer = InsertionWriter(args.indels_csv)
+    insert_writer = InsertionWriter(args.coord_ins_csv)
     
     args.aligned_csv.readline() # skip header
     
-    report = SequenceReport(indel_writer,
+    report = SequenceReport(insert_writer,
                             nuc_ref_seqs,
                             amino_ref_seqs,
                             settings.conseq_mixture_cutoffs)
@@ -931,7 +931,7 @@ def main():
     args.amino_csv.close()
     args.nuc_csv.close()
     args.conseq_csv.close()
-    args.indels_csv.close()
+    args.coord_ins_csv.close()
     args.failed_align_csv.close()
 
 if __name__ == '__main__':

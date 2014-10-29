@@ -91,7 +91,7 @@ def count_samples(fastq_samples, worker, args):
                            helpers=(base_path + 'settings.py', ),
                            args=(sample_info.output_root + '.remap.csv',
                                  sample_info.output_root + '.aligned.csv',
-                                 sample_info.output_root + '.insert.csv',
+                                 sample_info.output_root + '.conseq_ins.csv',
                                  sample_info.output_root + '.failed_read.csv'),
                            stdout=log_path,
                            stderr=log_path))
@@ -110,7 +110,7 @@ def count_samples(fastq_samples, worker, args):
                            args=(sample_info.output_root + '.aligned.csv',
                                  sample_info.output_root + '.nuc.csv',
                                  sample_info.output_root + '.amino.csv',
-                                 sample_info.output_root + '.indels.csv',
+                                 sample_info.output_root + '.coord_ins.csv',
                                  sample_info.output_root + '.conseq.csv',
                                  sample_info.output_root + '.failed_align.csv'),
                            stdout=log_path,
@@ -182,8 +182,8 @@ def collate_results(fastq_samples, worker, args, logger):
                         ('failed_align.csv', None),
                         ('failed_read.csv', None),
                         ('g2p.csv', None),
-                        ('insert.csv', None),
-                        ('indels.csv', None),
+                        ('conseq_ins.csv', None),
+                        ('coord_ins.csv', None),
                         ('nucleotide_frequencies.csv', '*.nuc.csv'),
                         ('nuc_variants.csv', None),
                         ('collated_counts.csv', '*.remap_counts.csv'))
