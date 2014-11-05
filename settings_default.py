@@ -36,9 +36,7 @@ DONE_PROCESSING = 'doneprocessing'
 
 ## Mapping parameters
 
-# location of .bt2 files
-ref_path = base_path + 'reference_sequences/'
-mapping_ref_path = ref_path + 'cfe'
+projects_json = base_path + 'projects.json'
 
 bowtie_threads = 4              # Bowtie performance roughly scales with number of threads
 min_mapping_efficiency = 0.95   # Fraction of fastq reads mapped needed
@@ -60,8 +58,6 @@ v3_mincounts = [0, 50, 100, 1000]       # Min number of reads to contribute to %
 
 ## aln2counts parameters
 conseq_mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
-final_alignment_ref_path = ref_path + 'aln2counts_amino_refseqs.csv'
-final_nuc_align_ref_path = ref_path + 'aln2nuc_refseqs.csv'
 
 # Default database user and password.
 oracle_uploader = "FILLINUSERNAME"

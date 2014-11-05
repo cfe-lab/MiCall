@@ -12,13 +12,13 @@ Dependencies: settings.py (derived from settings_default.py)
 """
 
 import argparse
-from glob import glob
 import logging
 import os
 import subprocess
 import sys
 
 import miseq_logging
+import project_config
 import settings  # settings.py is a CodeResourceDependency
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
@@ -56,25 +56,16 @@ def main():
         sys.exit(1)
 
     # generate initial reference files
-    is_ref_found = False
-    possible_refs = glob('*.fasta')
-    if not possible_refs:
-        possible_refs = [settings.mapping_ref_path + '.fasta']
-    for ref in possible_refs:
-        if not os.path.isfile(ref):
-            continue
-        is_ref_found = True
-        log_call(['samtools', 'faidx', ref])
-        break
-    if not is_ref_found:
-        possible_refs.insert(0, '*.fasta')
-        raise RuntimeError('No reference sequences found in {!r}'.format(
-            possible_refs))
+    projects = project_config.ProjectConfig.loadDefault()
+    ref_path = 'cfe.fasta'
+    with open(ref_path, 'w') as ref:
+        projects.writeSeedFasta(ref)
+    log_call(['samtools', 'faidx', ref_path])
     reffile_template = 'reference'
     log_call(['bowtie2-build',
               '--quiet',
               '-f',
-              ref,
+              ref_path,
               reffile_template])
 
     # do preliminary mapping

@@ -1,9 +1,29 @@
 {
   "projects": {
+    "HLA-B": {
+      "regions": [
+        {
+          "coordinate_region": "HLA-B-exon2",
+          "key_positions": [],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region": "HLA-B-seed"
+        },
+        {
+          "coordinate_region": "HLA-B-exon3",
+          "key_positions": [],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region": "HLA-B-seed"
+        }
+      ]
+    },
     "PR": {
       "regions": [
         {
-          "coordinate_region": "PR amino",
+          "coordinate_region": "PR",
           "key_positions": [
             {
               "end_pos": 11,
@@ -73,14 +93,14 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_region": "PR nuc"
+          "seed_region": "PR-seed"
         }
       ]
     },
     "RT": {
       "regions": [
         {
-          "coordinate_region": "RT amino",
+          "coordinate_region": "RT",
           "key_positions": [
             {
               "end_pos": 41,
@@ -210,20 +230,80 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_region": "RT nuc"
+          "seed_region": "RT-seed"
+        }
+      ]
+    },
+    "V3LOOP": {
+      "regions": [
+        {
+          "coordinate_region": "V3LOOP",
+          "key_positions": [
+            {
+              "end_pos": 14,
+              "start_pos": 1
+            },
+            {
+              "end_pos": 36,
+              "start_pos": 17
+            }
+          ],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region": "V3LOOP-seed"
         }
       ]
     }
   },
   "regions": {
-    "PR amino": {
+    "HLA-B-exon2": {
+      "is_nucleotide": false,
+      "reference": [
+        "LPLHEVFLHRHVPARPRGAPLHRSGLRGRHPVREVRQRRRESEDGAPGAMDRAGGAGVLGRGDTE",
+        "HEGLRADLPREPADRAPLLQPERG"
+      ]
+    },
+    "HLA-B-exon3": {
+      "is_nucleotide": false,
+      "reference": [
+        "SHIIQVMYGCDVGPDGRLLRGHDQSAYDGKDYIALNEDLSSWTAADTAAQITQRKWEAARVAEQL",
+        "RAYLEGLCVEWLRRYLENGKETLQRA"
+      ]
+    },
+    "HLA-B-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "GATCAGGACGAAGTCCCAGGTCCCGGACGGGGCTCTCAGGGTCTCAGGCTCCGAGAGCCTTGTCT",
+        "GCATTGGGGAGGCGCAGCGTTGGGGATTCCCCACTCCCACGAGTTTCACTTCTTCTCCCAACCTG",
+        "TGTCGGGTCCTTCTTCCAGGATACTCGTGACGCGTCCCCATTTCCCACTCCCATTGGGTGTCGGG",
+        "TGTCTAGAGAAGCCAATCAGCGTCGCCGCGGTCCCAGTTCTAAAGTCCCCACGCACCCACCCGGA",
+        "CTCAGAATCTCCTCAGACGCCGAGATGCGGGTCACGGCACCCCGAACCGTCCTCCTGCTGCTCTG",
+        "GGGGGCAGTGGCCCTGACCGAGACCTGGGCCGGTGAGTGCGGGTCGGCAGGGAAATGGCCTCTGT",
+        "AGGGAGGAGCAAGGGGACCGCAGGCGGGGGCGCAGGACCCGGGGAGCCGCGCCGGGAGGAGGGTC",
+        "GGGCGGGTCTCAGCCCCTCCTCGCCCCCAGGCTCCCACTCCATGAGGTATTTCTACACCGCCATG",
+        "TCCCGGCCCGGCCGCGGGGAGCCCCGCTTCATCGCAGTGGGCTACGTGGACGACACCCAGTTCGT",
+        "GAGGTTCGACAGCGACGCCGCGAGTCCGAGGATGGCGCCCCGGGCGCCATGGATAGAGCAGGAGG",
+        "GGCCGGAGTATTGGGACGGGGAGACACGGAACATGAAGGCCTCCGCGCAGACTTACCGAGAGAAC",
+        "CTGCGGATCGCGCTCCGCTACTACAACCAGAGCGAGGCCGGTGAGTGACCCCGGCCCGGGGCGCA",
+        "GGTCACGACTCCCCATCCCCCACGTACGGCCCGGGTCGCCCCGAGTCTCCGGGTCCGAGATCCAC",
+        "CCCCCTGAGGCCGCGGGACCCGCCCAGACCCTCGACCGGCGAGAGCCCCAGGCGCGTTTACCCGG",
+        "TTTCATTTTCAGTTGAGGCCAAAATCCCCGCGGGTTGGTCAGGGCGGGGCGGGGCTCGGGGGGAC",
+        "GGGGCTGACCGCGGGGCCGGGGCCAGGGTCTCACATCATCCAGGTGATGTATGGCTGCGACGTGG",
+        "GGCCGGACGGGCGCCTCCTCCGCGGGCATGACCAGTCCGCCTACGACGGCAAGGATTACATCGCC",
+        "CTGAACGAGGACCTGAGCTCCTGGACCGCGGCGGACACGGCGGCTCAGATCACCCAGCGCAAGTG",
+        "GGAGGCGGCCCGTGTGGCGGAGCAGCTGAGAGCCTACCTGGAGGGCCTGTGCGTGGAGTGGCTCC",
+        "GCAGATACCTGGAGAACGGGAAGGAGACGCTGCAGCGCGCGG"
+      ]
+    },
+    "PR": {
       "is_nucleotide": false,
       "reference": [
         "PQVTLWQRPLVTIKIGGQLKEALLDTGADDTVLEEMSLPGRWKPKMIGGIGGFIKVRQYDQILIE",
         "ICGHKAIGTVLVGPTPVNIIGRNLLTQIGCTLNF"
       ]
     },
-    "PR nuc": {
+    "PR-seed": {
       "is_nucleotide": true,
       "reference": [
         "CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGC",
@@ -233,7 +313,7 @@
         "AAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTT"
       ]
     },
-    "RT amino": {
+    "RT": {
       "is_nucleotide": false,
       "reference": [
         "PISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTEMEKEGKISKIGPENPYNTPVFAIKK",
@@ -245,7 +325,7 @@
         "LPIQKETWETWWTEYWQATWIPEWEFVNTPPLVKLWYQLEKEPIVGAETF"
       ]
     },
-    "RT nuc": {
+    "RT-seed": {
       "is_nucleotide": true,
       "reference": [
         "CCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAA",
@@ -267,6 +347,19 @@
         "AAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAA",
         "CAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAA",
         "CTGCCCATACAAAAGGAAACATGGGAAACA"
+      ]
+    },
+    "V3LOOP": {
+      "is_nucleotide": false,
+      "reference": [
+        "CTRPNNNTRKRIRIQRGPGRAFVTIGKIGNMRQAHC"
+      ]
+    },
+    "V3LOOP-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATATAGGACCAGGGAGAGCATTTTATGC",
+        "AACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"
       ]
     }
   }

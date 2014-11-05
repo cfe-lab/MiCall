@@ -13,7 +13,6 @@ Dependencies:
 """
 
 import argparse
-from glob import glob
 import itertools
 import logging
 import os
@@ -23,7 +22,8 @@ import sys
 
 # These are both CodeResourceDependencies
 import miseq_logging
-from settings import bowtie_threads, consensus_q_cutoff, mapping_ref_path,\
+import project_config
+from settings import bowtie_threads, consensus_q_cutoff,\
     max_remaps, min_mapping_efficiency
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
@@ -82,20 +82,11 @@ def main():
             sys.exit(1)
 
     # generate initial *.faidx file
-    is_ref_found = False
-    possible_refs = glob('*.fasta')
-    if not possible_refs:
-        possible_refs = [mapping_ref_path + '.fasta']
-    for ref in possible_refs:
-        if not os.path.isfile(ref):
-            continue
-        is_ref_found = True
-        log_call(['samtools', 'faidx', ref])
-        break
-    if not is_ref_found:
-        possible_refs.insert(0, '*.fasta')
-        raise RuntimeError('No reference sequences found in {!r}'.format(
-            possible_refs))
+    projects = project_config.ProjectConfig.loadDefault()
+    ref_path = 'cfe.fasta'
+    with open(ref_path, 'w') as ref:
+        projects.writeSeedFasta(ref)
+    log_call(['samtools', 'faidx', ref_path])
 
     # get the raw read count
     raw_count = count_file_lines(args.fastq1) / 2  # 4 lines per record in FASTQ, paired
@@ -146,7 +137,7 @@ def main():
             confile = refname+'.conseq'
 
             # convert SAM to BAM
-            redirect_call(['samtools', 'view', '-b', '-T', confile if refname in conseqs else ref, samfile], bamfile)
+            redirect_call(['samtools', 'view', '-b', '-T', confile if refname in conseqs else ref_path, samfile], bamfile)
 
             log_call(['samtools', 'sort', bamfile, refname])  # overwrite
 

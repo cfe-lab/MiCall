@@ -8,8 +8,8 @@ from collate import collate_labeled_files
 from fifo_scheduler import Job, Worker
 import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
-from settings import final_alignment_ref_path, final_nuc_align_ref_path, \
-    are_temp_folders_deleted, mapping_ref_path, base_path, alignment_lib
+from settings import alignment_lib, are_temp_folders_deleted, base_path, \
+    projects_json
 from mpi4py import MPI
 
 def parseOptions(comm_world):
@@ -55,7 +55,7 @@ def map_samples(fastq_samples, worker):
         worker.run_job(Job(script=base_path + 'prelim_map.py',
                            helpers=(base_path + 'settings.py',
                                     base_path + 'miseq_logging.py',
-                                    mapping_ref_path + '.fasta'),
+                                    projects_json),
                            args=(sample_info.fastq1,
                                  sample_info.fastq2,
                                  sample_info.output_root + '.prelim.csv'),
@@ -68,7 +68,7 @@ def map_samples(fastq_samples, worker):
         worker.run_job(Job(script=base_path + 'remap.py',
                            helpers=(base_path + 'settings.py',
                                     base_path + 'miseq_logging.py',
-                                    mapping_ref_path + '.fasta'),
+                                    projects_json),
                            args=(sample_info.fastq1, 
                                  sample_info.fastq2,
                                  sample_info.output_root + '.prelim.csv',
@@ -103,8 +103,7 @@ def count_samples(fastq_samples, worker, args):
         log_path = "{}.aln2counts.log".format(sample_info.output_root)
         worker.run_job(Job(script=base_path + 'aln2counts.py',
                            helpers=(base_path + 'settings.py',
-                                    final_alignment_ref_path,
-                                    mapping_ref_path + '.fasta',
+                                    projects_json,
                                     base_path + 'miseq_logging.py',
                                     base_path + 'hyphyAlign.py'),
                            args=(sample_info.output_root + '.aligned.csv',
@@ -120,7 +119,7 @@ def count_samples(fastq_samples, worker, args):
         log_path = "{}.aln2nuc.log".format(sample_info.output_root)
         worker.run_job(Job(script=base_path + 'aln2nuc.py',
                            helpers=(base_path + 'settings.py',
-                                    final_nuc_align_ref_path,
+                                    projects_json,
                                     base_path + 'hyphyAlign.py'),
                            args=(sample_info.output_root + '.aligned.csv',
                                  sample_info.output_root + '.nuc_variants.csv'),
@@ -147,7 +146,7 @@ def collate_results(fastq_samples, worker, args, logger):
     for sample_info in fastq_samples:
         log_path = "{}.coverage.log".format(sample_info.output_root)
         worker.run_job(Job(script=base_path + 'coverage_plots.R',
-                           helpers=(base_path + 'key_positions.csv', ),
+                           helpers=(projects_json, ),
                            args=(sample_info.output_root + '.amino.csv',
                                  sample_info.output_root + '.nuc.csv',
                                  sample_info.output_root + '.coverage_maps.tar',

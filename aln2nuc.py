@@ -12,13 +12,12 @@ Dependencies:
 """
 
 import argparse
-import csv
 import HyPhy
 import itertools
 import os
 
 import hyphyAlign
-import settings
+import project_config
 
 parser = argparse.ArgumentParser(
     description='Clip out sub-regions from MiSeq read alignments.')
@@ -42,50 +41,37 @@ min_avg_score = 2.
 
 
 def main():
-    # load reference sequences
-    is_ref_found = False
-    possible_refs = (os.path.basename(settings.final_nuc_align_ref_path),
-                     settings.final_nuc_align_ref_path)
-    for ref in possible_refs:
-        if not os.path.isfile(ref):
-            continue
-        is_ref_found = True
-        break
-    if not is_ref_found:
-        raise RuntimeError('No reference sequences found in {!r}'.format(
-            possible_refs))
-
-    refseqs = {}
-    with open(ref, 'rb') as f:
-        rows = csv.reader(f)
-        for region, _variant, subregion, sequence in rows:
-            if region not in refseqs:
-                refseqs.update({region: {}})
-            refseqs[region][subregion] = sequence
+    projects = project_config.ProjectConfig.loadDefault()
 
     handle = open(args.aligned_csv, 'rb')
     outfile = open(args.nuc_variants, 'w')
     
     handle.readline() # skip header
-    outfile.write('sample,refname,qcut,subregion,index,count,seq\n')
+    outfile.write('sample,seed,qcut,region,index,count,seq\n')
 
     for key, group in itertools.groupby(handle, lambda x: x.split(',')[0:2]):
-        sample_name, refname = key
-        if refname not in refseqs:
+        sample_name, seed = key
+        coord_refs = projects.getCoordinateReferences(seed)
+        if not coord_refs:
             continue
 
         for qcut, group2 in itertools.groupby(group, lambda x: x.split(',')[2]):
-            fasta = dict([(subregion, {}) for subregion in refseqs[refname].iterkeys()])
+            fasta = dict([(subregion, {}) for subregion in coord_refs.iterkeys()])
             for line in group2:
                 (_sample_name,
-                 _refname,
+                 _seedname,
                  _qcut,
                  index,
                  count,
                  _offset,
                  seq) = line.strip('\n').split(',')
-                for subregion, refseq in refseqs[refname].iteritems():
+                for subregion, refseq in coord_refs.iteritems():
                     aquery, aref, ascore = hyphyAlign.pair_align(hyphy, refseq, seq)
+                    #TODO: Move this to aln2counts, because the subregion reference is now an amino acid sequence.
+                    print subregion, refseq
+                    print aquery
+                    print aref
+                    print float(ascore) / len(refseq)
                     if float(ascore) / len(refseq) < min_avg_score:
                         continue
 
@@ -101,7 +87,7 @@ def main():
                 intermed.sort(reverse=True)  # descending order
                 for index, (count, seq) in enumerate(intermed):
                     outfile.write('%s,%s,%s,%s,%d,%d,%s\n' % (sample_name,
-                                                              refname,
+                                                              seed,
                                                               qcut,
                                                               subregion,
                                                               index,

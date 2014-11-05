@@ -158,7 +158,7 @@ Ruby
 
 R
 -
-1. Install R. The last two commands are run in the R console, and you should
+1. Install R. The last three commands are run in the R console, and you should
     check the [StatET installation page][statet] to see exactly which version
     of the rj package is compatible with the version of StatET you are going to
     install.
@@ -166,6 +166,7 @@ R
         sudo apt-get install r-base r-base-dev
         sudo R
         install.packages(c("rj", "rj.gd"), repos="http://download.walware.de/rj-2.0")
+        install.packages("jsonlite")
         q()
 
 2. Launch Eclipse. For some reason, you can't currently install StatET from the

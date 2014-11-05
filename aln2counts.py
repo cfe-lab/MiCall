@@ -26,6 +26,7 @@ import re
 from hyphyAlign import change_settings, pair_align
 import miseq_logging
 import settings
+import project_config
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -123,25 +124,19 @@ class SequenceReport(object):
     """
     def __init__(self,
                  insert_writer,
-                 seed_refs,
-                 coordinate_refs,
+                 projects,
                  conseq_mixture_cutoffs):
         """ Create an object instance.
         
         @param insert_writer: InsertionWriter object that will track reads and
             write out any insertions relative to the coordinate reference.
-        @param seed_refs: {name: sequence} dictionary of seed reference
-            sequences. Used to determine length of sequence when no coordinate
-            reference is available.
-        @param coordinate_refs: {name: sequence} dictionary of coordinate
-            reference sequences.
+        @param projects: ProjectConfig object
         @param conseq_mixture_cutoffs: a list of cutoff fractions used to
             determine what portion a variant must exceed before it will be
             included as a mixture in the consensus.
         """
         self.insert_writer = insert_writer
-        self.seed_refs = seed_refs
-        self.coordinate_refs = coordinate_refs
+        self.projects = projects
         self.conseq_mixture_cutoffs = list(conseq_mixture_cutoffs)
         self.conseq_mixture_cutoffs.insert(0, MAX_CUTOFF)
         
@@ -151,12 +146,12 @@ class SequenceReport(object):
         A section must have the same sample name, region, and qcut on all lines.
         """
         self.seed_aminos = []
-        self.report_aminos = []
+        self.reports = {} # {coord_name: [ReportAmino()]}
         self.inserts = set()
         self.consensus = ''
         for line in aligned_reads:
             (self.sample_name,
-             self.region,
+             self.seed,
              self.qcut,
              _rank,
              count,
@@ -166,7 +161,7 @@ class SequenceReport(object):
             count = int(count)
             if not self.seed_aminos:
                 self.insert_writer.start_group(self.sample_name,
-                                              self.region,
+                                              self.seed,
                                               self.qcut)
 
             offset_nuc_seq = '-' * offset + nuc_seq
@@ -184,25 +179,26 @@ class SequenceReport(object):
                                         count)
         
         if not self.seed_aminos:
-            self.coordinate_ref = None
+            self.coordinate_refs = {}
         else:
             self.consensus = ''.join([seed_amino.get_consensus()
                                       for seed_amino in self.seed_aminos])
             
-            self.coordinate_ref = self.coordinate_refs.get(self.region)
-            if self.coordinate_ref is None:
-                seed_ref = self.seed_refs[self.region]
+            self.coordinate_refs = self.projects.getCoordinateReferences(self.seed)
+            if not self.coordinate_refs:
+                seed_ref = self.projects.getReference(self.seed)
                 while len(self.seed_aminos)*3 < len(seed_ref):
                     self.seed_aminos.append(SeedAmino(len(self.seed_aminos)))
         
-        if self.coordinate_ref is not None:
+        for coordinate_name, coordinate_ref in self.coordinate_refs.iteritems():
             # map to reference coordinates by aligning consensus
             aquery, aref, _score = pair_align(hyphy,
-                                              self.coordinate_ref,
+                                              coordinate_ref,
                                               self.consensus)
             consensus_index = ref_index = 0
             self.inserts = set(range(len(self.consensus)))
             empty_seed_amino = SeedAmino(None)
+            report_aminos = []
             is_aligned = False
             for i in range(len(aref)):
                 if (consensus_index >= len(self.consensus) or
@@ -212,41 +208,46 @@ class SequenceReport(object):
                 else:
                     seed_amino = self.seed_aminos[consensus_index]
                     consensus_index += 1
-                if (ref_index < len(self.coordinate_ref) and
-                    aref[i] == self.coordinate_ref[ref_index]):
+                if (ref_index < len(coordinate_ref) and
+                    aref[i] == coordinate_ref[ref_index]):
                     
-                    self.report_aminos.append(ReportAmino(seed_amino, ref_index+1))
+                    report_aminos.append(ReportAmino(seed_amino, ref_index+1))
                     if seed_amino.consensus_index is not None:
                         self.inserts.remove(seed_amino.consensus_index)
                         is_aligned = True
                     ref_index += 1
             if not is_aligned:
-                self.report_aminos = []
+                report_aminos = []
+            self.reports[coordinate_name] = report_aminos
     
     def write_amino_header(self, amino_file):
         amino_file.write(
-            'sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,' +
+            'sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,' +
             'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*\n')
     
     def write_amino_counts(self, amino_file):
-        for report_amino in self.report_aminos:
-            seed_amino = report_amino.seed_amino
-            query_pos = (str(seed_amino.consensus_index + 1)
-                         if seed_amino.consensus_index is not None
-                         else '')
-            amino_file.write(','.join((self.sample_name,
-                                       self.region,
-                                       self.qcut,
-                                       query_pos,
-                                       str(report_amino.position),
-                                       seed_amino.get_report())) + '\n')
+        regions = self.reports.keys()
+        regions.sort()
+        for region in regions:
+            for report_amino in self.reports[region]:
+                seed_amino = report_amino.seed_amino
+                query_pos = (str(seed_amino.consensus_index + 1)
+                             if seed_amino.consensus_index is not None
+                             else '')
+                amino_file.write(','.join((self.sample_name,
+                                           self.seed,
+                                           region,
+                                           self.qcut,
+                                           query_pos,
+                                           str(report_amino.position),
+                                           seed_amino.get_report())) + '\n')
 
     def write_nuc_header(self, nuc_file):
         nuc_file.write(
-            'sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
+            'sample,seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
         
     def write_nuc_counts(self, nuc_file):
-        def write_counts(seed_amino, report_amino):
+        def write_counts(region, seed_amino, report_amino):
             for i, seed_nuc in enumerate(seed_amino.nucleotides):
                 query_pos = (str(i + 3*seed_amino.consensus_index + 1)
                              if seed_amino.consensus_index is not None
@@ -255,17 +256,19 @@ class SequenceReport(object):
                            if report_amino is not None
                            else '')
                 nuc_file.write(','.join((self.sample_name,
-                                         self.region,
+                                         self.seed,
+                                         region,
                                          self.qcut,
                                          query_pos,
                                          ref_pos,
                                          seed_nuc.get_report())) + '\n')
-        if self.coordinate_ref is None:
+        if not self.coordinate_refs:
             for seed_amino in self.seed_aminos:
-                write_counts(seed_amino, None)
+                write_counts(self.seed, seed_amino, None)
         else:
-            for report_amino in self.report_aminos:
-                write_counts(report_amino.seed_amino, report_amino)
+            for region, report_aminos in self.reports.iteritems():
+                for report_amino in report_aminos:
+                    write_counts(region, report_amino.seed_amino, report_amino)
                 
     def write_consensus_header(self, conseq_file):
         conseq_file.write(
@@ -279,22 +282,25 @@ class SequenceReport(object):
                 for seed_nuc in seed_amino.nucleotides:
                     consensus += seed_nuc.get_consensus(mixture_cutoff)
             conseq_file.write('%s,%s,%s,%s,%s,%s\n' % (sample_name_base,
-                                                       self.region,
+                                                       self.seed,
                                                        self.qcut,
                                                        sample_snum,
                                                        format_cutoff(mixture_cutoff),
                                                        consensus))
     
     def write_failure_header(self, fail_file):
-        fail_file.write('sample,region,qcut,queryseq,refseq\n')
+        fail_file.write('sample,seed,region,qcut,queryseq,refseq\n')
     
     def write_failure(self, fail_file):
-        if self.coordinate_ref is not None and not self.report_aminos:
-            fail_file.write(','.join((self.sample_name,
-                                      self.region,
-                                      self.qcut,
-                                      self.consensus,
-                                      self.coordinate_ref)) + '\n')
+        for region, report_aminos in self.reports.iteritems():
+            if not report_aminos:
+                coordinate_ref = self.projects.getReference(region)
+                fail_file.write(','.join((self.sample_name,
+                                          self.seed,
+                                          region,
+                                          self.qcut,
+                                          self.consensus,
+                                          coordinate_ref)) + '\n')
     
     def write_insertions(self):
         self.insert_writer.write(self.inserts)
@@ -534,22 +540,14 @@ def read_references(possible_ref_files):
 def main():
     args = parseArgs()
     
-    
-    amino_ref_seqs = read_references((
-        os.path.basename(settings.final_alignment_ref_path),
-        settings.final_alignment_ref_path))
-    nuc_ref_file = settings.mapping_ref_path + '.fasta'
-    nuc_ref_seqs = read_references((
-        os.path.basename(nuc_ref_file),
-        nuc_ref_file))
+    projects = project_config.ProjectConfig.loadDefault()
     
     insert_writer = InsertionWriter(args.coord_ins_csv)
     
     args.aligned_csv.readline() # skip header
     
     report = SequenceReport(insert_writer,
-                            nuc_ref_seqs,
-                            amino_ref_seqs,
+                            projects,
                             settings.conseq_mixture_cutoffs)
     report.write_amino_header(args.amino_csv)
     report.write_consensus_header(args.conseq_csv)

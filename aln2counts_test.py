@@ -2,20 +2,95 @@ import StringIO
 import unittest
 
 import aln2counts
+import project_config
 
 class SequenceReportTest(unittest.TestCase):
     def setUp(self):
         self.insertion_file = StringIO.StringIO()
         insert_writer = aln2counts.InsertionWriter(
             insert_file=self.insertion_file)
-        seed_refs = {"R_NO_COORD": "ACTACTACT"} # Content ignored, just length
-        coordinate_refs = {"R1": "KFR",
-                           "R2": "KFGPR",
-                           "R3": "KFQTPREH"}
+        projects = project_config.ProjectConfig()
+        
+        # Content of seed regions is irrelevant. For R-NO-COORD, there is
+        # no coordinate reference, so we use the seed reference for display, but
+        # only the length matters.
+        projects.load(StringIO.StringIO("""\
+{
+  "projects": {
+    "R1": {
+      "regions": [
+        {
+          "coordinate_region": "R1",
+          "seed_region": "R1-seed"
+        }
+      ]
+    },
+    "R2": {
+      "regions": [
+        {
+          "coordinate_region": "R2",
+          "seed_region": "R2-seed"
+        }
+      ]
+    },
+    "R3": {
+      "regions": [
+        {
+          "coordinate_region": "R3",
+          "seed_region": "R3-seed"
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R1-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "A"
+      ]
+    },
+    "R1": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFR"
+      ]
+    },
+    "R2-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "A"
+      ]
+    },
+    "R2": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFGPR"
+      ]
+    },
+    "R3-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "A"
+      ]
+    },
+    "R3": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFQTPREH"
+      ]
+    },
+    "R-NO-COORD": {
+      "is_nucleotide": true,
+      "reference": [
+        "ACTACTACT"
+      ]
+    }
+  }
+}
+"""))
         conseq_mixture_cutoffs = [0.1]
         self.report = aln2counts.SequenceReport(insert_writer,
-                                                seed_refs,
-                                                coordinate_refs,
+                                                projects,
                                                 conseq_mixture_cutoffs)
         self.report_file = StringIO.StringIO()
      
@@ -35,12 +110,12 @@ class SequenceReportTest(unittest.TestCase):
         """
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R1,15,0,9,0,AAATTT
+E1234_S1,R1-seed,15,0,9,0,AAATTT
 """.splitlines(True)
         expected_text = """\
 sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence
-E1234,R1,15,S1,MAX,AAATTT
-E1234,R1,15,S1,0.100,AAATTT
+E1234,R1-seed,15,S1,MAX,AAATTT
+E1234,R1-seed,15,S1,0.100,AAATTT
 """
          
         self.report.write_consensus_header(self.report_file)
@@ -56,8 +131,8 @@ E1234,R1,15,S1,0.100,AAATTT
         """
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R1,15,0,9,0,AAATTT
-E1234_S1,R1,15,0,1,0,CCCGGG
+E1234_S1,R1-seed,15,0,9,0,AAATTT
+E1234_S1,R1-seed,15,0,1,0,CCCGGG
 """.splitlines(True)
         expected_consensus = "KF"
          
@@ -75,14 +150,14 @@ E1234_S1,R1,15,0,1,0,CCCGGG
         """
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R1,15,0,9,0,AAATTT
+E1234_S1,R1-seed,15,0,9,0,AAATTT
 """.splitlines(True)
          
         expected_text = """\
-sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
-E1234_S1,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+E1234_S1,R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """        
         
         self.report.write_amino_header(self.report_file)
@@ -100,21 +175,21 @@ E1234_S1,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         """
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R1,15,0,9,0,AAATTT
+E1234_S1,R1-seed,15,0,9,0,AAATTT
 """.splitlines(True)
           
         #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
         expected_text = """\
-sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
-E1234_S1,R1,15,1,1,9,0,0,0
-E1234_S1,R1,15,2,2,9,0,0,0
-E1234_S1,R1,15,3,3,9,0,0,0
-E1234_S1,R1,15,4,4,0,0,0,9
-E1234_S1,R1,15,5,5,0,0,0,9
-E1234_S1,R1,15,6,6,0,0,0,9
-E1234_S1,R1,15,,7,0,0,0,0
-E1234_S1,R1,15,,8,0,0,0,0
-E1234_S1,R1,15,,9,0,0,0,0
+sample,seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+E1234_S1,R1-seed,R1,15,1,1,9,0,0,0
+E1234_S1,R1-seed,R1,15,2,2,9,0,0,0
+E1234_S1,R1-seed,R1,15,3,3,9,0,0,0
+E1234_S1,R1-seed,R1,15,4,4,0,0,0,9
+E1234_S1,R1-seed,R1,15,5,5,0,0,0,9
+E1234_S1,R1-seed,R1,15,6,6,0,0,0,9
+E1234_S1,R1-seed,R1,15,,7,0,0,0,0
+E1234_S1,R1-seed,R1,15,,8,0,0,0,0
+E1234_S1,R1-seed,R1,15,,9,0,0,0,0
 """
         
         self.report.write_nuc_header(self.report_file)
@@ -129,21 +204,21 @@ E1234_S1,R1,15,,9,0,0,0,0
         """
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R1,15,0,1,3,TTT
-E1234_S1,R1,15,0,8,5,TCGA
+E1234_S1,R1-seed,15,0,1,3,TTT
+E1234_S1,R1-seed,15,0,8,5,TCGA
 """.splitlines(True)
           
         #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
         expected_text = """\
-E1234_S1,R1,15,1,1,0,0,0,0
-E1234_S1,R1,15,2,2,0,0,0,0
-E1234_S1,R1,15,3,3,0,0,0,0
-E1234_S1,R1,15,4,4,0,0,0,1
-E1234_S1,R1,15,5,5,0,0,0,1
-E1234_S1,R1,15,6,6,0,0,0,9
-E1234_S1,R1,15,7,7,0,8,0,0
-E1234_S1,R1,15,8,8,0,0,8,0
-E1234_S1,R1,15,9,9,8,0,0,0
+E1234_S1,R1-seed,R1,15,1,1,0,0,0,0
+E1234_S1,R1-seed,R1,15,2,2,0,0,0,0
+E1234_S1,R1-seed,R1,15,3,3,0,0,0,0
+E1234_S1,R1-seed,R1,15,4,4,0,0,0,1
+E1234_S1,R1-seed,R1,15,5,5,0,0,0,1
+E1234_S1,R1-seed,R1,15,6,6,0,0,0,9
+E1234_S1,R1-seed,R1,15,7,7,0,8,0,0
+E1234_S1,R1-seed,R1,15,8,8,0,0,8,0
+E1234_S1,R1-seed,R1,15,9,9,8,0,0,0
 """
         
         self.report.read(aligned_reads)
@@ -154,20 +229,20 @@ E1234_S1,R1,15,9,9,8,0,0,0
     def testPartialCodonNucleotideReport(self):
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R1,15,0,9,0,AAATT
+E1234_S1,R1-seed,15,0,9,0,AAATT
 """.splitlines(True)
         
         #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
         expected_text = """\
-E1234_S1,R1,15,1,1,9,0,0,0
-E1234_S1,R1,15,2,2,9,0,0,0
-E1234_S1,R1,15,3,3,9,0,0,0
-E1234_S1,R1,15,4,4,0,0,0,9
-E1234_S1,R1,15,5,5,0,0,0,9
-E1234_S1,R1,15,6,6,0,0,0,0
-E1234_S1,R1,15,,7,0,0,0,0
-E1234_S1,R1,15,,8,0,0,0,0
-E1234_S1,R1,15,,9,0,0,0,0
+E1234_S1,R1-seed,R1,15,1,1,9,0,0,0
+E1234_S1,R1-seed,R1,15,2,2,9,0,0,0
+E1234_S1,R1-seed,R1,15,3,3,9,0,0,0
+E1234_S1,R1-seed,R1,15,4,4,0,0,0,9
+E1234_S1,R1-seed,R1,15,5,5,0,0,0,9
+E1234_S1,R1-seed,R1,15,6,6,0,0,0,0
+E1234_S1,R1-seed,R1,15,,7,0,0,0,0
+E1234_S1,R1-seed,R1,15,,8,0,0,0,0
+E1234_S1,R1-seed,R1,15,,9,0,0,0,0
 """
           
         self.report.read(aligned_reads)
@@ -183,26 +258,26 @@ E1234_S1,R1,15,,9,0,0,0,0
         """
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R2,15,0,9,0,AAATTTCCCCGA
+E1234_S1,R2-seed,15,0,9,0,AAATTTCCCCGA
 """.splitlines(True)
            
         #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
         expected_text = """\
-E1234_S1,R2,15,1,1,9,0,0,0
-E1234_S1,R2,15,2,2,9,0,0,0
-E1234_S1,R2,15,3,3,9,0,0,0
-E1234_S1,R2,15,4,4,0,0,0,9
-E1234_S1,R2,15,5,5,0,0,0,9
-E1234_S1,R2,15,6,6,0,0,0,9
-E1234_S1,R2,15,,7,0,0,0,0
-E1234_S1,R2,15,,8,0,0,0,0
-E1234_S1,R2,15,,9,0,0,0,0
-E1234_S1,R2,15,7,10,0,9,0,0
-E1234_S1,R2,15,8,11,0,9,0,0
-E1234_S1,R2,15,9,12,0,9,0,0
-E1234_S1,R2,15,10,13,0,9,0,0
-E1234_S1,R2,15,11,14,0,0,9,0
-E1234_S1,R2,15,12,15,9,0,0,0
+E1234_S1,R2-seed,R2,15,1,1,9,0,0,0
+E1234_S1,R2-seed,R2,15,2,2,9,0,0,0
+E1234_S1,R2-seed,R2,15,3,3,9,0,0,0
+E1234_S1,R2-seed,R2,15,4,4,0,0,0,9
+E1234_S1,R2-seed,R2,15,5,5,0,0,0,9
+E1234_S1,R2-seed,R2,15,6,6,0,0,0,9
+E1234_S1,R2-seed,R2,15,,7,0,0,0,0
+E1234_S1,R2-seed,R2,15,,8,0,0,0,0
+E1234_S1,R2-seed,R2,15,,9,0,0,0,0
+E1234_S1,R2-seed,R2,15,7,10,0,9,0,0
+E1234_S1,R2-seed,R2,15,8,11,0,9,0,0
+E1234_S1,R2-seed,R2,15,9,12,0,9,0,0
+E1234_S1,R2-seed,R2,15,10,13,0,9,0,0
+E1234_S1,R2-seed,R2,15,11,14,0,0,9,0
+E1234_S1,R2-seed,R2,15,12,15,9,0,0,0
 """
            
         self.report.read(aligned_reads)
@@ -218,17 +293,17 @@ E1234_S1,R2,15,12,15,9,0,0,0
         """
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R2,15,0,9,0,AAATTTCCCCGA
+E1234_S1,R2-seed,15,0,9,0,AAATTTCCCCGA
 """.splitlines(True)
            
         #sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,
         #          A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
         expected_text = """\
-E1234_S1,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2,15,3,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
-E1234_S1,R2,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
+E1234_S1,R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R2-seed,R2,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R2-seed,R2,15,3,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
+E1234_S1,R2-seed,R2,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
 """
         
         self.report.read(aligned_reads)
@@ -244,16 +319,16 @@ E1234_S1,R2,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
         """
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R1,15,0,5,0,AAA---CGA
-E1234_S1,R1,15,0,2,0,AAATTTCGA
+E1234_S1,R1-seed,15,0,5,0,AAA---CGA
+E1234_S1,R1-seed,15,0,2,0,AAATTTCGA
 """.splitlines(True)
            
         #sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,
         #          A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
         expected_text = """\
-E1234_S1,R1,15,1,1,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1,15,2,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0
+E1234_S1,R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1,15,2,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0
 """
         
         self.report.read(aligned_reads)
@@ -269,24 +344,24 @@ E1234_S1,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0
         """
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R3,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
+E1234_S1,R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
 """.splitlines(True)
            
         #sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,
         #          A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
         expected_text = """\
-E1234_S1,R3,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R3,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R3,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
-E1234_S1,R3,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0
-E1234_S1,R3,15,6,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
-E1234_S1,R3,15,7,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
-E1234_S1,R3,15,8,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R3,15,9,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R3-seed,R3,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R3-seed,R3,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R3-seed,R3,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
+E1234_S1,R3-seed,R3,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0
+E1234_S1,R3-seed,R3,15,6,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
+E1234_S1,R3-seed,R3,15,7,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
+E1234_S1,R3-seed,R3,15,8,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R3-seed,R3,15,9,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
         expected_insertions = """\
 sample,region,qcut,left,insert,count
-E1234_S1,R3,15,5,G,9
+E1234_S1,R3-seed,15,5,G,9
 """
 
         self.report.read(aligned_reads)
@@ -305,17 +380,17 @@ E1234_S1,R3,15,5,G,9
         """
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R2,15,0,5,0,AAATTTGGnnCCCGA
+E1234_S1,R2-seed,15,0,5,0,AAATTTGGnnCCCGA
 """.splitlines(True)
            
         #sample,region,q-cutoff,query.aa.pos,refseq.aa.pos,
         #          A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
         expected_text = """\
-E1234_S1,R2,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2,15,2,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2,15,3,3,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2,15,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0
+E1234_S1,R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R2-seed,R2,15,2,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R2-seed,R2,15,3,3,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R2-seed,R2,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R2-seed,R2,15,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0
 """
         
         self.report.read(aligned_reads)
@@ -326,7 +401,7 @@ E1234_S1,R2,15,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0
     def testFailedAlignmentAminoReport(self):
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R1,15,0,2,0,TTATCCTAC
+E1234_S1,R1-seed,15,0,2,0,TTATCCTAC
 """.splitlines(True)
            
         expected_text = ""
@@ -339,12 +414,12 @@ E1234_S1,R1,15,0,2,0,TTATCCTAC
     def testFailedAlignmentFailureReport(self):
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R1,15,0,2,0,TTATCCTAC
+E1234_S1,R1-seed,15,0,2,0,TTATCCTAC
 """.splitlines(True)
         
         expected_text = """\
-sample,region,qcut,queryseq,refseq
-E1234_S1,R1,15,LSY,KFR
+sample,seed,region,qcut,queryseq,refseq
+E1234_S1,R1-seed,R1,15,LSY,KFR
 """
         
         self.report.write_failure_header(self.report_file)
@@ -356,7 +431,7 @@ E1234_S1,R1,15,LSY,KFR
     def testNoFailureReport(self):
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R1,15,0,9,0,AAATTT
+E1234_S1,R1-seed,15,0,9,0,AAATTT
 """.splitlines(True)
          
         expected_text = ""
@@ -369,20 +444,20 @@ E1234_S1,R1,15,0,9,0,AAATTT
     def testRegionWithoutCoordinateReferenceNucleotideReport(self):
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R_NO_COORD,15,0,9,0,AAATTT
+E1234_S1,R-NO-COORD,15,0,9,0,AAATTT
 """.splitlines(True)
           
         #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
         expected_text = """\
-E1234_S1,R_NO_COORD,15,1,,9,0,0,0
-E1234_S1,R_NO_COORD,15,2,,9,0,0,0
-E1234_S1,R_NO_COORD,15,3,,9,0,0,0
-E1234_S1,R_NO_COORD,15,4,,0,0,0,9
-E1234_S1,R_NO_COORD,15,5,,0,0,0,9
-E1234_S1,R_NO_COORD,15,6,,0,0,0,9
-E1234_S1,R_NO_COORD,15,7,,0,0,0,0
-E1234_S1,R_NO_COORD,15,8,,0,0,0,0
-E1234_S1,R_NO_COORD,15,9,,0,0,0,0
+E1234_S1,R-NO-COORD,R-NO-COORD,15,1,,9,0,0,0
+E1234_S1,R-NO-COORD,R-NO-COORD,15,2,,9,0,0,0
+E1234_S1,R-NO-COORD,R-NO-COORD,15,3,,9,0,0,0
+E1234_S1,R-NO-COORD,R-NO-COORD,15,4,,0,0,0,9
+E1234_S1,R-NO-COORD,R-NO-COORD,15,5,,0,0,0,9
+E1234_S1,R-NO-COORD,R-NO-COORD,15,6,,0,0,0,9
+E1234_S1,R-NO-COORD,R-NO-COORD,15,7,,0,0,0,0
+E1234_S1,R-NO-COORD,R-NO-COORD,15,8,,0,0,0,0
+E1234_S1,R-NO-COORD,R-NO-COORD,15,9,,0,0,0,0
 """
         
         self.report.read(aligned_reads)
@@ -393,7 +468,7 @@ E1234_S1,R_NO_COORD,15,9,,0,0,0,0
     def testRegionWithoutCoordinateReferenceFailureReport(self):
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R_NO_COORD,15,0,9,0,AAATTT
+E1234_S1,R-NO-COORD,15,0,9,0,AAATTT
 """.splitlines(True)
           
         expected_text = ""
@@ -402,11 +477,73 @@ E1234_S1,R_NO_COORD,15,0,9,0,AAATTT
         self.report.write_failure(self.report_file)
         
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+     
+    def testMultipleCoordinateAminoReport(self):
+        """ Two coordinate regions map the same seed region, report both.
+        """
+        self.report.projects.load(StringIO.StringIO("""\
+{
+  "projects": {
+    "R1": {
+      "regions": [
+        {
+          "coordinate_region": "R1a",
+          "seed_region": "R1-seed"
+        },
+        {
+          "coordinate_region": "R1b",
+          "seed_region": "R1-seed"
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R1-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "A"
+      ]
+    },
+    "R1a": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFR"
+      ]
+    },
+    "R1b": {
+      "is_nucleotide": false,
+      "reference": [
+        "WKFR"
+      ]
+    }
+  }
+}
+"""))
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,9,0,AAATTT
+""".splitlines(True)
+        
+        expected_text = """\
+E1234_S1,R1-seed,R1a,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1a,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1a,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1b,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1b,15,1,2,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1b,15,2,3,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+"""        
+        
+        self.report.read(aligned_reads)
+        self.report.write_amino_counts(self.report_file)
+        
+        self.maxDiff = None
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
 class InsertionWriterTest(unittest.TestCase):
     def setUp(self):
         self.writer = aln2counts.InsertionWriter(insert_file=StringIO.StringIO())
-        self.writer.start_group(sample_name='E1234_S1', region='R1', qcut=15)
+        self.writer.start_group(sample_name='E1234_S1', region='R1-seed', qcut=15)
         
     def testNoInserts(self):
         expected_text = """\
@@ -421,7 +558,7 @@ sample,region,qcut,left,insert,count
     def testInsert(self):
         expected_text = """\
 sample,region,qcut,left,insert,count
-E1234_S1,R1,15,3,D,1
+E1234_S1,R1-seed,15,3,D,1
 """
         
         self.writer.add_read(offset_sequence='ACDEF', count=1)
@@ -432,7 +569,7 @@ E1234_S1,R1,15,3,D,1
     def testInsertWithOffset(self):
         expected_text = """\
 sample,region,qcut,left,insert,count
-E1234_S1,R1,15,3,D,1
+E1234_S1,R1-seed,15,3,D,1
 """
         
         self.writer.add_read(offset_sequence='-CDEFG', count=1)
@@ -443,8 +580,8 @@ E1234_S1,R1,15,3,D,1
     def testTwoInsertsWithOffset(self):
         expected_text = """\
 sample,region,qcut,left,insert,count
-E1234_S1,R1,15,3,D,1
-E1234_S1,R1,15,5,F,1
+E1234_S1,R1-seed,15,3,D,1
+E1234_S1,R1-seed,15,5,F,1
 """
         
         self.writer.add_read(offset_sequence='-CDEFG', count=1)
@@ -455,7 +592,7 @@ E1234_S1,R1,15,5,F,1
     def testInsertsWithVariants(self):
         expected_text = """\
 sample,region,qcut,left,insert,count
-E1234_S1,R1,15,3,D,2
+E1234_S1,R1-seed,15,3,D,2
 """
         
         self.writer.add_read(offset_sequence='ACDEF', count=1)
@@ -467,8 +604,8 @@ E1234_S1,R1,15,3,D,2
     def testDifferentInserts(self):
         expected_text = """\
 sample,region,qcut,left,insert,count
-E1234_S1,R1,15,3,D,2
-E1234_S1,R1,15,3,F,3
+E1234_S1,R1-seed,15,3,D,2
+E1234_S1,R1-seed,15,3,F,3
 """
         
         self.writer.add_read(offset_sequence='ACDEF', count=2)
@@ -480,7 +617,7 @@ E1234_S1,R1,15,3,F,3
     def testMulticharacterInsert(self):
         expected_text = """\
 sample,region,qcut,left,insert,count
-E1234_S1,R1,15,3,DE,1
+E1234_S1,R1-seed,15,3,DE,1
 """
         
         self.writer.add_read(offset_sequence='ACDEF', count=1)
@@ -491,7 +628,7 @@ E1234_S1,R1,15,3,DE,1
     def testUnsortedInserts(self):
         expected_text = """\
 sample,region,qcut,left,insert,count
-E1234_S1,R1,15,3,DE,1
+E1234_S1,R1-seed,15,3,DE,1
 """
         
         self.writer.add_read(offset_sequence='ACDEF', count=1)
