@@ -28,9 +28,7 @@ Monitoring system regularly checks network attached storage for unprocessed runs
   * amino.csv - collated as amino_frequencies.csv - amino counts
   * coord_ins.csv - collated - insertions relative to coordinate reference
   * conseq.csv - collated as collated_conseqs.csv - consensus sequence
-  * failed_align.csv - collated
-* aln2nuc
-  * in - aligned.csv
+  * failed_align.csv - collated - any consensus that failed to align to its ref
   * nuc_variants.csv - collated - top nucleotide variants for HLA
 * sam_g2p
   * in - remap.csv

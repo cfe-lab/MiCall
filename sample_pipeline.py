@@ -111,17 +111,7 @@ def count_samples(fastq_samples, worker, args):
                                  sample_info.output_root + '.amino.csv',
                                  sample_info.output_root + '.coord_ins.csv',
                                  sample_info.output_root + '.conseq.csv',
-                                 sample_info.output_root + '.failed_align.csv'),
-                           stdout=log_path,
-                           stderr=log_path))
-        
-    for sample_info in fastq_samples:
-        log_path = "{}.aln2nuc.log".format(sample_info.output_root)
-        worker.run_job(Job(script=base_path + 'aln2nuc.py',
-                           helpers=(base_path + 'settings.py',
-                                    projects_json,
-                                    base_path + 'hyphyAlign.py'),
-                           args=(sample_info.output_root + '.aligned.csv',
+                                 sample_info.output_root + '.failed_align.csv',
                                  sample_info.output_root + '.nuc_variants.csv'),
                            stdout=log_path,
                            stderr=log_path))

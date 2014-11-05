@@ -4,6 +4,26 @@ import unittest
 import aln2counts
 import project_config
 
+class StubbedSequenceReport(aln2counts.SequenceReport):
+    def __init__(self, 
+                 insert_writer, 
+                 projects, 
+                 conseq_mixture_cutoffs):
+        aln2counts.SequenceReport.__init__(self,
+                                           insert_writer,
+                                           projects,
+                                           conseq_mixture_cutoffs)
+        self.overrides = {}
+        
+    def _pair_align(self, reference, query):
+        override = self.overrides.get((reference, query))
+        return (override
+                if override is not None
+                else aln2counts.SequenceReport._pair_align(self, reference, query))
+    
+    def add_override(self, reference, query, aligned_query, aligned_reference):
+        self.overrides[(reference, query)] = (aligned_query, aligned_reference)
+
 class SequenceReportTest(unittest.TestCase):
     def setUp(self):
         self.insertion_file = StringIO.StringIO()
@@ -89,9 +109,9 @@ class SequenceReportTest(unittest.TestCase):
 }
 """))
         conseq_mixture_cutoffs = [0.1]
-        self.report = aln2counts.SequenceReport(insert_writer,
-                                                projects,
-                                                conseq_mixture_cutoffs)
+        self.report = StubbedSequenceReport(insert_writer,
+                                            projects,
+                                            conseq_mixture_cutoffs)
         self.report_file = StringIO.StringIO()
      
     def testEmptyAminoReport(self):
@@ -537,7 +557,301 @@ E1234_S1,R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         self.report.read(aligned_reads)
         self.report.write_amino_counts(self.report_file)
         
-        self.maxDiff = None
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
+    def testVariantReport(self):
+        """ Reference is KFR, variants are KFRx10, GFRx8, KFGx6, KFSx5
+        """
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,10,0,AAATTTCGA
+E1234_S1,R1-seed,15,1,8,0,GGGTTTCGA
+E1234_S1,R1-seed,15,2,6,0,AAATTTGGG
+E1234_S1,R1-seed,15,3,5,0,AAATTTTCA
+""".splitlines(True)
+        
+        #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        expected_text = """\
+sample,seed,qcut,region,index,count,seq
+E1234_S1,R1-seed,15,R1,0,10,AAATTTCGA
+E1234_S1,R1-seed,15,R1,1,8,GGGTTTCGA
+E1234_S1,R1-seed,15,R1,2,6,AAATTTGGG
+E1234_S1,R1-seed,15,R1,3,5,AAATTTTCA
+"""
+        
+        self.report.write_nuc_variants_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
+    def testVariantLimit(self):
+        """ Only report top 3 variants
+        """
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,10,0,AAATTTCGA
+E1234_S1,R1-seed,15,1,8,0,GGGTTTCGA
+E1234_S1,R1-seed,15,2,6,0,AAATTTGGG
+E1234_S1,R1-seed,15,3,5,0,AAATTTTCA
+""".splitlines(True)
+          
+        #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        expected_text = """\
+E1234_S1,R1-seed,15,R1,0,10,AAATTTCGA
+E1234_S1,R1-seed,15,R1,1,8,GGGTTTCGA
+E1234_S1,R1-seed,15,R1,2,6,AAATTTGGG
+"""
+        self.report.max_variants = 3
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
+    def testVariantClippingEnd(self):
+        """ Coordinate reference is KFR, so last codons should be clipped
+        """
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,10,0,AAATTTCGATCA
+E1234_S1,R1-seed,15,1,8,0,GGGTTTCGATCA
+E1234_S1,R1-seed,15,2,6,0,AAATTTGGGTCA
+E1234_S1,R1-seed,15,3,5,0,AAATTTTCA
+""".splitlines(True)
+        
+        #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        expected_text = """\
+E1234_S1,R1-seed,15,R1,0,10,AAATTTCGA
+E1234_S1,R1-seed,15,R1,1,8,GGGTTTCGA
+E1234_S1,R1-seed,15,R1,2,6,AAATTTGGG
+E1234_S1,R1-seed,15,R1,3,5,AAATTTTCA
+"""
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
+    def testVariantClippingStart(self):
+        """ Coordinate reference is KFR, so first codons should be clipped
+        """
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,10,0,TCAAAATTTCGA
+E1234_S1,R1-seed,15,1,8,0,TCAGGGTTTCGA
+E1234_S1,R1-seed,15,2,6,0,TCAAAATTTGGG
+E1234_S1,R1-seed,15,3,5,0,TCAAAATTTTCA
+""".splitlines(True)
+        
+        #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        expected_text = """\
+E1234_S1,R1-seed,15,R1,0,10,AAATTTCGA
+E1234_S1,R1-seed,15,R1,1,8,GGGTTTCGA
+E1234_S1,R1-seed,15,R1,2,6,AAATTTGGG
+E1234_S1,R1-seed,15,R1,3,5,AAATTTTCA
+"""
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
+    def testVariantWhenAlignFails(self):
+        """ Coordinate reference is KFR, read is SGG.
+        """
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,10,0,TCAGGGGGG
+""".splitlines(True)
+          
+        #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        expected_text = ""
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
+    def testVariantShortRead(self):
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,10,0,AAATTT
+E1234_S1,R1-seed,15,1,8,0,GGGTTT
+""".splitlines(True)
+          
+        #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        expected_text = """\
+E1234_S1,R1-seed,15,R1,0,10,AAATTT
+E1234_S1,R1-seed,15,R1,1,8,GGGTTT
+"""
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
+    def testVariantOffset(self):
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,10,0,AAATTT
+E1234_S1,R1-seed,15,1,8,3,TTT
+""".splitlines(True)
+          
+        #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        expected_text = """\
+E1234_S1,R1-seed,15,R1,0,10,AAATTT
+E1234_S1,R1-seed,15,R1,1,8,---TTT
+"""
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
+    def testVariantsCombinedAfterClipping(self):
+        """ If reads only differ outside the clipped region, their counts
+        should be combined.
+        """
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,10,0,TCAAAATTTCGA
+E1234_S1,R1-seed,15,1,8,0,TCAGGGTTTCGA
+E1234_S1,R1-seed,15,2,6,0,CGAGGGTTTCGA
+""".splitlines(True)
+          
+        #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        expected_text = """\
+E1234_S1,R1-seed,15,R1,0,14,GGGTTTCGA
+E1234_S1,R1-seed,15,R1,1,10,AAATTTCGA
+"""
+        self.report.max_variants = 2 # applied after combining clipped reads
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+     
+    def testVariantInsertion(self):
+        """ Coordinate reference is KFR, consensus is KFGR, and alignment decides
+        on KF-R, KFGR. The G is an insertion inside the coordinate reference
+        and should not be clipped.
+        """
+        self.report.add_override(reference='KFR',
+                                 query='KFGR',
+                                 aligned_query='KFGR',
+                                 aligned_reference='KF-R') 
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,10,0,AAATTTGGGCGA
+""".splitlines(True)
+          
+        #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        expected_text = """\
+E1234_S1,R1-seed,15,R1,0,10,AAATTTGGGCGA
+"""
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+     
+    def testVariantInsertionPastEnd(self):
+        """ Coordinate reference is KFR, consensus is KFG, and alignment decides
+        on KFR-, KF-G. The G is an insertion outside the coordinate reference
+        and should be clipped.
+        """
+        self.report.add_override(reference='KFR',
+                                 query='KFG',
+                                 aligned_query='KF-G',
+                                 aligned_reference='KFR-') 
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,10,0,AAATTTGGG
+""".splitlines(True)
+          
+        #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        expected_text = """\
+E1234_S1,R1-seed,15,R1,0,10,AAATTT
+"""
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
+    def testVariantCanProcessReadsTwice(self):
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = iter("""\
+E1234_S1,R1-seed,15,0,10,0,AAATTT
+E1234_S1,R1-seed,15,1,8,3,TTT
+""".splitlines(True))
+          
+        #sample,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        expected_text = """\
+E1234_S1,R1-seed,15,R1,0,10,AAATTT
+E1234_S1,R1-seed,15,R1,1,8,---TTT
+"""
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
+    def testMultipleCoordinateVariantReport(self):
+        """ Two coordinate regions map the same seed region, report both.
+        """
+        self.report.projects.load(StringIO.StringIO("""\
+{
+  "projects": {
+    "R1": {
+      "regions": [
+        {
+          "coordinate_region": "R1a",
+          "seed_region": "R1-seed"
+        },
+        {
+          "coordinate_region": "R1b",
+          "seed_region": "R1-seed"
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R1-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "A"
+      ]
+    },
+    "R1a": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFR"
+      ]
+    },
+    "R1b": {
+      "is_nucleotide": false,
+      "reference": [
+        "WKFR"
+      ]
+    }
+  }
+}
+"""))
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,9,0,AAATTT
+""".splitlines(True)
+        
+        expected_text = """\
+E1234_S1,R1-seed,15,R1a,0,9,AAATTT
+E1234_S1,R1-seed,15,R1b,0,9,AAATTT
+"""        
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
 class InsertionWriterTest(unittest.TestCase):

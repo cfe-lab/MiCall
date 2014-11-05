@@ -49,7 +49,10 @@ def parseArgs():
                         help='CSV containing consensus sequences')
     parser.add_argument('failed_align_csv',
                         type=argparse.FileType('w'),
-                        help='CSV containing any sequences that failed to align')
+                        help='CSV containing any consensus that failed to align')
+    parser.add_argument('nuc_variants_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing top nucleotide variants')
     
     return parser.parse_args()
 
@@ -135,20 +138,14 @@ class SequenceReport(object):
             determine what portion a variant must exceed before it will be
             included as a mixture in the consensus.
         """
+        self.max_variants = 10
         self.insert_writer = insert_writer
         self.projects = projects
         self.conseq_mixture_cutoffs = list(conseq_mixture_cutoffs)
         self.conseq_mixture_cutoffs.insert(0, MAX_CUTOFF)
         
-    def read(self, aligned_reads):
-        """ Reset all the counters, and read a new section of aligned reads.
-        
-        A section must have the same sample name, region, and qcut on all lines.
-        """
-        self.seed_aminos = []
-        self.reports = {} # {coord_name: [ReportAmino()]}
-        self.inserts = set()
-        self.consensus = ''
+
+    def _count_reads(self, aligned_reads):
         for line in aligned_reads:
             (self.sample_name,
              self.seed,
@@ -161,9 +158,8 @@ class SequenceReport(object):
             count = int(count)
             if not self.seed_aminos:
                 self.insert_writer.start_group(self.sample_name,
-                                              self.seed,
-                                              self.qcut)
-
+                                               self.seed,
+                                               self.qcut)
             offset_nuc_seq = '-' * offset + nuc_seq
             # pad to a codon boundary
             offset_nuc_seq += '-' * ((3 - (len(offset_nuc_seq) % 3)) % 3)
@@ -172,17 +168,66 @@ class SequenceReport(object):
                 codon_index = nuc_pos / 3
                 while len(self.seed_aminos) <= codon_index:
                     self.seed_aminos.append(SeedAmino(len(self.seed_aminos)))
-                codon = offset_nuc_seq[nuc_pos:nuc_pos+3]
+                
+                codon = offset_nuc_seq[nuc_pos:nuc_pos + 3]
                 self.seed_aminos[codon_index].count_nucleotides(codon, count)
+            
             #TODO: avoid translating twice
-            self.insert_writer.add_read(translate(offset_nuc_seq.upper()),
-                                        count)
+            self.insert_writer.add_read(translate(offset_nuc_seq.upper()), count)
+            
+    def _pair_align(self, reference, query):
+        """ Align a query sequence to a reference sequence using hyphy.
+        
+        @return: (aligned_query, aligned_ref) Note that this is the opposite
+            order from the input parameters, but that's the order hyphy returns.
+        """
+        return pair_align(hyphy, reference, query)[0:2]
+
+    def _map_to_coordinate_ref(self, coordinate_name, coordinate_ref):
+        # map to reference coordinates by aligning consensus
+        aquery, aref = self._pair_align(coordinate_ref, self.consensus)
+        consensus_index = ref_index = 0
+        self.inserts = set(range(len(self.consensus)))
+        empty_seed_amino = SeedAmino(None)
+        report_aminos = []
+        is_aligned = False
+        for i in range(len(aref)):
+            if (consensus_index >= len(self.consensus) or 
+                aquery[i] != self.consensus[consensus_index]):
+                seed_amino = empty_seed_amino
+            else:
+                seed_amino = self.seed_aminos[consensus_index]
+                consensus_index += 1
+            if (ref_index < len(coordinate_ref) and 
+                aref[i] == coordinate_ref[ref_index]):
+                report_aminos.append(ReportAmino(seed_amino, ref_index + 1))
+                if seed_amino.consensus_index is not None:
+                    self.inserts.remove(seed_amino.consensus_index)
+                    is_aligned = True
+                ref_index += 1
+        
+        if not is_aligned:
+            report_aminos = []
+        self.reports[coordinate_name] = report_aminos
+
+    def read(self, aligned_reads):
+        """ Reset all the counters, and read a new section of aligned reads.
+        
+        A section must have the same sample name, region, and qcut on all lines.
+        """
+        aligned_reads = list(aligned_reads) # let us run multiple passes
+        self.seed_aminos = []
+        self.reports = {} # {coord_name: [ReportAmino()]}
+        self.inserts = set()
+        self.consensus = ''
+        self.variants = {} # {coord_name: [(count, nuc_seq)]}
+        self._count_reads(aligned_reads)
         
         if not self.seed_aminos:
             self.coordinate_refs = {}
         else:
-            self.consensus = ''.join([seed_amino.get_consensus()
-                                      for seed_amino in self.seed_aminos])
+            self.consensus = ''.join([seed_amino1.get_consensus()
+                                      for seed_amino1 in self.seed_aminos])
             
             self.coordinate_refs = self.projects.getCoordinateReferences(self.seed)
             if not self.coordinate_refs:
@@ -191,34 +236,40 @@ class SequenceReport(object):
                     self.seed_aminos.append(SeedAmino(len(self.seed_aminos)))
         
         for coordinate_name, coordinate_ref in self.coordinate_refs.iteritems():
-            # map to reference coordinates by aligning consensus
-            aquery, aref, _score = pair_align(hyphy,
-                                              coordinate_ref,
-                                              self.consensus)
-            consensus_index = ref_index = 0
-            self.inserts = set(range(len(self.consensus)))
-            empty_seed_amino = SeedAmino(None)
-            report_aminos = []
-            is_aligned = False
-            for i in range(len(aref)):
-                if (consensus_index >= len(self.consensus) or
-                    aquery[i] != self.consensus[consensus_index]):
-                    
-                    seed_amino = empty_seed_amino
-                else:
-                    seed_amino = self.seed_aminos[consensus_index]
-                    consensus_index += 1
-                if (ref_index < len(coordinate_ref) and
-                    aref[i] == coordinate_ref[ref_index]):
-                    
-                    report_aminos.append(ReportAmino(seed_amino, ref_index+1))
-                    if seed_amino.consensus_index is not None:
-                        self.inserts.remove(seed_amino.consensus_index)
-                        is_aligned = True
-                    ref_index += 1
-            if not is_aligned:
-                report_aminos = []
-            self.reports[coordinate_name] = report_aminos
+            self._map_to_coordinate_ref(coordinate_name, coordinate_ref)
+            report_aminos = self.reports[coordinate_name]
+            if report_aminos:
+                variant_counts = {} # {seq: count}
+                for report_amino in report_aminos:
+                    first_amino_index = report_amino.seed_amino.consensus_index
+                    if first_amino_index is not None:
+                        break
+                first_amino_index = first_amino_index or 0
+                start_pos = first_amino_index * 3
+                for report_amino in reversed(report_aminos):
+                    last_amino_index = report_amino.seed_amino.consensus_index
+                    if last_amino_index is not None:
+                        break
+                last_amino_index = last_amino_index or -1
+                end_pos = (last_amino_index+1) * 3
+                for line in aligned_reads:
+                    (_sample_name,
+                     _seed,
+                     _qcut,
+                     _rank,
+                     count,
+                     offset,
+                     nuc_seq) = line.rstrip().split(',')
+                    count = int(count)
+                    offset = int(offset)
+                    padded_seq = offset*'-' + nuc_seq
+                    clipped_seq = padded_seq[start_pos:end_pos]
+                    previous_count = variant_counts.get(clipped_seq, 0)
+                    variant_counts[clipped_seq] = previous_count + count
+                coordinate_variants = [(count, seq)
+                                       for seq, count in variant_counts.iteritems()]
+                coordinate_variants.sort(reverse=True)
+                self.variants[coordinate_name] = coordinate_variants[0:self.max_variants]
     
     def write_amino_header(self, amino_file):
         amino_file.write(
@@ -287,6 +338,23 @@ class SequenceReport(object):
                                                        sample_snum,
                                                        format_cutoff(mixture_cutoff),
                                                        consensus))
+    
+    def write_nuc_variants_header(self, nuc_variants_file):
+        nuc_variants_file.write('sample,seed,qcut,region,index,count,seq\n')
+    
+    def write_nuc_variants(self, nuc_variants_file):
+        regions = self.variants.keys()
+        regions.sort()
+        for coordinate_name in regions:
+            for i, variant in enumerate(self.variants[coordinate_name]):
+                count, nuc_seq = variant
+                nuc_variants_file.write(','.join((self.sample_name,
+                                                  self.seed,
+                                                  self.qcut,
+                                                  coordinate_name,
+                                                  str(i),
+                                                  str(count),
+                                                  nuc_seq)) + '\n')
     
     def write_failure_header(self, fail_file):
         fail_file.write('sample,seed,region,qcut,queryseq,refseq\n')
@@ -506,37 +574,6 @@ def format_cutoff(cutoff):
         return cutoff
     return '{:0.3f}'.format(cutoff)    
 
-def read_references(possible_ref_files):
-    # check that the reference input exists
-    is_ref_found = False
-    for ref_file in possible_ref_files:
-        if not os.path.isfile(ref_file):
-            continue
-        is_ref_found = True
-        break
-    if not is_ref_found:
-        raise RuntimeError('No reference sequences found in {!r}'.format(
-            possible_ref_files))
-
-    # read in amino acid reference sequences from file
-    refseqs = {}
-    with open(ref_file, 'rU') as handle:
-        for line_number, line in enumerate(handle):
-            stripped_line = line.rstrip('\n')
-            if line_number == 0:
-                is_multiline = stripped_line.startswith('>')
-                if not is_multiline:
-                    continue
-            if not is_multiline:
-                region, seq = stripped_line.split(',')
-                refseqs[region] = seq
-            elif line_number % 2 == 0:
-                region = stripped_line[1:]
-            else:
-                # second line of multiline entry holds sequence
-                refseqs[region] = stripped_line
-    return refseqs
-
 def main():
     args = parseArgs()
     
@@ -553,6 +590,7 @@ def main():
     report.write_consensus_header(args.conseq_csv)
     report.write_failure_header(args.failed_align_csv)
     report.write_nuc_header(args.nuc_csv)
+    report.write_nuc_variants_header(args.nuc_variants_csv)
     for _key, aligned_reads in groupby(args.aligned_csv,
                                        lambda x: x.split(',')[0:3]):
         report.read(aligned_reads)
@@ -562,6 +600,7 @@ def main():
         report.write_failure(args.failed_align_csv)
         report.write_insertions()
         report.write_nuc_counts(args.nuc_csv)
+        report.write_nuc_variants(args.nuc_variants_csv)
 
     args.aligned_csv.close()
     args.amino_csv.close()
@@ -569,6 +608,7 @@ def main():
     args.conseq_csv.close()
     args.coord_ins_csv.close()
     args.failed_align_csv.close()
+    args.nuc_variants_csv.close()
 
 if __name__ == '__main__':
     main()
