@@ -138,7 +138,6 @@ class SequenceReport(object):
             determine what portion a variant must exceed before it will be
             included as a mixture in the consensus.
         """
-        self.max_variants = 10
         self.insert_writer = insert_writer
         self.projects = projects
         self.conseq_mixture_cutoffs = list(conseq_mixture_cutoffs)
@@ -187,7 +186,8 @@ class SequenceReport(object):
         # map to reference coordinates by aligning consensus
         aquery, aref = self._pair_align(coordinate_ref, self.consensus)
         consensus_index = ref_index = 0
-        self.inserts = set(range(len(self.consensus)))
+        coordinate_inserts = set(range(len(self.consensus)))
+        self.inserts[coordinate_name] = coordinate_inserts
         empty_seed_amino = SeedAmino(None)
         report_aminos = []
         is_aligned = False
@@ -202,8 +202,10 @@ class SequenceReport(object):
                 aref[i] == coordinate_ref[ref_index]):
                 report_aminos.append(ReportAmino(seed_amino, ref_index + 1))
                 if seed_amino.consensus_index is not None:
-                    self.inserts.remove(seed_amino.consensus_index)
-                    is_aligned = True
+                    coordinate_inserts.remove(seed_amino.consensus_index)
+                    if aquery[i] != '-':
+                        # Don't let dashes be the only thing that aligns.
+                        is_aligned = True
                 ref_index += 1
         
         if not is_aligned:
@@ -218,7 +220,7 @@ class SequenceReport(object):
         aligned_reads = list(aligned_reads) # let us run multiple passes
         self.seed_aminos = []
         self.reports = {} # {coord_name: [ReportAmino()]}
-        self.inserts = set()
+        self.inserts = {} # {coord_name: set([consensus_index])}
         self.consensus = ''
         self.variants = {} # {coord_name: [(count, nuc_seq)]}
         self._count_reads(aligned_reads)
@@ -269,7 +271,8 @@ class SequenceReport(object):
                 coordinate_variants = [(count, seq)
                                        for seq, count in variant_counts.iteritems()]
                 coordinate_variants.sort(reverse=True)
-                self.variants[coordinate_name] = coordinate_variants[0:self.max_variants]
+                max_variants = self.projects.getMaxVariants(coordinate_name)
+                self.variants[coordinate_name] = coordinate_variants[0:max_variants]
     
     def write_amino_header(self, amino_file):
         amino_file.write(
@@ -371,7 +374,8 @@ class SequenceReport(object):
                                           coordinate_ref)) + '\n')
     
     def write_insertions(self):
-        self.insert_writer.write(self.inserts)
+        for coordinate_name, coordinate_inserts in self.inserts.iteritems():
+            self.insert_writer.write(coordinate_inserts, coordinate_name)
     
 class SeedAmino(object):
     def __init__(self, consensus_index):
@@ -498,17 +502,17 @@ class InsertionWriter(object):
         @param insert_file: an open file that the data will be written to
         """
         self.insert_file = insert_file
-        self.insert_file.write('sample,region,qcut,left,insert,count\n')
+        self.insert_file.write('sample,seed,region,qcut,left,insert,count\n')
     
-    def start_group(self, sample_name, region, qcut):
+    def start_group(self, sample_name, seed, qcut):
         """ Start a new group of reads.
         
         @param sample_name: the name of the sample these reads came from
-        @param region: the name of the region these reads mapped to
+        @param seed: the name of the region these reads mapped to
         @param qcut: the quality cut off used for these reads
         """
         self.sample_name = sample_name
-        self.region = region
+        self.seed = seed
         self.qcut = qcut
         self.pcache = {}
     
@@ -525,12 +529,14 @@ class InsertionWriter(object):
             self.pcache.update({p: 0})
         self.pcache[p] += count
         
-    def write(self, inserts):
+    def write(self, inserts, region):
         """ Write any insert ranges to the file.
         
         Sequence data comes from the reads that were added to the current group.
         @param inserts: indexes of positions in the reads that should be
             reported as insertions.
+        @param region: the name of the coordinate region the current group was
+            mapped to
         """
         if len(inserts) == 0:
             return
@@ -560,12 +566,14 @@ class InsertionWriter(object):
         # record insertions to CSV
         for left, counts in insert_counts.iteritems():
             for insert_seq, count in counts.iteritems():
-                self.insert_file.write('%s,%s,%s,%d,%s,%d\n' % (self.sample_name,
-                                                                self.region,
-                                                                self.qcut,
-                                                                left+1,
-                                                                insert_seq,
-                                                                count))
+                self.insert_file.write('%s,%s,%s,%s,%d,%s,%d\n' % (
+                    self.sample_name,
+                    self.seed,
+                    region,
+                    self.qcut,
+                    left+1,
+                    insert_seq,
+                    count))
 
 def format_cutoff(cutoff):
     """ Format the cutoff fraction as a string to use as a name. """

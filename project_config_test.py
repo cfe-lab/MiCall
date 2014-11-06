@@ -8,6 +8,7 @@ class ProjectConfigurationTest(unittest.TestCase):
 {
   "projects": {
     "R1": {
+      "max_variants": 5,
       "regions": [
         {
           "coordinate_region": "R1",
@@ -167,6 +168,112 @@ ACTGAAAGGG
         seed_name = 'R-unknown'
         
         self.assertRaises(KeyError, self.config.getReference, seed_name)
+
+    def testMaxVariants(self):
+        self.config.load(self.defaultJsonIO)
+        coordinate_region_name = 'R1'
+        
+        self.assertEqual(5, self.config.getMaxVariants(coordinate_region_name))
+
+    def testMaxVariantsUnusedRegion(self):
+        jsonIO = StringIO.StringIO("""\
+{
+  "projects": {
+    "R1": {
+      "max_variants": 2,
+      "regions": [
+        {
+          "coordinate_region": "R1",
+          "seed_region": "R1-seed"
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R1-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "ACTGAAA",
+        "GGG"
+      ]
+    },
+    "R1": {
+      "is_nucleotide": false,
+      "reference": [
+        "NSFW"
+      ]
+    },
+    "R2": {
+      "is_nucleotide": false,
+      "reference": [
+        "RSW"
+      ]
+    }
+  }
+}
+""")
+        self.config.load(jsonIO)
+        coordinate_region_name = 'R2'
+        
+        self.assertEqual(0, self.config.getMaxVariants(coordinate_region_name))
+
+    def testMaxVariantsTwoProjects(self):
+        """ If two projects specify a maximum for the same coordinate region,
+        use the bigger of the two.
+        """
+        jsonIO = StringIO.StringIO("""\
+{
+  "projects": {
+    "R1": {
+      "max_variants": 9,
+      "regions": [
+        {
+          "coordinate_region": "R1",
+          "seed_region": "R1-seed"
+        }
+      ]
+    },
+    "R1-and-R2": {
+      "max_variants": 2,
+      "regions": [
+        {
+          "coordinate_region": "R1",
+          "seed_region": "R1-seed"
+        },
+        {
+          "coordinate_region": "R2",
+          "seed_region": "R1-seed"
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R1-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "ACTGAAA",
+        "GGG"
+      ]
+    },
+    "R1": {
+      "is_nucleotide": false,
+      "reference": [
+        "NSFW"
+      ]
+    },
+    "R2": {
+      "is_nucleotide": false,
+      "reference": [
+        "RSW"
+      ]
+    }
+  }
+}
+""")
+        self.config.load(jsonIO)
+        coordinate_region_name = 'R1'
+        
+        self.assertEqual(9, self.config.getMaxVariants(coordinate_region_name))
         
     def testReload(self):
         jsonIO1 = StringIO.StringIO("""\

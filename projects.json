@@ -1,6 +1,7 @@
 {
   "projects": {
     "HLA-B": {
+      "max_variants": 10,
       "regions": [
         {
           "coordinate_region": "HLA-B-exon2",
@@ -21,6 +22,7 @@
       ]
     },
     "PR": {
+      "max_variants": 0,
       "regions": [
         {
           "coordinate_region": "PR",
@@ -98,6 +100,7 @@
       ]
     },
     "RT": {
+      "max_variants": 0,
       "regions": [
         {
           "coordinate_region": "RT",
@@ -235,6 +238,7 @@
       ]
     },
     "V3LOOP": {
+      "max_variants": 0,
       "regions": [
         {
           "coordinate_region": "V3LOOP",

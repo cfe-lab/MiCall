@@ -59,3 +59,18 @@ class ProjectConfig(object):
                 if region['seed_region'] == seed_region and coord_region:
                     coord_refs[coord_region] = self.getReference(coord_region)
         return coord_refs
+    
+    def getMaxVariants(self, coordinate_region):
+        """ Find the maximum number of variants to report for a coordinate
+        region.
+        
+        @param coordinate_region: The name of a coordinate region
+        @return an integer with the maximum variants requested for any project
+            that uses the coordinate region.
+        """
+        max_variants = 0
+        for project in self.config['projects'].itervalues():
+            for region in project['regions']:
+                if region['coordinate_region'] == coordinate_region:
+                    max_variants = max(project['max_variants'], max_variants)
+        return max_variants
