@@ -99,21 +99,25 @@ def main():
     # group CSV stream by first item
     with open(args.prelim_csv, 'rU') as handle:
         handle.readline()  # skip header
-        prelim_count = 0
         map_counts = {}
         refnames = []
         for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
-            refnames.append(refname)
             # reconstitute region-specific SAM files
             tmpfile = open('%s.sam' % refname, 'w')
             count = 0
+            good_count = 0
             for line in group:
-                tmpfile.write('\t'.join(line.split(',')))
-                prelim_count += 1
+                fields = line.split(',')
+                tmpfile.write('\t'.join(fields))
+                mapq = int(fields[4])
+                if mapq >= 20:
+                    good_count += 1
                 count += 1
             stat_file.write('%s,prelim %s,%d\n' % (sample_name, refname, count))
             map_counts.update({refname: count})
             tmpfile.close()
+            if good_count >= 10:
+                refnames.append(refname)
 
     # settings for iterative remapping
     n_remaps = 0
