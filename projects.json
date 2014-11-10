@@ -29,16 +29,16 @@
           "coordinate_region": "HLA-B-exon2",
           "key_positions": [],
           "min_coverage1": 1,
-          "min_coverage2": 101,
-          "min_coverage3": 1001,
+          "min_coverage2": 11,
+          "min_coverage3": 101,
           "seed_region": "HLA-B-seed"
         },
         {
           "coordinate_region": "HLA-B-exon3",
           "key_positions": [],
           "min_coverage1": 1,
-          "min_coverage2": 101,
-          "min_coverage3": 1001,
+          "min_coverage2": 11,
+          "min_coverage3": 101,
           "seed_region": "HLA-B-seed"
         }
       ]

@@ -2,25 +2,23 @@
 
 # Command line expects these arguments:
 # 1. input file name (amino frequencies CSV)
-# 2. input file, nucleotide frequencies CSV
-# 3. output maps archive (tar file where coverage maps will be written)
-# 4. output scores (count scores CSV)
+# 2. output maps archive (tar file where coverage maps will be written)
+# 3. output scores (count scores CSV)
 
-# Other dependency: key_positions.csv
+# Other dependency: projects.json
 # Working files are created in the current directory.
 
 library(jsonlite)
 
-syntax.error = "Correct syntax: ./coverage_plot.R <amino CSV> <nuc CSV> <output maps tar> <output scores CSV>"
+syntax.error = "Correct syntax: ./coverage_plot.R <amino CSV> <output maps tar> <output scores CSV>"
 args <- commandArgs(TRUE)
 
-if (length(args) != 4) {
+if (length(args) != 3) {
     stop(syntax.error)
 }
 input.csv <- args[1]
-nuc.csv <- args[2]
-output.maps <- args[3]
-scores.csv <- args[4]
+output.maps <- args[2]
+scores.csv <- args[3]
 
 record.score <- function(
         scores,
@@ -131,16 +129,24 @@ prepare.plot <- function(
 
 dir.create('coverage_maps')
 
-# load key positions file
-# load key positions file
+# load project configuration
 projects.config <- fromJSON('projects.json')
 projects <- projects.config$projects
 
+coverage.levels <- data.frame()
 key.positions <- data.frame()
 for (project.name in names(projects)) {
     project <- projects[[project.name]]
     for (i in seq_len(nrow(project$regions))) {
         region <- project$regions[i,]
+        new.coverage.levels <- data.frame(
+                project=project.name,
+                seed=region$seed_region,
+                coord=region$coordinate_region,
+                red=region$min_coverage1,
+                yellow=region$min_coverage2,
+                green=region$min_coverage3)
+        coverage.levels <- rbind(coverage.levels, new.coverage.levels)
         region.pairs <- region$key_positions[[1]]
         if (length(region.pairs) != 0) {
             region.pairs$end_pos[is.na(region.pairs$end_pos)] <- (
@@ -155,7 +161,7 @@ for (project.name in names(projects)) {
                     end_pos=1:nchar(ref))
         }
         for (j in seq_along(region.pairs$start_pos)) {
-            new.positions = data.frame(
+            new.positions <- data.frame(
                     pos=region.pairs$start_pos[[j]]:region.pairs$end_pos[[j]],
                     coord=region$coordinate_region,
                     seed=region$seed_region,
@@ -187,8 +193,6 @@ data$coverage <- apply(data[ , which(is.element(names(data), alphabet))], 1, sum
 
 # partition AA frequency table by sample and region
 coverage <- split(data[,which(is.element(names(data), c('refseq.aa.pos', 'q.cutoff', 'coverage')))], f=list(data$seed, data$region, data$sample), drop=TRUE)
-good.coverage <- 1000
-coverage.levels <- c(-Inf, 0, 100, good.coverage, Inf)
 
 # loop through partitions
 for (i in seq_along(coverage)) {
@@ -209,10 +213,18 @@ for (i in seq_along(coverage)) {
             drop=TRUE)
     
     for (project.name in names(project.positions)) {
+        region.coverage.levels <- coverage.levels[
+                coverage.levels$project == project.name & coverage.levels$seed == seed & coverage.levels$coord == region,]
+        score.breaks <- c(
+                -Inf,
+                region.coverage.levels$red,
+                region.coverage.levels$yellow,
+                region.coverage.levels$green,
+                Inf)
         prepare.plot(
                 xlim,
                 x.label,
-                good.coverage,
+                region.coverage.levels$green,
                 sample,
                 project.name,
                 region,
@@ -236,14 +248,14 @@ for (i in seq_along(coverage)) {
                     scores,
                     df2,
                     project.positions[[project.name]],
-                    coverage.levels,
+                    score.breaks,
                     sample,
                     region,
                     q.cut)
         }
         
         # draw required coverage line
-        abline(h = good.coverage, lty=2)
+        abline(h = region.coverage.levels$green, lty=2)
         
         axis(1)
         axis(2, at=c(1E1, 1E2, 1E3, 1E4, 1E5), labels=c('10', '100', '1000', '10,000', '100,000'), las=2)

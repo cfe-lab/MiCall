@@ -138,7 +138,6 @@ def collate_results(fastq_samples, worker, args, logger):
         worker.run_job(Job(script=base_path + 'coverage_plots.R',
                            helpers=(projects_json, ),
                            args=(sample_info.output_root + '.amino.csv',
-                                 sample_info.output_root + '.nuc.csv',
                                  sample_info.output_root + '.coverage_maps.tar',
                                  sample_info.output_root + '.coverage_scores.csv'),
                            stdout=log_path,

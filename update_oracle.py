@@ -180,17 +180,15 @@ values (
     expected_exon_prefix = 'exon'
     curs = conn.cursor()
     try:
+        # sample,seed,qcut,region,index,count,seq
         rows = csv.DictReader(sample_file)
         for row in rows:
-            if row['refname'] != 'HLA-B':
+            if row['seed'] != 'HLA-B':
                 continue
             ind = int(row['index'])
-            if ind >= 10:
-                # Only want to upload the ten most common variants.
-                continue
                 
             sample_name = row['sample']
-            exon = row['subregion']
+            exon = row['region']
             if exon.startswith(expected_exon_prefix):
                 exon_number = int(exon[len(expected_exon_prefix):])
             else:

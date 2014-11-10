@@ -3,6 +3,7 @@ import unittest
 
 import aln2counts
 import project_config
+import sys
 
 class StubbedSequenceReport(aln2counts.SequenceReport):
     def __init__(self, 
@@ -21,8 +22,15 @@ class StubbedSequenceReport(aln2counts.SequenceReport):
                 if override is not None
                 else aln2counts.SequenceReport._pair_align(self, reference, query))
     
-    def add_override(self, reference, query, aligned_query, aligned_reference):
-        self.overrides[(reference, query)] = (aligned_query, aligned_reference)
+    def add_override(self,
+                     reference,
+                     query,
+                     aligned_query,
+                     aligned_reference,
+                     score=sys.maxint):
+        self.overrides[(reference, query)] = (aligned_query,
+                                              aligned_reference,
+                                              score)
 
 class SequenceReportTest(unittest.TestCase):
     def setUp(self):
@@ -157,12 +165,17 @@ E1234,R1-seed,15,S1,0.100,AAATTT
 E1234_S1,R1-seed,15,0,9,0,AAATTT
 E1234_S1,R1-seed,15,0,1,0,CCCGGG
 """.splitlines(True)
-        expected_consensus = "KF"
+        expected_text = """\
+sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence
+E1234,R1-seed,15,S1,MAX,AAATTT
+E1234,R1-seed,15,S1,0.100,MMMKKK
+"""
          
+        self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
-        consensus = self.report.consensus
+        self.report.write_consensus(self.report_file)
          
-        self.assertSequenceEqual(expected_consensus, consensus)
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
      
     def testSingleReadAminoReport(self):
         """ In this sample, there is a single read with two codons.
@@ -270,6 +283,31 @@ E1234_S1,R1-seed,R1,15,,9,0,0,0,0
         self.report.read(aligned_reads)
         self.report.write_nuc_counts(self.report_file)
          
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+     
+    def testShiftedReadingFrameAminoReport(self):
+        """ The seed's reading frame doesn't match the coordinate reference's
+        reading frame, so there is an extra nucleotide at the beginning of the
+        reads.
+        It will try padding the first codon to see which of the three possible
+        reading frames gives the highest alignment score.
+        """
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,9,0,GAAATTTCGA
+""".splitlines(True)
+         
+        # sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        #                  A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+        expected_text = """\
+E1234_S1,R1-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1,15,3,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+E1234_S1,R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
+"""        
+        
+        self.report.read(aligned_reads)
+        self.report.write_amino_counts(self.report_file)
+        
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
     def testDeletionBetweenSeedAndCoordinateNucleotideReport(self):
@@ -508,6 +546,34 @@ E1234_S1,R1-seed,R1,15,LSY,KFR
         
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
+    def testFailedAlignmentWithHeadToTailMatch(self):
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R3-seed,15,0,2,0,TTATCCTACTTATCCTACTTATCCAAA
+""".splitlines(True)
+        
+        expected_text = """\
+E1234_S1,R3-seed,R3,15,LSYLSYLSK,KFQTPREH
+"""
+        
+        self.report.read(aligned_reads)
+        self.report.write_failure(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
+    def testGoodAlignmentWithTinyCoordinateReference(self):
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,2,0,AAATTTCGATTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTAC
+""".splitlines(True)
+        
+        expected_text = ""
+        
+        self.report.read(aligned_reads)
+        self.report.write_failure(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
     def testFailedAlignmentWithOffset(self):
         """ Be careful that an offset from the seed reference doesn't match
         the dashes in the failed alignment.
@@ -518,11 +584,9 @@ E1234_S1,R1-seed,15,0,2,3,TTATCCTAC
 """.splitlines(True)
         
         expected_text = """\
-sample,seed,region,qcut,queryseq,refseq
 E1234_S1,R1-seed,R1,15,-LSY,KFR
 """
         
-        self.report.write_failure_header(self.report_file)
         self.report.read(aligned_reads)
         self.report.write_failure(self.report_file)
         
@@ -766,11 +830,11 @@ E1234_S1,R1-seed,15,R1,3,5,AAATTTTCA
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
     def testVariantWhenAlignFails(self):
-        """ Coordinate reference is KFR, read is SGG.
+        """ Coordinate reference is KFR, read is SLS.
         """
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,TCAGGGGGG
+E1234_S1,R1-seed,15,0,10,0,TCACTCTCT
 """.splitlines(True)
           
         expected_text = ""
