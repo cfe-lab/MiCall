@@ -161,6 +161,7 @@ class SequenceReport(object):
                                                self.qcut)
                 for reading_frame in range(3):
                     self.seed_aminos[reading_frame] = []
+            self.insert_writer.add_nuc_read('-'*offset + nuc_seq, count)
                     
             for reading_frame, frame_seed_aminos in self.seed_aminos.iteritems():
                 offset_nuc_seq = '-' * (reading_frame + offset) + nuc_seq
@@ -175,10 +176,6 @@ class SequenceReport(object):
                     codon = offset_nuc_seq[nuc_pos:nuc_pos + 3]
                     frame_seed_aminos[codon_index].count_nucleotides(codon, count)
                 
-                if (reading_frame == 0):
-                    #TODO: avoid translating twice
-                    self.insert_writer.add_read(translate(offset_nuc_seq.upper()), count)
-            
     def _pair_align(self, reference, query):
         """ Align a query sequence to a reference sequence using hyphy.
         
@@ -205,12 +202,21 @@ class SequenceReport(object):
             if score < max_score:
                 continue
             max_score = score
-            best_alignment = (consensus, aquery, aref, frame_seed_aminos)
+            best_alignment = (reading_frame,
+                              consensus,
+                              aquery,
+                              aref,
+                              frame_seed_aminos)
         
         if best_alignment is None:
             report_aminos = []
         else:
-            consensus, aquery, aref, frame_seed_aminos = best_alignment
+            (reading_frame,
+             consensus,
+             aquery,
+             aref,
+             frame_seed_aminos) = best_alignment
+            self.reading_frames[coordinate_name] = reading_frame
             self.consensus[coordinate_name] = consensus
             consensus_index = ref_index = 0
             coordinate_inserts = set(range(len(consensus)))
@@ -241,6 +247,7 @@ class SequenceReport(object):
         aligned_reads = list(aligned_reads) # let us run multiple passes
         self.seed_aminos = {} # {reading_frame: [SeedAmino(consensus_index)]}
         self.reports = {} # {coord_name: [ReportAmino()]}
+        self.reading_frames = {} # {coord_name: reading_frame}
         self.inserts = {} # {coord_name: set([consensus_index])}
         self.consensus = {} # {coord_name: consensus_amino_seq}
         self.variants = {} # {coord_name: [(count, nuc_seq)]}
@@ -393,7 +400,9 @@ class SequenceReport(object):
     
     def write_insertions(self):
         for coordinate_name, coordinate_inserts in self.inserts.iteritems():
-            self.insert_writer.write(coordinate_inserts, coordinate_name)
+            self.insert_writer.write(coordinate_inserts,
+                                     coordinate_name,
+                                     self.reading_frames[coordinate_name])
     
 class SeedAmino(object):
     def __init__(self, consensus_index):
@@ -532,22 +541,20 @@ class InsertionWriter(object):
         self.sample_name = sample_name
         self.seed = seed
         self.qcut = qcut
-        self.pcache = {}
+        self.nuc_seqs = {} # {nuc_seq: count}
     
-    def add_read(self, offset_sequence, count):
+    def add_nuc_read(self, offset_sequence, count):
         """ Add a read to the group.
         
-        @param offset_sequence: the sequence of the read that has had dashes
-            added to offset it into the consensus sequence coordinates
+        @param offset_sequence: the nucleotide sequence of the read that has
+            had dashes added to offset it into the consensus sequence
+            coordinates
         @param count: the number of times this sequence was read
         """
-        p = offset_sequence
-        if p not in self.pcache:
-            # retain linkage info for reporting insertions
-            self.pcache.update({p: 0})
-        self.pcache[p] += count
+        current_count = self.nuc_seqs.get(offset_sequence, 0)
+        self.nuc_seqs[offset_sequence] = current_count + count
         
-    def write(self, inserts, region):
+    def write(self, inserts, region, reading_frame=0):
         """ Write any insert ranges to the file.
         
         Sequence data comes from the reads that were added to the current group.
@@ -555,6 +562,8 @@ class InsertionWriter(object):
             reported as insertions.
         @param region: the name of the coordinate region the current group was
             mapped to
+        @param reading_frame: the reading frame to use when translating
+            nucleotide sequences to amino acids - an integer from 0 to 2.
         """
         if len(inserts) == 0:
             return
@@ -576,10 +585,12 @@ class InsertionWriter(object):
         for left, right in insert_ranges:
             current_counts = {}
             insert_counts[left] = current_counts
-            for p, count in self.pcache.iteritems():
-                insert_seq = p[left:right]
-                current_count = current_counts.get(insert_seq, 0)
-                current_counts[insert_seq] = current_count + count
+            for nuc_seq, count in self.nuc_seqs.iteritems():
+                framed_nuc_seq = reading_frame * '-' + nuc_seq
+                insert_nuc_seq = framed_nuc_seq[left*3:right*3]
+                insert_amino_seq = translate(insert_nuc_seq)
+                current_count = current_counts.get(insert_amino_seq, 0)
+                current_counts[insert_amino_seq] = current_count + count
 
         # record insertions to CSV
         for left, counts in insert_counts.iteritems():

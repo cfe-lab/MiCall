@@ -50,6 +50,7 @@ def main():
         
     with open("projects.json", "w") as f:
         json.dump(dump, f, sort_keys=True, indent=2, separators=(',', ': '))
+        f.write('\n')
     
     print "Done."
 

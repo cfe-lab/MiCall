@@ -431,6 +431,27 @@ E1234_S1,R3-seed,R3,15,5,G,9
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
         self.assertMultiLineEqual(expected_insertions,
                                   self.insertion_file.getvalue())
+    
+    def testInsertionInDifferentReadingFrame(self):
+        """ Delete part of the first codon to throw off the reading frame.
+        """
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R3-seed,15,0,9,0,AATTTCAGACTGGGCCCCGAGAGCAT
+""".splitlines(True)
+           
+        expected_insertions = """\
+sample,seed,region,qcut,left,insert,count
+E1234_S1,R3-seed,R3,15,5,G,9
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_amino_counts(self.report_file)
+        self.report.write_insertions()
+        
+        self.assertMultiLineEqual(expected_insertions,
+                                  self.insertion_file.getvalue())
+        
     def testMultipleCoordinateInsertionReport(self):
         """ Two coordinate regions map the same seed region, the consensus
         has an insertion relative to only one of them.
@@ -1060,13 +1081,15 @@ class InsertionWriterTest(unittest.TestCase):
     def setUp(self):
         self.writer = aln2counts.InsertionWriter(insert_file=StringIO.StringIO())
         self.writer.start_group(sample_name='E1234_S1', seed='R1-seed', qcut=15)
+        self.nuc_seq_acdef = 'GCTTGTGACGAGTTT'
+        self.nuc_seq_afdef = 'GCTTTTGACGAGTTT'
         
     def testNoInserts(self):
         expected_text = """\
 sample,seed,region,qcut,left,insert,count
 """
         
-        self.writer.add_read(offset_sequence='ACDEF', count=1)
+        self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(inserts=[], region='R1')
         
         self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
@@ -1077,8 +1100,23 @@ sample,seed,region,qcut,left,insert,count
 E1234_S1,R1-seed,R1,15,3,D,1
 """
         
-        self.writer.add_read(offset_sequence='ACDEF', count=1)
+        self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(inserts=[2], region='R1')
+        
+        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        
+    def testInsertDifferentReadingFrame(self):
+        """ Add a partial codon at the start of the read to shift the reading
+        frame.
+        """
+        expected_text = """\
+sample,seed,region,qcut,left,insert,count
+E1234_S1,R1-seed,R1,15,4,D,1
+"""
+        
+        self.writer.add_nuc_read(offset_sequence='A' + self.nuc_seq_acdef,
+                                 count=1)
+        self.writer.write(inserts=[3], region='R1', reading_frame=2)
         
         self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
         
@@ -1088,7 +1126,8 @@ sample,seed,region,qcut,left,insert,count
 E1234_S1,R1-seed,R1,15,3,D,1
 """
         
-        self.writer.add_read(offset_sequence='-CDEFG', count=1)
+        #                                            C  D  E  F
+        self.writer.add_nuc_read(offset_sequence='---TGTGACGAGTTT', count=1)
         self.writer.write(inserts=[2], region='R1')
         
         self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
@@ -1100,7 +1139,8 @@ E1234_S1,R1-seed,R1,15,3,D,1
 E1234_S1,R1-seed,R1,15,5,F,1
 """
         
-        self.writer.add_read(offset_sequence='-CDEFG', count=1)
+        #                                            C  D  E  F  G
+        self.writer.add_nuc_read(offset_sequence='---TGTGACGAGTTTGGG', count=1)
         self.writer.write(inserts=[2, 4], region='R1')
         
         self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
@@ -1111,8 +1151,8 @@ sample,seed,region,qcut,left,insert,count
 E1234_S1,R1-seed,R1,15,3,D,2
 """
         
-        self.writer.add_read(offset_sequence='ACDEF', count=1)
-        self.writer.add_read(offset_sequence='AFDEF', count=1)
+        self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
+        self.writer.add_nuc_read(offset_sequence=self.nuc_seq_afdef, count=1)
         self.writer.write(inserts=[2], region='R1')
         
         self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
@@ -1120,13 +1160,13 @@ E1234_S1,R1-seed,R1,15,3,D,2
     def testDifferentInserts(self):
         expected_text = """\
 sample,seed,region,qcut,left,insert,count
-E1234_S1,R1-seed,R1,15,3,D,2
-E1234_S1,R1-seed,R1,15,3,F,3
+E1234_S1,R1-seed,R1,15,2,C,2
+E1234_S1,R1-seed,R1,15,2,F,3
 """
         
-        self.writer.add_read(offset_sequence='ACDEF', count=2)
-        self.writer.add_read(offset_sequence='ACFEF', count=3)
-        self.writer.write(inserts=[2], region='R1')
+        self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=2)
+        self.writer.add_nuc_read(offset_sequence=self.nuc_seq_afdef, count=3)
+        self.writer.write(inserts=[1], region='R1')
         
         self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
 
@@ -1136,7 +1176,7 @@ sample,seed,region,qcut,left,insert,count
 E1234_S1,R1-seed,R1,15,3,DE,1
 """
         
-        self.writer.add_read(offset_sequence='ACDEF', count=1)
+        self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(inserts=[2,3], region='R1')
         
         self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
@@ -1147,7 +1187,7 @@ sample,seed,region,qcut,left,insert,count
 E1234_S1,R1-seed,R1,15,3,DE,1
 """
         
-        self.writer.add_read(offset_sequence='ACDEF', count=1)
+        self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(inserts=(3, 2), region='R1')
         
         self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
