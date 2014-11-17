@@ -264,16 +264,7 @@
       "regions": [
         {
           "coordinate_region": "V3LOOP",
-          "key_positions": [
-            {
-              "end_pos": 14,
-              "start_pos": 1
-            },
-            {
-              "end_pos": 36,
-              "start_pos": 17
-            }
-          ],
+          "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,

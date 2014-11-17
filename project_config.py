@@ -74,3 +74,15 @@ class ProjectConfig(object):
                 if region['coordinate_region'] == coordinate_region:
                     max_variants = max(project['max_variants'], max_variants)
         return max_variants
+    
+    def getProjectSeeds(self, project_name):
+        """ Return all the seed regions used by a project.
+        
+        @return a set of seed region names
+        """
+        
+        seeds = set()
+        for region in self.config['projects'][project_name]['regions']:
+            seeds.add(region['seed_region'])
+        
+        return seeds

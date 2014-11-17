@@ -327,3 +327,11 @@ ACTGAAAGGG
         
         self.assertRaises(KeyError, self.config.getReference, "R1-seed")
         self.assertSequenceEqual("GACCTA", self.config.getReference("R2-seed"))
+
+    def testProjectSeeds(self):
+        expected_seeds = set(['R1-seed'])
+        
+        self.config.load(self.defaultJsonIO)
+        seeds = self.config.getProjectSeeds('R1')
+        
+        self.assertSetEqual(expected_seeds, seeds)

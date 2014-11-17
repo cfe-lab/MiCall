@@ -4,8 +4,8 @@ Setting up a developer workstation
 This will document the installation steps to get the miseq pipeline running locally on your workstation.
 The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferred IDE or operating system.
 
-Java, Python, and Oracle
-------------------------
+Java and Python
+---------------
 1. Check that you are running a 64-bit operating system, or bowtie2 won't work.
    Check About this Computer under the gear menu.
 2. If you want to edit Python code using PyDev and Eclipse, you will need to
@@ -36,29 +36,6 @@ Java, Python, and Oracle
         sudo apt-get install python-pip
         sudo pip install testfixtures
         sudo pip install requests
-
-8.  Install [Oracle Instant Client][oracle]. Use the basic lite version, and 
-    test that sqlplus works. You will probably have to follow the steps to set 
-    up the libraries, and you may have to run sqlplus64 instead of sqlplus.
-
-        sqlplus USER@\"//192.168.67.9:1521/CFE9ir2\"
-
-    If you want to have history and tab expansion in sqlplus, install rlwrap:
-
-        sudo apt-get install rlwrap
-        alias sqlplus="rlwrap sqlplus"
-
-    You also need to set the `ORACLE_HOME` environment variable and make it
-    visible to sudo.
-
-        sudo vi /etc/profile.d/oracle.sh # Add the next line:
-        export ORACLE_HOME=/usr/lib/oracle/12.1/client64
-
-9. To use Oracle from Python, you will need the cx_Oracle package.
-
-        sudo env ORACLE_HOME=$ORACLE_HOME pip install cx_Oracle
-
-[oracle]: https://help.ubuntu.com/community/Oracle%20Instant%20Client
 
 Eclipse
 -------

@@ -34,16 +34,13 @@ def main():
         response = session.post(settings.qai_path + "/account/login",
                                 data={'user_login': settings.qai_user,
                                       'user_password': settings.qai_password})
-        # Would be nice to check response code, but it's always 200
-        if 'loginform' in response.text:
+        if response.status_code == requests.codes.forbidden:  # @UndefinedVariable
             exit('Login failed, check qai_user in settings.py')
         
-        regions = session.get(settings.qai_path + "/lab_miseq_regions.json?mode=dump",
-                              auth=(settings.qai_user,
-                                    settings.qai_password))
-        projects = session.get(settings.qai_path + "/lab_miseq_projects.json?mode=dump",
-                               auth=(settings.qai_user,
-                                     settings.qai_password))
+        regions = session.get(
+            settings.qai_path + "/lab_miseq_regions.json?mode=dump")
+        projects = session.get(
+            settings.qai_path + "/lab_miseq_projects.json?mode=dump")
         dump['regions'] = regions.json()
         dump['projects'] = projects.json()
         check_key_positions(dump['projects'], sys.stdout)

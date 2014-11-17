@@ -2,7 +2,7 @@
 To make pipeline portable, allow user to specify local paths and thread counts.
 """
 
-pipeline_version = '6.3'
+pipeline_version = '6.4'
 
 production = False  # set this to True to push results to NAS
 filter_cross_contaminants = False
@@ -59,7 +59,7 @@ v3_mincounts = [0, 50, 100, 1000]       # Min number of reads to contribute to %
 ## aln2counts parameters
 conseq_mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 
-# Default database user and password.
-oracle_uploader = "FILLINUSERNAME"
-oracle_uploader_pass = "****"
-oracle_db = "//192.168.X.Y:port/DBname"
+# Connection to QAI RESTful API
+qai_user = "FILLINUSERNAME"
+qai_password = "****"
+qai_path = "http://192.168.X.Y:port"
