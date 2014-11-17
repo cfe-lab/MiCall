@@ -18,7 +18,7 @@ import miseq_logging
 from sample_sheet_parser import sample_sheet_parser
 from settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
     NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, base_path
-import update_oracle
+import update_qai
 
 
 if sys.version_info[:2] != (2, 7):
@@ -250,7 +250,7 @@ while True:
                 with tarfile.open(tar_path) as tar:
                     tar.extractall(result_path_final)
             
-            update_oracle.process_folder(result_path_final, logger)
+            update_qai.process_folder(result_path_final, logger)
             
             mark_run_as_done(result_path_final)
             
