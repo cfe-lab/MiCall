@@ -5,9 +5,6 @@ import sam2aln
 
 
 class RemapReaderTest(unittest.TestCase):
-#     def setUp(self):
-#         self.ss = sample_sheet_parser(StringIO.StringIO(self.stub_sample_sheet))
-
     def test_grouping(self):
         remap_file = StringIO.StringIO("""\
 sample_name,qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual

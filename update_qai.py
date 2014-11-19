@@ -154,6 +154,110 @@ def upload_hla_to_qai(sample_file, runid, version, session):
                    'ind': ind,
                    'cnt': cnt,
                    'string': curr_seq})
+        
+def build_review_decisions(coverage_file,
+                           collated_counts_file,
+                           sample_sheet,
+                           sequencings,
+                           region_defaults):
+    """ Build a list of request objects that will create the review decision
+    records.
+    
+    @param coverage_file: CSV file with coverage scores
+    @param collated_counts_file: CSV file with read counts
+    @param sample_sheet: the sample sheet for the run
+    @param sequencings: the sequencing records from QAI
+    @param region_defaults: [{'name': name, 'default_project_region': id}]
+        defaults to use for off-target regions
+    """
+    
+    decisions = []
+    sample_tags = {}
+    for sample in sample_sheet['DataSplit']:
+        sample_tags[sample['filename']] = sample['tags']
+    region_default_map = {}
+    for region_default in region_defaults:
+        project_region = region_default['default_project_region']
+        if project_region is not None:
+            region_default_map[region_default['name']] = project_region
+    
+    sequencing_tags = dict([(sequencing['tag'], sequencing)
+                            for sequencing in sequencings])
+    
+    counts_map = {} # {tags: raw, (tags, seed): mapped]}
+    # sample_name,type,count
+    for counts in csv.DictReader(collated_counts_file):
+        count = int(counts['count'])
+        tags = sample_tags[counts['sample_name']]
+        sequencing = sequencing_tags[tags]
+        count_type = counts['type']
+        if count_type == 'raw':
+            counts_map[tags] = count
+        elif count_type != 'unmapped':
+            seed = count_type.split(' ', 1)[1]
+            key = tags, seed
+            current_count = counts_map.get(key, 0)
+            counts_map[key] = max(current_count, count)
+    
+    #sample,region,q.cut,min.coverage,which.key.pos,off.score,on.score
+    for coverage in csv.DictReader(coverage_file):
+        tags = sample_tags[coverage['sample']]
+        sequencing = sequencing_tags[tags]
+        score = int(coverage['on.score'])
+        target_project_regions = sequencing['target_project_regions']
+        project_region = target_project_regions.get(coverage['region'])
+        if project_region is None:
+            project_region = region_default_map[coverage['region']]
+            score = int(coverage['off.score'])
+        raw_count = counts_map[tags]
+        mapped_count = counts_map[(tags, project_region['seed'])]
+        decisions.append({'sequencing_id': sequencing['id'],
+                          'project_region_id': project_region['id'],
+                          'score': score,
+                          'min_coverage': int(coverage['min.coverage']),
+                          'min_coverage_pos': int(coverage['which.key.pos']),
+                          'raw_reads': raw_count,
+                          'mapped_reads': mapped_count})
+    return decisions
+
+def upload_review_to_qai(coverage_file,
+                         collated_counts_file,
+                         run,
+                         sample_sheet,
+                         session):
+    """ Create a review.
+    
+    @param coverage_file: the coverage scores to upload
+    @param collated_counts_file: CSV file of read counts to upload
+    @param run: a hash with the attributes of the run record, including a
+        sequencing summary of all the samples and their target projects
+    @param sample_sheet: details of the run so we can tell which sample used
+        which tags
+    @param session: the QAI session
+    """
+    
+    runid = run['id']
+    sequencings = run['sequencing_summary']
+    
+    response = session.get(
+        settings.qai_path + "/lab_miseq_regions.json?summary=default_project_region")
+    region_defaults = response.json()
+    
+    response = send_json(session,
+                         "/lab_miseq_reviews",
+                         {'runid': runid,
+                          'pipeline_id': find_pipeline_id(session)})
+    review_id = response.json()['id']
+    
+    decisions = build_review_decisions(coverage_file,
+                                       collated_counts_file,
+                                       sample_sheet,
+                                       sequencings,
+                                       region_defaults)
+    for decision in decisions:
+        send_json(session,
+                  "/lab_miseq_reviews/%d/lab_miseq_review_decisions" % review_id,
+                  decision)
 
 def clean_runname(runname):
     try:
@@ -163,14 +267,15 @@ def clean_runname(runname):
         clean_runname = runname
     return clean_runname
 
-def find_runid(session, runname):
+def find_run(session, runname):
     """ Query QAI to find the run id for a given run name.
     
-    @return: the run id.
+    @return: a hash with the attributes of the run record, including a
+        sequencing summary of all the samples and their target projects.
     """
     cleaned_runname = clean_runname(runname)
     response = session.get(
-        settings.qai_path + "/lab_miseq_runs.json?runname=" + cleaned_runname)
+        settings.qai_path + "/lab_miseq_runs.json?summary=sequencing&runname=" + cleaned_runname)
     runs = response.json()
     rowcount = len(runs)
     if rowcount == 0:
@@ -179,7 +284,25 @@ def find_runid(session, runname):
         raise RuntimeError("Found {} runs with runname {!r}.".format(
             rowcount,
             cleaned_runname))
-    return runs[0]['id']
+    return runs[0]
+
+def find_pipeline_id(session):
+    """ Query QAI to find the pipeline id for the current version.
+    
+    @return: the pipeline id.
+    """
+    response = session.get(
+        settings.qai_path + "/lab_miseq_pipelines.json?version=" + settings.pipeline_version)
+    pipelines = response.json()
+    rowcount = len(pipelines)
+    if rowcount == 0:
+        raise RuntimeError("No pipeline found with version {!r}.".format(
+            settings.pipeline_version))
+    if rowcount != 1:
+        raise RuntimeError("Found {} pipelines with version {!r}.".format(
+            rowcount,
+            settings.pipeline_version))
+    return pipelines[0]['id']
     
 def check_existing_data(session, sample_sheet, logger):
     """ Find the run id, and check for existing detail records.
@@ -188,8 +311,12 @@ def check_existing_data(session, sample_sheet, logger):
     @param session: open QAI session
     @param sample_sheet: parsed data from the sample sheet
     @param logger: for reporting any existing records
+    @return: a hash with the attributes of the run record, including a
+        sequencing summary of all the samples and their target projects.
     """
-    runid = find_runid(session, sample_sheet["Experiment Name"])
+    run = find_run(session, sample_sheet["Experiment Name"])
+    runid = run['id']
+    
     response = session.get(
         settings.qai_path + "/lab_miseq_runs/%d/lab_miseq_conseqs.json?pipelineversion=%s" %
         (runid, settings.pipeline_version))
@@ -198,6 +325,7 @@ def check_existing_data(session, sample_sheet, logger):
         response = session.delete(
             settings.qai_path + "/lab_miseq_runs/%d/lab_miseq_conseqs/%d" % (runid, conseq['id']))
         response.raise_for_status()
+    
     response = session.get(
         settings.qai_path + "/lab_miseq_runs/%d/lab_miseq_hla_b_seqs.json?pipelineversion=%s" %
         (runid, settings.pipeline_version))
@@ -206,13 +334,14 @@ def check_existing_data(session, sample_sheet, logger):
         response = session.delete(
             settings.qai_path + "/lab_miseq_runs/%d/lab_miseq_hla_b_seqs/%d" % (runid, hla_b_seq['id']))
         response.raise_for_status()
+    
     total_rowcount = len(conseqs) + len(hla_b_seqs)
     if total_rowcount > 0:
         logger.warn('Deleted {} existing records for run id {}'.format(
             total_rowcount,
             runid))
     
-    return runid
+    return run
 
 def load_ok_sample_regions(result_folder):
     ok_sample_regions = set()
@@ -228,7 +357,9 @@ def load_ok_sample_regions(result_folder):
 def process_folder(result_folder, logger):
     logger.info('Uploading data to Oracle from {}'.format(result_folder))
     collated_conseqs = os.path.join(result_folder, 'collated_conseqs.csv')
+    collated_counts = os.path.join(result_folder, 'collated_counts.csv')
     nuc_variants = os.path.join(result_folder, 'nuc_variants.csv')
+    coverage_scores = os.path.join(result_folder, 'coverage_scores.csv')
     all_results_path, _ = os.path.split(result_folder)
     run_path, _ = os.path.split(all_results_path)
     sample_sheet_file = os.path.join(run_path, "SampleSheet.csv")
@@ -243,7 +374,8 @@ def process_folder(result_folder, logger):
                                       'user_password': settings.qai_password})
         if response.status_code == requests.codes.forbidden:  # @UndefinedVariable
             exit('Login failed, check qai_user in settings.py')
-        runid = check_existing_data(session, sample_sheet, logger)
+        run = check_existing_data(session, sample_sheet, logger)
+        runid = run['id']
 
         with open(collated_conseqs, "rU") as f:
             upload_conseqs_to_qai(f,
@@ -255,6 +387,12 @@ def process_folder(result_folder, logger):
                                   session)
         with open(nuc_variants, "rU") as f:
             upload_hla_to_qai(f, runid, settings.pipeline_version, session)
+        with open(coverage_scores, "rU") as f, open(collated_counts, "rU") as f2:
+            upload_review_to_qai(f,
+                                 f2,
+                                 run,
+                                 sample_sheet,
+                                 session)
 
 def main():
     args, parser = parse_args()
