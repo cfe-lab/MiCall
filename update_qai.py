@@ -181,15 +181,11 @@ def build_review_decisions(coverage_file,
         if project_region is not None:
             region_default_map[region_default['name']] = project_region
     
-    sequencing_tags = dict([(sequencing['tag'], sequencing)
-                            for sequencing in sequencings])
-    
     counts_map = {} # {tags: raw, (tags, seed): mapped]}
     # sample_name,type,count
     for counts in csv.DictReader(collated_counts_file):
         count = int(counts['count'])
         tags = sample_tags[counts['sample_name']]
-        sequencing = sequencing_tags[tags]
         count_type = counts['type']
         if count_type == 'raw':
             counts_map[tags] = count
@@ -202,11 +198,23 @@ def build_review_decisions(coverage_file,
     #sample,region,q.cut,min.coverage,which.key.pos,off.score,on.score
     for coverage in csv.DictReader(coverage_file):
         tags = sample_tags[coverage['sample']]
-        sequencing = sequencing_tags[tags]
         score = int(coverage['on.score'])
-        target_project_regions = sequencing['target_project_regions']
-        project_region = target_project_regions.get(coverage['region'])
-        if project_region is None:
+        project_region = None
+        sequencing_with_target = None
+        sequencing_with_tags = None
+        for sequencing in sequencings:
+            if sequencing['tag'] != tags:
+                continue
+            sequencing_with_tags = sequencing
+            target_project_regions = sequencing['target_project_regions']
+            project_region = target_project_regions.get(coverage['region'])
+            if project_region is not None:
+                sequencing_with_target = sequencing
+                break
+        if project_region is not None:
+            sequencing = sequencing_with_target
+        else:
+            sequencing = sequencing_with_tags
             project_region = region_default_map[coverage['region']]
             score = int(coverage['off.score'])
         raw_count = counts_map[tags]
