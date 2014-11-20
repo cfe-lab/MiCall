@@ -159,7 +159,7 @@ def build_review_decisions(coverage_file,
                            collated_counts_file,
                            sample_sheet,
                            sequencings,
-                           region_defaults):
+                           projects):
     """ Build a list of request objects that will create the review decision
     records.
     
@@ -167,19 +167,13 @@ def build_review_decisions(coverage_file,
     @param collated_counts_file: CSV file with read counts
     @param sample_sheet: the sample sheet for the run
     @param sequencings: the sequencing records from QAI
-    @param region_defaults: [{'name': name, 'default_project_region': id}]
-        defaults to use for off-target regions
+    @param projects: ProjectConfig object
     """
     
     decisions = []
     sample_tags = {}
     for sample in sample_sheet['DataSplit']:
         sample_tags[sample['filename']] = sample['tags']
-    region_default_map = {}
-    for region_default in region_defaults:
-        project_region = region_default['default_project_region']
-        if project_region is not None:
-            region_default_map[region_default['name']] = project_region
     
     counts_map = {} # {tags: raw, (tags, seed): mapped]}
     # sample_name,type,count
@@ -195,32 +189,31 @@ def build_review_decisions(coverage_file,
             current_count = counts_map.get(key, 0)
             counts_map[key] = max(current_count, count)
     
-    #sample,region,q.cut,min.coverage,which.key.pos,off.score,on.score
+    #sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
     for coverage in csv.DictReader(coverage_file):
         tags = sample_tags[coverage['sample']]
-        score = int(coverage['on.score'])
-        project_region = None
+        score = int(coverage['off.score'])
         sequencing_with_target = None
         sequencing_with_tags = None
         for sequencing in sequencings:
             if sequencing['tag'] != tags:
                 continue
             sequencing_with_tags = sequencing
-            target_project_regions = sequencing['target_project_regions']
-            project_region = target_project_regions.get(coverage['region'])
-            if project_region is not None:
-                sequencing_with_target = sequencing
-                break
-        if project_region is not None:
-            sequencing = sequencing_with_target
-        else:
-            sequencing = sequencing_with_tags
-            project_region = region_default_map[coverage['region']]
-            score = int(coverage['off.score'])
+            if sequencing['target_project'] != coverage['project']:
+                continue
+            sequencing_with_target = sequencing
+            score = int(coverage['on.score'])
+            break
+        sequencing = sequencing_with_target or sequencing_with_tags
+        if sequencing is None:
+            raise StandardError("No sequencing found with tags '%s'." % tags)
+        project_region_id, seed = projects.findProjectRegion(
+            coverage['project'],
+            coverage['region'])
         raw_count = counts_map[tags]
-        mapped_count = counts_map[(tags, project_region['seed'])]
+        mapped_count = counts_map[(tags, seed)]
         decisions.append({'sequencing_id': sequencing['id'],
-                          'project_region_id': project_region['id'],
+                          'project_region_id': project_region_id,
                           'score': score,
                           'min_coverage': int(coverage['min.coverage']),
                           'min_coverage_pos': int(coverage['which.key.pos']),
@@ -247,10 +240,6 @@ def upload_review_to_qai(coverage_file,
     runid = run['id']
     sequencings = run['sequencing_summary']
     
-    response = session.get(
-        settings.qai_path + "/lab_miseq_regions.json?summary=default_project_region")
-    region_defaults = response.json()
-    
     response = send_json(session,
                          "/lab_miseq_reviews",
                          {'runid': runid,
@@ -261,7 +250,7 @@ def upload_review_to_qai(coverage_file,
                                        collated_counts_file,
                                        sample_sheet,
                                        sequencings,
-                                       region_defaults)
+                                       ProjectConfig.loadDefault())
     for decision in decisions:
         send_json(session,
                   "/lab_miseq_reviews/%d/lab_miseq_review_decisions" % review_id,

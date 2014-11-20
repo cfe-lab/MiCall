@@ -86,3 +86,22 @@ class ProjectConfig(object):
             seeds.add(region['seed_region'])
         
         return seeds
+
+    def findProjectRegion(self, project_name, coordinate_region_name):
+        """ Find a project region that matches the project and coordinate region.
+        
+        @param project_name: name of the project to find
+        @param coordinate_region_name: name of the coordinate region to find
+            within that project. If the project has more than one region with
+            the same coordinate region, just return one of them.
+        @return (project_region_id, seed_name)
+        """
+        project = self.config['projects'].get(project_name)
+        if project is None:
+            raise KeyError('Project %r not found.' % project_name)
+        
+        for project_region in project['regions']:
+            if project_region['coordinate_region'] == coordinate_region_name:
+                return project_region['id'], project_region['seed_region']
+        raise KeyError('Coordinate region %r not found in project %rx' %
+                       (coordinate_region_name, project_name))

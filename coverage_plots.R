@@ -26,6 +26,7 @@ record.score <- function(
         region.key.pos,
         coverage.levels,
         sample, 
+        project.name,
         region, 
         q.cut) {
     # Add a row of scores to the scores matrix.
@@ -42,6 +43,7 @@ record.score <- function(
     # coverage.levels - a vector of four coverage levels that are thresholds
     #	for the four different scores in on-target regions.
     # sample - the sample name
+    # project.name - the project name
     # region - the region name
     # q.cut - the quality cutoff used for this data
     # Returns scores with a new row added.
@@ -75,7 +77,8 @@ record.score <- function(
                 coverage.levels,
                 labels=c(1, 2, 3, 4)))
         scores <- rbind(scores, c(
-                        sample, 
+                        sample,
+                        project.name,
                         region, 
                         q.cut, 
                         min.coverage, 
@@ -83,7 +86,9 @@ record.score <- function(
                         off.score,
                         on.score))
     } else {
-        scores <- rbind(scores, c(sample, region, q.cut, NA, NA, 0, 1))
+        scores <- rbind(
+                scores,
+                c(sample, project.name, region, q.cut, NA, NA, 0, 1))
     }
 }
 
@@ -173,6 +178,7 @@ for (project.name in names(projects)) {
 
 scores.columns <- c(
         'sample',
+        'project',
         'region',
         'q.cut',
         'min.coverage',
@@ -250,6 +256,7 @@ for (i in seq_along(coverage)) {
                     project.positions[[project.name]],
                     score.breaks,
                     sample,
+                    project.name,
                     region,
                     q.cut)
         }

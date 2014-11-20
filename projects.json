@@ -5,6 +5,7 @@
       "regions": [
         {
           "coordinate_region": "GP41",
+          "id": 10006,
           "key_positions": [
             {
               "end_pos": 40,
@@ -27,6 +28,7 @@
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-E1",
+          "id": 10011,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 101,
@@ -35,6 +37,7 @@
         },
         {
           "coordinate_region": "HCV1A-H77-E2",
+          "id": 10012,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 101,
@@ -43,6 +46,7 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS2",
+          "id": 10013,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 101,
@@ -51,6 +55,7 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS3",
+          "id": 10014,
           "key_positions": [
             {
               "end_pos": null,
@@ -92,6 +97,7 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS4a",
+          "id": 10015,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 101,
@@ -100,6 +106,7 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS4b",
+          "id": 10016,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 101,
@@ -108,6 +115,7 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS5a",
+          "id": 10017,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 101,
@@ -116,6 +124,7 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS5b",
+          "id": 10018,
           "key_positions": [
             {
               "end_pos": 551,
@@ -129,6 +138,7 @@
         },
         {
           "coordinate_region": "HCV1A-H77-core",
+          "id": 10019,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 101,
@@ -137,6 +147,7 @@
         },
         {
           "coordinate_region": "HCV1A-H77-p7",
+          "id": 10020,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 101,
@@ -150,6 +161,7 @@
       "regions": [
         {
           "coordinate_region": "HLA-B-exon2",
+          "id": 10000,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 11,
@@ -158,6 +170,7 @@
         },
         {
           "coordinate_region": "HLA-B-exon3",
+          "id": 10001,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 11,
@@ -171,6 +184,7 @@
       "regions": [
         {
           "coordinate_region": "INT",
+          "id": 10021,
           "key_positions": [
             {
               "end_pos": null,
@@ -213,6 +227,7 @@
       "regions": [
         {
           "coordinate_region": "PR",
+          "id": 10002,
           "key_positions": [
             {
               "end_pos": 11,
@@ -291,6 +306,7 @@
       "regions": [
         {
           "coordinate_region": "PR",
+          "id": 10009,
           "key_positions": [
             {
               "end_pos": 11,
@@ -364,6 +380,7 @@
         },
         {
           "coordinate_region": "RT",
+          "id": 10010,
           "key_positions": [
             {
               "end_pos": 41,
@@ -502,6 +519,7 @@
       "regions": [
         {
           "coordinate_region": "RT",
+          "id": 10003,
           "key_positions": [
             {
               "end_pos": 41,
@@ -640,6 +658,7 @@
       "regions": [
         {
           "coordinate_region": "RT",
+          "id": 10008,
           "key_positions": [
             {
               "end_pos": null,
@@ -738,6 +757,7 @@
       "regions": [
         {
           "coordinate_region": "V3LOOP",
+          "id": 10004,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 101,
@@ -751,6 +771,7 @@
       "regions": [
         {
           "coordinate_region": "V3LOOP",
+          "id": 10007,
           "key_positions": [],
           "min_coverage1": 1,
           "min_coverage2": 101,

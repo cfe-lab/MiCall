@@ -12,7 +12,8 @@ class ProjectConfigurationTest(unittest.TestCase):
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_region": "R1-seed"
+          "seed_region": "R1-seed",
+          "id": 10042
         }
       ]
     }
@@ -335,3 +336,36 @@ ACTGAAAGGG
         seeds = self.config.getProjectSeeds('R1')
         
         self.assertSetEqual(expected_seeds, seeds)
+
+    def testFindProjectRegion(self):
+        expected_project_region_id = 10042
+        expected_seed = 'R1-seed'
+        self.config.load(self.defaultJsonIO)
+        
+        project_region_id, seed = self.config.findProjectRegion(
+            project_name="R1",
+            coordinate_region_name="R1")
+        
+        self.assertEqual(expected_project_region_id, project_region_id)
+        self.assertEqual(expected_seed, seed)
+
+    def testFindProjectRegionUnknownRegion(self):
+        self.config.load(self.defaultJsonIO)
+        
+        self.assertRaisesRegexp(
+            KeyError,
+            "Coordinate region 'RXXX' not found in project 'R1'",
+            self.config.findProjectRegion,
+            project_name='R1',
+            coordinate_region_name='RXXX')
+
+    def testFindProjectRegionUnknownProject(self):
+        self.config.load(self.defaultJsonIO)
+        
+        self.assertRaisesRegexp(
+            KeyError,
+            "Project 'RXXX' not found",
+            self.config.findProjectRegion,
+            project_name='RXXX',
+            coordinate_region_name='R1')
+        
