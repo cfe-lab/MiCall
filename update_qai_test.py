@@ -141,6 +141,7 @@ Sample1-Proj1_S1,Proj1,R1,15,1900,12,-3,4
 """)
         expected_decisions = [{'sequencing_id': 10001,
                                'project_region_id': 20001,
+                               'sample_name': 'Sample1-Proj1_S1',
                                'score': 4,
                                'min_coverage': 1900,
                                'min_coverage_pos': 12,
@@ -162,6 +163,7 @@ Sample1-Proj1_S1,Proj2,R2,15,1900,12,-3,4
 """)
         expected_decisions = [{'sequencing_id': 10001,
                                'project_region_id': 20002,
+                               'sample_name': 'Sample1-Proj1_S1',
                                'score': -3,
                                'min_coverage': 1900,
                                'min_coverage_pos': 12,
@@ -184,6 +186,7 @@ Sample2-Proj2-Sample3-Proj3_S2,Proj3,R3,15,190,20,-2,3
 """)
         expected_decisions = [{'sequencing_id': 10002,
                                'project_region_id': 20002,
+                               'sample_name': 'Sample2-Proj2-Sample3-Proj3_S2',
                                'score': 4,
                                'min_coverage': 1900,
                                'min_coverage_pos': 12,
@@ -191,6 +194,7 @@ Sample2-Proj2-Sample3-Proj3_S2,Proj3,R3,15,190,20,-2,3
                                'mapped_reads': 2000},
                               {'sequencing_id': 10003,
                                'project_region_id': 20003,
+                               'sample_name': 'Sample2-Proj2-Sample3-Proj3_S2',
                                'score': 3,
                                'min_coverage': 190,
                                'min_coverage_pos': 20,

@@ -94,7 +94,7 @@ def upload_conseqs_to_qai(conseqs_file,
         ok_region = sample_region in ok_sample_regions
         is_target_region = (sample_tags, row["region"]) in target_regions
         ok_for_release = ok_region and is_target_region
-        send_json(session,
+        post_json(session,
                   "/lab_miseq_runs/%d/lab_miseq_conseqs" % runid,
                   {"samplename": orig_sample_name,
                    # July 9, 2014: we can't do this properly right now 
@@ -109,12 +109,19 @@ def upload_conseqs_to_qai(conseqs_file,
                    "seq": curr_seq,
                    "ok_for_release": ok_for_release})
         
-def send_json(session, path, data):
+def post_json(session, path, data):
     response = session.post(
         settings.qai_path + path,
         data=json.dumps(data),
         headers={'Content-Type': 'application/json',
                  'Accept': 'application/json'})
+    response.raise_for_status()
+    return response
+
+def get_json(session, path):
+    response = session.get(
+        settings.qai_path + path,
+        headers={'Accept': 'application/json'})
     response.raise_for_status()
     return response
 
@@ -144,7 +151,7 @@ def upload_hla_to_qai(sample_file, runid, version, session):
         cnt = row['count']
         curr_seq = row['seq']
     
-        send_json(session,
+        post_json(session,
                   "/lab_miseq_runs/%d/lab_miseq_hla_b_seqs" % runid,
                   {'samplename': sample_name,
                    'testcode': None,
@@ -214,6 +221,7 @@ def build_review_decisions(coverage_file,
         mapped_count = counts_map[(tags, seed)]
         decisions.append({'sequencing_id': sequencing['id'],
                           'project_region_id': project_region_id,
+                          'sample_name': coverage['sample'],
                           'score': score,
                           'min_coverage': int(coverage['min.coverage']),
                           'min_coverage_pos': int(coverage['which.key.pos']),
@@ -240,7 +248,7 @@ def upload_review_to_qai(coverage_file,
     runid = run['id']
     sequencings = run['sequencing_summary']
     
-    response = send_json(session,
+    response = post_json(session,
                          "/lab_miseq_reviews",
                          {'runid': runid,
                           'pipeline_id': find_pipeline_id(session)})
@@ -252,7 +260,7 @@ def upload_review_to_qai(coverage_file,
                                        sequencings,
                                        ProjectConfig.loadDefault())
     for decision in decisions:
-        send_json(session,
+        post_json(session,
                   "/lab_miseq_reviews/%d/lab_miseq_review_decisions" % review_id,
                   decision)
 
@@ -271,8 +279,9 @@ def find_run(session, runname):
         sequencing summary of all the samples and their target projects.
     """
     cleaned_runname = clean_runname(runname)
-    response = session.get(
-        settings.qai_path + "/lab_miseq_runs.json?summary=sequencing&runname=" + cleaned_runname)
+    response = get_json(
+        session,
+        "/lab_miseq_runs?summary=sequencing&runname=" + cleaned_runname)
     runs = response.json()
     rowcount = len(runs)
     if rowcount == 0:
