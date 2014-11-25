@@ -345,7 +345,7 @@ def pileup_to_conseq (handle, qCutoff):
         if '+' in token:
             m = indel_re.findall(token)[0] # \+[0-9]+
             conseq += token[0]
-            if len(m) % 3 == 0:
+            if int(m) % 3 == 0:
                 # only add insertions that retain reading frame
                 conseq += token[1+len(m):]
         elif token == '-':

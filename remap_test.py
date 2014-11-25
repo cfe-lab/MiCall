@@ -1,3 +1,4 @@
+import StringIO
 import unittest
 
 import remap
@@ -36,3 +37,82 @@ class IsFirstReadTest(unittest.TestCase):
         isFirst = is_first_read(flag)
         
         self.assertEqual(isFirstExpected, isFirst)
+
+class PileupToConseqTest(unittest.TestCase):
+    def testInsertion(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t1\tN\t2\t^MG^Mg\tAA\n" +
+            "GP41-seed\t2\tN\t2\tCc\tAA\n" +
+            "GP41-seed\t3\tN\t2\tC+3ATAc+3ata\tAA\n" +
+            "GP41-seed\t4\tN\t2\tGg\tAA\n" +
+            "GP41-seed\t2\tN\t2\tCc\tAA\n" +
+            "GP41-seed\t2\tN\t2\tCc\tAA\n")
+        qCutoff = 20
+        expected_conseq = "GCCATAGCC"
+        
+        conseq = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertSequenceEqual(expected_conseq, conseq)
+        
+    def testInsertionShiftsFrame(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t1\tN\t2\t^MG^Mg\tAA\n" +
+            "GP41-seed\t2\tN\t2\tCc\tAA\n" +
+            "GP41-seed\t3\tN\t2\tC+2ATc+2at\tAA\n" +
+            "GP41-seed\t4\tN\t2\tGg\tAA\n" +
+            "GP41-seed\t5\tN\t2\tCc\tAA\n" +
+            "GP41-seed\t6\tN\t2\tCc\tAA\n")
+        qCutoff = 20
+        expected_conseq = "GCCGCC"
+        
+        conseq = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertSequenceEqual(expected_conseq, conseq)
+        
+    def testLongInsertion(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t1\tN\t2\t^MG^Mg\tAA\n" +
+            "GP41-seed\t2\tN\t2\tCc\tAA\n" +
+            "GP41-seed\t3\tN\t2\tC+12AAATTTAAATTTc+12aaatttaaattt\tAA\n" +
+            "GP41-seed\t4\tN\t2\tGg\tAA\n" +
+            "GP41-seed\t5\tN\t2\tCc\tAA\n" +
+            "GP41-seed\t6\tN\t2\tCc\tAA\n")
+        qCutoff = 20
+        expected_conseq = "GCCAAATTTAAATTTGCC"
+        
+        conseq = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertSequenceEqual(expected_conseq, conseq)
+        
+    def testDeletion(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t1\tN\t2\t^MG^Mg\tAA\n" +
+            "GP41-seed\t2\tN\t2\tCc\tAA\n" +
+            "GP41-seed\t3\tN\t2\tC-3NNNc-3nnn\tAA\n" +
+            "GP41-seed\t4\tN\t2\t**\tAA\n" +
+            "GP41-seed\t5\tN\t2\t**\tAA\n" +
+            "GP41-seed\t6\tN\t2\t**\tAA\n" +
+            "GP41-seed\t7\tN\t2\tGg\tAA\n" +
+            "GP41-seed\t8\tN\t2\tCc\tAA\n" +
+            "GP41-seed\t9\tN\t2\tCc\tAA\n")
+        qCutoff = 20
+        expected_conseq = "GCCGCC"
+        
+        conseq = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertSequenceEqual(expected_conseq, conseq)
+        
+    def testOffset(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t2\tN\t2\t^MC^Mc\tAA\n" +
+            "GP41-seed\t3\tN\t2\tCc\tAA\n" +
+            "GP41-seed\t4\tN\t2\tGg\tAA\n" +
+            "GP41-seed\t5\tN\t2\tCc\tAA\n" +
+            "GP41-seed\t6\tN\t2\tCc\tAA\n")
+        qCutoff = 20
+        expected_conseq = "NCCGCC"
+        
+        conseq = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertSequenceEqual(expected_conseq, conseq)
+        
