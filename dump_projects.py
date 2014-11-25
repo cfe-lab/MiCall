@@ -32,10 +32,10 @@ def main():
     dump = {}
     with requests.Session() as session:
         response = session.post(settings.qai_path + "/account/login",
-                                data={'user_login': settings.qai_user,
-                                      'user_password': settings.qai_password})
+                                data={'user_login': settings.qai_project_user,
+                                      'user_password': settings.qai_project_password})
         if response.status_code == requests.codes.forbidden:  # @UndefinedVariable
-            exit('Login failed, check qai_user in settings.py')
+            exit('Login failed, check qai_project_user in settings.py')
         
         regions = session.get(
             settings.qai_path + "/lab_miseq_regions.json?mode=dump")

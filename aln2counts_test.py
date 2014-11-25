@@ -1181,6 +1181,18 @@ E1234_S1,R1-seed,R1,15,3,DE,1
         
         self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
 
+    def testReadGapInInsert(self):
+        nuc_seq = 'GCTCTnGACGAGTTT'
+
+        expected_text = """\
+sample,seed,region,qcut,left,insert,count
+"""
+        
+        self.writer.add_nuc_read(nuc_seq, count=1)
+        self.writer.write(inserts=[1], region='R1')
+        
+        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+
     def testUnsortedInserts(self):
         expected_text = """\
 sample,seed,region,qcut,left,insert,count

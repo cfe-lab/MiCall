@@ -59,7 +59,12 @@ v3_mincounts = [0, 50, 100, 1000]       # Min number of reads to contribute to %
 ## aln2counts parameters
 conseq_mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 
-# Connection to QAI RESTful API
+# Connection to QAI RESTful API for uploading results
 qai_user = "FILLINUSERNAME"
 qai_password = "****"
 qai_path = "http://192.168.X.Y:port"
+
+# Connection to QAI RESTful API for dumping project configuration (read-only)
+qai_project_user = "FILLINUSERNAME"
+qai_project_password = "****"
+qai_project_path = "http://192.168.X.Y:port"

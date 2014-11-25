@@ -588,9 +588,10 @@ class InsertionWriter(object):
             for nuc_seq, count in self.nuc_seqs.iteritems():
                 framed_nuc_seq = reading_frame * '-' + nuc_seq
                 insert_nuc_seq = framed_nuc_seq[left*3:right*3]
-                insert_amino_seq = translate(insert_nuc_seq)
-                current_count = current_counts.get(insert_amino_seq, 0)
-                current_counts[insert_amino_seq] = current_count + count
+                if 'n' not in insert_nuc_seq:
+                    insert_amino_seq = translate(insert_nuc_seq)
+                    current_count = current_counts.get(insert_amino_seq, 0)
+                    current_counts[insert_amino_seq] = current_count + count
 
         # record insertions to CSV
         for left, counts in insert_counts.iteritems():
