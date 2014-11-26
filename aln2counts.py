@@ -188,7 +188,8 @@ class SequenceReport(object):
     def _map_to_coordinate_ref(self, coordinate_name, coordinate_ref):
         # Start max_score with the minimum score we can consider a valid
         # alignment. Anything worse, we won't bother
-        max_score = min(len(self.seed_aminos[0]), len(coordinate_ref))
+        consensus_length = len([amino for amino in self.seed_aminos[0] if amino.counts])
+        max_score = min(consensus_length, len(coordinate_ref))
         best_alignment = None # (consensus, aquery, aref)
         for reading_frame, frame_seed_aminos in self.seed_aminos.iteritems():
             consensus = ''.join([seed_amino1.get_consensus()

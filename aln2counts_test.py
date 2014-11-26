@@ -595,6 +595,55 @@ E1234_S1,R1-seed,15,0,2,0,AAATTTCGATTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTAC
         
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
+    def testGoodAlignmentWithGiantSeed(self):
+        """ Short consensus with long seed and long coordinate reference.
+        
+        Even when the consensus maps to the end of the seed, it should still
+        only require a low alignment score.
+        """
+        self.report.projects.load(StringIO.StringIO("""\
+{
+  "projects": {
+    "R3": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "R3",
+          "seed_region": "R3-seed"
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R3-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      ]
+    },
+    "R3": {
+      "is_nucleotide": false,
+      "reference": [
+        "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWKFR"
+      ]
+    }
+  }
+}
+"""))
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R3-seed,15,0,9,123,AAATTTCGA
+""".splitlines(True)
+
+        # sample,seed,region,qcut,queryseq,refseq
+        expected_text = ""
+        
+        self.report.read(aligned_reads)
+        self.report.write_failure(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+     
     def testFailedAlignmentWithOffset(self):
         """ Be careful that an offset from the seed reference doesn't match
         the dashes in the failed alignment.
