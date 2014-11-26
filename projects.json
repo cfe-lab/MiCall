@@ -19,7 +19,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_region": "GP41-seed"
+          "seed_region": "HIV1B-env-seed"
         }
       ]
     },

@@ -142,7 +142,11 @@ coverage.levels <- data.frame()
 key.positions <- data.frame()
 for (project.name in names(projects)) {
     project <- projects[[project.name]]
-    for (i in seq_len(nrow(project$regions))) {
+    region.count <- nrow(project$regions)
+    if (is.null(region.count)) {
+        region.count <- 0
+    }
+    for (i in seq_len(region.count)) {
         region <- project$regions[i,]
         new.coverage.levels <- data.frame(
                 project=project.name,
