@@ -55,6 +55,7 @@ def map_samples(fastq_samples, worker):
         worker.run_job(Job(script=base_path + 'prelim_map.py',
                            helpers=(base_path + 'settings.py',
                                     base_path + 'miseq_logging.py',
+                                    base_path + 'project_config.py',
                                     projects_json),
                            args=(sample_info.fastq1,
                                  sample_info.fastq2,
@@ -68,6 +69,7 @@ def map_samples(fastq_samples, worker):
         worker.run_job(Job(script=base_path + 'remap.py',
                            helpers=(base_path + 'settings.py',
                                     base_path + 'miseq_logging.py',
+                                    base_path + 'project_config.py',
                                     projects_json),
                            args=(sample_info.fastq1, 
                                  sample_info.fastq2,
@@ -103,6 +105,7 @@ def count_samples(fastq_samples, worker, args):
         log_path = "{}.aln2counts.log".format(sample_info.output_root)
         worker.run_job(Job(script=base_path + 'aln2counts.py',
                            helpers=(base_path + 'settings.py',
+                                    base_path + 'project_config.py',
                                     projects_json,
                                     base_path + 'miseq_logging.py',
                                     base_path + 'hyphyAlign.py'),

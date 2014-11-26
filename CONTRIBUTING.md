@@ -239,8 +239,8 @@ similar steps to setting up a development workstation. Follow these steps:
 
 1. Make sure the code works in your development environment. Run all the unit
     tests as described above, process the microtest data set, and process a full
-    run using MISEQ_MONITOR.py. Check the logs for errors. Also check that all
-    the issues in the current milestone are closed.
+    run using MISEQ_MONITOR.py from the command line. Check the logs for errors.
+    Also check that all the issues in the current milestone are closed.
 2. Determine what version number should be used next. Update the version number
     in `settings_default.py` if it hasn't been updated already, commit, and push.
 3. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y
