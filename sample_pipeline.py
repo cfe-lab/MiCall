@@ -147,6 +147,9 @@ def collate_results(fastq_samples, worker, args, logger):
     if not os.path.isdir(results_folder):
         os.mkdir(results_folder)
     
+    logger.info("Collating *.coverage.log files")
+    miseq_logging.collate_logs(args.run_folder, "coverage.log", "coverage.log")
+    
     logger.info("Collating *.mapping.log files")
     miseq_logging.collate_logs(args.run_folder, "mapping.log", "mapping.log")
     
