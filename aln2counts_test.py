@@ -1181,6 +1181,17 @@ E1234_S1,R1-seed,R1,15,3,D,1
         
         self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
         
+    def testInsertWithDeletion(self):
+        expected_text = """\
+sample,seed,region,qcut,left,insert,count
+"""
+        
+        #                                         C  D     E  F
+        self.writer.add_nuc_read(offset_sequence='TGTGAC---GAGTTT', count=1)
+        self.writer.write(inserts=[1,2], region='R1')
+        
+        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        
     def testTwoInsertsWithOffset(self):
         expected_text = """\
 sample,seed,region,qcut,left,insert,count

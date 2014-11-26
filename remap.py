@@ -151,22 +151,22 @@ def main():
 
             # pileup to consensus sequence
             with open(pileup_path, 'rU') as f:
-                conseqs[refname] = pileup_to_conseq(f, consensus_q_cutoff)
+                new_conseq = pileup_to_conseq(f, consensus_q_cutoff)
 
-            if len(conseqs[refname]) == 0:
+            if len(new_conseq) == 0:
                 # failed to generate consensus from this pileup
                 # usually because no reads passed filter
                 frozen.append(refname)
                 continue
 
             # generate *.faidx for later calls to samtools-view
-            handle = open(refname+'.conseq', 'w')
-            handle.write('>%s\n%s\n' % (refname, conseqs[refname]))
+            handle = open(confile, 'w')
+            handle.write('>%s\n%s\n' % (refname, new_conseq))
             handle.close()
             log_call(['samtools', 'faidx', confile])
 
             # consensus to *.bt2
-            log_call(['bowtie2-build', '-c', '-q', conseqs[refname], refname])
+            log_call(['bowtie2-build', '-c', '-q', new_conseq, refname])
             log_call(['bowtie2',
                       '--quiet',
                       '-p', str(bowtie_threads),
@@ -180,15 +180,16 @@ def main():
 
             # how many reads did we map?
             count = count_file_lines(tmpfile) - 3  # ignore SAM header
+            
+            if count >= map_counts[refname]:
+                # overwrite previous SAM file
+                os.rename(tmpfile, samfile)
+                conseqs[refname] = new_conseq
+                map_counts[refname] = count
 
             if count <= map_counts[refname]:
                 # failed to improve the number of mapped reads
                 frozen.append(refname)
-                continue
-
-            # overwrite previous SAM file
-            os.rename(tmpfile, samfile)
-            map_counts[refname] = count
 
         n_remaps += 1
         mapping_efficiency = sum(map_counts.values()) / float(raw_count)
@@ -208,7 +209,8 @@ def main():
         stat_file.write('%s,remap %s,%d\n' % (sample_name,
                                               refname,
                                               map_counts[refname]))
-        seqfile.write('%s,%s\n' % (refname, conseqs[refname]))
+        conseq = conseqs.get(refname) or projects.getReference(refname)
+        seqfile.write('%s,%s\n' % (refname, conseq))
         # transfer contents of last SAM file to CSV
         handle = open(refname+'.sam', 'rU')
         for line in handle:
