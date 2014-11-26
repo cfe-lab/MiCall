@@ -83,6 +83,26 @@ Sample2-Proj2-Sample3-Proj3_S2,unmapped,800
           "id": 20003
         }
       ]
+    },
+    "Proj-all": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "R1",
+          "seed_region": "R1-seed",
+          "id": 20011
+        },
+        {
+          "coordinate_region": "R2",
+          "seed_region": "R2-seed",
+          "id": 20012
+        },
+        {
+          "coordinate_region": "R3",
+          "seed_region": "R3-seed",
+          "id": 20013
+        }
+      ]
     }
   },
   "regions": {
@@ -200,6 +220,29 @@ Sample2-Proj2-Sample3-Proj3_S2,Proj3,R3,15,190,20,-2,3
                                'min_coverage_pos': 20,
                                'raw_reads': 3000,
                                'mapped_reads': 200}]
+        
+        decisions = update_qai.build_review_decisions(coverage_file,
+                                                      self.collated_counts_file,
+                                                      self.sample_sheet,
+                                                      self.sequencings,
+                                                      self.projects)
+
+        self.assertListEqual(expected_decisions, decisions)
+
+    def test_multiple_projects_one_on_target(self):
+        coverage_file = StringIO.StringIO("""\
+sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
+Sample1-Proj1_S1,Proj-all,R1,15,1900,12,-3,4
+Sample1-Proj1_S1,Proj1,R1,15,1900,12,-3,4
+""")
+        expected_decisions = [{'sequencing_id': 10001,
+                               'project_region_id': 20001,
+                               'sample_name': 'Sample1-Proj1_S1',
+                               'score': 4,
+                               'min_coverage': 1900,
+                               'min_coverage_pos': 12,
+                               'raw_reads': 3000,
+                               'mapped_reads': 2000}]
         
         decisions = update_qai.build_review_decisions(coverage_file,
                                                       self.collated_counts_file,

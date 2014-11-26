@@ -177,7 +177,6 @@ def build_review_decisions(coverage_file,
     @param projects: ProjectConfig object
     """
     
-    decisions = []
     sample_tags = {}
     for sample in sample_sheet['DataSplit']:
         sample_tags[sample['filename']] = sample['tags']
@@ -196,6 +195,7 @@ def build_review_decisions(coverage_file,
             current_count = counts_map.get(key, 0)
             counts_map[key] = max(current_count, count)
     
+    decisions = {} # {(sample_name, region): decision}
     #sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
     for coverage in csv.DictReader(coverage_file):
         tags = sample_tags[coverage['sample']]
@@ -219,15 +219,20 @@ def build_review_decisions(coverage_file,
             coverage['region'])
         raw_count = counts_map[tags]
         mapped_count = counts_map[(tags, seed)]
-        decisions.append({'sequencing_id': sequencing['id'],
-                          'project_region_id': project_region_id,
-                          'sample_name': coverage['sample'],
-                          'score': score,
-                          'min_coverage': int(coverage['min.coverage']),
-                          'min_coverage_pos': int(coverage['which.key.pos']),
-                          'raw_reads': raw_count,
-                          'mapped_reads': mapped_count})
-    return decisions
+        decision_key = (coverage['sample'], coverage['region'])
+        previous_decision = decisions.get(decision_key)
+        if previous_decision is None or score > previous_decision['score']:
+            decisions[decision_key] = {
+                'sequencing_id': sequencing['id'],
+                'project_region_id': project_region_id,
+                'sample_name': coverage['sample'],
+                'score': score,
+                'min_coverage': int(coverage['min.coverage']),
+                'min_coverage_pos': int(coverage['which.key.pos']),
+                'raw_reads': raw_count,
+                'mapped_reads': mapped_count
+            }
+    return decisions.values()
 
 def upload_review_to_qai(coverage_file,
                          collated_counts_file,
