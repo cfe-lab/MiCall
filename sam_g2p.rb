@@ -18,7 +18,7 @@ g2p.matrix
 CSV [Ruby module]
 =end
 
-require 'csv'
+require 'faster_csv'
 require './pssm_lib'
 require 'bio'
 require 'ostruct'
@@ -29,8 +29,8 @@ QDELTA = 5
 
 def parse_options()
   options = OpenStruct.new
-  options.remap_csv, options.g2p_csv = ARGV
-  raise "Usage: #{__FILE__} remap_csv g2p_csv" unless options.g2p_csv
+  options.remap_csv, options.nuc_csv, options.g2p_csv = ARGV
+  raise "Usage: #{__FILE__} remap_csv nuc_csv g2p_csv" unless options.g2p_csv
   
   options
 end
@@ -76,6 +76,8 @@ def apply_cigar_and_clip(cigar, seq, qual, pos=0, clip_from=0, clip_to=nil)
               # accept only high quality insertions
               newseq += seq[left..right]
               newqual += qual[left..right]
+              clip_from += length if left < clip_from
+              clip_to += length if clip_to >= 0
           end
           left += length
       elsif operation == 'S'
@@ -153,6 +155,59 @@ def merge_pairs(seq1, seq2, qual1, qual2)
     return mseq
 end
 
+# Keep track of the clipping region for each seed by looking at which query
+# positions mapped to the coordinate region.
+class RegionTracker
+  # Initialize an instance.
+  #
+  # * <tt>:tracked_region</tt> - the only region to track. All others are
+  # ignored.
+  def initialize(tracked_region)
+    @tracked_region = tracked_region
+    @sample_name = nil
+    @ranges = {}
+  end
+  
+  # Add a nucleotide position to the tracker.
+  #
+  # * <tt>:sample_name</tt> - raises an error if this doesn't match the previous
+  # sample name, because only one sample can be tracked.
+  # * <tt>:seed</tt> - name of the seed region
+  # * <tt>:region</tt> - name of the coordinate region
+  # * <tt>:query_pos</tt> - query position in the consensus coordinates
+  def add_nuc(sample_name, seed, region, query_pos)
+    if region != @tracked_region
+      return
+    end
+    
+    if @sample_name.nil?
+      @sample_name = sample_name
+    else
+      if sample_name != @sample_name
+        raise ArgumentError.new(
+          "Two sample names found: '#{@sample_name}' and '#{sample_name}'.")
+      end
+    end
+    range = @ranges[seed]
+    if range.nil?
+      @ranges[seed] = [query_pos, query_pos]
+    else
+      if range[1] < query_pos
+        range[1] = query_pos
+      elsif query_pos < range[0]
+        range[0] = query_pos
+      end
+    end
+  end
+  
+  # Get the minimum and maximum query positions that were seen for a seed.
+  # * <tt>:seed</tt> - name of the seed region
+  # Returns an array of two integers.
+  def get_range(seed)
+    return @ranges[seed]
+  end
+end
+
 def main()
   options = parse_options()
   ## convert file contents into hash to collect identical variants
@@ -160,25 +215,47 @@ def main()
   pairs = Hash.new  # cache read for pairing
   merged = Hash.new # tabulate merged sequence variants
   sample_name = ''
+  tracker = RegionTracker.new("V3LOOP")
   
-  CSV.foreach(options.remap_csv) do |row|
-      sample_name, qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual = row
-      if rname != 'HIV1B-env-seed'
-          # uninteresting region or the header row
+  # Look up clipping region for each seed
+  FasterCSV.foreach(
+    options.nuc_csv,
+    :headers => true,
+    :return_headers => false) do |row|
+    
+    tracker.add_nuc(
+      row['sample'],
+      row['seed'],
+      row['region'],
+      row['query.nuc.pos'].to_i - 1)
+  end
+  
+  FasterCSV.foreach(
+      options.remap_csv,
+      :headers => true,
+      :return_headers => false) do |row|
+      
+      sample_name = row['sample_name']
+      clip_from, clip_to = tracker.get_range(row['rname'])
+      if clip_from.nil?
+          # uninteresting region
           next
       end
-      seq1, qual1 = apply_cigar_and_clip(cigar, seq, qual)
-      pos1 = pos.to_i-1
-      seq2 = '-'*pos1 + seq1 # pad the sequence
-      qual2 = '!'*pos1 + qual1
+      seq2, qual2 = apply_cigar_and_clip(
+        row['cigar'],
+        row['seq'],
+        row['qual'],
+        row['pos'].to_i-1,
+        clip_from,
+        clip_to)
   
-      pair = pairs[qname]
+      pair = pairs[row['qname']]
       if pair == nil
         # cache this read
-        pairs[qname] = {'seq'=>seq2, 'qual'=>qual2}
+        pairs[row['qname']] = {'seq'=>seq2, 'qual'=>qual2}
       else
         # merge reads
-        pairs.delete(qname)
+        pairs.delete(row['qname'])
         seq1 = pair['seq'] # retrieve from cache
         qual1 = pair['qual']
       

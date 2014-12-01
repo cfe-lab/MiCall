@@ -128,6 +128,7 @@ def count_samples(fastq_samples, worker, args):
                                     base_path + 'g2p.matrix',
                                     base_path + 'g2p_fpr.txt'),
                            args=(sample_info.output_root + '.remap.csv',
+                                 sample_info.output_root + '.nuc.csv',
                                  sample_info.output_root + '.g2p.csv'),
                            stdout=log_path,
                            stderr=log_path))

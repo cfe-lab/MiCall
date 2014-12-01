@@ -115,7 +115,73 @@ class CigarTest < Test::Unit::TestCase
     assert_equal(expected_seq, clipped_seq)
     assert_equal(expected_quality, clipped_quality)
   end
-
+  
+  def test_clip_insertion
+    cigar = '6M3I6M'
+    seq              = 'AAACAAGGGCCACCC'
+    quality          = 'BBBDDDHHHEEEFFF'
+    pos = 0
+    clip_from = 3
+    clip_to = 8
+    expected_seq     = 'CAAGGGCCA'
+    expected_quality = 'DDDHHHEEE'
+    
+    clipped_seq, clipped_quality = apply_cigar_and_clip(
+      cigar,
+      seq,
+      quality,
+      pos,
+      clip_from,
+      clip_to)
+    
+    assert_equal(expected_seq, clipped_seq)
+    assert_equal(expected_quality, clipped_quality)
+  end
+  
+  def test_clip_insertion_low_quality
+    cigar = '6M3I6M'
+    seq              = 'AAACAAGGGCCACCC'
+    quality          = 'BBBDDDHH*EEEFFF'
+    pos = 0
+    clip_from = 3
+    clip_to = 8
+    expected_seq     = 'CAACCA'
+    expected_quality = 'DDDEEE'
+    
+    clipped_seq, clipped_quality = apply_cigar_and_clip(
+      cigar,
+      seq,
+      quality,
+      pos,
+      clip_from,
+      clip_to)
+    
+    assert_equal(expected_seq, clipped_seq)
+    assert_equal(expected_quality, clipped_quality)
+  end
+  
+  def test_insertion_before_clip
+    cigar = '3M3I9M'
+    seq              = 'AAAGGGCAACCACCC'
+    quality          = 'BBBHHHDDDEEEFFF'
+    pos = 0
+    clip_from = 6
+    clip_to = 8
+    expected_seq     = 'CCA'
+    expected_quality = 'EEE'
+    
+    clipped_seq, clipped_quality = apply_cigar_and_clip(
+      cigar,
+      seq,
+      quality,
+      pos,
+      clip_from,
+      clip_to)
+    
+    assert_equal(expected_seq, clipped_seq)
+    assert_equal(expected_quality, clipped_quality)
+  end
+  
   def test_invalid_cigar
     cigar = '3M...6M'
     seq     = 'AAACAACCACCC'
@@ -285,5 +351,101 @@ class MergeTest < Test::Unit::TestCase
     merged_seq = merge_pairs(seq1, seq2, qual1, qual2)
     
     assert_equal(expected_seq, merged_seq)
+  end
+end
+
+class RegionTrackerTest < Test::Unit::TestCase
+  def setup
+    @tracked_region = "R1"
+    @untracked_region = "R2"
+    @tracker = RegionTracker.new(@tracked_region)
+  end
+  
+  def test_get_range
+    sample_name = "S1"
+    seed = "R-seed"
+    region = @tracked_region
+    query_pos1 = 10
+    query_pos2 = 11
+    query_pos3 = 12
+    expected_min = 10
+    expected_max = 12
+    
+    @tracker.add_nuc(sample_name, seed, region, query_pos1)
+    @tracker.add_nuc(sample_name, seed, region, query_pos2)
+    @tracker.add_nuc(sample_name, seed, region, query_pos3)
+    min, max = @tracker.get_range(seed)
+    
+    assert_equal(expected_min, min, "minimum position")
+    assert_equal(expected_max, max, "maximum position")
+  end
+  
+  def test_untracked_region
+    sample_name = "S1"
+    seed = "R-seed"
+    region = @untracked_region
+    query_pos1 = 10
+    query_pos2 = 11
+    query_pos3 = 12
+    expected_min = nil
+    expected_max = nil
+    
+    @tracker.add_nuc(sample_name, seed, region, query_pos1)
+    @tracker.add_nuc(sample_name, seed, region, query_pos2)
+    @tracker.add_nuc(sample_name, seed, region, query_pos3)
+    min, max = @tracker.get_range(seed)
+    
+    assert_equal(expected_min, min, "minimum position")
+    assert_equal(expected_max, max, "maximum position")
+  end
+  
+  def test_changed_sample
+    sample_name = "S1"
+    changed_sample_name = "S2"
+    expected_error = "Two sample names found: 'S1' and 'S2'."
+    seed = "R-seed"
+    region = @tracked_region
+    query_pos1 = 10
+    query_pos2 = 11
+    query_pos3 = 12
+
+    @tracker.add_nuc(sample_name, seed, region, query_pos1)
+    @tracker.add_nuc(sample_name, seed, region, query_pos2)
+    begin
+      @tracker.add_nuc(changed_sample_name, seed, region, query_pos3)
+      
+      message = nil
+    rescue ArgumentError => e
+      message = e.message
+    end
+    
+    assert_equal(expected_error, message)
+  end
+  
+  def test_multiple_seeds
+    sample_name = "S1"
+    seeda = "Ra-seed"
+    seedb = "Rb-seed"
+    region = @tracked_region
+    query_pos1a = 10
+    query_pos2a = 11
+    query_pos1b = 100
+    query_pos2b = 101
+    expected_mina = 10
+    expected_maxa = 11
+    expected_minb = 100
+    expected_maxb = 101
+    
+    @tracker.add_nuc(sample_name, seeda, region, query_pos1a)
+    @tracker.add_nuc(sample_name, seeda, region, query_pos2a)
+    @tracker.add_nuc(sample_name, seedb, region, query_pos1b)
+    @tracker.add_nuc(sample_name, seedb, region, query_pos2b)
+    mina, maxa = @tracker.get_range(seeda)
+    minb, maxb = @tracker.get_range(seedb)
+    
+    assert_equal(expected_mina, mina, "minimum position for seed A")
+    assert_equal(expected_maxa, maxa, "maximum position for seed A")
+    assert_equal(expected_minb, minb, "minimum position for seed B")
+    assert_equal(expected_maxb, maxb, "maximum position for seed B")
   end
 end
