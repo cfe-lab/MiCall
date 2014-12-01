@@ -31,11 +31,13 @@ Java and Python
         
         sudo apt-get install python2.7
         
-7. Install pip the Python package manager and a couple of packages for Python:
+7. Install [pip the Python package manager][pip] and a couple of packages for Python:
 
         sudo apt-get install python-pip
         sudo pip install testfixtures
         sudo pip install requests
+
+[pip]: https://pip.pypa.io/en/latest/installing.html
 
 Eclipse
 -------
