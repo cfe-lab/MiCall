@@ -31,16 +31,16 @@ def check_key_positions(projects, warning_file):
 def main():
     dump = {}
     with requests.Session() as session:
-        response = session.post(settings.qai_path + "/account/login",
+        response = session.post(settings.qai_project_path + "/account/login",
                                 data={'user_login': settings.qai_project_user,
                                       'user_password': settings.qai_project_password})
         if response.status_code == requests.codes.forbidden:  # @UndefinedVariable
             exit('Login failed, check qai_project_user in settings.py')
         
         regions = session.get(
-            settings.qai_path + "/lab_miseq_regions.json?mode=dump")
+            settings.qai_project_path + "/lab_miseq_regions.json?mode=dump")
         projects = session.get(
-            settings.qai_path + "/lab_miseq_projects.json?mode=dump")
+            settings.qai_project_path + "/lab_miseq_projects.json?mode=dump")
         dump['regions'] = regions.json()
         dump['projects'] = projects.json()
         check_key_positions(dump['projects'], sys.stdout)

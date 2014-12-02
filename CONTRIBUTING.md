@@ -208,6 +208,7 @@ Running the code
 
         cd ~/git/MiseqPipeline
         python -m unittest discover -p '*_test.py'
+        ruby -rubygems -I"lib:test" *_test.rb
     
 Test data
 ---------
