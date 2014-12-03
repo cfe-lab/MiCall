@@ -182,6 +182,28 @@ class CigarTest < Test::Unit::TestCase
     assert_equal(expected_quality, clipped_quality)
   end
   
+  def test_clipping_everything
+    cigar = '12M'
+    seq              = 'AAACAACCACCC'
+    quality          = 'BBBDDDEEEFFF'
+    pos = 0
+    clip_from = 100
+    clip_to = 108
+    expected_seq     = ''
+    expected_quality = ''
+    
+    clipped_seq, clipped_quality = apply_cigar_and_clip(
+      cigar,
+      seq,
+      quality,
+      pos,
+      clip_from,
+      clip_to)
+    
+    assert_equal(expected_seq, clipped_seq)
+    assert_equal(expected_quality, clipped_quality)
+  end
+  
   def test_invalid_cigar
     cigar = '3M...6M'
     seq     = 'AAACAACCACCC'

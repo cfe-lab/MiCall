@@ -249,7 +249,7 @@ similar steps to setting up a development workstation. Follow these steps:
 3. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y
     matches the version you used in `settings_default.py`. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
-    so on.
+    so on. Mark the release as pre-release until you finish deploying it.
 4. Get the code from Github into the server's development environment.
         ssh user@server
         cd /usr/local/share/miseq/development/
@@ -281,7 +281,8 @@ similar steps to setting up a development workstation. Follow these steps:
         cd /usr/local/share/miseq/production/
         python MISEQ_MONITOR.py &>/dev/null &
         tail -f /data/miseq/MISEQ_MONITOR_OUTPUT.log
-11. Close the milestone for this release, create one for the next release, and
+11. Remove the pre-release flag from the release.
+12. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
 
 [release]: https://help.github.com/categories/85/articles

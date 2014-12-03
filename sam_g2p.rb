@@ -47,7 +47,8 @@ end
 # * <tt>:clip_to</tt> - last position to include after clipping, given in
 #   consensus coordinates, nil means no clipping at the end
 #
-# Returns the new sequence and the new quality string
+# Returns the new sequence and the new quality string. If none of the read was
+# within the clipped range, then both strings will be blank.
 #
 #   apply_cigar_and_clip("12M", "AAACAACCACCC", "AAAAAAAAAAAA", 0, 3, 9)
 #   # => "CAACCA", "AAAAAA"
@@ -94,8 +95,8 @@ def apply_cigar_and_clip(cigar, seq, qual, pos=0, clip_from=0, clip_to=nil)
     message = "CIGAR string '#{cigar}' is too short for sequence '#{seq}'."
     raise ArgumentError.new(message)
   end
-  newseq = newseq[clip_from..clip_to]
-  newqual = newqual[clip_from..clip_to]
+  newseq = newseq[clip_from..clip_to] || ''
+  newqual = newqual[clip_from..clip_to] || ''
   return newseq, newqual
 end
 
@@ -277,7 +278,7 @@ def main()
       rank += 1
       prefix = "#{sample_name},#{rank},#{count}"
       seq = s.delete '-'
-      if (seq.count 'N') > (0.5*seq.length)
+      if (seq.upcase.count 'N') > (0.5*seq.length)
           # if more than 50% of sequence is garbage
           f.write("#{prefix},,,,low quality\n")
           next
@@ -293,7 +294,7 @@ def main()
         next
       end
     
-      dna = Bio::Sequence.auto(seq)
+      dna = Bio::Sequence::NA.new(seq)
       prot = dna.translate
   
       # sanity check 1 - bounded by cysteines
