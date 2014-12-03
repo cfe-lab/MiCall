@@ -29,7 +29,7 @@ def parse_args():
     return args, parser
 
 def upload_conseqs_to_qai(conseqs_file,
-                          runid,
+                          run,
                           sample_sheet,
                           ok_sample_regions,
                           version,
@@ -41,6 +41,8 @@ def upload_conseqs_to_qai(conseqs_file,
     By default the Oracle user is specified in settings_default.py.
     @param conseqs_file: An open file that contains the consensus sequences
         from the counts2csf step for all samples in the run.
+    @param run: a hash with the attributes of the run record, including a
+        sequencing summary of all the samples and their target projects
     @param sample_sheet: The data parsed from the sample sheet.
     @param ok_sample_regions: A set of (sample_name, region, qcut) tuples that
         were given a good score by the pipeline.
@@ -50,6 +52,8 @@ def upload_conseqs_to_qai(conseqs_file,
     """
     
     ss = sample_sheet
+    runid = run['id']
+    sequencings = run['sequencing_summary']
     conseqs_csv = csv.DictReader(conseqs_file)
     # ss["Data"] is keyed by (what should be) the FASTQ
     # filename, which looks like
@@ -69,10 +73,10 @@ def upload_conseqs_to_qai(conseqs_file,
     
     projects = ProjectConfig.loadDefault()
     target_regions = set() # set([(project_name, tags)])
-    for entry in ss["DataSplit"]:
-        seeds = projects.getProjectSeeds(entry['project'])
+    for entry in sequencings:
+        seeds = projects.getProjectSeeds(entry['target_project'])
         for seed in seeds:
-            target_regions.add((entry['tags'], seed))
+            target_regions.add((entry['tag'], seed))
         
     for row in conseqs_csv:
         # Each row of this file looks like:
@@ -390,7 +394,7 @@ def process_folder(result_folder, logger):
 
         with open(collated_conseqs, "rU") as f:
             upload_conseqs_to_qai(f,
-                                  runid,
+                                  run,
                                   sample_sheet,
                                   ok_sample_regions,
                                   settings.pipeline_version,

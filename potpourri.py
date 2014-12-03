@@ -52,7 +52,7 @@ def choose_samples(args):
                     break
             sample_lines = list(f)
                 
-        for sample_name in sample_sheet['Data'].iterkeys():
+        for sample_name, sample_data in sample_sheet['Data'].iteritems():
             files_exist = (
                 os.path.isfile(calculate_data_file_path(run, sample_name, 1)) and
                 os.path.isfile(calculate_data_file_path(run, sample_name, 2)))
@@ -60,11 +60,21 @@ def choose_samples(args):
                 sample_number = int(sample_name.split('_')[-1][1:])
                 if sample_number < len(sample_lines):
                     sample_line = sample_lines[sample_number]
-                    sample_names.append((run, sample_name, sample_line))
+                    sample_names.append((run,
+                                         sample_name,
+                                         sample_line,
+                                         sample_data['tags']))
     
     sample_names = random.sample(sample_names, args.sample_count)
     sample_names.sort()
-    return sample_names
+    chosen_samples = []
+    for i, (run, sample_name, sample_line, tags) in enumerate(sample_names):
+        row = i / 12
+        column = i % 12
+        new_tags = "N%d-N%d" % (row+501, column+701)
+        retagged_line = sample_line.replace(tags, new_tags)
+        chosen_samples.append((run, sample_name, retagged_line))
+    return chosen_samples
 
 
 def calculate_data_file_path(run, sample_name, read_number):
@@ -80,7 +90,7 @@ def calculate_data_file_path(run, sample_name, read_number):
 def create_target_run():
     name_count = 1
     while True:
-        run_name = 'potpourri_test'
+        run_name = datetime.now().strftime('%y%m%d_potpourri_test')
         if name_count > 1:
             run_name = '{}_{}'.format(run_name, name_count)
         target_run = os.path.join(settings.rawdata_mount,
@@ -141,5 +151,5 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Descr
     
     with open(os.path.join(target_run, settings.NEEDS_PROCESSING), 'w') as f:
         pass # empty file
-    print 'Done.'
+    print "Done. Don't forget to import the run in QAI."
 main()
