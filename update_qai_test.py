@@ -3,7 +3,7 @@ import StringIO
 
 import update_qai
 from sample_sheet_parser import sample_sheet_parser
-import project_config
+import json
 
 class UpdateQaiTest(unittest.TestCase):
     def setUp(self):
@@ -51,108 +51,47 @@ Sample2-Proj2-Sample3-Proj3_S2,unmapped,800
                             {'tag': 'N501-N702',
                              'id': 10003,
                              'target_project': 'Proj3'}]
-        self.projectConfigFile = StringIO.StringIO("""\
-{
-  "projects": {
-    "Proj1": {
-      "max_variants": 0,
-      "regions": [
-        {
-          "coordinate_region": "R1",
-          "seed_region": "R1-seed",
-          "id": 20001
-        }
-      ]
+        projectRegionsJson = """\
+[
+    {
+        "project_name": "Proj1",
+        "id": 20001,
+        "seed_region_name": "R1-seed",
+        "coordinate_region_name": "R1"
     },
-    "Proj2": {
-      "max_variants": 0,
-      "regions": [
-        {
-          "coordinate_region": "R2",
-          "seed_region": "R2-seed",
-          "id": 20002
-        }
-      ]
+    {
+        "project_name": "Proj2",
+        "id": 20002,
+        "seed_region_name": "R2-seed",
+        "coordinate_region_name": "R2"
     },
-    "Proj3": {
-      "max_variants": 0,
-      "regions": [
-        {
-          "coordinate_region": "R3",
-          "seed_region": "R3-seed",
-          "id": 20003
-        }
-      ]
+    {
+        "project_name": "Proj3",
+        "id": 20003,
+        "seed_region_name": "R3-seed",
+        "coordinate_region_name": "R3"
     },
-    "Proj-all": {
-      "max_variants": 0,
-      "regions": [
-        {
-          "coordinate_region": "R1",
-          "seed_region": "R1-seed",
-          "id": 20011
-        },
-        {
-          "coordinate_region": "R2",
-          "seed_region": "R2-seed",
-          "id": 20012
-        },
-        {
-          "coordinate_region": "R3",
-          "seed_region": "R3-seed",
-          "id": 20013
-        }
-      ]
+    {
+        "project_name": "Proj-all",
+        "id": 20011,
+        "seed_region_name": "R1-seed",
+        "coordinate_region_name": "R1"
+    },
+    {
+        "project_name": "Proj-all",
+        "id": 20012,
+        "seed_region_name": "R2-seed",
+        "coordinate_region_name": "R2"
+    },
+    {
+        "project_name": "Proj-all",
+        "id": 20013,
+        "seed_region_name": "R3-seed",
+        "coordinate_region_name": "R3"
     }
-  },
-  "regions": {
-    "R1-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "ACTGAAA",
-        "GGG"
-      ]
-    },
-    "R1": {
-      "is_nucleotide": false,
-      "reference": [
-        "RWN",
-        "NWR"
-      ]
-    },
-    "R2-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "ACTGAAA",
-        "GGG"
-      ]
-    },
-    "R2": {
-      "is_nucleotide": false,
-      "reference": [
-        "RWN",
-        "NWR"
-      ]
-    },
-    "R3-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "ACTGAAA",
-        "GGG"
-      ]
-    },
-    "R3": {
-      "is_nucleotide": false,
-      "reference": [
-        "RWN",
-        "NWR"
-      ]
-    }
-  }
-}
-""")
-        self.projects = project_config.ProjectConfig()
-        self.projects.load(self.projectConfigFile)
+]
+"""
+        self.project_regions = json.loads(projectRegionsJson)
         
     def test_on_target(self):
         coverage_file = StringIO.StringIO("""\
@@ -172,7 +111,7 @@ Sample1-Proj1_S1,Proj1,R1,15,1900,12,-3,4
                                                       self.collated_counts_file,
                                                       self.sample_sheet,
                                                       self.sequencings,
-                                                      self.projects)
+                                                      self.project_regions)
 
         self.assertListEqual(expected_decisions, decisions)
         
@@ -194,7 +133,7 @@ Sample1-Proj1_S1,Proj2,R2,15,1900,12,-3,4
                                                       self.collated_counts_file,
                                                       self.sample_sheet,
                                                       self.sequencings,
-                                                      self.projects)
+                                                      self.project_regions)
 
         self.assertListEqual(expected_decisions, decisions)
 
@@ -225,7 +164,7 @@ Sample2-Proj2-Sample3-Proj3_S2,Proj3,R3,15,190,20,-2,3
                                                       self.collated_counts_file,
                                                       self.sample_sheet,
                                                       self.sequencings,
-                                                      self.projects)
+                                                      self.project_regions)
 
         self.assertListEqual(expected_decisions, decisions)
 
@@ -248,6 +187,6 @@ Sample1-Proj1_S1,Proj1,R1,15,1900,12,-3,4
                                                       self.collated_counts_file,
                                                       self.sample_sheet,
                                                       self.sequencings,
-                                                      self.projects)
+                                                      self.project_regions)
 
         self.assertListEqual(expected_decisions, decisions)
