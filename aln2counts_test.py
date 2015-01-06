@@ -1440,6 +1440,19 @@ class SeedAminoTest(unittest.TestCase):
         consensus = self.amino.get_consensus()
         
         self.assertEqual(expected_consensus, consensus)
+        
+    def testAmbiguousData(self):
+        """If a read is ambiguous, don't count it toward consensus."""
+        
+        nuc_seq1 = 'Cnn' # -> ?
+        nuc_seq2 = 'AAA' # -> K
+        expected_consensus = 'K'
+        
+        self.amino.count_nucleotides(nuc_seq1, 9)
+        self.amino.count_nucleotides(nuc_seq2, 1)
+        consensus = self.amino.get_consensus()
+        
+        self.assertEqual(expected_consensus, consensus)
 
 class SeedNucleotideTest(unittest.TestCase):
     def setUp(self):

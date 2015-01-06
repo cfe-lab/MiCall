@@ -27,6 +27,7 @@ from hyphyAlign import change_settings, pair_align
 import miseq_logging
 import settings
 import project_config
+from collections import Counter
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -267,7 +268,7 @@ class SequenceReport(object):
             self._map_to_coordinate_ref(coordinate_name, coordinate_ref)
             report_aminos = self.reports[coordinate_name]
             if report_aminos:
-                variant_counts = {} # {seq: count}
+                variant_counts = Counter() # {seq: count}
                 for report_amino in report_aminos:
                     first_amino_index = report_amino.seed_amino.consensus_index
                     if first_amino_index is not None:
@@ -292,8 +293,7 @@ class SequenceReport(object):
                     offset = int(offset)
                     padded_seq = offset*'-' + nuc_seq
                     clipped_seq = padded_seq[start_pos:end_pos]
-                    previous_count = variant_counts.get(clipped_seq, 0)
-                    variant_counts[clipped_seq] = previous_count + count
+                    variant_counts[clipped_seq] += count
                 coordinate_variants = [(count, seq)
                                        for seq, count in variant_counts.iteritems()]
                 coordinate_variants.sort(reverse=True)
@@ -303,7 +303,7 @@ class SequenceReport(object):
     def write_amino_header(self, amino_file):
         amino_file.write(
             'sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,' +
-            'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*\n')
+            ','.join(amino_alphabet) + '\n')
     
     def write_amino_counts(self, amino_file):
         regions = self.reports.keys()
@@ -408,7 +408,7 @@ class SequenceReport(object):
 class SeedAmino(object):
     def __init__(self, consensus_index):
         self.consensus_index = consensus_index
-        self.counts = {}
+        self.counts = Counter()
         self.nucleotides = [SeedNucleotide() for _ in range(3)]
         
     def count_nucleotides(self, nuc_seq, count):
@@ -418,8 +418,8 @@ class SeedAmino(object):
         @param count: the number of times they were read
         """
         amino = translate(nuc_seq.upper())
-        prev_count = self.counts.get(amino, 0)
-        self.counts[amino] = prev_count + count
+        if amino in amino_alphabet:
+            self.counts[amino] += count
         for i in range(3):
             self.nucleotides[i].count_nucleotides(nuc_seq[i], count)
     
@@ -430,7 +430,7 @@ class SeedAmino(object):
         @return: comma-separated list of counts in the same order as the
         amino_alphabet list
         """
-        return ','.join([str(self.counts.get(amino, 0))
+        return ','.join([str(self.counts[amino])
                          for amino in amino_alphabet])
         
     def get_consensus(self):
@@ -439,17 +439,12 @@ class SeedAmino(object):
         If there is a tie, just pick one of the tied amino acids.
         @return: the letter of the most common amino acid
         """
-        max_count = 0
-        consensus = None
-        for amino, count in self.counts.iteritems():
-            if count > max_count:
-                consensus = amino
-                max_count = count
-        return '-' if consensus is None else consensus
+        consensus = self.counts.most_common(1)
+        return '-' if not consensus else consensus[0][0]
 
 class SeedNucleotide(object):
     def __init__(self):
-        self.counts = {}
+        self.counts = Counter()
         
     def count_nucleotides(self, nuc_seq, count):
         """ Record a set of reads at this position in the seed reference.
@@ -460,8 +455,7 @@ class SeedNucleotide(object):
         if nuc_seq == 'n':
             "Represents gap between forward and reverse read, ignore."
         else:
-            prev_count = self.counts.get(nuc_seq, 0)
-            self.counts[nuc_seq] = prev_count + count
+            self.counts[nuc_seq] += count
     
     def get_report(self):
         """ Build a report string with the counts of each nucleotide.
@@ -469,7 +463,7 @@ class SeedNucleotide(object):
         Report how many times each nucleotide was seen in count_nucleotides().
         @return: comma-separated list of counts for A, C, G, and T.
         """
-        return ','.join(map(str, [self.counts.get(nuc, 0) for nuc in 'ACGT']))
+        return ','.join(map(str, [self.counts[nuc] for nuc in 'ACGT']))
     
     def get_consensus(self, mixture_cutoff):
         """ Choose consensus nucleotide or mixture from the counts.
@@ -484,22 +478,21 @@ class SeedNucleotide(object):
         if not self.counts:
             return ''
         
-        intermed = [(count, nuc) for nuc, count in self.counts.iteritems()]
-        intermed.sort(reverse=True)
+        intermed = self.counts.most_common()
         
         # Remove gaps and low quality reads if there is anything else.
         for i in reversed(range(len(intermed))):
-            _count, nuc = intermed[i]
+            nuc, _count = intermed[i]
             if nuc in ('N', '-') and len(intermed) > 1:
                 intermed.pop(i)
         
-        total_count = sum([count for count, nuc in intermed])
+        total_count = sum(self.counts.values())
         mixture = []
-        min_count = (intermed[0][0]
+        min_count = (intermed[0][1]
                      if mixture_cutoff == MAX_CUTOFF
                      else total_count * mixture_cutoff)
         # filter for nucleotides that pass frequency cutoff
-        for count, nuc in intermed:
+        for nuc, count in intermed:
             if count >= min_count:
                 mixture.append(nuc)
 
@@ -542,7 +535,7 @@ class InsertionWriter(object):
         self.sample_name = sample_name
         self.seed = seed
         self.qcut = qcut
-        self.nuc_seqs = {} # {nuc_seq: count}
+        self.nuc_seqs = Counter() # {nuc_seq: count}
     
     def add_nuc_read(self, offset_sequence, count):
         """ Add a read to the group.
@@ -552,8 +545,7 @@ class InsertionWriter(object):
             coordinates
         @param count: the number of times this sequence was read
         """
-        current_count = self.nuc_seqs.get(offset_sequence, 0)
-        self.nuc_seqs[offset_sequence] = current_count + count
+        self.nuc_seqs[offset_sequence] += count
         
     def write(self, inserts, region, reading_frame=0):
         """ Write any insert ranges to the file.
@@ -584,15 +576,14 @@ class InsertionWriter(object):
         # enumerate insertions by popping out all AA sub-string variants
         insert_counts = {} # {left: {insert_seq: count}}
         for left, right in insert_ranges:
-            current_counts = {}
+            current_counts = Counter()
             insert_counts[left] = current_counts
             for nuc_seq, count in self.nuc_seqs.iteritems():
                 framed_nuc_seq = reading_frame * '-' + nuc_seq
                 insert_nuc_seq = framed_nuc_seq[left*3:right*3]
                 if 'n' not in insert_nuc_seq and '-' not in insert_nuc_seq:
                     insert_amino_seq = translate(insert_nuc_seq)
-                    current_count = current_counts.get(insert_amino_seq, 0)
-                    current_counts[insert_amino_seq] = current_count + count
+                    current_counts[insert_amino_seq] += count
 
         # record insertions to CSV
         for left, counts in insert_counts.iteritems():
