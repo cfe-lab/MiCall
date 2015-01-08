@@ -10,7 +10,7 @@
 
 library(jsonlite)
 
-syntax.error = "Correct syntax: ./coverage_plot.R <amino CSV> <output maps tar> <output scores CSV>"
+syntax.error = "Correct syntax: ./coverage_plots.R <amino CSV> <output maps tar> <output scores CSV>"
 args <- commandArgs(TRUE)
 
 if (length(args) != 3) {
@@ -148,34 +148,36 @@ for (project.name in names(projects)) {
     }
     for (i in seq_len(region.count)) {
         region <- project$regions[i,]
-        new.coverage.levels <- data.frame(
-                project=project.name,
-                seed=region$seed_region,
-                coord=region$coordinate_region,
-                red=region$min_coverage1,
-                yellow=region$min_coverage2,
-                green=region$min_coverage3)
-        coverage.levels <- rbind(coverage.levels, new.coverage.levels)
+        seed_regions <- region$seed_regions[[1]]
+        for (seed.index in seq_along(seed_regions)) {
+            new.coverage.levels <- data.frame(
+                    project=project.name,
+                    seed=seed_regions[[seed.index]],
+                    coord=region$coordinate_region,
+                    red=region$min_coverage1,
+                    yellow=region$min_coverage2,
+                    green=region$min_coverage3)
+            coverage.levels <- rbind(coverage.levels, new.coverage.levels)
+        }
         region.pairs <- region$key_positions[[1]]
         if (length(region.pairs) != 0) {
             region.pairs$end_pos[is.na(region.pairs$end_pos)] <- (
                         region.pairs$start_pos[is.na(region.pairs$end_pos)])
         }
         else {
-            ref <- paste(
-                    projects.config$regions[[region$coordinate_region]]$reference,
-                    collapse="")
-            region.pairs = data.frame(
-                    start_pos=1:nchar(ref),
-                    end_pos=1:nchar(ref))
+            ref <- projects.config$regions[[region$coordinate_region]]$reference
+            region.pairs = data.frame(start_pos=1, end_pos=sum(nchar(ref)))
         }
-        for (j in seq_along(region.pairs$start_pos)) {
-            new.positions <- data.frame(
-                    pos=region.pairs$start_pos[[j]]:region.pairs$end_pos[[j]],
-                    coord=region$coordinate_region,
-                    seed=region$seed_region,
-                    project=project.name)
-            key.positions <- rbind(key.positions, new.positions)
+        for (seed.index in seq_along(seed_regions)) {
+            for (j in seq_along(region.pairs$start_pos)) {
+                # This step adds about 4s to the run time. Could improve?
+                new.positions <- data.frame(
+                        pos=region.pairs$start_pos[[j]]:region.pairs$end_pos[[j]],
+                        coord=region$coordinate_region,
+                        seed=seed_regions[[seed.index]],
+                        project=project.name)
+                key.positions <- rbind(key.positions, new.positions)
+            }
         }
     }
 }

@@ -100,24 +100,26 @@ def main():
     with open(args.prelim_csv, 'rU') as handle:
         handle.readline()  # skip header
         map_counts = {}
-        refnames = []
+        refgroups = {} # { group_name: (refname, count) }
         for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
             # reconstitute region-specific SAM files
             tmpfile = open('%s.sam' % refname, 'w')
             count = 0
-            good_count = 0
             for line in group:
                 fields = line.split(',')
                 tmpfile.write('\t'.join(fields))
-                mapq = int(fields[4])
-                if mapq >= 20:
-                    good_count += 1
                 count += 1
             stat_file.write('%s,prelim %s,%d\n' % (sample_name, refname, count))
             map_counts.update({refname: count})
             tmpfile.close()
-            if good_count >= 10:
-                refnames.append(refname)
+            refgroup = projects.getSeedGroup(refname)
+            count_threshold = 10 # must have more than this to get remapped
+            _best_ref, best_count = refgroups.get(refgroup,
+                                                  (None, count_threshold))
+            if count > best_count:
+                refgroups[refgroup] = (refname, count)
+    
+    refnames = [refname for refname, _count in refgroups.itervalues()]
 
     # settings for iterative remapping
     n_remaps = 0
@@ -149,6 +151,7 @@ def main():
             pileup_path = bamfile+'.pileup'
             redirect_call(['samtools', 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
 
+            #TODO: what's the difference between this consensus and the one in aln2counts.py?
             # pileup to consensus sequence
             with open(pileup_path, 'rU') as f:
                 new_conseq = pileup_to_conseq(f, consensus_q_cutoff)
@@ -167,6 +170,7 @@ def main():
 
             # consensus to *.bt2
             log_call(['bowtie2-build', '-c', '-q', new_conseq, refname])
+            #TODO: Should we map all references at the same time?
             log_call(['bowtie2',
                       '--quiet',
                       '-p', str(bowtie_threads),

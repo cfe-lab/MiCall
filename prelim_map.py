@@ -77,15 +77,13 @@ def main():
                    '-x', reffile_template,
                    '-1', args.fastq1,
                    '-2', args.fastq2,
-                   '--no-unal',
+                   '--no-unal', # don't report reads that failed to align
+                   '--no-hd', # no header lines (start with @)
                    '--local',
                    '-p', str(settings.bowtie_threads)]
     p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
     with p.stdout:
         for line in p.stdout:
-            if line.startswith('@'):
-                # skip header line
-                continue
             refname = line.split('\t')[2]  # read was mapped to this reference
             if not refname in output:
                 output.update({refname: []})

@@ -12,7 +12,7 @@ class ProjectConfigurationTest(unittest.TestCase):
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_region": "R1-seed",
+          "seed_regions": ["R1-seed"],
           "id": 10042
         }
       ]
@@ -24,14 +24,16 @@ class ProjectConfigurationTest(unittest.TestCase):
       "reference": [
         "ACTGAAA",
         "GGG"
-      ]
+      ],
+      "seed_group": "R1-seeds"
     },
     "R1": {
       "is_nucleotide": false,
       "reference": [
         "RWN",
         "NWR"
-      ]
+      ],
+      "seed_group": null
     }
   }
 }
@@ -58,7 +60,7 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": null,
-          "seed_region": "R1-seed"
+          "seed_regions": ["R1-seed"]
         }
       ]
     },
@@ -66,11 +68,11 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": null,
-          "seed_region": "R1-seed"
+          "seed_regions": ["R1-seed"]
         },
         {
           "coordinate_region": null,
-          "seed_region": "R2-seed"
+          "seed_regions": ["R2-seed"]
         }
       ]
     }
@@ -113,7 +115,7 @@ TTT
       "regions": [
         {
           "coordinate_region": null,
-          "seed_region": "R1-seed"
+          "seed_regions": ["R1-seed"]
         }
       ]
     }
@@ -185,7 +187,7 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_region": "R1-seed"
+          "seed_regions": ["R1-seed"]
         }
       ]
     }
@@ -230,7 +232,7 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_region": "R1-seed"
+          "seed_regions": ["R1-seed"]
         }
       ]
     },
@@ -239,11 +241,11 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_region": "R1-seed"
+          "seed_regions": ["R1-seed"]
         },
         {
           "coordinate_region": "R2",
-          "seed_region": "R1-seed"
+          "seed_regions": ["R1-seed"]
         }
       ]
     }
@@ -284,7 +286,7 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": null,
-          "seed_region": "R1-seed"
+          "seed_regions": ["R1-seed"]
         }
       ]
     }
@@ -307,7 +309,7 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": null,
-          "seed_region": "R2-seed"
+          "seed_regions": ["R2-seed"]
         }
       ]
     }
@@ -336,36 +338,11 @@ ACTGAAAGGG
         seeds = self.config.getProjectSeeds('R1')
         
         self.assertSetEqual(expected_seeds, seeds)
-
-    def testFindProjectRegion(self):
-        expected_project_region_id = 10042
-        expected_seed = 'R1-seed'
+    
+    def testSeedGroup(self):
+        expected_group = "R1-seeds"
+        
         self.config.load(self.defaultJsonIO)
+        group = self.config.getSeedGroup('R1-seed')
         
-        project_region_id, seed = self.config.findProjectRegion(
-            project_name="R1",
-            coordinate_region_name="R1")
-        
-        self.assertEqual(expected_project_region_id, project_region_id)
-        self.assertEqual(expected_seed, seed)
-
-    def testFindProjectRegionUnknownRegion(self):
-        self.config.load(self.defaultJsonIO)
-        
-        self.assertRaisesRegexp(
-            KeyError,
-            "Coordinate region 'RXXX' not found in project 'R1'",
-            self.config.findProjectRegion,
-            project_name='R1',
-            coordinate_region_name='RXXX')
-
-    def testFindProjectRegionUnknownProject(self):
-        self.config.load(self.defaultJsonIO)
-        
-        self.assertRaisesRegexp(
-            KeyError,
-            "Project 'RXXX' not found",
-            self.config.findProjectRegion,
-            project_name='RXXX',
-            coordinate_region_name='R1')
-        
+        self.assertEqual(expected_group, group)
