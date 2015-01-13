@@ -56,37 +56,37 @@ Sample2-Proj2-Sample3-Proj3_S2,unmapped,800
     {
         "project_name": "Proj1",
         "id": 20001,
-        "seed_region_name": "R1-seed",
+        "seed_region_names": ["R1-seed"],
         "coordinate_region_name": "R1"
     },
     {
         "project_name": "Proj2",
         "id": 20002,
-        "seed_region_name": "R2-seed",
+        "seed_region_names": ["R2-seed"],
         "coordinate_region_name": "R2"
     },
     {
         "project_name": "Proj3",
         "id": 20003,
-        "seed_region_name": "R3-seed",
+        "seed_region_names": ["R3-seed"],
         "coordinate_region_name": "R3"
     },
     {
         "project_name": "Proj-all",
         "id": 20011,
-        "seed_region_name": "R1-seed",
+        "seed_region_names": ["R1-seed"],
         "coordinate_region_name": "R1"
     },
     {
         "project_name": "Proj-all",
         "id": 20012,
-        "seed_region_name": "R2-seed",
+        "seed_region_names": ["R2-seed"],
         "coordinate_region_name": "R2"
     },
     {
         "project_name": "Proj-all",
         "id": 20013,
-        "seed_region_name": "R3-seed",
+        "seed_region_names": ["R3-seed"],
         "coordinate_region_name": "R3"
     }
 ]

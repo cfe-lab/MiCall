@@ -170,13 +170,13 @@ def build_review_decisions(coverage_file,
     @param sequencings: the sequencing records from QAI
     @param project_regions: [{"id": project_region_id,
                               "project_name": project_name,
-                              "seed_region_name": seed_region_name,
+                              "seed_region_names": [seed_region_name],
                               "coordinate_region_name": coordinate_region_name}]
     """
     
     project_region_map = dict(
         [((entry['project_name'], entry['coordinate_region_name']),
-          (entry['id'], entry['seed_region_name']))
+          (entry['id'], entry['seed_region_names']))
          for entry in project_regions])
     sample_tags = {}
     for sample in sample_sheet['DataSplit']:
@@ -215,11 +215,14 @@ def build_review_decisions(coverage_file,
         sequencing = sequencing_with_target or sequencing_with_tags
         if sequencing is None:
             raise StandardError("No sequencing found with tags '%s'." % tags)
-        project_region_id, seed = project_region_map[(
+        project_region_id, seeds = project_region_map[(
             coverage['project'],
             coverage['region'])]
         raw_count = counts_map[tags]
-        mapped_count = counts_map[(tags, seed)]
+        for seed in seeds:
+            mapped_count = counts_map.get((tags, seed))
+            if mapped_count:
+                break
         decision_key = (coverage['sample'], coverage['region'])
         previous_decision = decisions.get(decision_key)
         if previous_decision is None or score > previous_decision['score']:
@@ -260,7 +263,9 @@ def upload_review_to_qai(coverage_file,
     runid = run['id']
     sequencings = run['sequencing_summary']
     
-    response = get_json(session, "/lab_miseq_project_regions")
+    response = get_json(
+        session,
+        "/lab_miseq_project_regions?pipeline=" + settings.pipeline_version)
     project_regions = response.json()
     
     decisions = build_review_decisions(coverage_file,

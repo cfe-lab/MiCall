@@ -40,9 +40,14 @@ def main():
         regions = session.get(
             settings.qai_project_path + "/lab_miseq_regions.json?mode=dump")
         projects = session.get(
-            settings.qai_project_path + "/lab_miseq_projects.json?mode=dump")
+            settings.qai_project_path + 
+            "/lab_miseq_projects.json?mode=dump&pipeline=" +
+            settings.pipeline_version)
         dump['regions'] = regions.json()
         dump['projects'] = projects.json()
+        errors = dump['projects'].get('errors')
+        if errors:
+            raise StandardError('\n'.join(errors))
         check_key_positions(dump['projects'], sys.stdout)
         
     with open("projects.json", "w") as f:

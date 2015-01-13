@@ -9,7 +9,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HCV1A-H77-seed",
             "HCV1B-seed",
             "HCV1C-seed",
@@ -29,7 +29,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HCV1A-H77-seed",
             "HCV1B-seed",
             "HCV1C-seed",
@@ -49,7 +49,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HCV1A-H77-seed",
             "HCV1B-seed",
             "HCV1C-seed",
@@ -102,7 +102,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HCV1A-H77-seed",
             "HCV1B-seed",
             "HCV1C-seed",
@@ -122,7 +122,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HCV1A-H77-seed",
             "HCV1B-seed",
             "HCV1C-seed",
@@ -142,7 +142,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HCV1A-H77-seed",
             "HCV1B-seed",
             "HCV1C-seed",
@@ -162,7 +162,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HCV1A-H77-seed",
             "HCV1B-seed",
             "HCV1C-seed",
@@ -187,7 +187,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HCV1A-H77-seed",
             "HCV1B-seed",
             "HCV1C-seed",
@@ -207,7 +207,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HCV1A-H77-seed",
             "HCV1B-seed",
             "HCV1C-seed",
@@ -227,7 +227,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HCV1A-H77-seed",
             "HCV1B-seed",
             "HCV1C-seed",
@@ -252,7 +252,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HIV1B-gag-seed"
           ]
         },
@@ -262,7 +262,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HIV1B-nef-seed"
           ]
         },
@@ -272,7 +272,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HIV1B-vif-seed"
           ]
         },
@@ -282,7 +282,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HIV1B-vpr-seed"
           ]
         },
@@ -292,7 +292,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HIV1B-vpu-seed"
           ]
         },
@@ -311,7 +311,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HIV1B-env-seed"
           ]
         },
@@ -350,7 +350,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "INT-seed"
           ]
         },
@@ -425,7 +425,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "PR-seed"
           ]
         },
@@ -560,7 +560,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "RT-seed"
           ]
         },
@@ -570,7 +570,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HIV1B-env-seed"
           ]
         }
@@ -585,7 +585,7 @@
           "min_coverage1": 1,
           "min_coverage2": 11,
           "min_coverage3": 101,
-          "seed_regions": [
+          "seed_region_names": [
             "HLA-B-seed"
           ]
         },
@@ -595,7 +595,7 @@
           "min_coverage1": 1,
           "min_coverage2": 11,
           "min_coverage3": 101,
-          "seed_regions": [
+          "seed_region_names": [
             "HLA-B-seed"
           ]
         }
@@ -639,7 +639,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "INT-seed"
           ]
         }
@@ -719,7 +719,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "PR-seed"
           ]
         },
@@ -854,7 +854,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "RT-seed"
           ]
         }
@@ -994,7 +994,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "RT-seed"
           ]
         }
@@ -1013,7 +1013,7 @@
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
-          "seed_regions": [
+          "seed_region_names": [
             "HIV1B-env-seed"
           ]
         }
@@ -1077,7 +1077,7 @@
         "CATCATGGACATGATCGCTGGTGCTCACTGGGGAGTCCTGGCGGGCATAGCGTATTTCTCCATGG",
         "TGGGGAACTGGGCGAAGGTCCTGGTAGTGCTGCTGCTATTTGCCGGCGTCGACGCG"
       ],
-      "seed_group": null
+      "seed_group": "HCV1A-H77-E1-seed"
     },
     "HCV1A-H77-E2": {
       "is_nucleotide": false,
@@ -1112,7 +1112,7 @@
         "ATCGCGTCCTGGGCCATTAAGTGGGAGTACGTCGTTCTCCTGTTCCTCCTGCTTGCAGACGCGCG",
         "CGTCTGCTCCTGCTTGTGGATGATGTTACTCATATCCCAAGCGGAGGCG"
       ],
-      "seed_group": null
+      "seed_group": "HCV1A-H77-E2-seed"
     },
     "HCV1A-H77-NS2": {
       "is_nucleotide": false,
@@ -1139,7 +1139,7 @@
         "CGTAGGGGCCAGGAGATACTGCTTGGGCCAGCCGACGGAATGGTCTCCAAGGGGTGGAGGTTGCT",
         "G"
       ],
-      "seed_group": null
+      "seed_group": "HCV1A-H77-NS2-seed"
     },
     "HCV1A-H77-NS3": {
       "is_nucleotide": false,
@@ -1191,7 +1191,7 @@
         "TGAAGTCACCCTGACGCACCCAATCACCAAATACATCATGACATGCATGTCGGCCGACCTGGAGG",
         "TCGTCACG"
       ],
-      "seed_group": null
+      "seed_group": "HCV1A-H77-NS3-seed"
     },
     "HCV1A-H77-NS4a": {
       "is_nucleotide": false,
@@ -1207,7 +1207,7 @@
         "CGTGGTCATAGTGGGCAGGATTGTCTTGTCCGGGAAGCCGGCAATTATACCTGACAGGGAGGTTC",
         "TCTACCAGGAGTTCGATGAGATGGAAGAGTGC"
       ],
-      "seed_group": null
+      "seed_group": "HCV1A-H77-NS4a-seed"
     },
     "HCV1A-H77-NS4b": {
       "is_nucleotide": false,
@@ -1237,7 +1237,7 @@
         "GCCTCACTGTAACCCAGCTCCTGAGGCGACTGCATCAGTGGATAAGCTCGGAGTGTACCACTCCA",
         "TGC"
       ],
-      "seed_group": null
+      "seed_group": "HCV1A-H77-NS4b-seed"
     },
     "HCV1A-H77-NS5a": {
       "is_nucleotide": false,
@@ -1277,7 +1277,7 @@
         "CTATTCTTCCATGCCCCCCCTGGAGGGGGAGCCTGGGGATCCGGATCTCAGCGACGGGTCATGGT",
         "CGACGGTCAGTAGTGGGGCCGACACGGAAGATGTCGTGTGCTGC"
       ],
-      "seed_group": null
+      "seed_group": "HCV1A-H77-NS5a-seed"
     },
     "HCV1A-H77-NS5b": {
       "is_nucleotide": false,
@@ -1327,7 +1327,7 @@
         "TGTCTCATGCCCGGCCCCGCTGGTTCTGGTTTTGCCTACTCCTGCTCGCTGCAGGGGTAGGCATC",
         "TACCTCCTCCCCAACCGATGA"
       ],
-      "seed_group": null
+      "seed_group": "HCV1A-H77-NS5b-seed"
     },
     "HCV1A-H77-core": {
       "is_nucleotide": false,
@@ -1351,7 +1351,7 @@
         "GCATGGCGTCCGGGTTCTGGAAGACGGCGTGAACTATGCAACAGGGAACCTTCCTGGTTGCTCTT",
         "TCTCTATCTTCCTTCTGGCCCTGCTCTCTTGCCTGACTGTGCCCGCTTCAGCC"
       ],
-      "seed_group": null
+      "seed_group": "HCV1A-H77-core-seed"
     },
     "HCV1A-H77-p7": {
       "is_nucleotide": false,
@@ -1367,7 +1367,7 @@
         "CCTCGTGTTCTTCTGCTTTGCGTGGTATCTGAAGGGTAGGTGGGTGCCCGGAGCGGTCTACGCCT",
         "TCTACGGGATGTGGCCTCTCCTCCTGCTCCTGCTGGCGTTGCCTCAGCGGGCATACGCA"
       ],
-      "seed_group": null
+      "seed_group": "HCV1A-H77-p7-seed"
     },
     "HCV1A-H77-seed": {
       "is_nucleotide": true,

@@ -148,7 +148,7 @@ for (project.name in names(projects)) {
     }
     for (i in seq_len(region.count)) {
         region <- project$regions[i,]
-        seed_regions <- region$seed_regions[[1]]
+        seed_regions <- region$seed_region_names[[1]]
         for (seed.index in seq_along(seed_regions)) {
             new.coverage.levels <- data.frame(
                     project=project.name,

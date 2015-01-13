@@ -50,7 +50,7 @@ class SequenceReportTest(unittest.TestCase):
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         }
       ]
     },
@@ -59,7 +59,7 @@ class SequenceReportTest(unittest.TestCase):
       "regions": [
         {
           "coordinate_region": "R2",
-          "seed_regions": ["R2-seed"]
+          "seed_region_names": ["R2-seed"]
         }
       ]
     },
@@ -68,7 +68,7 @@ class SequenceReportTest(unittest.TestCase):
       "regions": [
         {
           "coordinate_region": "R3",
-          "seed_regions": ["R3-seed"]
+          "seed_region_names": ["R3-seed"]
         }
       ]
     }
@@ -464,11 +464,11 @@ E1234_S1,R3-seed,R3,15,5,G,9
       "regions": [
         {
           "coordinate_region": "R3a",
-          "seed_regions": ["R3-seed"]
+          "seed_region_names": ["R3-seed"]
         },
         {
           "coordinate_region": "R3b",
-          "seed_regions": ["R3-seed"]
+          "seed_region_names": ["R3-seed"]
         }
       ]
     }
@@ -609,7 +609,7 @@ E1234_S1,R1-seed,15,0,2,0,AAATTTCGATTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTAC
       "regions": [
         {
           "coordinate_region": "R3",
-          "seed_regions": ["R3-seed"]
+          "seed_region_names": ["R3-seed"]
         }
       ]
     }
@@ -723,11 +723,11 @@ E1234_S1,R-NO-COORD,15,0,9,0,AAATTT
       "regions": [
         {
           "coordinate_region": "R1a",
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         },
         {
           "coordinate_region": "R1b",
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         }
       ]
     }
@@ -810,7 +810,7 @@ E1234_S1,R1-seed,15,R1,3,5,AAATTTTCA
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         }
       ]
     }
@@ -963,7 +963,7 @@ E1234_S1,R1-seed,15,R1,1,8,---TTT
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         }
       ]
     }
@@ -1079,11 +1079,11 @@ E1234_S1,R1-seed,15,R1,1,8,---TTT
       "regions": [
         {
           "coordinate_region": "R1a",
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         },
         {
           "coordinate_region": "R1b",
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         }
       ]
     }

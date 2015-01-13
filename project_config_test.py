@@ -12,7 +12,7 @@ class ProjectConfigurationTest(unittest.TestCase):
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_regions": ["R1-seed"],
+          "seed_region_names": ["R1-seed"],
           "id": 10042
         }
       ]
@@ -60,7 +60,7 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": null,
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         }
       ]
     },
@@ -68,11 +68,11 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": null,
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         },
         {
           "coordinate_region": null,
-          "seed_regions": ["R2-seed"]
+          "seed_region_names": ["R2-seed"]
         }
       ]
     }
@@ -115,7 +115,7 @@ TTT
       "regions": [
         {
           "coordinate_region": null,
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         }
       ]
     }
@@ -187,7 +187,7 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         }
       ]
     }
@@ -232,7 +232,7 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         }
       ]
     },
@@ -241,11 +241,11 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         },
         {
           "coordinate_region": "R2",
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         }
       ]
     }
@@ -286,7 +286,7 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": null,
-          "seed_regions": ["R1-seed"]
+          "seed_region_names": ["R1-seed"]
         }
       ]
     }
@@ -309,7 +309,7 @@ ACTGAAAGGG
       "regions": [
         {
           "coordinate_region": null,
-          "seed_regions": ["R2-seed"]
+          "seed_region_names": ["R2-seed"]
         }
       ]
     }

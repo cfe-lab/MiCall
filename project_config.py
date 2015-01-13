@@ -31,7 +31,7 @@ class ProjectConfig(object):
         seed_region_set = set()
         for project in self.config['projects'].itervalues():
             for region in project['regions']:
-                seed_region_set.update(region['seed_regions'])
+                seed_region_set.update(region['seed_region_names'])
          
         seed_region_list = list(seed_region_set)
         seed_region_list.sort()
@@ -56,7 +56,7 @@ class ProjectConfig(object):
         for project in self.config['projects'].itervalues():
             for region in project['regions']:
                 coord_region = region['coordinate_region']
-                if seed_region in region['seed_regions'] and coord_region:
+                if seed_region in region['seed_region_names'] and coord_region:
                     coord_refs[coord_region] = self.getReference(coord_region)
         return coord_refs
     
@@ -83,7 +83,7 @@ class ProjectConfig(object):
         
         seeds = set()
         for region in self.config['projects'][project_name]['regions']:
-            seeds.update(region['seed_regions'])
+            seeds.update(region['seed_region_names'])
         
         return seeds
 
