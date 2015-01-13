@@ -132,11 +132,7 @@ def count_samples(fastq_samples, worker, args):
                                  sample_info.output_root + '.g2p.csv'),
                            stdout=log_path,
                            stderr=log_path))
-
-            
-def collate_results(fastq_samples, worker, args, logger):
     
-    #TODO: Move this back to count_samples() after fixing issue #110.
     for sample_info in fastq_samples:
         log_path = "{}.coverage.log".format(sample_info.output_root)
         worker.run_job(Job(script=base_path + 'coverage_plots.R',
@@ -146,6 +142,9 @@ def collate_results(fastq_samples, worker, args, logger):
                                  sample_info.output_root + '.coverage_scores.csv'),
                            stdout=log_path,
                            stderr=log_path))
+
+            
+def collate_results(fastq_samples, worker, args, logger):
 
     results_folder = os.path.join(args.run_folder, 'results')
     if not os.path.isdir(results_folder):
