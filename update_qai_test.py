@@ -92,14 +92,44 @@ Sample2-Proj2-Sample3-Proj3_S2,unmapped,800
 ]
 """
         self.project_regions = json.loads(projectRegionsJson)
-        
+        regionsJson = """\
+[
+    {
+        "name": "R1",
+        "id": 30001
+    },
+    {
+        "name": "R1-seed",
+        "id": 30011
+    },
+    {
+        "name": "R2",
+        "id": 30002
+    },
+    {
+        "name": "R2-seed",
+        "id": 30012
+    },
+    {
+        "name": "R3",
+        "id": 30003
+    },
+    {
+        "name": "R3-seed",
+        "id": 30013
+    }
+]
+"""
+        self.regions = json.loads(regionsJson)
+                
     def test_on_target(self):
         coverage_file = StringIO.StringIO("""\
-sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
-Sample1-Proj1_S1,Proj1,R1,15,1900,12,-3,4
+sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
+Sample1-Proj1_S1,Proj1,R1,R1-seed,15,1900,12,-3,4
 """)
         expected_decisions = [{'sequencing_id': 10001,
                                'project_region_id': 20001,
+                               'seed_region_id': 30011,
                                'sample_name': 'Sample1-Proj1_S1',
                                'score': 4,
                                'min_coverage': 1900,
@@ -111,40 +141,44 @@ Sample1-Proj1_S1,Proj1,R1,15,1900,12,-3,4
                                                       self.collated_counts_file,
                                                       self.sample_sheet,
                                                       self.sequencings,
-                                                      self.project_regions)
+                                                      self.project_regions,
+                                                      self.regions)
 
         self.assertListEqual(expected_decisions, decisions)
         
     def test_off_target(self):
         coverage_file = StringIO.StringIO("""\
-sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
-Sample1-Proj1_S1,Proj2,R2,15,1900,12,-3,4
+sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
+Sample1-Proj1_S1,Proj2,R2,R2-seed,15,1900,12,-3,4
 """)
         expected_decisions = [{'sequencing_id': 10001,
                                'project_region_id': 20002,
+                               'seed_region_id': 30012,
                                'sample_name': 'Sample1-Proj1_S1',
                                'score': -3,
                                'min_coverage': 1900,
                                'min_coverage_pos': 12,
                                'raw_reads': 3000,
                                'mapped_reads': 200}]
-        
+         
         decisions = update_qai.build_review_decisions(coverage_file,
                                                       self.collated_counts_file,
                                                       self.sample_sheet,
                                                       self.sequencings,
-                                                      self.project_regions)
-
+                                                      self.project_regions,
+                                                      self.regions)
+ 
         self.assertListEqual(expected_decisions, decisions)
-
+ 
     def test_multiple_targets(self):
         coverage_file = StringIO.StringIO("""\
-sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
-Sample2-Proj2-Sample3-Proj3_S2,Proj2,R2,15,1900,12,-3,4
-Sample2-Proj2-Sample3-Proj3_S2,Proj3,R3,15,190,20,-2,3
+sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
+Sample2-Proj2-Sample3-Proj3_S2,Proj2,R2,R2-seed,15,1900,12,-3,4
+Sample2-Proj2-Sample3-Proj3_S2,Proj3,R3,R3-seed,15,190,20,-2,3
 """)
         expected_decisions = [{'sequencing_id': 10002,
                                'project_region_id': 20002,
+                               'seed_region_id': 30012,
                                'sample_name': 'Sample2-Proj2-Sample3-Proj3_S2',
                                'score': 4,
                                'min_coverage': 1900,
@@ -153,40 +187,44 @@ Sample2-Proj2-Sample3-Proj3_S2,Proj3,R3,15,190,20,-2,3
                                'mapped_reads': 2000},
                               {'sequencing_id': 10003,
                                'project_region_id': 20003,
+                               'seed_region_id': 30013,
                                'sample_name': 'Sample2-Proj2-Sample3-Proj3_S2',
                                'score': 3,
                                'min_coverage': 190,
                                'min_coverage_pos': 20,
                                'raw_reads': 3000,
                                'mapped_reads': 200}]
-        
+         
         decisions = update_qai.build_review_decisions(coverage_file,
                                                       self.collated_counts_file,
                                                       self.sample_sheet,
                                                       self.sequencings,
-                                                      self.project_regions)
-
+                                                      self.project_regions,
+                                                      self.regions)
+ 
         self.assertListEqual(expected_decisions, decisions)
-
+ 
     def test_multiple_projects_one_on_target(self):
         coverage_file = StringIO.StringIO("""\
-sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
-Sample1-Proj1_S1,Proj-all,R1,15,1900,12,-3,4
-Sample1-Proj1_S1,Proj1,R1,15,1900,12,-3,4
+sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
+Sample1-Proj1_S1,Proj-all,R1,R1-seed,15,1900,12,-3,4
+Sample1-Proj1_S1,Proj1,R1,R1-seed,15,1900,12,-3,4
 """)
         expected_decisions = [{'sequencing_id': 10001,
                                'project_region_id': 20001,
+                               'seed_region_id': 30011,
                                'sample_name': 'Sample1-Proj1_S1',
                                'score': 4,
                                'min_coverage': 1900,
                                'min_coverage_pos': 12,
                                'raw_reads': 3000,
                                'mapped_reads': 2000}]
-        
+         
         decisions = update_qai.build_review_decisions(coverage_file,
                                                       self.collated_counts_file,
                                                       self.sample_sheet,
                                                       self.sequencings,
-                                                      self.project_regions)
-
+                                                      self.project_regions,
+                                                      self.regions)
+ 
         self.assertListEqual(expected_decisions, decisions)

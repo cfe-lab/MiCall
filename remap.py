@@ -101,22 +101,30 @@ def main():
         handle.readline()  # skip header
         map_counts = {}
         refgroups = {} # { group_name: (refname, count) }
+        # mapq is higher when alignment score is only good in one location on
+        # one seed, so only count reads with high mapq when deciding which seed
+        # to use.
+        mapq_threshold = 10
+        count_threshold = 10 # must have more than this to get remapped at all
         for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
             # reconstitute region-specific SAM files
             tmpfile = open('%s.sam' % refname, 'w')
             count = 0
+            good_count = 0
             for line in group:
                 fields = line.split(',')
                 tmpfile.write('\t'.join(fields))
+                mapq = int(fields[4])
                 count += 1
+                if mapq > mapq_threshold:
+                    good_count += 1
             stat_file.write('%s,prelim %s,%d\n' % (sample_name, refname, count))
-            map_counts.update({refname: count})
+            map_counts[refname] = count
             tmpfile.close()
             refgroup = projects.getSeedGroup(refname)
-            count_threshold = 10 # must have more than this to get remapped
             _best_ref, best_count = refgroups.get(refgroup,
                                                   (None, count_threshold))
-            if count > best_count:
+            if good_count > best_count:
                 refgroups[refgroup] = (refname, count)
     
     refnames = [refname for refname, _count in refgroups.itervalues()]

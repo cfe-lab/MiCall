@@ -160,7 +160,8 @@ def build_review_decisions(coverage_file,
                            collated_counts_file,
                            sample_sheet,
                            sequencings,
-                           project_regions):
+                           project_regions,
+                           regions):
     """ Build a list of request objects that will create the review decision
     records.
     
@@ -172,12 +173,13 @@ def build_review_decisions(coverage_file,
                               "project_name": project_name,
                               "seed_region_names": [seed_region_name],
                               "coordinate_region_name": coordinate_region_name}]
+    @param regions: [{"id": region_id, "name": region_name}]
     """
     
     project_region_map = dict(
-        [((entry['project_name'], entry['coordinate_region_name']),
-          (entry['id'], entry['seed_region_names']))
+        [((entry['project_name'], entry['coordinate_region_name']), entry['id'])
          for entry in project_regions])
+    region_map = dict([(entry['name'], entry['id']) for entry in regions])
     sample_tags = {}
     for sample in sample_sheet['DataSplit']:
         sample_tags[sample['filename']] = sample['tags']
@@ -215,20 +217,21 @@ def build_review_decisions(coverage_file,
         sequencing = sequencing_with_target or sequencing_with_tags
         if sequencing is None:
             raise StandardError("No sequencing found with tags '%s'." % tags)
-        project_region_id, seeds = project_region_map[(
+        project_region_id = project_region_map[(
             coverage['project'],
             coverage['region'])]
         raw_count = counts_map[tags]
-        for seed in seeds:
-            mapped_count = counts_map.get((tags, seed))
-            if mapped_count:
-                break
+        seed = coverage['seed']
+        mapped_count = counts_map.get((tags, seed))
+        seed_region_id = region_map[seed]
+        
         decision_key = (coverage['sample'], coverage['region'])
         previous_decision = decisions.get(decision_key)
         if previous_decision is None or score > previous_decision['score']:
             decisions[decision_key] = {
                 'sequencing_id': sequencing['id'],
                 'project_region_id': project_region_id,
+                'seed_region_id': seed_region_id,
                 'sample_name': coverage['sample'],
                 'score': score,
                 'min_coverage': int(coverage['min.coverage']),
@@ -268,11 +271,15 @@ def upload_review_to_qai(coverage_file,
         "/lab_miseq_project_regions?pipeline=" + settings.pipeline_version)
     project_regions = response.json()
     
+    response = get_json(session, "/lab_miseq_regions")
+    regions = response.json()
+    
     decisions = build_review_decisions(coverage_file,
                                        collated_counts_file,
                                        sample_sheet,
                                        sequencings,
-                                       project_regions)
+                                       project_regions,
+                                       regions)
     
     post_json(session,
               "/lab_miseq_reviews",
