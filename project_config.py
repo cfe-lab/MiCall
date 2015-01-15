@@ -28,16 +28,27 @@ class ProjectConfig(object):
         self.config = json.load(json_file)
     
     def writeSeedFasta(self, fasta_file):
+        """ Write seed references to a FASTA file.
+        
+        @param fasta_file: an open file
+        """
         seed_region_set = set()
         for project in self.config['projects'].itervalues():
             for region in project['regions']:
                 seed_region_set.update(region['seed_region_names'])
          
         seed_region_list = list(seed_region_set)
+        seed_name_map = {} # {sequence: name}
         seed_region_list.sort()
         for name in seed_region_list:
             region = self.config['regions'][name]
             sequence = ''.join(region['reference'])
+            duplicate_name = seed_name_map.get(sequence)
+            if duplicate_name is not None:
+                raise RuntimeError("Duplicate references: {} and {}.".format(
+                    duplicate_name,
+                    name))
+            seed_name_map[sequence] = name
             fasta_file.write('>{name}\n{ref}\n'.format(name=name,
                                                        ref=sequence))
 

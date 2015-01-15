@@ -2,7 +2,7 @@ import StringIO
 import unittest
 
 import remap
-from remap import is_first_read
+from remap import is_first_read, is_primer
 
 class RemapTest(unittest.TestCase):
     def testSampleName(self):
@@ -12,6 +12,25 @@ class RemapTest(unittest.TestCase):
         sample_name = remap.calculate_sample_name(filename)
         
         self.assertEqual(sample_name, expected_sample_name)
+        
+    def assertCigarIsPrimer(self, cigar, is_primer_expected):
+        fields = "qname,flag,rname,pos,mapq,cigar,rnext".split(',')
+        fields[5] = cigar
+        max_primer_length = 29
+        self.assertEqual(is_primer_expected, is_primer(fields, max_primer_length))
+        
+    def testIsPrimerForLongRead(self):
+        self.assertCigarIsPrimer('45M', False)
+        
+    def testIsPrimerForShortRead(self):
+        self.assertCigarIsPrimer('10M', True)
+        
+    def testIsPrimerForShortReadWithClipping(self):
+        self.assertCigarIsPrimer('45S10M', True)
+        
+    def testIsPrimerForReadWithMultipleMatches(self):
+        self.assertCigarIsPrimer('10M3D45M', False)
+        
 
 class IsFirstReadTest(unittest.TestCase):
     def testFirstRead(self):

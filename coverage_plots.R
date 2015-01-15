@@ -34,15 +34,15 @@ record.score <- function(
     #
     # scores - a matrix that holds data to write out to the scores file.
     # data - A data frame with the following columns:
-    #	refseq.aa.pos - the position in the amino acid reference sequence
+    #   refseq.aa.pos - the position in the amino acid reference sequence
     #   query.nuc.pos - the position in the nucleotide reference sequence
-    #	coverage - the coverage at that position by combining all reads
-    #	If the amino acid position column is empty, the nucleotide column
-    #	will be used instead.
+    #   coverage - the coverage at that position by combining all reads
+    #   If the amino acid position column is empty, the nucleotide column
+    #   will be used instead.
     # region.key.pos - a vector of key positions within the region. If it is
-    #	empty, treat all positions as key.
+    #   empty, treat all positions as key.
     # coverage.levels - a vector of four coverage levels that are thresholds
-    #	for the four different scores in on-target regions.
+    #   for the four different scores in on-target regions.
     # sample - the sample name
     # project.name - the project name
     # region - the coordinate region name
@@ -142,7 +142,9 @@ projects.config <- fromJSON('projects.json')
 projects <- projects.config$projects
 
 coverage.levels <- data.frame()
-key.positions <- data.frame()
+key.positions <- data.frame()  # { pos, project, region.index }
+region.indexes <- data.frame() # { seed, coord, region.index }
+region.index <- 0
 for (project.name in names(projects)) {
     project <- projects[[project.name]]
     region.count <- nrow(project$regions)
@@ -161,6 +163,12 @@ for (project.name in names(projects)) {
                     yellow=region$min_coverage2,
                     green=region$min_coverage3)
             coverage.levels <- rbind(coverage.levels, new.coverage.levels)
+            
+            new.region.indexes <- data.frame(
+                    coord=region$coordinate_region,
+                    seed=seed_regions[[seed.index]],
+                    region.index=region.index)
+            region.indexes <- rbind(region.indexes, new.region.indexes)
         }
         region.pairs <- region$key_positions[[1]]
         if (length(region.pairs) != 0) {
@@ -171,17 +179,14 @@ for (project.name in names(projects)) {
             ref <- projects.config$regions[[region$coordinate_region]]$reference
             region.pairs = data.frame(start_pos=1, end_pos=sum(nchar(ref)))
         }
-        for (seed.index in seq_along(seed_regions)) {
-            for (j in seq_along(region.pairs$start_pos)) {
-                # This step adds about 4s to the run time. Could improve?
-                new.positions <- data.frame(
-                        pos=region.pairs$start_pos[[j]]:region.pairs$end_pos[[j]],
-                        coord=region$coordinate_region,
-                        seed=seed_regions[[seed.index]],
-                        project=project.name)
-                key.positions <- rbind(key.positions, new.positions)
-            }
+        for (j in seq_along(region.pairs$start_pos)) {
+            new.positions <- data.frame(
+                    pos=region.pairs$start_pos[[j]]:region.pairs$end_pos[[j]],
+                    project=project.name,
+                    region.index=region.index)
+            key.positions <- rbind(key.positions, new.positions)
         }
+        region.index <- region.index + 1
     }
 }
 
@@ -221,8 +226,10 @@ for (i in seq_along(coverage)) {
     df <- coverage[[i]]
     xlim <- max(df$refseq.aa.pos)
     x.label <- "Reference coordinates (AA)"
+    related.regions <- region.indexes[
+            region.indexes$coord == region & region.indexes$seed == seed,]
     related.positions <- key.positions[
-            key.positions$coord == region & key.positions$seed == seed,]
+            key.positions$region.index %in% related.regions$region.index,]
     project.positions <- split(
             related.positions$pos,
             f=list(related.positions$project),

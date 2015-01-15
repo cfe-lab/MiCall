@@ -41,6 +41,12 @@ def is_first_read(flag):
     IS_FIRST_SEGMENT = 0x40
     return (int(flag) & IS_FIRST_SEGMENT) != 0
 
+def is_primer(read_fields, max_primer_length):
+    cigar = read_fields[5]
+    sizes = re.findall(r'(\d+)M', cigar)
+    match_length = max(map(int, sizes))
+    return match_length <= max_primer_length
+
 def main():
     parser = argparse.ArgumentParser(
         description='Iterative remapping of bowtie2 by reference.')
@@ -101,10 +107,10 @@ def main():
         handle.readline()  # skip header
         map_counts = {}
         refgroups = {} # { group_name: (refname, count) }
-        # mapq is higher when alignment score is only good in one location on
-        # one seed, so only count reads with high mapq when deciding which seed
-        # to use.
-        mapq_threshold = 10
+        # We had a problem where a large number of primer reads would map to
+        # a different seed and overwhelm the seed selection. Now we ignore
+        # short reads when selecting the seed, because they might be primers.
+        max_primer_length = 50
         count_threshold = 10 # must have more than this to get remapped at all
         for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
             # reconstitute region-specific SAM files
@@ -114,9 +120,8 @@ def main():
             for line in group:
                 fields = line.split(',')
                 tmpfile.write('\t'.join(fields))
-                mapq = int(fields[4])
                 count += 1
-                if mapq > mapq_threshold:
+                if not is_primer(fields, max_primer_length):
                     good_count += 1
             stat_file.write('%s,prelim %s,%d\n' % (sample_name, refname, count))
             map_counts[refname] = count

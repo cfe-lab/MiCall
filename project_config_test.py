@@ -147,6 +147,43 @@ ACTGAAAGGG
         self.config.writeSeedFasta(fasta)
         
         self.assertMultiLineEqual(expected_fasta, fasta.getvalue())
+        
+    def testDuplicateReference(self):
+        jsonIO = StringIO.StringIO("""\
+{
+  "projects": {
+    "R1": {
+      "regions": [
+        {
+          "coordinate_region": null,
+          "seed_region_names": ["R1a-seed", "R1b-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R1a-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "ACTAAAGGG"
+      ]
+    },
+    "R1b-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "ACTAAAGGG"
+      ]
+    }
+  }
+}
+""")
+        fasta = StringIO.StringIO()
+        self.config.load(jsonIO)
+        
+        self.assertRaisesRegexp(RuntimeError,
+                                "Duplicate references: R1a-seed and R1b-seed.",
+                                self.config.writeSeedFasta,
+                                fasta)
 
     def testGetReference(self):
         self.config.load(self.defaultJsonIO)
