@@ -13,6 +13,7 @@ Dependencies:
 """
 
 import argparse
+import csv
 import itertools
 import logging
 import os
@@ -25,6 +26,7 @@ import miseq_logging
 import project_config
 from settings import bowtie_threads, consensus_q_cutoff,\
     max_remaps, min_mapping_efficiency
+from operator import itemgetter
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
@@ -47,12 +49,24 @@ def main():
     
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-    parser.add_argument('prelim_csv', help='<input> CSV containing preliminary map output (modified SAM)')
-    parser.add_argument('remap_csv', help='<output> CSV containing remap output (modified SAM)')
-    parser.add_argument('remap_counts_csv', help='<output> CSV containing numbers of mapped reads')
-    parser.add_argument('remap_conseq_csv', help='<output> CSV containing mapping consensus sequences')
-    parser.add_argument('unmapped1', help='<output> FASTQ R1 of reads that failed to map to any region')
-    parser.add_argument('unmapped2', help='<output> FASTQ R2 of reads that failed to map to any region')
+    parser.add_argument('prelim_csv',
+                        type=argparse.FileType('rU'),
+                        help='<input> CSV containing preliminary map output (modified SAM)')
+    parser.add_argument('remap_csv',
+                        type=argparse.FileType('w'),
+                        help='<output> CSV containing remap output (modified SAM)')
+    parser.add_argument('remap_counts_csv',
+                        type=argparse.FileType('w'),
+                        help='<output> CSV containing numbers of mapped reads')
+    parser.add_argument('remap_conseq_csv',
+                        type=argparse.FileType('w'),
+                        help='<output> CSV containing mapping consensus sequences')
+    parser.add_argument('unmapped1',
+                        type=argparse.FileType('w'),
+                        help='<output> FASTQ R1 of reads that failed to map to any region')
+    parser.add_argument('unmapped2',
+                        type=argparse.FileType('w'),
+                        help='<output> FASTQ R2 of reads that failed to map to any region')
     
     args = parser.parse_args()
     
@@ -74,13 +88,6 @@ def main():
         logger.error('bowtie2 not found; check if it is installed and in $PATH\n')
         sys.exit(1)
 
-    # check that the output paths are valid
-    for path in [args.remap_csv, args.remap_counts_csv, args.remap_conseq_csv]:
-        output_path = os.path.split(path)[0]
-        if not os.path.exists(output_path) and output_path != '':
-            logger.error('Output path does not exist: %s', output_path)
-            sys.exit(1)
-
     # generate initial *.faidx file
     projects = project_config.ProjectConfig.loadDefault()
     ref_path = 'cfe.fasta'
@@ -92,28 +99,28 @@ def main():
     raw_count = count_file_lines(args.fastq1) / 2  # 4 lines per record in FASTQ, paired
 
     sample_name = calculate_sample_name(args.fastq1)
-    stat_file = open(args.remap_counts_csv, 'w')
-    stat_file.write('sample_name,type,count\n')
-    stat_file.write('%s,raw,%d\n' % (sample_name, raw_count))
+    args.remap_counts_csv.write('sample_name,type,count\n')
+    args.remap_counts_csv.write('%s,raw,%d\n' % (sample_name, raw_count))
 
     # group CSV stream by first item
-    with open(args.prelim_csv, 'rU') as handle:
-        handle.readline()  # skip header
+    with args.prelim_csv:
+        reader = csv.DictReader(args.prelim_csv)
         map_counts = {}
         refnames = []
-        for refname, group in itertools.groupby(handle, lambda x: x.split(',')[2]):
+        for refname, group in itertools.groupby(reader, itemgetter('rname')):
             # reconstitute region-specific SAM files
             tmpfile = open('%s.sam' % refname, 'w')
             count = 0
             good_count = 0
-            for line in group:
-                fields = line.split(',')
-                tmpfile.write('\t'.join(fields))
-                mapq = int(fields[4])
+            for row in group:
+                tmpfile.write('\t'.join([row[field]
+                                         for field in reader.fieldnames]))
+                tmpfile.write('\n')
+                mapq = int(row['mapq'])
                 if mapq >= 20:
                     good_count += 1
                 count += 1
-            stat_file.write('%s,prelim %s,%d\n' % (sample_name, refname, count))
+            args.remap_counts_csv.write('%s,prelim %s,%d\n' % (sample_name, refname, count))
             map_counts.update({refname: count})
             tmpfile.close()
             if good_count >= 10:
@@ -199,18 +206,29 @@ def main():
     mapped = {}  # track which reads have been mapped to a region
 
     # generate outputs
-    seqfile = open(args.remap_conseq_csv, 'w')  # record consensus sequences for later use
-    outfile = open(args.remap_csv, 'w')  # combine SAM files into single CSV output
-    
-    seqfile.write('region,sequence\n')
-    outfile.write('sample_name,qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n')
+    args.remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
+    # combine SAM files into single CSV output
+    fieldnames = ['sample_name',
+                  'qname', 
+                  'flag',
+                  'rname',
+                  'pos',
+                  'mapq',
+                  'cigar',
+                  'rnext',
+                  'pnext',
+                  'tlen',
+                  'seq',
+                  'qual']
+    remap_writer = csv.DictWriter(args.remap_csv, fieldnames)
+    remap_writer.writeheader()
 
     for refname in refnames:
-        stat_file.write('%s,remap %s,%d\n' % (sample_name,
+        args.remap_counts_csv.write('%s,remap %s,%d\n' % (sample_name,
                                               refname,
                                               map_counts[refname]))
         conseq = conseqs.get(refname) or projects.getReference(refname)
-        seqfile.write('%s,%s\n' % (refname, conseq))
+        args.remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
         # transfer contents of last SAM file to CSV
         handle = open(refname+'.sam', 'rU')
         for line in handle:
@@ -229,14 +247,13 @@ def main():
 
             items[2] = refname  # replace '0' due to passing conseq to bowtie2-build on cmd line
             items.insert(0, sample_name)
-            outfile.write(','.join(items) + '\n')
+            remap_writer.writerow(dict(zip(fieldnames, items)))
         handle.close()
 
-    outfile.close()
-    seqfile.close()
+    args.remap_csv.close()
+    args.remap_conseq_csv.close()
 
     # screen raw data for reads that have not mapped to any region
-    outfile = open(args.unmapped1, 'w')
     n_unmapped = 0
     with open(args.fastq1, 'rU') as f:
         # http://stackoverflow.com/questions/1657299/how-do-i-read-two-lines-from-a-file-at-a-time-using-python
@@ -244,24 +261,22 @@ def main():
             qname = ident.lstrip('@').rstrip('\n').split()[0]
             if qname not in mapped or mapped[qname] < 2:
                 # forward read not mapped
-                outfile.write(''.join([ident, seq, opt, qual]))
+                args.unmapped1.write(''.join([ident, seq, opt, qual]))
                 n_unmapped += 1
-    outfile.close()
+    args.unmapped1.close()
 
     # write out the other pair
-    outfile = open(args.unmapped2, 'w')
     with open(args.fastq2, 'rU') as f:
         for ident, seq, opt, qual in itertools.izip_longest(*[f]*4):
             qname = ident.lstrip('@').rstrip('\n').split()[0]
             if qname not in mapped or mapped[qname] % 2 == 0:
                 # reverse read not mapped
-                outfile.write(''.join([ident, seq, opt, qual]))
+                args.unmapped2.write(''.join([ident, seq, opt, qual]))
                 n_unmapped += 1
-    outfile.close()
+    args.unmapped2.close()
 
     # report number of unmapped reads
-    stat_file.write('%s,unmapped,%d\n' % (sample_name, n_unmapped))
-    stat_file.close()
+    args.remap_counts_csv.write('%s,unmapped,%d\n' % (sample_name, n_unmapped))
 
 
 def pileup_to_conseq (handle, qCutoff):

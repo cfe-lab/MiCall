@@ -12,6 +12,7 @@ Dependencies: settings.py (derived from settings_default.py)
 """
 
 import argparse
+import csv
 import logging
 import os
 import subprocess
@@ -29,7 +30,9 @@ def main():
     
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-    parser.add_argument('prelim_csv', help='<output> CSV containing preliminary mapping from bowtie2 (modified SAM)')
+    parser.add_argument('prelim_csv',
+                        type=argparse.FileType('w'),
+                        help='<output> CSV containing preliminary mapping from bowtie2 (modified SAM)')
     
     args = parser.parse_args()
 
@@ -47,12 +50,6 @@ def main():
 
     if not os.path.exists(args.fastq2):
         logger.error('No FASTQ found at %s', args.fastq2)
-        sys.exit(1)
-
-    # check that the SAM output path is valid
-    output_path = os.path.split(args.prelim_csv)[0]
-    if not os.path.exists(output_path) and output_path != '':
-        logger.error('SAM output path does not exist: %s', output_path)
         sys.exit(1)
 
     # generate initial reference files
@@ -94,13 +91,24 @@ def main():
     if p.returncode:
         raise subprocess.CalledProcessError(p.returncode, bowtie_args)
 
+    fieldnames = ['qname', 
+                  'flag',
+                  'rname',
+                  'pos',
+                  'mapq',
+                  'cigar',
+                  'rnext',
+                  'pnext',
+                  'tlen',
+                  'seq',
+                  'qual']
+    writer = csv.DictWriter(args.prelim_csv, fieldnames)
+    writer.writeheader()
+    
     # lines grouped by refname
-    with open(args.prelim_csv, 'w') as outfile:
-        outfile.write('qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n')
-        
-        for refname, lines in output.iteritems():
-            for line in lines:
-                outfile.write(line.replace('\t', ',') + '\n')
+    for refname, lines in output.iteritems():
+        for line in lines:
+            writer.writerow(dict(zip(fieldnames, line.split('\t'))))
 
 
 def log_call(args, format_string='%s'):
