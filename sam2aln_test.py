@@ -23,3 +23,20 @@ sample_name,qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
 
         self.assertEqual(regions, ['V3LOOP', 'INT'])
         self.assertEqual(sample_names, ['1234A', '1234A'])
+
+    def test_escaping(self):
+        remap_file = StringIO.StringIO("""\
+sample_name,qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+1234A,Example_read_1,99,V3LOOP,1,44,32M,=,1,-32,TGT,"A,A"
+1234A,Example_read_1,147,V3LOOP,1,44,32M,=,1,-32,TGT,"A""A"
+""")
+        expected_qualities = ['A,A',
+                              'A"A']
+        
+        reader = sam2aln.RemapReader(remap_file)
+        qualities = []
+        for _sample_name, _region, group in reader.read_groups():
+            for row in group:
+                qualities.append(row['qual'])
+        
+        self.assertSequenceEqual(expected_qualities, qualities)

@@ -15,20 +15,28 @@ Dependencies:
 """
 
 import argparse
-import os
 import sys
 import itertools
 import re
 
 from settings import max_prop_N, read_mapping_cutoff, sam2aln_q_cutoffs
+import csv
 
 def parseArgs():
     parser = argparse.ArgumentParser(
         description='Conversion of SAM data into aligned format.')
-    parser.add_argument('remap_csv', help='<input> SAM output of bowtie2 in CSV format')
-    parser.add_argument('aligned_csv', help='<output> CSV containing cleaned and merged reads')
-    parser.add_argument('insert_csv', help='<output> CSV containing insertions relative to sample consensus')
-    parser.add_argument('failed_csv', help='<output> CSV containing reads that failed to merge')
+    parser.add_argument('remap_csv',
+                        type=argparse.FileType('rU'),
+                        help='<input> SAM output of bowtie2 in CSV format')
+    parser.add_argument('aligned_csv',
+                        type=argparse.FileType('w'),
+                        help='<output> CSV containing cleaned and merged reads')
+    parser.add_argument('insert_csv',
+                        type=argparse.FileType('w'),
+                        help='<output> CSV containing insertions relative to sample consensus')
+    parser.add_argument('failed_csv',
+                        type=argparse.FileType('w'),
+                        help='<output> CSV containing reads that failed to merge')
     
     return parser.parse_args()
 
@@ -135,15 +143,13 @@ def len_gap_prefix(s):
 class RemapReader(object):
     
     def __init__(self, remap_file):
-        self.remap_file = remap_file
+        self.remap_reader = csv.DictReader(remap_file)
         
-    def _get_key(self, line):
-        fields = line.split(',')
-        return (fields[0], fields[3])
+    def _get_key(self, row):
+        return (row['sample_name'], row['rname'])
     
     def read_groups(self):
-        self.remap_file.readline() # skip header
-        for key, group in itertools.groupby(self.remap_file, self._get_key):
+        for key, group in itertools.groupby(self.remap_reader, self._get_key):
             sample_name, refname = key
             yield sample_name, refname, group
         
@@ -158,47 +164,54 @@ def is_first_read(flag):
 def main():
     args = parseArgs()
     
-    # check that the inputs exist
-    if not os.path.exists(args.remap_csv):
-        print 'No input CSV found at', args.remap_csv
-        sys.exit(1)
-
-    # check that the output paths are valid
-    output_path = os.path.split(args.aligned_csv)[0]
-    if not os.path.exists(output_path) and output_path != '':
-        print 'Output path does not exist:', output_path
-        sys.exit(1)
-
-
-    handle = open(args.remap_csv, 'rU')
-    outfile = open(args.aligned_csv, 'w')
-    insert_file = open(args.insert_csv, 'w')
-    failfile = open(args.failed_csv, 'w')
-    
-    reader = RemapReader(handle)
-    outfile.write('sample,refname,qcut,rank,count,offset,seq\n')
-    insert_file.write('sample,qname,fwd_rev,refname,pos,insert,qual\n')
-    failfile.write('sample,qname,qcut,seq1,qual1,seq2,qual2,prop_N,mseq\n')
+    reader = RemapReader(args.remap_csv)
+    args.aligned_csv.write('sample,refname,qcut,rank,count,offset,seq\n')
+    insert_writer = csv.DictWriter(args.insert_csv,
+                                   ['sample',
+                                    'qname',
+                                    'fwd_rev',
+                                    'refname',
+                                    'pos',
+                                    'insert',
+                                    'qual'])
+    insert_writer.writeheader()
+    failed_writer = csv.DictWriter(args.failed_csv,
+                                   ['sample',
+                                    'qname',
+                                    'qcut',
+                                    'seq1',
+                                    'qual1',
+                                    'seq2',
+                                    'qual2',
+                                    'prop_N',
+                                    'mseq'])
+    failed_writer.writeheader()
 
     for sample_name, refname, group in reader.read_groups():
         aligned = dict([(qcut, {}) for qcut in sam2aln_q_cutoffs])
         cached_reads = {}  # for mate pairing
-        for line in group:
+        for row in group:
             if refname == '0':
-                print line
+                print row
                 sys.exit()
 
-            _, qname, bitflag, _, pos, mapq, cigar, _, _, _, seq, qual = line.strip('\n').split(',')
-            if cigar == '*' or int(mapq) < read_mapping_cutoff:
+            cigar = row['cigar']
+            qname = row['qname']
+            if cigar == '*' or int(row['mapq']) < read_mapping_cutoff:
                 continue
 
-            pos1 = int(pos)-1  # convert 1-index to 0-index
+            pos1 = int(row['pos'])-1  # convert 1-index to 0-index
 
             # report insertions relative to sample consensus
-            _, seq1, qual1, inserts = apply_cigar(cigar, seq, qual)
+            _, seq1, qual1, inserts = apply_cigar(cigar, row['seq'], row['qual'])
             for left, (iseq, iqual) in inserts.iteritems():
-                insert_file.write('%s,%s,%s,%s,%d,%s,%s\n' % (sample_name, qname, 'F' if is_first_read(bitflag) else 'R',
-                                                              refname, pos1+left, iseq, iqual))
+                insert_writer.writerow({'sample': sample_name,
+                                        'qname': qname,
+                                        'fwd_rev': 'F' if is_first_read(row['flag']) else 'R',
+                                        'refname': refname,
+                                        'pos': pos1+left,
+                                        'insert': iseq,
+                                        'qual': iqual})
 
             seq2 = '-'*pos1 + seq1  # pad sequence on left
             qual2 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
@@ -214,16 +227,14 @@ def main():
                 prop_N = mseq.count('N') / float(len(mseq.strip('-')))
                 if prop_N > max_prop_N:
                     # merged read is too messy
-                    failfile.write(','.join(map(str, [sample_name,
-                                                      qname,
-                                                      qcut,
-                                                      seq1,
-                                                      qual1,
-                                                      seq2,
-                                                      qual2,
-                                                      prop_N,
-                                                      mseq])))
-                    failfile.write('\n')
+                    failed_writer.writerow({'sample': sample_name,
+                                            'qname': qname,
+                                            'seq1': seq1,
+                                            'qual1': qual1,
+                                            'seq2': seq2,
+                                            'qual2': qual2,
+                                            'prop_N': prop_N,
+                                            'mseq': mseq})
                     continue
 
                 if mseq in aligned[qcut]:
@@ -237,19 +248,15 @@ def main():
             intermed = [(count, len_gap_prefix(s), s) for s, count in data.iteritems()]
             intermed.sort(reverse=True)
             for rank, (count, offset, seq) in enumerate(intermed):
-                outfile.write(','.join(map(str, [sample_name,
+                args.aligned_csv.write(','.join(map(str, [sample_name,
                                                  refname,
                                                  qcut,
                                                  rank,
                                                  count,
                                                  offset,
                                                  seq.strip('-')])))
-                outfile.write('\n')
+                args.aligned_csv.write('\n')
 
-    handle.close()
-    outfile.close()
-    failfile.close()
-    insert_file.close()
 
 if __name__ == '__main__':
     main()

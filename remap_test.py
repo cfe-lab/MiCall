@@ -14,10 +14,9 @@ class RemapTest(unittest.TestCase):
         self.assertEqual(sample_name, expected_sample_name)
         
     def assertCigarIsPrimer(self, cigar, is_primer_expected):
-        fields = "qname,flag,rname,pos,mapq,cigar,rnext".split(',')
-        fields[5] = cigar
+        row = {'cigar': cigar}
         max_primer_length = 29
-        self.assertEqual(is_primer_expected, is_primer(fields, max_primer_length))
+        self.assertEqual(is_primer_expected, is_primer(row, max_primer_length))
         
     def testIsPrimerForLongRead(self):
         self.assertCigarIsPrimer('45M', False)
