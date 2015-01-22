@@ -15,6 +15,7 @@ import miseq_logging
 import sample_sheet_parser
 import settings
 from project_config import ProjectConfig
+from operator import itemgetter
 
 
 def parse_args():
@@ -198,6 +199,8 @@ def build_review_decisions(coverage_file,
             current_count = counts_map.get(key, 0)
             counts_map[key] = max(current_count, count)
     
+    targeted_projects = set(map(itemgetter('target_project'), sequencings))
+    
     decisions = {} # {(sample_name, region): decision}
     #sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
     for coverage in csv.DictReader(coverage_file):
@@ -227,7 +230,11 @@ def build_review_decisions(coverage_file,
         
         decision_key = (coverage['sample'], coverage['region'])
         previous_decision = decisions.get(decision_key)
-        if previous_decision is None or score > previous_decision['score']:
+        is_replacement = (previous_decision is None or
+                          score > previous_decision['score'] or
+                          (score == previous_decision['score'] and
+                           coverage['project'] in targeted_projects))
+        if is_replacement:
             decisions[decision_key] = {
                 'sequencing_id': sequencing['id'],
                 'project_region_id': project_region_id,

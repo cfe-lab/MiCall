@@ -228,3 +228,76 @@ Sample1-Proj1_S1,Proj1,R1,R1-seed,15,1900,12,-3,4
                                                       self.regions)
  
         self.assertListEqual(expected_decisions, decisions)
+
+    def test_multiple_samples_one_off_target(self):
+        coverage_file = StringIO.StringIO("""\
+sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
+Sample1-Proj1_S1,Proj-all,R2,R2-seed,15,1900,12,-2,3
+Sample1-Proj1_S1,Proj2,R2,R2-seed,15,1900,12,-2,3
+Sample2-Proj2-Sample3-Proj3_S2,Proj-all,R2,R2-seed,15,1900,12,-3,4
+Sample2-Proj2-Sample3-Proj3_S2,Proj2,R2,R2-seed,15,1900,12,-3,4
+""")
+        expected_decisions = [{'sequencing_id': 10001,
+                               'project_region_id': 20002,
+                               'seed_region_id': 30012,
+                               'sample_name': 'Sample1-Proj1_S1',
+                               'score': -2,
+                               'min_coverage': 1900,
+                               'min_coverage_pos': 12,
+                               'raw_reads': 3000,
+                               'mapped_reads': 200},
+                              {'sequencing_id': 10002,
+                               'project_region_id': 20002,
+                               'seed_region_id': 30012,
+                               'sample_name': 'Sample2-Proj2-Sample3-Proj3_S2',
+                               'score': 4,
+                               'min_coverage': 1900,
+                               'min_coverage_pos': 12,
+                               'raw_reads': 3000,
+                               'mapped_reads': 2000}]
+        
+        decisions = update_qai.build_review_decisions(coverage_file,
+                                                      self.collated_counts_file,
+                                                      self.sample_sheet,
+                                                      self.sequencings,
+                                                      self.project_regions,
+                                                      self.regions)
+
+        self.assertListEqual(expected_decisions, decisions)
+
+    def test_better_score_off_target(self):
+        self.sequencings[0]['target_project'] = 'Proj-all'
+        coverage_file = StringIO.StringIO("""\
+sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
+Sample1-Proj1_S1,Proj-all,R2,R2-seed,15,1900,12,-2,3
+Sample1-Proj1_S1,Proj2,R2,R2-seed,15,1900,12,-2,3
+Sample2-Proj2-Sample3-Proj3_S2,Proj-all,R2,R2-seed,15,1900,12,-3,4
+Sample2-Proj2-Sample3-Proj3_S2,Proj2,R2,R2-seed,15,1900,12,-3,4
+""")
+        expected_decisions = [{'sequencing_id': 10001,
+                               'project_region_id': 20012,
+                               'seed_region_id': 30012,
+                               'sample_name': 'Sample1-Proj1_S1',
+                               'score': 3,
+                               'min_coverage': 1900,
+                               'min_coverage_pos': 12,
+                               'raw_reads': 3000,
+                               'mapped_reads': 200},
+                              {'sequencing_id': 10002,
+                               'project_region_id': 20002,
+                               'seed_region_id': 30012,
+                               'sample_name': 'Sample2-Proj2-Sample3-Proj3_S2',
+                               'score': 4,
+                               'min_coverage': 1900,
+                               'min_coverage_pos': 12,
+                               'raw_reads': 3000,
+                               'mapped_reads': 2000}]
+        
+        decisions = update_qai.build_review_decisions(coverage_file,
+                                                      self.collated_counts_file,
+                                                      self.sample_sheet,
+                                                      self.sequencings,
+                                                      self.project_regions,
+                                                      self.regions)
+
+        self.assertListEqual(expected_decisions, decisions)
