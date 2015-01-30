@@ -1105,6 +1105,82 @@
         }
       ]
     },
+    "MiniHCV": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "HCV1A-H77-NS5b",
+          "key_positions": [
+            {
+              "end_pos": 336,
+              "start_pos": 227
+            }
+          ],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region_names": [
+            "HCV1A-H77-seed",
+            "HCV1B-seed",
+            "HCV1C-seed",
+            "HCV1E-seed",
+            "HCV1G-seed",
+            "HCV2A-seed",
+            "HCV2B-seed",
+            "HCV2C-seed",
+            "HCV2I-seed",
+            "HCV2J-seed",
+            "HCV2K-seed",
+            "HCV2Q-seed",
+            "HCV3A-seed",
+            "HCV3B-seed",
+            "HCV3I-seed",
+            "HCV3K-seed",
+            "HCV4A-seed",
+            "HCV4B-seed",
+            "HCV4C-seed",
+            "HCV4D-seed",
+            "HCV4F-seed",
+            "HCV4G-seed",
+            "HCV4K-seed",
+            "HCV4L-seed",
+            "HCV4M-seed",
+            "HCV4N-seed",
+            "HCV4O-seed",
+            "HCV4P-seed",
+            "HCV4Q-seed",
+            "HCV4R-seed",
+            "HCV4T-seed",
+            "HCV4V-seed",
+            "HCV5A-seed",
+            "HCV6A-seed",
+            "HCV6B-seed",
+            "HCV6C-seed",
+            "HCV6D-seed",
+            "HCV6E-seed",
+            "HCV6F-seed",
+            "HCV6G-seed",
+            "HCV6H-seed",
+            "HCV6I-seed",
+            "HCV6J-seed",
+            "HCV6K-seed",
+            "HCV6L-seed",
+            "HCV6M-seed",
+            "HCV6N-seed",
+            "HCV6O-seed",
+            "HCV6P-seed",
+            "HCV6Q-seed",
+            "HCV6R-seed",
+            "HCV6S-seed",
+            "HCV6T-seed",
+            "HCV6U-seed",
+            "HCV6V-seed",
+            "HCV6W-speed",
+            "HCV7A-seed"
+          ]
+        }
+      ]
+    },
     "PR-RT": {
       "max_variants": 0,
       "regions": [
