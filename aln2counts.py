@@ -582,7 +582,10 @@ class InsertionWriter(object):
             for nuc_seq, count in self.nuc_seqs.iteritems():
                 framed_nuc_seq = reading_frame * '-' + nuc_seq
                 insert_nuc_seq = framed_nuc_seq[left*3:right*3]
-                if 'n' not in insert_nuc_seq and '-' not in insert_nuc_seq:
+                is_valid = (insert_nuc_seq and
+                            'n' not in insert_nuc_seq and
+                            '-' not in insert_nuc_seq)
+                if is_valid:
                     insert_amino_seq = translate(insert_nuc_seq)
                     current_counts[insert_amino_seq] += count
 

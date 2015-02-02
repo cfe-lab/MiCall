@@ -451,6 +451,27 @@ E1234_S1,R3-seed,R3,15,5,G,9
         
         self.assertMultiLineEqual(expected_insertions,
                                   self.insertion_file.getvalue())
+    
+    def testInsertionInSomeReads(self):
+        """ Not all reads have the insertion, some end before it.
+        """
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
+E1234_S1,R3-seed,15,1,5,0,AAATTTCAG
+""".splitlines(True)
+           
+        expected_insertions = """\
+sample,seed,region,qcut,left,insert,count
+E1234_S1,R3-seed,R3,15,5,G,9
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_amino_counts(self.report_file)
+        self.report.write_insertions()
+        
+        self.assertMultiLineEqual(expected_insertions,
+                                  self.insertion_file.getvalue())
         
     def testMultipleCoordinateInsertionReport(self):
         """ Two coordinate regions map the same seed region, the consensus
