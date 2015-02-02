@@ -914,6 +914,25 @@ E1234_S1,R1-seed,15,0,10,0,TCACTCTCT
         
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
+    def testVariantWhenSomeAlignsFail(self):
+        """ Coordinate reference and first read are KFR, second read is SLS,
+        mapped to another part of the seed.
+        """
+        #sample,refname,qcut,rank,count,offset,seq
+        aligned_reads = """\
+E1234_S1,R1-seed,15,0,10,0,AAATTTCGA
+E1234_S1,R1-seed,15,1,20,30,TCACTCTCT
+""".splitlines(True)
+        
+        expected_text = """\
+E1234_S1,R1-seed,15,R1,0,10,AAATTTCGA
+"""
+        
+        self.report.read(aligned_reads)
+        self.report.write_nuc_variants(self.report_file)
+        
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+    
     def testVariantShortRead(self):
         #sample,refname,qcut,rank,count,offset,seq
         aligned_reads = """\

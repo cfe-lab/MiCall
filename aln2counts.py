@@ -210,9 +210,8 @@ class SequenceReport(object):
                               aref,
                               frame_seed_aminos)
         
-        if best_alignment is None:
-            report_aminos = []
-        else:
+        report_aminos = []
+        if best_alignment is not None:
             (reading_frame,
              consensus,
              aquery,
@@ -224,7 +223,6 @@ class SequenceReport(object):
             coordinate_inserts = set(range(len(consensus)))
             self.inserts[coordinate_name] = coordinate_inserts
             empty_seed_amino = SeedAmino(None)
-            report_aminos = []
             for i in range(len(aref)):
                 if (consensus_index >= len(consensus) or 
                     aquery[i] != consensus[consensus_index]):
@@ -267,7 +265,8 @@ class SequenceReport(object):
         for coordinate_name, coordinate_ref in self.coordinate_refs.iteritems():
             self._map_to_coordinate_ref(coordinate_name, coordinate_ref)
             report_aminos = self.reports[coordinate_name]
-            if report_aminos:
+            max_variants = self.projects.getMaxVariants(coordinate_name)
+            if report_aminos and max_variants:
                 variant_counts = Counter() # {seq: count}
                 for report_amino in report_aminos:
                     first_amino_index = report_amino.seed_amino.consensus_index
@@ -281,6 +280,7 @@ class SequenceReport(object):
                         break
                 last_amino_index = last_amino_index or -1
                 end_pos = (last_amino_index+1) * 3
+                minimum_variant_length = len(coordinate_ref)/2
                 for line in aligned_reads:
                     (_sample_name,
                      _seed,
@@ -293,11 +293,12 @@ class SequenceReport(object):
                     offset = int(offset)
                     padded_seq = offset*'-' + nuc_seq
                     clipped_seq = padded_seq[start_pos:end_pos]
-                    variant_counts[clipped_seq] += count
+                    stripped_seq = clipped_seq.replace('-', '')
+                    if len(stripped_seq) > minimum_variant_length:
+                        variant_counts[clipped_seq] += count
                 coordinate_variants = [(count, seq)
                                        for seq, count in variant_counts.iteritems()]
                 coordinate_variants.sort(reverse=True)
-                max_variants = self.projects.getMaxVariants(coordinate_name)
                 self.variants[coordinate_name] = coordinate_variants[0:max_variants]
     
     def write_amino_header(self, amino_file):
