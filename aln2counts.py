@@ -587,7 +587,8 @@ class InsertionWriter(object):
                             '-' not in insert_nuc_seq)
                 if is_valid:
                     insert_amino_seq = translate(insert_nuc_seq)
-                    current_counts[insert_amino_seq] += count
+                    if insert_amino_seq:
+                        current_counts[insert_amino_seq] += count
 
         # record insertions to CSV
         for left, counts in insert_counts.iteritems():

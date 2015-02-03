@@ -459,6 +459,7 @@ E1234_S1,R3-seed,R3,15,5,G,9
         aligned_reads = """\
 E1234_S1,R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
 E1234_S1,R3-seed,15,1,5,0,AAATTTCAG
+E1234_S1,R3-seed,15,2,4,0,AAATTTCAGACTG
 """.splitlines(True)
            
         expected_insertions = """\
