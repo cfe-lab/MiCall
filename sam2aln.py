@@ -229,6 +229,7 @@ def main():
                     # merged read is too messy
                     failed_writer.writerow({'sample': sample_name,
                                             'qname': qname,
+                                            'qcut': qcut,
                                             'seq1': seq1,
                                             'qual1': qual1,
                                             'seq2': seq2,
