@@ -8,15 +8,18 @@ from datetime import datetime
 from glob import glob
 import json
 import logging
+from operator import itemgetter
 import os
+from random import Random
 import requests
+import time
 
 import miseq_logging
 import sample_sheet_parser
 import settings
 from project_config import ProjectConfig
-from operator import itemgetter
 
+logger = miseq_logging.init_logging_console_only(logging.INFO)
 
 def parse_args():
     import argparse
@@ -106,22 +109,48 @@ def build_conseqs(conseqs_file,
                        "seq": curr_seq,
                        "ok_for_release": ok_for_release})
     return result
-        
+
+def retry_json(method, path, data=None):
+    json_data = data and json.dumps(data)
+    retries_remaining = 3
+    while True:
+        try:
+            response = method(
+                settings.qai_path + path,
+                data=json_data,
+                headers={'Content-Type': 'application/json',
+                         'Accept': 'application/json'})
+            response.raise_for_status()
+            return response.json()
+        except StandardError:
+            if retries_remaining <= 0:
+                raise
+            sleep_seconds = Random().uniform(0, 10)
+            logger.warn(
+                'JSON request failed. Sleeping for %ss before retry.',
+                sleep_seconds,
+                exc_info=True)
+            time.sleep(sleep_seconds)
+            retries_remaining -= 1
+
 def post_json(session, path, data):
-    response = session.post(
-        settings.qai_path + path,
-        data=json.dumps(data),
-        headers={'Content-Type': 'application/json',
-                 'Accept': 'application/json'})
-    response.raise_for_status()
-    return response
+    """ Post a JSON object to the web server, and return a JSON object.
+    
+    @param session an open HTTP session
+    @param path the relative path to add to settings.qai_path
+    @param data a JSON object that will be converted to a JSON string
+    @return the response body, parsed as a JSON object
+    """
+    return retry_json(session.post, path, data)
 
 def get_json(session, path):
-    response = session.get(
-        settings.qai_path + path,
-        headers={'Accept': 'application/json'})
-    response.raise_for_status()
-    return response
+    """ Get a JSON object from the web server.
+    
+    @param session an open HTTP session
+    @param path the relative path to add to settings.qai_path
+    @return the response body, parsed as a JSON object
+    """
+    return retry_json(session.get, path)
 
 def build_hla_b_seqs(sample_file):
     """
@@ -273,13 +302,11 @@ def upload_review_to_qai(coverage_file,
     runid = run['id']
     sequencings = run['sequencing_summary']
     
-    response = get_json(
+    project_regions = get_json(
         session,
         "/lab_miseq_project_regions?pipeline=" + settings.pipeline_version)
-    project_regions = response.json()
     
-    response = get_json(session, "/lab_miseq_regions")
-    regions = response.json()
+    regions = get_json(session, "/lab_miseq_regions")
     
     decisions = build_review_decisions(coverage_file,
                                        collated_counts_file,
@@ -311,10 +338,9 @@ def find_run(session, runname):
         sequencing summary of all the samples and their target projects.
     """
     cleaned_runname = clean_runname(runname)
-    response = get_json(
+    runs = get_json(
         session,
         "/lab_miseq_runs?summary=sequencing&runname=" + cleaned_runname)
-    runs = response.json()
     rowcount = len(runs)
     if rowcount == 0:
         raise RuntimeError("No run found with runname {!r}.".format(cleaned_runname))
@@ -329,9 +355,9 @@ def find_pipeline_id(session):
     
     @return: the pipeline id.
     """
-    response = session.get(
-        settings.qai_path + "/lab_miseq_pipelines.json?version=" + settings.pipeline_version)
-    pipelines = response.json()
+    pipelines = get_json(
+        session,
+        "/lab_miseq_pipelines.json?version=" + settings.pipeline_version)
     rowcount = len(pipelines)
     if rowcount == 0:
         raise RuntimeError("No pipeline found with version {!r}.".format(
@@ -373,6 +399,7 @@ def process_folder(result_folder, logger):
                                       'user_password': settings.qai_password})
         if response.status_code == requests.codes.forbidden:  # @UndefinedVariable
             exit('Login failed, check qai_user in settings.py')
+
         run = find_run(session, sample_sheet["Experiment Name"])
 
         with open(collated_conseqs, "rU") as f:
@@ -394,8 +421,6 @@ def process_folder(result_folder, logger):
 def main():
     args, parser = parse_args()
     
-    logger = miseq_logging.init_logging_console_only(logging.INFO)
-
     if args.result_folder:
         process_folder(args.result_folder, logger)
     elif not args.load_all:

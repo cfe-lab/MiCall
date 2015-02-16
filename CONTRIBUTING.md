@@ -294,7 +294,8 @@ similar steps to setting up a development workstation. Follow these steps:
         python MISEQ_MONITOR.py &>/dev/null &
         tail -f /data/miseq/MISEQ_MONITOR_OUTPUT.log
 11. Remove the pre-release flag from the release.
-12. Close the milestone for this release, create one for the next release, and
+12. Send an e-mail to users describing the major changes in the release.
+13. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
 
 [release]: https://help.github.com/categories/85/articles
