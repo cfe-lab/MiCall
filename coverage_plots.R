@@ -122,7 +122,7 @@ prepare.plot <- function(
     # set up plot
     png(file=filename, width=400, height=300, type='cairo')
     par(family='sans', cex=1, mar=c(5,5,1,1))
-    plot(NA, xlim=c(1,xlim), ylim=c(1,200000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
+    plot(NA, xlim=c(1,xlim), ylim=c(1,2000000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
     title(xlab=x.label, font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
     
     # indicate key positions for this region
@@ -130,7 +130,7 @@ prepare.plot <- function(
         rect(
                 pos-0.505, good.coverage/2,
                 pos+0.505, good.coverage*2,
-                col='red',
+                col='grey30',
                 border=NA)
     }
 }
@@ -283,11 +283,10 @@ for (i in seq_along(coverage)) {
         abline(h = region.coverage.levels$green, lty=2)
         
         axis(1)
-        axis(2, at=c(1E1, 1E2, 1E3, 1E4, 1E5), labels=c('10', '100', '1000', '10,000', '100,000'), las=2)
+        axis(2, at=c(1E1, 1E2, 1E3, 1E4, 1E5, 1E6), labels=c('10', '100', '1000', '10,000', '100,000', '1,000,000'), las=2)
         box()
         
-        legend(x=0, y=1, legend=paste('q=', cutoffs, sep=''), col=rainbow(length(cutoffs), v=0.8), lty=1, lwd=2, bty='n', yjust=0)
-        text(x=max(df$refseq.aa.pos)/2, y=190000, label=paste(sample, region), cex=0.7, col='grey30', adj=c(0.5, 0.5))
+        text(x=max(df$refseq.aa.pos)/2, y=1900000, label=paste(sample, region), cex=0.7, col='grey30', adj=c(0.5, 0.5))
         
         garbage <- dev.off()
     }
