@@ -246,6 +246,21 @@ data and for the working folders.
 
 [cifs]: https://wiki.ubuntu.com/MountWindowsSharesPermanently
 
+Looking at SAM files
+--------------------
+When you don't understand the pipeline's output, it can be helpful to look at
+the raw reads in a sequence viewer like [Tablet][tablet]. Change the settings
+file on your workstation to not delete the temp folders, then run the pipeline
+on a run with a single sample. Look through the temp folders to find the one
+for the step you're interested in. For the remap step, the final remap results
+are stored in a SAM file named for the seed region. You also have to edit the
+`cfe.fasta` file and rename that seed region to "0", because the SAM file uses
+the region name "0" instead of the proper region name. Once you've done that,
+you should be able to open an assembly in Tablet using the SAM file and the
+edited FASTA file.
+
+[tablet]: http://ics.hutton.ac.uk/tablet/
+
 Releases
 --------
 This section assumes you already have a working server up and running, and you

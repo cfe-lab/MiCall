@@ -105,8 +105,14 @@ def main():
     raw_count = count_file_lines(args.fastq1) / 2  # 4 lines per record in FASTQ, paired
 
     sample_name = calculate_sample_name(args.fastq1)
-    args.remap_counts_csv.write('sample_name,type,count\n')
-    args.remap_counts_csv.write('%s,raw,%d\n' % (sample_name, raw_count))
+    remap_counts_writer = csv.DictWriter(args.remap_counts_csv, ['sample_name',
+                                                                 'type',
+                                                                 'count',
+                                                                 'filtered_count'])
+    remap_counts_writer.writeheader()
+    remap_counts_writer.writerow(dict(sample_name=sample_name,
+                                      type='raw',
+                                      count=raw_count))
 
     # group CSV stream by first item
     with args.prelim_csv:
@@ -122,22 +128,25 @@ def main():
             # reconstitute region-specific SAM files
             tmpfile = open('%s.sam' % refname, 'w')
             count = 0
-            good_count = 0
+            filtered_count = 0
             for row in group:
                 tmpfile.write('\t'.join([row[field]
                                          for field in reader.fieldnames]))
                 tmpfile.write('\n')
                 count += 1
                 if not is_primer(row, max_primer_length):
-                    good_count += 1
-            args.remap_counts_csv.write('%s,prelim %s,%d\n' % (sample_name, refname, count))
+                    filtered_count += 1
+            remap_counts_writer.writerow(dict(sample_name=sample_name,
+                                              type='prelim %s' % refname,
+                                              count=count,
+                                              filtered_count=filtered_count))
             map_counts[refname] = count
             tmpfile.close()
             refgroup = projects.getSeedGroup(refname)
             _best_ref, best_count = refgroups.get(refgroup,
                                                   (None, count_threshold))
-            if good_count > best_count:
-                refgroups[refgroup] = (refname, count)
+            if filtered_count > best_count:
+                refgroups[refgroup] = (refname, filtered_count)
     
     refnames = [refname for refname, _count in refgroups.itervalues()]
 
@@ -241,9 +250,9 @@ def main():
     remap_writer.writeheader()
 
     for refname in refnames:
-        args.remap_counts_csv.write('%s,remap %s,%d\n' % (sample_name,
-                                              refname,
-                                              map_counts[refname]))
+        remap_counts_writer.writerow(dict(sample_name=sample_name,
+                                          type='remap %s' % refname,
+                                          count=map_counts[refname]))
         conseq = conseqs.get(refname) or projects.getReference(refname)
         args.remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
         # transfer contents of last SAM file to CSV
@@ -293,7 +302,9 @@ def main():
     args.unmapped2.close()
 
     # report number of unmapped reads
-    args.remap_counts_csv.write('%s,unmapped,%d\n' % (sample_name, n_unmapped))
+    remap_counts_writer.writerow(dict(sample_name=sample_name,
+                                      type='unmapped',
+                                      count=n_unmapped))
 
 
 def pileup_to_conseq (handle, qCutoff):
