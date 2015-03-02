@@ -2,7 +2,7 @@
 To make pipeline portable, allow user to specify local paths and thread counts.
 """
 
-pipeline_version = '6.6'
+pipeline_version = '6.7'
 
 production = False  # set this to True to push results to NAS
 filter_cross_contaminants = False
