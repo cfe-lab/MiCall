@@ -130,7 +130,7 @@ prepare.plot <- function(
         rect(
                 pos-0.505, good.coverage/2,
                 pos+0.505, good.coverage*2,
-                col='grey30',
+                col='#cccccc',
                 border=NA)
     }
 }
@@ -263,7 +263,7 @@ for (i in seq_along(coverage)) {
             lines(x = df2$refseq.aa.pos, 
                     y = sapply(df2$coverage, function(x) max(x, 0.1)), 
                     col=rainbow(length(cutoffs), v=0.8)[j],
-                    lwd=2
+                    lwd=4
             )
             
             # determine minimum coverage at key positions
