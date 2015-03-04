@@ -5,6 +5,7 @@ MISEQ_MONITOR.py
 3) Upload results to the network drive
 """
 
+import csv
 from glob import glob
 import logging
 import os
@@ -13,11 +14,14 @@ import subprocess
 import sys
 import tarfile
 import time
+from xml.etree import ElementTree
 
 import miseq_logging
+import qai_helper
 from sample_sheet_parser import sample_sheet_parser
 from settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
-    NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, base_path
+    NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, base_path,\
+    qai_path, qai_user, qai_password
 import update_qai
 
 
@@ -75,6 +79,28 @@ logger = None
 failure_message = None
 
 # Process runs flagged for processing not already processed by this version of the pipeline
+
+
+def download_quality(run_info_path, destination):
+    """ Download quality control data for the run.
+    
+    @return the QC run id as a string
+    """
+    runInfoTree = ElementTree.parse(run_info_path)
+    runInfoRoot = runInfoTree.getroot()
+    qcRunId = runInfoRoot[0].attrib['Id']
+    with qai_helper.Session() as session:
+        session.login(qai_path, qai_user, qai_password)
+        metrics = session.get_json('/miseqqc_errormetrics?runid=' + qcRunId)
+    with open(destination, 'w') as f:
+        writer = csv.DictWriter(f, ['tile', 'cycle', 'errorrate'])
+        writer.writeheader()
+        for metric in metrics:
+            writer.writerow(dict(tile=metric['tile'],
+                                 cycle=metric['cycle'],
+                                 errorrate=metric['errorrate']))
+    return qcRunId
+
 while True:
     if failure_message is not None:
         # We're still logging to a run folder that failed.
@@ -206,6 +232,14 @@ while True:
         execute_command(['rsync', '-a', gz_file, local_file])
         execute_command(['gunzip', '-f', local_file])
 
+    try:
+        download_quality(os.path.join(root, 'RunInfo.xml'),
+                         os.path.join(home, run_name, 'quality.csv'))
+    except StandardError as e:
+        failure_message = mark_run_as_disabled(root,
+                                               "Quality could not be downloaded.",
+                                               exc_info=True)
+        continue
 
     # Standard out/error concatenates to the log
     logger.info("Launching pipeline for %s%s", home, run_name)

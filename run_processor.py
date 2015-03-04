@@ -48,7 +48,8 @@ def main():
                           'SampleSheet.csv',
                           '.launch',
                           'MISEQ_MONITOR_OUTPUT.log',
-                          'run.log')
+                          'run.log',
+                          'quality.csv')
         old_files = glob(args.run_folder+'/*')
         for f in old_files:
             is_excluded = False

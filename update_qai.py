@@ -6,15 +6,12 @@
 import csv
 from datetime import datetime
 from glob import glob
-import json
 import logging
 from operator import itemgetter
 import os
-from random import Random
-import requests
-import time
 
 import miseq_logging
+import qai_helper
 import sample_sheet_parser
 import settings
 from project_config import ProjectConfig
@@ -109,48 +106,6 @@ def build_conseqs(conseqs_file,
                        "seq": curr_seq,
                        "ok_for_release": ok_for_release})
     return result
-
-def retry_json(method, path, data=None):
-    json_data = data and json.dumps(data)
-    retries_remaining = 3
-    while True:
-        try:
-            response = method(
-                settings.qai_path + path,
-                data=json_data,
-                headers={'Content-Type': 'application/json',
-                         'Accept': 'application/json'})
-            response.raise_for_status()
-            return response.json()
-        except StandardError:
-            if retries_remaining <= 0:
-                raise
-            sleep_seconds = Random().uniform(0, 10)
-            logger.warn(
-                'JSON request failed. Sleeping for %ss before retry.',
-                sleep_seconds,
-                exc_info=True)
-            time.sleep(sleep_seconds)
-            retries_remaining -= 1
-
-def post_json(session, path, data):
-    """ Post a JSON object to the web server, and return a JSON object.
-    
-    @param session an open HTTP session
-    @param path the relative path to add to settings.qai_path
-    @param data a JSON object that will be converted to a JSON string
-    @return the response body, parsed as a JSON object
-    """
-    return retry_json(session.post, path, data)
-
-def get_json(session, path):
-    """ Get a JSON object from the web server.
-    
-    @param session an open HTTP session
-    @param path the relative path to add to settings.qai_path
-    @return the response body, parsed as a JSON object
-    """
-    return retry_json(session.get, path)
 
 def build_hla_b_seqs(sample_file):
     """
@@ -302,11 +257,10 @@ def upload_review_to_qai(coverage_file,
     runid = run['id']
     sequencings = run['sequencing_summary']
     
-    project_regions = get_json(
-        session,
+    project_regions = session.get_json(
         "/lab_miseq_project_regions?pipeline=" + settings.pipeline_version)
     
-    regions = get_json(session, "/lab_miseq_regions")
+    regions = session.get_json("/lab_miseq_regions")
     
     decisions = build_review_decisions(coverage_file,
                                        collated_counts_file,
@@ -315,13 +269,12 @@ def upload_review_to_qai(coverage_file,
                                        project_regions,
                                        regions)
     
-    post_json(session,
-              "/lab_miseq_reviews",
-              {'runid': runid,
-               'pipeline_id': find_pipeline_id(session),
-               'lab_miseq_review_decisions': decisions,
-               'lab_miseq_conseqs': conseqs,
-               'lab_miseq_hla_b_seqs': hla_b_seqs})
+    session.post_json("/lab_miseq_reviews",
+                      {'runid': runid,
+                       'pipeline_id': find_pipeline_id(session),
+                       'lab_miseq_review_decisions': decisions,
+                       'lab_miseq_conseqs': conseqs,
+                       'lab_miseq_hla_b_seqs': hla_b_seqs})
 
 def clean_runname(runname):
     try:
@@ -338,8 +291,7 @@ def find_run(session, runname):
         sequencing summary of all the samples and their target projects.
     """
     cleaned_runname = clean_runname(runname)
-    runs = get_json(
-        session,
+    runs = session.get_json(
         "/lab_miseq_runs?summary=sequencing&runname=" + cleaned_runname)
     rowcount = len(runs)
     if rowcount == 0:
@@ -355,8 +307,7 @@ def find_pipeline_id(session):
     
     @return: the pipeline id.
     """
-    pipelines = get_json(
-        session,
+    pipelines = session.get_json(
         "/lab_miseq_pipelines.json?version=" + settings.pipeline_version)
     rowcount = len(pipelines)
     if rowcount == 0:
@@ -393,12 +344,10 @@ def process_folder(result_folder, logger):
         
     ok_sample_regions = load_ok_sample_regions(result_folder)
     
-    with requests.Session() as session:
-        response = session.post(settings.qai_path + "/account/login",
-                                data={'user_login': settings.qai_user,
-                                      'user_password': settings.qai_password})
-        if response.status_code == requests.codes.forbidden:  # @UndefinedVariable
-            exit('Login failed, check qai_user in settings.py')
+    with qai_helper.Session() as session:
+        session.login(settings.qai_path,
+                      settings.qai_user,
+                      settings.qai_password)
 
         run = find_run(session, sample_sheet["Experiment Name"])
 
