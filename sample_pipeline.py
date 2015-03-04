@@ -48,6 +48,17 @@ class SampleInfo(object):
         self.key = sample_name + '_' + sample_number
         self.output_root = os.path.join(dirname, self.key)
         
+def filter_quality(run_folder, worker):
+    log_path = os.path.join(run_folder, 'quality.log')
+    worker.run_job(Job(script=base_path + 'filter_quality.py',
+                       helpers=(base_path + 'settings.py',
+                                base_path + 'miseq_logging.py',
+                                projects_json),
+                       args=(os.path.join(run_folder, 'quality.csv'),
+                             os.path.join(run_folder, 'bad_cycles.csv')),
+                       stdout=log_path,
+                       stderr=log_path))
+    
 def map_samples(fastq_samples, worker):
     # Preliminary map
     for sample_info in fastq_samples:
@@ -236,6 +247,9 @@ def main():
                     working_path=args.run_folder,
                     are_temp_folders_deleted=are_temp_folders_deleted,
                     logger=logger)
+    
+    if args.phase in ('filter', 'all'):
+        filter_quality(args.run_folder, worker)
     
     if args.phase in ('mapping', 'all'):
         map_samples(fastq_samples, worker)

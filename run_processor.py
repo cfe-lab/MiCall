@@ -74,28 +74,36 @@ def main():
             if not expected_version in version:
                 sys.exit("Couldn't find Open MPI:\n{}".format(version))
         
-        mapping_args = ['mpirun', 
+        base_args =    ['mpirun', 
                         '-np', 
-                        str(settings.mapping_processes), 
+                        '1', 
                         '--hostfile', 
                         settings.base_path + 'hostfile', 
                         settings.base_path + 'sample_pipeline.py',
                         args.run_folder]
         if args.mode is not None:
-            mapping_args.append(args.mode)
-        mapping_args.append('--phase')
+            base_args.append(args.mode)
+        base_args.append('--phase')
+        
+        filter_args = base_args[:]
+        filter_args.append('filter')
+        filter_command = prefix + ' '.join(filter_args)
+        
+        mapping_args = base_args[:]
+        mapping_args[2] = str(settings.mapping_processes)
         mapping_args.append('mapping')
         mapping_command = prefix + ' '.join(mapping_args)
         
-        counting_args = mapping_args[:]
+        counting_args = base_args[:]
         counting_args[2] = str(settings.counting_processes)
-        counting_args[-1] = 'counting'
+        counting_args.append('counting')
         counting_command = prefix + ' '.join(counting_args)
         
-        summarizing_args = mapping_args[:]
-        summarizing_args[2] = '1' # Only one process does the summary
-        summarizing_args[-1] = 'summarizing'
+        summarizing_args = base_args[:]
+        summarizing_args.append('summarizing')
         summarizing_command = prefix + ' '.join(summarizing_args)
+        
+        subprocess.check_call(filter_command, shell=True)
         
         subprocess.check_call(mapping_command, shell=True)
     
