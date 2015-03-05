@@ -4,6 +4,7 @@ import unittest
 import aln2counts
 import project_config
 import sys
+import csv
 
 class StubbedSequenceReport(aln2counts.SequenceReport):
     def __init__(self, 
@@ -124,6 +125,11 @@ class SequenceReportTest(unittest.TestCase):
                                             projects,
                                             conseq_mixture_cutoffs)
         self.report_file = StringIO.StringIO()
+    
+    def prepareReads(self, aligned_reads_text):
+        full_text = "refname,qcut,rank,count,offset,seq\n" + aligned_reads_text
+        dummy_file = StringIO.StringIO(full_text)
+        return csv.DictReader(dummy_file)
      
     def testEmptyAminoReport(self):
         expected_text = ""
@@ -139,14 +145,14 @@ class SequenceReportTest(unittest.TestCase):
         AAA -> K
         TTT -> F
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,9,0,AAATTT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTT
+""")
         expected_text = """\
-sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence
-E1234,R1-seed,15,S1,MAX,AAATTT
-E1234,R1-seed,15,S1,0.100,AAATTT
+region,q-cutoff,consensus-percent-cutoff,sequence
+R1-seed,15,MAX,AAATTT
+R1-seed,15,0.100,AAATTT
 """
          
         self.report.write_consensus_header(self.report_file)
@@ -160,15 +166,15 @@ E1234,R1-seed,15,S1,0.100,AAATTT
         CCC -> P
         GGG -> G
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,9,0,AAATTT
-E1234_S1,R1-seed,15,0,1,0,CCCGGG
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTT
+R1-seed,15,0,1,0,CCCGGG
+""")
         expected_text = """\
-sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence
-E1234,R1-seed,15,S1,MAX,AAATTT
-E1234,R1-seed,15,S1,0.100,MMMKKK
+region,q-cutoff,consensus-percent-cutoff,sequence
+R1-seed,15,MAX,AAATTT
+R1-seed,15,0.100,MMMKKK
 """
          
         self.report.write_consensus_header(self.report_file)
@@ -184,16 +190,16 @@ E1234,R1-seed,15,S1,0.100,MMMKKK
         The coordinate reference has three codons, so the third position is
         empty.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,9,0,AAATTT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTT
+""")
          
         expected_text = """\
-sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
-E1234_S1,R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """        
         
         self.report.write_amino_header(self.report_file)
@@ -209,22 +215,22 @@ E1234_S1,R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         The coordinate reference has three codons, so the third position is
         empty.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,9,0,AAATTT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTT
+""")
           
         expected_text = """\
-sample,seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
-E1234_S1,R1-seed,R1,15,1,1,9,0,0,0
-E1234_S1,R1-seed,R1,15,2,2,9,0,0,0
-E1234_S1,R1-seed,R1,15,3,3,9,0,0,0
-E1234_S1,R1-seed,R1,15,4,4,0,0,0,9
-E1234_S1,R1-seed,R1,15,5,5,0,0,0,9
-E1234_S1,R1-seed,R1,15,6,6,0,0,0,9
-E1234_S1,R1-seed,R1,15,,7,0,0,0,0
-E1234_S1,R1-seed,R1,15,,8,0,0,0,0
-E1234_S1,R1-seed,R1,15,,9,0,0,0,0
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+R1-seed,R1,15,1,1,9,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0
+R1-seed,R1,15,4,4,0,0,0,9
+R1-seed,R1,15,5,5,0,0,0,9
+R1-seed,R1,15,6,6,0,0,0,9
+R1-seed,R1,15,,7,0,0,0,0
+R1-seed,R1,15,,8,0,0,0,0
+R1-seed,R1,15,,9,0,0,0,0
 """
         
         self.report.write_nuc_header(self.report_file)
@@ -237,23 +243,23 @@ E1234_S1,R1-seed,R1,15,,9,0,0,0,0
         """ The first row provides alignment so the partial codon at the start
         of the second row will map to the reference.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,1,3,TTT
-E1234_S1,R1-seed,15,0,8,5,TCGA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,1,3,TTT
+R1-seed,15,0,8,5,TCGA
+""")
           
-        #sample,seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        #seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
         expected_text = """\
-E1234_S1,R1-seed,R1,15,1,1,0,0,0,0
-E1234_S1,R1-seed,R1,15,2,2,0,0,0,0
-E1234_S1,R1-seed,R1,15,3,3,0,0,0,0
-E1234_S1,R1-seed,R1,15,4,4,0,0,0,1
-E1234_S1,R1-seed,R1,15,5,5,0,0,0,1
-E1234_S1,R1-seed,R1,15,6,6,0,0,0,9
-E1234_S1,R1-seed,R1,15,7,7,0,8,0,0
-E1234_S1,R1-seed,R1,15,8,8,0,0,8,0
-E1234_S1,R1-seed,R1,15,9,9,8,0,0,0
+R1-seed,R1,15,1,1,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0
+R1-seed,R1,15,3,3,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,1
+R1-seed,R1,15,5,5,0,0,0,1
+R1-seed,R1,15,6,6,0,0,0,9
+R1-seed,R1,15,7,7,0,8,0,0
+R1-seed,R1,15,8,8,0,0,8,0
+R1-seed,R1,15,9,9,8,0,0,0
 """
         
         self.report.read(aligned_reads)
@@ -262,22 +268,22 @@ E1234_S1,R1-seed,R1,15,9,9,8,0,0,0
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
     def testPartialCodonNucleotideReport(self):
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,9,0,AAATT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATT
+""")
         
-        #sample,seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        #seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
         expected_text = """\
-E1234_S1,R1-seed,R1,15,1,1,9,0,0,0
-E1234_S1,R1-seed,R1,15,2,2,9,0,0,0
-E1234_S1,R1-seed,R1,15,3,3,9,0,0,0
-E1234_S1,R1-seed,R1,15,4,4,0,0,0,9
-E1234_S1,R1-seed,R1,15,5,5,0,0,0,9
-E1234_S1,R1-seed,R1,15,6,6,0,0,0,0
-E1234_S1,R1-seed,R1,15,,7,0,0,0,0
-E1234_S1,R1-seed,R1,15,,8,0,0,0,0
-E1234_S1,R1-seed,R1,15,,9,0,0,0,0
+R1-seed,R1,15,1,1,9,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0
+R1-seed,R1,15,4,4,0,0,0,9
+R1-seed,R1,15,5,5,0,0,0,9
+R1-seed,R1,15,6,6,0,0,0,0
+R1-seed,R1,15,,7,0,0,0,0
+R1-seed,R1,15,,8,0,0,0,0
+R1-seed,R1,15,,9,0,0,0,0
 """
           
         self.report.read(aligned_reads)
@@ -292,17 +298,17 @@ E1234_S1,R1-seed,R1,15,,9,0,0,0,0
         It will try padding the first codon to see which of the three possible
         reading frames gives the highest alignment score.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,9,0,GAAATTTCGA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,GAAATTTCGA
+""")
          
-        # sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #                  A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+        # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
         expected_text = """\
-E1234_S1,R1-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1,15,3,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
+R1-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,3,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
 """        
         
         self.report.read(aligned_reads)
@@ -316,28 +322,28 @@ E1234_S1,R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
         Must be a deletion in the seed reference with respect to the coordinate
         reference.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R2-seed,15,0,9,0,AAATTTCCCCGA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R2-seed,15,0,9,0,AAATTTCCCCGA
+""")
            
-        #sample,seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        #seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
         expected_text = """\
-E1234_S1,R2-seed,R2,15,1,1,9,0,0,0
-E1234_S1,R2-seed,R2,15,2,2,9,0,0,0
-E1234_S1,R2-seed,R2,15,3,3,9,0,0,0
-E1234_S1,R2-seed,R2,15,4,4,0,0,0,9
-E1234_S1,R2-seed,R2,15,5,5,0,0,0,9
-E1234_S1,R2-seed,R2,15,6,6,0,0,0,9
-E1234_S1,R2-seed,R2,15,,7,0,0,0,0
-E1234_S1,R2-seed,R2,15,,8,0,0,0,0
-E1234_S1,R2-seed,R2,15,,9,0,0,0,0
-E1234_S1,R2-seed,R2,15,7,10,0,9,0,0
-E1234_S1,R2-seed,R2,15,8,11,0,9,0,0
-E1234_S1,R2-seed,R2,15,9,12,0,9,0,0
-E1234_S1,R2-seed,R2,15,10,13,0,9,0,0
-E1234_S1,R2-seed,R2,15,11,14,0,0,9,0
-E1234_S1,R2-seed,R2,15,12,15,9,0,0,0
+R2-seed,R2,15,1,1,9,0,0,0
+R2-seed,R2,15,2,2,9,0,0,0
+R2-seed,R2,15,3,3,9,0,0,0
+R2-seed,R2,15,4,4,0,0,0,9
+R2-seed,R2,15,5,5,0,0,0,9
+R2-seed,R2,15,6,6,0,0,0,9
+R2-seed,R2,15,,7,0,0,0,0
+R2-seed,R2,15,,8,0,0,0,0
+R2-seed,R2,15,,9,0,0,0,0
+R2-seed,R2,15,7,10,0,9,0,0
+R2-seed,R2,15,8,11,0,9,0,0
+R2-seed,R2,15,9,12,0,9,0,0
+R2-seed,R2,15,10,13,0,9,0,0
+R2-seed,R2,15,11,14,0,0,9,0
+R2-seed,R2,15,12,15,9,0,0,0
 """
            
         self.report.read(aligned_reads)
@@ -351,19 +357,19 @@ E1234_S1,R2-seed,R2,15,12,15,9,0,0,0
         Must be a deletion in the seed reference with respect to the coordinate
         reference.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R2-seed,15,0,9,0,AAATTTCCCCGA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R2-seed,15,0,9,0,AAATTTCCCCGA
+""")
            
-        #sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #                  A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+        #seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
         expected_text = """\
-E1234_S1,R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2-seed,R2,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2-seed,R2,15,3,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
-E1234_S1,R2-seed,R2,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
+R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,3,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
+R2-seed,R2,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
 """
         
         self.report.read(aligned_reads)
@@ -377,18 +383,18 @@ E1234_S1,R2-seed,R2,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
         Must be a deletion in the sample with respect to the seed reference,
         but some variants in the sample do not have that deletion.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,5,0,AAA---CGA
-E1234_S1,R1-seed,15,0,2,0,AAATTTCGA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,5,0,AAA---CGA
+R1-seed,15,0,2,0,AAATTTCGA
+""")
            
-        #sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #                  A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+        #seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
         expected_text = """\
-E1234_S1,R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1,15,2,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0
 """
         
         self.report.read(aligned_reads)
@@ -402,26 +408,26 @@ E1234_S1,R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0
         The G must be an insertion in the seed reference with respect to the
         coordinate reference.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
+""")
            
-        #sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #                  A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+        #seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
         expected_text = """\
-E1234_S1,R3-seed,R3,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R3-seed,R3,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R3-seed,R3,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
-E1234_S1,R3-seed,R3,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0
-E1234_S1,R3-seed,R3,15,6,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
-E1234_S1,R3-seed,R3,15,7,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
-E1234_S1,R3-seed,R3,15,8,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R3-seed,R3,15,9,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
+R3-seed,R3,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0
+R3-seed,R3,15,6,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
+R3-seed,R3,15,7,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
+R3-seed,R3,15,8,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,9,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
         expected_insertions = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R3-seed,R3,15,5,G,9
+seed,region,qcut,left,insert,count
+R3-seed,R3,15,5,G,9
 """
 
         self.report.read(aligned_reads)
@@ -435,14 +441,14 @@ E1234_S1,R3-seed,R3,15,5,G,9
     def testInsertionInDifferentReadingFrame(self):
         """ Delete part of the first codon to throw off the reading frame.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R3-seed,15,0,9,0,AATTTCAGACTGGGCCCCGAGAGCAT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R3-seed,15,0,9,0,AATTTCAGACTGGGCCCCGAGAGCAT
+""")
            
         expected_insertions = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R3-seed,R3,15,5,G,9
+seed,region,qcut,left,insert,count
+R3-seed,R3,15,5,G,9
 """
 
         self.report.read(aligned_reads)
@@ -455,16 +461,16 @@ E1234_S1,R3-seed,R3,15,5,G,9
     def testInsertionInSomeReads(self):
         """ Not all reads have the insertion, some end before it.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
-E1234_S1,R3-seed,15,1,5,0,AAATTTCAG
-E1234_S1,R3-seed,15,2,4,0,AAATTTCAGACTG
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
+R3-seed,15,1,5,0,AAATTTCAG
+R3-seed,15,2,4,0,AAATTTCAGACTG
+""")
            
         expected_insertions = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R3-seed,R3,15,5,G,9
+seed,region,qcut,left,insert,count
+R3-seed,R3,15,5,G,9
 """
 
         self.report.read(aligned_reads)
@@ -517,14 +523,14 @@ E1234_S1,R3-seed,R3,15,5,G,9
   }
 }
 """))
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
+""")
         
         expected_insertions = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R3-seed,R3a,15,5,G,9
+seed,region,qcut,left,insert,count
+R3-seed,R3a,15,5,G,9
 """
         
         self.report.read(aligned_reads)
@@ -539,19 +545,19 @@ E1234_S1,R3-seed,R3a,15,5,G,9
         Region R2 has sequence KFGPR, so this read has a gap at the end of G
         and beginning of P. G is still unambiguous, but P is not.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R2-seed,15,0,5,0,AAATTTGGnnCCCGA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R2-seed,15,0,5,0,AAATTTGGnnCCCGA
+""")
            
-        #sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #                  A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+        #seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
         expected_text = """\
-E1234_S1,R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2-seed,R2,15,2,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2-seed,R2,15,3,3,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2-seed,R2,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R2-seed,R2,15,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0
+R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,2,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,3,3,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0
 """
         
         self.report.read(aligned_reads)
@@ -560,10 +566,10 @@ E1234_S1,R2-seed,R2,15,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
     def testFailedAlignmentAminoReport(self):
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,2,0,TTATCCTAC
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,2,0,TTATCCTAC
+""")
            
         expected_text = ""
         
@@ -573,14 +579,14 @@ E1234_S1,R1-seed,15,0,2,0,TTATCCTAC
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
     def testFailedAlignmentFailureReport(self):
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,2,0,TTATCCTAC
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,2,0,TTATCCTAC
+""")
         
         expected_text = """\
-sample,seed,region,qcut,queryseq,refseq
-E1234_S1,R1-seed,R1,15,LSY,KFR
+seed,region,qcut,queryseq,refseq
+R1-seed,R1,15,LSY,KFR
 """
         
         self.report.write_failure_header(self.report_file)
@@ -590,13 +596,13 @@ E1234_S1,R1-seed,R1,15,LSY,KFR
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
     def testFailedAlignmentWithHeadToTailMatch(self):
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R3-seed,15,0,2,0,TTATCCTACTTATCCTACTTATCCAAA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R3-seed,15,0,2,0,TTATCCTACTTATCCTACTTATCCAAA
+""")
         
         expected_text = """\
-E1234_S1,R3-seed,R3,15,LSYLSYLSK,KFQTPREH
+R3-seed,R3,15,LSYLSYLSK,KFQTPREH
 """
         
         self.report.read(aligned_reads)
@@ -605,10 +611,10 @@ E1234_S1,R3-seed,R3,15,LSYLSYLSK,KFQTPREH
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
     def testGoodAlignmentWithTinyCoordinateReference(self):
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,2,0,AAATTTCGATTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTAC
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,2,0,AAATTTCGATTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTAC
+""")
         
         expected_text = ""
         
@@ -653,12 +659,12 @@ E1234_S1,R1-seed,15,0,2,0,AAATTTCGATTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTAC
   }
 }
 """))
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R3-seed,15,0,9,123,AAATTTCGA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R3-seed,15,0,9,123,AAATTTCGA
+""")
 
-        # sample,seed,region,qcut,queryseq,refseq
+        # seed,region,qcut,queryseq,refseq
         expected_text = ""
         
         self.report.read(aligned_reads)
@@ -670,13 +676,13 @@ E1234_S1,R3-seed,15,0,9,123,AAATTTCGA
         """ Be careful that an offset from the seed reference doesn't match
         the dashes in the failed alignment.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,2,3,TTATCCTAC
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,2,3,TTATCCTAC
+""")
         
         expected_text = """\
-E1234_S1,R1-seed,R1,15,-LSY,KFR
+R1-seed,R1,15,-LSY,KFR
 """
         
         self.report.read(aligned_reads)
@@ -685,10 +691,10 @@ E1234_S1,R1-seed,R1,15,-LSY,KFR
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
        
     def testNoFailureReport(self):
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,9,0,AAATTT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTT
+""")
          
         expected_text = ""
         
@@ -698,22 +704,22 @@ E1234_S1,R1-seed,15,0,9,0,AAATTT
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
      
     def testRegionWithoutCoordinateReferenceNucleotideReport(self):
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R-NO-COORD,15,0,9,0,AAATTT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R-NO-COORD,15,0,9,0,AAATTT
+""")
           
-        #sample,seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        #seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
         expected_text = """\
-E1234_S1,R-NO-COORD,R-NO-COORD,15,1,,9,0,0,0
-E1234_S1,R-NO-COORD,R-NO-COORD,15,2,,9,0,0,0
-E1234_S1,R-NO-COORD,R-NO-COORD,15,3,,9,0,0,0
-E1234_S1,R-NO-COORD,R-NO-COORD,15,4,,0,0,0,9
-E1234_S1,R-NO-COORD,R-NO-COORD,15,5,,0,0,0,9
-E1234_S1,R-NO-COORD,R-NO-COORD,15,6,,0,0,0,9
-E1234_S1,R-NO-COORD,R-NO-COORD,15,7,,0,0,0,0
-E1234_S1,R-NO-COORD,R-NO-COORD,15,8,,0,0,0,0
-E1234_S1,R-NO-COORD,R-NO-COORD,15,9,,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,1,,9,0,0,0
+R-NO-COORD,R-NO-COORD,15,2,,9,0,0,0
+R-NO-COORD,R-NO-COORD,15,3,,9,0,0,0
+R-NO-COORD,R-NO-COORD,15,4,,0,0,0,9
+R-NO-COORD,R-NO-COORD,15,5,,0,0,0,9
+R-NO-COORD,R-NO-COORD,15,6,,0,0,0,9
+R-NO-COORD,R-NO-COORD,15,7,,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,8,,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,9,,0,0,0,0
 """
         
         self.report.read(aligned_reads)
@@ -722,10 +728,10 @@ E1234_S1,R-NO-COORD,R-NO-COORD,15,9,,0,0,0,0
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
      
     def testRegionWithoutCoordinateReferenceFailureReport(self):
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R-NO-COORD,15,0,9,0,AAATTT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R-NO-COORD,15,0,9,0,AAATTT
+""")
           
         expected_text = ""
         
@@ -776,19 +782,19 @@ E1234_S1,R-NO-COORD,15,0,9,0,AAATTT
   }
 }
 """))
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,9,0,AAATTT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTT
+""")
         
         expected_text = """\
-E1234_S1,R1-seed,R1a,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1a,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1a,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1b,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1b,15,1,2,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1b,15,2,3,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-E1234_S1,R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1a,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1a,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1a,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,1,2,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,2,3,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """        
         
         self.report.read(aligned_reads)
@@ -799,20 +805,20 @@ E1234_S1,R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     def testVariantReport(self):
         """ Reference is KFR, variants are KFRx10, GFRx8, KFGx6, KFSx5
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,AAATTTCGA
-E1234_S1,R1-seed,15,1,8,0,GGGTTTCGA
-E1234_S1,R1-seed,15,2,6,0,AAATTTGGG
-E1234_S1,R1-seed,15,3,5,0,AAATTTTCA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,10,0,AAATTTCGA
+R1-seed,15,1,8,0,GGGTTTCGA
+R1-seed,15,2,6,0,AAATTTGGG
+R1-seed,15,3,5,0,AAATTTTCA
+""")
         
         expected_text = """\
-sample,seed,qcut,region,index,count,seq
-E1234_S1,R1-seed,15,R1,0,10,AAATTTCGA
-E1234_S1,R1-seed,15,R1,1,8,GGGTTTCGA
-E1234_S1,R1-seed,15,R1,2,6,AAATTTGGG
-E1234_S1,R1-seed,15,R1,3,5,AAATTTTCA
+seed,qcut,region,index,count,seq
+R1-seed,15,R1,0,10,AAATTTCGA
+R1-seed,15,R1,1,8,GGGTTTCGA
+R1-seed,15,R1,2,6,AAATTTGGG
+R1-seed,15,R1,3,5,AAATTTTCA
 """
         
         self.report.write_nuc_variants_header(self.report_file)
@@ -854,19 +860,19 @@ E1234_S1,R1-seed,15,R1,3,5,AAATTTTCA
 }
 """))
         
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,AAATTTCGA
-E1234_S1,R1-seed,15,1,8,0,GGGTTTCGA
-E1234_S1,R1-seed,15,2,6,0,AAATTTGGG
-E1234_S1,R1-seed,15,3,5,0,AAATTTTCA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,10,0,AAATTTCGA
+R1-seed,15,1,8,0,GGGTTTCGA
+R1-seed,15,2,6,0,AAATTTGGG
+R1-seed,15,3,5,0,AAATTTTCA
+""")
         
-        # sample,seed,qcut,region,index,count,seq
+        # seed,qcut,region,index,count,seq
         expected_text = """\
-E1234_S1,R1-seed,15,R1,0,10,AAATTTCGA
-E1234_S1,R1-seed,15,R1,1,8,GGGTTTCGA
-E1234_S1,R1-seed,15,R1,2,6,AAATTTGGG
+R1-seed,15,R1,0,10,AAATTTCGA
+R1-seed,15,R1,1,8,GGGTTTCGA
+R1-seed,15,R1,2,6,AAATTTGGG
 """
         self.report.read(aligned_reads)
         self.report.write_nuc_variants(self.report_file)
@@ -876,20 +882,20 @@ E1234_S1,R1-seed,15,R1,2,6,AAATTTGGG
     def testVariantClippingEnd(self):
         """ Coordinate reference is KFR, so last codons should be clipped
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,AAATTTCGATCA
-E1234_S1,R1-seed,15,1,8,0,GGGTTTCGATCA
-E1234_S1,R1-seed,15,2,6,0,AAATTTGGGTCA
-E1234_S1,R1-seed,15,3,5,0,AAATTTTCA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,10,0,AAATTTCGATCA
+R1-seed,15,1,8,0,GGGTTTCGATCA
+R1-seed,15,2,6,0,AAATTTGGGTCA
+R1-seed,15,3,5,0,AAATTTTCA
+""")
         
-        # sample,seed,qcut,region,index,count,seq
+        # seed,qcut,region,index,count,seq
         expected_text = """\
-E1234_S1,R1-seed,15,R1,0,10,AAATTTCGA
-E1234_S1,R1-seed,15,R1,1,8,GGGTTTCGA
-E1234_S1,R1-seed,15,R1,2,6,AAATTTGGG
-E1234_S1,R1-seed,15,R1,3,5,AAATTTTCA
+R1-seed,15,R1,0,10,AAATTTCGA
+R1-seed,15,R1,1,8,GGGTTTCGA
+R1-seed,15,R1,2,6,AAATTTGGG
+R1-seed,15,R1,3,5,AAATTTTCA
 """
         
         self.report.read(aligned_reads)
@@ -900,20 +906,20 @@ E1234_S1,R1-seed,15,R1,3,5,AAATTTTCA
     def testVariantClippingStart(self):
         """ Coordinate reference is KFR, so first codons should be clipped
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,TCAAAATTTCGA
-E1234_S1,R1-seed,15,1,8,0,TCAGGGTTTCGA
-E1234_S1,R1-seed,15,2,6,0,TCAAAATTTGGG
-E1234_S1,R1-seed,15,3,5,0,TCAAAATTTTCA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,10,0,TCAAAATTTCGA
+R1-seed,15,1,8,0,TCAGGGTTTCGA
+R1-seed,15,2,6,0,TCAAAATTTGGG
+R1-seed,15,3,5,0,TCAAAATTTTCA
+""")
         
-        # sample,seed,qcut,region,index,count,seq
+        # seed,qcut,region,index,count,seq
         expected_text = """\
-E1234_S1,R1-seed,15,R1,0,10,AAATTTCGA
-E1234_S1,R1-seed,15,R1,1,8,GGGTTTCGA
-E1234_S1,R1-seed,15,R1,2,6,AAATTTGGG
-E1234_S1,R1-seed,15,R1,3,5,AAATTTTCA
+R1-seed,15,R1,0,10,AAATTTCGA
+R1-seed,15,R1,1,8,GGGTTTCGA
+R1-seed,15,R1,2,6,AAATTTGGG
+R1-seed,15,R1,3,5,AAATTTTCA
 """
         
         self.report.read(aligned_reads)
@@ -924,10 +930,10 @@ E1234_S1,R1-seed,15,R1,3,5,AAATTTTCA
     def testVariantWhenAlignFails(self):
         """ Coordinate reference is KFR, read is SLS.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,TCACTCTCT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,10,0,TCACTCTCT
+""")
           
         expected_text = ""
         
@@ -940,14 +946,14 @@ E1234_S1,R1-seed,15,0,10,0,TCACTCTCT
         """ Coordinate reference and first read are KFR, second read is SLS,
         mapped to another part of the seed.
         """
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,AAATTTCGA
-E1234_S1,R1-seed,15,1,20,30,TCACTCTCT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,10,0,AAATTTCGA
+R1-seed,15,1,20,30,TCACTCTCT
+""")
         
         expected_text = """\
-E1234_S1,R1-seed,15,R1,0,10,AAATTTCGA
+R1-seed,15,R1,0,10,AAATTTCGA
 """
         
         self.report.read(aligned_reads)
@@ -956,16 +962,16 @@ E1234_S1,R1-seed,15,R1,0,10,AAATTTCGA
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
     def testVariantShortRead(self):
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,AAATTT
-E1234_S1,R1-seed,15,1,8,0,GGGTTT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,10,0,AAATTT
+R1-seed,15,1,8,0,GGGTTT
+""")
         
-        # sample,seed,qcut,region,index,count,seq
+        # seed,qcut,region,index,count,seq
         expected_text = """\
-E1234_S1,R1-seed,15,R1,0,10,AAATTT
-E1234_S1,R1-seed,15,R1,1,8,GGGTTT
+R1-seed,15,R1,0,10,AAATTT
+R1-seed,15,R1,1,8,GGGTTT
 """
         
         self.report.read(aligned_reads)
@@ -974,16 +980,16 @@ E1234_S1,R1-seed,15,R1,1,8,GGGTTT
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
     def testVariantOffset(self):
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,AAATTT
-E1234_S1,R1-seed,15,1,8,3,TTT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,10,0,AAATTT
+R1-seed,15,1,8,3,TTT
+""")
           
-        # sample,seed,qcut,region,index,count,seq
+        # seed,qcut,region,index,count,seq
         expected_text = """\
-E1234_S1,R1-seed,15,R1,0,10,AAATTT
-E1234_S1,R1-seed,15,R1,1,8,---TTT
+R1-seed,15,R1,0,10,AAATTT
+R1-seed,15,R1,1,8,---TTT
 """
         
         self.report.read(aligned_reads)
@@ -1025,18 +1031,18 @@ E1234_S1,R1-seed,15,R1,1,8,---TTT
   }
 }
 """))
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,TCAAAATTTCGA
-E1234_S1,R1-seed,15,1,9,0,TCAGGGTTTCGA
-E1234_S1,R1-seed,15,2,7,0,TCAGGGTTTGGG
-E1234_S1,R1-seed,15,3,5,0,CGAGGGTTTCGA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,10,0,TCAAAATTTCGA
+R1-seed,15,1,9,0,TCAGGGTTTCGA
+R1-seed,15,2,7,0,TCAGGGTTTGGG
+R1-seed,15,3,5,0,CGAGGGTTTCGA
+""")
           
-        # sample,seed,qcut,region,index,count,seq
+        # seed,qcut,region,index,count,seq
         expected_text = """\
-E1234_S1,R1-seed,15,R1,0,14,GGGTTTCGA
-E1234_S1,R1-seed,15,R1,1,10,AAATTTCGA
+R1-seed,15,R1,0,14,GGGTTTCGA
+R1-seed,15,R1,1,10,AAATTTCGA
 """
         self.report.read(aligned_reads)
         self.report.write_nuc_variants(self.report_file)
@@ -1052,14 +1058,14 @@ E1234_S1,R1-seed,15,R1,1,10,AAATTTCGA
                                  query='KFGR',
                                  aligned_query='KFGR',
                                  aligned_reference='KF-R') 
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,AAATTTGGGCGA
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,10,0,AAATTTGGGCGA
+""")
           
-        # sample,seed,qcut,region,index,count,seq
+        # seed,qcut,region,index,count,seq
         expected_text = """\
-E1234_S1,R1-seed,15,R1,0,10,AAATTTGGGCGA
+R1-seed,15,R1,0,10,AAATTTGGGCGA
 """
         
         self.report.read(aligned_reads)
@@ -1076,32 +1082,14 @@ E1234_S1,R1-seed,15,R1,0,10,AAATTTGGGCGA
                                  query='KFG',
                                  aligned_query='KF-G',
                                  aligned_reference='KFR-') 
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,10,0,AAATTTGGG
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,10,0,AAATTTGGG
+""")
           
-        # sample,seed,qcut,region,index,count,seq
+        # seed,qcut,region,index,count,seq
         expected_text = """\
-E1234_S1,R1-seed,15,R1,0,10,AAATTT
-"""
-        
-        self.report.read(aligned_reads)
-        self.report.write_nuc_variants(self.report_file)
-        
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-    
-    def testVariantCanProcessReadsTwice(self):
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = iter("""\
-E1234_S1,R1-seed,15,0,10,0,AAATTT
-E1234_S1,R1-seed,15,1,8,3,TTT
-""".splitlines(True))
-          
-        # sample,seed,qcut,region,index,count,seq
-        expected_text = """\
-E1234_S1,R1-seed,15,R1,0,10,AAATTT
-E1234_S1,R1-seed,15,R1,1,8,---TTT
+R1-seed,15,R1,0,10,AAATTT
 """
         
         self.report.read(aligned_reads)
@@ -1151,15 +1139,15 @@ E1234_S1,R1-seed,15,R1,1,8,---TTT
   }
 }
 """))
-        #sample,refname,qcut,rank,count,offset,seq
-        aligned_reads = """\
-E1234_S1,R1-seed,15,0,9,0,AAATTT
-""".splitlines(True)
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTT
+""")
         
-        # sample,seed,qcut,region,index,count,seq
+        # seed,qcut,region,index,count,seq
         expected_text = """\
-E1234_S1,R1-seed,15,R1a,0,9,AAATTT
-E1234_S1,R1-seed,15,R1b,0,9,AAATTT
+R1-seed,15,R1a,0,9,AAATTT
+R1-seed,15,R1b,0,9,AAATTT
 """        
         
         self.report.read(aligned_reads)
@@ -1169,141 +1157,142 @@ E1234_S1,R1-seed,15,R1b,0,9,AAATTT
 
 class InsertionWriterTest(unittest.TestCase):
     def setUp(self):
-        self.writer = aln2counts.InsertionWriter(insert_file=StringIO.StringIO())
-        self.writer.start_group(sample_name='E1234_S1', seed='R1-seed', qcut=15)
+        self.insert_file = StringIO.StringIO()
+        self.writer = aln2counts.InsertionWriter(self.insert_file)
+        self.writer.start_group(seed='R1-seed', qcut=15)
         self.nuc_seq_acdef = 'GCTTGTGACGAGTTT'
         self.nuc_seq_afdef = 'GCTTTTGACGAGTTT'
         
     def testNoInserts(self):
         expected_text = """\
-sample,seed,region,qcut,left,insert,count
+seed,region,qcut,left,insert,count
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(inserts=[], region='R1')
         
-        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
         
     def testInsert(self):
         expected_text = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R1-seed,R1,15,3,D,1
+seed,region,qcut,left,insert,count
+R1-seed,R1,15,3,D,1
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(inserts=[2], region='R1')
         
-        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
         
     def testInsertDifferentReadingFrame(self):
         """ Add a partial codon at the start of the read to shift the reading
         frame.
         """
         expected_text = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R1-seed,R1,15,4,D,1
+seed,region,qcut,left,insert,count
+R1-seed,R1,15,4,D,1
 """
         
         self.writer.add_nuc_read(offset_sequence='A' + self.nuc_seq_acdef,
                                  count=1)
         self.writer.write(inserts=[3], region='R1', reading_frame=2)
         
-        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
         
     def testInsertWithOffset(self):
         expected_text = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R1-seed,R1,15,3,D,1
+seed,region,qcut,left,insert,count
+R1-seed,R1,15,3,D,1
 """
         
         #                                            C  D  E  F
         self.writer.add_nuc_read(offset_sequence='---TGTGACGAGTTT', count=1)
         self.writer.write(inserts=[2], region='R1')
         
-        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
         
     def testInsertWithDeletion(self):
         expected_text = """\
-sample,seed,region,qcut,left,insert,count
+seed,region,qcut,left,insert,count
 """
         
         #                                         C  D     E  F
         self.writer.add_nuc_read(offset_sequence='TGTGAC---GAGTTT', count=1)
         self.writer.write(inserts=[1,2], region='R1')
         
-        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
         
     def testTwoInsertsWithOffset(self):
         expected_text = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R1-seed,R1,15,3,D,1
-E1234_S1,R1-seed,R1,15,5,F,1
+seed,region,qcut,left,insert,count
+R1-seed,R1,15,3,D,1
+R1-seed,R1,15,5,F,1
 """
         
         #                                            C  D  E  F  G
         self.writer.add_nuc_read(offset_sequence='---TGTGACGAGTTTGGG', count=1)
         self.writer.write(inserts=[2, 4], region='R1')
         
-        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testInsertsWithVariants(self):
         expected_text = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R1-seed,R1,15,3,D,2
+seed,region,qcut,left,insert,count
+R1-seed,R1,15,3,D,2
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_afdef, count=1)
         self.writer.write(inserts=[2], region='R1')
         
-        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testDifferentInserts(self):
         expected_text = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R1-seed,R1,15,2,C,2
-E1234_S1,R1-seed,R1,15,2,F,3
+seed,region,qcut,left,insert,count
+R1-seed,R1,15,2,C,2
+R1-seed,R1,15,2,F,3
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=2)
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_afdef, count=3)
         self.writer.write(inserts=[1], region='R1')
         
-        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testMulticharacterInsert(self):
         expected_text = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R1-seed,R1,15,3,DE,1
+seed,region,qcut,left,insert,count
+R1-seed,R1,15,3,DE,1
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(inserts=[2,3], region='R1')
         
-        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testReadGapInInsert(self):
         nuc_seq = 'GCTCTnGACGAGTTT'
 
         expected_text = """\
-sample,seed,region,qcut,left,insert,count
+seed,region,qcut,left,insert,count
 """
         
         self.writer.add_nuc_read(nuc_seq, count=1)
         self.writer.write(inserts=[1], region='R1')
         
-        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testUnsortedInserts(self):
         expected_text = """\
-sample,seed,region,qcut,left,insert,count
-E1234_S1,R1-seed,R1,15,3,DE,1
+seed,region,qcut,left,insert,count
+R1-seed,R1,15,3,DE,1
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(inserts=(3, 2), region='R1')
         
-        self.assertMultiLineEqual(expected_text, self.writer.insert_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
 class TranslateTest(unittest.TestCase):
     def testSingleCodon(self):
@@ -1510,7 +1499,7 @@ class SeedNucleotideTest(unittest.TestCase):
         counts = self.nuc.get_report()
         
         self.assertSequenceEqual(expected_counts, counts)
-
+        
     def testConsensusNoMixes(self):
         self.nuc.count_nucleotides('C', 1)
         consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)

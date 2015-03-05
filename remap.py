@@ -234,8 +234,7 @@ def main():
     # generate outputs
     args.remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
     # combine SAM files into single CSV output
-    fieldnames = ['sample_name',
-                  'qname', 
+    fieldnames = ['qname', 
                   'flag',
                   'rname',
                   'pos',
@@ -272,7 +271,6 @@ def main():
             mapped[qname] += (2 if is_first_read(bitflag) else 1)
 
             items[2] = refname  # replace '0' due to passing conseq to bowtie2-build on cmd line
-            items.insert(0, sample_name)
             remap_writer.writerow(dict(zip(fieldnames, items)))
         handle.close()
 

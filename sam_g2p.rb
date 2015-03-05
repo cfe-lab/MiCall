@@ -165,30 +165,19 @@ class RegionTracker
   # ignored.
   def initialize(tracked_region)
     @tracked_region = tracked_region
-    @sample_name = nil
     @ranges = {}
   end
   
   # Add a nucleotide position to the tracker.
   #
-  # * <tt>:sample_name</tt> - raises an error if this doesn't match the previous
-  # sample name, because only one sample can be tracked.
   # * <tt>:seed</tt> - name of the seed region
   # * <tt>:region</tt> - name of the coordinate region
   # * <tt>:query_pos</tt> - query position in the consensus coordinates
-  def add_nuc(sample_name, seed, region, query_pos)
+  def add_nuc(seed, region, query_pos)
     if region != @tracked_region
       return
     end
     
-    if @sample_name.nil?
-      @sample_name = sample_name
-    else
-      if sample_name != @sample_name
-        raise ArgumentError.new(
-          "Two sample names found: '#{@sample_name}' and '#{sample_name}'.")
-      end
-    end
     range = @ranges[seed]
     if range.nil?
       @ranges[seed] = [query_pos, query_pos]
@@ -215,7 +204,6 @@ def main()
   
   pairs = Hash.new  # cache read for pairing
   merged = Hash.new # tabulate merged sequence variants
-  sample_name = ''
   tracker = RegionTracker.new("V3LOOP")
   
   # Look up clipping region for each seed
@@ -225,7 +213,6 @@ def main()
     :return_headers => false) do |row|
     
     tracker.add_nuc(
-      row['sample'],
       row['seed'],
       row['region'],
       row['query.nuc.pos'].to_i - 1)
@@ -236,7 +223,6 @@ def main()
       :headers => true,
       :return_headers => false) do |row|
       
-      sample_name = row['sample_name']
       clip_from, clip_to = tracker.get_range(row['rname'])
       if clip_from.nil?
           # uninteresting region
@@ -271,12 +257,12 @@ def main()
   
   ## apply g2p algorithm to merged reads
   f = File.open(options.g2p_csv, mode='w') # write-only
-  f.write("sample,rank,count,g2p,fpr,aligned,error\n")  # CSV header
+  f.write("rank,count,g2p,fpr,aligned,error\n")  # CSV header
   
   rank = 0
   sorted.each do |s, count|
       rank += 1
-      prefix = "#{sample_name},#{rank},#{count}"
+      prefix = "#{rank},#{count}"
       seq = s.delete '-'
       if (seq.upcase.count 'N') > (0.5*seq.length)
           # if more than 50% of sequence is garbage

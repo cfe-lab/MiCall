@@ -83,7 +83,7 @@ def build_conseqs(conseqs_file,
         # In version 1, this looked like [sample name]~[project name]#[...]
         # but both ; and _ got garbled by the MiSeq instrument itself.
         # Thus we have to work around it.
-        fastq_filename = "{}_{}".format(row["sample"], row["s-number"])
+        fastq_filename = row["sample"]
         sample_info = ss["Data"][fastq_filename]
         orig_sample_name = sample_info["orig_sample_name"]
         sample_tags = sample_info["tags"]
@@ -102,7 +102,7 @@ def build_conseqs(conseqs_file,
                        "conseq_cutoff": row["consensus-percent-cutoff"],
                        "region": row["region"],
                        "qcutoff": float(row["q-cutoff"]),
-                       "snum": row["s-number"],
+                       "snum": fastq_filename.split('_')[-1],
                        "seq": curr_seq,
                        "ok_for_release": ok_for_release})
     return result
@@ -170,10 +170,10 @@ def build_review_decisions(coverage_file,
         sample_tags[sample['filename']] = sample['tags']
     
     counts_map = {} # {tags: raw, (tags, seed): mapped]}
-    # sample_name,type,count
+    # sample,type,count
     for counts in csv.DictReader(collated_counts_file):
         count = int(counts['count'])
-        tags = sample_tags[counts['sample_name']]
+        tags = sample_tags[counts['sample']]
         count_type = counts['type']
         if count_type == 'raw':
             counts_map[tags] = count

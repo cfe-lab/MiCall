@@ -21,6 +21,7 @@ import re
 
 from settings import max_prop_N, read_mapping_cutoff, sam2aln_q_cutoffs
 import csv
+import operator
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -149,9 +150,7 @@ class RemapReader(object):
         return (row['sample_name'], row['rname'])
     
     def read_groups(self):
-        for key, group in itertools.groupby(self.remap_reader, self._get_key):
-            sample_name, refname = key
-            yield sample_name, refname, group
+        return itertools.groupby(self.remap_reader, operator.itemgetter('rname'))
         
 def is_first_read(flag):
     """
@@ -165,10 +164,16 @@ def main():
     args = parseArgs()
     
     reader = RemapReader(args.remap_csv)
-    args.aligned_csv.write('sample,refname,qcut,rank,count,offset,seq\n')
+    aligned_writer = csv.DictWriter(args.aligned_csv,
+                                    ['refname',
+                                     'qcut',
+                                     'rank',
+                                     'count',
+                                     'offset',
+                                     'seq'])
+    aligned_writer.writeheader()
     insert_writer = csv.DictWriter(args.insert_csv,
-                                   ['sample',
-                                    'qname',
+                                   ['qname',
                                     'fwd_rev',
                                     'refname',
                                     'pos',
@@ -176,8 +181,7 @@ def main():
                                     'qual'])
     insert_writer.writeheader()
     failed_writer = csv.DictWriter(args.failed_csv,
-                                   ['sample',
-                                    'qname',
+                                   ['qname',
                                     'qcut',
                                     'seq1',
                                     'qual1',
@@ -187,7 +191,7 @@ def main():
                                     'mseq'])
     failed_writer.writeheader()
 
-    for sample_name, refname, group in reader.read_groups():
+    for refname, group in reader.read_groups():
         aligned = dict([(qcut, {}) for qcut in sam2aln_q_cutoffs])
         cached_reads = {}  # for mate pairing
         for row in group:
@@ -205,8 +209,7 @@ def main():
             # report insertions relative to sample consensus
             _, seq1, qual1, inserts = apply_cigar(cigar, row['seq'], row['qual'])
             for left, (iseq, iqual) in inserts.iteritems():
-                insert_writer.writerow({'sample': sample_name,
-                                        'qname': qname,
+                insert_writer.writerow({'qname': qname,
                                         'fwd_rev': 'F' if is_first_read(row['flag']) else 'R',
                                         'refname': refname,
                                         'pos': pos1+left,
@@ -227,8 +230,7 @@ def main():
                 prop_N = mseq.count('N') / float(len(mseq.strip('-')))
                 if prop_N > max_prop_N:
                     # merged read is too messy
-                    failed_writer.writerow({'sample': sample_name,
-                                            'qname': qname,
+                    failed_writer.writerow({'qname': qname,
                                             'qcut': qcut,
                                             'seq1': seq1,
                                             'qual1': qual1,
@@ -249,14 +251,12 @@ def main():
             intermed = [(count, len_gap_prefix(s), s) for s, count in data.iteritems()]
             intermed.sort(reverse=True)
             for rank, (count, offset, seq) in enumerate(intermed):
-                args.aligned_csv.write(','.join(map(str, [sample_name,
-                                                 refname,
-                                                 qcut,
-                                                 rank,
-                                                 count,
-                                                 offset,
-                                                 seq.strip('-')])))
-                args.aligned_csv.write('\n')
+                aligned_writer.writerow(dict(refname=refname,
+                                             qcut=qcut,
+                                             rank=rank,
+                                             count=count,
+                                             offset=offset,
+                                             seq=seq.strip('-')))
 
 
 if __name__ == '__main__':

@@ -25,7 +25,6 @@ record.score <- function(
         data,
         region.key.pos,
         coverage.levels,
-        sample, 
         project.name,
         region,
         seed,
@@ -43,7 +42,6 @@ record.score <- function(
     #   empty, treat all positions as key.
     # coverage.levels - a vector of four coverage levels that are thresholds
     #   for the four different scores in on-target regions.
-    # sample - the sample name
     # project.name - the project name
     # region - the coordinate region name
     # seed - the seed region name
@@ -79,7 +77,6 @@ record.score <- function(
                 coverage.levels,
                 labels=c(1, 2, 3, 4)))
         scores <- rbind(scores, c(
-                        sample,
                         project.name,
                         region,
                         seed,
@@ -91,7 +88,7 @@ record.score <- function(
     } else {
         scores <- rbind(
                 scores,
-                c(sample, project.name, region, q.cut, NA, NA, 0, 1))
+                c(project.name, region, q.cut, NA, NA, 0, 1))
     }
 }
 
@@ -99,7 +96,6 @@ prepare.plot <- function(
         xlim,
         x.label,
         good.coverage,
-        sample,
         project.name,
         region,
         region.key.pos) {
@@ -108,12 +104,10 @@ prepare.plot <- function(
     # xlim - the maximum value of the x axis
     # x.label - the label text for the x axis
     # good.coverage - the minimum coverage that is considered good
-    # sample - sample name
     # project.name - project name that defines the key positions
     # region - region name
     # region.key.pos - vector holding all key positions in the region
     filename <- file.path('coverage_maps', paste(
-                    sample,
                     project.name,
                     region,
                     'png',
@@ -191,7 +185,6 @@ for (project.name in names(projects)) {
 }
 
 scores.columns <- c(
-        'sample',
         'project',
         'region',
         'seed',
@@ -205,15 +198,15 @@ scores <- matrix(nrow=0, ncol=length(scores.columns), dimnames=list(NULL, scores
 data <- read.csv(file=input.csv, header=TRUE, sep=',')
 
 # the input CSV should look like this:
-#sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
-#50955ARPT-HCV-49537A-INT-PR-RT_S16,HCV1A-H77-core-seed,HCV1A-H77-core,0,0,1,0,0,0,0,0,0,0,3,0,0,1542,0,0,0,0,0,0,0,0,0,0
+#seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+#HCV1A-H77-core-seed,HCV1A-H77-core,0,0,1,0,0,0,0,0,0,0,3,0,0,1542,0,0,0,0,0,0,0,0,0,0
 
 alphabet <- c('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y')  # X. represents stop codon '*'
 
 data$coverage <- apply(data[ , which(is.element(names(data), alphabet))], 1, sum)
 
-# partition AA frequency table by sample and region
-coverage <- split(data[,which(is.element(names(data), c('refseq.aa.pos', 'q.cutoff', 'coverage')))], f=list(data$seed, data$region, data$sample), drop=TRUE)
+# partition AA frequency table by region
+coverage <- split(data[,which(is.element(names(data), c('refseq.aa.pos', 'q.cutoff', 'coverage')))], f=list(data$seed, data$region), drop=TRUE)
 
 # loop through partitions
 for (i in seq_along(coverage)) {
@@ -221,7 +214,6 @@ for (i in seq_along(coverage)) {
     tokens <- strsplit(label, split='\\.')[[1]]
     seed <- tokens[1]
     region <- tokens[2]
-    sample <- tokens[3]
     
     df <- coverage[[i]]
     xlim <- max(df$refseq.aa.pos)
@@ -248,7 +240,6 @@ for (i in seq_along(coverage)) {
                 xlim,
                 x.label,
                 region.coverage.levels$green,
-                sample,
                 project.name,
                 region,
                 project.positions[[project.name]])
@@ -272,7 +263,6 @@ for (i in seq_along(coverage)) {
                     df2,
                     project.positions[[project.name]],
                     score.breaks,
-                    sample,
                     project.name,
                     region,
                     seed,
@@ -286,7 +276,7 @@ for (i in seq_along(coverage)) {
         axis(2, at=c(1E1, 1E2, 1E3, 1E4, 1E5, 1E6), labels=c('10', '100', '1000', '10,000', '100,000', '1,000,000'), las=2)
         box()
         
-        text(x=max(df$refseq.aa.pos)/2, y=1900000, label=paste(sample, region), cex=0.7, col='grey30', adj=c(0.5, 0.5))
+        text(x=max(df$refseq.aa.pos)/2, y=1900000, label=paste(region), cex=0.7, col='grey30', adj=c(0.5, 0.5))
         
         garbage <- dev.off()
     }

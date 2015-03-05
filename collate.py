@@ -1,4 +1,5 @@
 import glob
+import os
 
 #TODO: This can probably be deleted. Wait until we revisit cross-contamination filter to be sure.
 # def collate_frequencies (run_path, output_path, output_type):
@@ -56,11 +57,15 @@ def collate_labeled_files(pattern, output_path):
         filenames = glob.glob(pattern)
         filenames.sort()
         for filename in filenames:
+            basename = os.path.basename(filename)
+            samplename = basename.split('.')[0]
             with open(filename, 'rU') as fin:
                 for i, line in enumerate(fin):
                     if i == 0:
                         if not is_header_written:
+                            fout.write('sample,')
                             fout.write(line)
                             is_header_written = True
                     else:
+                        fout.write(samplename + ',')
                         fout.write(line)

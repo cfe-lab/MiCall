@@ -28,6 +28,7 @@ import miseq_logging
 import settings
 import project_config
 from collections import Counter
+import csv
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -146,19 +147,14 @@ class SequenceReport(object):
         
 
     def _count_reads(self, aligned_reads):
-        for line in aligned_reads:
-            (self.sample_name,
-             self.seed,
-             self.qcut,
-             _rank,
-             count,
-             offset,
-             nuc_seq) = line.rstrip().split(',')
-            offset = int(offset)
-            count = int(count)
+        for row in aligned_reads:
+            self.seed = row['refname']
+            self.qcut = row['qcut']
+            nuc_seq = row['seq']
+            offset = int(row['offset'])
+            count = int(row['count'])
             if not self.seed_aminos:
-                self.insert_writer.start_group(self.sample_name,
-                                               self.seed,
+                self.insert_writer.start_group(self.seed,
                                                self.qcut)
                 for reading_frame in range(3):
                     self.seed_aminos[reading_frame] = []
@@ -242,7 +238,8 @@ class SequenceReport(object):
     def read(self, aligned_reads):
         """ Reset all the counters, and read a new section of aligned reads.
         
-        A section must have the same sample name, region, and qcut on all lines.
+        A section must have the same region, and qcut on all lines.
+        @param aligned_reads: a sequence of dicts, one for each read
         """
         aligned_reads = list(aligned_reads) # let us run multiple passes
         self.seed_aminos = {} # {reading_frame: [SeedAmino(consensus_index)]}
@@ -281,17 +278,10 @@ class SequenceReport(object):
                 last_amino_index = last_amino_index or -1
                 end_pos = (last_amino_index+1) * 3
                 minimum_variant_length = len(coordinate_ref)/2
-                for line in aligned_reads:
-                    (_sample_name,
-                     _seed,
-                     _qcut,
-                     _rank,
-                     count,
-                     offset,
-                     nuc_seq) = line.rstrip().split(',')
-                    count = int(count)
-                    offset = int(offset)
-                    padded_seq = offset*'-' + nuc_seq
+                for row in aligned_reads:
+                    count = int(row['count'])
+                    offset = int(row['offset'])
+                    padded_seq = offset*'-' + row['seq']
                     clipped_seq = padded_seq[start_pos:end_pos]
                     stripped_seq = clipped_seq.replace('-', '')
                     if len(stripped_seq) > minimum_variant_length:
@@ -301,33 +291,57 @@ class SequenceReport(object):
                 coordinate_variants.sort(reverse=True)
                 self.variants[coordinate_name] = coordinate_variants[0:max_variants]
     
+    def _create_amino_writer(self, amino_file):
+        columns = ['seed',
+                   'region',
+                   'q-cutoff',
+                   'query.aa.pos',
+                   'refseq.aa.pos']
+        columns.extend(amino_alphabet)
+        return csv.DictWriter(amino_file,
+                              columns,
+                              lineterminator='\n')
+        
     def write_amino_header(self, amino_file):
-        amino_file.write(
-            'sample,seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,' +
-            ','.join(amino_alphabet) + '\n')
+        self._create_amino_writer(amino_file).writeheader()
     
     def write_amino_counts(self, amino_file):
         regions = self.reports.keys()
         regions.sort()
+        amino_writer = self._create_amino_writer(amino_file)
         for region in regions:
             for report_amino in self.reports[region]:
                 seed_amino = report_amino.seed_amino
                 query_pos = (str(seed_amino.consensus_index + 1)
                              if seed_amino.consensus_index is not None
                              else '')
-                amino_file.write(','.join((self.sample_name,
-                                           self.seed,
-                                           region,
-                                           self.qcut,
-                                           query_pos,
-                                           str(report_amino.position),
-                                           seed_amino.get_report())) + '\n')
+                row = {'seed': self.seed,
+                       'region': region,
+                       'q-cutoff': self.qcut,
+                       'query.aa.pos': query_pos,
+                       'refseq.aa.pos': report_amino.position}
+                for letter in amino_alphabet:
+                    row[letter] = seed_amino.counts[letter]
+                amino_writer.writerow(row)
 
+    def _create_nuc_writer(self, nuc_file):
+        return csv.DictWriter(nuc_file,
+                              ['seed',
+                               'region',
+                               'q-cutoff',
+                               'query.nuc.pos',
+                               'refseq.nuc.pos',
+                               'A',
+                               'C',
+                               'G',
+                               'T'],
+                              lineterminator='\n')
+        
     def write_nuc_header(self, nuc_file):
-        nuc_file.write(
-            'sample,seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T\n')
+        self._create_nuc_writer(nuc_file).writeheader()
         
     def write_nuc_counts(self, nuc_file):
+        nuc_writer = self._create_nuc_writer(nuc_file)
         def write_counts(region, seed_amino, report_amino):
             for i, seed_nuc in enumerate(seed_amino.nucleotides):
                 query_pos = (str(i + 3*seed_amino.consensus_index + 1)
@@ -336,13 +350,14 @@ class SequenceReport(object):
                 ref_pos = (str(i + 3*report_amino.position - 2)
                            if report_amino is not None
                            else '')
-                nuc_file.write(','.join((self.sample_name,
-                                         self.seed,
-                                         region,
-                                         self.qcut,
-                                         query_pos,
-                                         ref_pos,
-                                         seed_nuc.get_report())) + '\n')
+                row = {'seed': self.seed,
+                       'region': region,
+                       'q-cutoff': self.qcut,
+                       'query.nuc.pos': query_pos,
+                       'refseq.nuc.pos': ref_pos}
+                for base in 'ACTG':
+                    row[base] = seed_nuc.counts[base]
+                nuc_writer.writerow(row)
         if not self.coordinate_refs:
             for seed_amino in self.seed_aminos[0]:
                 write_counts(self.seed, seed_amino, None)
@@ -350,55 +365,80 @@ class SequenceReport(object):
             for region, report_aminos in self.reports.iteritems():
                 for report_amino in report_aminos:
                     write_counts(region, report_amino.seed_amino, report_amino)
+    
+    def _create_consensus_writer(self, conseq_file):
+        return csv.DictWriter(conseq_file,
+                              ['region',
+                               'q-cutoff',
+                               'consensus-percent-cutoff',
+                               'sequence'],
+                              lineterminator='\n')
                 
     def write_consensus_header(self, conseq_file):
-        conseq_file.write(
-            'sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence\n')
+        self._create_consensus_writer(conseq_file).writeheader()
     
     def write_consensus(self, conseq_file):
-        sample_name_base, sample_snum = self.sample_name.split('_', 1)
+        conseq_writer = self._create_consensus_writer(conseq_file)
         for mixture_cutoff in self.conseq_mixture_cutoffs:
             consensus = ''
             for seed_amino in self.seed_aminos[0]:
                 for seed_nuc in seed_amino.nucleotides:
                     consensus += seed_nuc.get_consensus(mixture_cutoff)
-            conseq_file.write('%s,%s,%s,%s,%s,%s\n' % (sample_name_base,
-                                                       self.seed,
-                                                       self.qcut,
-                                                       sample_snum,
-                                                       format_cutoff(mixture_cutoff),
-                                                       consensus))
+            conseq_writer.writerow(
+                {'region': self.seed,
+                 'q-cutoff': self.qcut,
+                 'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
+                 'sequence': consensus})
+    
+    def _create_nuc_variants_writer(self, nuc_variants_file):
+        return csv.DictWriter(nuc_variants_file,
+                              ['seed',
+                               'qcut',
+                               'region',
+                               'index',
+                               'count',
+                               'seq'],
+                              lineterminator='\n')
     
     def write_nuc_variants_header(self, nuc_variants_file):
-        nuc_variants_file.write('sample,seed,qcut,region,index,count,seq\n')
+        self._create_nuc_variants_writer(nuc_variants_file).writeheader()
     
     def write_nuc_variants(self, nuc_variants_file):
         regions = self.variants.keys()
         regions.sort()
+        writer = self._create_nuc_variants_writer(nuc_variants_file)
         for coordinate_name in regions:
             for i, variant in enumerate(self.variants[coordinate_name]):
                 count, nuc_seq = variant
-                nuc_variants_file.write(','.join((self.sample_name,
-                                                  self.seed,
-                                                  self.qcut,
-                                                  coordinate_name,
-                                                  str(i),
-                                                  str(count),
-                                                  nuc_seq)) + '\n')
+                writer.writerow(dict(seed=self.seed,
+                                     qcut=self.qcut,
+                                     region=coordinate_name,
+                                     index=i,
+                                     count=count,
+                                     seq=nuc_seq))
+    
+    def _create_failure_writer(self, fail_file):
+        return csv.DictWriter(fail_file,
+                              ['seed',
+                               'region',
+                               'qcut',
+                               'queryseq',
+                               'refseq'],
+                              lineterminator='\n')
     
     def write_failure_header(self, fail_file):
-        fail_file.write('sample,seed,region,qcut,queryseq,refseq\n')
+        self._create_failure_writer(fail_file).writeheader()
     
     def write_failure(self, fail_file):
+        fail_writer = self._create_failure_writer(fail_file)
         for region, report_aminos in self.reports.iteritems():
             if not report_aminos:
                 coordinate_ref = self.projects.getReference(region)
-                fail_file.write(','.join((self.sample_name,
-                                          self.seed,
-                                          region,
-                                          self.qcut,
-                                          self.consensus[region],
-                                          coordinate_ref)) + '\n')
+                fail_writer.writerow(dict(seed=self.seed,
+                                          region=region,
+                                          qcut=self.qcut,
+                                          queryseq=self.consensus[region],
+                                          refseq=coordinate_ref))
     
     def write_insertions(self):
         for coordinate_name, coordinate_inserts in self.inserts.iteritems():
@@ -523,17 +563,22 @@ class InsertionWriter(object):
         
         @param insert_file: an open file that the data will be written to
         """
-        self.insert_file = insert_file
-        self.insert_file.write('sample,seed,region,qcut,left,insert,count\n')
+        self.insert_writer = csv.DictWriter(insert_file,
+                                            ['seed',
+                                             'region',
+                                             'qcut',
+                                             'left',
+                                             'insert',
+                                             'count'],
+                                            lineterminator='\n')
+        self.insert_writer.writeheader()
     
-    def start_group(self, sample_name, seed, qcut):
+    def start_group(self, seed, qcut):
         """ Start a new group of reads.
         
-        @param sample_name: the name of the sample these reads came from
         @param seed: the name of the region these reads mapped to
         @param qcut: the quality cut off used for these reads
         """
-        self.sample_name = sample_name
         self.seed = seed
         self.qcut = qcut
         self.nuc_seqs = Counter() # {nuc_seq: count}
@@ -593,14 +638,13 @@ class InsertionWriter(object):
         # record insertions to CSV
         for left, counts in insert_counts.iteritems():
             for insert_seq, count in counts.iteritems():
-                self.insert_file.write('%s,%s,%s,%s,%d,%s,%d\n' % (
-                    self.sample_name,
-                    self.seed,
-                    region,
-                    self.qcut,
-                    left+1,
-                    insert_seq,
-                    count))
+                self.insert_writer.writerow(dict(
+                    seed=self.seed,
+                    region=region,
+                    qcut=self.qcut,
+                    left=left+1,
+                    insert=insert_seq,
+                    count=count))
 
 def format_cutoff(cutoff):
     """ Format the cutoff fraction as a string to use as a name. """
@@ -616,7 +660,7 @@ def main():
     
     insert_writer = InsertionWriter(args.coord_ins_csv)
     
-    args.aligned_csv.readline() # skip header
+    aligned_reader = csv.DictReader(args.aligned_csv)
     
     report = SequenceReport(insert_writer,
                             projects,
@@ -626,8 +670,8 @@ def main():
     report.write_failure_header(args.failed_align_csv)
     report.write_nuc_header(args.nuc_csv)
     report.write_nuc_variants_header(args.nuc_variants_csv)
-    for _key, aligned_reads in groupby(args.aligned_csv,
-                                       lambda x: x.split(',')[0:3]):
+    for _key, aligned_reads in groupby(aligned_reader,
+                                       lambda row: (row['refname'], row['qcut'])):
         report.read(aligned_reads)
         
         report.write_amino_counts(args.amino_csv)

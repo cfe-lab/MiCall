@@ -286,9 +286,24 @@ while True:
                     os.mkdir(destination_path)
                 post_files(glob(full_pattern), destination_path)
                     
+            untar_path = os.path.join(result_path_final, 'untar')
+            coverage_source_path = os.path.join(untar_path, 'coverage_maps')
+            coverage_dest_path = os.path.join(result_path_final, 'coverage_maps')
+            os.mkdir(untar_path)
+            os.mkdir(coverage_dest_path)
             for tar_path in glob(home + run_name + '/*.coverage_maps.tar'):
+                basename = os.path.basename(tar_path)
+                map_name = os.path.splitext(basename)[0]
+                sample_name = os.path.splitext(map_name)[0]
                 with tarfile.open(tar_path) as tar:
-                    tar.extractall(result_path_final)
+                    tar.extractall(untar_path)
+                for image_filename in os.listdir(coverage_source_path):
+                    source = os.path.join(coverage_source_path, image_filename)
+                    destination = os.path.join(coverage_dest_path,
+                                               sample_name+'.'+image_filename)
+                    os.rename(source, destination)
+            os.rmdir(coverage_source_path)
+            os.rmdir(untar_path)
             
             update_qai.process_folder(result_path_final, logger)
             
