@@ -23,6 +23,8 @@ from settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
     NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, base_path,\
     qai_path, qai_user, qai_password
 import update_qai
+import itertools
+import operator
 
 
 if sys.version_info[:2] != (2, 7):
@@ -89,20 +91,35 @@ def download_quality(run_info_path, destination, read_lengths):
     runInfoTree = ElementTree.parse(run_info_path)
     runInfoRoot = runInfoTree.getroot()
     qcRunId = runInfoRoot[0].attrib['Id']
-    first_reverse_cycle = read_lengths[0] + 17
+    direction_params = [(read_lengths[0], 1), (read_lengths[1], -1)]
     with qai_helper.Session() as session:
         session.login(qai_path, qai_user, qai_password)
         metrics = session.get_json('/miseqqc_errormetrics?runid=' + qcRunId)
     with open(destination, 'w') as f:
         writer = csv.DictWriter(f, ['tile', 'cycle', 'errorrate'])
         writer.writeheader()
-        for metric in metrics:
-            cycle = int(metric['cycle'])
-            if cycle >= first_reverse_cycle:
-                cycle = first_reverse_cycle - cycle - 1
-            writer.writerow(dict(tile=metric['tile'],
-                                 cycle=cycle,
-                                 errorrate=metric['errorrate']))
+        for tile, tile_metrics in itertools.groupby(metrics,
+                                                    operator.itemgetter('tile')):
+            expected_cycle = 0
+            metric = next(tile_metrics)
+            for cycles, sign in direction_params:
+                report_cycle = sign
+                for _ in range(1, cycles+1):
+                    expected_cycle += 1
+                    cycle = int(metric['cycle'])
+                    if cycle == expected_cycle:
+                        errorrate = metric['errorrate']
+                        try:
+                            metric = next(tile_metrics)
+                        except StopIteration:
+                            metric = dict(cycle=-1)
+                    else:
+                        errorrate = ''
+                    writer.writerow(dict(tile=tile,
+                                         cycle=report_cycle,
+                                         errorrate=errorrate))
+                    report_cycle += sign
+                expected_cycle += 16
     return qcRunId
 
 while True:
@@ -271,6 +288,7 @@ while True:
             logger.info("Posting results to {}".format(result_path_final))
             file_sets = [# (pattern, destination)
                          ('results/*', None),
+                         ('bad_cycles.csv', None),
                          ('*.log', 'logs'),
                          ('*.unmapped?.fastq', 'unmapped')]
             

@@ -38,7 +38,10 @@ def main():
         for _tile_direction, cycles in itertools.groupby(reader, grouper):
             is_bad = False
             for cycle in cycles:
-                is_bad = is_bad or float(cycle['errorrate']) >= BAD_ERROR_RATE
+                errorrate = cycle['errorrate']
+                is_bad = (is_bad or
+                          errorrate == '' or
+                          float(errorrate) >= BAD_ERROR_RATE)
                 if is_bad:
                     writer.writerow(cycle)
 
