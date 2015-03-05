@@ -81,7 +81,7 @@ failure_message = None
 # Process runs flagged for processing not already processed by this version of the pipeline
 
 
-def download_quality(run_info_path, destination):
+def download_quality(run_info_path, destination, read_lengths):
     """ Download quality control data for the run.
     
     @return the QC run id as a string
@@ -89,6 +89,7 @@ def download_quality(run_info_path, destination):
     runInfoTree = ElementTree.parse(run_info_path)
     runInfoRoot = runInfoTree.getroot()
     qcRunId = runInfoRoot[0].attrib['Id']
+    first_reverse_cycle = read_lengths[0] + 17
     with qai_helper.Session() as session:
         session.login(qai_path, qai_user, qai_password)
         metrics = session.get_json('/miseqqc_errormetrics?runid=' + qcRunId)
@@ -96,8 +97,11 @@ def download_quality(run_info_path, destination):
         writer = csv.DictWriter(f, ['tile', 'cycle', 'errorrate'])
         writer.writeheader()
         for metric in metrics:
+            cycle = int(metric['cycle'])
+            if cycle >= first_reverse_cycle:
+                cycle = first_reverse_cycle - cycle - 1
             writer.writerow(dict(tile=metric['tile'],
-                                 cycle=metric['cycle'],
+                                 cycle=cycle,
                                  errorrate=metric['errorrate']))
     return qcRunId
 
@@ -184,6 +188,7 @@ while True:
             # parse run information from SampleSheet
             run_info = sample_sheet_parser(sample_sheet)
             mode = run_info['Description']
+            read_lengths = run_info['Reads']
     except Exception as e:
         failure_message = mark_run_as_disabled(
             root,
@@ -234,7 +239,8 @@ while True:
 
     try:
         download_quality(os.path.join(root, 'RunInfo.xml'),
-                         os.path.join(home, run_name, 'quality.csv'))
+                         os.path.join(home, run_name, 'quality.csv'),
+                         read_lengths)
     except StandardError as e:
         failure_message = mark_run_as_disabled(root,
                                                "Quality could not be downloaded.",

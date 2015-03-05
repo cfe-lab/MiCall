@@ -282,8 +282,10 @@ def main():
     # screen raw data for reads that have not mapped to any region
     n_unmapped = 0
     with open(args.fastq1, 'rU') as f:
-        # http://stackoverflow.com/questions/1657299/how-do-i-read-two-lines-from-a-file-at-a-time-using-python
-        for ident, seq, opt, qual in itertools.izip_longest(*[f]*4):
+        # http://stackoverflow.com/a/1657385/4794
+        # izip_longest will call f.next() four times for each iteration, so
+        # the four variables are assigned the next four lines.
+        for ident, seq, opt, qual in itertools.izip_longest(f, f, f, f):
             qname = ident.lstrip('@').rstrip('\n').split()[0]
             if qname not in mapped or mapped[qname] < 2:
                 # forward read not mapped
@@ -293,7 +295,7 @@ def main():
 
     # write out the other pair
     with open(args.fastq2, 'rU') as f:
-        for ident, seq, opt, qual in itertools.izip_longest(*[f]*4):
+        for ident, seq, opt, qual in itertools.izip_longest(f, f, f, f):
             qname = ident.lstrip('@').rstrip('\n').split()[0]
             if qname not in mapped or mapped[qname] % 2 == 0:
                 # reverse read not mapped

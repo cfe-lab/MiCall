@@ -56,7 +56,9 @@ def main():
             for ending in excluded_files:
                 if f.endswith(ending):
                     is_excluded = not (f.endswith('unmapped1.fastq') or
-                                       f.endswith('unmapped2.fastq'))
+                                       f.endswith('unmapped2.fastq') or
+                                       f.endswith('censored1.fastq') or
+                                       f.endswith('censored2.fastq'))
                     break
             if not is_excluded:
                 if os.path.isdir(f):

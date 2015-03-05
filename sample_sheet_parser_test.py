@@ -52,7 +52,8 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing
         self.assertSetEqual(
             set(self.ss.keys()),
             {"IEMFileVersion", "Investigator Name", "Project Name", "Experiment Name", "Date", "Workflow",
-             "Assay", "Description", "Chemistry", "Data", "DataSplit", "sample_sheet_version"})
+             "Assay", "Description", "Chemistry", "Data", "DataSplit", "sample_sheet_version",
+             "Reads"})
 
     def test_preamble_correct(self):
         """
@@ -68,6 +69,7 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing
         self.assertEquals(self.ss["Description"], "Nextera")
         self.assertEquals(self.ss["Chemistry"], "Amplicon")
         self.assertEquals(self.ss["sample_sheet_version"], 1)
+        self.assertEquals(self.ss["Reads"], [251, 251])
 
     def test_data(self):
         """
@@ -181,7 +183,8 @@ CFE_SomeId_11-Jul-2014_N501-N704_Sample4--Proj4,Sample4--Proj4,11-Jul-2014_testi
         self.assertSetEqual(
             set(self.ss.keys()),
             {"IEMFileVersion", "Investigator Name", "Project Name", "Experiment Name", "Date", "Workflow",
-             "Assay", "Description", "Chemistry", "Data", "DataSplit", "sample_sheet_version"})
+             "Assay", "Description", "Chemistry", "Data", "DataSplit", "sample_sheet_version",
+             "Reads"})
 
     def test_preamble_correct(self):
         """
@@ -309,7 +312,8 @@ CFE_SomeId_11-Jul-2014_N501-N702_Sample3_Proj3;CFE_SomeId_11-Jul-2014_N501-N702_
         self.assertSetEqual(
             set(self.ss.keys()),
             {"IEMFileVersion", "Investigator Name", "Project Name", "Experiment Name", "Date", "Workflow",
-             "Assay", "Description", "Chemistry", "Data", "DataSplit", "sample_sheet_version"})
+             "Assay", "Description", "Chemistry", "Data", "DataSplit", "sample_sheet_version",
+             "Reads"})
 
     def test_preamble_correct(self):
         """
@@ -467,7 +471,8 @@ CFE_SomeId_11-Jul-2014_N501-N702_Sample3--Proj3---CFE_SomeId_11-Jul-2014_N501-N7
         self.assertSetEqual(
             set(self.ss.keys()),
             {"IEMFileVersion", "Investigator Name", "Project Name", "Experiment Name", "Date", "Workflow",
-             "Assay", "Description", "Chemistry", "Data", "DataSplit", "sample_sheet_version"})
+             "Assay", "Description", "Chemistry", "Data", "DataSplit", "sample_sheet_version",
+             "Reads"})
 
     def test_preamble_correct(self):
         """

@@ -59,31 +59,42 @@ def filter_quality(run_folder, worker):
                        stdout=log_path,
                        stderr=log_path))
     
-def map_samples(fastq_samples, worker):
-    # Preliminary map
+def map_samples(run_folder, fastq_samples, worker):
     for sample_info in fastq_samples:
+        log_path = "{}.censor.log".format(sample_info.output_root)
+        worker.run_job(Job(script=base_path + 'censor_fastq.py',
+                           args=(sample_info.fastq1,
+                                 os.path.join(run_folder, 'bad_cycles.csv'),
+                                 sample_info.output_root + '.censored1.fastq'),
+                           stdout=log_path,
+                           stderr=log_path))
+        worker.run_job(Job(script=base_path + 'censor_fastq.py',
+                           args=(sample_info.fastq2,
+                                 os.path.join(run_folder, 'bad_cycles.csv'),
+                                 sample_info.output_root + '.censored2.fastq'),
+                           stdout=log_path,
+                           stderr=log_path))
         log_path = "{}.mapping.log".format(sample_info.output_root)
+        # Preliminary map
         worker.run_job(Job(script=base_path + 'prelim_map.py',
                            helpers=(base_path + 'settings.py',
                                     base_path + 'miseq_logging.py',
                                     base_path + 'project_config.py',
                                     projects_json),
-                           args=(sample_info.fastq1,
-                                 sample_info.fastq2,
+                           args=(sample_info.output_root + '.censored1.fastq',
+                                 sample_info.output_root + '.censored2.fastq',
                                  sample_info.output_root + '.prelim.csv'),
                            stdout=log_path,
                            stderr=log_path))
     
-    # Iterative re-mapping
-    for sample_info in fastq_samples:
-        log_path = "{}.mapping.log".format(sample_info.output_root)
+        # Iterative re-mapping
         worker.run_job(Job(script=base_path + 'remap.py',
                            helpers=(base_path + 'settings.py',
                                     base_path + 'miseq_logging.py',
                                     base_path + 'project_config.py',
                                     projects_json),
-                           args=(sample_info.fastq1, 
-                                 sample_info.fastq2,
+                           args=(sample_info.output_root + '.censored1.fastq', 
+                                 sample_info.output_root + '.censored2.fastq',
                                  sample_info.output_root + '.prelim.csv',
                                  sample_info.output_root + '.remap.csv',
                                  sample_info.output_root + '.remap_counts.csv',
@@ -252,7 +263,7 @@ def main():
         filter_quality(args.run_folder, worker)
     
     if args.phase in ('mapping', 'all'):
-        map_samples(fastq_samples, worker)
+        map_samples(args.run_folder, fastq_samples, worker)
     
     if args.phase in ('counting', 'all'):
         count_samples(fastq_samples, worker, args)

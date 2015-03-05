@@ -14,7 +14,8 @@ def sample_sheet_parser (handle):
     get_header = False
     header = [] # store Data block column labels
     sample_number = 1 # 1-indexing
-    run_info = {} # return object
+    read_lengths = []
+    run_info = { 'Reads': read_lengths } # return object
     sample_sheet_version = None #Version 1 is there we used underscores and semicolons, version 2 we use tilde's and hashes
     sample_delimiter_v1 = ';' # Between multiple samples in one well
     project_delimiter_v1 = '_' # Between the sample and project names
@@ -40,6 +41,9 @@ def sample_sheet_parser (handle):
             # inside [Header] block
             key, value = tokens[:2]
             run_info.update({key: value})
+            
+        elif tag == 'Reads':
+            read_lengths.append(int(tokens[0]))
 
         elif tag == 'Data':
             # inside [Data] block
