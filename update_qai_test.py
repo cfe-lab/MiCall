@@ -28,7 +28,7 @@ CFE_SomeId_10-Jul-2014_N501-N701_Sample1_Proj1,Sample1_Proj1,10-Jul-2014_testing
 CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2;CFE_SomeId_10-Jul-2014_N501-N702_Sample3_Proj3,Sample2_Proj2;Sample3_Proj3,10-Jul-2014,N/A,AAAAGGGG,CCCCTTTT,10-Jul-2014,Research:Sample2_Proj2:FALSE;Sample3_Proj3:FALSE Comments:Sample2_Proj2:thisiscommenttwo;Sample3_Proj3:thisiscommentthree Disablecontamcheck:Sample2_Proj2:TRUE;Sample3_Proj3:TRUE,
 """))
         self.collated_counts_file = StringIO.StringIO("""\
-sample_name,type,count
+sample,type,count
 Sample1-Proj1_S1,raw,3000
 Sample1-Proj1_S1,prelim R1-seed,1500
 Sample1-Proj1_S1,remap R1-seed,2000
