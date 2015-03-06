@@ -1105,6 +1105,82 @@
         }
       ]
     },
+    "MidHCV": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "HCV1A-H77-NS5b",
+          "key_positions": [
+            {
+              "end_pos": 591,
+              "start_pos": 250
+            }
+          ],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region_names": [
+            "HCV-1A-H77-seed",
+            "HCV-1B-seed",
+            "HCV-1C-seed",
+            "HCV-1E-seed",
+            "HCV-1G-seed",
+            "HCV-2A-seed",
+            "HCV-2B-seed",
+            "HCV-2C-seed",
+            "HCV-2I-seed",
+            "HCV-2J-seed",
+            "HCV-2K-seed",
+            "HCV-2Q-seed",
+            "HCV-3A-seed",
+            "HCV-3B-seed",
+            "HCV-3I-seed",
+            "HCV-3K-seed",
+            "HCV-4A-seed",
+            "HCV-4B-seed",
+            "HCV-4C-seed",
+            "HCV-4D-seed",
+            "HCV-4F-seed",
+            "HCV-4G-seed",
+            "HCV-4K-seed",
+            "HCV-4L-seed",
+            "HCV-4M-seed",
+            "HCV-4N-seed",
+            "HCV-4O-seed",
+            "HCV-4P-seed",
+            "HCV-4Q-seed",
+            "HCV-4R-seed",
+            "HCV-4T-seed",
+            "HCV-4V-seed",
+            "HCV-5A-seed",
+            "HCV-6A-seed",
+            "HCV-6B-seed",
+            "HCV-6C-seed",
+            "HCV-6D-seed",
+            "HCV-6E-seed",
+            "HCV-6F-seed",
+            "HCV-6G-seed",
+            "HCV-6H-seed",
+            "HCV-6I-seed",
+            "HCV-6J-seed",
+            "HCV-6K-seed",
+            "HCV-6L-seed",
+            "HCV-6M-seed",
+            "HCV-6N-seed",
+            "HCV-6O-seed",
+            "HCV-6P-seed",
+            "HCV-6Q-seed",
+            "HCV-6R-seed",
+            "HCV-6S-seed",
+            "HCV-6T-seed",
+            "HCV-6U-seed",
+            "HCV-6V-seed",
+            "HCV-6W-speed",
+            "HCV-7A-seed"
+          ]
+        }
+      ]
+    },
     "MiniHCV": {
       "max_variants": 0,
       "regions": [
