@@ -384,7 +384,6 @@ class RegionTrackerTest < Test::Unit::TestCase
   end
   
   def test_get_range
-    sample_name = "S1"
     seed = "R-seed"
     region = @tracked_region
     query_pos1 = 10
@@ -393,9 +392,9 @@ class RegionTrackerTest < Test::Unit::TestCase
     expected_min = 10
     expected_max = 12
     
-    @tracker.add_nuc(sample_name, seed, region, query_pos1)
-    @tracker.add_nuc(sample_name, seed, region, query_pos2)
-    @tracker.add_nuc(sample_name, seed, region, query_pos3)
+    @tracker.add_nuc(seed, region, query_pos1)
+    @tracker.add_nuc(seed, region, query_pos2)
+    @tracker.add_nuc(seed, region, query_pos3)
     min, max = @tracker.get_range(seed)
     
     assert_equal(expected_min, min, "minimum position")
@@ -403,7 +402,6 @@ class RegionTrackerTest < Test::Unit::TestCase
   end
   
   def test_untracked_region
-    sample_name = "S1"
     seed = "R-seed"
     region = @untracked_region
     query_pos1 = 10
@@ -412,40 +410,16 @@ class RegionTrackerTest < Test::Unit::TestCase
     expected_min = nil
     expected_max = nil
     
-    @tracker.add_nuc(sample_name, seed, region, query_pos1)
-    @tracker.add_nuc(sample_name, seed, region, query_pos2)
-    @tracker.add_nuc(sample_name, seed, region, query_pos3)
+    @tracker.add_nuc(seed, region, query_pos1)
+    @tracker.add_nuc(seed, region, query_pos2)
+    @tracker.add_nuc(seed, region, query_pos3)
     min, max = @tracker.get_range(seed)
     
     assert_equal(expected_min, min, "minimum position")
     assert_equal(expected_max, max, "maximum position")
   end
   
-  def test_changed_sample
-    sample_name = "S1"
-    changed_sample_name = "S2"
-    expected_error = "Two sample names found: 'S1' and 'S2'."
-    seed = "R-seed"
-    region = @tracked_region
-    query_pos1 = 10
-    query_pos2 = 11
-    query_pos3 = 12
-
-    @tracker.add_nuc(sample_name, seed, region, query_pos1)
-    @tracker.add_nuc(sample_name, seed, region, query_pos2)
-    begin
-      @tracker.add_nuc(changed_sample_name, seed, region, query_pos3)
-      
-      message = nil
-    rescue ArgumentError => e
-      message = e.message
-    end
-    
-    assert_equal(expected_error, message)
-  end
-  
   def test_multiple_seeds
-    sample_name = "S1"
     seeda = "Ra-seed"
     seedb = "Rb-seed"
     region = @tracked_region
@@ -458,10 +432,10 @@ class RegionTrackerTest < Test::Unit::TestCase
     expected_minb = 100
     expected_maxb = 101
     
-    @tracker.add_nuc(sample_name, seeda, region, query_pos1a)
-    @tracker.add_nuc(sample_name, seeda, region, query_pos2a)
-    @tracker.add_nuc(sample_name, seedb, region, query_pos1b)
-    @tracker.add_nuc(sample_name, seedb, region, query_pos2b)
+    @tracker.add_nuc(seeda, region, query_pos1a)
+    @tracker.add_nuc(seeda, region, query_pos2a)
+    @tracker.add_nuc(seedb, region, query_pos1b)
+    @tracker.add_nuc(seedb, region, query_pos2b)
     mina, maxa = @tracker.get_range(seeda)
     minb, maxb = @tracker.get_range(seedb)
     
