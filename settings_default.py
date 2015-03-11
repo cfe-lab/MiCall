@@ -2,6 +2,7 @@
 To make pipeline portable, allow user to specify local paths and thread counts.
 """
 
+instrument_number = 'M01841'  # for Illumina MiSeq, second item in run folder name
 pipeline_version = '6.7'
 
 production = False  # set this to True to push results to NAS
@@ -16,6 +17,7 @@ home = '/data/miseq/'
 
 
 are_temp_folders_deleted = True # Should FIFO worker clean up working folders?
+nruns_to_store = 20  # protect X most recent runs from cleaning up intermediate files
 
 # Scheduling processes: these should be a multiple of the total number of slots
 # in your hostfile.

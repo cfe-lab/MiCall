@@ -21,6 +21,9 @@ def parseOptions():
     parser.add_argument('mode',
                         help='Amplicon or Nextera, default from sample sheet',
                         nargs=argparse.OPTIONAL)
+    parser.add_argument('-clean',
+                        help='Remove intermediate files after run is complete.',
+                        action='store_true')
     
     return parser.parse_args()
 
@@ -86,6 +89,10 @@ def main():
         if args.mode is not None:
             base_args.append(args.mode)
         base_args.append('--phase')
+
+        if args.clean:
+            # propagate option
+            base_args.append('-clean')
         
         filter_args = base_args[:]
         filter_args.append('filter')

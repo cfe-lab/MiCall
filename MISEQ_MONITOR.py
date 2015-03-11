@@ -21,7 +21,7 @@ import qai_helper
 from sample_sheet_parser import sample_sheet_parser
 from settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
     NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, base_path,\
-    qai_path, qai_user, qai_password
+    qai_path, qai_user, qai_password, instrument_number, nruns_to_store
 import update_qai
 import itertools
 import operator
@@ -182,6 +182,12 @@ while True:
     if not os.path.exists(home+run_name):
         os.mkdir(home+run_name)
 
+    all_runs = map(lambda x: x.split('/')[-1], glob('%s/*/*%s*' % (home, instrument_number)))
+    all_runs.sort()
+    runs_to_keep = all_runs[-nruns_to_store:]  # X most recent runs
+    do_cleanup = (run_name in runs_to_keep)
+
+
     # Record standard input / output of monitor
     logger.info('Starting run %s', root)
     logging.shutdown()
@@ -268,7 +274,8 @@ while True:
     logger.info("Launching pipeline for %s%s", home, run_name)
     try:
         subprocess.check_call([os.path.join(base_path, 'run_processor.py'),
-                               home+run_name])
+                               home+run_name,
+                               '-clean' if do_cleanup else ''])
         logger.info("===== {} successfully processed! =====".format(run_name))
     except Exception as e:
         failure_message = mark_run_as_disabled(

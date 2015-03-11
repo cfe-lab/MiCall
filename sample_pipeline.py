@@ -24,6 +24,9 @@ def parseOptions(comm_world):
     parser.add_argument('--phase', '-p',
                         help='Phase to execute: mapping, counting, plotting, or all',
                         default='all')
+    parser.add_argument('--clean',
+                        help='Remove all intermediate files after processing.',
+                        action='store_true')
     
     # Rank 0 process parses the arguments, complains about errors, 
     # then broadcasts the parsed arguments (or None) to all other ranks.
@@ -211,6 +214,24 @@ def collate_results(fastq_samples, worker, args, logger):
         collate_labeled_files(os.path.join(args.run_folder, pattern),
                               os.path.join(results_folder, target_file))
 
+def clean_intermediate_files (fastq_samples, logger):
+    """
+    Remove intermediate files produced by pipeline to save space on
+    hard disk.
+    :param fastq_samples: a List of SampleInfo objects corresponding to FASTQ
+        files in this run.
+    :param logger:
+    :return:
+    """
+    logger.info('Cleaning up intermediate files')
+    files_to_delete = ('.prelim.csv', '.remap.csv', '.aligned.csv',
+                       '.censored1.fastq', '.censored2.fastq')
+    for sample_info in fastq_samples:
+        for extension in files_to_delete:
+            os.remove(sample_info.output_root + extension)
+
+
+
 def main():
     comm = MPI.COMM_WORLD
     process_rank = comm.Get_rank()
@@ -274,6 +295,9 @@ def main():
     logger.info('Finish processing run %s, rank %d',
                 args.run_folder,
                 process_rank)
+
+    if args.clean:
+        clean_intermediate_files(fastq_samples, logger)
     
 
 ###############################
