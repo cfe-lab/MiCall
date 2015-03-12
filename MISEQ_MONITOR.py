@@ -182,11 +182,13 @@ while True:
     if not os.path.exists(home+run_name):
         os.mkdir(home+run_name)
 
+    # Determine if intermediary files should persist past end of run
     all_runs = map(lambda x: x.split('/')[-1], glob('%s/*/*%s*' % (home, instrument_number)))
     all_runs.sort()
     runs_to_keep = all_runs[-nruns_to_store:]  # X most recent runs
-    do_cleanup = (run_name in runs_to_keep)
-
+    do_cleanup = (run_name in runs_to_keep)  # true/false
+    if do_cleanup:
+        logger.info('Set clean mode for run %s', run_name)
 
     # Record standard input / output of monitor
     logger.info('Starting run %s', root)
@@ -275,7 +277,7 @@ while True:
     try:
         subprocess.check_call([os.path.join(base_path, 'run_processor.py'),
                                home+run_name,
-                               '-clean' if do_cleanup else ''])
+                               '--clean' if do_cleanup else ''])
         logger.info("===== {} successfully processed! =====".format(run_name))
     except Exception as e:
         failure_message = mark_run_as_disabled(

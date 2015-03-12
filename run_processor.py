@@ -21,7 +21,7 @@ def parseOptions():
     parser.add_argument('mode',
                         help='Amplicon or Nextera, default from sample sheet',
                         nargs=argparse.OPTIONAL)
-    parser.add_argument('-clean',
+    parser.add_argument('--clean',
                         help='Remove intermediate files after run is complete.',
                         action='store_true')
     
@@ -45,6 +45,11 @@ def main():
                                         file_log_level=logging.DEBUG,
                                         console_log_level=logging.INFO)
     logger.info('Start processing run %s', args.run_folder)
+    if args.clean:
+        logger.info('Clean mode ON')
+    else:
+        logger.info('Clean mode OFF')
+
     try:
         logger.info('Removing old working files')
         excluded_files = ('.fastq',
@@ -86,13 +91,10 @@ def main():
                         settings.base_path + 'hostfile', 
                         settings.base_path + 'sample_pipeline.py',
                         args.run_folder]
+
         if args.mode is not None:
             base_args.append(args.mode)
         base_args.append('--phase')
-
-        if args.clean:
-            # propagate option
-            base_args.append('-clean')
         
         filter_args = base_args[:]
         filter_args.append('filter')
@@ -119,7 +121,17 @@ def main():
         subprocess.check_call(counting_command, shell=True)
     
         subprocess.check_call(summarizing_command, shell=True)
-        
+
+        if args.clean:
+            # remove intermediate files
+            logger.info('Removing large working files, clean mode')
+            files_to_remove = glob(args.run_folder+'/*.prelim.csv')
+            files_to_remove += glob(args.run_folder+'/*.remap.csv')
+            files_to_remove += glob(args.run_folder+'/*.aligned.csv')
+            files_to_remove += glob(args.run_folder+'/*.censored?.fastq')
+            for f in files_to_remove:
+                os.remove(f)
+
         logger.info('Finished processing run %s', args.run_folder)
     except:
         logger.error('Failed to process run %s', args.run_folder, exc_info=True)
