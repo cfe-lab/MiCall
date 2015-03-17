@@ -186,7 +186,7 @@ while True:
     all_runs = map(lambda x: x.split('/')[-1], glob('%s*%s*' % (home, instrument_number)))
     all_runs.sort()
     runs_to_keep = all_runs[-nruns_to_store:]  # X most recent runs
-    do_cleanup = (run_name in runs_to_keep)  # true/false
+    do_cleanup = (run_name not in runs_to_keep)  # true/false
     if do_cleanup:
         logger.info('Set clean mode for run %s', run_name)
 
