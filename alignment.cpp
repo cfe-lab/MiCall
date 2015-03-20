@@ -1,5 +1,11 @@
 #include <string>
-#include "ruby.h"
+
+#ifdef __PYTHON__
+    #include <Python.h>
+#else
+    #include "ruby.h"
+#endif
+
 using namespace std;
 
 /*
@@ -11,7 +17,7 @@ confident in that perl can do this seamlessly(unlike nicer languages like ruby a
 
 void trim(string* seq);
 
-static int nucMat[127][127];
+static int nucMat[127][127]; // ASCII runs from 0 to 127
 void init_pairscore(int matchscore, int mismatchPenalty)
 {
 	for (int i=0; i<127; i++)
@@ -32,6 +38,8 @@ void init_pairscore(int matchscore, int mismatchPenalty)
 			}
 		}
 	}
+
+	// adjust naive assignments for case-insensitivity
 	nucMat['a']['A']=nucMat['A']['a']=matchscore;
 	nucMat['c']['C']=nucMat['C']['c']=matchscore;
 	nucMat['g']['G']=nucMat['G']['g']=matchscore;
@@ -144,6 +152,61 @@ void init_pairscore_aa(int matchscore, int mismatchPenalty)
 }
 
 
+/*
+    Empirical score matrix based on 25% divergent HIV sequences
+    See Nickle, David C., et al. "HIV-specific probabilistic models of protein evolution."
+        PLoS One 2.6 (2007): e503.
+*/
+static int empirical_hiv25[24][24] = {\
+{7,-7,-7,-4,-10,-11,-4,-3,-10,-6,-9,-9,-7,-13,-3,-2,1,-16,-15,0,-5,-5,-3,-17},\
+{-7,7,-5,-11,-8,-2,-7,-2,0,-6,-6,2,-3,-12,-4,-2,-2,-5,-9,-10,-7,-3,-3,-17},\
+{-7,-5,8,2,-9,-6,-6,-7,0,-6,-12,0,-10,-12,-9,1,0,-17,-3,-10,6,-6,-3,-17},\
+{-4,-11,2,8,-14,-10,0,-2,-3,-11,-15,-7,-13,-15,-13,-5,-6,-16,-6,-5,7,0,-3,-17},\
+{-10,-8,-9,-14,11,-16,-15,-5,-7,-11,-9,-13,-14,0,-12,-1,-6,-2,0,-8,-10,-16,-5,-17},\
+{-11,-2,-6,-10,-16,8,-2,-10,0,-12,-4,0,-8,-12,-1,-9,-8,-14,-9,-13,-7,6,-4,-17},\
+{-4,-7,-6,0,-15,-2,7,-1,-9,-12,-15,-1,-10,-17,-13,-11,-8,-15,-12,-5,0,6,-4,-17},\
+{-3,-2,-7,-2,-5,-10,-1,7,-10,-11,-14,-6,-12,-9,-11,-1,-7,-5,-14,-5,-4,-3,-4,-17},\
+{-10,0,0,-3,-7,0,-9,-10,10,-10,-4,-5,-10,-6,-3,-6,-6,-11,2,-14,-1,-2,-3,-17},\
+{-6,-6,-6,-11,-11,-12,-12,-11,-10,7,0,-7,0,-2,-10,-4,0,-14,-9,2,-7,-12,-2,-17},\
+{-9,-6,-12,-15,-9,-4,-15,-14,-4,0,6,-10,0,0,-3,-5,-8,-6,-8,-4,-13,-6,-4,-17},\
+{-9,2,0,-7,-13,0,-1,-6,-5,-7,-10,7,-4,-14,-9,-5,-1,-12,-13,-9,-1,-1,-2,-17},\
+{-7,-3,-10,-13,-14,-8,-10,-12,-10,0,0,-4,10,-7,-11,-9,-1,-11,-15,0,-11,-9,-3,-17},\
+{-13,-12,-12,-15,0,-12,-17,-9,-6,-2,0,-14,-7,10,-11,-5,-10,-5,1,-5,-13,-14,-3,-17},\
+{-3,-4,-9,-13,-12,-1,-13,-11,-3,-10,-3,-9,-11,-11,8,-1,-3,-13,-11,-12,-10,-3,-5,-17},\
+{-2,-2,1,-5,-1,-9,-11,-1,-6,-4,-5,-5,-9,-5,-1,8,0,-12,-6,-9,0,-10,-3,-17},\
+{1,-2,0,-6,-6,-8,-8,-7,-6,0,-8,-1,-1,-10,-3,0,7,-16,-10,-4,-2,-8,-2,-17},\
+{-16,-5,-17,-16,-2,-14,-15,-5,-11,-14,-6,-12,-11,-5,-13,-12,-16,10,-4,-16,-16,-14,-8,-17},\
+{-15,-9,-3,-6,0,-9,-12,-14,2,-9,-8,-13,-15,1,-11,-6,-10,-4,10,-12,-4,-10,-4,-17},\
+{0,-10,-10,-5,-8,-13,-5,-5,-14,2,-4,-9,0,-5,-12,-9,-4,-16,-12,7,-7,-7,-3,-17},\
+{-5,-7,6,7,-10,-7,0,-4,-1,-7,-13,-1,-11,-13,-10,0,-2,-16,-4,-7,7,-2,-4,-17},\
+{-5,-3,-6,0,-16,6,6,-3,-2,-12,-6,-1,-9,-14,-3,-10,-8,-14,-10,-7,-2,6,-4,-17},\
+{-3,-3,-3,-3,-5,-4,-4,-4,-3,-2,-4,-2,-3,-3,-5,-3,-2,-8,-4,-3,-4,-4,-3,-17},\
+{-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,1}};
+
+void init_pairscore_hiv25(void) {
+    // ASCII codes for protein alphabet ARNDCQEGHILKMFPSTWYVBZX*
+    int aa_to_ascii[24] = { 65, 82, 78, 68, 67, 81, 69, 71, 72, 73, 76, 75, 77, 70, 80, 83, 84,
+    87, 89, 86, 66, 90, 88, 42 };
+    int i2, j2;
+
+    // reset score matrix to be safe
+    for (int i=0; i<127; i++) {
+        for (int j=0; j<127; j++) {
+            nucMat[i][j] = 0;
+        }
+    }
+
+    // map HIV 25% empirical matrix to score matrix
+    for (int i=0; i<24; i++) {
+        i2 = aa_to_ascii[i];
+        for (int j=0; j<24; j++) {
+            j2 = aa_to_ascii[j];
+            // also map to lowercase
+            nucMat[i2+32][j2+32] = nucMat[i2+32][j2] = nucMat[i2][j2+32] = nucMat[i2][j2] = empirical_hiv25[i][j];
+        }
+    }
+}
+
 
 extern int pairscore(char a, char b)
 {
@@ -200,6 +263,7 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 	int maxiS = -100000;
 	int maxjS = -100000;
 	int maxij, maxji;
+	int pscore;  // bringing this outside so it can be returned
 
 	for (i=1; i < M+1; i++)
 	{
@@ -227,7 +291,7 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 				PP[j] += v;
 
 			int tmp_pp = PP[j];
-			int pscore = oldSS[j - 1] + pairscore((*seqa)[i - 1], (*seqb)[j - 1]);
+			pscore = oldSS[j - 1] + pairscore((*seqa)[i - 1], (*seqb)[j - 1]);
 
            //no idea if this will work, but its supposed to be a stop codon aligner
            //the bonus is  assigned on the last codon, if the codons between don't make a big difference it'll be wrong.  Hrm.
@@ -403,12 +467,17 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 		delete []pjSS[i];
 	}
 
+    int score = 0;
+    for (i = 0; i <= N + 1; i++) {
+        score += SS[i];
+    }
+
 	delete []SS;
 	delete []oldSS;
 	delete []piSS;
 	delete []pjSS;
 	delete []PP;
-	return 0;
+	return score;
 }
 
 void degap(string* seq)
@@ -498,57 +567,143 @@ void widen_gaps(string* seq)
 	}
 }
 
-extern "C" VALUE align_it(VALUE self, VALUE standard, VALUE seq, VALUE gap_init_penalty, VALUE gap_extend_penalty)
-{
-   init_pairscore(1, 1);
+#ifdef __PYTHON__
+    /* Python wrapper functions */
+    static PyObject * align_it(PyObject * self, PyObject * args)
+    {
+        const char * standard;
+        const char * seq;
+        int gap_init_penalty;
+        int gap_extend_penalty;
+        int score;
 
-   string* seqa = new string(RSTRING_PTR(standard));
-   string* seqb = new string(RSTRING_PTR(seq));
-   trim(seqa);
-	trim(seqb);
-   degap(seqa);
-	degap(seqb);
-   string* newseqa = new string();
-   string* newseqb = new string();
-   align(seqa, seqb, newseqa, newseqb, NUM2INT(gap_init_penalty), NUM2INT(gap_extend_penalty));
+        if (!PyArg_ParseTuple(args, "ssii", &standard, &seq, &gap_init_penalty, &gap_extend_penalty)) {
+            return NULL;
+        }
 
-   VALUE ret = rb_ary_new3(2, rb_str_new2(newseqa->c_str()),rb_str_new2(newseqb->c_str()));
+        init_pairscore(5, 4); // match, mismatch scores +5, -4 respectively (HyPhy defaults)
 
-   delete seqa;
-   delete seqb;
-   delete newseqa;
-   delete newseqb;
+        string* seqa = new string(standard);
+        string* seqb = new string(seq);
+        trim(seqa);
+        trim(seqb);
+        degap(seqa);
+        degap(seqb);
+        string* newseqa = new string();
+        string* newseqb = new string();
 
-   return ret;
-}
+        score = align(seqa, seqb, newseqa, newseqb, gap_init_penalty, gap_extend_penalty);
 
-extern "C" VALUE align_it_aa(VALUE self, VALUE standard, VALUE seq, VALUE gap_init_penalty, VALUE gap_extend_penalty)
-{
-   init_pairscore_aa(4, -2);
+        PyObject * retval = Py_BuildValue("ssi", newseqa->c_str(), newseqb->c_str(), score);
 
-   string* seqa = new string(RSTRING_PTR(standard));
-   string* seqb = new string(RSTRING_PTR(seq));
-   trim(seqa);
-	trim(seqb);
-   degap(seqa);
-	degap(seqb);
-   string* newseqa = new string();
-   string* newseqb = new string();
-   align(seqa, seqb, newseqa, newseqb, NUM2INT(gap_init_penalty), NUM2INT(gap_extend_penalty));
+        delete seqa;
+        delete seqb;
+        delete newseqa;
+        delete newseqb;
 
-   VALUE ret = rb_ary_new3(2, rb_str_new2(newseqa->c_str()),rb_str_new2(newseqb->c_str()));
+        return retval;
+    }
 
-   delete seqa;
-   delete seqb;
-   delete newseqa;
-   delete newseqb;
+    static PyObject * align_it_aa(PyObject * self, PyObject * args)
+    {
+        const char * standard;
+        const char * seq;
+        int gap_init_penalty;
+        int gap_extend_penalty;
+        int score;
 
-   return ret;
-}
+        if (!PyArg_ParseTuple(args, "ssii", &standard, &seq, &gap_init_penalty, &gap_extend_penalty)) {
+            return NULL;
+        }
+
+        init_pairscore_hiv25();
+
+        string* seqa = new string(standard);
+        string* seqb = new string(seq);
+        trim(seqa);
+        trim(seqb);
+        degap(seqa);
+        degap(seqb);
+        string* newseqa = new string();
+        string* newseqb = new string();
+
+        score = align(seqa, seqb, newseqa, newseqb, gap_init_penalty, gap_extend_penalty);
+
+        PyObject * retval = Py_BuildValue("ssi", newseqa->c_str(), newseqb->c_str(), score);
+        delete seqa;
+        delete seqb;
+        delete newseqa;
+        delete newseqb;
+
+        return retval;
+    }
+
+    static PyMethodDef AlignmentMethods [] =
+    {
+        {"align_it", align_it, METH_VARARGS, "Pairwise alignment of nucleotide sequences."},
+        {"align_it_aa", align_it_aa, METH_VARARGS, "Pairwise alignment of protein sequences using empirical HIV 25% score matrix."},
+        {NULL, NULL, 0, NULL}
+    };
+
+    PyMODINIT_FUNC initalignment (void) {
+        (void) Py_InitModule("alignment", AlignmentMethods);
+    }
+
+#else
+    /* Ruby wrapper functions */
+    extern "C" VALUE align_it(VALUE self, VALUE standard, VALUE seq, VALUE gap_init_penalty, VALUE gap_extend_penalty)
+    {
+       init_pairscore(1, 1);
+
+       string* seqa = new string(RSTRING_PTR(standard));
+       string* seqb = new string(RSTRING_PTR(seq));
+       trim(seqa);
+        trim(seqb);
+       degap(seqa);
+        degap(seqb);
+       string* newseqa = new string();
+       string* newseqb = new string();
+       align(seqa, seqb, newseqa, newseqb, NUM2INT(gap_init_penalty), NUM2INT(gap_extend_penalty));
+
+       VALUE ret = rb_ary_new3(2, rb_str_new2(newseqa->c_str()),rb_str_new2(newseqb->c_str()));
+
+       delete seqa;
+       delete seqb;
+       delete newseqa;
+       delete newseqb;
+
+       return ret;
+    }
+
+    extern "C" VALUE align_it_aa(VALUE self, VALUE standard, VALUE seq, VALUE gap_init_penalty, VALUE gap_extend_penalty)
+    {
+       init_pairscore_aa(4, -2);
+
+       string* seqa = new string(RSTRING_PTR(standard));
+       string* seqb = new string(RSTRING_PTR(seq));
+       trim(seqa);
+        trim(seqb);
+       degap(seqa);
+        degap(seqb);
+       string* newseqa = new string();
+       string* newseqb = new string();
+       align(seqa, seqb, newseqa, newseqb, NUM2INT(gap_init_penalty), NUM2INT(gap_extend_penalty));
+
+       VALUE ret = rb_ary_new3(2, rb_str_new2(newseqa->c_str()),rb_str_new2(newseqb->c_str()));
+
+       delete seqa;
+       delete seqb;
+       delete newseqa;
+       delete newseqb;
+
+       return ret;
+    }
 
 
-extern "C" void Init_alignment()
-{
-   rb_define_global_function("align_it", (VALUE(*)(...))align_it, 4);
-   rb_define_global_function("align_it_aa", (VALUE(*)(...))align_it_aa, 4);
-}
+    extern "C" void Init_alignment()
+    {
+       rb_define_global_function("align_it", (VALUE(*)(...))align_it, 4);
+       rb_define_global_function("align_it_aa", (VALUE(*)(...))align_it_aa, 4);
+    }
+
+#endif

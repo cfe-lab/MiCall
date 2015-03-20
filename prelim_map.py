@@ -77,6 +77,8 @@ def main():
                    '--no-unal', # don't report reads that failed to align
                    '--no-hd', # no header lines (start with @)
                    '--local',
+                   '--rdg 10,3',  # increase gap open penalties
+                   '--rfg 10,3',
                    '-p', str(settings.bowtie_threads)]
     p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
     with p.stdout:

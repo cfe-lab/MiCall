@@ -207,6 +207,8 @@ def main():
                       '-x', refname,
                       '-1', args.fastq1,
                       '-2', args.fastq2,
+                      '--rdg 10,3',  # increase gap open penalties
+                      '--rfg 10,3',
                       '--no-unal',
                       '-S', tmpfile]  # output
             )
