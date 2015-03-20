@@ -227,24 +227,37 @@ void reverse(string* seq)
 //Error must be somewhere in here.  Ug...
 int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip, int gep)
 {
-	int M = seqa->size();
-	int N = seqb->size();
+    /*
+     Pairwise alignment with affine gap penalty.
+     see Gotoh, Osamu. "Optimal alignment between groups of sequences and its application
+     to multiple sequence alignment." Computer applications in the biosciences: CABIOS 9.3
+     (1993): 361-370.
+
+     Gap penalties [gip] and [gep] are assumed to take positive values.
+    */
+
+	int M = seqa->size(); // first group of pre-aligned sequences
+	int N = seqb->size(); // second group
 
 	int i, j;
 
-	int *SS=new int[N+1];
-	int *oldSS=new int[N+1];
-	int **piSS = new int*[M+1];
-	int **pjSS = new int*[M+1];
-	int *PP = new int[N+1];
+    // not all elements of D, P, and Q need to be stored - vectors are adequate
+	int *SS=new int[N+1];  // D(i, .)
+	int *oldSS=new int[N+1];  // D(i-1, .)
+	int *PP = new int[N+1];  // P(i, .)
 
+    // Gotoh traceback matrices
+    int **piSS = new int*[M+1];
+	int **pjSS = new int*[M+1];
 
 	int u = -gip; // affine gap initiation penalty
 	int v = -gep; // affine gap extension penalty
 
-	int w1 = u + v;
+	int w1 = u + v; // gap weight w_k = v * k + u for k = 1
 	int t = u;
 	int s, q;
+
+	// initialize vectors
 	for (j=0; j<N+1; j++)
 	{
 		SS[j]=0;
@@ -252,6 +265,7 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 		PP[j]=0;
 	}
 
+    // initialize traceback matrices
 	piSS[0] = new int[N+1];
 	pjSS[0] = new int[N+1];
 	piSS[1] = new int[N+1];
@@ -260,18 +274,19 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 	pjSS[1][0] = 0;
 	piSS[0][1] = 0;
 	pjSS[0][1] = 0;
+
 	int maxiS = -100000;
 	int maxjS = -100000;
 	int maxij, maxji;
-	int pscore;  // bringing this outside so it can be returned
 
 	for (i=1; i < M+1; i++)
 	{
-		t += v;
+		t += v; // update gap extension
 		s = t;
 		SS[0]=0;
 		q = t + u;
 
+        // add new rows
 		if (i>1)
 		{
 			piSS[i] = new int[N+1];
@@ -280,71 +295,93 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 
 		for (j = 1; j < N + 1; j++)
 		{
+		    // recursive calculation of Q
 			if (q >= s + u )
-				q += v;
+				q += v; // extension
 			else
-				q = s + u + v;
+				q = s + u + v; // open
 
+            // recursive calculation of P
 			if ((oldSS[j] + w1) > (PP[j] + v))
 				PP[j] = oldSS[j] + w1;
 			else
 				PP[j] += v;
 
 			int tmp_pp = PP[j];
-			pscore = oldSS[j - 1] + pairscore((*seqa)[i - 1], (*seqb)[j - 1]);
 
-           //no idea if this will work, but its supposed to be a stop codon aligner
-           //the bonus is  assigned on the last codon, if the codons between don't make a big difference it'll be wrong.  Hrm.
+			// D(i-1, j-1) + d(a_i, b_j)
+			int pscore = oldSS[j - 1] + pairscore((*seqa)[i - 1], (*seqb)[j - 1]);
 
-           if((*seqa)[i-3] == '$' && (*seqa)[i-2] == '$' && (*seqa)[i-1] == '$'  &&
+            //no idea if this will work, but its supposed to be a stop codon aligner
+            //the bonus is  assigned on the last codon, if the codons between don't make a big difference it'll be wrong.  Hrm.
+
+            if((*seqa)[i-3] == '$' && (*seqa)[i-2] == '$' && (*seqa)[i-1] == '$'  &&
                (((*seqb)[j-3] == 'T' && (*seqb)[j-2] == 'A' && (*seqb)[j-1] == 'G') ||
                ((*seqb)[j-3] == 'T' && (*seqb)[j-2] == 'A' && (*seqb)[j-1] == 'A') ||
                ((*seqb)[j-3] == 'T' && (*seqb)[j-2] == 'G' && (*seqb)[j-1] == 'A') ))
-           {
+            {
                pscore += 6;
-           }
-           if((*seqa)[i-2] == '$' && (*seqa)[i-1] == '$' && (*seqa)[i-0] == '$'  &&
+            }
+            if((*seqa)[i-2] == '$' && (*seqa)[i-1] == '$' && (*seqa)[i-0] == '$'  &&
                (((*seqb)[j-2] == 'T' && (*seqb)[j-1] == 'A' && (*seqb)[j-0] == 'G') ||
                ((*seqb)[j-2] == 'T' && (*seqb)[j-1] == 'A' && (*seqb)[j-0] == 'A') ||
                ((*seqb)[j-2] == 'T' && (*seqb)[j-1] == 'G' && (*seqb)[j-0] == 'A') ))
-           {
+            {
                pscore += 6;
-           }
-           if((*seqa)[i-1] == '$' && (*seqa)[i-0] == '$' && (*seqa)[i+1] == '$'  &&
+            }
+            if((*seqa)[i-1] == '$' && (*seqa)[i-0] == '$' && (*seqa)[i+1] == '$'  &&
                (((*seqb)[j-1] == 'T' && (*seqb)[j-0] == 'A' && (*seqb)[j+1] == 'G') ||
                ((*seqb)[j-1] == 'T' && (*seqb)[j-0] == 'A' && (*seqb)[j+1] == 'A') ||
                ((*seqb)[j-1] == 'T' && (*seqb)[j-0] == 'G' && (*seqb)[j+1] == 'A') ))
-           {
+            {
                pscore += 6;
-           }
+            }
 
+            /*
+             D(i,j) = Min { D(i-1, j-1) + d(a_i, b_j), P(i,j), Q(i,j) }
+			 where P(i,j) = Min { D(i-k, j) + w_k } for k = 1, .., i
+			   and Q(i,j) = Min { D(i, j-k) + w_k } for k = 1, ..., j
+
+			 i.e., three options are:
+			  1. match/mismatch,
+			  2. gap open/extension in sequence (a),
+			  3. gap open/extension in sequence (b)
+
+			 pscore = D(i-1, j-1) + d(a_i, b_j)
+			 tmp_pp = P(i,j)
+			 q = Q(i,j)
+            */
 
 			//maybe just >?
 			if (tmp_pp >= pscore)
 			{
 				if (tmp_pp > q)
 				{
+				    // gap open / extension in (a)
 					s = tmp_pp;
 					piSS[i][j] = i - 1;
 					pjSS[i][j] = j;
 				}
-				else
+				else // q > tmp_pp > pscore
 				{
+				    // gap open / extension in (b)
 					s = q;
 					piSS[i][j] = i;
 					pjSS[i][j] = j - 1;
 				}
 			}
-			else
+			else // pscore > tmp_pp)
 			{
 				if (pscore > q)
 				{
+				    // match / mismatch
 					s = pscore;
 					piSS[i][j] = i - 1;
 					pjSS[i][j] = j - 1;
 				}
-				else
+				else // q > pscore > tmp_pp
 				{
+				    // gap open / extension in (b)
 					s = q;
 					piSS[i][j] = i;
 					pjSS[i][j] = j - 1;
@@ -382,8 +419,10 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 		maxji=0;
 
 	//add starting -'s
+	int alignment_score;
 	if (maxiS > maxjS)
 	{
+	    alignment_score = maxiS;
 		i = M;
 		j = maxij;
 		for (int kk = N; kk > maxij; kk--)
@@ -394,6 +433,7 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 	}
    else
 	{
+	    alignment_score = maxjS;
 		i = maxji;
 		j = N;
 		for (int kk = M; kk > maxji; kk--)
@@ -467,17 +507,12 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 		delete []pjSS[i];
 	}
 
-    int score = 0;
-    for (i = 0; i <= N + 1; i++) {
-        score += SS[i];
-    }
-
 	delete []SS;
 	delete []oldSS;
 	delete []piSS;
 	delete []pjSS;
 	delete []PP;
-	return score;
+	return alignment_score;
 }
 
 void degap(string* seq)
