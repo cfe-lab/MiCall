@@ -37,7 +37,9 @@ class Session(requests.Session):
             except StandardError:
                 if retries_remaining <= 0:
                     raise
-                sleep_seconds = Random().uniform(0, 10)
+
+                # ten minutes with some noise
+                sleep_seconds = 600 + Random().uniform(-10, 10)
                 logger.warn(
                     'JSON request failed. Sleeping for %ss before retry.',
                     sleep_seconds,
