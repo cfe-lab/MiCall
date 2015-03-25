@@ -13,3 +13,6 @@ microtest/*.log
 microtest/tmp*
 microtest/*.tar
 microtest/*.unmapped?.fastq
+.DS_Store
+*/.DS_Store
+

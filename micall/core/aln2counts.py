@@ -23,9 +23,9 @@ import logging
 import os
 import re
 
-from hyphyAlign import change_settings, pair_align
+from micall.alignment.hyphyAlign import change_settings, pair_align
 import miseq_logging
-import settings
+import micall.settings as settings
 import project_config
 from collections import Counter
 import csv
@@ -653,41 +653,62 @@ def format_cutoff(cutoff):
         return cutoff
     return '{:0.3f}'.format(cutoff)    
 
-def main():
-    args = parseArgs()
-    
+
+def aln2counts (aligned_csv, nuc_csv, amino_csv, coord_ins_csv, conseq_csv, failed_align_csv, nuc_variants_csv, cwd=None):
+    """
+    Analyze aligned reads for nucleotide and amino acid frequencies.
+    Generate consensus sequences.
+    :param aligned_csv:         Open file handle containing aligned reads (from sam2aln)
+    :param nuc_csv:             Open file handle to write nucleotide frequencies.
+    :param amino_csv:           Open file handle to write amino acid frequencies.
+    :param coord_ins_csv:       Open file handle to write insertions relative to coordinate reference.
+    :param conseq_csv:          Open file handle to write consensus sequences.
+    :param failed_align_csv:    Open file handle to write sample consensus sequences that failed to
+                                align to the coordinate reference.
+    :param nuc_variants_csv:    Open file handle to write the most frequent nucleotide sequence
+                                variants.
+    :return: None
+    """
+    if cwd is not None:
+        os.chdir(cwd)
+
     projects = project_config.ProjectConfig.loadDefault()
+    insert_writer = InsertionWriter(coord_ins_csv)
     
-    insert_writer = InsertionWriter(args.coord_ins_csv)
-    
-    aligned_reader = csv.DictReader(args.aligned_csv)
+    aligned_reader = csv.DictReader(aligned_csv)
     
     report = SequenceReport(insert_writer,
                             projects,
                             settings.conseq_mixture_cutoffs)
-    report.write_amino_header(args.amino_csv)
-    report.write_consensus_header(args.conseq_csv)
-    report.write_failure_header(args.failed_align_csv)
-    report.write_nuc_header(args.nuc_csv)
-    report.write_nuc_variants_header(args.nuc_variants_csv)
+    report.write_amino_header(amino_csv)
+    report.write_consensus_header(conseq_csv)
+    report.write_failure_header(failed_align_csv)
+    report.write_nuc_header(nuc_csv)
+    report.write_nuc_variants_header(nuc_variants_csv)
+
     for _key, aligned_reads in groupby(aligned_reader,
                                        lambda row: (row['refname'], row['qcut'])):
         report.read(aligned_reads)
         
-        report.write_amino_counts(args.amino_csv)
-        report.write_consensus(args.conseq_csv)
-        report.write_failure(args.failed_align_csv)
+        report.write_amino_counts(amino_csv)
+        report.write_consensus(conseq_csv)
+        report.write_failure(failed_align_csv)
         report.write_insertions()
-        report.write_nuc_counts(args.nuc_csv)
-        report.write_nuc_variants(args.nuc_variants_csv)
+        report.write_nuc_counts(nuc_csv)
+        report.write_nuc_variants(nuc_variants_csv)
 
-    args.aligned_csv.close()
-    args.amino_csv.close()
-    args.nuc_csv.close()
-    args.conseq_csv.close()
-    args.coord_ins_csv.close()
-    args.failed_align_csv.close()
-    args.nuc_variants_csv.close()
+    aligned_csv.close()
+    amino_csv.close()
+    nuc_csv.close()
+    conseq_csv.close()
+    coord_ins_csv.close()
+    failed_align_csv.close()
+    nuc_variants_csv.close()
+
+def main():
+    args = parseArgs()
+    aln2counts(args.aligned_csv, args.nuc_csv, args.amino_csv, args.coord_ins_csv, args.conseq_csv,
+               args.failed_align_csv, args.nuc_variants_csv)
 
 if __name__ == '__main__':
     main()

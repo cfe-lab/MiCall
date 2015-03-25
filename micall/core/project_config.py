@@ -1,7 +1,7 @@
 import json
 import os
 
-import micall.settings
+from micall import settings
 
 
 class ProjectConfig(object):

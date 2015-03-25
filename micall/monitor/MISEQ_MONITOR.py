@@ -16,10 +16,10 @@ import tarfile
 import time
 from xml.etree import ElementTree
 
-import miseq_logging
+from micall.core import miseq_logging
 import qai_helper
-from sample_sheet_parser import sample_sheet_parser
-from settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
+from micall.utils.sample_sheet_parser import sample_sheet_parser
+from micall.settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
     NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, base_path,\
     qai_path, qai_user, qai_password, instrument_number, nruns_to_store
 import update_qai

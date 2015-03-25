@@ -19,7 +19,7 @@ import sys
 import itertools
 import re
 
-from settings import max_prop_N, read_mapping_cutoff, sam2aln_q_cutoffs
+from micall.settings import max_prop_N, read_mapping_cutoff, sam2aln_q_cutoffs
 import csv
 import operator
 
@@ -160,11 +160,10 @@ def is_first_read(flag):
     IS_FIRST_SEGMENT = 0x40
     return (int(flag) & IS_FIRST_SEGMENT) != 0
 
-def main():
-    args = parseArgs()
-    
-    reader = RemapReader(args.remap_csv)
-    aligned_writer = csv.DictWriter(args.aligned_csv,
+
+def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv):
+    reader = RemapReader(remap_csv)
+    aligned_writer = csv.DictWriter(aligned_csv,
                                     ['refname',
                                      'qcut',
                                      'rank',
@@ -172,7 +171,7 @@ def main():
                                      'offset',
                                      'seq'])
     aligned_writer.writeheader()
-    insert_writer = csv.DictWriter(args.insert_csv,
+    insert_writer = csv.DictWriter(insert_csv,
                                    ['qname',
                                     'fwd_rev',
                                     'refname',
@@ -180,7 +179,7 @@ def main():
                                     'insert',
                                     'qual'])
     insert_writer.writeheader()
-    failed_writer = csv.DictWriter(args.failed_csv,
+    failed_writer = csv.DictWriter(failed_csv,
                                    ['qname',
                                     'qcut',
                                     'seq1',
@@ -258,6 +257,9 @@ def main():
                                              offset=offset,
                                              seq=seq.strip('-')))
 
+def main():
+    args = parseArgs()
+    sam2aln(args.remap_csv, args.aligned_csv, args.insert_csv, args.failed_csv)
 
 if __name__ == '__main__':
     main()
