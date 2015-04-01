@@ -25,7 +25,8 @@ import sys
 import miseq_logging
 import project_config
 from settings import bowtie_threads, consensus_q_cutoff,\
-    max_remaps, min_mapping_efficiency
+    max_remaps, min_mapping_efficiency, read_gap_open_remap, read_gap_extend_remap,\
+    ref_gap_open_remap, ref_gap_extend_remap
 from operator import itemgetter
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
@@ -73,6 +74,8 @@ def main():
     parser.add_argument('unmapped2',
                         type=argparse.FileType('w'),
                         help='<output> FASTQ R2 of reads that failed to map to any region')
+    parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
+    parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
     
     args = parser.parse_args()
     
@@ -197,21 +200,25 @@ def main():
             handle.close()
             log_call(['samtools', 'faidx', confile])
 
+            read_gap_open_penalty = args.rdgopen or read_gap_open_remap
+            ref_gap_open_penalty = args.rfgopen or ref_gap_open_remap
+
             # consensus to *.bt2
             log_call(['bowtie2-build', '-c', '-q', new_conseq, refname])
             #TODO: Should we map all references at the same time?
-            log_call(['bowtie2',
-                      '--quiet',
-                      '-p', str(bowtie_threads),
-                      '--local',  # allow some characters on ends to not participate in map
-                      '-x', refname,
-                      '-1', args.fastq1,
-                      '-2', args.fastq2,
-                      '--rdg 10,3',  # increase gap open penalties
-                      '--rfg 10,3',
-                      '--no-unal',
-                      '-S', tmpfile]  # output
-            )
+            log_call([
+                'bowtie2',
+                '--quiet',
+                '-p', str(bowtie_threads),
+                '--local',  # allow some characters on ends to not participate in map
+                '-x', refname,
+                '--rdg', "{},{}".format(read_gap_open_penalty, read_gap_extend_remap),  # read gap penalty
+                '--rfg', "{},{}".format(ref_gap_open_penalty, ref_gap_extend_remap),  # reference gap penalty
+                '-1', args.fastq1,
+                '-2', args.fastq2,
+                '--no-unal',
+                '-S', tmpfile  # output
+            ])
 
             # how many reads did we map?
             count = count_file_lines(tmpfile) - 3  # ignore SAM header

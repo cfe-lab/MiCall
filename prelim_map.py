@@ -24,6 +24,7 @@ import settings  # settings.py is a CodeResourceDependency
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 
+
 def main():
     parser = argparse.ArgumentParser(
         description='Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
@@ -33,6 +34,8 @@ def main():
     parser.add_argument('prelim_csv',
                         type=argparse.FileType('w'),
                         help='<output> CSV containing preliminary mapping from bowtie2 (modified SAM)')
+    parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
+    parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
     
     args = parser.parse_args()
 
@@ -68,18 +71,23 @@ def main():
     # do preliminary mapping
     output = {}
 
+    read_gap_open_penalty = args.rdgopen or settings.read_gap_open_prelim
+    ref_gap_open_penalty = args.rfgopen or settings.ref_gap_open_prelim
+
     # stream output from bowtie2
-    bowtie_args = ['bowtie2',
-                   '--quiet',
-                   '-x', reffile_template,
-                   '-1', args.fastq1,
-                   '-2', args.fastq2,
-                   '--no-unal', # don't report reads that failed to align
-                   '--no-hd', # no header lines (start with @)
-                   '--local',
-                   '--rdg 10,3',  # increase gap open penalties
-                   '--rfg 10,3',
-                   '-p', str(settings.bowtie_threads)]
+    bowtie_args = [
+        'bowtie2',
+        '--quiet',
+        '-x', reffile_template,
+        '-1', args.fastq1,
+        '-2', args.fastq2,
+        '--rdg', "{},{}".format(read_gap_open_penalty, settings.read_gap_extend_prelim),  # read gap penalty
+        '--rfg', "{},{}".format(ref_gap_open_penalty, settings.ref_gap_extend_prelim),  # reference gap
+        '--no-unal',  # don't report reads that failed to align
+        '--no-hd',  # no header lines (start with @)
+        '--local',
+        '-p', str(settings.bowtie_threads)
+    ]
     p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
     with p.stdout:
         for line in p.stdout:

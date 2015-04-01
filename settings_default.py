@@ -46,6 +46,18 @@ max_remaps = 3                  # Number of remapping attempts if mapping effici
 consensus_q_cutoff = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 
 
+# Read and reference gap open/extension penalties.
+read_gap_open_prelim = 10
+read_gap_extend_prelim = 3
+ref_gap_open_prelim = 10
+ref_gap_extend_prelim = 3
+
+read_gap_open_remap = read_gap_open_prelim
+read_gap_extend_remap = read_gap_extend_prelim
+ref_gap_open_remap = ref_gap_open_prelim
+ref_gap_extend_remap = ref_gap_extend_prelim
+
+
 ## sam2aln parameters
 sam2aln_q_cutoffs = [15]  # Q-cutoff for base censoring
 max_prop_N = 0.5                 # Drop reads with more censored bases than this proportion
