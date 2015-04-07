@@ -3,7 +3,7 @@ To make pipeline portable, allow user to specify local paths and thread counts.
 """
 
 instrument_number = 'M01841'  # for Illumina MiSeq, second item in run folder name
-pipeline_version = '6.7'
+pipeline_version = '6.8'
 
 production = False  # set this to True to push results to NAS
 filter_cross_contaminants = False

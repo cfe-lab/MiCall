@@ -317,6 +317,7 @@ while True:
             coverage_source_path = os.path.join(untar_path, 'coverage_maps')
             coverage_dest_path = os.path.join(result_path_final, 'coverage_maps')
             os.mkdir(untar_path)
+            os.mkdir(coverage_source_path)
             os.mkdir(coverage_dest_path)
             for tar_path in glob(home + run_name + '/*.coverage_maps.tar'):
                 basename = os.path.basename(tar_path)
