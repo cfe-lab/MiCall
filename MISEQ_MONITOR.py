@@ -21,7 +21,8 @@ import qai_helper
 from sample_sheet_parser import sample_sheet_parser
 from settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
     NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, base_path,\
-    qai_path, qai_user, qai_password, instrument_number, nruns_to_store
+    qai_path, qai_user, qai_password, instrument_number, nruns_to_store,\
+    QC_UPLOADED
 import update_qai
 import itertools
 import operator
@@ -56,6 +57,9 @@ def mark_run_as_disabled(root, message, exc_info=None):
 
 def is_marked_as_disabled(run):
     return os.path.exists(run.replace(NEEDS_PROCESSING, ERROR_PROCESSING))
+
+def is_quality_control_uploaded(run):
+    return os.path.exists(run.replace(NEEDS_PROCESSING, QC_UPLOADED))
 
 def mark_run_as_done(results_folder):
     """ Mark a run that has completed its processing.
@@ -95,6 +99,10 @@ def download_quality(run_info_path, destination, read_lengths):
     with qai_helper.Session() as session:
         session.login(qai_path, qai_user, qai_password)
         metrics = session.get_json('/miseqqc_errormetrics?runid=' + qcRunId)
+        if not metrics:
+            raise StandardError(
+                'No quality control metrics found for run ' + qcRunId)
+    
     with open(destination, 'w') as f:
         writer = csv.DictWriter(f, ['tile', 'cycle', 'errorrate'])
         writer.writeheader()
@@ -149,6 +157,9 @@ while True:
         done_path = os.path.join(result_path, DONE_PROCESSING)
 
         if is_marked_as_disabled(run):
+            continue
+        
+        if not is_quality_control_uploaded(run):
             continue
 
         # if doneprocessing file already exists, then do not re-process

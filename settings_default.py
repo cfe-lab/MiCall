@@ -34,6 +34,7 @@ delay = 3600  # Delay (seconds) for polling NAS for unprocessed runs
 NEEDS_PROCESSING = 'needsprocessing'  # File flags
 ERROR_PROCESSING = 'errorprocessing'
 DONE_PROCESSING = 'doneprocessing'
+QC_UPLOADED = 'qc_uploaded'
 
 
 ## Mapping parameters
