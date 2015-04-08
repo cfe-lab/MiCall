@@ -50,8 +50,8 @@ Eclipse
 4. After installing PyDev, open Window: Preferences. Navigate down to PyDev: Interpreters: Python Interpreter. 
 5. Click the Quick Auto-Config button. Click OK.
 6. From the File menu, choose Import.... Navigate down to Git: Projects from Git.
-7. Choose Clone URI, and paste this URI: https://github.com/ArtPoon/MiseqPipeline.git
-8. Take all the branches, and select dev as your initial branch.
+7. Choose Clone URI, and paste this URI: https://github.com/cfe-lab/MiCall.git
+8. Take all the branches, and select master as your initial branch.
 9. Select import existing projects, and finish the import.
 
 [eclipse]: https://www.eclipse.org/downloads/
@@ -123,7 +123,7 @@ Ruby
 
 5. Build the alignment library.
 
-        cd ~/git/MiseqPipeline
+        cd ~/git/MiCall
         ./build_alignment.sh
 
 6. From the Help menu in Eclipse, choose Eclipse Marketplace…
@@ -218,7 +218,7 @@ Running the code
 12. Run the unit tests. Either run them from Eclipse, or run them from the
     command line like this:
 
-        cd ~/git/MiseqPipeline
+        cd ~/git/MiCall
         python -m unittest discover -p '*_test.py'
         ruby -rubygems -I"lib:test" *_test.rb
     
@@ -289,7 +289,12 @@ similar steps to setting up a development workstation. Follow these steps:
     the version number, at least. Make sure that `production = False`, and the
     process counts are half the production values. Do the same comparison of
     `hostfile`.
-6. Process one full run of data.
+6. Check if `alignment.cpp` is newer than `alignment.so`. If so, rebuild it.
+
+        cd /usr/local/share/miseq/development/
+        ./build_alignment.sh
+        
+7. Process one full run of data.
 
         cd /usr/local/share/miseq/development/
         ./run_processor.py /data/miseq/YYMMDD*
@@ -309,8 +314,8 @@ similar steps to setting up a development workstation. Follow these steps:
         git fetch
         git checkout tags/vX.Y
 
-9. Review the settings and host file just as you did in the development
-    environment, but make sure that `production = True`.
+9. Review the settings, host file, and alignment library just as you did in the
+    development environment, but make sure that `production = True`.
 10. Start the monitor, and tail the log to see that it begins processing all the
     runs with the new version of the pipeline.
 
