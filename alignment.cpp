@@ -4,6 +4,11 @@
     #include <Python.h>
 #else
     #include "ruby.h"
+    
+    #ifndef RSTRING_PTR
+        // Ruby 1.8.5 doesn't include this definition
+        #define RSTRING_PTR(s) (RSTRING(s)->ptr)
+    #endif
 #endif
 
 using namespace std;

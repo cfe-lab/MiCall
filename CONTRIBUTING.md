@@ -281,7 +281,7 @@ similar steps to setting up a development workstation. Follow these steps:
 
         ssh user@server
         cd /usr/local/share/miseq/development/
-        git fetch github
+        git fetch
         git checkout tags/vX.Y
 
 5. Check if you need to set any new settings by running

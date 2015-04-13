@@ -1,7 +1,7 @@
 """
 MISEQ_MONITOR.py
 1) For runs flagged 'needsprocessing' that have not yet been processed, copy fastqs to local disk
-2) Process the run by calling MISEQ_PIPELINE.py
+2) Process the run by calling MISEQ_MONITOR.py
 3) Upload results to the network drive
 """
 
@@ -293,7 +293,7 @@ while True:
     except Exception as e:
         failure_message = mark_run_as_disabled(
             root,
-            "MISEQ_PIPELINE.py failed: '{}'".format(e))
+            "MISEQ_MONITOR.py failed: '{}'".format(e))
         continue
 
     if not production:
