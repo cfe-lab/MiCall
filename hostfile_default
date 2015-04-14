@@ -10,7 +10,7 @@
 # this list assigning n processes to each machine, and looping through the
 # list until enough processes have been assigned or all the hosts have hit
 # their max_slots.
-#Bulbasaur slots=3
+#Bulbasaur slots=2
 #n0 slots=3
 #n1 slots=4
 #n2 slots=4

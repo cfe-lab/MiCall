@@ -21,8 +21,8 @@ nruns_to_store = 20  # protect X most recent runs from cleaning up intermediate 
 
 # Scheduling processes: these should be a multiple of the total number of slots
 # in your hostfile.
-mapping_processes = 38
-counting_processes = 152
+mapping_processes = 36
+counting_processes = 144
 
 
 ## MISEQ_MONITOR settings

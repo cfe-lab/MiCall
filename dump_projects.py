@@ -35,10 +35,12 @@ def main():
                       settings.qai_project_user,
                       settings.qai_project_password)
 
-        dump['regions'] = session.get_json("/lab_miseq_regions.json?mode=dump")
+        dump['regions'] = session.get_json("/lab_miseq_regions.json?mode=dump",
+                                           retries=0)
         dump['projects'] = session.get_json(
             "/lab_miseq_projects.json?mode=dump&pipeline=" +
-            settings.pipeline_version)
+            settings.pipeline_version,
+            retries=0)
         errors = dump['projects'].get('errors')
         if errors:
             raise StandardError('\n'.join(errors))

@@ -273,6 +273,9 @@ similar steps to setting up a development workstation. Follow these steps:
     Also check that all the issues in the current milestone are closed.
 2. Determine what version number should be used next. Update the version number
     in `settings_default.py` if it hasn't been updated already, commit, and push.
+2. Copy the previous pipeline on QAI/lab_miseq_pipelines to make a new version.
+    Use the `dump_projects.py` script and compare `projects.json` to check that
+    the projects match.
 3. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y
     matches the version you used in `settings_default.py`. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
