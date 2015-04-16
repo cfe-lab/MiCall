@@ -225,7 +225,8 @@ void reverse(string* seq)
 
 
 //Error must be somewhere in here.  Ug...
-int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip, int gep)
+int align(string* seqa, string* seqb, string* newseqa, string* newseqb,
+          int gip, int gep, int use_terminal_gap_penalty)
 {
     /*
      Pairwise alignment with affine gap penalty.
@@ -233,7 +234,7 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
      to multiple sequence alignment." Computer applications in the biosciences: CABIOS 9.3
      (1993): 361-370.
 
-     Gap penalties [gip] and [gep] are assumed to take positive values.
+     Gap open and extension penalties [gip] and [gep] are assumed to take positive values.
     */
 
 	int M = seqa->size(); // first group of pre-aligned sequences
@@ -481,13 +482,16 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 	}
 
 	//add extra trailing -'s
+	//forgive terminal gap penalties if user specifies this option
 	if (i < j)
 	{
 		for (int jj = j; jj >= 1; jj--)
 		{
 			*newseqb += (*seqb)[jj - 1];
 			*newseqa += '-';
+			if (use_terminal_gap_penalty!=0) alignment_score += gep;
 		}
+		if (use_terminal_gap_penalty!=0) alignment_score += gip;
 	}
 	else if(i > j)
 	{
@@ -495,7 +499,9 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 		{
 			*newseqa += (*seqa)[ii - 1];
 			*newseqb += '-';
+			if (use_terminal_gap_penalty!=0) alignment_score += gep;
 		}
+		if (use_terminal_gap_penalty!=0) alignment_score += gip;
 	}
 
 	reverse(newseqa);
@@ -517,6 +523,9 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb, int gip,
 
 void degap(string* seq)
 {
+    /*
+    Remove pre-existing gap characters from sequences prior to alignment.
+    */
 	unsigned int pos = 0;
 	while(pos != -1)
 	{
@@ -530,6 +539,9 @@ void degap(string* seq)
 
 void trim(string* seq)
 {
+    /*
+    Remove trailing whitespace from sequences.
+    */
 	while((*seq)[0] == ' ' || (*seq)[0] == '\t' || (*seq)[0] == '\n' || (*seq)[0] == '\r')
 	{
 		seq->erase(0, 1);
@@ -610,9 +622,10 @@ void widen_gaps(string* seq)
         const char * seq;
         int gap_init_penalty;
         int gap_extend_penalty;
+        int use_terminal_gap_penalty;
         int score;
 
-        if (!PyArg_ParseTuple(args, "ssii", &standard, &seq, &gap_init_penalty, &gap_extend_penalty)) {
+        if (!PyArg_ParseTuple(args, "ssiii", &standard, &seq, &gap_init_penalty, &gap_extend_penalty, &use_terminal_gap_penalty)) {
             return NULL;
         }
 
@@ -627,7 +640,7 @@ void widen_gaps(string* seq)
         string* newseqa = new string();
         string* newseqb = new string();
 
-        score = align(seqa, seqb, newseqa, newseqb, gap_init_penalty, gap_extend_penalty);
+        score = align(seqa, seqb, newseqa, newseqb, gap_init_penalty, gap_extend_penalty, use_terminal_gap_penalty);
 
         PyObject * retval = Py_BuildValue("ssi", newseqa->c_str(), newseqb->c_str(), score);
 
@@ -645,9 +658,10 @@ void widen_gaps(string* seq)
         const char * seq;
         int gap_init_penalty;
         int gap_extend_penalty;
+        int use_terminal_gap_penalty;
         int score;
 
-        if (!PyArg_ParseTuple(args, "ssii", &standard, &seq, &gap_init_penalty, &gap_extend_penalty)) {
+        if (!PyArg_ParseTuple(args, "ssiii", &standard, &seq, &gap_init_penalty, &gap_extend_penalty, &use_terminal_gap_penalty)) {
             return NULL;
         }
 
@@ -662,7 +676,7 @@ void widen_gaps(string* seq)
         string* newseqa = new string();
         string* newseqb = new string();
 
-        score = align(seqa, seqb, newseqa, newseqb, gap_init_penalty, gap_extend_penalty);
+        score = align(seqa, seqb, newseqa, newseqb, gap_init_penalty, gap_extend_penalty, use_terminal_gap_penalty);
 
         PyObject * retval = Py_BuildValue("ssi", newseqa->c_str(), newseqb->c_str(), score);
         delete seqa;
@@ -698,7 +712,7 @@ void widen_gaps(string* seq)
         degap(seqb);
        string* newseqa = new string();
        string* newseqb = new string();
-       align(seqa, seqb, newseqa, newseqb, NUM2INT(gap_init_penalty), NUM2INT(gap_extend_penalty));
+       align(seqa, seqb, newseqa, newseqb, NUM2INT(gap_init_penalty), NUM2INT(gap_extend_penalty), 0);
 
        VALUE ret = rb_ary_new3(2, rb_str_new2(newseqa->c_str()),rb_str_new2(newseqb->c_str()));
 
@@ -722,7 +736,7 @@ void widen_gaps(string* seq)
         degap(seqb);
        string* newseqa = new string();
        string* newseqb = new string();
-       align(seqa, seqb, newseqa, newseqb, NUM2INT(gap_init_penalty), NUM2INT(gap_extend_penalty));
+       align(seqa, seqb, newseqa, newseqb, NUM2INT(gap_init_penalty), NUM2INT(gap_extend_penalty), 0);
 
        VALUE ret = rb_ary_new3(2, rb_str_new2(newseqa->c_str()),rb_str_new2(newseqb->c_str()));
 

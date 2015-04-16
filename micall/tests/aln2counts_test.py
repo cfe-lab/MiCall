@@ -1,8 +1,8 @@
 import StringIO
 import unittest
 
-import aln2counts
-import project_config
+from micall.core import aln2counts
+from micall.core import project_config
 import sys
 import csv
 
@@ -1387,7 +1387,7 @@ class SeedAminoTest(unittest.TestCase):
         nuc_seq = 'AAA' # -> K
         expected_counts = '0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0'
         
-        self.amino.count_nucleotides(nuc_seq, 8)
+        self.amino.count_aminos(nuc_seq, 8)
         counts = self.amino.get_report()
         
         self.assertSequenceEqual(expected_counts, counts)
@@ -1400,8 +1400,8 @@ class SeedAminoTest(unittest.TestCase):
         nuc_seq2 = 'GGG' # -> G
         expected_counts = '0,0,0,0,0,5,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0'
         
-        self.amino.count_nucleotides(nuc_seq1, 8)
-        self.amino.count_nucleotides(nuc_seq2, 5)
+        self.amino.count_aminos(nuc_seq1, 8)
+        self.amino.count_aminos(nuc_seq2, 5)
         counts = self.amino.get_report()
         
         self.assertSequenceEqual(expected_counts, counts)
@@ -1414,8 +1414,8 @@ class SeedAminoTest(unittest.TestCase):
         nuc_seq2 = 'AAG' # -> K
         expected_counts = '0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0'
         
-        self.amino.count_nucleotides(nuc_seq1, 4)
-        self.amino.count_nucleotides(nuc_seq2, 5)
+        self.amino.count_aminos(nuc_seq1, 4)
+        self.amino.count_aminos(nuc_seq2, 5)
         counts = self.amino.get_report()
         
         self.assertSequenceEqual(expected_counts, counts)
@@ -1425,8 +1425,8 @@ class SeedAminoTest(unittest.TestCase):
         nuc_seq2 = 'AAG' # -> K
         expected_nuc_counts = '4,0,5,0'
         
-        self.amino.count_nucleotides(nuc_seq1, 4)
-        self.amino.count_nucleotides(nuc_seq2, 5)
+        self.amino.count_aminos(nuc_seq1, 4)
+        self.amino.count_aminos(nuc_seq2, 5)
         counts = self.amino.nucleotides[2].get_report()
         
         self.assertSequenceEqual(expected_nuc_counts, counts)
@@ -1436,8 +1436,8 @@ class SeedAminoTest(unittest.TestCase):
         nuc_seq2 = 'GGG' # -> G
         expected_consensus = 'G'
         
-        self.amino.count_nucleotides(nuc_seq1, 4)
-        self.amino.count_nucleotides(nuc_seq2, 5)
+        self.amino.count_aminos(nuc_seq1, 4)
+        self.amino.count_aminos(nuc_seq2, 5)
         consensus = self.amino.get_consensus()
         
         self.assertSequenceEqual(expected_consensus, consensus)
@@ -1448,9 +1448,9 @@ class SeedAminoTest(unittest.TestCase):
         nuc_seq3 = 'TTT' # -> F
         allowed_consensus_values = ('G', 'K')
         
-        self.amino.count_nucleotides(nuc_seq1, 4)
-        self.amino.count_nucleotides(nuc_seq2, 4)
-        self.amino.count_nucleotides(nuc_seq3, 3)
+        self.amino.count_aminos(nuc_seq1, 4)
+        self.amino.count_aminos(nuc_seq2, 4)
+        self.amino.count_aminos(nuc_seq3, 3)
         consensus = self.amino.get_consensus()
         
         self.assertIn(consensus, allowed_consensus_values)
@@ -1466,7 +1466,7 @@ class SeedAminoTest(unittest.TestCase):
         nuc_seq = 'CTn'
         expected_consensus = 'L'
         
-        self.amino.count_nucleotides(nuc_seq, 1)
+        self.amino.count_aminos(nuc_seq, 1)
         consensus = self.amino.get_consensus()
         
         self.assertEqual(expected_consensus, consensus)
@@ -1478,8 +1478,8 @@ class SeedAminoTest(unittest.TestCase):
         nuc_seq2 = 'AAA' # -> K
         expected_consensus = 'K'
         
-        self.amino.count_nucleotides(nuc_seq1, 9)
-        self.amino.count_nucleotides(nuc_seq2, 1)
+        self.amino.count_aminos(nuc_seq1, 9)
+        self.amino.count_aminos(nuc_seq2, 1)
         consensus = self.amino.get_consensus()
         
         self.assertEqual(expected_consensus, consensus)

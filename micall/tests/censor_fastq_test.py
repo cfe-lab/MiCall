@@ -1,7 +1,7 @@
 import StringIO
 import unittest
 
-import censor_fastq
+from micall.core import censor_fastq
 
 #TODO: remaining tests:
 # * multiple directions

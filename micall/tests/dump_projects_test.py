@@ -2,7 +2,7 @@ import json
 import StringIO
 import unittest
 
-import dump_projects
+from micall.monitor import dump_projects
 
 class CheckKeyPositionsTest(unittest.TestCase):
     def setUp(self):

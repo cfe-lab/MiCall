@@ -1,8 +1,8 @@
 import StringIO
 import unittest
 
-import remap
-from remap import is_first_read, is_primer
+from micall.core import remap
+from micall.core.remap import is_first_read, is_primer
 
 class RemapTest(unittest.TestCase):
     def testSampleName(self):

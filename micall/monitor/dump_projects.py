@@ -2,7 +2,7 @@ import json
 import sys
 
 import qai_helper
-import settings
+from micall import settings
 
 def check_key_positions(projects, warning_file):
     """ Complain if a coordinate region has two sets of key positions in the

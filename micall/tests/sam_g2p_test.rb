@@ -1,5 +1,5 @@
 require 'test/unit'
-require 'sam_g2p'
+require '../core/sam_g2p'
 
 class CigarTest < Test::Unit::TestCase
   def test_trivial

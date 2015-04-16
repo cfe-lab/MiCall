@@ -1,6 +1,6 @@
 import unittest
 import StringIO
-from sample_sheet_parser import sample_sheet_parser
+from micall.utils.sample_sheet_parser import sample_sheet_parser
 
 """
 Test suite for the sample sheet parser.
@@ -40,6 +40,7 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing
     clean_filenames = ["Sample1-Proj1_S1", "Sample2-Proj2_S2"]
 
     def setUp(self):
+        self.maxDiff=None
         self.ss = sample_sheet_parser(StringIO.StringIO(self.stub_sample_sheet))
 
     def test_keys_correct(self):

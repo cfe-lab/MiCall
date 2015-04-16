@@ -10,11 +10,11 @@ import logging
 from operator import itemgetter
 import os
 
-import miseq_logging
+from micall.core import miseq_logging
 import qai_helper
-import sample_sheet_parser
-import settings
-from project_config import ProjectConfig
+from micall.utils import sample_sheet_parser
+from micall import settings
+from micall.core.project_config import ProjectConfig
 
 logger = miseq_logging.init_logging_console_only(logging.INFO)
 

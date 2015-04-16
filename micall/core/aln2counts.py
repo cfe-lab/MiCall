@@ -17,13 +17,12 @@ Dependencies:
 """
 
 import argparse
-import HyPhy
 from itertools import groupby
 import logging
 import os
 import re
 
-from micall.alignment.hyphyAlign import change_settings, pair_align
+import alignment
 import miseq_logging
 import micall.settings as settings
 import project_config
@@ -59,9 +58,6 @@ def parseArgs():
     return parser.parse_args()
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
-
-hyphy = HyPhy._THyPhy (os.getcwd(), 1)  # @UndefinedVariable
-change_settings(hyphy)
 
 MAX_CUTOFF = 'MAX'
 
@@ -147,19 +143,34 @@ class SequenceReport(object):
         
 
     def _count_reads(self, aligned_reads):
+        """
+        Parses contents of aligned CSV.
+
+        :param aligned_reads: a List of Dicts from csv.DictReader
+        :return:
+        """
+
+        # these will be the same for all rows, so just assign from the first
+        first_row = aligned_reads[0]
+        self.seed = first_row['refname']
+        self.qcut = first_row['qcut']
+
         for row in aligned_reads:
-            self.seed = row['refname']
-            self.qcut = row['qcut']
             nuc_seq = row['seq']
             offset = int(row['offset'])
             count = int(row['count'])
+
+            # first run, prepare containers
             if not self.seed_aminos:
                 self.insert_writer.start_group(self.seed,
                                                self.qcut)
                 for reading_frame in range(3):
                     self.seed_aminos[reading_frame] = []
+
+            # record this read to calculate insertions later
             self.insert_writer.add_nuc_read('-'*offset + nuc_seq, count)
-                    
+
+            # cycle through reading frames
             for reading_frame, frame_seed_aminos in self.seed_aminos.iteritems():
                 offset_nuc_seq = '-' * (reading_frame + offset) + nuc_seq
                 # pad to a codon boundary
@@ -167,36 +178,48 @@ class SequenceReport(object):
                 start = offset - (offset % 3)
                 for nuc_pos in range(start, len(offset_nuc_seq), 3):
                     codon_index = nuc_pos / 3
+                    # append SeedAmino objects to this list if necessary
                     while len(frame_seed_aminos) <= codon_index:
                         frame_seed_aminos.append(SeedAmino(len(frame_seed_aminos)))
-                    
+
+                    # update amino acid counts
                     codon = offset_nuc_seq[nuc_pos:nuc_pos + 3]
-                    frame_seed_aminos[codon_index].count_nucleotides(codon, count)
+                    frame_seed_aminos[codon_index].count_aminos(codon, count)
                 
-    def _pair_align(self, reference, query):
-        """ Align a query sequence to a reference sequence using hyphy.
+    def _pair_align(self, reference, query, gap_open=15, gap_extend=5, use_terminal_gap_penalty=0):
+        """ Align a query sequence to a reference sequence.
         
-        @return: (aligned_query, aligned_ref, score) Note that this is the
-            opposite order from the input parameters, but that's the order
-            hyphy returns.
+        @return: (aligned_ref, aligned_query, score)
         """
-        return pair_align(hyphy, reference, query)
+        return alignment.align_it_aa(reference, query, gap_open, gap_extend, use_terminal_gap_penalty)
 
     def _map_to_coordinate_ref(self, coordinate_name, coordinate_ref):
+        """
+        Align consensus of aligned reads in each reading frame to the
+        coordinate reference to determine best frame.
+        Generate a map of consensus indices to the coordinate reference.
+
+        :param coordinate_name: Name of coordinate reference.
+        :param coordinate_ref: Amino acid sequence of coordinate reference.
+        :return: Dict object containing coordinate map.
+        """
+
         # Start max_score with the minimum score we can consider a valid
         # alignment. Anything worse, we won't bother
         consensus_length = len([amino for amino in self.seed_aminos[0] if amino.counts])
         max_score = min(consensus_length, len(coordinate_ref))
-        best_alignment = None # (consensus, aquery, aref)
+
+        best_alignment = None
         for reading_frame, frame_seed_aminos in self.seed_aminos.iteritems():
             consensus = ''.join([seed_amino1.get_consensus()
                                 for seed_amino1 in frame_seed_aminos])
             if reading_frame == 0:
-                # best guess before aligning
+                # best guess before aligning - if alignments fail, this will be non-empty
                 self.consensus[coordinate_name] = consensus
             
             # map to reference coordinates by aligning consensus
-            aquery, aref, score = self._pair_align(coordinate_ref, consensus)
+            aref, aquery, score = self._pair_align(coordinate_ref, consensus)
+
             if score < max_score:
                 continue
             max_score = score
@@ -205,7 +228,7 @@ class SequenceReport(object):
                               aquery,
                               aref,
                               frame_seed_aminos)
-        
+
         report_aminos = []
         if best_alignment is not None:
             (reading_frame,
@@ -213,6 +236,7 @@ class SequenceReport(object):
              aquery,
              aref,
              frame_seed_aminos) = best_alignment
+
             self.reading_frames[coordinate_name] = reading_frame
             self.consensus[coordinate_name] = consensus
             consensus_index = ref_index = 0
@@ -236,29 +260,40 @@ class SequenceReport(object):
         self.reports[coordinate_name] = report_aminos
 
     def read(self, aligned_reads):
-        """ Reset all the counters, and read a new section of aligned reads.
-        
-        A section must have the same region, and qcut on all lines.
-        @param aligned_reads: a sequence of dicts, one for each read
         """
-        aligned_reads = list(aligned_reads) # let us run multiple passes
+        Reset all the counters, and read a new section of aligned reads.
+        A section must have the same region, and qcut on all lines.
+
+        @param aligned_reads: an iterator of dicts generated by csv.DictReader
+            Each dict corresponds to a row from an aligned.CSV file and
+            corresponds to a single aligned read.
+        """
+        aligned_reads = list(aligned_reads) # lets us run multiple passes
+
         self.seed_aminos = {} # {reading_frame: [SeedAmino(consensus_index)]}
         self.reports = {} # {coord_name: [ReportAmino()]}
         self.reading_frames = {} # {coord_name: reading_frame}
         self.inserts = {} # {coord_name: set([consensus_index])}
         self.consensus = {} # {coord_name: consensus_amino_seq}
         self.variants = {} # {coord_name: [(count, nuc_seq)]}
+
+        # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
-        
+
         if not self.seed_aminos:
+            # no valid reads were aligned to this region and counted, skip next step
             self.coordinate_refs = {}
         else:
             self.coordinate_refs = self.projects.getCoordinateReferences(self.seed)
             if not self.coordinate_refs:
+                # No coordinate references defined for this region.
+                # Pad the amino acid count list until it has the same length
+                # as the seed reference, then skip next step.
                 seed_ref = self.projects.getReference(self.seed)
                 while len(self.seed_aminos[0])*3 < len(seed_ref):
                     self.seed_aminos[0].append(SeedAmino(len(self.seed_aminos[0])))
-        
+
+        # iterate over coordinate references defined for this region
         for coordinate_name, coordinate_ref in self.coordinate_refs.iteritems():
             self._map_to_coordinate_ref(coordinate_name, coordinate_ref)
             report_aminos = self.reports[coordinate_name]
@@ -445,29 +480,34 @@ class SequenceReport(object):
             self.insert_writer.write(coordinate_inserts,
                                      coordinate_name,
                                      self.reading_frames[coordinate_name])
-    
+
+
 class SeedAmino(object):
+    """
+    Records the frequencies of amino acids at a given position of the
+    aligned reads as determined by the consensus sequence.
+    """
     def __init__(self, consensus_index):
         self.consensus_index = consensus_index
         self.counts = Counter()
         self.nucleotides = [SeedNucleotide() for _ in range(3)]
         
-    def count_nucleotides(self, nuc_seq, count):
+    def count_aminos(self, codon_seq, count):
         """ Record a set of reads at this position in the seed reference.
-        @param nuc_seq: a string of three nucleotides that were read at this
-        position
+        @param codon_seq: a string of three nucleotides that were read at this
+                          position
         @param count: the number of times they were read
         """
-        amino = translate(nuc_seq.upper())
+        amino = translate(codon_seq.upper())
         if amino in amino_alphabet:
             self.counts[amino] += count
         for i in range(3):
-            self.nucleotides[i].count_nucleotides(nuc_seq[i], count)
+            self.nucleotides[i].count_nucleotides(codon_seq[i], count)
     
     def get_report(self):
         """ Build a report string with the counts of each amino acid.
         
-        Report how many times each amino acid was seen in count_nucleotides().
+        Report how many times each amino acid was seen in count_aminos().
         @return: comma-separated list of counts in the same order as the
         amino_alphabet list
         """
@@ -475,7 +515,7 @@ class SeedAmino(object):
                          for amino in amino_alphabet])
         
     def get_consensus(self):
-        """ Find the amino acid that was seen most often in count_nucleotides().
+        """ Find the amino acid that was seen most often in count_aminos().
         
         If there is a tie, just pick one of the tied amino acids.
         @return: the letter of the most common amino acid
@@ -483,7 +523,12 @@ class SeedAmino(object):
         consensus = self.counts.most_common(1)
         return '-' if not consensus else consensus[0][0]
 
+
 class SeedNucleotide(object):
+    """
+    Records the frequencies of nucleotides at a given position of the
+    aligned reads as determined by the consensus sequence.
+    """
     def __init__(self):
         self.counts = Counter()
         
@@ -672,11 +717,11 @@ def aln2counts (aligned_csv, nuc_csv, amino_csv, coord_ins_csv, conseq_csv, fail
     if cwd is not None:
         os.chdir(cwd)
 
+    # load project information
     projects = project_config.ProjectConfig.loadDefault()
+
+    # initialize reporter classes
     insert_writer = InsertionWriter(coord_ins_csv)
-    
-    aligned_reader = csv.DictReader(aligned_csv)
-    
     report = SequenceReport(insert_writer,
                             projects,
                             settings.conseq_mixture_cutoffs)
@@ -686,6 +731,8 @@ def aln2counts (aligned_csv, nuc_csv, amino_csv, coord_ins_csv, conseq_csv, fail
     report.write_nuc_header(nuc_csv)
     report.write_nuc_variants_header(nuc_variants_csv)
 
+    # parse CSV file containing aligned reads, grouped by reference and quality cutoff
+    aligned_reader = csv.DictReader(aligned_csv)
     for _key, aligned_reads in groupby(aligned_reader,
                                        lambda row: (row['refname'], row['qcut'])):
         report.read(aligned_reads)

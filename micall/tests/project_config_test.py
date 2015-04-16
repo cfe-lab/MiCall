@@ -1,6 +1,6 @@
 import unittest
 import StringIO
-import project_config
+from micall.core import project_config
 
 class ProjectConfigurationTest(unittest.TestCase):
     def setUp(self):

@@ -4,7 +4,7 @@ from random import Random
 import requests
 import time
 
-import miseq_logging
+from micall.core import miseq_logging
 
 logger = miseq_logging.init_logging_console_only(logging.INFO)
 

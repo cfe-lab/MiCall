@@ -1,7 +1,7 @@
 import unittest
 import StringIO
 
-import sam2aln
+from micall.core import sam2aln
 
 
 class RemapReaderTest(unittest.TestCase):

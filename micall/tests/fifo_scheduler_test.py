@@ -4,7 +4,7 @@ from subprocess import CalledProcessError
 import time
 import unittest
 
-from fifo_scheduler import Factory, Job, Worker
+from micall.monitor.fifo_scheduler import Factory, Job, Worker
 from testfixtures.logcapture import LogCapture
 import stat
 from shutil import rmtree
