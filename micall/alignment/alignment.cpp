@@ -635,8 +635,8 @@ void widen_gaps(string* seq)
         string* seqb = new string(seq);
         trim(seqa);
         trim(seqb);
-        degap(seqa);
-        degap(seqb);
+        //degap(seqa);
+        //degap(seqb);
         string* newseqa = new string();
         string* newseqb = new string();
 
@@ -667,12 +667,12 @@ void widen_gaps(string* seq)
 
         init_pairscore_hiv25();
 
-        string* seqa = new string(standard);
-        string* seqb = new string(seq);
+        string* seqa = new string(standard);  // reference
+        string* seqb = new string(seq);  // query
         trim(seqa);
         trim(seqb);
-        degap(seqa);
-        degap(seqb);
+        //degap(seqa);  // HyPhy behaviour is to not remove gaps
+        //degap(seqb);
         string* newseqa = new string();
         string* newseqb = new string();
 

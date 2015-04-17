@@ -29,8 +29,8 @@ class StubbedSequenceReport(aln2counts.SequenceReport):
                      aligned_query,
                      aligned_reference,
                      score=sys.maxint):
-        self.overrides[(reference, query)] = (aligned_query,
-                                              aligned_reference,
+        self.overrides[(reference, query)] = (aligned_reference,
+                                              aligned_query,
                                               score)
 
 class SequenceReportTest(unittest.TestCase):
@@ -1034,14 +1034,14 @@ R1-seed,15,R1,1,8,---TTT
         #refname,qcut,rank,count,offset,seq
         aligned_reads = self.prepareReads("""\
 R1-seed,15,0,10,0,TCAAAATTTCGA
-R1-seed,15,1,9,0,TCAGGGTTTCGA
-R1-seed,15,2,7,0,TCAGGGTTTGGG
-R1-seed,15,3,5,0,CGAGGGTTTCGA
+R1-seed,15,1,9,0,TCAAAGTTTCGA
+R1-seed,15,2,7,0,TCAAAGTTTGGG
+R1-seed,15,3,5,0,CGAAAGTTTCGA
 """)
           
         # seed,qcut,region,index,count,seq
         expected_text = """\
-R1-seed,15,R1,0,14,GGGTTTCGA
+R1-seed,15,R1,0,14,AAGTTTCGA
 R1-seed,15,R1,1,10,AAATTTCGA
 """
         self.report.read(aligned_reads)
@@ -1057,7 +1057,7 @@ R1-seed,15,R1,1,10,AAATTTCGA
         self.report.add_override(reference='KFR',
                                  query='KFGR',
                                  aligned_query='KFGR',
-                                 aligned_reference='KF-R') 
+                                 aligned_reference='KF-R')
         #refname,qcut,rank,count,offset,seq
         aligned_reads = self.prepareReads("""\
 R1-seed,15,0,10,0,AAATTTGGGCGA

@@ -193,7 +193,8 @@ class SequenceReport(object):
         
         @return: (aligned_ref, aligned_query, score)
         """
-        return alignment.align_it_aa(reference, query, gap_open, gap_extend, use_terminal_gap_penalty)
+        aligned_ref, aligned_query, score = alignment.align_it_aa(reference, query, gap_open, gap_extend, use_terminal_gap_penalty)
+        return aligned_ref, aligned_query, score
 
     def _map_to_coordinate_ref(self, coordinate_name, coordinate_ref):
         """
@@ -221,7 +222,6 @@ class SequenceReport(object):
             
             # map to reference coordinates by aligning consensus
             aref, aquery, score = self._pair_align(coordinate_ref, consensus)
-
             if score < max_score:
                 continue
             max_score = score
