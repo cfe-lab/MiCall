@@ -150,10 +150,12 @@ class SequenceReport(object):
         :return:
         """
 
-        # these will be the same for all rows, so just assign from the first
-        first_row = aligned_reads[0]
-        self.seed = first_row['refname']
-        self.qcut = first_row['qcut']
+        # skip everything if aligned_reads is empty
+        if len(aligned_reads) > 0:
+            # these will be the same for all rows, so just assign from the first
+            first_row = aligned_reads[0]
+            self.seed = first_row['refname']
+            self.qcut = first_row['qcut']
 
         for row in aligned_reads:
             nuc_seq = row['seq']

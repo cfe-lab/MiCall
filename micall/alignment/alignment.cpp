@@ -184,9 +184,9 @@ static int empirical_hiv25[24][24] = {\
 {-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,-17,1}};
 
 void init_pairscore_hiv25(void) {
-    // ASCII codes for protein alphabet ARNDCQEGHILKMFPSTWYVBZX*
+    // ASCII codes for protein alphabet ARNDCQEGHILKMFPSTWYVBZ?*
     int aa_to_ascii[24] = { 65, 82, 78, 68, 67, 81, 69, 71, 72, 73, 76, 75, 77, 70, 80, 83, 84,
-    87, 89, 86, 66, 90, 88, 42 };
+    87, 89, 86, 66, 90, 63, 42 };
     int i2, j2;
 
     // reset score matrix to be safe
