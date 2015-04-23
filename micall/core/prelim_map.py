@@ -24,6 +24,14 @@ from micall import settings  # settings.py is a CodeResourceDependency
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 
+def resource_path(target):
+    """
+    See http://stackoverflow.com/questions/7674790/bundling-data-files-with-pyinstaller-onefile
+    :param relative:
+    :return:
+    """
+    return os.path.join('' if not hasattr(sys, '_MEIPASS') else sys._MEIPASS, target)
+
 
 
 def prelim_map(fastq1, fastq2, prelim_csv, cwd=None):
@@ -32,9 +40,9 @@ def prelim_map(fastq1, fastq2, prelim_csv, cwd=None):
 
     # check that we have access to bowtie2
     try:
-        subprocess.check_output(['bowtie2', '-h'])
+        subprocess.check_output([resource_path('bowtie2'), '-h'])
     except OSError:
-        raise RuntimeError('bowtie2 not found; check if it is installed and in $PATH\n')
+        raise RuntimeError('bowtie2 not found; check if it is installed and in $PATH\n%s\n' % resource_path('bowtie2'))
 
     # check that the inputs exist
     if not os.path.exists(fastq1):
@@ -50,9 +58,9 @@ def prelim_map(fastq1, fastq2, prelim_csv, cwd=None):
     ref_path = 'micall.fasta'
     with open(ref_path, 'w') as ref:
         projects.writeSeedFasta(ref)
-    log_call(['samtools', 'faidx', ref_path])
+    log_call([resource_path('samtools'), 'faidx', ref_path])
     reffile_template = 'reference'
-    log_call(['bowtie2-build',
+    log_call([resource_path('bowtie2-build'),
               '--quiet',
               '-f',
               ref_path,
@@ -62,7 +70,7 @@ def prelim_map(fastq1, fastq2, prelim_csv, cwd=None):
     output = {}
 
     # stream output from bowtie2
-    bowtie_args = ['bowtie2',
+    bowtie_args = [resource_path('bowtie2'),
                    '--quiet',
                    '-x', reffile_template,
                    '-1', fastq1,
