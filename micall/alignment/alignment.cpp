@@ -489,9 +489,9 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb,
 		{
 			*newseqb += (*seqb)[jj - 1];
 			*newseqa += '-';
-			if (use_terminal_gap_penalty!=0) alignment_score += gep;
+			if (use_terminal_gap_penalty==0) alignment_score += gep;
 		}
-		if (use_terminal_gap_penalty!=0) alignment_score += gip;
+		if (use_terminal_gap_penalty==0) alignment_score += gip;
 	}
 	else if(i > j)
 	{
@@ -499,9 +499,9 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb,
 		{
 			*newseqa += (*seqa)[ii - 1];
 			*newseqb += '-';
-			if (use_terminal_gap_penalty!=0) alignment_score += gep;
+			if (use_terminal_gap_penalty==0) alignment_score += gep;
 		}
-		if (use_terminal_gap_penalty!=0) alignment_score += gip;
+		if (use_terminal_gap_penalty==0) alignment_score += gip;
 	}
 
 	reverse(newseqa);

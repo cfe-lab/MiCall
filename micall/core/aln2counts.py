@@ -188,7 +188,7 @@ class SequenceReport(object):
                     codon = offset_nuc_seq[nuc_pos:nuc_pos + 3]
                     frame_seed_aminos[codon_index].count_aminos(codon, count)
                 
-    def _pair_align(self, reference, query, gap_open=15, gap_extend=5, use_terminal_gap_penalty=0):
+    def _pair_align(self, reference, query, gap_open=15, gap_extend=5, use_terminal_gap_penalty=1):
         """ Align a query sequence to a reference sequence.
         
         @return: (aligned_ref, aligned_query, score)
