@@ -28,6 +28,9 @@ from micall.settings import bowtie_threads, consensus_q_cutoff,\
     max_remaps, min_mapping_efficiency
 from operator import itemgetter
 
+def resource_path(target):
+    return os.path.join('' if not hasattr(sys, '_MEIPASS') else sys._MEIPASS, target)
+
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 
@@ -66,7 +69,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
 
     # check that we have access to bowtie2
     try:
-        redirect_call(['bowtie2', '-h'], os.devnull)
+        redirect_call([resource_path('bowtie2'), '-h'], os.devnull)
     except OSError:
         logger.error('bowtie2 not found; check if it is installed and in $PATH\n')
         sys.exit(1)
@@ -76,7 +79,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     ref_path = 'micall.fasta'  # TODO: this should not be hard-coded, move to settings
     with open(ref_path, 'w') as ref:
         projects.writeSeedFasta(ref)
-    log_call(['samtools', 'faidx', ref_path])
+    log_call([resource_path('samtools'), 'faidx', ref_path])
 
     # get the raw read count
     raw_count = count_file_lines(fastq1) / 2  # 4 lines per record in FASTQ, paired
@@ -149,13 +152,13 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
             confile = refname+'.conseq'
 
             # convert SAM to BAM
-            redirect_call(['samtools', 'view', '-b', '-T', confile if refname in conseqs else ref_path, samfile], bamfile)
+            redirect_call([resource_path('samtools'), 'view', '-b', '-T', confile if refname in conseqs else ref_path, samfile], bamfile)
 
-            log_call(['samtools', 'sort', bamfile, refname])  # overwrite
+            log_call([resource_path('samtools'), 'sort', bamfile, refname])  # overwrite
 
             # BAM to pileup
             pileup_path = bamfile+'.pileup'
-            redirect_call(['samtools', 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
+            redirect_call([resource_path('samtools'), 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
 
             #TODO: what's the difference between this consensus and the one in aln2counts.py?
             # pileup to consensus sequence
@@ -172,12 +175,12 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
             handle = open(confile, 'w')
             handle.write('>%s\n%s\n' % (refname, new_conseq))
             handle.close()
-            log_call(['samtools', 'faidx', confile])
+            log_call([resource_path('samtools'), 'faidx', confile])
 
             # consensus to *.bt2
-            log_call(['bowtie2-build', '-c', '-q', new_conseq, refname])
+            log_call([resource_path('bowtie2-build'), '-c', '-q', new_conseq, refname])
             #TODO: Should we map all references at the same time?
-            log_call(['bowtie2',
+            log_call([resource_path('bowtie2'),
                       '--quiet',
                       '-p', str(bowtie_threads),
                       '--local',  # allow some characters on ends to not participate in map

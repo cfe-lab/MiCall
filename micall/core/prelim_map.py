@@ -26,6 +26,7 @@ logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 
 def resource_path(target):
     """
+    Returns absolute path to target.
     See http://stackoverflow.com/questions/7674790/bundling-data-files-with-pyinstaller-onefile
     :param relative:
     :return:
