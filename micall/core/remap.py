@@ -53,7 +53,7 @@ def is_primer(read_row, max_primer_length):
     return match_length <= max_primer_length
 
 
-def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_csv, unmapped1, unmapped2, cwd=None):
+def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_csv, unmapped1, unmapped2, cwd=None, nthreads=None):
     if cwd is not None:
         os.chdir(cwd)
     max_pileup_depth = str(2**16)
@@ -182,7 +182,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
             #TODO: Should we map all references at the same time?
             log_call([resource_path('bowtie2'),
                       '--quiet',
-                      '-p', str(bowtie_threads),
+                      '-p', str(bowtie_threads) if nthreads is None else str(nthreads),
                       '--local',  # allow some characters on ends to not participate in map
                       '-x', refname,
                       '-1', fastq1,

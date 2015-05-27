@@ -35,7 +35,7 @@ def resource_path(target):
 
 
 
-def prelim_map(fastq1, fastq2, prelim_csv, cwd=None):
+def prelim_map(fastq1, fastq2, prelim_csv, cwd=None, nthreads=None):
     if cwd is not None:
         os.chdir(cwd)
 
@@ -81,7 +81,7 @@ def prelim_map(fastq1, fastq2, prelim_csv, cwd=None):
                    '--local',
                    '--rdg 12,3',  # increase gap open penalties
                    '--rfg 12,3',
-                   '-p', str(settings.bowtie_threads)]
+                   '-p', str(settings.bowtie_threads) if nthreads is None else str(nthreads)]
     p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
     with p.stdout:
         for line in p.stdout:

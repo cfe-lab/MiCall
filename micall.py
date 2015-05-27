@@ -1,6 +1,5 @@
 import os
 import Tkinter as tk
-import sys
 import tkFileDialog
 import shutil
 import subprocess
@@ -10,10 +9,12 @@ from micall.core.remap import remap
 from micall.core.sam2aln import sam2aln
 from micall.core.aln2counts import aln2counts
 from tempfile import gettempdir
+from micall.settings import pipeline_version
+from multiprocessing import cpu_count
 
 class MiCall(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
-        self.__version__ = 0.1
+        self.__version__ = '0.1'
 
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
@@ -50,11 +51,19 @@ class MiCall(tk.Frame):
         )
         self.button_quit.grid(row=0, column=3, sticky='W')
 
+        self.thread_label = tk.Label(self.button_frame, text='#threads')
+        self.thread_label.grid(row=0, column=4, sticky='E')
+
+        self.nthreads = tk.IntVar()
+        self.nthreads.set(1)
+        self.thread_select = tk.OptionMenu(self.button_frame, self.nthreads, *[(i+1) for i in range(cpu_count())])
+        self.thread_select.grid(row=0, column=5, sticky='E')
+
         self.console = tk.Text(
             self.console_frame, bg='black', fg='white', cursor='xterm'
         )
         self.console.pack(side='top', fill='both', expand=True)
-        self.write('Welcome to MiCall v%1.1f!\n' % (self.__version__,))
+        self.write('Welcome to MiCall v%s (pipeline v%s)\n' % (self.__version__, pipeline_version))
         self.write('Default working directory %s\n' % (self.workdir))
 
     def set_workdir(self):
@@ -104,11 +113,12 @@ class MiCall(tk.Frame):
                             run_info = sample_sheet_parser(handle)
                     except:
                         raise
-                if file.endswith('_R1_001.fastq.gz'):
+                if file.endswith('_R1_001.fastq') or file.endswith('_R1_001.fastq.gz'):
                     fastq_files.append(os.path.join(root, file))
 
+
         if not fastq_files:  # empty list
-            self.write('Error, folder does not seem to contain any FASTQ.gz files!\n')
+            self.write('Error, folder does not seem to contain any FASTQ(.gz) files!\n')
             self.rundir = None
             #self.button_setwd.config(state=tk.ACTIVE)
             self.button_load.config(state=tk.ACTIVE)
@@ -141,8 +151,9 @@ class MiCall(tk.Frame):
 
             # decompress files
             #self.write('Uncompressing files\n')
-            p = subprocess.Popen(['gunzip', dest], stdout=subprocess.PIPE)
-            p = subprocess.Popen(['gunzip', dest2], stdout=subprocess.PIPE)
+            if filename.endswith('.gz'):
+                subprocess.check_call(['gunzip', dest])
+                subprocess.check_call(['gunzip', dest2])
 
         self.write('Transferred and uncompressed FASTQ files to working directory.\n')
         self.button_run.config(state=tk.ACTIVE)
@@ -170,7 +181,7 @@ class MiCall(tk.Frame):
             self.write('Preliminary map of %s\n' % (prefix,))
             self.parent.update_idletasks()  # flush buffer
             with open(output_csv, 'w') as handle:
-                prelim_map(fastq1, fastq2, handle, self.workdir)
+                prelim_map(fastq1, fastq2, handle, self.workdir, nthreads=self.nthreads.get())
 
             # prepare file handles for remap stage
             prelim_csv = open(output_csv, 'rU')
@@ -183,7 +194,8 @@ class MiCall(tk.Frame):
 
             self.write('Iterative remap of %s\n' % (prefix,))
             self.parent.update_idletasks()
-            remap(fastq1, fastq2, prelim_csv, remap_csv, counts_csv, conseq_csv, unmapped1, unmapped2, self.workdir)
+            remap(fastq1, fastq2, prelim_csv, remap_csv, counts_csv, conseq_csv, unmapped1, unmapped2, self.workdir,
+                  nthreads=self.nthreads.get())
 
             # prepare file handles for conversion from SAM format to alignment
             remap_csv = open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU')
