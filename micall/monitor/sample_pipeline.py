@@ -4,11 +4,11 @@ import argparse
 from glob import glob
 import logging, os
 
-from collate import collate_labeled_files
+from micall.utils.collate import collate_labeled_files
 from fifo_scheduler import Job, Worker
-import miseq_logging
-from sample_sheet_parser import sample_sheet_parser
-from settings import alignment_lib, are_temp_folders_deleted, base_path, \
+from micall.core import miseq_logging
+from micall.utils import sample_sheet_parser
+from micall.settings import alignment_lib, are_temp_folders_deleted, base_path, \
     projects_json
 from mpi4py import MPI
 

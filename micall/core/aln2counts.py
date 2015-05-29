@@ -23,13 +23,12 @@ import os
 
 import alignment
 import miseq_logging
-import micall.settings as settings
+from micall.settings import conseq_mixture_cutoffs, amino_alphabet
 from micall.utils.translation import translate, ambig_dict
 import project_config
 from collections import Counter
 import csv
 
-amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -673,7 +672,7 @@ def aln2counts (aligned_csv, nuc_csv, amino_csv, coord_ins_csv, conseq_csv, fail
     insert_writer = InsertionWriter(coord_ins_csv)
     report = SequenceReport(insert_writer,
                             projects,
-                            settings.conseq_mixture_cutoffs)
+                            conseq_mixture_cutoffs)
     report.write_amino_header(amino_csv)
     report.write_consensus_header(conseq_csv)
     report.write_failure_header(failed_align_csv)

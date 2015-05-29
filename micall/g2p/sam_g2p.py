@@ -1,5 +1,3 @@
-import sys
-from micall.g2p.pssm_lib import Pssm
 import argparse
 from csv import DictReader
 from micall.core.sam2aln import apply_cigar, merge_pairs
@@ -55,22 +53,19 @@ class RegionTracker:
         return self.ranges[seed]
 
 
-def main():
-    pssm = Pssm()
-    args = parse_args()
-
+def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
     pairs = {}  # cache read for pairing
     merged = {}  # tabular merged sequence variants
     tracker = RegionTracker('V3LOOP')
 
     # look up clipping region for each read
-    reader = DictReader(args.nuc_csv)
+    reader = DictReader(nuc_csv)
     for row in reader:
         if row['query.nuc.pos'] == '':
             continue
         tracker.add_nuc(row['seed'], row['region'], int(row['query.nuc.pos'])-1)
 
-    reader = DictReader(args.remap_csv)
+    reader = DictReader(remap_csv)
     for row in reader:
         clip_from, clip_to = tracker.get_range(row['rname'])
         if clip_from is None:
@@ -100,7 +95,7 @@ def main():
     sorted.sort(reverse=True)
 
     # apply g2p algorithm to merged reads
-    with args.g2p_csv as f:
+    with g2p_csv as f:
         f.write('rank,count,g2p,fpr,aligned,error\n')  # CSV header
         rank = 0
         for count, s in sorted:
@@ -152,6 +147,10 @@ def main():
 
         f.close()
 
+
+def main():
+    args = parse_args()
+    sam_g2p(remap_csv=args.remap_csv, nuc_csv=args.nuc_csv, g2p_csv=args.g2p_csv)
 
 if __name__ == '__main__':
     # note, must be called from project root if executing directly

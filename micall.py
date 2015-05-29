@@ -8,18 +8,40 @@ from micall.core.prelim_map import prelim_map
 from micall.core.remap import remap
 from micall.core.sam2aln import sam2aln
 from micall.core.aln2counts import aln2counts
+from micall.g2p.pssm_lib import Pssm
+from micall.g2p.sam_g2p import sam_g2p
+from micall.utils.coverage_plots import coverage_plot
+
 from tempfile import gettempdir
 from micall.settings import pipeline_version
 from multiprocessing import cpu_count
+from micall.utils import collate
+
+files_to_collate = (('amino_frequencies.csv', '*.amino.csv'),
+                    ('collated_conseqs.csv', '*.conseq.csv'),
+                    ('failed_align.csv', None),
+                    ('failed_read.csv', None),
+                    ('g2p.csv', None),
+                    ('conseq_ins.csv', None),
+                    ('coord_ins.csv', None),
+                    ('nucleotide_frequencies.csv', '*.nuc.csv'),
+                    ('nuc_variants.csv', None),
+                    ('collated_counts.csv', '*.remap_counts.csv'))
+
+def resource_path(target):
+    return os.path.join('' if not hasattr(sys, '_MEIPASS') else sys._MEIPASS, target)
+
 
 class MiCall(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
-        self.__version__ = '0.1'
+        self.__version__ = '0.2'
+        self.pssm = Pssm(path_to_lookup=resource_path('micall/g2p/g2p_fpr.txt'),
+                         path_to_matrix=resource_path('micall/g2p/g2p.matrix'))
 
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
 
-        self.rundir = None
+        self.rundir = None  # path to MiSeq run folder containing data
         self.workdir = gettempdir()  # default to temp directory
         os.chdir(self.workdir)
 
@@ -55,7 +77,7 @@ class MiCall(tk.Frame):
         self.thread_label.grid(row=0, column=4, sticky='E')
 
         self.nthreads = tk.IntVar()
-        self.nthreads.set(1)
+        self.nthreads.set(max(1, cpu_count()/2))
         self.thread_select = tk.OptionMenu(self.button_frame, self.nthreads, *[(i+1) for i in range(cpu_count())])
         self.thread_select.grid(row=0, column=5, sticky='E')
 
@@ -155,7 +177,10 @@ class MiCall(tk.Frame):
                 subprocess.check_call(['gunzip', dest])
                 subprocess.check_call(['gunzip', dest2])
 
-        self.write('Transferred and uncompressed FASTQ files to working directory.\n')
+        # remove duplicate entries
+        self.target_files = list(set(self.target_files))
+
+        self.write('Transferred and uncompressed %d FASTQ files to working directory.\n' % len(self.target_files))
         self.button_run.config(state=tk.ACTIVE)
 
 
@@ -165,7 +190,7 @@ class MiCall(tk.Frame):
         :return:
         """
         working_files = []
-        output_files = []
+        image_paths = []
 
         # look for FASTQ files
         if len(self.target_files) == 0:
@@ -216,35 +241,48 @@ class MiCall(tk.Frame):
             failed_align_csv = open(os.path.join(self.workdir, prefix+'.failed_align.csv'), 'w')
             nuc_variants_csv = open(os.path.join(self.workdir, prefix+'.nuc_variants.csv'), 'w')
 
-            output_files += map(lambda x: x.name, [nuc_csv, amino_csv, coord_ins_csv, conseq_csv, failed_align_csv,
-                                                    nuc_variants_csv])
-
             self.write('Extracting statistics from alignments\n')
             self.parent.update_idletasks()
             aln2counts(aligned_csv, nuc_csv, amino_csv, coord_ins_csv, conseq_csv, failed_align_csv, nuc_variants_csv,
                        self.workdir)
 
+            self.write('Generating coverage plots\n')
+            self.parent.update_idletasks()
+            amino_csv = open(os.path.join(self.workdir, prefix+'.amino.csv'), 'rU')
+            image_paths += coverage_plot(amino_csv)
+
             self.write('Performing g2p scoring on samples covering HIV-1 V3\n')
             self.parent.update_idletasks()
-            g2p_csv = os.path.join(self.workdir, prefix+'.g2p.csv')
-            subprocess.check_call(['sam_g2p.sh', remap_csv.name, nuc_csv.name, g2p_csv])
-
+            remap_csv = open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU')
+            nuc_csv = open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'rU')
+            g2p_csv = open(os.path.join(self.workdir, prefix+'.g2p.csv'), 'w')
+            sam_g2p(pssm=self.pssm, remap_csv=remap_csv, nuc_csv=nuc_csv, g2p_csv=g2p_csv)
 
 
         # prevent rerun until a new folder is loaded
         self.button_run.config(state=tk.DISABLED)
 
-        # collate results and specify save location, then reset buttons
         savedir = tkFileDialog.askdirectory(title='Select folder to save results')
-        for src in output_files:
-            dest = os.path.join(savedir, os.path.basename(src))
+
+        # collate results to results folder
+        for target_file, pattern in files_to_collate:
+            if pattern is None:
+                pattern = '*.' + target_file
+            collate.collate_labeled_files(os.path.join(self.workdir, pattern),
+                                          os.path.join(savedir, target_file))
+
+        # copy coverage plots
+        imagedir = os.path.join(savedir, 'coverage')
+        os.mkdir(imagedir)
+        for src in image_paths:
+            dest = os.path.join(imagedir, os.path.basename(src))
             shutil.move(src, dest)
 
         # clean up working files
         for fn in working_files:
             os.remove(fn)
 
-        # clean up raw data
+        # clean up raw data in working directory
         for fn in self.target_files:
             os.remove(fn)
 

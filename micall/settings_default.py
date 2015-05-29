@@ -60,6 +60,7 @@ g2p_fpr_cutoffs = [3.0, 3.5, 4.0, 5.0]  # FPR cutoff to determine R5/X4 tropism
 v3_mincounts = [0, 50, 100, 1000]       # Min number of reads to contribute to %X4 calculation
 
 ## aln2counts parameters
+amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
 gap_open_penalty = 15
 gap_extension_penalty = 5
 conseq_mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
