@@ -20,14 +20,16 @@ import argparse
 from itertools import groupby
 import logging
 import os
-import re
 
 import alignment
 import miseq_logging
 import micall.settings as settings
+from micall.utils.translation import translate, ambig_dict
 import project_config
 from collections import Counter
 import csv
+
+amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -61,61 +63,6 @@ logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 
 MAX_CUTOFF = 'MAX'
 
-amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
-
-codon_dict = {'TTT':'F', 'TTC':'F', 'TTA':'L', 'TTG':'L',
-                'TCT':'S', 'TCC':'S', 'TCA':'S', 'TCG':'S',
-                'TAT':'Y', 'TAC':'Y', 'TAA':'*', 'TAG':'*',
-                'TGT':'C', 'TGC':'C', 'TGA':'*', 'TGG':'W',
-                'CTT':'L', 'CTC':'L', 'CTA':'L', 'CTG':'L',
-                'CCT':'P', 'CCC':'P', 'CCA':'P', 'CCG':'P',
-                'CAT':'H', 'CAC':'H', 'CAA':'Q', 'CAG':'Q',
-                'CGT':'R', 'CGC':'R', 'CGA':'R', 'CGG':'R',
-                'ATT':'I', 'ATC':'I', 'ATA':'I', 'ATG':'M',
-                'ACT':'T', 'ACC':'T', 'ACA':'T', 'ACG':'T',
-                'AAT':'N', 'AAC':'N', 'AAA':'K', 'AAG':'K',
-                'AGT':'S', 'AGC':'S', 'AGA':'R', 'AGG':'R',
-                'GTT':'V', 'GTC':'V', 'GTA':'V', 'GTG':'V',
-                'GCT':'A', 'GCC':'A', 'GCA':'A', 'GCG':'A',
-                'GAT':'D', 'GAC':'D', 'GAA':'E', 'GAG':'E',
-                'GGT':'G', 'GGC':'G', 'GGA':'G', 'GGG':'G',
-                '---':'-', 'XXX':'?'}
-mixture_regex = re.compile('[WRKYSMBDHVN-]')
-mixture_dict = {'W':'AT', 'R':'AG', 'K':'GT', 'Y':'CT', 'S':'CG',
-                'M':'AC', 'V':'AGC', 'H':'ATC', 'D':'ATG',
-                'B':'TGC', 'N':'ATGC', '-':'ATGC'}
-ambig_dict = dict(("".join(sorted(v)), k)
-                  for k, v in mixture_dict.iteritems()
-                  if k != '-')
-
-
-def translate(seq, offset=0):
-    seq = '-'*offset + seq
-    aa_seq = ''
-    for codon_site in xrange(0, len(seq), 3):
-        codon = seq[codon_site:codon_site+3]
-        if len(codon) < 3:
-            break
-        if codon.count('-') > 1 or '?' in codon:
-            aa_seq += '-' if (codon == '---') else '?'
-            continue
-
-        # look for nucleotide mixtures in codon, resolve to alternative codons if found
-        num_mixtures = len(mixture_regex.findall(codon))
-        if num_mixtures == 0:
-            aa_seq += codon_dict[codon]
-        elif num_mixtures == 1:
-            resolved_AAs = []
-            for pos in range(3):
-                if codon[pos] in mixture_dict.keys():
-                    for r in mixture_dict[codon[pos]]:
-                        rcodon = codon[0:pos] + r + codon[(pos+1):]
-                        if codon_dict[rcodon] not in resolved_AAs:
-                            resolved_AAs.append(codon_dict[rcodon])
-            aa_seq += '?' if (len(resolved_AAs) > 1) else resolved_AAs[0]
-        else:
-            aa_seq += '?'
-    return aa_seq
 
 class SequenceReport(object):
     """ Hold the data for several reports related to a sample's genetic sequence.

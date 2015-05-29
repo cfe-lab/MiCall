@@ -215,6 +215,7 @@ class MiCall(tk.Frame):
             conseq_csv = open(os.path.join(self.workdir, prefix+'.conseq.csv'), 'w')
             failed_align_csv = open(os.path.join(self.workdir, prefix+'.failed_align.csv'), 'w')
             nuc_variants_csv = open(os.path.join(self.workdir, prefix+'.nuc_variants.csv'), 'w')
+
             output_files += map(lambda x: x.name, [nuc_csv, amino_csv, coord_ins_csv, conseq_csv, failed_align_csv,
                                                     nuc_variants_csv])
 
@@ -222,6 +223,13 @@ class MiCall(tk.Frame):
             self.parent.update_idletasks()
             aln2counts(aligned_csv, nuc_csv, amino_csv, coord_ins_csv, conseq_csv, failed_align_csv, nuc_variants_csv,
                        self.workdir)
+
+            self.write('Performing g2p scoring on samples covering HIV-1 V3\n')
+            self.parent.update_idletasks()
+            g2p_csv = os.path.join(self.workdir, prefix+'.g2p.csv')
+            subprocess.check_call(['sam_g2p.sh', remap_csv.name, nuc_csv.name, g2p_csv])
+
+
 
         # prevent rerun until a new folder is loaded
         self.button_run.config(state=tk.DISABLED)

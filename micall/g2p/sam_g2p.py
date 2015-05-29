@@ -1,4 +1,5 @@
-import pssm_lib
+import sys
+from micall.g2p.pssm_lib import Pssm
 import argparse
 from csv import DictReader
 from micall.core.sam2aln import apply_cigar, merge_pairs
@@ -55,6 +56,7 @@ class RegionTracker:
 
 
 def main():
+    pssm = Pssm()
     args = parse_args()
 
     pairs = {}  # cache read for pairing
@@ -62,34 +64,37 @@ def main():
     tracker = RegionTracker('V3LOOP')
 
     # look up clipping region for each read
-    with DictReader(args.nuc_csv) as reader:
-        for row in reader:
-            tracker.add_nuc(row['seed'], row['region'], int(row['query_pos'])-1)
+    reader = DictReader(args.nuc_csv)
+    for row in reader:
+        if row['query.nuc.pos'] == '':
+            continue
+        tracker.add_nuc(row['seed'], row['region'], int(row['query.nuc.pos'])-1)
 
-    with DictReader(args.remap_csv) as reader:
-        for row in reader:
-            clip_from, clip_to = tracker.get_range(row['rname'])
-            if clip_from is None:
-                # uninteresting region
-                continue
+    reader = DictReader(args.remap_csv)
+    for row in reader:
+        clip_from, clip_to = tracker.get_range(row['rname'])
+        if clip_from is None:
+            # uninteresting region
+            continue
 
-            seq, qual = apply_cigar(row['cigar'], row['seq'], row['qual'])
-            offset = int(row['pos'])-1
-            seq2 = ('-' * offset + seq)[clip_from:clip_to]
-            qual2 = ('!' * offset + qual)[clip_from:clip_to]
+        shift, seq, qual, insertions = apply_cigar(row['cigar'], row['seq'], row['qual'])
+        offset = int(row['pos'])-1
+        seq2 = ('-' * offset + seq)[clip_from:(clip_to+1)]
+        qual2 = ('!' * offset + qual)[clip_from:(clip_to+1)]
 
-            mate = pairs.get(row['qname'], None)
-            if mate:
-                # merge reads
-                seq1 = mate['seq']
-                qual1 = mate['qual']
-                mseq = merge_pairs(seq1, seq2, qual1, qual2)
-                if mseq not in merged:
-                    merged.update({mseq: 0})
-                merged[mseq] += 1
+        mate = pairs.get(row['qname'], None)
+        if mate:
+            # merge reads
+            seq1 = mate['seq']
+            qual1 = mate['qual']
+            mseq = merge_pairs(seq1, seq2, qual1, qual2)
+            if mseq not in merged:
+                merged.update({mseq: 0})
+            merged[mseq] += 1
 
-            else:
-                pairs.update({row['qname']: {'seq': seq2, 'qual': qual2}})
+        else:
+            pairs.update({row['qname']: {'seq': seq2, 'qual': qual2}})
+
 
     sorted = [(v,k) for k, v in merged.iteritems()]
     sorted.sort(reverse=True)
@@ -134,19 +139,21 @@ def main():
                 f.write('%s,,,%s,length\n' % (prefix, prot))
                 continue
 
-            score, aligned = pssm_lib.run_g2p(seq)
+            score, aligned = pssm.run_g2p(seq)
             try:
-                aligned2 = ''.join(aligned)
+                aligned2 = ''.join([aa_list[0] for aa_list in aligned])
             except:
                 # sequence failed to align
                 f.write('%s,%s,,,failed to align\n' % (prefix, score))
                 continue
 
-            fpr = pssm_lib.g2p_to_fpr(score)
+            fpr = pssm.g2p_to_fpr(score)
             f.write('%s,%s,%s,%s,\n' % (prefix, score, fpr, aligned2))
 
         f.close()
 
 
 if __name__ == '__main__':
+    # note, must be called from project root if executing directly
+    # i.e., python micall/g2p/sam_g2p.py -h
     main()

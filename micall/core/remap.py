@@ -452,6 +452,9 @@ def main():
                         help='<output> FASTQ R2 of reads that failed to map to any region')
 
     args = parser.parse_args()
+    remap(fastq1=args.fastq1, fastq2=args.fastq2, prelim_csv=args.prelim_csv, remap_csv=args.remap_csv,
+          remap_counts_csv=args.remap_counts_csv, remap_conseq_csv=args.remap_conseq_csv,
+          unmapped1=args.unmapped1, unmapped2=args.unmapped2)
 
 if __name__ == '__main__':
     main()

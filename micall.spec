@@ -8,7 +8,9 @@ a = Analysis(['micall.py'],
 a.datas += [
     ('micall/projects.json', 'micall/projects.json', 'DATA'),
     ('bowtie2', 'bin/bowtie2', 'DATA'),
-    ('bowtie2-build', 'bin/bowtie2-build', 'DATA')
+    ('bowtie2-build', 'bin/bowtie2-build', 'DATA'),
+    ('micall/g2p/g2p.matrix', 'micall/g2p/g2p.matrix', 'DATA'),
+    ('micall/g2p/g2p_fpr.txt', 'micall/g2p/g2p_fpr.txt', 'DATA'),
 ]
 
 a.binaries += [

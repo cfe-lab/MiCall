@@ -3,8 +3,6 @@ Utility function for translating nucleotides (codons) into amino acids.
 """
 import re
 
-amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
-
 codon_dict = {'TTT':'F', 'TTC':'F', 'TTA':'L', 'TTG':'L',
                 'TCT':'S', 'TCC':'S', 'TCA':'S', 'TCG':'S',
                 'TAT':'Y', 'TAC':'Y', 'TAA':'*', 'TAG':'*',
@@ -42,7 +40,7 @@ def translate (seq, offset=0, resolve=False, return_list=False):
     :return: string (AA sequence) or list of lists if return_list=True
     """
 
-    seq = '-'*offset + seq
+    seq = '-'*offset + seq.upper()
     aa_list = []
     aa_seq = ''	# use to align against reference, for resolving indels
 

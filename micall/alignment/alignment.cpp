@@ -687,10 +687,45 @@ void widen_gaps(string* seq)
         return retval;
     }
 
+    static PyObject * align_it_aa_rb(PyObject * self, PyObject * args)
+    {
+        // emulate Ruby implementation of align_it_aa
+        const char * standard;
+        const char * seq;
+        int gap_init_penalty;
+        int gap_extend_penalty;
+
+        if (!PyArg_ParseTuple(args, "ssii", &standard, &seq, &gap_init_penalty, &gap_extend_penalty)) {
+            return NULL;
+        }
+
+        init_pairscore_aa(4, -2);
+
+        string* seqa = new string(standard);  // reference
+        string* seqb = new string(seq);  // query
+        trim(seqa);
+        trim(seqb);
+        degap(seqa);
+        degap(seqb);
+        string* newseqa = new string();
+        string* newseqb = new string();
+
+        align(seqa, seqb, newseqa, newseqb, gap_init_penalty, gap_extend_penalty, 0);
+
+        PyObject * retval = Py_BuildValue("ss", newseqa->c_str(), newseqb->c_str());
+        delete seqa;
+        delete seqb;
+        delete newseqa;
+        delete newseqb;
+
+        return retval;
+    }
+
     static PyMethodDef AlignmentMethods [] =
     {
         {"align_it", align_it, METH_VARARGS, "Pairwise alignment of nucleotide sequences."},
         {"align_it_aa", align_it_aa, METH_VARARGS, "Pairwise alignment of protein sequences using empirical HIV 25% score matrix."},
+        {"align_it_aa_rb", align_it_aa_rb, METH_VARARGS, "Pairwise alignment of protein sequences using ReCall settings."},
         {NULL, NULL, 0, NULL}
     };
 
