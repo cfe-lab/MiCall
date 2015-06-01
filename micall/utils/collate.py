@@ -45,6 +45,33 @@ import os
 #                     continue
 #                 f_out.write("{},{},{},{}\n".format(sample, region, q, line.rstrip("\n")))
 
+
+def collate_named_files(src_dir, sample_list, extension, output_path):
+    """
+    Collate files
+    :param src_dir: directory to copy files from
+    :param sample_list: sample prefix to match by wildcard
+    :param extension: filetype to collate (e.g., '.nuc.csv')
+    :param output_path: path to write results to
+    :return:
+    """
+    with open(output_path, 'w') as fout:
+        is_header_written = False
+        for samplename in sample_list:
+            srcfile = os.path.join(src_dir, samplename+extension)
+            if not os.path.exists(srcfile):
+                continue
+            with open(srcfile, 'rU') as fin:
+                for i, line in enumerate(fin):
+                    if i == 0:
+                        if not is_header_written:
+                            fout.write('sample,')
+                            fout.write(line)
+                            is_header_written = True
+                    else:
+                        fout.write(samplename + ',')
+                        fout.write(line)
+
 def collate_labeled_files(pattern, output_path):
     """ Collate files that are already labeled on each row.
     

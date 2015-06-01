@@ -26,7 +26,25 @@ import miseq_logging
 import project_config
 from micall.settings import bowtie_threads, consensus_q_cutoff,\
     max_remaps, min_mapping_efficiency
+from micall.core.sam2aln import sam2aln
+from micall.core.aln2counts import aln2counts
 from operator import itemgetter
+
+# SAM file format
+fieldnames = [
+    'qname',
+    'flag',
+    'rname',
+    'pos',
+    'mapq',
+    'cigar',
+    'rnext',
+    'pnext',
+    'tlen',
+    'seq',
+    'qual'
+]
+
 
 def resource_path(target):
     return os.path.join('' if not hasattr(sys, '_MEIPASS') else sys._MEIPASS, target)
@@ -53,7 +71,8 @@ def is_primer(read_row, max_primer_length):
     return match_length <= max_primer_length
 
 
-def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_csv, unmapped1, unmapped2, cwd=None, nthreads=None):
+def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_csv, unmapped1, unmapped2,
+          cwd=None, nthreads=None, callback=None):
     if cwd is not None:
         os.chdir(cwd)
     max_pileup_depth = str(2**16)
@@ -106,13 +125,13 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         count_threshold = 10 # must have more than this to get remapped at all
         for refname, group in itertools.groupby(reader, itemgetter('rname')):
             # reconstitute region-specific SAM files
-            tmpfile = open('%s.sam' % refname, 'w')
+            #tmpfile = open('%s.sam' % refname, 'w')
             count = 0
             filtered_count = 0
             for row in group:
-                tmpfile.write('\t'.join([row[field]
-                                         for field in reader.fieldnames]))
-                tmpfile.write('\n')
+                #tmpfile.write('\t'.join([row[field]
+                #                         for field in reader.fieldnames]))
+                #tmpfile.write('\n')
                 count += 1
                 if not is_primer(row, max_primer_length):
                     filtered_count += 1
@@ -121,7 +140,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                                               count=count,
                                               filtered_count=filtered_count))
             map_counts[refname] = count
-            tmpfile.close()
+            #tmpfile.close()
             refgroup = projects.getSeedGroup(refname)
             _best_ref, best_count = refgroups.get(refgroup,
                                                   (None, count_threshold))
@@ -133,130 +152,106 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     # settings for iterative remapping
     n_remaps = 0
     frozen = []  # which regions to stop re-mapping
-    tmpfile = 'temp.sam'  # temporary bowtie2-align output
 
+    samfile = open(prelim_csv.name, 'rU')  # re-open file
     conseqs = {}
 
     while n_remaps < max_remaps:
-        if len(frozen) == len(refnames):
-            # every region is frozen
+        if callback:
+            callback(0)  # reset progress bar (standalone app only)
+
+        # update references by generating consensus sequences from current SAM CSV
+        tmpfile = open('remap-aligned.csv', 'w')
+        nullfile = open(os.devnull, 'w')
+        sam2aln(remap_csv=samfile, aligned_csv=tmpfile, insert_csv=nullfile, failed_csv=nullfile)
+
+        tmpfile = open('remap-aligned.csv', 'rU')
+        confile = open('remap-conseq.csv', 'w')
+        aln2counts(aligned_csv=tmpfile, nuc_csv=nullfile, amino_csv=nullfile, coord_ins_csv=nullfile,
+                   conseq_csv=confile, failed_align_csv=nullfile, nuc_variants_csv=nullfile)
+
+        handle = open(confile.name, 'rU')
+        outfile = open('remap-conseq.fa', 'w')
+        _ = handle.next()  # header
+        for line in handle:
+            region, qcut, pcut, sequence = line.strip('\n').split(',')
+            if pcut == 'MAX':
+                conseqs.update({region: sequence})
+                outfile.write('>%s\n%s\n' % (region, sequence))
+        handle.close()
+        outfile.close()
+
+        # regenerate bowtie2 index files
+        log_call([resource_path('bowtie2-build'), '-f', '-q', outfile.name, outfile.name])
+
+        # stream output from bowtie2
+        bowtie_args = [resource_path('bowtie2'),
+                       '--quiet',
+                       '-x', outfile.name,
+                       '-1', fastq1,
+                       '-2', fastq2,
+                       '--no-unal', # don't report reads that failed to align
+                       '--no-hd', # no header lines (start with @)
+                       '--local',
+                       '--rdg 12,3',  # increase gap open penalties
+                       '--rfg 12,3',
+                       '-p', str(bowtie_threads) if nthreads is None else str(nthreads)]
+
+        # regenerate SAM CSV output
+        remap_csv.close()
+        remap_csv = open(remap_csv.name, 'w')  # reset file
+        remap_writer = csv.DictWriter(remap_csv, fieldnames)
+        remap_writer.writeheader()
+
+        mapped = {}
+        new_counts = {}
+        p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
+        with p.stdout:
+            for i, line in enumerate(p.stdout):
+                if callback and i%1000 == 0:
+                    callback(i)
+                items = line.split('\t')
+                qname, bitflag, refname = items[:3]
+                if not refname in new_counts:
+                    new_counts.update({refname: 0})
+                new_counts[refname] += 1
+
+                if qname not in mapped:
+                    mapped.update({qname: 0})
+                # track how many times this read has mapped to a region with integer value
+                # 0(00) = neither; 2(10) = forward only; 1(01) = reverse only; 3(11) both
+                mapped[qname] += (2 if is_first_read(bitflag) else 1)
+
+                # write SAM line to remap CSV
+                remap_writer.writerow(dict(zip(fieldnames, items)))
+
+        samfile = remap_csv  # now target this file for regenerating consensus sequences
+        n_remaps += 1
+        if callback:
+            callback('... remap iteration %d' % n_remaps)
+
+        # stopping criterion 1
+        if all([(count <= map_counts[refname]) for refname, count in new_counts.iteritems()]):
             break
 
-        for refname in refnames:
-            if refname in frozen:
-                # don't attempt to re-map this region
-                continue
+        map_counts = new_counts  # update counts
 
-            samfile = refname+'.sam'
-            bamfile = refname+'.bam'
-            confile = refname+'.conseq'
-
-            # convert SAM to BAM
-            redirect_call([resource_path('samtools'), 'view', '-b', '-T', confile if refname in conseqs else ref_path, samfile], bamfile)
-
-            log_call([resource_path('samtools'), 'sort', bamfile, refname])  # overwrite
-
-            # BAM to pileup
-            pileup_path = bamfile+'.pileup'
-            redirect_call([resource_path('samtools'), 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
-
-            #TODO: what's the difference between this consensus and the one in aln2counts.py?
-            # pileup to consensus sequence
-            with open(pileup_path, 'rU') as f:
-                new_conseq = pileup_to_conseq(f, consensus_q_cutoff)
-
-            if len(new_conseq) == 0:
-                # failed to generate consensus from this pileup
-                # usually because no reads passed filter
-                frozen.append(refname)
-                continue
-
-            # generate *.faidx for later calls to samtools-view
-            handle = open(confile, 'w')
-            handle.write('>%s\n%s\n' % (refname, new_conseq))
-            handle.close()
-            log_call([resource_path('samtools'), 'faidx', confile])
-
-            # consensus to *.bt2
-            log_call([resource_path('bowtie2-build'), '-c', '-q', new_conseq, refname])
-            #TODO: Should we map all references at the same time?
-            log_call([resource_path('bowtie2'),
-                      '--quiet',
-                      '-p', str(bowtie_threads) if nthreads is None else str(nthreads),
-                      '--local',  # allow some characters on ends to not participate in map
-                      '-x', refname,
-                      '-1', fastq1,
-                      '-2', fastq2,
-                      '--rdg 12,3',  # increase gap open penalties
-                      '--rfg 12,3',
-                      '--no-unal',
-                      '-S', tmpfile]  # output
-            )
-
-            # how many reads did we map?
-            count = count_file_lines(tmpfile) - 3  # ignore SAM header
-            
-            if count >= map_counts[refname]:
-                # overwrite previous SAM file
-                os.rename(tmpfile, samfile)
-                conseqs[refname] = new_conseq
-                map_counts[refname] = count
-
-            if count <= map_counts[refname]:
-                # failed to improve the number of mapped reads
-                frozen.append(refname)
-
-        n_remaps += 1
+        # stopping criterion 2
         mapping_efficiency = sum(map_counts.values()) / float(raw_count)
         if mapping_efficiency > min_mapping_efficiency:
             break  # a sufficient fraction of raw data has been mapped
 
-    mapped = {}  # track which reads have been mapped to a region
+    ## finished iterative phase
 
-    # generate outputs
+    # write consensus sequences and counts
     remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
-    # combine SAM files into single CSV output
-    fieldnames = ['qname', 
-                  'flag',
-                  'rname',
-                  'pos',
-                  'mapq',
-                  'cigar',
-                  'rnext',
-                  'pnext',
-                  'tlen',
-                  'seq',
-                  'qual']
-    remap_writer = csv.DictWriter(remap_csv, fieldnames)
-    remap_writer.writeheader()
-
     for refname in refnames:
         remap_counts_writer.writerow(dict(sample_name=sample_name,
                                           type='remap %s' % refname,
                                           count=map_counts[refname]))
         conseq = conseqs.get(refname) or projects.getReference(refname)
         remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
-        # transfer contents of last SAM file to CSV
-        handle = open(refname+'.sam', 'rU')
-        for line in handle:
-            if line.startswith('@'):
-                continue  # omit SAM header lines
-            items = line.strip('\n').split('\t')[:11]
-            qname = items[0]
-            bitflag = items[1]
 
-            if qname not in mapped:
-                mapped.update({qname: 0})
-
-            # track how many times this read has mapped to a region with integer value
-            # 0(00) = neither; 2(10) = forward only; 1(01) = reverse only; 3(11) both
-            mapped[qname] += (2 if is_first_read(bitflag) else 1)
-
-            items[2] = refname  # replace '0' due to passing conseq to bowtie2-build on cmd line
-            remap_writer.writerow(dict(zip(fieldnames, items)))
-        handle.close()
-
-    remap_csv.close()
     remap_conseq_csv.close()
 
     # screen raw data for reads that have not mapped to any region

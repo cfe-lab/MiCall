@@ -1,6 +1,9 @@
 import os
+
 import Tkinter as tk
+from ttk import Progressbar
 import tkFileDialog
+
 import shutil
 import subprocess
 from micall.utils.sample_sheet_parser import sample_sheet_parser
@@ -17,16 +20,20 @@ from micall.settings import pipeline_version
 from multiprocessing import cpu_count
 from micall.utils import collate
 
-files_to_collate = (('amino_frequencies.csv', '*.amino.csv'),
-                    ('collated_conseqs.csv', '*.conseq.csv'),
+import re
+
+fastq_re = re.compile('_L001_R[12]_001.fastq')
+
+files_to_collate = (('amino_frequencies.csv', '.amino.csv'),
+                    ('collated_conseqs.csv', '.conseq.csv'),
                     ('failed_align.csv', None),
                     ('failed_read.csv', None),
                     ('g2p.csv', None),
                     ('conseq_ins.csv', None),
                     ('coord_ins.csv', None),
-                    ('nucleotide_frequencies.csv', '*.nuc.csv'),
+                    ('nucleotide_frequencies.csv', '.nuc.csv'),
                     ('nuc_variants.csv', None),
-                    ('collated_counts.csv', '*.remap_counts.csv'))
+                    ('collated_counts.csv', '.remap_counts.csv'))
 
 def resource_path(target):
     return os.path.join('' if not hasattr(sys, '_MEIPASS') else sys._MEIPASS, target)
@@ -61,25 +68,28 @@ class MiCall(tk.Frame):
         self.button_load = tk.Button(
             self.button_frame, text="Select run folder", command=self.open_files
         )
-        self.button_load.grid(row=0, column=1, sticky='W')
+        self.button_load.grid(row=0, column=0, sticky='W')
 
         self.button_run = tk.Button(
             self.button_frame, text="Run", command=self.process_files, state=tk.DISABLED
         )
-        self.button_run.grid(row=0, column=2, sticky='W')
+        self.button_run.grid(row=0, column=1, sticky='W')
 
         self.button_quit = tk.Button(
             self.button_frame, text='Quit', command=self.quit
         )
-        self.button_quit.grid(row=0, column=3, sticky='W')
+        self.button_quit.grid(row=0, column=2, sticky='W')
 
         self.thread_label = tk.Label(self.button_frame, text='#threads')
-        self.thread_label.grid(row=0, column=4, sticky='E')
+        self.thread_label.grid(row=0, column=3, sticky='E')
 
         self.nthreads = tk.IntVar()
         self.nthreads.set(max(1, cpu_count()/2))
         self.thread_select = tk.OptionMenu(self.button_frame, self.nthreads, *[(i+1) for i in range(cpu_count())])
-        self.thread_select.grid(row=0, column=5, sticky='E')
+        self.thread_select.grid(row=0, column=4, sticky='E')
+
+        self.progress_bar = Progressbar(self.button_frame, orient='horizontal', length=500, mode='determinate')
+        self.progress_bar.grid(row=1, columnspan=5)
 
         self.console = tk.Text(
             self.console_frame, bg='black', fg='white', cursor='xterm'
@@ -119,8 +129,7 @@ class MiCall(tk.Frame):
         :return:
         """
         #self.button_setwd.config(state=tk.DISABLED)
-        self.button_load.config(state=tk.DISABLED)
-
+        #self.button_load.config(state=tk.DISABLED)
         self.rundir = tkFileDialog.askdirectory()
         self.write('Selected folder %s\n' % (self.rundir,))
 
@@ -135,7 +144,8 @@ class MiCall(tk.Frame):
                             run_info = sample_sheet_parser(handle)
                     except:
                         raise
-                if file.endswith('_R1_001.fastq') or file.endswith('_R1_001.fastq.gz'):
+
+                if len(fastq_re.findall(file)) > 0:
                     fastq_files.append(os.path.join(root, file))
 
 
@@ -149,39 +159,54 @@ class MiCall(tk.Frame):
         if run_info is None:
             self.write('Warning, failed to locate run manifest (SampleSheet.csv).\n')
 
-        self.write('Found %d sets of FASTQ files.\n' % (len(fastq_files),))
+        self.write('Found %d FASTQ files.\n' % (len(fastq_files),))
 
         # transfer FASTQ.gz files to working folder
         self.target_files = []
         for src in fastq_files:
             filename = os.path.basename(src)
+            prefix = filename.split('.')[0]
             dest = os.path.join(self.workdir, filename)
-            self.target_files.append(dest.replace('.gz', ''))
 
-            # don't overwrite file if already present
-            if os.path.exists(os.path.join(self.workdir, filename.replace('.gz', ''))):
-                self.write('Found %s in working folder, skipping transfer.\n' % (filename,))
+            if '_R1_001' in dest:
+                self.target_files.append(dest.replace('.gz', ''))
+
+            if os.path.exists(os.path.join(self.workdir, prefix+'.fastq')):
+                # uncompressed file already present
                 continue
-
-            # copy file
-            #self.write('Copying from %s to %s\n' % (src, dest))
-            shutil.copy(src, dest)
-
-            src2 = src.replace('_R1_001', '_R2_001')
-            dest2 = os.path.join(self.workdir, os.path.basename(src2))
-            shutil.copy(src2, dest2)
-
-            # decompress files
-            #self.write('Uncompressing files\n')
-            if filename.endswith('.gz'):
+            elif os.path.exists(os.path.join(self.workdir, prefix+'.fastq.gz')):
                 subprocess.check_call(['gunzip', dest])
-                subprocess.check_call(['gunzip', dest2])
+                continue
+            else:
+                # neither file type is present
+                shutil.copy(src, dest)
+                if dest.endswith('.gz'):
+                    subprocess.check_call(['gunzip', dest])
+
 
         # remove duplicate entries
         self.target_files = list(set(self.target_files))
 
-        self.write('Transferred and uncompressed %d FASTQ files to working directory.\n' % len(self.target_files))
+        self.write('Transferred %d sets of FASTQ files to working directory.\n' % len(self.target_files))
         self.button_run.config(state=tk.ACTIVE)
+
+    def line_count(self, file):
+        """
+        Count number of records in a FASTQ file
+        :param file:
+        :return:
+        """
+        p = subprocess.Popen(['wc', '-l', file], stdout=subprocess.PIPE)
+        output = p.communicate()[0]
+        return int(output.strip(' \n').split()[0]) / 4
+
+    def callback(self, msg):
+        if type(msg) is int:
+            self.progress_bar['value'] = msg
+        elif type(msg) is str:
+            self.write(msg+'\n')
+
+        self.parent.update_idletasks()
 
 
     def process_files(self):
@@ -199,14 +224,22 @@ class MiCall(tk.Frame):
 
         for fastq1 in self.target_files:
             fastq2 = fastq1.replace('_R1_001', '_R2_001')
+            if not os.path.exists(fastq2):
+                self.write('ERROR: Missing R2 file for', fastq1)
+                continue
+
             prefix = os.path.basename(fastq1).replace('_L001_R1_001.fastq', '')
             output_csv = fastq1.replace('_L001_R1_001.fastq', '.prelim.csv')
             working_files.append(output_csv)
 
-            self.write('Preliminary map of %s\n' % (prefix,))
+            self.write('Processing sample %s\n... preliminary mapping\n' % (prefix,))
+            nrecords = self.line_count(fastq1)
+            self.progress_bar['value'] = 0
+            self.progress_bar['maximum'] = nrecords
             self.parent.update_idletasks()  # flush buffer
+
             with open(output_csv, 'w') as handle:
-                prelim_map(fastq1, fastq2, handle, self.workdir, nthreads=self.nthreads.get())
+                prelim_map(fastq1, fastq2, handle, self.workdir, nthreads=self.nthreads.get(), callback=self.callback)
 
             # prepare file handles for remap stage
             prelim_csv = open(output_csv, 'rU')
@@ -217,10 +250,11 @@ class MiCall(tk.Frame):
             unmapped2 = open(os.path.join(self.workdir, prefix+'.unmapped2.fastq'), 'w')
             working_files += map(lambda x: x.name, [remap_csv, counts_csv, conseq_csv, unmapped1, unmapped2])
 
-            self.write('Iterative remap of %s\n' % (prefix,))
+            self.write('... remapping\n')
             self.parent.update_idletasks()
+            self.progress_bar['value'] = 0
             remap(fastq1, fastq2, prelim_csv, remap_csv, counts_csv, conseq_csv, unmapped1, unmapped2, self.workdir,
-                  nthreads=self.nthreads.get())
+                  nthreads=self.nthreads.get(), callback=self.callback)
 
             # prepare file handles for conversion from SAM format to alignment
             remap_csv = open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU')
@@ -229,7 +263,7 @@ class MiCall(tk.Frame):
             failed_csv = open(os.path.join(self.workdir, prefix+'.failed.csv'), 'w')
             working_files += map(lambda x: x.name, [aligned_csv, insert_csv, failed_csv])
 
-            self.write('Converting mapped reads into alignment\n')
+            self.write('... converting into alignment\n')
             self.parent.update_idletasks()
             sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv)
 
@@ -241,17 +275,17 @@ class MiCall(tk.Frame):
             failed_align_csv = open(os.path.join(self.workdir, prefix+'.failed_align.csv'), 'w')
             nuc_variants_csv = open(os.path.join(self.workdir, prefix+'.nuc_variants.csv'), 'w')
 
-            self.write('Extracting statistics from alignments\n')
+            self.write('... extracting statistics from alignments\n')
             self.parent.update_idletasks()
             aln2counts(aligned_csv, nuc_csv, amino_csv, coord_ins_csv, conseq_csv, failed_align_csv, nuc_variants_csv,
                        self.workdir)
 
-            self.write('Generating coverage plots\n')
+            self.write('... generating coverage plots\n')
             self.parent.update_idletasks()
             amino_csv = open(os.path.join(self.workdir, prefix+'.amino.csv'), 'rU')
             image_paths += coverage_plot(amino_csv)
 
-            self.write('Performing g2p scoring on samples covering HIV-1 V3\n')
+            self.write('... performing g2p scoring on samples covering HIV-1 V3\n')
             self.parent.update_idletasks()
             remap_csv = open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU')
             nuc_csv = open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'rU')
@@ -265,15 +299,17 @@ class MiCall(tk.Frame):
         savedir = tkFileDialog.askdirectory(title='Select folder to save results')
 
         # collate results to results folder
-        for target_file, pattern in files_to_collate:
-            if pattern is None:
-                pattern = '*.' + target_file
-            collate.collate_labeled_files(os.path.join(self.workdir, pattern),
-                                          os.path.join(savedir, target_file))
+        prefixes = ['_'.join(os.path.basename(fn).split('_')[:2]) for fn in self.target_files]
+        for target_file, extension in files_to_collate:
+            if extension is None:
+                extension = '.' + target_file
+            collate.collate_named_files(src_dir=self.workdir, sample_list=prefixes, extension=extension,
+                                        output_path=os.path.join(savedir, target_file))
 
         # copy coverage plots
         imagedir = os.path.join(savedir, 'coverage')
-        os.mkdir(imagedir)
+        if not os.path.exists(imagedir):
+            os.mkdir(imagedir)
         for src in image_paths:
             dest = os.path.join(imagedir, os.path.basename(src))
             shutil.move(src, dest)

@@ -2,7 +2,8 @@ import os
 import argparse
 import itertools
 from csv import DictReader
-from matplotlib.pyplot import step, xlabel, ylabel, savefig, close
+#from matplotlib.pyplot import step, xlabel, ylabel, savefig, close
+from matplotlib import pyplot as plt
 from operator import itemgetter
 from micall.core import project_config
 from micall.settings import amino_alphabet
@@ -29,15 +30,14 @@ def coverage_plot(amino_csv):
             total = sum([int(row[aa]) for aa in amino_alphabet])
             y[pos] = total
 
-        step(x,y)
-        xlabel('Reference coordinates (AA)', fontsize=18)
-        ylabel('Coverage', fontsize=18)
+        plt.step(x,y)
+        plt.xlabel('Reference coordinates (AA)', fontsize=18)
+        plt.ylabel('Coverage', fontsize=18)
         figname = '%s.%s.png' % (prefix, region)
         dest = os.path.join(path, figname)
-        print dest
         paths.append(dest)
-        savefig(dest)  # write image to file
-        close()
+        plt.savefig(dest)  # write image to file
+        plt.close()
 
     return paths  # locations of image files
 

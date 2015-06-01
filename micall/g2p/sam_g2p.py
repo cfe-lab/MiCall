@@ -3,6 +3,7 @@ from csv import DictReader
 from micall.core.sam2aln import apply_cigar, merge_pairs
 from micall.utils.translation import translate
 
+
 QMIN = 20   # minimum base quality within insertions
 QCUT = 10   # minimum base quality to not be censored
 QDELTA = 5
@@ -50,7 +51,7 @@ class RegionTracker:
         :param seed: name of the seed region
         :return: array of two integers
         """
-        return self.ranges[seed]
+        return self.ranges.get(seed, [None, None])
 
 
 def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
@@ -62,6 +63,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
     reader = DictReader(nuc_csv)
     for row in reader:
         if row['query.nuc.pos'] == '':
+            # skip deletions in query relative to reference
             continue
         tracker.add_nuc(row['seed'], row['region'], int(row['query.nuc.pos'])-1)
 
@@ -136,21 +138,24 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
 
             score, aligned = pssm.run_g2p(seq)
             try:
-                aligned2 = ''.join([aa_list[0] for aa_list in aligned])
+                aligned2 = ''.join([aa_list[0] if len(aa_list) == 1 else '[%s]'%''.join(aa_list)
+                                    for aa_list in aligned])
             except:
                 # sequence failed to align
                 f.write('%s,%s,,,failed to align\n' % (prefix, score))
                 continue
 
             fpr = pssm.g2p_to_fpr(score)
-            f.write('%s,%s,%s,%s,\n' % (prefix, score, fpr, aligned2))
+            f.write(','.join(map(str, [prefix, score, fpr, aligned2, 'ambiguous' if '[' in aligned2 else '']))+'\n')
 
         f.close()
 
 
 def main():
     args = parse_args()
-    sam_g2p(remap_csv=args.remap_csv, nuc_csv=args.nuc_csv, g2p_csv=args.g2p_csv)
+    from micall.g2p.pssm_lib import Pssm
+    pssm = Pssm()
+    sam_g2p(pssm=pssm, remap_csv=args.remap_csv, nuc_csv=args.nuc_csv, g2p_csv=args.g2p_csv)
 
 if __name__ == '__main__':
     # note, must be called from project root if executing directly

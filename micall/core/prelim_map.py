@@ -35,7 +35,7 @@ def resource_path(target):
 
 
 
-def prelim_map(fastq1, fastq2, prelim_csv, cwd=None, nthreads=None):
+def prelim_map(fastq1, fastq2, prelim_csv, cwd=None, nthreads=None, callback=None):
     if cwd is not None:
         os.chdir(cwd)
 
@@ -84,7 +84,9 @@ def prelim_map(fastq1, fastq2, prelim_csv, cwd=None, nthreads=None):
                    '-p', str(settings.bowtie_threads) if nthreads is None else str(nthreads)]
     p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
     with p.stdout:
-        for line in p.stdout:
+        for i, line in enumerate(p.stdout):
+            if callback and i%1000 == 0:
+                callback(i)
             refname = line.split('\t')[2]  # read was mapped to this reference
             if not refname in output:
                 output.update({refname: []})
