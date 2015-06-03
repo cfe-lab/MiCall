@@ -26,8 +26,7 @@ import miseq_logging
 import project_config
 from micall.settings import bowtie_threads, consensus_q_cutoff,\
     max_remaps, min_mapping_efficiency
-from micall.core.sam2aln import sam2aln
-from micall.core.aln2counts import aln2counts
+from micall.core.sam2aln import cigar_re
 from operator import itemgetter
 
 # SAM file format
@@ -245,7 +244,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
 
     # write consensus sequences and counts
     remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
-    for refname in refnames:
+    for refname in map_counts.iterkeys():
         remap_counts_writer.writerow(dict(sample_name=sample_name,
                                           type='remap %s' % refname,
                                           count=map_counts[refname]))
@@ -282,6 +281,94 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     remap_counts_writer.writerow(dict(sample_name=sample_name,
                                       type='unmapped',
                                       count=n_unmapped))
+
+
+def csv_to_pileup (sam_csv):
+    """
+    Convert a SAM-style CSV file into samtools pileup-like format in memory.
+    Process inline by region.  Also return numbers of reads mapped to each region.
+    :param sam_csv: Product of prelim_map.py or iterative remapping.
+    :return: dictionary by region, keying dictionaries of concatenated bases by position
+    """
+    pileup = {}
+    counts = {}
+    reader = csv.DictReader(sam_csv)
+    for row in reader:
+        refname = row['rname']
+        if refname not in pileup:
+            pileup.update({refname: {}})
+        if refname not in counts:
+            counts.update({refname: 0})
+        counts[refname] += 1
+
+        cigar = row['cigar']
+        seq = row['seq']
+        qual = row['qual']
+        mapq = row['mapq']
+        offset = int(row['pos'])
+
+        pos = 0  # position in sequence
+        refpos = offset # position in reference
+
+        tokens = cigar_re.findall(cigar)
+        if tokens[0].endswith('S'):
+            # skip left soft clip
+            pos = int(token[:-1])
+            tokens.pop(0)  # remove this first token
+
+        if not tokens[0].endswith('M'):
+            # the leftmost token must end with M
+            print 'ERROR: CIGAR token after soft clip must be match interval'
+            sys.exit()
+
+        # record start of read
+        if refpos not in pileup[refname]:
+            # keys 's' = sequence, 'q' = quality string
+            pileup[refname].update({refpos: {'s': '', 'q': ''}})
+        pileup[refname][refpos]['s'] += '^' + chr(int(mapq))
+
+        for token in tokens:
+            length = int(token[:-1])
+            if token.endswith('M'):
+                # match
+                for i in range(length):
+                    if refpos not in pileup[refname]:
+                        pileup[refname].update({refpos: {'s': '', 'q': ''}})
+                    pileup[refname][refpos]['s'] += seq[pos]
+                    pileup[refname][refpos]['q'] += qual[pos]
+                    pos += 1
+                    refpos += 1
+
+            elif token.endswith('D'):
+                # deletion relative to reference
+                # refpos must have been already encountered by preceding match region
+                pileup[refname][refpos]['s'] += '-' + str(length) + 'N'*length
+
+                # append deletion placeholders downstream
+                for i in range(refpos+1, refpos+1+length):
+                    if i not in pileup[refname]:
+                        pileup[refname].update({i: {'s': '', 'q': ''}})
+                    pileup[refname][i]['s'] += '*'
+
+                refpos += length
+
+            elif token.endswith('I'):
+                # insertion relative to reference
+                # FIXME: pileup does not record quality scores of inserted bases
+                # refpos must have been already encountered by preceding match region
+                pileup[refname][refpos]['s'] += '+' + str(length) + seq[pos:(pos+length)]
+                pos += length
+
+            elif token.endswith('S'):
+                # soft clip
+                break
+
+            else:
+                print 'ERROR: Unknown token in CIGAR string', token
+                sys.exit()
+
+    return pileup, counts
+
 
 
 def pileup_to_conseq (handle, qCutoff):
@@ -332,13 +419,14 @@ def pileup_to_conseq (handle, qCutoff):
             elif astr[i] == '$':
                 i += 1
             elif i < len(astr)-1 and astr[i+1] in '+-':
+                # i-th base is followed by an indel indicator
                 m = indel_re.match(astr[i+1:])
                 indel_len = int(m.group().strip('+-'))
                 left = i+1 + len(m.group())
                 insertion = astr[left:(left+indel_len)]
                 q = ord(qstr[j])-33
                 base = astr[i].upper() if q >= qCutoff else 'N'
-                token = base + m.group() + insertion.upper()
+                token = base + m.group() + insertion.upper()  # e.g., A+3ACG
                 if astr[i+1] == '+':
                     alist.append(token)
                 else:
