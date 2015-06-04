@@ -133,4 +133,110 @@ class PileupToConseqTest(unittest.TestCase):
         conseq = remap.pileup_to_conseq(pileupIO, qCutoff)
         
         self.assertSequenceEqual(expected_conseq, conseq)
-        
+
+class SamToPileupTest(unittest.TestCase):
+    def testOffset(self):
+        samIO = StringIO.StringIO(
+            "qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n"
+            "test1,99,test,3,44,12M,=,3,12,ACAAGACCCAAC,JJJJJJJJJJJJ\n"
+            "test1,147,test,3,44,12M,=,3,-12,ACAAGACCCAAC,JJJJJJJJJJJJ\n"
+        )
+        expected_pileup = {'test': {3: {'s': '^MA^Ma', 'q': 'JJ'},
+                                    4: {'s': 'Cc', 'q': 'JJ'},
+                                    5: {'s': 'Aa', 'q': 'JJ'},
+                                    6: {'s': 'Aa', 'q': 'JJ'},
+                                    7: {'s': 'Gg', 'q': 'JJ'},
+                                    8: {'s': 'Aa', 'q': 'JJ'},
+                                    9: {'s': 'Cc', 'q': 'JJ'},
+                                    10: {'s': 'Cc', 'q': 'JJ'},
+                                    11: {'s': 'Cc', 'q': 'JJ'},
+                                    12: {'s': 'Aa', 'q': 'JJ'},
+                                    13: {'s': 'Aa', 'q': 'JJ'},
+                                    14: {'s': 'C$c$', 'q': 'JJ'}
+                                    }}
+        expected_counts = {'test': 2}
+        pileup, counts = remap.csv_to_pileup(samIO)
+        self.maxDiff = None
+        self.assertEqual(pileup, expected_pileup)
+        self.assertEqual(counts, expected_counts)
+
+    def testSimpleInsertion(self):
+        samIO = StringIO.StringIO(
+            "qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n"
+            "test1,99,test,3,44,3M3I9M,=,3,12,ACAGGGAGACCCAAC,JJJJJJJJJJJJJJJ\n"
+            "test1,147,test,3,44,3M3I9M,=,3,-12,ACAGGGAGACCCAAC,JJJJJJJJJJJJJJJ\n"
+        )
+        expected_pileup = {'test': {3: {'s': '^MA^Ma', 'q': 'JJ'},
+                                    4: {'s': 'Cc', 'q': 'JJ'},
+                                    5: {'s': 'A+3GGGa+3ggg', 'q': 'JJ'},
+                                    6: {'s': 'Aa', 'q': 'JJ'},
+                                    7: {'s': 'Gg', 'q': 'JJ'},
+                                    8: {'s': 'Aa', 'q': 'JJ'},
+                                    9: {'s': 'Cc', 'q': 'JJ'},
+                                    10: {'s': 'Cc', 'q': 'JJ'},
+                                    11: {'s': 'Cc', 'q': 'JJ'},
+                                    12: {'s': 'Aa', 'q': 'JJ'},
+                                    13: {'s': 'Aa', 'q': 'JJ'},
+                                    14: {'s': 'C$c$', 'q': 'JJ'}
+                                    }}
+        expected_counts = {'test': 2}
+        pileup, counts = remap.csv_to_pileup(samIO)
+        self.maxDiff = None
+        self.assertEqual(pileup, expected_pileup)
+        self.assertEqual(counts, expected_counts)
+
+    def testComplexInsertion(self):
+        samIO = StringIO.StringIO(
+            "qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n"
+            "test1,99,test,3,44,3M1I3M2I6M,=,3,12,ACAGAGAGGCCCAAC,JJJJJJJJJJJJJJJ\n"
+            "test1,147,test,3,44,3M1I3M2I6M,=,3,-12,ACAGAGAGGCCCAAC,JJJJJJJJJJJJJJJ\n"
+        )
+        expected_pileup = {'test': {3: {'s': '^MA^Ma', 'q': 'JJ'},
+                                    4: {'s': 'Cc', 'q': 'JJ'},
+                                    5: {'s': 'A+1Ga+1g', 'q': 'JJ'},
+                                    6: {'s': 'Aa', 'q': 'JJ'},
+                                    7: {'s': 'Gg', 'q': 'JJ'},
+                                    8: {'s': 'A+2GGa+2gg', 'q': 'JJ'},
+                                    9: {'s': 'Cc', 'q': 'JJ'},
+                                    10: {'s': 'Cc', 'q': 'JJ'},
+                                    11: {'s': 'Cc', 'q': 'JJ'},
+                                    12: {'s': 'Aa', 'q': 'JJ'},
+                                    13: {'s': 'Aa', 'q': 'JJ'},
+                                    14: {'s': 'C$c$', 'q': 'JJ'}
+                                    }}
+        expected_counts = {'test': 2}
+        pileup, counts = remap.csv_to_pileup(samIO)
+        self.maxDiff = None
+        self.assertEqual(pileup, expected_pileup)
+        self.assertEqual(counts, expected_counts)
+
+    def testStaggeredPair(self):
+        samIO = StringIO.StringIO(
+            "qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n"
+            "test1,99,test,3,44,12M,=,3,12,ACAAGACCCAAC,JJJJJJJJJJJJ\n"
+            "test1,147,test,9,44,12M,=,9,-12,CCCAACAACAAT,JJJJJJJJJJJJ\n"
+        )
+        expected_pileup = {'test': {3: {'s': '^MA', 'q': 'J'},
+                                    4: {'s': 'C', 'q': 'J'},
+                                    5: {'s': 'A', 'q': 'J'},
+                                    6: {'s': 'A', 'q': 'J'},
+                                    7: {'s': 'G', 'q': 'J'},
+                                    8: {'s': 'A', 'q': 'J'},
+                                    9: {'s': 'C^Mc', 'q': 'JJ'},
+                                    10: {'s': 'Cc', 'q': 'JJ'},
+                                    11: {'s': 'Cc', 'q': 'JJ'},
+                                    12: {'s': 'Aa', 'q': 'JJ'},
+                                    13: {'s': 'Aa', 'q': 'JJ'},
+                                    14: {'s': 'C$c', 'q': 'JJ'},
+                                    15: {'s': 'a', 'q': 'J'},
+                                    16: {'s': 'a', 'q': 'J'},
+                                    17: {'s': 'c', 'q': 'J'},
+                                    18: {'s': 'a', 'q': 'J'},
+                                    19: {'s': 'a', 'q': 'J'},
+                                    20: {'s': 't$', 'q': 'J'}
+                                    }}
+        expected_counts = {'test': 2}
+        pileup, counts = remap.csv_to_pileup(samIO)
+        self.maxDiff = None
+        self.assertEqual(pileup, expected_pileup)
+        self.assertEqual(counts, expected_counts)

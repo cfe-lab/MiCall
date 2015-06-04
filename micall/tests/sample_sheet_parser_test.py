@@ -76,6 +76,7 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing
         """
         Check each entry in the "Data" dictionary.
         """
+        self.maxDiff = None
         self.assertDictEqual(
             self.ss["Data"],
             {

@@ -26,7 +26,7 @@ import miseq_logging
 import project_config
 from micall.settings import bowtie_threads, consensus_q_cutoff,\
     max_remaps, min_mapping_efficiency
-from micall.core.sam2aln import cigar_re
+from micall.core.sam2aln import cigar_re, is_first_read
 from operator import itemgetter
 
 # SAM file format
@@ -293,28 +293,30 @@ def csv_to_pileup (sam_csv):
     pileup = {}
     counts = {}
     reader = csv.DictReader(sam_csv)
-    for row in reader:
+    for rcount, row in enumerate(reader):
         refname = row['rname']
         if refname not in pileup:
             pileup.update({refname: {}})
         if refname not in counts:
             counts.update({refname: 0})
+
+        # update mapped read counts
         counts[refname] += 1
 
-        cigar = row['cigar']
+        is_first = is_first_read(row['flag'])
         seq = row['seq']
         qual = row['qual']
-        mapq = row['mapq']
-        offset = int(row['pos'])
 
         pos = 0  # position in sequence
-        refpos = offset # position in reference
+        refpos = int(row['pos']) # position in reference
 
-        tokens = cigar_re.findall(cigar)
+        tokens = cigar_re.findall(row['cigar'])
+
         if tokens[0].endswith('S'):
             # skip left soft clip
-            pos = int(token[:-1])
+            pos = int(tokens[0][:-1])
             tokens.pop(0)  # remove this first token
+            print 'soft clip to query position', pos
 
         if not tokens[0].endswith('M'):
             # the leftmost token must end with M
@@ -325,29 +327,26 @@ def csv_to_pileup (sam_csv):
         if refpos not in pileup[refname]:
             # keys 's' = sequence, 'q' = quality string
             pileup[refname].update({refpos: {'s': '', 'q': ''}})
-        pileup[refname][refpos]['s'] += '^' + chr(int(mapq))
+        pileup[refname][refpos]['s'] += '^' + chr(int(row['mapq'])+33)
 
         for token in tokens:
             length = int(token[:-1])
             if token.endswith('M'):
                 # match
                 for i in range(length):
-                    if refpos not in pileup[refname]:
-                        pileup[refname].update({refpos: {'s': '', 'q': ''}})
-                    pileup[refname][refpos]['s'] += seq[pos]
+                    if refpos not in pileup[refname]: pileup[refname].update({refpos: {'s': '', 'q': ''}})
+                    pileup[refname][refpos]['s'] += seq[pos] if is_first else seq[pos].lower()
                     pileup[refname][refpos]['q'] += qual[pos]
                     pos += 1
                     refpos += 1
 
             elif token.endswith('D'):
                 # deletion relative to reference
-                # refpos must have been already encountered by preceding match region
-                pileup[refname][refpos]['s'] += '-' + str(length) + 'N'*length
+                pileup[refname][refpos-1]['s'] += '-' + str(length) + ('N' if is_first else 'n')*length
 
                 # append deletion placeholders downstream
-                for i in range(refpos+1, refpos+1+length):
-                    if i not in pileup[refname]:
-                        pileup[refname].update({i: {'s': '', 'q': ''}})
+                for i in range(refpos, refpos+length):
+                    if i not in pileup[refname]: pileup[refname].update({i: {'s': '', 'q': ''}})
                     pileup[refname][i]['s'] += '*'
 
                 refpos += length
@@ -355,8 +354,8 @@ def csv_to_pileup (sam_csv):
             elif token.endswith('I'):
                 # insertion relative to reference
                 # FIXME: pileup does not record quality scores of inserted bases
-                # refpos must have been already encountered by preceding match region
-                pileup[refname][refpos]['s'] += '+' + str(length) + seq[pos:(pos+length)]
+                insert = seq[pos:(pos+length)]
+                pileup[refname][refpos-1]['s'] += '+' + str(length) + (insert if is_first else insert.lower())
                 pos += length
 
             elif token.endswith('S'):
@@ -366,6 +365,10 @@ def csv_to_pileup (sam_csv):
             else:
                 print 'ERROR: Unknown token in CIGAR string', token
                 sys.exit()
+
+        # record end of read
+        pileup[refname][refpos-1]['s'] += '$'
+
 
     return pileup, counts
 

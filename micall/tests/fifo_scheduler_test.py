@@ -476,7 +476,7 @@ class FactoryTest(unittest.TestCase):
             exception_message = str(e)
          
         self.assertEquals(exception_message, expected_error)
-        log.check(('fifo_scheduler', 
+        log.check(('micall.monitor.fifo_scheduler',
                    'ERROR', 
                    """Command ' python -c "exit(1)"' returned non-zero exit status 1"""))
     

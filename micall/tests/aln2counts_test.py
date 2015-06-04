@@ -1370,10 +1370,18 @@ class TranslateTest(unittest.TestCase):
         
     def testTwoAmbiguousBasesThatAreSynonyms(self):
         nucs = 'MGR' # CGA, CGG, AGA, or AGG: all map to R
+        expected_aminos = 'R'
+
+        aminos = aln2counts.translate(nucs)
+
+        self.assertEqual(expected_aminos, aminos)
+
+    def testTwoAmbiguousBasesThatAreNotSynonyms(self):
+        nucs = 'RGR' # GGA, GGG, AGA, or AGG: map to G and R, respectively
         expected_aminos = '?'
 
         aminos = aln2counts.translate(nucs)
-        
+
         self.assertEqual(expected_aminos, aminos)
 
 class SeedAminoTest(unittest.TestCase):
