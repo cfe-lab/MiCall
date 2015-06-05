@@ -63,8 +63,8 @@ class PileupToConseqTest(unittest.TestCase):
             "GP41-seed\t2\tN\t2\tCc\tAA\n" +
             "GP41-seed\t3\tN\t2\tC+3ATAc+3ata\tAA\n" +
             "GP41-seed\t4\tN\t2\tGg\tAA\n" +
-            "GP41-seed\t2\tN\t2\tCc\tAA\n" +
-            "GP41-seed\t2\tN\t2\tCc\tAA\n")
+            "GP41-seed\t5\tN\t2\tCc\tAA\n" +
+            "GP41-seed\t6\tN\t2\tCc\tAA\n")
         qCutoff = 20
         expected_conseq = "GCCATAGCC"
         
@@ -134,6 +134,96 @@ class PileupToConseqTest(unittest.TestCase):
         
         self.assertSequenceEqual(expected_conseq, conseq)
 
+
+class MakeConsensusTest(unittest.TestCase):
+    def testInsertion(self):
+        pileup = {'GP41-seed': {
+            1: {'s': '^MG^Mg', 'q': 'AA'},
+            2: {'s': 'Cc', 'q': 'AA'},
+            3: {'s': 'C+3ATAc+3ata', 'q': 'AA'},
+            4: {'s': 'Gg', 'q': 'AA'},
+            5: {'s': 'Cc', 'q': 'AA'},
+            6: {'s': 'Cc', 'q': 'AA'}
+        }}
+        last_conseqs = {'GP41-seed': 'GCCGCC'}
+        qCutoff = 20
+        expected_conseqs = {'GP41-seed': 'GCCATAGCC'}
+
+        conseqs = remap.make_consensus(pileup=pileup, last_conseqs=last_conseqs, qCutoff=qCutoff)
+
+        self.assertEqual(conseqs, expected_conseqs)
+
+    def testInsertionShiftsFrame(self):
+        pileup = {'GP41-seed': {
+            1: {'s': '^MG^Mg', 'q': 'AA'},
+            2: {'s': 'Cc', 'q': 'AA'},
+            3: {'s': 'C+2ATc+2at', 'q': 'AA'},
+            4: {'s': 'Gg', 'q': 'AA'},
+            5: {'s': 'Cc', 'q': 'AA'},
+            6: {'s': 'Cc', 'q': 'AA'}
+        }}
+        last_conseqs = {'GP41-seed': 'GCCGCC'}
+        qCutoff = 20
+        expected_conseqs = {'GP41-seed': 'GCCGCC'}
+
+        conseqs = remap.make_consensus(pileup=pileup, last_conseqs=last_conseqs, qCutoff=qCutoff)
+
+        self.assertEqual(conseqs, expected_conseqs)
+
+    def testLongInsertion(self):
+        pileup = {'GP41-seed': {
+            1: {'s': '^MG^Mg', 'q': 'AA'},
+            2: {'s': 'Cc', 'q': 'AA'},
+            3: {'s': 'C+12AAATTTAAATTTc+12aaatttaaattt', 'q': 'AA'},
+            4: {'s': 'Gg', 'q': 'AA'},
+            5: {'s': 'Cc', 'q': 'AA'},
+            6: {'s': 'Cc', 'q': 'AA'}
+        }}
+        last_conseqs = {'GP41-seed': 'GCCGCC'}
+        qCutoff = 20
+        expected_conseqs = {'GP41-seed': 'GCCAAATTTAAATTTGCC'}
+
+        conseqs = remap.make_consensus(pileup=pileup, last_conseqs=last_conseqs, qCutoff=qCutoff)
+
+        self.assertEqual(conseqs, expected_conseqs)
+
+    def testDeletion(self):
+        pileup = {'GP41-seed': {
+            1: {'s': '^MG^Mg', 'q': 'AA'},
+            2: {'s': 'Cc', 'q': 'AA'},
+            3: {'s': 'C-3NNNc-3nnn', 'q': 'AA'},
+            4: {'s': '**', 'q': 'AA'},
+            5: {'s': '**', 'q': 'AA'},
+            6: {'s': '**', 'q': 'AA'},
+            7: {'s': 'Gg', 'q': 'AA'},
+            8: {'s': 'Cc', 'q': 'AA'},
+            9: {'s': 'Cc', 'q': 'AA'}
+        }}
+        last_conseqs = {'GP41-seed': 'GCCAAAGCC'}
+        qCutoff = 20
+        expected_conseqs = {'GP41-seed': 'GCCGCC'}
+
+        conseqs = remap.make_consensus(pileup=pileup, last_conseqs=last_conseqs, qCutoff=qCutoff)
+
+        self.assertEqual(conseqs, expected_conseqs)
+
+    def testOffset(self):
+        pileup = {'GP41-seed': {
+            2: {'s': '^MC^Mc', 'q': 'AA'},
+            3: {'s': 'Cc', 'q': 'AA'},
+            4: {'s': 'Gg', 'q': 'AA'},
+            5: {'s': 'Cc', 'q': 'AA'},
+            6: {'s': 'Cc', 'q': 'AA'}
+        }}
+        last_conseqs = {'GP41-seed': 'GCCGCC'}
+        qCutoff = 20
+        expected_conseqs = {'GP41-seed': 'NCCGCC'}
+
+        conseqs = remap.make_consensus(pileup=pileup, last_conseqs=last_conseqs, qCutoff=qCutoff)
+
+        self.assertEqual(conseqs, expected_conseqs)
+
+
 class SamToPileupTest(unittest.TestCase):
     def testOffset(self):
         samIO = StringIO.StringIO(
@@ -154,11 +244,9 @@ class SamToPileupTest(unittest.TestCase):
                                     13: {'s': 'Aa', 'q': 'JJ'},
                                     14: {'s': 'C$c$', 'q': 'JJ'}
                                     }}
-        expected_counts = {'test': 2}
-        pileup, counts = remap.csv_to_pileup(samIO)
+        pileup, counts = remap.csv_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)
-        self.assertEqual(counts, expected_counts)
 
     def testSimpleInsertion(self):
         samIO = StringIO.StringIO(
@@ -179,11 +267,9 @@ class SamToPileupTest(unittest.TestCase):
                                     13: {'s': 'Aa', 'q': 'JJ'},
                                     14: {'s': 'C$c$', 'q': 'JJ'}
                                     }}
-        expected_counts = {'test': 2}
-        pileup, counts = remap.csv_to_pileup(samIO)
+        pileup, counts = remap.csv_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)
-        self.assertEqual(counts, expected_counts)
 
     def testComplexInsertion(self):
         samIO = StringIO.StringIO(
@@ -204,11 +290,9 @@ class SamToPileupTest(unittest.TestCase):
                                     13: {'s': 'Aa', 'q': 'JJ'},
                                     14: {'s': 'C$c$', 'q': 'JJ'}
                                     }}
-        expected_counts = {'test': 2}
-        pileup, counts = remap.csv_to_pileup(samIO)
+        pileup, counts = remap.csv_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)
-        self.assertEqual(counts, expected_counts)
 
     def testStaggeredPair(self):
         samIO = StringIO.StringIO(
@@ -235,8 +319,6 @@ class SamToPileupTest(unittest.TestCase):
                                     19: {'s': 'a', 'q': 'J'},
                                     20: {'s': 't$', 'q': 'J'}
                                     }}
-        expected_counts = {'test': 2}
-        pileup, counts = remap.csv_to_pileup(samIO)
+        pileup, counts = remap.csv_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)
-        self.assertEqual(counts, expected_counts)
