@@ -136,6 +136,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                                       count=raw_count))
 
     # group CSV stream by first item
+    callback('processing prelim')
     with prelim_csv:
         # update consensus sequences from preliminary mapping
         pileup, map_counts = csv_to_pileup(prelim_csv, max_primer_length=50)
@@ -186,13 +187,20 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         remap_writer.writeheader()
 
         mapped = {}
+        new_counts = {}  # just totals for now
         p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
         with p.stdout:
             for i, line in enumerate(p.stdout):
                 if callback and i%1000 == 0:
                     callback(i)
+
                 items = line.split('\t')
-                qname, bitflag = items[:2]
+                qname, bitflag, rname = items[:3]
+
+                if rname not in new_counts:
+                    new_counts.update({rname: 0})
+                new_counts[rname] += 1
+
                 if qname not in mapped:
                     mapped.update({qname: 0})
                 # track how many times this read has mapped to a region with integer value
@@ -203,25 +211,26 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                 remap_writer.writerow(dict(zip(fieldnames, items)))
         remap_csv.close()
 
+        # stopping criterion 1
+        if all([(count <= map_counts[refname]['total']) for refname, count in new_counts.iteritems()]):
+            break
+
+        # stopping criterion 2
+        mapping_efficiency = sum(new_counts.values()) / float(raw_count)
+        if mapping_efficiency > min_mapping_efficiency:
+            break  # a sufficient fraction of raw data has been mapped
+
         # update consensus sequences
+        print 'making pileup'
         remap_csv = open(remap_csv.name, 'rU')
-        pileup, new_counts = csv_to_pileup(remap_csv, max_primer_length=50)
+        pileup, map_counts = csv_to_pileup(remap_csv, max_primer_length=50)
+
+        print 'updating consensus sequences'
         conseqs = make_consensus(pileup=pileup, last_conseqs=conseqs, qCutoff=consensus_q_cutoff)
 
         n_remaps += 1
         if callback:
             callback('... remap iteration %d' % n_remaps)
-
-        # stopping criterion 1
-        if all([(count <= map_counts[refname]) for refname, count in new_counts.iteritems()]):
-            break
-
-        map_counts = new_counts  # update counts
-
-        # stopping criterion 2
-        mapping_efficiency = sum([v['total'] for v in map_counts.itervalues()]) / float(raw_count)
-        if mapping_efficiency > min_mapping_efficiency:
-            break  # a sufficient fraction of raw data has been mapped
 
     ## finished iterative phase
 
