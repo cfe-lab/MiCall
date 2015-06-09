@@ -20,14 +20,17 @@ import os
 import re
 import subprocess
 import sys
+from tempfile import gettempdir
+
+tmp = gettempdir()
 
 # These are both CodeResourceDependencies
 import miseq_logging
 import project_config
+
 from micall.settings import bowtie_threads, consensus_q_cutoff,\
     max_remaps, min_mapping_efficiency
 from micall.core.sam2aln import cigar_re, is_first_read
-from operator import itemgetter
 
 # SAM file format
 fieldnames = [
@@ -44,6 +47,8 @@ fieldnames = [
     'qual'
 ]
 
+max_pileup_depth = str(2**16)
+
 
 def resource_path(target):
     return os.path.join('' if not hasattr(sys, '_MEIPASS') else sys._MEIPASS, target)
@@ -54,14 +59,6 @@ indel_re = re.compile('[+-][0-9]+')
 def calculate_sample_name(fastq_filepath):
     filename = os.path.basename(fastq_filepath)
     return '_'.join(filename.split('_')[:2])
-
-def is_first_read(flag):
-    """
-    Interpret bitwise flag from SAM field.
-    Returns True or False indicating whether the read is the first read in a pair.
-    """
-    IS_FIRST_SEGMENT = 0x40
-    return (int(flag) & IS_FIRST_SEGMENT) != 0
 
 
 def is_short_read(read_row, max_primer_length):
@@ -77,8 +74,9 @@ def is_short_read(read_row, max_primer_length):
     return match_length <= max_primer_length
 
 
+
 def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_csv, unmapped1, unmapped2,
-          cwd=None, nthreads=None, callback=None, count_threshold=10):
+          cwd=None, nthreads=None, callback=None, count_threshold=10, use_samtools=True):
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
@@ -120,7 +118,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     conseqs = {}
     for seed, vals in projects.config['regions'].iteritems():
         seqs = vals['reference']
-        conseqs.update({seed: ''.join(seqs)})
+        conseqs.update({str(seed): ''.join(seqs)})
 
     # record the raw read count
     raw_count = count_file_lines(fastq1) / 2  # 4 lines per record in FASTQ, paired
@@ -135,42 +133,66 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                                       type='raw',
                                       count=raw_count))
 
-    # group CSV stream by first item
-    callback('processing prelim')
+    # convert preliminary CSV to SAM, count reads
     with prelim_csv:
-        # update consensus sequences from preliminary mapping
-        pileup, map_counts = csv_to_pileup(prelim_csv, max_primer_length=50)
-        conseqs = make_consensus(pileup=pileup, last_conseqs=conseqs, qCutoff=consensus_q_cutoff)
+        map_counts = {}
+        filtered_counts = {}
+        reader = csv.DictReader(prelim_csv)
+        for row in reader:
+            rname = row['rname']
+            if rname not in map_counts:
+                map_counts.update({rname: 0})
+            map_counts[rname] += 1
 
-        # report preliminary counts to file
-        for region, count in map_counts.iteritems():
-            remap_counts_writer.writerow(dict(sample_name=sample_name,
-                                              type='prelim %s' % region,
-                                              count=count['total'],
-                                              filtered_count=count['filtered']))
+            if is_short_read(row, max_primer_length=50):
+                continue
+
+            if rname not in filtered_counts:
+                filtered_counts.update({rname: 0})
+            filtered_counts[rname] += 1
+
+    # report preliminary counts to file
+    for rname, count in map_counts.iteritems():
+        remap_counts_writer.writerow(dict(sample_name=sample_name,
+                                          type='prelim %s' % rname,
+                                          count=count,
+                                          filtered_count=filtered_counts[rname]))
+
+    # exclude references with low filtered counts
+    new_conseqs = {}
+    for rname, conseq in conseqs.iteritems():
+        count = filtered_counts.get(rname, 0)
+        if count < count_threshold:
+            continue
+        new_conseqs.update({rname: conseq})
+    conseqs = dict([(k, v) for k, v in new_conseqs.iteritems()])  # deep copy
+
 
     # settings for iterative remapping
+    reffile = os.path.join(tmp, 'temp.fa')
+    samfile = os.path.join(tmp, 'temp.sam')
+
     n_remaps = 0
     while n_remaps < max_remaps:
         if callback:
             callback(0)  # reset progress bar (standalone app only)
 
         # generate reference file from current set of consensus sequences
-        outfile = open('remap-conseq.fa', 'w')
+        outfile = open(reffile, 'w')
         for region, conseq in conseqs.iteritems():
-            if map_counts[region]['filtered'] < count_threshold:
+            if map_counts[region] < count_threshold:
                 # discount this seed
                 continue
             outfile.write('>%s\n%s\n' % (region, conseq))
         outfile.close()
 
         # regenerate bowtie2 index files
-        log_call([resource_path('bowtie2-build'), '-f', '-q', outfile.name, outfile.name])
+        log_call([resource_path('bowtie2-build'), '-f', '-q', reffile, reffile])
 
         # stream output from bowtie2
         bowtie_args = [resource_path('bowtie2'),
                        '--quiet',
-                       '-x', outfile.name,
+                       '-x', reffile,
                        '-1', fastq1,
                        '-2', fastq2,
                        '--no-unal', # don't report reads that failed to align
@@ -180,16 +202,13 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                        '--rfg 12,3',
                        '-p', str(bowtie_threads) if nthreads is None else str(nthreads)]
 
-        # regenerate SAM CSV output
-        remap_csv.close()
-        remap_csv = open(remap_csv.name, 'w')  # reset file
-        remap_writer = csv.DictWriter(remap_csv, fieldnames)
-        remap_writer.writeheader()
-
-        mapped = {}
-        new_counts = {}  # just totals for now
         p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
-        with p.stdout:
+
+        # capture stdout stream to count reads before writing to file
+        # also handy for progress monitoring
+        mapped = {}
+        new_counts = {}
+        with open(samfile, 'w') as f:
             for i, line in enumerate(p.stdout):
                 if callback and i%1000 == 0:
                     callback(i)
@@ -207,12 +226,10 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                 # 0(00) = neither; 2(10) = forward only; 1(01) = reverse only; 3(11) both
                 mapped[qname] += (2 if is_first_read(bitflag) else 1)
 
-                # write SAM line to remap CSV
-                remap_writer.writerow(dict(zip(fieldnames, items)))
-        remap_csv.close()
+                f.write(line)
 
         # stopping criterion 1
-        if all([(count <= map_counts[refname]['total']) for refname, count in new_counts.iteritems()]):
+        if all([(count <= map_counts[refname]) for refname, count in new_counts.iteritems()]):
             break
 
         # stopping criterion 2
@@ -220,19 +237,34 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         if mapping_efficiency > min_mapping_efficiency:
             break  # a sufficient fraction of raw data has been mapped
 
-        # update consensus sequences
-        print 'making pileup'
-        remap_csv = open(remap_csv.name, 'rU')
-        pileup, map_counts = csv_to_pileup(remap_csv, max_primer_length=50)
-
-        print 'updating consensus sequences'
-        conseqs = make_consensus(pileup=pileup, last_conseqs=conseqs, qCutoff=consensus_q_cutoff)
+        # generate consensus sequences and refresh counts
+        if use_samtools:
+            # convert SAM to BAM
+            bamfile = samfile.replace('.sam', '.bam')
+            redirect_call(['samtools', 'view', '-b', samfile], bamfile)
+            log_call(['samtools', 'sort', bamfile, bamfile.replace('.bam', '')])  # overwrite
+            # BAM to pileup
+            pileup_path = bamfile+'.pileup'
+            redirect_call(['samtools', 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
+            with open(pileup_path, 'rU') as f:
+                conseqs, map_counts = pileup_to_conseq(f, consensus_q_cutoff)
+        else:
+            # use slower internal code
+            pileup, map_counts = csv_to_pileup(samfile, max_primer_length=50, max_count=1E5)
+            conseqs = make_consensus(pileup=pileup, last_conseqs=conseqs, qCutoff=consensus_q_cutoff)
 
         n_remaps += 1
         if callback:
             callback('... remap iteration %d' % n_remaps)
 
     ## finished iterative phase
+
+    # generate SAM CSV output
+    remap_writer = csv.DictWriter(remap_csv, fieldnames)
+    remap_writer.writeheader()
+    with open(samfile, 'rU') as f:
+        remap_writer.writerow(dict(zip(fieldnames, items)))
+    remap_csv.close()
 
     # write consensus sequences and counts
     remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
@@ -275,40 +307,40 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                                       count=n_unmapped))
 
 
-def csv_to_pileup (sam_csv, max_primer_length):
+def sam_to_pileup (samfile, max_primer_length, max_count=None):
     """
-    Convert a SAM-style CSV file into samtools pileup-like format in memory.
+    Convert SAM file into samtools pileup-like format in memory.
     Process inline by region.  Also return numbers of reads mapped to each region.
     :param sam_csv: Product of prelim_map.py or iterative remapping.
     :param max_primer_length: Argument to pass to is_short_read, exclude possible
         primer-derived reads.
+    :param max_count: Process no more than these many reads.  If None, then do
+        complete read set.
     :return: dictionary by region, keying dictionaries of concatenated bases by position
     """
     pileup = {}
     counts = {}
-    reader = csv.DictReader(sam_csv)
-    for rcount, row in enumerate(reader):
-        refname = row['rname']
-        if refname not in pileup:
-            pileup.update({refname: {}})
-        if refname not in counts:
-            counts.update({refname: {'total': 0, 'filtered': 0}})
-
-        counts[refname]['total'] += 1
-
-        if is_short_read(read_row=row, max_primer_length=max_primer_length):
-            # skip reads that mapped against too small an interval
+    for line in samfile:
+        if line.startswith('@'):
             continue
-        counts[refname]['filtered'] += 1
 
-        is_first = is_first_read(row['flag'])
-        seq = row['seq']
-        qual = row['qual']
+        qname, flag, rname, refpos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')
+        if rname not in pileup:
+            pileup.update({rname: {}})
+        if rname not in counts:
+            counts.update({rname: 0})
+        counts[rname] += 1
+
+        if max_count and rcount > max_count:
+            # skip sequence parsing, just get counts
+            continue
+
+        is_first = is_first_read(flag)
 
         pos = 0  # position in sequence
-        refpos = int(row['pos']) # position in reference
+        refpos = int(refpos) # position in reference
 
-        tokens = cigar_re.findall(row['cigar'])
+        tokens = cigar_re.findall(cigar)
 
         if tokens[0].endswith('S'):
             # skip left soft clip
@@ -323,28 +355,28 @@ def csv_to_pileup (sam_csv, max_primer_length):
         # record start of read
         if refpos not in pileup[refname]:
             # keys 's' = sequence, 'q' = quality string
-            pileup[refname].update({refpos: {'s': '', 'q': ''}})
-        pileup[refname][refpos]['s'] += '^' + chr(int(row['mapq'])+33)
+            pileup[rname].update({refpos: {'s': '', 'q': ''}})
+        pileup[rname][refpos]['s'] += '^' + chr(int(mapq)+33)
 
         for token in tokens:
             length = int(token[:-1])
             if token.endswith('M'):
                 # match
                 for i in range(length):
-                    if refpos not in pileup[refname]: pileup[refname].update({refpos: {'s': '', 'q': ''}})
-                    pileup[refname][refpos]['s'] += seq[pos] if is_first else seq[pos].lower()
-                    pileup[refname][refpos]['q'] += qual[pos]
+                    if refpos not in pileup[rname]: pileup[rname].update({refpos: {'s': '', 'q': ''}})
+                    pileup[rname][refpos]['s'] += seq[pos] if is_first else seq[pos].lower()
+                    pileup[rname][refpos]['q'] += qual[pos]
                     pos += 1
                     refpos += 1
 
             elif token.endswith('D'):
                 # deletion relative to reference
-                pileup[refname][refpos-1]['s'] += '-' + str(length) + ('N' if is_first else 'n')*length
+                pileup[rname][refpos-1]['s'] += '-' + str(length) + ('N' if is_first else 'n')*length
 
                 # append deletion placeholders downstream
                 for i in range(refpos, refpos+length):
-                    if i not in pileup[refname]: pileup[refname].update({i: {'s': '', 'q': ''}})
-                    pileup[refname][i]['s'] += '*'
+                    if i not in pileup[rname]: pileup[rname].update({i: {'s': '', 'q': ''}})
+                    pileup[rname][i]['s'] += '*'
 
                 refpos += length
 
@@ -352,7 +384,7 @@ def csv_to_pileup (sam_csv, max_primer_length):
                 # insertion relative to reference
                 # FIXME: pileup does not record quality scores of inserted bases
                 insert = seq[pos:(pos+length)]
-                pileup[refname][refpos-1]['s'] += '+' + str(length) + (insert if is_first else insert.lower())
+                pileup[rname][refpos-1]['s'] += '+' + str(length) + (insert if is_first else insert.lower())
                 pos += length
 
             elif token.endswith('S'):
@@ -364,7 +396,7 @@ def csv_to_pileup (sam_csv, max_primer_length):
                 sys.exit()
 
         # record end of read
-        pileup[refname][refpos-1]['s'] += '$'
+        pileup[rname][refpos-1]['s'] += '$'
 
     return pileup, counts
 
@@ -469,6 +501,7 @@ def make_consensus (pileup, last_conseqs, qCutoff):
     return conseqs
 
 
+
 def pileup_to_conseq (handle, qCutoff):
     """
     Generate a consensus sequence from a samtools pileup file.
@@ -486,7 +519,8 @@ def pileup_to_conseq (handle, qCutoff):
     restrict all insertions to those divisible by 3 to enforce a reading
     frame.
     """
-    conseq = ''
+    conseqs = {}
+    counts = {}
     to_skip = 0
     last_pos = 0
     for line in handle:
@@ -495,10 +529,15 @@ def pileup_to_conseq (handle, qCutoff):
             continue
 
         #label, pos, en, depth, astr, qstr
-        _,      pos, _,  _,     astr, qstr = line.strip('\n').split('\t')
+        region,      pos, _,  _,     astr, qstr = line.strip('\n').split('\t')
+
+        if region not in conseqs:
+            conseqs.update({region: ''})
+            counts.update({region: 0})
+
         pos = int(pos)  # position in the pileup, 1-index
         if (pos - last_pos) > 1:
-            conseq += 'N' * (pos - last_pos - 1)
+            conseqs[region] += 'N' * (pos - last_pos - 1)
         last_pos = pos
         alist = []  # alist stores all bases at a given coordinate
         i = 0       # Current index for astr
@@ -506,6 +545,8 @@ def pileup_to_conseq (handle, qCutoff):
 
         while i < len(astr):
             if astr[i] == '^':
+                # start of new read
+                counts[region] += 1
                 q = ord(qstr[j])-33
                 base = astr[i+2] if q >= qCutoff else 'N'
                 alist.append(base.upper())
@@ -552,20 +593,21 @@ def pileup_to_conseq (handle, qCutoff):
 
         if '+' in token:
             m = indel_re.findall(token)[0] # \+[0-9]+
-            conseq += token[0]
+            conseqs[region] += token[0]
             if int(m) % 3 == 0:
                 # only add insertions that retain reading frame
-                conseq += token[1+len(m):]
+                conseqs[region] += token[1+len(m):]
         elif token == '-':
-            conseq += '-'
+            conseqs[region] += '-'
         else:
-            conseq += token
-    handle.close()
+            conseqs[region] += token
 
     # remove in-frame deletions (multiples of 3), if any
-    pat = re.compile('([ACGT])(---)+([ACGT])')
-    conseq = re.sub(pat, r'\g<1>\g<3>', conseq)
-    return conseq
+    for region, conseq in conseqs.iteritems():
+        pat = re.compile('([ACGT])(---)+([ACGT])')
+        conseqs[region] = re.sub(pat, r'\g<1>\g<3>', conseq)
+
+    return conseqs, counts
 
 
 def redirect_call(args, outpath, format_string='%s'):

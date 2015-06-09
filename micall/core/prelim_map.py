@@ -59,7 +59,7 @@ def prelim_map(fastq1, fastq2, prelim_csv, cwd=None, nthreads=None, callback=Non
     ref_path = 'micall.fasta'
     with open(ref_path, 'w') as ref:
         projects.writeSeedFasta(ref)
-    log_call([resource_path('samtools'), 'faidx', ref_path])
+    #log_call([resource_path('samtools'), 'faidx', ref_path])
     reffile_template = 'reference'
     log_call([resource_path('bowtie2-build'),
               '--quiet',
