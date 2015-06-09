@@ -161,7 +161,7 @@ def is_first_read(flag):
     return (int(flag) & IS_FIRST_SEGMENT) != 0
 
 
-def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv):
+def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
     reader = RemapReader(remap_csv)
     aligned_writer = csv.DictWriter(aligned_csv,
                                     ['refname',
@@ -195,6 +195,7 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv):
         cached_reads = {}  # for mate pairing
         for row in group:
             if refname == '0':
+                # FIXME: why is this here? - art
                 print row
                 sys.exit()
 

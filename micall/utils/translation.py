@@ -29,7 +29,7 @@ ambig_dict = dict(("".join(sorted(v)), k)
                   if k != '-')
 
 
-def translate (seq, offset=0, resolve=False, return_list=False):
+def translate (seq, offset=0, resolve=False, return_list=False, ambig_char='?'):
     """
     Translate codon (nucleotide) sequence into amino acids.
     :param seq: the nucleotide sequence
@@ -57,8 +57,8 @@ def translate (seq, offset=0, resolve=False, return_list=False):
                 aa_seq += '-'
                 aa_list.append(['-'])
             else:
-                aa_seq += '?'
-                aa_list.append(['?'])
+                aa_seq += ambig_char
+                aa_list.append([ambig_char])
             continue
 
         # look for nucleotide mixtures in codon, resolve to alternative codons if found
@@ -94,7 +94,7 @@ def translate (seq, offset=0, resolve=False, return_list=False):
                 if resolve:
                     aa_seq += aminos[0]  # arbitrary resolution
                 else:
-                    aa_seq += '?'
+                    aa_seq += ambig_char
             else:
                 aa_seq += aminos[0]
 

@@ -144,6 +144,10 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                                       count=raw_count))
 
     # convert preliminary CSV to SAM, count reads
+    if callback:
+        callback('... processing preliminary map')
+        callback(0)
+
     with open(samfile, 'w') as f:
         # write SAM header
         f.write('@HD\tVN:1.0\tSO:unsorted\n')
@@ -155,7 +159,10 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         map_counts = {}
         filtered_counts = {}
         reader = csv.DictReader(prelim_csv)
-        for row in reader:
+        for i, row in enumerate(reader):
+            if callback and i%1000 == 0:
+                callback(i)
+
             rname = row['rname']
             if rname not in map_counts:
                 map_counts.update({rname: 0})
@@ -177,15 +184,15 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         remap_counts_writer.writerow(dict(sample_name=sample_name,
                                           type='prelim %s' % rname,
                                           count=count,
-                                          filtered_count=filtered_counts[rname]))
+                                          filtered_count=filtered_counts.get(rname, 0)))
 
     # regenerate consensus sequences based on preliminary map
     if use_samtools:
         # convert SAM to BAM
-        redirect_call(['samtools', 'view', '-b', samfile], bamfile)
-        log_call(['samtools', 'sort', bamfile, bamfile.replace('.bam', '')])  # overwrite
+        redirect_call([resource_path('samtools'), 'view', '-b', samfile], bamfile)
+        log_call([resource_path('samtools'), 'sort', bamfile, bamfile.replace('.bam', '')])  # overwrite
         # BAM to pileup
-        redirect_call(['samtools', 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
+        redirect_call([resource_path('samtools'), 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
         with open(pileup_path, 'rU') as f:
             conseqs = pileup_to_conseq(f, consensus_q_cutoff)
     else:
@@ -197,7 +204,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     new_conseqs = {}
     for rname, conseq in conseqs.iteritems():
         count = filtered_counts.get(rname, 0)
-        map_counts[rname] = count  # refresh counts for entering remap loop
+        map_counts[rname] = count  # transfer filtered counts to map counts for remap loop
         if count < count_threshold:
             continue
         new_conseqs.update({rname: conseq})
@@ -208,6 +215,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     n_remaps = 0
     while n_remaps < max_remaps:
         if callback:
+            callback('... remap iteration %d' % n_remaps)
             callback(0)  # reset progress bar (standalone app only)
 
         # generate reference file from current set of consensus sequences
@@ -238,6 +246,12 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         mapped = {}  # track which reads have mapped to something
         new_counts = {}
         with open(samfile, 'w') as f:
+            # write SAM header
+            f.write('@HD\tVN:1.0\tSO:unsorted\n')
+            for rname, refseq in conseqs.iteritems():
+                f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
+            f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
+
             for i, line in enumerate(p.stdout):
                 if callback and i%1000 == 0:
                     callback(i)  # progress monitoring in GUI
@@ -271,9 +285,9 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
 
         # regenerate consensus sequences
         if use_samtools:
-            redirect_call(['samtools', 'view', '-b', samfile], bamfile)
-            log_call(['samtools', 'sort', bamfile, bamfile.replace('.bam', '')])  # overwrite
-            redirect_call(['samtools', 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
+            redirect_call([resource_path('samtools'), 'view', '-b', samfile], bamfile)
+            log_call([resource_path('samtools'), 'sort', bamfile, bamfile.replace('.bam', '')])  # overwrite
+            redirect_call([resource_path('samtools'), 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
             with open(pileup_path, 'rU') as f:
                 conseqs = pileup_to_conseq(f, consensus_q_cutoff)
         else:
@@ -282,8 +296,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
             conseqs = make_consensus(pileup=pileup, last_conseqs=conseqs, qCutoff=consensus_q_cutoff)
 
         n_remaps += 1
-        if callback:
-            callback('... remap iteration %d' % n_remaps)
+
 
     ## finished iterative phase
 
@@ -304,6 +317,8 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         remap_counts_writer.writerow(dict(sample_name=sample_name,
                                           type='remap %s' % refname,
                                           count=new_counts[refname]))
+        # NOTE this is the consensus sequence to which the reads were mapped, NOT the
+        # current consensus!
         conseq = conseqs.get(refname) or projects.getReference(refname)
         remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
     remap_conseq_csv.close()
@@ -336,9 +351,10 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     remap_counts_writer.writerow(dict(sample_name=sample_name,
                                       type='unmapped',
                                       count=n_unmapped))
+    remap_counts_csv.close()
 
 
-def sam_to_pileup (samfile, max_primer_length, max_count=None):
+def sam_to_pileup (samfile, max_primer_length, max_count=None, delimiter='\t'):
     """
     Convert SAM file into samtools pileup-like format in memory.
     Process inline by region.  Also return numbers of reads mapped to each region.
@@ -355,7 +371,7 @@ def sam_to_pileup (samfile, max_primer_length, max_count=None):
         if line.startswith('@'):
             continue
 
-        qname, flag, rname, refpos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split('\t')
+        qname, flag, rname, refpos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split(delimiter)
         if rname not in pileup:
             pileup.update({rname: {}})
         if rname not in counts:
@@ -384,7 +400,7 @@ def sam_to_pileup (samfile, max_primer_length, max_count=None):
             sys.exit()
 
         # record start of read
-        if refpos not in pileup[refname]:
+        if refpos not in pileup[rname]:
             # keys 's' = sequence, 'q' = quality string
             pileup[rname].update({refpos: {'s': '', 'q': ''}})
         pileup[rname][refpos]['s'] += '^' + chr(int(mapq)+33)

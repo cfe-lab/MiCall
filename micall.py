@@ -1,4 +1,5 @@
 import os
+import sys
 
 import Tkinter as tk
 from ttk import Progressbar
@@ -39,9 +40,20 @@ def resource_path(target):
     return os.path.join('' if not hasattr(sys, '_MEIPASS') else sys._MEIPASS, target)
 
 
+class Redirector(object):
+    # see https://gist.github.com/K-DawG007/7729555
+    def __init__(self, widget):
+        self.widget = widget
+
+    def write(self, msg):
+        self.widget.config(state=tk.NORMAL)
+        self.widget.insert(tk.END, msg, ('ERROR',))
+        self.widget.see(tk.END)
+        self.widget.config(state=tk.DISABLED)
+
 class MiCall(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
-        self.__version__ = '0.2'
+        self.__version__ = '0.3'
         self.pssm = Pssm(path_to_lookup=resource_path('micall/g2p/g2p_fpr.txt'),
                          path_to_matrix=resource_path('micall/g2p/g2p.matrix'))
 
@@ -95,6 +107,11 @@ class MiCall(tk.Frame):
             self.console_frame, bg='black', fg='white', cursor='xterm'
         )
         self.console.pack(side='top', fill='both', expand=True)
+        self.console.tag_configure('ERROR', foreground="red")
+
+        # redirect stderr to Text widget
+        sys.stderr = Redirector(self.console)
+
         self.write('Welcome to MiCall v%s (pipeline v%s)\n' % (self.__version__, pipeline_version))
         self.write('Default working directory %s\n' % (self.workdir))
 
@@ -216,6 +233,7 @@ class MiCall(tk.Frame):
         """
         working_files = []
         image_paths = []
+        prefixes = []
 
         # look for FASTQ files
         if len(self.target_files) == 0:
@@ -229,6 +247,7 @@ class MiCall(tk.Frame):
                 continue
 
             prefix = os.path.basename(fastq1).replace('_L001_R1_001.fastq', '')
+            prefixes.append(prefix)
             output_csv = fastq1.replace('_L001_R1_001.fastq', '.prelim.csv')
             working_files.append(output_csv)
 
@@ -299,7 +318,6 @@ class MiCall(tk.Frame):
         savedir = tkFileDialog.askdirectory(title='Select folder to save results')
 
         # collate results to results folder
-        prefixes = ['_'.join(os.path.basename(fn).split('_')[:2]) for fn in self.target_files]
         for target_file, extension in files_to_collate:
             if extension is None:
                 extension = '.' + target_file

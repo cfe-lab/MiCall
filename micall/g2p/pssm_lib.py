@@ -117,7 +117,7 @@ class Pssm ():
             aa_lists = seq  # aa_seq in pssm_lib.rb
         else:
             # assume this is a codon sequence
-            aa_lists = translate(seq=seq, offset=0, resolve=False, return_list=True)
+            aa_lists = translate(seq=seq, offset=0, resolve=False, return_list=True, ambig_char='X')
 
         for i, aa_list in enumerate(aa_lists):
             for j, aa in enumerate(aa_list):

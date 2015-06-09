@@ -1,3 +1,4 @@
+import sys
 import argparse
 from csv import DictReader
 from micall.core.sam2aln import apply_cigar, merge_pairs
@@ -67,6 +68,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
             continue
         tracker.add_nuc(row['seed'], row['region'], int(row['query.nuc.pos'])-1)
 
+    # parse contents of remap CSV output
     reader = DictReader(remap_csv)
     for row in reader:
         clip_from, clip_to = tracker.get_range(row['rname'])
@@ -100,10 +102,9 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
     with g2p_csv as f:
         f.write('rank,count,g2p,fpr,aligned,error\n')  # CSV header
         rank = 0
-        for count, s in sorted:
+        for count, seq in sorted:
             rank += 1
             prefix = '%d,%d' % (rank, count)
-            seq = s.replace('-', '')
             seqlen = len(seq)
             if seq.upper().count('N') > (0.5*seqlen):
                 # if more than 50% of the sequence is garbage
@@ -114,7 +115,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
                 f.write('%s,,,,zerolength\n' % prefix)
                 continue
 
-            prot = translate(seq, 0)
+            prot = translate(seq, 0, ambig_char='X')
 
             # sanity check 1 - bounded by cysteines
             if not prot.startswith('C') or not prot.endswith('C'):
@@ -122,9 +123,9 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
                 continue
 
             # sanity check 2 - no ambiguous codons
-            if prot.count('X') > 0:
-                f.write('%s,,,%s,ambiguous\n' % (prefix, prot))
-                continue
+            #if prot.count('X') > 0:
+            #    f.write('%s,,,%s,ambiguous\n' % (prefix, prot))
+            #    continue
 
             # sanity check 3 - no stop codons
             if prot.count('*') > 0:
@@ -137,6 +138,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
                 continue
 
             score, aligned = pssm.run_g2p(seq)
+
             try:
                 aligned2 = ''.join([aa_list[0] if len(aa_list) == 1 else '[%s]'%''.join(aa_list)
                                     for aa_list in aligned])

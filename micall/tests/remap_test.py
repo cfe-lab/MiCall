@@ -2,7 +2,7 @@ import StringIO
 import unittest
 
 from micall.core import remap
-from micall.core.remap import is_first_read, is_primer
+from micall.core.remap import is_first_read, is_short_read
 
 class RemapTest(unittest.TestCase):
     def testSampleName(self):
@@ -16,7 +16,7 @@ class RemapTest(unittest.TestCase):
     def assertCigarIsPrimer(self, cigar, is_primer_expected):
         row = {'cigar': cigar}
         max_primer_length = 29
-        self.assertEqual(is_primer_expected, is_primer(row, max_primer_length))
+        self.assertEqual(is_primer_expected, is_short_read(row, max_primer_length))
         
     def testIsPrimerForLongRead(self):
         self.assertCigarIsPrimer('45M', False)
@@ -66,11 +66,11 @@ class PileupToConseqTest(unittest.TestCase):
             "GP41-seed\t5\tN\t2\tCc\tAA\n" +
             "GP41-seed\t6\tN\t2\tCc\tAA\n")
         qCutoff = 20
-        expected_conseq = "GCCATAGCC"
+        expected_conseqs = {'GP41-seed': "GCCATAGCC"}
         
-        conseq = remap.pileup_to_conseq(pileupIO, qCutoff)
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
         
-        self.assertSequenceEqual(expected_conseq, conseq)
+        self.assertSequenceEqual(expected_conseqs, conseqs)
         
     def testInsertionShiftsFrame(self):
         pileupIO = StringIO.StringIO(
@@ -81,11 +81,11 @@ class PileupToConseqTest(unittest.TestCase):
             "GP41-seed\t5\tN\t2\tCc\tAA\n" +
             "GP41-seed\t6\tN\t2\tCc\tAA\n")
         qCutoff = 20
-        expected_conseq = "GCCGCC"
+        expected_conseqs = {'GP41-seed': "GCCGCC"}
         
-        conseq = remap.pileup_to_conseq(pileupIO, qCutoff)
-        
-        self.assertSequenceEqual(expected_conseq, conseq)
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
+
+        self.assertSequenceEqual(expected_conseqs, conseqs)
         
     def testLongInsertion(self):
         pileupIO = StringIO.StringIO(
@@ -96,11 +96,11 @@ class PileupToConseqTest(unittest.TestCase):
             "GP41-seed\t5\tN\t2\tCc\tAA\n" +
             "GP41-seed\t6\tN\t2\tCc\tAA\n")
         qCutoff = 20
-        expected_conseq = "GCCAAATTTAAATTTGCC"
+        expected_conseqs = {'GP41-seed': "GCCAAATTTAAATTTGCC"}
         
-        conseq = remap.pileup_to_conseq(pileupIO, qCutoff)
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
         
-        self.assertSequenceEqual(expected_conseq, conseq)
+        self.assertSequenceEqual(expected_conseqs, conseqs)
         
     def testDeletion(self):
         pileupIO = StringIO.StringIO(
@@ -114,11 +114,11 @@ class PileupToConseqTest(unittest.TestCase):
             "GP41-seed\t8\tN\t2\tCc\tAA\n" +
             "GP41-seed\t9\tN\t2\tCc\tAA\n")
         qCutoff = 20
-        expected_conseq = "GCCGCC"
+        expected_conseqs = {'GP41-seed': "GCCGCC"}
         
-        conseq = remap.pileup_to_conseq(pileupIO, qCutoff)
+        conseqs= remap.pileup_to_conseq(pileupIO, qCutoff)
         
-        self.assertSequenceEqual(expected_conseq, conseq)
+        self.assertSequenceEqual(expected_conseqs, conseqs)
         
     def testOffset(self):
         pileupIO = StringIO.StringIO(
@@ -128,11 +128,11 @@ class PileupToConseqTest(unittest.TestCase):
             "GP41-seed\t5\tN\t2\tCc\tAA\n" +
             "GP41-seed\t6\tN\t2\tCc\tAA\n")
         qCutoff = 20
-        expected_conseq = "NCCGCC"
+        expected_conseqs= {'GP41-seed': "NCCGCC"}
         
-        conseq = remap.pileup_to_conseq(pileupIO, qCutoff)
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
         
-        self.assertSequenceEqual(expected_conseq, conseq)
+        self.assertSequenceEqual(expected_conseqs, conseqs)
 
 
 class MakeConsensusTest(unittest.TestCase):
@@ -227,9 +227,8 @@ class MakeConsensusTest(unittest.TestCase):
 class SamToPileupTest(unittest.TestCase):
     def testOffset(self):
         samIO = StringIO.StringIO(
-            "qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n"
-            "test1,99,test,3,44,12M,=,3,12,ACAAGACCCAAC,JJJJJJJJJJJJ\n"
-            "test1,147,test,3,44,12M,=,3,-12,ACAAGACCCAAC,JJJJJJJJJJJJ\n"
+            "test1\t99\ttest\t3\t44\t12M\t=\t3\t12\tACAAGACCCAAC\tJJJJJJJJJJJJ\n"
+            "test1\t147\ttest\t3\t44\t12M\t=\t3\t-12\tACAAGACCCAAC\tJJJJJJJJJJJJ\n"
         )
         expected_pileup = {'test': {3: {'s': '^MA^Ma', 'q': 'JJ'},
                                     4: {'s': 'Cc', 'q': 'JJ'},
@@ -244,15 +243,14 @@ class SamToPileupTest(unittest.TestCase):
                                     13: {'s': 'Aa', 'q': 'JJ'},
                                     14: {'s': 'C$c$', 'q': 'JJ'}
                                     }}
-        pileup, counts = remap.csv_to_pileup(samIO, max_primer_length=0)
+        pileup, counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)
 
     def testSimpleInsertion(self):
         samIO = StringIO.StringIO(
-            "qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n"
-            "test1,99,test,3,44,3M3I9M,=,3,12,ACAGGGAGACCCAAC,JJJJJJJJJJJJJJJ\n"
-            "test1,147,test,3,44,3M3I9M,=,3,-12,ACAGGGAGACCCAAC,JJJJJJJJJJJJJJJ\n"
+            "test1\t99\ttest\t3\t44\t3M3I9M\t=\t3\t12\tACAGGGAGACCCAAC\tJJJJJJJJJJJJJJJ\n"
+            "test1\t147\ttest\t3\t44\t3M3I9M\t=\t3\t-12\tACAGGGAGACCCAAC\tJJJJJJJJJJJJJJJ\n"
         )
         expected_pileup = {'test': {3: {'s': '^MA^Ma', 'q': 'JJ'},
                                     4: {'s': 'Cc', 'q': 'JJ'},
@@ -267,15 +265,14 @@ class SamToPileupTest(unittest.TestCase):
                                     13: {'s': 'Aa', 'q': 'JJ'},
                                     14: {'s': 'C$c$', 'q': 'JJ'}
                                     }}
-        pileup, counts = remap.csv_to_pileup(samIO, max_primer_length=0)
+        pileup, counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)
 
     def testComplexInsertion(self):
         samIO = StringIO.StringIO(
-            "qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n"
-            "test1,99,test,3,44,3M1I3M2I6M,=,3,12,ACAGAGAGGCCCAAC,JJJJJJJJJJJJJJJ\n"
-            "test1,147,test,3,44,3M1I3M2I6M,=,3,-12,ACAGAGAGGCCCAAC,JJJJJJJJJJJJJJJ\n"
+            "test1\t99\ttest\t3\t44\t3M1I3M2I6M\t=\t3\t12\tACAGAGAGGCCCAAC\tJJJJJJJJJJJJJJJ\n"
+            "test1\t147\ttest\t3\t44\t3M1I3M2I6M\t=\t3\t-12\tACAGAGAGGCCCAAC\tJJJJJJJJJJJJJJJ\n"
         )
         expected_pileup = {'test': {3: {'s': '^MA^Ma', 'q': 'JJ'},
                                     4: {'s': 'Cc', 'q': 'JJ'},
@@ -290,15 +287,14 @@ class SamToPileupTest(unittest.TestCase):
                                     13: {'s': 'Aa', 'q': 'JJ'},
                                     14: {'s': 'C$c$', 'q': 'JJ'}
                                     }}
-        pileup, counts = remap.csv_to_pileup(samIO, max_primer_length=0)
+        pileup, counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)
 
     def testStaggeredPair(self):
         samIO = StringIO.StringIO(
-            "qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n"
-            "test1,99,test,3,44,12M,=,3,12,ACAAGACCCAAC,JJJJJJJJJJJJ\n"
-            "test1,147,test,9,44,12M,=,9,-12,CCCAACAACAAT,JJJJJJJJJJJJ\n"
+            "test1\t99\ttest\t3\t44\t12M\t=\t3\t12\tACAAGACCCAAC\tJJJJJJJJJJJJ\n"
+            "test1\t147\ttest\t9\t44\t12M\t=\t9\t-12\tCCCAACAACAAT\tJJJJJJJJJJJJ\n"
         )
         expected_pileup = {'test': {3: {'s': '^MA', 'q': 'J'},
                                     4: {'s': 'C', 'q': 'J'},
@@ -319,6 +315,6 @@ class SamToPileupTest(unittest.TestCase):
                                     19: {'s': 'a', 'q': 'J'},
                                     20: {'s': 't$', 'q': 'J'}
                                     }}
-        pileup, counts = remap.csv_to_pileup(samIO, max_primer_length=0)
+        pileup, counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)
