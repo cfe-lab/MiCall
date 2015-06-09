@@ -209,13 +209,14 @@ class MiCall(tk.Frame):
 
     def line_count(self, file):
         """
-        Count number of records in a FASTQ file
+        Count number of records in a FASTQ file.  This is simply the number of
+        lines divided by 4, and multiplied by 2 because these are paired FASTQs.
         :param file:
         :return:
         """
         p = subprocess.Popen(['wc', '-l', file], stdout=subprocess.PIPE)
         output = p.communicate()[0]
-        return int(output.strip(' \n').split()[0]) / 4
+        return int(output.strip(' \n').split()[0]) / 2
 
     def callback(self, msg):
         if type(msg) is int:

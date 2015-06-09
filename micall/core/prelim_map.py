@@ -90,7 +90,7 @@ def prelim_map(fastq1, fastq2, prelim_csv, cwd=None, nthreads=None, callback=Non
             refname = line.split('\t')[2]  # read was mapped to this reference
             if not refname in output:
                 output.update({refname: []})
-            output[refname].append('\t'.join(line.split('\t')[:11]))  # discard optional items
+            output[refname].append(line.split('\t')[:11])  # discard optional items
 
     if p.returncode:
         raise subprocess.CalledProcessError(p.returncode, bowtie_args)
@@ -112,7 +112,7 @@ def prelim_map(fastq1, fastq2, prelim_csv, cwd=None, nthreads=None, callback=Non
     # lines grouped by refname
     for refname, lines in output.iteritems():
         for line in lines:
-            writer.writerow(dict(zip(fieldnames, line.split('\t'))))
+            writer.writerow(dict(zip(fieldnames, line)))
 
 
 def log_call(args, format_string='%s'):
