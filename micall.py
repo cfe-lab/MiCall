@@ -285,7 +285,7 @@ class MiCall(tk.Frame):
 
             self.write('... converting into alignment\n')
             self.parent.update_idletasks()
-            sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv)
+            sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=self.nthreads.get())
 
             aligned_csv = open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'rU')
             nuc_csv = open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'w')
