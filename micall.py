@@ -317,6 +317,7 @@ class MiCall(tk.Frame):
         self.button_run.config(state=tk.DISABLED)
 
         savedir = tkFileDialog.askdirectory(title='Select folder to save results')
+        # TODO: if user hits cancel by accident, prevent MiCall from deleting result files
 
         # collate results to results folder
         for target_file, extension in files_to_collate:

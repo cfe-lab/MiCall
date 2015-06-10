@@ -1,9 +1,11 @@
-import sys
+import re
 import argparse
 from csv import DictReader
 from micall.core.sam2aln import apply_cigar, merge_pairs
 from micall.utils.translation import translate
 
+# screen for in-frame deletions
+pat = re.compile('([A-Z])(---)+([A-Z])')
 
 QMIN = 20   # minimum base quality within insertions
 QCUT = 10   # minimum base quality to not be censored
@@ -102,7 +104,10 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
     with g2p_csv as f:
         f.write('rank,count,g2p,fpr,aligned,error\n')  # CSV header
         rank = 0
-        for count, seq in sorted:
+        for count, s in sorted:
+            # remove in-frame deletions
+            seq = re.sub(pat, r'\g<1>\g<3>', s)
+
             rank += 1
             prefix = '%d,%d' % (rank, count)
             seqlen = len(seq)
@@ -122,10 +127,10 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
                 f.write('%s,,,%s,cysteines\n' % (prefix, prot))
                 continue
 
-            # sanity check 2 - no ambiguous codons
-            #if prot.count('X') > 0:
-            #    f.write('%s,,,%s,ambiguous\n' % (prefix, prot))
-            #    continue
+            # sanity check 2 - too many ambiguous codons
+            if prot.count('X') > 2:
+                f.write('%s,,,%s,>2ambiguous\n' % (prefix, prot))
+                continue
 
             # sanity check 3 - no stop codons
             if prot.count('*') > 0:
