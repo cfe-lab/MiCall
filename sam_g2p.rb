@@ -212,6 +212,8 @@ def main()
     :headers => true,
     :return_headers => false) do |row|
     
+    next if(row['query.nuc.pos'].nil?)
+    
     tracker.add_nuc(
       row['seed'],
       row['region'],
