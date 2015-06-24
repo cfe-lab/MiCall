@@ -110,7 +110,7 @@ class MiCall(tk.Frame):
         self.console.tag_configure('ERROR', foreground="red")
 
         # redirect stderr to Text widget
-        sys.stderr = Redirector(self.console)
+        #sys.stderr = Redirector(self.console)
 
         self.write('Welcome to MiCall v%s (pipeline v%s)\n' % (self.__version__, pipeline_version))
         self.write('Default working directory %s\n' % (self.workdir))

@@ -211,6 +211,9 @@ def main()
     options.nuc_csv,
     :headers => true,
     :return_headers => false) do |row|
+
+    # Conan's fix: if deletion, then this value is empty string that returns 0 on calling "to_i"
+    next if(row['query.nuc.pos'].nil?)
     
     tracker.add_nuc(
       row['seed'],
@@ -224,6 +227,7 @@ def main()
       :return_headers => false) do |row|
       
       clip_from, clip_to = tracker.get_range(row['rname'])
+      
       if clip_from.nil?
           # uninteresting region
           next
