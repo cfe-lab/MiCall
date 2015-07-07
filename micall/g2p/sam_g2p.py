@@ -1,7 +1,8 @@
+import sys
 import re
 import argparse
 from csv import DictReader
-from micall.core.sam2aln import apply_cigar, merge_pairs
+from micall.core.sam2aln import merge_pairs, cigar_re
 from micall.utils.translation import translate
 
 # screen for in-frame deletions
@@ -57,6 +58,51 @@ class RegionTracker:
         return self.ranges.get(seed, [None, None])
 
 
+def apply_cigar_and_clip (cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
+    """
+    Use CIGAR string (Compact Idiosyncratic Gapped Alignment Report) in SAM data
+    to apply soft clips, insertions, and deletions to the read sequence.
+    Any insertions relative to the sample consensus sequence are discarded to
+    enforce a strict pairwise alignment, and returned separately in a
+    dict object.
+    """
+    newseq = '-' * int(pos)  # pad on left
+    newqual = '!' * int(pos)
+    tokens = cigar_re.findall(cigar)
+    if len(tokens) == 0:
+        return None, None, None
+    left = 0
+    for token in tokens:
+        length = int(token[:-1])
+        # Matching sequence: carry it over
+        if token[-1] == 'M':
+            newseq += seq[left:(left+length)]
+            newqual += qual[left:(left+length)]
+            left += length
+        # Deletion relative to reference: pad with gaps
+        elif token[-1] == 'D':
+            newseq += '-'*length
+            newqual += ' '*length  # Assign fake placeholder score (Q=-1)
+        # Insertion relative to reference
+        elif token[-1] == 'I':
+            its_quals = qual[left:(left+length)]
+            if all([(ord(q)-33) >= QMIN for q in its_quals]):
+                # accept only high quality insertions relative to sample consensus
+                newseq += seq[left:(left+length)]
+                newqual += its_quals
+                if clip_to:
+                    clip_to += length  # accommodate insertion
+            left += length
+        # Soft clipping leaves the sequence in the SAM - so we should skip it
+        elif token[-1] == 'S':
+            left += length
+        else:
+            print "Unable to handle CIGAR token: {} - quitting".format(token)
+            sys.exit()
+
+    return newseq[clip_from:clip_to], newqual[clip_from:clip_to]
+
+
 def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
     pairs = {}  # cache read for pairing
     merged = {}  # tabular merged sequence variants
@@ -78,17 +124,20 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
             # uninteresting region
             continue
 
-        shift, seq, qual, insertions = apply_cigar(row['cigar'], row['seq'], row['qual'])
-        offset = int(row['pos'])-1
-        seq2 = ('-' * offset + seq)[clip_from:(clip_to+1)]
-        qual2 = ('!' * offset + qual)[clip_from:(clip_to+1)]
+        seq2, qual2 = apply_cigar_and_clip(row['cigar'], row['seq'], row['qual'], int(row['pos'])-1, clip_from, clip_to+1)
 
         mate = pairs.get(row['qname'], None)
         if mate:
-            # merge reads
             seq1 = mate['seq']
             qual1 = mate['qual']
-            mseq = merge_pairs(seq1, seq2, qual1, qual2)
+
+            # merge pairs only if they are the same length
+            if len(seq1) == len(seq2):
+                mseq = merge_pairs(seq1, seq2, qual1, qual2)
+            else:
+                # implies an insertion not covered in one read mate
+                mseq = seq1 if len(seq1) > len(seq2) else seq2
+
             if mseq not in merged:
                 merged.update({mseq: 0})
             merged[mseq] += 1
