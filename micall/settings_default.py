@@ -41,6 +41,7 @@ DONE_PROCESSING = 'doneprocessing'
 
 projects_json = base_path + 'projects.json'
 
+bowtie_version = '2.2.1'        # version of bowtie2, used for version control
 bowtie_threads = 4              # Bowtie performance roughly scales with number of threads
 min_mapping_efficiency = 0.95   # Fraction of fastq reads mapped needed
 max_remaps = 3                  # Number of remapping attempts if mapping efficiency unsatisfied
@@ -48,6 +49,7 @@ consensus_q_cutoff = 20         # Min Q for base to contribute to conseq (pileup
 
 
 ## sam2aln parameters
+samtools_version = '0.1.18'
 sam2aln_q_cutoffs = [15]  # Q-cutoff for base censoring
 max_prop_N = 0.5                 # Drop reads with more censored bases than this proportion
 read_mapping_cutoff = 10         # Minimum bowtie read mapping quality
