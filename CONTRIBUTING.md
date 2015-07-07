@@ -73,7 +73,10 @@ Bowtie, Samtools, and Hyphy
         sudo apt-get install zlib1g-dev libncurses5-dev
 
 4. Download the latest version of the [source for samtools][samtools].
-5. Extract the files, and follow the instructions in the INSTALL file. Copy the samtools executable to /usr/bin.
+5. Extract the files, and follow the instructions in the INSTALL file. Copy the
+    samtools executable to /usr/bin/samtools-X.Y where X.Y is the version of
+    samtools. You can check the samtools version by running `samtools-X.Y` with
+    no arguments.
 6. Before you can build HyPhy, you will need these libraries:
 
         sudo apt-get install build-essential python-dev libcurl4-openssl-dev libcrypto++-dev libssl-dev

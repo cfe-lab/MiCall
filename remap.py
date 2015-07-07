@@ -32,10 +32,6 @@ from operator import itemgetter
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 
-def calculate_sample_name(fastq_filepath):
-    filename = os.path.basename(fastq_filepath)
-    return '_'.join(filename.split('_')[:2])
-
 def is_first_read(flag):
     """
     Interpret bitwise flag from SAM field.
@@ -107,15 +103,11 @@ def main():
     # get the raw read count
     raw_count = count_file_lines(args.fastq1) / 2  # 4 lines per record in FASTQ, paired
 
-    sample_name = calculate_sample_name(args.fastq1)
-    remap_counts_writer = csv.DictWriter(args.remap_counts_csv, ['sample_name',
-                                                                 'type',
+    remap_counts_writer = csv.DictWriter(args.remap_counts_csv, ['type',
                                                                  'count',
                                                                  'filtered_count'])
     remap_counts_writer.writeheader()
-    remap_counts_writer.writerow(dict(sample_name=sample_name,
-                                      type='raw',
-                                      count=raw_count))
+    remap_counts_writer.writerow(dict(type='raw', count=raw_count))
 
     # group CSV stream by first item
     with args.prelim_csv:
@@ -139,8 +131,7 @@ def main():
                 count += 1
                 if not is_primer(row, max_primer_length):
                     filtered_count += 1
-            remap_counts_writer.writerow(dict(sample_name=sample_name,
-                                              type='prelim %s' % refname,
+            remap_counts_writer.writerow(dict(type='prelim %s' % refname,
                                               count=count,
                                               filtered_count=filtered_count))
             map_counts[refname] = count
@@ -258,8 +249,7 @@ def main():
     remap_writer.writeheader()
 
     for refname in refnames:
-        remap_counts_writer.writerow(dict(sample_name=sample_name,
-                                          type='remap %s' % refname,
+        remap_counts_writer.writerow(dict(type='remap %s' % refname,
                                           count=map_counts[refname]))
         conseq = conseqs.get(refname) or projects.getReference(refname)
         args.remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
@@ -311,8 +301,7 @@ def main():
     args.unmapped2.close()
 
     # report number of unmapped reads
-    remap_counts_writer.writerow(dict(sample_name=sample_name,
-                                      type='unmapped',
+    remap_counts_writer.writerow(dict(type='unmapped',
                                       count=n_unmapped))
 
 
