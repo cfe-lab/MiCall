@@ -94,12 +94,17 @@ Bowtie, Samtools, and Hyphy
 
 Alignment library
 -----------------
-This is compiled from source code, and the compilation is different for Mac and
-Ubuntu.
+MiCall uses an implementation of a modified Gotoh algorithm for pairwise sequence alignment.
+This is written in the C++ source file `alignment.cpp`.  To compile this into a shared library
+that can be accessed from Python, go to `micall/alignment` and enter the following:
+```
+python setup.py build
+sudo python setup.py install
+```
+This assumes that you have superuser permissions on your platform.  We have tested this
+installation on OS-X and Ubuntu.
 
-On Ubuntu, just run the `build_alignment.sh` script under `micall/alignment`.
 
-On Mac, use the `extconf.rb` file to generate a Makefile and then run make.
 
 MPI
 ---
