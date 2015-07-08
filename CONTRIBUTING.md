@@ -92,99 +92,14 @@ Bowtie, Samtools, and Hyphy
 [samtools]: http://sourceforge.net/projects/samtools/files/
 [hyphy]: https://github.com/veg/hyphy
 
-Ruby
-----
-1. Install Ruby for the fasta2g2p step. Check what version you have:
+Alignment library
+-----------------
+This is compiled from source code, and the compilation is different for Mac and
+Ubuntu.
 
-        ruby -v
+On Ubuntu, just run the `build_alignment.sh` script under `micall/alignment`.
 
-2. If you don't have version 1.8.6, install Ruby Version Manager, and Ruby 1.8.6.
-
-        sudo apt-get install curl
-        curl -sSL https://get.rvm.io | bash -s stable
-        # exit, then start a new shell so rvm will work
-        sudo ls
-        rvm requirements
-        rvm install 1.8.6
-
-3. Now install the bio and fastercsv gems.
-
-        gem install bio
-        gem install fastercsv
-
-4. It sounds like executable-hooks is installed with Ruby 1.8.6, even though
-    it is incompatible. It causes the warning: `parenthesize argument(s) for 
-    future version`. Follow the removal instructions from
-    [the bug report][rvm-bug]. The first command complains a lot, but it seems
-    to work.
-
-        executable-hooks-uninstaller
-        rvm @global do gem uninstall -ax rubygems-bundler executable-hooks bundler-unload
-
-5. Build the alignment library.
-
-        cd ~/git/MiseqPipeline
-        ./build_alignment.sh
-
-6. From the Help menu in Eclipse, choose Eclipse Marketplace…
-7. Search for Ruby, and install Ruby (DLTK).
-8. From the Window menu, select Preferences. Navigate down to Ruby: Interpreters.
-9. Click Add... and browse for the Interpreter executable. Look under your
-    `.rvm` folder for a path like this:
-    
-        ~/.rvm/rubies/ruby-1.8.6-p420/bin/ruby
-
-10. For Interpreter arguments, type `-rubygems`.
-
-[rvm-bug]: https://github.com/wayneeseguin/rvm/issues/2325
-
-R
--
-1. Install R.
-
-        sudo apt-get install r-base r-base-dev
-
-2. In R, install the rj, rj.gd, and jsonlite packages.  First, invoke R using sudo,
-    so that packages can be installed system-wide:
-
-        sudo R
-
-   Next, in the resulting R console:
-
-        install.packages(c("rj", "rj.gd"), repos="http://download.walware.de/rj-2.0")  # your repo may vary
-        install.packages("jsonlite")
-        q()  # quit
-
-   Note that the repository must be specified for the rj and rj.gd packages.  You 
-    should check the [StatET installation page][statet] to see exactly which version
-    of the rj package is compatible with the version of StatET you are going to
-    install, and which repository to use.
-
-3. Launch Eclipse. For some reason, you can't currently install StatET from the
-    Eclipse Marketplace, so from the Help menu, choose Install New Software....
-4. Go to the [StatET installation page][statet], and find the update site for
-    your version of Eclipse. Paste that address in the install wizard, and 
-    select the StatET for R component. Finish the installation.
-5. From the Window menu, choose Preferences. Navigate down to StatET: 
-    Run/Debug: R Environments.
-6. Click the Add... button.
-7. Next to the Location (R_HOME) field, press the + button, and choose Try
-    find automatically. It should find the R you just installed.
-8. Click the Detect Default Properties/Settings button. Click OK. Click OK.
-9. From the Window menu, choose Preferences. Navigate down to 
-    StatET: R Code Formatting. Change the policy to use spaces. Click OK.
-10. If you want an R console, open the Run menu, and choose 
-    Run Configurations.... Select R Console and click the add button. Click Run.
-11. To run an R script with command-line arguments, modify the R console 
-    configuration by setting the working directory and adding this to the 
-    Options/Arguments field with whatever CSV file name was created by the
-    previous step:
-    
-        --args /path/to/amino_frequencies.csv /path/to/coverage_maps
-    
-    Then you can use `source("coverage_plots.R")` in the console to launch it.
-
-[statet]: http://www.walware.de/it/statet/installation.mframe
+On Mac, use the `extconf.rb` file to generate a Makefile and then run make.
 
 MPI
 ---

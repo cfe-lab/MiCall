@@ -37,7 +37,7 @@ def coverage_plot(amino_csv):
         dest = os.path.join(path, figname)
         paths.append(dest)
         plt.savefig(dest)  # write image to file
-        plt.close()
+        plt.clf()
 
     return paths  # locations of image files
 

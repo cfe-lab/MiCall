@@ -153,7 +153,7 @@ class MiCall(tk.Frame):
         # check for presence of FASTQ files and SampleSheet.csv
         fastq_files = []
         run_info = None
-        for root, dirs, files in os.walk(self.rundir):
+        for root, _dirs, files in os.walk(self.rundir):
             for file in files:
                 if file == 'SampleSheet.csv' and run_info is None:
                     try:
@@ -202,7 +202,7 @@ class MiCall(tk.Frame):
 
 
         # remove duplicate entries
-        self.target_files = list(set(self.target_files))
+        self.target_files = sorted(set(self.target_files))
 
         self.write('Transferred %d sets of FASTQ files to working directory.\n' % len(self.target_files))
         self.button_run.config(state=tk.ACTIVE)
@@ -226,6 +226,11 @@ class MiCall(tk.Frame):
 
         self.parent.update_idletasks()
 
+    def make_tree(self, path):
+        if not os.path.isdir(path):
+            parent = os.path.dirname(path)
+            self.make_tree(parent)
+            os.mkdir(path)
 
     def process_files(self):
         """
@@ -318,6 +323,7 @@ class MiCall(tk.Frame):
 
         savedir = tkFileDialog.askdirectory(title='Select folder to save results')
         # TODO: if user hits cancel by accident, prevent MiCall from deleting result files
+        self.make_tree(savedir)
 
         # collate results to results folder
         for target_file, extension in files_to_collate:

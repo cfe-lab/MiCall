@@ -189,10 +189,10 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     # regenerate consensus sequences based on preliminary map
     if use_samtools:
         # convert SAM to BAM
-        redirect_call([resource_path('samtools'), 'view', '-b', samfile], bamfile)
-        log_call([resource_path('samtools'), 'sort', bamfile, bamfile.replace('.bam', '')])  # overwrite
+        redirect_call([resource_path('samtools-1.1'), 'view', '-b', samfile], bamfile)
+        log_call([resource_path('samtools-1.1'), 'sort', bamfile, bamfile.replace('.bam', '')])  # overwrite
         # BAM to pileup
-        redirect_call([resource_path('samtools'), 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
+        redirect_call([resource_path('samtools-1.1'), 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
         with open(pileup_path, 'rU') as f:
             conseqs = pileup_to_conseq(f, consensus_q_cutoff)
     else:
@@ -213,7 +213,9 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
 
     # start remapping loop
     n_remaps = 0
-    while n_remaps < max_remaps:
+    new_counts = {}
+    mapped = {}
+    while n_remaps < max_remaps and conseqs:
         if callback:
             callback('... remap iteration %d' % n_remaps)
             callback(0)  # reset progress bar (standalone app only)
@@ -243,8 +245,8 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
 
         # capture stdout stream to count reads before writing to file
-        mapped = {}  # track which reads have mapped to something
-        new_counts = {}
+        mapped.clear()  # track which reads have mapped to something
+        new_counts.clear()
         with open(samfile, 'w') as f:
             # write SAM header
             f.write('@HD\tVN:1.0\tSO:unsorted\n')
@@ -285,9 +287,9 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
 
         # regenerate consensus sequences
         if use_samtools:
-            redirect_call([resource_path('samtools'), 'view', '-b', samfile], bamfile)
-            log_call([resource_path('samtools'), 'sort', bamfile, bamfile.replace('.bam', '')])  # overwrite
-            redirect_call([resource_path('samtools'), 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
+            redirect_call([resource_path('samtools-1.1'), 'view', '-b', samfile], bamfile)
+            log_call([resource_path('samtools-1.1'), 'sort', bamfile, bamfile.replace('.bam', '')])  # overwrite
+            redirect_call([resource_path('samtools-1.1'), 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
             with open(pileup_path, 'rU') as f:
                 conseqs = pileup_to_conseq(f, consensus_q_cutoff)
         else:
