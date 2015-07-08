@@ -3,7 +3,7 @@ Reimplementation of Conan's pssm_lib.rb Ruby script in Python
 PSSM was an abbreviation of position-specific scoring matrix.
 """
 
-import alignment
+import gotoh
 from micall.utils.translation import translate
 from math import exp
 
@@ -97,7 +97,7 @@ class Pssm ():
 
     def align_aminos(self, seq, gapIns=3, removeinserts=False, qachecks=False):
         """
-        Align amino acids to a standard reference using alignment.cpp
+        Align amino acids to a standard reference using gotoh.cpp
         :param seq:  AA sequence in list form, to align against reference standard
         :param removeinserts:  Whether to remove insertions relative to standard
         :param qachecks:  These are not used when [seq] is a list
@@ -137,7 +137,7 @@ class Pssm ():
                 return -1, None
 
         std = std.replace('-', 'X')  # fix gaps in reference
-        aligned_std, aligned_seq = alignment.align_it_aa_rb(std, aa_seq, gapIns, 1)  # method_recall
+        aligned_std, aligned_seq = gotoh.align_it_aa_rb(std, aa_seq, gapIns, 1)  # method_recall
         aligned_std = aligned_std.replace('X', '-')
         std = std.replace('X', '-')  # restore original state
 

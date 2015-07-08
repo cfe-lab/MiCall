@@ -98,12 +98,10 @@ MiCall uses an implementation of a modified Gotoh algorithm for pairwise sequenc
 This is written in the C++ source file `alignment.cpp`.  To compile this into a shared library
 that can be accessed from Python, go to `micall/alignment` and enter the following:
 ```
-python setup.py build
 sudo python setup.py install
 ```
-This assumes that you have superuser permissions on your platform.  We have tested this
+This assumes that you have superuser permissions on your system.  We have tested this
 installation on OS-X and Ubuntu.
-
 
 
 MPI

@@ -729,8 +729,8 @@ void widen_gaps(string* seq)
         {NULL, NULL, 0, NULL}
     };
 
-    PyMODINIT_FUNC initalignment (void) {
-        (void) Py_InitModule("alignment", AlignmentMethods);
+    PyMODINIT_FUNC initgotoh (void) {
+        (void) Py_InitModule("gotoh", AlignmentMethods);
     }
 
 #else

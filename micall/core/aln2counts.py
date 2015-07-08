@@ -21,7 +21,7 @@ from itertools import groupby
 import logging
 import os
 
-import alignment
+import gotoh
 import miseq_logging
 from micall.settings import conseq_mixture_cutoffs, amino_alphabet
 from micall.utils.translation import translate, ambig_dict
@@ -139,7 +139,7 @@ class SequenceReport(object):
         
         @return: (aligned_ref, aligned_query, score)
         """
-        aligned_ref, aligned_query, score = alignment.align_it_aa(reference, query, gap_open, gap_extend, use_terminal_gap_penalty)
+        aligned_ref, aligned_query, score = gotoh.align_it_aa(reference, query, gap_open, gap_extend, use_terminal_gap_penalty)
         return aligned_ref, aligned_query, score
 
     def _map_to_coordinate_ref(self, coordinate_name, coordinate_ref):
