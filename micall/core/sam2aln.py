@@ -10,7 +10,6 @@ clips).
 Dependencies:
     bowtie2-build
     bowtie2-align
-    samtools
     settings.py
 """
 

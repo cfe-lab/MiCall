@@ -22,6 +22,7 @@ from multiprocessing import cpu_count
 from micall.utils import collate
 
 import re
+import json
 
 fastq_re = re.compile('_L001_R[12]_001.fastq')
 
@@ -52,6 +53,7 @@ class Redirector(object):
         self.widget.config(state=tk.DISABLED)
 
 class MiCall(tk.Frame):
+    CONFIG_FILE = os.path.expanduser("~/.micall.config")
     def __init__(self, parent, *args, **kwargs):
         self.__version__ = '0.3'
         self.pssm = Pssm(path_to_lookup=resource_path('micall/g2p/g2p_fpr.txt'),
@@ -71,6 +73,12 @@ class MiCall(tk.Frame):
         self.button_frame.pack(side='top')
         self.console_frame = tk.Frame(self)
         self.console_frame.pack(side='top', fill='both', expand=True)
+        
+        try:
+            with open(MiCall.CONFIG_FILE, 'rU') as f:
+                self.config = json.load(f)
+        except:
+            self.config = {}
 
         #self.button_setwd = tk.Button(
         #    self.button_frame, text="Set working directory", command=self.set_workdir
@@ -139,6 +147,13 @@ class MiCall(tk.Frame):
         self.console.insert(tk.END, msg)
         self.console.see(tk.END)
         self.console.config(state=tk.DISABLED)
+        
+    def write_config(self):
+        try:
+            with open(MiCall.CONFIG_FILE, 'w') as f:
+                json.dump(self.config, f)
+        except:
+            pass # For now, we don't care if config fails
 
     def open_files(self):
         """
@@ -147,7 +162,14 @@ class MiCall(tk.Frame):
         """
         #self.button_setwd.config(state=tk.DISABLED)
         #self.button_load.config(state=tk.DISABLED)
-        self.rundir = tkFileDialog.askdirectory()
+        setting_name = 'run_path'
+        run_path = self.config.get(setting_name, '')
+        self.rundir = tkFileDialog.askdirectory(title='Choose a run directory:',
+                                                initialdir=run_path)
+        if not self.rundir:
+            return
+        self.config[setting_name] = self.rundir
+        self.write_config()
         self.write('Selected folder %s\n' % (self.rundir,))
 
         # check for presence of FASTQ files and SampleSheet.csv
@@ -361,4 +383,3 @@ root.wm_title('MiCall')
 app = MiCall(root).pack(fill='both', expand=True)
 
 root.mainloop()  # enter Tk event loop
-root.destroy()

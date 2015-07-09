@@ -92,10 +92,10 @@ Bowtie, Samtools, and Hyphy
 [samtools]: http://sourceforge.net/projects/samtools/files/
 [hyphy]: https://github.com/veg/hyphy
 
-Alignment library
------------------
+Gotoh library
+-------------
 MiCall uses an implementation of a modified Gotoh algorithm for pairwise sequence alignment.
-This is written in the C++ source file `alignment.cpp`.  To compile this into a shared library
+This is written in the C++ source file `gotoh.cpp`.  To compile this into a shared library
 that can be accessed from Python, go to `micall/alignment` and enter the following:
 ```
 sudo python setup.py install

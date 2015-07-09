@@ -28,9 +28,9 @@ tmp = gettempdir()
 import miseq_logging
 import project_config
 
-from micall.settings import bowtie_threads, consensus_q_cutoff,\
-    max_remaps, min_mapping_efficiency
+from micall import settings
 from micall.core.sam2aln import cigar_re, is_first_read
+from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools
 
 # SAM file format
 fieldnames = [
@@ -75,6 +75,34 @@ def is_short_read(read_row, max_primer_length):
 
 
 
+
+def build_conseqs(use_samtools, samfile, samtools, conseqs):
+    """ Build the new consensus sequences from the mapping results.
+    
+    @param use_samtools:  user has the option to use native Python code exclusively of samtools,
+                            but this is slower
+    @param samfile: the mapping results in SAM format
+    @param samtools: a command wrapper for samtools
+    @param conseqs: the consensus sequences from the previous iteration
+    """
+    if use_samtools: # convert SAM to BAM
+        bamfile = samfile.replace('.sam', '.bam')
+        pileup_path = bamfile + '.pileup'
+        samtools.redirect_call(['view', '-b', samfile], bamfile)
+        samtools.log_call(['sort', bamfile, bamfile.replace('.bam', '')]) # overwrite
+        
+        # BAM to pileup
+        samtools.redirect_call(['mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
+        with open(pileup_path, 'rU') as f2:
+            conseqs = pileup_to_conseq(f2, settings.consensus_q_cutoff)
+    else:
+        pileup, _ = sam_to_pileup(samfile, max_primer_length=50, max_count=1E5)
+        # use slower internal code
+        conseqs = make_consensus(pileup=pileup, 
+                                 last_conseqs=conseqs, 
+                                 qCutoff=settings.consensus_q_cutoff)
+    return conseqs
+
 def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_csv, unmapped1, unmapped2,
           cwd=None, nthreads=None, callback=None, count_threshold=10, use_samtools=True):
     """
@@ -102,11 +130,15 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     sample_name = calculate_sample_name(fastq1)
     reffile = os.path.join(tmp, 'temp.fa')
     samfile = os.path.join(tmp, 'temp.sam')
-    bamfile = samfile.replace('.sam', '.bam')
-    pileup_path = bamfile+'.pileup'
 
     if cwd is not None:
         os.chdir(cwd)
+    nthreads = nthreads or settings.bowtie_threads
+    bowtie2 = Bowtie2(settings.bowtie_version, settings.bowtie_path)
+    bowtie2_build = Bowtie2Build(settings.bowtie_version,
+                                 settings.bowtie_build_path,
+                                 logger)
+    samtools = Samtools(settings.samtools_version, settings.samtools_path, logger)
 
     # check that the inputs exist
     if not os.path.exists(fastq1):
@@ -115,13 +147,6 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
 
     if not os.path.exists(fastq2):
         logger.error('No FASTQ found at %s', fastq2)
-        sys.exit(1)
-
-    # check that we have access to bowtie2
-    try:
-        redirect_call([resource_path('bowtie2'), '-h'], os.devnull)
-    except OSError:
-        logger.error('bowtie2 not found; check if it is installed and in $PATH\n')
         sys.exit(1)
 
     # retrieve reference sequences used for preliminary mapping
@@ -187,18 +212,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                                           filtered_count=filtered_counts.get(rname, 0)))
 
     # regenerate consensus sequences based on preliminary map
-    if use_samtools:
-        # convert SAM to BAM
-        redirect_call([resource_path('samtools'), 'view', '-b', samfile], bamfile)
-        log_call([resource_path('samtools'), 'sort', bamfile, bamfile.replace('.bam', '')])  # overwrite
-        # BAM to pileup
-        redirect_call([resource_path('samtools'), 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
-        with open(pileup_path, 'rU') as f:
-            conseqs = pileup_to_conseq(f, consensus_q_cutoff)
-    else:
-        # use slower internal code
-        pileup, _ = sam_to_pileup(samfile, max_primer_length=50, max_count=1E5)
-        conseqs = make_consensus(pileup=pileup, last_conseqs=conseqs, qCutoff=consensus_q_cutoff)
+    conseqs = build_conseqs(use_samtools, samfile, samtools, conseqs)
 
     # exclude references with low counts (post filtering)
     new_conseqs = {}
@@ -215,7 +229,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     n_remaps = 0
     new_counts = {}
     mapped = {}
-    while n_remaps < max_remaps and conseqs:
+    while n_remaps < settings.max_remaps and conseqs:
         if callback:
             callback('... remap iteration %d' % n_remaps)
             callback(0)  # reset progress bar (standalone app only)
@@ -227,11 +241,10 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         outfile.close()
 
         # regenerate bowtie2 index files
-        log_call([resource_path('bowtie2-build'), '-f', '-q', reffile, reffile])
+        bowtie2_build.log_call(['-f', '-q', reffile, reffile])
 
         # stream output from bowtie2
-        bowtie_args = [resource_path('bowtie2'),
-                       '--quiet',
+        bowtie_args = ['--quiet',
                        '-x', reffile,
                        '-1', fastq1,
                        '-2', fastq2,
@@ -240,9 +253,9 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                        '--local',
                        '--rdg 12,3',  # increase gap open penalties
                        '--rfg 12,3',
-                       '-p', str(bowtie_threads) if nthreads is None else str(nthreads)]
+                       '-p', str(nthreads)]
 
-        p = subprocess.Popen(bowtie_args, stdout=subprocess.PIPE)
+        p = bowtie2.create_process(bowtie_args, stdout=subprocess.PIPE)
 
         # capture stdout stream to count reads before writing to file
         mapped.clear()  # track which reads have mapped to something
@@ -279,24 +292,14 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
 
         # stopping criterion 2 - a sufficient fraction of raw data has been mapped
         mapping_efficiency = sum(new_counts.values()) / float(raw_count)
-        if mapping_efficiency > min_mapping_efficiency:
+        if mapping_efficiency > settings.min_mapping_efficiency:
             break
 
         # deep copy of mapping counts
         map_counts = dict([(k, v) for k, v in new_counts.iteritems()])
 
         # regenerate consensus sequences
-        if use_samtools:
-            redirect_call([resource_path('samtools'), 'view', '-b', samfile], bamfile)
-            log_call([resource_path('samtools'), 'sort', bamfile, bamfile.replace('.bam', '')])  # overwrite
-            redirect_call([resource_path('samtools'), 'mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
-            with open(pileup_path, 'rU') as f:
-                conseqs = pileup_to_conseq(f, consensus_q_cutoff)
-        else:
-            # use slower internal code
-            pileup, _ = sam_to_pileup(samfile, max_primer_length=50, max_count=1E5)
-            conseqs = make_consensus(pileup=pileup, last_conseqs=conseqs, qCutoff=consensus_q_cutoff)
-
+        conseqs = build_conseqs(use_samtools, samfile, samtools, conseqs)
         n_remaps += 1
 
 
@@ -369,16 +372,18 @@ def sam_to_pileup (samfile, max_primer_length, max_count=None, delimiter='\t'):
     """
     pileup = {}
     counts = {}
+    rcount = 0
     for line in samfile:
         if line.startswith('@'):
             continue
 
-        qname, flag, rname, refpos, mapq, cigar, rnext, pnext, tlen, seq, qual = line.strip('\n').split(delimiter)
+        _qname, flag, rname, refpos, mapq, cigar, _rnext, _pnext, _tlen, seq, qual = line.strip('\n').split(delimiter)
         if rname not in pileup:
             pileup.update({rname: {}})
         if rname not in counts:
             counts.update({rname: 0})
         counts[rname] += 1
+        rcount += 1
 
         if max_count and rcount > max_count:
             # skip sequence parsing, just get counts
@@ -658,37 +663,6 @@ def pileup_to_conseq (handle, qCutoff):
 
     return conseqs#, counts
 
-
-def redirect_call(args, outpath, format_string='%s'):
-    """ Launch a subprocess, and redirect the output to a file.
-    
-    Raise an exception if the return code is not zero.
-    Standard error is logged to the debug logger.
-    @param args: A list of arguments to pass to subprocess.Popen().
-    @param outpath: a filename that stdout should be redirected to. If you 
-    don't need to redirect the output, then just use subprocess.check_call().
-    @param format_string: A template for the debug message that will have each
-    line of standard error formatted with it.
-    """
-    with open(outpath, 'w') as outfile:
-        p = subprocess.Popen(args, stdout=outfile, stderr=subprocess.PIPE)
-        for line in p.stderr:
-            logger.debug(format_string, line.rstrip())
-        if p.returncode:
-            raise subprocess.CalledProcessError(p.returncode, args)
-
-def log_call(args, format_string='%s'):
-    """ Launch a subprocess, and log any output to the debug logger.
-    
-    Raise an exception if the return code is not zero. This assumes only a
-    small amount of output, and holds it all in memory before logging it.
-    @param args: A list of arguments to pass to subprocess.Popen().
-    @param format_string: A template for the debug message that will have each
-    line of output formatted with it.
-    """
-    output = subprocess.check_output(args, stderr=subprocess.STDOUT)
-    for line in output.splitlines():
-        logger.debug(format_string, line)
 
 def count_file_lines(path):
     """ Run the wc command to count lines in a file, as shown here:
