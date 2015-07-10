@@ -36,7 +36,14 @@ def resource_path(target):
 
 
 
-def prelim_map(fastq1, fastq2, prelim_csv, cwd=None, nthreads=None, callback=None):
+def prelim_map(fastq1,
+               fastq2,
+               prelim_csv,
+               cwd=None,
+               nthreads=None,
+               callback=None,
+               rdgopen=None,
+               rfgopen=None):
     if cwd is not None:
         os.chdir(cwd)
     nthreads = nthreads or settings.bowtie_threads
@@ -68,17 +75,21 @@ def prelim_map(fastq1, fastq2, prelim_csv, cwd=None, nthreads=None, callback=Non
 
     # do preliminary mapping
     output = {}
+    read_gap_open_penalty = rdgopen or settings.read_gap_open_prelim
+    ref_gap_open_penalty = rfgopen or settings.ref_gap_open_prelim
 
     # stream output from bowtie2
     bowtie_args = ['--quiet',
                    '-x', reffile_template,
                    '-1', fastq1,
                    '-2', fastq2,
+                   '--rdg', "{},{}".format(read_gap_open_penalty,
+                                           settings.read_gap_extend_prelim),
+                   '--rfg', "{},{}".format(ref_gap_open_penalty,
+                                           settings.ref_gap_extend_prelim),
                    '--no-unal', # don't report reads that failed to align
                    '--no-hd', # no header lines (start with @)
                    '--local',
-                   '--rdg 12,3',  # increase gap open penalties
-                   '--rfg 12,3',
                    '-p', str(nthreads)]
     p = bowtie2.create_process(bowtie_args, stdout=subprocess.PIPE)
     with p.stdout:
@@ -93,7 +104,7 @@ def prelim_map(fastq1, fastq2, prelim_csv, cwd=None, nthreads=None, callback=Non
     if p.returncode:
         raise subprocess.CalledProcessError(p.returncode, bowtie_args)
 
-    fieldnames = ['qname', 
+    fieldnames = ['qname',
                   'flag',
                   'rname',
                   'pos',
@@ -122,9 +133,11 @@ def main():
     parser.add_argument('prelim_csv',
                         type=argparse.FileType('w'),
                         help='<output> CSV containing preliminary mapping from bowtie2 (modified SAM)')
+    parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
+    parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
     
     args = parser.parse_args()
-    prelim_map(args.fastq1, args.fastq2, args.prelim_csv)
+    prelim_map(args.fastq1, args.fastq2, args.prelim_csv, args.rdgopen, args.rfgopen)
 
 
     

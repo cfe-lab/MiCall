@@ -22,9 +22,10 @@ class Session(requests.Session):
         if response.status_code == requests.codes.forbidden:  # @UndefinedVariable
             raise RuntimeError("Login failed for QAI user '{}'.".format(qai_user))
 
-    def _retry_json(self, method, path, data=None):
+    def _retry_json(self, method, path, data=None, retries=3):
         json_data = data and json.dumps(data)
-        retries_remaining = 3
+        retries_remaining = retries
+        average_delay = 20
         while True:
             try:
                 response = method(
@@ -39,28 +40,31 @@ class Session(requests.Session):
                     raise
 
                 # ten minutes with some noise
-                sleep_seconds = 600 + Random().uniform(-10, 10)
+                sleep_seconds = average_delay + Random().uniform(-10, 10)
                 logger.warn(
                     'JSON request failed. Sleeping for %ss before retry.',
                     sleep_seconds,
                     exc_info=True)
                 time.sleep(sleep_seconds)
                 retries_remaining -= 1
+                average_delay += 600
     
-    def post_json(self, path, data):
+    def post_json(self, path, data, retries=3):
         """ Post a JSON object to the web server, and return a JSON object.
         
         @param path the relative path to add to the qai_path used in login()
         @param data a JSON object that will be converted to a JSON string
+        @param retries: the number of times to retry the request before failing.
         @return the response body, parsed as a JSON object
         """
-        return self._retry_json(self.post, path, data)
+        return self._retry_json(self.post, path, data, retries)
     
-    def get_json(self, path):
+    def get_json(self, path, retries=3):
         """ Get a JSON object from the web server.
         
         @param session an open HTTP session
         @param path the relative path to add to settings.qai_path
+        @param retries: the number of times to retry the request before failing.
         @return the response body, parsed as a JSON object
         """
-        return self._retry_json(self.get, path)
+        return self._retry_json(self.get, path, retries=retries)

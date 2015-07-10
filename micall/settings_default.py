@@ -29,6 +29,16 @@ read_mapping_cutoff = 10         # Minimum bowtie read mapping quality
 amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
 conseq_mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 
+# Read and reference gap open/extension penalties.
+read_gap_open_prelim = 10
+read_gap_extend_prelim = 3
+ref_gap_open_prelim = 10
+ref_gap_extend_prelim = 3
+read_gap_open_remap = read_gap_open_prelim
+read_gap_extend_remap = read_gap_extend_prelim
+ref_gap_open_remap = ref_gap_open_prelim
+ref_gap_extend_remap = ref_gap_extend_prelim
+
 
 ### Monitor settings ###
 instrument_number = 'M01841'  # for Illumina MiSeq, second item in run folder name
@@ -40,8 +50,8 @@ nruns_to_store = 20  # protect X most recent runs from cleaning up intermediate 
 
 # Scheduling processes: these should be a multiple of the total number of slots
 # in your hostfile.
-mapping_processes = 38
-counting_processes = 152
+mapping_processes = 36
+counting_processes = 144
 
 rawdata_mount = '/media/RAW_DATA/'  # NAS
 delay = 3600  # Delay (seconds) for polling NAS for unprocessed runs

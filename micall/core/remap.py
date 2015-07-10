@@ -56,11 +56,6 @@ def resource_path(target):
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 
-def calculate_sample_name(fastq_filepath):
-    filename = os.path.basename(fastq_filepath)
-    return '_'.join(filename.split('_')[:2])
-
-
 def is_short_read(read_row, max_primer_length):
     """
     Return length of matched intervals in read
@@ -103,8 +98,21 @@ def build_conseqs(use_samtools, samfile, samtools, conseqs):
                                  qCutoff=settings.consensus_q_cutoff)
     return conseqs
 
-def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_csv, unmapped1, unmapped2,
-          cwd=None, nthreads=None, callback=None, count_threshold=10, use_samtools=True):
+def remap(fastq1,
+          fastq2,
+          prelim_csv,
+          remap_csv,
+          remap_counts_csv,
+          remap_conseq_csv,
+          unmapped1,
+          unmapped2,
+          cwd=None,
+          nthreads=None,
+          callback=None,
+          count_threshold=10,
+          use_samtools=True,
+          rdgopen=None,
+          rfgopen=None):
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
@@ -124,10 +132,11 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     :param count_threshold:  minimum number of reads that map to a region for it to be remapped
     :param use_samtools:  user has the option to use native Python code exclusively of samtools,
                             but this is slower
+    :param rdgopen: read gap open penalty
+    :param rfgopen: reference gap open penalty
     :return:
     """
 
-    sample_name = calculate_sample_name(fastq1)
     reffile = os.path.join(tmp, 'temp.fa')
     samfile = os.path.join(tmp, 'temp.sam')
 
@@ -159,14 +168,11 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     # record the raw read count
     raw_count = count_file_lines(fastq1) / 2  # 4 lines per record in FASTQ, paired
 
-    remap_counts_writer = csv.DictWriter(remap_counts_csv, ['sample_name',
-                                                                 'type',
-                                                                 'count',
-                                                                 'filtered_count'])
+    remap_counts_writer = csv.DictWriter(remap_counts_csv, ['type',
+                                                            'count',
+                                                            'filtered_count'])
     remap_counts_writer.writeheader()
-    remap_counts_writer.writerow(dict(sample_name=sample_name,
-                                      type='raw',
-                                      count=raw_count))
+    remap_counts_writer.writerow(dict(type='raw', count=raw_count))
 
     # convert preliminary CSV to SAM, count reads
     if callback:
@@ -206,8 +212,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
 
     # report preliminary counts to file
     for rname, count in map_counts.iteritems():
-        remap_counts_writer.writerow(dict(sample_name=sample_name,
-                                          type='prelim %s' % rname,
+        remap_counts_writer.writerow(dict(type='prelim %s' % rname,
                                           count=count,
                                           filtered_count=filtered_counts.get(rname, 0)))
 
@@ -243,16 +248,21 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         # regenerate bowtie2 index files
         bowtie2_build.log_call(['-f', '-q', reffile, reffile])
 
+        read_gap_open_penalty = rdgopen or settings.read_gap_open_remap
+        ref_gap_open_penalty = rfgopen or settings.ref_gap_open_remap
+
         # stream output from bowtie2
         bowtie_args = ['--quiet',
                        '-x', reffile,
+                       '--rdg', "{},{}".format(read_gap_open_penalty,
+                                               settings.read_gap_extend_remap),
+                       '--rfg', "{},{}".format(ref_gap_open_penalty,
+                                               settings.ref_gap_extend_remap),
                        '-1', fastq1,
                        '-2', fastq2,
                        '--no-unal', # don't report reads that failed to align
                        '--no-hd', # no header lines (start with @)
                        '--local',
-                       '--rdg 12,3',  # increase gap open penalties
-                       '--rfg 12,3',
                        '-p', str(nthreads)]
 
         p = bowtie2.create_process(bowtie_args, stdout=subprocess.PIPE)
@@ -319,8 +329,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     # write consensus sequences and counts
     remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
     for refname in new_counts.iterkeys():
-        remap_counts_writer.writerow(dict(sample_name=sample_name,
-                                          type='remap %s' % refname,
+        remap_counts_writer.writerow(dict(type='remap %s' % refname,
                                           count=new_counts[refname]))
         # NOTE this is the consensus sequence to which the reads were mapped, NOT the
         # current consensus!
@@ -353,8 +362,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     unmapped2.close()
 
     # report number of unmapped reads
-    remap_counts_writer.writerow(dict(sample_name=sample_name,
-                                      type='unmapped',
+    remap_counts_writer.writerow(dict(type='unmapped',
                                       count=n_unmapped))
     remap_counts_csv.close()
 
@@ -696,6 +704,8 @@ def main():
     parser.add_argument('unmapped2',
                         type=argparse.FileType('w'),
                         help='<output> FASTQ R2 of reads that failed to map to any region')
+    parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
+    parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
 
     def callback(msg):
         print msg

@@ -50,8 +50,8 @@ Eclipse
 4. After installing PyDev, open Window: Preferences. Navigate down to PyDev: Interpreters: Python Interpreter. 
 5. Click the Quick Auto-Config button. Click OK.
 6. From the File menu, choose Import.... Navigate down to Git: Projects from Git.
-7. Choose Clone URI, and paste this URI: https://github.com/ArtPoon/MiseqPipeline.git
-8. Take all the branches, and select dev as your initial branch.
+7. Choose Clone URI, and paste this URI: https://github.com/cfe-lab/MiCall.git
+8. Take all the branches, and select master as your initial branch.
 9. Select import existing projects, and finish the import.
 
 [eclipse]: https://www.eclipse.org/downloads/
@@ -73,7 +73,10 @@ Bowtie, Samtools, and Hyphy
         sudo apt-get install zlib1g-dev libncurses5-dev
 
 4. Download the latest version of the [source for samtools][samtools].
-5. Extract the files, and follow the instructions in the INSTALL file. Copy the samtools executable to /usr/bin.
+5. Extract the files, and follow the instructions in the INSTALL file. Copy the
+    samtools executable to /usr/bin/samtools-X.Y where X.Y is the version of
+    samtools. You can check the samtools version by running `samtools-X.Y` with
+    no arguments.
 6. Before you can build HyPhy, you will need these libraries:
 
         sudo apt-get install build-essential python-dev libcurl4-openssl-dev libcrypto++-dev libssl-dev
@@ -136,7 +139,7 @@ Running the code
 12. Run the unit tests. Either run them from Eclipse, or run them from the
     command line like this:
 
-        cd ~/git/MiseqPipeline
+        cd ~/git/MiCall
         python -m unittest discover -p '*_test.py'
         ruby -rubygems -I"lib:test" *_test.rb
     
@@ -191,61 +194,59 @@ similar steps to setting up a development workstation. Follow these steps:
     Also check that all the issues in the current milestone are closed.
 2. Determine what version number should be used next. Update the version number
     in `settings_default.py` if it hasn't been updated already, commit, and push.
+2. Copy the previous pipeline on QAI/lab_miseq_pipelines to make a new version.
+    Use the `dump_projects.py` script and compare `projects.json` to check that
+    the projects match.
 3. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y
     matches the version you used in `settings_default.py`. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
     so on. Mark the release as pre-release until you finish deploying it.
 4. Get the code from Github into the server's development environment.
 
-    ```
-    ssh user@server
-    cd /usr/local/share/miseq/development/
-    git fetch github
-    git checkout tags/vX.Y
-    ```
+        ssh user@server
+        cd /usr/local/share/miseq/development/
+        git fetch
+        git checkout tags/vX.Y
 
 5. Check if you need to set any new settings by running
     `diff settings_default.py settings.py`. You will probably need to modify
     the version number, at least. Make sure that `production = False`, and the
     process counts are half the production values. Do the same comparison of
     `hostfile`.
-6. Process one full run of data.
+6. Check if `alignment.cpp` is newer than `alignment.so`. If so, rebuild it.
 
-    ```
-    cd /usr/local/share/miseq/development/
-    ./run_processor.py /data/miseq/YYMMDD*
-    ```
+        cd /usr/local/share/miseq/development/
+        ./build_alignment.sh
+        
+7. Process one full run of data.
+
+        cd /usr/local/share/miseq/development/
+        ./run_processor.py /data/miseq/YYMMDD*
 
 7. Stop the `MISEQ_MONITOR.py` process after you check that it's not processing
     any runs.
 
-    ```
-    ssh user@server
-    tail /data/miseq/MISEQ_MONITOR_OUTPUT.log
-    ps aux|grep MISEQ_MONITOR.py
-    sudo kill -9 <process id from grep output>
-    ```
+        ssh user@server
+        tail /data/miseq/MISEQ_MONITOR_OUTPUT.log
+        ps aux|grep MISEQ_MONITOR.py
+        sudo kill -9 <process id from grep output>
 
 8. Get the code from Github into the server's production environment.
 
-    ```
-    ssh user@server
-    cd /usr/local/share/miseq/production/
-    git fetch
-    git checkout tags/vX.Y
-    ```
-        
-9. Review the settings and host file just as you did in the development
-    environment, but make sure that `production = True`.
+        ssh user@server
+        cd /usr/local/share/miseq/production/
+        git fetch
+        git checkout tags/vX.Y
+
+9. Review the settings, host file, and alignment library just as you did in the
+    development environment, but make sure that `production = True`.
 10. Start the monitor, and tail the log to see that it begins processing all the
     runs with the new version of the pipeline.
 
-    ```
-    cd /usr/local/share/miseq/production/
-    python MISEQ_MONITOR.py &>/dev/null &
-    tail -f /data/miseq/MISEQ_MONITOR_OUTPUT.log
-    ```
-    
+        cd /usr/local/share/miseq/production/
+        python MISEQ_MONITOR.py &>/dev/null &
+        tail -f /data/miseq/MISEQ_MONITOR_OUTPUT.log
+
 11. Remove the pre-release flag from the release.
 12. Send an e-mail to users describing the major changes in the release.
 13. Close the milestone for this release, create one for the next release, and

@@ -77,7 +77,7 @@ def apply_cigar_and_clip(cigar, seq, qual, pos=0, clip_from=0, clip_to=nil)
               # accept only high quality insertions
               newseq += seq[left..right]
               newqual += qual[left..right]
-              clip_from += length if left < clip_from
+              #clip_from += length if left < clip_from
               clip_to += length if clip_to >= 0
           end
           left += length
@@ -215,6 +215,8 @@ def main()
     # Conan's fix: if deletion, then this value is empty string that returns 0 on calling "to_i"
     next if(row['query.nuc.pos'].nil?)
     
+    next if(row['query.nuc.pos'].nil?)
+    
     tracker.add_nuc(
       row['seed'],
       row['region'],
@@ -249,13 +251,24 @@ def main()
         pairs.delete(row['qname'])
         seq1 = pair['seq'] # retrieve from cache
         qual1 = pair['qual']
-      
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
-      
+        
+        if seq1.length == seq2.length
+          # require clipped and padded reads to have same length for merger
+          mseq = merge_pairs(seq1, seq2, qual1, qual2)
+        else
+          # otherwise there has been an insertion in one read 
+          mseq = (if seq1.length > seq2.length then seq1 else seq2 end)
+        end
+        
+        # if merging introduces a lot of ambiguities, then throw out the R2 read
+        if mseq.count('N') > (0.2 * mseq.length)
+          next
+        end
+
         count = merged.fetch(mseq, 0)
         merged[mseq] = count + 1
       end
-  end  
+  end 
   
   sorted = merged.sort_by {|k,v| v}.reverse  # sort by count in descending order
   

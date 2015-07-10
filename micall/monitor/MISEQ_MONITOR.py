@@ -1,7 +1,7 @@
 """
 MISEQ_MONITOR.py
 1) For runs flagged 'needsprocessing' that have not yet been processed, copy fastqs to local disk
-2) Process the run by calling MISEQ_PIPELINE.py
+2) Process the run by calling MISEQ_MONITOR.py
 3) Upload results to the network drive
 """
 
@@ -21,7 +21,8 @@ import qai_helper
 from micall.utils.sample_sheet_parser import sample_sheet_parser
 from micall.settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
     NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, base_path,\
-    qai_path, qai_user, qai_password, instrument_number, nruns_to_store
+    qai_path, qai_user, qai_password, instrument_number, nruns_to_store,\
+    QC_UPLOADED
 import update_qai
 import itertools
 import operator
@@ -56,6 +57,9 @@ def mark_run_as_disabled(root, message, exc_info=None):
 
 def is_marked_as_disabled(run):
     return os.path.exists(run.replace(NEEDS_PROCESSING, ERROR_PROCESSING))
+
+def is_quality_control_uploaded(run):
+    return os.path.exists(run.replace(NEEDS_PROCESSING, QC_UPLOADED))
 
 def mark_run_as_done(results_folder):
     """ Mark a run that has completed its processing.
@@ -95,6 +99,10 @@ def download_quality(run_info_path, destination, read_lengths):
     with qai_helper.Session() as session:
         session.login(qai_path, qai_user, qai_password)
         metrics = session.get_json('/miseqqc_errormetrics?runid=' + qcRunId)
+        if not metrics:
+            raise StandardError(
+                'No quality control metrics found for run ' + qcRunId)
+    
     with open(destination, 'w') as f:
         writer = csv.DictWriter(f, ['tile', 'cycle', 'errorrate'])
         writer.writeheader()
@@ -149,6 +157,9 @@ while True:
         done_path = os.path.join(result_path, DONE_PROCESSING)
 
         if is_marked_as_disabled(run):
+            continue
+        
+        if not is_quality_control_uploaded(run):
             continue
 
         # if doneprocessing file already exists, then do not re-process
@@ -282,7 +293,7 @@ while True:
     except Exception as e:
         failure_message = mark_run_as_disabled(
             root,
-            "MISEQ_PIPELINE.py failed: '{}'".format(e))
+            "MISEQ_MONITOR.py failed: '{}'".format(e))
         continue
 
     if not production:
@@ -317,6 +328,7 @@ while True:
             coverage_source_path = os.path.join(untar_path, 'coverage_maps')
             coverage_dest_path = os.path.join(result_path_final, 'coverage_maps')
             os.mkdir(untar_path)
+            os.mkdir(coverage_source_path)
             os.mkdir(coverage_dest_path)
             for tar_path in glob(home + run_name + '/*.coverage_maps.tar'):
                 basename = os.path.basename(tar_path)

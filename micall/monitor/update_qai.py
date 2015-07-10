@@ -336,7 +336,7 @@ def process_folder(result_folder, logger):
     collated_counts = os.path.join(result_folder, 'collated_counts.csv')
     nuc_variants = os.path.join(result_folder, 'nuc_variants.csv')
     coverage_scores = os.path.join(result_folder, 'coverage_scores.csv')
-    all_results_path, _ = os.path.split(result_folder)
+    all_results_path, _ = os.path.split(os.path.normpath(result_folder))
     run_path, _ = os.path.split(all_results_path)
     sample_sheet_file = os.path.join(run_path, "SampleSheet.csv")
     with open(sample_sheet_file, "rU") as f:
