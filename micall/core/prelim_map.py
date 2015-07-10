@@ -25,17 +25,6 @@ from micall.utils.externals import Bowtie2, Bowtie2Build
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 
-def resource_path(target):
-    """
-    Returns absolute path to target.
-    See http://stackoverflow.com/questions/7674790/bundling-data-files-with-pyinstaller-onefile
-    :param relative:
-    :return:
-    """
-    return os.path.join('' if not hasattr(sys, '_MEIPASS') else sys._MEIPASS, target)
-
-
-
 def prelim_map(fastq1,
                fastq2,
                prelim_csv,

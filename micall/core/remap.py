@@ -50,9 +50,6 @@ fieldnames = [
 max_pileup_depth = str(2**16)
 
 
-def resource_path(target):
-    return os.path.join('' if not hasattr(sys, '_MEIPASS') else sys._MEIPASS, target)
-
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 

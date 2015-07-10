@@ -1,28 +1,26 @@
+import json
+from multiprocessing import cpu_count
 import os
-import sys
+import re
+import shutil
+import subprocess
+from tempfile import gettempdir
 
 import Tkinter as tk
 from ttk import Progressbar
 import tkFileDialog
 
-import shutil
-import subprocess
-from micall.utils.sample_sheet_parser import sample_sheet_parser
 from micall.core.prelim_map import prelim_map
 from micall.core.remap import remap
 from micall.core.sam2aln import sam2aln
 from micall.core.aln2counts import aln2counts
 from micall.g2p.pssm_lib import Pssm
 from micall.g2p.sam_g2p import sam_g2p
-from micall.utils.coverage_plots import coverage_plot
-
-from tempfile import gettempdir
 from micall.settings import pipeline_version
-from multiprocessing import cpu_count
 from micall.utils import collate
-
-import re
-import json
+from micall.utils.coverage_plots import coverage_plot
+from micall.utils.externals import AssetWrapper
+from micall.utils.sample_sheet_parser import sample_sheet_parser
 
 fastq_re = re.compile('_L001_R[12]_001.fastq')
 
@@ -36,10 +34,6 @@ files_to_collate = (('amino_frequencies.csv', '.amino.csv'),
                     ('nucleotide_frequencies.csv', '.nuc.csv'),
                     ('nuc_variants.csv', None),
                     ('collated_counts.csv', '.remap_counts.csv'))
-
-def resource_path(target):
-    return os.path.join('' if not hasattr(sys, '_MEIPASS') else sys._MEIPASS, target)
-
 
 class Redirector(object):
     # see https://gist.github.com/K-DawG007/7729555
@@ -56,8 +50,8 @@ class MiCall(tk.Frame):
     CONFIG_FILE = os.path.expanduser("~/.micall.config")
     def __init__(self, parent, *args, **kwargs):
         self.__version__ = '0.3'
-        self.pssm = Pssm(path_to_lookup=resource_path('micall/g2p/g2p_fpr.txt'),
-                         path_to_matrix=resource_path('micall/g2p/g2p.matrix'))
+        self.pssm = Pssm(path_to_lookup=AssetWrapper('micall/g2p/g2p_fpr.txt').path,
+                         path_to_matrix=AssetWrapper('micall/g2p/g2p.matrix').path)
 
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
