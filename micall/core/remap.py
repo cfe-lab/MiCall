@@ -20,9 +20,6 @@ import os
 import re
 import subprocess
 import sys
-from tempfile import gettempdir
-
-tmp = gettempdir()
 
 # These are both CodeResourceDependencies
 import miseq_logging
@@ -103,7 +100,7 @@ def remap(fastq1,
           remap_conseq_csv,
           unmapped1,
           unmapped2,
-          cwd=None,
+          work_path='',
           nthreads=None,
           callback=None,
           count_threshold=10,
@@ -122,7 +119,7 @@ def remap(fastq1,
                                 generated while remapping reads
     :param unmapped1:  output FASTQ containing R1 reads that did not map to any region
     :param unmapped2:  output FASTQ containing R2 reads that did not map to any region
-    :param cwd:  optional setting to change current working directory
+    :param work_path:  optional path to store working files
     :param nthreads:  optional setting to modify the number of threads used by bowtie2
     :param callback:  optional setting to pass a callback function, used for progress
                         monitoring in GUI
@@ -134,11 +131,9 @@ def remap(fastq1,
     :return:
     """
 
-    reffile = os.path.join(tmp, 'temp.fa')
-    samfile = os.path.join(tmp, 'temp.sam')
+    reffile = os.path.join(work_path, 'temp.fasta')
+    samfile = os.path.join(work_path, 'temp.sam')
 
-    if cwd is not None:
-        os.chdir(cwd)
     nthreads = nthreads or settings.bowtie_threads
     bowtie2 = Bowtie2(settings.bowtie_version, settings.bowtie_path)
     bowtie2_build = Bowtie2Build(settings.bowtie_version,
@@ -267,6 +262,8 @@ def remap(fastq1,
         # capture stdout stream to count reads before writing to file
         mapped.clear()  # track which reads have mapped to something
         new_counts.clear()
+        FORWARD_FLAG = 2
+        REVERSE_FLAG = 1
         with open(samfile, 'w') as f:
             # write SAM header
             f.write('@HD\tVN:1.0\tSO:unsorted\n')
@@ -289,7 +286,9 @@ def remap(fastq1,
                     mapped.update({qname: 0})
                 # track how many times this read has mapped to a region with integer value
                 # 0(00) = neither; 2(10) = forward only; 1(01) = reverse only; 3(11) both
-                mapped[qname] += (2 if is_first_read(bitflag) else 1)
+                mapped[qname] |= (FORWARD_FLAG
+                                  if is_first_read(bitflag)
+                                  else REVERSE_FLAG)
 
                 f.write(line)
 
@@ -342,7 +341,7 @@ def remap(fastq1,
         # the four variables are assigned the next four lines.
         for ident, seq, opt, qual in itertools.izip_longest(f, f, f, f):
             qname = ident.lstrip('@').rstrip('\n').split()[0]
-            if qname not in mapped or mapped[qname] < 2:
+            if qname not in mapped or (mapped[qname] & FORWARD_FLAG) == 0:
                 # forward read not mapped
                 unmapped1.write(''.join([ident, seq, opt, qual]))
                 n_unmapped += 1
@@ -352,7 +351,7 @@ def remap(fastq1,
     with open(fastq2, 'rU') as f:
         for ident, seq, opt, qual in itertools.izip_longest(f, f, f, f):
             qname = ident.lstrip('@').rstrip('\n').split()[0]
-            if qname not in mapped or mapped[qname] % 2 == 0:
+            if qname not in mapped or (mapped[qname] & REVERSE_FLAG) == 0:
                 # reverse read not mapped
                 unmapped2.write(''.join([ident, seq, opt, qual]))
                 n_unmapped += 1

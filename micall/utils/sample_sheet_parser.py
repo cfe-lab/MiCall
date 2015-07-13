@@ -103,8 +103,6 @@ def sample_sheet_parser (handle):
             # Parse Description field.  This uses some version-specific
             # code to handle version 1 (where semicolons and underscores were used)
             # to version 2 (where tildes and hashes are used).
-
-            """
             desc = tokens[header.index('Description')]
             desc_fields = desc.split() # whitespace-delimited
             for desc_field in desc_fields:
@@ -190,7 +188,6 @@ def sample_sheet_parser (handle):
                                 entry['disable_contamination_check'] = (val == 'TRUE')
                 
                 run_info['DataSplit'].append(entry)
-            """
             sample_number += 1
     return run_info
 

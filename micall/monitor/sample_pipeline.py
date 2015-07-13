@@ -158,16 +158,15 @@ def count_samples(fastq_samples, worker, args):
                            stdout=log_path,
                            stderr=log_path))
 
-#TODO: Put this back
-#     for sample_info in fastq_samples:
-#         log_path = "{}.coverage.log".format(sample_info.output_root)
-#         worker.run_job(Job(script=base_path + 'coverage_plots.R',
-#                            helpers=(projects_json, ),
-#                            args=(sample_info.output_root + '.amino.csv',
-#                                  sample_info.output_root + '.coverage_maps.tar',
-#                                  sample_info.output_root + '.coverage_scores.csv'),
-#                            stdout=log_path,
-#                            stderr=log_path))
+    for sample_info in fastq_samples:
+        log_path = "{}.coverage.log".format(sample_info.output_root)
+        worker.run_job(Job(script=build_path('monitor/coverage_plots.R'),
+                           helpers=(build_path('projects.json'), ),
+                           args=(sample_info.output_root + '.amino.csv',
+                                 sample_info.output_root + '.coverage_maps.tar',
+                                 sample_info.output_root + '.coverage_scores.csv'),
+                           stdout=log_path,
+                           stderr=log_path))
 
             
 def collate_results(fastq_samples, worker, args, logger):

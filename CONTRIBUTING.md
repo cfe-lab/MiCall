@@ -77,7 +77,9 @@ Bowtie, Samtools, and Hyphy
     samtools executable to /usr/bin/samtools-X.Y where X.Y is the version of
     samtools. You can check the samtools version by running `samtools-X.Y` with
     no arguments.
-6. Before you can build HyPhy, you will need these libraries:
+6. Hyphy is not needed by the main pipeline, only some of the helper utilities,
+    so you can probably skip it. Before you can build HyPhy, you will need these
+    libraries:
 
         sudo apt-get install build-essential python-dev libcurl4-openssl-dev libcrypto++-dev libssl-dev
 
@@ -106,6 +108,53 @@ sudo python setup.py install
 This assumes that you have superuser permissions on your system.  We have tested this
 installation on OS-X and Ubuntu.
 
+R
+-
+1. Install R.
+
+        sudo apt-get install r-base r-base-dev
+
+2. In R, install the rj, rj.gd, and jsonlite packages.  First, invoke R using sudo,
+    so that packages can be installed system-wide:
+
+        sudo R
+
+   Next, in the resulting R console:
+
+        install.packages(c("rj", "rj.gd"), repos="http://download.walware.de/rj-2.0")  # your repo may vary
+        install.packages("jsonlite")
+        q()  # quit
+
+   Note that the repository must be specified for the rj and rj.gd packages.  You 
+    should check the [StatET installation page][statet] to see exactly which version
+    of the rj package is compatible with the version of StatET you are going to
+    install, and which repository to use.
+
+3. Launch Eclipse. For some reason, you can't currently install StatET from the
+    Eclipse Marketplace, so from the Help menu, choose Install New Software....
+4. Go to the [StatET installation page][statet], and find the update site for
+    your version of Eclipse. Paste that address in the install wizard, and 
+    select the StatET for R component. Finish the installation.
+5. From the Window menu, choose Preferences. Navigate down to StatET: 
+    Run/Debug: R Environments.
+6. Click the Add... button.
+7. Next to the Location (R_HOME) field, press the + button, and choose Try
+    find automatically. It should find the R you just installed.
+8. Click the Detect Default Properties/Settings button. Click OK. Click OK.
+9. From the Window menu, choose Preferences. Navigate down to 
+    StatET: R Code Formatting. Change the policy to use spaces. Click OK.
+10. If you want an R console, open the Run menu, and choose 
+    Run Configurations.... Select R Console and click the add button. Click Run.
+11. To run an R script with command-line arguments, modify the R console 
+    configuration by setting the working directory and adding this to the 
+    Options/Arguments field with whatever CSV file name was created by the
+    previous step:
+    
+        --args /path/to/amino_frequencies.csv /path/to/coverage_maps
+    
+    Then you can use `source("coverage_plots.R")` in the console to launch it.
+
+[statet]: http://www.walware.de/it/statet/installation.mframe
 
 MPI
 ---

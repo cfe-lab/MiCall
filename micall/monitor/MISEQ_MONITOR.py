@@ -345,8 +345,7 @@ while True:
             os.rmdir(coverage_source_path)
             os.rmdir(untar_path)
             
-            #TODO: Put this back
-            #update_qai.process_folder(result_path_final, logger)
+            update_qai.process_folder(result_path_final, logger)
             
             mark_run_as_done(result_path_final)
             

@@ -5,13 +5,15 @@ from csv import DictReader
 #from matplotlib.pyplot import step, xlabel, ylabel, savefig, close
 from matplotlib import pyplot as plt
 from operator import itemgetter
+
 from micall.core import project_config
 from micall.settings import amino_alphabet
 
 def coverage_plot(amino_csv):
-    """
+    """ Generate coverage plots.
 
-    :return:
+    @param amino_csv: an open file object that holds amino acid frequencies
+    @return: a list of full paths to the image files.
     """
     # imports project information from JSON
     path, filename = os.path.split(amino_csv.name)
