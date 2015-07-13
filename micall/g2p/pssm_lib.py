@@ -8,7 +8,7 @@ from micall.utils.translation import translate
 from math import exp
 
 class Pssm ():
-    def __init__(self, std='g2p', path_to_lookup='micall/g2p/g2p_fpr.txt', path_to_matrix='micall/g2p/g2p.matrix'):
+    def __init__(self, std='g2p', path_to_lookup='g2p_fpr.txt', path_to_matrix='g2p.matrix'):
         if std == 'pssm':
             self.std_v3 = 'CTRPNNNTRKGIHIGPGRAFYATGEIIGDIRQAHC'
         elif std == 'nuc':
@@ -181,15 +181,15 @@ class Pssm ():
             seqs = [seqs]
 
         for seq in seqs:
-            aa, indels = self.align_aminos(seq, removeinserts=False, qachecks=(type(seq) is not list))
+            aa, _indels = self.align_aminos(seq, removeinserts=False, qachecks=(type(seq) is not list))
             if aa < 0:
                 # failed alignment, try higher gap insert penalty
-                aa, indels = self.align_aminos(seq, gapIns=6, removeinserts=False,
+                aa, _indels = self.align_aminos(seq, gapIns=6, removeinserts=False,
                                                qachecks=(type(seq) is not list))  # :recall6
             score = None if aa < 0 else self.g2p(aa)
             scores.append(score)
             if aa == -1:
-                aa, indels = self.align_aminos(seq, gapIns=6, removeinserts=False,
+                aa, _indels = self.align_aminos(seq, gapIns=6, removeinserts=False,
                                                qachecks=(type(seq) is not list))  # :recall6
             aa_aligned = aa
 

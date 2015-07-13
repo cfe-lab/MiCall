@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 
 import argparse
-import logging
-
-import miseq_logging
 import csv
 import itertools
+import logging
 import math
+
+import miseq_logging
 
 BAD_ERROR_RATE = 7.5
 

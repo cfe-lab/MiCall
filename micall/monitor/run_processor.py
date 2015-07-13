@@ -4,13 +4,13 @@ import argparse
 from glob import glob
 import logging
 import os
+import shutil
 import subprocess
 import sys
 import traceback
 
-import miseq_logging
-import settings
-import shutil
+from micall.core import miseq_logging
+from micall import settings
 
 def parseOptions():
     parser = argparse.ArgumentParser(
@@ -83,13 +83,14 @@ def main():
             version = check_mpi_version(prefix)
             if not expected_version in version:
                 sys.exit("Couldn't find Open MPI:\n{}".format(version))
+        monitor_path = os.path.abspath(os.path.dirname(__file__))
         
         base_args =    ['mpirun', 
                         '-np', 
                         '1', 
                         '--hostfile', 
-                        settings.base_path + 'hostfile', 
-                        settings.base_path + 'sample_pipeline.py',
+                        os.path.join(monitor_path, 'hostfile'), 
+                        os.path.join(monitor_path, 'sample_pipeline.py'),
                         args.run_folder]
 
         if args.mode is not None:

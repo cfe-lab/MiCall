@@ -1,12 +1,9 @@
 """
 To make pipeline portable, allow user to specify local paths and thread counts.
 """
-import os
 
 ### Core settings ###
 pipeline_version = '6.8'        # Change for each release
-base_path = os.path.dirname(os.path.realpath(__file__))
-projects_json = os.path.join(base_path, 'projects.json')
 are_temp_folders_deleted = True # Should FIFO worker clean up working folders?
 
 ## Mapping parameters

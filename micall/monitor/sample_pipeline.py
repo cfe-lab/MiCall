@@ -7,10 +7,13 @@ import logging, os
 from micall.utils.collate import collate_labeled_files
 from fifo_scheduler import Job, Worker
 from micall.core import miseq_logging
-from micall.utils import sample_sheet_parser
-from micall.settings import alignment_lib, are_temp_folders_deleted, base_path, \
-    projects_json
+from micall.utils.sample_sheet_parser import sample_sheet_parser
+from micall.settings import are_temp_folders_deleted
 from mpi4py import MPI
+
+def build_path(path):
+    base_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    return os.path.join(base_path, path)
 
 def parseOptions(comm_world):
     parser = argparse.ArgumentParser(
@@ -50,10 +53,10 @@ class SampleInfo(object):
         
 def filter_quality(run_folder, worker):
     log_path = os.path.join(run_folder, 'quality.log')
-    worker.run_job(Job(script=base_path + 'filter_quality.py',
-                       helpers=(base_path + 'settings.py',
-                                base_path + 'miseq_logging.py',
-                                projects_json),
+    worker.run_job(Job(script=build_path('core/filter_quality.py'),
+                       helpers=(build_path('settings.py'),
+                                build_path('core/miseq_logging.py'),
+                                build_path('projects.json')),
                        args=(os.path.join(run_folder, 'quality.csv'),
                              os.path.join(run_folder, 'bad_cycles.csv')),
                        stdout=log_path,
@@ -62,13 +65,15 @@ def filter_quality(run_folder, worker):
 def map_samples(run_folder, fastq_samples, worker):
     for sample_info in fastq_samples:
         log_path = "{}.censor.log".format(sample_info.output_root)
-        worker.run_job(Job(script=base_path + 'censor_fastq.py',
+        worker.are_temp_folders_deleted = False
+        worker.run_job(Job(script=build_path('core/censor_fastq.py'),
                            args=(sample_info.fastq1,
                                  os.path.join(run_folder, 'bad_cycles.csv'),
                                  sample_info.output_root + '.censored1.fastq'),
                            stdout=log_path,
                            stderr=log_path))
-        worker.run_job(Job(script=base_path + 'censor_fastq.py',
+        worker.are_temp_folders_deleted = are_temp_folders_deleted
+        worker.run_job(Job(script=build_path('core/censor_fastq.py'),
                            args=(sample_info.fastq2,
                                  os.path.join(run_folder, 'bad_cycles.csv'),
                                  sample_info.output_root + '.censored2.fastq'),
@@ -76,11 +81,11 @@ def map_samples(run_folder, fastq_samples, worker):
                            stderr=log_path))
         log_path = "{}.mapping.log".format(sample_info.output_root)
         # Preliminary map
-        worker.run_job(Job(script=base_path + 'prelim_map.py',
-                           helpers=(base_path + 'settings.py',
-                                    base_path + 'miseq_logging.py',
-                                    base_path + 'project_config.py',
-                                    projects_json),
+        worker.run_job(Job(script=build_path('core/prelim_map.py'),
+                           helpers=(build_path('settings.py'),
+                                    build_path('core/miseq_logging.py'),
+                                    build_path('core/project_config.py'),
+                                    build_path('projects.json')),
                            args=(sample_info.output_root + '.censored1.fastq',
                                  sample_info.output_root + '.censored2.fastq',
                                  sample_info.output_root + '.prelim.csv'),
@@ -88,11 +93,11 @@ def map_samples(run_folder, fastq_samples, worker):
                            stderr=log_path))
     
         # Iterative re-mapping
-        worker.run_job(Job(script=base_path + 'remap.py',
-                           helpers=(base_path + 'settings.py',
-                                    base_path + 'miseq_logging.py',
-                                    base_path + 'project_config.py',
-                                    projects_json),
+        worker.run_job(Job(script=build_path('core/remap.py'),
+                           helpers=(build_path('settings.py'),
+                                    build_path('core/miseq_logging.py'),
+                                    build_path('core/project_config.py'),
+                                    build_path('projects.json')),
                            args=(sample_info.output_root + '.censored1.fastq', 
                                  sample_info.output_root + '.censored2.fastq',
                                  sample_info.output_root + '.prelim.csv',
@@ -111,8 +116,8 @@ def count_samples(fastq_samples, worker, args):
     
     for sample_info in fastq_samples:
         log_path = "{}.sam2aln.log".format(sample_info.output_root)
-        worker.run_job(Job(script=base_path + 'sam2aln.py',
-                           helpers=(base_path + 'settings.py', ),
+        worker.run_job(Job(script=build_path('core/sam2aln.py'),
+                           helpers=(build_path('settings.py'), ),
                            args=(sample_info.output_root + '.remap.csv',
                                  sample_info.output_root + '.aligned.csv',
                                  sample_info.output_root + '.conseq_ins.csv',
@@ -125,12 +130,11 @@ def count_samples(fastq_samples, worker, args):
     
     for sample_info in fastq_samples:
         log_path = "{}.aln2counts.log".format(sample_info.output_root)
-        worker.run_job(Job(script=base_path + 'aln2counts.py',
-                           helpers=(base_path + 'settings.py',
-                                    base_path + 'project_config.py',
-                                    projects_json,
-                                    base_path + 'miseq_logging.py',
-                                    base_path + 'hyphyAlign.py'),
+        worker.run_job(Job(script=build_path('core/aln2counts.py'),
+                           helpers=(build_path('settings.py'),
+                                    build_path('core/project_config.py'),
+                                    build_path('projects.json'),
+                                    build_path('core/miseq_logging.py')),
                            args=(sample_info.output_root + '.aligned.csv',
                                  sample_info.output_root + '.nuc.csv',
                                  sample_info.output_root + '.amino.csv',
@@ -143,27 +147,27 @@ def count_samples(fastq_samples, worker, args):
         
     for sample_info in fastq_samples:
         log_path = "{}.g2p.log".format(sample_info.output_root)
-        worker.run_job(Job(script=base_path + 'sam_g2p.sh',
-                           helpers=(base_path + 'sam_g2p.rb',
-                                    base_path + 'pssm_lib.rb',
-                                    base_path + alignment_lib,
-                                    base_path + 'g2p.matrix',
-                                    base_path + 'g2p_fpr.txt'),
+        worker.run_job(Job(script=build_path('g2p/sam_g2p.py'),
+                           helpers=(build_path('core/sam2aln.py'),
+                                    build_path('utils/translation.py'),
+                                    build_path('g2p/g2p.matrix'),
+                                    build_path('g2p/g2p_fpr.txt')),
                            args=(sample_info.output_root + '.remap.csv',
                                  sample_info.output_root + '.nuc.csv',
                                  sample_info.output_root + '.g2p.csv'),
                            stdout=log_path,
                            stderr=log_path))
-    
-    for sample_info in fastq_samples:
-        log_path = "{}.coverage.log".format(sample_info.output_root)
-        worker.run_job(Job(script=base_path + 'coverage_plots.R',
-                           helpers=(projects_json, ),
-                           args=(sample_info.output_root + '.amino.csv',
-                                 sample_info.output_root + '.coverage_maps.tar',
-                                 sample_info.output_root + '.coverage_scores.csv'),
-                           stdout=log_path,
-                           stderr=log_path))
+
+#TODO: Put this back
+#     for sample_info in fastq_samples:
+#         log_path = "{}.coverage.log".format(sample_info.output_root)
+#         worker.run_job(Job(script=base_path + 'coverage_plots.R',
+#                            helpers=(projects_json, ),
+#                            args=(sample_info.output_root + '.amino.csv',
+#                                  sample_info.output_root + '.coverage_maps.tar',
+#                                  sample_info.output_root + '.coverage_scores.csv'),
+#                            stdout=log_path,
+#                            stderr=log_path))
 
             
 def collate_results(fastq_samples, worker, args, logger):

@@ -1,15 +1,11 @@
 import json
-import os
-
-from micall import settings
 
 
 class ProjectConfig(object):
     @classmethod
     def loadDefault(cls):
         projects = None
-        project_paths = [settings.projects_json,
-                         os.path.basename(settings.projects_json)]
+        project_paths = ['projects.json', 'micall/projects.json']
         for project_path in project_paths:
             try:
                 with open(project_path, 'rU') as projects_file:

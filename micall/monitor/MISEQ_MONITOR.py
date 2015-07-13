@@ -20,7 +20,7 @@ from micall.core import miseq_logging
 import qai_helper
 from micall.utils.sample_sheet_parser import sample_sheet_parser
 from micall.settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
-    NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, base_path,\
+    NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, \
     qai_path, qai_user, qai_password, instrument_number, nruns_to_store,\
     QC_UPLOADED
 import update_qai
@@ -286,7 +286,8 @@ while True:
     # Standard out/error concatenates to the log
     logger.info("Launching pipeline for %s%s", home, run_name)
     try:
-        subprocess.check_call([os.path.join(base_path, 'run_processor.py'),
+        monitor_path = os.path.abspath(os.path.dirname(__file__))
+        subprocess.check_call([os.path.join(monitor_path, 'run_processor.py'),
                                home+run_name,
                                '--clean' if do_cleanup else ''])
         logger.info("===== {} successfully processed! =====".format(run_name))
@@ -344,7 +345,8 @@ while True:
             os.rmdir(coverage_source_path)
             os.rmdir(untar_path)
             
-            update_qai.process_folder(result_path_final, logger)
+            #TODO: Put this back
+            #update_qai.process_folder(result_path_final, logger)
             
             mark_run_as_done(result_path_final)
             

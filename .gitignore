@@ -1,5 +1,5 @@
 /micall/settings.py
-/hostfile
+/micall/monitor/hostfile
 *.pyc
 *.o
 *.so

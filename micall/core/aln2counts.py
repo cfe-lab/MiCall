@@ -13,7 +13,7 @@ This does not assume any reading frame (because of a frameshift in HLA-B).
 
 Dependencies:
     settings.py
-    hyphyAlign.py
+    gotoh package
 """
 
 import argparse
