@@ -1,11 +1,14 @@
 import json
+import os
 
 
 class ProjectConfig(object):
     @classmethod
     def loadDefault(cls):
         projects = None
-        project_paths = ['projects.json', 'micall/projects.json']
+        file_path = os.path.dirname(__file__)
+        project_paths = [os.path.join(file_path, 'projects.json'),
+                         os.path.join(os.path.dirname(file_path), 'projects.json')]
         for project_path in project_paths:
             try:
                 with open(project_path, 'rU') as projects_file:
