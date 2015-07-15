@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 """
 MISEQ_MONITOR.py
 1) For runs flagged 'needsprocessing' that have not yet been processed, copy fastqs to local disk
@@ -17,13 +19,13 @@ import time
 from xml.etree import ElementTree
 
 from micall.core import miseq_logging
-import qai_helper
+from micall.monitor import qai_helper
 from micall.utils.sample_sheet_parser import sample_sheet_parser
 from micall.settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
     NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, \
     qai_path, qai_user, qai_password, instrument_number, nruns_to_store,\
     QC_UPLOADED
-import update_qai
+from micall.monitor import update_qai
 import itertools
 import operator
 
@@ -287,9 +289,13 @@ while True:
     logger.info("Launching pipeline for %s%s", home, run_name)
     try:
         monitor_path = os.path.abspath(os.path.dirname(__file__))
-        subprocess.check_call([os.path.join(monitor_path, 'run_processor.py'),
+        environment = dict(os.environ)
+        old_path = environment.get('PYTHONPATH', '')
+        environment['PYTHONPATH'] = os.pathsep.join((old_path, monitor_path))
+        subprocess.check_call([os.path.join(monitor_path, 'micall/monitor/run_processor.py'),
                                home+run_name,
-                               '--clean' if do_cleanup else ''])
+                               '--clean' if do_cleanup else ''],
+                              env=environment)
         logger.info("===== {} successfully processed! =====".format(run_name))
     except Exception as e:
         failure_message = mark_run_as_disabled(

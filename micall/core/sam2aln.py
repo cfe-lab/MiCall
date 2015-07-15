@@ -163,11 +163,12 @@ def matchmaker(remap_csv):
     cached_rows = {}
     for row in reader:
         qname = row['qname']
-        if qname not in cached_rows:
+        old_row = cached_rows.pop(qname, None)
+        if old_row is None:
             cached_rows.update({qname: row})
             continue
         # current row should be the second read of the pair
-        yield cached_rows[qname], row
+        yield old_row, row
 
 
 def parse_sam(rows):
