@@ -298,15 +298,16 @@ class MiCall(tk.Frame):
                   nthreads=self.nthreads.get(), callback=self.callback)
 
             # prepare file handles for conversion from SAM format to alignment
-            remap_csv = open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU')
-            aligned_csv = open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'w')
-            insert_csv = open(os.path.join(self.workdir, prefix+'.insert.csv'), 'w')
-            failed_csv = open(os.path.join(self.workdir, prefix+'.failed.csv'), 'w')
-            working_files += map(lambda x: x.name, [aligned_csv, insert_csv, failed_csv])
+            with open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU') as remap_csv, \
+                 open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'w') as aligned_csv, \
+                 open(os.path.join(self.workdir, prefix+'.insert.csv'), 'w') as insert_csv, \
+                 open(os.path.join(self.workdir, prefix+'.failed.csv'), 'w') as failed_csv:
+                
+                working_files += map(lambda x: x.name, [aligned_csv, insert_csv, failed_csv])
 
-            self.write('... converting into alignment\n')
-            self.parent.update_idletasks()
-            sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=self.nthreads.get())
+                self.write('... converting into alignment\n')
+                self.parent.update_idletasks()
+                sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=self.nthreads.get())
 
             aligned_csv = open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'rU')
             nuc_csv = open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'w')

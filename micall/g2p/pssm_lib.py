@@ -3,9 +3,11 @@ Reimplementation of Conan's pssm_lib.rb Ruby script in Python
 PSSM was an abbreviation of position-specific scoring matrix.
 """
 
-import gotoh
-from micall.utils.translation import translate
 from math import exp
+
+import gotoh
+
+from micall.utils.translation import translate
 
 class Pssm ():
     def __init__(self, std='g2p', path_to_lookup=None, path_to_matrix=None):
@@ -44,7 +46,7 @@ class Pssm ():
         if path_to_matrix is None:
             matrix_paths = ['g2p.matrix', '../../g2p/g2p.matrix']
         else:
-            matrix_paths = [path_to_lookup]
+            matrix_paths = [path_to_matrix]
         for path in matrix_paths:
             try:
                 with open(path, 'rU') as handle:
