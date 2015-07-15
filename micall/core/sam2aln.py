@@ -20,6 +20,7 @@ import re
 
 from micall.settings import max_prop_N, read_mapping_cutoff, sam2aln_q_cutoffs
 from csv import DictReader, DictWriter
+import os
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -170,63 +171,96 @@ def matchmaker(remap_csv):
 
 
 def parse_sam(rows):
-    """
-    :param rows:  chunk of tuples of paired rows from matchmaker generator
-    :return:
+    """ Merge two matched reads into a single aligned read.
+    
+    Also report insertions and failed merges.
+    @param rows: tuple holding a pair of matched rows - forward and reverse reads
+    @return: (refname, merged_seqs, insert_list, failed_list) where
+        merged_seqs is {qcut: seq} the merged sequence for each cutoff level
+        insert_list is [{'qname': query_name,
+                         'fwd_rev': 'F' or 'R',
+                         'refname': refname,
+                         'pos': pos,
+                         'insert': insertion_sequence,
+                         'qual': insertion_quality_sequence}] insertions
+        relative to the reference sequence.
+        failed_list is [{'qname': query_name,
+                         'qcut': qcut,
+                         'seq1': seq1,
+                         'qual1': qual1,
+                         'seq2': seq2,
+                         'qual2': qual2,
+                         'prop_N': proportion_of_Ns,
+                         'mseq': merged_sequence}] sequences that failed to
+        merge.
     """
     row1, row2 = rows
+    mseqs = {}
     failed_list = []
     insert_list = []
     rname = row1['rname']
     qname = row1['qname']
 
     cigar1 = row1['cigar']
-    if cigar1 == '*' or int(row1['mapq']) < read_mapping_cutoff:
-        return rname, None, insert_list
-
-    pos1 = int(row1['pos'])-1  # convert 1-index to 0-index
-    _, seq1, qual1, inserts = apply_cigar(cigar1, row1['seq'], row1['qual'])
-
-    # report insertions relative to sample consensus
-    for left, (iseq, iqual) in inserts.iteritems():
-        insert_list.append([qname,
-                            'F' if is_first_read(row1['flag']) else 'R',
-                            rname,
-                            pos1+left,
-                            iseq,
-                            iqual])
-
-    seq1 = '-'*pos1 + seq1  # pad sequence on left
-    qual1 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
-
-
-    # now process the mate
     cigar2 = row2['cigar']
-    if cigar2 == '*' or int(row2['mapq']) < read_mapping_cutoff:
-        return rname, None, insert_list
-
-    pos2 = int(row2['pos'])-1  # convert 1-index to 0-index
-    _, seq2, qual2, inserts = apply_cigar(cigar2, row2['seq'], row2['qual'])
-    for left, (iseq, iqual) in inserts.iteritems():
-        insert_list.append([qname,
-                            'F' if is_first_read(row2['flag']) else 'R',
-                            rname,
-                            pos2+left,
-                            iseq,
-                            iqual])
-    seq2 = '-'*pos2 + seq2
-    qual2 = '!'*pos2 + qual2
-
-    # merge reads
-    mseqs = {}
-    for qcut in sam2aln_q_cutoffs:
-        mseq = merge_pairs(seq1, seq2, qual1, qual2, qcut)
-        prop_N = mseq.count('N') / float(len(mseq.strip('-')))
-        if prop_N > max_prop_N:
-            # fail read pair
-            failed_list.append([qname, qcut, seq1, qual1, seq2, qual2, prop_N, mseq])
-            continue
-        mseqs.update({qcut: mseq})
+    if (cigar1 == '*' or
+        int(row1['mapq']) < read_mapping_cutoff or
+        cigar2 == '*' or
+        int(row2['mapq']) < read_mapping_cutoff):
+        
+        failed_list.append({'qname': qname,
+                            'seq1': row1['seq'],
+                            'qual1': row1['qual'],
+                            'seq2': row2['seq'],
+                            'qual2': row2['qual'],
+                            'mapq1': row1['mapq'],
+                            'mapq2': row2['mapq']})
+    else:
+        pos1 = int(row1['pos'])-1  # convert 1-index to 0-index
+        _, seq1, qual1, inserts = apply_cigar(cigar1, row1['seq'], row1['qual'])
+    
+        # report insertions relative to sample consensus
+        for left, (iseq, iqual) in inserts.iteritems():
+            insert_list.append({'qname': qname,
+                                'fwd_rev': 'F' if is_first_read(row1['flag']) else 'R',
+                                'refname': rname,
+                                'pos': pos1+left,
+                                'insert': iseq,
+                                'qual': iqual})
+    
+        seq1 = '-'*pos1 + seq1  # pad sequence on left
+        qual1 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
+    
+    
+        # now process the mate
+        pos2 = int(row2['pos'])-1  # convert 1-index to 0-index
+        _, seq2, qual2, inserts = apply_cigar(cigar2, row2['seq'], row2['qual'])
+        for left, (iseq, iqual) in inserts.iteritems():
+            insert_list.append({'qname': qname,
+                                'fwd_rev': 'F' if is_first_read(row2['flag']) else 'R',
+                                'refname': rname,
+                                'pos': pos2+left,
+                                'insert': iseq,
+                                'qual': iqual})
+        seq2 = '-'*pos2 + seq2
+        qual2 = '!'*pos2 + qual2
+    
+        # merge reads
+        for qcut in sam2aln_q_cutoffs:
+            mseq = merge_pairs(seq1, seq2, qual1, qual2, qcut)
+            prop_N = mseq.count('N') / float(len(mseq.strip('-')))
+            if prop_N > max_prop_N:
+                # fail read pair
+                failed_list.append({'qname': qname,
+                                    'qcut': qcut,
+                                    'seq1': seq1,
+                                    'qual1': qual1,
+                                    'seq2': seq2,
+                                    'qual2': qual2,
+                                    'prop_N': prop_N,
+                                    'mseq': mseq})
+                continue
+            mseqs.update({qcut: mseq})
 
     return rname, mseqs, insert_list, failed_list
 
@@ -234,11 +268,11 @@ def parse_sam(rows):
 def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
     # prepare outputs
     insert_fields =  ['qname', 'fwd_rev', 'refname', 'pos', 'insert', 'qual']
-    insert_writer = DictWriter(insert_csv, insert_fields)
+    insert_writer = DictWriter(insert_csv, insert_fields, lineterminator=os.linesep)
     insert_writer.writeheader()
 
-    failed_fields =  ['qname', 'qcut', 'seq1', 'qual1', 'seq2', 'qual2', 'prop_N', 'mseq']
-    failed_writer = DictWriter(failed_csv, failed_fields)
+    failed_fields =  ['qname', 'qcut', 'seq1', 'qual1', 'seq2', 'qual2', 'prop_N', 'mseq', 'mapq1', 'mapq2']
+    failed_writer = DictWriter(failed_csv, failed_fields, lineterminator=os.linesep)
     failed_writer.writeheader()
 
     aligned = {}
@@ -262,20 +296,15 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
                 aligned[rname][qcut].update({mseq: 0})
             aligned[rname][qcut][mseq] += 1
 
-            # write out inserts to CSV
-            for items in insert_list:
-                insert_writer.writerow(dict(zip(insert_fields, items)))
+        # write out inserts to CSV
+        insert_writer.writerows(insert_list)
 
-            # write out failed read mergers to CSV
-            for items in failed_list:
-                failed_writer.writerow(dict(zip(failed_fields, items)))
-
-    failed_csv.close()
-    insert_csv.close()
+        # write out failed read mergers to CSV
+        failed_writer.writerows(failed_list)
 
     # write out merged sequences to file
     aligned_fields = ['refname', 'qcut', 'rank', 'count', 'offset', 'seq']
-    aligned_writer = DictWriter(aligned_csv, aligned_fields)
+    aligned_writer = DictWriter(aligned_csv, aligned_fields, lineterminator=os.linesep)
     aligned_writer.writeheader()
     for rname, data in aligned.iteritems():
         for qcut, data2 in data.iteritems():
@@ -289,7 +318,6 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
                                              count=count,
                                              offset=offset,
                                              seq=seq.strip('-')))
-    aligned_csv.close()
 
 
 
