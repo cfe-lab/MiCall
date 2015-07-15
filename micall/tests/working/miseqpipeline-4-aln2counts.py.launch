@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.python.pydev.debug.regularLaunchConfigurationType">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/miseqpipeline/micall/core/aln2counts.py"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:miseqpipeline/micall/core/aln2counts.py}"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_OTHER_WORKING_DIRECTORY" value="${workspace_loc:miseqpipeline/micall/tests/working}"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.aligned.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.nuc.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.amino.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.coord_ins.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.conseq.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.failed_align.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.nuc_variants.csv"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:miseqpipeline/micall/tests/working}"/>
+<stringAttribute key="org.python.pydev.debug.ATTR_INTERPRETER" value="__default"/>
+<stringAttribute key="org.python.pydev.debug.ATTR_PROJECT" value="miseqpipeline"/>
+<intAttribute key="org.python.pydev.debug.ATTR_RESOURCE_TYPE" value="1"/>
+<stringAttribute key="process_factory_id" value="org.python.pydev.debug.processfactory.PyProcessFactory"/>
+</launchConfiguration>

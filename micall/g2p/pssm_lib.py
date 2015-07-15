@@ -8,7 +8,7 @@ from micall.utils.translation import translate
 from math import exp
 
 class Pssm ():
-    def __init__(self, std='g2p', path_to_lookup='g2p_fpr.txt', path_to_matrix='g2p.matrix'):
+    def __init__(self, std='g2p', path_to_lookup=None, path_to_matrix=None):
         if std == 'pssm':
             self.std_v3 = 'CTRPNNNTRKGIHIGPGRAFYATGEIIGDIRQAHC'
         elif std == 'nuc':
@@ -19,26 +19,50 @@ class Pssm ():
             print 'ERROR: Unrecognized argument to std'
             return
 
-        # load empirical curve of FPR to g2p scores from file
-        self.g2p_fpr_data = []
-        handle = open(path_to_lookup, 'rU')
-        for line in handle:
-            g2p, fpr = map(float, line.strip('\n').split(','))
-            self.g2p_fpr_data.append((g2p, fpr))
-        handle.close()
+        if path_to_lookup is None:
+            lookup_paths = ['g2p_fpr.txt', '../../g2p/g2p_fpr.txt']
+        else:
+            lookup_paths = [path_to_lookup]
+        for path in lookup_paths:
+            self.g2p_fpr_data = []
+            try:
+                with open(path, 'rU') as handle:
+                    # load empirical curve of FPR to g2p scores from file
+                    for line in handle:
+                        g2p, fpr = map(float, line.strip('\n').split(','))
+                        self.g2p_fpr_data.append((g2p, fpr))
+                break
+            except:
+                self.g2p_fpr_data = None
+        
+        if not self.g2p_fpr_data:
+            raise RuntimeError('No g2p_fpr data found in {!r}'.format(
+                lookup_paths))
 
         self.g2p_fpr_data.sort()  # make sure the list is sorted
 
-        # load g2p score matrix
-        self.g2p_matrix = dict([(i, {}) for i in range(len(self.std_v3))])
-        handle = open(path_to_matrix, 'rU')
-        for line in handle:
-            items = line.split('\t')
-            residue = items[0]
-            scores = map(float, items[1:])  # V3 reference length
-            for i, score in enumerate(scores):
-                self.g2p_matrix[i].update({residue: score})
-        handle.close()
+        if path_to_matrix is None:
+            matrix_paths = ['g2p.matrix', '../../g2p/g2p.matrix']
+        else:
+            matrix_paths = [path_to_lookup]
+        for path in matrix_paths:
+            try:
+                with open(path, 'rU') as handle:
+                    # load g2p score matrix
+                    self.g2p_matrix = dict([(i, {}) for i in range(len(self.std_v3))])
+                    for line in handle:
+                        items = line.split('\t')
+                        residue = items[0]
+                        scores = map(float, items[1:])  # V3 reference length
+                        for i, score in enumerate(scores):
+                            self.g2p_matrix[i].update({residue: score})
+                break
+            except:
+                self.g2p_matrix = None
+        
+        if not self.g2p_matrix:
+            raise RuntimeError('No g2p matrix data found in {!r}'.format(
+                matrix_paths))
 
     def g2p(self, aa_lists):
         """

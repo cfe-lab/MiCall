@@ -5,14 +5,6 @@ from micall.core import remap
 from micall.core.remap import is_first_read, is_short_read
 
 class RemapTest(unittest.TestCase):
-    def testSampleName(self):
-        filename = '/some/path/2020A-V3LOOP_S4_L001_R1_001.fastq'
-        expected_sample_name = '2020A-V3LOOP_S4'
-        
-        sample_name = remap.calculate_sample_name(filename)
-        
-        self.assertEqual(sample_name, expected_sample_name)
-        
     def assertCigarIsPrimer(self, cigar, is_primer_expected):
         row = {'cigar': cigar}
         max_primer_length = 29
@@ -243,7 +235,7 @@ class SamToPileupTest(unittest.TestCase):
                                     13: {'s': 'Aa', 'q': 'JJ'},
                                     14: {'s': 'C$c$', 'q': 'JJ'}
                                     }}
-        pileup, counts = remap.sam_to_pileup(samIO, max_primer_length=0)
+        pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)
 
@@ -265,7 +257,7 @@ class SamToPileupTest(unittest.TestCase):
                                     13: {'s': 'Aa', 'q': 'JJ'},
                                     14: {'s': 'C$c$', 'q': 'JJ'}
                                     }}
-        pileup, counts = remap.sam_to_pileup(samIO, max_primer_length=0)
+        pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)
 
@@ -287,7 +279,7 @@ class SamToPileupTest(unittest.TestCase):
                                     13: {'s': 'Aa', 'q': 'JJ'},
                                     14: {'s': 'C$c$', 'q': 'JJ'}
                                     }}
-        pileup, counts = remap.sam_to_pileup(samIO, max_primer_length=0)
+        pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)
 
@@ -315,6 +307,6 @@ class SamToPileupTest(unittest.TestCase):
                                     19: {'s': 'a', 'q': 'J'},
                                     20: {'s': 't$', 'q': 'J'}
                                     }}
-        pileup, counts = remap.sam_to_pileup(samIO, max_primer_length=0)
+        pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
         self.assertEqual(pileup, expected_pileup)

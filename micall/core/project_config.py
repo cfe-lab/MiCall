@@ -16,7 +16,7 @@ class ProjectConfig(object):
                     projects.load(projects_file)
                     break
             except:
-                pass
+                projects = None
         
         if not projects:
             raise RuntimeError('No project definitions found in {!r}'.format(

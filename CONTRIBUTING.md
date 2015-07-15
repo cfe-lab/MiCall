@@ -1,11 +1,25 @@
-Setting up a developer workstation
-==================================
+# Contributing to the MiCall Project #
 
-This will document the installation steps to get the miseq pipeline running locally on your workstation.
+If you like this project and want to make it better, help out. You could report
+a bug, or pitch in with some development work.
+
+## Bug Reports and Enhancement Requests ##
+
+Please create issue descriptions [on GitHub][issues]. Be as specific as possible.
+Which version are you using? What did you do? What did you expect to happen? Are
+you planning to submit your own fix in a pull request?
+
+[issues]: https://github.com/cfe-lab/MiCall/issues
+
+## Development ##
+This will document the installation steps to get MiCall running locally on your workstation.
 The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferred IDE or operating system.
 
-Java and Python
----------------
+If you want to see what's currently being worked on, check out the [waffle board][waffle].
+
+[waffle]: https://waffle.io/cfe-lab/micall
+
+### Java and Python ###
 1. Check that you are running a 64-bit operating system, or bowtie2 won't work.
    Check About this Computer under the gear menu.
 2. If you want to edit Python code using PyDev and Eclipse, you will need to
@@ -39,8 +53,7 @@ Java and Python
 
 [pip]: https://pip.pypa.io/en/latest/installing.html
 
-Eclipse
--------
+### Eclipse ###
 1. Install Eclipse, although you might prefer a more recent version from the [Eclipse web site][eclipse]:
 
         sudo apt-get install eclipse
@@ -57,8 +70,7 @@ Eclipse
 [eclipse]: https://www.eclipse.org/downloads/
 [pydev]: http://pydev.org/updates
 
-Bowtie, Samtools, and Hyphy
----------------------------
+### Bowtie, Samtools, and Hyphy ###
 1. Download the latest version of [bowtie2's binaries for Linux][bowtie2].
 2. Right click and choose Extract Here. Change the folder owner to root, move it to /opt, and add it to the path.
 
@@ -97,8 +109,7 @@ Bowtie, Samtools, and Hyphy
 [samtools]: http://sourceforge.net/projects/samtools/files/
 [hyphy]: https://github.com/veg/hyphy
 
-Gotoh library
--------------
+### Gotoh library ###
 MiCall uses an implementation of a modified Gotoh algorithm for pairwise sequence alignment.
 This is written in the C++ source file `gotoh.cpp`.  To compile this into a shared library
 that can be accessed from Python, go to `micall/alignment` and enter the following:
@@ -108,8 +119,9 @@ sudo python setup.py install
 This assumes that you have superuser permissions on your system.  We have tested this
 installation on OS-X and Ubuntu.
 
-R
--
+### R ###
+R is used in the MISEQ_MONITOR version, but not in the stand-alone version.
+
 1. Install R.
 
         sudo apt-get install r-base r-base-dev
@@ -156,8 +168,9 @@ R
 
 [statet]: http://www.walware.de/it/statet/installation.mframe
 
-MPI
----
+### MPI ###
+MPI is only used in the MISEQ_MONITOR version, not in the stand-alone version.
+
 1. Install Open MPI.
 
     sudo apt-get install openmpi-bin
@@ -166,23 +179,17 @@ MPI
 
     sudo apt-get install python-mpi4py
 
-Running the code
-----------------
+### Running the code ###
 1. Copy settings_default.py to settings.py, and open it for editing.
-2. Set `base_path` to '../', and comment out the next line with the
-   production/development extensions.
 3. Change `counting_processes` to match the number of processors on your
    computer, and set `mapping_processes` to be that number divided by four.
-4. If you want to reduce the combinations that run, remove all but the first 
-    value in g2p_fpr_cutoffs, v3_mincounts, conseq_mixture_cutoffs. Remove all 
-    but 15 from sam2csf_q_cutoffs.
 5. Copy hostfile_default to hostfile, and open it for editing.
 6. You probably just want to uncomment the localhost line.
-7. Try the launch configurations. They are saved in the `working` directory,
-    but you should see them if you open the Run menu and choose Run
+7. Try the launch configurations. They are saved in the `micall/tests/working`
+    directory, but you should see them if you open the Run menu and choose Run
     configurations.... If you want to run all steps at once, skip to the next
     step, otherwise go through the numbered launch configurations in order.
-8. Copy all the files from the microtest folder to the working folder.
+8. Copy or link all the files from the microtest folder to the working folder.
 9. Run the sample_pipeline or run_processor launch configurations. They will
     process all the sample files in the working folder. 
 12. Run the unit tests. Either run them from Eclipse, or run them from the
@@ -190,12 +197,11 @@ Running the code
 
         cd ~/git/MiCall
         python -m unittest discover -p '*_test.py'
-        ruby -rubygems -I"lib:test" *_test.rb
     
-Test data
----------
+### Test data ###
 If you want to run MISEQ_MONITOR.py, you have to set up data folders for raw
-data and for the working folders.
+data and for the working folders. You'll also need to set up the QAI project
+and the MiseqQCReport so you can download QC data and upload results.
 
 1. Create a data folder somewhere on your workstation, like ~/data. Create
    subdirectories called miseq and RAW_DATA. Add folders RAW_DATA/MiSeq/runs.
@@ -206,18 +212,22 @@ data and for the working folders.
 4. Copy SampleSheet.csv to a sample run folder under your local
    RAW_DATA/MiSeq/runs folder.
 5. Navigate down to Data\Intensities\BaseCalls, and copy a few of the .fastq.gz
-   files to your sample run folder.
+   files to your sample run folder under Data/Intensities/BaseCalls.
+5. Copy the Interop folder and the files RunInfo.xml and runParameters.xml.
 6. Open settings.py for editing.
 7. Point `home` at your local data/miseq folder.
 8. Point `rawdata_mount` at your local RAW_DATA folder.
 9. Set the Oracle connection information to a test database where you can upload
    sequence data.
-10. Run MISEQ_MONITOR.py, it doesn't take any arguments.
+10. Run the Ruby console for QAI and `LabMiseqRun.import('01-Jan-2000')` for the
+    date of your sample run.
+11. Run the MiSeqQCReport script to upload the QC data from the sample run
+    folder.
+12. Run MISEQ_MONITOR.py, it doesn't take any arguments.
 
 [cifs]: https://wiki.ubuntu.com/MountWindowsSharesPermanently
 
-Looking at SAM files
---------------------
+### Looking at SAM files ###
 When you don't understand the pipeline's output, it can be helpful to look at
 the raw reads in a sequence viewer like [Tablet][tablet]. Change the settings
 file on your workstation to not delete the temp folders, then run the pipeline
@@ -231,8 +241,7 @@ edited FASTA file.
 
 [tablet]: http://ics.hutton.ac.uk/tablet/
 
-Releases
---------
+### Releases ###
 This section assumes you already have a working server up and running, and you
 just want to publish a new release. If you're setting up a new server, follow
 similar steps to setting up a development workstation. Follow these steps:

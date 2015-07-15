@@ -703,13 +703,10 @@ def main():
     parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
     parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
 
-    def callback(msg):
-        print msg
-
     args = parser.parse_args()
     remap(fastq1=args.fastq1, fastq2=args.fastq2, prelim_csv=args.prelim_csv, remap_csv=args.remap_csv,
           remap_counts_csv=args.remap_counts_csv, remap_conseq_csv=args.remap_conseq_csv,
-          unmapped1=args.unmapped1, unmapped2=args.unmapped2, callback=callback)
+          unmapped1=args.unmapped1, unmapped2=args.unmapped2)
 
 if __name__ == '__main__':
     main()

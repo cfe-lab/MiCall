@@ -5,8 +5,8 @@
 *.so
 *.fai
 *~
-working/*
-!working/*.launch
+/micall/tests/working/*
+!/micall/tests/working/*.launch
 *.bt2
 .DS_Store
 */.DS_Store
