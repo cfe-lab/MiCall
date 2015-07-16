@@ -14,13 +14,13 @@ Dependencies:
 """
 
 import argparse
-import sys
 import itertools
 import re
 
 from micall.settings import max_prop_N, read_mapping_cutoff, sam2aln_q_cutoffs
 from csv import DictReader, DictWriter
 import os
+import collections
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -78,7 +78,7 @@ def apply_cigar (cigar, seq, qual):
             newqual += ' '*length  # Assign fake placeholder score (Q=-1)
         # Insertion relative to reference: skip it (excise it)
         elif token[-1] == 'I':
-            insertions.update({left: (seq[left:(left+length)], qual[left:(left+length)])})
+            insertions[left] = (seq[left:(left+length)], qual[left:(left+length)])
             left += length
             continue
         # Soft clipping leaves the sequence in the SAM - so we should skip it
@@ -86,8 +86,8 @@ def apply_cigar (cigar, seq, qual):
             left += length
             continue
         else:
-            print "Unable to handle CIGAR token: {} - quitting".format(token)
-            sys.exit()
+            raise RuntimeError(
+                "Unable to handle CIGAR token: {} - quitting".format(token))
 
     return shift, newseq, newqual, insertions
 
@@ -165,10 +165,10 @@ def matchmaker(remap_csv):
         qname = row['qname']
         old_row = cached_rows.pop(qname, None)
         if old_row is None:
-            cached_rows.update({qname: row})
-            continue
-        # current row should be the second read of the pair
-        yield old_row, row
+            cached_rows[qname] = row
+        else:
+            # current row should be the second read of the pair
+            yield old_row, row
 
 
 def parse_sam(rows):
@@ -261,7 +261,7 @@ def parse_sam(rows):
                                     'prop_N': prop_N,
                                     'mseq': mseq})
                 continue
-            mseqs.update({qcut: mseq})
+            mseqs[qcut] = mseq
 
     return rname, mseqs, insert_list, failed_list
 
@@ -276,7 +276,8 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
     failed_writer = DictWriter(failed_csv, failed_fields, lineterminator=os.linesep)
     failed_writer.writeheader()
 
-    aligned = {}
+    empty_region = collections.defaultdict(collections.Counter)
+    aligned = collections.defaultdict(empty_region.copy)
     if nthreads:
         from multiprocessing import Pool
         pool = Pool(processes=nthreads)
@@ -285,17 +286,12 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
         iter = itertools.imap(parse_sam, matchmaker(remap_csv))
 
     for rname, mseqs, insert_list, failed_list in iter:
-        if mseqs is None:
-            continue
-
-        if rname not in aligned:
-            aligned.update({rname: dict([(qcut, {}) for qcut in sam2aln_q_cutoffs])})
+        region = aligned[rname]
 
         for qcut, mseq in mseqs.iteritems():
             # collect identical merged sequences
-            if mseq not in aligned[rname][qcut]:
-                aligned[rname][qcut].update({mseq: 0})
-            aligned[rname][qcut][mseq] += 1
+            mseq_counter = region[qcut]
+            mseq_counter[mseq] += 1
 
         # write out inserts to CSV
         insert_writer.writerows(insert_list)
