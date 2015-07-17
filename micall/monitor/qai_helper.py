@@ -37,6 +37,9 @@ class Session(requests.Session):
                 return response.json()
             except StandardError:
                 if retries_remaining <= 0:
+                    logger.error('JSON request failed for %s',
+                                 path,
+                                 exc_info=True)
                     raise
 
                 # ten minutes with some noise
