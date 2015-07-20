@@ -25,4 +25,4 @@ The scenarios that each file tests are:
   and reverse
 * 2070A-PR - seven reads with two deletions and three with one deletion
 * 2080A-V3LOOP - PR contamination below remap threshold
-* 2090A-HCV - mixed infection
+* 2090A-HCV - mixed infection of HCV 1A and 1B, in the NS5b region.
