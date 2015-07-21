@@ -28,6 +28,8 @@ import project_config
 from micall import settings
 from micall.core.sam2aln import cigar_re, is_first_read
 from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools
+import collections
+from operator import itemgetter
 
 # SAM file format
 fieldnames = [
@@ -179,46 +181,53 @@ def remap(fastq1,
         f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
         # iterate through prelim CSV and record counts, transfer rows to SAM
-        map_counts = {}
-        filtered_counts = {}
+        map_counts = collections.Counter()
+        refgroups = {} # { group_name: (refname, count) }
         reader = csv.DictReader(prelim_csv)
-        for i, row in enumerate(reader):
-            if callback and i%1000 == 0:
-                callback(i)
+        row_count = 0
+        for refname, group in itertools.groupby(reader, itemgetter('rname')):
+            count = 0
+            filtered_count = 0
+            for row in group:
+                if callback and row_count%1000 == 0:
+                    callback(row_count)
+    
+                row_count += 1
+    
+                if is_short_read(row, max_primer_length=50):
+                    # exclude short reads
+                    continue
+    
+                filtered_count += 1
+    
+                # write SAM row
+                f.write('\t'.join([row[field] for field in fieldnames]) + '\n')
+            
+            # report preliminary counts to file
+            remap_counts_writer.writerow(
+                dict(type='prelim %s' % refname,
+                     count=map_counts[refname],
+                     filtered_count=filtered_count))
+            map_counts[refname] = count
+            refgroup = projects.getSeedGroup(refname)
+            _best_ref, best_count = refgroups.get(refgroup,
+                                                  (None, count_threshold))
+            if filtered_count > best_count:
+                refgroups[refgroup] = (refname, filtered_count)
 
-            rname = row['rname']
-            if rname not in map_counts:
-                map_counts.update({rname: 0})
-            map_counts[rname] += 1
-
-            if is_short_read(row, max_primer_length=50):
-                # exclude short reads
-                continue
-
-            if rname not in filtered_counts:
-                filtered_counts.update({rname: 0})
-            filtered_counts[rname] += 1
-
-            # write SAM row
-            f.write('\t'.join([row[field] for field in fieldnames]) + '\n')
-
-    # report preliminary counts to file
-    for rname, count in map_counts.iteritems():
-        remap_counts_writer.writerow(dict(type='prelim %s' % rname,
-                                          count=count,
-                                          filtered_count=filtered_counts.get(rname, 0)))
-
+    seed_counts = {best_ref: best_count
+                   for best_ref, best_count in refgroups.itervalues()}
     # regenerate consensus sequences based on preliminary map
     conseqs = build_conseqs(use_samtools, samfile, samtools, conseqs)
 
     # exclude references with low counts (post filtering)
     new_conseqs = {}
+    map_counts = {}
     for rname, conseq in conseqs.iteritems():
-        count = filtered_counts.get(rname, 0)
-        map_counts[rname] = count  # transfer filtered counts to map counts for remap loop
-        if count < count_threshold:
-            continue
-        new_conseqs.update({rname: conseq})
+        count = seed_counts.get(rname, None)
+        if count is not None:
+            map_counts[rname] = count  # transfer filtered counts to map counts for remap loop
+            new_conseqs[rname] = conseq
     conseqs = dict([(k, v) for k, v in new_conseqs.iteritems()])  # deep copy
 
 
