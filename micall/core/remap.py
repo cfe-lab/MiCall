@@ -28,7 +28,6 @@ import project_config
 from micall import settings
 from micall.core.sam2aln import cigar_re, is_first_read
 from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools
-import collections
 from operator import itemgetter
 
 # SAM file format
@@ -181,7 +180,6 @@ def remap(fastq1,
         f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
         # iterate through prelim CSV and record counts, transfer rows to SAM
-        map_counts = collections.Counter()
         refgroups = {} # { group_name: (refname, count) }
         reader = csv.DictReader(prelim_csv)
         row_count = 0
@@ -191,7 +189,8 @@ def remap(fastq1,
             for row in group:
                 if callback and row_count%1000 == 0:
                     callback(row_count)
-    
+                
+                count += 1
                 row_count += 1
     
                 if is_short_read(row, max_primer_length=50):
@@ -206,9 +205,8 @@ def remap(fastq1,
             # report preliminary counts to file
             remap_counts_writer.writerow(
                 dict(type='prelim %s' % refname,
-                     count=map_counts[refname],
+                     count=count,
                      filtered_count=filtered_count))
-            map_counts[refname] = count
             refgroup = projects.getSeedGroup(refname)
             _best_ref, best_count = refgroups.get(refgroup,
                                                   (None, count_threshold))
