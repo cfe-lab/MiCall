@@ -45,9 +45,6 @@ fieldnames = [
     'qual'
 ]
 
-max_pileup_depth = str(2**16)
-
-
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 
@@ -66,7 +63,7 @@ def is_short_read(read_row, max_primer_length):
 
 
 
-def build_conseqs(use_samtools, samfile, samtools, conseqs):
+def build_conseqs(use_samtools, samfile, samtools, conseqs, raw_count):
     """ Build the new consensus sequences from the mapping results.
     
     @param use_samtools:  user has the option to use native Python code exclusively of samtools,
@@ -74,6 +71,7 @@ def build_conseqs(use_samtools, samfile, samtools, conseqs):
     @param samfile: the mapping results in SAM format
     @param samtools: a command wrapper for samtools
     @param conseqs: the consensus sequences from the previous iteration
+    @param raw_count: the maximum number of reads in the SAM file
     """
     if use_samtools: # convert SAM to BAM
         bamfile = samfile.replace('.sam', '.bam')
@@ -82,7 +80,7 @@ def build_conseqs(use_samtools, samfile, samtools, conseqs):
         samtools.log_call(['sort', bamfile, bamfile.replace('.bam', '')]) # overwrite
         
         # BAM to pileup
-        samtools.redirect_call(['mpileup', '-d', max_pileup_depth, bamfile], pileup_path)
+        samtools.redirect_call(['mpileup', '-d', str(raw_count), bamfile], pileup_path)
         with open(pileup_path, 'rU') as f2:
             conseqs = pileup_to_conseq(f2, settings.consensus_q_cutoff)
     else:
@@ -216,7 +214,7 @@ def remap(fastq1,
     seed_counts = {best_ref: best_count
                    for best_ref, best_count in refgroups.itervalues()}
     # regenerate consensus sequences based on preliminary map
-    conseqs = build_conseqs(use_samtools, samfile, samtools, conseqs)
+    conseqs = build_conseqs(use_samtools, samfile, samtools, conseqs, raw_count)
 
     # exclude references with low counts (post filtering)
     new_conseqs = {}
