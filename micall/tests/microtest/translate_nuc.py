@@ -1,4 +1,4 @@
-import aln2counts
+from micall.core import aln2counts
 
 """ Translate nucleotide sequence to amino acid sequence and compare the result
 with an expected sequence.
