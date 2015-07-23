@@ -310,7 +310,7 @@ def remap(fastq1,
         map_counts = dict([(k, v) for k, v in new_counts.iteritems()])
 
         # regenerate consensus sequences
-        conseqs = build_conseqs(use_samtools, samfile, samtools, conseqs)
+        conseqs = build_conseqs(use_samtools, samfile, samtools, conseqs, raw_count)
         n_remaps += 1
 
 
