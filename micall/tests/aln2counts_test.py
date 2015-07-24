@@ -150,9 +150,9 @@ class SequenceReportTest(unittest.TestCase):
 R1-seed,15,0,9,0,AAATTT
 """)
         expected_text = """\
-region,q-cutoff,consensus-percent-cutoff,sequence
-R1-seed,15,MAX,AAATTT
-R1-seed,15,0.100,AAATTT
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAATTT
+R1-seed,15,0.100,0,AAATTT
 """
          
         self.report.write_consensus_header(self.report_file)
@@ -172,9 +172,27 @@ R1-seed,15,0,9,0,AAATTT
 R1-seed,15,0,1,0,CCCGGG
 """)
         expected_text = """\
-region,q-cutoff,consensus-percent-cutoff,sequence
-R1-seed,15,MAX,AAATTT
-R1-seed,15,0.100,MMMKKK
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAATTT
+R1-seed,15,0.100,0,MMMKKK
+"""
+         
+        self.report.write_consensus_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus(self.report_file)
+         
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+     
+    def testConsensusWithOffset(self):
+        #refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,3,AAATTT
+R1-seed,15,0,1,7,TTGGG
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,3,AAATTTGGG
+R1-seed,15,0.100,3,AAATTTGGG
 """
          
         self.report.write_consensus_header(self.report_file)

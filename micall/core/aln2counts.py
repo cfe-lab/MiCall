@@ -354,6 +354,7 @@ class SequenceReport(object):
                               ['region',
                                'q-cutoff',
                                'consensus-percent-cutoff',
+                               'offset',
                                'sequence'],
                               lineterminator='\n')
                 
@@ -364,13 +365,17 @@ class SequenceReport(object):
         conseq_writer = self._create_consensus_writer(conseq_file)
         for mixture_cutoff in self.conseq_mixture_cutoffs:
             consensus = ''
+            offset = None
             for seed_amino in self.seed_aminos[0]:
+                if offset is None and seed_amino.counts:
+                    offset = seed_amino.consensus_index*3
                 for seed_nuc in seed_amino.nucleotides:
                     consensus += seed_nuc.get_consensus(mixture_cutoff)
             conseq_writer.writerow(
                 {'region': self.seed,
                  'q-cutoff': self.qcut,
                  'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
+                 'offset': offset,
                  'sequence': consensus})
     
     def _create_nuc_variants_writer(self, nuc_variants_file):
