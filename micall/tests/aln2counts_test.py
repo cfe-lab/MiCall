@@ -403,31 +403,31 @@ R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
     
     def testInsertionBetweenSeedAndCoordinateAminoReport(self):
-        """ Coordinate sequence is KFQTPREH, and this aligned read is KFQTGPREH.
+        """ Coordinate sequence is KFQTPREH, and this aligned read is HERKFQTGPREHQFK.
          
         The G must be an insertion in the seed reference with respect to the
         coordinate reference.
         """
         #refname,qcut,rank,count,offset,seq
         aligned_reads = self.prepareReads("""\
-R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
+R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
 """)
            
         #seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
         #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
         expected_text = """\
-R3-seed,R3,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
-R3-seed,R3,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0
-R3-seed,R3,15,6,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
-R3-seed,R3,15,7,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
-R3-seed,R3,15,8,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,9,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,4,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,6,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
+R3-seed,R3,15,7,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0
+R3-seed,R3,15,9,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
+R3-seed,R3,15,10,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
+R3-seed,R3,15,11,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,12,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
         expected_insertions = """\
-seed,region,qcut,left,insert,count
-R3-seed,R3,15,5,G,9
+seed,region,qcut,left,insert,count,before
+R3-seed,R3,15,8,G,9,5
 """
 
         self.report.read(aligned_reads)
@@ -447,8 +447,8 @@ R3-seed,15,0,9,0,AATTTCAGACTGGGCCCCGAGAGCAT
 """)
            
         expected_insertions = """\
-seed,region,qcut,left,insert,count
-R3-seed,R3,15,5,G,9
+seed,region,qcut,left,insert,count,before
+R3-seed,R3,15,5,G,9,5
 """
 
         self.report.read(aligned_reads)
@@ -469,8 +469,8 @@ R3-seed,15,2,4,0,AAATTTCAGACTG
 """)
            
         expected_insertions = """\
-seed,region,qcut,left,insert,count
-R3-seed,R3,15,5,G,9
+seed,region,qcut,left,insert,count,before
+R3-seed,R3,15,5,G,9,5
 """
 
         self.report.read(aligned_reads)
@@ -529,8 +529,8 @@ R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
 """)
         
         expected_insertions = """\
-seed,region,qcut,left,insert,count
-R3-seed,R3a,15,5,G,9
+seed,region,qcut,left,insert,count,before
+R3-seed,R3a,15,5,G,9,5
 """
         
         self.report.read(aligned_reads)
@@ -1165,7 +1165,7 @@ class InsertionWriterTest(unittest.TestCase):
         
     def testNoInserts(self):
         expected_text = """\
-seed,region,qcut,left,insert,count
+seed,region,qcut,left,insert,count,before
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
@@ -1175,8 +1175,8 @@ seed,region,qcut,left,insert,count
         
     def testInsert(self):
         expected_text = """\
-seed,region,qcut,left,insert,count
-R1-seed,R1,15,3,D,1
+seed,region,qcut,left,insert,count,before
+R1-seed,R1,15,3,D,1,
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
@@ -1189,8 +1189,8 @@ R1-seed,R1,15,3,D,1
         frame.
         """
         expected_text = """\
-seed,region,qcut,left,insert,count
-R1-seed,R1,15,4,D,1
+seed,region,qcut,left,insert,count,before
+R1-seed,R1,15,4,D,1,
 """
         
         self.writer.add_nuc_read(offset_sequence='A' + self.nuc_seq_acdef,
@@ -1201,8 +1201,8 @@ R1-seed,R1,15,4,D,1
         
     def testInsertWithOffset(self):
         expected_text = """\
-seed,region,qcut,left,insert,count
-R1-seed,R1,15,3,D,1
+seed,region,qcut,left,insert,count,before
+R1-seed,R1,15,3,D,1,
 """
         
         #                                            C  D  E  F
@@ -1213,7 +1213,7 @@ R1-seed,R1,15,3,D,1
         
     def testInsertWithDeletion(self):
         expected_text = """\
-seed,region,qcut,left,insert,count
+seed,region,qcut,left,insert,count,before
 """
         
         #                                         C  D     E  F
@@ -1224,9 +1224,9 @@ seed,region,qcut,left,insert,count
         
     def testTwoInsertsWithOffset(self):
         expected_text = """\
-seed,region,qcut,left,insert,count
-R1-seed,R1,15,3,D,1
-R1-seed,R1,15,5,F,1
+seed,region,qcut,left,insert,count,before
+R1-seed,R1,15,3,D,1,
+R1-seed,R1,15,5,F,1,
 """
         
         #                                            C  D  E  F  G
@@ -1237,8 +1237,8 @@ R1-seed,R1,15,5,F,1
 
     def testInsertsWithVariants(self):
         expected_text = """\
-seed,region,qcut,left,insert,count
-R1-seed,R1,15,3,D,2
+seed,region,qcut,left,insert,count,before
+R1-seed,R1,15,3,D,2,
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
@@ -1249,9 +1249,9 @@ R1-seed,R1,15,3,D,2
 
     def testDifferentInserts(self):
         expected_text = """\
-seed,region,qcut,left,insert,count
-R1-seed,R1,15,2,C,2
-R1-seed,R1,15,2,F,3
+seed,region,qcut,left,insert,count,before
+R1-seed,R1,15,2,C,2,
+R1-seed,R1,15,2,F,3,
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=2)
@@ -1262,8 +1262,8 @@ R1-seed,R1,15,2,F,3
 
     def testMulticharacterInsert(self):
         expected_text = """\
-seed,region,qcut,left,insert,count
-R1-seed,R1,15,3,DE,1
+seed,region,qcut,left,insert,count,before
+R1-seed,R1,15,3,DE,1,
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
@@ -1275,7 +1275,7 @@ R1-seed,R1,15,3,DE,1
         nuc_seq = 'GCTCTnGACGAGTTT'
 
         expected_text = """\
-seed,region,qcut,left,insert,count
+seed,region,qcut,left,insert,count,before
 """
         
         self.writer.add_nuc_read(nuc_seq, count=1)
@@ -1285,8 +1285,8 @@ seed,region,qcut,left,insert,count
 
     def testUnsortedInserts(self):
         expected_text = """\
-seed,region,qcut,left,insert,count
-R1-seed,R1,15,3,DE,1
+seed,region,qcut,left,insert,count,before
+R1-seed,R1,15,3,DE,1,
 """
         
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)

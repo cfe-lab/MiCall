@@ -22,10 +22,10 @@ import logging
 import os
 
 import gotoh
-import miseq_logging
+from micall.core import miseq_logging
 from micall.settings import conseq_mixture_cutoffs, amino_alphabet
 from micall.utils.translation import translate, ambig_dict
-import project_config
+from micall.core import project_config
 from collections import Counter
 import csv
 
@@ -427,7 +427,8 @@ class SequenceReport(object):
         for coordinate_name, coordinate_inserts in self.inserts.iteritems():
             self.insert_writer.write(coordinate_inserts,
                                      coordinate_name,
-                                     self.reading_frames[coordinate_name])
+                                     self.reading_frames[coordinate_name],
+                                     self.reports[coordinate_name])
 
 
 class SeedAmino(object):
@@ -439,6 +440,9 @@ class SeedAmino(object):
         self.consensus_index = consensus_index
         self.counts = Counter()
         self.nucleotides = [SeedNucleotide() for _ in range(3)]
+    
+    def __repr__(self):
+        return 'SeedAmino({})'.format(self.consensus_index)
         
     def count_aminos(self, codon_seq, count):
         """ Record a set of reads at this position in the seed reference.
@@ -549,6 +553,9 @@ class ReportAmino(object):
         """
         self.seed_amino = seed_amino
         self.position = position
+    
+    def __repr__(self):
+        return 'ReportAmino({!r}, {})'.format(self.seed_amino, self.position)
 
 class InsertionWriter(object):
     def __init__(self, insert_file):
@@ -562,7 +569,8 @@ class InsertionWriter(object):
                                              'qcut',
                                              'left',
                                              'insert',
-                                             'count'],
+                                             'count',
+                                             'before'],
                                             lineterminator='\n')
         self.insert_writer.writeheader()
     
@@ -586,7 +594,7 @@ class InsertionWriter(object):
         """
         self.nuc_seqs[offset_sequence] += count
         
-    def write(self, inserts, region, reading_frame=0):
+    def write(self, inserts, region, reading_frame=0, report_aminos=[]):
         """ Write any insert ranges to the file.
         
         Sequence data comes from the reads that were added to the current group.
@@ -596,6 +604,8 @@ class InsertionWriter(object):
             mapped to
         @param reading_frame: the reading frame to use when translating
             nucleotide sequences to amino acids - an integer from 0 to 2.
+        @param report_aminos: a list of ReportAmino objects that represent the
+            sequence that successfully mapped to the coordinate reference.
         """
         if len(inserts) == 0:
             return
@@ -614,7 +624,12 @@ class InsertionWriter(object):
 
         # enumerate insertions by popping out all AA sub-string variants
         insert_counts = {} # {left: {insert_seq: count}}
+        insert_targets = {} # {left: inserted_before_pos}
         for left, right in insert_ranges:
+            for report_amino in report_aminos:
+                if report_amino.seed_amino.consensus_index == right:
+                    insert_targets[left] = report_amino.position
+                    break
             current_counts = Counter()
             insert_counts[left] = current_counts
             for nuc_seq, count in self.nuc_seqs.iteritems():
@@ -631,13 +646,18 @@ class InsertionWriter(object):
         # record insertions to CSV
         for left, counts in insert_counts.iteritems():
             for insert_seq, count in counts.iteritems():
-                self.insert_writer.writerow(dict(
-                    seed=self.seed,
-                    region=region,
-                    qcut=self.qcut,
-                    left=left+1,
-                    insert=insert_seq,
-                    count=count))
+                insert_before = insert_targets.get(left, None)
+                # Only care about insertions in the middle of the sequence,
+                # so ignore any that come before or after the reference
+                if not report_aminos or insert_before not in (1, None):
+                    row = dict(seed=self.seed, 
+                               region=region, 
+                               qcut=self.qcut, 
+                               left=left + 1, 
+                               insert=insert_seq, 
+                               count=count, 
+                               before=insert_before)
+                    self.insert_writer.writerow(row)
 
 def format_cutoff(cutoff):
     """ Format the cutoff fraction as a string to use as a name. """
@@ -707,4 +727,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
