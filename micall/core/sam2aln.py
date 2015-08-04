@@ -265,6 +265,20 @@ def parse_sam(rows):
 
     return rname, mseqs, insert_list, failed_list
 
+def parse_sam_in_threads(remap_csv, nthreads):
+    """ Call parse_sam() in multiple processes.
+    
+    Launch a multiprocessing pool, walk through the iterator, and then be sure
+    to close the pool at the end.
+    """
+    from multiprocessing import Pool
+    pool = Pool(processes=nthreads)
+    try:
+        reads = pool.imap(parse_sam, iterable=matchmaker(remap_csv), chunksize=100)
+        for read in reads:
+            yield read
+    finally:
+        pool.close()
 
 def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
     # prepare outputs
@@ -279,9 +293,7 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
     empty_region = collections.defaultdict(collections.Counter)
     aligned = collections.defaultdict(empty_region.copy)
     if nthreads:
-        from multiprocessing import Pool
-        pool = Pool(processes=nthreads)
-        iter = pool.imap(parse_sam, iterable=matchmaker(remap_csv), chunksize=100)
+        iter = parse_sam_in_threads(remap_csv, nthreads)
     else:
         iter = itertools.imap(parse_sam, matchmaker(remap_csv))
 
