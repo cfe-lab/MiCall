@@ -32,7 +32,10 @@ def coverage_plot(amino_csv):
             total = sum([int(row[aa]) for aa in amino_alphabet])
             y[pos] = total
 
-        plt.step(x,y)
+        plt.step(x, y, linewidth=3, where='mid')
+        plt.xlim([1, len(coord_ref)])
+        plt.ylim([0.1, 1000000])
+        plt.yscale('log')
         plt.xlabel('Reference coordinates (AA)', fontsize=18)
         plt.ylabel('Coverage', fontsize=18)
         figname = '%s.%s.png' % (prefix, region)

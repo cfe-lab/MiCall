@@ -80,7 +80,8 @@ def build_conseqs(use_samtools, samfile, samtools, conseqs, raw_count):
         samtools.log_call(['sort', bamfile, bamfile.replace('.bam', '')]) # overwrite
         
         # BAM to pileup
-        samtools.redirect_call(['mpileup', '-d', str(raw_count), bamfile], pileup_path)
+        pileup_depth = max(raw_count, 8000)
+        samtools.redirect_call(['mpileup', '-d', str(pileup_depth), bamfile], pileup_path)
         with open(pileup_path, 'rU') as f2:
             conseqs = pileup_to_conseq(f2, settings.consensus_q_cutoff)
     else:
