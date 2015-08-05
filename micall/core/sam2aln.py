@@ -207,7 +207,8 @@ def parse_sam(rows):
     if (cigar1 == '*' or
         int(row1['mapq']) < read_mapping_cutoff or
         cigar2 == '*' or
-        int(row2['mapq']) < read_mapping_cutoff):
+        int(row2['mapq']) < read_mapping_cutoff or
+        row1['rname'] != row2['rname']):
         
         failed_list.append({'qname': qname,
                             'seq1': row1['seq'],
