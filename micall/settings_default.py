@@ -35,6 +35,8 @@ read_gap_open_remap = read_gap_open_prelim
 read_gap_extend_remap = read_gap_extend_prelim
 ref_gap_open_remap = ref_gap_open_prelim
 ref_gap_extend_remap = ref_gap_extend_prelim
+gap_open_coord = 40
+gap_extend_coord = 10
 
 
 ### Monitor settings ###

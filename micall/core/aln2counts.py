@@ -22,8 +22,8 @@ import logging
 import os
 
 import gotoh
+from micall import settings
 from micall.core import miseq_logging
-from micall.settings import conseq_mixture_cutoffs, amino_alphabet
 from micall.utils.translation import translate, ambig_dict
 from micall.core import project_config
 from collections import Counter
@@ -167,7 +167,11 @@ class SequenceReport(object):
                 self.consensus[coordinate_name] = consensus
             
             # map to reference coordinates by aligning consensus
-            aref, aquery, score = self._pair_align(coordinate_ref, consensus)
+            aref, aquery, score = self._pair_align(
+                coordinate_ref,
+                consensus,
+                gap_open=settings.gap_open_coord,
+                gap_extend=settings.gap_extend_coord)
             if score < max_score:
                 continue
             max_score = score
@@ -280,7 +284,7 @@ class SequenceReport(object):
                    'q-cutoff',
                    'query.aa.pos',
                    'refseq.aa.pos']
-        columns.extend(amino_alphabet)
+        columns.extend(settings.amino_alphabet)
         return csv.DictWriter(amino_file,
                               columns,
                               lineterminator='\n')
@@ -303,7 +307,7 @@ class SequenceReport(object):
                        'q-cutoff': self.qcut,
                        'query.aa.pos': query_pos,
                        'refseq.aa.pos': report_amino.position}
-                for letter in amino_alphabet:
+                for letter in settings.amino_alphabet:
                     row[letter] = seed_amino.counts[letter]
                 amino_writer.writerow(row)
 
@@ -456,7 +460,7 @@ class SeedAmino(object):
         @param count: the number of times they were read
         """
         amino = translate(codon_seq.upper())
-        if amino in amino_alphabet:
+        if amino in settings.amino_alphabet:
             self.counts[amino] += count
         for i in range(3):
             self.nucleotides[i].count_nucleotides(codon_seq[i], count)
@@ -469,7 +473,7 @@ class SeedAmino(object):
         amino_alphabet list
         """
         return ','.join([str(self.counts[amino])
-                         for amino in amino_alphabet])
+                         for amino in settings.amino_alphabet])
         
     def get_consensus(self):
         """ Find the amino acid that was seen most often in count_aminos().
@@ -697,7 +701,7 @@ def aln2counts (aligned_csv, nuc_csv, amino_csv, coord_ins_csv, conseq_csv, fail
     insert_writer = InsertionWriter(coord_ins_csv)
     report = SequenceReport(insert_writer,
                             projects,
-                            conseq_mixture_cutoffs)
+                            settings.conseq_mixture_cutoffs)
     report.write_amino_header(amino_csv)
     report.write_consensus_header(conseq_csv)
     report.write_failure_header(failed_align_csv)
