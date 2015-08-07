@@ -1,4 +1,4 @@
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 
 gotoh = Extension('gotoh',
                     sources = ['gotoh.cpp'],
@@ -7,4 +7,5 @@ gotoh = Extension('gotoh',
 setup (name = 'gotoh',
        version = '0.1',
        description = "Wrapper for Conan's alignment.cpp code",
-       ext_modules = [gotoh])
+       ext_modules = [gotoh],
+       zip_safe = False) #avoid headache with permissions on ~/.python-eggs

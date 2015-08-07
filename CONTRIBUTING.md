@@ -117,7 +117,10 @@ that can be accessed from Python, go to `micall/alignment` and enter the followi
 sudo python setup.py install
 ```
 This assumes that you have superuser permissions on your system.  We have tested this
-installation on OS-X and Ubuntu.
+installation on OS-X and Ubuntu. If you're installing on Windows, you will need
+to [install Visual C++ for Python][vcpp].
+
+[vcpp]: http://stackoverflow.com/a/26127562/4794
 
 ### R ###
 R is used in the MISEQ_MONITOR version, but not in the stand-alone version.
@@ -178,6 +181,23 @@ MPI is only used in the MISEQ_MONITOR version, not in the stand-alone version.
 2. Install mpi4py.
 
     sudo apt-get install python-mpi4py
+    
+### PyInstaller ###
+If you want to distribute a stand-alone Windows executable version, you need
+to use [PyInstaller][pyinstaller].
+
+1. If you haven't done all the previous steps, install Python and PyWin32.
+2. Install [git for Windows][wingit], and clone the MiCall repository.
+3. Follow the instructions above to install the Gotoh package from the
+    `micall/alignment` folder.
+2. Use pip to install pyinstaller.
+
+    cd \Python27\Scripts
+    pip install pyinstaller
+
+
+[pyinstaller]: https://github.com/pyinstaller/pyinstaller
+[wingit]: https://git-scm.com/download/win
 
 ### Running the code ###
 1. Copy settings_default.py to settings.py, and open it for editing.
