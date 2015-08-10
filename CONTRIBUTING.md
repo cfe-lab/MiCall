@@ -70,9 +70,20 @@ If you want to see what's currently being worked on, check out the [waffle board
 [eclipse]: https://www.eclipse.org/downloads/
 [pydev]: http://pydev.org/updates
 
-### Perl, Bowtie, Samtools, and Hyphy ###
-1. Check that Perl is installed by running `perl --version`. On Windows, you
-    can install [ActivePerl][perl].
+### Python and Perl ###
+Check that Python and Perl are already installed.
+
+    python --version
+    perl --version
+
+We have tested with Python 2.7 and Perl 5.18.
+
+On Windows, you can install [Anaconda Python][anaconda] and [ActivePerl][perl].
+
+[anaconda]: http://continuum.io/downloads
+[perl]: http://www.activestate.com/activeperl/downloads
+
+### Bowtie, Samtools, and Hyphy ###
 1. Download the latest version of [bowtie2's binaries for Linux][bowtie2].
 2. Right click and choose Extract Here. Change the folder owner to root, move it to /opt, and add it to the path.
 
@@ -108,7 +119,6 @@ If you want to see what's currently being worked on, check out the [waffle board
         cd Examples/Python
         python BasicHyPhy.py # Just check that there are no obvious errors.
 
-[perl]: http://www.activestate.com/activeperl/downloads
 [bowtie2]: http://sourceforge.net/projects/bowtie-bio/files/bowtie2/
 [samtools]: http://sourceforge.net/projects/samtools/files/
 [hyphy]: https://github.com/veg/hyphy
@@ -185,7 +195,13 @@ MPI is only used in the MISEQ_MONITOR version, not in the stand-alone version.
 2. Install mpi4py.
 
     sudo apt-get install python-mpi4py
-    
+
+### Matplotlib ###
+Matplotlib is only used in the stand-alone version, and it comes packaged with
+the Anaconda Python. If you want to install it on Ubuntu, use pip:
+
+    sudo pip install matplotlib
+
 ### PyInstaller ###
 If you want to distribute a stand-alone Windows executable version, you need
 to use [PyInstaller][pyinstaller].
