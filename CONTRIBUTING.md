@@ -70,7 +70,9 @@ If you want to see what's currently being worked on, check out the [waffle board
 [eclipse]: https://www.eclipse.org/downloads/
 [pydev]: http://pydev.org/updates
 
-### Bowtie, Samtools, and Hyphy ###
+### Perl, Bowtie, Samtools, and Hyphy ###
+1. Check that Perl is installed by running `perl --version`. On Windows, you
+    can install [ActivePerl][perl].
 1. Download the latest version of [bowtie2's binaries for Linux][bowtie2].
 2. Right click and choose Extract Here. Change the folder owner to root, move it to /opt, and add it to the path.
 
@@ -80,7 +82,8 @@ If you want to see what's currently being worked on, check out the [waffle board
         sudo vi /etc/environment # add :/opt/bowtie2-2.2.1 and logout/login
         bowtie2 --version # smoke test
 
-3. Before you can build samtools, you will need these libraries:
+3. Samtools doesn't seem to be available for Windows, so skip it. Before you can
+    build samtools on Ubuntu, you will need these libraries:
 
         sudo apt-get install zlib1g-dev libncurses5-dev
 
@@ -105,6 +108,7 @@ If you want to see what's currently being worked on, check out the [waffle board
         cd Examples/Python
         python BasicHyPhy.py # Just check that there are no obvious errors.
 
+[perl]: http://www.activestate.com/activeperl/downloads
 [bowtie2]: http://sourceforge.net/projects/bowtie-bio/files/bowtie2/
 [samtools]: http://sourceforge.net/projects/samtools/files/
 [hyphy]: https://github.com/veg/hyphy
@@ -187,10 +191,11 @@ If you want to distribute a stand-alone Windows executable version, you need
 to use [PyInstaller][pyinstaller].
 
 1. If you haven't done all the previous steps, install Python and PyWin32.
-2. Install [git for Windows][wingit], and clone the MiCall repository.
-3. Follow the instructions above to install the Gotoh package from the
+2. Install ActivePerl and bowtie2.
+3. Install [git for Windows][wingit], and clone the MiCall repository.
+4. Follow the instructions above to install the Gotoh package from the
     `micall/alignment` folder.
-2. Use pip to install pyinstaller.
+5. Use pip to install pyinstaller.
 
     cd \Python27\Scripts
     pip install pyinstaller

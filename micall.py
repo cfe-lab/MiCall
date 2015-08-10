@@ -262,6 +262,11 @@ class MiCall(tk.Frame):
             print 'ERROR: No files to process'
             return
 
+        savedir = tkFileDialog.askdirectory(title='Select folder to save results')
+        if not savedir:
+            return
+        self.make_tree(savedir)
+
         for fastq1 in self.target_files:
             fastq2 = fastq1.replace('_R1_001', '_R2_001')
             if not os.path.exists(fastq2):
@@ -295,7 +300,7 @@ class MiCall(tk.Frame):
             self.parent.update_idletasks()
             self.progress_bar['value'] = 0
             remap(fastq1, fastq2, prelim_csv, remap_csv, counts_csv, conseq_csv, unmapped1, unmapped2, self.workdir,
-                  nthreads=self.nthreads.get(), callback=self.callback)
+                  nthreads=self.nthreads.get(), callback=self.callback, use_samtools=False)
 
             # prepare file handles for conversion from SAM format to alignment
             with open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU') as remap_csv, \
@@ -337,10 +342,6 @@ class MiCall(tk.Frame):
 
         # prevent rerun until a new folder is loaded
         self.button_run.config(state=tk.DISABLED)
-
-        savedir = tkFileDialog.askdirectory(title='Select folder to save results')
-        # TODO: if user hits cancel by accident, prevent MiCall from deleting result files
-        self.make_tree(savedir)
 
         # collate results to results folder
         for target_file, extension in files_to_collate:

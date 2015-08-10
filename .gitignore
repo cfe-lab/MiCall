@@ -1,5 +1,8 @@
 /micall/settings.py
 /micall/monitor/hostfile
+/micall/alignment/build
+/micall/alignment/dist
+/micall/alignment/gotoh.egg-info
 *.pyc
 *.o
 *.so

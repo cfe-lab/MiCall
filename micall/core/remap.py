@@ -63,20 +63,20 @@ def is_short_read(read_row, max_primer_length):
 
 
 
-def build_conseqs(use_samtools, samfile, samtools, conseqs, raw_count):
+def build_conseqs(use_samtools, samfilename, samtools, conseqs, raw_count):
     """ Build the new consensus sequences from the mapping results.
     
     @param use_samtools:  user has the option to use native Python code exclusively of samtools,
                             but this is slower
-    @param samfile: the mapping results in SAM format
+    @param samfilename: the mapping results in SAM format
     @param samtools: a command wrapper for samtools
     @param conseqs: the consensus sequences from the previous iteration
     @param raw_count: the maximum number of reads in the SAM file
     """
     if use_samtools: # convert SAM to BAM
-        bamfile = samfile.replace('.sam', '.bam')
+        bamfile = samfilename.replace('.sam', '.bam')
         pileup_path = bamfile + '.pileup'
-        samtools.redirect_call(['view', '-b', samfile], bamfile)
+        samtools.redirect_call(['view', '-b', samfilename], bamfile)
         samtools.log_call(['sort', bamfile, bamfile.replace('.bam', '')]) # overwrite
         
         # BAM to pileup
@@ -85,7 +85,10 @@ def build_conseqs(use_samtools, samfile, samtools, conseqs, raw_count):
         with open(pileup_path, 'rU') as f2:
             conseqs = pileup_to_conseq(f2, settings.consensus_q_cutoff)
     else:
-        pileup, _ = sam_to_pileup(samfile, max_primer_length=50, max_count=1E5)
+        with open(samfilename, 'rU') as samfile:
+            pileup, _ = sam_to_pileup(samfile,
+                                      max_primer_length=50,
+                                      max_count=raw_count)
         # use slower internal code
         conseqs = make_consensus(pileup=pileup, 
                                  last_conseqs=conseqs, 
@@ -373,7 +376,7 @@ def sam_to_pileup (samfile, max_primer_length, max_count=None, delimiter='\t'):
     """
     Convert SAM file into samtools pileup-like format in memory.
     Process inline by region.  Also return numbers of reads mapped to each region.
-    :param sam_csv: Product of prelim_map.py or iterative remapping.
+    :param samfile: Product of prelim_map.py or iterative remapping.
     :param max_primer_length: Argument to pass to is_short_read, exclude possible
         primer-derived reads.
     :param max_count: Process no more than these many reads.  If None, then do
