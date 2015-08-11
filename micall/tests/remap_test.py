@@ -140,6 +140,31 @@ class PileupToConseqTest(unittest.TestCase):
         conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
         
         self.assertDictEqual(expected_conseqs, conseqs)
+        
+    def testGapBetweenReads(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t1\tN\t1\t^MC^MC\tAA\n" +
+            "GP41-seed\t2\tN\t2\tG$G$\tAA\n" +
+            "GP41-seed\t5\tN\t2\t^MT^MT\tB3\n" +
+            "GP41-seed\t6\tN\t2\tA$A$\tAA\n")
+        qCutoff = 20
+        expected_conseqs= {'GP41-seed': "CGNNTA"}
+        
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+        
+    def testMajorityLowQuality(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t1\tN\t1\t^MC^MC\tAA\n" +
+            "GP41-seed\t2\tN\t2\tTTT\tA33\n" +
+            "GP41-seed\t3\tN\t2\tG$G$\tAA\n")
+        qCutoff = 20
+        expected_conseqs= {'GP41-seed': "CTG"}
+        
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
 
 
 class MakeConsensusTest(unittest.TestCase):
@@ -258,66 +283,85 @@ class SamToPileupTest(unittest.TestCase):
             "test1\t99\ttest\t3\t44\t12M\t=\t3\t12\tACAAGACCCAAC\tJJJJJJJJJJJJ\n"
             "test1\t147\ttest\t3\t44\t12M\t=\t3\t-12\tACAAGACCCAAC\tJJJJJJJJJJJJ\n"
         )
-        expected_pileup = {'test': {3: {'s': '^MA^Ma', 'q': 'JJ'},
-                                    4: {'s': 'Cc', 'q': 'JJ'},
-                                    5: {'s': 'Aa', 'q': 'JJ'},
-                                    6: {'s': 'Aa', 'q': 'JJ'},
-                                    7: {'s': 'Gg', 'q': 'JJ'},
-                                    8: {'s': 'Aa', 'q': 'JJ'},
-                                    9: {'s': 'Cc', 'q': 'JJ'},
-                                    10: {'s': 'Cc', 'q': 'JJ'},
-                                    11: {'s': 'Cc', 'q': 'JJ'},
-                                    12: {'s': 'Aa', 'q': 'JJ'},
-                                    13: {'s': 'Aa', 'q': 'JJ'},
-                                    14: {'s': 'C$c$', 'q': 'JJ'}
+        expected_pileup = {'test': {3: {'s': '^MA', 'q': 'J'},
+                                    4: {'s': 'C', 'q': 'J'},
+                                    5: {'s': 'A', 'q': 'J'},
+                                    6: {'s': 'A', 'q': 'J'},
+                                    7: {'s': 'G', 'q': 'J'},
+                                    8: {'s': 'A', 'q': 'J'},
+                                    9: {'s': 'C', 'q': 'J'},
+                                    10: {'s': 'C', 'q': 'J'},
+                                    11: {'s': 'C', 'q': 'J'},
+                                    12: {'s': 'A', 'q': 'J'},
+                                    13: {'s': 'A', 'q': 'J'},
+                                    14: {'s': 'C$', 'q': 'J'}
                                     }}
         pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
-        self.assertEqual(pileup, expected_pileup)
+        self.assertEqual(expected_pileup, pileup)
 
     def testSimpleInsertion(self):
         samIO = StringIO.StringIO(
             "test1\t99\ttest\t3\t44\t3M3I9M\t=\t3\t12\tACAGGGAGACCCAAC\tJJJJJJJJJJJJJJJ\n"
             "test1\t147\ttest\t3\t44\t3M3I9M\t=\t3\t-12\tACAGGGAGACCCAAC\tJJJJJJJJJJJJJJJ\n"
         )
-        expected_pileup = {'test': {3: {'s': '^MA^Ma', 'q': 'JJ'},
-                                    4: {'s': 'Cc', 'q': 'JJ'},
-                                    5: {'s': 'A+3GGGa+3ggg', 'q': 'JJ'},
-                                    6: {'s': 'Aa', 'q': 'JJ'},
-                                    7: {'s': 'Gg', 'q': 'JJ'},
-                                    8: {'s': 'Aa', 'q': 'JJ'},
-                                    9: {'s': 'Cc', 'q': 'JJ'},
-                                    10: {'s': 'Cc', 'q': 'JJ'},
-                                    11: {'s': 'Cc', 'q': 'JJ'},
-                                    12: {'s': 'Aa', 'q': 'JJ'},
-                                    13: {'s': 'Aa', 'q': 'JJ'},
-                                    14: {'s': 'C$c$', 'q': 'JJ'}
+        expected_pileup = {'test': {3: {'s': '^MA', 'q': 'J'},
+                                    4: {'s': 'C', 'q': 'J'},
+                                    5: {'s': 'A+3GGG', 'q': 'J'},
+                                    6: {'s': 'A', 'q': 'J'},
+                                    7: {'s': 'G', 'q': 'J'},
+                                    8: {'s': 'A', 'q': 'J'},
+                                    9: {'s': 'C', 'q': 'J'},
+                                    10: {'s': 'C', 'q': 'J'},
+                                    11: {'s': 'C', 'q': 'J'},
+                                    12: {'s': 'A', 'q': 'J'},
+                                    13: {'s': 'A', 'q': 'J'},
+                                    14: {'s': 'C$', 'q': 'J'}
                                     }}
         pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
-        self.assertEqual(pileup, expected_pileup)
+        self.assertEqual(expected_pileup, pileup)
 
     def testComplexInsertion(self):
         samIO = StringIO.StringIO(
             "test1\t99\ttest\t3\t44\t3M1I3M2I6M\t=\t3\t12\tACAGAGAGGCCCAAC\tJJJJJJJJJJJJJJJ\n"
             "test1\t147\ttest\t3\t44\t3M1I3M2I6M\t=\t3\t-12\tACAGAGAGGCCCAAC\tJJJJJJJJJJJJJJJ\n"
         )
-        expected_pileup = {'test': {3: {'s': '^MA^Ma', 'q': 'JJ'},
-                                    4: {'s': 'Cc', 'q': 'JJ'},
-                                    5: {'s': 'A+1Ga+1g', 'q': 'JJ'},
-                                    6: {'s': 'Aa', 'q': 'JJ'},
-                                    7: {'s': 'Gg', 'q': 'JJ'},
-                                    8: {'s': 'A+2GGa+2gg', 'q': 'JJ'},
-                                    9: {'s': 'Cc', 'q': 'JJ'},
-                                    10: {'s': 'Cc', 'q': 'JJ'},
-                                    11: {'s': 'Cc', 'q': 'JJ'},
-                                    12: {'s': 'Aa', 'q': 'JJ'},
-                                    13: {'s': 'Aa', 'q': 'JJ'},
-                                    14: {'s': 'C$c$', 'q': 'JJ'}
+        expected_pileup = {'test': {3: {'s': '^MA', 'q': 'J'},
+                                    4: {'s': 'C', 'q': 'J'},
+                                    5: {'s': 'A+1G', 'q': 'J'},
+                                    6: {'s': 'A', 'q': 'J'},
+                                    7: {'s': 'G', 'q': 'J'},
+                                    8: {'s': 'A+2GG', 'q': 'J'},
+                                    9: {'s': 'C', 'q': 'J'},
+                                    10: {'s': 'C', 'q': 'J'},
+                                    11: {'s': 'C', 'q': 'J'},
+                                    12: {'s': 'A', 'q': 'J'},
+                                    13: {'s': 'A', 'q': 'J'},
+                                    14: {'s': 'C$', 'q': 'J'}
                                     }}
         pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
-        self.assertEqual(pileup, expected_pileup)
+        self.assertEqual(expected_pileup, pileup)
+
+    def testDeletion(self):
+        samIO = StringIO.StringIO(
+            "test1\t99\ttest\t3\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
+            "test1\t147\ttest\t3\t44\t3M3D3M\t=\t3\t-6\tACAGGG\tJJJJJJ\n"
+        )
+        expected_pileup = {'test': {3: {'s': '^MA', 'q': 'J'},
+                                    4: {'s': 'C', 'q': 'J'},
+                                    5: {'s': 'A-3NNN', 'q': 'J'},
+                                    6: {'s': '*', 'q': ''},
+                                    7: {'s': '*', 'q': ''},
+                                    8: {'s': '*', 'q': ''},
+                                    9: {'s': 'G', 'q': 'J'},
+                                    10: {'s': 'G', 'q': 'J'},
+                                    11: {'s': 'G$', 'q': 'J'}
+                                    }}
+        pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
+        self.maxDiff = None
+        self.assertEqual(expected_pileup, pileup)
 
     def testStaggeredPair(self):
         samIO = StringIO.StringIO(
@@ -330,12 +374,12 @@ class SamToPileupTest(unittest.TestCase):
                                     6: {'s': 'A', 'q': 'J'},
                                     7: {'s': 'G', 'q': 'J'},
                                     8: {'s': 'A', 'q': 'J'},
-                                    9: {'s': 'C^Mc', 'q': 'JJ'},
-                                    10: {'s': 'Cc', 'q': 'JJ'},
-                                    11: {'s': 'Cc', 'q': 'JJ'},
-                                    12: {'s': 'Aa', 'q': 'JJ'},
-                                    13: {'s': 'Aa', 'q': 'JJ'},
-                                    14: {'s': 'C$c', 'q': 'JJ'},
+                                    9: {'s': 'C', 'q': 'J'},
+                                    10: {'s': 'C', 'q': 'J'},
+                                    11: {'s': 'C', 'q': 'J'},
+                                    12: {'s': 'A', 'q': 'J'},
+                                    13: {'s': 'A', 'q': 'J'},
+                                    14: {'s': 'C$', 'q': 'J'},
                                     15: {'s': 'a', 'q': 'J'},
                                     16: {'s': 'a', 'q': 'J'},
                                     17: {'s': 'c', 'q': 'J'},
@@ -345,7 +389,7 @@ class SamToPileupTest(unittest.TestCase):
                                     }}
         pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None
-        self.assertEqual(pileup, expected_pileup)
+        self.assertEqual(expected_pileup, pileup)
 
     def testPairMapsToTwoReferences(self):
         samIO = StringIO.StringIO(

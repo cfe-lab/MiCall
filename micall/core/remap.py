@@ -28,6 +28,7 @@ from micall.core import project_config
 from micall.core.sam2aln import cigar_re, is_first_read
 from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools
 from operator import itemgetter
+from collections import Counter
 
 # SAM file format
 fieldnames = [
@@ -79,18 +80,19 @@ def build_conseqs_with_samtools(samfilename, samtools, raw_count):
 
 def build_conseqs_with_python(samfilename, raw_count):
     with open(samfilename, 'rU') as samfile:
-        pileup, _ = sam_to_pileup(samfile, max_primer_length=50, 
-            max_count=raw_count)
-    
-    with open('/tmp/temp.python.pileup', 'w') as pfile:
-        for region, piles in pileup.iteritems():
-            for pos, pile in piles.iteritems():
-                pfile.write('\t'.join([region,
-                                       str(pos),
-                                       'N',
-                                       str(len(pile['q'])),
-                                       pile['s'],
-                                       pile['q']]) + '\n')
+        pileup, _ = sam_to_pileup(samfile, max_primer_length=50)
+
+    is_pileup_dumped = False
+    if is_pileup_dumped:    
+        with open('/tmp/temp.python.pileup', 'w') as pfile:
+            for region, piles in pileup.iteritems():
+                for pos, pile in piles.iteritems():
+                    pfile.write('\t'.join([region,
+                                           str(pos),
+                                           'N',
+                                           str(len(pile['q'])),
+                                           pile['s'],
+                                           pile['q']]) + '\n')
     # use slower internal code
     conseqs = make_consensus(pileup=pileup, qCutoff=settings.consensus_q_cutoff)
     return conseqs
@@ -120,18 +122,26 @@ def build_conseqs(use_samtools, samfilename, samtools, raw_count):
     
     if use_samtools and use_python:
         # Some debugging code to compare the two results.
-        timing_file_name = samfilename.replace('.sam', 'conseq_timing.csv')
+        with open(samfilename, 'rU') as samfile:
+            first_qname = ''
+            for line in samfile:
+                if not line.startswith('@'):
+                    first_qname = line.split('\t')[0]
+                    break
+        timing_file_name = samfilename.replace('.sam', '_conseq_timing.csv')
         new_file = not os.path.exists(timing_file_name)
         with open(timing_file_name, 'ab') as timing_file:
             writer = csv.DictWriter(timing_file,
-                                    ['lines',
+                                    ['first_qname',
+                                     'lines',
                                      'samtools_seconds',
                                      'python_seconds',
                                      'samtools_conseqs',
                                      'python_conseqs'])
             if new_file:
                 writer.writeheader()
-            row = {'lines': count_file_lines(samfilename),
+            row = {'first_qname': first_qname,
+                   'lines': count_file_lines(samfilename),
                    'samtools_seconds': samtools_seconds,
                    'python_seconds': python_seconds}
             if python_conseqs != samtools_conseqs:
@@ -461,9 +471,19 @@ def sam_to_pileup(samfile, max_primer_length, max_count=None):
         if read1[2] != read2[2]:
             # region mismatch, ignore the read pair.
             continue
-
+        last_pos = -1
         for read in read_pair:
-            _qname, flag, rname, refpos, mapq, cigar, _rnext, _pnext, _tlen, seq, qual = read
+            (_qname,
+             flag,
+             rname,
+             refpos,
+             mapq,
+             cigar,
+             _rnext,
+             _pnext,
+             _tlen,
+             seq,
+             qual) = read[0:11] # drop optional fields.
             if rname not in pileup:
                 pileup.update({rname: {}})
             if rname not in counts:
@@ -479,6 +499,7 @@ def sam_to_pileup(samfile, max_primer_length, max_count=None):
     
             pos = 0  # position in sequence
             refpos = int(refpos) # position in reference
+            is_in_overlap = refpos <= last_pos
     
             tokens = cigar_re.findall(cigar)
     
@@ -496,7 +517,8 @@ def sam_to_pileup(samfile, max_primer_length, max_count=None):
             if refpos not in pileup[rname]:
                 # keys 's' = sequence, 'q' = quality string
                 pileup[rname].update({refpos: {'s': '', 'q': ''}})
-            pileup[rname][refpos]['s'] += '^' + chr(int(mapq)+33)
+            if refpos > last_pos:
+                pileup[rname][refpos]['s'] += '^' + chr(int(mapq)+33)
     
             for token in tokens:
                 length = int(token[:-1])
@@ -504,27 +526,32 @@ def sam_to_pileup(samfile, max_primer_length, max_count=None):
                     # match
                     for i in range(length):
                         if refpos not in pileup[rname]: pileup[rname].update({refpos: {'s': '', 'q': ''}})
-                        pileup[rname][refpos]['s'] += seq[pos] if is_first else seq[pos].lower()
-                        pileup[rname][refpos]['q'] += qual[pos]
+                        if refpos > last_pos:
+                            pileup[rname][refpos]['s'] += seq[pos] if is_first else seq[pos].lower()
+                            pileup[rname][refpos]['q'] += qual[pos]
+                            last_pos = refpos
+                            is_in_overlap = False
                         pos += 1
                         refpos += 1
     
                 elif token.endswith('D'):
-                    # deletion relative to reference
-                    pileup[rname][refpos-1]['s'] += '-' + str(length) + ('N' if is_first else 'n')*length
-    
-                    # append deletion placeholders downstream
-                    for i in range(refpos, refpos+length):
-                        if i not in pileup[rname]: pileup[rname].update({i: {'s': '', 'q': ''}})
-                        pileup[rname][i]['s'] += '*'
+                    if refpos > last_pos:
+                        # deletion relative to reference
+                        pileup[rname][refpos-1]['s'] += '-' + str(length) + ('N' if is_first else 'n')*length
+        
+                        # append deletion placeholders downstream
+                        for i in range(refpos, refpos+length):
+                            if i not in pileup[rname]: pileup[rname].update({i: {'s': '', 'q': ''}})
+                            pileup[rname][i]['s'] += '*'
     
                     refpos += length
     
                 elif token.endswith('I'):
                     # insertion relative to reference
                     # FIXME: pileup does not record quality scores of inserted bases
-                    insert = seq[pos:(pos+length)]
-                    pileup[rname][refpos-1]['s'] += '+' + str(length) + (insert if is_first else insert.lower())
+                    if refpos > last_pos:
+                        insert = seq[pos:(pos+length)]
+                        pileup[rname][refpos-1]['s'] += '+' + str(length) + (insert if is_first else insert.lower())
                     pos += length
     
                 elif token.endswith('S'):
@@ -535,8 +562,9 @@ def sam_to_pileup(samfile, max_primer_length, max_count=None):
                     print 'ERROR: Unknown token in CIGAR string', token
                     sys.exit()
     
-            # record end of read
-            pileup[rname][refpos-1]['s'] += '$'
+            if not is_in_overlap:
+                # record end of read
+                pileup[rname][refpos-1]['s'] += '$'
 
     return pileup, counts
 
@@ -680,7 +708,7 @@ def pileup_to_conseq (handle, qCutoff):
         if (pos - last_pos) > 1:
             conseqs[region] += 'N' * (pos - last_pos - 1)
         last_pos = pos
-        alist = []  # alist stores all bases at a given coordinate
+        base_counts = Counter()
         i = 0       # Current index for astr
         j = 0       # Current index for qstr
 
@@ -690,11 +718,11 @@ def pileup_to_conseq (handle, qCutoff):
                 #counts[region] += 1
                 q = ord(qstr[j])-33
                 base = astr[i+2] if q >= qCutoff else 'N'
-                alist.append(base.upper())
+                base_counts[base.upper()] += 1
                 i += 3
                 j += 1
             elif astr[i] in '*':
-                alist.append('-')
+                base_counts['-'] += 1
                 i += 1
             elif astr[i] == '$':
                 i += 1
@@ -708,29 +736,21 @@ def pileup_to_conseq (handle, qCutoff):
                 base = astr[i].upper() if q >= qCutoff else 'N'
                 token = base + m.group() + insertion.upper()  # e.g., A+3ACG
                 if astr[i+1] == '+':
-                    alist.append(token)
+                    base_counts[token] += 1
                 else:
-                    alist.append(base)
+                    base_counts[base] += 1
                 i += len(token)
                 j += 1
             else:
                 # Operative case: sequence matches reference (And no indel ahead)
                 q = ord(qstr[j])-33
                 base = astr[i].upper() if q >= qCutoff else 'N'
-                alist.append(base)
+                base_counts[base] += 1
                 i += 1
                 j += 1
 
-        atypes = set(alist)
-        intermed = []
-        for atype in atypes:
-            intermed.append((alist.count(atype), atype))
-        intermed.sort(reverse=True)
-
-        if intermed:
-            token = intermed[0][1]
-        else:
-            token = 'N'
+        base_counts['N'] = 0
+        token = base_counts.most_common(1)[0][0]
 
         if '+' in token:
             m = indel_re.findall(token)[0] # \+[0-9]+
