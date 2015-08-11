@@ -1,3 +1,4 @@
+import gzip
 import json
 from multiprocessing import cpu_count
 import os
@@ -115,7 +116,6 @@ class MiCall(tk.Frame):
         #sys.stderr = Redirector(self.console)
 
         self.write('Welcome to MiCall v%s (pipeline v%s)\n' % (self.__version__, pipeline_version))
-        self.write('Default working directory %s\n' % (self.workdir))
 
     def set_workdir(self):
         """
@@ -238,6 +238,8 @@ class MiCall(tk.Frame):
         if not savedir:
             return
         self.workdir = os.path.join(savedir, 'working')
+        if os.path.exists(self.workdir):
+            shutil.rmtree(self.workdir)
         self.make_tree(self.workdir)
 
         # transfer FASTQ.gz files to working folder
@@ -250,17 +252,13 @@ class MiCall(tk.Frame):
             if '_R1_001' in dest:
                 self.target_files.append(dest.replace('.gz', ''))
 
-            if os.path.exists(os.path.join(self.workdir, prefix+'.fastq')):
-                # uncompressed file already present
-                continue
-            elif os.path.exists(os.path.join(self.workdir, prefix+'.fastq.gz')):
-                subprocess.check_call(['gunzip', dest])
-                continue
-            else:
-                # neither file type is present
+            # neither file type is present
+            if not dest.endswith('.gz'):
                 shutil.copy(src, dest)
-                if dest.endswith('.gz'):
-                    subprocess.check_call(['gunzip', dest])
+            else:
+                dest = os.path.join(self.workdir, prefix+'.fastq')
+                with gzip.open(src, 'rb') as zip_src, open(dest, 'w') as fastq_dest:
+                    shutil.copyfileobj(zip_src, fastq_dest)
 
 
         # remove duplicate entries
@@ -299,7 +297,7 @@ class MiCall(tk.Frame):
             self.parent.update_idletasks()
             self.progress_bar['value'] = 0
             remap(fastq1, fastq2, prelim_csv, remap_csv, counts_csv, conseq_csv, unmapped1, unmapped2, self.workdir,
-                  nthreads=self.nthreads.get(), callback=self.callback, use_samtools=False)
+                  nthreads=self.nthreads.get(), callback=self.callback)
 
             # prepare file handles for conversion from SAM format to alignment
             with open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU') as remap_csv, \

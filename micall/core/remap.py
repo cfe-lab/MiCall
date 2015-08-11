@@ -97,16 +97,15 @@ def build_conseqs_with_python(samfilename, raw_count):
     conseqs = make_consensus(pileup=pileup, qCutoff=settings.consensus_q_cutoff)
     return conseqs
 
-def build_conseqs(use_samtools, samfilename, samtools, raw_count):
+def build_conseqs(samfilename, samtools, raw_count):
     """ Build the new consensus sequences from the mapping results.
     
-    @param use_samtools:  user has the option to use native Python code exclusively of samtools,
-                            but this is slower
     @param samfilename: the mapping results in SAM format
-    @param samtools: a command wrapper for samtools
+    @param samtools: a command wrapper for samtools, or None if it's not
+        available
     @param raw_count: the maximum number of reads in the SAM file
     """
-#     use_samtools = True
+    use_samtools = samtools is not None
     use_python = not use_samtools
     if use_samtools:
         start = datetime.now()
@@ -163,7 +162,6 @@ def remap(fastq1,
           nthreads=None,
           callback=None,
           count_threshold=10,
-          use_samtools=True,
           rdgopen=None,
           rfgopen=None):
     """
@@ -183,8 +181,6 @@ def remap(fastq1,
     :param callback:  optional setting to pass a callback function, used for progress
                         monitoring in GUI
     :param count_threshold:  minimum number of reads that map to a region for it to be remapped
-    :param use_samtools:  user has the option to use native Python code exclusively of samtools,
-                            but this is slower
     :param rdgopen: read gap open penalty
     :param rfgopen: reference gap open penalty
     :return:
@@ -198,7 +194,9 @@ def remap(fastq1,
     bowtie2_build = Bowtie2Build(settings.bowtie_version,
                                  settings.bowtie_build_path,
                                  logger)
-    samtools = Samtools(settings.samtools_version, settings.samtools_path, logger)
+    samtools = settings.samtools_version and Samtools(settings.samtools_version,
+                                                      settings.samtools_path,
+                                                      logger)
 
     # check that the inputs exist
     if not os.path.exists(fastq1):
@@ -274,7 +272,7 @@ def remap(fastq1,
     seed_counts = {best_ref: best_count
                    for best_ref, best_count in refgroups.itervalues()}
     # regenerate consensus sequences based on preliminary map
-    conseqs = build_conseqs(use_samtools, samfile, samtools, raw_count)
+    conseqs = build_conseqs(samfile, samtools, raw_count)
 
     # exclude references with low counts (post filtering)
     new_conseqs = {}
@@ -370,7 +368,7 @@ def remap(fastq1,
         map_counts = dict([(k, v) for k, v in new_counts.iteritems()])
 
         # regenerate consensus sequences
-        conseqs = build_conseqs(use_samtools, samfile, samtools, raw_count)
+        conseqs = build_conseqs(samfile, samtools, raw_count)
         n_remaps += 1
 
 
