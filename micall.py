@@ -192,35 +192,8 @@ class MiCall(tk.Frame):
         if run_info is None:
             self.write('Warning, failed to locate run manifest (SampleSheet.csv).\n')
 
+        self.fastq_files = fastq_files
         self.write('Found %d FASTQ files.\n' % (len(fastq_files),))
-
-        # transfer FASTQ.gz files to working folder
-        self.target_files = []
-        for src in fastq_files:
-            filename = os.path.basename(src)
-            prefix = filename.split('.')[0]
-            dest = os.path.join(self.workdir, filename)
-
-            if '_R1_001' in dest:
-                self.target_files.append(dest.replace('.gz', ''))
-
-            if os.path.exists(os.path.join(self.workdir, prefix+'.fastq')):
-                # uncompressed file already present
-                continue
-            elif os.path.exists(os.path.join(self.workdir, prefix+'.fastq.gz')):
-                subprocess.check_call(['gunzip', dest])
-                continue
-            else:
-                # neither file type is present
-                shutil.copy(src, dest)
-                if dest.endswith('.gz'):
-                    subprocess.check_call(['gunzip', dest])
-
-
-        # remove duplicate entries
-        self.target_files = sorted(set(self.target_files))
-
-        self.write('Transferred %d sets of FASTQ files to working directory.\n' % len(self.target_files))
         self.button_run.config(state=tk.ACTIVE)
 
     def line_count(self, file):
@@ -253,19 +226,47 @@ class MiCall(tk.Frame):
         Perform MiCall data processing on FASTQ files in working directory.
         :return:
         """
-        working_files = []
         image_paths = []
         prefixes = []
 
         # look for FASTQ files
-        if len(self.target_files) == 0:
+        if len(self.fastq_files) == 0:
             print 'ERROR: No files to process'
             return
 
         savedir = tkFileDialog.askdirectory(title='Select folder to save results')
         if not savedir:
             return
-        self.make_tree(savedir)
+        self.workdir = os.path.join(savedir, 'working')
+        self.make_tree(self.workdir)
+
+        # transfer FASTQ.gz files to working folder
+        self.target_files = []
+        for src in self.fastq_files:
+            filename = os.path.basename(src)
+            prefix = filename.split('.')[0]
+            dest = os.path.join(self.workdir, filename)
+
+            if '_R1_001' in dest:
+                self.target_files.append(dest.replace('.gz', ''))
+
+            if os.path.exists(os.path.join(self.workdir, prefix+'.fastq')):
+                # uncompressed file already present
+                continue
+            elif os.path.exists(os.path.join(self.workdir, prefix+'.fastq.gz')):
+                subprocess.check_call(['gunzip', dest])
+                continue
+            else:
+                # neither file type is present
+                shutil.copy(src, dest)
+                if dest.endswith('.gz'):
+                    subprocess.check_call(['gunzip', dest])
+
+
+        # remove duplicate entries
+        self.target_files = sorted(set(self.target_files))
+
+        self.write('Transferred %d sets of FASTQ files to working directory.\n' % len(self.target_files))
 
         for fastq1 in self.target_files:
             fastq2 = fastq1.replace('_R1_001', '_R2_001')
@@ -276,7 +277,6 @@ class MiCall(tk.Frame):
             prefix = os.path.basename(fastq1).replace('_L001_R1_001.fastq', '')
             prefixes.append(prefix)
             output_csv = fastq1.replace('_L001_R1_001.fastq', '.prelim.csv')
-            working_files.append(output_csv)
 
             self.write('Processing sample %s\n... preliminary mapping\n' % (prefix,))
             nrecords = self.line_count(fastq1)
@@ -294,7 +294,6 @@ class MiCall(tk.Frame):
             conseq_csv = open(os.path.join(self.workdir, prefix+'.remap_conseq.csv'), 'w')
             unmapped1 = open(os.path.join(self.workdir, prefix+'.unmapped1.fastq'), 'w')
             unmapped2 = open(os.path.join(self.workdir, prefix+'.unmapped2.fastq'), 'w')
-            working_files += map(lambda x: x.name, [remap_csv, counts_csv, conseq_csv, unmapped1, unmapped2])
 
             self.write('... remapping\n')
             self.parent.update_idletasks()
@@ -308,7 +307,6 @@ class MiCall(tk.Frame):
                  open(os.path.join(self.workdir, prefix+'.insert.csv'), 'w') as insert_csv, \
                  open(os.path.join(self.workdir, prefix+'.failed.csv'), 'w') as failed_csv:
                 
-                working_files += map(lambda x: x.name, [aligned_csv, insert_csv, failed_csv])
 
                 self.write('... converting into alignment\n')
                 self.parent.update_idletasks()
@@ -359,12 +357,7 @@ class MiCall(tk.Frame):
             shutil.move(src, dest)
 
         # clean up working files
-        for fn in working_files:
-            os.remove(fn)
-
-        # clean up raw data in working directory
-        for fn in self.target_files:
-            os.remove(fn)
+        shutil.rmtree(self.workdir)
 
         # reactivate buttons
         self.button_load.config(state=tk.ACTIVE)
