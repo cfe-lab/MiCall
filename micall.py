@@ -285,18 +285,27 @@ class MiCall(tk.Frame):
                 prelim_map(fastq1, fastq2, handle, self.workdir, nthreads=self.nthreads.get(), callback=self.callback)
 
             # prepare file handles for remap stage
-            prelim_csv = open(output_csv, 'rU')
-            remap_csv = open(os.path.join(self.workdir, prefix+'.remap.csv'), 'wb')
-            counts_csv = open(os.path.join(self.workdir, prefix+'.remap_counts.csv'), 'wb')
-            conseq_csv = open(os.path.join(self.workdir, prefix+'.remap_conseq.csv'), 'wb')
-            unmapped1 = open(os.path.join(self.workdir, prefix+'.unmapped1.fastq'), 'w')
-            unmapped2 = open(os.path.join(self.workdir, prefix+'.unmapped2.fastq'), 'w')
+            with open(output_csv, 'rU') as prelim_csv, \
+                 open(os.path.join(self.workdir, prefix+'.remap.csv'), 'wb') as remap_csv, \
+                 open(os.path.join(self.workdir, prefix+'.remap_counts.csv'), 'wb') as counts_csv, \
+                 open(os.path.join(self.workdir, prefix+'.remap_conseq.csv'), 'wb') as conseq_csv, \
+                 open(os.path.join(self.workdir, prefix+'.unmapped1.fastq'), 'w') as unmapped1, \
+                 open(os.path.join(self.workdir, prefix+'.unmapped2.fastq'), 'w') as unmapped2:
 
-            self.write('... remapping\n')
-            self.parent.update_idletasks()
-            self.progress_bar['value'] = 0
-            remap(fastq1, fastq2, prelim_csv, remap_csv, counts_csv, conseq_csv, unmapped1, unmapped2, self.workdir,
-                  nthreads=self.nthreads.get(), callback=self.callback)
+                self.write('... remapping\n')
+                self.parent.update_idletasks()
+                self.progress_bar['value'] = 0
+                remap(fastq1,
+                      fastq2,
+                      prelim_csv,
+                      remap_csv,
+                      counts_csv,
+                      conseq_csv,
+                      unmapped1,
+                      unmapped2,
+                      self.workdir,
+                      nthreads=self.nthreads.get(),
+                      callback=self.callback)
 
             # prepare file handles for conversion from SAM format to alignment
             with open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU') as remap_csv, \
@@ -309,30 +318,37 @@ class MiCall(tk.Frame):
                 self.parent.update_idletasks()
                 sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=self.nthreads.get())
 
-            aligned_csv = open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'rU')
-            nuc_csv = open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'wb')
-            amino_csv = open(os.path.join(self.workdir, prefix+'.amino.csv'), 'wb')
-            coord_ins_csv = open(os.path.join(self.workdir, prefix+'.coord_ins.csv'), 'wb')
-            conseq_csv = open(os.path.join(self.workdir, prefix+'.conseq.csv'), 'wb')
-            failed_align_csv = open(os.path.join(self.workdir, prefix+'.failed_align.csv'), 'wb')
-            nuc_variants_csv = open(os.path.join(self.workdir, prefix+'.nuc_variants.csv'), 'wb')
+            with open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'rU') as aligned_csv, \
+                 open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'wb') as nuc_csv, \
+                 open(os.path.join(self.workdir, prefix+'.amino.csv'), 'wb') as amino_csv, \
+                 open(os.path.join(self.workdir, prefix+'.coord_ins.csv'), 'wb') as coord_ins_csv, \
+                 open(os.path.join(self.workdir, prefix+'.conseq.csv'), 'wb') as conseq_csv, \
+                 open(os.path.join(self.workdir, prefix+'.failed_align.csv'), 'wb') as failed_align_csv, \
+                 open(os.path.join(self.workdir, prefix+'.nuc_variants.csv'), 'wb') as nuc_variants_csv:
 
-            self.write('... extracting statistics from alignments\n')
-            self.parent.update_idletasks()
-            aln2counts(aligned_csv, nuc_csv, amino_csv, coord_ins_csv, conseq_csv, failed_align_csv, nuc_variants_csv,
-                       self.workdir)
+                self.write('... extracting statistics from alignments\n')
+                self.parent.update_idletasks()
+                aln2counts(aligned_csv,
+                           nuc_csv,
+                           amino_csv,
+                           coord_ins_csv,
+                           conseq_csv,
+                           failed_align_csv,
+                           nuc_variants_csv,
+                           self.workdir)
 
             self.write('... generating coverage plots\n')
             self.parent.update_idletasks()
-            amino_csv = open(os.path.join(self.workdir, prefix+'.amino.csv'), 'rU')
-            image_paths += coverage_plot(amino_csv)
+            with open(os.path.join(self.workdir, prefix+'.amino.csv'), 'rU') as amino_csv:
+                image_paths += coverage_plot(amino_csv)
 
             self.write('... performing g2p scoring on samples covering HIV-1 V3\n')
             self.parent.update_idletasks()
-            remap_csv = open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU')
-            nuc_csv = open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'rU')
-            g2p_csv = open(os.path.join(self.workdir, prefix+'.g2p.csv'), 'wb')
-            sam_g2p(pssm=self.pssm, remap_csv=remap_csv, nuc_csv=nuc_csv, g2p_csv=g2p_csv)
+            with open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU') as remap_csv, \
+                 open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'rU') as nuc_csv, \
+                 open(os.path.join(self.workdir, prefix+'.g2p.csv'), 'wb') as g2p_csv:
+                
+                sam_g2p(pssm=self.pssm, remap_csv=remap_csv, nuc_csv=nuc_csv, g2p_csv=g2p_csv)
 
 
         # prevent rerun until a new folder is loaded
