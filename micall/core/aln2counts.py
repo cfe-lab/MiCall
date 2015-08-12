@@ -287,7 +287,7 @@ class SequenceReport(object):
         columns.extend(settings.amino_alphabet)
         return csv.DictWriter(amino_file,
                               columns,
-                              lineterminator='\n')
+                              lineterminator=os.linesep)
         
     def write_amino_header(self, amino_file):
         self._create_amino_writer(amino_file).writeheader()
@@ -322,7 +322,7 @@ class SequenceReport(object):
                                'C',
                                'G',
                                'T'],
-                              lineterminator='\n')
+                              lineterminator=os.linesep)
         
     def write_nuc_header(self, nuc_file):
         self._create_nuc_writer(nuc_file).writeheader()
@@ -360,7 +360,7 @@ class SequenceReport(object):
                                'consensus-percent-cutoff',
                                'offset',
                                'sequence'],
-                              lineterminator='\n')
+                              lineterminator=os.linesep)
                 
     def write_consensus_header(self, conseq_file):
         self._create_consensus_writer(conseq_file).writeheader()
@@ -390,7 +390,7 @@ class SequenceReport(object):
                                'index',
                                'count',
                                'seq'],
-                              lineterminator='\n')
+                              lineterminator=os.linesep)
     
     def write_nuc_variants_header(self, nuc_variants_file):
         self._create_nuc_variants_writer(nuc_variants_file).writeheader()
@@ -416,7 +416,7 @@ class SequenceReport(object):
                                'qcut',
                                'queryseq',
                                'refseq'],
-                              lineterminator='\n')
+                              lineterminator=os.linesep)
     
     def write_failure_header(self, fail_file):
         self._create_failure_writer(fail_file).writeheader()
@@ -580,7 +580,7 @@ class InsertionWriter(object):
                                              'insert',
                                              'count',
                                              'before'],
-                                            lineterminator='\n')
+                                            lineterminator=os.linesep)
         self.insert_writer.writeheader()
     
     def start_group(self, seed, qcut):

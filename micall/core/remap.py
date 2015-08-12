@@ -137,7 +137,8 @@ def build_conseqs(samfilename, samtools, raw_count):
                                      'samtools_seconds',
                                      'python_seconds',
                                      'samtools_conseqs',
-                                     'python_conseqs'])
+                                     'python_conseqs'],
+                                    lineterminator=os.linesep)
             if new_file:
                 writer.writeheader()
             row = {'first_qname': first_qname,
@@ -218,9 +219,9 @@ def remap(fastq1,
     # record the raw read count
     raw_count = line_counter.count(fastq1) / 2  # 4 lines per record in FASTQ, paired
 
-    remap_counts_writer = csv.DictWriter(remap_counts_csv, ['type',
-                                                            'count',
-                                                            'filtered_count'])
+    remap_counts_writer = csv.DictWriter(remap_counts_csv,
+                                         ['type', 'count', 'filtered_count'],
+                                         lineterminator=os.linesep)
     remap_counts_writer.writeheader()
     remap_counts_writer.writerow(dict(type='raw', count=raw_count))
 
@@ -339,6 +340,7 @@ def remap(fastq1,
                 if callback and i%1000 == 0:
                     callback(i)  # progress monitoring in GUI
 
+                line = line.rstrip('\r\n')
                 items = line.split('\t')
                 qname, bitflag, rname = items[:3]
 
@@ -354,7 +356,7 @@ def remap(fastq1,
                                   if is_first_read(bitflag)
                                   else REVERSE_FLAG)
 
-                f.write(line)
+                f.write(line + '\n')
 
         # stopping criterion 1 - none of the regions gained reads
         if all([(count <= map_counts[refname]) for refname, count in new_counts.iteritems()]):
@@ -376,7 +378,7 @@ def remap(fastq1,
     ## finished iterative phase
 
     # generate SAM CSV output
-    remap_writer = csv.DictWriter(remap_csv, fieldnames)
+    remap_writer = csv.DictWriter(remap_csv, fieldnames, lineterminator=os.linesep)
     remap_writer.writeheader()
     with open(samfile, 'rU') as f:
         for line in f:

@@ -280,6 +280,7 @@ def parse_sam_in_threads(remap_csv, nthreads):
             yield read
     finally:
         pool.close()
+        pool.join()
 
 def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
     # prepare outputs

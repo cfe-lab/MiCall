@@ -5,6 +5,7 @@ import csv
 import itertools
 import logging
 import math
+import os
 
 import miseq_logging
 
@@ -33,7 +34,8 @@ def main():
     with args.quality_csv, args.bad_cycles_csv:
         reader = csv.DictReader(args.quality_csv)
         writer = csv.DictWriter(args.bad_cycles_csv,
-                                ['tile', 'cycle', 'errorrate'])
+                                ['tile', 'cycle', 'errorrate'],
+                                lineterminator=os.linesep)
         writer.writeheader()
         for _tile_direction, cycles in itertools.groupby(reader, grouper):
             is_bad = False

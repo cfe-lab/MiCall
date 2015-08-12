@@ -106,7 +106,9 @@ def download_quality(run_info_path, destination, read_lengths):
                 'No quality control metrics found for run ' + qcRunId)
     
     with open(destination, 'w') as f:
-        writer = csv.DictWriter(f, ['tile', 'cycle', 'errorrate'])
+        writer = csv.DictWriter(f,
+                                ['tile', 'cycle', 'errorrate'],
+                                lineterminator=os.linesep)
         writer.writeheader()
         for tile, tile_metrics in itertools.groupby(metrics,
                                                     operator.itemgetter('tile')):

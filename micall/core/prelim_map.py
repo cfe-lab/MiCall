@@ -104,7 +104,7 @@ def prelim_map(fastq1,
                   'tlen',
                   'seq',
                   'qual']
-    writer = csv.DictWriter(prelim_csv, fieldnames)
+    writer = csv.DictWriter(prelim_csv, fieldnames, lineterminator=os.linesep)
     writer.writeheader()
     
     # lines grouped by refname
