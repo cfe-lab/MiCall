@@ -224,9 +224,14 @@ class MiCall(tk.Frame):
             print 'ERROR: No files to process'
             return
 
-        savedir = tkFileDialog.askdirectory(title='Select folder to save results')
+        setting_name = 'results_path'
+        savedir = self.config.get(setting_name, '')
+        savedir = tkFileDialog.askdirectory(title='Select folder to save results',
+                                            initialdir=savedir)
         if not savedir:
             return
+        self.config[setting_name] = savedir
+        self.write_config()
         self.workdir = os.path.join(savedir, 'working')
         if os.path.exists(self.workdir):
             shutil.rmtree(self.workdir)

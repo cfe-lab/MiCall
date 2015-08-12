@@ -321,21 +321,21 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb,
             //no idea if this will work, but its supposed to be a stop codon aligner
             //the bonus is  assigned on the last codon, if the codons between don't make a big difference it'll be wrong.  Hrm.
 
-            if((*seqa)[i-3] == '$' && (*seqa)[i-2] == '$' && (*seqa)[i-1] == '$'  &&
+            if(i >= 3 && j >= 3 && (*seqa)[i-3] == '$' && (*seqa)[i-2] == '$' && (*seqa)[i-1] == '$'  &&
                (((*seqb)[j-3] == 'T' && (*seqb)[j-2] == 'A' && (*seqb)[j-1] == 'G') ||
                ((*seqb)[j-3] == 'T' && (*seqb)[j-2] == 'A' && (*seqb)[j-1] == 'A') ||
                ((*seqb)[j-3] == 'T' && (*seqb)[j-2] == 'G' && (*seqb)[j-1] == 'A') ))
             {
                pscore += 6;
             }
-            if((*seqa)[i-2] == '$' && (*seqa)[i-1] == '$' && (*seqa)[i-0] == '$'  &&
+            if(i >= 3 && j >= 3 && (*seqa)[i-2] == '$' && (*seqa)[i-1] == '$' && (*seqa)[i-0] == '$'  &&
                (((*seqb)[j-2] == 'T' && (*seqb)[j-1] == 'A' && (*seqb)[j-0] == 'G') ||
                ((*seqb)[j-2] == 'T' && (*seqb)[j-1] == 'A' && (*seqb)[j-0] == 'A') ||
                ((*seqb)[j-2] == 'T' && (*seqb)[j-1] == 'G' && (*seqb)[j-0] == 'A') ))
             {
                pscore += 6;
             }
-            if((*seqa)[i-1] == '$' && (*seqa)[i-0] == '$' && (*seqa)[i+1] == '$'  &&
+            if(i >= 3 && j >= 3 && (*seqa)[i-1] == '$' && (*seqa)[i-0] == '$' && (*seqa)[i+1] == '$'  &&
                (((*seqb)[j-1] == 'T' && (*seqb)[j-0] == 'A' && (*seqb)[j+1] == 'G') ||
                ((*seqb)[j-1] == 'T' && (*seqb)[j-0] == 'A' && (*seqb)[j+1] == 'A') ||
                ((*seqb)[j-1] == 'T' && (*seqb)[j-0] == 'G' && (*seqb)[j+1] == 'A') ))
