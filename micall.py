@@ -276,7 +276,7 @@ class MiCall(tk.Frame):
             self.progress_bar['maximum'] = nrecords
             self.parent.update_idletasks()  # flush buffer
 
-            with open(output_csv, 'w') as handle:
+            with open(output_csv, 'wb') as handle:
                 prelim_map(fastq1, fastq2, handle, self.workdir, nthreads=self.nthreads.get(), callback=self.callback)
 
             # prepare file handles for remap stage
