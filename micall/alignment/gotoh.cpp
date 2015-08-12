@@ -25,134 +25,134 @@ void trim(string* seq);
 static int nucMat[127][127]; // ASCII runs from 0 to 127
 void init_pairscore(int matchscore, int mismatchPenalty)
 {
-	for (int i=0; i<127; i++)
-	{
-		for (int j=0; j<127; j++)
-		{
-			if (i==j)
-			{
-				nucMat[i][j]=matchscore;
-			}
-			else
-			{
-				nucMat[i][j]=-mismatchPenalty;
-//				if ((char)i=='N' || (char)i=='n' || (char)j=='N' || (char)j=='n')
-//				{
-//					nucMat[i][j]=-mismatchPenalty;
-//				}
-			}
-		}
-	}
+    for (int i=0; i<127; i++)
+    {
+        for (int j=0; j<127; j++)
+        {
+            if (i==j)
+            {
+                nucMat[i][j]=matchscore;
+            }
+            else
+            {
+                nucMat[i][j]=-mismatchPenalty;
+//                if ((char)i=='N' || (char)i=='n' || (char)j=='N' || (char)j=='n')
+//                {
+//                    nucMat[i][j]=-mismatchPenalty;
+//                }
+            }
+        }
+    }
 
-	// adjust naive assignments for case-insensitivity
-	nucMat['a']['A']=nucMat['A']['a']=matchscore;
-	nucMat['c']['C']=nucMat['C']['c']=matchscore;
-	nucMat['g']['G']=nucMat['G']['g']=matchscore;
-	nucMat['t']['T']=nucMat['T']['t']=nucMat['u']['U']=nucMat['U']['u']=matchscore;
-	nucMat['t']['u']=nucMat['t']['U']=nucMat['T']['u']=nucMat['T']['U']=matchscore;
-	nucMat['u']['t']=nucMat['t']['T']=nucMat['U']['t']=nucMat['U']['T']=matchscore;
-	nucMat['N']['N']=nucMat['n']['N']=nucMat['N']['n']=0;
+    // adjust naive assignments for case-insensitivity
+    nucMat['a']['A']=nucMat['A']['a']=matchscore;
+    nucMat['c']['C']=nucMat['C']['c']=matchscore;
+    nucMat['g']['G']=nucMat['G']['g']=matchscore;
+    nucMat['t']['T']=nucMat['T']['t']=nucMat['u']['U']=nucMat['U']['u']=matchscore;
+    nucMat['t']['u']=nucMat['t']['U']=nucMat['T']['u']=nucMat['T']['U']=matchscore;
+    nucMat['u']['t']=nucMat['t']['T']=nucMat['U']['t']=nucMat['U']['T']=matchscore;
+    nucMat['N']['N']=nucMat['n']['N']=nucMat['N']['n']=0;
 
 
-	//bi-mixtures
-	nucMat['A']['R']=nucMat['R']['A']=matchscore;
-	nucMat['G']['R']=nucMat['R']['G']=matchscore;
+    //bi-mixtures
+    nucMat['A']['R']=nucMat['R']['A']=matchscore;
+    nucMat['G']['R']=nucMat['R']['G']=matchscore;
 
-	nucMat['C']['Y']=nucMat['Y']['C']=matchscore;
-	nucMat['T']['Y']=nucMat['Y']['T']=matchscore;
+    nucMat['C']['Y']=nucMat['Y']['C']=matchscore;
+    nucMat['T']['Y']=nucMat['Y']['T']=matchscore;
 
-	nucMat['G']['K']=nucMat['K']['G']=matchscore;
-	nucMat['T']['K']=nucMat['K']['T']=matchscore;
+    nucMat['G']['K']=nucMat['K']['G']=matchscore;
+    nucMat['T']['K']=nucMat['K']['T']=matchscore;
 
-	nucMat['C']['M']=nucMat['M']['C']=matchscore;
-	nucMat['A']['M']=nucMat['M']['A']=matchscore;
+    nucMat['C']['M']=nucMat['M']['C']=matchscore;
+    nucMat['A']['M']=nucMat['M']['A']=matchscore;
 
-	nucMat['C']['S']=nucMat['S']['C']=matchscore;
-	nucMat['G']['S']=nucMat['S']['G']=matchscore;
+    nucMat['C']['S']=nucMat['S']['C']=matchscore;
+    nucMat['G']['S']=nucMat['S']['G']=matchscore;
 
-	nucMat['T']['W']=nucMat['W']['T']=matchscore;
-	nucMat['A']['W']=nucMat['W']['A']=matchscore;
+    nucMat['T']['W']=nucMat['W']['T']=matchscore;
+    nucMat['A']['W']=nucMat['W']['A']=matchscore;
 
-	//tri-mixtures
-	nucMat['C']['B']=nucMat['B']['C']=matchscore;
-	nucMat['G']['B']=nucMat['B']['G']=matchscore;
-	nucMat['T']['B']=nucMat['B']['T']=matchscore;
+    //tri-mixtures
+    nucMat['C']['B']=nucMat['B']['C']=matchscore;
+    nucMat['G']['B']=nucMat['B']['G']=matchscore;
+    nucMat['T']['B']=nucMat['B']['T']=matchscore;
 
-	nucMat['A']['D']=nucMat['D']['A']=matchscore;
-	nucMat['G']['D']=nucMat['D']['G']=matchscore;
-	nucMat['T']['D']=nucMat['D']['T']=matchscore;
+    nucMat['A']['D']=nucMat['D']['A']=matchscore;
+    nucMat['G']['D']=nucMat['D']['G']=matchscore;
+    nucMat['T']['D']=nucMat['D']['T']=matchscore;
 
-	nucMat['A']['H']=nucMat['H']['A']=matchscore;
-	nucMat['C']['H']=nucMat['H']['C']=matchscore;
-	nucMat['T']['H']=nucMat['H']['T']=matchscore;
+    nucMat['A']['H']=nucMat['H']['A']=matchscore;
+    nucMat['C']['H']=nucMat['H']['C']=matchscore;
+    nucMat['T']['H']=nucMat['H']['T']=matchscore;
 
-	nucMat['A']['V']=nucMat['V']['A']=matchscore;
-	nucMat['C']['V']=nucMat['V']['C']=matchscore;
-	nucMat['G']['V']=nucMat['V']['G']=matchscore;
+    nucMat['A']['V']=nucMat['V']['A']=matchscore;
+    nucMat['C']['V']=nucMat['V']['C']=matchscore;
+    nucMat['G']['V']=nucMat['V']['G']=matchscore;
 
    //Wild cards
    nucMat['*']['A']=nucMat['*']['a']=nucMat['A']['*']=nucMat['a']['*']=matchscore;
-	nucMat['*']['C']=nucMat['*']['c']=nucMat['C']['*']=nucMat['c']['*']=matchscore;
-	nucMat['*']['T']=nucMat['*']['t']=nucMat['T']['*']=nucMat['t']['*']=matchscore;
-	nucMat['*']['G']=nucMat['*']['g']=nucMat['G']['*']=nucMat['g']['*']=matchscore;
+    nucMat['*']['C']=nucMat['*']['c']=nucMat['C']['*']=nucMat['c']['*']=matchscore;
+    nucMat['*']['T']=nucMat['*']['t']=nucMat['T']['*']=nucMat['t']['*']=matchscore;
+    nucMat['*']['G']=nucMat['*']['g']=nucMat['G']['*']=nucMat['g']['*']=matchscore;
 
    nucMat['$']['$']=50;
 //    nucMat['$']['A']=nucMat['$']['a']=nucMat['A']['$']=nucMat['a']['$']=0;
-//	nucMat['$']['T']=nucMat['$']['t']=nucMat['T']['$']=nucMat['t']['$']=0;
-//	nucMat['$']['G']=nucMat['$']['g']=nucMat['G']['$']=nucMat['g']['$']=0;
+//    nucMat['$']['T']=nucMat['$']['t']=nucMat['T']['$']=nucMat['t']['$']=0;
+//    nucMat['$']['G']=nucMat['$']['g']=nucMat['G']['$']=nucMat['g']['$']=0;
 
-	//For those annoying duplicate phred values.
-	nucMat['.']['A']=nucMat['.']['a']=nucMat['A']['.']=nucMat['a']['.']=-20;
-	nucMat['.']['C']=nucMat['.']['c']=nucMat['C']['.']=nucMat['c']['.']=-20;
-	nucMat['.']['T']=nucMat['.']['t']=nucMat['T']['.']=nucMat['t']['.']=-20;
-	nucMat['.']['G']=nucMat['.']['g']=nucMat['G']['.']=nucMat['g']['.']=-20;
+    //For those annoying duplicate phred values.
+    nucMat['.']['A']=nucMat['.']['a']=nucMat['A']['.']=nucMat['a']['.']=-20;
+    nucMat['.']['C']=nucMat['.']['c']=nucMat['C']['.']=nucMat['c']['.']=-20;
+    nucMat['.']['T']=nucMat['.']['t']=nucMat['T']['.']=nucMat['t']['.']=-20;
+    nucMat['.']['G']=nucMat['.']['g']=nucMat['G']['.']=nucMat['g']['.']=-20;
 
-	nucMat['N']['A']=nucMat['N']['a']=nucMat['A']['N']=nucMat['a']['N']=-3;
-	nucMat['N']['C']=nucMat['N']['c']=nucMat['C']['N']=nucMat['c']['N']=-3;
-	nucMat['N']['T']=nucMat['N']['t']=nucMat['T']['N']=nucMat['t']['N']=-3;
-	nucMat['N']['G']=nucMat['N']['g']=nucMat['G']['N']=nucMat['g']['N']=-3;
-	
-	//for easy alignment to a standard with gaps
-	nucMat['X']['A']=nucMat['X']['a']=nucMat['A']['X']=nucMat['a']['X']=-6;
-	nucMat['X']['C']=nucMat['X']['c']=nucMat['C']['X']=nucMat['c']['X']=-6;
-	nucMat['X']['T']=nucMat['X']['t']=nucMat['T']['X']=nucMat['t']['X']=-6;
-	nucMat['X']['G']=nucMat['X']['g']=nucMat['G']['X']=nucMat['g']['X']=-6;
-	nucMat['X']['R']=nucMat['X']['r']=nucMat['R']['X']=nucMat['r']['X']=-6;
-	nucMat['X']['Y']=nucMat['X']['y']=nucMat['Y']['X']=nucMat['y']['X']=-6;
-	nucMat['X']['K']=nucMat['X']['k']=nucMat['K']['X']=nucMat['k']['X']=-6;
-	nucMat['X']['M']=nucMat['X']['m']=nucMat['M']['X']=nucMat['m']['X']=-6;
-	nucMat['X']['S']=nucMat['X']['s']=nucMat['S']['X']=nucMat['s']['X']=-6;
-	nucMat['X']['W']=nucMat['X']['w']=nucMat['W']['X']=nucMat['w']['X']=-6;
-	nucMat['X']['B']=nucMat['X']['b']=nucMat['B']['X']=nucMat['b']['X']=-6;
-	nucMat['X']['D']=nucMat['X']['d']=nucMat['D']['X']=nucMat['d']['X']=-6;
-	nucMat['X']['H']=nucMat['X']['h']=nucMat['H']['X']=nucMat['h']['X']=-6;
-	nucMat['X']['V']=nucMat['X']['v']=nucMat['V']['X']=nucMat['v']['X']=-6;
-	nucMat['X']['-']=nucMat['X']['-']=3;
+    nucMat['N']['A']=nucMat['N']['a']=nucMat['A']['N']=nucMat['a']['N']=-3;
+    nucMat['N']['C']=nucMat['N']['c']=nucMat['C']['N']=nucMat['c']['N']=-3;
+    nucMat['N']['T']=nucMat['N']['t']=nucMat['T']['N']=nucMat['t']['N']=-3;
+    nucMat['N']['G']=nucMat['N']['g']=nucMat['G']['N']=nucMat['g']['N']=-3;
+    
+    //for easy alignment to a standard with gaps
+    nucMat['X']['A']=nucMat['X']['a']=nucMat['A']['X']=nucMat['a']['X']=-6;
+    nucMat['X']['C']=nucMat['X']['c']=nucMat['C']['X']=nucMat['c']['X']=-6;
+    nucMat['X']['T']=nucMat['X']['t']=nucMat['T']['X']=nucMat['t']['X']=-6;
+    nucMat['X']['G']=nucMat['X']['g']=nucMat['G']['X']=nucMat['g']['X']=-6;
+    nucMat['X']['R']=nucMat['X']['r']=nucMat['R']['X']=nucMat['r']['X']=-6;
+    nucMat['X']['Y']=nucMat['X']['y']=nucMat['Y']['X']=nucMat['y']['X']=-6;
+    nucMat['X']['K']=nucMat['X']['k']=nucMat['K']['X']=nucMat['k']['X']=-6;
+    nucMat['X']['M']=nucMat['X']['m']=nucMat['M']['X']=nucMat['m']['X']=-6;
+    nucMat['X']['S']=nucMat['X']['s']=nucMat['S']['X']=nucMat['s']['X']=-6;
+    nucMat['X']['W']=nucMat['X']['w']=nucMat['W']['X']=nucMat['w']['X']=-6;
+    nucMat['X']['B']=nucMat['X']['b']=nucMat['B']['X']=nucMat['b']['X']=-6;
+    nucMat['X']['D']=nucMat['X']['d']=nucMat['D']['X']=nucMat['d']['X']=-6;
+    nucMat['X']['H']=nucMat['X']['h']=nucMat['H']['X']=nucMat['h']['X']=-6;
+    nucMat['X']['V']=nucMat['X']['v']=nucMat['V']['X']=nucMat['v']['X']=-6;
+    nucMat['X']['-']=nucMat['X']['-']=3;
 }
 
 
 void init_pairscore_aa(int matchscore, int mismatchPenalty)
 {
-	for (int i=0; i<127; i++)
-	{
-		for (int j=0; j<127; j++)
-		{
-			if(i==j)
-			{
-				nucMat[i][j]=matchscore;
-			}
-			else
-			{
-				nucMat[i][j]=-mismatchPenalty;
+    for (int i=0; i<127; i++)
+    {
+        for (int j=0; j<127; j++)
+        {
+            if(i==j)
+            {
+                nucMat[i][j]=matchscore;
+            }
+            else
+            {
+                nucMat[i][j]=-mismatchPenalty;
                if((char)i=='X' || (char)j=='X')
                {
                    nucMat[i][j]=-4;    
                }
-			}
-		}
-	}
+            }
+        }
+    }
 
-	nucMat['Z']['Z']=nucMat['z']['Z']=nucMat['Z']['z']=0;
+    nucMat['Z']['Z']=nucMat['z']['Z']=nucMat['Z']['z']=0;
    nucMat['X']['-']=nucMat['-']['X']=matchscore;
 }
 
@@ -215,17 +215,17 @@ void init_pairscore_hiv25(void) {
 
 extern int pairscore(char a, char b)
 {
-	return nucMat[a][b];
+    return nucMat[a][b];
 }
 
 void reverse(string* seq)
 {
-	string tmp = "";
-	for(int i = seq->size() - 1; i >= 0; --i)
-	{
-		tmp += (*seq)[i];
-	}
-	*seq = tmp;
+    string tmp = "";
+    for(int i = seq->size() - 1; i >= 0; --i)
+    {
+        tmp += (*seq)[i];
+    }
+    *seq = tmp;
 }
 
 
@@ -242,81 +242,81 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb,
      Gap open and extension penalties [gip] and [gep] are assumed to take positive values.
     */
 
-	int M = seqa->size(); // first group of pre-aligned sequences
-	int N = seqb->size(); // second group
+    int M = seqa->size(); // first group of pre-aligned sequences
+    int N = seqb->size(); // second group
 
-	int i, j;
+    int i, j;
 
     // not all elements of D, P, and Q need to be stored - vectors are adequate
-	int *SS=new int[N+1];  // D(i, .)
-	int *oldSS=new int[N+1];  // D(i-1, .)
-	int *PP = new int[N+1];  // P(i, .)
+    int *SS=new int[N+1];  // D(i, .)
+    int *oldSS=new int[N+1];  // D(i-1, .)
+    int *PP = new int[N+1];  // P(i, .)
 
     // Gotoh traceback matrices
     int **piSS = new int*[M+1];
-	int **pjSS = new int*[M+1];
+    int **pjSS = new int*[M+1];
 
-	int u = -gip; // affine gap initiation penalty
-	int v = -gep; // affine gap extension penalty
+    int u = -gip; // affine gap initiation penalty
+    int v = -gep; // affine gap extension penalty
 
-	int w1 = u + v; // gap weight w_k = v * k + u for k = 1
-	int t = u;
-	int s, q;
+    int w1 = u + v; // gap weight w_k = v * k + u for k = 1
+    int t = u;
+    int s, q;
 
-	// initialize vectors
-	for (j=0; j<N+1; j++)
-	{
-		SS[j]=0;
-		oldSS[j]=0;
-		PP[j]=0;
-	}
+    // initialize vectors
+    for (j=0; j<N+1; j++)
+    {
+        SS[j]=0;
+        oldSS[j]=0;
+        PP[j]=0;
+    }
 
     // initialize traceback matrices
-	piSS[0] = new int[N+1];
-	pjSS[0] = new int[N+1];
-	piSS[1] = new int[N+1];
-	pjSS[1] = new int[N+1];
-	piSS[1][0] = 0;
-	pjSS[1][0] = 0;
-	piSS[0][1] = 0;
-	pjSS[0][1] = 0;
+    piSS[0] = new int[N+1];
+    pjSS[0] = new int[N+1];
+    piSS[1] = new int[N+1];
+    pjSS[1] = new int[N+1];
+    piSS[1][0] = 0;
+    pjSS[1][0] = 0;
+    piSS[0][1] = 0;
+    pjSS[0][1] = 0;
 
-	int maxiS = -100000;
-	int maxjS = -100000;
-	int maxij, maxji;
+    int maxiS = -100000;
+    int maxjS = -100000;
+    int maxij, maxji;
 
-	for (i=1; i < M+1; i++)
-	{
-		t += v; // update gap extension
-		s = t;
-		SS[0]=0;
-		q = t + u;
+    for (i=1; i < M+1; i++)
+    {
+        t += v; // update gap extension
+        s = t;
+        SS[0]=0;
+        q = t + u;
 
         // add new rows
-		if (i>1)
-		{
-			piSS[i] = new int[N+1];
-			pjSS[i] = new int[N+1];
-		}
+        if (i>1)
+        {
+            piSS[i] = new int[N+1];
+            pjSS[i] = new int[N+1];
+        }
 
-		for (j = 1; j < N + 1; j++)
-		{
-		    // recursive calculation of Q
-			if (q >= s + u )
-				q += v; // extension
-			else
-				q = s + u + v; // open
+        for (j = 1; j < N + 1; j++)
+        {
+            // recursive calculation of Q
+            if (q >= s + u )
+                q += v; // extension
+            else
+                q = s + u + v; // open
 
             // recursive calculation of P
-			if ((oldSS[j] + w1) > (PP[j] + v))
-				PP[j] = oldSS[j] + w1;
-			else
-				PP[j] += v;
+            if ((oldSS[j] + w1) > (PP[j] + v))
+                PP[j] = oldSS[j] + w1;
+            else
+                PP[j] += v;
 
-			int tmp_pp = PP[j];
+            int tmp_pp = PP[j];
 
-			// D(i-1, j-1) + d(a_i, b_j)
-			int pscore = oldSS[j - 1] + pairscore((*seqa)[i - 1], (*seqb)[j - 1]);
+            // D(i-1, j-1) + d(a_i, b_j)
+            int pscore = oldSS[j - 1] + pairscore((*seqa)[i - 1], (*seqb)[j - 1]);
 
             //no idea if this will work, but its supposed to be a stop codon aligner
             //the bonus is  assigned on the last codon, if the codons between don't make a big difference it'll be wrong.  Hrm.
@@ -345,185 +345,185 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb,
 
             /*
              D(i,j) = Min { D(i-1, j-1) + d(a_i, b_j), P(i,j), Q(i,j) }
-			 where P(i,j) = Min { D(i-k, j) + w_k } for k = 1, .., i
-			   and Q(i,j) = Min { D(i, j-k) + w_k } for k = 1, ..., j
+             where P(i,j) = Min { D(i-k, j) + w_k } for k = 1, .., i
+               and Q(i,j) = Min { D(i, j-k) + w_k } for k = 1, ..., j
 
-			 i.e., three options are:
-			  1. match/mismatch,
-			  2. gap open/extension in sequence (a),
-			  3. gap open/extension in sequence (b)
+             i.e., three options are:
+              1. match/mismatch,
+              2. gap open/extension in sequence (a),
+              3. gap open/extension in sequence (b)
 
-			 pscore = D(i-1, j-1) + d(a_i, b_j)
-			 tmp_pp = P(i,j)
-			 q = Q(i,j)
+             pscore = D(i-1, j-1) + d(a_i, b_j)
+             tmp_pp = P(i,j)
+             q = Q(i,j)
             */
 
-			//maybe just >?
-			if (tmp_pp >= pscore)
-			{
-				if (tmp_pp > q)
-				{
-				    // gap open / extension in (a)
-					s = tmp_pp;
-					piSS[i][j] = i - 1;
-					pjSS[i][j] = j;
-				}
-				else // q > tmp_pp > pscore
-				{
-				    // gap open / extension in (b)
-					s = q;
-					piSS[i][j] = i;
-					pjSS[i][j] = j - 1;
-				}
-			}
-			else // pscore > tmp_pp)
-			{
-				if (pscore > q)
-				{
-				    // match / mismatch
-					s = pscore;
-					piSS[i][j] = i - 1;
-					pjSS[i][j] = j - 1;
-				}
-				else // q > pscore > tmp_pp
-				{
-				    // gap open / extension in (b)
-					s = q;
-					piSS[i][j] = i;
-					pjSS[i][j] = j - 1;
-				}
-			}
+            //maybe just >?
+            if (tmp_pp >= pscore)
+            {
+                if (tmp_pp > q)
+                {
+                    // gap open / extension in (a)
+                    s = tmp_pp;
+                    piSS[i][j] = i - 1;
+                    pjSS[i][j] = j;
+                }
+                else // q > tmp_pp > pscore
+                {
+                    // gap open / extension in (b)
+                    s = q;
+                    piSS[i][j] = i;
+                    pjSS[i][j] = j - 1;
+                }
+            }
+            else // pscore > tmp_pp)
+            {
+                if (pscore > q)
+                {
+                    // match / mismatch
+                    s = pscore;
+                    piSS[i][j] = i - 1;
+                    pjSS[i][j] = j - 1;
+                }
+                else // q > pscore > tmp_pp
+                {
+                    // gap open / extension in (b)
+                    s = q;
+                    piSS[i][j] = i;
+                    pjSS[i][j] = j - 1;
+                }
+            }
 
-			SS[j] = s;
+            SS[j] = s;
 
-			if (i == M && SS[j] >= maxiS)
-			{
-				maxiS = SS[j];
-				maxij = j;
-			}
-		}
+            if (i == M && SS[j] >= maxiS)
+            {
+                maxiS = SS[j];
+                maxij = j;
+            }
+        }
 
-		if (SS[N] >= maxjS)
-		{
-			maxjS = SS[N];
-			maxji = i;
-		}
+        if (SS[N] >= maxjS)
+        {
+            maxjS = SS[N];
+            maxji = i;
+        }
 
-		for (j = 0; j < N + 1; j++)
-		{
-			oldSS[j] = SS[j];
-		}
-	}
+        for (j = 0; j < N + 1; j++)
+        {
+            oldSS[j] = SS[j];
+        }
+    }
 
-	if (maxij>N)
-		maxij=N;
-	if (maxji>M)
-		maxji=M;
-	if (maxij<0)
-		maxij=0;
-	if (maxji<0)
-		maxji=0;
+    if (maxij>N)
+        maxij=N;
+    if (maxji>M)
+        maxji=M;
+    if (maxij<0)
+        maxij=0;
+    if (maxji<0)
+        maxji=0;
 
-	//add starting -'s
-	int alignment_score;
-	if (maxiS > maxjS)
-	{
-	    alignment_score = maxiS;
-		i = M;
-		j = maxij;
-		for (int kk = N; kk > maxij; kk--)
-		{
-			*newseqb += (*seqb)[kk - 1];
-			*newseqa += '-';
-		}
-	}
+    //add starting -'s
+    int alignment_score;
+    if (maxiS > maxjS)
+    {
+        alignment_score = maxiS;
+        i = M;
+        j = maxij;
+        for (int kk = N; kk > maxij; kk--)
+        {
+            *newseqb += (*seqb)[kk - 1];
+            *newseqa += '-';
+        }
+    }
    else
-	{
-	    alignment_score = maxjS;
-		i = maxji;
-		j = N;
-		for (int kk = M; kk > maxji; kk--)
-		{
-			*newseqa += (*seqa)[kk - 1];
-			*newseqb += '-';
-		}
-	}
+    {
+        alignment_score = maxjS;
+        i = maxji;
+        j = N;
+        for (int kk = M; kk > maxji; kk--)
+        {
+            *newseqa += (*seqa)[kk - 1];
+            *newseqb += '-';
+        }
+    }
 
-	bool decI = false;
-	bool decJ = false;
-	//inserting -'s in the middle!
-	while(i >= 1 && j >= 1)
-	{
-		decI=false;
-		decJ=false;
-		if (piSS[i][j] < i)
-		{
-			*newseqa += (*seqa)[i - 1];
-			decI = true;
-		}
-		else
-		{
-			*newseqa += '-';
-		}
+    bool decI = false;
+    bool decJ = false;
+    //inserting -'s in the middle!
+    while(i >= 1 && j >= 1)
+    {
+        decI=false;
+        decJ=false;
+        if (piSS[i][j] < i)
+        {
+            *newseqa += (*seqa)[i - 1];
+            decI = true;
+        }
+        else
+        {
+            *newseqa += '-';
+        }
 
-		if (pjSS[i][j] < j)
-		{
-			*newseqb += (*seqb)[j - 1];
-			decJ=true;
-		}
-		else
-		{
-			*newseqb += '-';
-		}
+        if (pjSS[i][j] < j)
+        {
+            *newseqb += (*seqb)[j - 1];
+            decJ=true;
+        }
+        else
+        {
+            *newseqb += '-';
+        }
 
-		if (decI)
-		{
-			i--;
-		}
-		if (decJ)
-		{
-			j--;
-		}
-	}
+        if (decI)
+        {
+            i--;
+        }
+        if (decJ)
+        {
+            j--;
+        }
+    }
 
-	//add extra trailing -'s
-	//forgive terminal gap penalties if user specifies this option
-	if (i < j)
-	{
-		for (int jj = j; jj >= 1; jj--)
-		{
-			*newseqb += (*seqb)[jj - 1];
-			*newseqa += '-';
-			if (use_terminal_gap_penalty==0) alignment_score += gep;
-		}
-		if (use_terminal_gap_penalty==0) alignment_score += gip;
-	}
-	else if(i > j)
-	{
-		for (int ii = i; ii >= 1; ii--)
-		{
-			*newseqa += (*seqa)[ii - 1];
-			*newseqb += '-';
-			if (use_terminal_gap_penalty==0) alignment_score += gep;
-		}
-		if (use_terminal_gap_penalty==0) alignment_score += gip;
-	}
+    //add extra trailing -'s
+    //forgive terminal gap penalties if user specifies this option
+    if (i < j)
+    {
+        for (int jj = j; jj >= 1; jj--)
+        {
+            *newseqb += (*seqb)[jj - 1];
+            *newseqa += '-';
+            if (use_terminal_gap_penalty==0) alignment_score += gep;
+        }
+        if (use_terminal_gap_penalty==0) alignment_score += gip;
+    }
+    else if(i > j)
+    {
+        for (int ii = i; ii >= 1; ii--)
+        {
+            *newseqa += (*seqa)[ii - 1];
+            *newseqb += '-';
+            if (use_terminal_gap_penalty==0) alignment_score += gep;
+        }
+        if (use_terminal_gap_penalty==0) alignment_score += gip;
+    }
 
-	reverse(newseqa);
-	reverse(newseqb);
+    reverse(newseqa);
+    reverse(newseqb);
 
-	for (i = 0; i < M + 1; i++)
-	{
-		delete []piSS[i];
-		delete []pjSS[i];
-	}
+    for (i = 0; i < M + 1; i++)
+    {
+        delete []piSS[i];
+        delete []pjSS[i];
+    }
 
-	delete []SS;
-	delete []oldSS;
-	delete []piSS;
-	delete []pjSS;
-	delete []PP;
-	return alignment_score;
+    delete []SS;
+    delete []oldSS;
+    delete []piSS;
+    delete []pjSS;
+    delete []PP;
+    return alignment_score;
 }
 
 void degap(string* seq)
@@ -531,15 +531,15 @@ void degap(string* seq)
     /*
     Remove pre-existing gap characters from sequences prior to alignment.
     */
-	unsigned int pos = 0;
-	while(pos != -1)
-	{
-		pos = seq->find('-', 0);
-		if(pos != -1)
-		{
-			seq->erase(pos, 1);
-		}
-	}
+    unsigned int pos = 0;
+    while(pos != -1)
+    {
+        pos = seq->find('-', 0);
+        if(pos != -1)
+        {
+            seq->erase(pos, 1);
+        }
+    }
 }
 
 void trim(string* seq)
@@ -547,76 +547,76 @@ void trim(string* seq)
     /*
     Remove trailing whitespace from sequences.
     */
-	while((*seq)[0] == ' ' || (*seq)[0] == '\t' || (*seq)[0] == '\n' || (*seq)[0] == '\r')
-	{
-		seq->erase(0, 1);
-	}
+    while((*seq)[0] == ' ' || (*seq)[0] == '\t' || (*seq)[0] == '\n' || (*seq)[0] == '\r')
+    {
+        seq->erase(0, 1);
+    }
 
-	while((*seq)[seq->size() - 1] == ' ' || (*seq)[seq->size() - 1] == '\t' || (*seq)[seq->size() - 1] == '\n'  || (*seq)[seq->size() - 1] == '\r')
-	{
-		seq->erase(seq->size() - 1, 1);
-	}
+    while((*seq)[seq->size() - 1] == ' ' || (*seq)[seq->size() - 1] == '\t' || (*seq)[seq->size() - 1] == '\n'  || (*seq)[seq->size() - 1] == '\r')
+    {
+        seq->erase(seq->size() - 1, 1);
+    }
 }
 
 
 void widen_gaps(string* seq)
 {
-	int size = seq->size();
-	for(int i = 0; i < size; i++)
-	{
-		if((*seq)[i] == '-')
-		{ //start searching for gaps to cluster
+    int size = seq->size();
+    for(int i = 0; i < size; i++)
+    {
+        if((*seq)[i] == '-')
+        { //start searching for gaps to cluster
 
-			//backwards, seqa
-			unsigned int j = i - 1;
-			int letter = (*seq)[j];
-			j--;
-			while(j >= 0)
-			{
-				if((*seq)[j] == '-')
-				{
-					//woo, swap this with i - 1
-					(*seq)[j] = letter;
-					(*seq)[i - 1] = '-';
-					break;
-				}
-				else if((*seq)[j] == letter)
-				{
-					//nothing really
-				}
-				else if((*seq)[j] != letter)
-				{
-					break;
-				}
-				j--;
-			}
+            //backwards, seqa
+            unsigned int j = i - 1;
+            int letter = (*seq)[j];
+            j--;
+            while(j >= 0)
+            {
+                if((*seq)[j] == '-')
+                {
+                    //woo, swap this with i - 1
+                    (*seq)[j] = letter;
+                    (*seq)[i - 1] = '-';
+                    break;
+                }
+                else if((*seq)[j] == letter)
+                {
+                    //nothing really
+                }
+                else if((*seq)[j] != letter)
+                {
+                    break;
+                }
+                j--;
+            }
 
 
-			//forward, seqa
-			j = i + 1;
-			letter = (*seq)[j];
-			j++;
-			while(j < seq->size())
-			{
-				if((*seq)[j] == '-')
-				{
-					//woo, swap this with i + 1
-					(*seq)[j] = letter;
-					(*seq)[i + 1] = '-';
-					break;
-				}
-				else if((*seq)[j] == letter)
-				{
-					//nothing really
-				}
-				else if((*seq)[j] != letter)
-				{
-					break;
-				}
-				j++;
-			}
-		}
-	}
+            //forward, seqa
+            j = i + 1;
+            letter = (*seq)[j];
+            j++;
+            while(j < seq->size())
+            {
+                if((*seq)[j] == '-')
+                {
+                    //woo, swap this with i + 1
+                    (*seq)[j] = letter;
+                    (*seq)[i + 1] = '-';
+                    break;
+                }
+                else if((*seq)[j] == letter)
+                {
+                    //nothing really
+                }
+                else if((*seq)[j] != letter)
+                {
+                    break;
+                }
+                j++;
+            }
+        }
+    }
 }
 
 #ifdef __PYTHON__
