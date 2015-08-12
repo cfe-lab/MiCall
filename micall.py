@@ -281,9 +281,9 @@ class MiCall(tk.Frame):
 
             # prepare file handles for remap stage
             prelim_csv = open(output_csv, 'rU')
-            remap_csv = open(os.path.join(self.workdir, prefix+'.remap.csv'), 'w')
-            counts_csv = open(os.path.join(self.workdir, prefix+'.remap_counts.csv'), 'w')
-            conseq_csv = open(os.path.join(self.workdir, prefix+'.remap_conseq.csv'), 'w')
+            remap_csv = open(os.path.join(self.workdir, prefix+'.remap.csv'), 'wb')
+            counts_csv = open(os.path.join(self.workdir, prefix+'.remap_counts.csv'), 'wb')
+            conseq_csv = open(os.path.join(self.workdir, prefix+'.remap_conseq.csv'), 'wb')
             unmapped1 = open(os.path.join(self.workdir, prefix+'.unmapped1.fastq'), 'w')
             unmapped2 = open(os.path.join(self.workdir, prefix+'.unmapped2.fastq'), 'w')
 
@@ -295,9 +295,9 @@ class MiCall(tk.Frame):
 
             # prepare file handles for conversion from SAM format to alignment
             with open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU') as remap_csv, \
-                 open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'w') as aligned_csv, \
-                 open(os.path.join(self.workdir, prefix+'.insert.csv'), 'w') as insert_csv, \
-                 open(os.path.join(self.workdir, prefix+'.failed.csv'), 'w') as failed_csv:
+                 open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'wb') as aligned_csv, \
+                 open(os.path.join(self.workdir, prefix+'.insert.csv'), 'wb') as insert_csv, \
+                 open(os.path.join(self.workdir, prefix+'.failed.csv'), 'wb') as failed_csv:
                 
 
                 self.write('... converting into alignment\n')
@@ -305,12 +305,12 @@ class MiCall(tk.Frame):
                 sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=self.nthreads.get())
 
             aligned_csv = open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'rU')
-            nuc_csv = open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'w')
-            amino_csv = open(os.path.join(self.workdir, prefix+'.amino.csv'), 'w')
-            coord_ins_csv = open(os.path.join(self.workdir, prefix+'.coord_ins.csv'), 'w')
-            conseq_csv = open(os.path.join(self.workdir, prefix+'.conseq.csv'), 'w')
-            failed_align_csv = open(os.path.join(self.workdir, prefix+'.failed_align.csv'), 'w')
-            nuc_variants_csv = open(os.path.join(self.workdir, prefix+'.nuc_variants.csv'), 'w')
+            nuc_csv = open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'wb')
+            amino_csv = open(os.path.join(self.workdir, prefix+'.amino.csv'), 'wb')
+            coord_ins_csv = open(os.path.join(self.workdir, prefix+'.coord_ins.csv'), 'wb')
+            conseq_csv = open(os.path.join(self.workdir, prefix+'.conseq.csv'), 'wb')
+            failed_align_csv = open(os.path.join(self.workdir, prefix+'.failed_align.csv'), 'wb')
+            nuc_variants_csv = open(os.path.join(self.workdir, prefix+'.nuc_variants.csv'), 'wb')
 
             self.write('... extracting statistics from alignments\n')
             self.parent.update_idletasks()
@@ -326,7 +326,7 @@ class MiCall(tk.Frame):
             self.parent.update_idletasks()
             remap_csv = open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU')
             nuc_csv = open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'rU')
-            g2p_csv = open(os.path.join(self.workdir, prefix+'.g2p.csv'), 'w')
+            g2p_csv = open(os.path.join(self.workdir, prefix+'.g2p.csv'), 'wb')
             sam_g2p(pssm=self.pssm, remap_csv=remap_csv, nuc_csv=nuc_csv, g2p_csv=g2p_csv)
 
 
