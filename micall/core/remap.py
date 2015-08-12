@@ -26,7 +26,7 @@ from micall import settings
 from micall.core import miseq_logging
 from micall.core import project_config
 from micall.core.sam2aln import cigar_re, is_first_read
-from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools
+from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools, LineCounter
 from operator import itemgetter
 from collections import Counter
 
@@ -47,6 +47,7 @@ fieldnames = [
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
+line_counter = LineCounter()
 
 def is_short_read(read_row, max_primer_length):
     """
@@ -78,7 +79,7 @@ def build_conseqs_with_samtools(samfilename, samtools, raw_count):
     return conseqs
 
 
-def build_conseqs_with_python(samfilename, raw_count):
+def build_conseqs_with_python(samfilename):
     with open(samfilename, 'rU') as samfile:
         pileup, _ = sam_to_pileup(samfile, max_primer_length=50)
 
@@ -115,7 +116,7 @@ def build_conseqs(samfilename, samtools, raw_count):
     
     if use_python:
         start = datetime.now()
-        python_conseqs = build_conseqs_with_python(samfilename, raw_count)
+        python_conseqs = build_conseqs_with_python(samfilename)
         python_seconds = (datetime.now() - start).total_seconds()
         conseqs = python_conseqs
     
@@ -140,7 +141,7 @@ def build_conseqs(samfilename, samtools, raw_count):
             if new_file:
                 writer.writeheader()
             row = {'first_qname': first_qname,
-                   'lines': count_file_lines(samfilename),
+                   'lines': line_counter.count(samfilename),
                    'samtools_seconds': samtools_seconds,
                    'python_seconds': python_seconds}
             if python_conseqs != samtools_conseqs:
@@ -215,7 +216,7 @@ def remap(fastq1,
         conseqs.update({str(seed): ''.join(seqs)})
 
     # record the raw read count
-    raw_count = count_file_lines(fastq1) / 2  # 4 lines per record in FASTQ, paired
+    raw_count = line_counter.count(fastq1) / 2  # 4 lines per record in FASTQ, paired
 
     remap_counts_writer = csv.DictWriter(remap_counts_csv, ['type',
                                                             'count',
@@ -535,7 +536,12 @@ def sam_to_pileup(samfile, max_primer_length, max_count=None):
                 elif token.endswith('D'):
                     if refpos > last_pos:
                         # deletion relative to reference
-                        pileup[rname][refpos-1]['s'] += '-' + str(length) + ('N' if is_first else 'n')*length
+                        deletion = '-' + str(length) + ('N' if is_first else 'n')*length
+                        pile = pileup[rname][refpos-1]
+                        if pile['s'].endswith('$'):
+                            pile['s'] = pile['s'][:-1]
+                            deletion += '$'
+                        pileup[rname][refpos-1]['s'] += deletion
         
                         # append deletion placeholders downstream
                         for i in range(refpos, refpos+length):
@@ -767,15 +773,6 @@ def pileup_to_conseq (handle, qCutoff):
         conseqs[region] = re.sub(pat, r'\g<1>\g<3>', conseq)
 
     return conseqs#, counts
-
-
-def count_file_lines(path):
-    """ Run the wc command to count lines in a file, as shown here:
-    https://gist.github.com/zed/0ac760859e614cd03652
-    """
-    wc_output = subprocess.check_output(['wc', '-l', path])
-    return int(wc_output.split()[0])
-
 
 def main():
     parser = argparse.ArgumentParser(

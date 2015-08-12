@@ -279,6 +279,7 @@ class MakeConsensusTest(unittest.TestCase):
 
 class SamToPileupTest(unittest.TestCase):
     def testOffset(self):
+        #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
         samIO = StringIO.StringIO(
             "test1\t99\ttest\t3\t44\t12M\t=\t3\t12\tACAAGACCCAAC\tJJJJJJJJJJJJ\n"
             "test1\t147\ttest\t3\t44\t12M\t=\t3\t-12\tACAAGACCCAAC\tJJJJJJJJJJJJ\n"
@@ -386,6 +387,28 @@ class SamToPileupTest(unittest.TestCase):
                                     18: {'s': 'a', 'q': 'J'},
                                     19: {'s': 'a', 'q': 'J'},
                                     20: {'s': 't$', 'q': 'J'}
+                                    }}
+        pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
+        self.maxDiff = None
+        self.assertEqual(expected_pileup, pileup)
+
+    def testDeletionNearOverlap(self):
+        samIO = StringIO.StringIO(
+            "test1\t99\ttest\t3\t44\t6M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
+            "test1\t147\ttest\t6\t44\t3M3D3M\t=\t3\t-6\tGGGCAT\tJJJJJJ\n"
+        )
+        expected_pileup = {'test': {3: {'s': '^MA', 'q': 'J'},
+                                    4: {'s': 'C', 'q': 'J'},
+                                    5: {'s': 'A', 'q': 'J'},
+                                    6: {'s': 'G', 'q': 'J'},
+                                    7: {'s': 'G', 'q': 'J'},
+                                    8: {'s': 'G-3nnn$', 'q': 'J'},
+                                    9: {'s': '*', 'q': ''},
+                                    10: {'s': '*', 'q': ''},
+                                    11: {'s': '*', 'q': ''},
+                                    12: {'s': 'c', 'q': 'J'},
+                                    13: {'s': 'a', 'q': 'J'},
+                                    14: {'s': 't$', 'q': 'J'}
                                     }}
         pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
         self.maxDiff = None

@@ -4,7 +4,6 @@ from multiprocessing import cpu_count
 import os
 import re
 import shutil
-import subprocess
 from tempfile import gettempdir
 
 import Tkinter as tk
@@ -20,7 +19,7 @@ from micall.g2p.sam_g2p import sam_g2p
 from micall.settings import pipeline_version
 from micall.utils import collate
 from micall.utils.coverage_plots import coverage_plot
-from micall.utils.externals import AssetWrapper
+from micall.utils.externals import AssetWrapper, LineCounter
 from micall.utils.sample_sheet_parser import sample_sheet_parser
 
 fastq_re = re.compile('_L001_R[12]_001.fastq')
@@ -60,6 +59,8 @@ class MiCall(tk.Frame):
         self.rundir = None  # path to MiSeq run folder containing data
         self.workdir = gettempdir()  # default to temp directory
         os.chdir(self.workdir)
+        
+        self.line_counter = LineCounter()
 
         self.run_info = None
         self.target_files = []
@@ -196,17 +197,6 @@ class MiCall(tk.Frame):
         self.write('Found %d FASTQ files.\n' % (len(fastq_files),))
         self.button_run.config(state=tk.ACTIVE)
 
-    def line_count(self, file):
-        """
-        Count number of records in a FASTQ file.  This is simply the number of
-        lines divided by 4, and multiplied by 2 because these are paired FASTQs.
-        :param file:
-        :return:
-        """
-        p = subprocess.Popen(['wc', '-l', file], stdout=subprocess.PIPE)
-        output = p.communicate()[0]
-        return int(output.strip(' \n').split()[0]) / 2
-
     def callback(self, msg):
         if type(msg) is int:
             self.progress_bar['value'] = msg
@@ -245,6 +235,9 @@ class MiCall(tk.Frame):
         # transfer FASTQ.gz files to working folder
         self.target_files = []
         for src in self.fastq_files:
+            if src.startswith(self.workdir):
+                # Working file from previous run.
+                continue
             filename = os.path.basename(src)
             prefix = filename.split('.')[0]
             dest = os.path.join(self.workdir, filename)
@@ -277,7 +270,8 @@ class MiCall(tk.Frame):
             output_csv = fastq1.replace('_L001_R1_001.fastq', '.prelim.csv')
 
             self.write('Processing sample %s\n... preliminary mapping\n' % (prefix,))
-            nrecords = self.line_count(fastq1)
+            # four lines per read, two files
+            nrecords = self.line_counter.count(fastq1) / 2
             self.progress_bar['value'] = 0
             self.progress_bar['maximum'] = nrecords
             self.parent.update_idletasks()  # flush buffer

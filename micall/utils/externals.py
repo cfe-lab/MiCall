@@ -118,3 +118,35 @@ class Bowtie2Build(CommandWrapper):
         stdout = self.check_output(['--version'])
         version_found = stdout.split('\n')[0].split()[-1]
         self.validate_version(version_found)
+
+class LineCounter():
+    """ Run the wc command to count lines in a file.
+    
+    Fall back to pure Python if wc command is not available.
+    
+    Inspired by zed: https://gist.github.com/zed/0ac760859e614cd03652
+    """
+    def __init__(self):
+        self.command = 'wc'
+        
+    def count(self, filename):
+        if self.command:
+            try:
+                wc_output = subprocess.check_output(['wc', '-l', filename])
+                return int(wc_output.split()[0])
+            except:
+                self.command = None
+        return self.buffered_count(filename)
+    
+    def buffered_count(self, filename):
+        with open(filename) as f:                  
+            lines = 0
+            buf_size = 1024 * 1024
+            read_f = f.read # loop optimization
+        
+            buf = read_f(buf_size)
+            while buf:
+                lines += buf.count('\n')
+                buf = read_f(buf_size)
+    
+        return lines
