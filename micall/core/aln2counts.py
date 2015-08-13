@@ -676,7 +676,13 @@ def format_cutoff(cutoff):
     return '{:0.3f}'.format(cutoff)    
 
 
-def aln2counts (aligned_csv, nuc_csv, amino_csv, coord_ins_csv, conseq_csv, failed_align_csv, nuc_variants_csv, cwd=None):
+def aln2counts(aligned_csv,
+               nuc_csv,
+               amino_csv,
+               coord_ins_csv,
+               conseq_csv,
+               failed_align_csv,
+               nuc_variants_csv):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -691,9 +697,6 @@ def aln2counts (aligned_csv, nuc_csv, amino_csv, coord_ins_csv, conseq_csv, fail
                                 variants.
     :return: None
     """
-    if cwd is not None:
-        os.chdir(cwd)
-
     # load project information
     projects = project_config.ProjectConfig.loadDefault()
 

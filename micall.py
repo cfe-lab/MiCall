@@ -81,20 +81,10 @@ class MiCall(tk.Frame):
         #)
         #self.button_setwd.grid(row=0, column=0, sticky='W')
 
-        self.button_load = tk.Button(
-            self.button_frame, text="Select run folder", command=self.open_files
-        )
-        self.button_load.grid(row=0, column=0, sticky='W')
-
         self.button_run = tk.Button(
-            self.button_frame, text="Run", command=self.process_files, state=tk.DISABLED
+            self.button_frame, text="Run", command=self.process_files
         )
         self.button_run.grid(row=0, column=1, sticky='W')
-
-        self.button_quit = tk.Button(
-            self.button_frame, text='Quit', command=self.quit
-        )
-        self.button_quit.grid(row=0, column=2, sticky='W')
 
         self.thread_label = tk.Label(self.button_frame, text='#threads')
         self.thread_label.grid(row=0, column=3, sticky='E')
@@ -117,20 +107,6 @@ class MiCall(tk.Frame):
         #sys.stderr = Redirector(self.console)
 
         self.write('Welcome to MiCall v%s (pipeline v%s)\n' % (self.__version__, pipeline_version))
-
-    def set_workdir(self):
-        """
-        Set destination folder to write intermediate and output files.
-        :return:
-        """
-        folder = tkFileDialog.askdirectory()
-        if folder == '':
-            # cancelled file dialog
-            return
-        self.workdir = folder
-        self.write('Set destination folder to %s\n' % (self.workdir,))
-        os.chdir(self.workdir)  # set working directory
-        self.button_load.config(state=tk.ACTIVE)
 
     def write(self, msg):
         """
@@ -155,20 +131,19 @@ class MiCall(tk.Frame):
         Transfer FASTQ files into working folder, uncompress.
         :return:
         """
-        #self.button_setwd.config(state=tk.DISABLED)
-        #self.button_load.config(state=tk.DISABLED)
+        fastq_files = []
         setting_name = 'run_path'
         run_path = self.config.get(setting_name, '')
-        self.rundir = tkFileDialog.askdirectory(title='Choose a run directory:',
-                                                initialdir=run_path)
+        self.rundir = tkFileDialog.askdirectory(
+            title='Choose a folder of FASTQ files:',
+            initialdir=run_path)
         if not self.rundir:
-            return
+            return fastq_files
         self.config[setting_name] = self.rundir
         self.write_config()
         self.write('Selected folder %s\n' % (self.rundir,))
 
         # check for presence of FASTQ files and SampleSheet.csv
-        fastq_files = []
         run_info = None
         for root, _dirs, files in os.walk(self.rundir):
             for file in files:
@@ -183,19 +158,16 @@ class MiCall(tk.Frame):
                     fastq_files.append(os.path.join(root, file))
 
 
-        if not fastq_files:  # empty list
+        if fastq_files:
+            self.write('Found %d FASTQ files.\n' % (len(fastq_files),))
+        else:  # empty list
             self.write('Error, folder does not seem to contain any FASTQ(.gz) files!\n')
             self.rundir = None
-            #self.button_setwd.config(state=tk.ACTIVE)
-            self.button_load.config(state=tk.ACTIVE)
-            return False
 
         if run_info is None:
             self.write('Warning, failed to locate run manifest (SampleSheet.csv).\n')
 
-        self.fastq_files = fastq_files
-        self.write('Found %d FASTQ files.\n' % (len(fastq_files),))
-        self.button_run.config(state=tk.ACTIVE)
+        return fastq_files
 
     def callback(self, msg):
         if type(msg) is int:
@@ -220,13 +192,13 @@ class MiCall(tk.Frame):
         prefixes = []
 
         # look for FASTQ files
-        if len(self.fastq_files) == 0:
-            print 'ERROR: No files to process'
+        fastq_files = self.open_files()
+        if len(fastq_files) == 0:
             return
 
         setting_name = 'results_path'
         savedir = self.config.get(setting_name, '')
-        savedir = tkFileDialog.askdirectory(title='Select folder to save results',
+        savedir = tkFileDialog.askdirectory(title='Choose a folder to save results',
                                             initialdir=savedir)
         if not savedir:
             return
@@ -236,10 +208,11 @@ class MiCall(tk.Frame):
         if os.path.exists(self.workdir):
             shutil.rmtree(self.workdir)
         self.make_tree(self.workdir)
+        os.chdir(self.workdir)
 
         # transfer FASTQ.gz files to working folder
         self.target_files = []
-        for src in self.fastq_files:
+        for src in fastq_files:
             if src.startswith(self.workdir):
                 # Working file from previous run.
                 continue
@@ -282,7 +255,11 @@ class MiCall(tk.Frame):
             self.parent.update_idletasks()  # flush buffer
 
             with open(output_csv, 'wb') as handle:
-                prelim_map(fastq1, fastq2, handle, self.workdir, nthreads=self.nthreads.get(), callback=self.callback)
+                prelim_map(fastq1,
+                           fastq2,
+                           handle,
+                           nthreads=self.nthreads.get(),
+                           callback=self.callback)
 
             # prepare file handles for remap stage
             with open(output_csv, 'rU') as prelim_csv, \
@@ -334,8 +311,7 @@ class MiCall(tk.Frame):
                            coord_ins_csv,
                            conseq_csv,
                            failed_align_csv,
-                           nuc_variants_csv,
-                           self.workdir)
+                           nuc_variants_csv)
 
             self.write('... generating coverage plots\n')
             self.parent.update_idletasks()
@@ -370,11 +346,8 @@ class MiCall(tk.Frame):
             shutil.move(src, dest)
 
         # clean up working files
+        os.chdir(savedir)
         shutil.rmtree(self.workdir)
-
-        # reactivate buttons
-        self.button_load.config(state=tk.ACTIVE)
-        #self.button_setwd.config(state=tk.DISABLED)
 
         self.write('Run complete.\n')
 

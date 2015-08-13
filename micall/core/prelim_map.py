@@ -28,13 +28,10 @@ logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 def prelim_map(fastq1,
                fastq2,
                prelim_csv,
-               cwd=None,
                nthreads=None,
                callback=None,
                rdgopen=None,
                rfgopen=None):
-    if cwd is not None:
-        os.chdir(cwd)
     nthreads = nthreads or settings.bowtie_threads
 
     bowtie2 = Bowtie2(settings.bowtie_version, settings.bowtie_path)
