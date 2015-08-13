@@ -62,10 +62,6 @@ def is_short_read(read_row, max_primer_length):
     match_length = max(map(int, sizes))
     return match_length <= max_primer_length
 
-
-
-
-
 def build_conseqs_with_samtools(samfilename, samtools, raw_count):
     bamfile = samfilename.replace('.sam', '.bam')
     pileup_path = bamfile + '.pileup'
@@ -80,7 +76,7 @@ def build_conseqs_with_samtools(samfilename, samtools, raw_count):
     return conseqs
 
 
-def build_conseqs_with_python(samfilename):
+def build_conseqs_with_python_old(samfilename):
     with open(samfilename, 'rU') as samfile:
         pileup, _ = sam_to_pileup(samfile, max_primer_length=50)
 
@@ -99,16 +95,27 @@ def build_conseqs_with_python(samfilename):
     conseqs = make_consensus(pileup=pileup, qCutoff=settings.consensus_q_cutoff)
     return conseqs
 
-def build_conseqs_with_python2(samfilename):
+def build_conseqs_with_python(samfilename):
     with open(samfilename, 'rU') as samfile:
-        return sam_to_conseqs(samfile)
+        return sam_to_conseqs(samfile, settings.consensus_q_cutoff)
 
-def sam_to_conseqs(samfile):
+def sam_to_conseqs(samfile, quality_cutoff=0):
+    """ Build consensus sequences for each reference from a SAM file.
+    
+    @param samfile: an open file in the SAM format containing reads with their
+        mapped position and quality scores
+    @param quality_cutoff: minimum quality score for a base to be counted
+    @return: {reference_name: consensus_sequence}
+    """
+    
     # refmap structure: {refname: {pos: {nuc: count}}}
     def pos_nucs_factory():
         nuc_count_factory = Counter
         return defaultdict(nuc_count_factory)
     refmap = defaultdict(pos_nucs_factory)
+    SAM_QUALITY_BASE = 33 # from SAM file format specification
+    quality_cutoff_char = chr(SAM_QUALITY_BASE + quality_cutoff)
+    
     for read_pair in matchmaker(samfile):
         read1, read2 = read_pair
         if read1[2] != read2[2]:
@@ -126,7 +133,7 @@ def sam_to_conseqs(samfile):
              _pnext,
              _tlen,
              seq,
-             _qual) = read[:11] # ignore optional fields
+             qual) = read[:11] # ignore optional fields
             pos_nucs = refmap[rname]
             pos = int(refpos_str)
             tokens = cigar_re.findall(cigar)
@@ -151,11 +158,12 @@ def sam_to_conseqs(samfile):
                 if token_type == 'S':
                     pass
                 elif token_type == 'M':
-                    if pos > fwd_end:
+                    if pos > fwd_end and qual[i] >= quality_cutoff_char:
                         nuc_counts = pos_nucs[pos]
                         nuc_counts[nuc] += 1
                     pos += 1
             fwd_end = pos-1
+            
     conseqs = {}
     for refname, pos_nucs in refmap.iteritems():
         conseq = ''
@@ -181,7 +189,7 @@ def build_conseqs(samfilename, samtools, raw_count):
     if samtools:
         conseqs = build_conseqs_with_samtools(samfilename, samtools, raw_count)
     else:
-        conseqs = build_conseqs_with_python2(samfilename)
+        conseqs = build_conseqs_with_python(samfilename)
     
     if False:
         # Some debugging code to save the SAM file for testing.

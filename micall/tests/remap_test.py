@@ -550,4 +550,14 @@ class SamToConseqsTest(unittest.TestCase):
         expected_conseqs = {}
         conseqs = remap.sam_to_conseqs(samIO)
         self.assertDictEqual(expected_conseqs, conseqs)
-         
+ 
+    def testLowQuality(self):
+        # Note that we ignore the overlapped portion of the reverse read,
+        # even if it has higher quality.
+        samIO = StringIO.StringIO(
+            "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJ/J\n"
+            "test1\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n"
+        )
+        expected_conseqs = {'test': 'ANG'}
+        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+        self.assertDictEqual(expected_conseqs, conseqs)
