@@ -326,10 +326,6 @@ class MiCall(tk.Frame):
                 
                 sam_g2p(pssm=self.pssm, remap_csv=remap_csv, nuc_csv=nuc_csv, g2p_csv=g2p_csv)
 
-
-        # prevent rerun until a new folder is loaded
-        self.button_run.config(state=tk.DISABLED)
-
         # collate results to results folder
         for target_file, extension in files_to_collate:
             if extension is None:

@@ -15,7 +15,6 @@ Dependencies:
 import argparse
 from collections import Counter, defaultdict
 import csv
-from datetime import datetime
 import itertools
 import logging
 from operator import itemgetter
@@ -110,48 +109,53 @@ def sam_to_conseqs(samfile):
         nuc_count_factory = Counter
         return defaultdict(nuc_count_factory)
     refmap = defaultdict(pos_nucs_factory)
-    for line in samfile:
-        if line.startswith('@'):
+    for read_pair in matchmaker(samfile):
+        read1, read2 = read_pair
+        if read1[2] != read2[2]:
+            # region mismatch, ignore the read pair.
             continue
-        fields = line.split('\t')
-        (_qname,
-         _flag,
-         rname,
-         refpos,
-         _mapq,
-         cigar,
-         _rnext,
-         _pnext,
-         _tlen,
-         seq,
-         _qual) = fields[:11] # ignore optional fields
-        pos_nucs = refmap[rname]
-        pos = int(refpos)
-        tokens = cigar_re.findall(cigar)
-
-        token_end_pos = -1
-        token_itr = iter(tokens)
-        for i, nuc in enumerate(seq):
-            while i > token_end_pos:
-                token = next(token_itr)
-                token_size = int(token[:-1])
-                token_type = token[-1]
-                if token_type != 'D':
-                    token_end_pos += token_size
-                if token_type == 'I' and token_size % 3 == 0:
-                    # replace previous base with insertion
-                    prev_nuc_counts = pos_nucs[pos-1]
-                    prev_nuc = seq[i-1]
-                    prev_nuc_counts[prev_nuc] -= 1
-                    insertion = prev_nuc + seq[i:token_end_pos+1]
-                    prev_nuc_counts[insertion] += 1
-                    
-            if token_type == 'S':
-                pass
-            elif token_type == 'M':
-                nuc_counts = pos_nucs[pos]
-                nuc_counts[nuc] += 1
-                pos += 1
+        fwd_end = -1
+        for read in read_pair:
+            (_qname,
+             _flag,
+             rname,
+             refpos_str,
+             _mapq,
+             cigar,
+             _rnext,
+             _pnext,
+             _tlen,
+             seq,
+             _qual) = read[:11] # ignore optional fields
+            pos_nucs = refmap[rname]
+            pos = int(refpos_str)
+            tokens = cigar_re.findall(cigar)
+    
+            token_end_pos = -1
+            token_itr = iter(tokens)
+            for i, nuc in enumerate(seq):
+                while i > token_end_pos:
+                    token = next(token_itr)
+                    token_size = int(token[:-1])
+                    token_type = token[-1]
+                    if token_type != 'D':
+                        token_end_pos += token_size
+                    if token_type == 'I' and token_size % 3 == 0 and pos > fwd_end:
+                        # replace previous base with insertion
+                        prev_nuc_counts = pos_nucs[pos-1]
+                        prev_nuc = seq[i-1]
+                        prev_nuc_counts[prev_nuc] -= 1
+                        insertion = prev_nuc + seq[i:token_end_pos+1]
+                        prev_nuc_counts[insertion] += 1
+                        
+                if token_type == 'S':
+                    pass
+                elif token_type == 'M':
+                    if pos > fwd_end:
+                        nuc_counts = pos_nucs[pos]
+                        nuc_counts[nuc] += 1
+                    pos += 1
+            fwd_end = pos-1
     conseqs = {}
     for refname, pos_nucs in refmap.iteritems():
         conseq = ''
@@ -174,54 +178,15 @@ def build_conseqs(samfilename, samtools, raw_count):
         available
     @param raw_count: the maximum number of reads in the SAM file
     """
-    use_samtools = samtools is not None
-    use_python = not use_samtools
-    if use_samtools:
-        start = datetime.now()
-        samtools_conseqs = build_conseqs_with_samtools(samfilename, samtools, raw_count)
-        samtools_seconds = (datetime.now() - start).total_seconds()
-        conseqs = samtools_conseqs
+    if samtools:
+        conseqs = build_conseqs_with_samtools(samfilename, samtools, raw_count)
+    else:
+        conseqs = build_conseqs_with_python2(samfilename)
     
-    if use_python:
-        start = datetime.now()
-        python_conseqs = build_conseqs_with_python(samfilename)
-        python_seconds = (datetime.now() - start).total_seconds()
-        conseqs = python_conseqs
-    
-    if use_samtools and use_python:
-        # Some debugging code to compare the two results.
+    if False:
+        # Some debugging code to save the SAM file for testing.
         copy_name = tempfile.mktemp(suffix='.sam', prefix=samfilename)
-        with open(samfilename, 'rU') as samfile, open(copy_name, 'w') as samcopy:
-            first_qname = ''
-            while True:
-                line = samfile.readline()
-                samcopy.write(line)
-                if not line.startswith('@'):
-                    first_qname = line.split('\t')[0]
-                    shutil.copyfileobj(samfile, samcopy)
-                    break
-        
-        timing_file_name = samfilename.replace('.sam', '_conseq_timing.csv')
-        new_file = not os.path.exists(timing_file_name)
-        with open(timing_file_name, 'ab') as timing_file:
-            writer = csv.DictWriter(timing_file,
-                                    ['first_qname',
-                                     'lines',
-                                     'samtools_seconds',
-                                     'python_seconds',
-                                     'samtools_conseqs',
-                                     'python_conseqs'],
-                                    lineterminator=os.linesep)
-            if new_file:
-                writer.writeheader()
-            row = {'first_qname': first_qname,
-                   'lines': line_counter.count(samfilename),
-                   'samtools_seconds': samtools_seconds,
-                   'python_seconds': python_seconds}
-            if python_conseqs != samtools_conseqs:
-                row['samtools_conseqs'] = samtools_conseqs
-                row['python_conseqs'] = python_conseqs
-            writer.writerow(row)
+        shutil.copy(samfilename, copy_name)
         
     return conseqs
 
@@ -884,25 +849,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-elif __name__ == '__live_coding__':
-    import unittest
-    import StringIO
-    def test_something(self):
-        samIO = StringIO.StringIO(
-            "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJJJJ\n"
-            "test1\t147\ttest\t1\t44\t3M3I3M\t=\t1\t-9\tACAGGGAGA\tJJJJJJJJJJJJ\n"
-        )
-        expected_conseqs = {'test': 'ACAGGGAGA'}
-        conseqs = sam_to_conseqs(samIO)
-        self.assertDictEqual(expected_conseqs, conseqs)
-
-    class DummyTest(unittest.TestCase):
-        def test_delegation(self):
-            test_something(self)
-
-    suite = unittest.TestSuite()
-    suite.addTest(DummyTest("test_delegation"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

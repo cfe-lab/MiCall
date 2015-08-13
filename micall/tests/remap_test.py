@@ -524,45 +524,23 @@ class SamToConseqsTest(unittest.TestCase):
         expected_conseqs = {'test': 'ACAGGG'}
         conseqs = remap.sam_to_conseqs(samIO)
         self.assertDictEqual(expected_conseqs, conseqs)
-#  
-#     def testOverlapsCountOnce(self):
-#         samIO = StringIO.StringIO(
-#             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
-#             "test1\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n"
-#             "test2\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
-#             "test2\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n"
-#             "test3\t99\ttest\t1\t44\t3M\t=\t3\t3\tATG\tJJJ\n"
-#             "test3\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
-#             "test4\t99\ttest\t1\t44\t3M\t=\t3\t3\tATG\tJJJ\n"
-#             "test4\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
-#             "test5\t99\ttest\t1\t44\t3M\t=\t3\t3\tATG\tJJJ\n"
-#             "test5\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
-#         )
-#         expected_conseqs = {'test': 'ATGCC'}
-#         conseqs = remap.sam_to_conseqs(samIO)
-#         self.assertDictEqual(expected_conseqs, conseqs)
-# 
-#     def testDeletionNearOverlap(self):
-#         samIO = StringIO.StringIO(
-#             "test1\t99\ttest\t3\t44\t6M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
-#             "test1\t147\ttest\t6\t44\t3M3D3M\t=\t3\t-6\tGGGCAT\tJJJJJJ\n"
-#         )
-#         expected_pileup = {'test': {3: {'s': '^MA', 'q': 'J'},
-#                                     4: {'s': 'C', 'q': 'J'},
-#                                     5: {'s': 'A', 'q': 'J'},
-#                                     6: {'s': 'G', 'q': 'J'},
-#                                     7: {'s': 'G', 'q': 'J'},
-#                                     8: {'s': 'G-3nnn$', 'q': 'J'},
-#                                     9: {'s': '*', 'q': ''},
-#                                     10: {'s': '*', 'q': ''},
-#                                     11: {'s': '*', 'q': ''},
-#                                     12: {'s': 'c', 'q': 'J'},
-#                                     13: {'s': 'a', 'q': 'J'},
-#                                     14: {'s': 't$', 'q': 'J'}
-#                                     }}
-#         pileup, _counts = remap.sam_to_pileup(samIO, max_primer_length=0)
-#         self.maxDiff = None
-#         self.assertEqual(expected_pileup, pileup)
+  
+    def testOverlapsCountOnce(self):
+        samIO = StringIO.StringIO(
+            "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
+            "test1\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n"
+            "test2\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
+            "test2\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n"
+            "test3\t99\ttest\t1\t44\t3M\t=\t3\t3\tATG\tJJJ\n"
+            "test3\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
+            "test4\t99\ttest\t1\t44\t3M\t=\t3\t3\tATG\tJJJ\n"
+            "test4\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
+            "test5\t99\ttest\t1\t44\t3M\t=\t3\t3\tATG\tJJJ\n"
+            "test5\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
+        )
+        expected_conseqs = {'test': 'ATGCC'}
+        conseqs = remap.sam_to_conseqs(samIO)
+        self.assertDictEqual(expected_conseqs, conseqs)
  
     def testPairMapsToTwoReferences(self):
         samIO = StringIO.StringIO(
