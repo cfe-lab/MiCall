@@ -13,22 +13,24 @@ Dependencies:
 """
 
 import argparse
+from collections import Counter, defaultdict
 import csv
 from datetime import datetime
 import itertools
 import logging
+from operator import itemgetter
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 
 from micall import settings
 from micall.core import miseq_logging
 from micall.core import project_config
 from micall.core.sam2aln import cigar_re, is_first_read
 from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools, LineCounter
-from operator import itemgetter
-from collections import Counter
 
 # SAM file format
 fieldnames = [
@@ -98,6 +100,72 @@ def build_conseqs_with_python(samfilename):
     conseqs = make_consensus(pileup=pileup, qCutoff=settings.consensus_q_cutoff)
     return conseqs
 
+def build_conseqs_with_python2(samfilename):
+    with open(samfilename, 'rU') as samfile:
+        return sam_to_conseqs(samfile)
+
+def sam_to_conseqs(samfile):
+    # refmap structure: {refname: {pos: {nuc: count}}}
+    def pos_nucs_factory():
+        nuc_count_factory = Counter
+        return defaultdict(nuc_count_factory)
+    refmap = defaultdict(pos_nucs_factory)
+    for line in samfile:
+        if line.startswith('@'):
+            continue
+        fields = line.split('\t')
+        (_qname,
+         _flag,
+         rname,
+         refpos,
+         _mapq,
+         cigar,
+         _rnext,
+         _pnext,
+         _tlen,
+         seq,
+         _qual) = fields[:11] # ignore optional fields
+        pos_nucs = refmap[rname]
+        pos = int(refpos)
+        tokens = cigar_re.findall(cigar)
+
+        token_end_pos = -1
+        token_itr = iter(tokens)
+        for i, nuc in enumerate(seq):
+            while i > token_end_pos:
+                token = next(token_itr)
+                token_size = int(token[:-1])
+                token_type = token[-1]
+                if token_type != 'D':
+                    token_end_pos += token_size
+                if token_type == 'I' and token_size % 3 == 0:
+                    # replace previous base with insertion
+                    prev_nuc_counts = pos_nucs[pos-1]
+                    prev_nuc = seq[i-1]
+                    prev_nuc_counts[prev_nuc] -= 1
+                    insertion = prev_nuc + seq[i:token_end_pos+1]
+                    prev_nuc_counts[insertion] += 1
+                    
+            if token_type == 'S':
+                pass
+            elif token_type == 'M':
+                nuc_counts = pos_nucs[pos]
+                nuc_counts[nuc] += 1
+                pos += 1
+    conseqs = {}
+    for refname, pos_nucs in refmap.iteritems():
+        conseq = ''
+        end = max(pos_nucs.keys())+1
+        for pos in range(1, end):
+            nuc_counts = pos_nucs[pos]
+            most_common = nuc_counts.most_common(1)
+            if not most_common:
+                conseq += 'N'
+            else:
+                conseq += most_common[0][0]
+        conseqs[refname] = conseq
+    return conseqs
+
 def build_conseqs(samfilename, samtools, raw_count):
     """ Build the new consensus sequences from the mapping results.
     
@@ -122,12 +190,17 @@ def build_conseqs(samfilename, samtools, raw_count):
     
     if use_samtools and use_python:
         # Some debugging code to compare the two results.
-        with open(samfilename, 'rU') as samfile:
+        copy_name = tempfile.mktemp(suffix='.sam', prefix=samfilename)
+        with open(samfilename, 'rU') as samfile, open(copy_name, 'w') as samcopy:
             first_qname = ''
-            for line in samfile:
+            while True:
+                line = samfile.readline()
+                samcopy.write(line)
                 if not line.startswith('@'):
                     first_qname = line.split('\t')[0]
+                    shutil.copyfileobj(samfile, samcopy)
                     break
+        
         timing_file_name = samfilename.replace('.sam', '_conseq_timing.csv')
         new_file = not os.path.exists(timing_file_name)
         with open(timing_file_name, 'ab') as timing_file:
@@ -322,7 +395,9 @@ def remap(fastq1,
                        '--local',
                        '-p', str(nthreads)]
 
-        p = bowtie2.create_process(bowtie_args, stdout=subprocess.PIPE)
+        p = bowtie2.create_process(bowtie_args,
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
 
         # capture stdout stream to count reads before writing to file
         mapped.clear()  # track which reads have mapped to something
@@ -340,7 +415,6 @@ def remap(fastq1,
                 if callback and i%1000 == 0:
                     callback(i)  # progress monitoring in GUI
 
-                line = line.rstrip('\r\n')
                 items = line.split('\t')
                 qname, bitflag, rname = items[:3]
 
@@ -356,7 +430,7 @@ def remap(fastq1,
                                   if is_first_read(bitflag)
                                   else REVERSE_FLAG)
 
-                f.write(line + '\n')
+                f.write(line)
 
         # stopping criterion 1 - none of the regions gained reads
         if all([(count <= map_counts[refname]) for refname, count in new_counts.iteritems()]):
@@ -810,3 +884,25 @@ def main():
 
 if __name__ == '__main__':
     main()
+elif __name__ == '__live_coding__':
+    import unittest
+    import StringIO
+    def test_something(self):
+        samIO = StringIO.StringIO(
+            "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJJJJ\n"
+            "test1\t147\ttest\t1\t44\t3M3I3M\t=\t1\t-9\tACAGGGAGA\tJJJJJJJJJJJJ\n"
+        )
+        expected_conseqs = {'test': 'ACAGGGAGA'}
+        conseqs = sam_to_conseqs(samIO)
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    class DummyTest(unittest.TestCase):
+        def test_delegation(self):
+            test_something(self)
+
+    suite = unittest.TestSuite()
+    suite.addTest(DummyTest("test_delegation"))
+    test_results = unittest.TextTestRunner().run(suite)
+
+    print(test_results.errors)
+    print(test_results.failures)
