@@ -175,7 +175,7 @@ class MiCall(tk.Frame):
         elif type(msg) is str:
             self.write(msg+'\n')
 
-        self.parent.update_idletasks()
+        self.parent.update()
 
     def make_tree(self, path):
         if not os.path.isdir(path):
@@ -252,7 +252,7 @@ class MiCall(tk.Frame):
             nrecords = self.line_counter.count(fastq1) / 2
             self.progress_bar['value'] = 0
             self.progress_bar['maximum'] = nrecords
-            self.parent.update_idletasks()  # flush buffer
+            self.parent.update()  # flush buffer
 
             with open(output_csv, 'wb') as handle:
                 prelim_map(fastq1,
@@ -270,7 +270,7 @@ class MiCall(tk.Frame):
                  open(os.path.join(self.workdir, prefix+'.unmapped2.fastq'), 'w') as unmapped2:
 
                 self.write('... remapping\n')
-                self.parent.update_idletasks()
+                self.parent.update()
                 self.progress_bar['value'] = 0
                 remap(fastq1,
                       fastq2,
@@ -292,7 +292,7 @@ class MiCall(tk.Frame):
                 
 
                 self.write('... converting into alignment\n')
-                self.parent.update_idletasks()
+                self.parent.update()
                 sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=self.nthreads.get())
 
             with open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'rU') as aligned_csv, \
@@ -304,7 +304,7 @@ class MiCall(tk.Frame):
                  open(os.path.join(self.workdir, prefix+'.nuc_variants.csv'), 'wb') as nuc_variants_csv:
 
                 self.write('... extracting statistics from alignments\n')
-                self.parent.update_idletasks()
+                self.parent.update()
                 aln2counts(aligned_csv,
                            nuc_csv,
                            amino_csv,
@@ -314,12 +314,12 @@ class MiCall(tk.Frame):
                            nuc_variants_csv)
 
             self.write('... generating coverage plots\n')
-            self.parent.update_idletasks()
+            self.parent.update()
             with open(os.path.join(self.workdir, prefix+'.amino.csv'), 'rU') as amino_csv:
                 image_paths += coverage_plot(amino_csv)
 
             self.write('... performing g2p scoring on samples covering HIV-1 V3\n')
-            self.parent.update_idletasks()
+            self.parent.update()
             with open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU') as remap_csv, \
                  open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'rU') as nuc_csv, \
                  open(os.path.join(self.workdir, prefix+'.g2p.csv'), 'wb') as g2p_csv:
@@ -346,7 +346,6 @@ class MiCall(tk.Frame):
         shutil.rmtree(self.workdir)
 
         self.write('Run complete.\n')
-
 
 root = tk.Tk()  # parent widget
 root.wm_title('MiCall')
