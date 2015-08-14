@@ -3,6 +3,8 @@
 /micall/alignment/build
 /micall/alignment/dist
 /micall/alignment/gotoh.egg-info
+/build
+/dist
 *.pyc
 *.o
 *.so

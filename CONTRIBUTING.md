@@ -213,8 +213,14 @@ to use [PyInstaller][pyinstaller].
     `micall/alignment` folder.
 5. Use pip to install pyinstaller.
 
-    cd \Python27\Scripts
     pip install pyinstaller
+
+6. Run pyinstaller.
+
+    cd git\micall
+    pyinstaller micall.spec
+
+The application is created as `dist\micall.exe`.
 
 
 [pyinstaller]: https://github.com/pyinstaller/pyinstaller

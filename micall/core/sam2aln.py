@@ -14,13 +14,16 @@ Dependencies:
 """
 
 import argparse
+import collections
+from csv import DictReader, DictWriter
 import itertools
+import multiprocessing.forking
+import multiprocessing.pool
+import os
 import re
+import sys
 
 from micall.settings import max_prop_N, read_mapping_cutoff, sam2aln_q_cutoffs
-from csv import DictReader, DictWriter
-import os
-import collections
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -45,6 +48,35 @@ def parseArgs():
 cigar_re = re.compile('[0-9]+[MIDNSHPX=]')  # CIGAR token
 gpfx = re.compile('^[-]+')  # length of gap prefix
 
+
+# From https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
+class _Popen(multiprocessing.forking.Popen):
+    def __init__(self, *args, **kw):
+        if hasattr(sys, 'frozen'):
+            # We have to set original _MEIPASS2 value from sys._MEIPASS
+            # to get --onefile mode working.
+            # Last character is stripped in C-loader. We have to add
+            # '/' or '\\' at the end.
+            os.putenv('_MEIPASS2', sys._MEIPASS)  # @UndefinedVariable
+        try:
+            super(_Popen, self).__init__(*args, **kw)
+        finally:
+            if hasattr(sys, 'frozen'):
+                # On some platforms (e.g. AIX) 'os.unsetenv()' is not
+                # available. In those cases we cannot delete the variable
+                # but only set it to the empty string. The bootloader
+                # can handle this case.
+                if hasattr(os, 'unsetenv'):
+                    os.unsetenv('_MEIPASS2')
+                else:
+                    os.putenv('_MEIPASS2', '')
+
+
+class Process(multiprocessing.Process):
+    _Popen = _Popen
+
+class Pool(multiprocessing.pool.Pool):
+    Process = Process
 
 def apply_cigar (cigar, seq, qual):
     """
@@ -272,7 +304,6 @@ def parse_sam_in_threads(remap_csv, nthreads):
     Launch a multiprocessing pool, walk through the iterator, and then be sure
     to close the pool at the end.
     """
-    from multiprocessing import Pool
     pool = Pool(processes=nthreads)
     try:
         reads = pool.imap(parse_sam, iterable=matchmaker(remap_csv), chunksize=100)
