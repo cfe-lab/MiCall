@@ -21,6 +21,7 @@ from micall.utils import collate
 from micall.utils.coverage_plots import coverage_plot
 from micall.utils.externals import AssetWrapper, LineCounter
 from micall.utils.sample_sheet_parser import sample_sheet_parser
+import multiprocessing
 
 fastq_re = re.compile('_L001_R[12]_001.fastq')
 
@@ -347,9 +348,14 @@ class MiCall(tk.Frame):
 
         self.write('Run complete.\n')
 
-root = tk.Tk()  # parent widget
-root.wm_title('MiCall')
+def main():
+    root = tk.Tk()  # parent widget
+    root.wm_title('MiCall')
+    
+    MiCall(root).pack(fill='both', expand=True)
+    
+    root.mainloop()  # enter Tk event loop
 
-app = MiCall(root).pack(fill='both', expand=True)
-
-root.mainloop()  # enter Tk event loop
+if __name__ == '__main__':
+    multiprocessing.freeze_support()
+    main()
