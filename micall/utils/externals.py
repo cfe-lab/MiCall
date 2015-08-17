@@ -5,7 +5,12 @@ import sys
 class AssetWrapper(object):
     """ Wraps a packaged asset, and finds its path. """
     def __init__(self, path):
-        self.path = os.path.join(getattr(sys, '_MEIPASS', ''), path)
+        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        local_path = os.path.join(app_dir, path)
+        if os.path.exists(local_path):
+            self.path = local_path
+        else:
+            self.path = os.path.join(getattr(sys, '_MEIPASS', ''), path)
 
 class CommandWrapper(AssetWrapper):
     """ Wraps an external tool, and builds the command lines for it. """
