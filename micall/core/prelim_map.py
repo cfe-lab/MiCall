@@ -54,7 +54,9 @@ def prelim_map(fastq1,
     with open(ref_path, 'w') as ref:
         projects.writeSeedFasta(ref)
     reffile_template = 'reference'
-    bowtie2_build.log_call(['--quiet',
+    bowtie2_build.log_call(['--wrapper',
+                            'micall-0',
+                            '--quiet',
                             '-f',
                             ref_path,
                             reffile_template])
@@ -65,7 +67,8 @@ def prelim_map(fastq1,
     ref_gap_open_penalty = rfgopen or settings.ref_gap_open_prelim
 
     # stream output from bowtie2
-    bowtie_args = ['--quiet',
+    bowtie_args = ['--wrapper', 'micall-0',
+                   '--quiet',
                    '-x', reffile_template,
                    '-1', fastq1,
                    '-2', fastq2,
@@ -77,6 +80,7 @@ def prelim_map(fastq1,
                    '--no-hd', # no header lines (start with @)
                    '--local',
                    '-p', str(nthreads)]
+
     p = bowtie2.create_process(bowtie_args, stdout=subprocess.PIPE)
     with p.stdout:
         for i, line in enumerate(p.stdout):

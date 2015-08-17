@@ -8,11 +8,11 @@ are_temp_folders_deleted = True # Should FIFO worker clean up working folders?
 
 ## Mapping parameters
 bowtie_version = '2.2.1'        # version of bowtie2, used for version control
-bowtie_path = 'bowtie2'         # path to executable, so you can install more than one version
-bowtie_build_path = 'bowtie2-build'
+bowtie_path = 'bowtie2-align-s'         # path to executable, so you can install more than one version
+bowtie_build_path = 'bowtie2-build-s'
 bowtie_threads = 4              # Bowtie performance roughly scales with number of threads
-samtools_version = '0.1.18'
-samtools_path = 'samtools'
+samtools_version = None #'1.1'
+samtools_path = None #'samtools-1.1'
 min_mapping_efficiency = 0.95   # Fraction of fastq reads mapped needed
 max_remaps = 3                  # Number of remapping attempts if mapping efficiency unsatisfied
 consensus_q_cutoff = 20         # Min Q for base to contribute to conseq (pileup2conseq)
