@@ -330,7 +330,7 @@ def remap(fastq1,
         if count is not None:
             map_counts[rname] = count  # transfer filtered counts to map counts for remap loop
             new_conseqs[rname] = conseq
-    conseqs = dict([(k, v) for k, v in new_conseqs.iteritems()])  # deep copy
+    conseqs = new_conseqs
 
 
     # start remapping loop
@@ -427,12 +427,14 @@ def remap(fastq1,
     # generate SAM CSV output
     remap_writer = csv.DictWriter(remap_csv, fieldnames, lineterminator=os.linesep)
     remap_writer.writeheader()
-    with open(samfile, 'rU') as f:
-        for line in f:
-            if line.startswith('@'):
-                continue  # this shouldn't happen because we set --no-hd
-            items = line.strip('\n').split('\t')[:11]
-            remap_writer.writerow(dict(zip(fieldnames, items)))
+    if mapped:
+        # At least one read was mapped, so samfile has relevant data
+        with open(samfile, 'rU') as f:
+            for line in f:
+                if line.startswith('@'):
+                    continue  # this shouldn't happen because we set --no-hd
+                items = line.strip('\n').split('\t')[:11]
+                remap_writer.writerow(dict(zip(fieldnames, items)))
     remap_csv.close()
 
     # write consensus sequences and counts
