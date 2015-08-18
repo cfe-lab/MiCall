@@ -86,7 +86,24 @@ class SequenceReport(object):
         self.projects = projects
         self.conseq_mixture_cutoffs = list(conseq_mixture_cutoffs)
         self.conseq_mixture_cutoffs.insert(0, MAX_CUTOFF)
+        self.callback = None
+    
+    def enable_callback(self, callback, file_size):
+        """ Enable callbacks to update progress while counting reads.
         
+        @param callback: a function to report progress with three optional
+            parameters - callback(message, progress, max_progress)
+        @param file_size: the size of the aligned reads file
+        """
+        
+        self.callback = callback
+        self.callback_max = file_size
+        self.callback_chunk_size = file_size / 100
+        self.callback_next = self.callback_chunk_size
+        self.callback_progress = 0
+        self.callback(message='... extracting statistics from alignments',
+                      progress=0,
+                      max_progress=self.callback_max)
 
     def _count_reads(self, aligned_reads):
         """
@@ -107,6 +124,12 @@ class SequenceReport(object):
             nuc_seq = row['seq']
             offset = int(row['offset'])
             count = int(row['count'])
+            if self.callback:
+                row_size = sum(map(len, row.values()))
+                self.callback_progress += row_size
+                if self.callback_progress >= self.callback_next:
+                    self.callback(progress=self.callback_progress)
+                    self.callback_next += self.callback_chunk_size
 
             # first run, prepare containers
             if not self.seed_aminos:
@@ -133,7 +156,9 @@ class SequenceReport(object):
                     # update amino acid counts
                     codon = offset_nuc_seq[nuc_pos:nuc_pos + 3]
                     frame_seed_aminos[codon_index].count_aminos(codon, count)
-                
+        if self.callback:
+            self.callback(progress=self.callback_max)
+            
     def _pair_align(self, reference, query, gap_open=15, gap_extend=5, use_terminal_gap_penalty=1):
         """ Align a query sequence to a reference sequence.
         
@@ -682,20 +707,22 @@ def aln2counts(aligned_csv,
                coord_ins_csv,
                conseq_csv,
                failed_align_csv,
-               nuc_variants_csv):
+               nuc_variants_csv,
+               callback=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
-    :param aligned_csv:         Open file handle containing aligned reads (from sam2aln)
-    :param nuc_csv:             Open file handle to write nucleotide frequencies.
-    :param amino_csv:           Open file handle to write amino acid frequencies.
-    :param coord_ins_csv:       Open file handle to write insertions relative to coordinate reference.
-    :param conseq_csv:          Open file handle to write consensus sequences.
-    :param failed_align_csv:    Open file handle to write sample consensus sequences that failed to
+    @param aligned_csv:         Open file handle containing aligned reads (from sam2aln)
+    @param nuc_csv:             Open file handle to write nucleotide frequencies.
+    @param amino_csv:           Open file handle to write amino acid frequencies.
+    @param coord_ins_csv:       Open file handle to write insertions relative to coordinate reference.
+    @param conseq_csv:          Open file handle to write consensus sequences.
+    @param failed_align_csv:    Open file handle to write sample consensus sequences that failed to
                                 align to the coordinate reference.
-    :param nuc_variants_csv:    Open file handle to write the most frequent nucleotide sequence
+    @param nuc_variants_csv:    Open file handle to write the most frequent nucleotide sequence
                                 variants.
-    :return: None
+    @param callback: a function to report progress with three optional
+        parameters - callback(message, progress, max_progress)
     """
     # load project information
     projects = project_config.ProjectConfig.loadDefault()
@@ -710,6 +737,12 @@ def aln2counts(aligned_csv,
     report.write_failure_header(failed_align_csv)
     report.write_nuc_header(nuc_csv)
     report.write_nuc_variants_header(nuc_variants_csv)
+    
+    if callback:
+        aligned_filename = getattr(aligned_csv, 'name', None)
+        if aligned_filename:
+            file_size = os.stat(aligned_filename).st_size
+            report.enable_callback(callback, file_size)
 
     # parse CSV file containing aligned reads, grouped by reference and quality cutoff
     aligned_reader = csv.DictReader(aligned_csv)

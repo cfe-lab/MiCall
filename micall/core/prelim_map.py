@@ -21,9 +21,10 @@ import sys
 import miseq_logging
 import project_config
 from micall import settings  # settings.py is a CodeResourceDependency
-from micall.utils.externals import Bowtie2, Bowtie2Build
+from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
+line_counter = LineCounter()
 
 def prelim_map(fastq1,
                fastq2,
@@ -32,6 +33,21 @@ def prelim_map(fastq1,
                callback=None,
                rdgopen=None,
                rfgopen=None):
+    """ Run the preliminary mapping step.
+    
+    @param fastq1: the file name for the forward reads in FASTQ format
+    @param fastq2: the file name for the reverse reads in FASTQ format
+    @param prelim_csv: an open file object for the output file - all the reads
+        mapped to references in CSV version of the SAM format
+    @param nthreads: the number of threads to use, or None to read from the
+        settings file.
+    @param callback: a function to report progress with three optional
+        parameters - callback(message, progress, max_progress)
+    @param rdgopen: a penalty for opening a gap in the read sequence, or None to
+        read from the settings file.
+    @param rfgopen: a penalty for opening a gap in the reference sequence, or
+        None to read from the settings file.
+    """
     nthreads = nthreads or settings.bowtie_threads
 
     bowtie2 = Bowtie2(settings.bowtie_version, settings.bowtie_path)
@@ -47,6 +63,13 @@ def prelim_map(fastq1,
     if not os.path.exists(fastq2):
         logger.error('No FASTQ found at %s', fastq2)
         sys.exit(1)
+
+    if callback:
+        # four lines per read, two files
+        total_reads = line_counter.count(fastq1) / 2
+        callback(message='... preliminary mapping',
+                 progress=0,
+                 max_progress=total_reads)
 
     # generate initial reference files
     projects = project_config.ProjectConfig.loadDefault()
@@ -80,7 +103,7 @@ def prelim_map(fastq1,
     with p.stdout:
         for i, line in enumerate(p.stdout):
             if callback and i%1000 == 0:
-                callback(i)
+                callback(progress=i)
             refname = line.split('\t')[2]  # read was mapped to this reference
             if not refname in output:
                 output.update({refname: []})
@@ -108,6 +131,10 @@ def prelim_map(fastq1,
         for line in lines:
             writer.writerow(dict(zip(fieldnames, line)))
 
+    if callback:
+        # Track progress for second half
+        callback(progress=total_reads)
+        
 
 def main():
     parser = argparse.ArgumentParser(

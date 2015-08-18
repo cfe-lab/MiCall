@@ -215,23 +215,22 @@ def remap(fastq1,
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
-    :param fastq1: input R1 FASTQ
-    :param fastq2: input R2 FASTQ
-    :param prelim_csv: input CSV output from prelim_csv()
-    :param remap_csv:  output CSV, contents of bowtie2 SAM output
-    :param remap_counts_csv:  output CSV, counts of reads mapped to regions
-    :param remap_conseq_csv:  output CSV, sample- and region-specific consensus sequences
+    @param fastq1: input R1 FASTQ
+    @param fastq2: input R2 FASTQ
+    @param prelim_csv: input CSV output from prelim_csv()
+    @param remap_csv:  output CSV, contents of bowtie2 SAM output
+    @param remap_counts_csv:  output CSV, counts of reads mapped to regions
+    @param remap_conseq_csv:  output CSV, sample- and region-specific consensus sequences
                                 generated while remapping reads
-    :param unmapped1:  output FASTQ containing R1 reads that did not map to any region
-    :param unmapped2:  output FASTQ containing R2 reads that did not map to any region
-    :param work_path:  optional path to store working files
-    :param nthreads:  optional setting to modify the number of threads used by bowtie2
-    :param callback:  optional setting to pass a callback function, used for progress
-                        monitoring in GUI
-    :param count_threshold:  minimum number of reads that map to a region for it to be remapped
-    :param rdgopen: read gap open penalty
-    :param rfgopen: reference gap open penalty
-    :return:
+    @param unmapped1:  output FASTQ containing R1 reads that did not map to any region
+    @param unmapped2:  output FASTQ containing R2 reads that did not map to any region
+    @param work_path:  optional path to store working files
+    @param nthreads:  optional setting to modify the number of threads used by bowtie2
+    @param callback: a function to report progress with three optional
+        parameters - callback(message, progress, max_progress)
+    @param count_threshold:  minimum number of reads that map to a region for it to be remapped
+    @param rdgopen: read gap open penalty
+    @param rfgopen: reference gap open penalty
     """
 
     reffile = os.path.join(work_path, 'temp.fasta')
@@ -273,8 +272,9 @@ def remap(fastq1,
 
     # convert preliminary CSV to SAM, count reads
     if callback:
-        callback('... processing preliminary map')
-        callback(0)
+        callback(message='... processing preliminary map',
+                 progress=0,
+                 max_progress=raw_count)
 
     with open(samfile, 'w') as f:
         # write SAM header
@@ -292,7 +292,7 @@ def remap(fastq1,
             filtered_count = 0
             for row in group:
                 if callback and row_count%1000 == 0:
-                    callback(row_count)
+                    callback(progress=row_count)
                 
                 count += 1
                 row_count += 1
@@ -305,6 +305,8 @@ def remap(fastq1,
     
                 # write SAM row
                 f.write('\t'.join([row[field] for field in fieldnames]) + '\n')
+            if callback:
+                callback(progress=raw_count)
             
             # report preliminary counts to file
             remap_counts_writer.writerow(
@@ -339,8 +341,7 @@ def remap(fastq1,
     mapped = {}
     while n_remaps < settings.max_remaps and conseqs:
         if callback:
-            callback('... remap iteration %d' % n_remaps)
-            callback(0)  # reset progress bar (standalone app only)
+            callback(message='... remap iteration %d' % n_remaps, progress=0)
 
         # generate reference file from current set of consensus sequences
         outfile = open(reffile, 'w')
@@ -386,7 +387,7 @@ def remap(fastq1,
 
             for i, line in enumerate(p.stdout):
                 if callback and i%1000 == 0:
-                    callback(i)  # progress monitoring in GUI
+                    callback(progress=i)  # progress monitoring in GUI
 
                 items = line.split('\t')
                 qname, bitflag, rname = items[:3]
@@ -404,6 +405,8 @@ def remap(fastq1,
                                   else REVERSE_FLAG)
 
                 f.write(line)
+            if callback:
+                callback(progress=raw_count)
 
         # stopping criterion 1 - none of the regions gained reads
         if all([(count <= map_counts[refname]) for refname, count in new_counts.iteritems()]):

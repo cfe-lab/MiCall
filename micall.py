@@ -170,11 +170,19 @@ class MiCall(tk.Frame):
 
         return fastq_files
 
-    def callback(self, msg):
-        if type(msg) is int:
-            self.progress_bar['value'] = msg
-        elif type(msg) is str:
-            self.write(msg+'\n')
+    def callback(self, message=None, progress=None, max_progress=None):
+        """ Report progress to the user.
+        
+        @param message: a string to write in the window, or None to not write
+        @param progress: an integer value to update the progress bar
+        @param max_progress: an integer value that represents completed progress
+        """
+        if max_progress:
+            self.progress_bar['maximum'] = max_progress
+        if progress is not None:
+            self.progress_bar['value'] = progress
+        if message is not None:
+            self.write(message + '\n')
 
         self.parent.update()
 
@@ -238,7 +246,8 @@ class MiCall(tk.Frame):
 
         self.write('Transferred %d sets of FASTQ files to working directory.\n' % len(self.target_files))
 
-        for fastq1 in self.target_files:
+        sample_count = len(self.target_files)
+        for sample_index, fastq1 in enumerate(self.target_files):
             fastq2 = fastq1.replace('_R1_001', '_R2_001')
             if not os.path.exists(fastq2):
                 self.write('ERROR: Missing R2 file for', fastq1)
@@ -248,12 +257,9 @@ class MiCall(tk.Frame):
             prefixes.append(prefix)
             output_csv = fastq1.replace('_L001_R1_001.fastq', '.prelim.csv')
 
-            self.write('Processing sample %s\n... preliminary mapping\n' % (prefix,))
-            # four lines per read, two files
-            nrecords = self.line_counter.count(fastq1) / 2
-            self.progress_bar['value'] = 0
-            self.progress_bar['maximum'] = nrecords
-            self.parent.update()  # flush buffer
+            self.write('Processing sample {} ({} of {})\n'.format(prefix,
+                                                                 sample_index+1,
+                                                                 sample_count))
 
             with open(output_csv, 'wb') as handle:
                 prelim_map(fastq1,
@@ -304,7 +310,6 @@ class MiCall(tk.Frame):
                  open(os.path.join(self.workdir, prefix+'.failed_align.csv'), 'wb') as failed_align_csv, \
                  open(os.path.join(self.workdir, prefix+'.nuc_variants.csv'), 'wb') as nuc_variants_csv:
 
-                self.write('... extracting statistics from alignments\n')
                 self.parent.update()
                 aln2counts(aligned_csv,
                            nuc_csv,
@@ -312,7 +317,8 @@ class MiCall(tk.Frame):
                            coord_ins_csv,
                            conseq_csv,
                            failed_align_csv,
-                           nuc_variants_csv)
+                           nuc_variants_csv,
+                           callback=self.callback)
 
             self.write('... generating coverage plots\n')
             self.parent.update()
