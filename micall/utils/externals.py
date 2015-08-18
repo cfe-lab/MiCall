@@ -123,6 +123,23 @@ class Bowtie2Build(CommandWrapper):
         stdout = self.check_output(['--version'])
         version_found = stdout.split('\n')[0].split()[-1]
         self.validate_version(version_found)
+    
+    def build(self, ref_path, reffile_template):
+        """ Build an index from a reference file.
+        
+        @param ref_path: path to a FASTA file with reference sequences. Must
+            be small enough to use with a small index (4GB or less).
+        @param reffile_template: file name template for the index files.
+        """
+        SMALL_INDEX_MAX_SIZE = 4 * 1024**3 - 200 # From bowtie2-build wrapper
+        assert os.stat(ref_path).st_size <= SMALL_INDEX_MAX_SIZE
+        self.log_call(['--wrapper',
+                       'micall-0',
+                       '--quiet',
+                       '-f',
+                       ref_path,
+                       reffile_template])
+        
 
 class LineCounter():
     """ Run the wc command to count lines in a file.

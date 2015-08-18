@@ -349,7 +349,7 @@ def remap(fastq1,
         outfile.close()
 
         # regenerate bowtie2 index files
-        bowtie2_build.log_call(['-f', '-q', reffile, reffile])
+        bowtie2_build.build(reffile, reffile)
 
         read_gap_open_penalty = rdgopen or settings.read_gap_open_remap
         ref_gap_open_penalty = rfgopen or settings.ref_gap_open_remap

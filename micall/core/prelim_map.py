@@ -54,12 +54,7 @@ def prelim_map(fastq1,
     with open(ref_path, 'w') as ref:
         projects.writeSeedFasta(ref)
     reffile_template = 'reference'
-    bowtie2_build.log_call(['--wrapper',
-                            'micall-0',
-                            '--quiet',
-                            '-f',
-                            ref_path,
-                            reffile_template])
+    bowtie2_build.build(ref_path, reffile_template)
 
     # do preliminary mapping
     output = {}
