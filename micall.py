@@ -1,10 +1,12 @@
 import gzip
 import json
+import multiprocessing
 from multiprocessing import cpu_count
 import os
 import re
 import shutil
 from tempfile import gettempdir
+import traceback
 
 import Tkinter as tk
 from ttk import Progressbar
@@ -21,7 +23,6 @@ from micall.utils import collate
 from micall.utils.coverage_plots import coverage_plot
 from micall.utils.externals import AssetWrapper, LineCounter
 from micall.utils.sample_sheet_parser import sample_sheet_parser
-import multiprocessing
 
 fastq_re = re.compile('_L001_R[12]_001.fastq')
 
@@ -192,14 +193,108 @@ class MiCall(tk.Frame):
             self.make_tree(parent)
             os.mkdir(path)
 
+
+    def process_sample(self, fastq1, progress, prefixes, image_paths):
+        fastq2 = fastq1.replace('_R1_001', '_R2_001')
+        if not os.path.exists(fastq2):
+            raise IOError('ERROR: Missing R2 file for {}'.format(fastq1))
+        
+        prefix = os.path.basename(fastq1).replace('_L001_R1_001.fastq', '')
+        prefixes.append(prefix)
+        output_csv = fastq1.replace('_L001_R1_001.fastq', '.prelim.csv')
+        self.write('Processing sample {} ({})\n'.format(prefix, progress))
+        with open(output_csv, 'wb') as handle:
+            prelim_map(fastq1,
+                       fastq2,
+                       handle,
+                       nthreads=self.nthreads.get(),
+                       callback=self.callback)
+        
+        # prepare file handles for remap stage
+        with open(output_csv, 'rU') as prelim_csv, \
+             open(os.path.join(self.workdir, prefix + '.remap.csv'), 'wb') as remap_csv, \
+             open(os.path.join(self.workdir, prefix + '.remap_counts.csv'), 'wb') as counts_csv, \
+             open(os.path.join(self.workdir, prefix + '.remap_conseq.csv'), 'wb') as conseq_csv, \
+             open(os.path.join(self.workdir, prefix + '.unmapped1.fastq'), 'w') as unmapped1, \
+             open(os.path.join(self.workdir, prefix + '.unmapped2.fastq'), 'w') as unmapped2:
+            
+            self.write('... remapping\n')
+            self.parent.update()
+            self.progress_bar['value'] = 0
+            remap(fastq1,
+                  fastq2,
+                  prelim_csv,
+                  remap_csv,
+                  counts_csv,
+                  conseq_csv,
+                  unmapped1,
+                  unmapped2,
+                  self.workdir,
+                  nthreads=self.nthreads.get(),
+                  callback=self.callback)
+            
+        # prepare file handles for conversion from SAM format to alignment
+        with open(os.path.join(self.workdir, prefix + '.remap.csv'), 'rU') as remap_csv, \
+             open(os.path.join(self.workdir, prefix + '.aligned.csv'), 'wb') as aligned_csv, \
+             open(os.path.join(self.workdir, prefix + '.insert.csv'), 'wb') as insert_csv, \
+             open(os.path.join(self.workdir, prefix + '.failed.csv'), 'wb') as failed_csv:
+            
+            self.write('... converting into alignment\n')
+            self.parent.update()
+            sam2aln(remap_csv,
+                    aligned_csv,
+                    insert_csv,
+                    failed_csv,
+                    nthreads=self.nthreads.get())
+            
+        with open(os.path.join(self.workdir, prefix + '.aligned.csv'), 'rU') as aligned_csv, \
+             open(os.path.join(self.workdir, prefix + '.nuc.csv'), 'wb') as nuc_csv, \
+             open(os.path.join(self.workdir, prefix + '.amino.csv'), 'wb') as amino_csv, \
+             open(os.path.join(self.workdir, prefix + '.coord_ins.csv'), 'wb') as coord_ins_csv, \
+             open(os.path.join(self.workdir, prefix + '.conseq.csv'), 'wb') as conseq_csv, \
+             open(os.path.join(self.workdir, prefix + '.failed_align.csv'), 'wb') as failed_align_csv, \
+             open(os.path.join(self.workdir, prefix + '.nuc_variants.csv'), 'wb') as nuc_variants_csv:
+            
+            self.parent.update()
+            aln2counts(aligned_csv,
+                       nuc_csv,
+                       amino_csv,
+                       coord_ins_csv,
+                       conseq_csv,
+                       failed_align_csv,
+                       nuc_variants_csv,
+                       callback=self.callback)
+            
+        self.write('... generating coverage plots\n')
+        self.parent.update()
+        with open(os.path.join(self.workdir, prefix + '.amino.csv'), 'rU') as amino_csv:
+            image_paths += coverage_plot(amino_csv)
+        self.write('... performing g2p scoring on samples covering HIV-1 V3\n')
+        self.parent.update()
+        with open(os.path.join(self.workdir, prefix + '.remap.csv'), 'rU') as remap_csv, \
+             open(os.path.join(self.workdir, prefix + '.nuc.csv'), 'rU') as nuc_csv, \
+             open(os.path.join(self.workdir, prefix + '.g2p.csv'), 'wb') as g2p_csv:
+            
+            sam_g2p(pssm=self.pssm,
+                    remap_csv=remap_csv,
+                    nuc_csv=nuc_csv,
+                    g2p_csv=g2p_csv)
+    
+    def build_run_summary(self, sample_count, error_count):
+        summary = '{} sample'.format(sample_count)
+        if sample_count != 1:
+            summary += 's'
+        if error_count > 0:
+            summary += ' with {} error'.format(error_count)
+            if error_count > 1:
+                summary += 's'
+        return summary
+
     def process_files(self):
         """
         Perform MiCall data processing on FASTQ files in working directory.
         :return:
         """
-        image_paths = []
-        prefixes = []
-
         # look for FASTQ files
         fastq_files = self.open_files()
         if len(fastq_files) == 0:
@@ -220,11 +315,13 @@ class MiCall(tk.Frame):
         os.chdir(self.workdir)
 
         # transfer FASTQ.gz files to working folder
+        self.callback(progress=0, max_progress=len(fastq_files))
         self.target_files = []
-        for src in fastq_files:
+        for file_index, src in enumerate(fastq_files):
             if src.startswith(self.workdir):
                 # Working file from previous run.
                 continue
+            self.callback(progress=file_index)
             filename = os.path.basename(src)
             prefix = filename.split('.')[0]
             dest = os.path.join(self.workdir, filename)
@@ -239,99 +336,26 @@ class MiCall(tk.Frame):
                 dest = os.path.join(self.workdir, prefix+'.fastq')
                 with gzip.open(src, 'rb') as zip_src, open(dest, 'w') as fastq_dest:
                     shutil.copyfileobj(zip_src, fastq_dest)
-
+        self.callback(progress=len(fastq_files))
 
         # remove duplicate entries
         self.target_files = sorted(set(self.target_files))
 
         self.write('Transferred %d sets of FASTQ files to working directory.\n' % len(self.target_files))
 
+        image_paths = []
+        prefixes = []
+        error_count = 0
         sample_count = len(self.target_files)
+        run_summary = self.build_run_summary(sample_count, error_count)
         for sample_index, fastq1 in enumerate(self.target_files):
-            fastq2 = fastq1.replace('_R1_001', '_R2_001')
-            if not os.path.exists(fastq2):
-                self.write('ERROR: Missing R2 file for', fastq1)
-                continue
-
-            prefix = os.path.basename(fastq1).replace('_L001_R1_001.fastq', '')
-            prefixes.append(prefix)
-            output_csv = fastq1.replace('_L001_R1_001.fastq', '.prelim.csv')
-
-            self.write('Processing sample {} ({} of {})\n'.format(prefix,
-                                                                 sample_index+1,
-                                                                 sample_count))
-
-            with open(output_csv, 'wb') as handle:
-                prelim_map(fastq1,
-                           fastq2,
-                           handle,
-                           nthreads=self.nthreads.get(),
-                           callback=self.callback)
-
-            # prepare file handles for remap stage
-            with open(output_csv, 'rU') as prelim_csv, \
-                 open(os.path.join(self.workdir, prefix+'.remap.csv'), 'wb') as remap_csv, \
-                 open(os.path.join(self.workdir, prefix+'.remap_counts.csv'), 'wb') as counts_csv, \
-                 open(os.path.join(self.workdir, prefix+'.remap_conseq.csv'), 'wb') as conseq_csv, \
-                 open(os.path.join(self.workdir, prefix+'.unmapped1.fastq'), 'w') as unmapped1, \
-                 open(os.path.join(self.workdir, prefix+'.unmapped2.fastq'), 'w') as unmapped2:
-
-                self.write('... remapping\n')
-                self.parent.update()
-                self.progress_bar['value'] = 0
-                remap(fastq1,
-                      fastq2,
-                      prelim_csv,
-                      remap_csv,
-                      counts_csv,
-                      conseq_csv,
-                      unmapped1,
-                      unmapped2,
-                      self.workdir,
-                      nthreads=self.nthreads.get(),
-                      callback=self.callback)
-
-            # prepare file handles for conversion from SAM format to alignment
-            with open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU') as remap_csv, \
-                 open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'wb') as aligned_csv, \
-                 open(os.path.join(self.workdir, prefix+'.insert.csv'), 'wb') as insert_csv, \
-                 open(os.path.join(self.workdir, prefix+'.failed.csv'), 'wb') as failed_csv:
-                
-
-                self.write('... converting into alignment\n')
-                self.parent.update()
-                sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=self.nthreads.get())
-
-            with open(os.path.join(self.workdir, prefix+'.aligned.csv'), 'rU') as aligned_csv, \
-                 open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'wb') as nuc_csv, \
-                 open(os.path.join(self.workdir, prefix+'.amino.csv'), 'wb') as amino_csv, \
-                 open(os.path.join(self.workdir, prefix+'.coord_ins.csv'), 'wb') as coord_ins_csv, \
-                 open(os.path.join(self.workdir, prefix+'.conseq.csv'), 'wb') as conseq_csv, \
-                 open(os.path.join(self.workdir, prefix+'.failed_align.csv'), 'wb') as failed_align_csv, \
-                 open(os.path.join(self.workdir, prefix+'.nuc_variants.csv'), 'wb') as nuc_variants_csv:
-
-                self.parent.update()
-                aln2counts(aligned_csv,
-                           nuc_csv,
-                           amino_csv,
-                           coord_ins_csv,
-                           conseq_csv,
-                           failed_align_csv,
-                           nuc_variants_csv,
-                           callback=self.callback)
-
-            self.write('... generating coverage plots\n')
-            self.parent.update()
-            with open(os.path.join(self.workdir, prefix+'.amino.csv'), 'rU') as amino_csv:
-                image_paths += coverage_plot(amino_csv)
-
-            self.write('... performing g2p scoring on samples covering HIV-1 V3\n')
-            self.parent.update()
-            with open(os.path.join(self.workdir, prefix+'.remap.csv'), 'rU') as remap_csv, \
-                 open(os.path.join(self.workdir, prefix+'.nuc.csv'), 'rU') as nuc_csv, \
-                 open(os.path.join(self.workdir, prefix+'.g2p.csv'), 'wb') as g2p_csv:
-                
-                sam_g2p(pssm=self.pssm, remap_csv=remap_csv, nuc_csv=nuc_csv, g2p_csv=g2p_csv)
+            try:
+                progress = '{} of {}'.format(sample_index+1, run_summary)
+                self.process_sample(fastq1, progress, prefixes, image_paths)
+            except:
+                self.write(traceback.format_exc())
+                error_count += 1
+                run_summary = self.build_run_summary(sample_count, error_count)
 
         # collate results to results folder
         for target_file, extension in files_to_collate:
@@ -352,7 +376,7 @@ class MiCall(tk.Frame):
         os.chdir(savedir)
         shutil.rmtree(self.workdir)
 
-        self.write('Run complete.\n')
+        self.write('Run complete: {}.\n'.format(run_summary))
 
 def main():
     root = tk.Tk()  # parent widget

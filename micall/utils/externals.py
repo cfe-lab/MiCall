@@ -18,6 +18,9 @@ class CommandWrapper(AssetWrapper):
         super(CommandWrapper, self).__init__(path=execname, *args, **kwargs)
         self.version = version
         self.logger = logger
+    
+    def build_args(self, args):
+        return [self.path] + args
         
     def check_output(self, args=[], *popenargs, **kwargs):
         """ Run command with arguments and return its output as a byte string.
@@ -28,7 +31,7 @@ class CommandWrapper(AssetWrapper):
         @param kwargs: keyword arguments to pass along
         @return the command's output
         """
-        return subprocess.check_output([self.path] + args, *popenargs, **kwargs)
+        return subprocess.check_output(self.build_args(args), *popenargs, **kwargs)
     
     def create_process(self, args=[], *popenargs, **kwargs):
         """ Execute a child program in a new process.
@@ -39,7 +42,7 @@ class CommandWrapper(AssetWrapper):
         @param kwargs: keyword arguments to pass along
         @return the new Popen object 
         """
-        return subprocess.Popen([self.path] + args, *popenargs, **kwargs)
+        return subprocess.Popen(self.build_args(args), *popenargs, **kwargs)
     
 
     def check_logger(self):
@@ -62,6 +65,21 @@ class CommandWrapper(AssetWrapper):
         output = self.check_output(args, stderr=subprocess.STDOUT)
         for line in output.splitlines():
             self.logger.debug(format_string, line)
+    
+    def yield_output(self, args):
+        """ Launch a subprocess, and yield the lines of standard output.
+        
+        Raise an exception if the return code is not zero.
+        Standard error is written to standard error.
+        @param args: A list of arguments to pass to subprocess.Popen().
+        """
+        p = self.create_process(args, stdout=subprocess.PIPE)
+        for line in p.stdout:
+            yield line
+        p.wait()
+        if p.returncode:
+            raise subprocess.CalledProcessError(p.returncode,
+                                                self.build_args(args))
 
     def redirect_call(self, args, outpath, format_string='%s'):
         """ Launch a subprocess, and redirect the output to a file.
@@ -79,8 +97,10 @@ class CommandWrapper(AssetWrapper):
             p = self.create_process(args, stdout=outfile, stderr=subprocess.PIPE)
             for line in p.stderr:
                 self.logger.debug(format_string, line.rstrip())
+            p.wait()
             if p.returncode:
-                raise subprocess.CalledProcessError(p.returncode, args)
+                raise subprocess.CalledProcessError(p.returncode,
+                                                    self.build_args(args))
     
     def validate_version(self, version_found):
         if self.version != version_found:

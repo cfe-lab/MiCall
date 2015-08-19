@@ -15,7 +15,6 @@ import argparse
 import csv
 import logging
 import os
-import subprocess
 import sys
 
 import miseq_logging
@@ -99,18 +98,13 @@ def prelim_map(fastq1,
                    '--local',
                    '-p', str(nthreads)]
 
-    p = bowtie2.create_process(bowtie_args, stdout=subprocess.PIPE)
-    with p.stdout:
-        for i, line in enumerate(p.stdout):
-            if callback and i%1000 == 0:
-                callback(progress=i)
-            refname = line.split('\t')[2]  # read was mapped to this reference
-            if not refname in output:
-                output.update({refname: []})
-            output[refname].append(line.split('\t')[:11])  # discard optional items
-
-    if p.returncode:
-        raise subprocess.CalledProcessError(p.returncode, bowtie_args)
+    for i, line in enumerate(bowtie2.yield_output(bowtie_args)):
+        if callback and i%1000 == 0:
+            callback(progress=i)
+        refname = line.split('\t')[2]  # read was mapped to this reference
+        if not refname in output:
+            output.update({refname: []})
+        output[refname].append(line.split('\t')[:11])  # discard optional items
 
     fieldnames = ['qname',
                   'flag',
