@@ -308,6 +308,11 @@ class MiCall(tk.Frame):
             return
         self.config[setting_name] = savedir
         self.write_config()
+        if os.listdir(savedir):
+            self.write('Run FAILED - results folder is not empty: {}\n'.format(
+                savedir))
+            return
+        
         self.workdir = os.path.join(savedir, 'working')
         if os.path.exists(self.workdir):
             shutil.rmtree(self.workdir)
