@@ -51,7 +51,6 @@ class Redirector(object):
 class MiCall(tk.Frame):
     CONFIG_FILE = os.path.expanduser("~/.micall.config")
     def __init__(self, parent, *args, **kwargs):
-        self.__version__ = '0.3'
         self.pssm = Pssm(path_to_lookup=AssetWrapper('micall/g2p/g2p_fpr.txt').path,
                          path_to_matrix=AssetWrapper('micall/g2p/g2p.matrix').path)
 
@@ -78,37 +77,36 @@ class MiCall(tk.Frame):
         except:
             self.config = {}
 
-        #self.button_setwd = tk.Button(
-        #    self.button_frame, text="Set working directory", command=self.set_workdir
-        #)
-        #self.button_setwd.grid(row=0, column=0, sticky='W')
+        self.nthreads = self.config.get('threads', None)
+        if not self.nthreads:
+            self.nthreads = int(round(cpu_count() * 0.5))
+            self.config['threads'] = self.nthreads
+            self.write_config()
 
         self.button_run = tk.Button(
             self.button_frame, text="Run", command=self.process_files
         )
         self.button_run.grid(row=0, column=1, sticky='W')
 
-        self.thread_label = tk.Label(self.button_frame, text='#threads')
-        self.thread_label.grid(row=0, column=3, sticky='E')
-
-        self.nthreads = tk.IntVar()
-        self.nthreads.set(max(1, cpu_count()/2))
-        self.thread_select = tk.OptionMenu(self.button_frame, self.nthreads, *[(i+1) for i in range(cpu_count())])
-        self.thread_select.grid(row=0, column=4, sticky='E')
-
         self.progress_bar = Progressbar(self.button_frame, orient='horizontal', length=500, mode='determinate')
         self.progress_bar.grid(row=1, columnspan=5)
 
-        self.console = tk.Text(
-            self.console_frame, bg='black', fg='white', cursor='xterm'
-        )
-        self.console.pack(side='top', fill='both', expand=True)
+        scrollbar = tk.Scrollbar(self.console_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.console = tk.Text(self.console_frame,
+                               bg='black',
+                               fg='white',
+                               yscrollcommand=scrollbar.set)
+        self.console.pack(side=tk.LEFT, fill=tk.BOTH)
         self.console.tag_configure('ERROR', foreground="red")
+        scrollbar.config(command=self.console.yview)
 
         # redirect stderr to Text widget
         #sys.stderr = Redirector(self.console)
 
-        self.write('Welcome to MiCall v%s (pipeline v%s)\n' % (self.__version__, pipeline_version))
+        self.write('Welcome to MiCall v{}, running with {} threads.\n'.format(
+            pipeline_version,
+            self.nthreads))
 
     def write(self, msg):
         """
@@ -124,7 +122,7 @@ class MiCall(tk.Frame):
     def write_config(self):
         try:
             with open(MiCall.CONFIG_FILE, 'w') as f:
-                json.dump(self.config, f)
+                json.dump(self.config, f, indent=4)
         except:
             pass # For now, we don't care if config fails
 
@@ -207,7 +205,7 @@ class MiCall(tk.Frame):
             prelim_map(fastq1,
                        fastq2,
                        handle,
-                       nthreads=self.nthreads.get(),
+                       nthreads=self.nthreads,
                        callback=self.callback)
         
         # prepare file handles for remap stage
@@ -230,7 +228,7 @@ class MiCall(tk.Frame):
                   unmapped1,
                   unmapped2,
                   self.workdir,
-                  nthreads=self.nthreads.get(),
+                  nthreads=self.nthreads,
                   callback=self.callback)
             
         # prepare file handles for conversion from SAM format to alignment
@@ -245,7 +243,7 @@ class MiCall(tk.Frame):
                     aligned_csv,
                     insert_csv,
                     failed_csv,
-                    nthreads=self.nthreads.get())
+                    nthreads=self.nthreads)
             
         with open(os.path.join(self.workdir, prefix + '.aligned.csv'), 'rU') as aligned_csv, \
              open(os.path.join(self.workdir, prefix + '.nuc.csv'), 'wb') as nuc_csv, \
@@ -308,7 +306,7 @@ class MiCall(tk.Frame):
             return
         self.config[setting_name] = savedir
         self.write_config()
-        if os.listdir(savedir):
+        if os.path.exists(savedir) and os.listdir(savedir):
             self.write('Run FAILED - results folder is not empty: {}\n'.format(
                 savedir))
             return

@@ -15,13 +15,7 @@ a.datas += [
 ]
 
 a.binaries += [
-    ('bin/bowtie2',             'bin/bowtie2', 'BINARY'),
-    ('bin/bowtie2.bat',         'bin/bowtie2.bat', 'BINARY'),
-    ('bin/bowtie2-align-l.exe', 'bin/bowtie2-align-l.exe', 'BINARY'),
     ('bin/bowtie2-align-s.exe', 'bin/bowtie2-align-s.exe', 'BINARY'),
-    ('bin/bowtie2-build',       'bin/bowtie2-build', 'BINARY'),
-    ('bin/bowtie2-build.bat',   'bin/bowtie2-build.bat', 'BINARY'),
-    ('bin/bowtie2-build-l.exe', 'bin/bowtie2-build-l.exe', 'BINARY'),
     ('bin/bowtie2-build-s.exe', 'bin/bowtie2-build-s.exe', 'BINARY')]
 
 pyz = PYZ(a.pure)
@@ -34,4 +28,4 @@ exe = EXE(pyz,
           debug=False,
           strip=None,
           upx=True,
-          console=True )
+          console=False )
