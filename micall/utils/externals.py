@@ -31,6 +31,7 @@ class CommandWrapper(AssetWrapper):
         @param kwargs: keyword arguments to pass along
         @return the command's output
         """
+        kwargs.setdefault('universal_newlines', True)
         return subprocess.check_output(self.build_args(args), *popenargs, **kwargs)
     
     def create_process(self, args=[], *popenargs, **kwargs):
@@ -42,6 +43,7 @@ class CommandWrapper(AssetWrapper):
         @param kwargs: keyword arguments to pass along
         @return the new Popen object 
         """
+        kwargs.setdefault('universal_newlines', True)
         return subprocess.Popen(self.build_args(args), *popenargs, **kwargs)
     
 
@@ -66,14 +68,20 @@ class CommandWrapper(AssetWrapper):
         for line in output.splitlines():
             self.logger.debug(format_string, line)
     
-    def yield_output(self, args):
+    def yield_output(self, args, *popenargs, **kwargs):
         """ Launch a subprocess, and yield the lines of standard output.
         
         Raise an exception if the return code is not zero.
-        Standard error is written to standard error.
+        Standard error is written to standard error and not returned, unless
+        you specify stderr=subprocessing.STDOUT as a keyword argument.
         @param args: A list of arguments to pass to subprocess.Popen().
+        @param popenargs: other positional arguments to pass along
+        @param kwargs: keyword arguments to pass along
         """
-        p = self.create_process(args, stdout=subprocess.PIPE)
+        p = self.create_process(args,
+                                stdout=subprocess.PIPE,
+                                *popenargs,
+                                **kwargs)
         for line in p.stdout:
             yield line
         p.wait()
@@ -153,12 +161,16 @@ class Bowtie2Build(CommandWrapper):
         """
         SMALL_INDEX_MAX_SIZE = 4 * 1024**3 - 200 # From bowtie2-build wrapper
         assert os.stat(ref_path).st_size <= SMALL_INDEX_MAX_SIZE
-        self.log_call(['--wrapper',
-                       'micall-0',
-                       '--quiet',
-                       '-f',
-                       ref_path,
-                       reffile_template])
+        self.check_logger()
+        for line in self.yield_output(['--wrapper',
+                                       'micall-0',
+                                       '--quiet',
+                                       '-f',
+                                       ref_path,
+                                       reffile_template],
+                                      stderr=subprocess.STDOUT):
+            if line != 'Building a SMALL index\n':
+                self.logger.debug(line)
         
 
 class LineCounter():

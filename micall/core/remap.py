@@ -21,7 +21,6 @@ from operator import itemgetter
 import os
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 
@@ -369,10 +368,6 @@ def remap(fastq1,
                        '--local',
                        '-p', str(nthreads)]
 
-        p = bowtie2.create_process(bowtie_args,
-                                   stdout=subprocess.PIPE,
-                                   universal_newlines=True)
-
         # capture stdout stream to count reads before writing to file
         mapped.clear()  # track which reads have mapped to something
         new_counts.clear()
@@ -385,7 +380,7 @@ def remap(fastq1,
                 f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
             f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
-            for i, line in enumerate(p.stdout):
+            for i, line in enumerate(bowtie2.yield_output(bowtie_args)):
                 if callback and i%1000 == 0:
                     callback(progress=i)  # progress monitoring in GUI
 
