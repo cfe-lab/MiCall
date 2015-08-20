@@ -207,7 +207,10 @@ If you want to distribute a stand-alone Windows executable version, you need
 to use [PyInstaller][pyinstaller].
 
 1. If you haven't done all the previous steps, install Python and PyWin32.
-2. Install ActivePerl and bowtie2.
+2. If you want to rebuild the bowtie2 binaries, install it as described above.
+    You might also want ActivePerl if you plan to play with bowtie2's Perl
+    wrapper scripts. Micall doesn't require Perl, and you can just build with
+    the bowtie2 binaries included in the git repository.
 3. Install [git for Windows][wingit], and clone the MiCall repository.
 4. Follow the instructions above to install the Gotoh package from the
     `micall/alignment` folder.

@@ -31,9 +31,12 @@ class CommandWrapper(AssetWrapper):
         @param kwargs: keyword arguments to pass along
         @return the command's output
         """
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        kwargs.setdefault('startupinfo', startupinfo)
+        try:
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            kwargs.setdefault('startupinfo', startupinfo)
+        except:
+            pass
         kwargs.setdefault('universal_newlines', True)
         kwargs.setdefault('stdin', sys.stdin)
         return subprocess.check_output(self.build_args(args), *popenargs, **kwargs)
@@ -47,9 +50,12 @@ class CommandWrapper(AssetWrapper):
         @param kwargs: keyword arguments to pass along
         @return the new Popen object 
         """
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        kwargs.setdefault('startupinfo', startupinfo)
+        try:
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            kwargs.setdefault('startupinfo', startupinfo)
+        except:
+            pass
         kwargs.setdefault('universal_newlines', True)
         kwargs.setdefault('stdin', sys.stdin)
         return subprocess.Popen(self.build_args(args), *popenargs, **kwargs)
