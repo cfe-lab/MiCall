@@ -31,7 +31,11 @@ class CommandWrapper(AssetWrapper):
         @param kwargs: keyword arguments to pass along
         @return the command's output
         """
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        kwargs.setdefault('startupinfo', startupinfo)
         kwargs.setdefault('universal_newlines', True)
+        kwargs.setdefault('stdin', sys.stdin)
         return subprocess.check_output(self.build_args(args), *popenargs, **kwargs)
     
     def create_process(self, args=[], *popenargs, **kwargs):
@@ -43,7 +47,11 @@ class CommandWrapper(AssetWrapper):
         @param kwargs: keyword arguments to pass along
         @return the new Popen object 
         """
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        kwargs.setdefault('startupinfo', startupinfo)
         kwargs.setdefault('universal_newlines', True)
+        kwargs.setdefault('stdin', sys.stdin)
         return subprocess.Popen(self.build_args(args), *popenargs, **kwargs)
     
 
@@ -132,7 +140,7 @@ class Samtools(CommandWrapper):
 class Bowtie2(CommandWrapper):
     def __init__(self, version, execname='bowtie2', logger=None, *args, **kwargs):
         super(Bowtie2, self).__init__(version, execname, logger, *args, **kwargs)
-        stdout = self.check_output(['--version'])
+        stdout = self.check_output(['--version'], stderr=subprocess.STDOUT)
         version_found = stdout.split('\n')[0].split()[-1]
         self.validate_version(version_found)
 
@@ -148,7 +156,7 @@ class Bowtie2Build(CommandWrapper):
                                            logger,
                                            *args,
                                            **kwargs)
-        stdout = self.check_output(['--version'])
+        stdout = self.check_output(['--version'], stderr=subprocess.STDOUT)
         version_found = stdout.split('\n')[0].split()[-1]
         self.validate_version(version_found)
     
@@ -186,7 +194,8 @@ class LineCounter():
     def count(self, filename):
         if self.command:
             try:
-                wc_output = subprocess.check_output(['wc', '-l', filename])
+                wc_output = subprocess.check_output(['wc', '-l', filename],
+                                                    stderr=subprocess.STDOUT)
                 return int(wc_output.split()[0])
             except:
                 self.command = None

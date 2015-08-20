@@ -210,7 +210,8 @@ def remap(fastq1,
           callback=None,
           count_threshold=10,
           rdgopen=None,
-          rfgopen=None):
+          rfgopen=None,
+          stderr=sys.stderr):
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
@@ -380,7 +381,7 @@ def remap(fastq1,
                 f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
             f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
-            for i, line in enumerate(bowtie2.yield_output(bowtie_args)):
+            for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
                 if callback and i%1000 == 0:
                     callback(progress=i)  # progress monitoring in GUI
 

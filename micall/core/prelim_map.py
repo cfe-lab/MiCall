@@ -31,7 +31,8 @@ def prelim_map(fastq1,
                nthreads=None,
                callback=None,
                rdgopen=None,
-               rfgopen=None):
+               rfgopen=None,
+               stderr=sys.stderr):
     """ Run the preliminary mapping step.
     
     @param fastq1: the file name for the forward reads in FASTQ format
@@ -46,6 +47,7 @@ def prelim_map(fastq1,
         read from the settings file.
     @param rfgopen: a penalty for opening a gap in the reference sequence, or
         None to read from the settings file.
+    @param stderr: where to write the standard error output from bowtie2 calls.
     """
     nthreads = nthreads or settings.bowtie_threads
 
@@ -98,7 +100,7 @@ def prelim_map(fastq1,
                    '--local',
                    '-p', str(nthreads)]
 
-    for i, line in enumerate(bowtie2.yield_output(bowtie_args)):
+    for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
         if callback and i%1000 == 0:
             callback(progress=i)
         refname = line.split('\t')[2]  # read was mapped to this reference

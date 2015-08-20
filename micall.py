@@ -5,6 +5,7 @@ from multiprocessing import cpu_count
 import os
 import re
 import shutil
+import sys
 from tempfile import gettempdir
 import traceback
 
@@ -25,6 +26,7 @@ from micall.utils.externals import AssetWrapper, LineCounter
 from micall.utils.sample_sheet_parser import sample_sheet_parser
 
 fastq_re = re.compile('_L001_R[12]_001.fastq')
+sys.stdin = open(os.devnull, 'r') # Fixes a problem when Windows launches without a console.
 
 files_to_collate = (('amino_frequencies.csv', '.amino.csv'),
                     ('collated_conseqs.csv', '.conseq.csv'),
@@ -192,7 +194,7 @@ class MiCall(tk.Frame):
             os.mkdir(path)
 
 
-    def process_sample(self, fastq1, progress, prefixes, image_paths):
+    def process_sample(self, fastq1, progress, prefixes, image_paths, error_log):
         fastq2 = fastq1.replace('_R1_001', '_R2_001')
         if not os.path.exists(fastq2):
             raise IOError('ERROR: Missing R2 file for {}'.format(fastq1))
@@ -206,7 +208,8 @@ class MiCall(tk.Frame):
                        fastq2,
                        handle,
                        nthreads=self.nthreads,
-                       callback=self.callback)
+                       callback=self.callback,
+                       stderr=error_log)
         
         # prepare file handles for remap stage
         with open(output_csv, 'rU') as prelim_csv, \
@@ -229,7 +232,8 @@ class MiCall(tk.Frame):
                   unmapped2,
                   self.workdir,
                   nthreads=self.nthreads,
-                  callback=self.callback)
+                  callback=self.callback,
+                  stderr=error_log)
             
         # prepare file handles for conversion from SAM format to alignment
         with open(os.path.join(self.workdir, prefix + '.remap.csv'), 'rU') as remap_csv, \
@@ -351,14 +355,17 @@ class MiCall(tk.Frame):
         error_count = 0
         sample_count = len(self.target_files)
         run_summary = self.build_run_summary(sample_count, error_count)
-        for sample_index, fastq1 in enumerate(self.target_files):
-            try:
-                progress = '{} of {}'.format(sample_index+1, run_summary)
-                self.process_sample(fastq1, progress, prefixes, image_paths)
-            except:
-                self.write(traceback.format_exc())
-                error_count += 1
-                run_summary = self.build_run_summary(sample_count, error_count)
+        with open(os.path.join(savedir, 'micall.log'), 'w') as error_log:
+            for sample_index, fastq1 in enumerate(self.target_files):
+                try:
+                    progress = '{} of {}'.format(sample_index+1, run_summary)
+                    self.process_sample(fastq1, progress, prefixes, image_paths, error_log)
+                except:
+                    msg = traceback.format_exc()
+                    self.write(msg)
+                    error_log.write(msg)
+                    error_count += 1
+                    run_summary = self.build_run_summary(sample_count, error_count)
 
         # collate results to results folder
         for target_file, extension in files_to_collate:
