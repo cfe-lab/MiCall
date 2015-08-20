@@ -25,7 +25,7 @@ from micall.utils.coverage_plots import coverage_plot
 from micall.utils.externals import AssetWrapper, LineCounter
 from micall.utils.sample_sheet_parser import sample_sheet_parser
 
-fastq_re = re.compile('_L001_R[12]_001.fastq')
+fastq_re = re.compile('(_L001_R[12]_001|.censored[12]).fastq')
 sys.stdin = open(os.devnull, 'r') # Fixes a problem when Windows launches without a console.
 
 files_to_collate = (('amino_frequencies.csv', '.amino.csv'),
@@ -195,13 +195,16 @@ class MiCall(tk.Frame):
 
 
     def process_sample(self, fastq1, progress, prefixes, image_paths, error_log):
-        fastq2 = fastq1.replace('_R1_001', '_R2_001')
+        fastq2 = fastq1.replace('_R1_001', '_R2_001').replace('censored1',
+                                                              'censored2')
         if not os.path.exists(fastq2):
             raise IOError('ERROR: Missing R2 file for {}'.format(fastq1))
         
-        prefix = os.path.basename(fastq1).replace('_L001_R1_001.fastq', '')
+        prefix = os.path.basename(fastq1).replace('_L001_R1_001.fastq',
+                                                  '').replace('.censored1.fastq',
+                                                              '')
         prefixes.append(prefix)
-        output_csv = fastq1.replace('_L001_R1_001.fastq', '.prelim.csv')
+        output_csv = prefix + '.prelim.csv'
         self.write('Processing sample {} ({})\n'.format(prefix, progress))
         with open(output_csv, 'wb') as handle:
             prelim_map(fastq1,
@@ -333,7 +336,7 @@ class MiCall(tk.Frame):
             prefix = filename.split('.')[0]
             dest = os.path.join(self.workdir, filename)
 
-            if '_R1_001' in dest:
+            if '_R1_001' in dest or 'censored1' in dest:
                 self.target_files.append(dest.replace('.gz', ''))
 
             # neither file type is present
