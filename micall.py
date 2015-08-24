@@ -58,6 +58,7 @@ class MiCall(tk.Frame):
 
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
+        parent.report_callback_exception = self.report_callback_exception
 
         self.rundir = None  # path to MiSeq run folder containing data
         self.workdir = gettempdir()  # default to temp directory
@@ -298,7 +299,6 @@ class MiCall(tk.Frame):
     def process_files(self):
         """
         Perform MiCall data processing on FASTQ files in working directory.
-        :return:
         """
         # look for FASTQ files
         fastq_files = self.open_files()
@@ -390,6 +390,12 @@ class MiCall(tk.Frame):
         shutil.rmtree(self.workdir)
 
         self.write('Run complete: {}.\n'.format(run_summary))
+
+    def report_callback_exception(self, exc_type, exc_value, exc_traceback):
+        message = ''.join(traceback.format_exception(exc_type,
+                                                     exc_value,
+                                                     exc_traceback))
+        self.write(message)
 
 def main():
     root = tk.Tk()  # parent widget
