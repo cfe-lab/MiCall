@@ -561,3 +561,17 @@ class SamToConseqsTest(unittest.TestCase):
         expected_conseqs = {'test': 'ANG'}
         conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
         self.assertDictEqual(expected_conseqs, conseqs)
+ 
+    def testDebugReports(self):
+        samIO = StringIO.StringIO(
+            "test1\t99\ttest\t1\t44\t3M3I9M\t=\t1\t12\tACTGGGAGACCCAAC\tJIJJJJJJJJJJJJJ\n"
+            "test1\t147\ttest\t1\t44\t3M3I9M\t=\t1\t-12\tACTGGGAGACCCAAC\tJKJJJJJJJJJJJJJ\n"
+            "test1\t99\ttest\t1\t44\t3M3I9M\t=\t1\t12\tATTGGGAGACCCAAC\tJHJJJJJJJJJJJJJ\n"
+            "test1\t147\ttest\t1\t44\t3M3I9M\t=\t1\t-12\tATTGGGAGACCCAAC\tJFJJJJJJJJJJJJJ\n"
+        )
+        reports = {('test', 2): None}
+        expected_reports = {('test', 2): 'H{C: 1, T: 1}, I{C: 1}'}
+        
+        remap.sam_to_conseqs(samIO, debug_reports=reports)
+        
+        self.assertDictEqual(expected_reports, reports)

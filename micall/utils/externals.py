@@ -1,6 +1,7 @@
 import subprocess
 import os
 import sys
+import re
 
 class AssetWrapper(object):
     """ Wraps a packaged asset, and finds its path. """
@@ -103,22 +104,26 @@ class CommandWrapper(AssetWrapper):
             raise subprocess.CalledProcessError(p.returncode,
                                                 self.build_args(args))
 
-    def redirect_call(self, args, outpath, format_string='%s'):
+    def redirect_call(self, args, outpath, format_string='%s', ignored=None):
         """ Launch a subprocess, and redirect the output to a file.
         
         Raise an exception if the return code is not zero.
-        Standard error is logged to the debug logger.
+        Standard error is logged to the warn logger.
         @param args: A list of arguments to pass to subprocess.Popen().
         @param outpath: a filename that stdout should be redirected to. If you 
         don't need to redirect the output, then just use subprocess.check_call().
         @param format_string: A template for the debug message that will have each
         line of standard error formatted with it.
+        @param ignored: A regular expression pattern for stderr messages that
+        should not be logged.
         """
         self.check_logger()
+        
         with open(outpath, 'w') as outfile:
             p = self.create_process(args, stdout=outfile, stderr=subprocess.PIPE)
             for line in p.stderr:
-                self.logger.debug(format_string, line.rstrip())
+                if not ignored or not re.search(ignored, line):
+                    self.logger.warn(format_string, line.rstrip())
             p.wait()
             if p.returncode:
                 raise subprocess.CalledProcessError(p.returncode,

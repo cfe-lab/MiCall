@@ -305,18 +305,23 @@ class MiCall(tk.Frame):
         if len(fastq_files) == 0:
             return
 
-        setting_name = 'results_path'
-        savedir = self.config.get(setting_name, '')
+        savedir_setting_name = 'results_path'
+        savedir = self.config.get(savedir_setting_name, '')
         savedir = tkFileDialog.askdirectory(title='Choose a folder to save results',
                                             initialdir=savedir)
         if not savedir:
             return
-        self.config[setting_name] = savedir
-        self.write_config()
+        self.config[savedir_setting_name] = savedir
         if os.path.exists(savedir) and os.listdir(savedir):
             self.write('Run FAILED - results folder is not empty: {}\n'.format(
                 savedir))
             return
+        
+        workdir_purged_setting_name = 'workdir_purged'
+        is_workdir_purged = self.config.get(workdir_purged_setting_name)
+        if is_workdir_purged is None:
+            self.config[workdir_purged_setting_name] = is_workdir_purged = True
+        self.write_config()
         
         self.workdir = os.path.join(savedir, 'working')
         if os.path.exists(self.workdir):
@@ -387,7 +392,8 @@ class MiCall(tk.Frame):
 
         # clean up working files
         os.chdir(savedir)
-        shutil.rmtree(self.workdir)
+        if is_workdir_purged:
+            shutil.rmtree(self.workdir)
 
         self.write('Run complete: {}.\n'.format(run_summary))
 

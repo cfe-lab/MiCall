@@ -65,11 +65,13 @@ def build_conseqs_with_samtools(samfilename, samtools, raw_count):
     bamfile = samfilename.replace('.sam', '.bam')
     pileup_path = bamfile + '.pileup'
     samtools.redirect_call(['view', '-b', samfilename], bamfile)
-    samtools.log_call(['sort', bamfile, bamfile.replace('.bam', '')]) # overwrite
+    samtools.log_call(['sort', bamfile, os.path.splitext(bamfile)[0]]) # overwrite
     
     # BAM to pileup
     pileup_depth = max(raw_count, 8000)
-    samtools.redirect_call(['mpileup', '-d', str(pileup_depth), bamfile], pileup_path)
+    samtools.redirect_call(['mpileup', '-d', str(pileup_depth), bamfile],
+                           pileup_path,
+                           ignored='\[mpileup\] 1 samples in 1 input files')
     with open(pileup_path, 'rU') as f2:
         conseqs = pileup_to_conseq(f2, settings.consensus_q_cutoff)
     return conseqs
@@ -98,7 +100,7 @@ def build_conseqs_with_python(samfilename):
     with open(samfilename, 'rU') as samfile:
         return sam_to_conseqs(samfile, settings.consensus_q_cutoff)
 
-def sam_to_conseqs(samfile, quality_cutoff=0):
+def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
     """ Build consensus sequences for each reference from a SAM file.
     
     @param samfile: an open file in the SAM format containing reads with their
@@ -106,6 +108,10 @@ def sam_to_conseqs(samfile, quality_cutoff=0):
     @param quality_cutoff: minimum quality score for a base to be counted
     @return: {reference_name: consensus_sequence}
     """
+    
+    if debug_reports:
+        for key in debug_reports.iterkeys():
+            debug_reports[key] = Counter()
     
     # refmap structure: {refname: {pos: {nuc: count}}}
     def pos_nucs_factory():
@@ -115,13 +121,15 @@ def sam_to_conseqs(samfile, quality_cutoff=0):
     SAM_QUALITY_BASE = 33 # from SAM file format specification
     quality_cutoff_char = chr(SAM_QUALITY_BASE + quality_cutoff)
     
-    for read_pair in matchmaker(samfile):
+    for read_pair in matchmaker(samfile, include_singles=True):
         read1, read2 = read_pair
-        if read1[2] != read2[2]:
+        if read2 and read1[2] != read2[2]:
             # region mismatch, ignore the read pair.
             continue
         fwd_end = -1
         for read in read_pair:
+            if not read:
+                continue
             (_qname,
              _flag,
              rname,
@@ -157,11 +165,36 @@ def sam_to_conseqs(samfile, quality_cutoff=0):
                 if token_type == 'S':
                     pass
                 elif token_type == 'M':
-                    if pos > fwd_end and qual[i] >= quality_cutoff_char:
-                        nuc_counts = pos_nucs[pos]
-                        nuc_counts[nuc] += 1
+                    if pos > fwd_end:
+                        if qual[i] >= quality_cutoff_char:
+                            nuc_counts = pos_nucs[pos]
+                            nuc_counts[nuc] += 1
+                        if debug_reports:
+                            counts = debug_reports.get((rname, pos))
+                            if counts is not None:
+                                counts[nuc + qual[i]] += 1
                     pos += 1
             fwd_end = pos-1
+    if debug_reports:
+        for key, counts in debug_reports.iteritems():
+            mixtures = []
+            nucs = set()
+            qualities = set()
+            for nuc, quality in counts.iterkeys():
+                nucs.add(nuc)
+                qualities.add(quality)
+            qualities = sorted(qualities)
+            for min_quality in qualities:
+                filtered_counts = Counter()
+                for (nuc, nuc_qual), count in counts.iteritems():
+                    if nuc_qual >= min_quality:
+                        filtered_counts[nuc] += count
+                mixture = []
+                for nuc, count in filtered_counts.iteritems():
+                    mixture.append('{}: {}'.format(nuc, count))
+                mixtures.append('{}{{{}}}'.format(min_quality,
+                                                  ', '.join(mixture)))
+            debug_reports[key] = ', '.join(mixtures)
             
     conseqs = {}
     for refname, pos_nucs in refmap.iteritems():
@@ -477,13 +510,15 @@ def remap(fastq1,
     remap_counts_csv.close()
 
 
-def matchmaker(samfile):
+def matchmaker(samfile, include_singles=False):
     """
     An iterator that returns pairs of reads sharing a common qname from a SAM file.
     Note that unpaired reads will be left in the cached_rows dictionary and
     discarded.
-    :param samfile: open file handle to a SAM file
-    :return: yields a tuple for each read pair with fields split by tab chars:
+    @param samfile: open file handle to a SAM file
+    @param include_singles: True if unpaired reads should be returned, paired
+        with a None value: ([qname, flag, rname, ...], None)
+    @return: yields a tuple for each read pair with fields split by tab chars:
         ([qname, flag, rname, ...], [qname, flag, rname, ...])
     """
     cached_rows = {}
@@ -499,6 +534,9 @@ def matchmaker(samfile):
         else:
             # current row should be the second read of the pair
             yield old_row, row
+    if include_singles:
+        for row in cached_rows.itervalues():
+            yield row, None
 
 
 def sam_to_pileup(samfile, max_primer_length, max_count=None):
