@@ -77,25 +77,6 @@ def build_conseqs_with_samtools(samfilename, samtools, raw_count):
     return conseqs
 
 
-def build_conseqs_with_python_old(samfilename):
-    with open(samfilename, 'rU') as samfile:
-        pileup, _ = sam_to_pileup(samfile, max_primer_length=50)
-
-    is_pileup_dumped = False
-    if is_pileup_dumped:    
-        with open('/tmp/temp.python.pileup', 'w') as pfile:
-            for region, piles in pileup.iteritems():
-                for pos, pile in piles.iteritems():
-                    pfile.write('\t'.join([region,
-                                           str(pos),
-                                           'N',
-                                           str(len(pile['q'])),
-                                           pile['s'],
-                                           pile['q']]) + '\n')
-    # use slower internal code
-    conseqs = make_consensus(pileup=pileup, qCutoff=settings.consensus_q_cutoff)
-    return conseqs
-
 def build_conseqs_with_python(samfilename):
     with open(samfilename, 'rU') as samfile:
         return sam_to_conseqs(samfile, settings.consensus_q_cutoff)
@@ -152,7 +133,14 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                     token = next(token_itr)
                     token_size = int(token[:-1])
                     token_type = token[-1]
-                    if token_type != 'D':
+                    if token_type == 'D':
+                        if token_size % 3 != 0:
+                            for _ in range(token_size):
+                                nuc_counts = pos_nucs[pos]
+                                # report dash if all reads have deletions
+                                nuc_counts['-'] = 0
+                                pos += 1
+                    else:
                         token_end_pos += token_size
                     if token_type == 'I' and token_size % 3 == 0 and pos > fwd_end:
                         # replace previous base with insertion
@@ -198,6 +186,9 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
             
     conseqs = {}
     for refname, pos_nucs in refmap.iteritems():
+        if not pos_nucs:
+            #Nothing mapped, so no consensus.
+            continue
         conseq = ''
         end = max(pos_nucs.keys())+1
         for pos in range(1, end):
@@ -537,229 +528,6 @@ def matchmaker(samfile, include_singles=False):
     if include_singles:
         for row in cached_rows.itervalues():
             yield row, None
-
-
-def sam_to_pileup(samfile, max_primer_length, max_count=None):
-    """
-    Convert SAM file into samtools pileup-like format in memory.
-    Process inline by region.  Also return numbers of reads mapped to each region.
-    :param samfile: Product of prelim_map.py or iterative remapping.
-    :param max_primer_length: Argument to pass to is_short_read, exclude possible
-        primer-derived reads.
-    :param max_count: Process no more than these many reads.  If None, then do
-        complete read set.
-    :return: dictionary by region, keying dictionaries of concatenated bases by position
-    """
-    pileup = {}
-    counts = {}
-    rcount = 0
-    for read_pair in matchmaker(samfile):
-        read1, read2 = read_pair
-        if read1[2] != read2[2]:
-            # region mismatch, ignore the read pair.
-            continue
-        last_pos = -1
-        for read in read_pair:
-            (_qname,
-             flag,
-             rname,
-             refpos,
-             mapq,
-             cigar,
-             _rnext,
-             _pnext,
-             _tlen,
-             seq,
-             qual) = read[0:11] # drop optional fields.
-            if rname not in pileup:
-                pileup.update({rname: {}})
-            if rname not in counts:
-                counts.update({rname: 0})
-            counts[rname] += 1
-            rcount += 1
-    
-            if max_count and rcount > max_count:
-                # skip sequence parsing, just get counts
-                continue
-    
-            is_first = is_first_read(flag)
-    
-            pos = 0  # position in sequence
-            refpos = int(refpos) # position in reference
-            is_in_overlap = refpos <= last_pos
-    
-            tokens = cigar_re.findall(cigar)
-    
-            if tokens[0].endswith('S'):
-                # skip left soft clip
-                pos = int(tokens[0][:-1])
-                tokens.pop(0)  # remove this first token
-    
-            if not tokens[0].endswith('M'):
-                # the leftmost token must end with M
-                print 'ERROR: CIGAR token after soft clip must be match interval'
-                sys.exit()
-    
-            # record start of read
-            if refpos not in pileup[rname]:
-                # keys 's' = sequence, 'q' = quality string
-                pileup[rname].update({refpos: {'s': '', 'q': ''}})
-            if refpos > last_pos:
-                pileup[rname][refpos]['s'] += '^' + chr(int(mapq)+33)
-    
-            for token in tokens:
-                length = int(token[:-1])
-                if token.endswith('M'):
-                    # match
-                    for i in range(length):
-                        if refpos not in pileup[rname]: pileup[rname].update({refpos: {'s': '', 'q': ''}})
-                        if refpos > last_pos:
-                            pileup[rname][refpos]['s'] += seq[pos] if is_first else seq[pos].lower()
-                            pileup[rname][refpos]['q'] += qual[pos]
-                            last_pos = refpos
-                            is_in_overlap = False
-                        pos += 1
-                        refpos += 1
-    
-                elif token.endswith('D'):
-                    if refpos > last_pos:
-                        # deletion relative to reference
-                        deletion = '-' + str(length) + ('N' if is_first else 'n')*length
-                        pile = pileup[rname][refpos-1]
-                        if pile['s'].endswith('$'):
-                            pile['s'] = pile['s'][:-1]
-                            deletion += '$'
-                        pileup[rname][refpos-1]['s'] += deletion
-        
-                        # append deletion placeholders downstream
-                        for i in range(refpos, refpos+length):
-                            if i not in pileup[rname]: pileup[rname].update({i: {'s': '', 'q': ''}})
-                            pileup[rname][i]['s'] += '*'
-    
-                    refpos += length
-    
-                elif token.endswith('I'):
-                    # insertion relative to reference
-                    # FIXME: pileup does not record quality scores of inserted bases
-                    if refpos > last_pos:
-                        insert = seq[pos:(pos+length)]
-                        pileup[rname][refpos-1]['s'] += '+' + str(length) + (insert if is_first else insert.lower())
-                    pos += length
-    
-                elif token.endswith('S'):
-                    # soft clip
-                    break
-    
-                else:
-                    print 'ERROR: Unknown token in CIGAR string', token
-                    sys.exit()
-    
-            if not is_in_overlap:
-                # record end of read
-                pileup[rname][refpos-1]['s'] += '$'
-
-    return pileup, counts
-
-
-
-def make_consensus(pileup, qCutoff):
-    """
-    Convert pileup dictionary returned by csv_to_pileup() and extract a consensus sequence,
-    taking into account indel polymorphisms.  Iterate over regions in the pileup.
-    Intervals without coverage are represented by N's.
-    :param pileup: dictionary of pileups by region
-    :param qCutoff: quality cutoff for bases
-    :return:
-    """
-    conseqs = {}
-    for region, pile in pileup.iteritems():
-        # in case there are intervals without coverage, iterate over entire range
-        maxpos = max(pile.keys())
-        conseq = ''
-        for refpos in xrange(1, maxpos+1):
-            # note position is 1-index
-            v = pile.get(refpos, None)
-            if v is None:
-                conseq += 'N'
-                continue
-            astr = v['s']
-            qstr = v['q']
-            alist = []  # store all bases at this position
-            i = 0  # current index for astr
-            j = 0  # current index for qstr
-
-            while i < len(astr):
-                if astr[i] == '^':
-                    # marks start of read
-                    q = ord(qstr[j])-33
-                    base = astr[i+2] if q >= qCutoff else 'N'
-                    alist.append(base.upper())
-                    i += 3
-                    j += 1
-                elif astr[i] in '*':
-                    # marks a deletion
-                    alist.append('-')
-                    i += 1
-                elif astr[i] == '$':
-                    # marks the end of a read
-                    i += 1
-                elif i < len(astr)-1 and astr[i+1] in '+-':
-                    # i-th base is followed by an indel indicator
-                    m = indel_re.match(astr[i+1:])
-                    indel_len = int(m.group().strip('+-'))
-                    left = i+1 + len(m.group())
-                    insertion = astr[left:(left+indel_len)]
-                    q = ord(qstr[j])-33
-                    base = astr[i].upper() if q >= qCutoff else 'N'
-                    token = base + m.group() + insertion.upper()  # e.g., A+3ACG
-                    if astr[i+1] == '+':
-                        alist.append(token)
-                    else:
-                        alist.append(base)
-                    i += len(token)
-                    j += 1
-                else:
-                    # Operative case: sequence matches reference (And no indel ahead)
-                    q = ord(qstr[j])-33
-                    base = astr[i].upper() if q >= qCutoff else 'N'
-                    alist.append(base)
-                    i += 1
-                    j += 1
-
-            # determine the most frequent character state at each position, including insertions
-            atypes = set(alist)
-            atypes -= set('N')
-            intermed = []
-            for atype in atypes:
-                intermed.append((alist.count(atype), atype))
-            intermed.sort(reverse=True)
-
-            if intermed:
-                token = intermed[0][1]
-            else:
-                # if the list was empty, then there was no coverage
-                token = 'N'
-
-            if '+' in token:
-                # insertion was most common state
-                m = indel_re.findall(token)[0] # \+[0-9]+
-                conseq += token[0]
-                if int(m) % 3 == 0:
-                    # only add insertions that retain reading frame
-                    conseq += token[1+len(m):]
-            elif token == '-':
-                # deletion was most common state
-                conseq += '-'
-            else:
-                conseq += token
-
-        # remove in-frame deletions (multiples of 3), if any
-        pat = re.compile('([ACGT])(---)+([ACGT])')
-        conseq = re.sub(pat, r'\g<1>\g<3>', conseq)
-        conseqs.update({region: conseq})
-
-    return conseqs
-
 
 
 def pileup_to_conseq (handle, qCutoff):
