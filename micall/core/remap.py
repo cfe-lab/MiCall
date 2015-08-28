@@ -134,12 +134,12 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                     token_size = int(token[:-1])
                     token_type = token[-1]
                     if token_type == 'D':
-                        if token_size % 3 != 0:
-                            for _ in range(token_size):
-                                nuc_counts = pos_nucs[pos]
-                                # report dash if all reads have deletions
-                                nuc_counts['-'] = 0
-                                pos += 1
+                        for _ in range(token_size):
+                            nuc_counts = pos_nucs[pos]
+                            # report dash if all reads have deletions
+                            # dash is overridden by low quality reads, so use -1
+                            nuc_counts['-'] = -1
+                            pos += 1
                     else:
                         token_end_pos += token_size
                     if token_type == 'I' and token_size % 3 == 0 and pos > fwd_end:
@@ -154,9 +154,11 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                     pass
                 elif token_type == 'M':
                     if pos > fwd_end:
+                        nuc_counts = pos_nucs[pos]
                         if qual[i] >= quality_cutoff_char:
-                            nuc_counts = pos_nucs[pos]
                             nuc_counts[nuc] += 1
+                        else:
+                            nuc_counts['N'] = 0
                         if debug_reports:
                             counts = debug_reports.get((rname, pos))
                             if counts is not None:
@@ -186,17 +188,25 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
             
     conseqs = {}
     for refname, pos_nucs in refmap.iteritems():
-        if not pos_nucs:
+        if not any((any(n > 0 for n in counts.itervalues())
+                    for counts in pos_nucs.itervalues())):
             #Nothing mapped, so no consensus.
             continue
         conseq = ''
+        deletion = ''
         end = max(pos_nucs.keys())+1
         for pos in range(1, end):
             nuc_counts = pos_nucs[pos]
             most_common = nuc_counts.most_common(1)
             if not most_common:
                 conseq += 'N'
+            elif most_common[0][0] == '-':
+                deletion += '-'
             else:
+                if deletion:
+                    if len(deletion) % 3 != 0:
+                        conseq += deletion
+                    deletion = ''
                 conseq += most_common[0][0]
         conseqs[refname] = conseq
     return conseqs

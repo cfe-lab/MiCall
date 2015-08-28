@@ -267,6 +267,19 @@ class SamToConseqsTest(unittest.TestCase):
         expected_conseqs = {'test': 'ACAGGG'}
         conseqs = remap.sam_to_conseqs(samIO)
         self.assertDictEqual(expected_conseqs, conseqs)
+ 
+    def testDeletionInSomeReads(self):
+        samIO = StringIO.StringIO(
+            "test1\t99\ttest\t1\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
+            "test1\t147\ttest\t1\t44\t3M3D3M\t=\t3\t-6\tACAGGG\tJJJJJJ\n"
+            "test2\t99\ttest\t1\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
+            "test2\t147\ttest\t1\t44\t3M3D3M\t=\t3\t-6\tACAGGG\tJJJJJJ\n"
+            "test3\t99\ttest\t1\t44\t9M\t=\t3\t9\tACATTTGGG\tJJJJJJJJJ\n"
+            "test3\t147\ttest\t1\t44\t9M\t=\t3\t-9\tACATTTGGG\tJJJJJJJJJ\n"
+        )
+        expected_conseqs = {'test': 'ACATTTGGG'}
+        conseqs = remap.sam_to_conseqs(samIO)
+        self.assertDictEqual(expected_conseqs, conseqs)
   
     def testDeletionWithFrameShift(self):
         samIO = StringIO.StringIO(
@@ -314,6 +327,15 @@ class SamToConseqsTest(unittest.TestCase):
         conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
         self.assertDictEqual(expected_conseqs, conseqs)
  
+    def testLowQualityAtEnd(self):
+        samIO = StringIO.StringIO(
+            "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJ/\n"
+            "test1\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n"
+        )
+        expected_conseqs = {'test': 'ACN'}
+        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+        self.assertDictEqual(expected_conseqs, conseqs)
+ 
     def testAllLowQuality(self):
         #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
         samIO = StringIO.StringIO(
@@ -323,6 +345,19 @@ class SamToConseqsTest(unittest.TestCase):
         
         conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
         
+        self.assertDictEqual(expected_conseqs, conseqs)
+ 
+    def testLowQualityAndDeletion(self):
+        samIO = StringIO.StringIO(
+            "test1\t99\ttest\t1\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
+            "test1\t147\ttest\t1\t44\t3M3D3M\t=\t3\t-6\tACAGGG\tJJJJJJ\n"
+            "test2\t99\ttest\t1\t44\t9M\t=\t3\t9\tACATTTGGG\tJJJ///JJJ\n"
+            "test2\t147\ttest\t1\t44\t9M\t=\t3\t-9\tACATTTGGG\tJJJ///JJJ\n"
+        )
+        expected_conseqs = {'test': 'ACANNNGGG'}
+
+        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+
         self.assertDictEqual(expected_conseqs, conseqs)
  
     def testDebugReports(self):

@@ -34,10 +34,10 @@ def build_comparison(samtools_conseqs, python2_conseqs, samfile):
                 pos_report = debug_reports[(refname, pos)]
                 python2_nuc = (pos <= len(python2_conseq) and
                                python2_conseq[pos-1] or
-                               '-')
+                               'None')
                 samtools_nuc = (pos <= len(samtools_conseq) and
                                samtools_conseq[pos-1] or
-                               '-')
+                               'None')
                 report += '{}: {}=>{} {}\n'.format((refname, pos),
                                                    samtools_nuc,
                                                    python2_nuc,
