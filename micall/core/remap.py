@@ -152,10 +152,13 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                     if token_type == 'I' and token_size % 3 == 0:
                         # replace previous base with insertion
                         prev_nuc_counts = pos_nucs[pos-1]
-                        prev_nuc = seq[i-1]
-                        prev_nuc_counts[prev_nuc] -= 1
-                        insertion = prev_nuc + seq[i:token_end_pos+1]
-                        prev_nuc_counts[insertion] += 1
+                        prev_nuc =           seq[i-1]
+                        insertion =          seq[i-1:token_end_pos+1]
+                        insertion_quality = qual[i-1:token_end_pos+1]
+                        min_quality = min(insertion_quality)
+                        if min_quality >= quality_cutoff_char:
+                            prev_nuc_counts[prev_nuc] -= 1
+                            prev_nuc_counts[insertion] += 1
                         
                 if token_type == 'S':
                     pass

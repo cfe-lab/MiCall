@@ -248,8 +248,7 @@ class SamToConseqsTest(unittest.TestCase):
  
     def testSoftClip(self):
         samIO = StringIO.StringIO(
-            "test1\t99\ttest\t1\t44\t3S5M1S\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJJJJ\n"
-            "test1\t147\ttest\t1\t44\t3S5M1S\t=\t1\t-9\tACAGGGAGA\tJJJJJJJJJJJJ\n"
+            "test1\t99\ttest\t1\t44\t3S5M1S\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJ\n"
         )
         expected_conseqs = {'test': 'GGGAG'}
         conseqs = remap.sam_to_conseqs(samIO)
@@ -257,11 +256,26 @@ class SamToConseqsTest(unittest.TestCase):
  
     def testSimpleInsertion(self):
         samIO = StringIO.StringIO(
-            "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJJJJ\n"
-            "test1\t147\ttest\t1\t44\t3M3I3M\t=\t1\t-9\tACAGGGAGA\tJJJJJJJJJJJJ\n"
+            "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJ\n"
         )
         expected_conseqs = {'test': 'ACAGGGAGA'}
         conseqs = remap.sam_to_conseqs(samIO)
+        self.assertDictEqual(expected_conseqs, conseqs)
+ 
+    def testLowQualityInsertion(self):
+        samIO = StringIO.StringIO(
+            "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJJJ/JJJJ\n"
+        )
+        expected_conseqs = {'test': 'ACAAGA'}
+        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+        self.assertDictEqual(expected_conseqs, conseqs)
+ 
+    def testInsertionAfterLowQuality(self):
+        samIO = StringIO.StringIO(
+            "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJ/JJJJJJ\n"
+        )
+        expected_conseqs = {'test': 'ACNAGA'}
+        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
         self.assertDictEqual(expected_conseqs, conseqs)
   
     def testInsertionAndOffset(self):
