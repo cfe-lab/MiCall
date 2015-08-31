@@ -68,8 +68,12 @@ def build_conseqs_with_samtools(samfilename, samtools, raw_count):
     samtools.log_call(['sort', bamfile, os.path.splitext(bamfile)[0]]) # overwrite
     
     # BAM to pileup
+    # -x doesn't try to merge forward and reverse reads, because the quality
+    #     calculation after merging was too hard to understand.
+    # -Q0 doesn't eliminate any bases from the pileup based on quality, the
+    #     quality is checked in pileup_to_conseq().
     pileup_depth = max(raw_count, 8000)
-    samtools.redirect_call(['mpileup', '-d', str(pileup_depth), bamfile],
+    samtools.redirect_call(['mpileup', '-xQ0', '-d', str(pileup_depth), bamfile],
                            pileup_path,
                            ignored='\[mpileup\] 1 samples in 1 input files')
     with open(pileup_path, 'rU') as f2:
@@ -100,6 +104,7 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
         return defaultdict(nuc_count_factory)
     refmap = defaultdict(pos_nucs_factory)
     SAM_QUALITY_BASE = 33 # from SAM file format specification
+    PROPERLY_ALIGNED_FLAG = 2
     quality_cutoff_char = chr(SAM_QUALITY_BASE + quality_cutoff)
     
     for read_pair in matchmaker(samfile, include_singles=True):
@@ -107,12 +112,11 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
         if read2 and read1[2] != read2[2]:
             # region mismatch, ignore the read pair.
             continue
-        fwd_end = -1
         for read in read_pair:
             if not read:
                 continue
             (_qname,
-             _flag,
+             flag_str,
              rname,
              refpos_str,
              _mapq,
@@ -122,6 +126,9 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
              _tlen,
              seq,
              qual) = read[:11] # ignore optional fields
+            flag = int(flag_str)
+            if not (flag & PROPERLY_ALIGNED_FLAG):
+                continue
             pos_nucs = refmap[rname]
             pos = int(refpos_str)
             tokens = cigar_re.findall(cigar)
@@ -142,7 +149,7 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                             pos += 1
                     else:
                         token_end_pos += token_size
-                    if token_type == 'I' and token_size % 3 == 0 and pos > fwd_end:
+                    if token_type == 'I' and token_size % 3 == 0:
                         # replace previous base with insertion
                         prev_nuc_counts = pos_nucs[pos-1]
                         prev_nuc = seq[i-1]
@@ -153,18 +160,16 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                 if token_type == 'S':
                     pass
                 elif token_type == 'M':
-                    if pos > fwd_end:
-                        nuc_counts = pos_nucs[pos]
-                        if qual[i] >= quality_cutoff_char:
-                            nuc_counts[nuc] += 1
-                        else:
-                            nuc_counts['N'] = 0
-                        if debug_reports:
-                            counts = debug_reports.get((rname, pos))
-                            if counts is not None:
-                                counts[nuc + qual[i]] += 1
+                    nuc_counts = pos_nucs[pos]
+                    if qual[i] >= quality_cutoff_char:
+                        nuc_counts[nuc] += 1
+                    else:
+                        nuc_counts['N'] = 0
+                    if debug_reports:
+                        counts = debug_reports.get((rname, pos))
+                        if counts is not None:
+                            counts[nuc + qual[i]] += 1
                     pos += 1
-            fwd_end = pos-1
     if debug_reports:
         for key, counts in debug_reports.iteritems():
             mixtures = []
@@ -561,13 +566,18 @@ def pileup_to_conseq (handle, qCutoff):
     #counts = {}
     to_skip = 0
     last_pos = 0
+    positions_with_deletions = set()
     for line in handle:
         if to_skip > 0:
             to_skip -= 1
             continue
 
-        #label, pos, en, depth, astr, qstr
-        region,      pos, _,  _,     astr, qstr = line.strip('\n').split('\t')
+        fields = line.strip('\n').split('\t')
+        region, pos, _refbase, _depth = fields[:4]
+        if len(fields) != 6:
+            astr = qstr = ''
+        else:
+            astr, qstr = fields[-2:]
 
         if region not in conseqs:
             conseqs.update({region: ''})
@@ -579,20 +589,17 @@ def pileup_to_conseq (handle, qCutoff):
             conseqs[region] += 'N' * (pos - last_pos - 1)
         last_pos = pos
         base_counts = Counter()
+        if pos in positions_with_deletions:
+            base_counts['-'] = -1
+            positions_with_deletions.remove(pos)
         i = 0       # Current index for astr
         j = 0       # Current index for qstr
 
         while i < len(astr):
             if astr[i] == '^':
                 # start of new read
-                #counts[region] += 1
-                q = ord(qstr[j])-33
-                base = astr[i+2] if q >= qCutoff else 'N'
-                base_counts[base.upper()] += 1
-                i += 3
-                j += 1
+                i += 2
             elif astr[i] in '*':
-                base_counts['-'] += 1
                 i += 1
             elif astr[i] == '$':
                 i += 1
@@ -608,6 +615,8 @@ def pileup_to_conseq (handle, qCutoff):
                 if astr[i+1] == '+':
                     base_counts[token] += 1
                 else:
+                    for deletion_pos in range(pos+1, pos+indel_len+1):
+                        positions_with_deletions.add(deletion_pos)
                     base_counts[base] += 1
                 i += len(token)
                 j += 1
@@ -619,7 +628,8 @@ def pileup_to_conseq (handle, qCutoff):
                 i += 1
                 j += 1
 
-        base_counts['N'] = 0
+        if 'N' in base_counts or not base_counts:
+            base_counts['N'] = 0
         token = base_counts.most_common(1)[0][0]
 
         if '+' in token:
@@ -635,7 +645,7 @@ def pileup_to_conseq (handle, qCutoff):
 
     # remove in-frame deletions (multiples of 3), if any
     for region, conseq in conseqs.iteritems():
-        pat = re.compile('([ACGT])(---)+([ACGT])')
+        pat = re.compile('([ACGTN])(---)+([ACGT])')
         conseqs[region] = re.sub(pat, r'\g<1>\g<3>', conseq)
 
     return conseqs#, counts

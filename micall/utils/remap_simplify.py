@@ -14,23 +14,11 @@ from operator import attrgetter
 import re
 
 
-def write_simple_sam(samfile, sam_lines, included_positions=None):
+def write_simple_sam(samfile, sam_lines):
     for line in sam_lines:
-        if included_positions is not None and not line.startswith('@'):
-            fields = line.rstrip('\n').split('\t')
-            seq = list(fields[9])
-            qual = list(fields[10])
-            for i in range(len(seq)):
-                if i not in included_positions:
-                    seq[i] = 'A'
-                    qual[i] = '#'
-                fields[9] = ''.join(seq)
-                fields[10] = ''.join(qual)
-            
-            line = '\t'.join(fields) + '\n'
         samfile.write(line)
 
-def test(sam_lines, temp_prefix, samtools, included_positions=None):
+def test(sam_lines, temp_prefix, samtools):
     """ Build a consensus sequence using samtools and Python, then compare.
     
     @return: 'PASS' if the results match or it's a difference we're not
@@ -46,7 +34,7 @@ def test(sam_lines, temp_prefix, samtools, included_positions=None):
     try:
         samfile = os.fdopen(samfd, 'w')
         try:
-            write_simple_sam(samfile, sam_lines, included_positions)
+            write_simple_sam(samfile, sam_lines)
         finally:
             samfile.close()
         try:

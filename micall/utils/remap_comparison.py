@@ -10,6 +10,7 @@ from micall.core.remap import build_conseqs_with_python, \
     build_conseqs_with_samtools, line_counter, sam_to_conseqs
 from micall.utils import externals
 import shutil
+import traceback
 
 
 def build_comparison(samtools_conseqs, python2_conseqs, samfile):
@@ -49,7 +50,8 @@ def compare_conseqs(samfilename, samtools):
     try:
         samtools_conseqs = build_conseqs_with_samtools(samfilename, samtools, raw_count)
     except:
-        samtools_conseqs = "Error"
+        traceback.print_exc()
+        return
     
     python2_conseqs = build_conseqs_with_python(samfilename)
     
@@ -84,7 +86,7 @@ if __name__ == '__main__':
     samtools = externals.Samtools(settings.samtools_version,
                                   settings.samtools_path,
                                   logger)
-    for txtfilename in glob.glob(os.path.join(args.workdir, args.pattern)):
+    for txtfilename in sorted(glob.glob(os.path.join(args.workdir, args.pattern))):
         logger.info(os.path.basename(txtfilename))
         samfilename = os.path.splitext(txtfilename)[0] + '.sam'
         shutil.copy(txtfilename, samfilename)
