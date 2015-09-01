@@ -530,19 +530,28 @@ def matchmaker(samfile, include_singles=False):
     @return: yields a tuple for each read pair with fields split by tab chars:
         ([qname, flag, rname, ...], [qname, flag, rname, ...])
     """
+    ref_names = set()
     cached_rows = {}
     for line in samfile:
+        row = line.strip('\n').split('\t')
+        
         if line.startswith('@'):
+            if row[0] == '@SQ':
+                for field in row[1:]:
+                    field_name, value = field.split(':', 1)
+                    if field_name == 'SN':
+                        ref_names.add(value)
             continue
         
-        row = line.strip('\n').split('\t')
         qname = row[0]
-        old_row = cached_rows.pop(qname, None)
-        if old_row is None:
-            cached_rows[qname] = row
-        else:
-            # current row should be the second read of the pair
-            yield old_row, row
+        ref_name = row[2]
+        if ref_name in ref_names:
+            old_row = cached_rows.pop(qname, None)
+            if old_row is None:
+                cached_rows[qname] = row
+            else:
+                # current row should be the second read of the pair
+                yield old_row, row
     if include_singles:
         for row in cached_rows.itervalues():
             yield row, None
@@ -612,15 +621,20 @@ def pileup_to_conseq (handle, qCutoff):
                 indel_len = int(m.group().strip('+-'))
                 left = i+1 + len(m.group())
                 insertion = astr[left:(left+indel_len)]
-                q = ord(qstr[j])-33
-                base = astr[i].upper() if q >= qCutoff else 'N'
-                token = base + m.group() + insertion.upper()  # e.g., A+3ACG
-                if astr[i+1] == '+':
-                    base_counts[token] += 1
-                else:
+                if astr[i+1] == '-':
                     for deletion_pos in range(pos+1, pos+indel_len+1):
                         positions_with_deletions.add(deletion_pos)
-                    base_counts[base] += 1
+                base = astr[i].upper()
+                token = base + m.group() + insertion.upper()  # e.g., A+3ACG
+                q = ord(qstr[j])-33
+                if q < qCutoff:
+                    base_counts['N'] = 0
+                else:
+                    if astr[i+1] == '+':
+                        base_counts[token] += 1
+                    else:
+                        base_counts[base] += 1
+                        
                 i += len(token)
                 j += 1
             else:

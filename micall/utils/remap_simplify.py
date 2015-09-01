@@ -49,12 +49,7 @@ def test(sam_lines, temp_prefix, samtools):
         except:
             return 'FAIL' #It was valid for samtools, want it valid for Python
         
-        if samtools_conseqs.keys() != python2_conseqs.keys():
-            # samtools only uses reads that map to regions listed in the header,
-            # so we don't care if it ignored a whole region.
-            return 'PASS'
         result = 'PASS' if samtools_conseqs == python2_conseqs else 'FAIL'
-        print len(sam_lines), result, txtfilename
         return result
     finally:
         os.remove(txtfilename)
@@ -71,7 +66,13 @@ def ddmin(sam_lines, temp_prefix, samtools):
         while start < len(sam_lines):
             complement = sam_lines[:start] + sam_lines[start + subset_length:]
 
-            if test(complement, temp_prefix, samtools) == "FAIL":
+            result = test(complement, temp_prefix, samtools)
+            complement_description = '0-{} + {}-{}'.format(start,
+                                                           start+subset_length,
+                                                           len(sam_lines))
+            print len(complement), result, complement_description, txtfilename
+
+            if result == "FAIL":
                 sam_lines = complement
                 n = max(n - 1, 2)
                 some_complement_is_failing = True

@@ -64,6 +64,7 @@ def compare_conseqs(samfilename, samtools):
                 line = samfile.readline()
                 if not line.startswith('@'):
                     first_qname = line.split('\t')[0]
+                    samfile.seek(0)
                     break
                 
             print first_qname
