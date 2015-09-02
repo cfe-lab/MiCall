@@ -14,16 +14,17 @@ def write_simple_sam(samfile, sam_lines):
     for line in sam_lines:
         samfile.write(line)
 
-def test(remap_lines, temp_prefix, pssm, ruby_script):
+def test(remap_lines, temp_prefix, pssm, ruby_script, delete_results=True):
     """ Calculate G2P scores using ruby_script and Python, then compare.
     
     @return: 'PASS' if the results match or it's a difference we're not
         interested in, 'FAIL' otherwise
     """
-    with NamedTemporaryFile(suffix=".csv", prefix=temp_prefix, delete=False) as remap_file:
+    with NamedTemporaryFile(suffix=".csv", prefix=temp_prefix, delete=True) as remap_file:
         for line in remap_lines:
             remap_file.write(line)
         remap_file.flush()
+        remap_file.seek(0)
         
         filename_root = os.path.splitext(os.path.splitext(remap_file.name)[0])[0]
         nuc_filename = filename_root + ".nuc.csv"
@@ -46,14 +47,17 @@ def test(remap_lines, temp_prefix, pssm, ruby_script):
             logger.info('{} lines: {}'.format(len(remap_lines), result))
             return result
         finally:
-            if os.path.exists(ruby_out_filename):
-                os.remove(ruby_out_filename)
-            if os.path.exists(python_out_filename):
-                os.remove(python_out_filename)
+            if delete_results:
+                if os.path.exists(ruby_out_filename):
+                    os.remove(ruby_out_filename)
+                if os.path.exists(python_out_filename):
+                    os.remove(python_out_filename)
 
 def ddmin(remap_lines, temp_prefix, pssm, ruby_script):
     #assert test(remap_lines) == "FAIL"
 
+    header = remap_lines[:1]
+    remap_lines = remap_lines[1:]
     n = 2     # Initial granularity
     while len(remap_lines) >= 2:
         start = 0
@@ -63,7 +67,7 @@ def ddmin(remap_lines, temp_prefix, pssm, ruby_script):
         while start < len(remap_lines):
             complement = remap_lines[:start] + remap_lines[start + subset_length:]
 
-            if test(complement, temp_prefix, pssm, ruby_script) == "FAIL":
+            if test(header + complement, temp_prefix, pssm, ruby_script) == "FAIL":
                 remap_lines = complement
                 n = max(n - 1, 2)
                 some_complement_is_failing = True
@@ -76,17 +80,23 @@ def ddmin(remap_lines, temp_prefix, pssm, ruby_script):
             if n == len(remap_lines):
                 break
 
-    return remap_lines
+    return header + remap_lines
 
 def compare_conseqs(txtfilename, ruby_script, pssm):
-    with open(txtfilename, 'rU') as samfile:
-        remap_lines = samfile.readlines()
+    with open(txtfilename, 'rU') as remap_file:
+        remap_lines = remap_file.readlines()
     simple_prefix = os.path.splitext(txtfilename)[0] + '_simple'
     if test(remap_lines, simple_prefix, pssm, ruby_script) != 'PASS':
         simple_remap_lines = ddmin(remap_lines, simple_prefix, pssm, ruby_script)
-        with open(simple_prefix + '.txt', 'w') as simplefile:
-            for line in simple_remap_lines:
-                simplefile.write(line)
+        test(simple_remap_lines,
+             simple_prefix,
+             pssm,
+             ruby_script,
+             delete_results=False)
+        if not txtfilename.endswith('.txt'):
+            with open(simple_prefix + '.txt', 'w') as simplefile:
+                for line in simple_remap_lines:
+                    simplefile.write(line)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

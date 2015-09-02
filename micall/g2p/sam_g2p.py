@@ -1,10 +1,9 @@
 #! /usr/bin/env python
 
-import sys
 import re
 import argparse
 from csv import DictReader
-from micall.core.sam2aln import merge_pairs, cigar_re
+from micall.core.sam2aln import merge_pairs
 from micall.utils.translation import translate
 
 # screen for in-frame deletions
@@ -61,48 +60,75 @@ class RegionTracker:
 
 
 def apply_cigar_and_clip (cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
-    """
+    """ Applies a cigar string to recreate a read, then clips the read.
+
     Use CIGAR string (Compact Idiosyncratic Gapped Alignment Report) in SAM data
     to apply soft clips, insertions, and deletions to the read sequence.
-    Any insertions relative to the sample consensus sequence are discarded to
-    enforce a strict pairwise alignment, and returned separately in a
-    dict object.
+    
+    @param cigar: a string in the CIGAR format, describing the relationship
+        between the read sequence and the consensus sequence
+    @param seq: the sequence that was read
+    @param qual: quality codes for each base in the read
+    @param pos: first position of the read, given in zero-based consensus
+        coordinates
+    @param clip_from: first position to include after clipping, given in
+        zero-based consensus coordinates
+    @param clip_to: last position to include after clipping, given in
+        zero-based consensus coordinates, None means no clipping at the end
+    @return: the new sequence and the new quality string. If none of the read
+        was within the clipped range, then both strings will be blank.
     """
     newseq = '-' * int(pos)  # pad on left
     newqual = '!' * int(pos)
-    tokens = cigar_re.findall(cigar)
+    is_valid = re.match(r'^((\d+)([MIDNSHPX=]))*$', cigar)
+    tokens =   re.findall(r'(\d+)([MIDNSHPX=])', cigar)
+    if not is_valid:
+        raise RuntimeError('Invalid CIGAR string: {!r}.'.format(cigar))
     if len(tokens) == 0:
         return None, None, None
     left = 0
     for token in tokens:
-        length = int(token[:-1])
+        length, operation = token
+        length = int(length)
         # Matching sequence: carry it over
-        if token[-1] == 'M':
+        if operation == 'M':
             newseq += seq[left:(left+length)]
             newqual += qual[left:(left+length)]
             left += length
         # Deletion relative to reference: pad with gaps
-        elif token[-1] == 'D':
+        elif operation == 'D':
             newseq += '-'*length
             newqual += ' '*length  # Assign fake placeholder score (Q=-1)
         # Insertion relative to reference
-        elif token[-1] == 'I':
+        elif operation == 'I':
             its_quals = qual[left:(left+length)]
             if all([(ord(q)-33) >= QMIN for q in its_quals]):
                 # accept only high quality insertions relative to sample consensus
                 newseq += seq[left:(left+length)]
                 newqual += its_quals
+                if left + pos <= clip_from:
+                    clip_from += length
                 if clip_to:
                     clip_to += length  # accommodate insertion
             left += length
         # Soft clipping leaves the sequence in the SAM - so we should skip it
-        elif token[-1] == 'S':
+        elif operation == 'S':
             left += length
         else:
-            print "Unable to handle CIGAR token: {} - quitting".format(token)
-            sys.exit()
-
-    return newseq[clip_from:clip_to], newqual[clip_from:clip_to]
+            raise RuntimeError('Unsupported CIGAR token: {!r}.'.format(
+                ''.join(token)))
+        if left > len(seq):
+            raise RuntimeError(
+                'CIGAR string {!r} is too long for sequence {!r}.'.format(cigar,
+                                                                          seq))
+    
+    if left < len(seq):
+        raise RuntimeError(
+            'CIGAR string {!r} is too short for sequence {!r}.'.format(cigar,
+                                                                       seq))
+    
+    end = None if clip_to is None else clip_to + 1
+    return newseq[clip_from:end], newqual[clip_from:end]
 
 
 def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
@@ -126,7 +152,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
             # uninteresting region
             continue
 
-        seq2, qual2 = apply_cigar_and_clip(row['cigar'], row['seq'], row['qual'], int(row['pos'])-1, clip_from, clip_to+1)
+        seq2, qual2 = apply_cigar_and_clip(row['cigar'], row['seq'], row['qual'], int(row['pos'])-1, clip_from, clip_to)
 
         mate = pairs.get(row['qname'], None)
         if mate:
@@ -152,61 +178,62 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
     sorted.sort(reverse=True)
 
     # apply g2p algorithm to merged reads
-    with g2p_csv as f:
-        f.write('rank,count,g2p,fpr,aligned,error\n')  # CSV header
-        rank = 0
-        for count, s in sorted:
-            # remove in-frame deletions
-            seq = re.sub(pat, r'\g<1>\g<3>', s)
+    g2p_csv.write('rank,count,g2p,fpr,aligned,error\n')  # CSV header
+    rank = 0
+    for count, s in sorted:
+        # remove in-frame deletions
+        seq = re.sub(pat, r'\g<1>\g<3>', s)
 
-            rank += 1
-            prefix = '%d,%d' % (rank, count)
-            seqlen = len(seq)
-            if seq.upper().count('N') > (0.5*seqlen):
-                # if more than 50% of the sequence is garbage
-                f.write('%s,,,,low quality\n' % prefix)
-                continue
+        rank += 1
+        prefix = '%d,%d' % (rank, count)
+        seqlen = len(seq)
+        if seq.upper().count('N') > (0.5*seqlen):
+            # if more than 50% of the sequence is garbage
+            g2p_csv.write('%s,,,,low quality\n' % prefix)
+            continue
 
-            if seqlen == 0:
-                f.write('%s,,,,zerolength\n' % prefix)
-                continue
+        if seqlen == 0:
+            g2p_csv.write('%s,,,,zerolength\n' % prefix)
+            continue
 
-            prot = translate(seq, 0, ambig_char='X')
+        prot = translate(seq, 0, ambig_char='X', translate_mixtures=False)
 
-            # sanity check 1 - bounded by cysteines
-            if not prot.startswith('C') or not prot.endswith('C'):
-                f.write('%s,,,%s,cysteines\n' % (prefix, prot))
-                continue
+        # sanity check 1 - bounded by cysteines
+        if not prot.startswith('C') or not prot.endswith('C'):
+            g2p_csv.write('%s,,,%s,cysteines\n' % (prefix, prot))
+            continue
 
-            # sanity check 2 - too many ambiguous codons
-            if prot.count('X') > 2:
-                f.write('%s,,,%s,>2ambiguous\n' % (prefix, prot))
-                continue
+        # sanity check 2 - too many ambiguous codons
+        if prot.count('X') > 2:
+            g2p_csv.write('%s,,,%s,>2ambiguous\n' % (prefix, prot))
+            continue
 
-            # sanity check 3 - no stop codons
-            if prot.count('*') > 0:
-                f.write('%s,,,%s,stop codons\n' % (prefix, prot))
-                continue
+        # sanity check 3 - no stop codons
+        if prot.count('*') > 0:
+            g2p_csv.write('%s,,,%s,stop codons\n' % (prefix, prot))
+            continue
 
-            # sanity check 4 - V3 length in range 32-40 inclusive
-            if len(prot) < 32 or len(prot) > 40:
-                f.write('%s,,,%s,length\n' % (prefix, prot))
-                continue
+        # sanity check 4 - V3 length in range 32-40 inclusive
+        if len(prot) < 32 or len(prot) > 40:
+            g2p_csv.write('%s,,,%s,length\n' % (prefix, prot))
+            continue
 
-            score, aligned = pssm.run_g2p(seq)
+        score, aligned = pssm.run_g2p(seq)
 
-            try:
-                aligned2 = ''.join([aa_list[0] if len(aa_list) == 1 else '[%s]'%''.join(aa_list)
-                                    for aa_list in aligned])
-            except:
-                # sequence failed to align
-                f.write('%s,%s,,,failed to align\n' % (prefix, score))
-                continue
+        try:
+            aligned2 = ''.join([aa_list[0] if len(aa_list) == 1 else '[%s]'%''.join(aa_list)
+                                for aa_list in aligned])
+        except:
+            # sequence failed to align
+            g2p_csv.write('%s,%s,,,failed to align\n' % (prefix, score))
+            continue
 
-            fpr = pssm.g2p_to_fpr(score)
-            f.write(','.join(map(str, [prefix, score, fpr, aligned2, 'ambiguous' if '[' in aligned2 else '']))+'\n')
-
-        f.close()
+        fpr = pssm.g2p_to_fpr(score)
+        g2p_csv.write(','.join(map(str, [prefix,
+                                         score,
+                                         fpr,
+                                         aligned2,
+                                         'ambiguous' if '[' in aligned2 else '']))+'\n')
 
 
 def main():

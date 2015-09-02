@@ -29,20 +29,27 @@ ambig_dict = dict(("".join(sorted(v)), k)
                   if k != '-')
 
 
-def translate (seq, offset=0, resolve=False, return_list=False, ambig_char='?'):
+def translate(seq,
+              offset=0,
+              resolve=False,
+              return_list=False,
+              ambig_char='?',
+              translate_mixtures=True):
     """
     Translate codon (nucleotide) sequence into amino acids.
-    :param seq: the nucleotide sequence
-    :param offset: prefix nucleotide sequence by X bases to shift reading frame
-    :param resolve: whether to assign an arbitrary residue at ambiguous codons
-    :param return_list: if True, then returns a list of lists containing all amino
+    @param seq: the nucleotide sequence
+    @param offset: prefix nucleotide sequence by X bases to shift reading frame
+    @param resolve: whether to assign an arbitrary residue at ambiguous codons
+    @param return_list: if True, then returns a list of lists containing all amino
         acid resolutions at each codon
-    :return: string (AA sequence) or list of lists if return_list=True
+    @param translate_mixtures: True if a codon should be translated when it has
+        an unambiguous mixture, such as CTN translated to L.
+    @return: string (AA sequence) or list of lists if return_list=True
     """
 
     seq = '-'*offset + seq.upper()
     aa_list = []
-    aa_seq = ''	# use to align against reference, for resolving indels
+    aa_seq = '' # use to align against reference, for resolving indels
 
     # loop over codon sites in nucleotide sequence
     for codon_site in xrange(0, len(seq), 3):
@@ -68,6 +75,8 @@ def translate (seq, offset=0, resolve=False, return_list=False, ambig_char='?'):
             aa = codon_dict[codon]
             aa_seq += aa
             aa_list.append([aa])
+        elif not translate_mixtures:
+            aa_seq += ambig_char
         else:
             # expand codon into all possible resolutions of mixtures
             codons = [codon]
