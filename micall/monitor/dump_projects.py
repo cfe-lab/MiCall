@@ -1,7 +1,7 @@
 import json
 import sys
 
-import qai_helper
+from micall.monitor import qai_helper
 from micall import settings
 
 def check_key_positions(projects, warning_file):
