@@ -105,7 +105,7 @@ if __name__ == '__main__':
     parser.add_argument('workdir', help='path to folder holding SAM files')
     parser.add_argument('ruby_script', help='path to Ruby version of G2P')
     parser.add_argument('--pattern',
-                        default='*.remap_head.csv',
+                        default='*.remap.csv',
                         help='File name pattern to match SAM files')
 
     args = parser.parse_args()

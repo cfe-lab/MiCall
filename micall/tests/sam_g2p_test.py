@@ -39,9 +39,8 @@ Example_read_1,147,HIV1B-env-seed,886,44,9M,=,877,-9,CCCAACAAC,AAAAAAAAA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,aligned,error
-1,1,,,---PNN,cysteines
+1,1,,,CTRPNN,cysteines
 """
-        #TODO: Better fix for #216, and expect this: 1,1,,,CTRPNN,cysteines
         
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
 
@@ -50,12 +49,118 @@ rank,count,g2p,fpr,aligned,error
     def testSynonymMixture(self):
         remap_csv = StringIO("""\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
-Example_read_1,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAGGN,AAAAAAAAA
-Example_read_1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAGGN,AAAAAAAAA
+Example_read_1,99,HIV1B-env-seed,877,44,12M,=,877,12,TGTACAGGNTGT,AAAAAAAA#AAA
+Example_read_1,147,HIV1B-env-seed,877,44,12M,=,877,-12,TGTACAGGNTGT,AAAAAAAA#AAA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,aligned,error
-1,1,,,CTX,cysteines
+1,1,,,CTXC,ambiguous
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        
+    def testLowQuality(self):
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,877,44,9M,=,877,9,TNTNNNGGN,A#A###AA#
+Example_read_1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TNTNNNGGN,A#A###AA#
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,aligned,error
+1,1,,,,low quality
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        
+    def testPartialCodon(self):
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,877,44,8M,=,877,8,TGTACAGG,AAAAAAAA
+Example_read_1,147,HIV1B-env-seed,877,44,8M,=,877,-8,TGTACAGG,AAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,aligned,error
+1,1,,,,notdiv3
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        
+    def testStopCodon(self):
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTTAGTGT,AAAAAAAAA
+Example_read_1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTTAGTGT,AAAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,aligned,error
+1,1,,,C*C,stop codons
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        
+    def testAllClipped(self):
+        """ In this scenario, the reads map outside the clipping region. """
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,868,44,9M,=,877,9,TGTACAGGG,AAAAAAAAA
+Example_read_1,147,HIV1B-env-seed,868,44,9M,=,877,-9,TGTACAGGG,AAAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,aligned,error
+1,1,,,,zerolength
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        
+    def testLength(self):
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTGGGTGT,AAAAAAAAA
+Example_read_1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTGGGTGT,AAAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,aligned,error
+1,1,,,CGC,length
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        
+    def testDeletion(self):
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,877,44,3M3D6M,=,877,9,TGTGGGTGT,AAAAAAAAA
+Example_read_1,147,HIV1B-env-seed,877,44,3M3D6M,=,877,-9,TGTGGGTGT,AAAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,aligned,error
+1,1,,,CGC,length
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        
+    def testDeletionAtStart(self):
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,874,44,3M3D6M,=,874,9,TGTGGGTGT,AAAAAAAAA
+Example_read_1,147,HIV1B-env-seed,874,44,3M3D6M,=,874,-9,TGTGGGTGT,AAAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,aligned,error
+1,1,,,-GC,length
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)

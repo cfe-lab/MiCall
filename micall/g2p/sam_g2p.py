@@ -132,6 +132,7 @@ def apply_cigar_and_clip (cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
 
 
 def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
+    is_ruby_compatible = False # Used for comparing results with old Ruby code
     pairs = {}  # cache read for pairing
     merged = {}  # tabular merged sequence variants
     tracker = RegionTracker('V3LOOP')
@@ -159,12 +160,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
             seq1 = mate['seq']
             qual1 = mate['qual']
 
-            # merge pairs only if they are the same length
-            if len(seq1) == len(seq2):
-                mseq = merge_pairs(seq1, seq2, qual1, qual2)
-            else:
-                # implies an insertion not covered in one read mate
-                mseq = seq1 if len(seq1) > len(seq2) else seq2
+            mseq = merge_pairs(seq1, seq2, qual1, qual2)
 
             if mseq not in merged:
                 merged.update({mseq: 0})
@@ -182,7 +178,10 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
     rank = 0
     for count, s in sorted:
         # remove in-frame deletions
-        seq = re.sub(pat, r'\g<1>\g<3>', s)
+        if is_ruby_compatible:
+            seq = re.sub('---', '', s)
+        else:
+            seq = re.sub(pat, r'\g<1>\g<3>', s)
 
         rank += 1
         prefix = '%d,%d' % (rank, count)
@@ -191,7 +190,11 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
             # if more than 50% of the sequence is garbage
             g2p_csv.write('%s,,,,low quality\n' % prefix)
             continue
-
+     
+        if seqlen % 3 != 0:
+            g2p_csv.write('%s,,,,notdiv3\n' % prefix)
+            continue
+     
         if seqlen == 0:
             g2p_csv.write('%s,,,,zerolength\n' % prefix)
             continue
@@ -204,9 +207,14 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
             continue
 
         # sanity check 2 - too many ambiguous codons
-        if prot.count('X') > 2:
-            g2p_csv.write('%s,,,%s,>2ambiguous\n' % (prefix, prot))
-            continue
+        if is_ruby_compatible:
+            if prot.count('X') > 0:
+                g2p_csv.write('%s,,,%s,ambiguous\n' % (prefix, prot))
+                continue
+        else:
+            if prot.count('X') > 2:
+                g2p_csv.write('%s,,,%s,> 2 ambiguous\n' % (prefix, prot))
+                continue
 
         # sanity check 3 - no stop codons
         if prot.count('*') > 0:
@@ -219,6 +227,8 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
             continue
 
         score, aligned = pssm.run_g2p(seq)
+        if is_ruby_compatible:
+            score = round(score, 10) if score is not None else score
 
         try:
             aligned2 = ''.join([aa_list[0] if len(aa_list) == 1 else '[%s]'%''.join(aa_list)

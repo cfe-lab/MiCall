@@ -99,27 +99,28 @@ class Pssm ():
         if g2p is None or g2p < 0.0 or g2p > 1.0:
             return None
 
-        # search by bi-section of sorted list
+        # binary search of sorted list
         left = 0
         right = len(self.g2p_fpr_data)
-        pivot_g2p, pivot_fpr = None, None
         while True:
             pivot = (right+left) / 2
             pivot_g2p, pivot_fpr = self.g2p_fpr_data[pivot]
             if g2p == pivot_g2p:
                 # found an exact match
-                break
+                return pivot_fpr
             elif g2p < pivot_g2p:
                 right = pivot
             else:
                 left = pivot
 
             if (right-left) == 1:
-                # adjacent indices, use midpoint
-                pivot_fpr = (self.g2p_fpr_data[right][1]+self.g2p_fpr_data[left][1]) / 2.
-                break
+                # adjacent indices, use one with closest G2P value
+                left_g2p, left_fpr = self.g2p_fpr_data[left]
+                right_g2p, right_fpr = self.g2p_fpr_data[right]
+                if abs(right_g2p - g2p) < abs(left_g2p - g2p):
+                    return right_fpr
+                return left_fpr
 
-        return pivot_fpr
 
     def align_aminos(self, seq, gapIns=3, removeinserts=False, qachecks=False):
         """
@@ -197,8 +198,10 @@ class Pssm ():
     def run_g2p(self, seqs):
         """
         Wrapper function to calculate g2p score over a set of sequences
-        :param seqs: a single sequence (str) or list of sequences
-        :return: a tuple of g2p scores (float or list) and the aligned sequence (if single)
+        @param seqs: a single sequence (str) or list of sequences
+        @return: a tuple of g2p scores (float or list) and the aligned
+            sequence (if a single sequence was requested). Score may also be
+            None if the alignment failed.
         """
         aa_aligned = ''
         is_array = (type(seqs) is list)
