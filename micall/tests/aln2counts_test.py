@@ -17,7 +17,7 @@ class StubbedSequenceReport(aln2counts.SequenceReport):
                                            conseq_mixture_cutoffs)
         self.overrides = {}
         
-    def _pair_align(self, reference, query):
+    def _pair_align(self, reference, query, *args, **kwargs):
         override = self.overrides.get((reference, query))
         return (override
                 if override is not None

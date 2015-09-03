@@ -1,13 +1,20 @@
 import unittest
 from StringIO import StringIO
+
 from micall.g2p.sam_g2p import sam_g2p, apply_cigar_and_clip
 from micall.g2p.pssm_lib import Pssm
+import os
 
 class SamG2PTest(unittest.TestCase):
     def setUp(self):
         super(SamG2PTest, self).setUp()
-        self.pssm = Pssm(path_to_lookup='../g2p/g2p_fpr.txt',
-                         path_to_matrix='../g2p/g2p.matrix')
+        if os.path.exists('../g2p/g2p_fpr.txt'):
+            self.pssm = Pssm(path_to_lookup='../g2p/g2p_fpr.txt',
+                             path_to_matrix='../g2p/g2p.matrix')
+        else:
+            self.pssm = Pssm(path_to_lookup='micall/g2p/g2p_fpr.txt',
+                             path_to_matrix='micall/g2p/g2p.matrix')
+            
         self.nuc_csv = StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
 HIV1B-env-seed,V3LOOP,15,877,1,0,0,0,100
