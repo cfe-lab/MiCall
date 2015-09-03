@@ -134,10 +134,81 @@ class SamBaseTest(unittest.TestCase):
                      SamBase('C', 'K', 3, 'M', qname, flag, rname, mapq)]
         #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
         sam_lines = ["test1\t99\ttest\t1\t44\t1M1D1M\t=\t1\t2\tAC\tJK\n"]
-         
+        
         self.assertJoins(sam_bases, sam_lines)
         self.assertSplits(sam_lines, sam_bases)
      
+    def testDeleteAtEndOfLine(self):
+        qname = 'test1'
+        qname2 = 'test2'
+        flag = '99'
+        rname = 'test'
+        mapq = '44'
+        sam_bases = [SamBase('A', 'J', 1, 'M', qname, flag, rname, mapq),
+                     SamBase(None, None, 2, 'D', qname, flag, rname, mapq),
+                     SamBase('C', 'K', 3, 'M', qname2, flag, rname, mapq)]
+        #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
+        sam_lines = ["test1\t99\ttest\t1\t44\t1M\t=\t1\t1\tA\tJ\n",
+                     "test2\t99\ttest\t3\t44\t1M\t=\t3\t1\tC\tK\n"]
+        
+        self.assertJoins(sam_bases, sam_lines)
+     
+    def testDeleteAtStartOfLine(self):
+        qname = 'test1'
+        qname2 = 'test2'
+        flag = '99'
+        rname = 'test'
+        mapq = '44'
+        sam_bases = [SamBase('A', 'J', 1, 'M', qname, flag, rname, mapq),
+                     SamBase(None, None, 2, 'D', qname2, flag, rname, mapq),
+                     SamBase('C', 'K', 3, 'M', qname2, flag, rname, mapq)]
+        #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
+        sam_lines = ["test1\t99\ttest\t1\t44\t1M\t=\t1\t1\tA\tJ\n",
+                     "test2\t99\ttest\t3\t44\t1M\t=\t3\t1\tC\tK\n"]
+        
+        self.assertJoins(sam_bases, sam_lines)
+    
+    def testDeleteAfterSoftClip(self):
+        qname = 'test1'
+        flag = '99'
+        rname = 'test'
+        mapq = '44'
+        sam_bases = [SamBase('A', 'J', None, 'S', qname, flag, rname, mapq),
+                     SamBase(None, None, 2, 'D', qname, flag, rname, mapq),
+                     SamBase('C', 'K', 3, 'M', qname, flag, rname, mapq)]
+        #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
+        sam_lines = ["test1\t99\ttest\t3\t44\t1S1M\t=\t3\t2\tAC\tJK\n"]
+        
+        self.assertJoins(sam_bases, sam_lines)
+    
+    def testDeleteAfterInsert(self):
+        qname = 'test1'
+        flag = '99'
+        rname = 'test'
+        mapq = '44'
+        sam_bases = [SamBase('A', 'J', 1, 'M', qname, flag, rname, mapq),
+                     SamBase('T', 'L', None, 'I', qname, flag, rname, mapq),
+                     SamBase(None, None, 3, 'D', qname, flag, rname, mapq),
+                     SamBase('C', 'K', 4, 'M', qname, flag, rname, mapq)]
+        #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
+        sam_lines = ["test1\t99\ttest\t1\t44\t1M1I1M1D1M\t=\t1\t4\tATAC\tJL#K\n"]
+        
+        self.assertJoins(sam_bases, sam_lines)
+    
+    def testInsertAfterDelete(self):
+        qname = 'test1'
+        flag = '99'
+        rname = 'test'
+        mapq = '44'
+        sam_bases = [SamBase('A', 'J', 1, 'M', qname, flag, rname, mapq),
+                     SamBase(None, None, 2, 'D', qname, flag, rname, mapq),
+                     SamBase('T', 'L', None, 'I', qname, flag, rname, mapq),
+                     SamBase('C', 'K', 4, 'M', qname, flag, rname, mapq)]
+        #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
+        sam_lines = ["test1\t99\ttest\t1\t44\t1M1D2M\t=\t1\t3\tAAC\tJ#K\n"]
+        
+        self.assertJoins(sam_bases, sam_lines)
+    
     def testSoftClip(self):
         qname = 'test1'
         flag = '99'

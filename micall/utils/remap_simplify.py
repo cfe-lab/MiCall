@@ -91,6 +91,7 @@ class SamHeader(object):
     def __init__(self, line):
         self.line = line
         self.qname = self.flag = self.pos = None
+        self.token_type = 'H'
         
     def __repr__(self):
         return 'SamHeader({!r})'.format(self.line)
@@ -152,6 +153,31 @@ class SamBase(object):
         return bases
     
     @classmethod
+    def _drop_hanging_indels(cls, sam_bases):
+        """ Yield all the entries in sam_bases, except hanging indels.
+        
+        If an insertion or deletion appears before the first 'M' or after the
+        last 'M', don't yield it. Yield everything else.
+        """
+        indels = []
+        is_started = False
+        for sam_base in sam_bases:
+            if sam_base.token_type in 'ID':
+                if is_started:
+                    # Can't have an insertion after a deletion, because they
+                    # end up right next to each other.
+                    if not (indels and
+                            indels[-1].token_type == 'D' and
+                            sam_base.token_type == 'I'):
+                        indels.append(sam_base)
+            else:
+                if sam_base.token_type == 'M':
+                    is_started = True
+                    for indel in indels:
+                        yield indel
+                yield sam_base
+    
+    @classmethod
     def _fill_positions(cls, sam_bases):
         """ Fill in the gaps in a sequence of bases.
         
@@ -159,7 +185,7 @@ class SamBase(object):
         @return: a sequence of bases without gaps
         """
         prev_pos = None
-        for sam_base in sam_bases:
+        for sam_base in cls._drop_hanging_indels(sam_bases):
             next_pos = sam_base.pos
             if next_pos is not None:
                 if prev_pos is not None:
@@ -188,6 +214,7 @@ class SamBase(object):
             token_size = 0
             fields = None
             pos = None
+            sam_base = None
             for sam_base in cls._fill_positions(line_bases):
                 try:
                     fields = [sam_base.line]
@@ -204,23 +231,24 @@ class SamBase(object):
                     if sam_base.nuc:
                         seq += sam_base.nuc
                         quality += sam_base.quality
-            if not fields:
-                cigar += '{}{}'.format(token_size, token_type)
-                len_str = str(len(seq))
-                if flag == '147':
-                    len_str = '-' + len_str
-                fields = [qname,
-                          flag,
-                          sam_base.rname,
-                          str(pos),
-                          sam_base.mapq,
-                          cigar,
-                          '=',
-                          str(pos),
-                          len_str,
-                          seq,
-                          quality]
-            sam_lines.append('\t'.join(fields) + '\n')
+            if sam_base:
+                if not fields:
+                    cigar += '{}{}'.format(token_size, token_type)
+                    len_str = str(len(seq))
+                    if flag == '147':
+                        len_str = '-' + len_str
+                    fields = [qname,
+                              flag,
+                              sam_base.rname,
+                              str(pos),
+                              sam_base.mapq,
+                              cigar,
+                              '=',
+                              str(pos),
+                              len_str,
+                              seq,
+                              quality]
+                sam_lines.append('\t'.join(fields) + '\n')
         return sam_lines
 
     @classmethod
@@ -311,3 +339,4 @@ if __name__ == '__main__':
         logger.info(os.path.basename(txtfilename))
         compare_conseqs(txtfilename, samtools)
     logger.info('Done.')
+    

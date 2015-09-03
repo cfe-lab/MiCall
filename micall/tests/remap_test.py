@@ -202,6 +202,29 @@ class PileupToConseqTest(unittest.TestCase):
         conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
         
         self.assertDictEqual(expected_conseqs, conseqs)
+    
+    def testReadAfterLowQualityDeletion(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t1\tN\t1\t^7c-1n\tA\n" +
+            "GP41-seed\t2\tN\t2\t*^7c\t1A\n" +
+            "GP41-seed\t3\tN\t2\tg$a\t1#\n" +
+            "GP41-seed\t4\tN\t1\tg$\t-\n")
+        qCutoff = 20
+        expected_conseqs= {'GP41-seed': "CCNN"}
+        
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+    
+    def testAllLowQuality(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t3\tN\t1\t^Kc$\t#\n")
+        qCutoff = 20
+        expected_conseqs= {}
+        
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
 
 
 class SamToConseqsTest(unittest.TestCase):

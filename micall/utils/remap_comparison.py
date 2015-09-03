@@ -17,7 +17,7 @@ def build_comparison(samtools_conseqs, python2_conseqs, samfile):
     report = ""
     debug_reports = {}
     for refname, samtools_conseq in samtools_conseqs.iteritems():
-        python2_conseq = python2_conseqs[refname]
+        python2_conseq = python2_conseqs.get(refname, '')
         for i, (s, p) in enumerate(map(None, samtools_conseq, python2_conseq)):
             if s != p:
                 debug_reports[(refname, i+1)] = None
@@ -28,8 +28,8 @@ def build_comparison(samtools_conseqs, python2_conseqs, samfile):
         for refname, pos in debug_reports.iterkeys():
             ref_positions[refname].append(pos)
         for refname, positions in ref_positions.iteritems():
-            python2_conseq = python2_conseqs[refname]
-            samtools_conseq = samtools_conseqs[refname]
+            python2_conseq = python2_conseqs.get(refname, '')
+            samtools_conseq = samtools_conseqs.get(refname, '')
             positions.sort()
             for pos in positions:
                 pos_report = debug_reports[(refname, pos)]

@@ -613,6 +613,7 @@ def pileup_to_conseq (handle, qCutoff):
                 i += 2
             elif astr[i] in '*':
                 i += 1
+                j += 1
             elif astr[i] == '$':
                 i += 1
             elif i < len(astr)-1 and astr[i+1] in '+-':
@@ -661,11 +662,14 @@ def pileup_to_conseq (handle, qCutoff):
             conseqs[region] += token
 
     # remove in-frame deletions (multiples of 3), if any
+    trimmed_conseqs = {}
     for region, conseq in conseqs.iteritems():
-        pat = re.compile('([ACGTN])(---)+([ACGT])')
-        conseqs[region] = re.sub(pat, r'\g<1>\g<3>', conseq)
+        if not re.match('^N*$', conseq):
+            trimmed_conseqs[region] = re.sub('([ACGTN])(---)+([ACGT])',
+                                             r'\g<1>\g<3>',
+                                             conseq)
 
-    return conseqs#, counts
+    return trimmed_conseqs
 
 def main():
     parser = argparse.ArgumentParser(
