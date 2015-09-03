@@ -108,7 +108,7 @@ def apply_cigar_and_clip (cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
                 newqual += its_quals
                 if left + pos <= clip_from:
                     clip_from += length
-                if clip_to:
+                if left + pos <= clip_to:
                     clip_to += length  # accommodate insertion
             left += length
         # Soft clipping leaves the sequence in the SAM - so we should skip it

@@ -54,7 +54,7 @@ Example_read_1,147,HIV1B-env-seed,877,44,12M,=,877,-12,TGTACAGGNTGT,AAAAAAAA#AAA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,aligned,error
-1,1,,,CTXC,ambiguous
+1,1,,,CTXC,length
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -160,7 +160,7 @@ Example_read_1,147,HIV1B-env-seed,874,44,3M3D6M,=,874,-9,TGTGGGTGT,AAAAAAAAA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,aligned,error
-1,1,,,-GC,length
+1,1,,,-GC,cysteines
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -431,3 +431,45 @@ class CigarTest(unittest.TestCase):
         self.assertEqual(
             "CIGAR string '10M' is too long for sequence 'AAACAACCA'.",
             result.exception.message)
+        
+    def testInsertionAfterClipping(self):
+        cigar = '3M3I3M'
+        seq     = "ACTTAGAAA"
+        quality = 'AAABBBDDD'
+        pos = 0
+        clip_from = 0
+        clip_to = 2
+        expected_seq     = 'ACT'
+        expected_quality = 'AAA'
+           
+        clipped_seq, clipped_quality = apply_cigar_and_clip(
+          cigar,
+          seq,
+          quality,
+          pos,
+          clip_from,
+          clip_to)
+           
+        self.assertEqual(expected_seq, clipped_seq)
+        self.assertEqual(expected_quality, clipped_quality)
+        
+    def testInsertionAtEndOfClipping(self):
+        cigar = '3M3I3M'
+        seq     = "ACTTAGAAA"
+        quality = 'AAABBBDDD'
+        pos = 0
+        clip_from = 0
+        clip_to = 3
+        expected_seq     = 'ACTTAGA'
+        expected_quality = 'AAABBBD'
+           
+        clipped_seq, clipped_quality = apply_cigar_and_clip(
+          cigar,
+          seq,
+          quality,
+          pos,
+          clip_from,
+          clip_to)
+           
+        self.assertEqual(expected_seq, clipped_seq)
+        self.assertEqual(expected_quality, clipped_quality)
