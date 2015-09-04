@@ -11,8 +11,12 @@ from micall.core.remap import build_conseqs_with_python, \
 from micall.utils import externals
 import shutil
 import traceback
+import itertools
+from operator import itemgetter
 
 
+def get_report_key(debug_report):
+    return
 def build_comparison(samtools_conseqs, python2_conseqs, samfile):
     report = ""
     debug_reports = {}
@@ -31,6 +35,7 @@ def build_comparison(samtools_conseqs, python2_conseqs, samfile):
             python2_conseq = python2_conseqs.get(refname, '')
             samtools_conseq = samtools_conseqs.get(refname, '')
             positions.sort()
+            lines = []
             for pos in positions:
                 pos_report = debug_reports[(refname, pos)]
                 python2_nuc = (pos <= len(python2_conseq) and
@@ -39,10 +44,22 @@ def build_comparison(samtools_conseqs, python2_conseqs, samfile):
                 samtools_nuc = (pos <= len(samtools_conseq) and
                                samtools_conseq[pos-1] or
                                'None')
-                report += '{}: {}=>{} {}\n'.format((refname, pos),
-                                                   samtools_nuc,
-                                                   python2_nuc,
-                                                   pos_report)
+                lines.append((pos, samtools_nuc, python2_nuc, pos_report))
+            for key, group in itertools.groupby(lines, itemgetter(1, 2, 3)):
+                samtools_nuc, python2_nuc, pos_report = key
+                dup_lines = list(group)
+                pos_list = []
+                if len(dup_lines) < 10:
+                    pos_list = map(itemgetter(0), dup_lines)
+                else:
+                    positions = map(itemgetter(0), dup_lines)
+                    pos_list = ['{}-{}'.format(min(positions), max(positions))]
+                for pos in pos_list:
+                    report += '({}, {}): {}=>{} {}\n'.format(refname,
+                                                             pos,
+                                                             samtools_nuc,
+                                                             python2_nuc,
+                                                             pos_report)
     return report
 
 def compare_conseqs(samfilename, samtools):
@@ -54,7 +71,6 @@ def compare_conseqs(samfilename, samtools):
         return
     
     python2_conseqs = build_conseqs_with_python(samfilename)
-    
     
     if python2_conseqs != samtools_conseqs:
         # Some debugging code to compare the two results.
@@ -84,6 +100,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     logger = init_logging_console_only(logging.INFO)
+    assert settings.samtools_path is not None
     samtools = externals.Samtools(settings.samtools_version,
                                   settings.samtools_path,
                                   logger)

@@ -214,11 +214,15 @@ to use [PyInstaller][pyinstaller].
 3. Install [git for Windows][wingit], and clone the MiCall repository.
 4. Follow the instructions above to install the Gotoh package from the
     `micall/alignment` folder.
-5. Use pip to install pyinstaller.
+5. Copy `settings_default.py` to `settings.py` and edit the settings. Point
+    bowtie2 at the copy in the bin folder.
+6. Try running micall.py and processing the FASTQ files in
+    `micall/tests/microtest`.
+7. Use pip to install pyinstaller.
 
     pip install pyinstaller
 
-6. Run pyinstaller.
+8. Run pyinstaller.
 
     cd git\micall
     pyinstaller micall.spec
@@ -355,9 +359,28 @@ similar steps to setting up a development workstation. Follow these steps:
         python MISEQ_MONITOR.py &>/dev/null &
         tail -f /data/miseq/MISEQ_MONITOR_OUTPUT.log
 
-11. Remove the pre-release flag from the release.
-12. Send an e-mail to users describing the major changes in the release.
-13. Close the milestone for this release, create one for the next release, and
+11. Start building the Windows package by pulling the code in Git Bash:
+
+        cd Documents/git/micall/
+        git fetch
+        git checkout tags/vX.Y
+
+12. Compare the settings file in Git Bash, and update anything that has changed.
+    Use bowtie2 from the bin directory, and you don't need anything in the
+    Monitor Settings section.
+    
+        diff micall/settings_default.py settings.py
+
+13. Run pyinstaller from a regular command prompt.
+
+    cd git\micall
+    pyinstaller micall.spec
+
+14. Upload `micall.exe` to GitHub as a binary for the release.
+15. Remove the pre-release flag from the release.
+16. Send an e-mail to users describing the major changes in the release.
+17. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
+
 
 [release]: https://help.github.com/categories/85/articles
