@@ -4,6 +4,7 @@ To make pipeline portable, allow user to specify local paths and thread counts.
 
 ### Core settings ###
 pipeline_version = '7.0'        # Change for each release
+pipeline_version_kive_id = 98   # Also change for each release
 are_temp_folders_deleted = True # Should FIFO worker clean up working folders?
 
 ## Mapping parameters

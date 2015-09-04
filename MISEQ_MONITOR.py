@@ -24,10 +24,17 @@ from micall.utils.sample_sheet_parser import sample_sheet_parser
 from micall.settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
     NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, \
     qai_path, qai_user, qai_password, instrument_number, nruns_to_store,\
-    QC_UPLOADED
+    QC_UPLOADED, pipeline_version_kive_id, quality_cdt_kive_id
 from micall.monitor import update_qai
+from micall.utils.collate import collate_labeled_files
 import itertools
 import operator
+
+
+from kiveapi import KiveAPI
+import sched
+import time
+
 
 
 if sys.version_info[:2] != (2, 7):
@@ -82,12 +89,6 @@ def post_files(files, destination):
     for f in files:
         execute_command(['rsync', '-a', f, '{}/{}'.format(destination, os.path.basename(f))])
 
-processed_runs = set()
-logger = None
-failure_message = None
-
-# Process runs flagged for processing not already processed by this version of the pipeline
-
 
 def download_quality(run_info_path, destination, read_lengths):
     """ Download quality control data for the run.
@@ -134,6 +135,86 @@ def download_quality(run_info_path, destination, read_lengths):
                 expected_cycle += 16
     return qcRunId
 
+
+def collate_results(run_folder, results_folder, logger):
+    """
+    Collate pipeline logs and outputs into a small set of files.
+    :param run_folder: Path to write collated files
+    :param logger: miseq_logging object
+    :return:
+    """
+    logger.info("Collating *.coverage.log files")
+    miseq_logging.collate_logs(run_folder, "coverage.log", "coverage.log")
+
+    logger.info("Collating *.mapping.log files")
+    miseq_logging.collate_logs(run_folder, "mapping.log", "mapping.log")
+
+    logger.info("Collating *.sam2aln.*.log files")
+    miseq_logging.collate_logs(run_folder, "sam2aln.log", "sam2aln.log")
+
+    logger.info("Collating *.g2p.log files")
+    miseq_logging.collate_logs(run_folder, "g2p.log", "g2p.log")
+
+    logger.info("Collating aln2counts.log files")
+    miseq_logging.collate_logs(run_folder,
+                               "aln2counts.log",
+                               "aln2counts.log")
+
+    logger.info("Collating aln2nuc.log files")
+    miseq_logging.collate_logs(run_folder, "aln2nuc.log", "aln2nuc.log")
+
+    files_to_collate = (('amino_frequencies.csv', '*.amino.csv'),
+                        ('collated_conseqs.csv', '*.conseq.csv'),
+                        ('coverage_scores.csv', None),
+                        ('failed_align.csv', None),
+                        ('failed_read.csv', None),
+                        ('g2p.csv', None),
+                        ('conseq_ins.csv', None),
+                        ('coord_ins.csv', None),
+                        ('nucleotide_frequencies.csv', '*.nuc.csv'),
+                        ('nuc_variants.csv', None),
+                        ('collated_counts.csv', '*.remap_counts.csv'))
+
+    for target_file, pattern in files_to_collate:
+        logger.info("Collating {}".format(target_file))
+        if pattern is None:
+            pattern = '*.' + target_file
+        collate_labeled_files(os.path.join(run_folder, pattern),
+                              os.path.join(results_folder, target_file))
+
+
+
+#####################################################################################
+
+KiveAPI.SERVER_URL = 'http://127.0.0.1:8000/'
+kive = KiveAPI('kive', 'kive')  #TODO: use different Kive user account?
+
+# retrieve Pipeline object based on version
+pipeline = kive.get_pipeline(pipeline_version_kive_id)
+
+# retrieve quality.csv compound data type
+quality_cdt = kive.get_cdt(quality_cdt_kive_id)
+
+processed_runs = set()
+logger = None
+failure_message = None
+
+
+def check_kive(scheduler, runs):
+    """
+    :param scheduler: instance of Python sched
+    :param runs: a List of Kive pipeline run objects
+    :return:
+    """
+    for run in runs:
+        logger.info('{} {}%'.format(run.get_status(), run.get_progress.percent()))
+    if not all(map(lambda x: x.is_complete(), runs)):
+        # reschedule a check on runs at subsequent time
+        scheduler.enter(5, 1, check_kive, (scheduler, runs,))
+
+
+## main loop
+# Process runs flagged for processing not already processed by this version of the pipeline
 while True:
     if failure_message is not None:
         # We're still logging to a run folder that failed.
@@ -175,6 +256,8 @@ while True:
                 # delete it, and rerun.
                 shutil.rmtree(result_path)
         else:
+            # running in development mode - do all runs even if already processed
+            # note that results will not be uploaded
             if run in processed_runs:
                 continue
 
@@ -183,6 +266,7 @@ while True:
     if not runs_needing_processing:
         logger.info('No runs need processing')
         if not production:
+            # development mode - exit main loop
             break
         time.sleep(delay)
         continue
@@ -192,10 +276,14 @@ while True:
     curr_run = runs_needing_processing[0]
     root = curr_run.replace(NEEDS_PROCESSING, '')
     run_name = root.split('/')[-2]
+    run_folder = home+run_name
+    results_folder = os.path.join(run_folder, 'results')
 
-    # Make folder on the cluster for intermediary files
-    if not os.path.exists(home+run_name):
-        os.mkdir(home+run_name)
+    # Make folder on the cluster for intermediary files and outputs
+    if not os.path.exists(run_folder):
+        os.mkdir(run_folder)
+    if not os.path.exists(results_folder):
+        os.mkdir(results_folder)
 
     # Determine if intermediary files should persist past end of run
     all_runs = map(lambda x: x.split('/')[-1], glob('%s*%s*' % (home, instrument_number)))
@@ -208,13 +296,14 @@ while True:
     # Record standard input / output of monitor
     logger.info('Starting run %s', root)
     logging.shutdown()
-    log_file = home + run_name + '/MISEQ_MONITOR_OUTPUT.log'
+    log_file = run_folder + '/MISEQ_MONITOR_OUTPUT.log'
     logger = init_logging(log_file)
     logger.info('===== Processing {} with pipeline version {} ====='.format(root, pipeline_version))
 
+
     # transfer SampleSheet.csv
     remote_file = curr_run.replace(NEEDS_PROCESSING, 'SampleSheet.csv')
-    local_file = home + run_name + '/SampleSheet.csv'
+    local_file = run_folder + '/SampleSheet.csv'
     execute_command(['rsync', '-a', remote_file, local_file])
 
     # Delete raw tiffs from this run
@@ -242,14 +331,23 @@ while True:
             "{} not a valid mode".format(mode))
         continue
 
-    # Copy fastq.gz files to the cluster and unzip them
+
     gz_files = glob(root + 'Data/Intensities/BaseCalls/*R?_001.fastq.gz')
     if not gz_files:
         failure_message = mark_run_as_disabled(root, "No data files found")
         continue
-    
-    for gz_file in gz_files:
-        filename = os.path.basename(gz_file)
+
+    # use Kive-API to transfer fastq.gz files
+    fastqs = {}
+    R1_files = filter(lambda x: '_R1_' in os.path.basename(x), gz_files)
+    for R1_file in R1_files:
+        R2_file = R1_file.replace('_R1_', '_R2_')
+        if R2_file not in gz_files:
+            logger.info("ERROR: Detected an unpaired R1 FASTQ file: {}".format(R1_file))
+            continue
+
+        filename = os.path.basename(R1_file)
+        sample, snum = filename.split('_')[:2]
 
         # Report number of reads failing to demultiplex to the log
         if filename.startswith('Undetermined'):
@@ -266,44 +364,78 @@ while True:
             logger.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
             continue
 
+        R1_obj = kive.add_dataset(name=filename,
+                                  description='',
+                                  handle=open(R1_file, 'rU'),
+                                  cdt=None,
+                                  users=None,
+                                  groups=['Everyone'])
+        R2_obj = kive.add_dataset(name=os.path.basename(R2_file),
+                                  description='',
+                                  handle=open(R2_file, 'rU'),
+                                  cdt=None,
+                                  users=None,
+                                  groups=['Everyone'])
+        fastqs.update({(sample, snum): (R1_obj, R2_obj)})
 
-        local_file = home + run_name + '/' + filename
-
-        if os.path.exists(local_file.replace('.gz', '')):
-            # If a local copy of the unzipped fastq exists, skip to next file
-            continue
-
-        # otherwise, transfer fastq.gz file and unzip
-        execute_command(['rsync', '-a', gz_file, local_file])
-        execute_command(['gunzip', '-f', local_file])
-
+    # generate quality.csv
     try:
-        download_quality(os.path.join(root, 'RunInfo.xml'),
-                         os.path.join(home, run_name, 'quality.csv'),
-                         read_lengths)
+        quality_csv = os.path.join(home, run_name, 'quality.csv')
+        download_quality(run_info_path=os.path.join(root, 'RunInfo.xml'),
+                         destination=quality_csv,
+                         read_lengths=read_lengths)
     except StandardError as e:
         failure_message = mark_run_as_disabled(root,
                                                "Quality could not be downloaded.",
                                                exc_info=True)
         continue
 
+    # transfer quality.csv with Kive API
+    quality_input = kive.add_dataset(name='quality.csv',
+                                     description='',
+                                     handle=open(quality_csv, 'rU'),
+                                     cdt=quality_cdt,
+                                     users=None,
+                                     groups=['Everyone'])
+
     # Standard out/error concatenates to the log
     logger.info("Launching pipeline for %s%s", home, run_name)
+    kive_runs = []
     try:
         monitor_path = os.path.abspath(os.path.dirname(__file__))
         environment = dict(os.environ)
         old_path = environment.get('PYTHONPATH', '')
         environment['PYTHONPATH'] = os.pathsep.join((old_path, monitor_path))
-        subprocess.check_call([os.path.join(monitor_path, 'micall/monitor/run_processor.py'),
-                               home+run_name,
-                               '--clean' if do_cleanup else ''],
-                              env=environment)
+        #subprocess.check_call([os.path.join(monitor_path, 'micall/monitor/run_processor.py'),
+        #                       home+run_name,
+        #                       '--clean' if do_cleanup else ''],
+        #                      env=environment)
+        for key, val in fastqs.iteritems():
+            fastq1, fastq2 = val
+            status = kive.run_pipeline(pipeline=pipeline, inputs=[fastq1, fastq2, quality_input])
+            kive_runs.append(status)
+
+        sc = sched.scheduler(time.time, time.sleep)
+        sc.enter(5, 1, check_kive, (sc, kive_runs))
+        sc.run()
+
         logger.info("===== {} successfully processed! =====".format(run_name))
     except Exception as e:
         failure_message = mark_run_as_disabled(
             root,
             "MISEQ_MONITOR.py failed: '{}'".format(e))
         continue
+
+
+    # Retrieve pipeline output files from Kive
+    for kive_run in kive_runs:
+        for dataset in kive_run.get_results():
+            with open(os.path.join(run_folder, dataset.filename), 'wb') as handle:
+                dataset.download(handle)
+
+    # Collate pipeline logs and outputs to location where following code expects
+    collate_results(run_folder, results_folder, logger)
+
 
     if not production:
         processed_runs.add(curr_run)
@@ -332,7 +464,8 @@ while True:
                 if not os.path.isdir(destination_path):
                     os.mkdir(destination_path)
                 post_files(glob(full_pattern), destination_path)
-                    
+
+
             untar_path = os.path.join(result_path_final, 'untar')
             coverage_source_path = os.path.join(untar_path, 'coverage_maps')
             coverage_dest_path = os.path.join(result_path_final, 'coverage_maps')
@@ -364,5 +497,5 @@ while True:
                 "Failed to post pipeline results",
                 exc_info=True)
 
-    logging.shutdown()
+    logging.shutdown()  #FIXME: should this not be outside the loop?
     logger = None
