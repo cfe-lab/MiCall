@@ -215,7 +215,7 @@ def collate_results(fastq_samples, worker, args, logger):
 
 
 def main():
-    comm = MPI.COMM_WORLD
+    comm = MPI.COMM_WORLD  # @UndefinedVariable
     process_rank = comm.Get_rank()
     process_count = comm.Get_size()
     

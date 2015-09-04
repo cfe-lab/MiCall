@@ -242,10 +242,13 @@ The application is created as `dist\micall.exe`.
 7. Try the launch configurations. They are saved in the `micall/tests/working`
     directory, but you should see them if you open the Run menu and choose Run
     configurations.... If you want to run all steps at once, skip to the next
-    step, otherwise go through the numbered launch configurations in order.
+    step, otherwise go through the numbered launch configurations in order. If
+    you are not running under Eclipse, just run each command to display the
+    list of command-line parameters.
 8. Copy or link all the files from the microtest folder to the working folder.
 9. Run the sample_pipeline or run_processor launch configurations. They will
-    process all the sample files in the working folder. 
+    process all the sample files in the working folder. If you are not running
+    under Eclipse, both commands take the run folder as a command-line parameter.
 12. Run the unit tests. Either run them from Eclipse, or run them from the
     command line like this:
 

@@ -95,7 +95,7 @@ record.score <- function(
 prepare.plot <- function(
         xlim,
         x.label,
-        good.coverage,
+        coverage.levels,
         project.name,
         region,
         region.key.pos) {
@@ -114,19 +114,36 @@ prepare.plot <- function(
                     sep='.'))
     
     # set up plot
+    MAX_READS <- 2000000
     png(file=filename, width=400, height=300, type='cairo')
     par(family='sans', cex=1, mar=c(5,5,1,1))
-    plot(NA, xlim=c(1,xlim), ylim=c(1,2000000), axes=FALSE, ann=FALSE, xaxs="r", log="y")
+    plot(NA, xlim=c(1,xlim), ylim=c(1,MAX_READS), axes=FALSE, ann=FALSE, xaxs="r", log="y")
     title(xlab=x.label, font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
     
     # indicate key positions for this region
     for (pos in region.key.pos) {
         rect(
-                pos-0.505, good.coverage/2,
-                pos+0.505, good.coverage*2,
+                pos-0.505, coverage.levels$green/2,
+                pos+0.505, coverage.levels$green*2,
                 col='#cccccc',
                 border=NA)
     }
+    rect(   -1, 0.5,
+            0, coverage.levels$red,
+            col='black',
+            border=NA)
+    rect(   -1, coverage.levels$red,
+            0, coverage.levels$yellow,
+            col='red',
+            border=NA)
+    rect(   -1, coverage.levels$yellow,
+            0, coverage.levels$green,
+            col='yellow',
+            border=NA)
+    rect(   -1, coverage.levels$green,
+            0, MAX_READS,
+            col='green',
+            border=NA)
 }
 
 dir.create('coverage_maps')
@@ -239,7 +256,7 @@ for (i in seq_along(coverage)) {
         prepare.plot(
                 xlim,
                 x.label,
-                region.coverage.levels$green,
+                region.coverage.levels,
                 project.name,
                 region,
                 project.positions[[project.name]])
