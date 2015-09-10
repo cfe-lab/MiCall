@@ -201,6 +201,10 @@ def matchmaker(remap_csv):
         else:
             # current row should be the second read of the pair
             yield old_row, row
+    
+    # Unmatched reads
+    for old_row in cached_rows.itervalues():
+        yield old_row, None
 
 
 def parse_sam(rows):
@@ -235,8 +239,9 @@ def parse_sam(rows):
     qname = row1['qname']
 
     cigar1 = row1['cigar']
-    cigar2 = row2['cigar']
-    if (cigar1 == '*' or
+    cigar2 = row2 and row2['cigar']
+    if (row2 is None or
+        cigar1 == '*' or
         int(row1['mapq']) < read_mapping_cutoff or
         cigar2 == '*' or
         int(row2['mapq']) < read_mapping_cutoff or
@@ -245,10 +250,10 @@ def parse_sam(rows):
         failed_list.append({'qname': qname,
                             'seq1': row1['seq'],
                             'qual1': row1['qual'],
-                            'seq2': row2['seq'],
-                            'qual2': row2['qual'],
+                            'seq2': row2 and row2['seq'],
+                            'qual2': row2 and row2['qual'],
                             'mapq1': row1['mapq'],
-                            'mapq2': row2['mapq']})
+                            'mapq2': row2 and row2['mapq']})
     else:
         pos1 = int(row1['pos'])-1  # convert 1-index to 0-index
         _, seq1, qual1, inserts = apply_cigar(cigar1, row1['seq'], row1['qual'])

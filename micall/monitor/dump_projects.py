@@ -46,7 +46,7 @@ def main():
             raise StandardError('\n'.join(errors))
         check_key_positions(dump['projects'], sys.stdout)
         
-    with open("projects.json", "w") as f:
+    with open("../projects.json", "w") as f:
         json.dump(dump, f, sort_keys=True, indent=2, separators=(',', ': '))
         f.write('\n')
     

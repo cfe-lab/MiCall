@@ -3458,19 +3458,6 @@
           ]
         },
         {
-          "coordinate_region": "HCV3-S52-NS4b",
-          "key_positions": [],
-          "min_coverage1": 1,
-          "min_coverage2": 101,
-          "min_coverage3": 1001,
-          "seed_region_names": [
-            "HCV-3a",
-            "HCV-3b",
-            "HCV-3i",
-            "HCV-3k"
-          ]
-        },
-        {
           "coordinate_region": "HCV3-S52-NS5a",
           "key_positions": [],
           "min_coverage1": 1,
