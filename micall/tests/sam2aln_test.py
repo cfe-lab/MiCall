@@ -54,8 +54,8 @@ refname,qcut,rank,count,offset,seq
 V3LOOP,15,0,1,0,TGTACAAGACCCAACAACAATACAAGAAAAAG
 """
         expected_failed_csv = """\
-qname,qcut,seq1,qual1,seq2,qual2,prop_N,mseq,mapq1,mapq2
-Example_read_2,,TGTACAAGACCCAACAACAATACAAGAAAAAG,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,TGTACAAGACCCAACAACAATACAAGAAAAAG,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,,,8,44
+qname,cause
+Example_read_2,mapq
 """
         actual_aligned_csv = StringIO()
         actual_failed_csv = StringIO()
@@ -82,8 +82,82 @@ refname,qcut,rank,count,offset,seq
 INT,15,0,1,0,TGTACAAGACCCAACAACAATACAAGAAAAAG
 """
         expected_failed_csv = """\
-qname,qcut,seq1,qual1,seq2,qual2,prop_N,mseq,mapq1,mapq2
-Example_read_1,15,TGTACAAGACCCAACAACAATACAAGAAAAAG,000000000000000000AAAAAAAAAAAAAA,TGTACAAGACCCAACAACAATACAAGAAAAAG,000000000000000000AAAAAAAAAAAAAA,0.5625,NNNNNNNNNNNNNNNNNNAATACAAGAAAAAG,,
+qname,cause
+Example_read_1,manyNs
+"""
+        actual_aligned_csv = StringIO()
+        actual_failed_csv = StringIO()
+        sam2aln.sam2aln(remap_file,
+                        actual_aligned_csv,
+                        StringIO(),
+                        actual_failed_csv)
+
+        self.assertMultiLineEqual(expected_aligned_csv,
+                                  actual_aligned_csv.getvalue())
+        self.assertMultiLineEqual(expected_failed_csv,
+                                  actual_failed_csv.getvalue())
+
+    def test_unmatched_read(self):
+        remap_file = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,V3LOOP,1,44,32M,=,1,-32,TGTACAAGACCCAACAACAATACAAGAAAAAG,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+""")
+        expected_aligned_csv = """\
+refname,qcut,rank,count,offset,seq
+"""
+        expected_failed_csv = """\
+qname,cause
+Example_read_1,unmatched
+"""
+        actual_aligned_csv = StringIO()
+        actual_failed_csv = StringIO()
+        sam2aln.sam2aln(remap_file,
+                        actual_aligned_csv,
+                        StringIO(),
+                        actual_failed_csv)
+
+        self.assertMultiLineEqual(expected_aligned_csv,
+                                  actual_aligned_csv.getvalue())
+        self.assertMultiLineEqual(expected_failed_csv,
+                                  actual_failed_csv.getvalue())
+
+    def test_bad_cigar(self):
+        remap_file = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,V3LOOP,1,44,32M,=,1,-32,TGTACAAGACCCAACAACAATACAAGAAAAAG,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Example_read_1,147,V3LOOP,1,44,*,=,1,-32,TGTACAAGACCCAACAACAATACAAGAAAAAG,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+""")
+        expected_aligned_csv = """\
+refname,qcut,rank,count,offset,seq
+"""
+        expected_failed_csv = """\
+qname,cause
+Example_read_1,badCigar
+"""
+        actual_aligned_csv = StringIO()
+        actual_failed_csv = StringIO()
+        sam2aln.sam2aln(remap_file,
+                        actual_aligned_csv,
+                        StringIO(),
+                        actual_failed_csv)
+
+        self.assertMultiLineEqual(expected_aligned_csv,
+                                  actual_aligned_csv.getvalue())
+        self.assertMultiLineEqual(expected_failed_csv,
+                                  actual_failed_csv.getvalue())
+
+    def test_different_references(self):
+        remap_file = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,V3LOOP,1,44,32M,=,1,-32,TGTACAAGACCCAACAACAATACAAGAAAAAG,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Example_read_1,147,GP41,1,44,32M,=,1,-32,TGTACAAGACCCAACAACAATACAAGAAAAAG,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+""")
+        expected_aligned_csv = """\
+refname,qcut,rank,count,offset,seq
+"""
+        expected_failed_csv = """\
+qname,cause
+Example_read_1,2refs
 """
         actual_aligned_csv = StringIO()
         actual_failed_csv = StringIO()

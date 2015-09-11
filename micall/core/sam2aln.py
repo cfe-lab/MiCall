@@ -302,21 +302,19 @@ def parse_sam(rows):
 
     cigar1 = row1['cigar']
     cigar2 = row2 and row2['cigar']
-    if (row2 is None or
-        cigar1 == '*' or
-        int(row1['mapq']) < read_mapping_cutoff or
-        cigar2 == '*' or
-        int(row2['mapq']) < read_mapping_cutoff or
-        row1['rname'] != row2['rname']):
+    failure_cause = None
+    if row2 is None:
+        failure_cause = 'unmatched'
+    elif cigar1 == '*' or cigar2 == '*':
+        failure_cause = 'badCigar'
+    elif (int(row1['mapq']) < read_mapping_cutoff or
+          int(row2['mapq']) < read_mapping_cutoff):
         
-        failed_list.append({'qname': qname,
-                            'seq1': row1['seq'],
-                            'qual1': row1['qual'],
-                            'seq2': row2 and row2['seq'],
-                            'qual2': row2 and row2['qual'],
-                            'mapq1': row1['mapq'],
-                            'mapq2': row2 and row2['mapq']})
-    else:
+        failure_cause = 'mapq'
+    elif row1['rname'] != row2['rname']:
+        failure_cause = '2refs' 
+
+    if not failure_cause:
         pos1 = int(row1['pos'])-1  # convert 1-index to 0-index
         seq1, qual1, inserts = apply_cigar(cigar1, row1['seq'], row1['qual'])
     
@@ -352,16 +350,13 @@ def parse_sam(rows):
             prop_N = mseq.count('N') / float(len(mseq.strip('-')))
             if prop_N > max_prop_N:
                 # fail read pair
-                failed_list.append({'qname': qname,
-                                    'qcut': qcut,
-                                    'seq1': seq1,
-                                    'qual1': qual1,
-                                    'seq2': seq2,
-                                    'qual2': qual2,
-                                    'prop_N': prop_N,
-                                    'mseq': mseq})
-                continue
-            mseqs[qcut] = mseq
+                failure_cause = 'manyNs'
+            else:
+                mseqs[qcut] = mseq
+    
+    if failure_cause:
+        failed_list.append({'qname': qname,
+                            'cause': failure_cause})
 
     return rname, mseqs, insert_list, failed_list
 
@@ -386,7 +381,7 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
     insert_writer = DictWriter(insert_csv, insert_fields, lineterminator=os.linesep)
     insert_writer.writeheader()
 
-    failed_fields =  ['qname', 'qcut', 'seq1', 'qual1', 'seq2', 'qual2', 'prop_N', 'mseq', 'mapq1', 'mapq2']
+    failed_fields =  ['qname', 'cause']
     failed_writer = DictWriter(failed_csv, failed_fields, lineterminator=os.linesep)
     failed_writer.writeheader()
 
