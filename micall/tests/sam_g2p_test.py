@@ -1,9 +1,9 @@
-import unittest
-from StringIO import StringIO
-
-from micall.g2p.sam_g2p import sam_g2p, apply_cigar_and_clip
-from micall.g2p.pssm_lib import Pssm
 import os
+from StringIO import StringIO
+import unittest
+
+from micall.g2p.pssm_lib import Pssm
+from micall.g2p.sam_g2p import sam_g2p
 
 class SamG2PTest(unittest.TestCase):
     def setUp(self):
@@ -32,6 +32,26 @@ Example_read_1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAAGA,AAAAAAAAA
         expected_g2p_csv = """\
 rank,count,g2p,fpr,aligned,error
 1,1,,,CTR,cysteines
+"""
+        
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        
+    def testVariants(self):
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAAGA,AAAAAAAAA
+Example_read_1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAAGA,AAAAAAAAA
+Example_read_2,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAAGA,AAAAAAAAA
+Example_read_2,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAAGA,AAAAAAAAA
+Example_read_3,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAGGG,AAAAAAAAA
+Example_read_3,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAGGG,AAAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,aligned,error
+1,2,,,CTR,cysteines
+2,1,,,CTG,cysteines
 """
         
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -173,310 +193,3 @@ rank,count,g2p,fpr,aligned,error
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
 
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
-        
-
-class CigarTest(unittest.TestCase):
-    def setUp(self):
-        super(CigarTest, self).setUp()
-        self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
-        
-    def testTrivial(self):
-        cigar = '9M'
-        seq     = 'AAACAACCA'
-        quality = 'BBBBBBBBB'
-        expected_seq = seq
-        expected_quality = quality
-        
-        clipped_seq, clipped_quality = apply_cigar_and_clip(cigar, seq, quality)
-        
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-     
-    def testDeletion(self):
-        cigar = '6M3D3M'
-        seq              = 'AAACAACCA'
-        quality          = 'BBBDDDEEE'
-        expected_seq     = 'AAACAA---CCA'
-        expected_quality = 'BBBDDD   EEE'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(cigar, seq, quality)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
- 
-    def testSoftClip(self):
-        cigar = '3S6M'
-        seq              = 'AAACAACCA'
-        quality          = 'BBBDDDEEE'
-        expected_seq     =    'CAACCA'
-        expected_quality =    'DDDEEE'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(cigar, seq, quality)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-     
-    def testInsertion(self):
-        cigar = '3M3I6M'
-        seq              = 'AAACAACCACCC'
-        quality          = 'BBBDDDEEEFFF'
-        expected_seq     = 'AAACAACCACCC'
-        expected_quality = 'BBBDDDEEEFFF'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(cigar, seq, quality)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
- 
-    def testInsertionLowQuality(self):
-        cigar = '3M3I6M'
-        seq              = 'AAACAACCACCC'
-        quality          = 'BBBD*DEEEFFF'
-        expected_seq     = 'AAACCACCC'
-        expected_quality = 'BBBEEEFFF'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(cigar, seq, quality)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-       
-    def testLargeToken(self):
-        cigar = '12M'
-        seq     = 'AAACAACCACCC'
-        quality = 'BBBBBBBBBBBB'
-        expected_seq = seq
-        expected_quality = quality
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(cigar, seq, quality)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-       
-    def testPadding(self):
-        cigar = '12M'
-        seq              = 'AAACAACCACCC'
-        quality          = 'BBBDDDEEEFFF'
-        pos = 3
-        expected_seq     = '---AAACAACCACCC'
-        expected_quality = '!!!BBBDDDEEEFFF'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(cigar, seq, quality, pos)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-       
-    def testClipping(self):
-        cigar = '12M'
-        seq              = 'AAACAACCACCC'
-        quality          = 'BBBDDDEEEFFF'
-        pos = 0
-        clip_from = 3
-        clip_to = 8
-        expected_seq     = 'CAACCA'
-        expected_quality = 'DDDEEE'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-   
-    def testClipInsertion(self):
-        cigar = '6M3I6M'
-        seq              = 'AAACAAGGGCCACCC'
-        quality          = 'BBBDDDHHHEEEFFF'
-        pos = 0
-        clip_from = 3
-        clip_to = 8
-        expected_seq     = 'CAAGGGCCA'
-        expected_quality = 'DDDHHHEEE'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-       
-    def testClipInsertionLowQuality(self):
-        cigar = '6M3I6M'
-        seq              = 'AAACAAGGGCCACCC'
-        quality          = 'BBBDDDHH*EEEFFF'
-        pos = 0
-        clip_from = 3
-        clip_to = 8
-        expected_seq     = 'CAACCA'
-        expected_quality = 'DDDEEE'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-       
-    def testInsertionBeforeClip(self):
-        cigar = '3M3I9M'
-        seq              = 'AAAGGGCAACCACCC'
-        quality          = 'BBBHHHDDDEEEFFF'
-        pos = 0
-        clip_from = 3
-        clip_to = 8
-        expected_seq     = 'CAACCA'
-        expected_quality = 'DDDEEE'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-    
-    def testInsertionAfterClipWithOffset(self):
-        cigar = '2M1I2M'
-        seq     = 'TAGCT'
-        quality = 'AABCC'
-        pos = 3
-        clip_from = 4
-        clip_to = 20
-        expected_seq     = 'AGCT'
-        expected_quality = 'ABCC'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-       
-    def testClippingEverything(self):
-        cigar = '12M'
-        seq              = 'AAACAACCACCC'
-        quality          = 'BBBDDDEEEFFF'
-        pos = 0
-        clip_from = 100
-        clip_to = 108
-        expected_seq     = ''
-        expected_quality = ''
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-   
-    def testInvalidCigar(self):
-        cigar = '3M...6M'
-        seq     = 'AAACAACCACCC'
-        quality = 'BBBDDDEEEFFF'
-         
-        with self.assertRaises(RuntimeError) as result:
-            apply_cigar_and_clip(cigar, seq, quality)
-        
-        self.assertEqual(
-            "Invalid CIGAR string: '3M...6M'.",
-            result.exception.message)
-    
-    def testUnsupportedCigarToken(self):
-        cigar = '3M3X6M'
-        seq     = 'AAACAACCACCC'
-        quality = 'BBBDDDEEEFFF'
-         
-        with self.assertRaises(RuntimeError) as result:
-            apply_cigar_and_clip(cigar, seq, quality)
-        
-        self.assertEqual(
-            "Unsupported CIGAR token: '3X'.",
-            result.exception.message)
-    
-    def testShortCigar(self):
-        cigar = '8M'
-        seq     = 'AAACAACCA'
-        quality = 'BBBDDDEEE'
-         
-        with self.assertRaises(RuntimeError) as result:
-            apply_cigar_and_clip(cigar, seq, quality)
-        
-        self.assertEqual(
-            "CIGAR string '8M' is too short for sequence 'AAACAACCA'.",
-            result.exception.message)
-    
-    def testLongCigar(self):
-        cigar = '10M'
-        seq     = 'AAACAACCA'
-        quality = 'BBBDDDEEE'
-         
-        with self.assertRaises(RuntimeError) as result:
-            apply_cigar_and_clip(cigar, seq, quality)
-        
-        self.assertEqual(
-            "CIGAR string '10M' is too long for sequence 'AAACAACCA'.",
-            result.exception.message)
-        
-    def testInsertionAfterClipping(self):
-        cigar = '3M3I3M'
-        seq     = "ACTTAGAAA"
-        quality = 'AAABBBDDD'
-        pos = 0
-        clip_from = 0
-        clip_to = 2
-        expected_seq     = 'ACT'
-        expected_quality = 'AAA'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
-        
-    def testInsertionAtEndOfClipping(self):
-        cigar = '3M3I3M'
-        seq     = "ACTTAGAAA"
-        quality = 'AAABBBDDD'
-        pos = 0
-        clip_from = 0
-        clip_to = 3
-        expected_seq     = 'ACTTAGA'
-        expected_quality = 'AAABBBD'
-           
-        clipped_seq, clipped_quality = apply_cigar_and_clip(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
-           
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)

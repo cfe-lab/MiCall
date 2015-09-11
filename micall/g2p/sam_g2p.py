@@ -1,9 +1,11 @@
 #! /usr/bin/env python
 
-import re
 import argparse
+from collections import Counter
 from csv import DictReader
-from micall.core.sam2aln import merge_pairs
+import re
+
+from micall.core.sam2aln import merge_pairs, apply_cigar
 from micall.utils.translation import translate
 
 # screen for in-frame deletions
@@ -59,82 +61,10 @@ class RegionTracker:
         return self.ranges.get(seed, [None, None])
 
 
-def apply_cigar_and_clip (cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
-    """ Applies a cigar string to recreate a read, then clips the read.
-
-    Use CIGAR string (Compact Idiosyncratic Gapped Alignment Report) in SAM data
-    to apply soft clips, insertions, and deletions to the read sequence.
-    
-    @param cigar: a string in the CIGAR format, describing the relationship
-        between the read sequence and the consensus sequence
-    @param seq: the sequence that was read
-    @param qual: quality codes for each base in the read
-    @param pos: first position of the read, given in zero-based consensus
-        coordinates
-    @param clip_from: first position to include after clipping, given in
-        zero-based consensus coordinates
-    @param clip_to: last position to include after clipping, given in
-        zero-based consensus coordinates, None means no clipping at the end
-    @return: the new sequence and the new quality string. If none of the read
-        was within the clipped range, then both strings will be blank.
-    """
-    newseq = '-' * int(pos)  # pad on left
-    newqual = '!' * int(pos)
-    is_valid = re.match(r'^((\d+)([MIDNSHPX=]))*$', cigar)
-    tokens =   re.findall(r'(\d+)([MIDNSHPX=])', cigar)
-    if not is_valid:
-        raise RuntimeError('Invalid CIGAR string: {!r}.'.format(cigar))
-    if len(tokens) == 0:
-        return None, None, None
-    left = 0
-    for token in tokens:
-        length, operation = token
-        length = int(length)
-        # Matching sequence: carry it over
-        if operation == 'M':
-            newseq += seq[left:(left+length)]
-            newqual += qual[left:(left+length)]
-            left += length
-        # Deletion relative to reference: pad with gaps
-        elif operation == 'D':
-            newseq += '-'*length
-            newqual += ' '*length  # Assign fake placeholder score (Q=-1)
-        # Insertion relative to reference
-        elif operation == 'I':
-            its_quals = qual[left:(left+length)]
-            if all([(ord(q)-33) >= QMIN for q in its_quals]):
-                # accept only high quality insertions relative to sample consensus
-                newseq += seq[left:(left+length)]
-                newqual += its_quals
-                if left + pos <= clip_from:
-                    clip_from += length
-                if left + pos <= clip_to:
-                    clip_to += length  # accommodate insertion
-            left += length
-        # Soft clipping leaves the sequence in the SAM - so we should skip it
-        elif operation == 'S':
-            left += length
-        else:
-            raise RuntimeError('Unsupported CIGAR token: {!r}.'.format(
-                ''.join(token)))
-        if left > len(seq):
-            raise RuntimeError(
-                'CIGAR string {!r} is too long for sequence {!r}.'.format(cigar,
-                                                                          seq))
-    
-    if left < len(seq):
-        raise RuntimeError(
-            'CIGAR string {!r} is too short for sequence {!r}.'.format(cigar,
-                                                                       seq))
-    
-    end = None if clip_to is None else clip_to + 1
-    return newseq[clip_from:end], newqual[clip_from:end]
-
-
 def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
     is_ruby_compatible = False # Used for comparing results with old Ruby code
     pairs = {}  # cache read for pairing
-    merged = {}  # tabular merged sequence variants
+    merged = Counter()  # { merged_nuc_seq: count }
     tracker = RegionTracker('V3LOOP')
 
     # look up clipping region for each read
@@ -153,30 +83,33 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
             # uninteresting region
             continue
 
-        seq2, qual2 = apply_cigar_and_clip(row['cigar'], row['seq'], row['qual'], int(row['pos'])-1, clip_from, clip_to)
+        seq2, qual2, ins2 = apply_cigar(row['cigar'],
+                                        row['seq'],
+                                        row['qual'],
+                                        int(row['pos'])-1,
+                                        clip_from,
+                                        clip_to)
 
         mate = pairs.get(row['qname'], None)
         if mate:
             seq1 = mate['seq']
             qual1 = mate['qual']
+            ins1 = mate['ins']
 
-            mseq = merge_pairs(seq1, seq2, qual1, qual2)
+            mseq = merge_pairs(seq1, seq2, qual1, qual2, ins1, ins2)
 
-            if mseq not in merged:
-                merged.update({mseq: 0})
             merged[mseq] += 1
 
         else:
-            pairs.update({row['qname']: {'seq': seq2, 'qual': qual2}})
+            pairs.update({row['qname']: {'seq': seq2,
+                                         'qual': qual2,
+                                         'ins': ins2}})
 
-
-    sorted = [(v,k) for k, v in merged.iteritems()]
-    sorted.sort(reverse=True)
 
     # apply g2p algorithm to merged reads
     g2p_csv.write('rank,count,g2p,fpr,aligned,error\n')  # CSV header
     rank = 0
-    for count, s in sorted:
+    for s, count in merged.most_common():
         # remove in-frame deletions
         if is_ruby_compatible:
             seq = re.sub('---', '', s)
