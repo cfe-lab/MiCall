@@ -193,6 +193,9 @@ def collate_results(fastq_samples, worker, args, logger):
     logger.info("Collating aln2nuc.log files")
     miseq_logging.collate_logs(args.run_folder, "aln2nuc.log", "aln2nuc.log")
     
+    logger.info("Collating censor.log files")
+    miseq_logging.collate_logs(args.run_folder, "censor.log", "censor.log")
+    
     files_to_collate = (('amino_frequencies.csv', '*.amino.csv'),
                         ('collated_conseqs.csv', '*.conseq.csv'),
                         ('coverage_scores.csv', None),
