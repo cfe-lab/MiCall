@@ -41,6 +41,8 @@ def main():
             "/lab_miseq_projects.json?mode=dump&pipeline=" +
             settings.pipeline_version,
             retries=0)
+        for project in dump['projects'].itervalues():
+            project['regions'].sort()
         errors = dump['projects'].get('errors')
         if errors:
             raise StandardError('\n'.join(errors))
