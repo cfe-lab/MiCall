@@ -168,6 +168,19 @@ class SamBaseTest(unittest.TestCase):
         
         self.assertJoins(sam_bases, sam_lines)
     
+    def testSoftClipAlone(self):
+        qname = 'test1'
+        qname2 = 'test2'
+        flag = '99'
+        rname = 'test'
+        mapq = '44'
+        sam_bases = [SamBase('A', 'J', 1, 'M', qname, flag, rname, mapq),
+                     SamBase('A', 'J', None, 'S', qname2, flag, rname, mapq)]
+        #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
+        sam_lines = ["test1\t99\ttest\t1\t44\t1M\t=\t1\t1\tA\tJ\n"]
+        
+        self.assertJoins(sam_bases, sam_lines)
+    
     def testDeleteAfterSoftClip(self):
         qname = 'test1'
         flag = '99'
@@ -191,7 +204,7 @@ class SamBaseTest(unittest.TestCase):
                      SamBase(None, None, 3, 'D', qname, flag, rname, mapq),
                      SamBase('C', 'K', 4, 'M', qname, flag, rname, mapq)]
         #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        sam_lines = ["test1\t99\ttest\t1\t44\t1M1I1M1D1M\t=\t1\t4\tATAC\tJL#K\n"]
+        sam_lines = ["test1\t99\ttest\t1\t44\t1M1I3M\t=\t1\t5\tATAAC\tJL##K\n"]
         
         self.assertJoins(sam_bases, sam_lines)
     
@@ -244,6 +257,22 @@ class SamBaseTest(unittest.TestCase):
         #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
         sam_lines = ["@SQ\tSN:test\tLN:1568\n",
                      "test1\t99\ttest\t3\t44\t1M\t=\t3\t1\tC\tK\n"]
+
+        self.assertJoins(sam_bases, sam_lines)
+        self.assertSplits(sam_lines, sam_bases)
+                
+    def testMultipleHeaders(self):
+        qname = 'test1'
+        flag = '99'
+        rname = 'testA'
+        mapq = '44'
+        sam_bases = [SamHeader('@SQ\tSN:testA\tLN:1568'),
+                     SamHeader('@SQ\tSN:testB\tLN:1568'),
+                     SamBase('C', 'K', 3, 'M', qname, flag, rname, mapq)]
+        #SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
+        sam_lines = ["@SQ\tSN:testA\tLN:1568\n",
+                     "@SQ\tSN:testB\tLN:1568\n",
+                     "test1\t99\ttestA\t3\t44\t1M\t=\t3\t1\tC\tK\n"]
 
         self.assertJoins(sam_bases, sam_lines)
         self.assertSplits(sam_lines, sam_bases)

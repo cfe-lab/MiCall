@@ -252,6 +252,18 @@ class PileupToConseqTest(unittest.TestCase):
         conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
         
         self.assertDictEqual(expected_conseqs, conseqs)
+    
+    def testTieHiddenByInsertion(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t1\tN\t2\t^KA^Ka^KA^Ka\tJJJJ\n" +
+            "GP41-seed\t2\tN\t2\tTcTc+1t\tJJJJ\n" +
+            "GP41-seed\t3\tN\t2\tG$g$G$g$\tJJJJ\n")
+        qCutoff = 20
+        expected_conseqs= {'GP41-seed': "ACG"}
+        
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
 
 
 class SamToConseqsTest(unittest.TestCase):
@@ -320,6 +332,16 @@ class SamToConseqsTest(unittest.TestCase):
             "test3\t99\ttest\t1\t44\t12M\t=\t1\t3\tTCA\tJJJ\n"
         )
         expected_conseqs = {'test': 'ACA'}
+        conseqs = remap.sam_to_conseqs(samIO)
+        self.assertDictEqual(expected_conseqs, conseqs)
+        
+    def testTie(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\n"
+            "test1\t99\ttest\t1\t44\t12M\t=\t1\t3\tGCA\tJJJ\n"
+            "test2\t147\ttest\t1\t44\t12M\t=\t1\t-3\tTCA\tJJJ\n"
+        )
+        expected_conseqs = {'test': 'GCA'}
         conseqs = remap.sam_to_conseqs(samIO)
         self.assertDictEqual(expected_conseqs, conseqs)
  

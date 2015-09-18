@@ -209,17 +209,17 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
         end = max(pos_nucs.keys())+1
         for pos in range(1, end):
             nuc_counts = pos_nucs[pos]
-            most_common = nuc_counts.most_common(1)
-            if not most_common:
+            most_common = find_top_token(nuc_counts)
+            if most_common is None:
                 conseq += 'N'
-            elif most_common[0][0] == '-':
+            elif most_common == '-':
                 deletion += '-'
             else:
                 if deletion:
                     if len(deletion) % 3 != 0:
                         conseq += deletion
                     deletion = ''
-                conseq += most_common[0][0]
+                conseq += most_common
         conseqs[refname] = conseq
     return conseqs
 
@@ -560,6 +560,17 @@ def matchmaker(samfile, include_singles=False):
         for row in cached_rows.itervalues():
             yield row, None
 
+def find_top_token(base_counts):
+    top_count = top_token = None
+    for token, count in base_counts.most_common():
+        if top_count is None:
+            top_token = token
+            top_count = count
+        elif count < top_count:
+            break
+        if token < top_token:
+            top_token = token
+    return top_token
 
 def pileup_to_conseq (handle, qCutoff):
     """
@@ -652,7 +663,17 @@ def pileup_to_conseq (handle, qCutoff):
 
         if 'N' in base_counts or not base_counts:
             base_counts['N'] = 0
-        token = base_counts.most_common(1)[0][0]
+        token = find_top_token(base_counts)
+        if '+' not in token:
+            # add counts from all insertions to the single base
+            ins_tokens = [token
+                          for token in base_counts.iterkeys()
+                          if '+' in token]
+            for token in ins_tokens:
+                base = token[0]
+                base_counts[base] += base_counts[token]
+                del base_counts[token]
+            token = find_top_token(base_counts)
 
         if '+' in token:
             m = indel_re.findall(token)[0] # \+[0-9]+

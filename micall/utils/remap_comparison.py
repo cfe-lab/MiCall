@@ -1,22 +1,20 @@
 import argparse
 from collections import defaultdict
 import glob
+import itertools
 import logging
+from operator import itemgetter
 import os
+import shutil
+import traceback
 
 from micall import settings
 from micall.core.miseq_logging import init_logging_console_only
 from micall.core.remap import build_conseqs_with_python, \
     build_conseqs_with_samtools, line_counter, sam_to_conseqs
 from micall.utils import externals
-import shutil
-import traceback
-import itertools
-from operator import itemgetter
 
 
-def get_report_key(debug_report):
-    return
 def build_comparison(samtools_conseqs, python2_conseqs, samfile):
     report = ""
     debug_reports = {}

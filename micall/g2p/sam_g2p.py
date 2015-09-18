@@ -90,7 +90,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
                                         clip_from,
                                         clip_to)
 
-        mate = pairs.get(row['qname'], None)
+        mate = pairs.pop(row['qname'], None)
         if mate:
             seq1 = mate['seq']
             qual1 = mate['qual']
