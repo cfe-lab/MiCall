@@ -21,10 +21,7 @@ from xml.etree import ElementTree
 from micall.core import miseq_logging
 from micall.monitor import qai_helper
 from micall.utils.sample_sheet_parser import sample_sheet_parser
-from micall.settings import delay, DONE_PROCESSING, ERROR_PROCESSING, home,\
-    NEEDS_PROCESSING, pipeline_version, production, rawdata_mount, \
-    qai_path, qai_user, qai_password, instrument_number, nruns_to_store,\
-    QC_UPLOADED, pipeline_version_kive_id, quality_cdt_kive_id
+import micall.settings as settings
 from micall.monitor import update_qai
 from micall.utils.collate import collate_labeled_files
 import itertools
@@ -58,25 +55,25 @@ def mark_run_as_disabled(root, message, exc_info=None):
     """
     failure_message = message + " - skipping run " + root
     logger.error(failure_message, exc_info=exc_info)
-    if production:
-        with open(root + ERROR_PROCESSING, 'w') as f:
+    if settings.production:
+        with open(root + settings.ERROR_PROCESSING, 'w') as f:
             f.write(message)
     
     return failure_message
 
 def is_marked_as_disabled(run):
-    return os.path.exists(run.replace(NEEDS_PROCESSING, ERROR_PROCESSING))
+    return os.path.exists(run.replace(settings.NEEDS_PROCESSING, settings.ERROR_PROCESSING))
 
 def is_quality_control_uploaded(run):
-    return os.path.exists(run.replace(NEEDS_PROCESSING, QC_UPLOADED))
+    return os.path.exists(run.replace(settings.NEEDS_PROCESSING, settings.QC_UPLOADED))
 
 def mark_run_as_done(results_folder):
     """ Mark a run that has completed its processing.
     
     @param results_folder: path to the results folder
     """
-    if production:
-        with open(os.path.join(results_folder, DONE_PROCESSING), 'w'):
+    if settings.production:
+        with open(os.path.join(results_folder, settings.DONE_PROCESSING), 'w'):
             pass # Leave the file empty
 
 def execute_command(command):
@@ -100,7 +97,7 @@ def download_quality(run_info_path, destination, read_lengths):
     qcRunId = runInfoRoot[0].attrib['Id']
     direction_params = [(read_lengths[0], 1), (read_lengths[1], -1)]
     with qai_helper.Session() as session:
-        session.login(qai_path, qai_user, qai_password)
+        session.login(settings.qai_path, settings.qai_user, settings.qai_password)
         metrics = session.get_json('/miseqqc_errormetrics?runid=' + qcRunId)
         if not metrics:
             raise StandardError(
@@ -186,14 +183,14 @@ def collate_results(run_folder, results_folder, logger):
 
 #####################################################################################
 
-KiveAPI.SERVER_URL = 'http://127.0.0.1:8000/'
-kive = KiveAPI('kive', 'kive')  #TODO: use different Kive user account?
+KiveAPI.SERVER_URL = settings.kive_server_url
+kive = KiveAPI(settings.kive_user, settings.kive_password)
 
 # retrieve Pipeline object based on version
-pipeline = kive.get_pipeline(pipeline_version_kive_id)
+pipeline = kive.get_pipeline(settings.pipeline_version_kive_id)
 
 # retrieve quality.csv compound data type
-quality_cdt = kive.get_cdt(quality_cdt_kive_id)
+quality_cdt = kive.get_cdt(settings.quality_cdt_kive_id)
 
 processed_runs = set()
 logger = None
@@ -222,7 +219,7 @@ while True:
         logger = None
         
     if logger is None:
-        logger = init_logging(home + '/MISEQ_MONITOR_OUTPUT.log')
+        logger = init_logging(settings.home + '/MISEQ_MONITOR_OUTPUT.log')
     
     if failure_message is not None:
         # Log it here again, now logging to home folder's log file.
@@ -230,7 +227,7 @@ while True:
         failure_message = None
         
     # flag indicates that Illumina MiseqReporter has completed pre-processing, files available on NAS
-    runs = glob(rawdata_mount + 'MiSeq/runs/*/{}'.format(NEEDS_PROCESSING))
+    runs = glob(settings.rawdata_mount + 'MiSeq/runs/*/{}'.format(settings.NEEDS_PROCESSING))
     #runs = glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
 
     runs_needing_processing = []
@@ -238,8 +235,8 @@ while True:
         root = os.path.dirname(run)
         result_path = os.path.join(root,
                                    'Results',
-                                   'version_{}'.format(pipeline_version))
-        done_path = os.path.join(result_path, DONE_PROCESSING)
+                                   'version_{}'.format(settings.pipeline_version))
+        done_path = os.path.join(result_path, settings.DONE_PROCESSING)
 
         if is_marked_as_disabled(run):
             continue
@@ -248,7 +245,7 @@ while True:
             continue
 
         # if doneprocessing file already exists, then do not re-process
-        if production:
+        if settings.production:
             if os.path.exists(done_path):
                 continue
             if os.path.exists(result_path):
@@ -265,18 +262,18 @@ while True:
 
     if not runs_needing_processing:
         logger.info('No runs need processing')
-        if not production:
+        if not settings.production:
             # development mode - exit main loop
             break
-        time.sleep(delay)
+        time.sleep(settings.delay)
         continue
 
     # Process most recently generated run and work backwards
     runs_needing_processing.sort(reverse=True)
     curr_run = runs_needing_processing[0]
-    root = curr_run.replace(NEEDS_PROCESSING, '')
+    root = curr_run.replace(settings.NEEDS_PROCESSING, '')
     run_name = root.split('/')[-2]
-    run_folder = home+run_name
+    run_folder = settings.home+run_name
     results_folder = os.path.join(run_folder, 'results')
 
     # Make folder on the cluster for intermediary files and outputs
@@ -286,9 +283,9 @@ while True:
         os.mkdir(results_folder)
 
     # Determine if intermediary files should persist past end of run
-    all_runs = map(lambda x: x.split('/')[-1], glob('%s*%s*' % (home, instrument_number)))
+    all_runs = map(lambda x: x.split('/')[-1], glob('%s*%s*' % (settings.home, settings.instrument_number)))
     all_runs.sort()
-    runs_to_keep = all_runs[-nruns_to_store:]  # X most recent runs
+    runs_to_keep = all_runs[-settings.nruns_to_store:]  # X most recent runs
     do_cleanup = (run_name not in runs_to_keep)  # true/false
     if do_cleanup:
         logger.info('Set clean mode for run %s', run_name)
@@ -298,11 +295,11 @@ while True:
     logging.shutdown()
     log_file = run_folder + '/MISEQ_MONITOR_OUTPUT.log'
     logger = init_logging(log_file)
-    logger.info('===== Processing {} with pipeline version {} ====='.format(root, pipeline_version))
+    logger.info('===== Processing {} with pipeline version {} ====='.format(root, settings.pipeline_version))
 
 
     # transfer SampleSheet.csv
-    remote_file = curr_run.replace(NEEDS_PROCESSING, 'SampleSheet.csv')
+    remote_file = curr_run.replace(settings.NEEDS_PROCESSING, 'SampleSheet.csv')
     local_file = run_folder + '/SampleSheet.csv'
     execute_command(['rsync', '-a', remote_file, local_file])
 
@@ -357,7 +354,7 @@ while True:
                 continue
 
             # Do word count directly on stream redirected from gunzip
-            p1 = subprocess.Popen(['gunzip', '-c', gz_file], stdout=subprocess.PIPE)
+            p1 = subprocess.Popen(['gunzip', '-c', settings.gz_file], stdout=subprocess.PIPE)
             p2 = subprocess.Popen(['wc', '-l'], stdin=p1.stdout, stdout=subprocess.PIPE)
             output = p2.communicate()[0]
             failed_demultiplexing = output.strip(' \n')
@@ -380,7 +377,7 @@ while True:
 
     # generate quality.csv
     try:
-        quality_csv = os.path.join(home, run_name, 'quality.csv')
+        quality_csv = os.path.join(settings.home, run_name, 'quality.csv')
         download_quality(run_info_path=os.path.join(root, 'RunInfo.xml'),
                          destination=quality_csv,
                          read_lengths=read_lengths)
@@ -399,7 +396,7 @@ while True:
                                      groups=['Everyone'])
 
     # Standard out/error concatenates to the log
-    logger.info("Launching pipeline for %s%s", home, run_name)
+    logger.info("Launching pipeline for %s%s", settings.home, run_name)
     kive_runs = []
     try:
         monitor_path = os.path.abspath(os.path.dirname(__file__))
@@ -437,13 +434,13 @@ while True:
     collate_results(run_folder, results_folder, logger)
 
 
-    if not production:
+    if not settings.production:
         processed_runs.add(curr_run)
     else:
         try:
             # Determine output paths
-            result_path = curr_run.replace(NEEDS_PROCESSING, 'Results')
-            result_path_final = '{}/version_{}'.format(result_path, pipeline_version)
+            result_path = curr_run.replace(settings.NEEDS_PROCESSING, 'Results')
+            result_path_final = '{}/version_{}'.format(result_path, settings.pipeline_version)
     
             # Post files to appropriate sub-folders
             logger.info("Posting results to {}".format(result_path_final))
@@ -460,7 +457,7 @@ while True:
                     os.path.join(result_path_final, destination)
                     if destination
                     else result_path_final)
-                full_pattern = os.path.join(home, run_name, pattern)
+                full_pattern = os.path.join(settings.home, run_name, pattern)
                 if not os.path.isdir(destination_path):
                     os.mkdir(destination_path)
                 post_files(glob(full_pattern), destination_path)
@@ -472,7 +469,8 @@ while True:
             os.mkdir(untar_path)
             os.mkdir(coverage_source_path)
             os.mkdir(coverage_dest_path)
-            for tar_path in glob(home + run_name + '/*.coverage_maps.tar'):
+
+            for tar_path in glob(settings.home + run_name + '/*.coverage_maps.tar'):
                 basename = os.path.basename(tar_path)
                 map_name = os.path.splitext(basename)[0]
                 sample_name = os.path.splitext(map_name)[0]
@@ -483,6 +481,7 @@ while True:
                     destination = os.path.join(coverage_dest_path,
                                                sample_name+'.'+image_filename)
                     os.rename(source, destination)
+
             os.rmdir(coverage_source_path)
             os.rmdir(untar_path)
             

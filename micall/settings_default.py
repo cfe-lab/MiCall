@@ -4,8 +4,14 @@ To make pipeline portable, allow user to specify local paths and thread counts.
 
 ### Core settings ###
 pipeline_version = '7.0'        # Change for each release
-pipeline_version_kive_id = 98   # Also change for each release
 are_temp_folders_deleted = True # Should FIFO worker clean up working folders?
+
+## Kive settings
+kive_server_url = 'http://127.0.0.1:8000/'
+kive_user = 'micall'
+kive_password = 'micall'
+pipeline_version_kive_id = 98   # Change for each release
+quality_cdt_kive_id = 25        # Kive ID for CompoundDatatype (tile:integer, cycle:integer, errorrate:float)
 
 ## Mapping parameters
 bowtie_version = '2.2.1'        # version of bowtie2, used for version control
