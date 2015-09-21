@@ -45,7 +45,6 @@ fieldnames = [
     'qual'
 ]
 
-is_samtools_compatible = False
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 line_counter = LineCounter()
@@ -156,10 +155,7 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                         prev_nuc =           seq[i-1]
                         insertion =          seq[i-1:token_end_pos+1]
                         insertion_quality = qual[i-1:token_end_pos+1]
-                        if is_samtools_compatible:
-                            min_quality = insertion_quality[0]
-                        else:
-                            min_quality = min(insertion_quality)
+                        min_quality = min(insertion_quality)
                         if min_quality >= quality_cutoff_char:
                             prev_nuc_counts[prev_nuc] -= 1
                             prev_nuc_counts[insertion] += 1
