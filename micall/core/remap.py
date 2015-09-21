@@ -112,6 +112,8 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
         if read2 and read1[2] != read2[2]:
             # region mismatch, ignore the read pair.
             continue
+        min_pos = None
+        max_pos = -1
         for read in read_pair:
             if not read:
                 continue
@@ -136,6 +138,7 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
             token_end_pos = -1
             token_itr = iter(tokens)
             for i, nuc in enumerate(seq):
+                is_in_overlap = min_pos is not None and min_pos <= pos <= max_pos
                 while i > token_end_pos:
                     token = next(token_itr)
                     token_size = int(token[:-1])
@@ -149,7 +152,10 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                             pos += 1
                     else:
                         token_end_pos += token_size
-                    if token_type == 'I' and token_size % 3 == 0:
+                    if (token_type == 'I' and
+                        token_size % 3 == 0 and
+                        not is_in_overlap):
+                        
                         # replace previous base with insertion
                         prev_nuc_counts = pos_nucs[pos-1]
                         prev_nuc =           seq[i-1]
@@ -163,15 +169,19 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                 if token_type == 'S':
                     pass
                 elif token_type == 'M':
-                    nuc_counts = pos_nucs[pos]
-                    if qual[i] >= quality_cutoff_char:
-                        nuc_counts[nuc] += 1
-                    else:
-                        nuc_counts['N'] = 0
-                    if debug_reports:
-                        counts = debug_reports.get((rname, pos))
-                        if counts is not None:
-                            counts[nuc + qual[i]] += 1
+                    if not is_in_overlap:
+                        nuc_counts = pos_nucs[pos]
+                        if qual[i] >= quality_cutoff_char:
+                            nuc_counts[nuc] += 1
+                        else:
+                            nuc_counts['N'] = 0
+                        if min_pos is None:
+                            min_pos = pos
+                        max_pos = max(pos, max_pos)
+                        if debug_reports:
+                            counts = debug_reports.get((rname, pos))
+                            if counts is not None:
+                                counts[nuc + qual[i]] += 1
                     pos += 1
     if debug_reports:
         for key, counts in debug_reports.iteritems():
