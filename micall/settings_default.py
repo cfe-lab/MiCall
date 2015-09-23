@@ -12,6 +12,12 @@ kive_user = 'micall'
 kive_password = 'micall'
 pipeline_version_kive_id = 98   # Change for each release
 quality_cdt_kive_id = 25        # Kive ID for CompoundDatatype (tile:integer, cycle:integer, errorrate:float)
+"""
+This can be retrieved by entering the Django shell with './manage.py shell'
+and using the following script:
+from metadata.models import CompoundDatatype
+map(lambda x: x.id, filter(lambda x: 'tile' in x.short_name, CompoundDatatype.objects.all()))
+"""
 
 ## Mapping parameters
 bowtie_version = '2.2.1'        # version of bowtie2, used for version control

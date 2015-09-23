@@ -32,7 +32,8 @@ def prelim_map(fastq1,
                callback=None,
                rdgopen=None,
                rfgopen=None,
-               stderr=sys.stderr):
+               stderr=sys.stderr,
+               gzip=False):
     """ Run the preliminary mapping step.
     
     @param fastq1: the file name for the forward reads in FASTQ format
@@ -64,6 +65,24 @@ def prelim_map(fastq1,
     if not os.path.exists(fastq2):
         logger.error('No FASTQ found at %s', fastq2)
         sys.exit(1)
+
+    # append .gz extension if necessary
+    if gzip:
+        if not fastq1.endswith('.gz'):
+            try:
+                os.symlink(fastq1, fastq1+'.gz')
+            except OSError:
+                # symbolic link already exists
+                pass
+            fastq1 += '.gz'
+
+        if not fastq2.endswith('.gz'):
+            try:
+                os.symlink(fastq2, fastq2+'.gz')
+            except OSError:
+                # symbolic link already exists
+                pass
+            fastq2 += '.gz'
 
     if callback:
         # four lines per read, two files
@@ -143,9 +162,10 @@ def main():
                         help='<output> CSV containing preliminary mapping from bowtie2 (modified SAM)')
     parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
     parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
+    parser.add_argument("--no_gzip", action='store_true', help="<optional> FASTQs are not compressed")
     
     args = parser.parse_args()
-    prelim_map(args.fastq1, args.fastq2, args.prelim_csv, args.rdgopen, args.rfgopen)
+    prelim_map(args.fastq1, args.fastq2, args.prelim_csv, args.rdgopen, args.rfgopen, gzip=not args.no_gzip)
 
 
     

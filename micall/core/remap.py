@@ -253,7 +253,8 @@ def remap(fastq1,
           count_threshold=10,
           rdgopen=None,
           rfgopen=None,
-          stderr=sys.stderr):
+          stderr=sys.stderr,
+          gzip=False):
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
@@ -296,6 +297,24 @@ def remap(fastq1,
         logger.error('No FASTQ found at %s', fastq2)
         sys.exit(1)
 
+    # append .gz extension if necessary
+    if gzip:
+        if not fastq1.endswith('.gz'):
+            try:
+                os.symlink(fastq1, fastq1+'.gz')
+            except OSError:
+                # symbolic link already exists
+                pass
+            fastq1 += '.gz'
+
+        if not fastq2.endswith('.gz'):
+            try:
+                os.symlink(fastq2, fastq2+'.gz')
+            except OSError:
+                # symbolic link already exists
+                pass
+            fastq2 += '.gz'
+
     # retrieve reference sequences used for preliminary mapping
     projects = project_config.ProjectConfig.loadDefault()
     conseqs = {}
@@ -304,7 +323,7 @@ def remap(fastq1,
         conseqs.update({str(seed): ''.join(seqs)})
 
     # record the raw read count
-    raw_count = line_counter.count(fastq1) / 2  # 4 lines per record in FASTQ, paired
+    raw_count = line_counter.count(fastq1, gzip=True) / 2  # 4 lines per record in FASTQ, paired
 
     remap_counts_writer = csv.DictWriter(remap_counts_csv,
                                          ['type', 'count', 'filtered_count'],
@@ -406,7 +425,7 @@ def remap(fastq1,
                                                settings.ref_gap_extend_remap),
                        '-1', fastq1,
                        '-2', fastq2,
-                       '--no-unal', # don't report reads that failed to align
+                       #'--no-unal', # don't report reads that failed to align
                        '--no-hd', # no header lines (start with @)
                        '--local',
                        '-p', str(nthreads)]
@@ -416,6 +435,10 @@ def remap(fastq1,
         new_counts.clear()
         FORWARD_FLAG = 2
         REVERSE_FLAG = 1
+
+        # reset containers with each iteration
+        unmapped = {'R1': {}, 'R2': {}}
+
         with open(samfile, 'w') as f:
             # write SAM header
             f.write('@HD\tVN:1.0\tSO:unsorted\n')
@@ -428,7 +451,12 @@ def remap(fastq1,
                     callback(progress=i)  # progress monitoring in GUI
 
                 items = line.split('\t')
-                qname, bitflag, rname = items[:3]
+                qname, bitflag, rname, _, _, _, _, _, _, seq, qual = items[:11]
+
+                if rname == '*':
+                    # did not map to any reference
+                    unmapped['R1' if is_first_read(bitflag) else 'R2'].update({qname: (seq, qual)})
+                    continue
 
                 if rname not in new_counts:
                     new_counts.update({rname: 0})
@@ -489,28 +517,16 @@ def remap(fastq1,
         remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
     remap_conseq_csv.close()
 
-    # screen raw data for reads that have not mapped to any region
+    # output unmapped reads to new FASTQ files
     n_unmapped = 0
-    with open(fastq1, 'rU') as f:
-        # http://stackoverflow.com/a/1657385/4794
-        # izip_longest will call f.next() four times for each iteration, so
-        # the four variables are assigned the next four lines.
-        for ident, seq, opt, qual in itertools.izip_longest(f, f, f, f):
-            qname = ident.lstrip('@').rstrip('\n').split()[0]
-            if qname not in mapped or (mapped[qname] & FORWARD_FLAG) == 0:
-                # forward read not mapped
-                unmapped1.write(''.join([ident, seq, opt, qual]))
-                n_unmapped += 1
+    for qname, (seq, qual) in unmapped['R1'].iteritems():
+        unmapped1.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+        n_unmapped += 1
     unmapped1.close()
 
-    # write out the other pair
-    with open(fastq2, 'rU') as f:
-        for ident, seq, opt, qual in itertools.izip_longest(f, f, f, f):
-            qname = ident.lstrip('@').rstrip('\n').split()[0]
-            if qname not in mapped or (mapped[qname] & REVERSE_FLAG) == 0:
-                # reverse read not mapped
-                unmapped2.write(''.join([ident, seq, opt, qual]))
-                n_unmapped += 1
+    for qname, (seq, qual) in unmapped['R2'].iteritems():
+        unmapped2.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+        n_unmapped += 1
     unmapped2.close()
 
     # report number of unmapped reads
@@ -697,11 +713,18 @@ def main():
                         help='<output> FASTQ R2 of reads that failed to map to any region')
     parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
     parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
+    parser.add_argument("--no_gzip", help="<optional> FASTQ files are not compressed", action='store_true')
 
     args = parser.parse_args()
-    remap(fastq1=args.fastq1, fastq2=args.fastq2, prelim_csv=args.prelim_csv, remap_csv=args.remap_csv,
-          remap_counts_csv=args.remap_counts_csv, remap_conseq_csv=args.remap_conseq_csv,
-          unmapped1=args.unmapped1, unmapped2=args.unmapped2)
+    remap(fastq1=args.fastq1,
+          fastq2=args.fastq2,
+          prelim_csv=args.prelim_csv,
+          remap_csv=args.remap_csv,
+          remap_counts_csv=args.remap_counts_csv,
+          remap_conseq_csv=args.remap_conseq_csv,
+          unmapped1=args.unmapped1,
+          unmapped2=args.unmapped2,
+          gzip=not args.no_gzip)
 
 if __name__ == '__main__':
     main()

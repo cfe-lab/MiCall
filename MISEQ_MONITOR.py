@@ -58,7 +58,9 @@ def mark_run_as_disabled(root, message, exc_info=None):
     if settings.production:
         with open(root + settings.ERROR_PROCESSING, 'w') as f:
             f.write(message)
-    
+    else:
+        # in development mode - exit the monitor if a run fails
+        sys.exit()
     return failure_message
 
 def is_marked_as_disabled(run):
@@ -204,7 +206,7 @@ def check_kive(scheduler, runs):
     :return:
     """
     for run in runs:
-        logger.info('{} {}%'.format(run.get_status(), run.get_progress.percent()))
+        logger.info('{} {}%'.format(run.get_status(), run.get_progress_percent()))
     if not all(map(lambda x: x.is_complete(), runs)):
         # reschedule a check on runs at subsequent time
         scheduler.enter(5, 1, check_kive, (scheduler, runs,))
@@ -354,26 +356,30 @@ while True:
                 continue
 
             # Do word count directly on stream redirected from gunzip
-            p1 = subprocess.Popen(['gunzip', '-c', settings.gz_file], stdout=subprocess.PIPE)
+            p1 = subprocess.Popen(['gunzip', '-c', R1_file], stdout=subprocess.PIPE)
             p2 = subprocess.Popen(['wc', '-l'], stdin=p1.stdout, stdout=subprocess.PIPE)
             output = p2.communicate()[0]
             failed_demultiplexing = output.strip(' \n')
             logger.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
             continue
 
+        logger.info(filename)
+
         R1_obj = kive.add_dataset(name=filename,
                                   description='',
-                                  handle=open(R1_file, 'rU'),
+                                  handle=open(R1_file, 'rb'),
                                   cdt=None,
                                   users=None,
                                   groups=['Everyone'])
+
         R2_obj = kive.add_dataset(name=os.path.basename(R2_file),
                                   description='',
-                                  handle=open(R2_file, 'rU'),
+                                  handle=open(R2_file, 'rb'),
                                   cdt=None,
                                   users=None,
                                   groups=['Everyone'])
         fastqs.update({(sample, snum): (R1_obj, R2_obj)})
+        break  #FIXME: for debugging - append only one sample
 
     # generate quality.csv
     try:
@@ -407,20 +413,23 @@ while True:
         #                       home+run_name,
         #                       '--clean' if do_cleanup else ''],
         #                      env=environment)
-        for key, val in fastqs.iteritems():
-            fastq1, fastq2 = val
-            status = kive.run_pipeline(pipeline=pipeline, inputs=[fastq1, fastq2, quality_input])
+
+        # push all samples into the queue
+        for key, (fastq1, fastq2) in fastqs.iteritems():
+            status = kive.run_pipeline(pipeline=pipeline, inputs=[fastq1, fastq2])#, quality_input])
             kive_runs.append(status)
 
+        # initialize progress monitoring
         sc = sched.scheduler(time.time, time.sleep)
         sc.enter(5, 1, check_kive, (sc, kive_runs))
-        sc.run()
+        sc.run()  # exits when all runs are complete
 
         logger.info("===== {} successfully processed! =====".format(run_name))
     except Exception as e:
         failure_message = mark_run_as_disabled(
             root,
-            "MISEQ_MONITOR.py failed: '{}'".format(e))
+            "MISEQ_MONITOR.py failed: '{}'".format(e),
+            exc_info=True)
         continue
 
 

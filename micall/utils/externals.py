@@ -202,11 +202,18 @@ class LineCounter():
     def __init__(self):
         self.command = 'wc'
         
-    def count(self, filename):
+    def count(self, filename, gzip=False):
         if self.command:
             try:
-                wc_output = subprocess.check_output(['wc', '-l', filename],
-                                                    stderr=subprocess.STDOUT)
+                if gzip:
+                    p = subprocess.Popen(['gunzip', '-c', filename], stdout=subprocess.PIPE,
+                                         stderr=subprocess.STDOUT)
+                    wc_output = subprocess.check_output(['wc', '-l'], stdin=p.stdout,
+                                                        stderr=subprocess.STDOUT)
+                else:
+                    wc_output = subprocess.check_output(['wc', '-l', filename],
+                                                        stderr=subprocess.STDOUT)
+
                 return int(wc_output.split()[0])
             except:
                 self.command = None
