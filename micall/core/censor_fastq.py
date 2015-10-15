@@ -4,6 +4,8 @@ import itertools
 import argparse
 import csv
 import math
+import subprocess
+#import gzip
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -21,7 +23,7 @@ def parseArgs():
     
     return parser.parse_args()
 
-def censor(original_file, bad_cycles_reader, censored_file):
+def censor(original_file, bad_cycles_reader, censored_file, use_gzip=True):
     """ Censor bases from a FASTQ file that were read in bad cycles.
     
     @param original_file: an open FASTQ file to read from
@@ -34,22 +36,35 @@ def censor(original_file, bad_cycles_reader, censored_file):
     for cycle in bad_cycles_reader:
         bad_cycles.add((cycle['tile'], int(cycle['cycle'])))
 
-    for ident, seq, opt, qual in itertools.izip_longest(original_file,
-                                                        original_file,
-                                                        original_file,
-                                                        original_file):
+    src = original_file
+    dest = censored_file
+    if use_gzip:
+        # create gunzip stream
+        p = subprocess.Popen(['gunzip', '-c'], stdin=original_file, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
+        src = p.stdout
+
+        # modify destination to be gzip compressed
+        #censored_file.close()
+        #censored_file = gzip.open(censored_file.name, 'w')  # this is really SLOW
+        p2 = subprocess.Popen(['gzip', '-c'], stdin=subprocess.PIPE, stdout=censored_file)
+        dest = p2.stdin  # has a write() function
+
+    for ident, seq, opt, qual in itertools.izip_longest(src, src, src, src):
+        # returns an aggregate of 4 lines per call
         ident_fields, read_fields = map(str.split, ident.split(' '), '::')
         tile = ident_fields[4]
         read_direction = read_fields[0]
         cycle_sign = 1 if read_direction == '1' else -1
-        censored_file.write(ident)
+        dest.write(ident)
         for cycle, base in enumerate(seq, start=1):
             cycle = math.copysign(cycle, cycle_sign)
-            censored_file.write('N' if (tile, cycle) in bad_cycles else base)
-        censored_file.write(opt)
+            dest.write('N' if (tile, cycle) in bad_cycles else base)
+        dest.write(opt)
         for cycle, score in enumerate(qual, start=1):
             cycle = math.copysign(cycle, cycle_sign)
-            censored_file.write('#' if (tile, cycle) in bad_cycles else score)
+            dest.write('#' if (tile, cycle) in bad_cycles else score)
+
 
 if __name__ == '__main__':
     args = parseArgs()
