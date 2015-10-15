@@ -186,7 +186,7 @@ def collate_results(run_folder, results_folder, logger):
 #####################################################################################
 
 KiveAPI.SERVER_URL = settings.kive_server_url
-kive = KiveAPI(settings.kive_user, settings.kive_password)
+kive = KiveAPI(settings.kive_user, settings.kive_password, verify=False)
 
 # retrieve Pipeline object based on version
 pipeline = kive.get_pipeline(settings.pipeline_version_kive_id)
@@ -395,7 +395,7 @@ while True:
 
     # transfer quality.csv with Kive API
     quality_input = kive.add_dataset(name='quality.csv',
-                                     description='',
+                                     description='phiX174 quality scores per tile and cycle for run %s' % (run_name,),
                                      handle=open(quality_csv, 'rU'),
                                      cdt=quality_cdt,
                                      users=None,
@@ -416,7 +416,7 @@ while True:
 
         # push all samples into the queue
         for key, (fastq1, fastq2) in fastqs.iteritems():
-            status = kive.run_pipeline(pipeline=pipeline, inputs=[fastq1, fastq2])#, quality_input])
+            status = kive.run_pipeline(pipeline=pipeline, inputs=[fastq1, fastq2, quality_input])
             kive_runs.append(status)
 
         # initialize progress monitoring
