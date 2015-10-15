@@ -27,7 +27,7 @@ import tempfile
 from micall import settings
 from micall.core import miseq_logging
 from micall.core import project_config
-from micall.core.sam2aln import cigar_re, is_first_read
+#from micall.core.sam2aln import cigar_re, is_first_read
 from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools, LineCounter
 
 # SAM file format
@@ -45,9 +45,19 @@ fieldnames = [
     'qual'
 ]
 
+cigar_re = re.compile('[0-9]+[MIDNSHPX=]')  # CIGAR token
+
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 line_counter = LineCounter()
+
+def is_first_read(flag):
+    """
+    Interpret bitwise flag from SAM field.
+    Returns True or False indicating whether the read is the first read in a pair.
+    """
+    IS_FIRST_SEGMENT = 0x40
+    return (int(flag) & IS_FIRST_SEGMENT) != 0
 
 def is_short_read(read_row, max_primer_length):
     """
@@ -323,7 +333,7 @@ def remap(fastq1,
         conseqs.update({str(seed): ''.join(seqs)})
 
     # record the raw read count
-    raw_count = line_counter.count(fastq1, gzip=True) / 2  # 4 lines per record in FASTQ, paired
+    raw_count = line_counter.count(fastq1, gzip=gzip) / 2  # 4 lines per record in FASTQ, paired
 
     remap_counts_writer = csv.DictWriter(remap_counts_csv,
                                          ['type', 'count', 'filtered_count'],

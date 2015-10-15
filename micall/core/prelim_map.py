@@ -86,7 +86,7 @@ def prelim_map(fastq1,
 
     if callback:
         # four lines per read, two files
-        total_reads = line_counter.count(fastq1) / 2
+        total_reads = line_counter.count(fastq1, gzip=gzip) / 2
         callback(message='... preliminary mapping',
                  progress=0,
                  max_progress=total_reads)
