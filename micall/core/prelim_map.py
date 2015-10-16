@@ -162,10 +162,15 @@ def main():
                         help='<output> CSV containing preliminary mapping from bowtie2 (modified SAM)')
     parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
     parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
-    parser.add_argument("--no_gzip", action='store_true', help="<optional> FASTQs are not compressed")
+    parser.add_argument("--gzip", action='store_true', help="<optional> FASTQs are compressed")
     
     args = parser.parse_args()
-    prelim_map(args.fastq1, args.fastq2, args.prelim_csv, args.rdgopen, args.rfgopen, gzip=not args.no_gzip)
+    prelim_map(fastq1=args.fastq1,
+               fastq2=args.fastq2,
+               prelim_csv=args.prelim_csv,
+               rdgopen=args.rdgopen,
+               rfgopen=args.rfgopen,
+               gzip=args.gzip)  # defaults to False
 
 
     

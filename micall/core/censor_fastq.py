@@ -47,8 +47,8 @@ def censor(original_file, bad_cycles_reader, censored_file, use_gzip=True):
         # modify destination to be gzip compressed
         #censored_file.close()
         #censored_file = gzip.open(censored_file.name, 'w')  # this is really SLOW
-        p2 = subprocess.Popen(['gzip', '-c'], stdin=subprocess.PIPE, stdout=censored_file)
-        dest = p2.stdin  # has a write() function
+        #p2 = subprocess.Popen(['gzip', '-c'], stdin=subprocess.PIPE, stdout=censored_file)
+        #dest = p2.stdin  # has a write() function
 
     for ident, seq, opt, qual in itertools.izip_longest(src, src, src, src):
         # returns an aggregate of 4 lines per call
