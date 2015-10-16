@@ -24,9 +24,10 @@ import shutil
 import sys
 import tempfile
 
+
+import miseq_logging
+import project_config
 from micall import settings
-from micall.core import miseq_logging
-from micall.core import project_config
 #from micall.core.sam2aln import cigar_re, is_first_read
 from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools, LineCounter
 
@@ -723,7 +724,8 @@ def main():
                         help='<output> FASTQ R2 of reads that failed to map to any region')
     parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
     parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
-    parser.add_argument("--no_gzip", help="<optional> FASTQ files are not compressed", action='store_true')
+    parser.add_argument("--gzip", help="<optional> FASTQ files are compressed",
+                        action='store_true')
 
     args = parser.parse_args()
     remap(fastq1=args.fastq1,
@@ -734,7 +736,7 @@ def main():
           remap_conseq_csv=args.remap_conseq_csv,
           unmapped1=args.unmapped1,
           unmapped2=args.unmapped2,
-          gzip=not args.no_gzip)
+          gzip=args.gzip)  # defaults to False
 
 if __name__ == '__main__':
     main()
