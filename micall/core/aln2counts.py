@@ -23,9 +23,9 @@ import os
 
 import gotoh
 from micall import settings
-from micall.core import miseq_logging
+import miseq_logging
+import project_config
 from micall.utils.translation import translate, ambig_dict
-from micall.core import project_config
 from collections import Counter
 import csv
 
