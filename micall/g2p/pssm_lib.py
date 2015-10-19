@@ -22,7 +22,7 @@ class Pssm ():
             return
 
         if path_to_lookup is None:
-            lookup_paths = ['g2p_fpr.txt', '../../g2p/g2p_fpr.txt']
+            lookup_paths = ['g2p_fpr.txt', '../../g2p/g2p_fpr.txt', 'micall/g2p/g2p_fpr.txt']
         else:
             lookup_paths = [path_to_lookup]
         for path in lookup_paths:
@@ -44,7 +44,7 @@ class Pssm ():
         self.g2p_fpr_data.sort()  # make sure the list is sorted
 
         if path_to_matrix is None:
-            matrix_paths = ['g2p.matrix', '../../g2p/g2p.matrix']
+            matrix_paths = ['g2p.matrix', '../../g2p/g2p.matrix', 'micall/g2p/g2p.matrix']
         else:
             matrix_paths = [path_to_matrix]
         for path in matrix_paths:
