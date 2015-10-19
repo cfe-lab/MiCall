@@ -149,7 +149,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
     reader = DictReader(remap_csv)
     for row in reader:
         clip_from, clip_to = tracker.get_range(row['rname'])
-        if clip_from is None:
+        if clip_from is None or row['cigar'] == '*':
             # uninteresting region
             continue
 
