@@ -366,14 +366,14 @@ while True:
         logger.info(filename)
 
         R1_obj = kive.add_dataset(name=filename,
-                                  description='',
+                                  description='R1 FASTQ for sample %s (%s) from MiSeq run %s' % (sample, snum, run_name),
                                   handle=open(R1_file, 'rb'),
                                   cdt=None,
                                   users=None,
                                   groups=['Everyone'])
 
         R2_obj = kive.add_dataset(name=os.path.basename(R2_file),
-                                  description='',
+                                  description='R2 FASTQ for sample %s (%s) from MiSeq run %s' % (sample, snum, run_name),
                                   handle=open(R2_file, 'rb'),
                                   cdt=None,
                                   users=None,
@@ -394,7 +394,7 @@ while True:
         continue
 
     # transfer quality.csv with Kive API
-    quality_input = kive.add_dataset(name='quality.csv',
+    quality_input = kive.add_dataset(name='%s_quality.csv' % (run_name[:6],),
                                      description='phiX174 quality scores per tile and cycle for run %s' % (run_name,),
                                      handle=open(quality_csv, 'rU'),
                                      cdt=quality_cdt,
@@ -416,7 +416,7 @@ while True:
 
         # push all samples into the queue
         for key, (fastq1, fastq2) in fastqs.iteritems():
-            status = kive.run_pipeline(pipeline=pipeline, inputs=[fastq1, fastq2, quality_input])
+            status = kive.run_pipeline(pipeline=pipeline, inputs=[quality_input, fastq1, fastq2])  # note order of inputs is critical
             kive_runs.append(status)
 
         # initialize progress monitoring
