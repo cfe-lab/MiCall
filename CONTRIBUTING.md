@@ -70,20 +70,18 @@ If you want to see what's currently being worked on, check out the [waffle board
 [eclipse]: https://www.eclipse.org/downloads/
 [pydev]: http://pydev.org/updates
 
-### Python and Perl ###
-Check that Python and Perl are already installed.
+### Python ###
+Check that Python is already installed.
 
     python --version
-    perl --version
 
-We have tested with Python 2.7 and Perl 5.18.
+We have tested with Python 2.7.
 
-On Windows, you can install [Anaconda Python][anaconda] and [ActivePerl][perl].
+On Windows, you can install [Anaconda Python][anaconda].
 
 [anaconda]: http://continuum.io/downloads
-[perl]: http://www.activestate.com/activeperl/downloads
 
-### Bowtie, Samtools, and Hyphy ###
+### Bowtie and HyPhy ###
 1. Download the latest version of [bowtie2's binaries for Linux][bowtie2].
 2. Right click and choose Extract Here. Change the folder owner to root, move it to /opt, and add it to the path.
 
@@ -93,17 +91,7 @@ On Windows, you can install [Anaconda Python][anaconda] and [ActivePerl][perl].
         sudo vi /etc/environment # add :/opt/bowtie2-2.2.1 and logout/login
         bowtie2 --version # smoke test
 
-3. Samtools doesn't seem to be available for Windows, so skip it. Before you can
-    build samtools on Ubuntu, you will need these libraries:
-
-        sudo apt-get install zlib1g-dev libncurses5-dev
-
-4. Download the latest version of the [source for samtools][samtools].
-5. Extract the files, and follow the instructions in the INSTALL file. Copy the
-    samtools executable to /usr/bin/samtools-X.Y where X.Y is the version of
-    samtools. You can check the samtools version by running `samtools-X.Y` with
-    no arguments.
-6. Hyphy is not needed by the main pipeline, only some of the helper utilities,
+3. HyPhy is not needed by the main pipeline, only some of the helper utilities,
     so you can probably skip it. Before you can build HyPhy, you will need these
     libraries:
 
@@ -120,7 +108,6 @@ On Windows, you can install [Anaconda Python][anaconda] and [ActivePerl][perl].
         python BasicHyPhy.py # Just check that there are no obvious errors.
 
 [bowtie2]: http://sourceforge.net/projects/bowtie-bio/files/bowtie2/
-[samtools]: http://sourceforge.net/projects/samtools/files/
 [hyphy]: https://github.com/veg/hyphy
 
 ### Gotoh library ###
@@ -184,17 +171,6 @@ R is used in the MISEQ_MONITOR version, but not in the stand-alone version.
     Then you can use `source("coverage_plots.R")` in the console to launch it.
 
 [statet]: http://www.walware.de/it/statet/installation.mframe
-
-### MPI ###
-MPI is only used in the MISEQ_MONITOR version, not in the stand-alone version.
-
-1. Install Open MPI.
-
-    sudo apt-get install openmpi-bin
-    
-2. Install mpi4py.
-
-    sudo apt-get install python-mpi4py
 
 ### Matplotlib ###
 Matplotlib is only used in the stand-alone version, and it comes packaged with

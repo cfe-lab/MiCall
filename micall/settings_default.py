@@ -2,40 +2,26 @@
 To make pipeline portable, allow user to specify local paths and thread counts.
 """
 
-### Core settings ###
+# ### Core settings ### #
 pipeline_version = '7.0'        # Change for each release
-are_temp_folders_deleted = True # Should FIFO worker clean up working folders?
 
-## Kive settings
-kive_server_url = 'http://127.0.0.1:8000/'
-kive_user = 'micall'
-kive_password = 'micall'
-pipeline_version_kive_id = 98   # Change for each release
-quality_cdt_kive_id = 25        # Kive ID for CompoundDatatype (tile:integer, cycle:integer, errorrate:float)
-"""
-This can be retrieved by entering the Django shell with './manage.py shell'
-and using the following script:
-from metadata.models import CompoundDatatype
-map(lambda x: x.id, filter(lambda x: 'tile' in x.short_name, CompoundDatatype.objects.all()))
-"""
-
-## Mapping parameters
+# Mapping parameters
 bowtie_version = '2.2.1'        # version of bowtie2, used for version control
 bowtie_path = 'bowtie2-align-s'         # path to executable, so you can install more than one version
 bowtie_build_path = 'bowtie2-build-s'
 bowtie_threads = 4              # Bowtie performance roughly scales with number of threads
-samtools_version = None #'1.1'
-samtools_path = None #'samtools-1.1'
+samtools_version = None  # '1.1'
+samtools_path = None  # 'samtools-1.1'
 min_mapping_efficiency = 0.95   # Fraction of fastq reads mapped needed
 max_remaps = 3                  # Number of remapping attempts if mapping efficiency unsatisfied
 consensus_q_cutoff = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 
-## sam2aln parameters
+# sam2aln parameters
 sam2aln_q_cutoffs = [15]  # Q-cutoff for base censoring
 max_prop_N = 0.5                 # Drop reads with more censored bases than this proportion
 read_mapping_cutoff = 10         # Minimum bowtie read mapping quality
 
-## aln2counts parameters
+# aln2counts parameters
 amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'
 conseq_mixture_cutoffs = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 
@@ -52,9 +38,10 @@ gap_open_coord = 40
 gap_extend_coord = 10
 
 
-### Monitor settings ###
+# ### Monitor settings ### #
 instrument_number = 'M01841'  # for Illumina MiSeq, second item in run folder name
 production = False  # set this to True to push results to NAS
+are_temp_folders_deleted = True  # Should FIFO worker clean up working folders?
 
 # Local path for writing data
 home = '/data/miseq/'
@@ -71,6 +58,20 @@ NEEDS_PROCESSING = 'needsprocessing'  # File flags
 ERROR_PROCESSING = 'errorprocessing'
 DONE_PROCESSING = 'doneprocessing'
 QC_UPLOADED = 'qc_uploaded'
+
+# Kive settings
+kive_server_url = 'http://127.0.0.1:8000/'
+kive_user = 'FILLINUSERNAME'
+kive_password = '*******'
+kive_groups_allowed = ['Everyone']
+pipeline_version_kive_id = 98   # Change for each release
+quality_cdt_kive_id = 25        # Kive ID for CompoundDatatype (tile:integer, cycle:integer, errorrate:float)
+"""
+This can be retrieved by entering the Django shell with './manage.py shell'
+and using the following script:
+from metadata.models import CompoundDatatype
+map(lambda x: x.id, filter(lambda x: 'tile' in x.short_name, CompoundDatatype.objects.all()))
+"""
 
 # Connection to QAI RESTful API for uploading results
 qai_user = "FILLINUSERNAME"

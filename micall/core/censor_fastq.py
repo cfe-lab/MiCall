@@ -4,28 +4,29 @@ import itertools
 import argparse
 import csv
 import math
-import subprocess
-#import gzip
+from gzip import GzipFile
+
 
 def parseArgs():
     parser = argparse.ArgumentParser(
         description='Censor tiles and cycles from a FASTQ file.')
-    
+
     parser.add_argument('original_fastq',
                         type=argparse.FileType('rU'),
-                        help='<input> FASTQ containing original reads')
+                        help='<input> FASTQ.gz containing original reads')
     parser.add_argument('bad_cycles_csv',
                         type=argparse.FileType('rU'),
                         help='<input> List of tiles and cycles rejected for poor quality')
     parser.add_argument('censored_fastq',
                         type=argparse.FileType('w'),
-                        help='<output> FASTQ containing censored reads')
-    
+                        help='<output> uncompressed FASTQ containing censored reads')
+
     return parser.parse_args()
+
 
 def censor(original_file, bad_cycles_reader, censored_file, use_gzip=True):
     """ Censor bases from a FASTQ file that were read in bad cycles.
-    
+
     @param original_file: an open FASTQ file to read from
     @param bad_cycles_reader: an iterable collection of bad cycle entries:
         {'tile': tile, 'cycle': cycle}
@@ -39,16 +40,7 @@ def censor(original_file, bad_cycles_reader, censored_file, use_gzip=True):
     src = original_file
     dest = censored_file
     if use_gzip:
-        # create gunzip stream
-        p = subprocess.Popen(['gunzip', '-c'], stdin=original_file, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
-        src = p.stdout
-
-        # modify destination to be gzip compressed
-        #censored_file.close()
-        #censored_file = gzip.open(censored_file.name, 'w')  # this is really SLOW
-        #p2 = subprocess.Popen(['gzip', '-c'], stdin=subprocess.PIPE, stdout=censored_file)
-        #dest = p2.stdin  # has a write() function
+        src = GzipFile(fileobj=original_file)
 
     for ident, seq, opt, qual in itertools.izip_longest(src, src, src, src):
         # returns an aggregate of 4 lines per call
@@ -72,6 +64,3 @@ if __name__ == '__main__':
     censor(args.original_fastq,
            csv.DictReader(args.bad_cycles_csv),
            args.censored_fastq)
-#     args.censored_fastq.write('test\n')
-#     args.censored_fastq.close()
-#     print 'Done with {}.'.format(args.censored_fastq.name)

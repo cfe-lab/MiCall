@@ -368,16 +368,12 @@ while True:
         R1_obj = kive.add_dataset(name=filename,
                                   description='R1 FASTQ for sample %s (%s) from MiSeq run %s' % (sample, snum, run_name),
                                   handle=open(R1_file, 'rb'),
-                                  cdt=None,
-                                  users=None,
-                                  groups=['Everyone'])
+                                  groups=settings.kive_groups_allowed)
 
         R2_obj = kive.add_dataset(name=os.path.basename(R2_file),
                                   description='R2 FASTQ for sample %s (%s) from MiSeq run %s' % (sample, snum, run_name),
                                   handle=open(R2_file, 'rb'),
-                                  cdt=None,
-                                  users=None,
-                                  groups=['Everyone'])
+                                  groups=settings.kive_groups_allowed)
         fastqs.update({(sample, snum): (R1_obj, R2_obj)})
         break  #FIXME: for debugging - append only one sample
 
@@ -398,8 +394,7 @@ while True:
                                      description='phiX174 quality scores per tile and cycle for run %s' % (run_name,),
                                      handle=open(quality_csv, 'rU'),
                                      cdt=quality_cdt,
-                                     users=None,
-                                     groups=['Everyone'])
+                                     groups=settings.kive_groups_allowed)
 
     # Standard out/error concatenates to the log
     logger.info("Launching pipeline for %s%s", settings.home, run_name)
@@ -416,7 +411,9 @@ while True:
 
         # push all samples into the queue
         for key, (fastq1, fastq2) in fastqs.iteritems():
-            status = kive.run_pipeline(pipeline=pipeline, inputs=[quality_input, fastq1, fastq2])  # note order of inputs is critical
+            status = kive.run_pipeline(pipeline=pipeline,
+                                       inputs=[quality_input, fastq1, fastq2],
+                                       groups=settings.kive_groups_allowed)  # note order of inputs is critical
             kive_runs.append(status)
 
         # initialize progress monitoring
