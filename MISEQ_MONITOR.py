@@ -9,7 +9,9 @@ MISEQ_MONITOR.py
 
 import csv
 from glob import glob
+import itertools
 import logging
+import operator
 import os
 import sched
 import shutil
@@ -27,12 +29,12 @@ from micall.utils.sample_sheet_parser import sample_sheet_parser
 import micall.settings as settings
 from micall.monitor import update_qai
 from micall.utils.collate import collate_labeled_files
-import itertools
-import operator
 
 
 if sys.version_info[:2] != (2, 7):
     raise Exception("Python 2.7 not detected")
+
+MAX_RUN_NAME_LENGTH = 60
 
 
 def init_logging(log_file):
@@ -342,7 +344,7 @@ while True:
 
     # use Kive-API to transfer fastq.gz files
     fastqs = {}
-    R1_files = filter(lambda x: '_R1_' in os.path.basename(x), gz_files)
+    R1_files = sorted(filter(lambda x: '_R1_' in os.path.basename(x), gz_files))
     for R1_file in R1_files:
         R2_file = R1_file.replace('_R1_', '_R2_')
         if R2_file not in gz_files:
@@ -407,20 +409,18 @@ while True:
     logger.info("Launching pipeline for %s%s", settings.home, run_name)
     kive_runs = []
     try:
-        monitor_path = os.path.abspath(os.path.dirname(__file__))
-        environment = dict(os.environ)
-        old_path = environment.get('PYTHONPATH', '')
-        environment['PYTHONPATH'] = os.pathsep.join((old_path, monitor_path))
-        # subprocess.check_call([os.path.join(monitor_path, 'micall/monitor/run_processor.py'),
-        #                       home+run_name,
-        #                       '--clean' if do_cleanup else ''],
-        #                      env=environment)
-
         # push all samples into the queue
-        for key, (fastq1, fastq2) in fastqs.iteritems():
+        for (sample, snum), (fastq1, fastq2) in fastqs.iteritems():
+            name = '{} - {} ({})'.format(pipeline.family,
+                                         fastq1.name,
+                                         run_name)
+            name = name[:MAX_RUN_NAME_LENGTH]
+
+            # note order of inputs is critical
             status = kive.run_pipeline(pipeline=pipeline,
                                        inputs=[quality_input, fastq1, fastq2],
-                                       groups=settings.kive_groups_allowed)  # note order of inputs is critical
+                                       name=name,
+                                       groups=settings.kive_groups_allowed)
             kive_runs.append(status)
 
         # initialize progress monitoring
