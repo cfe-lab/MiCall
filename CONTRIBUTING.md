@@ -276,38 +276,52 @@ similar steps to setting up a development workstation. Follow these steps:
     tests as described above, process the microtest data set, and process a full
     run using MISEQ_MONITOR.py from the command line. Check the logs for errors.
     Also check that all the issues in the current milestone are closed.
-2. Determine what version number should be used next. Update the version number
+2. Check if the kiveapi package needs a new release by looking for new commits.
+    Make sure you tested with the latest version.
+3. Determine what version number should be used next. Update the version number
     in `settings_default.py` if it hasn't been updated already, commit, and push.
-2. Copy the previous pipeline on QAI/lab_miseq_pipelines to make a new version.
+4. Copy the previous pipeline on QAI/lab_miseq_pipelines to make a new version.
     Use the `dump_projects.py` script and compare `projects.json` to check that
     the projects match.
-3. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y
+5. Check the history of the `micall.alignment` folder. If it has changed since
+    the last release, then update the version number in `setup.py`.
+6. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y
     matches the version you used in `settings_default.py`. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
     so on. Mark the release as pre-release until you finish deploying it.
-4. Get the code from Github into the server's development environment.
+7. Get the code from Github into the server's development environment.
 
         ssh user@server
         cd /usr/local/share/miseq/development/
         git fetch
         git checkout tags/vX.Y
 
-5. Check if you need to set any new settings by running
+8. Check if you need to set any new settings by running
     `diff settings_default.py settings.py`. You will probably need to modify
     the version number, at least. Make sure that `production = False`, and the
     process counts are half the production values. Do the same comparison of
     `hostfile`.
-6. Check if `alignment.cpp` is newer than `alignment.so`. If so, rebuild it.
+9. Check if the gotoh package is up to date. If not, install it.
 
-        cd /usr/local/share/miseq/development/
-        ./build_alignment.sh
-        
-7. Process one full run of data.
+        cd /usr/local/share/miseq/development/micall/alignment
+        pip show gotoh
+        cat setup.py  # compare version numbers
+        sudo python setup.py install
+
+10. Check that the kiveapi package is the same version you tested with. If not,
+    get the latest code and install it.
+
+        cd /usr/local/share/py-kive-api
+        git fetch
+        git checkout tags/vM.N
+        sudo python setup.py install
+
+11. Process one full run of data.
 
         cd /usr/local/share/miseq/development/
         ./run_processor.py /data/miseq/YYMMDD*
 
-7. Stop the `MISEQ_MONITOR.py` process after you check that it's not processing
+12. Stop the `MISEQ_MONITOR.py` process after you check that it's not processing
     any runs.
 
         ssh user@server
@@ -315,25 +329,25 @@ similar steps to setting up a development workstation. Follow these steps:
         ps aux|grep MISEQ_MONITOR.py
         sudo kill -9 <process id from grep output>
 
-8. Get the code from Github into the server's production environment.
+13. Get the code from Github into the server's production environment.
 
         ssh user@server
         cd /usr/local/share/miseq/production/
         git fetch
         git checkout tags/vX.Y
 
-9. Review the settings, host file, and alignment library just as you did in the
+14. Review the settings and host file just as you did in the
     development environment, but make sure that `production = True`.
-10. Start the monitor, and tail the log to see that it begins processing all the
+15. Start the monitor, and tail the log to see that it begins processing all the
     runs with the new version of the pipeline.
 
         cd /usr/local/share/miseq/production/
         python MISEQ_MONITOR.py &>/dev/null &
         tail -f /data/miseq/MISEQ_MONITOR_OUTPUT.log
 
-11. Remove the pre-release flag from the release.
-12. Send an e-mail to users describing the major changes in the release.
-13. Close the milestone for this release, create one for the next release, and
+16. Remove the pre-release flag from the release.
+17. Send an e-mail to users describing the major changes in the release.
+18. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
 
 [release]: https://help.github.com/categories/85/articles
