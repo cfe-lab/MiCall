@@ -35,6 +35,7 @@ if sys.version_info[:2] != (2, 7):
     raise Exception("Python 2.7 not detected")
 
 MAX_RUN_NAME_LENGTH = 60
+logger = None
 
 
 def init_logging(log_file):
@@ -202,10 +203,6 @@ pipeline = kive.get_pipeline(settings.pipeline_version_kive_id)
 # retrieve quality.csv compound data type
 quality_cdt = kive.get_cdt(settings.quality_cdt_kive_id)
 
-processed_runs = set()
-logger = None
-failure_message = None
-
 
 def check_kive(scheduler, runs):
     """
@@ -220,26 +217,10 @@ def check_kive(scheduler, runs):
         scheduler.enter(5, 1, check_kive, (scheduler, runs,))
 
 
-# main loop
-# Process runs flagged for processing not already processed by this version of the pipeline
-while True:
-    if failure_message is not None:
-        # We're still logging to a run folder that failed.
-        logging.shutdown()
-        logger = None
-
-    if logger is None:
-        logger = init_logging(settings.home + '/MISEQ_MONITOR_OUTPUT.log')
-
-    if failure_message is not None:
-        # Log it here again, now logging to home folder's log file.
-        logger.error(failure_message)
-        failure_message = None
-
+def find_runs(processed_runs):
     # flag indicates that Illumina MiseqReporter has completed pre-processing, files available on NAS
-    runs = glob(settings.rawdata_mount + 'MiSeq/runs/*/{}'.format(settings.NEEDS_PROCESSING))
-    # runs = glob(rawdata_mount + 'MiSeq/runs/131119_M01841_0041_000000000-A5EPY/{}'.format(NEEDS_PROCESSING))
-
+    runs = glob(settings.rawdata_mount +
+                'MiSeq/runs/*/{}'.format(settings.NEEDS_PROCESSING))
     runs_needing_processing = []
     for run in runs:
         root = os.path.dirname(run)
@@ -247,13 +228,10 @@ while True:
                                    'Results',
                                    'version_{}'.format(settings.pipeline_version))
         done_path = os.path.join(result_path, settings.DONE_PROCESSING)
-
         if is_marked_as_disabled(run):
             continue
-
         if not is_quality_control_uploaded(run):
             continue
-
         # if doneprocessing file already exists, then do not re-process
         if settings.production:
             if os.path.exists(done_path):
@@ -262,88 +240,59 @@ while True:
                 # Not done, but results folder exists. Assume it's incomplete,
                 # delete it, and rerun.
                 shutil.rmtree(result_path)
-        else:
             # running in development mode - do all runs even if already processed
             # note that results will not be uploaded
-            if run in processed_runs:
-                continue
-
+        elif run in processed_runs:
+            continue
         runs_needing_processing.append(run)
 
-    if not runs_needing_processing:
-        logger.info('No runs need processing')
-        if not settings.production:
-            # development mode - exit main loop
-            break
-        time.sleep(settings.delay)
-        continue
+    return runs_needing_processing
 
-    # Process most recently generated run and work backwards
-    runs_needing_processing.sort(reverse=True)
-    curr_run = runs_needing_processing[0]
-    root = curr_run.replace(settings.NEEDS_PROCESSING, '')
-    run_name = root.split('/')[-2]
-    run_folder = settings.home+run_name
-    results_folder = os.path.join(run_folder, 'results')
 
-    # Make folder on the cluster for intermediary files and outputs
-    if not os.path.exists(run_folder):
-        os.mkdir(run_folder)
-    if not os.path.exists(results_folder):
-        os.mkdir(results_folder)
+def upload_data(root, run_name, run_folder):
+    """ Upload FASTQ files and quality to Kive.
 
-    # Determine if intermediary files should persist past end of run
-    all_runs = map(lambda x: x.split('/')[-1], glob('%s*%s*' % (settings.home, settings.instrument_number)))
-    all_runs.sort()
-    runs_to_keep = all_runs[-settings.nruns_to_store:]  # X most recent runs
-    do_cleanup = (run_name not in runs_to_keep)  # true/false
-    if do_cleanup:
-        logger.info('Set clean mode for run %s', run_name)
-
-    # Record standard input / output of monitor
-    logger.info('Starting run %s', root)
-    logging.shutdown()
-    log_file = run_folder + '/MISEQ_MONITOR_OUTPUT.log'
-    logger = init_logging(log_file)
-    logger.info('===== Processing {} with pipeline version {} ====='.format(root, settings.pipeline_version))
+    :param root: the path to the root folder of the run that holds all the
+        FASTQ files
+    :param run_name: the folder name
+    :param run_folder: the local folder that will hold working files.
+    """
+    fastqs = []
+    failure_message = None
+    quality_input = None
 
     # transfer SampleSheet.csv
-    remote_file = curr_run.replace(settings.NEEDS_PROCESSING, 'SampleSheet.csv')
+    remote_file = os.path.join(root, 'SampleSheet.csv')
     local_file = run_folder + '/SampleSheet.csv'
     execute_command(['rsync', '-a', remote_file, local_file])
-
     try:
         with open(local_file, 'rU') as sample_sheet:
             # parse run information from SampleSheet
             run_info = sample_sheet_parser(sample_sheet)
             read_lengths = run_info['Reads']
-    except Exception as e:
-        failure_message = mark_run_as_disabled(
-            root,
-            "Parsing sample sheet failed",
-            exc_info=True)
-        continue
+    except Exception:
+        failure_message = mark_run_as_disabled(root,
+                                               "Parsing sample sheet failed",
+                                               exc_info=True)
+        return fastqs, failure_message, quality_input
 
     gz_files = glob(root + 'Data/Intensities/BaseCalls/*R?_001.fastq.gz')
     if not gz_files:
         failure_message = mark_run_as_disabled(root, "No data files found")
-        continue
+        return fastqs, failure_message, quality_input
 
     # use Kive-API to transfer fastq.gz files
-    fastqs = []
     R1_files = sorted(filter(lambda x: '_R1_' in os.path.basename(x), gz_files))
     for R1_file in R1_files:
         R2_file = R1_file.replace('_R1_', '_R2_')
         if R2_file not in gz_files:
-            logger.info("ERROR: Detected an unpaired R1 FASTQ file: {}".format(R1_file))
+            logger.warn("Detected an unpaired R1 FASTQ file: {}".format(R1_file))
             continue
 
         filename = os.path.basename(R1_file)
         sample, snum = filename.split('_')[:2]
-
         # Report number of reads failing to demultiplex to the log
         if filename.startswith('Undetermined'):
-
             # Second file has the same number of lines - don't bother
             if filename.endswith('_L001_R2_001.fastq.gz'):
                 continue
@@ -353,11 +302,10 @@ while True:
             p2 = subprocess.Popen(['wc', '-l'], stdin=p1.stdout, stdout=subprocess.PIPE)
             output = p2.communicate()[0]
             failed_demultiplexing = output.strip(' \n')
-            logger.info("{} reads failed to demultiplex in {} (removing file)".format(failed_demultiplexing, filename))
+            logger.info("%s reads failed to demultiplex in %s (removing file)", failed_demultiplexing, filename)
             continue
 
         logger.info(filename)
-
         description = 'FASTQ for sample %s (%s) from MiSeq run %s' % (sample,
                                                                       snum,
                                                                       run_name)
@@ -365,12 +313,12 @@ while True:
                                   description='R1 ' + description,
                                   handle=open(R1_file, 'rb'),
                                   groups=settings.kive_groups_allowed)
-
         R2_obj = kive.add_dataset(name=os.path.basename(R2_file),
                                   description='R2 ' + description,
                                   handle=open(R2_file, 'rb'),
                                   groups=settings.kive_groups_allowed)
         fastqs.append(((sample + '_' + snum), R1_obj, R2_obj))
+
         break  # FIXME: for debugging - append only one sample
 
     # generate quality.csv
@@ -379,51 +327,48 @@ while True:
         download_quality(run_info_path=os.path.join(root, 'RunInfo.xml'),
                          destination=quality_csv,
                          read_lengths=read_lengths)
-    except StandardError as e:
+    except StandardError:
         failure_message = mark_run_as_disabled(root,
                                                "Quality could not be downloaded.",
                                                exc_info=True)
-        continue
+        return fastqs, failure_message, quality_input
 
     # transfer quality.csv with Kive API
-    quality_input = kive.add_dataset(name='%s_quality.csv' % (run_name[:6],),
-                                     description='phiX174 quality scores per tile and cycle for run %s' % (run_name,),
-                                     handle=open(quality_csv, 'rU'),
-                                     cdt=quality_cdt,
-                                     groups=settings.kive_groups_allowed)
+    quality_input = kive.add_dataset(
+        name='%s_quality.csv' % (run_name[:6], ),
+        description='phiX174 quality scores per tile and cycle for run %s' % (run_name, ),
+        handle=open(quality_csv, 'rU'),
+        cdt=quality_cdt,
+        groups=settings.kive_groups_allowed)
+    return fastqs, failure_message, quality_input
 
+
+def launch_runs(fastqs, quality_input, run_name):
     # Standard out/error concatenates to the log
     logger.info("Launching pipeline for %s%s", settings.home, run_name)
     kive_runs = []
-    try:
-        # push all samples into the queue
-        for (sample_name, fastq1, fastq2) in fastqs:
-            name = '{} - {} ({})'.format(pipeline.family,
-                                         sample_name,
-                                         run_name)
-            name = name[:MAX_RUN_NAME_LENGTH]
+    # push all samples into the queue
+    for sample_name, fastq1, fastq2 in fastqs:
+        name = '{} - {} ({})'.format(pipeline.family, sample_name, run_name)
+        name = name[:MAX_RUN_NAME_LENGTH]
+        # note order of inputs is critical
+        status = kive.run_pipeline(pipeline=pipeline,
+                                   inputs=[quality_input, fastq1, fastq2],
+                                   name=name,
+                                   groups=settings.kive_groups_allowed)
+        kive_runs.append((sample_name, status))
 
-            # note order of inputs is critical
-            status = kive.run_pipeline(pipeline=pipeline,
-                                       inputs=[quality_input, fastq1, fastq2],
-                                       name=name,
-                                       groups=settings.kive_groups_allowed)
-            kive_runs.append((sample_name, status))
+    # initialize progress monitoring
+    sc = sched.scheduler(time.time, time.sleep)
+    sc.enter(5, 1, check_kive, (sc, kive_runs))
+    sc.run()  # exits when all runs are complete
+    logger.info("===== {} successfully processed! =====".format(run_name))
+    return kive_runs
 
-        # initialize progress monitoring
-        sc = sched.scheduler(time.time, time.sleep)
-        sc.enter(5, 1, check_kive, (sc, kive_runs))
-        sc.run()  # exits when all runs are complete
 
-        logger.info("===== {} successfully processed! =====".format(run_name))
-    except Exception as e:
-        failure_message = mark_run_as_disabled(
-            root,
-            "MISEQ_MONITOR.py failed: '{}'".format(e),
-            exc_info=True)
-        continue
-
+def download_results(kive_runs, root, run_name, run_folder):
     # Retrieve pipeline output files from Kive
+    failure_message = None
 #     tar_files = []
 #     for i, (sample_name, kive_run) in enumerate(kive_runs):
 #         outputs = kive_run.get_results()
@@ -433,8 +378,7 @@ while True:
 #             if not dataset:
 #                 continue
 #             if output_name.endswith('_tar'):
-#                 tar_filename = os.path.join(run_folder,
-#                                             sample_name + '_coverage_maps.tar')
+#                 tar_filename = os.path.join(run_folder, sample_name + '_coverage_maps.tar')
 #                 with open(tar_filename, 'wb') as tar_file:
 #                     dataset.download(tar_file)
 #                 tar_files.append(tar_filename)
@@ -445,32 +389,27 @@ while True:
 #                         if i == 0 or j != 0:
 #                             result_file.write(line)
 
+    results_folder = os.path.join(run_folder, 'results')
+    if not os.path.exists(results_folder):
+        os.mkdir(results_folder)
+
     # Collate pipeline logs and outputs to location where following code expects
     collate_results(run_folder, results_folder, logger)
-
-    if not settings.production:
-        processed_runs.add(curr_run)
-    else:
+    if settings.production:
         try:
             # Determine output paths
-            result_path = curr_run.replace(settings.NEEDS_PROCESSING, 'Results')
+            result_path = os.path.join(root, 'Results')
             result_path_final = '{}/version_{}'.format(result_path, settings.pipeline_version)
-
             # Post files to appropriate sub-folders
             logger.info("Posting results to {}".format(result_path_final))
             file_sets = [  # (pattern, destination)
-                         ('results/*', None),
-                         ('bad_cycles.csv', None),
+                         ('results/*', None), ('bad_cycles.csv', None),
                          ('*.log', 'logs'),
                          ('*.unmapped?.fastq', 'unmapped')]
-
             if not os.path.isdir(result_path):
                 os.mkdir(result_path)
             for pattern, destination in file_sets:
-                destination_path = (
-                    os.path.join(result_path_final, destination)
-                    if destination
-                    else result_path_final)
+                destination_path = os.path.join(result_path_final, destination) if destination else result_path_final
                 full_pattern = os.path.join(settings.home, run_name, pattern)
                 if not os.path.isdir(destination_path):
                     os.mkdir(destination_path)
@@ -482,7 +421,6 @@ while True:
             os.mkdir(untar_path)
             os.mkdir(coverage_source_path)
             os.mkdir(coverage_dest_path)
-
             for tar_path in glob(settings.home + run_name + '/*.coverage_maps.tar'):
                 basename = os.path.basename(tar_path)
                 map_name = os.path.splitext(basename)[0]
@@ -491,24 +429,98 @@ while True:
                     tar.extractall(untar_path)
                 for image_filename in os.listdir(coverage_source_path):
                     source = os.path.join(coverage_source_path, image_filename)
-                    destination = os.path.join(coverage_dest_path,
-                                               sample_name+'.'+image_filename)
+                    destination = os.path.join(coverage_dest_path, sample_name + '.' + image_filename)
                     os.rename(source, destination)
 
             os.rmdir(coverage_source_path)
             os.rmdir(untar_path)
-
             update_qai.process_folder(result_path_final, logger)
-
             mark_run_as_done(result_path_final)
-
             logger.info("===== %s file transfer completed =====", run_name)
         except:
             failure_message = mark_run_as_disabled(
                 root,
                 "Failed to post pipeline results",
                 exc_info=True)
+    return failure_message
 
-    # Reset logger so it will switch back to the root directory log file.
-    logging.shutdown()
-    logger = None
+
+def main():
+    global logger
+    processed_runs = set()
+    failure_message = None
+    # main loop
+    # Process runs flagged for processing not already processed by this version of the pipeline
+    while True:
+        if failure_message is not None:
+            # We're still logging to a run folder that failed.
+            logging.shutdown()
+            logger = None
+
+        if logger is None:
+            logger = init_logging(settings.home + '/MISEQ_MONITOR_OUTPUT.log')
+
+        if failure_message is not None:
+            # Log it here again, now logging to home folder's log file.
+            logger.error(failure_message)
+            failure_message = None
+
+        runs_needing_processing = find_runs(processed_runs)
+
+        if not runs_needing_processing:
+            logger.info('No runs need processing')
+            if not settings.production:
+                # development mode - exit main loop
+                break
+            time.sleep(settings.delay)
+            continue
+
+        # Process most recently generated run and work backwards
+        runs_needing_processing.sort(reverse=True)
+        curr_run = runs_needing_processing[0]
+        root = curr_run.replace(settings.NEEDS_PROCESSING, '')
+        run_name = root.split('/')[-2]
+        run_folder = settings.home+run_name
+
+        # Make folder on the cluster for intermediary files and outputs
+        if not os.path.exists(run_folder):
+            os.mkdir(run_folder)
+
+        # Determine if intermediary files should persist past end of run
+        all_runs = map(lambda x: x.split('/')[-1], glob('%s*%s*' % (settings.home, settings.instrument_number)))
+        all_runs.sort()
+        runs_to_keep = all_runs[-settings.nruns_to_store:]  # X most recent runs
+        do_cleanup = (run_name not in runs_to_keep)  # true/false
+        if do_cleanup:
+            logger.info('Set clean mode for run %s', run_name)
+
+        # Record standard input / output of monitor
+        logger.info('Starting run %s', root)
+        logging.shutdown()
+        log_file = run_folder + '/MISEQ_MONITOR_OUTPUT.log'
+        logger = init_logging(log_file)
+        logger.info('===== Processing {} with pipeline version {} ====='.format(root, settings.pipeline_version))
+
+        fastqs, failure_message, quality_input = upload_data(root,
+                                                             run_name,
+                                                             run_folder)
+        if not (fastqs and quality_input):
+            continue
+
+        try:
+            kive_runs = launch_runs(fastqs, quality_input, run_name)
+        except Exception as e:
+            failure_message = mark_run_as_disabled(
+                root,
+                "Failed to launch runs: '{}'".format(e),
+                exc_info=True)
+            continue
+
+        failure_message = download_results(kive_runs, root, run_name, run_folder)
+        if not settings.production:
+            processed_runs.add(curr_run)
+
+        # Reset logger so it will switch back to the root directory log file.
+        logging.shutdown()
+        logger = None
+main()
