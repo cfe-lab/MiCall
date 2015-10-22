@@ -213,9 +213,9 @@ def check_kive(scheduler, runs):
     :param runs: a List of Kive pipeline run objects
     :return:
     """
-    for run in runs:
+    for _sample_name, run in runs:
         logger.info('{} {}%'.format(run.get_status(), run.get_progress_percent()))
-    if not all(map(lambda x: x.is_complete(), runs)):
+    if not all(map(lambda (_, run): run.is_complete(), runs)):
         # reschedule a check on runs at subsequent time
         scheduler.enter(5, 1, check_kive, (scheduler, runs,))
 
@@ -312,12 +312,6 @@ while True:
     local_file = run_folder + '/SampleSheet.csv'
     execute_command(['rsync', '-a', remote_file, local_file])
 
-    # Delete raw tiffs from this run
-    # logger.info("Deleting tiffs from {}Images/Focus/L001/*".format(root))
-    # for tiff in glob("{}Images/Focus/L001/*/*.tif".format(root)):
-    #    log.info("os.remove({})".format(tiff))
-    #    os.remove(tiff)
-
     try:
         with open(local_file, 'rU') as sample_sheet:
             # parse run information from SampleSheet
@@ -343,7 +337,7 @@ while True:
         continue
 
     # use Kive-API to transfer fastq.gz files
-    fastqs = {}
+    fastqs = []
     R1_files = sorted(filter(lambda x: '_R1_' in os.path.basename(x), gz_files))
     for R1_file in R1_files:
         R2_file = R1_file.replace('_R1_', '_R2_')
@@ -383,7 +377,7 @@ while True:
                                   description='R2 ' + description,
                                   handle=open(R2_file, 'rb'),
                                   groups=settings.kive_groups_allowed)
-        fastqs.update({(sample, snum): (R1_obj, R2_obj)})
+        fastqs.append(((sample + '_' + snum), R1_obj, R2_obj))
         break  # FIXME: for debugging - append only one sample
 
     # generate quality.csv
@@ -410,9 +404,9 @@ while True:
     kive_runs = []
     try:
         # push all samples into the queue
-        for (sample, snum), (fastq1, fastq2) in fastqs.iteritems():
+        for (sample_name, fastq1, fastq2) in fastqs:
             name = '{} - {} ({})'.format(pipeline.family,
-                                         fastq1.name,
+                                         sample_name,
                                          run_name)
             name = name[:MAX_RUN_NAME_LENGTH]
 
@@ -421,7 +415,7 @@ while True:
                                        inputs=[quality_input, fastq1, fastq2],
                                        name=name,
                                        groups=settings.kive_groups_allowed)
-            kive_runs.append(status)
+            kive_runs.append((sample_name, status))
 
         # initialize progress monitoring
         sc = sched.scheduler(time.time, time.sleep)
@@ -437,10 +431,26 @@ while True:
         continue
 
     # Retrieve pipeline output files from Kive
-    for kive_run in kive_runs:
-        for dataset in kive_run.get_results():
-            with open(os.path.join(run_folder, dataset.filename), 'wb') as handle:
-                dataset.download(handle)
+#     tar_files = []
+#     for i, (sample_name, kive_run) in enumerate(kive_runs):
+#         outputs = kive_run.get_results()
+#         output_names = ['remap_counts', 'conseq', 'coverage_maps_tar']
+#         for output_name in output_names:
+#             dataset = outputs.get(output_name, None)
+#             if not dataset:
+#                 continue
+#             if output_name.endswith('_tar'):
+#                 tar_filename = os.path.join(run_folder,
+#                                             sample_name + '_coverage_maps.tar')
+#                 with open(tar_filename, 'wb') as tar_file:
+#                     dataset.download(tar_file)
+#                 tar_files.append(tar_filename)
+#             else:
+#                 filename = os.path.join(results_folder, output_name + '.csv')
+#                 with open(filename, 'a') as result_file:
+#                     for j, line in enumerate(dataset.iter_lines()):
+#                         if i == 0 or j != 0:
+#                             result_file.write(line)
 
     # Collate pipeline logs and outputs to location where following code expects
     collate_results(run_folder, results_folder, logger)
