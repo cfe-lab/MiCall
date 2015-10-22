@@ -1,7 +1,10 @@
 import argparse
 import glob
+import itertools
 import logging
+from operator import attrgetter
 import os
+import re
 import tempfile
 
 from micall import settings
@@ -9,9 +12,6 @@ from micall.core.miseq_logging import init_logging_console_only
 from micall.core.remap import build_conseqs_with_python, \
     build_conseqs_with_samtools, line_counter
 from micall.utils import externals
-import itertools
-from operator import attrgetter
-import re
 
 
 def write_simple_sam(samfile, sam_lines):
@@ -46,13 +46,40 @@ def test(sam_lines, temp_prefix, samtools):
         
         try:
             python2_conseqs = build_conseqs_with_python(txtfilename)
-        except:
+        except StandardError as ex:
+            record_failure(sam_lines, temp_prefix, samtools_conseqs, exception=ex)
             return 'FAIL' #It was valid for samtools, want it valid for Python
         
         result = 'PASS' if samtools_conseqs == python2_conseqs else 'FAIL'
+        if result == 'FAIL':
+            record_failure(sam_lines, temp_prefix, samtools_conseqs, python2_conseqs)
         return result
     finally:
         os.remove(txtfilename)
+
+def record_failure(sam_lines,
+                   temp_prefix,
+                   samtools_conseqs,
+                   python_conseqs=None,
+                   exception=None):
+    with open('failures.txt', 'a') as f:
+        line_count = len(sam_lines)
+        file_size = sum(map(len, sam_lines))
+        basename = os.path.basename(temp_prefix)
+        f.write('FAIL {}, {} in {}\n'.format(line_count, file_size, basename))
+        if exception is not None:
+            f.write('  {}\n'.format(exception))
+        else:
+            for refname, samtools_conseq in samtools_conseqs.iteritems():
+                python_conseq = python_conseqs.get(refname, '')
+                is_header_printed = False
+                for i, (s, p) in enumerate(map(None, samtools_conseq, python_conseq)):
+                    if s != p:
+                        if not is_header_printed:
+                            f.write('  {}\n'.format(refname))
+                            is_header_printed = True
+                        f.write('    {}: {}->{}\n'.format(i+1, s, p))
+        f.write('\n')
 
 def ddmin(sam_lines, temp_prefix, samtools):
     #assert test(sam_lines) == "FAIL"
@@ -153,29 +180,31 @@ class SamBase(object):
         return bases
     
     @classmethod
-    def _drop_hanging_indels(cls, sam_bases):
-        """ Yield all the entries in sam_bases, except hanging indels.
+    def _drop_multiple_unmatched(cls, sam_bases):
+        """ Yield all the entries in sam_bases, except groups that are not 'M'.
         
-        If an insertion or deletion appears before the first 'M' or after the
-        last 'M', don't yield it. Yield everything else.
+        Soft clips 'S' must have an 'M' before or after them. Deletes 'D' and
+        inserts 'I' must have an 'M' before *and* after them.
+        Headers 'H' are always on a line by themselves, so just treat them the
+        same as 'M'.
         """
-        indels = []
+        unmatched = []
         is_started = False
         for sam_base in sam_bases:
-            if sam_base.token_type in 'ID':
-                if is_started:
-                    # Can't have an insertion after a deletion, because they
-                    # end up right next to each other.
-                    if not (indels and
-                            indels[-1].token_type == 'D' and
-                            sam_base.token_type == 'I'):
-                        indels.append(sam_base)
+            if sam_base.token_type not in 'MH':
+                if not unmatched or unmatched[0].token_type == sam_base.token_type:
+                    unmatched.append(sam_base)
             else:
-                if sam_base.token_type == 'M':
-                    is_started = True
-                    for indel in indels:
-                        yield indel
+                if unmatched:
+                    if is_started or unmatched[0].token_type == 'S':
+                        for b in unmatched:
+                            yield b
+                    unmatched = []
+                is_started = True
                 yield sam_base
+        if unmatched and is_started and unmatched[0].token_type == 'S':
+            for b in unmatched:
+                yield b
     
     @classmethod
     def _fill_positions(cls, sam_bases):
@@ -185,7 +214,7 @@ class SamBase(object):
         @return: a sequence of bases without gaps
         """
         prev_pos = None
-        for sam_base in cls._drop_hanging_indels(sam_bases):
+        for sam_base in cls._drop_multiple_unmatched(sam_bases):
             next_pos = sam_base.pos
             if next_pos is not None:
                 if prev_pos is not None:
@@ -217,7 +246,7 @@ class SamBase(object):
             sam_base = None
             for sam_base in cls._fill_positions(line_bases):
                 try:
-                    fields = [sam_base.line]
+                    sam_lines.append(sam_base.line + '\n')
                 except:
                     if pos == None:
                         pos = sam_base.pos
@@ -231,23 +260,22 @@ class SamBase(object):
                     if sam_base.nuc:
                         seq += sam_base.nuc
                         quality += sam_base.quality
-            if sam_base:
-                if not fields:
-                    cigar += '{}{}'.format(token_size, token_type)
-                    len_str = str(len(seq))
-                    if flag == '147':
-                        len_str = '-' + len_str
-                    fields = [qname,
-                              flag,
-                              sam_base.rname,
-                              str(pos),
-                              sam_base.mapq,
-                              cigar,
-                              '=',
-                              str(pos),
-                              len_str,
-                              seq,
-                              quality]
+            if seq:
+                cigar += '{}{}'.format(token_size, token_type)
+                len_str = str(len(seq))
+                if flag == '147':
+                    len_str = '-' + len_str
+                fields = [qname,
+                          flag,
+                          sam_base.rname,
+                          str(pos),
+                          sam_base.mapq,
+                          cigar,
+                          '=',
+                          str(pos),
+                          len_str,
+                          seq,
+                          quality]
                 sam_lines.append('\t'.join(fields) + '\n')
         return sam_lines
 
@@ -330,6 +358,9 @@ if __name__ == '__main__':
                         help='File name pattern to match SAM files')
 
     args = parser.parse_args()
+    
+    if settings.samtools_version is None:
+        raise RuntimeError('samtools is not configured.')
     
     logger = init_logging_console_only(logging.INFO)
     samtools = externals.Samtools(settings.samtools_version,

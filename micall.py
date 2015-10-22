@@ -23,7 +23,6 @@ from micall.settings import pipeline_version
 from micall.utils import collate
 from micall.utils.coverage_plots import coverage_plot
 from micall.utils.externals import AssetWrapper, LineCounter
-from micall.utils.sample_sheet_parser import sample_sheet_parser
 
 fastq_re = re.compile('(_L001_R[12]_001|.censored[12]).fastq')
 sys.stdin = open(os.devnull, 'r') # Fixes a problem when Windows launches without a console.
@@ -146,29 +145,17 @@ class MiCall(tk.Frame):
         self.write_config()
         self.write('Selected folder %s\n' % (self.rundir,))
 
-        # check for presence of FASTQ files and SampleSheet.csv
-        run_info = None
+        # check for presence of FASTQ files
         for root, _dirs, files in os.walk(self.rundir):
             for file in files:
-                if file == 'SampleSheet.csv' and run_info is None:
-                    try:
-                        with open(os.path.join(root, file), 'rU') as handle:
-                            run_info = sample_sheet_parser(handle)
-                    except:
-                        raise
-
                 if len(fastq_re.findall(file)) > 0:
                     fastq_files.append(os.path.join(root, file))
-
 
         if fastq_files:
             self.write('Found %d FASTQ files.\n' % (len(fastq_files),))
         else:  # empty list
             self.write('Error, folder does not seem to contain any FASTQ(.gz) files!\n')
             self.rundir = None
-
-        if run_info is None:
-            self.write('Warning, failed to locate run manifest (SampleSheet.csv).\n')
 
         return fastq_files
 

@@ -78,56 +78,107 @@ class Process(multiprocessing.Process):
 class Pool(multiprocessing.pool.Pool):
     Process = Process
 
-def apply_cigar (cigar, seq, qual):
-    """
+def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
+    """ Applies a cigar string to recreate a read, then clips the read.
+
     Use CIGAR string (Compact Idiosyncratic Gapped Alignment Report) in SAM data
     to apply soft clips, insertions, and deletions to the read sequence.
-    Any insertions relative to the sample consensus sequence are discarded to
+    Any insertions relative to the sample consensus sequence are removed to
     enforce a strict pairwise alignment, and returned separately in a
     dict object.
+    
+    @param cigar: a string in the CIGAR format, describing the relationship
+        between the read sequence and the consensus sequence
+    @param seq: the sequence that was read
+    @param qual: quality codes for each base in the read
+    @param pos: first position of the read, given in zero-based consensus
+        coordinates
+    @param clip_from: first position to include after clipping, given in
+        zero-based consensus coordinates
+    @param clip_to: last position to include after clipping, given in
+        zero-based consensus coordinates, None means no clipping at the end
+    @return: (sequence, quality, {pos: (insert_seq, insert_qual)}) - the new
+        sequence, the new quality string, and a dictionary of insertions with
+        the zero-based consensus coordinate that follows each insertion as the
+        key, and the insertion sequence and quality strings as the
+        value. If none of the read was within the clipped range, then both
+        strings will be blank and the dictionary will be empty.
     """
-    newseq = ''
-    newqual = ''
+    newseq = '-' * int(pos)  # pad on left
+    newqual = '!' * int(pos)
     insertions = {}
-    tokens = cigar_re.findall(cigar)
-    if len(tokens) == 0:
-        return None, None, None
-    # Account for removing soft clipped bases on left
-    shift = 0
-    if tokens[0].endswith('S'):
-        shift = int(tokens[0][:-1])
+    is_valid = re.match(r'^((\d+)([MIDNSHPX=]))*$', cigar)
+    tokens =   re.findall(r'(\d+)([MIDNSHPX=])', cigar)
+    if not is_valid:
+        raise RuntimeError('Invalid CIGAR string: {!r}.'.format(cigar))
+    end = None if clip_to is None else clip_to + 1
     left = 0
     for token in tokens:
-        length = int(token[:-1])
+        length, operation = token
+        length = int(length)
         # Matching sequence: carry it over
-        if token[-1] == 'M':
+        if operation == 'M':
             newseq += seq[left:(left+length)]
             newqual += qual[left:(left+length)]
             left += length
         # Deletion relative to reference: pad with gaps
-        elif token[-1] == 'D':
+        elif operation == 'D':
             newseq += '-'*length
             newqual += ' '*length  # Assign fake placeholder score (Q=-1)
-        # Insertion relative to reference: skip it (excise it)
-        elif token[-1] == 'I':
-            insertions[left] = (seq[left:(left+length)], qual[left:(left+length)])
+        # Insertion relative to reference
+        elif operation == 'I':
+            if end is None or left < end:
+                insertions[left+pos] = (seq[left:(left+length)],
+                                        qual[left:(left+length)])
             left += length
-            continue
         # Soft clipping leaves the sequence in the SAM - so we should skip it
-        elif token[-1] == 'S':
+        elif operation == 'S':
             left += length
-            continue
         else:
+            raise RuntimeError('Unsupported CIGAR token: {!r}.'.format(
+                ''.join(token)))
+        if left > len(seq):
             raise RuntimeError(
-                "Unable to handle CIGAR token: {} - quitting".format(token))
+                'CIGAR string {!r} is too long for sequence {!r}.'.format(cigar,
+                                                                          seq))
+    
+    if left < len(seq):
+        raise RuntimeError(
+            'CIGAR string {!r} is too short for sequence {!r}.'.format(cigar,
+                                                                       seq))
+    
+    return newseq[clip_from:end], newqual[clip_from:end], insertions
 
-    return shift, newseq, newqual, insertions
 
-
-def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
+def merge_pairs(seq1,
+                seq2,
+                qual1,
+                qual2,
+                ins1=None,
+                ins2=None,
+                q_cutoff=10,
+                minimum_q_delta=5):
     """
-    Combine paired-end reads into a single sequence by managing discordant
-    base calls on the basis of quality scores.
+    Combine paired-end reads into a single sequence.
+    
+    Manage discordant base calls on the basis of quality scores, and add any
+    insertions.
+    @param seq1: a read sequence of base calls in a string
+    @param seq2: a read sequence of base calls in a string, aligned with seq1
+    @param qual1: a string of quality scores for the base calls in seq1, each
+        quality score is an ASCII character of the Phred-scaled base quality+33
+    @param qual2: a string of quality scores for the base calls in seq2
+    @param ins1: { pos: (seq, qual) } a dictionary of insertions to seq1 with
+        the zero-based position that follows each insertion as the
+        key, and the insertion sequence and quality strings as the
+        value. May also be None.
+    @param ins2: the same as ins1, but for seq2
+    @param q_cutoff: Phred-scaled base quality as an integer - each base quality
+        score must be higher than this, or the base will be reported as an N.
+    @param minimum_q_delta: if the two reads disagree on a base, the higher
+        quality must be at least this much higher than the other, or that base
+        will be reported as an N.
+    @return: the merged sequence of base calls in a string
     """
     mseq = ''
     # force second read to be longest of the two
@@ -162,8 +213,19 @@ def merge_pairs (seq1, seq2, qual1, qual2, q_cutoff=10, minimum_q_delta=5):
             # past end of read 1
             if c2 == '-' and q2 == 0:
                 mseq += 'n'  # interval between reads
-                continue
-            mseq += c2 if (q2 > q_cutoff) else 'N'
+            elif q2 > q_cutoff:
+                mseq += c2
+            else:
+                mseq += 'N'
+    
+    ins1 = {} if ins1 is None else ins1
+    ins2 = {} if ins2 is None else ins2
+    for pos in range(len(mseq)-1, -1, -1):
+        ins_seq1, ins_qual1 = ins1.get(pos, ('', ''))
+        ins_seq2, ins_qual2 = ins2.get(pos, ('', ''))
+        if ins_seq1 or ins_seq2:
+            ins_mseq = merge_pairs(ins_seq1, ins_seq2, ins_qual1, ins_qual2)
+            mseq = mseq[:pos] + ins_mseq + mseq[pos:]
     return mseq
 
 
@@ -186,8 +248,7 @@ def is_first_read(flag):
 def matchmaker(remap_csv):
     """
     An iterator that returns pairs of reads sharing a common qname from a remap CSV.
-    Note that unpaired reads will be left in the cached_rows dictionary and
-    discarded.
+    Note that unpaired reads will be yielded paired with None.
     :param remap_csv: open file handle to CSV generated by remap.py
     :return: yields pairs of rows from DictReader corresponding to paired reads
     """
@@ -201,6 +262,10 @@ def matchmaker(remap_csv):
         else:
             # current row should be the second read of the pair
             yield old_row, row
+    
+    # Unmatched reads
+    for old_row in cached_rows.itervalues():
+        yield old_row, None
 
 
 def parse_sam(rows):
@@ -235,23 +300,22 @@ def parse_sam(rows):
     qname = row1['qname']
 
     cigar1 = row1['cigar']
-    cigar2 = row2['cigar']
-    if (cigar1 == '*' or
-        int(row1['mapq']) < read_mapping_cutoff or
-        cigar2 == '*' or
-        int(row2['mapq']) < read_mapping_cutoff or
-        row1['rname'] != row2['rname']):
+    cigar2 = row2 and row2['cigar']
+    failure_cause = None
+    if row2 is None:
+        failure_cause = 'unmatched'
+    elif cigar1 == '*' or cigar2 == '*':
+        failure_cause = 'badCigar'
+    elif (int(row1['mapq']) < read_mapping_cutoff or
+          int(row2['mapq']) < read_mapping_cutoff):
         
-        failed_list.append({'qname': qname,
-                            'seq1': row1['seq'],
-                            'qual1': row1['qual'],
-                            'seq2': row2['seq'],
-                            'qual2': row2['qual'],
-                            'mapq1': row1['mapq'],
-                            'mapq2': row2['mapq']})
-    else:
+        failure_cause = 'mapq'
+    elif row1['rname'] != row2['rname']:
+        failure_cause = '2refs' 
+
+    if not failure_cause:
         pos1 = int(row1['pos'])-1  # convert 1-index to 0-index
-        _, seq1, qual1, inserts = apply_cigar(cigar1, row1['seq'], row1['qual'])
+        seq1, qual1, inserts = apply_cigar(cigar1, row1['seq'], row1['qual'])
     
         # report insertions relative to sample consensus
         for left, (iseq, iqual) in inserts.iteritems():
@@ -268,7 +332,7 @@ def parse_sam(rows):
     
         # now process the mate
         pos2 = int(row2['pos'])-1  # convert 1-index to 0-index
-        _, seq2, qual2, inserts = apply_cigar(cigar2, row2['seq'], row2['qual'])
+        seq2, qual2, inserts = apply_cigar(cigar2, row2['seq'], row2['qual'])
         for left, (iseq, iqual) in inserts.iteritems():
             insert_list.append({'qname': qname,
                                 'fwd_rev': 'F' if is_first_read(row2['flag']) else 'R',
@@ -281,20 +345,17 @@ def parse_sam(rows):
     
         # merge reads
         for qcut in sam2aln_q_cutoffs:
-            mseq = merge_pairs(seq1, seq2, qual1, qual2, qcut)
+            mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=qcut)
             prop_N = mseq.count('N') / float(len(mseq.strip('-')))
             if prop_N > max_prop_N:
                 # fail read pair
-                failed_list.append({'qname': qname,
-                                    'qcut': qcut,
-                                    'seq1': seq1,
-                                    'qual1': qual1,
-                                    'seq2': seq2,
-                                    'qual2': qual2,
-                                    'prop_N': prop_N,
-                                    'mseq': mseq})
-                continue
-            mseqs[qcut] = mseq
+                failure_cause = 'manyNs'
+            else:
+                mseqs[qcut] = mseq
+    
+    if failure_cause:
+        failed_list.append({'qname': qname,
+                            'cause': failure_cause})
 
     return rname, mseqs, insert_list, failed_list
 
@@ -319,7 +380,7 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
     insert_writer = DictWriter(insert_csv, insert_fields, lineterminator=os.linesep)
     insert_writer.writeheader()
 
-    failed_fields =  ['qname', 'qcut', 'seq1', 'qual1', 'seq2', 'qual2', 'prop_N', 'mseq', 'mapq1', 'mapq2']
+    failed_fields =  ['qname', 'cause']
     failed_writer = DictWriter(failed_csv, failed_fields, lineterminator=os.linesep)
     failed_writer.writeheader()
 

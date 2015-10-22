@@ -316,19 +316,12 @@ while True:
         with open(local_file, 'rU') as sample_sheet:
             # parse run information from SampleSheet
             run_info = sample_sheet_parser(sample_sheet)
-            mode = run_info['Description']
             read_lengths = run_info['Reads']
     except Exception as e:
         failure_message = mark_run_as_disabled(
             root,
             "Parsing sample sheet failed",
             exc_info=True)
-        continue
-
-    if mode not in ['Nextera', 'Amplicon']:
-        failure_message = mark_run_as_disabled(
-            root,
-            "{} not a valid mode".format(mode))
         continue
 
     gz_files = glob(root + 'Data/Intensities/BaseCalls/*R?_001.fastq.gz')

@@ -41,12 +41,14 @@ def main():
             "/lab_miseq_projects.json?mode=dump&pipeline=" +
             settings.pipeline_version,
             retries=0)
+        for project in dump['projects'].itervalues():
+            project['regions'].sort()
         errors = dump['projects'].get('errors')
         if errors:
             raise StandardError('\n'.join(errors))
         check_key_positions(dump['projects'], sys.stdout)
         
-    with open("projects.json", "w") as f:
+    with open("../projects.json", "w") as f:
         json.dump(dump, f, sort_keys=True, indent=2, separators=(',', ': '))
         f.write('\n')
     

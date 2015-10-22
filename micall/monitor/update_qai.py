@@ -259,6 +259,8 @@ def upload_review_to_qai(coverage_file,
     
     project_regions = session.get_json(
         "/lab_miseq_project_regions?pipeline=" + settings.pipeline_version)
+    if not project_regions:
+        raise RuntimeError('Unknown pipeline: ' + settings.pipeline_version)
     
     regions = session.get_json("/lab_miseq_regions")
     

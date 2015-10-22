@@ -2,7 +2,8 @@ import json
 import StringIO
 import unittest
 
-from micall.monitor import dump_projects
+from micall.monitor.projects_dump import check_key_positions
+
 
 class CheckKeyPositionsTest(unittest.TestCase):
     def setUp(self):
@@ -30,7 +31,7 @@ class CheckKeyPositionsTest(unittest.TestCase):
 """)
         expected_warnings = ""
         
-        dump_projects.check_key_positions(projects, self.warningIO)
+        check_key_positions(projects, self.warningIO)
         
         self.assertMultiLineEqual(expected_warnings, self.warningIO.getvalue())
         
@@ -61,7 +62,7 @@ class CheckKeyPositionsTest(unittest.TestCase):
 """)
         expected_warnings = ""
         
-        dump_projects.check_key_positions(projects, self.warningIO)
+        check_key_positions(projects, self.warningIO)
         
         self.assertMultiLineEqual(expected_warnings, self.warningIO.getvalue())
         
@@ -99,7 +100,7 @@ class CheckKeyPositionsTest(unittest.TestCase):
             "WARNING: project R1 has multiple sets of key positions for " +
             "coordinate region R1.\n")
         
-        dump_projects.check_key_positions(projects, self.warningIO)
+        check_key_positions(projects, self.warningIO)
         
         self.assertMultiLineEqual(expected_warnings, self.warningIO.getvalue())
         
@@ -147,6 +148,6 @@ class CheckKeyPositionsTest(unittest.TestCase):
             "WARNING: project R1 has multiple sets of key positions for " +
             "coordinate region R1.\n")
         
-        dump_projects.check_key_positions(projects, self.warningIO)
+        check_key_positions(projects, self.warningIO)
         
         self.assertMultiLineEqual(expected_warnings, self.warningIO.getvalue())

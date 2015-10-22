@@ -148,6 +148,21 @@ class PileupToConseqTest(unittest.TestCase):
         conseqs= remap.pileup_to_conseq(pileupIO, qCutoff)
         
         self.assertDictEqual(expected_conseqs, conseqs)
+    
+    def testDeletionBeforeLowQuality(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t1\tN\t1\t^Kg-3nnn\tC\n" +
+            "GP41-seed\t2\tN\t1\t*\t#\n" +
+            "GP41-seed\t3\tN\t1\t*\t#\n" +
+            "GP41-seed\t4\tN\t1\t*\t#\n" +
+            "GP41-seed\t5\tN\t1\tg\t#\n" +
+            "GP41-seed\t6\tN\t1\ta$\tC\n")
+        qCutoff = 20
+        expected_conseqs = {'GP41-seed': "GNA"}
+         
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
+         
+        self.assertDictEqual(expected_conseqs, conseqs)
         
     def testOffset(self):
         pileupIO = StringIO.StringIO(
@@ -225,6 +240,30 @@ class PileupToConseqTest(unittest.TestCase):
         conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
         
         self.assertDictEqual(expected_conseqs, conseqs)
+    
+    def testAllLowQualityOrDeletion(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t3\tN\t1\t^Kc-1n\t#\n" +
+            "GP41-seed\t4\tN\t1\t*\t#\n" +
+            "GP41-seed\t5\tN\t1\ta$\t#\n")
+        qCutoff = 20
+        expected_conseqs= {}
+        
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
+    
+    def testTieHiddenByInsertion(self):
+        pileupIO = StringIO.StringIO(
+            "GP41-seed\t1\tN\t2\t^KA^Ka^KA^Ka\tJJJJ\n" +
+            "GP41-seed\t2\tN\t2\tTcTc+1t\tJJJJ\n" +
+            "GP41-seed\t3\tN\t2\tG$g$G$g$\tJJJJ\n")
+        qCutoff = 20
+        expected_conseqs= {'GP41-seed': "ACG"}
+        
+        conseqs = remap.pileup_to_conseq(pileupIO, qCutoff)
+        
+        self.assertDictEqual(expected_conseqs, conseqs)
 
 
 class SamToConseqsTest(unittest.TestCase):
@@ -293,6 +332,16 @@ class SamToConseqsTest(unittest.TestCase):
             "test3\t99\ttest\t1\t44\t12M\t=\t1\t3\tTCA\tJJJ\n"
         )
         expected_conseqs = {'test': 'ACA'}
+        conseqs = remap.sam_to_conseqs(samIO)
+        self.assertDictEqual(expected_conseqs, conseqs)
+        
+    def testTie(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\n"
+            "test1\t99\ttest\t1\t44\t12M\t=\t1\t3\tGCA\tJJJ\n"
+            "test2\t147\ttest\t1\t44\t12M\t=\t1\t-3\tTCA\tJJJ\n"
+        )
+        expected_conseqs = {'test': 'GCA'}
         conseqs = remap.sam_to_conseqs(samIO)
         self.assertDictEqual(expected_conseqs, conseqs)
  
@@ -381,26 +430,7 @@ class SamToConseqsTest(unittest.TestCase):
         conseqs = remap.sam_to_conseqs(samIO)
         self.assertDictEqual(expected_conseqs, conseqs)
   
-#     def testOverlapsCountOnce(self):
-#         samIO = StringIO.StringIO(
-#             "@SQ\tSN:test\n"
-#             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
-#             "test1\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n"
-#             "test2\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
-#             "test2\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n"
-#             "test3\t99\ttest\t1\t44\t3M\t=\t3\t3\tATG\tJJJ\n"
-#             "test3\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
-#             "test4\t99\ttest\t1\t44\t3M\t=\t3\t3\tATG\tJJJ\n"
-#             "test4\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
-#             "test5\t99\ttest\t1\t44\t3M\t=\t3\t3\tATG\tJJJ\n"
-#             "test5\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
-#         )
-#         expected_conseqs = {'test': 'ATGCC'}
-#         conseqs = remap.sam_to_conseqs(samIO)
-#         self.assertDictEqual(expected_conseqs, conseqs)
-#   
-    def testOverlapsCountTwice(self):
-        #TODO: Switch to counting once after we remove samtools
+    def testOverlapsCountOnce(self):
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
@@ -414,10 +444,10 @@ class SamToConseqsTest(unittest.TestCase):
             "test5\t99\ttest\t1\t44\t3M\t=\t3\t3\tATG\tJJJ\n"
             "test5\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
         )
-        expected_conseqs = {'test': 'ACGCC'}
+        expected_conseqs = {'test': 'ATGCC'}
         conseqs = remap.sam_to_conseqs(samIO)
         self.assertDictEqual(expected_conseqs, conseqs)
-  
+
     def testReverseLeftOfForward(self):
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
@@ -504,7 +534,7 @@ class SamToConseqsTest(unittest.TestCase):
             "test1\t147\ttest\t1\t44\t3M3I9M\t=\t1\t-12\tATTGGGAGACCCAAC\tJHJJJJJJJJJJJJJ\n"
         )
         reports = {('test', 2): None}
-        expected_reports = {('test', 2): 'H{C: 2, T: 2}, I{C: 2}'}
+        expected_reports = {('test', 2): 'H{C: 1, T: 1}, I{C: 1}'}
         
         remap.sam_to_conseqs(samIO, debug_reports=reports)
         

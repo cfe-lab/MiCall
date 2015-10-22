@@ -123,6 +123,8 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
         if read2 and read1[2] != read2[2]:
             # region mismatch, ignore the read pair.
             continue
+        min_pos = None
+        max_pos = -1
         for read in read_pair:
             if not read:
                 continue
@@ -147,6 +149,7 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
             token_end_pos = -1
             token_itr = iter(tokens)
             for i, nuc in enumerate(seq):
+                is_in_overlap = min_pos is not None and min_pos <= pos <= max_pos
                 while i > token_end_pos:
                     token = next(token_itr)
                     token_size = int(token[:-1])
@@ -160,7 +163,10 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                             pos += 1
                     else:
                         token_end_pos += token_size
-                    if token_type == 'I' and token_size % 3 == 0:
+                    if (token_type == 'I' and
+                        token_size % 3 == 0 and
+                        not is_in_overlap):
+                        
                         # replace previous base with insertion
                         prev_nuc_counts = pos_nucs[pos-1]
                         prev_nuc =           seq[i-1]
@@ -174,15 +180,19 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                 if token_type == 'S':
                     pass
                 elif token_type == 'M':
-                    nuc_counts = pos_nucs[pos]
-                    if qual[i] >= quality_cutoff_char:
-                        nuc_counts[nuc] += 1
-                    else:
-                        nuc_counts['N'] = 0
-                    if debug_reports:
-                        counts = debug_reports.get((rname, pos))
-                        if counts is not None:
-                            counts[nuc + qual[i]] += 1
+                    if not is_in_overlap:
+                        nuc_counts = pos_nucs[pos]
+                        if qual[i] >= quality_cutoff_char:
+                            nuc_counts[nuc] += 1
+                        else:
+                            nuc_counts['N'] = 0
+                        if min_pos is None:
+                            min_pos = pos
+                        max_pos = max(pos, max_pos)
+                        if debug_reports:
+                            counts = debug_reports.get((rname, pos))
+                            if counts is not None:
+                                counts[nuc + qual[i]] += 1
                     pos += 1
     if debug_reports:
         for key, counts in debug_reports.iteritems():
@@ -216,17 +226,17 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
         end = max(pos_nucs.keys())+1
         for pos in range(1, end):
             nuc_counts = pos_nucs[pos]
-            most_common = nuc_counts.most_common(1)
-            if not most_common:
+            most_common = find_top_token(nuc_counts)
+            if most_common is None:
                 conseq += 'N'
-            elif most_common[0][0] == '-':
+            elif most_common == '-':
                 deletion += '-'
             else:
                 if deletion:
                     if len(deletion) % 3 != 0:
                         conseq += deletion
                     deletion = ''
-                conseq += most_common[0][0]
+                conseq += most_common
         conseqs[refname] = conseq
     return conseqs
 
@@ -583,6 +593,17 @@ def matchmaker(samfile, include_singles=False):
         for row in cached_rows.itervalues():
             yield row, None
 
+def find_top_token(base_counts):
+    top_count = top_token = None
+    for token, count in base_counts.most_common():
+        if top_count is None:
+            top_token = token
+            top_count = count
+        elif count < top_count:
+            break
+        if token < top_token:
+            top_token = token
+    return top_token
 
 def pileup_to_conseq (handle, qCutoff):
     """
@@ -675,7 +696,17 @@ def pileup_to_conseq (handle, qCutoff):
 
         if 'N' in base_counts or not base_counts:
             base_counts['N'] = 0
-        token = base_counts.most_common(1)[0][0]
+        token = find_top_token(base_counts)
+        if '+' not in token:
+            # add counts from all insertions to the single base
+            ins_tokens = [token
+                          for token in base_counts.iterkeys()
+                          if '+' in token]
+            for token in ins_tokens:
+                base = token[0]
+                base_counts[base] += base_counts[token]
+                del base_counts[token]
+            token = find_top_token(base_counts)
 
         if '+' in token:
             m = indel_re.findall(token)[0] # \+[0-9]+
@@ -691,8 +722,8 @@ def pileup_to_conseq (handle, qCutoff):
     # remove in-frame deletions (multiples of 3), if any
     trimmed_conseqs = {}
     for region, conseq in conseqs.iteritems():
-        if not re.match('^N*$', conseq):
-            trimmed_conseqs[region] = re.sub('([ACGTN])(---)+([ACGT])',
+        if not re.match('^[N-]*$', conseq):
+            trimmed_conseqs[region] = re.sub('([ACGTN])(---)+([ACGTN])',
                                              r'\g<1>\g<3>',
                                              conseq)
 

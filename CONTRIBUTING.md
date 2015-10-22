@@ -190,7 +190,11 @@ to use [PyInstaller][pyinstaller].
 3. Install [git for Windows][wingit], and clone the MiCall repository.
 4. Follow the instructions above to install the Gotoh package from the
     `micall/alignment` folder.
-5. Use pip to install pyinstaller.
+5. Copy `settings_default.py` to `settings.py` and edit the settings. Point
+    bowtie2 at the copy in the bin folder.
+6. Try running micall.py and processing the FASTQ files in
+    `micall/tests/microtest`.
+6. Use pip to install pyinstaller.
 
     pip install pyinstaller
 
@@ -214,10 +218,13 @@ The application is created as `dist\micall.exe`.
 7. Try the launch configurations. They are saved in the `micall/tests/working`
     directory, but you should see them if you open the Run menu and choose Run
     configurations.... If you want to run all steps at once, skip to the next
-    step, otherwise go through the numbered launch configurations in order.
+    step, otherwise go through the numbered launch configurations in order. If
+    you are not running under Eclipse, just run each command to display the
+    list of command-line parameters.
 8. Copy or link all the files from the microtest folder to the working folder.
 9. Run the sample_pipeline or run_processor launch configurations. They will
-    process all the sample files in the working folder. 
+    process all the sample files in the working folder. If you are not running
+    under Eclipse, both commands take the run folder as a command-line parameter.
 12. Run the unit tests. Either run them from Eclipse, or run them from the
     command line like this:
 
@@ -345,6 +352,24 @@ similar steps to setting up a development workstation. Follow these steps:
         python MISEQ_MONITOR.py &>/dev/null &
         tail -f /data/miseq/MISEQ_MONITOR_OUTPUT.log
 
+15. Start building the Windows package by pulling the code in Git Bash:
+
+        cd Documents/git/micall/
+        git fetch
+        git checkout tags/vX.Y
+
+15. Compare the settings file in Git Bash, and update anything that has changed.
+    Use bowtie2 from the bin directory, and you don't need anything in the
+    Monitor Settings section.
+    
+        diff micall/settings_default.py settings.py
+
+15. Run pyinstaller from a regular command prompt.
+
+    cd git\micall
+    pyinstaller micall.spec
+
+15. Upload `micall.exe` to GitHub as a binary for the release.
 16. Remove the pre-release flag from the release.
 17. Send an e-mail to users describing the major changes in the release.
 18. Close the milestone for this release, create one for the next release, and
