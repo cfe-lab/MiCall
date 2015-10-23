@@ -28,7 +28,6 @@ from micall.monitor import qai_helper
 from micall.utils.sample_sheet_parser import sample_sheet_parser
 import micall.settings as settings
 from micall.monitor import update_qai
-from micall.utils.collate import collate_labeled_files
 
 
 if sys.version_info[:2] != (2, 7):
@@ -145,53 +144,6 @@ def download_quality(run_info_path, destination, read_lengths):
     return qcRunId
 
 
-def collate_results(run_folder, results_folder, logger):
-    """
-    Collate pipeline logs and outputs into a small set of files.
-    :param run_folder: Path to write collated files
-    :param logger: miseq_logging object
-    :return:
-    """
-    logger.info("Collating *.coverage.log files")
-    miseq_logging.collate_logs(run_folder, "coverage.log", "coverage.log")
-
-    logger.info("Collating *.mapping.log files")
-    miseq_logging.collate_logs(run_folder, "mapping.log", "mapping.log")
-
-    logger.info("Collating *.sam2aln.*.log files")
-    miseq_logging.collate_logs(run_folder, "sam2aln.log", "sam2aln.log")
-
-    logger.info("Collating *.g2p.log files")
-    miseq_logging.collate_logs(run_folder, "g2p.log", "g2p.log")
-
-    logger.info("Collating aln2counts.log files")
-    miseq_logging.collate_logs(run_folder,
-                               "aln2counts.log",
-                               "aln2counts.log")
-
-    logger.info("Collating aln2nuc.log files")
-    miseq_logging.collate_logs(run_folder, "aln2nuc.log", "aln2nuc.log")
-
-    files_to_collate = (('amino_frequencies.csv', '*.amino.csv'),
-                        ('collated_conseqs.csv', '*.conseq.csv'),
-                        ('coverage_scores.csv', None),
-                        ('failed_align.csv', None),
-                        ('failed_read.csv', None),
-                        ('g2p.csv', None),
-                        ('conseq_ins.csv', None),
-                        ('coord_ins.csv', None),
-                        ('nucleotide_frequencies.csv', '*.nuc.csv'),
-                        ('nuc_variants.csv', None),
-                        ('collated_counts.csv', '*.remap_counts.csv'))
-
-    for target_file, pattern in files_to_collate:
-        logger.info("Collating {}".format(target_file))
-        if pattern is None:
-            pattern = '*.' + target_file
-        collate_labeled_files(os.path.join(run_folder, pattern),
-                              os.path.join(results_folder, target_file))
-
-
 #####################################################################################
 
 KiveAPI.SERVER_URL = settings.kive_server_url
@@ -204,17 +156,19 @@ pipeline = kive.get_pipeline(settings.pipeline_version_kive_id)
 quality_cdt = kive.get_cdt(settings.quality_cdt_kive_id)
 
 
-def check_kive(scheduler, runs):
+def check_kive(scheduler, active_runs):
     """
     :param scheduler: instance of Python sched
-    :param runs: a List of Kive pipeline run objects
+    :param active_runs: a List of Kive pipeline run objects
     :return:
     """
-    for _sample_name, run in runs:
-        logger.info('{} {}%'.format(run.get_status(), run.get_progress_percent()))
-    if not all(map(lambda (_, run): run.is_complete(), runs)):
+    sample_name, run = active_runs[0]
+    if run.is_complete():
+        logger.info('completed sample %s.', sample_name)
+        active_runs.pop(0)
+    if active_runs:
         # reschedule a check on runs at subsequent time
-        scheduler.enter(5, 1, check_kive, (scheduler, runs,))
+        scheduler.enter(5, 1, check_kive, (scheduler, active_runs))
 
 
 def find_runs(processed_runs):
@@ -249,17 +203,31 @@ def find_runs(processed_runs):
     return runs_needing_processing
 
 
-def upload_data(root, run_name, run_folder):
+def format_run_name(root):
+    return os.path.basename(os.path.normpath(root))
+
+
+def trim_run_name(run_name):
+    # run name is YYMMDD_MACHINEID_SEQ_RANDOMNUMBER.
+    # Date and machine id should be unique together.
+    return '_'.join(run_name.split('_')[:2])
+
+
+def upload_data(root, run_folder):
     """ Upload FASTQ files and quality to Kive.
 
     :param root: the path to the root folder of the run that holds all the
         FASTQ files
-    :param run_name: the folder name
     :param run_folder: the local folder that will hold working files.
+    :returns: a list of sample names and FASTQ datasets, in tuples, a
+        failure message string, and a dataset of quality data
+        [(sample_name, read1_dataset, read2_dataset)], failure_message, quality
     """
     fastqs = []
     failure_message = None
     quality_input = None
+    run_name = format_run_name(root)
+    trimmed_run_name = trim_run_name(run_name)
 
     # transfer SampleSheet.csv
     remote_file = os.path.join(root, 'SampleSheet.csv')
@@ -306,9 +274,10 @@ def upload_data(root, run_name, run_folder):
             continue
 
         logger.info(filename)
-        description = 'FASTQ for sample %s (%s) from MiSeq run %s' % (sample,
-                                                                      snum,
-                                                                      run_name)
+        description = 'FASTQ for sample %s (%s) from MiSeq run %s' % (
+            sample,
+            snum,
+            trimmed_run_name)
         R1_obj = kive.add_dataset(name=filename,
                                   description='R1 ' + description,
                                   handle=open(R1_file, 'rb'),
@@ -318,8 +287,6 @@ def upload_data(root, run_name, run_folder):
                                   handle=open(R2_file, 'rb'),
                                   groups=settings.kive_groups_allowed)
         fastqs.append(((sample + '_' + snum), R1_obj, R2_obj))
-
-        break  # FIXME: for debugging - append only one sample
 
     # generate quality.csv
     try:
@@ -335,8 +302,8 @@ def upload_data(root, run_name, run_folder):
 
     # transfer quality.csv with Kive API
     quality_input = kive.add_dataset(
-        name='%s_quality.csv' % (run_name[:6], ),
-        description='phiX174 quality scores per tile and cycle for run %s' % (run_name, ),
+        name='%s_quality.csv' % (trimmed_run_name, ),
+        description='phiX174 quality per tile and cycle for run ' + run_name,
         handle=open(quality_csv, 'rU'),
         cdt=quality_cdt,
         groups=settings.kive_groups_allowed)
@@ -344,12 +311,24 @@ def upload_data(root, run_name, run_folder):
 
 
 def launch_runs(fastqs, quality_input, run_name):
+    """ Launch runs on Kive, then wait for them to finish.
+
+    :param fastqs: a list of sample names and FASTQ datasets, in tuples
+        [(sample_name, read1_dataset, read2_dataset)]
+    :param quality_input: a dataset with quality data
+    :param run_name: the name of the run for labeling the Kive runs
+    :return: a list of sample names and RunStatus objects, in tuples
+        [(sample_name, run_status)]
+    """
+    trimmed_run_name = trim_run_name(run_name)
     # Standard out/error concatenates to the log
     logger.info("Launching pipeline for %s%s", settings.home, run_name)
     kive_runs = []
     # push all samples into the queue
     for sample_name, fastq1, fastq2 in fastqs:
-        name = '{} - {} ({})'.format(pipeline.family, sample_name, run_name)
+        name = '{} - {} ({})'.format(pipeline.family,
+                                     sample_name,
+                                     trimmed_run_name)
         name = name[:MAX_RUN_NAME_LENGTH]
         # note order of inputs is critical
         status = kive.run_pipeline(pipeline=pipeline,
@@ -360,89 +339,84 @@ def launch_runs(fastqs, quality_input, run_name):
 
     # initialize progress monitoring
     sc = sched.scheduler(time.time, time.sleep)
-    sc.enter(5, 1, check_kive, (sc, kive_runs))
+    active_runs = kive_runs[:]
+    sc.enter(5, 1, check_kive, (sc, active_runs))
     sc.run()  # exits when all runs are complete
     logger.info("===== {} successfully processed! =====".format(run_name))
     return kive_runs
 
 
-def download_results(kive_runs, root, run_name, run_folder):
-    # Retrieve pipeline output files from Kive
-    failure_message = None
-#     tar_files = []
-#     for i, (sample_name, kive_run) in enumerate(kive_runs):
-#         outputs = kive_run.get_results()
-#         output_names = ['remap_counts', 'conseq', 'coverage_maps_tar']
-#         for output_name in output_names:
-#             dataset = outputs.get(output_name, None)
-#             if not dataset:
-#                 continue
-#             if output_name.endswith('_tar'):
-#                 tar_filename = os.path.join(run_folder, sample_name + '_coverage_maps.tar')
-#                 with open(tar_filename, 'wb') as tar_file:
-#                     dataset.download(tar_file)
-#                 tar_files.append(tar_filename)
-#             else:
-#                 filename = os.path.join(results_folder, output_name + '.csv')
-#                 with open(filename, 'a') as result_file:
-#                     for j, line in enumerate(dataset.iter_lines()):
-#                         if i == 0 or j != 0:
-#                             result_file.write(line)
+def download_results(kive_runs, root, run_folder):
+    """ Retrieve pipeline output files from Kive
 
-    results_folder = os.path.join(run_folder, 'results')
+    :param kive_runs: a list of sample names and RunStatus objects, in tuples
+        [(sample_name, run_status)]
+    :param root: the path to the root folder of the run where the results
+        should be copied
+    :param run_folder: the local folder that will hold working files.
+    :return: a failure message if anything went wrong
+    """
+    if not settings.production:
+        results_folder = os.path.join(run_folder, 'results')
+    else:
+        results_parent = os.path.join(root, 'Results')
+        if not os.path.exists(results_parent):
+            os.mkdir(results_parent)
+        results_folder = os.path.join(results_parent,
+                                      'version_' + settings.pipeline_version)
     if not os.path.exists(results_folder):
         os.mkdir(results_folder)
+    tar_path = os.path.join(run_folder, 'coverage_maps.tar')
+    untar_path = os.path.join(run_folder, 'untar')
+    coverage_source_path = os.path.join(untar_path, 'coverage_maps')
+    coverage_dest_path = os.path.join(results_folder, 'coverage_maps')
+    os.mkdir(untar_path)
+    os.mkdir(coverage_source_path)
+    os.mkdir(coverage_dest_path)
 
-    # Collate pipeline logs and outputs to location where following code expects
-    collate_results(run_folder, results_folder, logger)
-    if settings.production:
-        try:
-            # Determine output paths
-            result_path = os.path.join(root, 'Results')
-            result_path_final = '{}/version_{}'.format(result_path, settings.pipeline_version)
-            # Post files to appropriate sub-folders
-            logger.info("Posting results to {}".format(result_path_final))
-            file_sets = [  # (pattern, destination)
-                         ('results/*', None), ('bad_cycles.csv', None),
-                         ('*.log', 'logs'),
-                         ('*.unmapped?.fastq', 'unmapped')]
-            if not os.path.isdir(result_path):
-                os.mkdir(result_path)
-            for pattern, destination in file_sets:
-                destination_path = os.path.join(result_path_final, destination) if destination else result_path_final
-                full_pattern = os.path.join(settings.home, run_name, pattern)
-                if not os.path.isdir(destination_path):
-                    os.mkdir(destination_path)
-                post_files(glob(full_pattern), destination_path)
-
-            untar_path = os.path.join(result_path_final, 'untar')
-            coverage_source_path = os.path.join(untar_path, 'coverage_maps')
-            coverage_dest_path = os.path.join(result_path_final, 'coverage_maps')
-            os.mkdir(untar_path)
-            os.mkdir(coverage_source_path)
-            os.mkdir(coverage_dest_path)
-            for tar_path in glob(settings.home + run_name + '/*.coverage_maps.tar'):
-                basename = os.path.basename(tar_path)
-                map_name = os.path.splitext(basename)[0]
-                sample_name = os.path.splitext(map_name)[0]
+    for i, (sample_name, kive_run) in enumerate(kive_runs):
+        outputs = kive_run.get_results()
+        output_names = ['remap_counts',
+                        'conseq',
+                        'conseq_ins',
+                        'failed_read',
+                        'nuc',
+                        'amino',
+                        'coord_ins',
+                        'failed_align',
+                        'nuc_variants',
+                        'g2p',
+                        'coverage_scores',
+                        'coverage_maps_tar']
+        for output_name in output_names:
+            dataset = outputs.get(output_name, None)
+            if not dataset:
+                continue
+            if not output_name.endswith('_tar'):
+                filename = os.path.join(results_folder, output_name + '.csv')
+                with open(filename, 'a') as result_file:
+                    for j, line in enumerate(dataset.readlines()):
+                        if i == 0 and j == 0:
+                            result_file.write('sample,' + line)
+                        elif j != 0:
+                            result_file.write(sample_name + ',' + line)
+            else:
+                with open(tar_path, 'wb') as f:
+                    dataset.download(f)
                 with tarfile.open(tar_path) as tar:
                     tar.extractall(untar_path)
                 for image_filename in os.listdir(coverage_source_path):
                     source = os.path.join(coverage_source_path, image_filename)
                     destination = os.path.join(coverage_dest_path, sample_name + '.' + image_filename)
                     os.rename(source, destination)
+        # TODO: Do we need to collate logs?
+    os.rmdir(coverage_source_path)
+    os.rmdir(untar_path)
+    os.remove(tar_path)
 
-            os.rmdir(coverage_source_path)
-            os.rmdir(untar_path)
-            update_qai.process_folder(result_path_final, logger)
-            mark_run_as_done(result_path_final)
-            logger.info("===== %s file transfer completed =====", run_name)
-        except:
-            failure_message = mark_run_as_disabled(
-                root,
-                "Failed to post pipeline results",
-                exc_info=True)
-    return failure_message
+    if settings.production:
+        update_qai.process_folder(results_folder, logger)
+    mark_run_as_done(results_folder)
 
 
 def main():
@@ -479,8 +453,8 @@ def main():
         runs_needing_processing.sort(reverse=True)
         curr_run = runs_needing_processing[0]
         root = curr_run.replace(settings.NEEDS_PROCESSING, '')
-        run_name = root.split('/')[-2]
-        run_folder = settings.home+run_name
+        run_name = format_run_name(root)
+        run_folder = os.path.join(settings.home, run_name)
 
         # Make folder on the cluster for intermediary files and outputs
         if not os.path.exists(run_folder):
@@ -501,9 +475,7 @@ def main():
         logger = init_logging(log_file)
         logger.info('===== Processing {} with pipeline version {} ====='.format(root, settings.pipeline_version))
 
-        fastqs, failure_message, quality_input = upload_data(root,
-                                                             run_name,
-                                                             run_folder)
+        fastqs, failure_message, quality_input = upload_data(root, run_folder)
         if not (fastqs and quality_input):
             continue
 
@@ -516,7 +488,14 @@ def main():
                 exc_info=True)
             continue
 
-        failure_message = download_results(kive_runs, root, run_name, run_folder)
+        try:
+            download_results(kive_runs, root, run_folder)
+            logger.info("===== %s file transfer completed =====", run_name)
+        except:
+            failure_message = mark_run_as_disabled(
+                root,
+                "Failed to post pipeline results",
+                exc_info=True)
         if not settings.production:
             processed_runs.add(curr_run)
 
