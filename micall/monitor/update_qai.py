@@ -18,16 +18,23 @@ from micall.core.project_config import ProjectConfig
 
 logger = miseq_logging.init_logging_console_only(logging.INFO)
 
+
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser(
-        version=settings.pipeline_version, 
+        version=settings.pipeline_version,
         description="Update the Oracle database with conseq information")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--result_folder", "-r", help="Result folder that holds collated_conseqs.csv file")
-    group.add_argument("--load_all", "-a", action="store_true", help="load all folders under RAW_DATA that have results.")
+    group.add_argument("--result_folder",
+                       "-r",
+                       help="Result folder that holds collated_conseqs.csv file")
+    group.add_argument("--load_all",
+                       "-a",
+                       action="store_true",
+                       help="load all folders under RAW_DATA that have results.")
     args = parser.parse_args()
     return args, parser
+
 
 def build_conseqs(conseqs_file,
                   run,
@@ -46,7 +53,7 @@ def build_conseqs(conseqs_file,
         were given a good score by the pipeline.
     @return an array of JSON hashes, one for each conseq.
     """
-    
+
     result = []
     ss = sample_sheet
     sequencings = run['sequencing_summary']
@@ -66,14 +73,14 @@ def build_conseqs(conseqs_file,
     # for fastq_filename in ss["Data"]:
     #     sample_name = filename_re.match(fastq_filename).group(1)
     #     FASTQ_lookup[sample_name] = fastq_filename
-    
+
     projects = ProjectConfig.loadDefault()
-    target_regions = set() # set([(project_name, tags)])
+    target_regions = set()  # set([(project_name, tags)])
     for entry in sequencings:
         seeds = projects.getProjectSeeds(entry['target_project'])
         for seed in seeds:
             target_regions.add((entry['tag'], seed))
-        
+
     for row in conseqs_csv:
         # Each row of this file looks like:
         # sample,region,q-cutoff,s-number,consensus-percent-cutoff,sequence
@@ -95,8 +102,8 @@ def build_conseqs(conseqs_file,
         is_target_region = (sample_tags, row["region"]) in target_regions
         ok_for_release = ok_region and is_target_region
         result.append({"samplename": orig_sample_name,
-                       # July 9, 2014: we can't do this properly right now 
-                       # without a lookup table that is yet to be fully 
+                       # July 9, 2014: we can't do this properly right now
+                       # without a lookup table that is yet to be fully
                        # defined.
                        "testcode": None,
                        "conseq_cutoff": row["consensus-percent-cutoff"],
@@ -107,20 +114,21 @@ def build_conseqs(conseqs_file,
                        "ok_for_release": ok_for_release})
     return result
 
+
 def build_hla_b_seqs(sample_file):
     """
     Build JSON hashes for HLA-B sequence records
-    
+
     @param sample_file: open file that holds the variant info
     """
-    
+
     result = []
     expected_exon_prefix = 'HLA-B-exon'
     # sample,seed,qcut,region,index,count,seq
     rows = csv.DictReader(sample_file)
     for row in rows:
         ind = int(row['index'])
-            
+
         sample_name = row['sample']
         exon = row['region']
         if exon.startswith(expected_exon_prefix):
@@ -130,7 +138,7 @@ def build_hla_b_seqs(sample_file):
         qcutoff = row['qcut']
         cnt = row['count']
         curr_seq = row['seq']
-    
+
         result.append({'samplename': sample_name,
                        'testcode': None,
                        'exon': exon_number,
@@ -138,9 +146,10 @@ def build_hla_b_seqs(sample_file):
                        'ind': ind,
                        'cnt': cnt,
                        'string': curr_seq})
-        
+
     return result
-        
+
+
 def build_review_decisions(coverage_file,
                            collated_counts_file,
                            sample_sheet,
@@ -149,7 +158,7 @@ def build_review_decisions(coverage_file,
                            regions):
     """ Build a list of request objects that will create the review decision
     records.
-    
+
     @param coverage_file: CSV file with coverage scores
     @param collated_counts_file: CSV file with read counts
     @param sample_sheet: the sample sheet for the run
@@ -160,7 +169,7 @@ def build_review_decisions(coverage_file,
                               "coordinate_region_name": coordinate_region_name}]
     @param regions: [{"id": region_id, "name": region_name}]
     """
-    
+
     project_region_map = dict(
         [((entry['project_name'], entry['coordinate_region_name']), entry['id'])
          for entry in project_regions])
@@ -168,8 +177,8 @@ def build_review_decisions(coverage_file,
     sample_tags = {}
     for sample in sample_sheet['DataSplit']:
         sample_tags[sample['filename']] = sample['tags']
-    
-    counts_map = {} # {tags: raw, (tags, seed): mapped]}
+
+    counts_map = {}  # {tags: raw, (tags, seed): mapped]}
     # sample,type,count
     for counts in csv.DictReader(collated_counts_file):
         count = int(counts['count'])
@@ -182,11 +191,11 @@ def build_review_decisions(coverage_file,
             key = tags, seed
             current_count = counts_map.get(key, 0)
             counts_map[key] = max(current_count, count)
-    
+
     targeted_projects = set(map(itemgetter('target_project'), sequencings))
-    
-    decisions = {} # {(sample_name, region): decision}
-    #sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
+
+    decisions = {}  # {(sample_name, region): decision}
+    # sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
     for coverage in csv.DictReader(coverage_file):
         tags = sample_tags[coverage['sample']]
         score = int(coverage['off.score'])
@@ -211,7 +220,7 @@ def build_review_decisions(coverage_file,
         seed = coverage['seed']
         mapped_count = counts_map.get((tags, seed))
         seed_region_id = region_map[seed]
-        
+
         decision_key = (coverage['sample'], coverage['region'])
         previous_decision = decisions.get(decision_key)
         is_replacement = (previous_decision is None or
@@ -232,6 +241,7 @@ def build_review_decisions(coverage_file,
             }
     return decisions.values()
 
+
 def upload_review_to_qai(coverage_file,
                          collated_counts_file,
                          run,
@@ -240,7 +250,7 @@ def upload_review_to_qai(coverage_file,
                          hla_b_seqs,
                          session):
     """ Create a review.
-    
+
     @param coverage_file: the coverage scores to upload
     @param collated_counts_file: CSV file of read counts to upload
     @param run: a hash with the attributes of the run record, including a
@@ -253,30 +263,31 @@ def upload_review_to_qai(coverage_file,
         child records
     @param session: the QAI session
     """
-    
+
     runid = run['id']
     sequencings = run['sequencing_summary']
-    
+
     project_regions = session.get_json(
         "/lab_miseq_project_regions?pipeline=" + settings.pipeline_version)
     if not project_regions:
         raise RuntimeError('Unknown pipeline: ' + settings.pipeline_version)
-    
+
     regions = session.get_json("/lab_miseq_regions")
-    
+
     decisions = build_review_decisions(coverage_file,
                                        collated_counts_file,
                                        sample_sheet,
                                        sequencings,
                                        project_regions,
                                        regions)
-    
+
     session.post_json("/lab_miseq_reviews",
                       {'runid': runid,
                        'pipeline_id': find_pipeline_id(session),
                        'lab_miseq_review_decisions': decisions,
                        'lab_miseq_conseqs': conseqs,
                        'lab_miseq_hla_b_seqs': hla_b_seqs})
+
 
 def clean_runname(runname):
     try:
@@ -286,9 +297,10 @@ def clean_runname(runname):
         clean_runname = runname
     return clean_runname
 
+
 def find_run(session, runname):
     """ Query QAI to find the run id for a given run name.
-    
+
     @return: a hash with the attributes of the run record, including a
         sequencing summary of all the samples and their target projects.
     """
@@ -304,9 +316,10 @@ def find_run(session, runname):
             cleaned_runname))
     return runs[0]
 
+
 def find_pipeline_id(session):
     """ Query QAI to find the pipeline id for the current version.
-    
+
     @return: the pipeline id.
     """
     pipelines = session.get_json(
@@ -320,7 +333,8 @@ def find_pipeline_id(session):
             rowcount,
             settings.pipeline_version))
     return pipelines[0]['id']
-    
+
+
 def load_ok_sample_regions(result_folder):
     ok_sample_regions = set()
     coverage_file = os.path.join(result_folder, 'coverage_scores.csv')
@@ -329,8 +343,9 @@ def load_ok_sample_regions(result_folder):
         for row in reader:
             if row['on.score'] == '4':
                 ok_sample_regions.add((row['sample'], row['region'], row['q.cut']))
-    
+
     return ok_sample_regions
+
 
 def process_folder(result_folder, logger):
     logger.info('Uploading data to Oracle from {}'.format(result_folder))
@@ -343,9 +358,9 @@ def process_folder(result_folder, logger):
     sample_sheet_file = os.path.join(run_path, "SampleSheet.csv")
     with open(sample_sheet_file, "rU") as f:
         sample_sheet = sample_sheet_parser.sample_sheet_parser(f)
-        
+
     ok_sample_regions = load_ok_sample_regions(result_folder)
-    
+
     with qai_helper.Session() as session:
         session.login(settings.qai_path,
                       settings.qai_user,
@@ -369,9 +384,10 @@ def process_folder(result_folder, logger):
                                  hla_b_seqs,
                                  session)
 
+
 def main():
     args, parser = parse_args()
-    
+
     if args.result_folder:
         process_folder(args.result_folder, logger)
     elif not args.load_all:
@@ -381,13 +397,13 @@ def main():
         runs = glob(settings.rawdata_mount + 'MiSeq/runs/*/{}'.format(
             settings.NEEDS_PROCESSING))
         runs.sort()
-            
+
         for run in runs:
             run_folder, _ = os.path.split(run)
             disabled_marker = os.path.join(run_folder, settings.ERROR_PROCESSING)
             if os.path.exists(disabled_marker):
                 continue
-            
+
             result_path = os.path.join(run_folder,
                                        'Results/version_' + settings.pipeline_version)
 
@@ -397,10 +413,10 @@ def main():
                 except:
                     logger.error('Failed to process %s',
                                  result_path,
-                                 exc_info=True)    
-    
+                                 exc_info=True)
+
     logger.info('Completed all uploads to Oracle.')
-        
+
 
 if __name__ == "__main__":
     main()
