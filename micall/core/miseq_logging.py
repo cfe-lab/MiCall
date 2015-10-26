@@ -1,5 +1,6 @@
 import logging
 
+
 class Timestamp(logging.Formatter):
     """
     Extended logging.Formatter to use DateTime instead of struct_time which doesn't support milliseconds.
@@ -7,7 +8,7 @@ class Timestamp(logging.Formatter):
     """
     import datetime
 
-    converter=datetime.datetime.fromtimestamp
+    converter = datetime.datetime.fromtimestamp
 
     def formatTime(self, record, datefmt=None):
         ct = self.converter(record.created)
@@ -17,6 +18,7 @@ class Timestamp(logging.Formatter):
             t = ct.strftime("%Y-%m-%d %H:%M:%S")
             s = "%s,%03d" % (t, record.msecs)
         return s
+
 
 def init_logging_console_only(log_level=logging.DEBUG):
     import sys
@@ -29,6 +31,7 @@ def init_logging_console_only(log_level=logging.DEBUG):
     console_logger.setFormatter(formatter)
     logger.addHandler(console_logger)
     return logger
+
 
 def init_logging(logging_path, file_log_level=logging.DEBUG, console_log_level=logging.DEBUG):
     """
@@ -59,13 +62,15 @@ def init_logging(logging_path, file_log_level=logging.DEBUG, console_log_level=l
 
     return logger
 
+
 def collate_logs(path, extension, final_log):
     """
     Combine logs of a given extension into final_log in a sorted manner.
     Delete original source logs.
     """
 
-    import datetime, os
+    import datetime
+    import os
     from glob import glob
 
     logs = []
