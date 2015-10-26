@@ -349,8 +349,8 @@ def load_ok_sample_regions(result_folder):
 
 def process_folder(result_folder, logger):
     logger.info('Uploading data to Oracle from {}'.format(result_folder))
-    collated_conseqs = os.path.join(result_folder, 'collated_conseqs.csv')
-    collated_counts = os.path.join(result_folder, 'collated_counts.csv')
+    collated_conseqs = os.path.join(result_folder, 'conseq.csv')
+    collated_counts = os.path.join(result_folder, 'remap_counts.csv')
     nuc_variants = os.path.join(result_folder, 'nuc_variants.csv')
     coverage_scores = os.path.join(result_folder, 'coverage_scores.csv')
     all_results_path, _ = os.path.split(os.path.normpath(result_folder))

@@ -146,6 +146,8 @@ def download_quality(run_info_path, destination, read_lengths):
 
 #####################################################################################
 
+logger = init_logging(settings.home + '/MISEQ_MONITOR_OUTPUT.log')
+
 KiveAPI.SERVER_URL = settings.kive_server_url
 kive = KiveAPI(settings.kive_user, settings.kive_password, verify=False)
 
@@ -409,7 +411,7 @@ def download_results(kive_runs, root, run_folder):
                     source = os.path.join(coverage_source_path, image_filename)
                     destination = os.path.join(coverage_dest_path, sample_name + '.' + image_filename)
                     os.rename(source, destination)
-        # TODO: Do we need to collate logs?
+
     os.rmdir(coverage_source_path)
     os.rmdir(untar_path)
     os.remove(tar_path)

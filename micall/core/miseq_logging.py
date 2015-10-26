@@ -60,6 +60,10 @@ def init_logging(logging_path, file_log_level=logging.DEBUG, console_log_level=l
     logger.addHandler(console_logger)
     logger.addHandler(file_logger)
 
+    # Quiet the urllib3 logger
+    connection_logger = logging.getLogger('urllib3.connectionpool')
+    connection_logger.setLevel(logging.WARN)
+
     return logger
 
 
