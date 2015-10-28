@@ -12,7 +12,7 @@ def parseArgs():
         description='Censor tiles and cycles from a FASTQ file.')
 
     parser.add_argument('original_fastq',
-                        type=argparse.FileType('rU'),
+                        type=argparse.FileType('rb'),
                         help='<input> FASTQ.gz containing original reads')
     parser.add_argument('bad_cycles_csv',
                         type=argparse.FileType('rU'),
