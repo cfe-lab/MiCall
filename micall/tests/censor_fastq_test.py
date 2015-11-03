@@ -3,7 +3,8 @@ import unittest
 
 from micall.core import censor_fastq
 
-#TODO: remaining tests:
+
+# TODO: remaining tests:
 # * multiple directions
 # * multiple reads
 class CensorTest(unittest.TestCase):
@@ -17,16 +18,17 @@ AAAA
         self.original_file = StringIO.StringIO(self.original_text)
         self.bad_cycles = []
         self.censored_file = StringIO.StringIO()
-     
+
     def testNoBadCycles(self):
         expected_text = self.original_text
-        
+
         censor_fastq.censor(self.original_file,
                             self.bad_cycles,
-                            self.censored_file)
-         
+                            self.censored_file,
+                            use_gzip=False)
+
         self.assertMultiLineEqual(expected_text, self.censored_file.getvalue())
-     
+
     def testBadCycle(self):
         self.bad_cycles = [{'tile': '1101', 'cycle': '3'}]
         expected_text = """\
@@ -38,18 +40,20 @@ AA#A
 
         censor_fastq.censor(self.original_file,
                             self.bad_cycles,
-                            self.censored_file)
-         
+                            self.censored_file,
+                            use_gzip=False)
+
         self.assertMultiLineEqual(expected_text, self.censored_file.getvalue())
 
     def testDifferentTile(self):
         self.bad_cycles = [{'tile': '1102', 'cycle': '3'}]
         expected_text = self.original_text
-        
+
         censor_fastq.censor(self.original_file,
                             self.bad_cycles,
-                            self.censored_file)
-         
+                            self.censored_file,
+                            use_gzip=False)
+
         self.assertMultiLineEqual(expected_text, self.censored_file.getvalue())
 
     def testDifferentDirection(self):
@@ -62,11 +66,12 @@ AAAA
         self.original_file = StringIO.StringIO(self.original_text)
         self.bad_cycles = [{'tile': '1101', 'cycle': '3'}]
         expected_text = self.original_text
-        
+
         censor_fastq.censor(self.original_file,
                             self.bad_cycles,
-                            self.censored_file)
-         
+                            self.censored_file,
+                            use_gzip=False)
+
         self.assertMultiLineEqual(expected_text, self.censored_file.getvalue())
 
     def testReverseDirection(self):
@@ -84,11 +89,12 @@ ACNT
 +
 AA#A
 """
-        
+
         censor_fastq.censor(self.original_file,
                             self.bad_cycles,
-                            self.censored_file)
-         
+                            self.censored_file,
+                            use_gzip=False)
+
         self.assertMultiLineEqual(expected_text, self.censored_file.getvalue())
 
     def testTwoReads(self):
@@ -115,9 +121,10 @@ TGNA
 +
 BB#B
 """
-        
+
         censor_fastq.censor(self.original_file,
                             self.bad_cycles,
-                            self.censored_file)
-         
+                            self.censored_file,
+                            use_gzip=False)
+
         self.assertMultiLineEqual(expected_text, self.censored_file.getvalue())

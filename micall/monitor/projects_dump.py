@@ -18,21 +18,27 @@ def check_key_positions(projects, warning_file):
     seed_warning = "WARNING: project {} has duplicate seed and coordinate: {}, {}\n"
     warnings = []
     for project_name, project in projects.iteritems():
-        regions_with_key_positions = set()
+        key_position_coordinates = Counter()
         seed_coordinate_pairs = Counter()
         for region in project['regions']:
             coordinate_name = region['coordinate_region']
             if region['key_positions']:
-                if coordinate_name in regions_with_key_positions:
-                    warnings.append(key_warning.format(project_name,
-                                                       coordinate_name))
-                regions_with_key_positions.add(coordinate_name)
+                key_position_coordinates[coordinate_name] += 1
             for seed_name in region['seed_region_names']:
                 seed_coordinate_pairs[(seed_name, coordinate_name)] += 1
+        sorted_counts = key_position_coordinates.most_common()
+        for coordinate_name, count in sorted_counts:
+            if count > 1:
+                warnings.append(key_warning.format(project_name,
+                                                   coordinate_name))
+            else:
+                break
         sorted_counts = seed_coordinate_pairs.most_common()
         for (seed_name, coordinate_name), count in sorted_counts:
             if count > 1:
-                warnings.append(seed_warning.format(seed_name, coordinate_name))
+                warnings.append(seed_warning.format(project_name,
+                                                    seed_name,
+                                                    coordinate_name))
             else:
                 break
     for warning in sorted(warnings):
