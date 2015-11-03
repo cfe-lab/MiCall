@@ -28,7 +28,6 @@ import tempfile
 import miseq_logging
 import project_config
 from micall import settings
-#from micall.core.sam2aln import cigar_re, is_first_read
 from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools, LineCounter
 
 # SAM file format
@@ -52,6 +51,7 @@ logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 indel_re = re.compile('[+-][0-9]+')
 line_counter = LineCounter()
 
+
 def is_first_read(flag):
     """
     Interpret bitwise flag from SAM field.
@@ -59,6 +59,7 @@ def is_first_read(flag):
     """
     IS_FIRST_SEGMENT = 0x40
     return (int(flag) & IS_FIRST_SEGMENT) != 0
+
 
 def is_short_read(read_row, max_primer_length):
     """
@@ -72,12 +73,13 @@ def is_short_read(read_row, max_primer_length):
     match_length = max(map(int, sizes))
     return match_length <= max_primer_length
 
+
 def build_conseqs_with_samtools(samfilename, samtools, raw_count):
     bamfile = samfilename.replace('.sam', '.bam')
     pileup_path = bamfile + '.pileup'
     samtools.redirect_call(['view', '-b', samfilename], bamfile)
-    samtools.log_call(['sort', bamfile, os.path.splitext(bamfile)[0]]) # overwrite
-    
+    samtools.log_call(['sort', bamfile, os.path.splitext(bamfile)[0]])  # overwrite
+
     # BAM to pileup
     # -x doesn't try to merge forward and reverse reads, because the quality
     #     calculation after merging was too hard to understand.
@@ -96,28 +98,29 @@ def build_conseqs_with_python(samfilename):
     with open(samfilename, 'rU') as samfile:
         return sam_to_conseqs(samfile, settings.consensus_q_cutoff)
 
+
 def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
     """ Build consensus sequences for each reference from a SAM file.
-    
+
     @param samfile: an open file in the SAM format containing reads with their
         mapped position and quality scores
     @param quality_cutoff: minimum quality score for a base to be counted
     @return: {reference_name: consensus_sequence}
     """
-    
+
     if debug_reports:
         for key in debug_reports.iterkeys():
             debug_reports[key] = Counter()
-    
+
     # refmap structure: {refname: {pos: {nuc: count}}}
     def pos_nucs_factory():
         nuc_count_factory = Counter
         return defaultdict(nuc_count_factory)
     refmap = defaultdict(pos_nucs_factory)
-    SAM_QUALITY_BASE = 33 # from SAM file format specification
+    SAM_QUALITY_BASE = 33  # from SAM file format specification
     PROPERLY_ALIGNED_FLAG = 2
     quality_cutoff_char = chr(SAM_QUALITY_BASE + quality_cutoff)
-    
+
     for read_pair in matchmaker(samfile, include_singles=True):
         read1, read2 = read_pair
         if read2 and read1[2] != read2[2]:
@@ -138,14 +141,14 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
              _pnext,
              _tlen,
              seq,
-             qual) = read[:11] # ignore optional fields
+             qual) = read[:11]  # ignore optional fields
             flag = int(flag_str)
             if not (flag & PROPERLY_ALIGNED_FLAG):
                 continue
             pos_nucs = refmap[rname]
             pos = int(refpos_str)
             tokens = cigar_re.findall(cigar)
-    
+
             token_end_pos = -1
             token_itr = iter(tokens)
             for i, nuc in enumerate(seq):
@@ -164,19 +167,19 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                     else:
                         token_end_pos += token_size
                     if (token_type == 'I' and
-                        token_size % 3 == 0 and
-                        not is_in_overlap):
-                        
+                            token_size % 3 == 0 and
+                            not is_in_overlap):
+
                         # replace previous base with insertion
                         prev_nuc_counts = pos_nucs[pos-1]
-                        prev_nuc =           seq[i-1]
-                        insertion =          seq[i-1:token_end_pos+1]
+                        prev_nuc = seq[i-1]
+                        insertion = seq[i-1:token_end_pos+1]
                         insertion_quality = qual[i-1:token_end_pos+1]
                         min_quality = min(insertion_quality)
                         if min_quality >= quality_cutoff_char:
                             prev_nuc_counts[prev_nuc] -= 1
                             prev_nuc_counts[insertion] += 1
-                        
+
                 if token_type == 'S':
                     pass
                 elif token_type == 'M':
@@ -214,12 +217,12 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                 mixtures.append('{}{{{}}}'.format(min_quality,
                                                   ', '.join(mixture)))
             debug_reports[key] = ', '.join(mixtures)
-            
+
     conseqs = {}
     for refname, pos_nucs in refmap.iteritems():
         if not any((any(n > 0 for n in counts.itervalues())
                     for counts in pos_nucs.itervalues())):
-            #Nothing mapped, so no consensus.
+            # Nothing mapped, so no consensus.
             continue
         conseq = ''
         deletion = ''
@@ -240,9 +243,10 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
         conseqs[refname] = conseq
     return conseqs
 
+
 def build_conseqs(samfilename, samtools, raw_count):
     """ Build the new consensus sequences from the mapping results.
-    
+
     @param samfilename: the mapping results in SAM format
     @param samtools: a command wrapper for samtools, or None if it's not
         available
@@ -252,13 +256,14 @@ def build_conseqs(samfilename, samtools, raw_count):
         conseqs = build_conseqs_with_samtools(samfilename, samtools, raw_count)
     else:
         conseqs = build_conseqs_with_python(samfilename)
-    
+
     if False:
         # Some debugging code to save the SAM file for testing.
         copy_name = tempfile.mktemp(suffix='.sam', prefix=samfilename)
         shutil.copy(samfilename, copy_name)
-        
+
     return conseqs
+
 
 def remap(fastq1,
           fastq2,
@@ -366,30 +371,30 @@ def remap(fastq1,
         f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
         # iterate through prelim CSV and record counts, transfer rows to SAM
-        refgroups = {} # { group_name: (refname, count) }
+        refgroups = {}  # { group_name: (refname, count) }
         reader = csv.DictReader(prelim_csv)
         row_count = 0
         for refname, group in itertools.groupby(reader, itemgetter('rname')):
             count = 0
             filtered_count = 0
             for row in group:
-                if callback and row_count%1000 == 0:
+                if callback and row_count % 1000 == 0:
                     callback(progress=row_count)
-                
+
                 count += 1
                 row_count += 1
-    
+
                 if is_short_read(row, max_primer_length=50):
                     # exclude short reads
                     continue
-    
+
                 filtered_count += 1
-    
+
                 # write SAM row
                 f.write('\t'.join([row[field] for field in fieldnames]) + '\n')
             if callback:
                 callback(progress=raw_count)
-            
+
             # report preliminary counts to file
             remap_counts_writer.writerow(
                 dict(type='prelim %s' % refname,
@@ -415,7 +420,6 @@ def remap(fastq1,
             map_counts[rname] = count  # transfer filtered counts to map counts for remap loop
             new_conseqs[rname] = conseq
     conseqs = new_conseqs
-
 
     # start remapping loop
     n_remaps = 0
@@ -446,8 +450,8 @@ def remap(fastq1,
                                                settings.ref_gap_extend_remap),
                        '-1', fastq1,
                        '-2', fastq2,
-                       #'--no-unal', # don't report reads that failed to align
-                       '--no-hd', # no header lines (start with @)
+                       # '--no-unal', # don't report reads that failed to align
+                       '--no-hd',  # no header lines (start with @)
                        '--local',
                        '-p', str(nthreads)]
 
@@ -468,7 +472,7 @@ def remap(fastq1,
             f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
             for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
-                if callback and i%1000 == 0:
+                if callback and i % 1000 == 0:
                     callback(progress=i)  # progress monitoring in GUI
 
                 items = line.split('\t')
@@ -511,8 +515,7 @@ def remap(fastq1,
         conseqs = build_conseqs(samfile, samtools, raw_count)
         n_remaps += 1
 
-
-    ## finished iterative phase
+    # finished iterative phase
 
     # generate SAM CSV output
     remap_writer = csv.DictWriter(remap_csv, fieldnames, lineterminator=os.linesep)
@@ -571,7 +574,7 @@ def matchmaker(samfile, include_singles=False):
     cached_rows = {}
     for line in samfile:
         row = line.strip('\n').split('\t')
-        
+
         if line.startswith('@'):
             if row[0] == '@SQ':
                 for field in row[1:]:
@@ -579,7 +582,7 @@ def matchmaker(samfile, include_singles=False):
                     if field_name == 'SN':
                         ref_names.add(value)
             continue
-        
+
         qname = row[0]
         ref_name = row[2]
         if ref_name in ref_names:
@@ -593,6 +596,7 @@ def matchmaker(samfile, include_singles=False):
         for row in cached_rows.itervalues():
             yield row, None
 
+
 def find_top_token(base_counts):
     top_count = top_token = None
     for token, count in base_counts.most_common():
@@ -605,7 +609,8 @@ def find_top_token(base_counts):
             top_token = token
     return top_token
 
-def pileup_to_conseq (handle, qCutoff):
+
+def pileup_to_conseq(handle, qCutoff):
     """
     Generate a consensus sequence from a samtools pileup file.
     Each line in a pileup file corresponds to a nucleotide position in the
@@ -623,7 +628,6 @@ def pileup_to_conseq (handle, qCutoff):
     frame.
     """
     conseqs = {}
-    #counts = {}
     to_skip = 0
     last_pos = 0
     positions_with_deletions = set()
@@ -641,7 +645,6 @@ def pileup_to_conseq (handle, qCutoff):
 
         if region not in conseqs:
             conseqs.update({region: ''})
-            #counts.update({region: 0})
             last_pos = 0
 
         pos = int(pos)  # position in the pileup, 1-index
@@ -683,7 +686,7 @@ def pileup_to_conseq (handle, qCutoff):
                         base_counts[token] += 1
                     else:
                         base_counts[base] += 1
-                        
+
                 i += len(token)
                 j += 1
             else:
@@ -709,7 +712,7 @@ def pileup_to_conseq (handle, qCutoff):
             token = find_top_token(base_counts)
 
         if '+' in token:
-            m = indel_re.findall(token)[0] # \+[0-9]+
+            m = indel_re.findall(token)[0]  # \+[0-9]+
             conseqs[region] += token[0]
             if int(m) % 3 == 0:
                 # only add insertions that retain reading frame
@@ -728,6 +731,7 @@ def pileup_to_conseq (handle, qCutoff):
                                              conseq)
 
     return trimmed_conseqs
+
 
 def main():
     parser = argparse.ArgumentParser(
