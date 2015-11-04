@@ -72,13 +72,15 @@ def map_samples(run_folder, fastq_samples, worker):
     for sample_info in fastq_samples:
         log_path = "{}.censor.log".format(sample_info.output_root)
         worker.run_job(Job(script=build_path('core/censor_fastq.py'),
-                           args=(sample_info.fastq1,
+                           args=('--unzipped',
+                                 sample_info.fastq1,
                                  os.path.join(run_folder, 'bad_cycles.csv'),
                                  sample_info.output_root + '.censored1.fastq'),
                            stdout=log_path,
                            stderr=log_path))
         worker.run_job(Job(script=build_path('core/censor_fastq.py'),
-                           args=(sample_info.fastq2,
+                           args=('--unzipped',
+                                 sample_info.fastq2,
                                  os.path.join(run_folder, 'bad_cycles.csv'),
                                  sample_info.output_root + '.censored2.fastq'),
                            stdout=log_path,

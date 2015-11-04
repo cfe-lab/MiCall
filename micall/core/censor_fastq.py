@@ -20,6 +20,10 @@ def parseArgs():
     parser.add_argument('censored_fastq',
                         type=argparse.FileType('w'),
                         help='<output> uncompressed FASTQ containing censored reads')
+    parser.add_argument('--unzipped',
+                        '-u',
+                        action='store_true',
+                        help='Set if the FASTQ file is not compressed')
 
     return parser.parse_args()
 
@@ -63,4 +67,5 @@ if __name__ == '__main__':
 
     censor(args.original_fastq,
            csv.DictReader(args.bad_cycles_csv),
-           args.censored_fastq)
+           args.censored_fastq,
+           not args.unzipped)

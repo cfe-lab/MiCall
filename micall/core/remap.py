@@ -425,6 +425,7 @@ def remap(fastq1,
     n_remaps = 0
     new_counts = {}
     mapped = {}
+    unmapped = None
     while n_remaps < settings.max_remaps and conseqs:
         if callback:
             callback(message='... remap iteration %d' % n_remaps, progress=0)
@@ -541,17 +542,18 @@ def remap(fastq1,
         remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
     remap_conseq_csv.close()
 
-    # output unmapped reads to new FASTQ files
     n_unmapped = 0
-    for qname, (seq, qual) in unmapped['R1'].iteritems():
-        unmapped1.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
-        n_unmapped += 1
-    unmapped1.close()
+    if unmapped:
+        # output unmapped reads to new FASTQ files
+        for qname, (seq, qual) in unmapped['R1'].iteritems():
+            unmapped1.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+            n_unmapped += 1
+        unmapped1.close()
 
-    for qname, (seq, qual) in unmapped['R2'].iteritems():
-        unmapped2.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
-        n_unmapped += 1
-    unmapped2.close()
+        for qname, (seq, qual) in unmapped['R2'].iteritems():
+            unmapped2.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+            n_unmapped += 1
+        unmapped2.close()
 
     # report number of unmapped reads
     remap_counts_writer.writerow(dict(type='unmapped',
