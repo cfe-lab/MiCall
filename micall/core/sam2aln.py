@@ -25,6 +25,7 @@ import sys
 
 from micall.settings import max_prop_N, read_mapping_cutoff, sam2aln_q_cutoffs
 
+
 def parseArgs():
     parser = argparse.ArgumentParser(
         description='Conversion of SAM data into aligned format.')
@@ -41,7 +42,7 @@ def parseArgs():
                         type=argparse.FileType('w'),
                         help='<output> CSV containing reads that failed to merge')
     parser.add_argument('-p', type=int, default=None, help='(optional) number of threads')
-    
+
     return parser.parse_args()
 
 
@@ -75,8 +76,10 @@ class _Popen(multiprocessing.forking.Popen):
 class Process(multiprocessing.Process):
     _Popen = _Popen
 
+
 class Pool(multiprocessing.pool.Pool):
     Process = Process
+
 
 def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
     """ Applies a cigar string to recreate a read, then clips the read.
@@ -86,7 +89,7 @@ def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
     Any insertions relative to the sample consensus sequence are removed to
     enforce a strict pairwise alignment, and returned separately in a
     dict object.
-    
+
     @param cigar: a string in the CIGAR format, describing the relationship
         between the read sequence and the consensus sequence
     @param seq: the sequence that was read
@@ -108,7 +111,7 @@ def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
     newqual = '!' * int(pos)
     insertions = {}
     is_valid = re.match(r'^((\d+)([MIDNSHPX=]))*$', cigar)
-    tokens =   re.findall(r'(\d+)([MIDNSHPX=])', cigar)
+    tokens = re.findall(r'  (\d+)([MIDNSHPX=])', cigar, re.VERBOSE)
     if not is_valid:
         raise RuntimeError('Invalid CIGAR string: {!r}.'.format(cigar))
     end = None if clip_to is None else clip_to + 1
@@ -141,12 +144,12 @@ def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
             raise RuntimeError(
                 'CIGAR string {!r} is too long for sequence {!r}.'.format(cigar,
                                                                           seq))
-    
+
     if left < len(seq):
         raise RuntimeError(
             'CIGAR string {!r} is too short for sequence {!r}.'.format(cigar,
                                                                        seq))
-    
+
     return newseq[clip_from:end], newqual[clip_from:end], insertions
 
 
@@ -160,7 +163,7 @@ def merge_pairs(seq1,
                 minimum_q_delta=5):
     """
     Combine paired-end reads into a single sequence.
-    
+
     Manage discordant base calls on the basis of quality scores, and add any
     insertions.
     @param seq1: a read sequence of base calls in a string
@@ -217,7 +220,7 @@ def merge_pairs(seq1,
                 mseq += c2
             else:
                 mseq += 'N'
-    
+
     ins1 = {} if ins1 is None else ins1
     ins2 = {} if ins2 is None else ins2
     for pos in range(len(mseq)-1, -1, -1):
@@ -235,7 +238,7 @@ def len_gap_prefix(s):
         return len(hits[0])
     return 0
 
-        
+
 def is_first_read(flag):
     """
     Interpret bitwise flag from SAM field.
@@ -262,7 +265,7 @@ def matchmaker(remap_csv):
         else:
             # current row should be the second read of the pair
             yield old_row, row
-    
+
     # Unmatched reads
     for old_row in cached_rows.itervalues():
         yield old_row, None
@@ -270,7 +273,7 @@ def matchmaker(remap_csv):
 
 def parse_sam(rows):
     """ Merge two matched reads into a single aligned read.
-    
+
     Also report insertions and failed merges.
     @param rows: tuple holding a pair of matched rows - forward and reverse reads
     @return: (refname, merged_seqs, insert_list, failed_list) where
@@ -308,15 +311,15 @@ def parse_sam(rows):
         failure_cause = 'badCigar'
     elif (int(row1['mapq']) < read_mapping_cutoff or
           int(row2['mapq']) < read_mapping_cutoff):
-        
+
         failure_cause = 'mapq'
     elif row1['rname'] != row2['rname']:
-        failure_cause = '2refs' 
+        failure_cause = '2refs'
 
     if not failure_cause:
         pos1 = int(row1['pos'])-1  # convert 1-index to 0-index
         seq1, qual1, inserts = apply_cigar(cigar1, row1['seq'], row1['qual'])
-    
+
         # report insertions relative to sample consensus
         for left, (iseq, iqual) in inserts.iteritems():
             insert_list.append({'qname': qname,
@@ -325,11 +328,10 @@ def parse_sam(rows):
                                 'pos': pos1+left,
                                 'insert': iseq,
                                 'qual': iqual})
-    
+
         seq1 = '-'*pos1 + seq1  # pad sequence on left
         qual1 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
-    
-    
+
         # now process the mate
         pos2 = int(row2['pos'])-1  # convert 1-index to 0-index
         seq2, qual2, inserts = apply_cigar(cigar2, row2['seq'], row2['qual'])
@@ -342,7 +344,7 @@ def parse_sam(rows):
                                 'qual': iqual})
         seq2 = '-'*pos2 + seq2
         qual2 = '!'*pos2 + qual2
-    
+
         # merge reads
         for qcut in sam2aln_q_cutoffs:
             mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=qcut)
@@ -352,16 +354,17 @@ def parse_sam(rows):
                 failure_cause = 'manyNs'
             else:
                 mseqs[qcut] = mseq
-    
+
     if failure_cause:
         failed_list.append({'qname': qname,
                             'cause': failure_cause})
 
     return rname, mseqs, insert_list, failed_list
 
+
 def parse_sam_in_threads(remap_csv, nthreads):
     """ Call parse_sam() in multiple processes.
-    
+
     Launch a multiprocessing pool, walk through the iterator, and then be sure
     to close the pool at the end.
     """
@@ -374,13 +377,14 @@ def parse_sam_in_threads(remap_csv, nthreads):
         pool.close()
         pool.join()
 
+
 def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
     # prepare outputs
-    insert_fields =  ['qname', 'fwd_rev', 'refname', 'pos', 'insert', 'qual']
+    insert_fields = ['qname', 'fwd_rev', 'refname', 'pos', 'insert', 'qual']
     insert_writer = DictWriter(insert_csv, insert_fields, lineterminator=os.linesep)
     insert_writer.writeheader()
 
-    failed_fields =  ['qname', 'cause']
+    failed_fields = ['qname', 'cause']
     failed_writer = DictWriter(failed_csv, failed_fields, lineterminator=os.linesep)
     failed_writer.writeheader()
 
@@ -421,7 +425,6 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
                                              count=count,
                                              offset=offset,
                                              seq=seq.strip('-')))
-
 
 
 def main():
