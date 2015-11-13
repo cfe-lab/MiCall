@@ -293,7 +293,7 @@ class SamToConseqsTest(unittest.TestCase):
             "@SH\tsome header\n"
             "@MHI\tmost headers are ignored, except SQ for sequence reference\n"
             "@SQ\tSN:test\n"
-            "test1\t99\ttest\t1\t44\t12M\t=\t1\t3\tACA\tJJJ\n"
+            "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACA\tJJJ\n"
         )
         expected_conseqs = {'test': 'ACA'}
         conseqs = remap.sam_to_conseqs(samIO)
@@ -311,7 +311,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testHeaderFields(self):
         samIO = StringIO.StringIO(
             "@SQ\tOF:other field: ignored\tSN:test\n"
-            "test1\t99\ttest\t1\t44\t12M\t=\t1\t3\tACA\tJJJ\n"
+            "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACA\tJJJ\n"
         )
         expected_conseqs = {'test': 'ACA'}
         conseqs = remap.sam_to_conseqs(samIO)
@@ -320,7 +320,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testExtraFields(self):
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
-            "test1\t99\ttest\t1\t44\t12M\t=\t1\t3\tACA\tJJJ\tAS:i:236\tNM:i:12\n"
+            "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACA\tJJJ\tAS:i:236\tNM:i:12\n"
         )
         expected_conseqs = {'test': 'ACA'}
         conseqs = remap.sam_to_conseqs(samIO)
@@ -329,9 +329,9 @@ class SamToConseqsTest(unittest.TestCase):
     def testMaxConsensus(self):
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
-            "test1\t99\ttest\t1\t44\t12M\t=\t1\t3\tACA\tJJJ\n"
-            "test2\t147\ttest\t1\t44\t12M\t=\t1\t-3\tACA\tJJJ\n"
-            "test3\t99\ttest\t1\t44\t12M\t=\t1\t3\tTCA\tJJJ\n"
+            "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACA\tJJJ\n"
+            "test2\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACA\tJJJ\n"
+            "test3\t99\ttest\t1\t44\t3M\t=\t1\t3\tTCA\tJJJ\n"
         )
         expected_conseqs = {'test': 'ACA'}
         conseqs = remap.sam_to_conseqs(samIO)
@@ -340,8 +340,8 @@ class SamToConseqsTest(unittest.TestCase):
     def testTie(self):
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
-            "test1\t99\ttest\t1\t44\t12M\t=\t1\t3\tGCA\tJJJ\n"
-            "test2\t147\ttest\t1\t44\t12M\t=\t1\t-3\tTCA\tJJJ\n"
+            "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tGCA\tJJJ\n"
+            "test2\t147\ttest\t1\t44\t3M\t=\t1\t-3\tTCA\tJJJ\n"
         )
         expected_conseqs = {'test': 'GCA'}
         conseqs = remap.sam_to_conseqs(samIO)
@@ -491,6 +491,16 @@ class SamToConseqsTest(unittest.TestCase):
         conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
         self.assertDictEqual(expected_conseqs, conseqs)
 
+    def testLowQualityForward(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\n"
+            "test1\t99\ttest\t1\t44\t3M\t=\t3\t3\tATA\tJJA\n"
+            "test1\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
+        )
+        expected_conseqs = {'test': 'ATGCC'}
+        conseqs = remap.sam_to_conseqs(samIO)
+        self.assertDictEqual(expected_conseqs, conseqs)
+
     def testAllLowQuality(self):
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
         samIO = StringIO.StringIO(
@@ -503,17 +513,37 @@ class SamToConseqsTest(unittest.TestCase):
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
-    def testBadAlignmentFlag(self):
+    def testBadPairFlag(self):
+        """ Even if the pair isn't concordant, still include in consensus.
+
+        SAM flag 145 does not have bit 2 for properly aligned.
+        """
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
             "test1\t145\ttest\t1\t24\t1M\t=\t1\t-1\tT\tF\n"
         )
+        expected_conseqs = {'test': 'T'}
+
+        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+
+        self.assertEqual(expected_conseqs, conseqs)
+
+    def testUnmappedFlag(self):
+        """ If the read is unmapped, don't include in consensus.
+
+        SAM flag 149 has bit 4 for unmapped. Region is irrelevant.
+        """
+        # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\n"
+            "test1\t149\ttest\t1\t24\t1M\t=\t1\t-1\tT\tF\n"
+        )
         expected_conseqs = {}
 
         conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
 
-        self.assertDictEqual(expected_conseqs, conseqs)
+        self.assertEqual(expected_conseqs, conseqs)
 
     def testLowQualityAndDeletion(self):
         samIO = StringIO.StringIO(

@@ -189,8 +189,11 @@ def merge_pairs(seq1,
         seq1, seq2 = seq2, seq1
         qual1, qual2 = qual2, qual1
 
+    is_reverse_started = False
     for i, c2 in enumerate(seq2):
         q2 = ord(qual2[i])-33
+        if c2 != '-':
+            is_reverse_started = True
         if i < len(seq1):
             c1 = seq1[i]
             q1 = ord(qual1[i])-33
@@ -214,22 +217,59 @@ def merge_pairs(seq1,
                     mseq += 'N'  # cannot resolve between discordant bases
         else:
             # past end of read 1
-            if c2 == '-' and q2 == 0:
-                mseq += 'n'  # interval between reads
+            if c2 == '-':
+                if is_reverse_started:
+                    mseq += c2
+                else:
+                    mseq += 'n'  # interval between reads
             elif q2 > q_cutoff:
                 mseq += c2
             else:
                 mseq += 'N'
 
-    ins1 = {} if ins1 is None else ins1
-    ins2 = {} if ins2 is None else ins2
+    merged_inserts = merge_inserts(ins1, ins2, q_cutoff, minimum_q_delta)
     for pos in range(len(mseq)-1, -1, -1):
-        ins_seq1, ins_qual1 = ins1.get(pos, ('', ''))
-        ins_seq2, ins_qual2 = ins2.get(pos, ('', ''))
-        if ins_seq1 or ins_seq2:
-            ins_mseq = merge_pairs(ins_seq1, ins_seq2, ins_qual1, ins_qual2)
+        ins_mseq = merged_inserts.get(pos)
+        if ins_mseq:
             mseq = mseq[:pos] + ins_mseq + mseq[pos:]
     return mseq
+
+
+def merge_inserts(ins1, ins2, q_cutoff=10, minimum_q_delta=5):
+    """ Merge two sets of insertions.
+
+    @param ins1: { pos: (seq, qual) } a dictionary of insertions from a
+        forward read with
+        the zero-based position that follows each insertion as the
+        key, and the insertion sequence and quality strings as the
+        value. May also be None.
+    @param ins2: the same as ins1, but for the reverse read
+    @param q_cutoff: Phred-scaled base quality as an integer - each base quality
+        score must be higher than this, or the base will be reported as an N.
+    @param minimum_q_delta: if two insertions disagree on a base, the higher
+        quality must be at least this much higher than the other, or that base
+        will be reported as an N.
+    @return {pos: seq} for each of the positions in ins1 and ins2. If the same
+        position was in both, then the two insertions are merged. If the minimum
+        quality for an insertion is below q_cutoff, that insertion is ignored.
+    """
+    ins1 = {} if ins1 is None else ins1
+    ins2 = {} if ins2 is None else ins2
+    q_cutoff_char = chr(q_cutoff+33)
+    merged = {pos: seq
+              for pos, (seq, qual) in ins1.iteritems()
+              if min(qual) > q_cutoff_char}
+    for pos, (seq2, qual2) in ins2.iteritems():
+        if min(qual2) > q_cutoff_char:
+            seq1, qual1 = ins1.get(pos, ('', ''))
+            merged[pos] = merge_pairs(seq1,
+                                      seq2,
+                                      qual1,
+                                      qual2,
+                                      q_cutoff=q_cutoff,
+                                      minimum_q_delta=minimum_q_delta)
+
+    return merged
 
 
 def len_gap_prefix(s):

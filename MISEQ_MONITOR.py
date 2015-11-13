@@ -149,7 +149,8 @@ def download_quality(run_info_path, destination, read_lengths):
 logger = init_logging(settings.home + '/MISEQ_MONITOR_OUTPUT.log')
 
 KiveAPI.SERVER_URL = settings.kive_server_url
-kive = KiveAPI(settings.kive_user, settings.kive_password, verify=False)
+kive = KiveAPI(verify=False)
+kive.login(settings.kive_user, settings.kive_password)
 
 # retrieve Pipeline object based on version
 pipeline = kive.get_pipeline(settings.pipeline_version_kive_id)

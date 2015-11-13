@@ -3,7 +3,7 @@
 	<name>miseqpipeline</name>
 	<comment></comment>
 	<projects>
-		<project>py-kive-api</project>
+		<project>kive</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -24,11 +24,11 @@ import shutil
 import sys
 import tempfile
 
-
-import miseq_logging
-import project_config
+from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall import settings
 from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools, LineCounter
+import miseq_logging
+import project_config
 
 # SAM file format
 fieldnames = [
@@ -59,6 +59,15 @@ def is_first_read(flag):
     """
     IS_FIRST_SEGMENT = 0x40
     return (int(flag) & IS_FIRST_SEGMENT) != 0
+
+
+def is_unmapped_read(flag):
+    """
+    Interpret bitwise flag from SAM field.
+    Returns True if the read is unmapped.
+    """
+    IS_UNMAPPED = 0x4
+    return (int(flag) & IS_UNMAPPED) != 0
 
 
 def is_short_read(read_row, max_primer_length):
@@ -117,22 +126,18 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
         nuc_count_factory = Counter
         return defaultdict(nuc_count_factory)
     refmap = defaultdict(pos_nucs_factory)
-    SAM_QUALITY_BASE = 33  # from SAM file format specification
-    PROPERLY_ALIGNED_FLAG = 2
-    quality_cutoff_char = chr(SAM_QUALITY_BASE + quality_cutoff)
 
     for read_pair in matchmaker(samfile, include_singles=True):
         read1, read2 = read_pair
         if read2 and read1[2] != read2[2]:
             # region mismatch, ignore the read pair.
             continue
-        min_pos = None
-        max_pos = -1
+        filtered_reads = []
         for read in read_pair:
             if not read:
                 continue
             (_qname,
-             flag_str,
+             flag,
              rname,
              refpos_str,
              _mapq,
@@ -142,61 +147,48 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
              _tlen,
              seq,
              qual) = read[:11]  # ignore optional fields
-            flag = int(flag_str)
-            if not (flag & PROPERLY_ALIGNED_FLAG):
+            if is_unmapped_read(flag):
                 continue
+            filtered_reads.append(dict(rname=rname,
+                                       cigar=cigar,
+                                       seq=seq,
+                                       qual=qual,
+                                       pos=int(refpos_str)))
+        if filtered_reads:
+            seq1, qual1, ins1 = apply_cigar(filtered_reads[0]['cigar'],
+                                            filtered_reads[0]['seq'],
+                                            filtered_reads[0]['qual'],
+                                            filtered_reads[0]['pos']-1)
+            if len(filtered_reads) == 1:
+                seq2 = qual2 = ''
+                ins2 = None
+            else:
+                seq2, qual2, ins2 = apply_cigar(filtered_reads[1]['cigar'],
+                                                filtered_reads[1]['seq'],
+                                                filtered_reads[1]['qual'],
+                                                filtered_reads[1]['pos']-1)
+            mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=quality_cutoff)
+            merged_inserts = merge_inserts(ins1, ins2, quality_cutoff)
             pos_nucs = refmap[rname]
-            pos = int(refpos_str)
-            tokens = cigar_re.findall(cigar)
 
-            token_end_pos = -1
-            token_itr = iter(tokens)
-            for i, nuc in enumerate(seq):
-                is_in_overlap = min_pos is not None and min_pos <= pos <= max_pos
-                while i > token_end_pos:
-                    token = next(token_itr)
-                    token_size = int(token[:-1])
-                    token_type = token[-1]
-                    if token_type == 'D':
-                        for _ in range(token_size):
-                            nuc_counts = pos_nucs[pos]
-                            # report dash if all reads have deletions
-                            # dash is overridden by low quality reads, so use -1
-                            nuc_counts['-'] = -1
-                            pos += 1
+            for pos, nuc in enumerate(mseq, 1):
+                if nuc != 'n':
+                    nuc_counts = pos_nucs[pos]
+                    if nuc == 'N':
+                        nuc_counts[nuc] = 0
+                    elif nuc == '-':
+                        nuc_counts[nuc] = -1
                     else:
-                        token_end_pos += token_size
-                    if (token_type == 'I' and
-                            token_size % 3 == 0 and
-                            not is_in_overlap):
-
-                        # replace previous base with insertion
-                        prev_nuc_counts = pos_nucs[pos-1]
-                        prev_nuc = seq[i-1]
-                        insertion = seq[i-1:token_end_pos+1]
-                        insertion_quality = qual[i-1:token_end_pos+1]
-                        min_quality = min(insertion_quality)
-                        if min_quality >= quality_cutoff_char:
-                            prev_nuc_counts[prev_nuc] -= 1
-                            prev_nuc_counts[insertion] += 1
-
-                if token_type == 'S':
-                    pass
-                elif token_type == 'M':
-                    if not is_in_overlap:
-                        nuc_counts = pos_nucs[pos]
-                        if qual[i] >= quality_cutoff_char:
-                            nuc_counts[nuc] += 1
+                        ins = merged_inserts.get(pos)
+                        if ins and len(ins) % 3 == 0:
+                            nuc_counts[nuc + ins] += 1
                         else:
-                            nuc_counts['N'] = 0
-                        if min_pos is None:
-                            min_pos = pos
-                        max_pos = max(pos, max_pos)
+                            nuc_counts[nuc] += 1
                         if debug_reports:
                             counts = debug_reports.get((rname, pos))
                             if counts is not None:
-                                counts[nuc + qual[i]] += 1
-                    pos += 1
+                                counts[nuc + qual[pos-1]] += 1
+
     if debug_reports:
         for key, counts in debug_reports.iteritems():
             mixtures = []
@@ -424,8 +416,7 @@ def remap(fastq1,
     # start remapping loop
     n_remaps = 0
     new_counts = {}
-    mapped = {}
-    unmapped = None
+    unmapped_count = raw_count
     while n_remaps < settings.max_remaps and conseqs:
         if callback:
             callback(message='... remap iteration %d' % n_remaps, progress=0)
@@ -443,7 +434,8 @@ def remap(fastq1,
         ref_gap_open_penalty = rfgopen or settings.ref_gap_open_remap
 
         # stream output from bowtie2
-        bowtie_args = ['--quiet',
+        bowtie_args = ['--wrapper', 'micall-0',
+                       '--quiet',
                        '-x', reffile,
                        '--rdg', "{},{}".format(read_gap_open_penalty,
                                                settings.read_gap_extend_remap),
@@ -451,19 +443,17 @@ def remap(fastq1,
                                                settings.ref_gap_extend_remap),
                        '-1', fastq1,
                        '-2', fastq2,
-                       # '--no-unal', # don't report reads that failed to align
                        '--no-hd',  # no header lines (start with @)
                        '--local',
                        '-p', str(nthreads)]
 
-        # capture stdout stream to count reads before writing to file
-        mapped.clear()  # track which reads have mapped to something
+        # reset counts and unmapped files with each iteration
         new_counts.clear()
-        FORWARD_FLAG = 2
-        REVERSE_FLAG = 1
-
-        # reset containers with each iteration
-        unmapped = {'R1': {}, 'R2': {}}
+        unmapped_count = 0
+        unmapped1.seek(0)
+        unmapped1.truncate()
+        unmapped2.seek(0)
+        unmapped2.truncate()
 
         with open(samfile, 'w') as f:
             # write SAM header
@@ -472,6 +462,7 @@ def remap(fastq1,
                 f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
             f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
+            # capture stdout stream to count reads before writing to file
             for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
                 if callback and i % 1000 == 0:
                     callback(progress=i)  # progress monitoring in GUI
@@ -479,22 +470,16 @@ def remap(fastq1,
                 items = line.split('\t')
                 qname, bitflag, rname, _, _, _, _, _, _, seq, qual = items[:11]
 
-                if rname == '*':
+                if is_unmapped_read(bitflag):
                     # did not map to any reference
-                    unmapped['R1' if is_first_read(bitflag) else 'R2'].update({qname: (seq, qual)})
+                    unmapped_file = unmapped1 if is_first_read(bitflag) else unmapped2
+                    unmapped_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+                    unmapped_count += 1
                     continue
 
                 if rname not in new_counts:
                     new_counts.update({rname: 0})
                 new_counts[rname] += 1
-
-                if qname not in mapped:
-                    mapped.update({qname: 0})
-                # track how many times this read has mapped to a region with integer value
-                # 0(00) = neither; 2(10) = forward only; 1(01) = reverse only; 3(11) both
-                mapped[qname] |= (FORWARD_FLAG
-                                  if is_first_read(bitflag)
-                                  else REVERSE_FLAG)
 
                 f.write(line)
             if callback:
@@ -521,7 +506,7 @@ def remap(fastq1,
     # generate SAM CSV output
     remap_writer = csv.DictWriter(remap_csv, fieldnames, lineterminator=os.linesep)
     remap_writer.writeheader()
-    if mapped:
+    if new_counts:
         # At least one read was mapped, so samfile has relevant data
         with open(samfile, 'rU') as f:
             for line in f:
@@ -542,22 +527,12 @@ def remap(fastq1,
         remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
     remap_conseq_csv.close()
 
-    n_unmapped = 0
-    if unmapped:
-        # output unmapped reads to new FASTQ files
-        for qname, (seq, qual) in unmapped['R1'].iteritems():
-            unmapped1.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
-            n_unmapped += 1
-        unmapped1.close()
-
-        for qname, (seq, qual) in unmapped['R2'].iteritems():
-            unmapped2.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
-            n_unmapped += 1
-        unmapped2.close()
+    unmapped1.close()
+    unmapped2.close()
 
     # report number of unmapped reads
     remap_counts_writer.writerow(dict(type='unmapped',
-                                      count=n_unmapped))
+                                      count=unmapped_count))
     remap_counts_csv.close()
 
 

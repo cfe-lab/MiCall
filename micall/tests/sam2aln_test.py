@@ -2,7 +2,7 @@ import unittest
 from StringIO import StringIO
 
 from micall.core import sam2aln
-from micall.core.sam2aln import apply_cigar, merge_pairs
+from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 
 
 class RemapReaderTest(unittest.TestCase):
@@ -558,6 +558,28 @@ class MergePairsTest(unittest.TestCase):
 
         self.assertEqual(expected_mseq, mseq)
 
+    def testForwardDeletion(self):
+        seq1          = 'C-GCA'  # @IgnorePep8
+        seq2          = '---CATCT'  # @IgnorePep8
+        qual1         = 'J!JJJ'  # @IgnorePep8
+        qual2         = '!!!JJJJJ'  # @IgnorePep8
+        expected_mseq = 'C-GCATCT'
+
+        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+
+        self.assertEqual(expected_mseq, mseq)
+
+    def testReverseDeletion(self):
+        seq1          = 'CTGCA'  # @IgnorePep8
+        seq2          = '--GCAT-T'  # @IgnorePep8
+        qual1         = 'JJJJJ'  # @IgnorePep8
+        qual2         = '!!JJJJ!J'  # @IgnorePep8
+        expected_mseq = 'CTGCAT-T'
+
+        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+
+        self.assertEqual(expected_mseq, mseq)
+
     def testDisagreementWithDifferentQuality(self):
         seq1          = 'AGTGCA'  # @IgnorePep8
         seq2          = 'ACTGCA'  # @IgnorePep8
@@ -651,3 +673,80 @@ class MergePairsTest(unittest.TestCase):
         mseq = merge_pairs(seq1, seq2, qual1, qual2, ins1, ins2)
 
         self.assertEqual(expected_mseq, mseq)
+
+
+class MergeInsertionsTest(unittest.TestCase):
+    def setUp(self):
+        self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
+
+    def testSeparateInsertions(self):
+        ins1 = {2: ('CCC', 'JJJ')}
+        ins2 = {10: ('GGG', 'JJJ')}
+        expected_merged = {2: 'CCC', 10: 'GGG'}
+
+        merged = merge_inserts(ins1, ins2)
+
+        self.assertEqual(expected_merged, merged)
+
+    def testIdenticalInsertions(self):
+        ins1 = {2: ('CCC', 'JJJ')}
+        ins2 = {2: ('CCC', 'JJJ')}
+        expected_merged = {2: 'CCC'}
+
+        merged = merge_inserts(ins1, ins2)
+
+        self.assertEqual(expected_merged, merged)
+
+    def testConflictingInsertions(self):
+        ins1 = {2: ('CCC', 'JJJ')}
+        ins2 = {2: ('CTC', 'JAJ')}
+        expected_merged = {2: 'CCC'}
+
+        merged = merge_inserts(ins1, ins2)
+
+        self.assertEqual(expected_merged, merged)
+
+    def testConflictingInsertionsTooCloseInQuality(self):
+        ins1 = {2: ('CCC', 'JJJ')}
+        ins2 = {2: ('CTC', 'JAJ')}
+        expected_merged = {2: 'CNC'}
+
+        merged = merge_inserts(ins1, ins2, minimum_q_delta=20)
+
+        self.assertEqual(expected_merged, merged)
+
+    def testInsertionQualityTooLowForward(self):
+        ins1 = {2: ('CCC', 'JAJ')}
+        ins2 = {10: ('GGG', 'JJJ')}
+        expected_merged = {10: 'GGG'}
+
+        merged = merge_inserts(ins1, ins2, q_cutoff=32)
+
+        self.assertEqual(expected_merged, merged)
+
+    def testInsertionQualityTooLowReverse(self):
+        ins1 = {2: ('CCC', 'JJJ')}
+        ins2 = {10: ('GGG', 'JAJ')}
+        expected_merged = {2: 'CCC'}
+
+        merged = merge_inserts(ins1, ins2, q_cutoff=32)
+
+        self.assertEqual(expected_merged, merged)
+
+    def testInsertionQualityJustEnough(self):
+        ins1 = {2: ('CCC', 'JJJ')}
+        ins2 = {10: ('GGG', 'JBJ')}
+        expected_merged = {2: 'CCC', 10: 'GGG'}
+
+        merged = merge_inserts(ins1, ins2, q_cutoff=32)
+
+        self.assertEqual(expected_merged, merged)
+
+    def testNone(self):
+        ins1 = None
+        ins2 = None
+        expected_merged = {}
+
+        merged = merge_inserts(ins1, ins2)
+
+        self.assertEqual(expected_merged, merged)
