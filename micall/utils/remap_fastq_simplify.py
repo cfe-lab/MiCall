@@ -21,7 +21,7 @@ def write_simple_fastq(filename1, reads):
 
 
 def test(reads, simple_filename):
-    """ Build a consensus sequence using samtools and Python, then compare.
+    """ Map with 6.8 and 7.0, then compare unmapped read counts.
 
     @return: 'PASS' if the results match or it's a difference we're not
         interested in, 'FAIL' otherwise
