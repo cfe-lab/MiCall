@@ -34,15 +34,15 @@ def test(reads, simple_filename):
         os.remove(bamfile)
 
     write_simple_fastq(simple_filename, reads)
-    ns3_coverage68 = remap68(simple_filename)
-    ns3_coverage70 = remap70(simple_filename)
-    if ns3_coverage70 >= ns3_coverage68:
+    remap_count68 = remap68(simple_filename)
+    remap_count70 = remap70(simple_filename)
+    if remap_count70 >= remap_count68:
         return 'PASS'
-    print '6.8: {}, 7.0: {}'.format(ns3_coverage68, ns3_coverage70)
+    print '6.8: {}, 7.0: {}'.format(remap_count68, remap_count70)
     return 'FAIL'
 
 
-def remap68(fastq1_filename):
+def remap68(fastq1_filename, do_counts=False):
     workdir = os.path.dirname(fastq1_filename)
     rundir = '/mnt/data/don/git/MiCall6_8'
     fastq2_filename = get_reverse_filename(fastq1_filename)
@@ -66,6 +66,8 @@ def remap68(fastq1_filename):
                            os.devnull,
                            os.devnull],
                           cwd=rundir)
+    if not do_counts:
+        return get_max_mapped_counts(remap_counts_filename)
     subprocess.check_call([os.path.join(rundir, 'sam2aln.py'),
                            remap_filename,
                            aligned_filename,
@@ -110,7 +112,23 @@ class DevNullWrapper(object):
         pass
 
 
-def remap70(fastq1_filename):
+def get_max_mapped_counts(remap_counts_filename):
+    prelim_count = remap_count = 0
+    with open(remap_counts_filename, 'rU') as remap_counts_csv:
+        reader = DictReader(remap_counts_csv)
+        for row in reader:
+            row_count = int(row['count'])
+            row_type = row['type']
+            if row_type.startswith('prelim'):
+                prelim_count = max(row_count, prelim_count)
+            elif row_type.startswith('remap'):
+                remap_count = max(row_count, remap_count)
+    if remap_count == prelim_count:
+        return 0
+    return remap_count
+
+
+def remap70(fastq1_filename, do_counts=False):
     workdir = os.path.dirname(fastq1_filename)
     fastq2_filename = get_reverse_filename(fastq1_filename)
     prelim_filename = os.path.join(workdir, 'temp70.prelim.csv')
@@ -135,6 +153,9 @@ def remap70(fastq1_filename):
               devnull,
               devnull,
               devnull)
+        if not do_counts:
+            remap_counts_csv.close()
+            return get_max_mapped_counts(remap_counts_filename)
         remap_csv.seek(0)
         sam2aln(remap_csv, aligned_csv, devnull, devnull)
         aligned_csv.seek(0)
@@ -203,13 +224,13 @@ def read_fastq(filename, reads):
 
 
 def compare_remap(txtfilename, logger):
-    ns3_coverage68 = remap68(txtfilename)
-    ns3_coverage70 = remap70(txtfilename)
+    remap_count68 = remap68(txtfilename)
+    remap_count70 = remap70(txtfilename)
 
-    if ns3_coverage70 < ns3_coverage68:
+    if remap_count70 < remap_count68:
         print 'Mismatch with sample {}: {} -> {}'.format(txtfilename,
-                                                         ns3_coverage68,
-                                                         ns3_coverage70)
+                                                         remap_count68,
+                                                         remap_count70)
         reads = defaultdict(list)
         read_fastq(txtfilename, reads)
         read_count = len(reads)

@@ -170,24 +170,7 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
             mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=quality_cutoff)
             merged_inserts = merge_inserts(ins1, ins2, quality_cutoff)
             pos_nucs = refmap[rname]
-
-            for pos, nuc in enumerate(mseq, 1):
-                if nuc != 'n':
-                    nuc_counts = pos_nucs[pos]
-                    if nuc == 'N':
-                        nuc_counts[nuc] = 0
-                    elif nuc == '-':
-                        nuc_counts[nuc] = -1
-                    else:
-                        ins = merged_inserts.get(pos)
-                        if ins and len(ins) % 3 == 0:
-                            nuc_counts[nuc + ins] += 1
-                        else:
-                            nuc_counts[nuc] += 1
-                        if debug_reports:
-                            counts = debug_reports.get((rname, pos))
-                            if counts is not None:
-                                counts[nuc + qual[pos-1]] += 1
+            update_counts(rname, qual, mseq, merged_inserts, pos_nucs, debug_reports)
 
     if debug_reports:
         for key, counts in debug_reports.iteritems():
@@ -210,6 +193,35 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
                                                   ', '.join(mixture)))
             debug_reports[key] = ', '.join(mixtures)
 
+    return counts_to_conseqs(refmap)
+
+
+def update_counts(rname, qual, mseq, merged_inserts, pos_nucs, debug_reports):
+    is_started = False
+    for pos, nuc in enumerate(mseq, 1):
+        if not is_started:
+            if nuc == '-':
+                continue
+            is_started = True
+        if nuc != 'n':
+            nuc_counts = pos_nucs[pos]
+            if nuc == 'N':
+                nuc_counts[nuc] = 0
+            elif nuc == '-':
+                nuc_counts[nuc] = -1
+            else:
+                ins = merged_inserts.get(pos)
+                if ins and len(ins) % 3 == 0:
+                    nuc_counts[nuc + ins] += 1
+                else:
+                    nuc_counts[nuc] += 1
+                if debug_reports:
+                    counts = debug_reports.get((rname, pos))
+                    if counts is not None:
+                        counts[nuc + qual[pos-1]] += 1
+
+
+def counts_to_conseqs(refmap):
     conseqs = {}
     for refname, pos_nucs in refmap.iteritems():
         if not any((any(n > 0 for n in counts.itervalues())
@@ -514,7 +526,6 @@ def remap(fastq1,
                     continue  # this shouldn't happen because we set --no-hd
                 items = line.strip('\n').split('\t')[:11]
                 remap_writer.writerow(dict(zip(fieldnames, items)))
-    remap_csv.close()
 
     # write consensus sequences and counts
     remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
@@ -525,15 +536,10 @@ def remap(fastq1,
         # current consensus!
         conseq = conseqs.get(refname) or projects.getReference(refname)
         remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
-    remap_conseq_csv.close()
-
-    unmapped1.close()
-    unmapped2.close()
 
     # report number of unmapped reads
     remap_counts_writer.writerow(dict(type='unmapped',
                                       count=unmapped_count))
-    remap_counts_csv.close()
 
 
 def matchmaker(samfile, include_singles=False):

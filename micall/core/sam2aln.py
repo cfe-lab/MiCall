@@ -189,27 +189,35 @@ def merge_pairs(seq1,
         seq1, seq2 = seq2, seq1
         qual1, qual2 = qual2, qual1
 
+    q_cutoff_char = chr(q_cutoff+33)
+    is_forward_started = False
     is_reverse_started = False
     for i, c2 in enumerate(seq2):
-        q2 = ord(qual2[i])-33
         if c2 != '-':
             is_reverse_started = True
         if i < len(seq1):
             c1 = seq1[i]
-            q1 = ord(qual1[i])-33
-            if c1 == '-' and c2 == '-':
-                mseq += '-'
-                continue
+            if not is_forward_started:
+                if c1 == '-' and c2 == '-':
+                    continue
+                is_forward_started = True
+                mseq = seq1[:i]
+            else:
+                if c1 == '-' and c2 == '-':
+                    mseq += '-'
+                    continue
+            q1 = qual1[i]
+            q2 = qual2[i]
             if c1 == c2:  # Reads agree and at least one has sufficient confidence
-                if q1 > q_cutoff or q2 > q_cutoff:
+                if q1 > q_cutoff_char or q2 > q_cutoff_char:
                     mseq += c1
                 else:
                     mseq += 'N'  # neither base is confident
             else:
-                if abs(q2 - q1) >= minimum_q_delta:
-                    if q1 > max(q2, q_cutoff):
+                if abs(ord(q2) - ord(q1)) >= minimum_q_delta:
+                    if q1 > max(q2, q_cutoff_char):
                         mseq += c1
-                    elif q2 > max(q1, q_cutoff):
+                    elif q2 > max(q1, q_cutoff_char):
                         mseq += c2
                     else:
                         mseq += 'N'
@@ -222,15 +230,15 @@ def merge_pairs(seq1,
                     mseq += c2
                 else:
                     mseq += 'n'  # interval between reads
-            elif q2 > q_cutoff:
+            elif qual2[i] > q_cutoff_char:
                 mseq += c2
             else:
                 mseq += 'N'
 
-    merged_inserts = merge_inserts(ins1, ins2, q_cutoff, minimum_q_delta)
-    for pos in range(len(mseq)-1, -1, -1):
-        ins_mseq = merged_inserts.get(pos)
-        if ins_mseq:
+    if ins1 or ins2:
+        merged_inserts = merge_inserts(ins1, ins2, q_cutoff, minimum_q_delta)
+        for pos in sorted(merged_inserts.keys(), reverse=True):
+            ins_mseq = merged_inserts[pos]
             mseq = mseq[:pos] + ins_mseq + mseq[pos:]
     return mseq
 
