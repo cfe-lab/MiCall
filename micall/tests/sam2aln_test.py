@@ -42,6 +42,11 @@ V3LOOP,15,0,1,0,TNT
                                   actual_aligned_csv.getvalue())
 
     def test_low_mapq(self):
+        """ We no longer fail reads because of low mapq.
+
+        When we use more than one reference, reads can receive low mapq if they
+        are in a conserved region that matches more than one reference.
+        """
         remap_file = StringIO("""\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
 Example_read_1,99,V3LOOP,1,44,32M,=,1,-32,TGTACAAGACCCAACAACAATACAAGAAAAAG,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -51,11 +56,11 @@ Example_read_2,147,INT,1,44,32M,=,1,-32,TGTACAAGACCCAACAACAATACAAGAAAAAG,AAAAAAA
 """)
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
+INT,15,0,1,0,TGTACAAGACCCAACAACAATACAAGAAAAAG
 V3LOOP,15,0,1,0,TGTACAAGACCCAACAACAATACAAGAAAAAG
 """
         expected_failed_csv = """\
 qname,cause
-Example_read_2,mapq
 """
         actual_aligned_csv = StringIO()
         actual_failed_csv = StringIO()

@@ -19,7 +19,6 @@ consensus_q_cutoff = 20         # Min Q for base to contribute to conseq (pileup
 # sam2aln parameters
 sam2aln_q_cutoffs = [15]  # Q-cutoff for base censoring
 max_prop_N = 0.5                 # Drop reads with more censored bases than this proportion
-read_mapping_cutoff = 10         # Minimum bowtie read mapping quality
 
 # aln2counts parameters
 amino_alphabet = 'ACDEFGHIKLMNPQRSTVWY*'

@@ -23,7 +23,7 @@ import os
 import re
 import sys
 
-from micall.settings import max_prop_N, read_mapping_cutoff, sam2aln_q_cutoffs
+from micall.settings import max_prop_N, sam2aln_q_cutoffs
 
 
 def parseArgs():
@@ -357,10 +357,6 @@ def parse_sam(rows):
         failure_cause = 'unmatched'
     elif cigar1 == '*' or cigar2 == '*':
         failure_cause = 'badCigar'
-    elif (int(row1['mapq']) < read_mapping_cutoff or
-          int(row2['mapq']) < read_mapping_cutoff):
-
-        failure_cause = 'mapq'
     elif row1['rname'] != row2['rname']:
         failure_cause = '2refs'
 

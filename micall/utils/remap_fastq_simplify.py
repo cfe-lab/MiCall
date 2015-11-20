@@ -34,11 +34,16 @@ def test(reads, simple_filename):
         os.remove(bamfile)
 
     write_simple_fastq(simple_filename, reads)
-    remap_count68 = remap68(simple_filename)
-    remap_count70 = remap70(simple_filename)
-    if remap_count70 >= remap_count68:
+    return test_file(simple_filename)
+
+
+def test_file(simple_filename):
+    ns3_coverage68 = remap68(simple_filename, do_counts=True)
+    ns3_coverage70 = remap70(simple_filename, do_counts=True)
+    if ns3_coverage70 >= ns3_coverage68 * 0.75:
+        print '6.8: {}, 7.0: {}'.format(ns3_coverage68, ns3_coverage70)
         return 'PASS'
-    print '6.8: {}, 7.0: {}'.format(remap_count68, remap_count70)
+    print '6.8: {}, 7.0: {}'.format(ns3_coverage68, ns3_coverage70)
     return 'FAIL'
 
 
@@ -136,11 +141,13 @@ def remap70(fastq1_filename, do_counts=False):
     remap_counts_filename = os.path.join(workdir, 'temp70.remap_counts.csv')
     aligned_filename = os.path.join(workdir, 'temp70.aligned.csv')
     nuc_filename = os.path.join(workdir, 'temp70.nuc.csv')
+    failed_align_filename = os.path.join(workdir, 'temp70.failed_align.csv')
     with open(prelim_filename, 'w+') as prelim_csv, \
             open(remap_filename, 'w+') as remap_csv, \
             open(remap_counts_filename, 'w+') as remap_counts_csv, \
             open(aligned_filename, 'w+') as aligned_csv, \
             open(nuc_filename, 'w+') as nuc_csv, \
+            open(failed_align_filename, 'w+') as failed_align_csv, \
             open(os.devnull, 'w+') as real_devnull:
         devnull = DevNullWrapper(real_devnull)
         prelim_map(fastq1_filename, fastq2_filename, prelim_csv)
@@ -157,7 +164,7 @@ def remap70(fastq1_filename, do_counts=False):
             remap_counts_csv.close()
             return get_max_mapped_counts(remap_counts_filename)
         remap_csv.seek(0)
-        sam2aln(remap_csv, aligned_csv, devnull, devnull)
+        sam2aln(remap_csv, aligned_csv, devnull, failed_align_csv)
         aligned_csv.seek(0)
         aln2counts(aligned_csv,
                    nuc_csv,
@@ -196,9 +203,9 @@ def ddmin(reads, simple_filename):
             start += subset_length
 
         if not some_complement_is_failing:
-            n = min(n*2, len(reads))
             if n == len(reads):
                 break
+            n = min(n*2, len(reads))
 
     return reads
 
@@ -224,13 +231,10 @@ def read_fastq(filename, reads):
 
 
 def compare_remap(txtfilename, logger):
-    remap_count68 = remap68(txtfilename)
-    remap_count70 = remap70(txtfilename)
+    result = test_file(txtfilename)
 
-    if remap_count70 < remap_count68:
-        print 'Mismatch with sample {}: {} -> {}'.format(txtfilename,
-                                                         remap_count68,
-                                                         remap_count70)
+    if result == 'FAIL':
+        print 'Simplifying sample {}'.format(txtfilename)
         reads = defaultdict(list)
         read_fastq(txtfilename, reads)
         read_count = len(reads)
