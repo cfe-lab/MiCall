@@ -3,27 +3,27 @@ Utility function for translating nucleotides (codons) into amino acids.
 """
 import re
 
-codon_dict = {'TTT':'F', 'TTC':'F', 'TTA':'L', 'TTG':'L',
-                'TCT':'S', 'TCC':'S', 'TCA':'S', 'TCG':'S',
-                'TAT':'Y', 'TAC':'Y', 'TAA':'*', 'TAG':'*',
-                'TGT':'C', 'TGC':'C', 'TGA':'*', 'TGG':'W',
-                'CTT':'L', 'CTC':'L', 'CTA':'L', 'CTG':'L',
-                'CCT':'P', 'CCC':'P', 'CCA':'P', 'CCG':'P',
-                'CAT':'H', 'CAC':'H', 'CAA':'Q', 'CAG':'Q',
-                'CGT':'R', 'CGC':'R', 'CGA':'R', 'CGG':'R',
-                'ATT':'I', 'ATC':'I', 'ATA':'I', 'ATG':'M',
-                'ACT':'T', 'ACC':'T', 'ACA':'T', 'ACG':'T',
-                'AAT':'N', 'AAC':'N', 'AAA':'K', 'AAG':'K',
-                'AGT':'S', 'AGC':'S', 'AGA':'R', 'AGG':'R',
-                'GTT':'V', 'GTC':'V', 'GTA':'V', 'GTG':'V',
-                'GCT':'A', 'GCC':'A', 'GCA':'A', 'GCG':'A',
-                'GAT':'D', 'GAC':'D', 'GAA':'E', 'GAG':'E',
-                'GGT':'G', 'GGC':'G', 'GGA':'G', 'GGG':'G',
-                '---':'-', 'XXX':'?'}
+codon_dict = {'TTT': 'F', 'TTC': 'F', 'TTA': 'L', 'TTG': 'L',
+              'TCT': 'S', 'TCC': 'S', 'TCA': 'S', 'TCG': 'S',
+              'TAT': 'Y', 'TAC': 'Y', 'TAA': '*', 'TAG': '*',
+              'TGT': 'C', 'TGC': 'C', 'TGA': '*', 'TGG': 'W',
+              'CTT': 'L', 'CTC': 'L', 'CTA': 'L', 'CTG': 'L',
+              'CCT': 'P', 'CCC': 'P', 'CCA': 'P', 'CCG': 'P',
+              'CAT': 'H', 'CAC': 'H', 'CAA': 'Q', 'CAG': 'Q',
+              'CGT': 'R', 'CGC': 'R', 'CGA': 'R', 'CGG': 'R',
+              'ATT': 'I', 'ATC': 'I', 'ATA': 'I', 'ATG': 'M',
+              'ACT': 'T', 'ACC': 'T', 'ACA': 'T', 'ACG': 'T',
+              'AAT': 'N', 'AAC': 'N', 'AAA': 'K', 'AAG': 'K',
+              'AGT': 'S', 'AGC': 'S', 'AGA': 'R', 'AGG': 'R',
+              'GTT': 'V', 'GTC': 'V', 'GTA': 'V', 'GTG': 'V',
+              'GCT': 'A', 'GCC': 'A', 'GCA': 'A', 'GCG': 'A',
+              'GAT': 'D', 'GAC': 'D', 'GAA': 'E', 'GAG': 'E',
+              'GGT': 'G', 'GGC': 'G', 'GGA': 'G', 'GGG': 'G',
+              '---': '-', 'XXX': '?'}
 mixture_regex = re.compile('[WRKYSMBDHVN-]')
-mixture_dict = {'W':'AT', 'R':'AG', 'K':'GT', 'Y':'CT', 'S':'CG',
-                'M':'AC', 'V':'AGC', 'H':'ATC', 'D':'ATG',
-                'B':'TGC', 'N':'ATGC', '-':'ATGC'}
+mixture_dict = {'W': 'AT', 'R': 'AG', 'K': 'GT', 'Y': 'CT', 'S': 'CG',
+                'M': 'AC', 'V': 'AGC', 'H': 'ATC', 'D': 'ATG',
+                'B': 'TGC', 'N': 'ATGC', '-': 'ATGC'}
 ambig_dict = dict(("".join(sorted(v)), k)
                   for k, v in mixture_dict.iteritems()
                   if k != '-')
@@ -49,7 +49,7 @@ def translate(seq,
 
     seq = '-'*offset + seq.upper()
     aa_list = []
-    aa_seq = '' # use to align against reference, for resolving indels
+    aa_seq = ''  # use to align against reference, for resolving indels
 
     # loop over codon sites in nucleotide sequence
     for codon_site in xrange(0, len(seq), 3):
@@ -60,7 +60,7 @@ def translate(seq,
 
         # note that we're willing to handle a single missing nucleotide as an ambiguity
         if codon.count('-') > 1 or '?' in codon:
-            if codon == '---':	# don't bother to translate incomplete codons
+            if codon == '---':  # don't bother to translate incomplete codons
                 aa_seq += '-'
                 aa_list.append(['-'])
             else:
