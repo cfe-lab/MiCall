@@ -103,17 +103,30 @@ def build_conseqs_with_samtools(samfilename, samtools, raw_count):
     return conseqs
 
 
-def build_conseqs_with_python(samfilename):
+def build_conseqs_with_python(samfilename, old_conseqs):
     with open(samfilename, 'rU') as samfile:
-        return sam_to_conseqs(samfile, settings.consensus_q_cutoff)
+        return sam_to_conseqs(samfile,
+                              settings.consensus_q_cutoff,
+                              old_conseqs=old_conseqs)
 
 
-def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
+def sam_to_conseqs(samfile,
+                   quality_cutoff=0,
+                   debug_reports=None,
+                   old_conseqs=None):
     """ Build consensus sequences for each reference from a SAM file.
 
     @param samfile: an open file in the SAM format containing reads with their
         mapped position and quality scores
     @param quality_cutoff: minimum quality score for a base to be counted
+    @param debug_reports: {(rname, pos): None} a dictionary with keys for all
+        of the regions and positions that you want a report for. The value
+        will be set to a string describing the counts and qualities at that
+        position.
+    @param old_conseqs: {reference_name: consensus_sequence} If this is set,
+        any positions without coverage will be set to the base from the old
+        consensus. If there are no reads mapped to a reference, it will not
+        be included as a new consensus.
     @return: {reference_name: consensus_sequence}
     """
 
@@ -126,6 +139,11 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None):
         nuc_count_factory = Counter
         return defaultdict(nuc_count_factory)
     refmap = defaultdict(pos_nucs_factory)
+    if old_conseqs:
+        for rname, old_conseq in old_conseqs.iteritems():
+            pos_nucs = refmap[rname]
+            for i, nuc in enumerate(old_conseq, 1):
+                pos_nucs[i][nuc] = 0
 
     for read_pair in matchmaker(samfile, include_singles=True):
         read1, read2 = read_pair
@@ -248,7 +266,7 @@ def counts_to_conseqs(refmap):
     return conseqs
 
 
-def build_conseqs(samfilename, samtools, raw_count):
+def build_conseqs(samfilename, samtools, raw_count, old_conseqs):
     """ Build the new consensus sequences from the mapping results.
 
     @param samfilename: the mapping results in SAM format
@@ -259,7 +277,7 @@ def build_conseqs(samfilename, samtools, raw_count):
     if samtools:
         conseqs = build_conseqs_with_samtools(samfilename, samtools, raw_count)
     else:
-        conseqs = build_conseqs_with_python(samfilename)
+        conseqs = build_conseqs_with_python(samfilename, old_conseqs)
 
     if False:
         # Some debugging code to save the SAM file for testing.
@@ -413,7 +431,7 @@ def remap(fastq1,
     seed_counts = {best_ref: best_count
                    for best_ref, best_count in refgroups.itervalues()}
     # regenerate consensus sequences based on preliminary map
-    conseqs = build_conseqs(samfile, samtools, raw_count)
+    conseqs = build_conseqs(samfile, samtools, raw_count, conseqs)
 
     # exclude references with low counts (post filtering)
     new_conseqs = {}
@@ -510,7 +528,7 @@ def remap(fastq1,
         map_counts = dict([(k, v) for k, v in new_counts.iteritems()])
 
         # regenerate consensus sequences
-        conseqs = build_conseqs(samfile, samtools, raw_count)
+        conseqs = build_conseqs(samfile, samtools, raw_count, conseqs)
         n_remaps += 1
 
     # finished iterative phase

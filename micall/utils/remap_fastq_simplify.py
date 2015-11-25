@@ -40,7 +40,7 @@ def test(reads, simple_filename):
 def test_file(simple_filename):
     ns3_coverage68 = remap68(simple_filename, do_counts=True)
     ns3_coverage70 = remap70(simple_filename, do_counts=True)
-    if ns3_coverage70 >= ns3_coverage68 * 0.75:
+    if ns3_coverage70 >= ns3_coverage68 * 0.85:
         print '6.8: {}, 7.0: {}'.format(ns3_coverage68, ns3_coverage70)
         return 'PASS'
     print '6.8: {}, 7.0: {}'.format(ns3_coverage68, ns3_coverage70)
@@ -180,13 +180,14 @@ def ddmin(reads, simple_filename):
     # assert test(sam_lines) == "FAIL"
 
     n = 2     # Initial granularity
+    offset = 0
     while len(reads) >= 2:
-        start = 0
         subset_length = len(reads) / n
         some_complement_is_failing = False
 
-        while start < len(reads):
-            complement = reads[:start] + reads[start + subset_length:]
+        for i in range(n):
+            start = ((i+offset) % n) * subset_length
+            complement = (reads[:start] + reads[start + subset_length:])
 
             result = test(complement, simple_filename)
             complement_description = '0-{} + {}-{}'.format(start,
@@ -196,17 +197,16 @@ def ddmin(reads, simple_filename):
 
             if result == "FAIL":
                 reads = complement
+                offset = (i+offset) % n
                 n = max(n - 1, 2)
                 some_complement_is_failing = True
                 break
-
-            start += subset_length
 
         if not some_complement_is_failing:
             if n == len(reads):
                 break
             n = min(n*2, len(reads))
-
+            offset = 0
     return reads
 
 

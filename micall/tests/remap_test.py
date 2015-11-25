@@ -557,6 +557,33 @@ class SamToConseqsTest(unittest.TestCase):
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
+    def testOldConsensus(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\n"
+            "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJJ\n"
+            "test2\t99\ttest\t10\t44\t3M\t=\t4\t-3\tCAC\tJJJ\n"
+        )
+        old_conseqs = {'test': 'ACATTTGGGCAC'}
+        expected_conseqs = {'test': 'ACATATGGGCAC'}
+
+        conseqs = remap.sam_to_conseqs(samIO, old_conseqs=old_conseqs)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testOldConsensusNeedsSomeReads(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\n"
+            "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJJ\n"
+            "test2\t99\ttest\t10\t44\t3M\t=\t4\t-3\tCAC\tJJJ\n"
+        )
+        old_conseqs = {'test': 'ACATTTGGGCAC',
+                       'other': 'TATGCACCC'}
+        expected_conseqs = {'test': 'ACATATGGGCAC'}
+
+        conseqs = remap.sam_to_conseqs(samIO, old_conseqs=old_conseqs)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
     def testDebugReports(self):
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
