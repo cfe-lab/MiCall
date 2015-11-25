@@ -1,5 +1,5 @@
 import unittest
-from micall.core import aln2counts
+from micall.utils.translation import translate
 
 
 class TranslateTest(unittest.TestCase):
@@ -7,7 +7,7 @@ class TranslateTest(unittest.TestCase):
         nucs = 'TTT'
         expected_aminos = 'F'
 
-        aminos = aln2counts.translate(nucs)
+        aminos = translate(nucs)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -15,7 +15,7 @@ class TranslateTest(unittest.TestCase):
         nucs = 'TTTCC'
         expected_aminos = 'F'
 
-        aminos = aln2counts.translate(nucs)
+        aminos = translate(nucs)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -23,7 +23,7 @@ class TranslateTest(unittest.TestCase):
         nucs = 'TTTCCT'
         expected_aminos = 'FP'
 
-        aminos = aln2counts.translate(nucs)
+        aminos = translate(nucs)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -31,7 +31,7 @@ class TranslateTest(unittest.TestCase):
         nucs = 'TttCCT'
         expected_aminos = 'FP'
 
-        aminos = aln2counts.translate(nucs)
+        aminos = translate(nucs)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -40,7 +40,7 @@ class TranslateTest(unittest.TestCase):
         offset = 3
         expected_aminos = "-FP"
 
-        aminos = aln2counts.translate(nucs, offset)
+        aminos = translate(nucs, offset)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -48,7 +48,7 @@ class TranslateTest(unittest.TestCase):
         nucs = '-TT'
         expected_aminos = '?'
 
-        aminos = aln2counts.translate(nucs)
+        aminos = translate(nucs)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -56,7 +56,7 @@ class TranslateTest(unittest.TestCase):
         nucs = 'CG-'  # CGA, CGC, CGG, CGT all map to R
         expected_aminos = 'R'
 
-        aminos = aln2counts.translate(nucs)
+        aminos = translate(nucs)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -64,7 +64,7 @@ class TranslateTest(unittest.TestCase):
         nucs = '--T'
         expected_aminos = '?'
 
-        aminos = aln2counts.translate(nucs)
+        aminos = translate(nucs)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -72,7 +72,7 @@ class TranslateTest(unittest.TestCase):
         nucs = '---'
         expected_aminos = '-'
 
-        aminos = aln2counts.translate(nucs)
+        aminos = translate(nucs)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -80,7 +80,7 @@ class TranslateTest(unittest.TestCase):
         nucs = 'TTY'  # TTC or TTT: both map to F
         expected_aminos = 'F'
 
-        aminos = aln2counts.translate(nucs)
+        aminos = translate(nucs)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -88,7 +88,7 @@ class TranslateTest(unittest.TestCase):
         nucs = 'MGR'  # CGA, CGG, AGA, or AGG: all map to R
         expected_aminos = 'R'
 
-        aminos = aln2counts.translate(nucs)
+        aminos = translate(nucs)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -96,7 +96,7 @@ class TranslateTest(unittest.TestCase):
         nucs = 'RGR'  # GGA, GGG, AGA, or AGG: map to G and R, respectively
         expected_aminos = '?'
 
-        aminos = aln2counts.translate(nucs)
+        aminos = translate(nucs)
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -104,6 +104,6 @@ class TranslateTest(unittest.TestCase):
         nucs = 'TTY'  # TTC or TTT: both map to F
         expected_aminos = '?'
 
-        aminos = aln2counts.translate(nucs, translate_mixtures=False)
+        aminos = translate(nucs, translate_mixtures=False)
 
         self.assertEqual(expected_aminos, aminos)
