@@ -4,6 +4,7 @@ If you want to compare the result to an expected sequence, put the expected
 sequence in reverse_compare.
 Source: https://github.com/ArtPoon/bioinfo/blob/master/seqUtils.py#L143
 """
+from micall.utils.translation import reverse_and_complement
 
 nuc_seq = ''.join([
         "TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATATAGGACCAGGGAGAGCATTTTATGC",
@@ -14,17 +15,6 @@ reverse_compare = ''.join([
         "TATGTATACTTTTTCTTGTATTGTTGTTGGGTCTTGTACA"
       ])
 
-complement_dict = {'A':'T', 'C':'G', 'G':'C', 'T':'A', 
-                    'W':'S', 'R':'Y', 'K':'M', 'Y':'R', 'S':'W', 'M':'K',
-                    'B':'V', 'D':'H', 'H':'D', 'V':'B',
-                    '*':'*', 'N':'N', '-':'-'}
-
-def reverse_and_complement(seq):
-    rseq = seq[::-1]
-    rcseq = ''
-    for i in rseq:  # reverse order
-        rcseq += complement_dict[i]
-    return rcseq
 
 reverse_seq = reverse_and_complement(nuc_seq)
 pairs = zip(reverse_seq, reverse_compare)

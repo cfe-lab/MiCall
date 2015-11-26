@@ -1,5 +1,5 @@
 import unittest
-from micall.utils.translation import translate
+from micall.utils.translation import translate, reverse_and_complement
 
 
 class TranslateTest(unittest.TestCase):
@@ -107,3 +107,13 @@ class TranslateTest(unittest.TestCase):
         aminos = translate(nucs, translate_mixtures=False)
 
         self.assertEqual(expected_aminos, aminos)
+
+
+class ReverseAndComplementTest(unittest.TestCase):
+    def testSimple(self):
+        fwd = 'ACTG'
+        expected = 'CAGT'
+
+        rev = reverse_and_complement(fwd)
+
+        self.assertEqual(expected, rev)

@@ -27,6 +27,14 @@ mixture_dict = {'W': 'AT', 'R': 'AG', 'K': 'GT', 'Y': 'CT', 'S': 'CG',
 ambig_dict = dict(("".join(sorted(v)), k)
                   for k, v in mixture_dict.iteritems()
                   if k != '-')
+complement_dict = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A',
+                   'W': 'S', 'R': 'Y', 'K': 'M', 'Y': 'R', 'S': 'W', 'M': 'K',
+                   'B': 'V', 'D': 'H', 'H': 'D', 'V': 'B',
+                   '*': '*', 'N': 'N', '-': '-'}
+
+
+def reverse_and_complement(seq):
+    return ''.join(complement_dict[nuc] for nuc in reversed(seq))
 
 
 def translate(seq,

@@ -2,7 +2,8 @@ import StringIO
 import unittest
 
 from micall.core import remap
-from micall.core.remap import is_first_read, is_short_read
+from micall.core.remap import is_first_read, is_short_read, \
+    MixedReferenceSplitter
 
 
 class RemapTest(unittest.TestCase):
@@ -574,13 +575,26 @@ class SamToConseqsTest(unittest.TestCase):
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJJ\n"
-            "test2\t99\ttest\t10\t44\t3M\t=\t4\t-3\tCAC\tJJJ\n"
         )
         old_conseqs = {'test': 'ACATTTGGGCAC',
                        'other': 'TATGCACCC'}
         expected_conseqs = {'test': 'ACATATGGGCAC'}
 
         conseqs = remap.sam_to_conseqs(samIO, old_conseqs=old_conseqs)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testOldConsensusWithLowQuality(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\n"
+            "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJ/\n"
+        )
+        old_conseqs = {'test': 'ACATTTGGGCAC'}
+        expected_conseqs = {'test': 'ACATATGGGCAC'}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       old_conseqs=old_conseqs,
+                                       quality_cutoff=32)
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
@@ -598,3 +612,138 @@ class SamToConseqsTest(unittest.TestCase):
         remap.sam_to_conseqs(samIO, debug_reports=reports)
 
         self.assertDictEqual(expected_reports, reports)
+
+
+class MixedReferenceMemorySplitter(MixedReferenceSplitter):
+    """ Dummy class to hold split reads in memory. Useful for testing. """
+    def create_split_file(self, refname, direction):
+        self.is_closed = False
+        return StringIO.StringIO()
+
+    def close_split_file(self, split_file):
+        self.is_closed = True
+
+
+class MixedReferenceSplitterTest(unittest.TestCase):
+    def setUp(self):
+        super(MixedReferenceSplitterTest, self).setUp()
+        self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
+
+    def testSimple(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:r\n"
+            "r1\t99\tr\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
+            "r1\t147\tr\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n")
+        expected_rows = [
+            ["r1", "99", "r", "1", "44", "3M", "=", "1", "3", "ACG", "JJJ"],
+            ["r1", "147", "r", "1", "44", "3M", "=", "1", "-3", "ACG", "JJJ"]]
+
+        splitter = MixedReferenceSplitter()
+        rows = list(splitter.split(samIO))
+
+        self.assertEqual(expected_rows, rows)
+
+    def testTrimOptionalFields(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:r\n"
+            "r1\t99\tr\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
+            "r1\t147\tr\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n")
+        expected_rows = [
+            ["r1", "99", "r", "1", "44", "3M", "=", "1", "3", "ACG", "JJJ"],
+            ["r1", "147", "r", "1", "44", "3M", "=", "1", "-3", "ACG", "JJJ"]]
+
+        splitter = MixedReferenceSplitter()
+        rows = list(splitter.split(samIO))
+
+        self.assertEqual(expected_rows, rows)
+
+    def testUnmapped(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:r\n"
+            "r1\t107\tr\t1\t44\t3M\t*\t1\t3\tACG\tJJJ\n"
+            "r1\t149\t*\t*\t*\t*\tr\t*\t*\tACG\tJJJ\n")
+        expected_rows = [
+            ["r1", "107", "r", "1", "44", "3M", "*", "1", "3", "ACG", "JJJ"],
+            ["r1", "149", "*", "*", "*", "*", "r", "*", "*", "ACG", "JJJ"]]
+
+        splitter = MixedReferenceSplitter()
+        rows = list(splitter.split(samIO))
+
+        self.assertEqual(expected_rows, rows)
+
+    def testSplit(self):
+        """ If a pair is split over two references, choose one.
+
+        Use the reference that gave the higher mapq score.
+        """
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:r\n"
+            "r1\t99\tRX\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
+            "r1\t147\tRX\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n"
+            "r2\t99\tRX\t1\t44\t3M\tRY\t1\t3\tACG\tJJJ\tAS:i:100\n"
+            "r2\t147\tRY\t1\t11\t3M\tRX\t1\t-3\tACC\tJJK\tAS:i:200\n")
+        expected_rows = [
+            ["r1", "99", "RX", "1", "44", "3M", "=", "1", "3", "ACG", "JJJ"],
+            ["r1", "147", "RX", "1", "44", "3M", "=", "1", "-3", "ACG", "JJJ"]]
+        expected_fastq1 = """\
+@r2
+ACG
++
+JJJ
+"""
+        expected_fastq2 = """\
+@r2
+GGT
++
+KJJ
+"""
+
+        splitter = MixedReferenceMemorySplitter()
+        rows = list(splitter.split(samIO))
+        is_closed = splitter.is_closed
+        splits = splitter.splits
+
+        self.assertEqual(expected_rows, rows)
+        self.assertEqual(['RX'], splits.keys())
+        fastq1, fastq2 = splits['RX']
+        self.assertEqual(expected_fastq1, fastq1.getvalue())
+        self.assertEqual(expected_fastq2, fastq2.getvalue())
+        self.assertTrue(is_closed)
+
+    def testTiedMapQ(self):
+        """ If both mates have the same mapq, choose higher alignment score.
+
+        Use the reference that gave the higher mapq score.
+        """
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:r\n"
+            "r1\t99\tRX\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
+            "r1\t147\tRX\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n"
+            "r2\t99\tRX\t1\t11\t3M\tRY\t1\t3\tACG\tJJJ\tAS:i:100\n"
+            "r2\t147\tRY\t1\t11\t3M\tRX\t1\t-3\tACC\tJJK\tAS:i:200\n")
+
+        splitter = MixedReferenceMemorySplitter()
+        list(splitter.split(samIO))
+        splits = splitter.splits
+
+        self.assertEqual(['RY'], splits.keys())
+
+    def testWalk(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:r\n"
+            "r1\t99\tRX\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
+            "r1\t147\tRX\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n"
+            "r2\t99\tRX\t1\t44\t3M\tRY\t1\t3\tACG\tJJJ\tAS:i:100\n"
+            "r2\t147\tRY\t1\t44\t3M\tRX\t1\t-3\tACT\tKKK\tAS:i:200\n")
+        expected_rows = [
+            ["r1", "99", "RX", "1", "44", "3M", "=", "1", "3", "ACG", "JJJ", "AS:i:100"],
+            ["r1", "147", "RX", "1", "44", "3M", "=", "1", "-3", "ACG", "JJJ", "YS:Z:UP"],
+            ["r2", "99", "RX", "1", "44", "3M", "RY", "1", "3", "ACG", "JJJ", "AS:i:100"],
+            ["r2", "147", "RY", "1", "44", "3M", "RX", "1", "-3", "ACT", "KKK", "AS:i:200"]]
+
+        splitter = MixedReferenceMemorySplitter()
+        rows = list(splitter.walk(samIO))
+        splits = splitter.splits
+
+        self.assertEqual(expected_rows, rows)
+        self.assertEqual({}, splits)

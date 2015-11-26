@@ -40,7 +40,7 @@ def test(reads, simple_filename):
 def test_file(simple_filename):
     ns3_coverage68 = remap68(simple_filename, do_counts=True)
     ns3_coverage70 = remap70(simple_filename, do_counts=True)
-    if ns3_coverage70 >= ns3_coverage68 * 0.85:
+    if ns3_coverage70 >= ns3_coverage68 * 0.977:
         print '6.8: {}, 7.0: {}'.format(ns3_coverage68, ns3_coverage70)
         return 'PASS'
     print '6.8: {}, 7.0: {}'.format(ns3_coverage68, ns3_coverage70)

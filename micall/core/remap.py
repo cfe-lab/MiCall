@@ -29,6 +29,7 @@ from micall import settings
 from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools, LineCounter
 import miseq_logging
 import project_config
+from micall.utils.translation import reverse_and_complement
 
 # SAM file format
 fieldnames = [
@@ -224,9 +225,9 @@ def update_counts(rname, qual, mseq, merged_inserts, pos_nucs, debug_reports):
         if nuc != 'n':
             nuc_counts = pos_nucs[pos]
             if nuc == 'N':
-                nuc_counts[nuc] = 0
-            elif nuc == '-':
                 nuc_counts[nuc] = -1
+            elif nuc == '-':
+                nuc_counts[nuc] = -2
             else:
                 ins = merged_inserts.get(pos)
                 if ins and len(ins) % 3 == 0:
@@ -445,75 +446,34 @@ def remap(fastq1,
 
     # start remapping loop
     n_remaps = 0
-    new_counts = {}
+    new_counts = Counter()
     unmapped_count = raw_count
-    while n_remaps < settings.max_remaps and conseqs:
+    while conseqs:
         if callback:
             callback(message='... remap iteration %d' % n_remaps, progress=0)
 
-        # generate reference file from current set of consensus sequences
-        outfile = open(reffile, 'w')
-        for region, conseq in conseqs.iteritems():
-            outfile.write('>%s\n%s\n' % (region, conseq))
-        outfile.close()
-
-        # regenerate bowtie2 index files
-        bowtie2_build.build(reffile, reffile)
-
-        read_gap_open_penalty = rdgopen or settings.read_gap_open_remap
-        ref_gap_open_penalty = rfgopen or settings.ref_gap_open_remap
-
-        # stream output from bowtie2
-        bowtie_args = ['--wrapper', 'micall-0',
-                       '--quiet',
-                       '-x', reffile,
-                       '--rdg', "{},{}".format(read_gap_open_penalty,
-                                               settings.read_gap_extend_remap),
-                       '--rfg', "{},{}".format(ref_gap_open_penalty,
-                                               settings.ref_gap_extend_remap),
-                       '-1', fastq1,
-                       '-2', fastq2,
-                       '--no-hd',  # no header lines (start with @)
-                       '--local',
-                       '-p', str(nthreads)]
-
-        # reset counts and unmapped files with each iteration
-        new_counts.clear()
-        unmapped_count = 0
+        # reset unmapped files with each iteration
         unmapped1.seek(0)
         unmapped1.truncate()
         unmapped2.seek(0)
         unmapped2.truncate()
 
-        with open(samfile, 'w') as f:
-            # write SAM header
-            f.write('@HD\tVN:1.0\tSO:unsorted\n')
-            for rname, refseq in conseqs.iteritems():
-                f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
-            f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
-
-            # capture stdout stream to count reads before writing to file
-            for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
-                if callback and i % 1000 == 0:
-                    callback(progress=i)  # progress monitoring in GUI
-
-                items = line.split('\t')
-                qname, bitflag, rname, _, _, _, _, _, _, seq, qual = items[:11]
-
-                if is_unmapped_read(bitflag):
-                    # did not map to any reference
-                    unmapped_file = unmapped1 if is_first_read(bitflag) else unmapped2
-                    unmapped_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
-                    unmapped_count += 1
-                    continue
-
-                if rname not in new_counts:
-                    new_counts.update({rname: 0})
-                new_counts[rname] += 1
-
-                f.write(line)
-            if callback:
-                callback(progress=raw_count)
+        unmapped_count = map_to_reference(fastq1,
+                                          fastq2,
+                                          conseqs,
+                                          reffile,
+                                          samfile,
+                                          unmapped1,
+                                          unmapped2,
+                                          bowtie2,
+                                          bowtie2_build,
+                                          raw_count,
+                                          rdgopen,
+                                          rfgopen,
+                                          nthreads,
+                                          new_counts,
+                                          stderr,
+                                          callback)
 
         # stopping criterion 1 - none of the regions gained reads
         if all([(count <= map_counts[refname]) for refname, count in new_counts.iteritems()]):
@@ -527,9 +487,12 @@ def remap(fastq1,
         # deep copy of mapping counts
         map_counts = dict([(k, v) for k, v in new_counts.iteritems()])
 
+        n_remaps += 1
+        if n_remaps >= settings.max_remaps:
+            break
+
         # regenerate consensus sequences
         conseqs = build_conseqs(samfile, samtools, raw_count, conseqs)
-        n_remaps += 1
 
     # finished iterative phase
 
@@ -537,13 +500,32 @@ def remap(fastq1,
     remap_writer = csv.DictWriter(remap_csv, fieldnames, lineterminator=os.linesep)
     remap_writer.writeheader()
     if new_counts:
+        splitter = MixedReferenceSplitter()
         # At least one read was mapped, so samfile has relevant data
         with open(samfile, 'rU') as f:
-            for line in f:
-                if line.startswith('@'):
-                    continue  # this shouldn't happen because we set --no-hd
-                items = line.strip('\n').split('\t')[:11]
-                remap_writer.writerow(dict(zip(fieldnames, items)))
+            for fields in splitter.split(f):
+                remap_writer.writerow(dict(zip(fieldnames, fields)))
+        for rname, (split_file1, split_file2) in splitter.splits.iteritems():
+            refseqs = {rname: conseqs[rname]}
+            unmapped_count += map_to_reference(split_file1.name,
+                                               split_file2.name,
+                                               refseqs,
+                                               reffile,
+                                               samfile,
+                                               unmapped1,
+                                               unmapped2,
+                                               bowtie2,
+                                               bowtie2_build,
+                                               raw_count,
+                                               rdgopen,
+                                               rfgopen,
+                                               nthreads,
+                                               new_counts,
+                                               stderr,
+                                               callback)
+            with open(samfile, 'rU') as f:
+                for fields in splitter.walk(f):
+                    remap_writer.writerow(dict(zip(fieldnames, fields)))
 
     # write consensus sequences and counts
     remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
@@ -558,6 +540,186 @@ def remap(fastq1,
     # report number of unmapped reads
     remap_counts_writer.writerow(dict(type='unmapped',
                                       count=unmapped_count))
+
+
+def map_to_reference(fastq1,
+                     fastq2,
+                     refseqs,
+                     reffile,
+                     samfile,
+                     unmapped1,
+                     unmapped2,
+                     bowtie2,
+                     bowtie2_build,
+                     raw_count,
+                     rdgopen,
+                     rfgopen,
+                     nthreads,
+                     new_counts,
+                     stderr,
+                     callback):
+    """ Map a pair of FASTQ files to a set of reference sequences.
+
+    @param fastq1: FASTQ file with the forward reads
+    @param fastq2: FASTQ file with the reverse reads
+    @param refseqs: reference sequences to map against
+    @param reffile: file path to use for the reference sequences
+    @param samfile: file path to use for the SAM file output from mapping
+    @param unmapped1: an open file to write unmapped reads to in FASTQ format
+    @param unmapped2: an open file to write unmapped reads to in FASTQ format
+    @param bowtie2: a wrapper for calls to bowtie2
+    @param bowtie2_build: a wrapper for calls to bowtie2-build
+    @param raw_count: the number of reads in fastq1
+    @param rdgopen: read gap open penalty
+    @param rfgopen: reference gap open penalty
+    @param nthreads:  optional setting to modify the number of threads used by bowtie2
+    @param new_counts: a Counter to track how many reads are mapped to each
+        reference
+    @param stderr: an open file object to receive stderr from the bowtie2 calls
+    @param callback: a function to report progress with three optional
+        parameters - callback(message, progress, max_progress)
+    """
+    # generate reference file from current set of consensus sequences
+    outfile = open(reffile, 'w')
+    for region, conseq in refseqs.iteritems():
+        outfile.write('>%s\n%s\n' % (region, conseq))
+    outfile.close()
+
+    # regenerate bowtie2 index files
+    bowtie2_build.build(reffile, reffile)
+
+    read_gap_open_penalty = rdgopen or settings.read_gap_open_remap
+    ref_gap_open_penalty = rfgopen or settings.ref_gap_open_remap
+
+    # stream output from bowtie2
+    bowtie_args = ['--wrapper', 'micall-0',
+                   '--quiet',
+                   '-x', reffile,
+                   '--rdg', "{},{}".format(read_gap_open_penalty,
+                                           settings.read_gap_extend_remap),
+                   '--rfg', "{},{}".format(ref_gap_open_penalty,
+                                           settings.ref_gap_extend_remap),
+                   '-1', fastq1,
+                   '-2', fastq2,
+                   '--no-hd',  # no header lines (start with @)
+                   '--local',
+                   '-p', str(nthreads)]
+
+    new_counts.clear()
+    unmapped_count = 0
+
+    with open(samfile, 'w') as f:
+        # write SAM header
+        f.write('@HD\tVN:1.0\tSO:unsorted\n')
+        for rname, refseq in refseqs.iteritems():
+            f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
+        f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
+
+        # capture stdout stream to count reads before writing to file
+        for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
+            if callback and i % 1000 == 0:
+                callback(progress=i)  # progress monitoring in GUI
+
+            items = line.split('\t')
+            qname, bitflag, rname, _, _, _, _, _, _, seq, qual = items[:11]
+
+            if is_unmapped_read(bitflag):
+                # did not map to any reference
+                unmapped_file = unmapped1 if is_first_read(bitflag) else unmapped2
+                unmapped_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+                unmapped_count += 1
+                continue
+
+            new_counts[rname] += 1
+
+            f.write(line)
+        if callback:
+            callback(progress=raw_count)
+    return unmapped_count
+
+
+class MixedReferenceSplitter(object):
+    def __init__(self):
+        self.splits = {}
+
+    def close_split_file(self, split_file):
+        split_file.close()
+
+    def walk(self, sam_lines):
+        for line in sam_lines:
+            if line.startswith('@'):
+                continue
+            yield line.strip('\n').split('\t')
+
+    def split(self, sam_lines):
+        FIRST_READ_FLAG = 64
+        READ_UNMAPPED_FLAG = 4
+        MATE_UNMAPPED_FLAG = 8
+        EITHER_UNMAPPED_MASK = READ_UNMAPPED_FLAG | MATE_UNMAPPED_FLAG
+        unmatched = {}
+        for fields in self.walk(sam_lines):
+            if fields[6] == '=':
+                yield fields[:11]
+            else:
+                flags = int(fields[1])
+                if flags & EITHER_UNMAPPED_MASK:
+                    yield fields[:11]
+                else:
+                    qname = fields[0]
+                    match = unmatched.pop(qname, None)
+                    if match is None:
+                        unmatched[qname] = fields
+                    else:
+                        mapq = fields[4]
+                        match_mapq = match[4]
+                        if mapq > match_mapq:
+                            rname = fields[2]
+                        elif mapq < match_mapq:
+                            rname = match[2]
+                        else:
+                            alignment_score = self.get_alignment_score(fields)
+                            match_alignment_score = self.get_alignment_score(match)
+                            if alignment_score > match_alignment_score:
+                                rname = fields[2]
+                            else:
+                                rname = match[2]
+                        ref_splits = self.splits.get(rname, None)
+                        if ref_splits is None:
+                            ref_splits = (self.create_split_file(rname, 1),
+                                          self.create_split_file(rname, 2))
+                            self.splits[rname] = ref_splits
+                        fastq1, fastq2 = ref_splits
+                        if flags & FIRST_READ_FLAG:
+                            fwd_read, rev_read = fields, match
+                        else:
+                            fwd_read, rev_read = match, fields
+                        self.write_fastq(fwd_read, fastq1)
+                        self.write_fastq(rev_read, fastq2, is_reversed=True)
+        for fastq1, fastq2 in self.splits.itervalues():
+            self.close_split_file(fastq1)
+            self.close_split_file(fastq2)
+
+    def get_alignment_score(self, fields):
+        for field in fields[11:]:
+            if field.startswith('AS:i:'):
+                return int(field[5:])
+
+    def get_split_file_name(self, refname, direction):
+        suffix = '_R1.fastq' if direction == 1 else '_R2.fastq'
+        return refname + suffix
+
+    def create_split_file(self, refname, direction):
+        split_file_name = self.get_split_file_name(refname, direction)
+        return open(split_file_name, 'w')
+
+    def write_fastq(self, fields, fastq, is_reversed=False):
+        qname = fields[0]
+        seq = fields[9]
+        quality = fields[10]
+        if is_reversed:
+            seq = reverse_and_complement(seq)
+            quality = ''.join(reversed(quality))
+        fastq.write('@{}\n{}\n+\n{}\n'.format(qname, seq, quality))
 
 
 def matchmaker(samfile, include_singles=False):
