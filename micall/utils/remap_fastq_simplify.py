@@ -40,7 +40,7 @@ def test(reads, simple_filename):
 def test_file(simple_filename):
     ns3_coverage68 = remap68(simple_filename, do_counts=True)
     ns3_coverage70 = remap70(simple_filename, do_counts=True)
-    if ns3_coverage70 >= ns3_coverage68 * 0.977:
+    if ns3_coverage70 >= ns3_coverage68 * 0.979:
         print '6.8: {}, 7.0: {}'.format(ns3_coverage68, ns3_coverage70)
         return 'PASS'
     print '6.8: {}, 7.0: {}'.format(ns3_coverage68, ns3_coverage70)
@@ -249,6 +249,8 @@ def compare_remap(txtfilename, logger):
         write_simple_fastq(simple_filename, simple_fastq_lines)
 
 if __name__ == '__main__':
+    logger = init_logging_console_only(logging.INFO)
+
     parser = argparse.ArgumentParser(
         description='Find the simplest test failure by trimming FASTQ files.')
 
@@ -259,7 +261,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    logger = init_logging_console_only(logging.INFO)
     filenames = glob.glob(os.path.join(args.workdir, args.pattern))
     filenames.sort()
     for txtfilename in filenames:

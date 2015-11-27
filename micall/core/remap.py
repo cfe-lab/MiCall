@@ -603,6 +603,7 @@ def map_to_reference(fastq1,
                    '-2', fastq2,
                    '--no-hd',  # no header lines (start with @)
                    '--local',
+                   '-X', '1200',
                    '-p', str(nthreads)]
 
     new_counts.clear()
