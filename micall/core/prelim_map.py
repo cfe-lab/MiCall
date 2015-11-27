@@ -25,6 +25,7 @@ from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 line_counter = LineCounter()
 
+
 def prelim_map(fastq1,
                fastq2,
                prelim_csv,
@@ -35,7 +36,7 @@ def prelim_map(fastq1,
                stderr=sys.stderr,
                gzip=False):
     """ Run the preliminary mapping step.
-    
+
     @param fastq1: the file name for the forward reads in FASTQ format
     @param fastq2: the file name for the reverse reads in FASTQ format
     @param prelim_csv: an open file object for the output file - all the reads
@@ -114,16 +115,16 @@ def prelim_map(fastq1,
                                            settings.read_gap_extend_prelim),
                    '--rfg', "{},{}".format(ref_gap_open_penalty,
                                            settings.ref_gap_extend_prelim),
-                   '--no-unal', # don't report reads that failed to align
-                   '--no-hd', # no header lines (start with @)
+                   '--no-unal',  # don't report reads that failed to align
+                   '--no-hd',  # no header lines (start with @)
                    '--local',
                    '-p', str(nthreads)]
 
     for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
-        if callback and i%1000 == 0:
+        if callback and i % 1000 == 0:
             callback(progress=i)
         refname = line.split('\t')[2]  # read was mapped to this reference
-        if not refname in output:
+        if refname not in output:
             output.update({refname: []})
         output[refname].append(line.split('\t')[:11])  # discard optional items
 
@@ -140,7 +141,7 @@ def prelim_map(fastq1,
                   'qual']
     writer = csv.DictWriter(prelim_csv, fieldnames, lineterminator=os.linesep)
     writer.writeheader()
-    
+
     # lines grouped by refname
     for refname, lines in output.iteritems():
         for line in lines:
@@ -149,12 +150,12 @@ def prelim_map(fastq1,
     if callback:
         # Track progress for second half
         callback(progress=total_reads)
-        
+
 
 def main():
     parser = argparse.ArgumentParser(
         description='Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
-    
+
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
     parser.add_argument('prelim_csv',
@@ -163,7 +164,7 @@ def main():
     parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
     parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
     parser.add_argument("--gzip", action='store_true', help="<optional> FASTQs are compressed")
-    
+
     args = parser.parse_args()
     prelim_map(fastq1=args.fastq1,
                fastq2=args.fastq2,
@@ -173,6 +174,5 @@ def main():
                gzip=args.gzip)  # defaults to False
 
 
-    
 if __name__ == '__main__':
     main()
