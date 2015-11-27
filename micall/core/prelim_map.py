@@ -117,7 +117,7 @@ def prelim_map(fastq1,
                                            settings.ref_gap_extend_prelim),
                    '--no-unal',  # don't report reads that failed to align
                    '--no-hd',  # no header lines (start with @)
-                   '--local',
+                   '-X', '1200',
                    '-p', str(nthreads)]
 
     for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
