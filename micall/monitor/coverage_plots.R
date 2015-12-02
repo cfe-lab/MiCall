@@ -115,9 +115,17 @@ prepare.plot <- function(
     
     # set up plot
     MAX_READS <- 2000000
+    indicator_width = xlim/50
     png(file=filename, width=400, height=300, type='cairo')
     par(family='sans', cex=1, mar=c(5,5,1,1))
-    plot(NA, xlim=c(1,xlim), ylim=c(1,MAX_READS), axes=FALSE, ann=FALSE, xaxs="r", log="y")
+    plot(
+            NA,
+            xlim=c(-indicator_width,xlim),
+            ylim=c(1,MAX_READS),
+            axes=FALSE,
+            ann=FALSE,
+            xaxs="r",
+            log="y")
     title(xlab=x.label, font.lab = 1.4, cex.lab=1.4, cex.main=1.4)
     
     # indicate key positions for this region
@@ -128,19 +136,19 @@ prepare.plot <- function(
                 col='#cccccc',
                 border=NA)
     }
-    rect(   -1, 0.5,
+    rect(   -indicator_width, 0.5,
             0, coverage.levels$red,
             col='black',
             border=NA)
-    rect(   -1, coverage.levels$red,
+    rect(   -indicator_width, coverage.levels$red,
             0, coverage.levels$yellow,
             col='red',
             border=NA)
-    rect(   -1, coverage.levels$yellow,
+    rect(   -indicator_width, coverage.levels$yellow,
             0, coverage.levels$green,
             col='yellow',
             border=NA)
-    rect(   -1, coverage.levels$green,
+    rect(   -indicator_width, coverage.levels$green,
             0, MAX_READS,
             col='green',
             border=NA)
@@ -293,7 +301,7 @@ for (i in seq_along(coverage)) {
         axis(2, at=c(1E1, 1E2, 1E3, 1E4, 1E5, 1E6), labels=c('10', '100', '1000', '10,000', '100,000', '1,000,000'), las=2)
         box()
         
-        text(x=max(df$refseq.aa.pos)/2, y=1900000, label=paste(region), cex=0.7, col='grey30', adj=c(0.5, 0.5))
+        text(x=xlim/2, y=1900000, label=paste(region), cex=0.7, col='grey30', adj=c(0.5, 0.5))
         
         garbage <- dev.off()
     }
