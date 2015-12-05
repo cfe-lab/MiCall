@@ -501,6 +501,7 @@ def remap(fastq1,
     remap_writer.writeheader()
     if new_counts:
         splitter = MixedReferenceSplitter()
+        split_counts = Counter()
         # At least one read was mapped, so samfile has relevant data
         with open(samfile, 'rU') as f:
             for fields in splitter.split(f):
@@ -520,9 +521,10 @@ def remap(fastq1,
                                                rdgopen,
                                                rfgopen,
                                                nthreads,
-                                               new_counts,
+                                               split_counts,
                                                stderr,
                                                callback)
+            new_counts.update(split_counts)
             with open(samfile, 'rU') as f:
                 for fields in splitter.walk(f):
                     remap_writer.writerow(dict(zip(fieldnames, fields)))
