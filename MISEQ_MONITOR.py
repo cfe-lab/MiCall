@@ -98,7 +98,7 @@ def post_files(files, destination):
         execute_command(['rsync', '-a', f, '{}/{}'.format(destination, os.path.basename(f))])
 
 
-def download_quality(run_info_path, destination, read_lengths):
+def download_quality(run_info_path, destination, read_lengths, index_lengths):
     """ Download quality control data for the run.
 
     @return the QC run id as a string
@@ -140,7 +140,7 @@ def download_quality(run_info_path, destination, read_lengths):
                                          cycle=report_cycle,
                                          errorrate=errorrate))
                     report_cycle += sign
-                expected_cycle += 16
+                expected_cycle += sum(index_lengths)
     return qcRunId
 
 
@@ -241,6 +241,11 @@ def upload_data(root, run_folder):
             # parse run information from SampleSheet
             run_info = sample_sheet_parser(sample_sheet)
             read_lengths = run_info['Reads']
+            entry = run_info['Data'].values()[0]
+            indexes = [entry.get('index', ''), entry.get('index2', '')]
+            while 'X' in indexes:
+                indexes.remove('X')
+            index_lengths = map(len, indexes)
     except Exception:
         failure_message = mark_run_as_disabled(root,
                                                "Parsing sample sheet failed",
@@ -296,7 +301,8 @@ def upload_data(root, run_folder):
         quality_csv = os.path.join(settings.home, run_name, 'quality.csv')
         download_quality(run_info_path=os.path.join(root, 'RunInfo.xml'),
                          destination=quality_csv,
-                         read_lengths=read_lengths)
+                         read_lengths=read_lengths,
+                         index_lengths=index_lengths)
     except StandardError:
         failure_message = mark_run_as_disabled(root,
                                                "Quality could not be downloaded.",

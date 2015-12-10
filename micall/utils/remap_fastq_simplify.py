@@ -38,12 +38,11 @@ def test(reads, simple_filename):
 
 
 def test_file(simple_filename):
-    ns3_coverage68 = remap68(simple_filename, do_counts=True)
-    ns3_coverage70 = remap70(simple_filename, do_counts=True)
-    if ns3_coverage70 >= ns3_coverage68 * 0.979:
-        print '6.8: {}, 7.0: {}'.format(ns3_coverage68, ns3_coverage70)
+    e2_gaplevel_68 = remap68(simple_filename, do_counts=True)
+    e2_gaplevel_70 = remap70(simple_filename, do_counts=True)
+    print '6.8: {}, 7.0: {}'.format(e2_gaplevel_68, e2_gaplevel_70)
+    if e2_gaplevel_68 < 0.5 or e2_gaplevel_70 > 0.01:
         return 'PASS'
-    print '6.8: {}, 7.0: {}'.format(ns3_coverage68, ns3_coverage70)
     return 'FAIL'
 
 
@@ -55,7 +54,7 @@ def remap68(fastq1_filename, do_counts=False):
     remap_filename = os.path.join(workdir, 'temp68.remap.csv')
     remap_counts_filename = os.path.join(workdir, 'temp68.remap_counts.csv')
     aligned_filename = os.path.join(workdir, 'temp68.aligned.csv')
-    nuc_filename = os.path.join(workdir, 'temp68.nuc.csv')
+    amino_filename = os.path.join(workdir, 'temp68.amino.csv')
     subprocess.check_call([os.path.join(rundir, 'prelim_map.py'),
                            fastq1_filename,
                            fastq2_filename,
@@ -81,14 +80,31 @@ def remap68(fastq1_filename, do_counts=False):
                           cwd=rundir)
     subprocess.check_call([os.path.join(rundir, 'aln2counts.py'),
                            aligned_filename,
-                           nuc_filename,
                            os.devnull,
+                           amino_filename,
                            os.devnull,
                            os.devnull,
                            os.devnull,
                            os.devnull],
                           cwd=rundir)
-    return get_gene_coverage(nuc_filename, 'NS3')
+    return get_gap_level(amino_filename, 'E2', 14)
+
+
+def get_gap_level(amino_filename, gene_name, pos):
+    gene_suffix = '-' + gene_name
+    counts = Counter()  # {pos: count}
+    with open(amino_filename, 'rU') as amino_csv:
+        reader = DictReader(amino_csv)
+        for row in reader:
+            if row['region'].endswith(gene_suffix):
+                amino_total = sum(map(int, (row[nuc]
+                                            for nuc in 'ACDEFGHIKLMNPQRSTVWY*')))
+                amino_pos = int(row['refseq.aa.pos'])
+                counts[amino_pos] += amino_total
+    neighbour_average = (counts[pos-1] + counts[pos+1]) * 0.5
+    if neighbour_average == 0:
+        return float('inf')
+    return counts[pos] / neighbour_average
 
 
 def get_gene_coverage(nuc_filename, gene_name):
@@ -141,12 +157,14 @@ def remap70(fastq1_filename, do_counts=False):
     remap_counts_filename = os.path.join(workdir, 'temp70.remap_counts.csv')
     aligned_filename = os.path.join(workdir, 'temp70.aligned.csv')
     nuc_filename = os.path.join(workdir, 'temp70.nuc.csv')
+    amino_filename = os.path.join(workdir, 'temp70.amino.csv')
     failed_align_filename = os.path.join(workdir, 'temp70.failed_align.csv')
     with open(prelim_filename, 'w+') as prelim_csv, \
             open(remap_filename, 'w+') as remap_csv, \
             open(remap_counts_filename, 'w+') as remap_counts_csv, \
             open(aligned_filename, 'w+') as aligned_csv, \
             open(nuc_filename, 'w+') as nuc_csv, \
+            open(amino_filename, 'w+') as amino_csv, \
             open(failed_align_filename, 'w+') as failed_align_csv, \
             open(os.devnull, 'w+') as real_devnull:
         devnull = DevNullWrapper(real_devnull)
@@ -168,12 +186,12 @@ def remap70(fastq1_filename, do_counts=False):
         aligned_csv.seek(0)
         aln2counts(aligned_csv,
                    nuc_csv,
-                   devnull,
+                   amino_csv,
                    devnull,
                    devnull,
                    devnull,
                    devnull)
-    return get_gene_coverage(nuc_filename, 'NS3')
+    return get_gap_level(amino_filename, 'E2', 14)
 
 
 def ddmin(reads, simple_filename):
@@ -197,6 +215,7 @@ def ddmin(reads, simple_filename):
 
             if result == "FAIL":
                 reads = complement
+                write_simple_fastq(simple_filename + '.failed', reads)
                 offset = (i+offset) % n
                 n = max(n - 1, 2)
                 some_complement_is_failing = True
@@ -250,6 +269,8 @@ def compare_remap(txtfilename, logger):
 
 if __name__ == '__main__':
     logger = init_logging_console_only(logging.INFO)
+    test_file('/home/don/git/MiCall/micall/tests/working/61515A-HCV_S1_uncensored1.fastq')
+    exit()
 
     parser = argparse.ArgumentParser(
         description='Find the simplest test failure by trimming FASTQ files.')
