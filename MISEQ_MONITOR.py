@@ -242,7 +242,7 @@ def upload_data(root, run_folder):
             run_info = sample_sheet_parser(sample_sheet)
             read_lengths = run_info['Reads']
             entry = run_info['Data'].values()[0]
-            indexes = [entry.get('index', ''), entry.get('index2', '')]
+            indexes = [entry.get('index1', ''), entry.get('index2', '')]
             while 'X' in indexes:
                 indexes.remove('X')
             index_lengths = map(len, indexes)
