@@ -39,7 +39,10 @@ logger = None
 
 def init_logging(log_file):
     try:
-        logger = miseq_logging.init_logging(log_file, file_log_level=logging.DEBUG, console_log_level=logging.INFO)
+        logger = miseq_logging.init_logging(log_file,
+                                            file_log_level=logging.INFO,
+                                            console_log_level=logging.INFO)
+        logging.getLogger('urllib3.connectionpool').setLevel(logging.WARN)
     except Exception as e:
         raise Exception("Couldn't setup logging (init_logging() threw exception '{}') - HALTING NOW!".format(str(e)))
     return logger
