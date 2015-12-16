@@ -17,17 +17,15 @@ import sched
 import shutil
 import subprocess
 import sys
-import tarfile
 import time
 from xml.etree import ElementTree
-
-from kiveapi import KiveAPI
 
 from micall.core import miseq_logging
 from micall.monitor import qai_helper
 from micall.utils.sample_sheet_parser import sample_sheet_parser
 import micall.settings as settings
 from micall.monitor import update_qai
+from micall.monitor.kive_download import download_results, kive_login
 
 
 if sys.version_info[:2] != (2, 7):
@@ -42,7 +40,6 @@ def init_logging(log_file):
         logger = miseq_logging.init_logging(log_file,
                                             file_log_level=logging.INFO,
                                             console_log_level=logging.INFO)
-        logging.getLogger('urllib3.connectionpool').setLevel(logging.WARN)
     except Exception as e:
         raise Exception("Couldn't setup logging (init_logging() threw exception '{}') - HALTING NOW!".format(str(e)))
     return logger
@@ -151,9 +148,9 @@ def download_quality(run_info_path, destination, read_lengths, index_lengths):
 
 logger = init_logging(settings.home + '/MISEQ_MONITOR_OUTPUT.log')
 
-KiveAPI.SERVER_URL = settings.kive_server_url
-kive = KiveAPI(verify=False)
-kive.login(settings.kive_user, settings.kive_password)
+kive = kive_login(settings.kive_server_url,
+                  settings.kive_user,
+                  settings.kive_password)
 
 # retrieve Pipeline object based on version
 pipeline = kive.get_pipeline(settings.pipeline_version_kive_id)
@@ -358,79 +355,6 @@ def launch_runs(fastqs, quality_input, run_name):
     return kive_runs
 
 
-def download_results(kive_runs, root, run_folder):
-    """ Retrieve pipeline output files from Kive
-
-    :param kive_runs: a list of sample names and RunStatus objects, in tuples
-        [(sample_name, run_status)]
-    :param root: the path to the root folder of the run where the results
-        should be copied
-    :param run_folder: the local folder that will hold working files.
-    :return: a failure message if anything went wrong
-    """
-    if not settings.production:
-        results_folder = os.path.join(run_folder, 'results')
-    else:
-        results_parent = os.path.join(root, 'Results')
-        if not os.path.exists(results_parent):
-            os.mkdir(results_parent)
-        results_folder = os.path.join(results_parent,
-                                      'version_' + settings.pipeline_version)
-    if not os.path.exists(results_folder):
-        os.mkdir(results_folder)
-    tar_path = os.path.join(run_folder, 'coverage_maps.tar')
-    untar_path = os.path.join(run_folder, 'untar')
-    coverage_source_path = os.path.join(untar_path, 'coverage_maps')
-    coverage_dest_path = os.path.join(results_folder, 'coverage_maps')
-    os.mkdir(untar_path)
-    os.mkdir(coverage_source_path)
-    os.mkdir(coverage_dest_path)
-
-    for i, (sample_name, kive_run) in enumerate(kive_runs):
-        outputs = kive_run.get_results()
-        output_names = ['remap_counts',
-                        'conseq',
-                        'conseq_ins',
-                        'failed_read',
-                        'nuc',
-                        'amino',
-                        'coord_ins',
-                        'failed_align',
-                        'nuc_variants',
-                        'g2p',
-                        'coverage_scores',
-                        'coverage_maps_tar']
-        for output_name in output_names:
-            dataset = outputs.get(output_name, None)
-            if not dataset:
-                continue
-            if not output_name.endswith('_tar'):
-                filename = os.path.join(results_folder, output_name + '.csv')
-                with open(filename, 'a') as result_file:
-                    for j, line in enumerate(dataset.readlines()):
-                        if i == 0 and j == 0:
-                            result_file.write('sample,' + line)
-                        elif j != 0:
-                            result_file.write(sample_name + ',' + line)
-            else:
-                with open(tar_path, 'wb') as f:
-                    dataset.download(f)
-                with tarfile.open(tar_path) as tar:
-                    tar.extractall(untar_path)
-                for image_filename in os.listdir(coverage_source_path):
-                    source = os.path.join(coverage_source_path, image_filename)
-                    destination = os.path.join(coverage_dest_path, sample_name + '.' + image_filename)
-                    os.rename(source, destination)
-
-    os.rmdir(coverage_source_path)
-    os.rmdir(untar_path)
-    os.remove(tar_path)
-
-    if settings.production:
-        update_qai.process_folder(results_folder, logger)
-    mark_run_as_done(results_folder)
-
-
 def main():
     global logger
     processed_runs = set()
@@ -501,7 +425,20 @@ def main():
             continue
 
         try:
-            download_results(kive_runs, root, run_folder)
+            if not settings.production:
+                results_folder = os.path.join(run_folder, 'results')
+            else:
+                results_parent = os.path.join(root, 'Results')
+                if not os.path.exists(results_parent):
+                    os.mkdir(results_parent)
+                results_folder = os.path.join(results_parent,
+                                              'version_' + settings.pipeline_version)
+            if not os.path.exists(results_folder):
+                os.mkdir(results_folder)
+            download_results(kive_runs, results_folder, run_folder)
+            if settings.production:
+                update_qai.process_folder(results_folder, logger)
+            mark_run_as_done(results_folder)
             logger.info("===== %s file transfer completed =====", run_name)
         except:
             failure_message = mark_run_as_disabled(

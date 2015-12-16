@@ -27,9 +27,13 @@ def init_logging_console_only(log_level=logging.DEBUG):
     logger.setLevel(logging.DEBUG)
     console_logger = logging.StreamHandler(sys.stdout)
     console_logger.setLevel(log_level)
-    formatter = Timestamp('%(asctime)s - [%(levelname)s] %(message)s', datefmt="%Y-%m-%d %H:%M:%S.%f")
+    formatter = Timestamp('%(asctime)s - [%(levelname)s](%(name)s) %(message)s', datefmt="%Y-%m-%d %H:%M:%S.%f")
     console_logger.setFormatter(formatter)
     logger.addHandler(console_logger)
+
+    # Quiet the urllib3 logger
+    connection_logger = logging.getLogger('urllib3.connectionpool')
+    connection_logger.setLevel(logging.ERROR)
     return logger
 
 
@@ -54,7 +58,8 @@ def init_logging(logging_path, file_log_level=logging.DEBUG, console_log_level=l
     console_logger.setLevel(console_log_level)
 
     # Format the handlers
-    formatter = Timestamp('%(asctime)s - [%(levelname)s] %(message)s', datefmt="%Y-%m-%d %H:%M:%S.%f")
+    formatter = Timestamp('%(asctime)s - [%(levelname)s](%(name)s) %(message)s',
+                          datefmt="%Y-%m-%d %H:%M:%S.%f")
     console_logger.setFormatter(formatter)
     file_logger.setFormatter(formatter)
     logger.addHandler(console_logger)
@@ -62,7 +67,7 @@ def init_logging(logging_path, file_log_level=logging.DEBUG, console_log_level=l
 
     # Quiet the urllib3 logger
     connection_logger = logging.getLogger('urllib3.connectionpool')
-    connection_logger.setLevel(logging.WARN)
+    connection_logger.setLevel(logging.ERROR)
 
     return logger
 

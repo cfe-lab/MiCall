@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-
 # Script to update QAI with information from the
 # collated_conseqs.csv files produced by the MiSeq pipeline.
+# To execute as a script, run python -m micall.monitor.update_qai
 
 import csv
 from datetime import datetime
