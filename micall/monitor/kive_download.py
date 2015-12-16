@@ -1,16 +1,17 @@
 # To run this as a script, use python -m micall.monitor.kive_download
 
-import os
-import tarfile
 from argparse import ArgumentParser
+import logging
+import os
+import shutil
+import tarfile
 
 from kiveapi import KiveAPI
-from requests.adapters import HTTPAdapter
 from kiveapi.runstatus import RunStatus
+from requests.adapters import HTTPAdapter
 
 from micall.settings import kive_server_url, kive_user, kive_password, home
 from micall.core.miseq_logging import init_logging
-import shutil
 
 
 def kive_login(server_url, user, password):
@@ -105,7 +106,9 @@ def find_old_runs(kive, **kwargs):
 
 
 def main():
-    logger = init_logging(os.path.join(home, 'kive_download.log'))
+    logger = init_logging(os.path.join(home, 'kive_download.log'),
+                          file_log_level=logging.INFO,
+                          console_log_level=logging.INFO)
     parser = ArgumentParser(description='Download runs from Kive.')
     parser.add_argument('--startafter',
                         '-a',

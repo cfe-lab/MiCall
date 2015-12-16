@@ -32,7 +32,7 @@ def init_logging_console_only(log_level=logging.DEBUG):
     logger.addHandler(console_logger)
 
     # Quiet the urllib3 logger
-    connection_logger = logging.getLogger('urllib3.connectionpool')
+    connection_logger = logging.getLogger('requests.packages.urllib3.connectionpool')
     connection_logger.setLevel(logging.ERROR)
     return logger
 
@@ -66,7 +66,7 @@ def init_logging(logging_path, file_log_level=logging.DEBUG, console_log_level=l
     logger.addHandler(file_logger)
 
     # Quiet the urllib3 logger
-    connection_logger = logging.getLogger('urllib3.connectionpool')
+    connection_logger = logging.getLogger('requests.packages.urllib3.connectionpool')
     connection_logger.setLevel(logging.ERROR)
 
     return logger
