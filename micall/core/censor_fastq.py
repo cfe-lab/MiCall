@@ -53,14 +53,28 @@ def censor(original_file, bad_cycles_reader, censored_file, use_gzip=True):
         read_direction = read_fields[0]
         cycle_sign = 1 if read_direction == '1' else -1
         dest.write(ident)
+        bad_count = 0
         for cycle, base in enumerate(seq.rstrip(), start=1):
             cycle = math.copysign(cycle, cycle_sign)
-            dest.write('N' if (tile, cycle) in bad_cycles else base)
+            if (tile, cycle) in bad_cycles:
+                bad_count += 1
+            else:
+                if bad_count:
+                    dest.write('N' * bad_count)
+                    bad_count = 0
+                dest.write(base)
         dest.write('\n')
         dest.write(opt)
+        bad_count = 0
         for cycle, score in enumerate(qual.rstrip(), start=1):
             cycle = math.copysign(cycle, cycle_sign)
-            dest.write('#' if (tile, cycle) in bad_cycles else score)
+            if (tile, cycle) in bad_cycles:
+                bad_count += 1
+            else:
+                if bad_count:
+                    dest.write('#' * bad_count)
+                    bad_count = 0
+                dest.write(score)
         dest.write('\n')
 
 

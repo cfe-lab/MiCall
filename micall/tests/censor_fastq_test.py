@@ -45,6 +45,23 @@ AA#A
 
         self.assertMultiLineEqual(expected_text, self.censored_file.getvalue())
 
+    def testBadTail(self):
+        self.bad_cycles = [{'tile': '1101', 'cycle': '3'},
+                           {'tile': '1101', 'cycle': '4'}]
+        expected_text = """\
+@M01841:45:000000000-A5FEG:1:1101:5296:13227 1:N:0:9
+AC
++
+AA
+"""
+
+        censor_fastq.censor(self.original_file,
+                            self.bad_cycles,
+                            self.censored_file,
+                            use_gzip=False)
+
+        self.assertMultiLineEqual(expected_text, self.censored_file.getvalue())
+
     def testDifferentTile(self):
         self.bad_cycles = [{'tile': '1102', 'cycle': '3'}]
         expected_text = self.original_text
