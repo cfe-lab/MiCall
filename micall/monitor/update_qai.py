@@ -1,5 +1,5 @@
 # Script to update QAI with information from the
-# collated_conseqs.csv files produced by the MiSeq pipeline.
+# conseq.csv files produced by the MiSeq pipeline.
 # To execute as a script, run python -m micall.monitor.update_qai
 
 import csv
@@ -26,7 +26,7 @@ def parse_args():
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--result_folder",
                        "-r",
-                       help="Result folder that holds collated_conseqs.csv file")
+                       help="Result folder that holds the conseq.csv file")
     group.add_argument("--load_all",
                        "-a",
                        action="store_true",

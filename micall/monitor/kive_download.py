@@ -124,6 +124,16 @@ def main():
                         help='Result folder to copy result files to.')
 
     args = parser.parse_args()
+    if args.workfolder or args.resultfolder:
+        if not args.workfolder:
+            parser.error('argument --workfolder is required with --resultfolder')
+        if not args.resultfolder:
+            parser.error('argument --resultfolder is required with --workfolder')
+        if not os.path.isdir(args.workfolder):
+            os.makedirs(args.workfolder)
+        if not os.path.isdir(args.resultfolder):
+            os.makedirs(args.resultfolder)
+
     logger.info('Starting.')
     kive = kive_login(kive_server_url,
                       kive_user,
@@ -145,14 +155,6 @@ def main():
         print('  ' + sample_name)
         print('  {} - {}'.format(start_time, end_time))
     if args.workfolder or args.resultfolder:
-        if not args.workfolder:
-            parser.error('argument --workfolder is required with --resultfolder')
-        if not args.resultfolder:
-            parser.error('argument --resultfolder is required with --workfolder')
-        if not os.path.isdir(args.workfolder):
-            os.makedirs(args.workfolder)
-        if not os.path.isdir(args.resultfolder):
-            os.makedirs(args.resultfolder)
         download_results(runs, args.resultfolder, args.workfolder)
     logger.info('%d runs found (%d unfinished).', len(runs), unfinished_count)
 
