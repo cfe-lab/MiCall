@@ -39,7 +39,8 @@ def download_results(kive_runs, results_folder, run_folder):
         os.mkdir(coverage_source_path)
     os.mkdir(coverage_dest_path)
 
-    for i, (sample_name, kive_run) in enumerate(kive_runs):
+    printed_headers = set()
+    for sample_name, kive_run in kive_runs:
         outputs = kive_run.get_results()
         output_names = ['remap_counts',
                         'conseq',
@@ -61,9 +62,11 @@ def download_results(kive_runs, results_folder, run_folder):
                 filename = os.path.join(results_folder, output_name + '.csv')
                 with open(filename, 'a') as result_file:
                     for j, line in enumerate(dataset.readlines()):
-                        if i == 0 and j == 0:
-                            result_file.write('sample,' + line)
-                        elif j != 0:
+                        if j == 0:
+                            if output_name not in printed_headers:
+                                result_file.write('sample,' + line)
+                                printed_headers.add(output_name)
+                        else:
                             result_file.write(sample_name + ',' + line)
             else:
                 with open(tar_path, 'wb') as f:
