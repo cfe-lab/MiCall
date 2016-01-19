@@ -8,10 +8,11 @@ from micall.core import miseq_logging
 
 logger = miseq_logging.init_logging_console_only(logging.INFO)
 
+
 class Session(requests.Session):
     def login(self, qai_path, qai_user, password):
         """ Login to QAI before calling post_json or get_json.
-        
+
         @raise RuntimeError: when the QAI server rejects the user and password.
         """
         self.qai_path = qai_path
@@ -24,6 +25,9 @@ class Session(requests.Session):
 
     def _retry_json(self, method, path, data=None, retries=3):
         json_data = data and json.dumps(data)
+        headers = {'Accept': 'application/json'}
+        if json_data:
+            headers['Content-Type'] = 'application/json'
         retries_remaining = retries
         average_delay = 20
         while True:
@@ -31,8 +35,7 @@ class Session(requests.Session):
                 response = method(
                     self.qai_path + path,
                     data=json_data,
-                    headers={'Content-Type': 'application/json',
-                             'Accept': 'application/json'})
+                    headers=headers)
                 response.raise_for_status()
                 return response.json()
             except StandardError:
@@ -51,20 +54,20 @@ class Session(requests.Session):
                 time.sleep(sleep_seconds)
                 retries_remaining -= 1
                 average_delay += 600
-    
+
     def post_json(self, path, data, retries=3):
         """ Post a JSON object to the web server, and return a JSON object.
-        
+
         @param path the relative path to add to the qai_path used in login()
         @param data a JSON object that will be converted to a JSON string
         @param retries: the number of times to retry the request before failing.
         @return the response body, parsed as a JSON object
         """
         return self._retry_json(self.post, path, data, retries)
-    
+
     def get_json(self, path, retries=3):
         """ Get a JSON object from the web server.
-        
+
         @param session an open HTTP session
         @param path the relative path to add to settings.qai_path
         @param retries: the number of times to retry the request before failing.

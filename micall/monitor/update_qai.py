@@ -322,7 +322,7 @@ def find_pipeline_id(session):
     @return: the pipeline id.
     """
     pipelines = session.get_json(
-        "/lab_miseq_pipelines.json?version=" + settings.pipeline_version)
+        "/lab_miseq_pipelines?version=" + settings.pipeline_version)
     rowcount = len(pipelines)
     if rowcount == 0:
         raise RuntimeError("No pipeline found with version {!r}.".format(
