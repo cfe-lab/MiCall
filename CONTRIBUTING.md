@@ -343,7 +343,7 @@ similar steps to setting up a development workstation. Follow these steps:
         git fetch
         git checkout tags/vX.Y
 
-14. Review the settings just as you did in the
+14. Review the settings and host file just as you did in the
     development environment, but make sure that `production = True`.
 15. Start the monitor, and tail the log to see that it begins processing all the
     runs with the new version of the pipeline.
