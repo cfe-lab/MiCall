@@ -296,26 +296,34 @@ similar steps to setting up a development workstation. Follow these steps:
     matches the version you used in `settings_default.py`. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
     so on. Mark the release as pre-release until you finish deploying it.
-7. Get the code from Github into the server's development environment.
+7. Stop the `MISEQ_MONITOR.py` process after you check that it's not processing
+    any runs.
+
+        ssh user@server
+        tail /data/miseq/MISEQ_MONITOR_OUTPUT.log
+        ps aux|grep MISEQ_MONITOR.py
+        sudo kill -9 <process id from grep output>
+
+8. Get the code from Github into the server's development environment.
 
         ssh user@server
         cd /usr/local/share/miseq/development/
         git fetch
         git checkout tags/vX.Y
 
-8. Check if you need to set any new settings by running
+9. Check if you need to set any new settings by running
     `diff settings_default.py settings.py`. You will probably need to modify
     the version number, at least. Make sure that `production = False`, and the
     process counts are half the production values. Do the same comparison of
     `hostfile`.
-9. Check if the gotoh package is up to date. If not, install it.
+10. Check if the gotoh package is up to date. If not, install it.
 
         cd /usr/local/share/miseq/development/micall/alignment
         pip show gotoh
         cat setup.py  # compare version numbers
         sudo python setup.py install
 
-10. Check that the kiveapi package is the same version you tested with. If not,
+11. Check that the kiveapi package is the same version you tested with. If not,
     get the latest code and install it.
 
         cd /usr/local/share/py-kive-api
@@ -323,18 +331,10 @@ similar steps to setting up a development workstation. Follow these steps:
         git checkout tags/vM.N
         sudo python setup.py install
 
-11. Process one full run of data.
+12. Process one full run of data.
 
         cd /usr/local/share/miseq/development/
         ./run_processor.py /data/miseq/YYMMDD*
-
-12. Stop the `MISEQ_MONITOR.py` process after you check that it's not processing
-    any runs.
-
-        ssh user@server
-        tail /data/miseq/MISEQ_MONITOR_OUTPUT.log
-        ps aux|grep MISEQ_MONITOR.py
-        sudo kill -9 <process id from grep output>
 
 13. Get the code from Github into the server's production environment.
 
