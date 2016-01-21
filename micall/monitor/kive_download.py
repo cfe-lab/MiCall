@@ -14,6 +14,25 @@ from micall.settings import kive_server_url, kive_user, kive_password, home
 from micall.core.miseq_logging import init_logging
 
 
+def parse_args():
+    parser = ArgumentParser(description='Download runs from Kive.')
+    parser.add_argument('--startafter', '-a', help='Old runs start after "DD Mon YYYY HH:MM".')
+    parser.add_argument('--startbefore', '-b', help='Old runs start before "DD Mon YYYY HH:MM".')
+    parser.add_argument('--workfolder', '-w', help='Work folder to download temporary files to.')
+    parser.add_argument('--resultfolder', '-r', help='Result folder to copy result files to.')
+    args = parser.parse_args()
+    if args.workfolder or args.resultfolder:
+        if not args.workfolder:
+            parser.error('argument --workfolder is required with --resultfolder')
+        if not args.resultfolder:
+            parser.error('argument --resultfolder is required with --workfolder')
+        if not os.path.isdir(args.workfolder):
+            os.makedirs(args.workfolder)
+        if not os.path.isdir(args.resultfolder):
+            os.makedirs(args.resultfolder)
+    return args
+
+
 def kive_login(server_url, user, password):
     kive = KiveAPI(server_url)
     kive.mount('https://', HTTPAdapter(max_retries=20))
@@ -112,30 +131,7 @@ def main():
     logger = init_logging(os.path.join(home, 'kive_download.log'),
                           file_log_level=logging.INFO,
                           console_log_level=logging.INFO)
-    parser = ArgumentParser(description='Download runs from Kive.')
-    parser.add_argument('--startafter',
-                        '-a',
-                        help='Old runs start after "DD Mon YYYY HH:MM".')
-    parser.add_argument('--startbefore',
-                        '-b',
-                        help='Old runs start before "DD Mon YYYY HH:MM".')
-    parser.add_argument('--workfolder',
-                        '-w',
-                        help='Work folder to download temporary files to.')
-    parser.add_argument('--resultfolder',
-                        '-r',
-                        help='Result folder to copy result files to.')
-
-    args = parser.parse_args()
-    if args.workfolder or args.resultfolder:
-        if not args.workfolder:
-            parser.error('argument --workfolder is required with --resultfolder')
-        if not args.resultfolder:
-            parser.error('argument --resultfolder is required with --workfolder')
-        if not os.path.isdir(args.workfolder):
-            os.makedirs(args.workfolder)
-        if not os.path.isdir(args.resultfolder):
-            os.makedirs(args.resultfolder)
+    args = parse_args()
 
     logger.info('Starting.')
     kive = kive_login(kive_server_url,
