@@ -26,6 +26,7 @@ from micall.utils.sample_sheet_parser import sample_sheet_parser
 import micall.settings as settings
 from micall.monitor import update_qai
 from micall.monitor.kive_download import download_results, kive_login
+import hashlib
 
 
 if sys.version_info[:2] != (2, 7):
@@ -216,6 +217,29 @@ def trim_run_name(run_name):
     return '_'.join(run_name.split('_')[:2])
 
 
+def upload_dataset(filename, description):
+    dataset_name = os.path.basename(filename)
+    CHUNK_SIZE = 4096
+    hash = hashlib.md5()
+    with open(filename, 'rb') as f:
+        for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
+            hash.update(chunk)
+        checksum = hash.hexdigest()
+        datasets = kive.find_datasets(dataset_name=dataset_name, md5=checksum)
+        needed_groups = set(settings.kive_groups_allowed)
+        for dataset in datasets:
+            missing_groups = needed_groups - set(dataset.groups_allowed)
+            if not missing_groups:
+                return datasets[0]
+
+        f.seek(0)
+        dataset = kive.add_dataset(name=dataset_name,
+                                   description=description,
+                                   handle=f,
+                                   groups=settings.kive_groups_allowed)
+    return dataset
+
+
 def upload_data(root, run_folder):
     """ Upload FASTQ files and quality to Kive.
 
@@ -286,19 +310,15 @@ def upload_data(root, run_folder):
             sample,
             snum,
             trimmed_run_name)
-        R1_obj = kive.add_dataset(name=filename,
-                                  description='R1 ' + description,
-                                  handle=open(R1_file, 'rb'),
-                                  groups=settings.kive_groups_allowed)
-        R2_obj = kive.add_dataset(name=os.path.basename(R2_file),
-                                  description='R2 ' + description,
-                                  handle=open(R2_file, 'rb'),
-                                  groups=settings.kive_groups_allowed)
+        R1_obj = upload_dataset(R1_file, 'R1 ' + description)
+        R2_obj = upload_dataset(R2_file, 'R2 ' + description)
         fastqs.append(((sample + '_' + snum), R1_obj, R2_obj))
 
     # generate quality.csv
     try:
-        quality_csv = os.path.join(settings.home, run_name, 'quality.csv')
+        quality_csv = os.path.join(settings.home,
+                                   run_name,
+                                   '{}_quality.csv'.format(trimmed_run_name))
         download_quality(run_info_path=os.path.join(root, 'RunInfo.xml'),
                          destination=quality_csv,
                          read_lengths=read_lengths,
@@ -310,12 +330,9 @@ def upload_data(root, run_folder):
         return fastqs, failure_message, quality_input
 
     # transfer quality.csv with Kive API
-    quality_input = kive.add_dataset(
-        name='%s_quality.csv' % (trimmed_run_name, ),
-        description='phiX174 quality per tile and cycle for run ' + run_name,
-        handle=open(quality_csv, 'rU'),
-        cdt=quality_cdt,
-        groups=settings.kive_groups_allowed)
+    quality_input = upload_dataset(
+        quality_csv,
+        'phiX174 quality per tile and cycle for run ' + run_name)
     return fastqs, failure_message, quality_input
 
 

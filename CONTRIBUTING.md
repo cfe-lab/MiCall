@@ -97,7 +97,10 @@ On Windows, you can install [Anaconda Python][anaconda].
 
         sudo apt-get install build-essential python-dev libcurl4-openssl-dev libcrypto++-dev libssl-dev
 
-7. Download the latest [source for HyPhy][hyphy]. Right click the zip file and choose Expand Here. Then run the setup script:
+4. There is a newer package for HyPhy in the
+    [hyphy-python project][hyphy-python]. Consider testing that before the next
+    installation, but so far we've just downloaded the latest source.
+5. Download the latest [source for HyPhy][hyphy]. Right click the zip file and choose Expand Here. Then run the setup script:
 
         cd ~/Downloads/hyphy-master/src/lib
         sudo python setup.py install
