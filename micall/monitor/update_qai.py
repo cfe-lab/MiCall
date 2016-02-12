@@ -9,13 +9,12 @@ import logging
 from operator import itemgetter
 import os
 
-from micall.core import miseq_logging
 import qai_helper
 from micall.utils import sample_sheet_parser
 from micall import settings
 from micall.core.project_config import ProjectConfig
 
-logger = miseq_logging.init_logging_console_only(logging.INFO)
+logger = logging.getLogger('update_qai')
 
 
 def parse_args():
@@ -346,7 +345,7 @@ def load_ok_sample_regions(result_folder):
     return ok_sample_regions
 
 
-def process_folder(result_folder, logger):
+def process_folder(result_folder):
     logger.info('Uploading data to Oracle from {}'.format(result_folder))
     collated_conseqs = os.path.join(result_folder, 'conseq.csv')
     collated_counts = os.path.join(result_folder, 'remap_counts.csv')
@@ -388,7 +387,7 @@ def main():
     args, parser = parse_args()
 
     if args.result_folder:
-        process_folder(args.result_folder, logger)
+        process_folder(args.result_folder)
     elif not args.load_all:
         parser.print_usage()
         exit(0)
@@ -408,7 +407,7 @@ def main():
 
             if os.path.exists(result_path):
                 try:
-                    process_folder(result_path, logger)
+                    process_folder(result_path)
                 except:
                     logger.error('Failed to process %s',
                                  result_path,
