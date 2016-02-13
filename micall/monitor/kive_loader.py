@@ -12,6 +12,8 @@ from xml.etree import ElementTree
 from micall import settings
 from micall.monitor import qai_helper, update_qai
 from micall.monitor.kive_download import kive_login, download_results
+import sys
+from datetime import datetime, timedelta
 
 MAX_RUN_NAME_LENGTH = 60
 logger = logging.getLogger("kive_loader")
@@ -20,7 +22,19 @@ logger = logging.getLogger("kive_loader")
 class KiveLoader(object):
     RunInfo = namedtuple('RunInfo', 'miseq_run_id read_lengths indexes_length')
 
-    def __init__(self):
+    def __init__(self,
+                 launch_limit=sys.maxint,
+                 status_delay=30,
+                 folder_delay=3600):
+        """ Prepare an instance.
+
+        @param launch_limit: the maximum number active runs
+        @param status_delay: seconds delay between checking status of all runs
+        @param folder_delay: seconds delay between scanning for new folders
+        """
+        self.launch_limit = launch_limit
+        self.status_delay = status_delay
+        self.folder_delay = folder_delay
         self.folders = None
         self.kive = None
         self.active_runs = []
@@ -28,11 +42,7 @@ class KiveLoader(object):
         self.status_check_index = 0
 
     def poll(self):
-        if self.folders is None:
-            self.folders = self.find_folders()
-            self.folder_count = 0
-            self.files = []
-            self.file_count = 0
+        self.check_folders()
         if self.file_count >= len(self.files):
             if self.folder_count >= len(self.folders):
                 self.folder = None
@@ -48,9 +58,10 @@ class KiveLoader(object):
                     quality_file,
                     'phiX174 quality from MiSeq run ' + self.trimmed_folder,
                     self.quality_cdt)
-        self.check_run_status()
-        if self.folder is None:
-            return
+        if not self.can_launch():
+            self.check_run_status()
+        if not self.can_launch():
+            return self.status_delay
         file1 = self.files[self.file_count]
         file2 = file1.replace('_R1_', '_R2_')
         self.file_count += 1
@@ -64,14 +75,31 @@ class KiveLoader(object):
         run = self.launch_run(self.quality_dataset, dataset1, dataset2)
         self.active_runs.append(run)
         self.batches[self.folder].append(run)
+        return 0
+
+    def check_folders(self):
+        now = self.get_time()
+        if self.folders is None or now >= self.folder_scan_time:
+            self.folder_scan_time = now + timedelta(seconds=self.folder_delay)
+            new_folders = self.find_folders()
+            if self.folders is None or self.folders != new_folders:
+                self.folders = new_folders
+                self.folder_count = 0
+                self.files = []
+                self.file_count = 0
+            elif not self.active_runs:
+                logger.info('No folders need processing.')
+
+    def can_launch(self):
+        if self.folder is None:
+            return False
+        return len(self.active_runs) < self.launch_limit
 
     def check_run_status(self):
-        if not self.active_runs:
-            return
-        self.status_check_index = (self.status_check_index + 1) % len(self.active_runs)
-        run = self.active_runs[self.status_check_index]
-        if self.is_run_complete(run):
-            self.active_runs.remove(run)
+        for i in reversed(range(len(self.active_runs))):
+            run = self.active_runs[i]
+            if self.is_run_complete(run):
+                del self.active_runs[i]
         for folder, runs in self.batches.items():
             if folder != self.folder and all(run not in self.active_runs
                                              for run in runs):
@@ -319,6 +347,12 @@ class KiveLoader(object):
             pass  # Leave the file empty
         logger.info('completed folder %r', folder)
 
+    def get_time(self):
+        """ Get the current system time.
+
+        Wrapped in a method to make it easier to mock when testing."""
+        return datetime.now()
+
 if __name__ == '__live_coding__':
     import unittest
 
@@ -329,6 +363,7 @@ if __name__ == '__live_coding__':
         self.launched = []
         self.completed = []
         self.downloaded = []
+        self.now = datetime(2000, 1, 1)
         self.quality_cdt = 'quality CDT'
 
         def check_kive_connection():
@@ -347,34 +382,37 @@ if __name__ == '__live_coding__':
         self.loader.is_run_complete = lambda run: run in self.completed
         self.loader.download_results = lambda folder, runs: (
             self.downloaded.append((folder, runs)))
+        self.loader.get_time = lambda: self.now
 
     def test_something(self):
-        # def test_download_two_folders(self):
-        self.loader.find_folders = lambda: ['run1', 'run2']
+        # def test_new_folder(self):
+        self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
-        expected_downloaded1 = [('run1', [('run1/quality.csv',
-                                           'run1/sample1_R1_x.fastq',
-                                           'run1/sample1_R2_x.fastq')])]
-        expected_downloaded2 = [('run1', [('run1/quality.csv',
-                                           'run1/sample1_R1_x.fastq',
-                                           'run1/sample1_R2_x.fastq')]),
-                                ('run2', [('run2/quality.csv',
-                                           'run2/sample1_R1_x.fastq',
-                                           'run2/sample1_R2_x.fastq')])]
+        expected_launched1 = [('run1/quality.csv',
+                               'run1/sample1_R1_x.fastq',
+                               'run1/sample1_R2_x.fastq')]
+        expected_launched2 = [('run1/quality.csv',
+                               'run1/sample1_R1_x.fastq',
+                               'run1/sample1_R2_x.fastq'),
+                              ('run2/quality.csv',
+                               'run2/sample1_R1_x.fastq',
+                               'run2/sample1_R2_x.fastq')]
 
-        self.loader.poll()  # launch 1
-        self.loader.poll()  # check status 1, launch 2
-        self.completed = self.launched[:1]  # finish sample 1
-        self.loader.poll()  # check status 2
-        self.loader.poll()  # check status 1, sample 2 irrelevant
-        downloaded1 = self.downloaded[:]
+        self.loader.poll()  # launch run1, sample1
+        self.loader.find_folders = lambda: ['run2', 'run1']
+        self.now += timedelta(seconds=self.loader.folder_delay-1)
 
-        self.completed = self.launched[:]  # finish sample 2
-        self.loader.poll()  # finished, so now download
-        downloaded2 = self.downloaded[:]
+        self.loader.poll()  # not ready to scan for new folder
 
-        self.assertEqual(expected_downloaded1, downloaded1)
-        self.assertEqual(expected_downloaded2, downloaded2)
+        launched1 = self.launched[:]
+        self.now += timedelta(seconds=1)
+
+        self.loader.poll()  # launch run2, sample1
+
+        launched2 = self.launched[:]
+
+        self.assertEqual(expected_launched1, launched1)
+        self.assertEqual(expected_launched2, launched2)
 
     class DummyTest(unittest.TestCase):
         def test_delegation(self):

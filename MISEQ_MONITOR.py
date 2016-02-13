@@ -13,10 +13,31 @@ from time import sleep
 
 import micall.settings as settings
 from micall.monitor.kive_loader import KiveLoader
+from argparse import ArgumentParser
 
 
 if sys.version_info[:2] != (2, 7):
     raise Exception("Python 2.7 not detected")
+
+
+def parse_args():
+    parser = ArgumentParser(description='Process MiSeq data on Kive.')
+    parser.add_argument('--max',
+                        '-x',
+                        type=int,
+                        default=settings.kive_max_runs,
+                        help='maximum number of active samples on Kive')
+    parser.add_argument('--status_delay',
+                        '-s',
+                        type=int,
+                        default=settings.kive_status_delay,
+                        help='seconds between checking run status')
+    parser.add_argument('--folder_delay',
+                        '-f',
+                        type=int,
+                        default=settings.kive_status_delay,
+                        help='seconds between checking for new folders')
+    return parser.parse_args()
 
 
 def mark_run_as_disabled(root, message, exc_info=None):
@@ -42,12 +63,15 @@ logger = logging.getLogger('MISEQ_MONITOR')
 
 
 def main():
+    args = parse_args()
     logger.info('Starting up.')
     try:
-        loader = KiveLoader()
+        loader = KiveLoader(launch_limit=args.max,
+                            status_delay=args.status_delay,
+                            folder_delay=args.folder_delay)
         while True:
-            loader.poll()
-            sleep(5)
+            delay = loader.poll()
+            sleep(delay)
     except:
         logger.error('Fatal error.', exc_info=True)
 main()
