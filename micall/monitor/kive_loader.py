@@ -14,6 +14,7 @@ from micall.monitor import qai_helper, update_qai
 from micall.monitor.kive_download import kive_login, download_results
 import sys
 from datetime import datetime, timedelta
+import subprocess
 
 MAX_RUN_NAME_LENGTH = 60
 logger = logging.getLogger("kive_loader")
@@ -152,8 +153,22 @@ class KiveLoader(object):
 
         @return: a list of paths to the files within the folder.
         """
-        gz_files = glob(os.path.join(folder,
-                                     'Data/Intensities/BaseCalls/*_R1_001.fastq.gz'))
+        gz_files = []
+        for filepath in glob(os.path.join(
+                folder,
+                'Data/Intensities/BaseCalls/*_R1_001.fastq.gz')):
+            # Report number of reads failing to demultiplex to the log
+            if not os.path.basename(filepath).startswith('Undetermined'):
+                gz_files.append(filepath)
+            else:
+                # Do word count directly on stream redirected from gunzip
+                p1 = subprocess.Popen(['gunzip', '-c', filepath], stdout=subprocess.PIPE)
+                p2 = subprocess.Popen(['wc', '-l'], stdin=p1.stdout, stdout=subprocess.PIPE)
+                output = p2.communicate()[0]
+                failed_demultiplexing = output.strip(' \n')
+                logger.info("%s reads failed to demultiplex in %s (skipping file)",
+                            failed_demultiplexing,
+                            filepath)
 
         return sorted(gz_files)
 
