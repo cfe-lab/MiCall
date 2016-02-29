@@ -15,7 +15,7 @@ import micall.settings as settings
 from micall.monitor.kive_loader import KiveLoader
 from argparse import ArgumentParser
 
-
+logger = logging.getLogger('MISEQ_MONITOR')
 if sys.version_info[:2] != (2, 7):
     raise Exception("Python 2.7 not detected")
 
@@ -38,28 +38,6 @@ def parse_args():
                         default=settings.kive_status_delay,
                         help='seconds between checking for new folders')
     return parser.parse_args()
-
-
-def mark_run_as_disabled(root, message, exc_info=None):
-    """ Mark a run that failed, so it won't be processed again.
-
-    @param root: path to the run folder that had an error
-    @param message: a description of the error
-    @param exc_info: details about the error's exception in the standard tuple,
-        True to look up the current exception, or None if there is no exception
-        to report
-    """
-    failure_message = message + " - skipping run " + root
-    logger.error(failure_message, exc_info=exc_info)
-    if settings.production:
-        with open(root + settings.ERROR_PROCESSING, 'w') as f:
-            f.write(message)
-    else:
-        # in development mode - exit the monitor if a run fails
-        sys.exit()
-    return failure_message
-
-logger = logging.getLogger('MISEQ_MONITOR')
 
 
 def main():

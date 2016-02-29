@@ -12,6 +12,7 @@ import subprocess
 import sys
 from xml.etree import ElementTree
 
+from kiveapi.errors import KiveRunFailedException
 from micall import settings
 from micall.monitor import qai_helper, update_qai
 from micall.monitor.kive_download import kive_login, download_results
@@ -37,11 +38,11 @@ class KiveLoader(object):
         self.status_delay = status_delay
         self.folder_delay = folder_delay
         self.folders = None
+        self.latest_folder = None
         self.kive = None
         self.preexisting_runs = None
         self.active_runs = []
         self.batches = defaultdict(list)  # {folder: [run]}
-        self.status_check_index = 0
 
     def poll(self):
         self.check_folders()
@@ -94,18 +95,25 @@ class KiveLoader(object):
                 self.folder_count = 0
                 self.files = []
                 self.file_count = 0
+                self.active_runs = []
+                self.preexisting_runs = None
             elif not self.active_runs:
                 logger.info('No folders need processing.')
 
     def can_launch(self):
         if self.folder is None:
             return False
-        return len(self.active_runs) < self.launch_limit
+        return (self.folder == self.latest_folder or
+                len(self.active_runs) < self.launch_limit)
 
     def check_run_status(self):
         for i in reversed(range(len(self.active_runs))):
             run = self.active_runs[i]
-            if self.is_run_complete(run):
+            try:
+                is_complete = self.is_run_complete(run)
+            except KiveRunFailedException:
+                is_complete = True
+            if is_complete:
                 del self.active_runs[i]
         for folder, runs in self.batches.items():
             if folder != self.folder and all(run not in self.active_runs
@@ -116,19 +124,25 @@ class KiveLoader(object):
     def find_folders(self):
         """ Find run folders ready to be processed.
 
+        Also set self.latest_folder to be the latest folder that is marked
+        with a needsprocessing file, even if it's done processing or failed.
+
         @return: a list of paths to the folders in the order they should be
             processed
         """
         # flag indicates that Illumina MiseqReporter has completed pre-processing, files available on NAS
         flag_files = glob(settings.rawdata_mount +
                           'MiSeq/runs/*/{}'.format(settings.NEEDS_PROCESSING))
+        flag_files.sort(reverse=True)
         folders = []
-        for flag_file in flag_files:
+        for i, flag_file in enumerate(flag_files):
             folder = os.path.dirname(flag_file)
             result_path = os.path.join(folder,
                                        'Results',
                                        'version_{}'.format(settings.pipeline_version))
             done_path = os.path.join(result_path, settings.DONE_PROCESSING)
+            if i == 0:
+                self.latest_folder = folder
             if self.is_marked_as_disabled(folder):
                 continue
             if not self.is_quality_control_uploaded(folder):
@@ -145,7 +159,6 @@ class KiveLoader(object):
                 # note that results will not be uploaded
             folders.append(folder)
 
-        folders.sort(reverse=True)
         return folders
 
     def is_marked_as_disabled(self, folder):
@@ -373,12 +386,40 @@ class KiveLoader(object):
         _sample_name, run_status = run
         return run_status.is_complete()
 
+    def mark_run_as_disabled(self, root, message, exc_info=None):
+        """ Mark a run that failed, so it won't be processed again.
+
+        @param root: path to the run folder that had an error
+        @param message: a description of the error
+        @param exc_info: details about the error's exception in the standard tuple,
+            True to look up the current exception, or None if there is no exception
+            to report
+        """
+        failure_message = message + " - skipping run " + root
+        logger.error(failure_message, exc_info=exc_info)
+        if settings.production:
+            with open(os.path.join(root, settings.ERROR_PROCESSING), 'w') as f:
+                f.write(message)
+        else:
+            # in development mode - exit the monitor if a run fails
+            sys.exit()
+        return failure_message
+
     def download_results(self, folder, runs):
         """ Download results from Kive.
 
         @param folder: the run folder
         @param runs: [(sample_name, run_status)] a sequence of pairs
         """
+        # First, check that all runs in the batch were successful.
+        for sample_name, run_status in runs:
+            try:
+                run_status.is_successful()
+            except KiveRunFailedException:
+                message = 'Sample {} failed in Kive.'.format(sample_name)
+                self.mark_run_as_disabled(folder, message, sys.exc_info())
+                return
+
         results_parent = os.path.join(folder, 'Results')
         if not os.path.exists(results_parent):
             os.mkdir(results_parent)
@@ -437,21 +478,32 @@ if __name__ == '__live_coding__':
         self.loader.get_time = lambda: self.now
 
     def test_something(self):
-        # def test_preexisting_runs(self):
+        # def test_failed_run(self):
+        def is_run_complete(run):
+            if run == ('run1/quality.csv',
+                       'run1/sample2_R1_x.fastq',
+                       'run1/sample2_R2_x.fastq'):
+                raise KiveRunFailedException('Mock failure.')
+            return True
+
+        self.loader.is_run_complete = is_run_complete
+
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
                                                  folder + '/sample2_R1_x.fastq']
-        self.existing_runs = {('run1/quality.csv',
-                               'run1/sample1_R1_x.fastq',
-                               'run1/sample1_R2_x.fastq'): 'dummy run status'}
-        expected_launched = [('run1/quality.csv',
-                              'run1/sample2_R1_x.fastq',
-                              'run1/sample2_R2_x.fastq')]
+        expected_downloaded = [('run1', [('run1/quality.csv',
+                                          'run1/sample1_R1_x.fastq',
+                                          'run1/sample1_R2_x.fastq'),
+                                         ('run1/quality.csv',
+                                          'run1/sample2_R1_x.fastq',
+                                          'run1/sample2_R2_x.fastq')])]
 
-        self.loader.poll()
-        self.loader.poll()
+        self.loader.poll()  # launch 1
+        self.loader.poll()  # launch 2
+        self.loader.poll()  # check status, catch exception
+        downloaded = self.downloaded[:]
 
-        self.assertEqual(expected_launched, self.launched)
+        self.assertEqual(expected_downloaded, downloaded)
 
     class DummyTest(unittest.TestCase):
         def test_delegation(self):
