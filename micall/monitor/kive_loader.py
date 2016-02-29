@@ -1,20 +1,20 @@
 from collections import namedtuple, defaultdict
 import csv
+from datetime import datetime, timedelta
 from glob import glob
 import hashlib
 import itertools
 import logging
-import operator
+from operator import itemgetter
 import os
 import shutil
+import subprocess
+import sys
 from xml.etree import ElementTree
 
 from micall import settings
 from micall.monitor import qai_helper, update_qai
 from micall.monitor.kive_download import kive_login, download_results
-import sys
-from datetime import datetime, timedelta
-import subprocess
 
 MAX_RUN_NAME_LENGTH = 60
 logger = logging.getLogger("kive_loader")
@@ -38,6 +38,7 @@ class KiveLoader(object):
         self.folder_delay = folder_delay
         self.folders = None
         self.kive = None
+        self.preexisting_runs = None
         self.active_runs = []
         self.batches = defaultdict(list)  # {folder: [run]}
         self.status_check_index = 0
@@ -73,7 +74,12 @@ class KiveLoader(object):
         dataset2 = self.prepare_kive_dataset(file2,
                                              'reverse ' + description,
                                              None)
-        run = self.launch_run(self.quality_dataset, dataset1, dataset2)
+        if self.preexisting_runs is None:
+            self.preexisting_runs = self.find_preexisting_runs()
+        run_key = self.get_run_key(self.quality_dataset, dataset1, dataset2)
+        run = self.preexisting_runs.pop(run_key, None)
+        if run is None:
+            run = self.launch_run(self.quality_dataset, dataset1, dataset2)
         self.active_runs.append(run)
         self.batches[self.folder].append(run)
         return 0
@@ -193,7 +199,7 @@ class KiveLoader(object):
             for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
                 hash.update(chunk)
             checksum = hash.hexdigest()
-            datasets = self.kive.find_datasets(dataset_name=dataset_name,
+            datasets = self.kive.find_datasets(name=dataset_name,
                                                md5=checksum,
                                                cdt=cdt)
             needed_groups = set(settings.kive_groups_allowed)
@@ -285,7 +291,7 @@ class KiveLoader(object):
                                     lineterminator=os.linesep)
             writer.writeheader()
             for tile, tile_metrics in itertools.groupby(metrics,
-                                                        operator.itemgetter('tile')):
+                                                        itemgetter('tile')):
                 expected_cycle = 0
                 metric = next(tile_metrics)
                 for cycles, sign in direction_params:
@@ -308,6 +314,12 @@ class KiveLoader(object):
                     expected_cycle += run_info.indexes_length
         return destination
 
+    def get_sample_name(self, fastq1):
+        """ Format sample name from a fastq1 Dataset object. """
+        short_name, sample_num = fastq1.name.split('_')[:2]
+        sample_name = short_name + '_' + sample_num
+        return sample_name
+
     def launch_run(self, quality, fastq1, fastq2):
         """ Launch a run on Kive.
 
@@ -318,8 +330,7 @@ class KiveLoader(object):
         @return: (sample_name, run_status)
         """
         self.check_kive_connection()
-        short_name, sample_num = fastq1.name.split('_')[:2]
-        sample_name = short_name + '_' + sample_num
+        sample_name = self.get_sample_name(fastq1)
         name = '{} - {} ({})'.format(self.pipeline.family,
                                      sample_name,
                                      self.trimmed_folder)
@@ -332,6 +343,27 @@ class KiveLoader(object):
                                         name=name,
                                         groups=settings.kive_groups_allowed)
         return sample_name, status
+
+    def find_preexisting_runs(self):
+        """ Query Kive for all active runs, filter by pipeline.
+
+        @return: {(quality_id, fastq1_id, fastq2_id): run}
+        """
+        runs = self.kive.find_runs(active=True)
+        map = {}
+        for run in runs:
+            if run.pipeline_id == self.pipeline.pipeline_id:
+                inputs = sorted(run.raw['inputs'], key=itemgetter('index'))
+                fastq1 = self.kive.get_dataset(inputs[1]['dataset'])
+                sample_name = self.get_sample_name(fastq1)
+                input_ids = tuple(input['dataset'] for input in inputs)
+                map[input_ids] = (sample_name, run)
+        return map
+
+    def get_run_key(self, quality, fastq1, fastq2):
+        """ Calculate the key to look up preexisting runs for the given inputs.
+        """
+        return (quality.dataset_id, fastq1.dataset_id, fastq2.dataset_id)
 
     def is_run_complete(self, run):
         """ Check if a Kive run is complete.
@@ -374,6 +406,7 @@ if __name__ == '__live_coding__':
     def setUp(self):
         self.loader = KiveLoader()
         self.existing_datasets = []
+        self.existing_runs = {}
         self.uploaded = []
         self.launched = []
         self.completed = []
@@ -386,6 +419,10 @@ if __name__ == '__live_coding__':
         self.loader.check_kive_connection = check_kive_connection
         self.loader.find_folders = lambda: []
         self.loader.find_files = lambda folder: []
+        self.loader.find_preexisting_runs = lambda: self.existing_runs
+        self.loader.get_run_key = lambda quality, fastq1, fastq2: (quality,
+                                                                   fastq1,
+                                                                   fastq2)
         self.loader.upload_kive_dataset = lambda filename, description, cdt: (
             self.uploaded.append((filename, description, cdt)) or filename)
         self.loader.download_quality = lambda folder: folder + '/quality.csv'
@@ -400,34 +437,21 @@ if __name__ == '__live_coding__':
         self.loader.get_time = lambda: self.now
 
     def test_something(self):
-        # def test_new_folder(self):
+        # def test_preexisting_runs(self):
         self.loader.find_folders = lambda: ['run1']
-        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
-        expected_launched1 = [('run1/quality.csv',
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
+                                                 folder + '/sample2_R1_x.fastq']
+        self.existing_runs = {('run1/quality.csv',
                                'run1/sample1_R1_x.fastq',
-                               'run1/sample1_R2_x.fastq')]
-        expected_launched2 = [('run1/quality.csv',
-                               'run1/sample1_R1_x.fastq',
-                               'run1/sample1_R2_x.fastq'),
-                              ('run2/quality.csv',
-                               'run2/sample1_R1_x.fastq',
-                               'run2/sample1_R2_x.fastq')]
+                               'run1/sample1_R2_x.fastq'): 'dummy run status'}
+        expected_launched = [('run1/quality.csv',
+                              'run1/sample2_R1_x.fastq',
+                              'run1/sample2_R2_x.fastq')]
 
-        self.loader.poll()  # launch run1, sample1
-        self.loader.find_folders = lambda: ['run2', 'run1']
-        self.now += timedelta(seconds=self.loader.folder_delay-1)
+        self.loader.poll()
+        self.loader.poll()
 
-        self.loader.poll()  # not ready to scan for new folder
-
-        launched1 = self.launched[:]
-        self.now += timedelta(seconds=1)
-
-        self.loader.poll()  # launch run2, sample1
-
-        launched2 = self.launched[:]
-
-        self.assertEqual(expected_launched1, launched1)
-        self.assertEqual(expected_launched2, launched2)
+        self.assertEqual(expected_launched, self.launched)
 
     class DummyTest(unittest.TestCase):
         def test_delegation(self):

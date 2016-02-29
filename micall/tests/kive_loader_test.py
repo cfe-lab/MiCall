@@ -8,6 +8,7 @@ class KiveLoaderTest(unittest.TestCase):
     def setUp(self):
         self.loader = KiveLoader()
         self.existing_datasets = []
+        self.existing_runs = {}
         self.uploaded = []
         self.launched = []
         self.completed = []
@@ -20,6 +21,10 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.check_kive_connection = check_kive_connection
         self.loader.find_folders = lambda: []
         self.loader.find_files = lambda folder: []
+        self.loader.find_preexisting_runs = lambda: self.existing_runs
+        self.loader.get_run_key = lambda quality, fastq1, fastq2: (quality,
+                                                                   fastq1,
+                                                                   fastq2)
         self.loader.upload_kive_dataset = lambda filename, description, cdt: (
             self.uploaded.append((filename, description, cdt)) or filename)
         self.loader.download_quality = lambda folder: folder + '/quality.csv'
@@ -299,3 +304,19 @@ class KiveLoaderTest(unittest.TestCase):
 
         self.assertEqual(expected_launched1, launched1)
         self.assertEqual(expected_launched2, launched2)
+
+    def test_preexisting_runs(self):
+        self.loader.find_folders = lambda: ['run1']
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
+                                                 folder + '/sample2_R1_x.fastq']
+        self.existing_runs = {('run1/quality.csv',
+                               'run1/sample1_R1_x.fastq',
+                               'run1/sample1_R2_x.fastq'): 'dummy run status'}
+        expected_launched = [('run1/quality.csv',
+                              'run1/sample2_R1_x.fastq',
+                              'run1/sample2_R2_x.fastq')]
+
+        self.loader.poll()
+        self.loader.poll()
+
+        self.assertEqual(expected_launched, self.launched)
