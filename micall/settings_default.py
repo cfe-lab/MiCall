@@ -1,10 +1,9 @@
 """
 To make pipeline portable, allow user to specify local paths and thread counts.
 """
+import logging.config
 
 # ### Core settings ### #
-pipeline_version = '7.0'        # Change for each release
-
 # Mapping parameters
 bowtie_version = '2.2.1'        # version of bowtie2, used for version control
 bowtie_path = 'bowtie2-align-s'         # path to executable, so you can install more than one version
@@ -38,6 +37,8 @@ gap_extend_coord = 10
 
 
 # ### Monitor settings ### #
+pipeline_version = '7.0'        # Change for each release
+
 instrument_number = 'M01841'  # for Illumina MiSeq, second item in run folder name
 production = False  # set this to True to push results to NAS
 are_temp_folders_deleted = True  # Should FIFO worker clean up working folders?
@@ -63,6 +64,10 @@ kive_server_url = 'http://127.0.0.1:8000/'
 kive_user = 'FILLINUSERNAME'
 kive_password = '*******'
 kive_groups_allowed = ['Everyone']
+kive_max_runs = 50  # Number of sample runs to have active at one time
+kive_status_delay = 30  # seconds between checking run status
+kive_folder_delay = 60*60  # seconds between scanning for new folders
+kive_retry_delay = 60*60  # seconds to continue retrying after error
 pipeline_version_kive_id = 98   # Change for each release
 quality_cdt_kive_id = 25        # Kive ID for CompoundDatatype (tile:integer, cycle:integer, errorrate:float?)
 """
@@ -81,3 +86,23 @@ qai_path = "http://192.168.X.Y:port"
 qai_project_user = "FILLINUSERNAME"
 qai_project_password = "****"
 qai_project_path = "http://192.168.X.Y:port"
+
+logging.config.dictConfig({
+    'version': 1,
+    'formatters': {'basic': {
+        'format': '%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s',
+        'datefmt': '%Y-%m-%d %H:%M:%S'}},
+    'handlers': {'console': {'class': 'logging.StreamHandler',
+                             'level': 'DEBUG',
+                             'formatter': 'basic'},
+                 'file': {'class': 'logging.handlers.RotatingFileHandler',
+                          'level': 'DEBUG',
+                          'formatter': 'basic',
+                          'filename': 'micall.log',
+                          'maxBytes': 1024*1024*15,  # 15MB
+                          'backupCount': 10}},
+    # This is the default logger.
+    'root': {'handlers': ['console', 'file'],
+             'level': 'WARN'},
+    'loggers': {"kive_loader": {"level": "INFO"},
+                "MISEQ_MONITOR": {"level": "INFO"}}})
