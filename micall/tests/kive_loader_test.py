@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime
+import logging
 import unittest
 
 from micall.monitor.kive_loader import KiveLoader
@@ -7,6 +8,7 @@ from kiveapi.errors import KiveRunFailedException
 
 class KiveLoaderTest(unittest.TestCase):
     def setUp(self):
+        logging.disable(logging.CRITICAL)  # avoid polluting test output
         self.loader = KiveLoader()
         self.existing_datasets = []
         self.existing_runs = {}
@@ -16,6 +18,8 @@ class KiveLoaderTest(unittest.TestCase):
         self.downloaded = []
         self.now = datetime(2000, 1, 1)
         self.quality_cdt = 'quality CDT'
+        self.disabled_folders = []
+        self.folder_retries = []
 
         def check_kive_connection():
             self.loader.quality_cdt = self.quality_cdt
@@ -38,6 +42,9 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.download_results = lambda folder, runs: (
             self.downloaded.append((folder, runs)))
         self.loader.get_time = lambda: self.now
+        self.loader.mark_folder_disabled = lambda folder, message, exc_info: (
+            self.disabled_folders.append(folder))
+        self.loader.log_retry = lambda folder: self.folder_retries.append(folder)
 
     def test_idle(self):
         delay = self.loader.poll()
@@ -368,3 +375,70 @@ class KiveLoaderTest(unittest.TestCase):
         downloaded = self.downloaded[:]
 
         self.assertEqual(expected_downloaded, downloaded)
+
+    def test_unable_to_check_status(self):
+        is_kive_running = False
+
+        def is_run_complete(run):
+            if not is_kive_running:
+                raise StandardError('Kive connection failed.')
+            return True
+
+        self.loader.is_run_complete = is_run_complete
+
+        self.loader.find_folders = lambda: ['run1']
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
+        expected_downloaded = [('run1', [('run1/quality.csv',
+                                          'run1/sample1_R1_x.fastq',
+                                          'run1/sample1_R2_x.fastq')])]
+
+        self.loader.poll()  # launch 1
+        self.loader.poll()  # check status, catch exception
+        downloaded1 = self.downloaded[:]
+
+        is_kive_running = True
+        self.loader.poll()  # check status successfully, and download
+        downloaded2 = self.downloaded[:]
+
+        self.assertEqual([], downloaded1)
+        self.assertEqual(expected_downloaded, downloaded2)
+
+    def test_failed_quality_download(self):
+        def download_quality(folder):
+            raise StandardError('Mock quality failure.')
+
+        self.loader.download_quality = download_quality
+
+        self.loader.find_folders = lambda: ['run1']
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
+                                                 folder + '/sample2_R1_x.fastq']
+        retry_delays = []
+
+        retry_delays.append(self.loader.poll())
+        retry_delays.append(self.loader.poll())
+        retry_delays.append(self.loader.poll())
+        final_delay = self.loader.poll()
+
+        self.assertEqual(self.loader.retry_delay, sum(retry_delays))
+        self.assertEqual(0, final_delay)
+
+    def test_failed_results_download(self):
+        def download_results(folder):
+            raise StandardError('Mock Kive failure.')
+
+        self.loader.download_results = download_results
+
+        self.loader.find_folders = lambda: ['run1']
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
+        retry_delays = []
+
+        first_delay = self.loader.poll()  # launch 1
+        self.completed = self.launched[:]
+        retry_delays.append(self.loader.poll())
+        retry_delays.append(self.loader.poll())
+        retry_delays.append(self.loader.poll())
+        final_delay = self.loader.poll()
+
+        self.assertEqual(0, first_delay)
+        self.assertEqual(self.loader.retry_delay, sum(retry_delays))
+        self.assertEqual(0, final_delay)

@@ -1,4 +1,4 @@
-from collections import namedtuple, defaultdict
+from collections import namedtuple, defaultdict, Counter
 import csv
 from datetime import datetime, timedelta
 from glob import glob
@@ -27,63 +27,94 @@ class KiveLoader(object):
     def __init__(self,
                  launch_limit=sys.maxint,
                  status_delay=30,
-                 folder_delay=3600):
+                 folder_delay=3600,
+                 retry_delay=3600):
         """ Prepare an instance.
 
         @param launch_limit: the maximum number active runs
         @param status_delay: seconds delay between checking status of all runs
         @param folder_delay: seconds delay between scanning for new folders
+        @param retry_delay: seconds to continue retrying after an error
         """
         self.launch_limit = launch_limit
         self.status_delay = status_delay
         self.folder_delay = folder_delay
+        self.retry_delay = retry_delay
         self.folders = None
         self.latest_folder = None
         self.kive = None
         self.preexisting_runs = None
         self.active_runs = []
         self.batches = defaultdict(list)  # {folder: [run]}
+        self.retry_counts = Counter()  # {folder: count}
+        self.is_status_available = True
 
     def poll(self):
-        self.check_folders()
-        if self.file_count >= len(self.files):
-            if self.folder_count >= len(self.folders):
-                self.folder = None
+        try:
+            self.downloading_folder = None
+            self.check_folders()
+            if self.file_count >= len(self.files):
+                if self.folder_count >= len(self.folders):
+                    self.folder = None
+                else:
+                    self.folder = self.folders[self.folder_count]
+                    self.folder_count += 1
+                    self.files = self.find_files(self.folder)
+                    self.file_count = 0
+                    self.trimmed_folder = self.trim_folder(self.folder)
+                    quality_file = self.download_quality(self.folder)
+                    self.check_kive_connection()
+                    self.quality_dataset = self.prepare_kive_dataset(
+                        quality_file,
+                        'phiX174 quality from MiSeq run ' + self.trimmed_folder,
+                        self.quality_cdt)
+            if not self.can_launch():
+                self.check_run_status()
+            if not self.can_launch():
+                return self.status_delay
+            file1 = self.files[self.file_count]
+            file2 = file1.replace('_R1_', '_R2_')
+            self.file_count += 1
+            description = 'read from MiSeq run ' + self.trimmed_folder
+            dataset1 = self.prepare_kive_dataset(file1,
+                                                 'forward ' + description,
+                                                 None)
+            dataset2 = self.prepare_kive_dataset(file2,
+                                                 'reverse ' + description,
+                                                 None)
+            if self.preexisting_runs is None:
+                self.preexisting_runs = self.find_preexisting_runs()
+            run_key = self.get_run_key(self.quality_dataset, dataset1, dataset2)
+            run = self.preexisting_runs.pop(run_key, None)
+            if run is None:
+                run = self.launch_run(self.quality_dataset, dataset1, dataset2)
+            self.active_runs.append(run)
+            self.batches[self.folder].append(run)
+            return 0
+        except StandardError as ex:
+            failed_folder = self.downloading_folder or self.folder
+            is_reset_needed = True
+            delay_fractions = [1.0/60, 5.0/60]
+            retry_count = self.retry_counts[failed_folder]
+            self.retry_counts[failed_folder] += 1
+            if retry_count > len(delay_fractions):
+                del self.retry_counts[failed_folder]
+                message = str(ex)
+                self.mark_folder_disabled(failed_folder,
+                                          message,
+                                          exc_info=True)
+                delay = 0
             else:
-                self.folder = self.folders[self.folder_count]
-                self.folder_count += 1
-                self.files = self.find_files(self.folder)
-                self.file_count = 0
-                self.trimmed_folder = self.trim_folder(self.folder)
-                quality_file = self.download_quality(self.folder)
-                self.check_kive_connection()
-                self.quality_dataset = self.prepare_kive_dataset(
-                    quality_file,
-                    'phiX174 quality from MiSeq run ' + self.trimmed_folder,
-                    self.quality_cdt)
-        if not self.can_launch():
-            self.check_run_status()
-        if not self.can_launch():
-            return self.status_delay
-        file1 = self.files[self.file_count]
-        file2 = file1.replace('_R1_', '_R2_')
-        self.file_count += 1
-        description = 'read from MiSeq run ' + self.trimmed_folder
-        dataset1 = self.prepare_kive_dataset(file1,
-                                             'forward ' + description,
-                                             None)
-        dataset2 = self.prepare_kive_dataset(file2,
-                                             'reverse ' + description,
-                                             None)
-        if self.preexisting_runs is None:
-            self.preexisting_runs = self.find_preexisting_runs()
-        run_key = self.get_run_key(self.quality_dataset, dataset1, dataset2)
-        run = self.preexisting_runs.pop(run_key, None)
-        if run is None:
-            run = self.launch_run(self.quality_dataset, dataset1, dataset2)
-        self.active_runs.append(run)
-        self.batches[self.folder].append(run)
-        return 0
+                self.log_retry(failed_folder)
+                if retry_count < len(delay_fractions):
+                    delay = self.retry_delay * delay_fractions[retry_count]
+                else:
+                    delay = self.retry_delay * (1-sum(delay_fractions))
+                is_reset_needed = self.downloading_folder is None
+            if is_reset_needed:
+                self.folders = None
+                self.reset_folders()
+            return delay
 
     def check_folders(self):
         now = self.get_time()
@@ -92,13 +123,18 @@ class KiveLoader(object):
             new_folders = self.find_folders()
             if self.folders is None or self.folders != new_folders:
                 self.folders = new_folders
-                self.folder_count = 0
-                self.files = []
-                self.file_count = 0
-                self.active_runs = []
-                self.preexisting_runs = None
+                self.reset_folders()
             elif not self.active_runs:
                 logger.info('No folders need processing.')
+
+    def reset_folders(self):
+        self.folder = None
+        self.folder_count = 0
+        self.files = []
+        self.file_count = 0
+        self.active_runs = []
+        self.preexisting_runs = None
+        self.batches.clear()
 
     def can_launch(self):
         if self.folder is None:
@@ -111,15 +147,24 @@ class KiveLoader(object):
             run = self.active_runs[i]
             try:
                 is_complete = self.is_run_complete(run)
+                self.is_status_available = True
             except KiveRunFailedException:
                 is_complete = True
+            except:
+                is_complete = False
+                if self.is_status_available:
+                    # First failure, so log it.
+                    logger.warn('Unable to check run status.', exc_info=True)
+                    self.is_status_available = False
             if is_complete:
                 del self.active_runs[i]
         for folder, runs in self.batches.items():
             if folder != self.folder and all(run not in self.active_runs
                                              for run in runs):
+                self.downloading_folder = folder
                 self.download_results(folder, runs)
                 del self.batches[folder]
+                self.downloading_folder = None
 
     def find_folders(self):
         """ Find run folders ready to be processed.
@@ -386,24 +431,27 @@ class KiveLoader(object):
         _sample_name, run_status = run
         return run_status.is_complete()
 
-    def mark_run_as_disabled(self, root, message, exc_info=None):
+    def mark_folder_disabled(self, folder, message, exc_info=None):
         """ Mark a run that failed, so it won't be processed again.
 
-        @param root: path to the run folder that had an error
+        @param folder: path to the run folder that had an error
         @param message: a description of the error
         @param exc_info: details about the error's exception in the standard tuple,
             True to look up the current exception, or None if there is no exception
             to report
         """
-        failure_message = message + " - skipping run " + root
+        failure_message = message + " - skipping run " + folder
         logger.error(failure_message, exc_info=exc_info)
         if settings.production:
-            with open(os.path.join(root, settings.ERROR_PROCESSING), 'w') as f:
+            with open(os.path.join(folder, settings.ERROR_PROCESSING), 'w') as f:
                 f.write(message)
         else:
             # in development mode - exit the monitor if a run fails
             sys.exit()
         return failure_message
+
+    def log_retry(self, folder):
+        logger.warn('Retrying folder %r.', folder, exc_info=True)
 
     def download_results(self, folder, runs):
         """ Download results from Kive.
@@ -417,7 +465,7 @@ class KiveLoader(object):
                 run_status.is_successful()
             except KiveRunFailedException:
                 message = 'Sample {} failed in Kive.'.format(sample_name)
-                self.mark_run_as_disabled(folder, message, sys.exc_info())
+                self.mark_folder_disabled(folder, message, exc_info=True)
                 return
 
         results_parent = os.path.join(folder, 'Results')
@@ -445,6 +493,7 @@ if __name__ == '__live_coding__':
     import unittest
 
     def setUp(self):
+        logging.disable(logging.CRITICAL)  # avoid polluting test output
         self.loader = KiveLoader()
         self.existing_datasets = []
         self.existing_runs = {}
@@ -454,6 +503,8 @@ if __name__ == '__live_coding__':
         self.downloaded = []
         self.now = datetime(2000, 1, 1)
         self.quality_cdt = 'quality CDT'
+        self.disabled_folders = []
+        self.folder_retries = []
 
         def check_kive_connection():
             self.loader.quality_cdt = self.quality_cdt
@@ -476,34 +527,31 @@ if __name__ == '__live_coding__':
         self.loader.download_results = lambda folder, runs: (
             self.downloaded.append((folder, runs)))
         self.loader.get_time = lambda: self.now
+        self.loader.mark_folder_disabled = lambda folder, message, exc_info: (
+            self.disabled_folders.append(folder))
+        self.loader.log_retry = lambda folder: self.folder_retries.append(folder)
 
     def test_something(self):
-        # def test_failed_run(self):
-        def is_run_complete(run):
-            if run == ('run1/quality.csv',
-                       'run1/sample2_R1_x.fastq',
-                       'run1/sample2_R2_x.fastq'):
-                raise KiveRunFailedException('Mock failure.')
-            return True
+        # def test_failed_results_download(self):
+        def download_results(folder):
+            raise StandardError('Mock Kive failure.')
 
-        self.loader.is_run_complete = is_run_complete
+        self.loader.download_results = download_results
 
         self.loader.find_folders = lambda: ['run1']
-        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
-                                                 folder + '/sample2_R1_x.fastq']
-        expected_downloaded = [('run1', [('run1/quality.csv',
-                                          'run1/sample1_R1_x.fastq',
-                                          'run1/sample1_R2_x.fastq'),
-                                         ('run1/quality.csv',
-                                          'run1/sample2_R1_x.fastq',
-                                          'run1/sample2_R2_x.fastq')])]
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
+        retry_delays = []
 
-        self.loader.poll()  # launch 1
-        self.loader.poll()  # launch 2
-        self.loader.poll()  # check status, catch exception
-        downloaded = self.downloaded[:]
+        first_delay = self.loader.poll()  # launch 1
+        self.completed = self.launched[:]
+        retry_delays.append(self.loader.poll())
+        retry_delays.append(self.loader.poll())
+        retry_delays.append(self.loader.poll())
+        final_delay = self.loader.poll()
 
-        self.assertEqual(expected_downloaded, downloaded)
+        self.assertEqual(0, first_delay)
+        self.assertEqual(self.loader.retry_delay, sum(retry_delays))
+        self.assertEqual(0, final_delay)
 
     class DummyTest(unittest.TestCase):
         def test_delegation(self):

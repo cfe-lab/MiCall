@@ -35,8 +35,13 @@ def parse_args():
     parser.add_argument('--folder_delay',
                         '-f',
                         type=int,
-                        default=settings.kive_status_delay,
+                        default=settings.kive_folder_delay,
                         help='seconds between checking for new folders')
+    parser.add_argument('--retry_delay',
+                        '-r',
+                        type=int,
+                        default=settings.kive_retry_delay,
+                        help='seconds to continue retrying after error')
     return parser.parse_args()
 
 
@@ -46,7 +51,8 @@ def main():
     try:
         loader = KiveLoader(launch_limit=args.max,
                             status_delay=args.status_delay,
-                            folder_delay=args.folder_delay)
+                            folder_delay=args.folder_delay,
+                            retry_delay=args.retry_delay)
         while True:
             delay = loader.poll()
             sleep(delay)
