@@ -121,7 +121,8 @@ class KiveLoader(object):
         if self.folders is None or now >= self.folder_scan_time:
             self.folder_scan_time = now + timedelta(seconds=self.folder_delay)
             new_folders = self.find_folders()
-            if self.folders is None or self.folders != new_folders:
+            if self.folders is None or set(new_folders).difference(self.folders):
+                # First time or we found a new folder
                 self.folders = new_folders
                 self.reset_folders()
             elif not self.active_runs:
@@ -328,9 +329,13 @@ class KiveLoader(object):
         @return path for the quality CSV file
         """
         trimmed_folder = self.trim_folder(folder)
-        destination = os.path.join(settings.home,
-                                   os.path.basename(folder),
+        destination_folder = os.path.join(settings.home,
+                                          os.path.basename(folder))
+        destination = os.path.join(destination_folder,
                                    '{}_quality.csv'.format(trimmed_folder))
+        if not os.path.exists(destination_folder):
+            os.makedirs(destination_folder)
+
         run_info_path = os.path.join(folder, 'RunInfo.xml')
         run_info = self.parse_run_info(run_info_path)
         direction_params = [(run_info.read_lengths[0], 1),

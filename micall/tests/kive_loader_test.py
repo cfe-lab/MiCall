@@ -333,6 +333,29 @@ class KiveLoaderTest(unittest.TestCase):
         self.assertEqual(expected_launched1, launched1)
         self.assertEqual(expected_launched2, launched2)
 
+    def test_completed_folder_no_reset(self):
+        self.loader.find_folders = lambda: ['run2', 'run1']
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
+        expected_launched = [('run2/quality.csv',
+                              'run2/sample1_R1_x.fastq',
+                              'run2/sample1_R2_x.fastq'),
+                             ('run1/quality.csv',
+                              'run1/sample1_R1_x.fastq',
+                              'run1/sample1_R2_x.fastq')]
+
+        self.loader.poll()  # launch 2
+        self.loader.poll()  # launch 1
+        self.completed = self.launched[:1]  # finish run 2
+        self.loader.poll()  # check status, download 2
+
+        self.loader.find_folders = lambda: ['run1']
+        self.now += timedelta(seconds=self.loader.folder_delay)
+
+        self.loader.poll()  # check status
+        launched = self.launched[:]
+
+        self.assertEqual(expected_launched, launched)
+
     def test_preexisting_runs(self):
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
