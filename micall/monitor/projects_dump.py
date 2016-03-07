@@ -45,6 +45,16 @@ def check_key_positions(projects, warning_file):
         warning_file.write(warning)
 
 
+def dump_json(json_object, filename):
+    with open(filename, "w") as f:
+        json.dump(json_object,
+                  f,
+                  sort_keys=True,
+                  indent=2,
+                  separators=(',', ': '))
+        f.write('\n')
+
+
 def main():
     dump = {}
     with qai_helper.Session() as session:
@@ -52,10 +62,10 @@ def main():
                       settings.qai_project_user,
                       settings.qai_project_password)
 
-        dump['regions'] = session.get_json("/lab_miseq_regions.json?mode=dump",
+        dump['regions'] = session.get_json("/lab_miseq_regions?mode=dump",
                                            retries=0)
         dump['projects'] = session.get_json(
-            "/lab_miseq_projects.json?mode=dump&pipeline=" +
+            "/lab_miseq_projects?mode=dump&pipeline=" +
             settings.pipeline_version,
             retries=0)
         for project in dump['projects'].itervalues():
@@ -65,9 +75,15 @@ def main():
             raise StandardError('\n'.join(errors))
         check_key_positions(dump['projects'], sys.stdout)
 
-    with open("../projects.json", "w") as f:
-        json.dump(dump, f, sort_keys=True, indent=2, separators=(',', ': '))
-        f.write('\n')
+    dump_json(dump, "../projects.json")
+
+    for project in dump['projects'].itervalues():
+        for region in project['regions']:
+            name = region['coordinate_region']
+            seq = ''.join(dump['regions'][name]['reference'])
+            region['coordinate_region_length'] = len(seq)
+    del dump['regions']
+    dump_json(dump, "../project_scoring.json")
 
     print "Done."
 

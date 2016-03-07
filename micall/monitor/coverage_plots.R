@@ -157,7 +157,7 @@ prepare.plot <- function(
 dir.create('coverage_maps')
 
 # load project configuration
-projects.config <- fromJSON('projects.json')
+projects.config <- fromJSON('project_scoring.json')
 projects <- projects.config$projects
 
 coverage.levels <- data.frame()
@@ -195,8 +195,7 @@ for (project.name in names(projects)) {
                         region.pairs$start_pos[is.na(region.pairs$end_pos)])
         }
         else {
-            ref <- projects.config$regions[[region$coordinate_region]]$reference
-            region.pairs = data.frame(start_pos=1, end_pos=sum(nchar(ref)))
+            region.pairs = data.frame(start_pos=1, end_pos=region$coordinate_region_length)
         }
         for (j in seq_along(region.pairs$start_pos)) {
             new.positions <- data.frame(

@@ -1907,10 +1907,6 @@
             {
               "end_pos": null,
               "start_pos": 318
-            },
-            {
-              "end_pos": null,
-              "start_pos": 348
             }
           ],
           "min_coverage1": 10,
@@ -2649,10 +2645,6 @@
             {
               "end_pos": null,
               "start_pos": 318
-            },
-            {
-              "end_pos": null,
-              "start_pos": 348
             }
           ],
           "min_coverage1": 10,
@@ -2789,10 +2781,6 @@
             {
               "end_pos": null,
               "start_pos": 318
-            },
-            {
-              "end_pos": null,
-              "start_pos": 348
             }
           ],
           "min_coverage1": 10,
