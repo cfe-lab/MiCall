@@ -37,7 +37,7 @@ gap_extend_coord = 10
 
 
 # ### Monitor settings ### #
-pipeline_version = '7.0'        # Change for each release
+pipeline_version = '7.1'        # Change for each release
 
 instrument_number = 'M01841'  # for Illumina MiSeq, second item in run folder name
 production = False  # set this to True to push results to NAS
