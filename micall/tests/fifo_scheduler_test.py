@@ -1,13 +1,15 @@
+import logging
 import os
+from shutil import rmtree
+import stat
 from StringIO import StringIO
 from subprocess import CalledProcessError
 import time
 import unittest
 
-from micall.monitor.fifo_scheduler import Factory, Job, Worker
 from testfixtures.logcapture import LogCapture
-import stat
-from shutil import rmtree
+
+from micall.monitor.fifo_scheduler import Factory, Job, Worker
 
 
 def purge_files(*filenames):
@@ -469,6 +471,7 @@ class FactoryTest(unittest.TestCase):
         self.assertEquals(exception_message, expected_error)
 
     def test_wait_multiple_nonzero(self):
+        logging.disable(None)  # Make sure logging isn't disabled.
         expected_error = """Command ' python -c "exit(2)"' returned non-zero exit status 2"""
         factory = Factory([("", 1)])
 
