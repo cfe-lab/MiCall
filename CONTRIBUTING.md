@@ -327,12 +327,11 @@ similar steps to setting up a development workstation. Follow these steps:
         sudo python setup.py install
 
 11. Check that the kiveapi package is the same version you tested with. If not,
-    get the latest code and install it.
+    do a Kive release first.
 
-        cd /usr/local/share/py-kive-api
-        git fetch
-        git checkout tags/vM.N
-        sudo python setup.py install
+        cd /usr/local/share/Kive
+        pip show kiveapi
+        cat api/setup.py
 
 12. Process one full run of data.
 

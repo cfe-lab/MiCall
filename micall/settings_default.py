@@ -98,7 +98,7 @@ logging.config.dictConfig({
                  'file': {'class': 'logging.handlers.RotatingFileHandler',
                           'level': 'DEBUG',
                           'formatter': 'basic',
-                          'filename': 'micall.log',
+                          'filename': '/data/miseq/micall.log',
                           'maxBytes': 1024*1024*15,  # 15MB
                           'backupCount': 10}},
     # This is the default logger.

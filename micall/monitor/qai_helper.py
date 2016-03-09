@@ -4,9 +4,7 @@ from random import Random
 import requests
 import time
 
-from micall.core import miseq_logging
-
-logger = miseq_logging.init_logging_console_only(logging.INFO)
+logger = logging.getLogger('qai_helper')
 
 
 class Session(requests.Session):
