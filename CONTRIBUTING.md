@@ -348,11 +348,13 @@ similar steps to setting up a development workstation. Follow these steps:
 14. Review the settings just as you did in the
     development environment, but make sure that `production = True`.
 15. Start the monitor, and tail the log to see that it begins processing all the
-    runs with the new version of the pipeline.
+    runs with the new version of the pipeline. Before you launch, change all
+    the working folders to be owned by the pipeline group.
 
         cd /usr/local/share/miseq/production/
+        chgrp -R pipeline /data/miseq
         python MISEQ_MONITOR.py &>/dev/null &
-        tail -f /data/miseq/MISEQ_MONITOR_OUTPUT.log
+        tail -f /data/miseq/micall.log
 
 15. Start building the Windows package by pulling the code in Git Bash:
 

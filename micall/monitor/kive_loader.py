@@ -416,11 +416,16 @@ class KiveLoader(object):
         map = {}
         for run in runs:
             if run.pipeline_id == self.pipeline.pipeline_id:
-                inputs = sorted(run.raw['inputs'], key=itemgetter('index'))
-                fastq1 = self.kive.get_dataset(inputs[1]['dataset'])
-                sample_name = self.get_sample_name(fastq1)
-                input_ids = tuple(input['dataset'] for input in inputs)
-                map[input_ids] = (sample_name, run)
+                try:
+                    run.is_complete()
+                    inputs = sorted(run.raw['inputs'], key=itemgetter('index'))
+                    fastq1 = self.kive.get_dataset(inputs[1]['dataset'])
+                    sample_name = self.get_sample_name(fastq1)
+                    input_ids = tuple(input['dataset'] for input in inputs)
+                    map[input_ids] = (sample_name, run)
+                except KiveRunFailedException:
+                    # Failed or cancelled, rerun.
+                    pass
         return map
 
     def get_run_key(self, quality, fastq1, fastq2):
