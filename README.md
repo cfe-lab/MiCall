@@ -153,8 +153,8 @@ the next one, moving it from that list to Samples In Progress.
 
 #### You need to force Monitor to reprocess a given run #### 
 
-First, stop the monitor.  Remove the results subfolder for the current version of 
-MiCall.  Restart the monitor.  On the next hourly scan, Monitor will handle this 
+First, stop Monitor.  Remove the results subfolder for the current version of 
+MiCall.  Restart Monitor.  On the next hourly scan, Monitor will handle this 
 folder as if it had never been processed through the current version of MiCall.  That 
 is, if it's The Newest Run, its samples will be immediately started and added to 
 Samples In Progress, and if it's not The Newest Run, its samples will be added to 
@@ -162,7 +162,7 @@ Samples That Need Processing.
 
 #### You need Monitor to skip a folder and handle an older one first ####
  
-Stop the monitor.  Add an `errorprocessing` flag to the run's folder in `RAW_DATA`.  
+Stop Monitor.  Add an `errorprocessing` flag to the run's folder in `RAW_DATA`.  
 This will make Monitor's next hourly scan believe that it's failed and should be 
 skipped, and Monitor will move on to the next one.  Note though that this has no 
 effect on which folder is The Newest Run: even if you're skipping The Newest Run, 
@@ -176,7 +176,7 @@ remove the fake `errorprocessing` flag you set (no need to stop and restart Moni
 
 #### You need to stop what's currently running and handle an older run ####
 
-Stop the monitor.  In Kive, stop the processing tasks that you need to clear out, 
+Stop Monitor.  In Kive, stop the processing tasks that you need to clear out, 
 but don't remove them; the progress you've already made can be reused later when 
 revisiting these tasks later.  Now, do the manipulations you need to do as in the
 above case to make Monitor deal with your desired run first.  Restart Monitor.
