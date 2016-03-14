@@ -24,6 +24,7 @@ def plot_distances(projects_filename):
     source_seed_names = []
     all_seeds = {}  # {name: (group_index, reference)}
     median_references = []
+    group_labels = []
     for group_index, group_name in enumerate(group_names):
         logger.info('Grouping %s.', group_name)
         seed_names = groups[group_name]
@@ -35,6 +36,7 @@ def plot_distances(projects_filename):
             all_seeds[seed_name] = (group_index, reference)
             references.append(reference)
         median_references.append(Levenshtein.median(references))
+        group_labels.append(group_name[4:-6])  # trim HCV- and -seeds
     config = None
 
     intragroup_source_groups = []
@@ -54,11 +56,16 @@ def plot_distances(projects_filename):
                 intergroup_source_groups.append(source_index)
                 intergroup_distances.append(distance)
 
-    plt.plot(intragroup_source_groups, intragroup_distances, 'go')
-    plt.plot(intergroup_source_groups, intergroup_distances, 'ro')
-    plt.xticks(range(len(source_seed_names)), source_seed_names, rotation='vertical')
-    plt.margins(0.1)
-    plt.subplots_adjust(bottom=0.15)
+    fig = plt.figure()
+    ax = fig.add_subplot(111,
+                         title='Distance From Genotype Median Reference',
+                         xlabel='genotype',
+                         ylabel='Levenshtein distance',
+                         xticks=range(len(group_labels)),
+                         xticklabels=group_labels)
+    ax.plot(intragroup_source_groups, intragroup_distances, 'go')
+    ax.plot(intergroup_source_groups, intergroup_distances, 'ro')
+    ax.margins(0.1)
     plt.show()
 
 plot_distances('../projects.json')
