@@ -23,13 +23,18 @@ def plot_distances(projects_filename):
     group_names.sort()
     source_seed_names = []
     all_seeds = {}  # {name: (group_index, reference)}
+    median_references = []
     for group_index, group_name in enumerate(group_names):
+        logger.info('Grouping %s.', group_name)
         seed_names = groups[group_name]
         seed_names.sort()
         source_seed_names.append(seed_names[0])
+        references = []
         for seed_name in seed_names:
             reference = ''.join(config['regions'][seed_name]['reference'])
             all_seeds[seed_name] = (group_index, reference)
+            references.append(reference)
+        median_references.append(Levenshtein.median(references))
     config = None
 
     intragroup_source_groups = []
@@ -37,18 +42,17 @@ def plot_distances(projects_filename):
     intergroup_source_groups = []
     intergroup_distances = []
 
-    for source_seed_name in source_seed_names:
-        logger.info('Processing %s.', source_seed_name)
-        source_index, source_reference = all_seeds[source_seed_name]
-        for dest_seed_name, (dest_index, dest_reference) in all_seeds.iteritems():
-            if dest_seed_name != source_seed_name:
-                distance = Levenshtein.distance(source_reference, dest_reference)
-                if source_index == dest_index:
-                    intragroup_source_groups.append(source_index)
-                    intragroup_distances.append(distance)
-                else:
-                    intergroup_source_groups.append(source_index)
-                    intergroup_distances.append(distance)
+    for source_index, source_group_name in enumerate(group_names):
+        logger.info('Processing %s.', source_group_name)
+        source_reference = median_references[source_index]
+        for dest_index, dest_reference in all_seeds.itervalues():
+            distance = Levenshtein.distance(source_reference, dest_reference)
+            if source_index == dest_index:
+                intragroup_source_groups.append(source_index)
+                intragroup_distances.append(distance)
+            else:
+                intergroup_source_groups.append(source_index)
+                intergroup_distances.append(distance)
 
     plt.plot(intragroup_source_groups, intragroup_distances, 'go')
     plt.plot(intergroup_source_groups, intergroup_distances, 'ro')
