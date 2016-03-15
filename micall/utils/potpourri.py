@@ -7,13 +7,14 @@ import os.path
 import random
 import time
 
-import settings
+from micall import settings
 from sample_sheet_parser import sample_sheet_parser
+
 
 def parseOptions():
     parser = argparse.ArgumentParser(
         description='Assemble a mixed set of sample files in a new run folder.')
-    
+
     parser.add_argument('source_runs',
                         help='path to raw data run folders')
     parser.add_argument('--sample_count',
@@ -26,13 +27,13 @@ def parseOptions():
                         help='random number seed, defaults to timer',
                         type=int,
                         default=long(time.time() * 256))
-    
+
     return parser.parse_args()
 
 
 def choose_samples(args):
     """ Randomly choose samples from all runs under the source runs folder.
-    
+
     @param args: the command line arguments
     @return: [(run_folder, sample_name, sample_line)] a list of tuples where
         sample_line is the original line from its sample sheet.
@@ -51,7 +52,7 @@ def choose_samples(args):
                 if line == '[Data]\n':
                     break
             sample_lines = list(f)
-                
+
         for sample_name, sample_data in sample_sheet['Data'].iteritems():
             files_exist = (
                 os.path.isfile(calculate_data_file_path(run, sample_name, 1)) and
@@ -64,7 +65,7 @@ def choose_samples(args):
                                          sample_name,
                                          sample_line,
                                          sample_data['tags']))
-    
+
     sample_names = random.sample(sample_names, args.sample_count)
     sample_names.sort()
     chosen_samples = []
@@ -94,13 +95,13 @@ def create_target_run():
         if name_count > 1:
             run_name = '{}_{}'.format(run_name, name_count)
         target_run = os.path.join(settings.rawdata_mount,
-                                  'MiSeq', 
-                                  'runs', 
+                                  'MiSeq',
+                                  'runs',
                                   run_name)
         if not os.path.exists(target_run):
             break
         name_count += 1
-    
+
     os.makedirs(os.path.join(target_run, 'Data', 'Intensities', 'BaseCalls'))
     return target_run
 
@@ -112,17 +113,19 @@ def create_links(target_run, sample_names):
             name_parts = sample_name.split('_')
             name_parts[-1] = 'S{}'.format(sample_number)
             new_sample_name = '_'.join(name_parts)
-            target_path = calculate_data_file_path(target_run, new_sample_name, 
-                read_number)
+            target_path = calculate_data_file_path(target_run,
+                                                   new_sample_name,
+                                                   read_number)
             os.symlink(read_path, target_path)
+
 
 def main():
     args = parseOptions()
     random.seed(args.seed)
-    
+
     target_run = create_target_run()
     print 'Creating run {} with seed {}'.format(target_run, args.seed)
-    
+
     sample_names = choose_samples(args)
     create_links(target_run, sample_names)
     header = """\
@@ -148,8 +151,8 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Descr
         f.write(header)
         for _run, _sample_name, sample_line in sample_names:
             f.write(sample_line)
-    
+
     with open(os.path.join(target_run, settings.NEEDS_PROCESSING), 'w') as f:
-        pass # empty file
+        pass  # empty file
     print "Done. Don't forget to import the run in QAI."
 main()
