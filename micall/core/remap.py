@@ -26,7 +26,7 @@ import tempfile
 
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall import settings
-from micall.utils.externals import Bowtie2, Bowtie2Build, Samtools, LineCounter
+from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 import miseq_logging
 import project_config
 from micall.utils.translation import reverse_and_complement
@@ -82,26 +82,6 @@ def is_short_read(read_row, max_primer_length):
     sizes = re.findall(r'(\d+)M', cigar)
     match_length = max(map(int, sizes))
     return match_length <= max_primer_length
-
-
-def build_conseqs_with_samtools(samfilename, samtools, raw_count):
-    bamfile = samfilename.replace('.sam', '.bam')
-    pileup_path = bamfile + '.pileup'
-    samtools.redirect_call(['view', '-b', samfilename], bamfile)
-    samtools.log_call(['sort', bamfile, os.path.splitext(bamfile)[0]])  # overwrite
-
-    # BAM to pileup
-    # -x doesn't try to merge forward and reverse reads, because the quality
-    #     calculation after merging was too hard to understand.
-    # -Q0 doesn't eliminate any bases from the pileup based on quality, the
-    #     quality is checked in pileup_to_conseq().
-    pileup_depth = max(raw_count, 8000)
-    samtools.redirect_call(['mpileup', '-xQ0', '-d', str(pileup_depth), bamfile],
-                           pileup_path,
-                           ignored='\[mpileup\] 1 samples in 1 input files')
-    with open(pileup_path, 'rU') as f2:
-        conseqs = pileup_to_conseq(f2, settings.consensus_q_cutoff)
-    return conseqs
 
 
 def build_conseqs_with_python(samfilename, old_conseqs):
@@ -267,18 +247,12 @@ def counts_to_conseqs(refmap):
     return conseqs
 
 
-def build_conseqs(samfilename, samtools, raw_count, old_conseqs):
+def build_conseqs(samfilename, old_conseqs):
     """ Build the new consensus sequences from the mapping results.
 
     @param samfilename: the mapping results in SAM format
-    @param samtools: a command wrapper for samtools, or None if it's not
-        available
-    @param raw_count: the maximum number of reads in the SAM file
     """
-    if samtools:
-        conseqs = build_conseqs_with_samtools(samfilename, samtools, raw_count)
-    else:
-        conseqs = build_conseqs_with_python(samfilename, old_conseqs)
+    conseqs = build_conseqs_with_python(samfilename, old_conseqs)
 
     if False:
         # Some debugging code to save the SAM file for testing.
@@ -333,9 +307,6 @@ def remap(fastq1,
     bowtie2_build = Bowtie2Build(settings.bowtie_version,
                                  settings.bowtie_build_path,
                                  logger)
-    samtools = settings.samtools_version and Samtools(settings.samtools_version,
-                                                      settings.samtools_path,
-                                                      logger)
 
     # check that the inputs exist
     if not os.path.exists(fastq1):
@@ -432,7 +403,7 @@ def remap(fastq1,
     seed_counts = {best_ref: best_count
                    for best_ref, best_count in refgroups.itervalues()}
     # regenerate consensus sequences based on preliminary map
-    conseqs = build_conseqs(samfile, samtools, raw_count, conseqs)
+    conseqs = build_conseqs(samfile, conseqs)
 
     # exclude references with low counts (post filtering)
     new_conseqs = {}
@@ -492,7 +463,7 @@ def remap(fastq1,
             break
 
         # regenerate consensus sequences
-        conseqs = build_conseqs(samfile, samtools, raw_count, conseqs)
+        conseqs = build_conseqs(samfile, conseqs)
 
     # finished iterative phase
 
@@ -774,129 +745,6 @@ def find_top_token(base_counts):
         if token < top_token:
             top_token = token
     return top_token
-
-
-def pileup_to_conseq(handle, qCutoff):
-    """
-    Generate a consensus sequence from a samtools pileup file.
-    Each line in a pileup file corresponds to a nucleotide position in the
-     reference.
-    Tokens are interpreted as follows:
-    ^               start of read
-    $               end of read
-    +[1-9]+[ACGT]+  insertion relative to ref of length \1 and substring \2
-    -[1-9]+N+  deletion relative to ref of length \1 and substring \2
-    *               placeholder for deleted base
-
-    FIXME: this cannot handle combinations of insertions (e.g., 1I3M2I)
-    because a pileup loses all linkage information.  For now we have to
-    restrict all insertions to those divisible by 3 to enforce a reading
-    frame.
-    """
-    conseqs = {}
-    to_skip = 0
-    last_pos = 0
-    positions_with_deletions = set()
-    for line in handle:
-        if to_skip > 0:
-            to_skip -= 1
-            continue
-
-        fields = line.strip('\n').split('\t')
-        region, pos, _refbase, _depth = fields[:4]
-        if len(fields) != 6:
-            astr = qstr = ''
-        else:
-            astr, qstr = fields[-2:]
-
-        if region not in conseqs:
-            conseqs.update({region: ''})
-            last_pos = 0
-
-        pos = int(pos)  # position in the pileup, 1-index
-        if (pos - last_pos) > 1:
-            conseqs[region] += 'N' * (pos - last_pos - 1)
-        last_pos = pos
-        base_counts = Counter()
-        if pos in positions_with_deletions:
-            base_counts['-'] = -1
-            positions_with_deletions.remove(pos)
-        i = 0       # Current index for astr
-        j = 0       # Current index for qstr
-
-        while i < len(astr):
-            if astr[i] == '^':
-                # start of new read
-                i += 2
-            elif astr[i] in '*':
-                i += 1
-                j += 1
-            elif astr[i] == '$':
-                i += 1
-            elif i < len(astr)-1 and astr[i+1] in '+-':
-                # i-th base is followed by an indel indicator
-                m = indel_re.match(astr[i+1:])
-                indel_len = int(m.group().strip('+-'))
-                left = i+1 + len(m.group())
-                insertion = astr[left:(left+indel_len)]
-                if astr[i+1] == '-':
-                    for deletion_pos in range(pos+1, pos+indel_len+1):
-                        positions_with_deletions.add(deletion_pos)
-                base = astr[i].upper()
-                token = base + m.group() + insertion.upper()  # e.g., A+3ACG
-                q = ord(qstr[j])-33
-                if q < qCutoff:
-                    base_counts['N'] = 0
-                else:
-                    if astr[i+1] == '+':
-                        base_counts[token] += 1
-                    else:
-                        base_counts[base] += 1
-
-                i += len(token)
-                j += 1
-            else:
-                # Operative case: sequence matches reference (And no indel ahead)
-                q = ord(qstr[j])-33
-                base = astr[i].upper() if q >= qCutoff else 'N'
-                base_counts[base] += 1
-                i += 1
-                j += 1
-
-        if 'N' in base_counts or not base_counts:
-            base_counts['N'] = 0
-        token = find_top_token(base_counts)
-        if '+' not in token:
-            # add counts from all insertions to the single base
-            ins_tokens = [token
-                          for token in base_counts.iterkeys()
-                          if '+' in token]
-            for token in ins_tokens:
-                base = token[0]
-                base_counts[base] += base_counts[token]
-                del base_counts[token]
-            token = find_top_token(base_counts)
-
-        if '+' in token:
-            m = indel_re.findall(token)[0]  # \+[0-9]+
-            conseqs[region] += token[0]
-            if int(m) % 3 == 0:
-                # only add insertions that retain reading frame
-                conseqs[region] += token[1+len(m):]
-        elif token == '-':
-            conseqs[region] += '-'
-        else:
-            conseqs[region] += token
-
-    # remove in-frame deletions (multiples of 3), if any
-    trimmed_conseqs = {}
-    for region, conseq in conseqs.iteritems():
-        if not re.match('^[N-]*$', conseq):
-            trimmed_conseqs[region] = re.sub('([ACGTN])(---)+([ACGTN])',
-                                             r'\g<1>\g<3>',
-                                             conseq)
-
-    return trimmed_conseqs
 
 
 def main():
