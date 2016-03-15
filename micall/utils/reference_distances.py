@@ -1,18 +1,64 @@
 from collections import defaultdict
 import json
-
-import matplotlib.pyplot as plt
-import Levenshtein
 import logging
+import re
+
+from gotoh import align_it  # @UnresolvedImport
+import Levenshtein
+import matplotlib.pyplot as plt
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
 logger = logging.getLogger('reference_distances')
+key_references = []
+key_sections = {}  # {reference: [key]}
+
+
+def populate_key_references(all_regions):
+    DEFINITIONS = [('HCV1A-H77-NS3-seed', 701, 950),
+                   ('HCV1A-H77-NS5a-seed', 1, 250),
+                   ('HCV1A-H77-NS5b-seed', 101, 350)]
+    for name, start, end in DEFINITIONS:
+        reference = ''.join(all_regions[name]['reference'])
+        key_references.append(reference[start-1:end])
+
+
+def calculate_keys(reference):
+    keys = key_sections.get(reference, None)
+    if keys is not None:
+        return keys
+
+    GAP_INIT_PENALTY = 10
+    GAP_EXTEND_PENALTY = 10
+    USE_TERMINAL_GAP_PENALTY = False
+    keys = []
+    for key in key_references:
+        # s1 is large sequence, s2 is key region
+        aligned_source, aligned_key, _score = align_it(reference,
+                                                       key,
+                                                       GAP_INIT_PENALTY,
+                                                       GAP_EXTEND_PENALTY,
+                                                       USE_TERMINAL_GAP_PENALTY)
+        match = re.match('^-*(.*?)-*$', aligned_key)
+        excerpt = aligned_source[match.start(1):match.end(1)].replace('-', '')
+        keys.append(excerpt)
+    key_sections[reference] = keys
+    return keys
+
+
+def calculate_distance(source, destination):
+    source_keys = calculate_keys(source)
+    dest_keys = calculate_keys(destination)
+    distance = 0
+    for source_key, dest_key in zip(source_keys, dest_keys):
+        distance += Levenshtein.distance(source_key, dest_key)
+    return distance
 
 
 def plot_distances(projects_filename):
     with open(projects_filename, 'rU') as f:
         config = json.load(f)
+    populate_key_references(config['regions'])
     groups = defaultdict(list)
     for name, region in config['regions'].iteritems():
         seed_group = region['seed_group']
@@ -48,7 +94,7 @@ def plot_distances(projects_filename):
         logger.info('Processing %s.', source_group_name)
         source_reference = median_references[source_index]
         for dest_index, dest_reference in all_seeds.itervalues():
-            distance = Levenshtein.distance(source_reference, dest_reference)
+            distance = calculate_distance(source_reference, dest_reference)
             if source_index == dest_index:
                 intragroup_source_groups.append(source_index)
                 intragroup_distances.append(distance)
@@ -58,13 +104,13 @@ def plot_distances(projects_filename):
 
     fig = plt.figure()
     ax = fig.add_subplot(111,
-                         title='Distance From Genotype Median Reference',
+                         title='Distance From Genotype Median Reference in Key Regions',
                          xlabel='genotype',
                          ylabel='Levenshtein distance',
                          xticks=range(len(group_labels)),
                          xticklabels=group_labels)
-    ax.plot(intragroup_source_groups, intragroup_distances, 'go')
-    ax.plot(intergroup_source_groups, intergroup_distances, 'ro')
+    ax.plot(intragroup_source_groups, intragroup_distances, 'go', alpha=0.4)
+    ax.plot(intergroup_source_groups, intergroup_distances, 'ro', alpha=0.4)
     ax.margins(0.1)
     plt.show()
 
