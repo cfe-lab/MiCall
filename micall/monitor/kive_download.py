@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 import logging
 import os
+import re
 import shutil
 import tarfile
 
@@ -18,6 +19,11 @@ def parse_args():
     parser = ArgumentParser(description='Download runs from Kive.')
     parser.add_argument('--startafter', '-a', help='Old runs start after "DD Mon YYYY HH:MM".')
     parser.add_argument('--startbefore', '-b', help='Old runs start before "DD Mon YYYY HH:MM".')
+    parser.add_argument('--batchdate', '-d', help='MiSeq run date "YYMMDD_MACHINEID".')
+    parser.add_argument('--batchsize',
+                        '-n',
+                        type=int,
+                        help='Number of samples to download.')
     parser.add_argument('--workfolder', '-w', help='Work folder to download temporary files to.')
     parser.add_argument('--resultfolder', '-r', help='Result folder to copy result files to.')
     args = parser.parse_args()
@@ -117,12 +123,56 @@ def find_old_runs(kive, **kwargs):
     for entry in json:
         status = RunStatus(entry, kive)
         status.json = entry
-        sample_name = entry['display_name']
         status_response = kive.get(entry['run_status'])
         status_response.raise_for_status()
         sample_filename = status_response.json()['inputs']['2']['dataset_name']
         sample_name = '_'.join(sample_filename.split('_')[:2])
         runs.append((sample_name, status))
+    runs.sort()
+    return runs
+
+
+def find_batch_runs(kive, batch_name, batch_size):
+    run_map = {}  # {sample_name: status}
+    for i in range(1, 201):
+        response = kive.get('/api/runs/status/', params={'page_size': 25,
+                                                         'page': i})
+        response.raise_for_status()
+        json = response.json()
+        for entry in json['results']:
+            text_status = entry['run_progress']['status']
+            pipeline_id = entry['pipeline']
+            if re.match(r'^\*+-\*+$', text_status) is None or pipeline_id != 167:
+                continue
+            display_match = re.match(r'^MiSeq - ([^_]*_S\d+) \((.*)\)$',
+                                     entry['display_name'])
+            if display_match is not None:
+                if display_match.group(2) != batch_name:
+                    continue
+                sample_name = display_match.group(1)
+            else:
+                status_response = kive.get(entry['run_status'])
+                status_response.raise_for_status()
+                status_json = status_response.json()
+                quality_filename = status_json['inputs']['1']['dataset_name']
+                if quality_filename != '{}_quality.csv'.format(batch_name):
+                    continue
+                sample_filename = status_json['inputs']['2']['dataset_name']
+                sample_name = '_'.join(sample_filename.split('_')[:2])
+            status = RunStatus(entry, kive)
+            status.json = entry
+            run_map[sample_name] = status
+        run_count = len(run_map)
+        print('Found {} of {} runs after {} pages.'.format(run_count,
+                                                           batch_size,
+                                                           i))
+        if run_count >= batch_size:
+            break
+    if run_count < batch_size:
+        raise StandardError('Expected {} samples, but only found {}.'.format(
+            batch_size,
+            run_count))
+    runs = run_map.items()
     runs.sort()
     return runs
 
@@ -137,9 +187,12 @@ def main():
     kive = kive_login(kive_server_url,
                       kive_user,
                       kive_password)
-    runs = find_old_runs(kive,
-                         startafter=args.startafter,
-                         startbefore=args.startbefore)
+    if args.batchdate is not None:
+        runs = find_batch_runs(kive, args.batchdate, args.batchsize)
+    else:
+        runs = find_old_runs(kive,
+                             startafter=args.startafter,
+                             startbefore=args.startbefore)
     unfinished_count = 0
     for sample_name, run in runs:
         progress = run.json.get('run_progress')

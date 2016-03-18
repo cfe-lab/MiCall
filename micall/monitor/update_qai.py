@@ -9,9 +9,10 @@ import logging
 from operator import itemgetter
 import os
 
+from micall import settings  # Import first for logging configuration.
+
 import qai_helper
 from micall.utils import sample_sheet_parser
-from micall import settings
 from micall.core.project_config import ProjectConfig
 
 logger = logging.getLogger('update_qai')
