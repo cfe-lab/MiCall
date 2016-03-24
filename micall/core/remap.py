@@ -24,6 +24,9 @@ import shutil
 import sys
 import tempfile
 
+from gotoh import align_it
+import Levenshtein
+
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall import settings
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
@@ -84,17 +87,11 @@ def is_short_read(read_row, max_primer_length):
     return match_length <= max_primer_length
 
 
-def build_conseqs_with_python(samfilename, old_conseqs):
-    with open(samfilename, 'rU') as samfile:
-        return sam_to_conseqs(samfile,
-                              settings.consensus_q_cutoff,
-                              old_conseqs=old_conseqs)
-
-
 def sam_to_conseqs(samfile,
                    quality_cutoff=0,
                    debug_reports=None,
-                   old_conseqs=None):
+                   seeds=None,
+                   is_filtered=False):
     """ Build consensus sequences for each reference from a SAM file.
 
     @param samfile: an open file in the SAM format containing reads with their
@@ -104,10 +101,13 @@ def sam_to_conseqs(samfile,
         of the regions and positions that you want a report for. The value
         will be set to a string describing the counts and qualities at that
         position.
-    @param old_conseqs: {reference_name: consensus_sequence} If this is set,
-        any positions without coverage will be set to the base from the old
-        consensus. If there are no reads mapped to a reference, it will not
+    @param seeds: {name: sequence} If this is set,
+        any positions without coverage will be set to the base from the seed
+        reference. If there are no reads mapped to a reference, it will not
         be included as a new consensus.
+    @param is_filtered: if True, then any consensus that has migrated so far
+        from its seed that it is closer to a different seed, will not be
+        included as a new consensus.
     @return: {reference_name: consensus_sequence}
     """
 
@@ -120,10 +120,10 @@ def sam_to_conseqs(samfile,
         nuc_count_factory = Counter
         return defaultdict(nuc_count_factory)
     refmap = defaultdict(pos_nucs_factory)
-    if old_conseqs:
-        for rname, old_conseq in old_conseqs.iteritems():
+    if seeds:
+        for rname, seq in seeds.iteritems():
             pos_nucs = refmap[rname]
-            for i, nuc in enumerate(old_conseq, 1):
+            for i, nuc in enumerate(seq, 1):
                 pos_nucs[i][nuc] = 0
 
     for read_pair in matchmaker(samfile, include_singles=True):
@@ -192,7 +192,42 @@ def sam_to_conseqs(samfile,
                                                   ', '.join(mixture)))
             debug_reports[key] = ', '.join(mixtures)
 
-    return counts_to_conseqs(refmap)
+    new_conseqs = counts_to_conseqs(refmap)
+    if not (seeds and is_filtered) or len(new_conseqs) < 2:
+        return new_conseqs
+
+    gap_open_penalty = 15
+    gap_extend_penalty = 0  # conseq can have large chunks removed
+    use_terminal_gap_penalty = 1
+    filtered_conseqs = {}
+    for name in sorted(new_conseqs.iterkeys()):
+        conseq = new_conseqs[name]
+        counts = refmap[name]
+        relevant_conseq = u''
+        for pos, c in enumerate(conseq, 1):
+            pos_counts = sum(counts[pos].itervalues())
+            if pos_counts > 0:
+                relevant_conseq += c
+
+        distances = {}
+        for seed_name in sorted(new_conseqs.iterkeys()):
+            seed_ref = seeds[seed_name]
+            aligned_seed, aligned_conseq, _score = align_it(seed_ref,
+                                                            relevant_conseq,
+                                                            gap_open_penalty,
+                                                            gap_extend_penalty,
+                                                            use_terminal_gap_penalty)
+            relevant_seed = u''
+            for seed_nuc, conseq_nuc in zip(aligned_seed, aligned_conseq):
+                if seed_nuc != '-' and conseq_nuc != '-':
+                    relevant_seed += seed_nuc
+            d = Levenshtein.distance(relevant_seed, relevant_conseq)
+            distances[seed_name] = d
+
+        if distances[name] == min(distances.itervalues()):
+            # Consensus is closer to starting seed than any other seed: keep it.
+            filtered_conseqs[name] = conseq
+    return filtered_conseqs
 
 
 def update_counts(rname, qual, mseq, merged_inserts, pos_nucs, debug_reports):
@@ -247,19 +282,37 @@ def counts_to_conseqs(refmap):
     return conseqs
 
 
-def build_conseqs(samfilename, old_conseqs):
+def build_conseqs(samfilename, seeds=None, is_filtered=False):
     """ Build the new consensus sequences from the mapping results.
 
     @param samfilename: the mapping results in SAM format
+    @param seeds: {name: sequence} If this is set,
+        any positions without coverage will be set to the base from the seed
+        reference. If there are no reads mapped to a reference, it will not
+        be included as a new consensus.
+    @param is_filtered: if True, then any consensus that has migrated so far
+        from its seed that it is closer to a different seed, will not be
+        included as a new consensus.
+    @return: {reference_name: consensus_sequence}
     """
-    conseqs = build_conseqs_with_python(samfilename, old_conseqs)
+    with open(samfilename, 'rU') as samfile:
+        conseqs = sam_to_conseqs(samfile,
+                                 settings.consensus_q_cutoff,
+                                 seeds=seeds,
+                                 is_filtered=is_filtered)
 
     if False:
         # Some debugging code to save the SAM file for testing.
-        copy_name = tempfile.mktemp(suffix='.sam', prefix=samfilename)
+        copy_name = tempfile.mktemp(suffix='.sam', prefix=samfilename, dir='.')
         shutil.copy(samfilename, copy_name)
 
     return conseqs
+
+
+def write_remap_counts(remap_counts_writer, counts, title):
+    for refname in sorted(counts.iterkeys()):
+        remap_counts_writer.writerow(dict(type=title + ' ' + refname,
+                                          count=counts[refname]))
 
 
 def remap(fastq1,
@@ -337,10 +390,11 @@ def remap(fastq1,
 
     # retrieve reference sequences used for preliminary mapping
     projects = project_config.ProjectConfig.loadDefault()
-    conseqs = {}
+    seeds = {}
     for seed, vals in projects.config['regions'].iteritems():
         seqs = vals['reference']
-        conseqs.update({str(seed): ''.join(seqs)})
+        seeds[seed] = ''.join(seqs)
+    conseqs = dict(seeds)  # copy
 
     # record the raw read count
     raw_count = line_counter.count(fastq1, gzip=gzip) / 2  # 4 lines per record in FASTQ, paired
@@ -403,7 +457,7 @@ def remap(fastq1,
     seed_counts = {best_ref: best_count
                    for best_ref, best_count in refgroups.itervalues()}
     # regenerate consensus sequences based on preliminary map
-    conseqs = build_conseqs(samfile, conseqs)
+    conseqs = build_conseqs(samfile, seeds=seeds)
 
     # exclude references with low counts (post filtering)
     new_conseqs = {}
@@ -446,24 +500,31 @@ def remap(fastq1,
                                           stderr,
                                           callback)
 
-        # stopping criterion 1 - none of the regions gained reads
-        if all([(count <= map_counts[refname]) for refname, count in new_counts.iteritems()]):
-            break
+        n_remaps += 1
+        write_remap_counts(remap_counts_writer,
+                           new_counts,
+                           title='remap-{}'.format(n_remaps))
+        old_seed_names = set(conseqs.iterkeys())
+        # regenerate consensus sequences
+        conseqs = build_conseqs(samfile, seeds=seeds, is_filtered=True)
+        new_seed_names = set(conseqs.iterkeys())
 
-        # stopping criterion 2 - a sufficient fraction of raw data has been mapped
-        mapping_efficiency = sum(new_counts.values()) / float(raw_count)
-        if mapping_efficiency > settings.min_mapping_efficiency:
-            break
+        if new_seed_names == old_seed_names:
+            # stopping criterion 1 - none of the regions gained reads
+            if all((count <= map_counts[refname])
+                   for refname, count in new_counts.iteritems()):
+                break
+
+            # stopping criterion 2 - a sufficient fraction of raw data has been mapped
+            mapping_efficiency = sum(new_counts.values()) / float(raw_count)
+            if mapping_efficiency > settings.min_mapping_efficiency:
+                break
+
+            if n_remaps >= settings.max_remaps:
+                break
 
         # deep copy of mapping counts
-        map_counts = dict([(k, v) for k, v in new_counts.iteritems()])
-
-        n_remaps += 1
-        if n_remaps >= settings.max_remaps:
-            break
-
-        # regenerate consensus sequences
-        conseqs = build_conseqs(samfile, conseqs)
+        map_counts = dict(new_counts)
 
     # finished iterative phase
 
@@ -503,12 +564,13 @@ def remap(fastq1,
     # write consensus sequences and counts
     remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
     for refname in new_counts.iterkeys():
-        remap_counts_writer.writerow(dict(type='remap %s' % refname,
-                                          count=new_counts[refname]))
         # NOTE this is the consensus sequence to which the reads were mapped, NOT the
         # current consensus!
         conseq = conseqs.get(refname) or projects.getReference(refname)
         remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
+    write_remap_counts(remap_counts_writer,
+                       new_counts,
+                       title='remap-final')
 
     # report number of unmapped reads
     remap_counts_writer.writerow(dict(type='unmapped',
