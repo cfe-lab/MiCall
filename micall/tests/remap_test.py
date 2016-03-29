@@ -449,6 +449,65 @@ class SamToConseqsTest(unittest.TestCase):
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
+    def testSeedsConvergedPlusOtherLowCoverage(self):
+        """ Portion with decent coverage has converged, other hasn't.
+        """
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\tSN:other\n"
+            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
+            "test2\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
+            "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
+            "other2\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
+            "other3\t99\tother\t11\t44\t6M\t=\t1\t16\tGTGTGT\tJJJJJJ\n"
+        )
+        seeds = {'test': 'ATGAAGTACTCTCT',
+                 'other': 'AAGCCGAAGTGTGT'}
+        expected_conseqs = {'test': 'ATGAGGAGTACTCT'}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       is_filtered=True,
+                                       filter_coverage=2)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testAllSeedsLowCoverage(self):
+        "Multiple seeds mapped, but none have good coverage. Choose most reads."
+
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\tSN:other\n"
+            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
+            "test2\t99\ttest\t11\t44\t6M\t=\t1\t10\tCTCTCT\tJJJJJJ\n"
+            "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
+        )
+        seeds = {'test': 'ATGAAGTACTCTCT',
+                 'other': 'AAGCCGAAGTGTGT'}
+        expected_conseqs = {'test': 'ATGAGGAGTACTCTCT'}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       is_filtered=True,
+                                       filter_coverage=2)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testNothingMapped(self):
+        "Multiple seeds mapped, but none have good coverage. Choose most reads."
+
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\tSN:other\n"
+        )
+        seeds = {'test': 'ATGAAGTACTCTCT',
+                 'other': 'AAGCCGAAGTGTGT'}
+        expected_conseqs = {}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       is_filtered=True,
+                                       filter_coverage=2)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
 
 class MixedReferenceMemorySplitter(MixedReferenceSplitter):
     """ Dummy class to hold split reads in memory. Useful for testing. """

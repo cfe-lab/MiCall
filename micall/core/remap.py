@@ -91,7 +91,8 @@ def sam_to_conseqs(samfile,
                    quality_cutoff=0,
                    debug_reports=None,
                    seeds=None,
-                   is_filtered=False):
+                   is_filtered=False,
+                   filter_coverage=1):
     """ Build consensus sequences for each reference from a SAM file.
 
     @param samfile: an open file in the SAM format containing reads with their
@@ -108,6 +109,8 @@ def sam_to_conseqs(samfile,
     @param is_filtered: if True, then any consensus that has migrated so far
         from its seed that it is closer to a different seed, will not be
         included as a new consensus.
+    @param filter_coverage: when filtering on consensus distance, only include
+        portions with at least this depth of coverage
     @return: {reference_name: consensus_sequence}
     """
 
@@ -126,6 +129,7 @@ def sam_to_conseqs(samfile,
             for i, nuc in enumerate(seq, 1):
                 pos_nucs[i][nuc] = 0
 
+    read_counts = Counter()
     for read_pair in matchmaker(samfile, include_singles=True):
         read1, read2 = read_pair
         if read2 and read1[2] != read2[2]:
@@ -168,6 +172,7 @@ def sam_to_conseqs(samfile,
                                                 filtered_reads[1]['pos']-1)
             mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=quality_cutoff)
             merged_inserts = merge_inserts(ins1, ins2, quality_cutoff)
+            read_counts[rname] += 1
             pos_nucs = refmap[rname]
             update_counts(rname, qual, mseq, merged_inserts, pos_nucs, debug_reports)
 
@@ -206,8 +211,11 @@ def sam_to_conseqs(samfile,
         relevant_conseq = u''
         for pos, c in enumerate(conseq, 1):
             pos_counts = sum(counts[pos].itervalues())
-            if pos_counts > 0:
+            if pos_counts >= filter_coverage:
                 relevant_conseq += c
+        if not relevant_conseq:
+            # None of the coverage was acceptable.
+            continue
 
         distances = {}
         for seed_name in sorted(new_conseqs.iterkeys()):
@@ -227,6 +235,10 @@ def sam_to_conseqs(samfile,
         if distances[name] == min(distances.itervalues()):
             # Consensus is closer to starting seed than any other seed: keep it.
             filtered_conseqs[name] = conseq
+    if not filtered_conseqs:
+        # No reference had acceptable coverage, choose one with most reads.
+        best_ref = read_counts.most_common(1)[0][0]
+        filtered_conseqs[best_ref] = new_conseqs[best_ref]
     return filtered_conseqs
 
 
@@ -282,7 +294,7 @@ def counts_to_conseqs(refmap):
     return conseqs
 
 
-def build_conseqs(samfilename, seeds=None, is_filtered=False):
+def build_conseqs(samfilename, seeds=None, is_filtered=False, filter_coverage=1):
     """ Build the new consensus sequences from the mapping results.
 
     @param samfilename: the mapping results in SAM format
@@ -293,13 +305,16 @@ def build_conseqs(samfilename, seeds=None, is_filtered=False):
     @param is_filtered: if True, then any consensus that has migrated so far
         from its seed that it is closer to a different seed, will not be
         included as a new consensus.
+    @param filter_coverage: when filtering on consensus distance, only include
+        portions with at least this depth of coverage
     @return: {reference_name: consensus_sequence}
     """
     with open(samfilename, 'rU') as samfile:
         conseqs = sam_to_conseqs(samfile,
                                  settings.consensus_q_cutoff,
                                  seeds=seeds,
-                                 is_filtered=is_filtered)
+                                 is_filtered=is_filtered,
+                                 filter_coverage=filter_coverage)
 
     if False:
         # Some debugging code to save the SAM file for testing.
@@ -506,7 +521,10 @@ def remap(fastq1,
                            title='remap-{}'.format(n_remaps))
         old_seed_names = set(conseqs.iterkeys())
         # regenerate consensus sequences
-        conseqs = build_conseqs(samfile, seeds=seeds, is_filtered=True)
+        conseqs = build_conseqs(samfile,
+                                seeds=seeds,
+                                is_filtered=True,
+                                filter_coverage=count_threshold)
         new_seed_names = set(conseqs.iterkeys())
 
         if new_seed_names == old_seed_names:
