@@ -257,7 +257,7 @@ def merge_inserts(ins1, ins2, q_cutoff=10, minimum_q_delta=5):
     @param minimum_q_delta: if two insertions disagree on a base, the higher
         quality must be at least this much higher than the other, or that base
         will be reported as an N.
-    @return {pos: seq} for each of the positions in ins1 and ins2. If the same
+    @return: {pos: seq} for each of the positions in ins1 and ins2. If the same
         position was in both, then the two insertions are merged. If the minimum
         quality for an insertion is below q_cutoff, that insertion is ignored.
     """

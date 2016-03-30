@@ -71,7 +71,9 @@ class KiveLoader(object):
             if not self.can_launch():
                 self.check_run_status()
             if not self.can_launch():
-                return self.status_delay
+                return (self.status_delay
+                        if self.active_runs
+                        else self.folder_delay)
             file1 = self.files[self.file_count]
             file2 = file1.replace('_R1_', '_R2_')
             self.file_count += 1

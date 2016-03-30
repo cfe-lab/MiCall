@@ -49,7 +49,7 @@ class KiveLoaderTest(unittest.TestCase):
     def test_idle(self):
         delay = self.loader.poll()
 
-        self.assertEqual(self.loader.status_delay, delay)
+        self.assertEqual(self.loader.folder_delay, delay)
 
     def test_upload_one_sample(self):
         self.loader.find_folders = lambda: ['run2', 'run1']
