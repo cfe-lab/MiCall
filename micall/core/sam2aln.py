@@ -1,16 +1,10 @@
 #! /usr/bin/env python
 
 """
-Shipyard-style MiSeq pipeline, step 3
 Takes SAM in CSV format as input.  Assumes that these data have been
 through remap.py (but not strictly necessary!).  Merges paired-end reads
 and outputs aligned sequences (with insertions and deletions, minus soft
 clips).
-
-Dependencies:
-    bowtie2-build
-    bowtie2-align
-    settings.py
 """
 
 import argparse
@@ -23,7 +17,8 @@ import os
 import re
 import sys
 
-from micall.settings import max_prop_N, sam2aln_q_cutoffs
+SAM2ALN_Q_CUTOFFS = [15]  # Q-cutoff for base censoring
+MAX_PROP_N = 0.5                 # Drop reads with more censored bases than this proportion
 
 
 def parseArgs():
@@ -390,10 +385,10 @@ def parse_sam(rows):
         qual2 = '!'*pos2 + qual2
 
         # merge reads
-        for qcut in sam2aln_q_cutoffs:
+        for qcut in SAM2ALN_Q_CUTOFFS:
             mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=qcut)
             prop_N = mseq.count('N') / float(len(mseq.strip('-')))
-            if prop_N > max_prop_N:
+            if prop_N > MAX_PROP_N:
                 # fail read pair
                 failure_cause = 'manyNs'
             else:

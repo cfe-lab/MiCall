@@ -1,15 +1,9 @@
 #! /usr/bin/env python
 
 """
-Shipyard-style MiSeq pipeline, step 2
 Takes preliminary SAM as CSV input.  Iterative re-mapping of reads from
 original FASTQ files.
 Also report the number of reads mapped before and after processing.
-Dependencies:
-    bowtie2-build
-    bowtie2-align
-    samtools (with mpileup modified to take higher max per-file depth)
-    settings.py
 """
 
 import argparse
@@ -25,11 +19,17 @@ import sys
 import tempfile
 
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
-from micall import settings
+from micall.core.prelim_map import BOWTIE_THREADS, BOWTIE_BUILD_PATH, \
+    BOWTIE_PATH, BOWTIE_VERSION, READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
+    REF_GAP_EXTEND
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 import miseq_logging
 import project_config
 from micall.utils.translation import reverse_and_complement
+
+CONSENSUS_Q_CUTOFF = 20         # Min Q for base to contribute to conseq (pileup2conseq)
+MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
+MAX_REMAPS = 3                  # Number of remapping attempts if mapping efficiency unsatisfied
 
 # SAM file format
 fieldnames = [
@@ -87,7 +87,7 @@ def is_short_read(read_row, max_primer_length):
 def build_conseqs_with_python(samfilename, old_conseqs):
     with open(samfilename, 'rU') as samfile:
         return sam_to_conseqs(samfile,
-                              settings.consensus_q_cutoff,
+                              CONSENSUS_Q_CUTOFF,
                               old_conseqs=old_conseqs)
 
 
@@ -271,11 +271,11 @@ def remap(fastq1,
           unmapped1,
           unmapped2,
           work_path='',
-          nthreads=None,
+          nthreads=BOWTIE_THREADS,
           callback=None,
           count_threshold=10,
-          rdgopen=None,
-          rfgopen=None,
+          rdgopen=READ_GAP_OPEN,
+          rfgopen=REF_GAP_OPEN,
           stderr=sys.stderr,
           gzip=False):
     """
@@ -302,10 +302,9 @@ def remap(fastq1,
     reffile = os.path.join(work_path, 'temp.fasta')
     samfile = os.path.join(work_path, 'temp.sam')
 
-    nthreads = nthreads or settings.bowtie_threads
-    bowtie2 = Bowtie2(settings.bowtie_version, settings.bowtie_path)
-    bowtie2_build = Bowtie2Build(settings.bowtie_version,
-                                 settings.bowtie_build_path,
+    bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
+    bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
+                                 BOWTIE_BUILD_PATH,
                                  logger)
 
     # check that the inputs exist
@@ -452,14 +451,14 @@ def remap(fastq1,
 
         # stopping criterion 2 - a sufficient fraction of raw data has been mapped
         mapping_efficiency = sum(new_counts.values()) / float(raw_count)
-        if mapping_efficiency > settings.min_mapping_efficiency:
+        if mapping_efficiency > MIN_MAPPING_EFFICIENCY:
             break
 
         # deep copy of mapping counts
         map_counts = dict([(k, v) for k, v in new_counts.iteritems()])
 
         n_remaps += 1
-        if n_remaps >= settings.max_remaps:
+        if n_remaps >= MAX_REMAPS:
             break
 
         # regenerate consensus sequences
@@ -561,17 +560,17 @@ def map_to_reference(fastq1,
     # regenerate bowtie2 index files
     bowtie2_build.build(reffile, reffile)
 
-    read_gap_open_penalty = rdgopen or settings.read_gap_open_remap
-    ref_gap_open_penalty = rfgopen or settings.ref_gap_open_remap
+    read_gap_open_penalty = rdgopen
+    ref_gap_open_penalty = rfgopen
 
     # stream output from bowtie2
     bowtie_args = ['--wrapper', 'micall-0',
                    '--quiet',
                    '-x', reffile,
                    '--rdg', "{},{}".format(read_gap_open_penalty,
-                                           settings.read_gap_extend_remap),
+                                           READ_GAP_EXTEND),
                    '--rfg', "{},{}".format(ref_gap_open_penalty,
-                                           settings.ref_gap_extend_remap),
+                                           REF_GAP_EXTEND),
                    '-1', fastq1,
                    '-2', fastq2,
                    '--no-hd',  # no header lines (start with @)

@@ -10,24 +10,25 @@ This assumes a consistent reading frame across the entire region.
 
 Outputs nucleotide counts for HLA-B in nucleotide frequencies file.
 This does not assume any reading frame (because of a frameshift in HLA-B).
-
-Dependencies:
-    settings.py
-    gotoh package
 """
 
 import argparse
+from collections import Counter
+import csv
 from itertools import groupby
 import logging
 import os
 
 import gotoh
-from micall import settings
+
 import miseq_logging
 import project_config
 from micall.utils.translation import translate, ambig_dict
-from collections import Counter
-import csv
+
+AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'
+CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
+GAP_OPEN_COORD = 40
+GAP_EXTEND_COORD = 10
 
 
 def parseArgs():
@@ -200,8 +201,8 @@ class SequenceReport(object):
             aref, aquery, score = self._pair_align(
                 coordinate_ref,
                 consensus,
-                gap_open=settings.gap_open_coord,
-                gap_extend=settings.gap_extend_coord)
+                gap_open=GAP_OPEN_COORD,
+                gap_extend=GAP_EXTEND_COORD)
             if score < max_score:
                 continue
             max_score = score
@@ -314,7 +315,7 @@ class SequenceReport(object):
                    'q-cutoff',
                    'query.aa.pos',
                    'refseq.aa.pos']
-        columns.extend(settings.amino_alphabet)
+        columns.extend(AMINO_ALPHABET)
         return csv.DictWriter(amino_file,
                               columns,
                               lineterminator=os.linesep)
@@ -337,7 +338,7 @@ class SequenceReport(object):
                        'q-cutoff': self.qcut,
                        'query.aa.pos': query_pos,
                        'refseq.aa.pos': report_amino.position}
-                for letter in settings.amino_alphabet:
+                for letter in AMINO_ALPHABET:
                     row[letter] = seed_amino.counts[letter]
                 amino_writer.writerow(row)
 
@@ -491,7 +492,7 @@ class SeedAmino(object):
         @param count: the number of times they were read
         """
         amino = translate(codon_seq.upper())
-        if amino in settings.amino_alphabet:
+        if amino in AMINO_ALPHABET:
             self.counts[amino] += count
         for i in range(3):
             self.nucleotides[i].count_nucleotides(codon_seq[i], count)
@@ -501,10 +502,10 @@ class SeedAmino(object):
 
         Report how many times each amino acid was seen in count_aminos().
         @return: comma-separated list of counts in the same order as the
-        amino_alphabet list
+        AMINO_ALPHABET list
         """
         return ','.join([str(self.counts[amino])
-                         for amino in settings.amino_alphabet])
+                         for amino in AMINO_ALPHABET])
 
     def get_consensus(self):
         """ Find the amino acid that was seen most often in count_aminos().
@@ -740,7 +741,7 @@ def aln2counts(aligned_csv,
     insert_writer = InsertionWriter(coord_ins_csv)
     report = SequenceReport(insert_writer,
                             projects,
-                            settings.conseq_mixture_cutoffs)
+                            CONSEQ_MIXTURE_CUTOFFS)
     report.write_amino_header(amino_csv)
     report.write_consensus_header(conseq_csv)
     report.write_failure_header(failed_align_csv)

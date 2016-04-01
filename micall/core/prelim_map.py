@@ -6,9 +6,6 @@ Run bowtie2 on paired-end FASTQ data sets with user-supplied *.bt2
 bowtie2 SAM format output to <stdout> for redirection via subprocess.Popen
 Sort outputs by refname.
 Convert to CSV format and write to file.
-
-Dependencies: settings.py (derived from settings_default.py)
-              *.bt2 files produced by bowtie2-align - pass as metapackage
 """
 
 import argparse
@@ -19,8 +16,17 @@ import sys
 
 import miseq_logging
 import project_config
-from micall import settings  # settings.py is a CodeResourceDependency
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
+
+BOWTIE_THREADS = 4    # Bowtie performance roughly scales with number of threads
+BOWTIE_VERSION = '2.2.1'        # version of bowtie2, used for version control
+BOWTIE_PATH = 'bowtie2-align-s'         # path to executable, so you can install more than one version
+BOWTIE_BUILD_PATH = 'bowtie2-build-s'
+# Read and reference gap open/extension penalties.
+READ_GAP_OPEN = 10
+READ_GAP_EXTEND = 3
+REF_GAP_OPEN = 10
+REF_GAP_EXTEND = 3
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 line_counter = LineCounter()
@@ -29,10 +35,10 @@ line_counter = LineCounter()
 def prelim_map(fastq1,
                fastq2,
                prelim_csv,
-               nthreads=None,
+               nthreads=BOWTIE_THREADS,
                callback=None,
-               rdgopen=None,
-               rfgopen=None,
+               rdgopen=READ_GAP_OPEN,
+               rfgopen=REF_GAP_OPEN,
                stderr=sys.stderr,
                gzip=False):
     """ Run the preliminary mapping step.
@@ -41,21 +47,16 @@ def prelim_map(fastq1,
     @param fastq2: the file name for the reverse reads in FASTQ format
     @param prelim_csv: an open file object for the output file - all the reads
         mapped to references in CSV version of the SAM format
-    @param nthreads: the number of threads to use, or None to read from the
-        settings file.
+    @param nthreads: the number of threads to use.
     @param callback: a function to report progress with three optional
         parameters - callback(message, progress, max_progress)
-    @param rdgopen: a penalty for opening a gap in the read sequence, or None to
-        read from the settings file.
-    @param rfgopen: a penalty for opening a gap in the reference sequence, or
-        None to read from the settings file.
+    @param rdgopen: a penalty for opening a gap in the read sequence.
+    @param rfgopen: a penalty for opening a gap in the reference sequence.
     @param stderr: where to write the standard error output from bowtie2 calls.
     """
-    nthreads = nthreads or settings.bowtie_threads
-
-    bowtie2 = Bowtie2(settings.bowtie_version, settings.bowtie_path)
-    bowtie2_build = Bowtie2Build(settings.bowtie_version,
-                                 settings.bowtie_build_path,
+    bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
+    bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
+                                 BOWTIE_BUILD_PATH,
                                  logger)
 
     # check that the inputs exist
@@ -102,8 +103,8 @@ def prelim_map(fastq1,
 
     # do preliminary mapping
     output = {}
-    read_gap_open_penalty = rdgopen or settings.read_gap_open_prelim
-    ref_gap_open_penalty = rfgopen or settings.ref_gap_open_prelim
+    read_gap_open_penalty = rdgopen
+    ref_gap_open_penalty = rfgopen
 
     # stream output from bowtie2
     bowtie_args = ['--wrapper', 'micall-0',
@@ -112,9 +113,9 @@ def prelim_map(fastq1,
                    '-1', fastq1,
                    '-2', fastq2,
                    '--rdg', "{},{}".format(read_gap_open_penalty,
-                                           settings.read_gap_extend_prelim),
+                                           READ_GAP_EXTEND),
                    '--rfg', "{},{}".format(ref_gap_open_penalty,
-                                           settings.ref_gap_extend_prelim),
+                                           REF_GAP_EXTEND),
                    '--no-unal',  # don't report reads that failed to align
                    '--no-hd',  # no header lines (start with @)
                    '-X', '1200',
