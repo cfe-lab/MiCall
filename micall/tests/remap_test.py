@@ -405,12 +405,21 @@ class SamToConseqsTest(unittest.TestCase):
         seeds = {'test': 'ATGAAGTA',
                  'other': 'AAGCCGAA'}
         expected_conseqs = {'test': 'ATGAGGAGTA'}
+        expected_distances = {'test': dict(seed_dist=2,
+                                           other_dist=5,
+                                           other_seed='other'),
+                              'other': dict(seed_dist=4,
+                                            other_dist=2,
+                                            other_seed='test')}
+        distances = {}
 
         conseqs = remap.sam_to_conseqs(samIO,
                                        seeds=seeds,
-                                       is_filtered=True)
+                                       is_filtered=True,
+                                       distance_report=distances)
 
-        self.assertDictEqual(expected_conseqs, conseqs)
+        self.assertEqual(expected_conseqs, conseqs)
+        self.assertEqual(expected_distances, distances)
 
     def testSeedsConvergedWithDifferentAlignment(self):
         """ Seeds have similar regions, but at different positions.
@@ -492,8 +501,6 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testNothingMapped(self):
-        "Multiple seeds mapped, but none have good coverage. Choose most reads."
-
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\tSN:other\n"
         )

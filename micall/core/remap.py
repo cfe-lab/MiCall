@@ -92,7 +92,8 @@ def sam_to_conseqs(samfile,
                    debug_reports=None,
                    seeds=None,
                    is_filtered=False,
-                   filter_coverage=1):
+                   filter_coverage=1,
+                   distance_report=None):
     """ Build consensus sequences for each reference from a SAM file.
 
     @param samfile: an open file in the SAM format containing reads with their
@@ -111,6 +112,9 @@ def sam_to_conseqs(samfile,
         included as a new consensus.
     @param filter_coverage: when filtering on consensus distance, only include
         portions with at least this depth of coverage
+    @param distance_report: empty dictionary or None. Dictionary will return:
+        {rname: {'seed_dist': seed_dist, 'other_dist': other_dist,
+        'other_seed': other_seed}}
     @return: {reference_name: consensus_sequence}
     """
 
@@ -119,15 +123,7 @@ def sam_to_conseqs(samfile,
             debug_reports[key] = Counter()
 
     # refmap structure: {refname: {pos: {nuc: count}}}
-    def pos_nucs_factory():
-        nuc_count_factory = Counter
-        return defaultdict(nuc_count_factory)
-    refmap = defaultdict(pos_nucs_factory)
-    if seeds:
-        for rname, seq in seeds.iteritems():
-            pos_nucs = refmap[rname]
-            for i, nuc in enumerate(seq, 1):
-                pos_nucs[i][nuc] = 0
+    refmap = {}
 
     read_counts = Counter()
     for read_pair in matchmaker(samfile, include_singles=True):
@@ -173,7 +169,13 @@ def sam_to_conseqs(samfile,
             mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=quality_cutoff)
             merged_inserts = merge_inserts(ins1, ins2, quality_cutoff)
             read_counts[rname] += 1
-            pos_nucs = refmap[rname]
+            pos_nucs = refmap.get(rname)
+            if pos_nucs is None:
+                pos_nucs = refmap[rname] = defaultdict(Counter)
+                if seeds:
+                    for i, nuc in enumerate(seeds[rname], 1):
+                        pos_nucs[i][nuc] = 0
+
             update_counts(rname, qual, mseq, merged_inserts, pos_nucs, debug_reports)
 
     if debug_reports:
@@ -217,7 +219,7 @@ def sam_to_conseqs(samfile,
             # None of the coverage was acceptable.
             continue
 
-        distances = {}
+        distances = Counter()
         for seed_name in sorted(new_conseqs.iterkeys()):
             seed_ref = seeds[seed_name]
             aligned_seed, aligned_conseq, _score = align_it(seed_ref,
@@ -232,9 +234,18 @@ def sam_to_conseqs(samfile,
             d = Levenshtein.distance(relevant_seed, relevant_conseq)
             distances[seed_name] = d
 
-        if distances[name] == min(distances.itervalues()):
+        seed_dist = distances[name]
+        other_seed, other_dist = distances.most_common(1)[0]
+        if other_seed == name:
+            other_seed, other_dist = distances.most_common(2)[-1]
+
+        if seed_dist <= other_dist:
             # Consensus is closer to starting seed than any other seed: keep it.
             filtered_conseqs[name] = conseq
+        if distance_report is not None:
+            distance_report[name] = dict(seed_dist=seed_dist,
+                                         other_dist=other_dist,
+                                         other_seed=other_seed)
     if not filtered_conseqs:
         # No reference had acceptable coverage, choose one with most reads.
         best_ref = read_counts.most_common(1)[0][0]
@@ -294,7 +305,11 @@ def counts_to_conseqs(refmap):
     return conseqs
 
 
-def build_conseqs(samfilename, seeds=None, is_filtered=False, filter_coverage=1):
+def build_conseqs(samfilename,
+                  seeds=None,
+                  is_filtered=False,
+                  filter_coverage=1,
+                  distance_report=None):
     """ Build the new consensus sequences from the mapping results.
 
     @param samfilename: the mapping results in SAM format
@@ -307,6 +322,9 @@ def build_conseqs(samfilename, seeds=None, is_filtered=False, filter_coverage=1)
         included as a new consensus.
     @param filter_coverage: when filtering on consensus distance, only include
         portions with at least this depth of coverage
+    @param distance_report: empty dictionary or None. Dictionary will return:
+        {rname: {'seed_dist': seed_dist, 'other_dist': other_dist,
+        'other_seed': other_seed}}
     @return: {reference_name: consensus_sequence}
     """
     with open(samfilename, 'rU') as samfile:
@@ -314,7 +332,8 @@ def build_conseqs(samfilename, seeds=None, is_filtered=False, filter_coverage=1)
                                  settings.consensus_q_cutoff,
                                  seeds=seeds,
                                  is_filtered=is_filtered,
-                                 filter_coverage=filter_coverage)
+                                 filter_coverage=filter_coverage,
+                                 distance_report=distance_report)
 
     if False:
         # Some debugging code to save the SAM file for testing.
@@ -324,10 +343,12 @@ def build_conseqs(samfilename, seeds=None, is_filtered=False, filter_coverage=1)
     return conseqs
 
 
-def write_remap_counts(remap_counts_writer, counts, title):
+def write_remap_counts(remap_counts_writer, counts, title, distance_report=None):
+    distance_report = distance_report or {}
     for refname in sorted(counts.iterkeys()):
-        remap_counts_writer.writerow(dict(type=title + ' ' + refname,
-                                          count=counts[refname]))
+        row = distance_report.get(refname, {})
+        row.update(type=title + ' ' + refname, count=counts[refname])
+        remap_counts_writer.writerow(row)
 
 
 def remap(fastq1,
@@ -414,9 +435,10 @@ def remap(fastq1,
     # record the raw read count
     raw_count = line_counter.count(fastq1, gzip=gzip) / 2  # 4 lines per record in FASTQ, paired
 
-    remap_counts_writer = csv.DictWriter(remap_counts_csv,
-                                         ['type', 'count', 'filtered_count'],
-                                         lineterminator=os.linesep)
+    remap_counts_writer = csv.DictWriter(
+        remap_counts_csv,
+        'type count filtered_count seed_dist other_dist other_seed'.split(),
+        lineterminator=os.linesep)
     remap_counts_writer.writeheader()
     remap_counts_writer.writerow(dict(type='raw', count=raw_count))
 
@@ -465,7 +487,7 @@ def remap(fastq1,
                      filtered_count=filtered_count))
             refgroup = projects.getSeedGroup(refname)
             _best_ref, best_count = refgroups.get(refgroup,
-                                                  (None, count_threshold))
+                                                  (None, count_threshold-1))
             if filtered_count > best_count:
                 refgroups[refgroup] = (refname, filtered_count)
 
@@ -515,17 +537,20 @@ def remap(fastq1,
                                           stderr,
                                           callback)
 
-        n_remaps += 1
-        write_remap_counts(remap_counts_writer,
-                           new_counts,
-                           title='remap-{}'.format(n_remaps))
         old_seed_names = set(conseqs.iterkeys())
         # regenerate consensus sequences
+        distance_report = {}
         conseqs = build_conseqs(samfile,
                                 seeds=seeds,
                                 is_filtered=True,
-                                filter_coverage=count_threshold)
+                                filter_coverage=count_threshold/2,  # pairs
+                                distance_report=distance_report)
         new_seed_names = set(conseqs.iterkeys())
+        n_remaps += 1
+        write_remap_counts(remap_counts_writer,
+                           new_counts,
+                           title='remap-{}'.format(n_remaps),
+                           distance_report=distance_report)
 
         if new_seed_names == old_seed_names:
             # stopping criterion 1 - none of the regions gained reads
