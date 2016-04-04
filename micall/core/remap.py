@@ -28,11 +28,10 @@ import tempfile
 from gotoh import align_it
 import Levenshtein
 
+from micall.core import miseq_logging, project_config
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall import settings
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
-import miseq_logging
-import project_config
 from micall.utils.translation import reverse_and_complement
 import multiprocessing
 
@@ -254,7 +253,7 @@ def sam_to_conseqs(samfile,
             # None of the coverage was acceptable.
             continue
 
-        distances = Counter()
+        other_seed = other_dist = None
         for seed_name in sorted(new_conseqs.iterkeys()):
             seed_ref = seeds[seed_name]
             aligned_seed, aligned_conseq, _score = align_it(seed_ref,
@@ -267,12 +266,11 @@ def sam_to_conseqs(samfile,
                 if seed_nuc != '-' and conseq_nuc != '-':
                     relevant_seed += seed_nuc
             d = Levenshtein.distance(relevant_seed, relevant_conseq)
-            distances[seed_name] = d
-
-        seed_dist = distances[name]
-        other_seed, other_dist = distances.most_common(1)[0]
-        if other_seed == name:
-            other_seed, other_dist = distances.most_common(2)[-1]
+            if seed_name == name:
+                seed_dist = d
+            elif other_dist is None or d < other_dist:
+                other_seed = seed_name
+                other_dist = d
 
         if seed_dist <= other_dist:
             # Consensus is closer to starting seed than any other seed: keep it.
@@ -954,3 +952,14 @@ def main():
 
 if __name__ == '__main__':
     main()
+elif __name__ == '__live_coding__':
+    import unittest
+    sys.modules['micall.core'].remap = sys.modules['micall.core.remap']
+    from micall.tests.remap_test import SamToConseqsTest
+
+    suite = unittest.TestSuite()
+    suite.addTest(SamToConseqsTest("testSeedsConverged"))
+    test_results = unittest.TextTestRunner().run(suite)
+
+    print(test_results.errors)
+    print(test_results.failures)
