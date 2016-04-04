@@ -398,19 +398,24 @@ class SamToConseqsTest(unittest.TestCase):
     def testSeedsConverged(self):
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
         samIO = StringIO.StringIO(
-            "@SQ\tSN:test\tSN:other\n"
+            "@SQ\tSN:test\tSN:other\tSN:wayoff\n"
             "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
             "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
+            "wayoff1\t99\twayoff\t1\t44\t10M\t=\t1\t10\tATGAGGGTAC\tJJJJJJJJJJJJ\n"
         )
         seeds = {'test': 'ATGAAGTA',
-                 'other': 'AAGCCGAA'}
+                 'other': 'AAGCCGAA',
+                 'wayoff': 'TCATGTAC'}
         expected_conseqs = {'test': 'ATGAGGAGTA'}
         expected_distances = {'test': dict(seed_dist=2,
                                            other_dist=5,
                                            other_seed='other'),
                               'other': dict(seed_dist=4,
                                             other_dist=2,
-                                            other_seed='test')}
+                                            other_seed='test'),
+                              'wayoff': dict(seed_dist=6,
+                                             other_dist=3,
+                                             other_seed='test')}
         distances = {}
 
         conseqs = remap.sam_to_conseqs(samIO,
@@ -418,6 +423,7 @@ class SamToConseqsTest(unittest.TestCase):
                                        is_filtered=True,
                                        distance_report=distances)
 
+        self.maxDiff = 1000
         self.assertEqual(expected_conseqs, conseqs)
         self.assertEqual(expected_distances, distances)
 
