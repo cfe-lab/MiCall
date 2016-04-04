@@ -19,7 +19,7 @@ def main():
             raise RuntimeError('Pipeline {} already exists.'.format(
                 settings.pipeline_version))
 
-        seed_groups = session.get_json("/lab_miseq_seed_groups.json")
+        seed_groups = session.get_json("/lab_miseq_seed_groups")
         seed_group_ids = dict(map(itemgetter('name', 'id'), seed_groups))
         old_regions = session.get_json("/lab_miseq_regions", retries=0)
         regions = dict(((region['name'], region) for region in old_regions))
