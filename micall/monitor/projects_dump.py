@@ -4,6 +4,7 @@ import sys
 from micall.monitor import qai_helper
 from micall import settings
 from collections import Counter
+from copy import deepcopy
 
 
 def check_key_positions(projects, warning_file):
@@ -75,15 +76,23 @@ def main():
             raise StandardError('\n'.join(errors))
         check_key_positions(dump['projects'], sys.stdout)
 
-    dump_json(dump, "../projects.json")
-
+    dump_scoring = deepcopy(dump)
     for project in dump['projects'].itervalues():
         for region in project['regions']:
+            del region['key_positions']
+            del region['min_coverage1']
+            del region['min_coverage2']
+            del region['min_coverage3']
+
+    dump_json(dump, "../projects.json")
+
+    for project in dump_scoring['projects'].itervalues():
+        for region in project['regions']:
             name = region['coordinate_region']
-            seq = ''.join(dump['regions'][name]['reference'])
+            seq = ''.join(dump_scoring['regions'][name]['reference'])
             region['coordinate_region_length'] = len(seq)
-    del dump['regions']
-    dump_json(dump, "../project_scoring.json")
+    del dump_scoring['regions']
+    dump_json(dump_scoring, "../project_scoring.json")
 
     print "Done."
 
