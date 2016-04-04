@@ -18,7 +18,7 @@ def main():
         if pipelines:
             raise RuntimeError('Pipeline {} already exists.'.format(
                 settings.pipeline_version))
-        
+
         seed_groups = session.get_json("/lab_miseq_seed_groups.json")
         seed_group_ids = dict(map(itemgetter('name', 'id'), seed_groups))
         old_regions = session.get_json("/lab_miseq_regions", retries=0)
@@ -40,11 +40,11 @@ def main():
                      'reference': ''.join(region_data['reference']),
                      'seed_group_id': seed_group_id})
                 regions[region_name] = region
-        
+
         pipeline = session.post_json("/lab_miseq_pipelines",
                                      {'version': settings.pipeline_version})
         pipeline_id = pipeline['id']
-                
+
         old_projects = session.get_json("/lab_miseq_projects", retries=0)
         projects = dict(((project['name'], project) for project in old_projects))
         for project_name, project_data in project_config.config['projects'].iteritems():
@@ -69,13 +69,13 @@ def main():
                      'min_coverage2': region_data['min_coverage2'],
                      'min_coverage3': region_data['min_coverage3'],
                      'seed_group_id': seed_group_id})
-                
+
                 for key_position in region_data['key_positions']:
                     session.post_json("/lab_miseq_key_positions",
                                       {'project_region_id': project_region['id'],
                                        'start_pos': key_position['start_pos'],
                                        'end_pos': key_position['end_pos']})
-                
+
     print "Done."
 
 if __name__ == "__main__":
