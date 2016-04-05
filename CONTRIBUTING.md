@@ -356,25 +356,10 @@ similar steps to setting up a development workstation. Follow these steps:
         python MISEQ_MONITOR.py &>/dev/null &
         tail -f /data/miseq/micall.log
 
-15. Start building the Windows package by pulling the code in Git Bash:
+16. Launch the basespace virtual machine, and build a new Docker container.
 
-        cd Documents/git/micall/
-        git fetch
-        git checkout tags/vX.Y
+    sudo docker build -t docker.illumina.com/cfelab/micall /media/sf_MiCall/
 
-15. Compare the settings file in Git Bash, and update anything that has changed.
-    Use bowtie2 from the bin directory, and you don't need anything in the
-    Monitor Settings section.
-    
-        diff micall/settings_default.py settings.py
-
-15. Run pyinstaller from a regular command prompt.
-
-    cd git\micall
-    pyinstaller micall.spec
-
-15. Upload `micall.exe` to GitHub as a binary for the release.
-16. Remove the pre-release flag from the release.
 17. Send an e-mail to users describing the major changes in the release.
 18. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
