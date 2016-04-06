@@ -356,8 +356,10 @@ similar steps to setting up a development workstation. Follow these steps:
         python MISEQ_MONITOR.py &>/dev/null &
         tail -f /data/miseq/micall.log
 
-16. Launch the basespace virtual machine, and build a new Docker container.
+16. Launch the basespace virtual machine, and build a new Docker container
+    from either GitHub or your local copy of the source code.
 
+    sudo docker build -t docker.illumina.com/cfelab/micall https://github.com/cfe-lab/MiCall.git
     sudo docker build -t docker.illumina.com/cfelab/micall /media/sf_MiCall/
 
 17. Send an e-mail to users describing the major changes in the release.
