@@ -340,42 +340,42 @@ class SamToConseqsTest(unittest.TestCase):
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
-    def testOldConsensus(self):
+    def testSeeds(self):
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJJ\n"
             "test2\t99\ttest\t10\t44\t3M\t=\t4\t-3\tCAC\tJJJ\n"
         )
-        old_conseqs = {'test': 'ACATTTGGGCAC'}
+        seeds = {'test': 'ACATTTGGGCAC'}
         expected_conseqs = {'test': 'ACATATGGGCAC'}
 
-        conseqs = remap.sam_to_conseqs(samIO, old_conseqs=old_conseqs)
+        conseqs = remap.sam_to_conseqs(samIO, seeds=seeds)
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
-    def testOldConsensusNeedsSomeReads(self):
+    def testSeedsNeedSomeReads(self):
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJJ\n"
         )
-        old_conseqs = {'test': 'ACATTTGGGCAC',
-                       'other': 'TATGCACCC'}
+        seeds = {'test': 'ACATTTGGGCAC',
+                 'other': 'TATGCACCC'}
         expected_conseqs = {'test': 'ACATATGGGCAC'}
 
-        conseqs = remap.sam_to_conseqs(samIO, old_conseqs=old_conseqs)
+        conseqs = remap.sam_to_conseqs(samIO, seeds=seeds)
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
-    def testOldConsensusWithLowQuality(self):
+    def testSeedsWithLowQuality(self):
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJ/\n"
         )
-        old_conseqs = {'test': 'ACATTTGGGCAC'}
+        seeds = {'test': 'ACATTTGGGCAC'}
         expected_conseqs = {'test': 'ACATATGGGCAC'}
 
         conseqs = remap.sam_to_conseqs(samIO,
-                                       old_conseqs=old_conseqs,
+                                       seeds=seeds,
                                        quality_cutoff=32)
 
         self.assertDictEqual(expected_conseqs, conseqs)
@@ -394,6 +394,132 @@ class SamToConseqsTest(unittest.TestCase):
         remap.sam_to_conseqs(samIO, debug_reports=reports)
 
         self.assertDictEqual(expected_reports, reports)
+
+    def testSeedsConverged(self):
+        # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\tSN:other\tSN:wayoff\n"
+            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
+            "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
+            "wayoff1\t99\twayoff\t1\t44\t10M\t=\t1\t10\tATGAGGGTAC\tJJJJJJJJJJJJ\n"
+        )
+        seeds = {'test': 'ATGAAGTA',
+                 'other': 'AAGCCGAA',
+                 'wayoff': 'TCATGTAC'}
+        expected_conseqs = {'test': 'ATGAGGAGTA'}
+        expected_distances = {'test': dict(seed_dist=2,
+                                           other_dist=5,
+                                           other_seed='other'),
+                              'other': dict(seed_dist=4,
+                                            other_dist=2,
+                                            other_seed='test'),
+                              'wayoff': dict(seed_dist=6,
+                                             other_dist=3,
+                                             other_seed='test')}
+        distances = {}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       is_filtered=True,
+                                       distance_report=distances)
+
+        self.maxDiff = 1000
+        self.assertEqual(expected_conseqs, conseqs)
+        self.assertEqual(expected_distances, distances)
+
+    def testSeedsConvergedWithDifferentAlignment(self):
+        """ Seeds have similar regions, but at different positions.
+        """
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\tSN:other\n"
+            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
+            "other1\t99\tother\t11\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
+        )
+        seeds = {'test': 'ATGAAGTA',
+                 'other': 'TCTCTCTCTCAAGCCGAA'}
+        expected_conseqs = {'test': 'ATGAGGAGTA'}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       is_filtered=True)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testSeedsConvergedWithDifferentAlignmentAndGap(self):
+        """ Gaps between areas with coverage.
+        """
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\tSN:other\n"
+            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
+            "other1\t99\tother\t11\t44\t5M\t=\t1\t5\tATGAC\tJJJJJJJ\n"
+            "other2\t99\tother\t26\t44\t5M\t=\t1\t5\tCAGTA\tJJJJJJJ\n"
+        )
+        seeds = {'test': 'ATGAAGTA',
+                 'other': 'TCTCTCTCTCAAGCTATATATATACGAA'}
+        expected_conseqs = {'test': 'ATGAGGAGTA'}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       is_filtered=True)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testSeedsConvergedPlusOtherLowCoverage(self):
+        """ Portion with decent coverage has converged, other hasn't.
+        """
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\tSN:other\n"
+            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
+            "test2\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
+            "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
+            "other2\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
+            "other3\t99\tother\t11\t44\t6M\t=\t1\t16\tGTGTGT\tJJJJJJ\n"
+        )
+        seeds = {'test': 'ATGAAGTACTCTCT',
+                 'other': 'AAGCCGAAGTGTGT'}
+        expected_conseqs = {'test': 'ATGAGGAGTACTCT'}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       is_filtered=True,
+                                       filter_coverage=2)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testAllSeedsLowCoverage(self):
+        "Multiple seeds mapped, but none have good coverage. Choose most reads."
+
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\tSN:other\n"
+            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
+            "test2\t99\ttest\t11\t44\t6M\t=\t1\t10\tCTCTCT\tJJJJJJ\n"
+            "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
+        )
+        seeds = {'test': 'ATGAAGTACTCTCT',
+                 'other': 'AAGCCGAAGTGTGT'}
+        expected_conseqs = {'test': 'ATGAGGAGTACTCTCT'}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       is_filtered=True,
+                                       filter_coverage=2)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testNothingMapped(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\tSN:other\n"
+        )
+        seeds = {'test': 'ATGAAGTACTCTCT',
+                 'other': 'AAGCCGAAGTGTGT'}
+        expected_conseqs = {}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       is_filtered=True,
+                                       filter_coverage=2)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
 
 
 class MixedReferenceMemorySplitter(MixedReferenceSplitter):
