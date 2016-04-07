@@ -2,12 +2,11 @@ import os
 import argparse
 import itertools
 from csv import DictReader
-#from matplotlib.pyplot import step, xlabel, ylabel, savefig, close
 from matplotlib import pyplot as plt
 from operator import itemgetter
 
-from micall.core import project_config
-from micall.settings import amino_alphabet
+from micall.core import project_config, aln2counts
+
 
 def coverage_plot(amino_csv):
     """ Generate coverage plots.
@@ -29,7 +28,7 @@ def coverage_plot(amino_csv):
         y = [0]*len(x)  # coverage
         for row in group:
             pos = int(row['refseq.aa.pos'])-1  # adjust from 1-index
-            total = sum([int(row[aa]) for aa in amino_alphabet])
+            total = sum([int(row[aa]) for aa in aln2counts.AMINO_ALPHABET])
             y[pos] = total
 
         plt.step(x, y, linewidth=3, where='mid')
@@ -45,7 +44,6 @@ def coverage_plot(amino_csv):
         plt.clf()
 
     return paths  # locations of image files
-
 
 
 def parse_args():
