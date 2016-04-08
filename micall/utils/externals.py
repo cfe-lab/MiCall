@@ -42,7 +42,12 @@ class CommandWrapper(AssetWrapper):
             pass
         kwargs.setdefault('universal_newlines', True)
         kwargs.setdefault('stdin', sys.stdin)
-        return subprocess.check_output(self.build_args(args), *popenargs, **kwargs)
+        final_args = self.build_args(args)
+        try:
+            return subprocess.check_output(final_args, *popenargs, **kwargs)
+        except OSError as ex:
+            ex.strerror += ' for command {}'.format(final_args)
+            raise
 
     def create_process(self, args=[], *popenargs, **kwargs):
         """ Execute a child program in a new process.

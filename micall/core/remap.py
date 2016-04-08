@@ -445,10 +445,16 @@ def remap(fastq1,
     reffile = os.path.join(work_path, 'temp.fasta')
     samfile = os.path.join(work_path, 'temp.sam')
 
-    bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
-    bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                 BOWTIE_BUILD_PATH,
-                                 logger)
+    try:
+        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
+        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
+                                     BOWTIE_BUILD_PATH,
+                                     logger)
+    except:
+        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH + '-' + BOWTIE_VERSION)
+        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
+                                     BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
+                                     logger)
 
     # check that the inputs exist
     if not os.path.exists(fastq1):
