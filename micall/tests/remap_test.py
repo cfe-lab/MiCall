@@ -395,6 +395,21 @@ class SamToConseqsTest(unittest.TestCase):
 
         self.assertDictEqual(expected_reports, reports)
 
+    def testDebugReportsOnReverseRead(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\n"
+            "test1\t99\ttest\t1\t44\t3M3I2M\t=\t1\t8\tACTGGGAG\tJJJJJJJJ\n"
+            "test1\t147\ttest\t5\t44\t8M\t=\t1\t-8\tGACCCAAC\tJJJJJIJJ\n"
+            "test1\t99\ttest\t1\t44\t3M3I2M\t=\t1\t12\tATTGGGAG\tJJJJJJJJ\n"
+            "test1\t147\ttest\t5\t44\t8M\t=\t1\t-12\tGACCCAAC\tJJJJJHJJ\n"
+        )
+        reports = {('test', 10): None}
+        expected_reports = {('test', 10): 'H{A: 2}, I{A: 1}'}
+
+        remap.sam_to_conseqs(samIO, debug_reports=reports)
+
+        self.assertDictEqual(expected_reports, reports)
+
     def testSeedsConverged(self):
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
         samIO = StringIO.StringIO(

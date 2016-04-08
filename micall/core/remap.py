@@ -9,6 +9,7 @@ Also report the number of reads mapped before and after processing.
 import argparse
 from collections import Counter, defaultdict
 import csv
+from functools import partial
 import itertools
 import logging
 from operator import itemgetter
@@ -28,6 +29,7 @@ from micall.core.prelim_map import BOWTIE_THREADS, BOWTIE_BUILD_PATH, \
     REF_GAP_EXTEND
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 from micall.utils.translation import reverse_and_complement
+import multiprocessing
 
 CONSENSUS_Q_CUTOFF = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
@@ -86,11 +88,66 @@ def is_short_read(read_row, max_primer_length):
     return match_length <= max_primer_length
 
 
+def merge_reads(quality_cutoff, read_pair):
+    """ Merge a pair of reads.
+
+    Also skip reads that don't meet certain criteria.
+    @param quality_cutoff: minimum quality score for a base to be counted
+    @param read_pair: a sequence of two sequences, each with fields from a
+    SAM file record
+    @return: (rname, mseq, merged_inserts, qual1, qual2) or None to skip the pair
+    """
+    read1, read2 = read_pair
+    if read2 and read1[2] != read2[2]:
+        # region mismatch, ignore the read pair.
+        return None
+    filtered_reads = []
+    for read in read_pair:
+        if not read:
+            continue
+        (_qname,
+         flag,
+         rname,
+         refpos_str,
+         _mapq,
+         cigar,
+         _rnext,
+         _pnext,
+         _tlen,
+         seq,
+         qual) = read[:11]  # ignore optional fields
+        if is_unmapped_read(flag):
+            continue
+        filtered_reads.append(dict(rname=rname,
+                                   cigar=cigar,
+                                   seq=seq,
+                                   qual=qual,
+                                   pos=int(refpos_str)))
+    if not filtered_reads:
+        return None
+    seq1, qual1, ins1 = apply_cigar(filtered_reads[0]['cigar'],
+                                    filtered_reads[0]['seq'],
+                                    filtered_reads[0]['qual'],
+                                    filtered_reads[0]['pos']-1)
+    if len(filtered_reads) == 1:
+        seq2 = qual2 = ''
+        ins2 = None
+    else:
+        seq2, qual2, ins2 = apply_cigar(filtered_reads[1]['cigar'],
+                                        filtered_reads[1]['seq'],
+                                        filtered_reads[1]['qual'],
+                                        filtered_reads[1]['pos']-1)
+    mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=quality_cutoff)
+    merged_inserts = merge_inserts(ins1, ins2, quality_cutoff)
+    return rname, mseq, merged_inserts, qual1, qual2
+
+
 def sam_to_conseqs(samfile,
                    quality_cutoff=0,
                    debug_reports=None,
                    seeds=None,
                    is_filtered=False,
+                   worker_pool=None,
                    filter_coverage=1,
                    distance_report=None):
     """ Build consensus sequences for each reference from a SAM file.
@@ -109,6 +166,7 @@ def sam_to_conseqs(samfile,
     @param is_filtered: if True, then any consensus that has migrated so far
         from its seed that it is closer to a different seed, will not be
         included as a new consensus.
+    @param worker_pool: a pool to do some distributed processing
     @param filter_coverage: when filtering on consensus distance, only include
         portions with at least this depth of coverage
     @param distance_report: empty dictionary or None. Dictionary will return:
@@ -124,58 +182,35 @@ def sam_to_conseqs(samfile,
     # refmap structure: {refname: {pos: {nuc: count}}}
     refmap = {}
 
+    if worker_pool is None:
+        pool = multiprocessing.Pool(processes=BOWTIE_THREADS)
+    else:
+        pool = worker_pool
+    pairs = matchmaker(samfile, include_singles=True)
+    merged_reads = pool.imap_unordered(partial(merge_reads, quality_cutoff),
+                                       pairs,
+                                       chunksize=100)
     read_counts = Counter()
-    for read_pair in matchmaker(samfile, include_singles=True):
-        read1, read2 = read_pair
-        if read2 and read1[2] != read2[2]:
-            # region mismatch, ignore the read pair.
+    for merged_read in merged_reads:
+        if merged_read is None:
             continue
-        filtered_reads = []
-        for read in read_pair:
-            if not read:
-                continue
-            (_qname,
-             flag,
-             rname,
-             refpos_str,
-             _mapq,
-             cigar,
-             _rnext,
-             _pnext,
-             _tlen,
-             seq,
-             qual) = read[:11]  # ignore optional fields
-            if is_unmapped_read(flag):
-                continue
-            filtered_reads.append(dict(rname=rname,
-                                       cigar=cigar,
-                                       seq=seq,
-                                       qual=qual,
-                                       pos=int(refpos_str)))
-        if filtered_reads:
-            seq1, qual1, ins1 = apply_cigar(filtered_reads[0]['cigar'],
-                                            filtered_reads[0]['seq'],
-                                            filtered_reads[0]['qual'],
-                                            filtered_reads[0]['pos']-1)
-            if len(filtered_reads) == 1:
-                seq2 = qual2 = ''
-                ins2 = None
-            else:
-                seq2, qual2, ins2 = apply_cigar(filtered_reads[1]['cigar'],
-                                                filtered_reads[1]['seq'],
-                                                filtered_reads[1]['qual'],
-                                                filtered_reads[1]['pos']-1)
-            mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=quality_cutoff)
-            merged_inserts = merge_inserts(ins1, ins2, quality_cutoff)
-            read_counts[rname] += 1
-            pos_nucs = refmap.get(rname)
-            if pos_nucs is None:
-                pos_nucs = refmap[rname] = defaultdict(Counter)
-                if seeds:
-                    for i, nuc in enumerate(seeds[rname], 1):
-                        pos_nucs[i][nuc] = 0
-
-            update_counts(rname, qual, mseq, merged_inserts, pos_nucs, debug_reports)
+        rname, mseq, merged_inserts, qual1, qual2 = merged_read
+        read_counts[rname] += 1
+        pos_nucs = refmap.get(rname)
+        if pos_nucs is None:
+            pos_nucs = refmap[rname] = defaultdict(Counter)
+            if seeds:
+                for i, nuc in enumerate(seeds[rname], 1):
+                    pos_nucs[i][nuc] = 0
+        update_counts(rname,
+                      qual1,
+                      qual2,
+                      mseq,
+                      merged_inserts,
+                      pos_nucs,
+                      debug_reports)
+    if worker_pool is None:
+        pool.close()
 
     if debug_reports:
         for key, counts in debug_reports.iteritems():
@@ -251,7 +286,24 @@ def sam_to_conseqs(samfile,
     return filtered_conseqs
 
 
-def update_counts(rname, qual, mseq, merged_inserts, pos_nucs, debug_reports):
+def update_counts(rname,
+                  qual1,
+                  qual2,
+                  mseq,
+                  merged_inserts,
+                  pos_nucs,
+                  debug_reports=None):
+    """ Update the counts for each position within a merged read.
+
+    @param rname: the reference name this read mapped to
+    @param qual1: the quality scores for the forward read
+    @param qual2: the quality scores for the reverse read
+    @param mseq: the merged sequence of the forward and reverse reads
+    @param merged_inserts: {pos: seq}
+    @param pos_nucs: {pos: {nuc: count}}
+    @param debug_reports: {(rname, pos): {nuc+qual: count}} a dictionary with
+        keys for all of the regions and positions that you want a report for.
+    """
     is_started = False
     for pos, nuc in enumerate(mseq, 1):
         if not is_started:
@@ -273,7 +325,8 @@ def update_counts(rname, qual, mseq, merged_inserts, pos_nucs, debug_reports):
                 if debug_reports:
                     counts = debug_reports.get((rname, pos))
                     if counts is not None:
-                        counts[nuc + qual[pos-1]] += 1
+                        q = qual1[pos-1] if pos <= len(qual1) else qual2[pos-1]
+                        counts[nuc + q] += 1
 
 
 def counts_to_conseqs(refmap):
@@ -306,6 +359,7 @@ def counts_to_conseqs(refmap):
 def build_conseqs(samfilename,
                   seeds=None,
                   is_filtered=False,
+                  worker_pool=None,
                   filter_coverage=1,
                   distance_report=None):
     """ Build the new consensus sequences from the mapping results.
@@ -318,6 +372,7 @@ def build_conseqs(samfilename,
     @param is_filtered: if True, then any consensus that has migrated so far
         from its seed that it is closer to a different seed, will not be
         included as a new consensus.
+    @param worker_pool: a pool to do some distributed processing
     @param filter_coverage: when filtering on consensus distance, only include
         portions with at least this depth of coverage
     @param distance_report: empty dictionary or None. Dictionary will return:
@@ -327,9 +382,10 @@ def build_conseqs(samfilename,
     """
     with open(samfilename, 'rU') as samfile:
         conseqs = sam_to_conseqs(samfile,
-                                 settings.consensus_q_cutoff,
+                                 CONSENSUS_Q_CUTOFF,
                                  seeds=seeds,
                                  is_filtered=is_filtered,
+                                 worker_pool=worker_pool,
                                  filter_coverage=filter_coverage,
                                  distance_report=distance_report)
 
@@ -421,6 +477,8 @@ def remap(fastq1,
                 pass
             fastq2 += '.gz'
 
+    worker_pool = multiprocessing.Pool(processes=nthreads)
+
     # retrieve reference sequences used for preliminary mapping
     projects = project_config.ProjectConfig.loadDefault()
     seeds = {}
@@ -491,7 +549,7 @@ def remap(fastq1,
     seed_counts = {best_ref: best_count
                    for best_ref, best_count in refgroups.itervalues()}
     # regenerate consensus sequences based on preliminary map
-    conseqs = build_conseqs(samfile, seeds=seeds)
+    conseqs = build_conseqs(samfile, seeds=seeds, worker_pool=worker_pool)
 
     # exclude references with low counts (post filtering)
     new_conseqs = {}
@@ -540,6 +598,7 @@ def remap(fastq1,
         conseqs = build_conseqs(samfile,
                                 seeds=seeds,
                                 is_filtered=True,
+                                worker_pool=worker_pool,
                                 filter_coverage=count_threshold/2,  # pairs
                                 distance_report=distance_report)
         new_seed_names = set(conseqs.iterkeys())
@@ -557,16 +616,17 @@ def remap(fastq1,
 
             # stopping criterion 2 - a sufficient fraction of raw data has been mapped
             mapping_efficiency = sum(new_counts.values()) / float(raw_count)
-            if mapping_efficiency > settings.min_mapping_efficiency:
+            if mapping_efficiency > MIN_MAPPING_EFFICIENCY:
                 break
 
-            if n_remaps >= settings.max_remaps:
+            if n_remaps >= MAX_REMAPS:
                 break
 
         # deep copy of mapping counts
         map_counts = dict(new_counts)
 
     # finished iterative phase
+    worker_pool.close()
 
     # generate SAM CSV output
     remap_writer = csv.DictWriter(remap_csv, fieldnames, lineterminator=os.linesep)

@@ -5,10 +5,6 @@
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -18,10 +14,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -31,10 +23,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -44,10 +32,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -57,43 +41,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -103,10 +50,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -116,10 +59,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -129,10 +68,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -142,15 +77,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 300,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -160,10 +86,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -173,148 +95,66 @@
         },
         {
           "coordinate_region": "HCV1B-Con1-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 300,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV2-JFH-1-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -327,10 +167,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -343,10 +179,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -359,10 +191,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -375,43 +203,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -424,10 +215,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -440,10 +227,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -456,10 +239,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -472,15 +251,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 300,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -493,10 +263,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -509,10 +275,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -522,10 +284,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -535,10 +293,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -548,10 +302,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -561,43 +311,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -607,10 +320,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -620,10 +329,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -633,10 +338,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -646,15 +347,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 300,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -664,10 +356,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -677,10 +365,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -702,10 +386,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -727,10 +407,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -752,10 +428,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -777,43 +449,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -835,10 +470,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -860,10 +491,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -885,10 +512,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -910,15 +533,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 300,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -940,10 +554,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -965,148 +575,66 @@
         },
         {
           "coordinate_region": "HCV5-SA13-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 300,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV6-EUHK2-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -1135,10 +663,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -1167,10 +691,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -1199,10 +719,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -1231,43 +747,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -1296,10 +775,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -1328,10 +803,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -1360,10 +831,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -1392,15 +859,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 300,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -1429,10 +887,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -1461,138 +915,60 @@
         },
         {
           "coordinate_region": "HCV7-QC69-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 300,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
@@ -1604,324 +980,60 @@
       "regions": [
         {
           "coordinate_region": "GP41",
-          "key_positions": [
-            {
-              "end_pos": 40,
-              "start_pos": 36
-            },
-            {
-              "end_pos": 45,
-              "start_pos": 42
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HIV1B-env-seed"
           ]
         },
         {
           "coordinate_region": "HIV1B-gag",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HIV1B-gag-seed"
           ]
         },
         {
           "coordinate_region": "HIV1B-nef",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HIV1B-nef-seed"
           ]
         },
         {
           "coordinate_region": "HIV1B-vif",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HIV1B-vif-seed"
           ]
         },
         {
           "coordinate_region": "HIV1B-vpr",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HIV1B-vpr-seed"
           ]
         },
         {
           "coordinate_region": "HIV1B-vpu",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HIV1B-vpu-seed"
           ]
         },
         {
           "coordinate_region": "INT",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 66
-            },
-            {
-              "end_pos": null,
-              "start_pos": 92
-            },
-            {
-              "end_pos": null,
-              "start_pos": 121
-            },
-            {
-              "end_pos": null,
-              "start_pos": 140
-            },
-            {
-              "end_pos": null,
-              "start_pos": 143
-            },
-            {
-              "end_pos": null,
-              "start_pos": 148
-            },
-            {
-              "end_pos": null,
-              "start_pos": 155
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "INT-seed"
           ]
         },
         {
           "coordinate_region": "PR",
-          "key_positions": [
-            {
-              "end_pos": 11,
-              "start_pos": 10
-            },
-            {
-              "end_pos": null,
-              "start_pos": 20
-            },
-            {
-              "end_pos": 24,
-              "start_pos": 23
-            },
-            {
-              "end_pos": null,
-              "start_pos": 30
-            },
-            {
-              "end_pos": 33,
-              "start_pos": 32
-            },
-            {
-              "end_pos": null,
-              "start_pos": 35
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": 48,
-              "start_pos": 46
-            },
-            {
-              "end_pos": null,
-              "start_pos": 50
-            },
-            {
-              "end_pos": 54,
-              "start_pos": 53
-            },
-            {
-              "end_pos": null,
-              "start_pos": 58
-            },
-            {
-              "end_pos": null,
-              "start_pos": 71
-            },
-            {
-              "end_pos": 74,
-              "start_pos": 73
-            },
-            {
-              "end_pos": null,
-              "start_pos": 76
-            },
-            {
-              "end_pos": 84,
-              "start_pos": 82
-            },
-            {
-              "end_pos": 90,
-              "start_pos": 88
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "PR-seed"
           ]
         },
         {
           "coordinate_region": "RT",
-          "key_positions": [
-            {
-              "end_pos": 41,
-              "start_pos": 40
-            },
-            {
-              "end_pos": null,
-              "start_pos": 44
-            },
-            {
-              "end_pos": null,
-              "start_pos": 62
-            },
-            {
-              "end_pos": 71,
-              "start_pos": 65
-            },
-            {
-              "end_pos": 75,
-              "start_pos": 74
-            },
-            {
-              "end_pos": null,
-              "start_pos": 77
-            },
-            {
-              "end_pos": null,
-              "start_pos": 90
-            },
-            {
-              "end_pos": null,
-              "start_pos": 98
-            },
-            {
-              "end_pos": 101,
-              "start_pos": 100
-            },
-            {
-              "end_pos": null,
-              "start_pos": 103
-            },
-            {
-              "end_pos": null,
-              "start_pos": 106
-            },
-            {
-              "end_pos": null,
-              "start_pos": 108
-            },
-            {
-              "end_pos": 116,
-              "start_pos": 115
-            },
-            {
-              "end_pos": null,
-              "start_pos": 138
-            },
-            {
-              "end_pos": null,
-              "start_pos": 151
-            },
-            {
-              "end_pos": null,
-              "start_pos": 179
-            },
-            {
-              "end_pos": null,
-              "start_pos": 181
-            },
-            {
-              "end_pos": null,
-              "start_pos": 184
-            },
-            {
-              "end_pos": null,
-              "start_pos": 188
-            },
-            {
-              "end_pos": null,
-              "start_pos": 190
-            },
-            {
-              "end_pos": null,
-              "start_pos": 210
-            },
-            {
-              "end_pos": null,
-              "start_pos": 215
-            },
-            {
-              "end_pos": null,
-              "start_pos": 219
-            },
-            {
-              "end_pos": null,
-              "start_pos": 221
-            },
-            {
-              "end_pos": null,
-              "start_pos": 225
-            },
-            {
-              "end_pos": null,
-              "start_pos": 227
-            },
-            {
-              "end_pos": null,
-              "start_pos": 230
-            },
-            {
-              "end_pos": null,
-              "start_pos": 236
-            },
-            {
-              "end_pos": null,
-              "start_pos": 238
-            },
-            {
-              "end_pos": null,
-              "start_pos": 318
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "RT-seed"
           ]
         },
         {
           "coordinate_region": "V3LOOP",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HIV1B-env-seed"
           ]
@@ -1933,20 +1045,12 @@
       "regions": [
         {
           "coordinate_region": "HLA-B-exon2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HLA-B-seed"
           ]
         },
         {
           "coordinate_region": "HLA-B-exon3",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HLA-B-seed"
           ]
@@ -1958,39 +1062,6 @@
       "regions": [
         {
           "coordinate_region": "INT",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 66
-            },
-            {
-              "end_pos": null,
-              "start_pos": 92
-            },
-            {
-              "end_pos": null,
-              "start_pos": 121
-            },
-            {
-              "end_pos": null,
-              "start_pos": 140
-            },
-            {
-              "end_pos": null,
-              "start_pos": 143
-            },
-            {
-              "end_pos": null,
-              "start_pos": 148
-            },
-            {
-              "end_pos": null,
-              "start_pos": 155
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "INT-seed"
           ]
@@ -2002,15 +1073,6 @@
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 591,
-              "start_pos": 250
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2020,30 +1082,12 @@
         },
         {
           "coordinate_region": "HCV1B-Con1-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 591,
-              "start_pos": 250
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 591,
-              "start_pos": 250
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -2056,15 +1100,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 591,
-              "start_pos": 250
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -2074,15 +1109,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 591,
-              "start_pos": 250
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -2104,30 +1130,12 @@
         },
         {
           "coordinate_region": "HCV5-SA13-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 591,
-              "start_pos": 250
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 591,
-              "start_pos": 250
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -2156,15 +1164,6 @@
         },
         {
           "coordinate_region": "HCV7-QC69-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 591,
-              "start_pos": 250
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
@@ -2176,15 +1175,6 @@
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 336,
-              "start_pos": 227
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2194,30 +1184,12 @@
         },
         {
           "coordinate_region": "HCV1B-Con1-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 336,
-              "start_pos": 227
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 336,
-              "start_pos": 227
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -2230,15 +1202,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 336,
-              "start_pos": 227
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -2248,15 +1211,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 336,
-              "start_pos": 227
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -2278,30 +1232,12 @@
         },
         {
           "coordinate_region": "HCV5-SA13-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 336,
-              "start_pos": 227
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 336,
-              "start_pos": 227
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -2330,15 +1266,6 @@
         },
         {
           "coordinate_region": "HCV7-QC69-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 336,
-              "start_pos": 227
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
@@ -2350,95 +1277,6 @@
       "regions": [
         {
           "coordinate_region": "RT",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 90
-            },
-            {
-              "end_pos": null,
-              "start_pos": 98
-            },
-            {
-              "end_pos": 101,
-              "start_pos": 100
-            },
-            {
-              "end_pos": null,
-              "start_pos": 103
-            },
-            {
-              "end_pos": null,
-              "start_pos": 106
-            },
-            {
-              "end_pos": null,
-              "start_pos": 108
-            },
-            {
-              "end_pos": 116,
-              "start_pos": 115
-            },
-            {
-              "end_pos": null,
-              "start_pos": 138
-            },
-            {
-              "end_pos": null,
-              "start_pos": 151
-            },
-            {
-              "end_pos": null,
-              "start_pos": 179
-            },
-            {
-              "end_pos": null,
-              "start_pos": 181
-            },
-            {
-              "end_pos": null,
-              "start_pos": 184
-            },
-            {
-              "end_pos": null,
-              "start_pos": 188
-            },
-            {
-              "end_pos": null,
-              "start_pos": 190
-            },
-            {
-              "end_pos": null,
-              "start_pos": 210
-            },
-            {
-              "end_pos": null,
-              "start_pos": 215
-            },
-            {
-              "end_pos": null,
-              "start_pos": 219
-            },
-            {
-              "end_pos": null,
-              "start_pos": 221
-            },
-            {
-              "end_pos": null,
-              "start_pos": 225
-            },
-            {
-              "end_pos": null,
-              "start_pos": 227
-            },
-            {
-              "end_pos": null,
-              "start_pos": 230
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "RT-seed"
           ]
@@ -2450,206 +1288,12 @@
       "regions": [
         {
           "coordinate_region": "PR",
-          "key_positions": [
-            {
-              "end_pos": 11,
-              "start_pos": 10
-            },
-            {
-              "end_pos": null,
-              "start_pos": 20
-            },
-            {
-              "end_pos": 24,
-              "start_pos": 23
-            },
-            {
-              "end_pos": null,
-              "start_pos": 30
-            },
-            {
-              "end_pos": 33,
-              "start_pos": 32
-            },
-            {
-              "end_pos": null,
-              "start_pos": 35
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": 48,
-              "start_pos": 46
-            },
-            {
-              "end_pos": null,
-              "start_pos": 50
-            },
-            {
-              "end_pos": 54,
-              "start_pos": 53
-            },
-            {
-              "end_pos": null,
-              "start_pos": 58
-            },
-            {
-              "end_pos": null,
-              "start_pos": 71
-            },
-            {
-              "end_pos": 74,
-              "start_pos": 73
-            },
-            {
-              "end_pos": null,
-              "start_pos": 76
-            },
-            {
-              "end_pos": 84,
-              "start_pos": 82
-            },
-            {
-              "end_pos": 90,
-              "start_pos": 88
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "PR-seed"
           ]
         },
         {
           "coordinate_region": "RT",
-          "key_positions": [
-            {
-              "end_pos": 41,
-              "start_pos": 40
-            },
-            {
-              "end_pos": null,
-              "start_pos": 44
-            },
-            {
-              "end_pos": null,
-              "start_pos": 62
-            },
-            {
-              "end_pos": 71,
-              "start_pos": 65
-            },
-            {
-              "end_pos": 75,
-              "start_pos": 74
-            },
-            {
-              "end_pos": null,
-              "start_pos": 77
-            },
-            {
-              "end_pos": null,
-              "start_pos": 90
-            },
-            {
-              "end_pos": null,
-              "start_pos": 98
-            },
-            {
-              "end_pos": 101,
-              "start_pos": 100
-            },
-            {
-              "end_pos": null,
-              "start_pos": 103
-            },
-            {
-              "end_pos": null,
-              "start_pos": 106
-            },
-            {
-              "end_pos": null,
-              "start_pos": 108
-            },
-            {
-              "end_pos": 116,
-              "start_pos": 115
-            },
-            {
-              "end_pos": null,
-              "start_pos": 138
-            },
-            {
-              "end_pos": null,
-              "start_pos": 151
-            },
-            {
-              "end_pos": null,
-              "start_pos": 179
-            },
-            {
-              "end_pos": null,
-              "start_pos": 181
-            },
-            {
-              "end_pos": null,
-              "start_pos": 184
-            },
-            {
-              "end_pos": null,
-              "start_pos": 188
-            },
-            {
-              "end_pos": null,
-              "start_pos": 190
-            },
-            {
-              "end_pos": null,
-              "start_pos": 210
-            },
-            {
-              "end_pos": null,
-              "start_pos": 215
-            },
-            {
-              "end_pos": null,
-              "start_pos": 219
-            },
-            {
-              "end_pos": null,
-              "start_pos": 221
-            },
-            {
-              "end_pos": null,
-              "start_pos": 225
-            },
-            {
-              "end_pos": null,
-              "start_pos": 227
-            },
-            {
-              "end_pos": null,
-              "start_pos": 230
-            },
-            {
-              "end_pos": null,
-              "start_pos": 236
-            },
-            {
-              "end_pos": null,
-              "start_pos": 238
-            },
-            {
-              "end_pos": null,
-              "start_pos": 318
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "RT-seed"
           ]
@@ -2661,131 +1305,6 @@
       "regions": [
         {
           "coordinate_region": "RT",
-          "key_positions": [
-            {
-              "end_pos": 41,
-              "start_pos": 40
-            },
-            {
-              "end_pos": null,
-              "start_pos": 44
-            },
-            {
-              "end_pos": null,
-              "start_pos": 62
-            },
-            {
-              "end_pos": 71,
-              "start_pos": 65
-            },
-            {
-              "end_pos": 75,
-              "start_pos": 74
-            },
-            {
-              "end_pos": null,
-              "start_pos": 77
-            },
-            {
-              "end_pos": null,
-              "start_pos": 90
-            },
-            {
-              "end_pos": null,
-              "start_pos": 98
-            },
-            {
-              "end_pos": 101,
-              "start_pos": 100
-            },
-            {
-              "end_pos": null,
-              "start_pos": 103
-            },
-            {
-              "end_pos": null,
-              "start_pos": 106
-            },
-            {
-              "end_pos": null,
-              "start_pos": 108
-            },
-            {
-              "end_pos": 116,
-              "start_pos": 115
-            },
-            {
-              "end_pos": null,
-              "start_pos": 138
-            },
-            {
-              "end_pos": null,
-              "start_pos": 151
-            },
-            {
-              "end_pos": null,
-              "start_pos": 179
-            },
-            {
-              "end_pos": null,
-              "start_pos": 181
-            },
-            {
-              "end_pos": null,
-              "start_pos": 184
-            },
-            {
-              "end_pos": null,
-              "start_pos": 188
-            },
-            {
-              "end_pos": null,
-              "start_pos": 190
-            },
-            {
-              "end_pos": null,
-              "start_pos": 210
-            },
-            {
-              "end_pos": null,
-              "start_pos": 215
-            },
-            {
-              "end_pos": null,
-              "start_pos": 219
-            },
-            {
-              "end_pos": null,
-              "start_pos": 221
-            },
-            {
-              "end_pos": null,
-              "start_pos": 225
-            },
-            {
-              "end_pos": null,
-              "start_pos": 227
-            },
-            {
-              "end_pos": null,
-              "start_pos": 230
-            },
-            {
-              "end_pos": null,
-              "start_pos": 236
-            },
-            {
-              "end_pos": null,
-              "start_pos": 238
-            },
-            {
-              "end_pos": null,
-              "start_pos": 318
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "RT-seed"
           ]
@@ -2801,10 +1320,6 @@
       "regions": [
         {
           "coordinate_region": "V3LOOP",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HIV1B-env-seed"
           ]
@@ -2816,10 +1331,6 @@
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2829,10 +1340,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2842,23 +1349,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "HCV-1a",
-            "HCV-1c",
-            "HCV-1e",
-            "HCV-1g"
-          ]
-        },
-        {
-          "coordinate_region": "HCV1A-H77-NS1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2868,10 +1358,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2881,43 +1367,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2927,10 +1376,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2940,10 +1385,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2953,10 +1394,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2966,15 +1403,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 530,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2984,10 +1412,6 @@
         },
         {
           "coordinate_region": "HCV1A-H77-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1a",
             "HCV-1c",
@@ -2997,138 +1421,66 @@
         },
         {
           "coordinate_region": "HCV1B-Con1-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV1B-Con1-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 530,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
+          "seed_region_names": [
+            "HCV-1b"
+          ]
+        },
+        {
+          "coordinate_region": "HCV1B-Con1-p7",
           "seed_region_names": [
             "HCV-1b"
           ]
         },
         {
           "coordinate_region": "HCV2-JFH-1-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -3141,10 +1493,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -3157,10 +1505,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -3173,10 +1517,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -3189,43 +1529,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -3238,10 +1541,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -3254,10 +1553,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -3270,10 +1565,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -3286,15 +1577,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 530,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -3307,10 +1589,6 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-2a",
             "HCV-2b",
@@ -3323,10 +1601,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -3336,10 +1610,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -3349,10 +1619,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -3362,10 +1628,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -3375,43 +1637,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -3421,10 +1646,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -3434,10 +1655,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -3447,10 +1664,6 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -3460,15 +1673,15 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 530,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
+          "seed_region_names": [
+            "HCV-3a",
+            "HCV-3b",
+            "HCV-3i",
+            "HCV-3k"
+          ]
+        },
+        {
+          "coordinate_region": "HCV3-S52-p7",
           "seed_region_names": [
             "HCV-3a",
             "HCV-3b",
@@ -3478,10 +1691,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -3503,10 +1712,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -3528,10 +1733,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -3553,10 +1754,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -3578,43 +1775,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -3636,10 +1796,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -3661,10 +1817,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -3686,10 +1838,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -3711,15 +1859,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 530,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -3741,10 +1880,6 @@
         },
         {
           "coordinate_region": "HCV4-ED43-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-4a",
             "HCV-4b",
@@ -3766,148 +1901,66 @@
         },
         {
           "coordinate_region": "HCV5-SA13-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 530,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV5-SA13-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-5a"
           ]
         },
         {
           "coordinate_region": "HCV6-EUHK2-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -3936,10 +1989,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -3968,10 +2017,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -4000,10 +2045,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -4032,43 +2073,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -4097,10 +2101,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -4129,10 +2129,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -4161,10 +2157,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -4193,15 +2185,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 530,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -4230,10 +2213,6 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-6a",
             "HCV-6b",
@@ -4262,138 +2241,60 @@
         },
         {
           "coordinate_region": "HCV7-QC69-Core",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-E1",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-E2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS2",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS3",
-          "key_positions": [
-            {
-              "end_pos": null,
-              "start_pos": 36
-            },
-            {
-              "end_pos": null,
-              "start_pos": 43
-            },
-            {
-              "end_pos": null,
-              "start_pos": 54
-            },
-            {
-              "end_pos": null,
-              "start_pos": 80
-            },
-            {
-              "end_pos": null,
-              "start_pos": 122
-            },
-            {
-              "end_pos": 156,
-              "start_pos": 155
-            },
-            {
-              "end_pos": null,
-              "start_pos": 168
-            },
-            {
-              "end_pos": null,
-              "start_pos": 170
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS4a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS4b",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS5a",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-NS5b",
-          "key_positions": [
-            {
-              "end_pos": 530,
-              "start_pos": 1
-            }
-          ],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]
         },
         {
           "coordinate_region": "HCV7-QC69-p7",
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
           "seed_region_names": [
             "HCV-7a"
           ]

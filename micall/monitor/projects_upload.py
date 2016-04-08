@@ -1,3 +1,4 @@
+import json
 from operator import itemgetter
 
 from micall import settings
@@ -7,6 +8,8 @@ from micall.monitor import qai_helper
 
 def main():
     project_config = ProjectConfig.loadDefault()
+    with open('../project_scoring.json', 'rU') as scoring_file:
+        scoring_config = json.load(scoring_file)
     with qai_helper.Session() as session:
         session.login(settings.qai_path,
                       settings.qai_user,
@@ -18,8 +21,8 @@ def main():
         if pipelines:
             raise RuntimeError('Pipeline {} already exists.'.format(
                 settings.pipeline_version))
-        
-        seed_groups = session.get_json("/lab_miseq_seed_groups.json")
+
+        seed_groups = session.get_json("/lab_miseq_seed_groups")
         seed_group_ids = dict(map(itemgetter('name', 'id'), seed_groups))
         old_regions = session.get_json("/lab_miseq_regions", retries=0)
         regions = dict(((region['name'], region) for region in old_regions))
@@ -40,11 +43,11 @@ def main():
                      'reference': ''.join(region_data['reference']),
                      'seed_group_id': seed_group_id})
                 regions[region_name] = region
-        
+
         pipeline = session.post_json("/lab_miseq_pipelines",
                                      {'version': settings.pipeline_version})
         pipeline_id = pipeline['id']
-                
+
         old_projects = session.get_json("/lab_miseq_projects", retries=0)
         projects = dict(((project['name'], project) for project in old_projects))
         for project_name, project_data in project_config.config['projects'].iteritems():
@@ -57,7 +60,8 @@ def main():
             project_version = session.post_json("/lab_miseq_project_versions",
                                                 {'pipeline_id': pipeline_id,
                                                  'project_id': project['id']})
-            for region_data in project_data['regions']:
+            for i, region_data in enumerate(project_data['regions']):
+                scoring_data = scoring_config['projects'][project_name]['regions'][i]
                 coordinate_region = regions[region_data['coordinate_region']]
                 seed_region = regions[region_data['seed_region_names'][0]]
                 seed_group_id = seed_region['seed_group_id']
@@ -65,17 +69,17 @@ def main():
                     "/lab_miseq_project_regions",
                     {'project_version_id': project_version['id'],
                      'coordinate_region_id': coordinate_region['id'],
-                     'min_coverage1': region_data['min_coverage1'],
-                     'min_coverage2': region_data['min_coverage2'],
-                     'min_coverage3': region_data['min_coverage3'],
+                     'min_coverage1': scoring_data['min_coverage1'],
+                     'min_coverage2': scoring_data['min_coverage2'],
+                     'min_coverage3': scoring_data['min_coverage3'],
                      'seed_group_id': seed_group_id})
-                
-                for key_position in region_data['key_positions']:
+
+                for key_position in scoring_data['key_positions']:
                     session.post_json("/lab_miseq_key_positions",
                                       {'project_region_id': project_region['id'],
                                        'start_pos': key_position['start_pos'],
                                        'end_pos': key_position['end_pos']})
-                
+
     print "Done."
 
 if __name__ == "__main__":
