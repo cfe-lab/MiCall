@@ -1,12 +1,13 @@
-import os
+from argparse import ArgumentParser
+import errno
 import fnmatch
+import gzip
 import json
+import os
+import shutil
+from tempfile import NamedTemporaryFile
 
 from micall.core.prelim_map import prelim_map
-from argparse import ArgumentParser
-import gzip
-import shutil
-import errno
 
 
 def parse_args():
@@ -35,11 +36,12 @@ def parse_json(json_file):
 
     args.name = arg_map['Input.app-session-name']['Content']
     args.sample_id = arg_map['Input.sample-id']['Content']['Id']
+    args.project_id = arg_map['Input.project-id']['Content']['Id']
 
     return args
 
 
-def unzip(filename):
+def unzip(filename, scratch_path):
     """ Extract a FASTQ file, and return the new file name.
 
     :param str filename: the FASTQ file's name, possibly compressed
@@ -47,25 +49,34 @@ def unzip(filename):
     """
     if not filename.endswith('.gz'):
         return filename
-    dest = os.path.splitext(filename)[0]
 
-    # neither file type is present
-    with gzip.open(filename, 'rb') as zip_src, open(dest, 'w') as fastq_dest:
-        shutil.copyfileobj(zip_src, fastq_dest)
-    return dest
+    gz_name = os.path.basename(filename)  # drop path
+    fastq_name = os.path.splitext(gz_name)[0]  # drop .gz
+    basename = os.path.splitext(fastq_name)[0]  # drop .fastq
+
+    with gzip.open(filename, 'rb') as zip_src, NamedTemporaryFile(
+            mode='w',
+            prefix=basename,
+            suffix='.fastq',
+            dir=scratch_path,
+            delete=False) as dest:
+        shutil.copyfileobj(zip_src, dest)
+        return dest.name
 
 
-def process_sample(sample_id, data_path):
-    sampleDir = os.path.join(data_path,
-                             'input/samples',
-                             sample_id,
-                             'Data/Intensities/BaseCalls')
-    if not os.path.exists(sampleDir):
-        sampleDir = os.path.join(data_path,
-                                 'input/samples',
-                                 sample_id)
+def process_sample(sample_id, project_id, data_path):
+    scratch_path = os.path.join(data_path, 'scratch')
+    makedirs(scratch_path)
+    sample_dir = os.path.join(data_path,
+                              'input/samples',
+                              sample_id,
+                              'Data/Intensities/BaseCalls')
+    if not os.path.exists(sample_dir):
+        sample_dir = os.path.join(data_path,
+                                  'input/samples',
+                                  sample_id)
     sample_path = None
-    for root, _dirs, files in os.walk(sampleDir):
+    for root, _dirs, files in os.walk(sample_dir):
         sample_paths = fnmatch.filter(files, '*_R1_*')
         if sample_paths:
             sample_path = os.path.join(root, sample_paths[0])
@@ -78,15 +89,14 @@ def process_sample(sample_id, data_path):
             sample_id,
             sample_path2))
     print('Processing sample {}.'.format(sample_path))
-    sample_path = unzip(sample_path)
-    sample_path2 = unzip(sample_path2)
+    sample_path = unzip(sample_path, scratch_path)
+    sample_path2 = unzip(sample_path2, scratch_path)
 
-    sample_out_path = os.path.join(data_path, 'output/appresults/out')
-    try:
-        os.makedirs(sample_out_path)
-    except OSError as exc:
-        if exc.errno != errno.EEXIST or not os.path.isdir(sample_out_path):
-            raise
+    sample_out_path = os.path.join(data_path,
+                                   'output/appresults',
+                                   project_id,
+                                   'out')
+    makedirs(sample_out_path)
 
     prelim_csv_path = os.path.join(sample_out_path, 'prelim.csv')
     print('Running prelim_map.')
@@ -97,13 +107,21 @@ def process_sample(sample_id, data_path):
     print('Done.')
 
 
+def makedirs(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if exc.errno != errno.EEXIST or not os.path.isdir(path):
+            raise
+
+
 def main():
     args = parse_args()
     json_path = os.path.join(args.data_path, 'input/AppSession.json')
     with open(json_path, 'rU') as json_file:
         json = parse_json(json_file)
 
-    process_sample(json.sample_id, args.data_path)
+    process_sample(json.sample_id, json.project_id, args.data_path)
 
 if __name__ == '__main__':
     main()
@@ -114,6 +132,9 @@ elif __name__ == '__live_coding__':
                            "Content": "MiCall 04/05/2016 3:14:23"},
                           {"Name": "Input.sample-id",
                            "Content": {"Id": "32896881",
-                                       "Name": "Se1-lib2-70x"}}]}}
+                                       "Name": "Se1-lib2-70x"}},
+                          {"Name": "Input.project-id",
+                           "Content": {"Id": "22595573",
+                                       "Name": "Test5"}}]}}
 """)
     parse_json(json_file)
