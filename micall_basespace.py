@@ -35,7 +35,8 @@ def parse_json(json_file):
                for item in raw_args['Properties']['Items']}
 
     args.name = arg_map['Input.app-session-name']['Content']
-    args.sample_id = arg_map['Input.sample-id']['Content']['Id']
+    args.run_id = arg_map['Input.run-id']['Content']['Id']
+    args.samples = arg_map['Input.sample-ids']['Items']
     args.project_id = arg_map['Input.project-id']['Content']['Id']
 
     return args
@@ -64,9 +65,11 @@ def unzip(filename, scratch_path):
         return dest.name
 
 
-def process_sample(sample_id, project_id, data_path):
+def process_sample(sample_info, project_id, data_path):
     scratch_path = os.path.join(data_path, 'scratch')
     makedirs(scratch_path)
+    sample_id = sample_info['Id']
+    sample_name = sample_info['Name']
     sample_dir = os.path.join(data_path,
                               'input/samples',
                               sample_id,
@@ -98,7 +101,7 @@ def process_sample(sample_id, project_id, data_path):
                                    'out')
     makedirs(sample_out_path)
 
-    prelim_csv_path = os.path.join(sample_out_path, 'prelim.csv')
+    prelim_csv_path = os.path.join(sample_out_path, sample_name + '_prelim.csv')
     print('Running prelim_map.')
     with open(prelim_csv_path, 'wb') as prelim_csv:
         prelim_map(sample_path,
@@ -121,7 +124,8 @@ def main():
     with open(json_path, 'rU') as json_file:
         json = parse_json(json_file)
 
-    process_sample(json.sample_id, json.project_id, args.data_path)
+    for sample_info in json.samples:
+        process_sample(sample_info, json.project_id, args.data_path)
 
 if __name__ == '__main__':
     main()
@@ -130,11 +134,16 @@ elif __name__ == '__live_coding__':
     json_file = StringIO("""\
 {"Properties": {"Items": [{"Name": "Input.app-session-name",
                            "Content": "MiCall 04/05/2016 3:14:23"},
-                          {"Name": "Input.sample-id",
-                           "Content": {"Id": "32896881",
-                                       "Name": "Se1-lib2-70x"}},
+                          {"Name": "Input.sample-ids",
+                           "Items": [{"Id": "11111",
+                                      "Name": "Example-Sample1"},
+                                     {"Id": "22222",
+                                      "Name": "Example-Sample2"}]},
                           {"Name": "Input.project-id",
-                           "Content": {"Id": "22595573",
-                                       "Name": "Test5"}}]}}
+                           "Content": {"Id": "33333",
+                                       "Name": "Example-Project"}},
+                          {"Name": "Input.run-id",
+                           "Content": {"Id": "44444",
+                                       "Name": "160115_Project"}}]}}
 """)
     parse_json(json_file)

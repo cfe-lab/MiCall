@@ -181,6 +181,13 @@ the Anaconda Python. If you want to install it on Ubuntu, use pip:
 
     sudo pip install matplotlib
 
+### BaseSpace ###
+Set up the [native apps virtual machine][bsvm], and configure a shared folder
+called MiCall that points to the source code. Make sure you have a developer
+account on illumina.com.
+
+[bsvm]: https://developer.basespace.illumina.com/docs/content/documentation/native-apps/setup-dev-environment
+
 ### PyInstaller ###
 If you want to distribute a stand-alone Windows executable version, you need
 to use [PyInstaller][pyinstaller].
@@ -356,11 +363,16 @@ similar steps to setting up a development workstation. Follow these steps:
         python MISEQ_MONITOR.py &>/dev/null &
         tail -f /data/miseq/micall.log
 
-16. Launch the basespace virtual machine, and build a new Docker container
+16. Launch the basespace virtual machine, and build a new Docker image
     from either GitHub or your local copy of the source code.
 
     sudo docker build -t docker.illumina.com/cfelab/micall https://github.com/cfe-lab/MiCall.git
     sudo docker build -t docker.illumina.com/cfelab/micall /media/sf_MiCall/
+
+17. Push the new image to the repository. You might have to log in to docker
+    before running this.
+    
+    sudo docker push docker.illumina.com/cfelab/micall
 
 17. Send an e-mail to users describing the major changes in the release.
 18. Close the milestone for this release, create one for the next release, and
