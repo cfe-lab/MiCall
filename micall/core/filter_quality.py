@@ -11,23 +11,26 @@ import miseq_logging
 
 BAD_ERROR_RATE = 7.5
 
+
 def parseArgs():
     parser = argparse.ArgumentParser(
         description='Post-processing of short-read alignments.')
-    
+
     parser.add_argument('quality_csv',
                         type=argparse.FileType('rU'),
                         help='QC error rate data, grouped by tile')
     parser.add_argument('bad_cycles_csv',
                         type=argparse.FileType('w'),
                         help='List of tiles and cycles rejected for poor quality')
-    
+
     return parser.parse_args()
 
 logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 
+
 def grouper(cycle):
     return (cycle['tile'], math.copysign(1, int(cycle['cycle'])))
+
 
 def main():
     args = parseArgs()
