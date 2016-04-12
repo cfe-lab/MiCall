@@ -12,6 +12,7 @@ import csv
 from functools import partial
 import itertools
 import logging
+import multiprocessing
 from operator import itemgetter
 import os
 import re
@@ -29,7 +30,6 @@ from micall.core.prelim_map import BOWTIE_THREADS, BOWTIE_BUILD_PATH, \
     REF_GAP_EXTEND
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 from micall.utils.translation import reverse_and_complement
-import multiprocessing
 
 CONSENSUS_Q_CUTOFF = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
@@ -182,14 +182,16 @@ def sam_to_conseqs(samfile,
     # refmap structure: {refname: {pos: {nuc: count}}}
     refmap = {}
 
-    if worker_pool is None:
-        pool = multiprocessing.Pool(processes=BOWTIE_THREADS)
-    else:
-        pool = worker_pool
     pairs = matchmaker(samfile, include_singles=True)
-    merged_reads = pool.imap_unordered(partial(merge_reads, quality_cutoff),
-                                       pairs,
-                                       chunksize=100)
+    if worker_pool is None:
+        merged_reads = itertools.imap(
+            partial(merge_reads, quality_cutoff),
+            pairs)
+    else:
+        merged_reads = worker_pool.imap_unordered(
+            partial(merge_reads, quality_cutoff),
+            pairs,
+            chunksize=100)
     read_counts = Counter()
     for merged_read in merged_reads:
         if merged_read is None:
@@ -209,8 +211,6 @@ def sam_to_conseqs(samfile,
                       merged_inserts,
                       pos_nucs,
                       debug_reports)
-    if worker_pool is None:
-        pool.close()
 
     if debug_reports:
         for key, counts in debug_reports.iteritems():
@@ -530,14 +530,16 @@ def remap(fastq1,
                 count += 1
                 row_count += 1
 
+                # write SAM row
+                f.write('\t'.join([row[field] for field in fieldnames]) + '\n')
+
+                if is_unmapped_read(row['flag']):
+                    continue
                 if is_short_read(row, max_primer_length=50):
                     # exclude short reads
                     continue
 
                 filtered_count += 1
-
-                # write SAM row
-                f.write('\t'.join([row[field] for field in fieldnames]) + '\n')
             if callback:
                 callback(progress=raw_count)
 
@@ -546,6 +548,8 @@ def remap(fastq1,
                 dict(type='prelim %s' % refname,
                      count=count,
                      filtered_count=filtered_count))
+            if refname == '*':
+                continue
             refgroup = projects.getSeedGroup(refname)
             _best_ref, best_count = refgroups.get(refgroup,
                                                   (None, count_threshold-1))

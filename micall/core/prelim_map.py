@@ -122,7 +122,6 @@ def prelim_map(fastq1,
                                            READ_GAP_EXTEND),
                    '--rfg', "{},{}".format(ref_gap_open_penalty,
                                            REF_GAP_EXTEND),
-                   '--no-unal',  # don't report reads that failed to align
                    '--no-hd',  # no header lines (start with @)
                    '-X', '1200',
                    '-p', str(nthreads)]
