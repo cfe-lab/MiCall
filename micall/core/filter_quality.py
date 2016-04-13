@@ -7,7 +7,7 @@ import logging
 import math
 import os
 
-import miseq_logging
+from micall.core import miseq_logging
 
 BAD_ERROR_RATE = 7.5
 
@@ -32,23 +32,37 @@ def grouper(cycle):
     return (cycle['tile'], math.copysign(1, int(cycle['cycle'])))
 
 
+def report_bad_cycles(quality_csv, bad_cycles_csv):
+    reader = csv.DictReader(quality_csv)
+    writer = csv.DictWriter(bad_cycles_csv,
+                            ['tile', 'cycle', 'errorrate'],
+                            lineterminator=os.linesep)
+    writer.writeheader()
+    for _tile_direction, cycles in itertools.groupby(reader, grouper):
+        is_bad = False
+        for cycle in cycles:
+            errorrate = cycle['errorrate']
+            is_bad = (is_bad or
+                      errorrate is None or
+                      float(errorrate) >= BAD_ERROR_RATE)
+            if is_bad:
+                writer.writerow(cycle)
+
+
 def main():
     args = parseArgs()
     with args.quality_csv, args.bad_cycles_csv:
-        reader = csv.DictReader(args.quality_csv)
-        writer = csv.DictWriter(args.bad_cycles_csv,
-                                ['tile', 'cycle', 'errorrate'],
-                                lineterminator=os.linesep)
-        writer.writeheader()
-        for _tile_direction, cycles in itertools.groupby(reader, grouper):
-            is_bad = False
-            for cycle in cycles:
-                errorrate = cycle['errorrate']
-                is_bad = (is_bad or
-                          errorrate == '' or
-                          float(errorrate) >= BAD_ERROR_RATE)
-                if is_bad:
-                    writer.writerow(cycle)
+        report_bad_cycles(args.quality_csv, args.bad_cycles_csv)
 
 if __name__ == '__main__':
     main()
+elif __name__ == '__live_coding__':
+    import unittest
+    from micall.tests.filter_quality_test import FilterQualityTest
+
+    suite = unittest.TestSuite()
+    suite.addTest(FilterQualityTest("test_missing"))
+    test_results = unittest.TextTestRunner().run(suite)
+
+    print(test_results.errors)
+    print(test_results.failures)
