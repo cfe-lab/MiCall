@@ -9,12 +9,14 @@ import gotoh
 
 from micall.utils.translation import translate
 
-class Pssm ():
+
+class Pssm():
     def __init__(self, std='g2p', path_to_lookup=None, path_to_matrix=None):
         if std == 'pssm':
             self.std_v3 = 'CTRPNNNTRKGIHIGPGRAFYATGEIIGDIRQAHC'
         elif std == 'nuc':
-            self.std_v3 = 'TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATATAGGACCAGGGAGAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT'
+            self.std_v3 = ('TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATATAGGACCAGGGAG'
+                           'AGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT')
         elif std == 'g2p':
             self.std_v3 = 'CTRPNXNNTXXRKSIRIXXXGPGQXXXAFYATXXXXGDIIGDIXXRQAHC'
         else:
@@ -36,7 +38,7 @@ class Pssm ():
                 break
             except:
                 self.g2p_fpr_data = None
-        
+
         if not self.g2p_fpr_data:
             raise RuntimeError('No g2p_fpr data found in {!r}'.format(
                 lookup_paths))
@@ -61,7 +63,7 @@ class Pssm ():
                 break
             except:
                 self.g2p_matrix = None
-        
+
         if not self.g2p_matrix:
             raise RuntimeError('No g2p matrix data found in {!r}'.format(
                 matrix_paths))
@@ -88,8 +90,7 @@ class Pssm ():
         score = 1. / (1 + exp(fapb-0.5))
         return score
 
-
-    def g2p_to_fpr (self, g2p):
+    def g2p_to_fpr(self, g2p):
         """
         Retrieve FPR value from empirically-derived curve recorded as finite set of values
         in file.  Use bisection search.  In case of inexact match, use midpoint FPR.
@@ -120,7 +121,6 @@ class Pssm ():
                 if abs(right_g2p - g2p) < abs(left_g2p - g2p):
                     return right_fpr
                 return left_fpr
-
 
     def align_aminos(self, seq, gapIns=3, removeinserts=False, qachecks=False):
         """
@@ -193,8 +193,6 @@ class Pssm ():
 
         return aa_lists, indels
 
-
-
     def run_g2p(self, seqs):
         """
         Wrapper function to calculate g2p score over a set of sequences
@@ -213,17 +211,20 @@ class Pssm ():
             aa, _indels = self.align_aminos(seq, removeinserts=False, qachecks=(type(seq) is not list))
             if aa < 0:
                 # failed alignment, try higher gap insert penalty
-                aa, _indels = self.align_aminos(seq, gapIns=6, removeinserts=False,
-                                               qachecks=(type(seq) is not list))  # :recall6
+                aa, _indels = self.align_aminos(seq,
+                                                gapIns=6,
+                                                removeinserts=False,
+                                                qachecks=(type(seq) is not list))  # :recall6
             score = None if aa < 0 else self.g2p(aa)
             scores.append(score)
             if aa == -1:
-                aa, _indels = self.align_aminos(seq, gapIns=6, removeinserts=False,
-                                               qachecks=(type(seq) is not list))  # :recall6
+                aa, _indels = self.align_aminos(seq,
+                                                gapIns=6,
+                                                removeinserts=False,
+                                                qachecks=(type(seq) is not list))  # :recall6
             aa_aligned = aa
 
         if not is_array:
             return scores[0], aa_aligned
         else:
             return scores, None
-
