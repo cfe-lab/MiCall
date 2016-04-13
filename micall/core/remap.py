@@ -766,6 +766,8 @@ def map_to_reference(fastq1,
             if callback and i % 1000 == 0:
                 callback(progress=i)  # progress monitoring in GUI
 
+            f.write(line)
+
             items = line.split('\t')
             qname, bitflag, rname, _, _, _, _, _, _, seq, qual = items[:11]
 
@@ -777,8 +779,6 @@ def map_to_reference(fastq1,
                 continue
 
             new_counts[rname] += 1
-
-            f.write(line)
         if callback:
             callback(progress=raw_count)
     return unmapped_count
