@@ -4,13 +4,14 @@ PSSM was an abbreviation of position-specific scoring matrix.
 """
 
 from math import exp
+import os
 
 import gotoh
 
 from micall.utils.translation import translate
 
 
-class Pssm():
+class Pssm(object):
     def __init__(self, std='g2p', path_to_lookup=None, path_to_matrix=None):
         if std == 'pssm':
             self.std_v3 = 'CTRPNNNTRKGIHIGPGRAFYATGEIIGDIRQAHC'
@@ -24,7 +25,10 @@ class Pssm():
             return
 
         if path_to_lookup is None:
-            lookup_paths = ['g2p_fpr.txt', '../../g2p/g2p_fpr.txt', 'micall/g2p/g2p_fpr.txt']
+            lookup_paths = [os.path.join(os.path.dirname(__file__), 'g2p_fpr.txt'),
+                            'g2p_fpr.txt',
+                            '../../g2p/g2p_fpr.txt',
+                            'micall/g2p/g2p_fpr.txt']
         else:
             lookup_paths = [path_to_lookup]
         for path in lookup_paths:
@@ -46,7 +50,10 @@ class Pssm():
         self.g2p_fpr_data.sort()  # make sure the list is sorted
 
         if path_to_matrix is None:
-            matrix_paths = ['g2p.matrix', '../../g2p/g2p.matrix', 'micall/g2p/g2p.matrix']
+            matrix_paths = [os.path.join(os.path.dirname(__file__), 'g2p.matrix'),
+                            'g2p.matrix',
+                            '../../g2p/g2p.matrix',
+                            'micall/g2p/g2p.matrix']
         else:
             matrix_paths = [path_to_matrix]
         for path in matrix_paths:

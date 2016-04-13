@@ -5,14 +5,19 @@ import fnmatch
 import json
 from operator import itemgetter
 import os
+import shutil
 import subprocess
 from tempfile import NamedTemporaryFile
 
-from micall.core.prelim_map import prelim_map
+from micall.core.aln2counts import aln2counts
 from micall.core.censor_fastq import censor
 from micall.core.filter_quality import report_bad_cycles
-from micall.monitor import phix_parser
 from micall.core.remap import remap
+from micall.core.prelim_map import prelim_map
+from micall.core.sam2aln import sam2aln
+from micall.monitor import phix_parser
+from micall.g2p.sam_g2p import sam_g2p
+from micall.g2p.pssm_lib import Pssm
 
 
 def parse_args():
@@ -71,7 +76,7 @@ def censor_sample(filename, scratch_path):
         return dest.name
 
 
-def process_sample(sample_info, project_id, data_path):
+def process_sample(sample_info, project_id, data_path, pssm):
     scratch_path = os.path.join(data_path, 'scratch')
     sample_id = sample_info['Id']
     sample_name = sample_info['Name']
@@ -111,16 +116,18 @@ def process_sample(sample_info, project_id, data_path):
                                    sample_name)
     makedirs(sample_out_path)
 
-    prelim_csv_path = os.path.join(scratch_path, sample_name + '_prelim.csv')
+    sample_scratch_path = os.path.join(scratch_path, sample_name)
+    makedirs(sample_scratch_path)
+
     print('Running prelim_map.')
-    with open(prelim_csv_path, 'wb') as prelim_csv:
+    with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'wb') as prelim_csv:
         prelim_map(censored_path1,
                    censored_path2,
                    prelim_csv)
 
     print('Running remap.')
-    with open(prelim_csv_path, 'rU') as prelim_csv, \
-            open(os.path.join(sample_out_path, 'remap.csv'), 'wb') as remap_csv, \
+    with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'rU') as prelim_csv, \
+            open(os.path.join(sample_scratch_path, 'remap.csv'), 'wb') as remap_csv, \
             open(os.path.join(sample_out_path, 'remap_counts.csv'), 'wb') as counts_csv, \
             open(os.path.join(sample_out_path, 'remap_conseq.csv'), 'wb') as conseq_csv, \
             open(os.path.join(sample_out_path, 'unmapped1.fastq'), 'w') as unmapped1, \
@@ -135,6 +142,41 @@ def process_sample(sample_info, project_id, data_path):
               unmapped1,
               unmapped2,
               scratch_path)
+
+    print("Running sam2aln.")
+    with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
+            open(os.path.join(sample_scratch_path, 'aligned.csv'), 'wb') as aligned_csv, \
+            open(os.path.join(sample_out_path, 'conseq_ins.csv'), 'wb') as insert_csv, \
+            open(os.path.join(sample_out_path, 'failed_read.csv'), 'wb') as failed_csv:
+
+        sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv)
+
+    print("Running aln2counts.")
+    with open(os.path.join(sample_scratch_path, 'aligned.csv'), 'rU') as aligned_csv, \
+            open(os.path.join(sample_out_path, 'nuc.csv'), 'wb') as nuc_csv, \
+            open(os.path.join(sample_out_path, 'amino.csv'), 'wb') as amino_csv, \
+            open(os.path.join(sample_out_path, 'coord_ins.csv'), 'wb') as coord_ins_csv, \
+            open(os.path.join(sample_out_path, 'conseq.csv'), 'wb') as conseq_csv, \
+            open(os.path.join(sample_out_path, 'failed_align.csv'), 'wb') as failed_align_csv, \
+            open(os.path.join(sample_out_path, 'nuc_variants.csv'), 'wb') as nuc_variants_csv:
+
+        aln2counts(aligned_csv,
+                   nuc_csv,
+                   amino_csv,
+                   coord_ins_csv,
+                   conseq_csv,
+                   failed_align_csv,
+                   nuc_variants_csv)
+
+    print("Running sam_g2p.")
+    with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
+            open(os.path.join(sample_out_path, 'nuc.csv'), 'rU') as nuc_csv, \
+            open(os.path.join(sample_out_path, 'g2p.csv'), 'wb') as g2p_csv:
+
+        sam_g2p(pssm=pssm,
+                remap_csv=remap_csv,
+                nuc_csv=nuc_csv,
+                g2p_csv=g2p_csv)
 
 
 def parse_phix(args, json):
@@ -176,18 +218,23 @@ def main():
     json_path = os.path.join(args.data_path, 'input', 'AppSession.json')
     with open(json_path, 'rU') as json_file:
         json = parse_json(json_file)
+    pssm = Pssm()
 
     scratch_path = os.path.join(args.data_path, 'scratch')
     makedirs(scratch_path)
     for filename in os.listdir(scratch_path):
-        os.remove(os.path.join(scratch_path, filename))
+        filepath = os.path.join(scratch_path, filename)
+        if os.path.isdir(filepath):
+            shutil.rmtree(filepath)
+        else:
+            os.remove(filepath)
 
     print('Processing error rates.')
     if json.run_id is not None:
         parse_phix(args, json)
 
     for sample_info in json.samples:
-        process_sample(sample_info, json.project_id, args.data_path)
+        process_sample(sample_info, json.project_id, args.data_path, pssm)
 
     listing_path = os.path.join(args.data_path,
                                 'output',
