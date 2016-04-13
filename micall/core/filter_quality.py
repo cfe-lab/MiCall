@@ -44,6 +44,7 @@ def report_bad_cycles(quality_csv, bad_cycles_csv):
             errorrate = cycle['errorrate']
             is_bad = (is_bad or
                       errorrate is None or
+                      errorrate == '' or
                       float(errorrate) >= BAD_ERROR_RATE)
             if is_bad:
                 writer.writerow(cycle)
@@ -61,7 +62,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.filter_quality_test import FilterQualityTest
 
     suite = unittest.TestSuite()
-    suite.addTest(FilterQualityTest("test_missing"))
+    suite.addTest(FilterQualityTest("test_blank"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

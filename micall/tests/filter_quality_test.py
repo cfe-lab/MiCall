@@ -54,6 +54,22 @@ tile,cycle,errorrate
 
         self.assertEqual(expected_bad_cycles_csv, bad_cycles_csv.getvalue())
 
+    def test_blank(self):
+        quality_csv = StringIO("""\
+tile,cycle,errorrate
+2,1,1.0
+2,2,
+""")
+        expected_bad_cycles_csv = """\
+tile,cycle,errorrate
+2,2,
+"""
+        bad_cycles_csv = StringIO()
+
+        report_bad_cycles(quality_csv, bad_cycles_csv)
+
+        self.assertEqual(expected_bad_cycles_csv, bad_cycles_csv.getvalue())
+
     def test_filter_following(self):
         quality_csv = StringIO("""\
 tile,cycle,errorrate
