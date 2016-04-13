@@ -9,6 +9,9 @@ RUN apt-get update -qq --fix-missing && apt-get install -qq -y \
   wget \
   && rm -rf /var/lib/apt/lists/*
 
+## Python packages
+RUN pip install python-Levenshtein
+
 ## bowtie2
 RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip; \
   unzip bowtie2.zip -d /opt/; \
@@ -28,4 +31,5 @@ RUN rm -r /opt/alignment
 COPY micall_basespace.py /opt/micall/
 COPY micall/__init__.py micall/project* /opt/micall/micall/
 COPY micall/core /opt/micall/micall/core/
+COPY micall/monitor /opt/micall/micall/monitor/
 COPY micall/utils /opt/micall/micall/utils/

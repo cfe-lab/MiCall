@@ -45,11 +45,12 @@ If you want to see what's currently being worked on, check out the [waffle board
         
         sudo apt-get install python2.7
         
-7. Install [pip the Python package manager][pip] and a couple of packages for Python:
+7. Install [pip the Python package manager][pip] and some packages for Python:
 
         sudo apt-get install python-pip
         sudo pip install testfixtures
         sudo pip install requests
+        sudo pip install python-Levenshtein
 
 [pip]: https://pip.pypa.io/en/latest/installing.html
 

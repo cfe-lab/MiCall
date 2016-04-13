@@ -3,6 +3,7 @@ import csv
 import errno
 import fnmatch
 import json
+from operator import itemgetter
 import os
 import subprocess
 from tempfile import NamedTemporaryFile
@@ -11,6 +12,7 @@ from micall.core.prelim_map import prelim_map
 from micall.core.censor_fastq import censor
 from micall.core.filter_quality import report_bad_cycles
 from micall.monitor import phix_parser
+from micall.core.remap import remap
 
 
 def parse_args():
@@ -44,7 +46,8 @@ def parse_json(json_file):
     args.read_length2 = run_content['SequencingStats']['NumCyclesRead2']
     args.index_length1 = run_content['SequencingStats']['NumCyclesIndex1']
     args.index_length2 = run_content['SequencingStats']['NumCyclesIndex2']
-    args.samples = arg_map['Input.sample-ids']['Items']
+    args.samples = sorted(arg_map['Input.sample-ids']['Items'],
+                          key=itemgetter('Name'))
     args.project_id = arg_map['Input.project-id']['Content']['Id']
 
     return args
@@ -105,15 +108,33 @@ def process_sample(sample_info, project_id, data_path):
                                    'output',
                                    'appresults',
                                    project_id,
-                                   'out')
+                                   sample_name)
     makedirs(sample_out_path)
 
-    prelim_csv_path = os.path.join(sample_out_path, sample_name + '_prelim.csv')
+    prelim_csv_path = os.path.join(scratch_path, sample_name + '_prelim.csv')
     print('Running prelim_map.')
     with open(prelim_csv_path, 'wb') as prelim_csv:
         prelim_map(censored_path1,
                    censored_path2,
                    prelim_csv)
+
+    print('Running remap.')
+    with open(prelim_csv_path, 'rU') as prelim_csv, \
+            open(os.path.join(sample_out_path, 'remap.csv'), 'wb') as remap_csv, \
+            open(os.path.join(sample_out_path, 'remap_counts.csv'), 'wb') as counts_csv, \
+            open(os.path.join(sample_out_path, 'remap_conseq.csv'), 'wb') as conseq_csv, \
+            open(os.path.join(sample_out_path, 'unmapped1.fastq'), 'w') as unmapped1, \
+            open(os.path.join(sample_out_path, 'unmapped2.fastq'), 'w') as unmapped2:
+
+        remap(censored_path1,
+              censored_path2,
+              prelim_csv,
+              remap_csv,
+              counts_csv,
+              conseq_csv,
+              unmapped1,
+              unmapped2,
+              scratch_path)
 
 
 def parse_phix(args, json):
@@ -172,7 +193,7 @@ def main():
                                 'output',
                                 'appresults',
                                 json.project_id,
-                                'out',
+                                json.samples[0]['Name'],
                                 'listing.txt')
     with open(listing_path, 'w') as listing:
         listing.write(subprocess.check_output(['ls', '-R', args.data_path]))
@@ -187,9 +208,9 @@ elif __name__ == '__live_coding__':
                            "Content": "MiCall 04/05/2016 3:14:23"},
                           {"Name": "Input.sample-ids",
                            "Items": [{"Id": "11111",
-                                      "Name": "Example-Sample1"},
+                                      "Name": "Example-SampleB"},
                                      {"Id": "22222",
-                                      "Name": "Example-Sample2"}]},
+                                      "Name": "Example-SampleA"}]},
                           {"Name": "Input.project-id",
                            "Content": {"Id": "33333",
                                        "Name": "Example-Project"}},
