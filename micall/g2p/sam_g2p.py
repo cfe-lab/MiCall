@@ -15,6 +15,7 @@ QMIN = 20   # minimum base quality within insertions
 QCUT = 10   # minimum base quality to not be censored
 QDELTA = 5
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Calculate g2p scores from amino acid sequences.')
 
@@ -104,7 +105,6 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
                                          'qual': qual2,
                                          'ins': ins2}})
 
-
     # apply g2p algorithm to merged reads
     g2p_csv.write('rank,count,g2p,fpr,aligned,error\n')  # CSV header
     rank = 0
@@ -119,11 +119,11 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
             # if more than 50% of the sequence is garbage
             g2p_csv.write('%s,,,,low quality\n' % prefix)
             continue
-     
+
         if seqlen % 3 != 0:
             g2p_csv.write('%s,,,,notdiv3\n' % prefix)
             continue
-     
+
         if seqlen == 0:
             g2p_csv.write('%s,,,,zerolength\n' % prefix)
             continue
@@ -152,7 +152,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
 
         score, aligned = pssm.run_g2p(seq)
         try:
-            aligned2 = ''.join([aa_list[0] if len(aa_list) == 1 else '[%s]'%''.join(aa_list)
+            aligned2 = ''.join([aa_list[0] if len(aa_list) == 1 else '[%s]' % ''.join(aa_list)
                                 for aa_list in aligned])
         except:
             # sequence failed to align
