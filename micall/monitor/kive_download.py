@@ -77,6 +77,7 @@ def download_results(kive_runs, results_folder, run_folder):
                         'failed_align',
                         'nuc_variants',
                         'g2p',
+                        'g2p_summary',
                         'coverage_scores',
                         'coverage_maps_tar']
         for output_name in output_names:

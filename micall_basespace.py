@@ -7,7 +7,6 @@ from operator import itemgetter
 import os
 import shutil
 import subprocess
-from tempfile import NamedTemporaryFile
 
 from micall.core.aln2counts import aln2counts
 from micall.core.censor_fastq import censor
@@ -58,20 +57,10 @@ def parse_json(json_file):
     return args
 
 
-def censor_sample(filename, scratch_path):
-    gz_name = os.path.basename(filename)  # drop path
-    fastq_name = os.path.splitext(gz_name)[0]  # drop .gz
-    basename = os.path.splitext(fastq_name)[0]  # drop .fastq
-    bad_cycles_path = os.path.join(scratch_path, 'bad_cycles.csv')
-
+def censor_sample(filename, bad_cycles_path, censored_name):
     with open(filename, 'rb') as fastq, \
             open(bad_cycles_path, 'rU') as bad_cycles, \
-            NamedTemporaryFile(
-                mode='w',
-                prefix=basename,
-                suffix='_censored.fastq',
-                dir=scratch_path,
-                delete=False) as dest:
+            open(censored_name, 'w') as dest:
         censor(fastq, csv.DictReader(bad_cycles), dest)
         return dest.name
 
@@ -106,8 +95,6 @@ def process_sample(sample_info, project_id, data_path, pssm):
             sample_id,
             sample_path2))
     print('Processing sample {}.'.format(sample_path))
-    censored_path1 = censor_sample(sample_path, scratch_path)
-    censored_path2 = censor_sample(sample_path2, scratch_path)
 
     sample_out_path = os.path.join(data_path,
                                    'output',
@@ -118,6 +105,15 @@ def process_sample(sample_info, project_id, data_path, pssm):
 
     sample_scratch_path = os.path.join(scratch_path, sample_name)
     makedirs(sample_scratch_path)
+
+    censored_path1 = os.path.join(sample_scratch_path, 'censored1.fastq')
+    censor_sample(sample_path,
+                  os.path.join(scratch_path, 'bad_cycles.csv'),
+                  censored_path1)
+    censored_path2 = os.path.join(sample_scratch_path, 'censored2.fastq')
+    censor_sample(sample_path2,
+                  os.path.join(scratch_path, 'bad_cycles.csv'),
+                  censored_path2)
 
     print('Running prelim_map.')
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'wb') as prelim_csv:
@@ -171,12 +167,14 @@ def process_sample(sample_info, project_id, data_path, pssm):
     print("Running sam_g2p.")
     with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
             open(os.path.join(sample_out_path, 'nuc.csv'), 'rU') as nuc_csv, \
-            open(os.path.join(sample_out_path, 'g2p.csv'), 'wb') as g2p_csv:
+            open(os.path.join(sample_out_path, 'g2p.csv'), 'wb') as g2p_csv, \
+            open(os.path.join(sample_out_path, 'g2p_summary.csv'), 'wb') as g2p_summary_csv:
 
         sam_g2p(pssm=pssm,
                 remap_csv=remap_csv,
                 nuc_csv=nuc_csv,
-                g2p_csv=g2p_csv)
+                g2p_csv=g2p_csv,
+                g2p_summary_csv=g2p_summary_csv)
 
 
 def parse_phix(args, json):

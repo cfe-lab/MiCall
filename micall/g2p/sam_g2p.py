@@ -2,7 +2,8 @@
 
 import argparse
 from collections import Counter
-from csv import DictReader
+import csv
+import os
 import re
 
 from micall.core.sam2aln import merge_pairs, apply_cigar
@@ -25,6 +26,8 @@ def parse_args():
                         help='<input> CSV containing nucleotide frequency output from aln2counts.py')
     parser.add_argument('g2p_csv', type=argparse.FileType('w'),
                         help='<output> CSV containing g2p predictions.')
+    parser.add_argument('g2p_summary_csv', type=argparse.FileType('w'),
+                        help='<output> CSV containing overall call for the sample.')
     return parser.parse_args()
 
 
@@ -62,13 +65,13 @@ class RegionTracker:
         return self.ranges.get(seed, [None, None])
 
 
-def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
+def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
     pairs = {}  # cache read for pairing
     merged = Counter()  # { merged_nuc_seq: count }
     tracker = RegionTracker('V3LOOP')
 
     # look up clipping region for each read
-    reader = DictReader(nuc_csv)
+    reader = csv.DictReader(nuc_csv)
     for row in reader:
         if row['query.nuc.pos'] == '':
             # skip deletions in query relative to reference
@@ -76,7 +79,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
         tracker.add_nuc(row['seed'], row['region'], int(row['query.nuc.pos'])-1)
 
     # parse contents of remap CSV output
-    reader = DictReader(remap_csv)
+    reader = csv.DictReader(remap_csv)
     for row in reader:
         clip_from, clip_to = tracker.get_range(row['rname'])
         if clip_from is None or row['cigar'] == '*':
@@ -108,11 +111,13 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
     # apply g2p algorithm to merged reads
     g2p_csv.write('rank,count,g2p,fpr,aligned,error\n')  # CSV header
     rank = 0
+    mapped_count = valid_count = x4_count = 0
     for s, count in merged.most_common():
         # remove in-frame deletions
         seq = re.sub(pat, r'\g<1>\g<3>', s)
 
         rank += 1
+        mapped_count += count
         prefix = '%d,%d' % (rank, count)
         seqlen = len(seq)
         if seq.upper().count('N') > (0.5*seqlen):
@@ -165,13 +170,36 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv):
                                          fpr,
                                          aligned2,
                                          'ambiguous' if '[' in aligned2 else '']))+'\n')
+        valid_count += count
+        if fpr <= 3.5:
+            x4_count += count
+
+    if g2p_summary_csv is not None:
+        if valid_count == 0:
+            x4_pct_display = ''
+            final_call = ''
+        else:
+            x4_pct = 100.0 * x4_count / valid_count
+            final_call = 'X4' if x4_pct >= 2.0 else 'R5'
+            x4_pct_display = '{:0.2f}'.format(x4_pct)
+        summary_writer = csv.writer(g2p_summary_csv, lineterminator=os.linesep)
+        summary_writer.writerow(['mapped', 'valid', 'X4calls', 'X4pct', 'final'])
+        summary_writer.writerow([mapped_count,
+                                 valid_count,
+                                 x4_count,
+                                 x4_pct_display,
+                                 final_call])
 
 
 def main():
     args = parse_args()
     from micall.g2p.pssm_lib import Pssm
     pssm = Pssm()
-    sam_g2p(pssm=pssm, remap_csv=args.remap_csv, nuc_csv=args.nuc_csv, g2p_csv=args.g2p_csv)
+    sam_g2p(pssm=pssm,
+            remap_csv=args.remap_csv,
+            nuc_csv=args.nuc_csv,
+            g2p_csv=args.g2p_csv,
+            g2p_summary_csv=args.g2p_summary_csv)
 
 if __name__ == '__main__':
     # note, must be called from project root if executing directly
