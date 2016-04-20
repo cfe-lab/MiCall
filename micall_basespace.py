@@ -3,6 +3,7 @@ import csv
 import errno
 import fnmatch
 import json
+import logging
 from operator import itemgetter
 import os
 import shutil
@@ -17,6 +18,10 @@ from micall.core.sam2aln import sam2aln
 from micall.monitor import phix_parser
 from micall.g2p.sam_g2p import sam_g2p
 from micall.g2p.pssm_lib import Pssm
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
+logger = logging.getLogger('micall')
 
 
 def parse_args():
@@ -94,7 +99,7 @@ def process_sample(sample_info, project_id, data_path, pssm):
         raise RuntimeError('R2 file missing for sample id {}: {!r}.'.format(
             sample_id,
             sample_path2))
-    print('Processing sample {}.'.format(sample_path))
+    logger.info('Processing sample %s.', sample_path)
 
     sample_out_path = os.path.join(data_path,
                                    'output',
@@ -115,13 +120,13 @@ def process_sample(sample_info, project_id, data_path, pssm):
                   os.path.join(scratch_path, 'bad_cycles.csv'),
                   censored_path2)
 
-    print('Running prelim_map.')
+    logger.info('Running prelim_map.')
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'wb') as prelim_csv:
         prelim_map(censored_path1,
                    censored_path2,
                    prelim_csv)
 
-    print('Running remap.')
+    logger.info('Running remap.')
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'rU') as prelim_csv, \
             open(os.path.join(sample_scratch_path, 'remap.csv'), 'wb') as remap_csv, \
             open(os.path.join(sample_out_path, 'remap_counts.csv'), 'wb') as counts_csv, \
@@ -139,7 +144,7 @@ def process_sample(sample_info, project_id, data_path, pssm):
               unmapped2,
               scratch_path)
 
-    print("Running sam2aln.")
+    logger.info("Running sam2aln.")
     with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
             open(os.path.join(sample_scratch_path, 'aligned.csv'), 'wb') as aligned_csv, \
             open(os.path.join(sample_out_path, 'conseq_ins.csv'), 'wb') as insert_csv, \
@@ -147,7 +152,7 @@ def process_sample(sample_info, project_id, data_path, pssm):
 
         sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv)
 
-    print("Running aln2counts.")
+    logger.info("Running aln2counts.")
     with open(os.path.join(sample_scratch_path, 'aligned.csv'), 'rU') as aligned_csv, \
             open(os.path.join(sample_out_path, 'nuc.csv'), 'wb') as nuc_csv, \
             open(os.path.join(sample_out_path, 'amino.csv'), 'wb') as amino_csv, \
@@ -164,7 +169,7 @@ def process_sample(sample_info, project_id, data_path, pssm):
                    failed_align_csv,
                    nuc_variants_csv)
 
-    print("Running sam_g2p.")
+    logger.info("Running sam_g2p.")
     with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
             open(os.path.join(sample_out_path, 'nuc.csv'), 'rU') as nuc_csv, \
             open(os.path.join(sample_out_path, 'g2p.csv'), 'wb') as g2p_csv, \
@@ -211,7 +216,7 @@ def makedirs(path):
 
 
 def main():
-    print('Starting.')
+    logger.info('Starting.')
     args = parse_args()
     json_path = os.path.join(args.data_path, 'input', 'AppSession.json')
     with open(json_path, 'rU') as json_file:
@@ -227,7 +232,7 @@ def main():
         else:
             os.remove(filepath)
 
-    print('Processing error rates.')
+    logger.info('Processing error rates.')
     if json.run_id is not None:
         parse_phix(args, json)
 
@@ -242,7 +247,7 @@ def main():
                                 'listing.txt')
     with open(listing_path, 'w') as listing:
         listing.write(subprocess.check_output(['ls', '-R', args.data_path]))
-    print('Done.')
+    logger.info('Done.')
 
 if __name__ == '__main__':
     main()

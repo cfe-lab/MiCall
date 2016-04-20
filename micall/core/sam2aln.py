@@ -97,9 +97,9 @@ def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
         zero-based consensus coordinates, None means no clipping at the end
     @return: (sequence, quality, {pos: (insert_seq, insert_qual)}) - the new
         sequence, the new quality string, and a dictionary of insertions with
-        the zero-based consensus coordinate that follows each insertion as the
-        key, and the insertion sequence and quality strings as the
-        value. If none of the read was within the clipped range, then both
+        the zero-based coordinate in the new sequence that follows each
+        insertion as the key, and the insertion sequence and quality strings as
+        the value. If none of the read was within the clipped range, then both
         strings will be blank and the dictionary will be empty.
     """
     newseq = '-' * int(pos)  # pad on left
@@ -126,8 +126,8 @@ def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
         # Insertion relative to reference
         elif operation == 'I':
             if end is None or left < end:
-                insertions[left+pos] = (seq[left:(left+length)],
-                                        qual[left:(left+length)])
+                insertions[left+pos-clip_from] = (seq[left:(left+length)],
+                                                  qual[left:(left+length)])
             left += length
         # Soft clipping leaves the sequence in the SAM - so we should skip it
         elif operation == 'S':

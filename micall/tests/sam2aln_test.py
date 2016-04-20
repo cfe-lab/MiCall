@@ -343,7 +343,7 @@ class CigarTest(unittest.TestCase):
 
         self.assertEqual(expected_seq, clipped_seq)
         self.assertEqual(expected_quality, clipped_quality)
-        self.assertEqual({6: ('GGG', 'HHH')}, inserts)
+        self.assertEqual({3: ('GGG', 'HHH')}, inserts)
 
     def testClipInsertionLowQuality(self):
         cigar = '6M3I6M'
@@ -365,7 +365,7 @@ class CigarTest(unittest.TestCase):
 
         self.assertEqual(expected_seq, clipped_seq)
         self.assertEqual(expected_quality, clipped_quality)
-        self.assertEqual({6: ('GGG', 'HH*')}, inserts)
+        self.assertEqual({3: ('GGG', 'HH*')}, inserts)
 
     def testInsertionBeforeClip(self):
         cigar = '3M3I9M'
@@ -387,7 +387,7 @@ class CigarTest(unittest.TestCase):
 
         self.assertEqual(expected_seq, clipped_seq)
         self.assertEqual(expected_quality, clipped_quality)
-        self.assertEqual({3: ('GGG', 'HHH')}, inserts)
+        self.assertEqual({0: ('GGG', 'HHH')}, inserts)
 
     def testInsertionAfterClipWithOffset(self):
         cigar = '2M1I2M'
@@ -409,7 +409,7 @@ class CigarTest(unittest.TestCase):
 
         self.assertEqual(expected_seq, clipped_seq)
         self.assertEqual(expected_quality, clipped_quality)
-        self.assertEqual({5: ('G', 'B')}, inserts)
+        self.assertEqual({1: ('G', 'B')}, inserts)
 
     def testClippingEverything(self):
         cigar = '12M'
