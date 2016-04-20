@@ -109,7 +109,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
                                          'ins': ins2}})
 
     # apply g2p algorithm to merged reads
-    g2p_csv.write('rank,count,g2p,fpr,aligned,error\n')  # CSV header
+    g2p_csv.write('rank,count,g2p,fpr,call,seq,aligned,error\n')  # CSV header
     rank = 0
     mapped_count = valid_count = x4_count = 0
     for s, count in merged.most_common():
@@ -122,22 +122,22 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
         seqlen = len(seq)
         if seq.upper().count('N') > (0.5*seqlen):
             # if more than 50% of the sequence is garbage
-            g2p_csv.write('%s,,,,low quality\n' % prefix)
+            g2p_csv.write('%s,,,,,,low quality\n' % prefix)
             continue
 
         if seqlen % 3 != 0:
-            g2p_csv.write('%s,,,,notdiv3\n' % prefix)
+            g2p_csv.write('%s,,,,,,notdiv3\n' % prefix)
             continue
 
         if seqlen == 0:
-            g2p_csv.write('%s,,,,zerolength\n' % prefix)
+            g2p_csv.write('%s,,,,,,zerolength\n' % prefix)
             continue
 
         prot = translate(seq, 0, ambig_char='X', translate_mixtures=False)
 
         # sanity check 1 - bounded by cysteines
         if not prot.startswith('C') or not prot.endswith('C'):
-            g2p_csv.write('%s,,,%s,cysteines\n' % (prefix, prot))
+            g2p_csv.write('%s,,,,%s,,cysteines\n' % (prefix, prot))
             continue
 
         # sanity check 2 - too many ambiguous codons
@@ -147,12 +147,12 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
 
         # sanity check 3 - no stop codons
         if prot.count('*') > 0:
-            g2p_csv.write('%s,,,%s,stop codons\n' % (prefix, prot))
+            g2p_csv.write('%s,,,,%s,,stop codons\n' % (prefix, prot))
             continue
 
         # sanity check 4 - V3 length in range 32-40 inclusive
         if len(prot) < 32 or len(prot) > 40:
-            g2p_csv.write('%s,,,%s,length\n' % (prefix, prot))
+            g2p_csv.write('%s,,,,%s,,length\n' % (prefix, prot))
             continue
 
         score, aligned = pssm.run_g2p(seq)
@@ -165,14 +165,19 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
             continue
 
         fpr = pssm.g2p_to_fpr(score)
+        if fpr > 3.5:
+            call = 'R5'
+        else:
+            call = 'X4'
+            x4_count += count
         g2p_csv.write(','.join(map(str, [prefix,
                                          score,
                                          fpr,
+                                         call,
+                                         aligned2.replace('-', ''),
                                          aligned2,
                                          'ambiguous' if '[' in aligned2 else '']))+'\n')
         valid_count += count
-        if fpr <= 3.5:
-            x4_count += count
 
     if g2p_summary_csv is not None:
         if valid_count == 0:
