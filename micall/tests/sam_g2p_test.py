@@ -175,7 +175,7 @@ Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error
-1,1,0.0662904840235,43.0,R5,CT[RS]PNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CT[RS]PN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,ambiguous
+1,1,0.0663051848427,43.0,R5,CT[RS]PNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CT[RS]PN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,ambiguous
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -183,7 +183,7 @@ rank,count,g2p,fpr,call,seq,aligned,error
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
 
     def testAmbiguousAtTwoPositions(self):
-        """ Same thing with codons 9 and 18. """
+        """ Same thing with codons 9 and 18 - rejected. """
         remap_csv = StringIO("""\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
 Example_read_1,99,HIV1B-env-seed,877,44,56M,=,926,56,TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATATAGGACCAGGGAGAGC,AAAAAAAAAAAAAAAAAAAAAAAAAA#AAAAAAAAAAAAAAAAAAAAAAAAAA#AA
@@ -191,23 +191,7 @@ Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error
-1,1,0.0440136995384,71.1,R5,CTRPNNNT[RS]KSIHIGPG[RS]AFYATGEIIGDIRQAHC,CTRPN-NNT--[RS]KSIHI---GPG[RS]---AFYAT----GEIIGDI--RQAHC,ambiguous
-"""
-
-        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
-
-        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
-
-    def testAmbiguousAtThreePositions(self):
-        """ Rejected. """
-        remap_csv = StringIO("""\
-qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
-Example_read_1,99,HIV1B-env-seed,877,44,56M,=,926,56,TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATATAGGACCAGGGAGAGC,AAAAAAAA#AAAAAAAAAAAAAAAAA#AAAAAAAAAAAAAAAAAAAAAAAAAA#AA
-Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT,AAAA#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-""")
-        expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CT[RS]PNNNT[RS]KSIHIGPG[RS]AFYATGEIIGDIRQAHC,,> 2 ambiguous
+1,1,,,,CTRPNNNT[RS]KSIHIGPG[RS]AFYATGEIIGDIRQAHC,,> 2 ambiguous
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)

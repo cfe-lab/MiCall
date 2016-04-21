@@ -1,6 +1,8 @@
 """
 Reimplementation of Conan's pssm_lib.rb Ruby script in Python
 PSSM was an abbreviation of position-specific scoring matrix.
+
+Based on work published at http://coreceptor.geno2pheno.org
 """
 
 from math import exp
@@ -84,18 +86,25 @@ class Pssm(object):
         rho = 1.33153
         probA = -2.31191
         probB = 0.244784
-        ssum = 0.
+        ssums = [0.]
 
-        # average scores over residues at each position
+        # Calculate sums for all possible sequences, based on ambiguous aminos.
         for i, aa_list in enumerate(aa_lists):
-            w_arr = [self.g2p_matrix[i][aa] for aa in aa_list]
-            s = sum(w_arr) / len(w_arr)
-            ssum += s
+            num_sums = len(ssums)
+            if len(aa_list) > 1:
+                ssums *= len(aa_list)
+            for j, aa in enumerate(aa_list):
+                aa_score = self.g2p_matrix[i][aa]
+                for k in range(num_sums):
+                    ssums[j*num_sums + k] += aa_score
 
-        dv = rho - ssum
-        fapb = (dv * probA) + probB
-        score = 1. / (1 + exp(fapb-0.5))
-        return score
+        # Calculate all possible scores, then average.
+        score = 0
+        for ssum in ssums:
+            dv = rho - ssum
+            fapb = (dv * probA) + probB
+            score += 1. / (1 + exp(fapb-0.5))
+        return score/len(ssums)
 
     def g2p_to_fpr(self, g2p):
         """

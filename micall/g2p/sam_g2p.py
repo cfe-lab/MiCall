@@ -144,7 +144,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
             continue
 
         # sanity check 2 - too many ambiguous codons
-        if stats['ambiguous'] > 2 or stats['max_aminos'] > 2:
+        if stats['ambiguous'] > 1 or stats['max_aminos'] > 2:
             g2p_csv.write('%s,,,,%s,,> 2 ambiguous\n' % (prefix, prot))
             continue
 
