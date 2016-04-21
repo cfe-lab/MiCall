@@ -64,11 +64,15 @@ class WorkerTest(unittest.TestCase):
 
     def setUp(self):
         purge_files(*self.ALL_FILES)
+        rmtree(self.ALTERNATE_WORKING_PATH, ignore_errors=True)
+        rmtree(Worker.DEFAULT_WORKING_PATH, ignore_errors=True)
         os.mkdir(self.ALTERNATE_WORKING_PATH)
+        os.mkdir(Worker.DEFAULT_WORKING_PATH)
 
     def tearDown(self):
         purge_files(*self.ALL_FILES)
-        rmtree(self.ALTERNATE_WORKING_PATH)
+        rmtree(self.ALTERNATE_WORKING_PATH, ignore_errors=True)
+        rmtree(Worker.DEFAULT_WORKING_PATH, ignore_errors=True)
 
     def assertFileContents(self, filename, expectedContents):
         with open(filename, "r") as f:
