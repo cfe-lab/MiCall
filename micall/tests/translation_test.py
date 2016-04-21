@@ -108,6 +108,73 @@ class TranslateTest(unittest.TestCase):
 
         self.assertEqual(expected_aminos, aminos)
 
+    def testListAmbiguousOverridesMixturesNotTranslated(self):
+        nucs = 'TTY'
+        expected_aminos = 'F'
+
+        aminos = translate(nucs, translate_mixtures=False, list_ambiguous=True)
+
+        self.assertEqual(expected_aminos, aminos)
+
+    def testAmbiguousAminosListed(self):
+        nucs = 'TTM'  # TTA or TTC: map to L or F
+        expected_aminos = '[FL]'
+
+        aminos = translate(nucs, list_ambiguous=True)
+
+        self.assertEqual(expected_aminos, aminos)
+
+    def testReturnList(self):
+        nucs = 'CGATTM'  # TTA or TTC: map to L or F
+        expected_aminos = [['R'], ['F', 'L']]
+
+        aminos = translate(nucs, return_list=True)
+
+        self.assertEqual(expected_aminos, aminos)
+
+    def testReturnListWithoutMixtures(self):
+        """ Don't know why you would use this combination, but stay sane. """
+
+        nucs = 'CGATTM'  # TTA or TTC: map to L or F
+        expected_aminos = [['R'], ['?']]
+
+        aminos = translate(nucs, return_list=True, translate_mixtures=False)
+
+        self.assertEqual(expected_aminos, aminos)
+
+    def testStatisticsUnambiguous(self):
+        nucs = 'TTATTCTTTTTA'
+        expected_aminos = 'LFFL'
+        stats = {}
+        expected_stats = dict(length=4, ambiguous=0, max_aminos=1)
+
+        aminos = translate(nucs, stats=stats, list_ambiguous=True)
+
+        self.assertEqual(expected_aminos, aminos)
+        self.assertEqual(expected_stats, stats)
+
+    def testStatisticsBlank(self):
+        nucs = ''
+        expected_aminos = ''
+        stats = {}
+        expected_stats = dict(length=0, ambiguous=0, max_aminos=0)
+
+        aminos = translate(nucs, stats=stats, list_ambiguous=True)
+
+        self.assertEqual(expected_aminos, aminos)
+        self.assertEqual(expected_stats, stats)
+
+    def testStatisticsAmbiguous(self):
+        nucs = 'TTMTTCNTTTTA'
+        expected_aminos = '[FL]F[FILV]L'
+        stats = {}
+        expected_stats = dict(length=4, ambiguous=2, max_aminos=4)
+
+        aminos = translate(nucs, stats=stats, list_ambiguous=True)
+
+        self.assertEqual(expected_aminos, aminos)
+        self.assertEqual(expected_stats, stats)
+
 
 class ReverseAndComplementTest(unittest.TestCase):
     def testSimple(self):

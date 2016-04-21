@@ -42,22 +42,35 @@ def translate(seq,
               resolve=False,
               return_list=False,
               ambig_char='?',
-              translate_mixtures=True):
+              translate_mixtures=True,
+              list_ambiguous=False,
+              stats=None):
     """
     Translate codon (nucleotide) sequence into amino acids.
-    @param seq: the nucleotide sequence
-    @param offset: prefix nucleotide sequence by X bases to shift reading frame
-    @param resolve: whether to assign an arbitrary residue at ambiguous codons
-    @param return_list: if True, then returns a list of lists containing all amino
+    :param str seq: the nucleotide sequence
+    :param int offset: prefix nucleotide sequence by X bases to shift reading frame
+    :param bool resolve: whether to assign an arbitrary residue at ambiguous codons
+    :param bool return_list: if True, then returns a list of lists containing all amino
         acid resolutions at each codon
-    @param translate_mixtures: True if a codon should be translated when it has
+    :param str ambig_char: character to use for ambiguous codons, unless
+    translate_mixtures, return_list, or list_ambiguous are true.
+    :param bool translate_mixtures: True if a codon should be translated when it has
         an unambiguous mixture, such as CTN translated to L.
-    @return: string (AA sequence) or list of lists if return_list=True
+    :param bool list_ambiguous: if True, then include all possible amino acids
+    in brackets for an ambiguous codon.
+    :param dict stats: will have 'length' set to the number of full codons,
+    'ambiguous' set to the number of ambiguous positions and max_aminos set to
+    the most ambiguous amino acids at any position
+    :return: string (AA sequence) or list of lists if return_list=True
     """
 
     seq = '-'*offset + seq.upper()
     aa_list = []
     aa_seq = ''  # use to align against reference, for resolving indels
+    if stats is not None:
+        stats['ambiguous'] = 0
+        stats['length'] = 0
+        stats['max_aminos'] = 1 if seq else 0
 
     # loop over codon sites in nucleotide sequence
     for codon_site in xrange(0, len(seq), 3):
@@ -66,6 +79,8 @@ def translate(seq,
         if len(codon) < 3:
             break
 
+        if stats is not None:
+            stats['length'] += 1
         # note that we're willing to handle a single missing nucleotide as an ambiguity
         if codon.count('-') > 1 or '?' in codon:
             if codon == '---':  # don't bother to translate incomplete codons
@@ -83,8 +98,11 @@ def translate(seq,
             aa = codon_dict[codon]
             aa_seq += aa
             aa_list.append([aa])
-        elif not translate_mixtures:
+        elif not translate_mixtures and not list_ambiguous:
+            if stats is not None:
+                stats['ambiguous'] += 1
             aa_seq += ambig_char
+            aa_list.append([ambig_char])
         else:
             # expand codon into all possible resolutions of mixtures
             codons = [codon]
@@ -108,11 +126,27 @@ def translate(seq,
             aa_list.append(aminos)
 
             if len(aminos) > 1:
-                if resolve:
+                if stats is not None:
+                    stats['ambiguous'] += 1
+                    stats['max_aminos'] = max(len(aminos), stats['max_aminos'])
+                if list_ambiguous or return_list:
+                    aminos.sort()
+                    aa_seq += '[{}]'.format(''.join(aminos))
+                elif resolve:
                     aa_seq += aminos[0]  # arbitrary resolution
                 else:
                     aa_seq += ambig_char
             else:
                 aa_seq += aminos[0]
-
     return aa_list if return_list else aa_seq
+
+if __name__ == '__live_coding__':
+    import unittest
+    from micall.tests.translation_test import TranslateTest
+
+    suite = unittest.TestSuite()
+    suite.addTest(TranslateTest("testMixturesNotTranslated2"))
+    test_results = unittest.TextTestRunner().run(suite)
+
+    print(test_results.errors)
+    print(test_results.failures)

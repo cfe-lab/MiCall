@@ -6,6 +6,14 @@ from micall.g2p.pssm_lib import Pssm
 from micall.g2p.sam_g2p import sam_g2p
 
 
+class DummyFile(StringIO):
+    def __repr__(self):
+        s = self.getvalue()
+        if len(s) > 50:
+            s = '...' + s[-47:]
+        return 'DummyFile({!r})'.format(s)
+
+
 class SamG2PTest(unittest.TestCase):
     def setUp(self):
         super(SamG2PTest, self).setUp()
@@ -21,8 +29,8 @@ seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
 HIV1B-env-seed,V3LOOP,15,877,1,0,0,0,100
 HIV1B-env-seed,V3LOOP,15,981,105,0,0,0,100
 """)
-        self.g2p_csv = StringIO()
-        self.g2p_summary_csv = StringIO()
+        self.g2p_csv = DummyFile()
+        self.g2p_summary_csv = DummyFile()
         self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
 
     def testSimple(self):
@@ -141,14 +149,82 @@ rank,count,g2p,fpr,call,seq,aligned,error
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
 
     def testSynonymMixture(self):
+        """ Marking position 12 as low quality means codon 4 has to be P.
+        """
         remap_csv = StringIO("""\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
-Example_read_1,99,HIV1B-env-seed,877,44,12M,=,877,12,TGTACAGGNTGT,AAAAAAAA#AAA
-Example_read_1,147,HIV1B-env-seed,877,44,12M,=,877,-12,TGTACAGGNTGT,AAAAAAAA#AAA
+Example_read_1,99,HIV1B-env-seed,877,44,56M,=,926,56,TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATATAGGACCAGGGAGAGC,AAAAAAAAAAA#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CTXC,,length
+1,1,0.0677537070158,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+
+    def testAmbiguousMixture(self):
+        """ Marking position 9 as low quality means codon 3 could be S or R.
+        """
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,877,44,56M,=,926,56,TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATATAGGACCAGGGAGAGC,AAAAAAAA#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,call,seq,aligned,error
+1,1,0.0662904840235,43.0,R5,CT[RS]PNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CT[RS]PN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,ambiguous
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+
+    def testAmbiguousAtTwoPositions(self):
+        """ Same thing with codons 9 and 18. """
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,877,44,56M,=,926,56,TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATATAGGACCAGGGAGAGC,AAAAAAAAAAAAAAAAAAAAAAAAAA#AAAAAAAAAAAAAAAAAAAAAAAAAA#AA
+Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT,AAAA#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,call,seq,aligned,error
+1,1,0.0440136995384,71.1,R5,CTRPNNNT[RS]KSIHIGPG[RS]AFYATGEIIGDIRQAHC,CTRPN-NNT--[RS]KSIHI---GPG[RS]---AFYAT----GEIIGDI--RQAHC,ambiguous
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+
+    def testAmbiguousAtThreePositions(self):
+        """ Rejected. """
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,877,44,56M,=,926,56,TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATATAGGACCAGGGAGAGC,AAAAAAAA#AAAAAAAAAAAAAAAAA#AAAAAAAAAAAAAAAAAAAAAAAAAA#AA
+Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT,AAAA#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,call,seq,aligned,error
+1,1,,,,CT[RS]PNNNT[RS]KSIHIGPG[RS]AFYATGEIIGDIRQAHC,,> 2 ambiguous
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+
+    def testAmbiguousMixtureThreeChoices(self):
+        """ Marking position 9 as low quality means codon 2 could be S or R.
+        """
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,877,44,21M,=,877,56,TGTACAAGACCCTTAAACTGT,AAAAAAAAAAAAA#AAAAAAA
+Example_read_1,147,HIV1B-env-seed,877,44,21M,=,877,56,TGTACAAGACCCTTAAACTGT,AAAAAAAAAAAAA#AAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,call,seq,aligned,error
+1,1,,,,CTRP[*LS]NC,,> 2 ambiguous
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)

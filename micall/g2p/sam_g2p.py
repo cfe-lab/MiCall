@@ -133,7 +133,10 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
             g2p_csv.write('%s,,,,,,zerolength\n' % prefix)
             continue
 
-        prot = translate(seq, 0, ambig_char='X', translate_mixtures=False)
+        stats = {}
+        prot = translate(seq,
+                         list_ambiguous=True,
+                         stats=stats)
 
         # sanity check 1 - bounded by cysteines
         if not prot.startswith('C') or not prot.endswith('C'):
@@ -141,8 +144,8 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
             continue
 
         # sanity check 2 - too many ambiguous codons
-        if prot.count('X') > 2:
-            g2p_csv.write('%s,,,%s,> 2 ambiguous\n' % (prefix, prot))
+        if stats['ambiguous'] > 2 or stats['max_aminos'] > 2:
+            g2p_csv.write('%s,,,,%s,,> 2 ambiguous\n' % (prefix, prot))
             continue
 
         # sanity check 3 - no stop codons
@@ -151,7 +154,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
             continue
 
         # sanity check 4 - V3 length in range 32-40 inclusive
-        if len(prot) < 32 or len(prot) > 40:
+        if stats['length'] < 32 or stats['length'] > 40:
             g2p_csv.write('%s,,,,%s,,length\n' % (prefix, prot))
             continue
 
@@ -210,3 +213,13 @@ if __name__ == '__main__':
     # note, must be called from project root if executing directly
     # i.e., python micall/g2p/sam_g2p.py -h
     main()
+elif __name__ == '__live_coding__':
+    import unittest
+    from micall.tests.sam_g2p_test import SamG2PTest
+
+    suite = unittest.TestSuite()
+    suite.addTest(SamG2PTest("testSynonymMixtureThreeLocations"))
+    test_results = unittest.TextTestRunner().run(suite)
+
+    print(test_results.errors)
+    print(test_results.failures)
