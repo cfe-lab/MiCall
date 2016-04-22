@@ -191,7 +191,7 @@ Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CTRPNNNT[RS]KSIHIGPG[RS]AFYATGEIIGDIRQAHC,,> 2 ambiguous
+1,1,,,,CTRPNNNTXKSIHIGPGXAFYATGEIIGDIRQAHC,,> 2 ambiguous
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -199,7 +199,7 @@ rank,count,g2p,fpr,call,seq,aligned,error
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
 
     def testAmbiguousMixtureThreeChoices(self):
-        """ Marking position 9 as low quality means codon 2 could be S or R.
+        """ Marking position 14 as low quality means codon 5 could be L, S, or *.
         """
         remap_csv = StringIO("""\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
@@ -208,7 +208,7 @@ Example_read_1,147,HIV1B-env-seed,877,44,21M,=,877,56,TGTACAAGACCCTTAAACTGT,AAAA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CTRP[*LS]NC,,> 2 ambiguous
+1,1,,,,CTRPXNC,,> 2 ambiguous
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)

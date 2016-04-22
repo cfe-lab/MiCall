@@ -99,7 +99,7 @@ def process_sample(sample_info, project_id, data_path, pssm):
         raise RuntimeError('R2 file missing for sample id {}: {!r}.'.format(
             sample_id,
             sample_path2))
-    logger.info('Processing sample %s.', sample_path)
+    logger.info('Processing sample %s: %s (%s).', sample_id, sample_name, sample_path)
 
     sample_out_path = os.path.join(data_path,
                                    'output',

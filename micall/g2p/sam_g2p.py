@@ -135,7 +135,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
 
         stats = {}
         prot = translate(seq,
-                         list_ambiguous=True,
+                         ambig_char='X',
                          stats=stats)
 
         # sanity check 1 - bounded by cysteines
