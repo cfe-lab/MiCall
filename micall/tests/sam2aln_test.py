@@ -1,8 +1,7 @@
 import unittest
 from StringIO import StringIO
 
-from micall.core import sam2aln
-from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
+from micall.core.sam2aln import sam2aln, apply_cigar, merge_pairs, merge_inserts
 
 
 class RemapReaderTest(unittest.TestCase):
@@ -20,7 +19,7 @@ INT,15,0,1,0,TGTACAAGACCCAACAACAATACAAGAAAAAG
 V3LOOP,15,0,1,0,TGTACAAGACCCAACAACAATACAAGAAAAAG
 """
         actual_aligned_csv = StringIO()
-        sam2aln.sam2aln(remap_file, actual_aligned_csv, StringIO(), StringIO())
+        sam2aln(remap_file, actual_aligned_csv, StringIO(), StringIO())
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -36,7 +35,7 @@ refname,qcut,rank,count,offset,seq
 V3LOOP,15,0,1,0,TNT
 """
         actual_aligned_csv = StringIO()
-        sam2aln.sam2aln(remap_file, actual_aligned_csv, StringIO(), StringIO())
+        sam2aln(remap_file, actual_aligned_csv, StringIO(), StringIO())
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -64,10 +63,10 @@ qname,cause
 """
         actual_aligned_csv = StringIO()
         actual_failed_csv = StringIO()
-        sam2aln.sam2aln(remap_file,
-                        actual_aligned_csv,
-                        StringIO(),
-                        actual_failed_csv)
+        sam2aln(remap_file,
+                actual_aligned_csv,
+                StringIO(),
+                actual_failed_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -92,10 +91,10 @@ Example_read_1,manyNs
 """
         actual_aligned_csv = StringIO()
         actual_failed_csv = StringIO()
-        sam2aln.sam2aln(remap_file,
-                        actual_aligned_csv,
-                        StringIO(),
-                        actual_failed_csv)
+        sam2aln(remap_file,
+                actual_aligned_csv,
+                StringIO(),
+                actual_failed_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -116,10 +115,10 @@ Example_read_1,unmatched
 """
         actual_aligned_csv = StringIO()
         actual_failed_csv = StringIO()
-        sam2aln.sam2aln(remap_file,
-                        actual_aligned_csv,
-                        StringIO(),
-                        actual_failed_csv)
+        sam2aln(remap_file,
+                actual_aligned_csv,
+                StringIO(),
+                actual_failed_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -141,10 +140,10 @@ Example_read_1,badCigar
 """
         actual_aligned_csv = StringIO()
         actual_failed_csv = StringIO()
-        sam2aln.sam2aln(remap_file,
-                        actual_aligned_csv,
-                        StringIO(),
-                        actual_failed_csv)
+        sam2aln(remap_file,
+                actual_aligned_csv,
+                StringIO(),
+                actual_failed_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -166,10 +165,10 @@ Example_read_1,2refs
 """
         actual_aligned_csv = StringIO()
         actual_failed_csv = StringIO()
-        sam2aln.sam2aln(remap_file,
-                        actual_aligned_csv,
-                        StringIO(),
-                        actual_failed_csv)
+        sam2aln(remap_file,
+                actual_aligned_csv,
+                StringIO(),
+                actual_failed_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -193,10 +192,10 @@ Example_read_1,R,V3LOOP,12,AACAAC,AAAAAA
 """
         actual_aligned_csv = StringIO()
         actual_insert_csv = StringIO()
-        sam2aln.sam2aln(remap_file,
-                        actual_aligned_csv,
-                        actual_insert_csv,
-                        StringIO())
+        sam2aln(remap_file,
+                actual_aligned_csv,
+                actual_insert_csv,
+                StringIO())
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -389,7 +388,7 @@ class CigarTest(unittest.TestCase):
         self.assertEqual(expected_quality, clipped_quality)
         self.assertEqual({0: ('GGG', 'HHH')}, inserts)
 
-    def testInsertionAfterClipWithOffset(self):
+    def testInsertionInsideClipRegionWithOffset(self):
         cigar = '2M1I2M'
         seq     = 'TAGCT'  # @IgnorePep8
         quality = 'AABCC'
@@ -410,6 +409,29 @@ class CigarTest(unittest.TestCase):
         self.assertEqual(expected_seq, clipped_seq)
         self.assertEqual(expected_quality, clipped_quality)
         self.assertEqual({1: ('G', 'B')}, inserts)
+
+    def testInsertionAfterClipRegionWithOffset(self):
+        cigar = '5M1I2M'
+        seq     = 'TAGCTCAG'  # @IgnorePep8
+        quality = 'AAAAABCC'
+        pos = 10
+        clip_from = 10
+        clip_to = 13
+        expected_seq     = 'TAGC'  # @IgnorePep8
+        expected_quality = 'AAAA'
+        expected_inserts = {}
+
+        clipped_seq, clipped_quality, inserts = apply_cigar(
+          cigar,
+          seq,
+          quality,
+          pos,
+          clip_from,
+          clip_to)
+
+        self.assertEqual(expected_seq, clipped_seq)
+        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(expected_inserts, inserts)
 
     def testClippingEverything(self):
         cigar = '12M'

@@ -125,7 +125,7 @@ def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
             newqual += ' '*length  # Assign fake placeholder score (Q=-1)
         # Insertion relative to reference
         elif operation == 'I':
-            if end is None or left < end:
+            if end is None or left+pos < end:
                 insertions[left+pos-clip_from] = (seq[left:(left+length)],
                                                   qual[left:(left+length)])
             left += length
@@ -476,3 +476,13 @@ def main():
 
 if __name__ == '__main__':
     main()
+elif __name__ == '__live_coding__':
+    import unittest
+    from micall.tests.sam2aln_test import CigarTest
+
+    suite = unittest.TestSuite()
+    suite.addTest(CigarTest("testInsertionAfterClipRegionWithOffset"))
+    test_results = unittest.TextTestRunner().run(suite)
+
+    print(test_results.errors)
+    print(test_results.failures)
