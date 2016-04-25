@@ -276,15 +276,30 @@ rank,count,g2p,fpr,call,seq,aligned,error
 
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
 
-    def testLength(self):
+    def testLengthMinimum(self):
         remap_csv = StringIO("""\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
-Example_read_1,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTGGGTGT,AAAAAAAAA
-Example_read_1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTGGGTGT,AAAAAAAAA
+Example_read_1,99,HIV1B-env-seed,877,44,51M,=,925,51,TGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGAAA,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Example_read_1,147,HIV1B-env-seed,925,44,48M,=,877,-48,AAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CGC,,length
+1,1,0.806326707173,1.5,X4,CGGGGGGGGGGGGGGGKGGGGGGGGGGGGGGC,---CG-GGG--GGGGGG---GGGG---GKGGG----GGGGGGG--GGGGC,
+"""
+
+        sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+
+    def testLengthTooShort(self):
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,HIV1B-env-seed,877,44,51M,=,925,51,TGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGAAA,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Example_read_1,147,HIV1B-env-seed,925,44,45M,=,877,-45,AAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,call,seq,aligned,error
+1,1,,,,CGGGGGGGGGGGGGGGKGGGGGGGGGGGGGC,,length
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)

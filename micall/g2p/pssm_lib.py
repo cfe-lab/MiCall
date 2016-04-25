@@ -151,7 +151,7 @@ class Pssm(object):
         if qachecks:
             if seq is None:
                 return -1, None
-            if (len(seq) % 3 != 0) or len(seq) < 99:
+            if (len(seq) % 3 != 0) or len(seq) < 96:
                 return -1, None
             if seq.startswith('----') or seq.endswith('----'):
                 return -1, None
