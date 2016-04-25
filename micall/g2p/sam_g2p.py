@@ -109,94 +109,101 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
                                          'ins': ins2}})
 
     # apply g2p algorithm to merged reads
-    g2p_csv.write('rank,count,g2p,fpr,call,seq,aligned,error\n')  # CSV header
-    rank = 0
-    mapped_count = valid_count = x4_count = 0
+    g2p_writer = csv.DictWriter(
+        g2p_csv,
+        ['rank', 'count', 'g2p', 'fpr', 'call', 'seq', 'aligned', 'error'],
+        lineterminator=os.linesep)
+    g2p_writer.writeheader()
+    counts = Counter()
     for s, count in merged.most_common():
         # remove in-frame deletions
         seq = re.sub(pat, r'\g<1>\g<3>', s)
 
-        rank += 1
-        mapped_count += count
-        prefix = '%d,%d' % (rank, count)
-        seqlen = len(seq)
-        if seq.upper().count('N') > (0.5*seqlen):
-            # if more than 50% of the sequence is garbage
-            g2p_csv.write('%s,,,,,,low quality\n' % prefix)
-            continue
-
-        if seqlen % 3 != 0:
-            g2p_csv.write('%s,,,,,,notdiv3\n' % prefix)
-            continue
-
-        if seqlen == 0:
-            g2p_csv.write('%s,,,,,,zerolength\n' % prefix)
-            continue
-
-        stats = {}
-        prot = translate(seq,
-                         ambig_char='X',
-                         stats=stats)
-
-        # sanity check 1 - bounded by cysteines
-        if not prot.startswith('C') or not prot.endswith('C'):
-            g2p_csv.write('%s,,,,%s,,cysteines\n' % (prefix, prot))
-            continue
-
-        # sanity check 2 - too many ambiguous codons
-        if stats['ambiguous'] > 1 or stats['max_aminos'] > 2:
-            g2p_csv.write('%s,,,,%s,,> 2 ambiguous\n' % (prefix, prot))
-            continue
-
-        # sanity check 3 - no stop codons
-        if prot.count('*') > 0:
-            g2p_csv.write('%s,,,,%s,,stop codons\n' % (prefix, prot))
-            continue
-
-        # sanity check 4 - V3 length in range 32-40 inclusive
-        if stats['length'] < 32 or stats['length'] > 40:
-            g2p_csv.write('%s,,,,%s,,length\n' % (prefix, prot))
-            continue
-
-        score, aligned = pssm.run_g2p(seq)
-        try:
-            aligned2 = ''.join([aa_list[0] if len(aa_list) == 1 else '[%s]' % ''.join(aa_list)
-                                for aa_list in aligned])
-        except:
-            # sequence failed to align
-            g2p_csv.write('%s,%s,,,failed to align\n' % (prefix, score))
-            continue
-
-        fpr = pssm.g2p_to_fpr(score)
-        if fpr > 3.5:
-            call = 'R5'
-        else:
-            call = 'X4'
-            x4_count += count
-        g2p_csv.write(','.join(map(str, [prefix,
-                                         score,
-                                         fpr,
-                                         call,
-                                         aligned2.replace('-', ''),
-                                         aligned2,
-                                         'ambiguous' if '[' in aligned2 else '']))+'\n')
-        valid_count += count
+        row = _build_row(seq, count, counts, pssm)
+        g2p_writer.writerow(row)
 
     if g2p_summary_csv is not None:
-        if valid_count == 0:
+        if counts['valid'] == 0:
             x4_pct_display = ''
             final_call = ''
         else:
-            x4_pct = 100.0 * x4_count / valid_count
+            x4_pct = 100.0 * counts['x4'] / counts['valid']
             final_call = 'X4' if x4_pct >= 2.0 else 'R5'
             x4_pct_display = '{:0.2f}'.format(x4_pct)
         summary_writer = csv.writer(g2p_summary_csv, lineterminator=os.linesep)
         summary_writer.writerow(['mapped', 'valid', 'X4calls', 'X4pct', 'final'])
-        summary_writer.writerow([mapped_count,
-                                 valid_count,
-                                 x4_count,
+        summary_writer.writerow([counts['mapped'],
+                                 counts['valid'],
+                                 counts['x4'],
                                  x4_pct_display,
                                  final_call])
+
+
+def _build_row(seq, count, counts, pssm):
+    counts['rank'] += 1
+    counts['mapped'] += count
+    row = {}
+    row['rank'] = counts['rank']
+    row['count'] = count
+    seqlen = len(seq)
+    if seq.upper().count('N') > (0.5*seqlen):
+        # if more than 50% of the sequence is garbage
+        row['error'] = 'low quality'
+        return row
+
+    if seqlen % 3 != 0:
+        row['error'] = 'notdiv3'
+        return row
+
+    if seqlen == 0:
+        row['error'] = 'zerolength'
+        return row
+
+    stats = {}
+    prot = translate(seq,
+                     ambig_char='X',
+                     stats=stats)
+
+    row['seq'] = prot
+    # sanity check 1 - bounded by cysteines
+    if not prot.startswith('C') or not prot.endswith('C'):
+        row['error'] = 'cysteines'
+        return row
+
+    # sanity check 2 - too many ambiguous codons
+    if stats['ambiguous'] > 1 or stats['max_aminos'] > 2:
+        row['error'] = '> 2 ambiguous'
+        return row
+
+    # sanity check 3 - no stop codons
+    if prot.count('*') > 0:
+        row['error'] = 'stop codons'
+        return row
+
+    # sanity check 4 - V3 length in range 32-40 inclusive
+    if stats['length'] < 32 or stats['length'] > 40:
+        row['error'] = 'length'
+        return row
+
+    score, aligned = pssm.run_g2p(seq)
+    aligned2 = ''.join([aa_list[0]
+                        if len(aa_list) == 1 else '[%s]' % ''.join(aa_list)
+                        for aa_list in aligned])
+
+    fpr = pssm.g2p_to_fpr(score)
+    if fpr > 3.5:
+        call = 'R5'
+    else:
+        call = 'X4'
+        counts['x4'] += count
+    counts['valid'] += count
+    row['g2p'] = str(score)
+    row['fpr'] = fpr
+    row['call'] = call
+    row['seq'] = aligned2.replace('-', '')
+    row['aligned'] = aligned2
+    row['error'] = 'ambiguous' if '[' in aligned2 else ''
+    return row
 
 
 def main():
@@ -218,7 +225,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.sam_g2p_test import SamG2PTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SamG2PTest("testSynonymMixtureThreeLocations"))
+    suite.addTest(SamG2PTest("testSimple"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)
