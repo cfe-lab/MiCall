@@ -186,6 +186,10 @@ def _build_row(seq, count, counts, pssm):
         return row
 
     score, aligned = pssm.run_g2p(seq)
+    if score is None:
+        row['error'] = 'failed to align'
+        return row
+
     aligned2 = ''.join([aa_list[0]
                         if len(aa_list) == 1 else '[%s]' % ''.join(aa_list)
                         for aa_list in aligned])
