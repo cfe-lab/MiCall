@@ -307,6 +307,7 @@ similar steps to setting up a development workstation. Follow these steps:
     matches the version you used in `settings_default.py`. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
     so on. Mark the release as pre-release until you finish deploying it.
+6. Upgrade the scripts in Kive, and record the id of the new pipeline.
 7. Stop the `MISEQ_MONITOR.py` process after you check that it's not processing
     any runs.
 
@@ -324,9 +325,9 @@ similar steps to setting up a development workstation. Follow these steps:
 
 9. Check if you need to set any new settings by running
     `diff settings_default.py settings.py`. You will probably need to modify
-    the version number, at least. Make sure that `production = False`, and the
-    process counts are half the production values. Do the same comparison of
-    `hostfile`.
+    the version number and pipeline id, at least. Make sure that
+    `production = False`, and the process counts are half the production values.
+    Do the same comparison of `hostfile`.
 10. Check if the gotoh package is up to date. If not, install it.
 
         cd /usr/local/share/miseq/development/micall/alignment

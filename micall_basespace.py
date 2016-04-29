@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 import csv
 import errno
 import fnmatch
+import gzip
 import json
 import logging
 from operator import itemgetter
@@ -49,12 +50,16 @@ def parse_json(json_file):
                for item in raw_args['Properties']['Items']}
 
     args.name = arg_map['Input.app-session-name']['Content']
-    run_content = arg_map['Input.run-id']['Content']
-    args.run_id = run_content['Id']
-    args.read_length1 = run_content['SequencingStats']['NumCyclesRead1']
-    args.read_length2 = run_content['SequencingStats']['NumCyclesRead2']
-    args.index_length1 = run_content['SequencingStats']['NumCyclesIndex1']
-    args.index_length2 = run_content['SequencingStats']['NumCyclesIndex2']
+    run = arg_map.get('Input.run-id')
+    if run is None:
+        args.run_id = None
+    else:
+        run_content = run['Content']
+        args.run_id = run_content['Id']
+        args.read_length1 = run_content['SequencingStats']['NumCyclesRead1']
+        args.read_length2 = run_content['SequencingStats']['NumCyclesRead2']
+        args.index_length1 = run_content['SequencingStats']['NumCyclesIndex1']
+        args.index_length2 = run_content['SequencingStats']['NumCyclesIndex2']
     args.samples = sorted(arg_map['Input.sample-ids']['Items'],
                           key=itemgetter('Name'))
     args.project_id = arg_map['Input.project-id']['Content']['Id']
@@ -63,11 +68,14 @@ def parse_json(json_file):
 
 
 def censor_sample(filename, bad_cycles_path, censored_name):
-    with open(filename, 'rb') as fastq, \
-            open(bad_cycles_path, 'rU') as bad_cycles, \
-            open(censored_name, 'w') as dest:
-        censor(fastq, csv.DictReader(bad_cycles), dest)
-        return dest.name
+    if not os.path.exists(bad_cycles_path):
+        with gzip.open(filename, 'rb') as zip_src, open(censored_name, 'w') as fastq_dest:
+            shutil.copyfileobj(zip_src, fastq_dest)
+    else:
+        with open(filename, 'rb') as fastq, \
+                open(bad_cycles_path, 'rU') as bad_cycles, \
+                open(censored_name, 'w') as dest:
+            censor(fastq, csv.DictReader(bad_cycles), dest)
 
 
 def process_sample(sample_info, project_id, data_path, pssm):
@@ -200,11 +208,16 @@ def parse_phix(args, json):
     bad_cycles_path = os.path.join(args.data_path,
                                    'scratch',
                                    'bad_cycles.csv')
+    bad_tiles_path = os.path.join(args.data_path,
+                                  'scratch',
+                                  'bad_tiles.csv')
     with open(phix_path, 'rb') as phix, open(quality_path, 'w') as quality:
         records = phix_parser.read_phix(phix)
         phix_parser.write_phix_csv(quality, records, read_lengths)
-    with open(quality_path, 'rU') as quality, open(bad_cycles_path, 'w') as bad_cycles:
-        report_bad_cycles(quality, bad_cycles)
+    with open(quality_path, 'rU') as quality, \
+            open(bad_cycles_path, 'w') as bad_cycles, \
+            open(bad_tiles_path, 'w') as bad_tiles:
+        report_bad_cycles(quality, bad_cycles, bad_tiles)
 
 
 def makedirs(path):
