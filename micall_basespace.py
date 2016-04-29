@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 import csv
 import errno
 import fnmatch
+from glob import glob
 import gzip
 import json
 import logging
@@ -9,6 +10,7 @@ from operator import itemgetter
 import os
 import shutil
 import subprocess
+from xml.etree import ElementTree
 
 from micall.core.aln2counts import aln2counts
 from micall.core.censor_fastq import censor
@@ -31,6 +33,9 @@ def parse_args():
                         default='/data',
                         nargs='?',
                         help='data folder filled in by BaseSpace')
+    parser.add_argument('--link_run',
+                        '-l',
+                        help='Run folder to link into the data folder')
     return parser.parse_args()
 
 
@@ -64,6 +69,59 @@ def parse_json(json_file):
                           key=itemgetter('Name'))
     args.project_id = arg_map['Input.project-id']['Content']['Id']
 
+    return args
+
+
+def link_json(run_path, data_path):
+    """ Load the data from a run folder into the BaseSpace layout. """
+    class Args(object):
+        pass
+    args = Args()
+
+    shutil.rmtree(data_path, ignore_errors=True)
+    os.makedirs(data_path)
+
+    args.run_id = os.path.basename(run_path)
+    runs_path = os.path.join(data_path, 'input', 'runs')
+    os.makedirs(runs_path)
+    new_run_path = os.path.join(runs_path, args.run_id)
+    os.symlink(run_path, new_run_path)
+    run_info_path = os.path.join(new_run_path, 'RunInfo.xml')
+    run_info = ElementTree.parse(run_info_path).getroot()
+    read1 = run_info.find('.//Read[@Number="1"][@IsIndexedRead="N"]')
+    args.read_length1 = int(read1.attrib['NumCycles'])
+    read2 = run_info.find('.//Read[@IsIndexedRead="N"][last()]')
+    args.read_length2 = int(read2.attrib['NumCycles'])
+    index1 = run_info.find('.//Read[@Number="2"][@IsIndexedRead="Y"]')
+    args.index_length1 = int(index1.attrib['NumCycles'])
+    index2 = run_info.find('.//Read[@Number="3"][@IsIndexedRead="Y"]')
+    if index2 is None:
+        args.index_length2 = 0
+    else:
+        args.index_length2 = int(index2.attrib['NumCycles'])
+    print(args.read_length1)
+    args.project_id = '1'
+
+    args.samples = []
+    samples_path = os.path.join(data_path, 'input', 'samples')
+    fastq_files = glob(os.path.join(run_path,
+                                    'Data',
+                                    'Intensities',
+                                    'BaseCalls',
+                                    '*_R1_*'))
+    fastq_files.sort()
+    for i, fastq_file in enumerate(fastq_files, 1):
+        sample_file = os.path.basename(fastq_file)
+        if not sample_file.startswith('Undetermined'):
+            sample_id = str(i)
+            sample_path = os.path.join(samples_path, sample_id)
+            os.makedirs(sample_path)
+            os.symlink(fastq_file, os.path.join(sample_path, sample_file))
+            fastq_file = fastq_file.replace('_R1_', '_R2_')
+            sample_file = os.path.basename(fastq_file)
+            os.symlink(fastq_file, os.path.join(sample_path, sample_file))
+            sample_name = '_'.join(sample_file.split('_')[:2])
+            args.samples.append(dict(Id=sample_id, Name=sample_name))
     return args
 
 
@@ -202,15 +260,15 @@ def parse_phix(args, json):
                              json.run_id,
                              'InterOp',
                              'ErrorMetricsOut.bin')
-    quality_path = os.path.join(args.data_path,
-                                'scratch',
-                                'quality.csv')
-    bad_cycles_path = os.path.join(args.data_path,
-                                   'scratch',
-                                   'bad_cycles.csv')
-    bad_tiles_path = os.path.join(args.data_path,
-                                  'scratch',
-                                  'bad_tiles.csv')
+    quality_path = os.path.join(args.data_path, 'scratch', 'quality.csv')
+    bad_cycles_path = os.path.join(args.data_path, 'scratch', 'bad_cycles.csv')
+    summary_path = os.path.join(args.data_path,
+                                'output',
+                                'appresults',
+                                json.project_id,
+                                'summary')
+    os.makedirs(summary_path)
+    bad_tiles_path = os.path.join(summary_path, 'bad_tiles.csv')
     with open(phix_path, 'rb') as phix, open(quality_path, 'w') as quality:
         records = phix_parser.read_phix(phix)
         phix_parser.write_phix_csv(quality, records, read_lengths)
@@ -231,9 +289,12 @@ def makedirs(path):
 def main():
     logger.info('Starting.')
     args = parse_args()
-    json_path = os.path.join(args.data_path, 'input', 'AppSession.json')
-    with open(json_path, 'rU') as json_file:
-        json = parse_json(json_file)
+    if args.link_run is not None:
+        json = link_json(args.link_run, args.data_path)
+    else:
+        json_path = os.path.join(args.data_path, 'input', 'AppSession.json')
+        with open(json_path, 'rU') as json_file:
+            json = parse_json(json_file)
     pssm = Pssm()
 
     scratch_path = os.path.join(args.data_path, 'scratch')
@@ -252,12 +313,14 @@ def main():
     for sample_info in json.samples:
         process_sample(sample_info, json.project_id, args.data_path, pssm)
 
-    listing_path = os.path.join(args.data_path,
+    summary_path = os.path.join(args.data_path,
                                 'output',
                                 'appresults',
                                 json.project_id,
-                                json.samples[0]['Name'],
-                                'listing.txt')
+                                'summary')
+    if not os.path.isdir(summary_path):
+        os.makedirs(summary_path)
+    listing_path = os.path.join(summary_path, 'listing.txt')
     with open(listing_path, 'w') as listing:
         listing.write(subprocess.check_output(['ls', '-R', args.data_path]))
     logger.info('Done.')
