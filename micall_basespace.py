@@ -79,11 +79,11 @@ def link_json(run_path, data_path):
     args = Args()
 
     shutil.rmtree(data_path, ignore_errors=True)
-    os.makedirs(data_path)
+    makedirs(data_path)
 
     args.run_id = os.path.basename(run_path)
     runs_path = os.path.join(data_path, 'input', 'runs')
-    os.makedirs(runs_path)
+    makedirs(runs_path)
     new_run_path = os.path.join(runs_path, args.run_id)
     os.symlink(run_path, new_run_path)
     run_info_path = os.path.join(new_run_path, 'RunInfo.xml')
@@ -115,7 +115,7 @@ def link_json(run_path, data_path):
         if not sample_file.startswith('Undetermined'):
             sample_id = str(i)
             sample_path = os.path.join(samples_path, sample_id)
-            os.makedirs(sample_path)
+            makedirs(sample_path)
             os.symlink(fastq_file, os.path.join(sample_path, sample_file))
             fastq_file = fastq_file.replace('_R1_', '_R2_')
             sample_file = os.path.basename(fastq_file)
@@ -266,8 +266,8 @@ def parse_phix(args, json):
                                 'output',
                                 'appresults',
                                 json.project_id,
-                                'summary')
-    os.makedirs(summary_path)
+                                json.samples[0]['Name'])
+    makedirs(summary_path)
     bad_tiles_path = os.path.join(summary_path, 'bad_tiles.csv')
     with open(phix_path, 'rb') as phix, open(quality_path, 'w') as quality:
         records = phix_parser.read_phix(phix)
@@ -317,9 +317,7 @@ def main():
                                 'output',
                                 'appresults',
                                 json.project_id,
-                                'summary')
-    if not os.path.isdir(summary_path):
-        os.makedirs(summary_path)
+                                json.samples[0]['Name'])
     listing_path = os.path.join(summary_path, 'listing.txt')
     with open(listing_path, 'w') as listing:
         listing.write(subprocess.check_output(['ls', '-R', args.data_path]))
