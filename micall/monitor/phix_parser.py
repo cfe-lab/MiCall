@@ -26,7 +26,7 @@ def read_phix(data_file):
     - num_4_errors [uint32]
     """
     header = data_file.read(2)  # ignore header
-    version, record_length = unpack('!bb', header)
+    version, record_length = unpack('!BB', header)
     PARSED_LENGTH = 30
     if version < 3:
         raise IOError('Old phiX error file version: {}'.format(version))
@@ -100,20 +100,12 @@ def write_phix_csv(out_file, records, read_lengths=None):
                 previous_cycle += sign
                 writer.writerow((record[0], previous_cycle))
 
-if __name__ == '__main__':
-    in_path = ('/home/don/data/RAW_DATA/MiSeq/runs/140123_M01841_microtest/'
-               'InterOp/ErrorMetricsOut.bin')
-    out_path = '/home/don/data/miseq/140123_M01841_microtest/quality2.csv'
-    with open(in_path, 'rb') as in_file, open(out_path, 'wb') as out_file:
-        records = read_phix(in_file)
-        write_phix_csv(out_file, records, read_lengths=[251, 8, 8, 251])
-    print('Done.')
-elif __name__ == '__live_coding__':
+if __name__ == '__live_coding__':
     import unittest
     from micall.tests.phix_parser_test import PhixParserTest
 
     suite = unittest.TestSuite()
-    suite.addTest(PhixParserTest("test_write_missing_end"))
+    suite.addTest(PhixParserTest("test_load"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

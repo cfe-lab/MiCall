@@ -18,7 +18,7 @@ from micall.core.filter_quality import report_bad_cycles
 from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from micall.core.sam2aln import sam2aln
-from micall.monitor import phix_parser
+from micall.monitor import phix_parser, quality_metrics_parser
 from micall.g2p.sam_g2p import sam_g2p
 from micall.g2p.pssm_lib import Pssm
 
@@ -99,7 +99,6 @@ def link_json(run_path, data_path):
         args.index_length2 = 0
     else:
         args.index_length2 = int(index2.attrib['NumCycles'])
-    print(args.read_length1)
     args.project_id = '1'
 
     args.samples = []
@@ -248,18 +247,18 @@ def process_sample(sample_info, project_id, data_path, pssm):
                 g2p_summary_csv=g2p_summary_csv)
 
 
-def parse_phix(args, json):
+def summarize_run(args, json):
     read_lengths = [json.read_length1,
                     json.index_length1,
                     json.index_length2,
                     json.read_length2]
 
-    phix_path = os.path.join(args.data_path,
-                             'input',
-                             'runs',
-                             json.run_id,
-                             'InterOp',
-                             'ErrorMetricsOut.bin')
+    interop_path = os.path.join(args.data_path,
+                                'input',
+                                'runs',
+                                json.run_id,
+                                'InterOp')
+    phix_path = os.path.join(interop_path, 'ErrorMetricsOut.bin')
     quality_path = os.path.join(args.data_path, 'scratch', 'quality.csv')
     bad_cycles_path = os.path.join(args.data_path, 'scratch', 'bad_cycles.csv')
     summary_path = os.path.join(args.data_path,
@@ -276,6 +275,21 @@ def parse_phix(args, json):
             open(bad_cycles_path, 'w') as bad_cycles, \
             open(bad_tiles_path, 'w') as bad_tiles:
         report_bad_cycles(quality, bad_cycles, bad_tiles)
+
+    quality_metrics_path = os.path.join(interop_path, 'QMetricsOut.bin')
+    with open(quality_metrics_path, 'rb') as quality_metrics:
+        records = quality_metrics_parser.read_quality(quality_metrics)
+        q30_fwd, q30_rev = quality_metrics_parser.summarize_quality(records,
+                                                                    read_lengths)
+
+    run_quality_path = os.path.join(summary_path, 'run_quality.csv')
+    with open(run_quality_path, 'w') as run_quality:
+        writer = csv.DictWriter(run_quality,
+                                ['q30_fwd', 'q30_rev'],
+                                lineterminator=os.linesep)
+        writer.writeheader()
+        writer.writerow(dict(q30_fwd=q30_fwd,
+                             q30_rev=q30_rev))
 
 
 def makedirs(path):
@@ -306,9 +320,9 @@ def main():
         else:
             os.remove(filepath)
 
-    logger.info('Processing error rates.')
     if json.run_id is not None:
-        parse_phix(args, json)
+        logger.info('Summarizing run.')
+        summarize_run(args, json)
 
     for sample_info in json.samples:
         process_sample(sample_info, json.project_id, args.data_path, pssm)
