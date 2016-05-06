@@ -142,6 +142,18 @@ def merge_reads(quality_cutoff, read_pair):
     return rname, mseq, merged_inserts, qual1, qual2
 
 
+def extract_relevant_seed(aligned_conseq, aligned_seed):
+    """ Extract the portion of a seed that is relevant to the consensus.
+
+    :param str aligned_conseq: the consensus sequence, aligned to the seed
+    :param str aligned_seed: the seed reference, aligned to the consensus
+    :return: the portion of the seed that mapped to or was surrounded by the
+    consensus.
+    """
+    match = re.match('-*([^-](.*[^-])?)', aligned_conseq)
+    return unicode(aligned_seed[match.start(1):match.end(1)]).replace('-', '')
+
+
 def sam_to_conseqs(samfile,
                    quality_cutoff=0,
                    debug_reports=None,
@@ -238,7 +250,7 @@ def sam_to_conseqs(samfile,
         return new_conseqs
 
     gap_open_penalty = 15
-    gap_extend_penalty = 0  # conseq can have large chunks removed
+    gap_extend_penalty = 3
     use_terminal_gap_penalty = 1
     filtered_conseqs = {}
     for name in sorted(new_conseqs.iterkeys()):
@@ -261,10 +273,7 @@ def sam_to_conseqs(samfile,
                                                             gap_open_penalty,
                                                             gap_extend_penalty,
                                                             use_terminal_gap_penalty)
-            relevant_seed = u''
-            for seed_nuc, conseq_nuc in zip(aligned_seed, aligned_conseq):
-                if seed_nuc != '-' and conseq_nuc != '-':
-                    relevant_seed += seed_nuc
+            relevant_seed = extract_relevant_seed(aligned_conseq, aligned_seed)
             d = Levenshtein.distance(relevant_seed, relevant_conseq)
             if seed_name == name:
                 seed_dist = d
@@ -968,7 +977,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.remap_test import SamToConseqsTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SamToConseqsTest("testSeedsConverged"))
+    suite.addTest(SamToConseqsTest("testExtractRelevantSeeds"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

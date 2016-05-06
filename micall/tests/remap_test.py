@@ -428,7 +428,7 @@ class SamToConseqsTest(unittest.TestCase):
                               'other': dict(seed_dist=4,
                                             other_dist=2,
                                             other_seed='test'),
-                              'wayoff': dict(seed_dist=6,
+                              'wayoff': dict(seed_dist=4,
                                              other_dist=3,
                                              other_seed='test')}
         distances = {}
@@ -479,6 +479,25 @@ class SamToConseqsTest(unittest.TestCase):
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
+    def testSeedsConvergedWithConfusingGap(self):
+        """ Reads match other seed well, but with a big gap.
+        """
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\tSN:other\n"
+            "test1\t99\ttest\t1\t44\t8M\t=\t1\t8\tATGTCGTA\tJJJJJJJJ\n"
+            "other1\t99\tother\t14\t44\t9M\t=\t1\t9\tAAGCTATAT\tJJJJJJJJJ\n"
+        )
+        seeds = {'test': 'ATGAAGTA',
+                 'other': 'ATGTCTCTCTCTCAAGCTATATATATACGAAGTA'}
+        expected_conseqs = {'test': 'ATGTCGTA',
+                            'other': 'ATGTCTCTCTCTCAAGCTATATATATACGAAGTA'}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       is_filtered=True)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
     def testSeedsConvergedPlusOtherLowCoverage(self):
         """ Portion with decent coverage has converged, other hasn't.
         """
@@ -520,6 +539,31 @@ class SamToConseqsTest(unittest.TestCase):
                                        filter_coverage=2)
 
         self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testExtractRelevantSeeds(self):
+        expectations = [  # (aligned_conseq, aligned_seed, expected_seed)
+            ('ACTG',
+             'ATTG',
+             'ATTG'),
+            ('-ACTG-',
+             'CATTGT',
+             'ATTG'),
+            ('-AC-TG--',
+             'CATATGT',
+             'ATATG'),
+            ('-AC-TG-AT-',
+             'CATATGTATC',
+             'ATATGTAT'),
+            ('--T--',
+             'CATAT',
+             'T'),
+            ('TACG----',
+             '----GGCC',
+             '')]
+        for aligned_conseq, aligned_seed, expected_seed in expectations:
+            relevant = remap.extract_relevant_seed(aligned_conseq, aligned_seed)
+            self.assertEqual((aligned_conseq, aligned_seed, expected_seed),
+                             (aligned_conseq, aligned_seed, relevant))
 
     def testNothingMapped(self):
         samIO = StringIO.StringIO(
