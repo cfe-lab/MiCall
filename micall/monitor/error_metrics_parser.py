@@ -7,7 +7,7 @@ import math
 from itertools import groupby
 
 
-def read_phix(data_file):
+def read_errors(data_file):
     """ Read error rate data from a phiX data file.
 
     :param file data_file: an open file-like object. Needs to have a two-byte

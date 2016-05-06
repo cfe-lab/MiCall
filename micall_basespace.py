@@ -18,7 +18,7 @@ from micall.core.filter_quality import report_bad_cycles
 from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from micall.core.sam2aln import sam2aln
-from micall.monitor import phix_parser, quality_metrics_parser
+from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.sam_g2p import sam_g2p
 from micall.g2p.pssm_lib import Pssm
 
@@ -269,8 +269,8 @@ def summarize_run(args, json):
     makedirs(summary_path)
     bad_tiles_path = os.path.join(summary_path, 'bad_tiles.csv')
     with open(phix_path, 'rb') as phix, open(quality_path, 'w') as quality:
-        records = phix_parser.read_phix(phix)
-        phix_parser.write_phix_csv(quality, records, read_lengths)
+        records = error_metrics_parser.read_errors(phix)
+        error_metrics_parser.write_phix_csv(quality, records, read_lengths)
     with open(quality_path, 'rU') as quality, \
             open(bad_cycles_path, 'w') as bad_cycles, \
             open(bad_tiles_path, 'w') as bad_tiles:

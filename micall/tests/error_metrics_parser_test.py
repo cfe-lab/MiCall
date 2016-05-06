@@ -1,7 +1,7 @@
 from cStringIO import StringIO
 from struct import pack
 from unittest import TestCase
-from micall.monitor.phix_parser import read_phix, write_phix_csv
+from micall.monitor.error_metrics_parser import read_errors, write_phix_csv
 
 
 class PhixParserTest(TestCase):
@@ -32,7 +32,7 @@ class PhixParserTest(TestCase):
                                  num_3_errors=7,
                                  num_4_errors=8)]
 
-        records = list(read_phix(self.sample_stream))
+        records = list(read_errors(self.sample_stream))
 
         self.assertEqual(expected_records, records)
 
@@ -42,7 +42,7 @@ class PhixParserTest(TestCase):
         self.sample_stream = StringIO(pack(format_string, *self.sample_data))
 
         try:
-            list(read_phix(self.sample_stream))
+            list(read_errors(self.sample_stream))
 
             self.fail('Should have thrown.')
         except IOError as ex:
@@ -64,7 +64,7 @@ class PhixParserTest(TestCase):
                                  num_3_errors=7,
                                  num_4_errors=8)] * 2
 
-        records = list(read_phix(self.sample_stream))
+        records = list(read_errors(self.sample_stream))
 
         self.maxDiff = 1000
         self.assertEqual(expected_records, records)
@@ -75,7 +75,7 @@ class PhixParserTest(TestCase):
         self.sample_stream = StringIO(pack(format_string, *self.sample_data))
 
         try:
-            list(read_phix(self.sample_stream))
+            list(read_errors(self.sample_stream))
 
             self.fail('Should have thrown.')
         except IOError as ex:
