@@ -21,6 +21,7 @@ from micall.core.sam2aln import sam2aln
 from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.sam_g2p import sam_g2p
 from micall.g2p.pssm_lib import Pssm
+from micall.monitor.tile_metrics_parser import summarize_tiles
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
@@ -252,6 +253,7 @@ def summarize_run(args, json):
                     json.index_length1,
                     json.index_length2,
                     json.read_length2]
+    summary = {}
 
     interop_path = os.path.join(args.data_path,
                                 'input',
@@ -277,19 +279,23 @@ def summarize_run(args, json):
         report_bad_cycles(quality, bad_cycles, bad_tiles)
 
     quality_metrics_path = os.path.join(interop_path, 'QMetricsOut.bin')
-    with open(quality_metrics_path, 'rb') as quality_metrics:
-        records = quality_metrics_parser.read_quality(quality_metrics)
-        q30_fwd, q30_rev = quality_metrics_parser.summarize_quality(records,
-                                                                    read_lengths)
+    quality_metrics_parser.summarize_quality(quality_metrics_path,
+                                             summary,
+                                             read_lengths)
+
+    tile_metrics_path = os.path.join(interop_path, 'TileMetricsOut.bin')
+    summarize_tiles(tile_metrics_path, summary)
 
     run_quality_path = os.path.join(summary_path, 'run_quality.csv')
     with open(run_quality_path, 'w') as run_quality:
         writer = csv.DictWriter(run_quality,
-                                ['q30_fwd', 'q30_rev'],
+                                ['q30_fwd',
+                                 'q30_rev',
+                                 'cluster_density',
+                                 'pass_rate'],
                                 lineterminator=os.linesep)
         writer.writeheader()
-        writer.writerow(dict(q30_fwd=q30_fwd,
-                             q30_rev=q30_rev))
+        writer.writerow(summary)
 
 
 def makedirs(path):

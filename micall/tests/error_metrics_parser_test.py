@@ -1,10 +1,65 @@
-from cStringIO import StringIO
+from StringIO import StringIO
 from struct import pack
 from unittest import TestCase
-from micall.monitor.error_metrics_parser import read_errors, write_phix_csv
+from micall.monitor.error_metrics_parser import read_errors, write_phix_csv,\
+    read_records
 
 
-class PhixParserTest(TestCase):
+class RecordsParserTest(TestCase):
+    def pack_data(self):
+        format_string = '<bbcccc'
+        self.sample_stream = StringIO(pack(format_string, *self.sample_data))
+        self.sample_stream.name = 'test_file'
+
+    def setUp(self):
+        self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
+        self.sample_data = [1,      # file version
+                            4,      # record size
+                            'A',    # field 1
+                            'B',    # field 2
+                            'C',    # field 3
+                            'D']    # field 4
+        self.pack_data()
+
+    def test_load(self):
+        expected_records = ['ABCD']
+
+        records = list(read_records(self.sample_stream, min_version=1))
+
+        self.assertEqual(expected_records, records)
+
+    def test_load_multiple_records(self):
+        self.sample_data[1] = 2  # record size
+        self.pack_data()
+        expected_records = ['AB', 'CD']
+
+        records = list(read_records(self.sample_stream, min_version=1))
+
+        self.assertEqual(expected_records, records)
+
+    def test_old_version(self):
+
+        records = read_records(self.sample_stream, min_version=3)
+
+        self.assertRaisesRegexp(
+            IOError,
+            'File version 1 is less than minimum version 3 in test_file.',
+            records.next)
+
+    def test_partial_record(self):
+        self.sample_data[1] = 3
+        self.pack_data()
+        records = read_records(self.sample_stream, min_version=1)
+        record1 = records.next()
+
+        self.assertEqual('ABC', record1)
+        self.assertRaisesRegexp(
+            IOError,
+            'Partial record of length 1 found in test_file.',
+            records.next)
+
+
+class ErrorMetricsParserTest(TestCase):
     def setUp(self):
         self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
         self.sample_data = [3,      # file version
@@ -36,18 +91,6 @@ class PhixParserTest(TestCase):
 
         self.assertEqual(expected_records, records)
 
-    def test_old_version(self):
-        self.sample_data[0] = 2
-        format_string = '<bbHHHfLLLLL'
-        self.sample_stream = StringIO(pack(format_string, *self.sample_data))
-
-        try:
-            list(read_errors(self.sample_stream))
-
-            self.fail('Should have thrown.')
-        except IOError as ex:
-            self.assertEqual('Old phiX error file version: 2', str(ex))
-
     def test_new_version(self):
         self.sample_data[:2] = [4, 31]
         self.sample_data.append(42)
@@ -68,19 +111,6 @@ class PhixParserTest(TestCase):
 
         self.maxDiff = 1000
         self.assertEqual(expected_records, records)
-
-    def test_partial_record(self):
-        self.sample_data = self.sample_data[:3]
-        format_string = '<bbH'
-        self.sample_stream = StringIO(pack(format_string, *self.sample_data))
-
-        try:
-            list(read_errors(self.sample_stream))
-
-            self.fail('Should have thrown.')
-        except IOError as ex:
-            self.assertEqual('Partial record of length 2 found in phiX error file.',
-                             str(ex))
 
     def test_write(self):
         out_file = StringIO()

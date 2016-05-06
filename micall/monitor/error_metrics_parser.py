@@ -7,6 +7,35 @@ import math
 from itertools import groupby
 
 
+def read_records(data_file, min_version):
+    """ Read records from an Illumina Interop file.
+    :param file data_file: an open file-like object. Needs to have a two-byte
+    header with the file version and the length of each record, followed by the
+    records.
+    :param int min_version: the minimum accepted file version.
+    :return: an iterator over the records of data in the file. Each record is a
+    dictionary with the following keys:
+    """
+    header = data_file.read(2)
+    version, record_length = unpack('!BB', header)
+    if version < min_version:
+        raise IOError(
+            'File version {} is less than minimum version {} in {}.'.format(
+                version,
+                min_version,
+                data_file.name))
+    while True:
+        data = data_file.read(record_length)
+        read_length = len(data)
+        if read_length == 0:
+            break
+        if read_length < record_length:
+            raise IOError('Partial record of length {} found in {}.'.format(
+                read_length,
+                data_file.name))
+        yield data
+
+
 def read_errors(data_file):
     """ Read error rate data from a phiX data file.
 
@@ -25,20 +54,8 @@ def read_errors(data_file):
     - num_3_errors [uint32]
     - num_4_errors [uint32]
     """
-    header = data_file.read(2)  # ignore header
-    version, record_length = unpack('!BB', header)
     PARSED_LENGTH = 30
-    if version < 3:
-        raise IOError('Old phiX error file version: {}'.format(version))
-    while True:
-        data = data_file.read(record_length)
-        read_length = len(data)
-        if read_length == 0:
-            break
-        if read_length < PARSED_LENGTH:
-            message = 'Partial record of length {} found in phiX error file.'.format(
-                read_length)
-            raise IOError(message)
+    for data in read_records(data_file, min_version=3):
         fields = unpack('<HHHfLLLLL', data[:PARSED_LENGTH])
         yield dict(lane=fields[0],
                    tile=fields[1],
@@ -102,10 +119,10 @@ def write_phix_csv(out_file, records, read_lengths=None):
 
 if __name__ == '__live_coding__':
     import unittest
-    from micall.tests.phix_parser_test import PhixParserTest
+    from micall.tests.error_metrics_parser_test import ErrorMetricsParserTest
 
     suite = unittest.TestSuite()
-    suite.addTest(PhixParserTest("test_load"))
+    suite.addTest(ErrorMetricsParserTest("test_load"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

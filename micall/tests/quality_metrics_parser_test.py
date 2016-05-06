@@ -2,7 +2,7 @@ from cStringIO import StringIO
 from struct import pack
 from unittest import TestCase
 from micall.monitor.quality_metrics_parser import read_quality,\
-    summarize_quality
+    summarize_quality_records
 
 
 class QualityMetricsParserTest(TestCase):
@@ -27,18 +27,6 @@ class QualityMetricsParserTest(TestCase):
 
         self.assertEqual(expected_records, records)
 
-    def test_old_version(self):
-        self.sample_data[0] = 3
-        format_string = '<BBHHH' + 'L'*50
-        self.sample_stream = StringIO(pack(format_string, *self.sample_data))
-
-        try:
-            list(read_quality(self.sample_stream))
-
-            self.fail('Should have thrown.')
-        except IOError as ex:
-            self.assertEqual('Old quality metrics file version: 3', str(ex))
-
     def test_new_version(self):
         self.sample_data[:2] = [5, 207]
         self.sample_data.append(42)
@@ -55,30 +43,18 @@ class QualityMetricsParserTest(TestCase):
         self.maxDiff = 1000
         self.assertEqual(expected_records, records)
 
-    def test_partial_record(self):
-        self.sample_data = self.sample_data[:3]
-        format_string = '<BBH'
-        self.sample_stream = StringIO(pack(format_string, *self.sample_data))
-
-        try:
-            list(read_quality(self.sample_stream))
-
-            self.fail('Should have thrown.')
-        except IOError as ex:
-            self.assertEqual('Partial record of length 2 found in quality metrics file.',
-                             str(ex))
-
     def test_summarize(self):
         records = [dict(cycle=1, quality_bins=[0] * 50),
                    dict(cycle=101, quality_bins=[0] * 50)]
         records[0]['quality_bins'][28] = 1
         records[0]['quality_bins'][29] = 1
         records[1]['quality_bins'][29] = 1
-        expected_portion = 2/3.0
+        expected_summary = dict(q30_fwd=2/3.0)
 
-        portion = summarize_quality(records)
+        summary = {}
+        summarize_quality_records(records, summary)
 
-        self.assertAlmostEqual(expected_portion, portion)
+        self.assertEqual(expected_summary, summary)
 
     def test_summarize_reverse(self):
         read_lengths = [95, 5, 95]
@@ -87,28 +63,31 @@ class QualityMetricsParserTest(TestCase):
         records[0]['quality_bins'][28] = 1
         records[0]['quality_bins'][29] = 1
         records[1]['quality_bins'][29] = 1
-        expected_portions = (0.5, 1.0)
+        expected_summary = dict(q30_fwd=0.5, q30_rev=1.0)
 
-        portions = summarize_quality(records, read_lengths)
+        summary = {}
+        summarize_quality_records(records, summary, read_lengths)
 
-        self.assertEqual(expected_portions, portions)
+        self.assertEqual(expected_summary, summary)
 
-    def test_summarize_ignores_index(self):
+    def test_summarize_ignores_index_reads(self):
         read_lengths = [95, 5, 95]
         records = [dict(cycle=96, quality_bins=[0] * 50),
                    dict(cycle=100, quality_bins=[0] * 50)]
         records[0]['quality_bins'][29] = 1
         records[1]['quality_bins'][29] = 1
-        expected_portions = (0, 0)
+        expected_summary = {}
 
-        portions = summarize_quality(records, read_lengths)
+        summary = {}
+        summarize_quality_records(records, summary, read_lengths)
 
-        self.assertEqual(expected_portions, portions)
+        self.assertEqual(expected_summary, summary)
 
     def test_summarize_blank(self):
         records = []
-        expected_portion = 0
+        expected_summary = {}
 
-        portion = summarize_quality(records)
+        summary = {}
+        summarize_quality_records(records, summary)
 
-        self.assertEqual(expected_portion, portion)
+        self.assertEqual(expected_summary, summary)

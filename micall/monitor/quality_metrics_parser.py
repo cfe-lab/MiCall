@@ -1,5 +1,7 @@
 from struct import unpack
 
+from micall.monitor.error_metrics_parser import read_records
+
 
 def read_quality(data_file):
     """ Read a quality metrics data file.
@@ -14,21 +16,9 @@ def read_quality(data_file):
     - cycle [uint16]
     - quality_bins [list of 50 uint32, representing quality 1 to 50]
     """
-    header = data_file.read(2)  # ignore header
-    version, record_length = unpack('!BB', header)
     PARSED_LENGTH = 206
     format_string = '<HHH' + 'L'*50
-    if version < 4:
-        raise IOError('Old quality metrics file version: {}'.format(version))
-    while True:
-        data = data_file.read(record_length)
-        read_length = len(data)
-        if read_length == 0:
-            break
-        if read_length < PARSED_LENGTH:
-            message = 'Partial record of length {} found in quality metrics file.'.format(
-                read_length)
-            raise IOError(message)
+    for data in read_records(data_file, min_version=4):
         fields = unpack(format_string, data[:PARSED_LENGTH])
         yield dict(lane=fields[0],
                    tile=fields[1],
@@ -36,21 +26,21 @@ def read_quality(data_file):
                    quality_bins=fields[3:])
 
 
-def summarize_quality(records, read_lengths=None):
+def summarize_quality_records(records, summary, read_lengths=None):
     """ Calculate the portion of clusters and cycles with quality >= 30.
 
     :param records: a sequence of dictionaries like those yielded from
     read_quality().
+    :param dict summary: a dictionary to hold the summary values:
+    q30_fwd and q30_rev. If read_lengths is None, only fwd_q30 will be set.
     :param list read_lengths: a list of lengths for each type of read: forward,
     indexes, and reverse
-    :return: (fwd_q30, rev_q30) if read_lengths is not None, otherwise just
-    returns a float
     """
     good_count = total_count = 0
+    good_reverse = total_reverse = 0
     if read_lengths is None:
         last_forward_cycle = first_reverse_cycle = None
     else:
-        good_reverse = total_reverse = 0
         last_forward_cycle = read_lengths[0]
         first_reverse_cycle = sum(read_lengths[:-1]) + 1
     for record in records:
@@ -65,11 +55,17 @@ def summarize_quality(records, read_lengths=None):
             total_reverse += cycle_clusters
             good_reverse += cycle_good
 
-    def summarize(good, total):
-        return good/float(total) if total != 0 else 0
-    if read_lengths is None:
-        return summarize(good_count, total_count)
-    return (summarize(good_count, total_count), summarize(good_reverse, total_reverse))
+    if total_count > 0:
+        summary['q30_fwd'] = good_count/float(total_count)
+    if total_reverse > 0:
+        summary['q30_rev'] = good_reverse/float(total_reverse)
+
+
+def summarize_quality(filename, summary, read_lengths=None):
+    """ Summarize the records from a quality metrics file. """
+    with open(filename, 'rb') as data_file:
+        records = read_quality(data_file)
+        summarize_quality_records(records, summary, read_lengths)
 
 if __name__ == '__live_coding__':
     import unittest
