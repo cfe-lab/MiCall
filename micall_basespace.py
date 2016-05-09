@@ -3,7 +3,6 @@ import csv
 import errno
 import fnmatch
 from glob import glob
-import gzip
 import json
 import logging
 from operator import itemgetter
@@ -125,15 +124,16 @@ def link_json(run_path, data_path):
     return args
 
 
-def censor_sample(filename, bad_cycles_path, censored_name):
+def censor_sample(filename, bad_cycles_path, censored_name, read_summary_name):
     if not os.path.exists(bad_cycles_path):
-        with gzip.open(filename, 'rb') as zip_src, open(censored_name, 'w') as fastq_dest:
-            shutil.copyfileobj(zip_src, fastq_dest)
+        bad_cycles = []
     else:
-        with open(filename, 'rb') as fastq, \
-                open(bad_cycles_path, 'rU') as bad_cycles, \
-                open(censored_name, 'w') as dest:
-            censor(fastq, csv.DictReader(bad_cycles), dest)
+        with open(bad_cycles_path, 'rU') as bad_cycles:
+            bad_cycles = list(csv.DictReader(bad_cycles))
+    with open(filename, 'rb') as fastq_src,\
+            open(censored_name, 'w') as fastq_dest,\
+            open(read_summary_name, 'w') as read_summary:
+        censor(fastq_src, bad_cycles, fastq_dest, summary_file=read_summary)
 
 
 def process_sample(sample_info, project_id, data_path, pssm):
@@ -178,13 +178,17 @@ def process_sample(sample_info, project_id, data_path, pssm):
     makedirs(sample_scratch_path)
 
     censored_path1 = os.path.join(sample_scratch_path, 'censored1.fastq')
+    read_summary_path1 = os.path.join(sample_scratch_path, 'read1_summary.csv')
     censor_sample(sample_path,
                   os.path.join(scratch_path, 'bad_cycles.csv'),
-                  censored_path1)
+                  censored_path1,
+                  read_summary_path1)
     censored_path2 = os.path.join(sample_scratch_path, 'censored2.fastq')
+    read_summary_path2 = os.path.join(sample_scratch_path, 'read2_summary.csv')
     censor_sample(sample_path2,
                   os.path.join(scratch_path, 'bad_cycles.csv'),
-                  censored_path2)
+                  censored_path2,
+                  read_summary_path2)
 
     logger.info('Running prelim_map.')
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'wb') as prelim_csv:
@@ -249,6 +253,11 @@ def process_sample(sample_info, project_id, data_path, pssm):
 
 
 def summarize_run(args, json):
+    """ Summarize the run data from the InterOp folder.
+
+    Writes some summary files.
+    :return: a dictionary with summary values.
+    """
     read_lengths = [json.read_length1,
                     json.index_length1,
                     json.index_length2,
@@ -288,6 +297,33 @@ def summarize_run(args, json):
 
     tile_metrics_path = os.path.join(interop_path, 'TileMetricsOut.bin')
     summarize_tiles(tile_metrics_path, summary)
+    return summary
+
+
+def summarize_samples(args, json, run_summary):
+    summary_path = os.path.join(args.data_path,
+                                'output',
+                                'appresults',
+                                json.project_id,
+                                json.samples[0]['Name'])
+
+    score_sum = 0.0
+    base_count = 0
+    for sample in json.samples:
+        sample_scratch_path = os.path.join(args.data_path,
+                                           'scratch',
+                                           sample['Name'])
+        for filename in ('read1_summary.csv', 'read2_summary.csv'):
+            read_summary_path = os.path.join(sample_scratch_path, filename)
+            with open(read_summary_path, 'rU') as read_summary:
+                reader = csv.DictReader(read_summary)
+                row = reader.next()
+                sample_base_count = int(row['base_count'])
+                if sample_base_count:
+                    score_sum += float(row['avg_quality']) * sample_base_count
+                    base_count += sample_base_count
+    if base_count > 0:
+        run_summary['avg_quality'] = score_sum / base_count
 
     run_quality_path = os.path.join(summary_path, 'run_quality.csv')
     with open(run_quality_path, 'w') as run_quality:
@@ -297,10 +333,15 @@ def summarize_run(args, json):
                                  'cluster_density',
                                  'pass_rate',
                                  'error_rate_fwd',
-                                 'error_rate_rev'],
+                                 'error_rate_rev',
+                                 'avg_quality'],
                                 lineterminator=os.linesep)
         writer.writeheader()
-        writer.writerow(summary)
+        writer.writerow(run_summary)
+
+    listing_path = os.path.join(summary_path, 'listing.txt')
+    with open(listing_path, 'w') as listing:
+        listing.write(subprocess.check_output(['ls', '-R', args.data_path]))
 
 
 def makedirs(path):
@@ -333,19 +374,13 @@ def main():
 
     if json.run_id is not None:
         logger.info('Summarizing run.')
-        summarize_run(args, json)
+        run_summary = summarize_run(args, json)
 
     for sample_info in json.samples:
         process_sample(sample_info, json.project_id, args.data_path, pssm)
 
-    summary_path = os.path.join(args.data_path,
-                                'output',
-                                'appresults',
-                                json.project_id,
-                                json.samples[0]['Name'])
-    listing_path = os.path.join(summary_path, 'listing.txt')
-    with open(listing_path, 'w') as listing:
-        listing.write(subprocess.check_output(['ls', '-R', args.data_path]))
+    if json.run_id is not None:
+        summarize_samples(args, json, run_summary)
     logger.info('Done.')
 
 if __name__ == '__main__':

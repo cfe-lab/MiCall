@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-import itertools
 import argparse
 import csv
-import math
 from gzip import GzipFile
+import itertools
+import math
+import os
 
 
 def parseArgs():
@@ -28,7 +29,11 @@ def parseArgs():
     return parser.parse_args()
 
 
-def censor(original_file, bad_cycles_reader, censored_file, use_gzip=True):
+def censor(original_file,
+           bad_cycles_reader,
+           censored_file,
+           use_gzip=True,
+           summary_file=None):
     """ Censor bases from a FASTQ file that were read in bad cycles.
 
     @param original_file: an open FASTQ file to read from
@@ -36,6 +41,8 @@ def censor(original_file, bad_cycles_reader, censored_file, use_gzip=True):
         {'tile': tile, 'cycle': cycle}
     @param censored_file: an open FASTQ file to write to: censored bases will
         be written as 'N' with a quality '#'.
+    @param summary_file: an open CSV file to write to: write a single row
+        with the average read quality for the whole sample
     """
     bad_cycles = set()
     for cycle in bad_cycles_reader:
@@ -43,6 +50,8 @@ def censor(original_file, bad_cycles_reader, censored_file, use_gzip=True):
 
     src = original_file
     dest = censored_file
+    base_count = 0
+    score_sum = 0.0
     if use_gzip:
         src = GzipFile(fileobj=original_file)
 
@@ -67,6 +76,9 @@ def censor(original_file, bad_cycles_reader, censored_file, use_gzip=True):
         dest.write(opt)
         bad_count = 0
         for cycle, score in enumerate(qual.rstrip(), start=1):
+            float_score = ord(score) - 33
+            score_sum += float_score
+            base_count += 1
             cycle = math.copysign(cycle, cycle_sign)
             if (tile, cycle) in bad_cycles:
                 bad_count += 1
@@ -76,6 +88,15 @@ def censor(original_file, bad_cycles_reader, censored_file, use_gzip=True):
                     bad_count = 0
                 dest.write(score)
         dest.write('\n')
+    if summary_file is not None:
+        avg_quality = score_sum/base_count if base_count > 0 else None
+        summary = dict(base_count=base_count,
+                       avg_quality=avg_quality)
+        summary_writer = csv.DictWriter(summary_file,
+                                        ['avg_quality', 'base_count'],
+                                        lineterminator=os.linesep)
+        summary_writer.writeheader()
+        summary_writer.writerow(summary)
 
 
 if __name__ == '__main__':
@@ -85,3 +106,13 @@ if __name__ == '__main__':
            csv.DictReader(args.bad_cycles_csv),
            args.censored_fastq,
            not args.unzipped)
+elif __name__ == '__live_coding__':
+    import unittest
+    from micall.tests.censor_fastq_test import CensorTest
+
+    suite = unittest.TestSuite()
+    suite.addTest(CensorTest("testSummaryEmpty"))
+    test_results = unittest.TextTestRunner().run(suite)
+
+    print(test_results.errors)
+    print(test_results.failures)
