@@ -272,7 +272,10 @@ def summarize_run(args, json):
     bad_tiles_path = os.path.join(summary_path, 'bad_tiles.csv')
     with open(phix_path, 'rb') as phix, open(quality_path, 'w') as quality:
         records = error_metrics_parser.read_errors(phix)
-        error_metrics_parser.write_phix_csv(quality, records, read_lengths)
+        error_metrics_parser.write_phix_csv(quality,
+                                            records,
+                                            read_lengths,
+                                            summary)
     with open(quality_path, 'rU') as quality, \
             open(bad_cycles_path, 'w') as bad_cycles, \
             open(bad_tiles_path, 'w') as bad_tiles:
@@ -292,7 +295,9 @@ def summarize_run(args, json):
                                 ['q30_fwd',
                                  'q30_rev',
                                  'cluster_density',
-                                 'pass_rate'],
+                                 'pass_rate',
+                                 'error_rate_fwd',
+                                 'error_rate_rev'],
                                 lineterminator=os.linesep)
         writer.writeheader()
         writer.writerow(summary)

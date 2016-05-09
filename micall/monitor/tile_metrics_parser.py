@@ -29,12 +29,6 @@ def read_tiles(data_file):
     - tile [uint16]
     - metric_code [uint16]
     - metric_value [float32]
-
-    Tile metric codes:
-    100: cluster density (K/mm2)
-    101: cluster density passing filters (K/mm2)
-    102: number of clusters
-    103: number of clusters passing filters
     """
     PARSED_LENGTH = 10
     format_string = '<HHHf'

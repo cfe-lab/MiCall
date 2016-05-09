@@ -87,7 +87,7 @@ def _record_grouper(record):
     return (record[0], int(math.copysign(1, record[1])))
 
 
-def write_phix_csv(out_file, records, read_lengths=None):
+def write_phix_csv(out_file, records, read_lengths=None, summary=None):
     """ Write phiX error rate data to a comma-separated-values file.
 
     Missing cycles are written with blank error rates, index reads are not
@@ -97,10 +97,14 @@ def write_phix_csv(out_file, records, read_lengths=None):
     read_phix().
     :param read_lengths: a list of lengths for each type of read: forward,
     indexes, and reverse
+    :param dict summary: a dictionary to hold the summary values:
+    error_rate_fwd and error_rate_rev.
     """
     writer = csv.writer(out_file, lineterminator=os.linesep)
     writer.writerow(['tile', 'cycle', 'errorrate'])
 
+    error_sums = [0.0, 0.0]
+    error_counts = [0, 0]
     for (_tile, sign), group in groupby(_yield_cycles(records, read_lengths),
                                         _record_grouper):
         previous_cycle = 0
@@ -111,18 +115,26 @@ def write_phix_csv(out_file, records, read_lengths=None):
                 writer.writerow((record[0], previous_cycle))
                 previous_cycle += sign
             writer.writerow(record)
+            summary_index = (sign+1)/2
+            error_sums[summary_index] += record[2]
+            error_counts[summary_index] += 1
         if read_lengths:
             read_length = read_lengths[0] if sign == 1 else -read_lengths[-1]
             while previous_cycle*sign < read_length*sign:
                 previous_cycle += sign
                 writer.writerow((record[0], previous_cycle))
+    if error_counts[1] > 0 and summary is not None:
+        summary['error_rate_fwd'] = error_sums[1]/error_counts[1]
+    if error_counts[0] > 0 and summary is not None:
+        summary['error_rate_rev'] = error_sums[0]/error_counts[0]
 
 if __name__ == '__live_coding__':
     import unittest
     from micall.tests.error_metrics_parser_test import ErrorMetricsParserTest
 
     suite = unittest.TestSuite()
-    suite.addTest(ErrorMetricsParserTest("test_load"))
+    suite.addTest(ErrorMetricsParserTest("test_summary_reverse"))
+    suite.addTest(ErrorMetricsParserTest("test_write_reverse"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

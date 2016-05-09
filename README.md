@@ -34,6 +34,10 @@ purchasing a license.
 
 ## Steps and their input / output files ##
 
+* run summary
+  * in - InterOp folder
+  * in - read lengths from RunInfo.xml or BaseSpace run parameters
+  * run_quality.csv
 * prelim_map
   * in - fastq1
   * in - fastq2
@@ -70,6 +74,17 @@ purchasing a license.
   * coverage_scores.csv - collated
 
 ## File descriptions ##
+* run_quality.csv
+  * q30_fwd - portion of tiles and cycles with quality score of at least 30
+  for forward reads
+  * q30_rev - portion of tiles and cycles with quality score of at least 30
+  for reverse reads
+  * cluster_density - average cluster density for all tiles and cycles K/mm2
+  * pass_rate - portion of clusters passing filters over all tiles and cycles
+  * error_rate_fwd - average error rate over tiles and cycles in forward reads
+  (phiX error count/tile/cycle)
+  * error_rate_rev - average error rate over tiles and cycles in reverse reads
+  (phiX error count/tile/cycle)
 * conseq.csv
   * consensus-percent-cutoff - to be included in a mixture, a variant must make
     up at least this fraction of the total valid counts

@@ -216,3 +216,28 @@ tile,cycle,errorrate
         write_phix_csv(out_file, records, read_lengths)
 
         self.assertEqual(expected_csv, out_file.getvalue())
+
+    def test_summary(self):
+        out_file = StringIO()
+        records = [dict(tile=2, cycle=1, error_rate=0.25),
+                   dict(tile=2, cycle=2, error_rate=0.75)]
+        expected_summary = dict(error_rate_fwd=0.5)
+
+        summary = {}
+        write_phix_csv(out_file, records, summary=summary)
+
+        self.assertEqual(expected_summary, summary)
+
+    def test_summary_reverse(self):
+        out_file = StringIO()
+        records = [dict(tile=2, cycle=1, error_rate=0.75),
+                   dict(tile=2, cycle=4, error_rate=0.375),
+                   dict(tile=2, cycle=5, error_rate=0.125)]
+        read_lengths = [3, 0, 0, 3]
+        expected_summary = dict(error_rate_fwd=0.75,
+                                error_rate_rev=0.25)
+
+        summary = {}
+        write_phix_csv(out_file, records, read_lengths, summary=summary)
+
+        self.assertEqual(expected_summary, summary)
