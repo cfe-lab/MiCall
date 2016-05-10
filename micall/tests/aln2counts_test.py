@@ -3,26 +3,27 @@ import StringIO
 import sys
 import unittest
 
-from micall.core import aln2counts
+from micall.core.aln2counts import SequenceReport, SeedNucleotide,\
+    InsertionWriter, MAX_CUTOFF, SeedAmino
 from micall.core import project_config
 
 
-class StubbedSequenceReport(aln2counts.SequenceReport):
+class StubbedSequenceReport(SequenceReport):
     def __init__(self,
                  insert_writer,
                  projects,
                  conseq_mixture_cutoffs):
-        aln2counts.SequenceReport.__init__(self,
-                                           insert_writer,
-                                           projects,
-                                           conseq_mixture_cutoffs)
+        SequenceReport.__init__(self,
+                                insert_writer,
+                                projects,
+                                conseq_mixture_cutoffs)
         self.overrides = {}
 
     def _pair_align(self, reference, query, *args, **kwargs):
         override = self.overrides.get((reference, query))
         return (override
                 if override is not None
-                else aln2counts.SequenceReport._pair_align(self, reference, query))
+                else SequenceReport._pair_align(self, reference, query))
 
     def add_override(self,
                      reference,
@@ -38,7 +39,7 @@ class StubbedSequenceReport(aln2counts.SequenceReport):
 class SequenceReportTest(unittest.TestCase):
     def setUp(self):
         self.insertion_file = StringIO.StringIO()
-        insert_writer = aln2counts.InsertionWriter(
+        insert_writer = InsertionWriter(
             insert_file=self.insertion_file)
         projects = project_config.ProjectConfig()
 
@@ -258,6 +259,58 @@ R1-seed,R1,15,,9,0,0,0,0
         self.report.write_nuc_counts(self.report_file)
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testCoverageSummary(self):
+        """ R1 has coverage 9.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTTCGA
+""")
+        expected_summary = dict(avg_coverage=9.0,
+                                coverage_region='R1',
+                                region_width=3)
+
+        summary = {}
+        self.report.read(aligned_reads)
+        self.report.write_amino_counts(self.report_file,
+                                       coverage_summary=summary)
+
+        self.assertEqual(expected_summary, summary)
+
+    def testCoverageSummaryNotImproved(self):
+        """ R2 has coverage 9, and R1 had coverage 50. Report R1.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R2-seed,15,0,9,0,AAATTTCGA
+""")
+        expected_summary = dict(avg_coverage=50.0,
+                                coverage_region='R1',
+                                region_width=3)
+
+        summary = dict(expected_summary)
+        self.report.read(aligned_reads)
+        self.report.write_amino_counts(self.report_file,
+                                       coverage_summary=summary)
+
+        self.assertEqual(expected_summary, summary)
+
+    def testCoverageSummaryNoCoverage(self):
+        """ Stuff mapped to the seed, but didn't align with the coordinate region.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,10,TGGTGGTGG
+""")
+        expected_summary = {}
+
+        summary = {}
+        self.report.read(aligned_reads)
+        self.report.write_amino_counts(self.report_file,
+                                       coverage_summary=summary)
+
+        self.assertEqual(expected_summary, summary)
 
     def testOffsetNucleotideReport(self):
         """ The first row provides alignment so the partial codon at the start
@@ -1179,7 +1232,7 @@ R1-seed,15,R1b,0,9,AAATTT
 class InsertionWriterTest(unittest.TestCase):
     def setUp(self):
         self.insert_file = StringIO.StringIO()
-        self.writer = aln2counts.InsertionWriter(self.insert_file)
+        self.writer = InsertionWriter(self.insert_file)
         self.writer.start_group(seed='R1-seed', qcut=15)
         self.nuc_seq_acdef = 'GCTTGTGACGAGTTT'
         self.nuc_seq_afdef = 'GCTTTTGACGAGTTT'
@@ -1318,7 +1371,7 @@ R1-seed,R1,15,3,DE,1,
 
 class SeedAminoTest(unittest.TestCase):
     def setUp(self):
-        self.amino = aln2counts.SeedAmino(None)
+        self.amino = SeedAmino(None)
 
     def testSingleRead(self):
         """ Read a single codon, and report on counts.
@@ -1427,7 +1480,7 @@ class SeedAminoTest(unittest.TestCase):
 
 class SeedNucleotideTest(unittest.TestCase):
     def setUp(self):
-        self.nuc = aln2counts.SeedNucleotide()
+        self.nuc = SeedNucleotide()
 
     def testSingleRead(self):
         """ Read a single nucleotide, and report on counts.
@@ -1443,7 +1496,7 @@ class SeedNucleotideTest(unittest.TestCase):
 
     def testConsensusNoMixes(self):
         self.nuc.count_nucleotides('C', 1)
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus = 'C'
@@ -1453,7 +1506,7 @@ class SeedNucleotideTest(unittest.TestCase):
     def testConsensusMixed(self):
         self.nuc.count_nucleotides('C', 2)
         self.nuc.count_nucleotides('T', 1)
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus_max = 'C'
@@ -1465,7 +1518,7 @@ class SeedNucleotideTest(unittest.TestCase):
         self.nuc.count_nucleotides('C', 2)
         self.nuc.count_nucleotides('T', 1)
         self.nuc.count_nucleotides('G', 1)
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus_max = 'C'
@@ -1478,7 +1531,7 @@ class SeedNucleotideTest(unittest.TestCase):
         self.nuc.count_nucleotides('T', 1)
         self.nuc.count_nucleotides('G', 1)
         self.nuc.count_nucleotides('A', 1)
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus_max = 'C'
@@ -1490,7 +1543,7 @@ class SeedNucleotideTest(unittest.TestCase):
         self.nuc.count_nucleotides('C', 2)
         self.nuc.count_nucleotides('T', 2)
         self.nuc.count_nucleotides('G', 1)
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus_max = 'Y'  # C and T tie for max, mix is Y
@@ -1525,7 +1578,7 @@ class SeedNucleotideTest(unittest.TestCase):
     def testConsensusMixedWithPoorQuality(self):
         self.nuc.count_nucleotides('N', 2)
         self.nuc.count_nucleotides('T', 1)
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus_max = 'T'  # N always overruled
@@ -1536,7 +1589,7 @@ class SeedNucleotideTest(unittest.TestCase):
     def testConsensusMixedWithGap(self):
         self.nuc.count_nucleotides('-', 2)
         self.nuc.count_nucleotides('T', 1)
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus_max = 'T'  # dash always overruled
@@ -1548,7 +1601,7 @@ class SeedNucleotideTest(unittest.TestCase):
         self.nuc.count_nucleotides('N', 3)
         self.nuc.count_nucleotides('-', 2)
         self.nuc.count_nucleotides('T', 1)
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus_max = 'T'
@@ -1558,7 +1611,7 @@ class SeedNucleotideTest(unittest.TestCase):
 
     def testConsensusPoorQualityOnly(self):
         self.nuc.count_nucleotides('N', 1)
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus_max = 'N'
@@ -1569,7 +1622,7 @@ class SeedNucleotideTest(unittest.TestCase):
     def testConsensusMixedGapAndPoorQualityOnly(self):
         self.nuc.count_nucleotides('N', 3)
         self.nuc.count_nucleotides('-', 2)
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus_max = 'N'
@@ -1581,7 +1634,7 @@ class SeedNucleotideTest(unittest.TestCase):
         self.nuc.count_nucleotides('C', 101)
         self.nuc.count_nucleotides('T', 100)
         self.nuc.count_nucleotides('G', 99)
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.5)
 
         expected_consensus_max = 'C'
@@ -1606,7 +1659,7 @@ class SeedNucleotideTest(unittest.TestCase):
 
         # No counts added
 
-        consensus_max = self.nuc.get_consensus(aln2counts.MAX_CUTOFF)
+        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus = ''

@@ -229,7 +229,8 @@ def process_sample(sample_info, project_id, data_path, pssm):
             open(os.path.join(sample_out_path, 'coord_ins.csv'), 'wb') as coord_ins_csv, \
             open(os.path.join(sample_out_path, 'conseq.csv'), 'wb') as conseq_csv, \
             open(os.path.join(sample_out_path, 'failed_align.csv'), 'wb') as failed_align_csv, \
-            open(os.path.join(sample_out_path, 'nuc_variants.csv'), 'wb') as nuc_variants_csv:
+            open(os.path.join(sample_out_path, 'nuc_variants.csv'), 'wb') as nuc_variants_csv, \
+            open(os.path.join(sample_scratch_path, 'coverage_summary.csv'), 'wb') as coverage_summary_csv:
 
         aln2counts(aligned_csv,
                    nuc_csv,
@@ -237,7 +238,8 @@ def process_sample(sample_info, project_id, data_path, pssm):
                    coord_ins_csv,
                    conseq_csv,
                    failed_align_csv,
-                   nuc_variants_csv)
+                   nuc_variants_csv,
+                   coverage_summary_csv=coverage_summary_csv)
 
     logger.info("Running sam_g2p.")
     with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
@@ -309,6 +311,8 @@ def summarize_samples(args, json, run_summary):
 
     score_sum = 0.0
     base_count = 0
+    coverage_sum = 0.0
+    coverage_count = 0
     for sample in json.samples:
         sample_scratch_path = os.path.join(args.data_path,
                                            'scratch',
@@ -322,8 +326,19 @@ def summarize_samples(args, json, run_summary):
                 if sample_base_count:
                     score_sum += float(row['avg_quality']) * sample_base_count
                     base_count += sample_base_count
+        coverage_summary_path = os.path.join(sample_scratch_path,
+                                             'coverage_summary.csv')
+        with open(coverage_summary_path, 'rU') as coverage_summary:
+            reader = csv.DictReader(coverage_summary)
+            for row in reader:
+                region_width = int(row['region_width'])
+                coverage_sum += float(row['avg_coverage']) * region_width
+                coverage_count += region_width
+
     if base_count > 0:
         run_summary['avg_quality'] = score_sum / base_count
+    if coverage_count > 0:
+        run_summary['avg_coverage'] = coverage_sum / coverage_count
 
     run_quality_path = os.path.join(summary_path, 'run_quality.csv')
     with open(run_quality_path, 'w') as run_quality:
@@ -334,7 +349,8 @@ def summarize_samples(args, json, run_summary):
                                  'pass_rate',
                                  'error_rate_fwd',
                                  'error_rate_rev',
-                                 'avg_quality'],
+                                 'avg_quality',
+                                 'avg_coverage'],
                                 lineterminator=os.linesep)
         writer.writeheader()
         writer.writerow(run_summary)

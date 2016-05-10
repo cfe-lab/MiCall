@@ -21,8 +21,8 @@ import os
 
 import gotoh
 
-import miseq_logging
-import project_config
+from micall.core import miseq_logging
+from micall.core import project_config
 from micall.utils.translation import translate, ambig_dict
 
 AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'
@@ -323,11 +323,13 @@ class SequenceReport(object):
     def write_amino_header(self, amino_file):
         self._create_amino_writer(amino_file).writeheader()
 
-    def write_amino_counts(self, amino_file):
+    def write_amino_counts(self, amino_file, coverage_summary=None):
         regions = self.reports.keys()
         regions.sort()
         amino_writer = self._create_amino_writer(amino_file)
         for region in regions:
+            coverage_sum = 0.0
+            pos_count = 0
             for report_amino in self.reports[region]:
                 seed_amino = report_amino.seed_amino
                 query_pos = (str(seed_amino.consensus_index + 1)
@@ -339,8 +341,18 @@ class SequenceReport(object):
                        'query.aa.pos': query_pos,
                        'refseq.aa.pos': report_amino.position}
                 for letter in AMINO_ALPHABET:
-                    row[letter] = seed_amino.counts[letter]
+                    letter_count = seed_amino.counts[letter]
+                    row[letter] = letter_count
+                    coverage_sum += letter_count
                 amino_writer.writerow(row)
+                pos_count += 1
+            if coverage_summary is not None and pos_count > 0:
+                region_coverage = coverage_sum / pos_count
+                old_coverage = coverage_summary.get('avg_coverage', -1)
+                if region_coverage > old_coverage:
+                    coverage_summary['avg_coverage'] = region_coverage
+                    coverage_summary['coverage_region'] = region
+                    coverage_summary['region_width'] = pos_count
 
     def _create_nuc_writer(self, nuc_file):
         return csv.DictWriter(nuc_file,
@@ -718,7 +730,8 @@ def aln2counts(aligned_csv,
                conseq_csv,
                failed_align_csv,
                nuc_variants_csv,
-               callback=None):
+               callback=None,
+               coverage_summary_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -733,6 +746,7 @@ def aln2counts(aligned_csv,
                                 variants.
     @param callback: a function to report progress with three optional
         parameters - callback(message, progress, max_progress)
+    @param coverage_summary_csv Open file handle to write coverage depth.
     """
     # load project information
     projects = project_config.ProjectConfig.loadDefault()
@@ -747,6 +761,16 @@ def aln2counts(aligned_csv,
     report.write_failure_header(failed_align_csv)
     report.write_nuc_header(nuc_csv)
     report.write_nuc_variants_header(nuc_variants_csv)
+    if coverage_summary_csv is None:
+        coverage_summary = None
+    else:
+        coverage_writer = csv.DictWriter(coverage_summary_csv,
+                                         ['avg_coverage',
+                                          'coverage_region',
+                                          'region_width'],
+                                         lineterminator=os.linesep)
+        coverage_writer.writeheader()
+        coverage_summary = {}
 
     if callback:
         aligned_filename = getattr(aligned_csv, 'name', None)
@@ -760,13 +784,16 @@ def aln2counts(aligned_csv,
                                        lambda row: (row['refname'], row['qcut'])):
         report.read(aligned_reads)
 
-        report.write_amino_counts(amino_csv)
+        report.write_amino_counts(amino_csv, coverage_summary=coverage_summary)
         report.write_consensus(conseq_csv)
         report.write_failure(failed_align_csv)
         report.write_insertions()
         report.write_nuc_counts(nuc_csv)
         report.write_nuc_variants(nuc_variants_csv)
 
+    if coverage_summary_csv is not None:
+        coverage_writer.writerow(coverage_summary)
+        coverage_summary_csv.close()
     aligned_csv.close()
     amino_csv.close()
     nuc_csv.close()
@@ -783,3 +810,13 @@ def main():
 
 if __name__ == '__main__':
     main()
+elif __name__ == '__live_coding__':
+    import unittest
+    from micall.tests.aln2counts_test import SequenceReportTest
+
+    suite = unittest.TestSuite()
+    suite.addTest(SequenceReportTest("testCoverageSummary"))
+    test_results = unittest.TextTestRunner().run(suite)
+
+    print(test_results.errors)
+    print(test_results.failures)
