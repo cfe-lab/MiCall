@@ -2,6 +2,7 @@ import unittest
 import StringIO
 from micall.core import project_config
 
+
 class ProjectConfigurationTest(unittest.TestCase):
     def setUp(self):
         self.defaultJsonIO = StringIO.StringIO("""\
@@ -39,7 +40,7 @@ class ProjectConfigurationTest(unittest.TestCase):
 }
 """)
         self.config = project_config.ProjectConfig()
-        
+
     def testConvert(self):
         expected_fasta = """\
 >R1-seed
@@ -49,7 +50,7 @@ ACTGAAAGGG
 
         self.config.load(self.defaultJsonIO)
         self.config.writeSeedFasta(fasta)
-        
+
         self.assertMultiLineEqual(expected_fasta, fasta.getvalue())
 
     def testSharedRegions(self):
@@ -104,7 +105,7 @@ TTT
 
         self.config.load(jsonIO)
         self.config.writeSeedFasta(fasta)
-        
+
         self.assertMultiLineEqual(expected_fasta, fasta.getvalue())
 
     def testUnusedRegion(self):
@@ -145,9 +146,9 @@ ACTGAAAGGG
 
         self.config.load(jsonIO)
         self.config.writeSeedFasta(fasta)
-        
+
         self.assertMultiLineEqual(expected_fasta, fasta.getvalue())
-        
+
     def testDuplicateReference(self):
         jsonIO = StringIO.StringIO("""\
 {
@@ -179,7 +180,7 @@ ACTGAAAGGG
 """)
         fasta = StringIO.StringIO()
         self.config.load(jsonIO)
-        
+
         self.assertRaisesRegexp(RuntimeError,
                                 "Duplicate references: R1a-seed and R1b-seed.",
                                 self.config.writeSeedFasta,
@@ -189,30 +190,30 @@ ACTGAAAGGG
         self.config.load(self.defaultJsonIO)
         seed_name = 'R1-seed'
         expected_ref = 'ACTGAAAGGG'
-        
+
         seed_ref = self.config.getReference(seed_name)
-        
+
         self.assertSequenceEqual(expected_ref, seed_ref)
 
     def testGetCoordinateReferences(self):
         self.config.load(self.defaultJsonIO)
         seed_name = 'R1-seed'
         expected_refs = {'R1': 'RWNNWR'}
-        
+
         coordinate_refs = self.config.getCoordinateReferences(seed_name)
-        
+
         self.assertDictEqual(expected_refs, coordinate_refs)
 
     def testUnknownReference(self):
         self.config.load(self.defaultJsonIO)
         seed_name = 'R-unknown'
-        
+
         self.assertRaises(KeyError, self.config.getReference, seed_name)
 
     def testMaxVariants(self):
         self.config.load(self.defaultJsonIO)
         coordinate_region_name = 'R1'
-        
+
         self.assertEqual(5, self.config.getMaxVariants(coordinate_region_name))
 
     def testMaxVariantsUnusedRegion(self):
@@ -254,7 +255,7 @@ ACTGAAAGGG
 """)
         self.config.load(jsonIO)
         coordinate_region_name = 'R2'
-        
+
         self.assertEqual(0, self.config.getMaxVariants(coordinate_region_name))
 
     def testMaxVariantsTwoProjects(self):
@@ -312,9 +313,9 @@ ACTGAAAGGG
 """)
         self.config.load(jsonIO)
         coordinate_region_name = 'R1'
-        
+
         self.assertEqual(9, self.config.getMaxVariants(coordinate_region_name))
-        
+
     def testReload(self):
         jsonIO1 = StringIO.StringIO("""\
 {
@@ -361,25 +362,25 @@ ACTGAAAGGG
   }
 }
 """)
-         
+
         self.config.load(jsonIO1)
         self.config.load(jsonIO2)
-        
+
         self.assertRaises(KeyError, self.config.getReference, "R1-seed")
         self.assertSequenceEqual("GACCTA", self.config.getReference("R2-seed"))
 
     def testProjectSeeds(self):
         expected_seeds = set(['R1-seed'])
-        
+
         self.config.load(self.defaultJsonIO)
         seeds = self.config.getProjectSeeds('R1')
-        
+
         self.assertSetEqual(expected_seeds, seeds)
-    
+
     def testSeedGroup(self):
         expected_group = "R1-seeds"
-        
+
         self.config.load(self.defaultJsonIO)
         group = self.config.getSeedGroup('R1-seed')
-        
+
         self.assertEqual(expected_group, group)
