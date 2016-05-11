@@ -21,6 +21,7 @@ from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.sam_g2p import sam_g2p
 from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
+from micall.utils.coverage_plots import coverage_plot
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
@@ -252,6 +253,12 @@ def process_sample(sample_info, project_id, data_path, pssm):
                 nuc_csv=nuc_csv,
                 g2p_csv=g2p_csv,
                 g2p_summary_csv=g2p_summary_csv)
+
+    logger.info("Running coverage_plots.")
+    coverage_path = os.path.join(sample_out_path, 'coverage')
+    with open(os.path.join(sample_out_path, 'amino.csv'), 'rU') as amino_csv, \
+            open(os.path.join(sample_out_path, 'coverage_scores.csv'), 'w') as coverage_scores_csv:
+        coverage_plot(amino_csv, coverage_scores_csv, path_prefix=coverage_path)
 
 
 def summarize_run(args, json):

@@ -1,6 +1,6 @@
 import unittest
 import StringIO
-from micall.core import project_config
+from micall.core.project_config import ProjectConfig
 
 
 class ProjectConfigurationTest(unittest.TestCase):
@@ -39,7 +39,7 @@ class ProjectConfigurationTest(unittest.TestCase):
   }
 }
 """)
-        self.config = project_config.ProjectConfig()
+        self.config = ProjectConfig()
 
     def testConvert(self):
         expected_fasta = """\
@@ -384,3 +384,71 @@ ACTGAAAGGG
         group = self.config.getSeedGroup('R1-seed')
 
         self.assertEqual(expected_group, group)
+
+    def testProjectRegions(self):
+        jsonIO = StringIO.StringIO("""\
+{
+  "projects": {
+    "R1": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "R1",
+          "coordinate_region_length": 3,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "R1-seed"
+          ]
+        }
+      ]
+    },
+    "R1 and R2": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "R1",
+          "coordinate_region_length": 3,
+          "key_positions": [1, 3],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "R1-seed"
+          ]
+        },
+        {
+          "coordinate_region": "R2",
+          "coordinate_region_length": 1,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "R2-seed"
+          ]
+        }
+      ]
+    }
+  }
+}
+""")
+        expected_project_regions = [{"project_name": "R1",
+                                     "coordinate_region_length": 3,
+                                     "key_positions": [],
+                                     "min_coverage1": 10,
+                                     "min_coverage2": 50,
+                                     "min_coverage3": 100},
+                                    {"project_name": "R1 and R2",
+                                     "coordinate_region_length": 3,
+                                     "key_positions": [1, 3],
+                                     "min_coverage1": 10,
+                                     "min_coverage2": 50,
+                                     "min_coverage3": 100}]
+
+        self.config.load(jsonIO)
+        project_regions = list(self.config.getProjectRegions('R1-seed', 'R1'))
+
+        self.assertEqual(expected_project_regions, project_regions)

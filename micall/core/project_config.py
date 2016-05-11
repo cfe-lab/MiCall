@@ -4,15 +4,12 @@ import os
 
 class ProjectConfig(object):
     @classmethod
-    def loadDefault(cls):
+    def search(cls, project_paths):
         projects = None
-        file_path = os.path.dirname(__file__)
-        project_paths = [os.path.join(file_path, 'projects.json'),
-                         os.path.join(os.path.dirname(file_path), 'projects.json')]
         for project_path in project_paths:
             try:
                 with open(project_path, 'rU') as projects_file:
-                    projects = ProjectConfig()
+                    projects = cls()
                     projects.load(projects_file)
                     break
             except:
@@ -22,6 +19,20 @@ class ProjectConfig(object):
             raise RuntimeError('No project definitions found in {!r}'.format(
                 project_paths))
         return projects
+
+    @classmethod
+    def loadDefault(cls):
+        file_path = os.path.dirname(__file__)
+        project_paths = [os.path.join(file_path, 'projects.json'),
+                         os.path.join(os.path.dirname(file_path), 'projects.json')]
+        return cls.search(project_paths)
+
+    @classmethod
+    def loadScoring(cls):
+        file_path = os.path.dirname(__file__)
+        project_paths = [os.path.join(file_path, 'project_scoring.json'),
+                         os.path.join(os.path.dirname(file_path), 'project_scoring.json')]
+        return cls.search(project_paths)
 
     def load(self, json_file):
         self.config = json.load(json_file)
@@ -105,3 +116,27 @@ class ProjectConfig(object):
         """
 
         return self.config['regions'][seed_region]['seed_group']
+
+    def getProjectRegions(self, seed_name, coordinate_name):
+        project_names = self.config['projects'].keys()
+        project_names.sort()
+        for project_name in project_names:
+            project = self.config['projects'][project_name]
+            for region in project['regions']:
+                if region['coordinate_region'] == coordinate_name and seed_name in region['seed_region_names']:
+                    project_region = dict(region)
+                    del project_region['coordinate_region']
+                    del project_region['seed_region_names']
+                    project_region['project_name'] = project_name
+                    yield project_region
+
+if __name__ == '__live_coding__':
+    import unittest
+    from micall.tests.project_config_test import ProjectConfigurationTest
+
+    suite = unittest.TestSuite()
+    suite.addTest(ProjectConfigurationTest("testProjectRegions"))
+    test_results = unittest.TextTestRunner().run(suite)
+
+    print(test_results.errors)
+    print(test_results.failures)
