@@ -9,13 +9,15 @@ from operator import itemgetter
 from micall.core import project_config, aln2counts
 
 
-def coverage_plot(amino_csv, coverage_scores_csv, path_prefix=None):
+def coverage_plot(amino_csv, coverage_scores_csv, path_prefix=None, filetype='png'):
     """ Generate coverage plots.
 
     @param amino_csv: an open file object that holds amino acid frequencies
     @param coverage_scores_csv: an open file object to write the coverage scores
     @param path_prefix: path prefix for coverage maps. Defaults to the path
     of amino_csv without the extension.
+    @param filetype: controls which file type will be saved, must be supported
+    by matplotlib (probably png, pdf, ps, eps and svg).
     @return: a list of full paths to the image files.
     """
     # imports project information from JSON
@@ -102,7 +104,7 @@ def coverage_plot(amino_csv, coverage_scores_csv, path_prefix=None):
             plt.xlabel('Reference coordinates (AA)', fontsize=9)
             plt.ylabel('Coverage', fontsize=9)
             plt.tight_layout()
-            figname = '{}.{}.{}.png'.format(prefix, project_name, region)
+            figname = '.'.join((prefix, project_name, region, filetype))
             dest = os.path.join(path, figname)
             paths.append(dest)
             plt.savefig(dest)  # write image to file
