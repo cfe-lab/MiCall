@@ -10,7 +10,7 @@ RUN apt-get update -qq --fix-missing && apt-get install -qq -y \
   && rm -rf /var/lib/apt/lists/*
 
 ## Python packages
-RUN pip install python-Levenshtein
+RUN pip install python-Levenshtein matplotlib
 
 ## bowtie2
 RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip; \

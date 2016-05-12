@@ -22,6 +22,7 @@ from micall.g2p.sam_g2p import sam_g2p
 from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
 from micall.utils.coverage_plots import coverage_plot
+from csv import DictReader
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
@@ -56,6 +57,7 @@ def parse_json(json_file):
                for item in raw_args['Properties']['Items']}
 
     args.name = arg_map['Input.app-session-name']['Content']
+    args.href_app_session = raw_args['Href']
     run = arg_map.get('Input.run-id')
     if run is None:
         args.run_id = None
@@ -121,7 +123,9 @@ def link_json(run_path, data_path):
             sample_file = os.path.basename(fastq_file)
             os.symlink(fastq_file, os.path.join(sample_path, sample_file))
             sample_name = '_'.join(sample_file.split('_')[:2])
-            args.samples.append(dict(Id=sample_id, Name=sample_name))
+            args.samples.append(dict(Id=sample_id,
+                                     Href="v1pre3/samples/" + sample_id,
+                                     Name=sample_name))
     return args
 
 
@@ -137,7 +141,39 @@ def censor_sample(filename, bad_cycles_path, censored_name, read_summary_name):
         censor(fastq_src, bad_cycles, fastq_dest, summary_file=read_summary)
 
 
-def process_sample(sample_info, project_id, data_path, pssm):
+def create_app_result(data_path,
+                      run_info,
+                      sample_info,
+                      description='',
+                      suffix=None):
+    dir_name = sample_info['Name']
+    if suffix is not None:
+        dir_name += suffix
+    sample_out_path = os.path.join(data_path,
+                                   'output',
+                                   'appresults',
+                                   run_info.project_id,
+                                   dir_name)
+    makedirs(sample_out_path)
+    metadata = dict(Name=dir_name,
+                    Description=description,
+                    HrefAppSession=run_info.href_app_session,
+                    Properties=[dict(Type='sample',
+                                     Name='Input.Samples',
+                                     Content=sample_info['Href'])])
+    with open(os.path.join(sample_out_path, '_metadata.json'), 'w') as json_file:
+        json.dump(metadata, json_file, indent=4)
+    return sample_out_path
+
+
+def process_sample(sample_info, run_info, data_path, pssm):
+    """ Process a single sample.
+
+    :param sample_info: sample parameters loaded from the session JSON
+    :param run_info: run parameters loaded from the session JSON
+    :param str data_path: the root folder for all BaseSpace data
+    :param pssm: the pssm library for running G2P analysis
+    """
     scratch_path = os.path.join(data_path, 'scratch')
     sample_id = sample_info['Id']
     sample_name = sample_info['Name']
@@ -168,12 +204,10 @@ def process_sample(sample_info, project_id, data_path, pssm):
             sample_path2))
     logger.info('Processing sample %s: %s (%s).', sample_id, sample_name, sample_path)
 
-    sample_out_path = os.path.join(data_path,
-                                   'output',
-                                   'appresults',
-                                   project_id,
-                                   sample_name)
-    makedirs(sample_out_path)
+    sample_out_path = create_app_result(data_path,
+                                        run_info,
+                                        sample_info,
+                                        description='Mapping results')
 
     sample_scratch_path = os.path.join(scratch_path, sample_name)
     makedirs(sample_scratch_path)
@@ -242,23 +276,37 @@ def process_sample(sample_info, project_id, data_path, pssm):
                    nuc_variants_csv,
                    coverage_summary_csv=coverage_summary_csv)
 
-    logger.info("Running sam_g2p.")
-    with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
-            open(os.path.join(sample_out_path, 'nuc.csv'), 'rU') as nuc_csv, \
-            open(os.path.join(sample_out_path, 'g2p.csv'), 'wb') as g2p_csv, \
-            open(os.path.join(sample_out_path, 'g2p_summary.csv'), 'wb') as g2p_summary_csv:
-
-        sam_g2p(pssm=pssm,
-                remap_csv=remap_csv,
-                nuc_csv=nuc_csv,
-                g2p_csv=g2p_csv,
-                g2p_summary_csv=g2p_summary_csv)
-
     logger.info("Running coverage_plots.")
     coverage_path = os.path.join(sample_out_path, 'coverage')
     with open(os.path.join(sample_out_path, 'amino.csv'), 'rU') as amino_csv, \
             open(os.path.join(sample_out_path, 'coverage_scores.csv'), 'w') as coverage_scores_csv:
         coverage_plot(amino_csv, coverage_scores_csv, path_prefix=coverage_path)
+
+    with open(os.path.join(sample_out_path, 'coverage_scores.csv'), 'rU') as coverage_scores_csv:
+        reader = DictReader(coverage_scores_csv)
+        is_v3loop_good = False
+        for row in reader:
+            if row['region'] == 'V3LOOP':
+                is_v3loop_good = row['on.score'] == '4'
+                break
+
+    if is_v3loop_good:
+        logger.info("Running sam_g2p.")
+        g2p_path = create_app_result(data_path,
+                                     run_info,
+                                     sample_info,
+                                     description='Geno To Pheno results',
+                                     suffix='_G2P')
+        with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
+                open(os.path.join(sample_out_path, 'nuc.csv'), 'rU') as nuc_csv, \
+                open(os.path.join(g2p_path, 'g2p.csv'), 'wb') as g2p_csv, \
+                open(os.path.join(g2p_path, 'g2p_summary.csv'), 'wb') as g2p_summary_csv:
+
+            sam_g2p(pssm=pssm,
+                    remap_csv=remap_csv,
+                    nuc_csv=nuc_csv,
+                    g2p_csv=g2p_csv,
+                    g2p_summary_csv=g2p_summary_csv)
 
 
 def summarize_run(args, json):
@@ -400,7 +448,7 @@ def main():
         run_summary = summarize_run(args, json)
 
     for sample_info in json.samples:
-        process_sample(sample_info, json.project_id, args.data_path, pssm)
+        process_sample(sample_info, json, args.data_path, pssm)
 
     if json.run_id is not None:
         summarize_samples(args, json, run_summary)
@@ -411,7 +459,8 @@ if __name__ == '__main__':
 elif __name__ == '__live_coding__':
     from cStringIO import StringIO
     json_file = StringIO("""\
-{"Properties": {"Items": [{"Name": "Input.app-session-name",
+{"Href": "v1pre3/appsessions/1234",
+ "Properties": {"Items": [{"Name": "Input.app-session-name",
                            "Content": "MiCall 04/05/2016 3:14:23"},
                           {"Name": "Input.sample-ids",
                            "Items": [{"Id": "11111",
