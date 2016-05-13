@@ -366,15 +366,16 @@ similar steps to setting up a development workstation. Follow these steps:
         tail -f /data/miseq/micall.log
 
 16. Launch the basespace virtual machine, and build a new Docker image
-    from either GitHub or your local copy of the source code.
+    from either GitHub or your local copy of the source code. Tag it with the
+    release number.
 
-    sudo docker build -t docker.illumina.com/cfelab/micall https://github.com/cfe-lab/MiCall.git
-    sudo docker build -t docker.illumina.com/cfelab/micall /media/sf_MiCall/
+    sudo docker build -t docker.illumina.com/cfelab/micall:X.Y https://github.com/cfe-lab/MiCall.git
+    sudo docker build -t docker.illumina.com/cfelab/micall:X.Y /media/sf_MiCall/
 
 17. Push the new image to the repository. You might have to log in to docker
     before running this.
     
-    sudo docker push docker.illumina.com/cfelab/micall
+    sudo docker push docker.illumina.com/cfelab/micall:X.Y
 
 17. Send an e-mail to users describing the major changes in the release.
 18. Close the milestone for this release, create one for the next release, and

@@ -21,18 +21,18 @@
                             <tbody>
                                 {% for row in result.files[file].parse.rows %}
                                 <tr>
-                                    <th title="fraction of clusters and cycles with Phred scores of at least 30 in forward reads">Q30 fwd</th>
+                                    <th title="Percentage of clusters and cycles with Phred scores of at least 30 in forward reads">% Q30 fwd</th>
                                     {% comment %}
                                     This hot mess is needed because we don't have
                                     a rounding operator yet.
                                     {% endcomment %}
-                                    {% assign r = row['q30_fwd'] | times: 1000 | plus: 0.5 | modulo: 1 | minus: 0.5 | divided_by: 1000 %}
-                                    <td>{{ row['q30_fwd'] | minus: r }}</td>
+                                    {% assign r = row['q30_fwd'] | times: 1000 | plus: 0.5 | modulo: 1 | minus: 0.5 | divided_by: 10 %}
+                                    <td>{{ row['q30_fwd'] | times: 100 | minus: r }}</td>
                                 </tr>
                                 <tr>
-                                    <th title="fraction of clusters and cycles with Phred scores of at least 30 in reverse reads">Q30 rev</th>
-                                    {% assign r = row['q30_rev'] | times: 1000 | plus: 0.5 | modulo: 1 | minus: 0.5 | divided_by: 1000 %}
-                                    <td>{{ row['q30_rev'] | minus: r }}</td>
+                                    <th title="Percentage of clusters and cycles with Phred scores of at least 30 in reverse reads">% Q30 rev</th>
+                                    {% assign r = row['q30_rev'] | times: 1000 | plus: 0.5 | modulo: 1 | minus: 0.5 | divided_by: 10 %}
+                                    <td>{{ row['q30_rev'] | times: 100 | minus: r }}</td>
                                 </tr>
                                 <tr>
                                     <th>Cluster density (K/mm<sup>2</sup>)</th>
@@ -40,9 +40,9 @@
                                     <td>{{ row['cluster_density'] | minus: r }}</td>
                                 </tr>
                                 <tr>
-                                    <th title="Portion of clusters passing filters over all tiles and cycles">Clusters passing filters rate</th>
-                                    {% assign r = row['pass_rate'] | times: 1000 | plus: 0.5 | modulo: 1 | minus: 0.5 | divided_by: 1000 %}
-                                    <td>{{ row['pass_rate'] | minus: r }}</td>
+                                    <th title="Percentage of clusters passing filters over all tiles and cycles">% Clusters passing filters</th>
+                                    {% assign r = row['pass_rate'] | times: 1000 | plus: 0.5 | modulo: 1 | minus: 0.5 | divided_by: 10 %}
+                                    <td>{{ row['pass_rate'] | times: 100 | minus: r }}</td>
                                 </tr>
                                 <tr>
                                     <th title="Average error rate over tiles and cycles in forward reads (phiX error count/tile/cycle)">Error rate fwd</th>
