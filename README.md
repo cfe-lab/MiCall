@@ -85,6 +85,8 @@ purchasing a license.
   (phiX error count/tile/cycle)
   * error_rate_rev - average error rate over tiles and cycles in reverse reads
   (phiX error count/tile/cycle)
+  * avg_quality - average Phred score over all clusters and cycles
+  * avg_coverage - average coverage across the best region for each sample
 * conseq.csv
   * consensus-percent-cutoff - to be included in a mixture, a variant must make
     up at least this fraction of the total valid counts

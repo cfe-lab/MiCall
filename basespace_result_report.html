@@ -39,7 +39,13 @@
                 </table>
                 <h4>G2P Detail:</h4>
                 <table class="table bs-table bs-table-justify">
-                    <tr><th># Reads</th><th>FPR</th><th>Call</th><th>Sequence</th><th>Error</th></tr>
+                    <tr>
+                        <th># Reads</th>
+                        <th title="False positive rate">FPR</th>
+                        <th>Call</th>
+                        <th>Sequence</th>
+                        <th>Error</th>
+                    </tr>
                     {% for row in result.files.where.ends_with['g2p.csv'].first.parse.rows %}
                     <tr>
                         <td>{{ row['count'] }}</td>
@@ -54,7 +60,15 @@
             {% for coverage_file in result.files.where.ends_with['coverage_scores.csv'] %}
                 <h4>Quality Control:</h4>
                 <table class="table bs-table bs-table-justify">
-                    <tr><th>Project</th><th>Region</th><th>Seed</th><th>Min</th><th>Pos</th><th>Score</th><th>Coverage</th></tr>
+                    <tr>
+                        <th title="Projects define sets of reference sequences and key positions.">Project</th>
+                        <th title="The reference sequence being displayed">Region</th>
+                        <th title="The reference sequence originally mapped against.">Seed</th>
+                        <th title="Minimum coverage across key positions">Min</th>
+                        <th title="Key position with the minimum coverage">Pos</th>
+                        <th title="Overall coverage score (out of 4)">Score</th>
+                        <th title="Coverage levels across the region">Coverage</th>
+                    </tr>
                     {% for row in result.files[coverage_file].parse.rows %}
                     <tr>
                         <td>{{ row['project'] }}</td>
