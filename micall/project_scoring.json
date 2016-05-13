@@ -1679,6 +1679,316 @@
         }
       ]
     },
+    "HCV-NS5a": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "HCV1A-H77-NS5a",
+          "coordinate_region_length": 448,
+          "key_positions": [
+            {
+              "end_pos": null,
+              "start_pos": 28
+            },
+            {
+              "end_pos": null,
+              "start_pos": 30
+            },
+            {
+              "end_pos": null,
+              "start_pos": 31
+            },
+            {
+              "end_pos": null,
+              "start_pos": 58
+            },
+            {
+              "end_pos": null,
+              "start_pos": 93
+            }
+          ],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "HCV-1a",
+            "HCV-1c",
+            "HCV-1e",
+            "HCV-1g"
+          ]
+        },
+        {
+          "coordinate_region": "HCV1B-Con1-NS5a",
+          "coordinate_region_length": 447,
+          "key_positions": [
+            {
+              "end_pos": null,
+              "start_pos": 28
+            },
+            {
+              "end_pos": null,
+              "start_pos": 30
+            },
+            {
+              "end_pos": null,
+              "start_pos": 31
+            },
+            {
+              "end_pos": null,
+              "start_pos": 58
+            },
+            {
+              "end_pos": null,
+              "start_pos": 93
+            }
+          ],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "HCV-1b"
+          ]
+        },
+        {
+          "coordinate_region": "HCV2-JFH-1-NS5a",
+          "coordinate_region_length": 428,
+          "key_positions": [
+            {
+              "end_pos": null,
+              "start_pos": 28
+            },
+            {
+              "end_pos": null,
+              "start_pos": 30
+            },
+            {
+              "end_pos": null,
+              "start_pos": 31
+            },
+            {
+              "end_pos": null,
+              "start_pos": 58
+            },
+            {
+              "end_pos": null,
+              "start_pos": 93
+            }
+          ],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "HCV-2a",
+            "HCV-2b",
+            "HCV-2c",
+            "HCV-2i",
+            "HCV-2j",
+            "HCV-2k",
+            "HCV-2q"
+          ]
+        },
+        {
+          "coordinate_region": "HCV3-S52-NS5a",
+          "coordinate_region_length": 452,
+          "key_positions": [
+            {
+              "end_pos": null,
+              "start_pos": 28
+            },
+            {
+              "end_pos": null,
+              "start_pos": 30
+            },
+            {
+              "end_pos": null,
+              "start_pos": 31
+            },
+            {
+              "end_pos": null,
+              "start_pos": 58
+            },
+            {
+              "end_pos": null,
+              "start_pos": 93
+            }
+          ],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "HCV-3a",
+            "HCV-3b",
+            "HCV-3i",
+            "HCV-3k"
+          ]
+        },
+        {
+          "coordinate_region": "HCV4-ED43-NS5a",
+          "coordinate_region_length": 445,
+          "key_positions": [
+            {
+              "end_pos": null,
+              "start_pos": 28
+            },
+            {
+              "end_pos": null,
+              "start_pos": 30
+            },
+            {
+              "end_pos": null,
+              "start_pos": 31
+            },
+            {
+              "end_pos": null,
+              "start_pos": 58
+            },
+            {
+              "end_pos": null,
+              "start_pos": 93
+            }
+          ],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "HCV-4a",
+            "HCV-4b",
+            "HCV-4c",
+            "HCV-4d",
+            "HCV-4f",
+            "HCV-4g",
+            "HCV-4k",
+            "HCV-4l",
+            "HCV-4m",
+            "HCV-4n",
+            "HCV-4o",
+            "HCV-4p",
+            "HCV-4q",
+            "HCV-4r",
+            "HCV-4t",
+            "HCV-4v"
+          ]
+        },
+        {
+          "coordinate_region": "HCV5-SA13-NS5a",
+          "coordinate_region_length": 450,
+          "key_positions": [
+            {
+              "end_pos": null,
+              "start_pos": 28
+            },
+            {
+              "end_pos": null,
+              "start_pos": 30
+            },
+            {
+              "end_pos": null,
+              "start_pos": 31
+            },
+            {
+              "end_pos": null,
+              "start_pos": 58
+            },
+            {
+              "end_pos": null,
+              "start_pos": 93
+            }
+          ],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "HCV-5a"
+          ]
+        },
+        {
+          "coordinate_region": "HCV6-EUHK2-NS5a",
+          "coordinate_region_length": 451,
+          "key_positions": [
+            {
+              "end_pos": null,
+              "start_pos": 28
+            },
+            {
+              "end_pos": null,
+              "start_pos": 30
+            },
+            {
+              "end_pos": null,
+              "start_pos": 31
+            },
+            {
+              "end_pos": null,
+              "start_pos": 58
+            },
+            {
+              "end_pos": null,
+              "start_pos": 93
+            }
+          ],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "HCV-6a",
+            "HCV-6b",
+            "HCV-6c",
+            "HCV-6d",
+            "HCV-6e",
+            "HCV-6f",
+            "HCV-6g",
+            "HCV-6h",
+            "HCV-6i",
+            "HCV-6j",
+            "HCV-6k",
+            "HCV-6l",
+            "HCV-6m",
+            "HCV-6n",
+            "HCV-6o",
+            "HCV-6p",
+            "HCV-6q",
+            "HCV-6r",
+            "HCV-6s",
+            "HCV-6t",
+            "HCV-6u",
+            "HCV-6v",
+            "HCV-6w"
+          ]
+        },
+        {
+          "coordinate_region": "HCV7-QC69-NS5a",
+          "coordinate_region_length": 446,
+          "key_positions": [
+            {
+              "end_pos": null,
+              "start_pos": 28
+            },
+            {
+              "end_pos": null,
+              "start_pos": 30
+            },
+            {
+              "end_pos": null,
+              "start_pos": 31
+            },
+            {
+              "end_pos": null,
+              "start_pos": 58
+            },
+            {
+              "end_pos": null,
+              "start_pos": 93
+            }
+          ],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "HCV-7a"
+          ]
+        }
+      ]
+    },
     "HIV": {
       "max_variants": 0,
       "regions": [
