@@ -309,10 +309,10 @@ similar steps to setting up a development workstation. Follow these steps:
     so on. Mark the release as pre-release until you finish deploying it.
 6. Upgrade the scripts in Kive, and record the id of the new pipeline.
 7. Stop the `MISEQ_MONITOR.py` process after you check that it's not processing
-    any runs.
+    any important runs.
 
         ssh user@server
-        tail /data/miseq/MISEQ_MONITOR_OUTPUT.log
+        tail /data/miseq/micall.log
         ps aux|grep MISEQ_MONITOR.py
         sudo kill -9 <process id from grep output>
 

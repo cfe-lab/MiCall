@@ -3,7 +3,7 @@ To make pipeline portable, allow user to specify local paths and thread counts.
 """
 import logging.config
 
-pipeline_version = '7.2'        # Change for each release
+pipeline_version = '7.3'        # Change for each release
 
 instrument_number = 'M01841'  # for Illumina MiSeq, second item in run folder name
 production = False  # set this to True to push results to NAS

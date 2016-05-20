@@ -102,7 +102,7 @@ def link_json(run_path, data_path):
         args.index_length2 = 0
     else:
         args.index_length2 = int(index2.attrib['NumCycles'])
-    args.project_id = '1'
+    args.project_id = args.href_app_session = '1'
 
     args.samples = []
     samples_path = os.path.join(data_path, 'input', 'samples')

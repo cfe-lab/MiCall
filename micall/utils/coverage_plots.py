@@ -41,6 +41,7 @@ def coverage_plot(amino_csv, coverage_scores_csv, path_prefix=None, filetype='pn
     writer.writeheader()
     paths = []
 
+    _fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
     for (seed, region), group in itertools.groupby(reader, itemgetter('seed',
                                                                       'region')):
         counts = Counter()
@@ -58,7 +59,6 @@ def coverage_plot(amino_csv, coverage_scores_csv, path_prefix=None, filetype='pn
             x = range(1, region_length+1)
             y = [counts[pos] for pos in x]
 
-            _fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
             key_positions = project_region['key_positions']
             if not key_positions:
                 key_positions.append(dict(start_pos=1,
@@ -108,7 +108,7 @@ def coverage_plot(amino_csv, coverage_scores_csv, path_prefix=None, filetype='pn
             dest = os.path.join(path, figname)
             paths.append(dest)
             plt.savefig(dest)  # write image to file
-            plt.clf()
+            plt.cla()  # clear the axis, but don't remove the axis itself.
             row = {'project': project_name,
                    'region': region,
                    'seed': seed,
