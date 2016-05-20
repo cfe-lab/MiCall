@@ -792,7 +792,8 @@ def aln2counts(aligned_csv,
         report.write_nuc_variants(nuc_variants_csv)
 
     if coverage_summary_csv is not None:
-        coverage_writer.writerow(coverage_summary)
+        if coverage_summary:
+            coverage_writer.writerow(coverage_summary)
         coverage_summary_csv.close()
     aligned_csv.close()
     amino_csv.close()

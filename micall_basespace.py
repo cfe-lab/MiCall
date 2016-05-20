@@ -5,9 +5,11 @@ import fnmatch
 from glob import glob
 import json
 import logging
+import multiprocessing
 from operator import itemgetter
 import os
 import shutil
+import socket
 import subprocess
 from xml.etree import ElementTree
 
@@ -22,7 +24,6 @@ from micall.g2p.sam_g2p import sam_g2p
 from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
 from micall.utils.coverage_plots import coverage_plot
-from csv import DictReader
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
@@ -166,15 +167,16 @@ def create_app_result(data_path,
     return sample_out_path
 
 
-def process_sample(sample_info, run_info, data_path, pssm):
+def process_sample(sample_index, run_info, data_path, pssm):
     """ Process a single sample.
 
-    :param sample_info: sample parameters loaded from the session JSON
+    :param sample_index: which sample to process from the session JSON
     :param run_info: run parameters loaded from the session JSON
     :param str data_path: the root folder for all BaseSpace data
     :param pssm: the pssm library for running G2P analysis
     """
     scratch_path = os.path.join(data_path, 'scratch')
+    sample_info = run_info.samples[sample_index]
     sample_id = sample_info['Id']
     sample_name = sample_info['Name']
     sample_dir = os.path.join(data_path,
@@ -202,7 +204,12 @@ def process_sample(sample_info, run_info, data_path, pssm):
         raise RuntimeError('R2 file missing for sample id {}: {!r}.'.format(
             sample_id,
             sample_path2))
-    logger.info('Processing sample %s: %s (%s).', sample_id, sample_name, sample_path)
+    logger.info('Processing sample %s (%d of %d): %s (%s).',
+                sample_id,
+                sample_index+1,
+                len(run_info.samples),
+                sample_name,
+                sample_path)
 
     sample_out_path = create_app_result(data_path,
                                         run_info,
@@ -283,7 +290,7 @@ def process_sample(sample_info, run_info, data_path, pssm):
         coverage_plot(amino_csv, coverage_scores_csv, path_prefix=coverage_path)
 
     with open(os.path.join(sample_out_path, 'coverage_scores.csv'), 'rU') as coverage_scores_csv:
-        reader = DictReader(coverage_scores_csv)
+        reader = csv.DictReader(coverage_scores_csv)
         is_v3loop_good = False
         for row in reader:
             if row['region'] == 'V3LOOP':
@@ -424,7 +431,9 @@ def makedirs(path):
 
 
 def main():
-    logger.info('Starting.')
+    logger.info("Starting on %s with %d CPU's.",
+                socket.gethostname(),
+                multiprocessing.cpu_count())
     args = parse_args()
     if args.link_run is not None:
         json = link_json(args.link_run, args.data_path)
@@ -447,8 +456,8 @@ def main():
         logger.info('Summarizing run.')
         run_summary = summarize_run(args, json)
 
-    for sample_info in json.samples:
-        process_sample(sample_info, json, args.data_path, pssm)
+    for sample_index in range(len(json.samples)):
+        process_sample(sample_index, json, args.data_path, pssm)
 
     if json.run_id is not None:
         summarize_samples(args, json, run_summary)
