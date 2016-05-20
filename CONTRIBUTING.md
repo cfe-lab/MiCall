@@ -187,6 +187,29 @@ Set up the [native apps virtual machine][bsvm], and configure a shared folder
 called MiCall that points to the source code. Make sure you have a developer
 account on illumina.com.
 
+Here's a little bash script to build the Docker image from the local version
+of the source code, and launch it for testing:
+
+    #!/bin/sh
+    sudo docker build -t docker.illumina.com/cfelab/micall /media/sf_MiCall/ && \
+    sudo docker push docker.illumina.com/cfelab/micall && \
+    sudo spacedock -a <agent id from Form Builder> -m https://mission.basespace.illumina.com
+
+That doesn't put a version number tag on the Docker image. You'll need to put
+your own agent id in place, get it from the Form Builder page.
+
+Here's a related script that pulls a tagged release from GitHub, builds the
+Docker image, tags it with the version number, and launches it for testing:
+
+    #!/bin/sh
+    if [ -z $1 ]; then
+      echo Missing version tag.
+      exit 1
+    fi
+    sudo docker build -t docker.illumina.com/cfelab/micall:$1 https://github.com/cfe-lab/MiCall.git#v$1 && \
+    sudo docker push docker.illumina.com/cfelab/micall:$1 && \
+    sudo spacedock -a <agent id from Form Builder> -m https://mission.basespace.illumina.com
+
 [bsvm]: https://developer.basespace.illumina.com/docs/content/documentation/native-apps/setup-dev-environment
 
 ### PyInstaller ###
@@ -366,11 +389,10 @@ similar steps to setting up a development workstation. Follow these steps:
         tail -f /data/miseq/micall.log
 
 16. Launch the basespace virtual machine, and build a new Docker image
-    from either GitHub or your local copy of the source code. Tag it with the
-    release number.
+    from GitHub. Tag it with the release number. See the bash scripts above for
+    an easy way to do this.
 
-    sudo docker build -t docker.illumina.com/cfelab/micall:X.Y https://github.com/cfe-lab/MiCall.git
-    sudo docker build -t docker.illumina.com/cfelab/micall:X.Y /media/sf_MiCall/
+    sudo docker build -t docker.illumina.com/cfelab/micall:X.Y https://github.com/cfe-lab/MiCall.git#vX.Y
 
 17. Push the new image to the repository. You might have to log in to docker
     before running this.

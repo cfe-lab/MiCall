@@ -142,11 +142,10 @@ def censor_sample(filename, bad_cycles_path, censored_name, read_summary_name):
         censor(fastq_src, bad_cycles, fastq_dest, summary_file=read_summary)
 
 
-def create_app_result(data_path,
-                      run_info,
-                      sample_info,
-                      description='',
-                      suffix=None):
+def build_app_result_path(data_path,
+                          run_info,
+                          sample_info,
+                          suffix=None):
     dir_name = sample_info['Name']
     if suffix is not None:
         dir_name += suffix
@@ -155,8 +154,20 @@ def create_app_result(data_path,
                                    'appresults',
                                    run_info.project_id,
                                    dir_name)
+    return sample_out_path
+
+
+def create_app_result(data_path,
+                      run_info,
+                      sample_info,
+                      description='',
+                      suffix=None):
+    sample_out_path = build_app_result_path(data_path,
+                                            run_info,
+                                            sample_info,
+                                            suffix)
     makedirs(sample_out_path)
-    metadata = dict(Name=dir_name,
+    metadata = dict(Name=os.path.basename(sample_out_path),
                     Description=description,
                     HrefAppSession=run_info.href_app_session,
                     Properties=[dict(Type='sample',
@@ -214,7 +225,8 @@ def process_sample(sample_index, run_info, data_path, pssm):
     sample_out_path = create_app_result(data_path,
                                         run_info,
                                         sample_info,
-                                        description='Mapping results')
+                                        description='Mapping results',
+                                        suffix='_QC')
 
     sample_scratch_path = os.path.join(scratch_path, sample_name)
     makedirs(sample_scratch_path)
@@ -336,11 +348,10 @@ def summarize_run(args, json):
     phix_path = os.path.join(interop_path, 'ErrorMetricsOut.bin')
     quality_path = os.path.join(args.data_path, 'scratch', 'quality.csv')
     bad_cycles_path = os.path.join(args.data_path, 'scratch', 'bad_cycles.csv')
-    summary_path = os.path.join(args.data_path,
-                                'output',
-                                'appresults',
-                                json.project_id,
-                                json.samples[0]['Name'])
+    summary_path = build_app_result_path(args.data_path,
+                                         json,
+                                         json.samples[0],
+                                         suffix='_QC')
     makedirs(summary_path)
     bad_tiles_path = os.path.join(summary_path, 'bad_tiles.csv')
     with open(phix_path, 'rb') as phix, open(quality_path, 'w') as quality:
@@ -365,11 +376,10 @@ def summarize_run(args, json):
 
 
 def summarize_samples(args, json, run_summary):
-    summary_path = os.path.join(args.data_path,
-                                'output',
-                                'appresults',
-                                json.project_id,
-                                json.samples[0]['Name'])
+    summary_path = build_app_result_path(args.data_path,
+                                         json,
+                                         json.samples[0],
+                                         suffix='_QC')
 
     score_sum = 0.0
     base_count = 0

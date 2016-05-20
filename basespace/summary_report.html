@@ -14,8 +14,10 @@
     <div class="row-fluid">
         <div class="col-sm-6">
             <section class="bs-panel">
+                {% assign quality_file = '' %}
                 {% for result in session.results %}
                     {% for file in result.files.where.ends_with['/run_quality.csv'] %}
+                        {% assign quality_file = file.name %}
                         <h3>Run Quality</h3>
                         <table class="table bs-table bs-table-justify">
                             <tbody>
@@ -69,6 +71,9 @@
                         </table>
                     {% endfor %}
                 {% endfor %}
+                {% if quality_file == '' %}
+                    <h3>Warning: Error Rate data not included.</h3>
+                {% endif %}
             </section>
             <br/>
             <section class="bs-panel">
