@@ -198,7 +198,7 @@ of the source code, and launch it for testing:
 That doesn't put a version number tag on the Docker image. You'll need to put
 your own agent id in place, get it from the Form Builder page.
 
-Here's a related script that pulls a tagged release from GitHub, builds the
+Here's a related script that pulls master from GitHub, builds the
 Docker image, tags it with the version number, and launches it for testing:
 
     #!/bin/sh
@@ -206,7 +206,7 @@ Docker image, tags it with the version number, and launches it for testing:
       echo Missing version tag.
       exit 1
     fi
-    sudo docker build -t docker.illumina.com/cfelab/micall:$1 https://github.com/cfe-lab/MiCall.git#v$1 && \
+    sudo docker build -t docker.illumina.com/cfelab/micall:$1 https://github.com/cfe-lab/MiCall.git && \
     sudo docker push docker.illumina.com/cfelab/micall:$1 && \
     sudo spacedock -a <agent id from Form Builder> -m https://mission.basespace.illumina.com
 
@@ -384,7 +384,7 @@ similar steps to setting up a development workstation. Follow these steps:
     the working folders to be owned by the pipeline group.
 
         cd /usr/local/share/miseq/production/
-        chgrp -R pipeline /data/miseq
+        sudo chgrp -R pipeline /data/miseq
         python MISEQ_MONITOR.py &>/dev/null &
         tail -f /data/miseq/micall.log
 

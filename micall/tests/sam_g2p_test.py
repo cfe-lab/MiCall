@@ -133,6 +133,44 @@ rank,count,g2p,fpr,call,seq,aligned,error
 
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
 
+    def testMinCount(self):
+        remap_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+variant1_read1,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAAGA,AAAAAAAAA
+variant1_read1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAAGA,AAAAAAAAA
+variant1_read2,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAAGA,AAAAAAAAA
+variant1_read2,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAAGA,AAAAAAAAA
+variant1_read3,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAAGA,AAAAAAAAA
+variant1_read3,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAAGA,AAAAAAAAA
+variant2_read1,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAGGG,AAAAAAAAA
+variant2_read1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAGGG,AAAAAAAAA
+variant2_read2,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAGGG,AAAAAAAAA
+variant2_read2,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAGGG,AAAAAAAAA
+variant3_read1,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAGAA,AAAAAAAAA
+variant3_read1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAGAA,AAAAAAAAA
+variant3_read2,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAGAA,AAAAAAAAA
+variant3_read2,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAGAA,AAAAAAAAA
+""")
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,call,seq,aligned,error
+1,3,,,,CTR,,cysteines
+2,4,,,,,,count < 3
+"""
+        expected_summary_csv = """\
+mapped,valid,X4calls,X4pct,final
+7,0,0,,
+"""
+
+        sam_g2p(self.pssm,
+                remap_csv,
+                self.nuc_csv,
+                self.g2p_csv,
+                self.g2p_summary_csv,
+                min_count=3)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
+
     def testOverlap(self):
         remap_csv = StringIO("""\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual

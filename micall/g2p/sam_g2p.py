@@ -65,7 +65,7 @@ class RegionTracker:
         return self.ranges.get(seed, [None, None])
 
 
-def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
+def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None, min_count=1):
     pairs = {}  # cache read for pairing
     merged = Counter()  # { merged_nuc_seq: count }
     tracker = RegionTracker('V3LOOP')
@@ -115,12 +115,21 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None):
         lineterminator=os.linesep)
     g2p_writer.writeheader()
     counts = Counter()
+    skip_count = 0
     for s, count in merged.most_common():
+        if count < min_count:
+            skip_count += count
+            continue
         # remove in-frame deletions
         seq = re.sub(pat, r'\g<1>\g<3>', s)
 
         row = _build_row(seq, count, counts, pssm)
         g2p_writer.writerow(row)
+    if skip_count:
+        counts['mapped'] += skip_count
+        g2p_writer.writerow(dict(rank=counts['rank'] + 1,
+                                 count=skip_count,
+                                 error='count < {}'.format(min_count)))
 
     if g2p_summary_csv is not None:
         if counts['valid'] == 0:
@@ -229,7 +238,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.sam_g2p_test import SamG2PTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SamG2PTest("testSimple"))
+    suite.addTest(SamG2PTest("testMinCount"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

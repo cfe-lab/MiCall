@@ -29,6 +29,8 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
 logger = logging.getLogger('micall')
 
+MIN_G2P_COUNT = 3
+
 
 def parse_args():
     parser = ArgumentParser(description='Map FASTQ files to references.')
@@ -325,7 +327,8 @@ def process_sample(sample_index, run_info, data_path, pssm):
                     remap_csv=remap_csv,
                     nuc_csv=nuc_csv,
                     g2p_csv=g2p_csv,
-                    g2p_summary_csv=g2p_summary_csv)
+                    g2p_summary_csv=g2p_summary_csv,
+                    min_count=MIN_G2P_COUNT)
 
 
 def summarize_run(args, json):
