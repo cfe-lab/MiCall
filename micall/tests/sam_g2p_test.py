@@ -40,8 +40,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAAGA,AAAAAAAAA
 Example_read_1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAAGA,AAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CTR,,cysteines
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,CTR,,cysteines,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -55,8 +55,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,56M,=,926,56,TGTACAAGACCCAACAACAATACAAGA
 Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,0.0677537070158,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,0.0677537070158,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
 """
         expected_summary_csv = """\
 mapped,valid,X4calls,X4pct,final
@@ -75,8 +75,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAAGA,AAAAAAAAA
 Example_read_1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAAGA,AAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CTR,,cysteines
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,CTR,,cysteines,
 """
         expected_summary_csv = """\
 mapped,valid,X4calls,X4pct,final
@@ -99,9 +99,9 @@ Example_read_3,99,HIV1B-env-seed,877,44,56M,=,926,56,TGTATGAGACCCAACAACAATACAAGA
 Example_read_3,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACGAGCACATTGT,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,2,0.454349263704,2.6,X4,CMRPNNNTRKSIHIGPGRAFYATGEIIGDIRRAHC,CMRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RRAHC,
-2,1,0.0677537070158,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,2,0.454349263704,2.6,X4,CMRPNNNTRKSIHIGPGRAFYATGEIIGDIRRAHC,CMRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RRAHC,,
+2,1,0.0677537070158,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
 """
         expected_summary_csv = """\
 mapped,valid,X4calls,X4pct,final
@@ -124,9 +124,9 @@ Example_read_3,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAGGG,AAAAAAAAA
 Example_read_3,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAGGG,AAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,2,,,,CTR,,cysteines
-2,1,,,,CTG,,cysteines
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,2,,,,CTR,,cysteines,
+2,1,,,,CTG,,cysteines,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -152,9 +152,9 @@ variant3_read2,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTACAGAA,AAAAAAAAA
 variant3_read2,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTACAGAA,AAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,3,,,,CTR,,cysteines
-2,4,,,,,,count < 3
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,3,,,,CTR,,cysteines,
+2,4,,,,,,count < 3,
 """
         expected_summary_csv = """\
 mapped,valid,X4calls,X4pct,final
@@ -178,8 +178,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,12M,=,886,12,TGTACAAGACCC,AAAAAAAAAAAA
 Example_read_1,147,HIV1B-env-seed,886,44,9M,=,877,-9,CCCAACAAC,AAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CTRPNN,,cysteines
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,CTRPNN,,cysteines,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -195,8 +195,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,56M,=,926,56,TGTACAAGACCCAACAACAATACAAGA
 Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,0.0677537070158,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,0.0677537070158,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -212,8 +212,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,56M,=,926,56,TGTACAAGACCCAACAACAATACAAGA
 Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,0.0663051848427,43.0,R5,CT[RS]PNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CT[RS]PN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,ambiguous
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,0.0663051848427,43.0,R5,CT[RS]PNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CT[RS]PN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,ambiguous
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -228,8 +228,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,56M,=,926,56,TGTACAAGACCCAACAACAATACAAGA
 Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT,AAAA#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CTRPNNNTXKSIHIGPGXAFYATGEIIGDIRQAHC,,> 2 ambiguous
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,CTRPNNNTXKSIHIGPGXAFYATGEIIGDIRQAHC,,> 2 ambiguous,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -245,8 +245,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,21M,=,877,56,TGTACAAGACCCTTAAACTGT,AAAAA
 Example_read_1,147,HIV1B-env-seed,877,44,21M,=,877,56,TGTACAAGACCCTTAAACTGT,AAAAAAAAAAAAA#AAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CTRPXNC,,> 2 ambiguous
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,CTRPXNC,,> 2 ambiguous,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -260,8 +260,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,9M,=,877,9,TNTNNNGGN,A#A###AA#
 Example_read_1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TNTNNNGGN,A#A###AA#
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,,,low quality
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,,,low quality,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -275,8 +275,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,8M,=,877,8,TGTACAGG,AAAAAAAA
 Example_read_1,147,HIV1B-env-seed,877,44,8M,=,877,-8,TGTACAGG,AAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,,,notdiv3
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,,,notdiv3,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -290,8 +290,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,9M,=,877,9,TGTTAGTGT,AAAAAAAAA
 Example_read_1,147,HIV1B-env-seed,877,44,9M,=,877,-9,TGTTAGTGT,AAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,C*C,,stop codons
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,C*C,,stop codons,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -306,8 +306,8 @@ Example_read_1,99,HIV1B-env-seed,868,44,9M,=,877,9,TGTACAGGG,AAAAAAAAA
 Example_read_1,147,HIV1B-env-seed,868,44,9M,=,877,-9,TGTACAGGG,AAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,,,zerolength
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,,,zerolength,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -321,8 +321,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,51M,=,925,51,TGTGGGGGGGGGGGGGGGGGGGGGGGG
 Example_read_1,147,HIV1B-env-seed,925,44,48M,=,877,-48,AAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,0.806326707173,1.5,X4,CGGGGGGGGGGGGGGGKGGGGGGGGGGGGGGC,---CG-GGG--GGGGGG---GGGG---GKGGG----GGGGGGG--GGGGC,
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,0.806326707173,1.5,X4,CGGGGGGGGGGGGGGGKGGGGGGGGGGGGGGC,---CG-GGG--GGGGGG---GGGG---GKGGG----GGGGGGG--GGGGC,,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -336,8 +336,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,51M,=,925,51,TGTGGGGGGGGGGGGGGGGGGGGGGGG
 Example_read_1,147,HIV1B-env-seed,925,44,45M,=,877,-45,AAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CGGGGGGGGGGGGGGGKGGGGGGGGGGGGGC,,length
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,CGGGGGGGGGGGGGGGKGGGGGGGGGGGGGC,,length,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -351,8 +351,8 @@ Example_read_1,99,HIV1B-env-seed,877,44,3M3D6M,=,877,9,TGTGGGTGT,AAAAAAAAA
 Example_read_1,147,HIV1B-env-seed,877,44,3M3D6M,=,877,-9,TGTGGGTGT,AAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,CGC,,length
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,CGC,,length,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -366,8 +366,8 @@ Example_read_1,99,HIV1B-env-seed,874,44,3M3D6M,=,874,9,TGTGGGTGT,AAAAAAAAA
 Example_read_1,147,HIV1B-env-seed,874,44,3M3D6M,=,874,-9,TGTGGGTGT,AAAAAAAAA
 """)
         expected_g2p_csv = """\
-rank,count,g2p,fpr,call,seq,aligned,error
-1,1,,,,-GC,,cysteines
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,1,,,,-GC,,cysteines,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)

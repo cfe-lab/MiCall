@@ -111,7 +111,15 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None, min_count=1
     # apply g2p algorithm to merged reads
     g2p_writer = csv.DictWriter(
         g2p_csv,
-        ['rank', 'count', 'g2p', 'fpr', 'call', 'seq', 'aligned', 'error'],
+        ['rank',
+         'count',
+         'g2p',
+         'fpr',
+         'call',
+         'seq',
+         'aligned',
+         'error',
+         'comment'],
         lineterminator=os.linesep)
     g2p_writer.writeheader()
     counts = Counter()
@@ -215,7 +223,7 @@ def _build_row(seq, count, counts, pssm):
     row['call'] = call
     row['seq'] = aligned2.replace('-', '')
     row['aligned'] = aligned2
-    row['error'] = 'ambiguous' if '[' in aligned2 else ''
+    row['comment'] = 'ambiguous' if '[' in aligned2 else ''
     return row
 
 
@@ -238,7 +246,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.sam_g2p_test import SamG2PTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SamG2PTest("testMinCount"))
+    suite.addTest(SamG2PTest("testAmbiguousMixture"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)
