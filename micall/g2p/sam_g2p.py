@@ -15,6 +15,7 @@ pat = re.compile('([A-Z])(---)+([A-Z])')
 QMIN = 20   # minimum base quality within insertions
 QCUT = 10   # minimum base quality to not be censored
 QDELTA = 5
+DEFAULT_MIN_COUNT = 3
 
 
 def parse_args():
@@ -235,7 +236,8 @@ def main():
             remap_csv=args.remap_csv,
             nuc_csv=args.nuc_csv,
             g2p_csv=args.g2p_csv,
-            g2p_summary_csv=args.g2p_summary_csv)
+            g2p_summary_csv=args.g2p_summary_csv,
+            min_count=DEFAULT_MIN_COUNT)
 
 if __name__ == '__main__':
     # note, must be called from project root if executing directly

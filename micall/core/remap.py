@@ -492,7 +492,7 @@ def remap(fastq1,
                 pass
             fastq2 += '.gz'
 
-    worker_pool = multiprocessing.Pool(processes=nthreads)
+    worker_pool = multiprocessing.Pool(processes=nthreads) if nthreads > 1 else None
 
     # retrieve reference sequences used for preliminary mapping
     projects = project_config.ProjectConfig.loadDefault()
@@ -646,7 +646,8 @@ def remap(fastq1,
         map_counts = dict(new_counts)
 
     # finished iterative phase
-    worker_pool.close()
+    if worker_pool is not None:
+        worker_pool.close()
 
     # generate SAM CSV output
     remap_writer = csv.DictWriter(remap_csv, fieldnames, lineterminator=os.linesep)

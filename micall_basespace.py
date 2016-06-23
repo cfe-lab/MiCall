@@ -2,10 +2,12 @@ from argparse import ArgumentParser
 import csv
 import errno
 import fnmatch
+import functools
 from glob import glob
 import json
 import logging
 import multiprocessing
+from multiprocessing.pool import Pool
 from operator import itemgetter
 import os
 import shutil
@@ -20,7 +22,7 @@ from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from micall.core.sam2aln import sam2aln
 from micall.monitor import error_metrics_parser, quality_metrics_parser
-from micall.g2p.sam_g2p import sam_g2p
+from micall.g2p.sam_g2p import sam_g2p, DEFAULT_MIN_COUNT
 from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
 from micall.utils.coverage_plots import coverage_plot
@@ -28,8 +30,6 @@ from micall.utils.coverage_plots import coverage_plot
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
 logger = logging.getLogger('micall')
-
-MIN_G2P_COUNT = 3
 
 
 def parse_args():
@@ -44,6 +44,10 @@ def parse_args():
     return parser.parse_args()
 
 
+class Args(object):
+    pass
+
+
 def parse_json(json_file):
     """ Load JSON from an open file, and pull out the arguments for this run.
 
@@ -51,8 +55,6 @@ def parse_json(json_file):
     AppSession format.
     :return: an object with an attribute for each argument
     """
-    class Args(object):
-        pass
     args = Args()
 
     raw_args = json.load(json_file)
@@ -80,8 +82,6 @@ def parse_json(json_file):
 
 def link_json(run_path, data_path):
     """ Load the data from a run folder into the BaseSpace layout. """
-    class Args(object):
-        pass
     args = Args()
 
     shutil.rmtree(data_path, ignore_errors=True)
@@ -180,6 +180,18 @@ def create_app_result(data_path,
     return sample_out_path
 
 
+def try_sample(sample_index, run_info, data_path, pssm):
+    """ Try processing a single sample.
+
+    Log detailed error if it fails.
+    """
+    try:
+        process_sample(sample_index, run_info, data_path, pssm)
+    except StandardError:
+        logger.error('Failed to process sample %d.', sample_index+1, exc_info=True)
+        raise
+
+
 def process_sample(sample_index, run_info, data_path, pssm):
     """ Process a single sample.
 
@@ -246,13 +258,13 @@ def process_sample(sample_index, run_info, data_path, pssm):
                   censored_path2,
                   read_summary_path2)
 
-    logger.info('Running prelim_map.')
+    logger.info('Running prelim_map (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'wb') as prelim_csv:
         prelim_map(censored_path1,
                    censored_path2,
                    prelim_csv)
 
-    logger.info('Running remap.')
+    logger.info('Running remap (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'rU') as prelim_csv, \
             open(os.path.join(sample_scratch_path, 'remap.csv'), 'wb') as remap_csv, \
             open(os.path.join(sample_out_path, 'remap_counts.csv'), 'wb') as counts_csv, \
@@ -268,9 +280,10 @@ def process_sample(sample_index, run_info, data_path, pssm):
               conseq_csv,
               unmapped1,
               unmapped2,
-              scratch_path)
+              sample_scratch_path,
+              nthreads=1)
 
-    logger.info("Running sam2aln.")
+    logger.info('Running sam2aln (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
             open(os.path.join(sample_scratch_path, 'aligned.csv'), 'wb') as aligned_csv, \
             open(os.path.join(sample_out_path, 'conseq_ins.csv'), 'wb') as insert_csv, \
@@ -278,7 +291,7 @@ def process_sample(sample_index, run_info, data_path, pssm):
 
         sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv)
 
-    logger.info("Running aln2counts.")
+    logger.info('Running aln2counts (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'aligned.csv'), 'rU') as aligned_csv, \
             open(os.path.join(sample_out_path, 'nuc.csv'), 'wb') as nuc_csv, \
             open(os.path.join(sample_out_path, 'amino.csv'), 'wb') as amino_csv, \
@@ -297,7 +310,7 @@ def process_sample(sample_index, run_info, data_path, pssm):
                    nuc_variants_csv,
                    coverage_summary_csv=coverage_summary_csv)
 
-    logger.info("Running coverage_plots.")
+    logger.info('Running coverage_plots (%d of %d).', sample_index+1, len(run_info.samples))
     coverage_path = os.path.join(sample_out_path, 'coverage')
     with open(os.path.join(sample_out_path, 'amino.csv'), 'rU') as amino_csv, \
             open(os.path.join(sample_out_path, 'coverage_scores.csv'), 'w') as coverage_scores_csv:
@@ -312,7 +325,7 @@ def process_sample(sample_index, run_info, data_path, pssm):
                 break
 
     if is_v3loop_good:
-        logger.info("Running sam_g2p.")
+        logger.info('Running sam_g2p (%d of %d).', sample_index+1, len(run_info.samples))
         g2p_path = create_app_result(data_path,
                                      run_info,
                                      sample_info,
@@ -328,7 +341,7 @@ def process_sample(sample_index, run_info, data_path, pssm):
                     nuc_csv=nuc_csv,
                     g2p_csv=g2p_csv,
                     g2p_summary_csv=g2p_summary_csv,
-                    min_count=MIN_G2P_COUNT)
+                    min_count=DEFAULT_MIN_COUNT)
 
 
 def summarize_run(args, json):
@@ -469,8 +482,12 @@ def main():
         logger.info('Summarizing run.')
         run_summary = summarize_run(args, json)
 
-    for sample_index in range(len(json.samples)):
-        process_sample(sample_index, json, args.data_path, pssm)
+    pool = Pool()
+    pool.map(functools.partial(try_sample,
+                               run_info=json,
+                               data_path=args.data_path,
+                               pssm=pssm),
+             range(len(json.samples)))
 
     if json.run_id is not None:
         summarize_samples(args, json, run_summary)
