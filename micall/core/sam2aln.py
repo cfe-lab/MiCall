@@ -17,7 +17,7 @@ import os
 import re
 import sys
 
-SAM2ALN_Q_CUTOFFS = [10, 15, 30, 35, 37, 38, 39]  # Q-cutoff for base censoring
+SAM2ALN_Q_CUTOFFS = [15]  # Q-cutoff for base censoring
 MAX_PROP_N = 0.5                 # Drop reads with more censored bases than this proportion
 
 
