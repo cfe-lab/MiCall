@@ -11,7 +11,8 @@ from kiveapi import KiveAPI
 from kiveapi.runstatus import RunStatus
 from requests.adapters import HTTPAdapter
 
-from micall.settings import kive_server_url, kive_user, kive_password, home
+from micall.settings import kive_server_url, kive_user, kive_password, home, \
+    pipeline_version_kive_id
 from micall.core.miseq_logging import init_logging
 
 
@@ -143,7 +144,8 @@ def find_batch_runs(kive, batch_name, batch_size):
         for entry in json['results']:
             text_status = entry['run_progress']['status']
             pipeline_id = entry['pipeline']
-            if re.match(r'^\*+-\*+$', text_status) is None or pipeline_id != 167:
+            if (re.match(r'^\*+-\*+$', text_status) is None or
+                    pipeline_id != pipeline_version_kive_id):
                 continue
             display_match = re.match(r'^MiSeq - ([^_]*_S\d+) \((.*)\)$',
                                      entry['display_name'])
