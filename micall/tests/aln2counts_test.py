@@ -204,6 +204,40 @@ R1-seed,15,0.100,3,AAATTTGGG
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testConsensusLowQualitySections(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,3,NNNTTT
+R1-seed,15,0,1,7,TTNGG
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,6,TTTNGG
+R1-seed,15,0.100,6,TTTNGG
+"""
+
+        self.report.write_consensus_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusLowQuality(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,3,NNNNNN
+R1-seed,15,0,1,7,NNNNN
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+"""
+
+        self.report.write_consensus_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testSingleReadAminoReport(self):
         """ In this sample, there is a single read with two codons.
         AAA -> K

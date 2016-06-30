@@ -415,16 +415,19 @@ class SequenceReport(object):
             consensus = ''
             offset = None
             for seed_amino in self.seed_aminos[0]:
-                if offset is None and seed_amino.counts:
+                if offset is None:
+                    if not seed_amino.counts:
+                        continue
                     offset = seed_amino.consensus_index*3
                 for seed_nuc in seed_amino.nucleotides:
                     consensus += seed_nuc.get_consensus(mixture_cutoff)
-            conseq_writer.writerow(
-                {'region': self.seed,
-                 'q-cutoff': self.qcut,
-                 'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
-                 'offset': offset,
-                 'sequence': consensus})
+            if offset is not None:
+                conseq_writer.writerow(
+                    {'region': self.seed,
+                     'q-cutoff': self.qcut,
+                     'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
+                     'offset': offset,
+                     'sequence': consensus})
 
     def _create_nuc_variants_writer(self, nuc_variants_file):
         return csv.DictWriter(nuc_variants_file,
@@ -816,7 +819,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.aln2counts_test import SequenceReportTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SequenceReportTest("testCoverageSummary"))
+    suite.addTest(SequenceReportTest("testConsensusLowQualitySections"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)
