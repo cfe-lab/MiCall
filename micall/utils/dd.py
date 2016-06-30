@@ -433,8 +433,8 @@ class DD:
     def old_dd(self, c, r = [], n = 2):
         """Return the failure-inducing subset of C"""
 
-        assert self.test([]) == dd.PASS
-        assert self.test(c)  == dd.FAIL
+        assert self.test([]) == DD.PASS
+        assert self.test(c)  == DD.FAIL
 
         if self.debug_dd:
             print ("dd(" + self.pretty(c) + ", " + `r` + ", " + `n` + ")...")
@@ -465,7 +465,7 @@ class DD:
 
         run = 1
         next_c = c[:]
-         next_r = r[:]
+        next_r = r[:]
 
         # We replace the tail recursion from the paper by a loop
         while 1:
