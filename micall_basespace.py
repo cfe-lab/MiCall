@@ -12,7 +12,6 @@ from operator import itemgetter
 import os
 import shutil
 import socket
-import subprocess
 from xml.etree import ElementTree
 
 from micall.core.aln2counts import aln2counts
@@ -146,9 +145,9 @@ def censor_sample(filename, bad_cycles_path, censored_name, read_summary_name):
 
 def build_app_result_path(data_path,
                           run_info,
-                          sample_info,
+                          sample_info=None,
                           suffix=None):
-    dir_name = sample_info['Name']
+    dir_name = sample_info['Name'] if sample_info else ''
     if suffix is not None:
         dir_name += suffix
     sample_out_path = os.path.join(data_path,
@@ -161,7 +160,7 @@ def build_app_result_path(data_path,
 
 def create_app_result(data_path,
                       run_info,
-                      sample_info,
+                      sample_info=None,
                       description='',
                       suffix=None):
     sample_out_path = build_app_result_path(data_path,
@@ -169,42 +168,50 @@ def create_app_result(data_path,
                                             sample_info,
                                             suffix)
     makedirs(sample_out_path)
+    if sample_info is None:
+        sample_properties = dict(Type='sample[]',
+                                 Name='Input.Samples',
+                                 Items=map(itemgetter('Href'), run_info.samples))
+    else:
+        sample_properties = dict(Type='sample',
+                                 Name='Input.Samples',
+                                 Content=sample_info['Href'])
     metadata = dict(Name=os.path.basename(sample_out_path),
                     Description=description,
                     HrefAppSession=run_info.href_app_session,
-                    Properties=[dict(Type='sample',
-                                     Name='Input.Samples',
-                                     Content=sample_info['Href'])])
+                    Properties=sample_properties)
     with open(os.path.join(sample_out_path, '_metadata.json'), 'w') as json_file:
         json.dump(metadata, json_file, indent=4)
     return sample_out_path
 
 
-def try_sample(sample_index, run_info, data_path, pssm):
+def try_sample(sample_index, run_info, args, pssm):
     """ Try processing a single sample.
 
-    Log detailed error if it fails.
+    Tracebacks and some errors can't be pickled across process boundaries, so
+    log detailed error before raising a RuntimeError.
     """
     try:
-        process_sample(sample_index, run_info, data_path, pssm)
-    except StandardError:
-        logger.error('Failed to process sample %d.', sample_index+1, exc_info=True)
-        raise
+        process_sample(sample_index, run_info, args, pssm)
+    except:
+        message = 'Failed to process sample {}.'.format(sample_index+1)
+        logger.error(message, exc_info=True)
+        raise RuntimeError(message)
 
 
-def process_sample(sample_index, run_info, data_path, pssm):
+def process_sample(sample_index, run_info, args, pssm):
     """ Process a single sample.
 
     :param sample_index: which sample to process from the session JSON
     :param run_info: run parameters loaded from the session JSON
-    :param str data_path: the root folder for all BaseSpace data
+    :param args: the command-line arguments
     :param pssm: the pssm library for running G2P analysis
     """
-    scratch_path = os.path.join(data_path, 'scratch')
+    scratch_path = os.path.join(args.data_path, 'scratch')
     sample_info = run_info.samples[sample_index]
     sample_id = sample_info['Id']
     sample_name = sample_info['Name']
-    sample_dir = os.path.join(data_path,
+    sample_dir = os.path.join(args.data_path,
                               'input',
                               'samples',
                               sample_id,
@@ -212,7 +219,7 @@ def process_sample(sample_index, run_info, data_path, pssm):
                               'Intensities',
                               'BaseCalls')
     if not os.path.exists(sample_dir):
-        sample_dir = os.path.join(data_path,
+        sample_dir = os.path.join(args.data_path,
                                   'input',
                                   'samples',
                                   sample_id)
@@ -236,12 +243,8 @@ def process_sample(sample_index, run_info, data_path, pssm):
                 sample_name,
                 sample_path)
 
-    sample_out_path = create_app_result(data_path,
-                                        run_info,
-                                        sample_info,
-                                        description='Mapping results',
-                                        suffix='_QC')
-
+    sample_qc_path = os.path.join(args.qc_path, sample_name)
+    makedirs(sample_qc_path)
     sample_scratch_path = os.path.join(scratch_path, sample_name)
     makedirs(sample_scratch_path)
 
@@ -262,15 +265,16 @@ def process_sample(sample_index, run_info, data_path, pssm):
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'wb') as prelim_csv:
         prelim_map(censored_path1,
                    censored_path2,
-                   prelim_csv)
+                   prelim_csv,
+                   work_path=sample_scratch_path)
 
     logger.info('Running remap (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'rU') as prelim_csv, \
             open(os.path.join(sample_scratch_path, 'remap.csv'), 'wb') as remap_csv, \
-            open(os.path.join(sample_out_path, 'remap_counts.csv'), 'wb') as counts_csv, \
-            open(os.path.join(sample_out_path, 'remap_conseq.csv'), 'wb') as conseq_csv, \
-            open(os.path.join(sample_out_path, 'unmapped1.fastq'), 'w') as unmapped1, \
-            open(os.path.join(sample_out_path, 'unmapped2.fastq'), 'w') as unmapped2:
+            open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'wb') as counts_csv, \
+            open(os.path.join(sample_scratch_path, 'remap_conseq.csv'), 'wb') as conseq_csv, \
+            open(os.path.join(sample_qc_path, 'unmapped1.fastq'), 'w') as unmapped1, \
+            open(os.path.join(sample_qc_path, 'unmapped2.fastq'), 'w') as unmapped2:
 
         remap(censored_path1,
               censored_path2,
@@ -286,19 +290,19 @@ def process_sample(sample_index, run_info, data_path, pssm):
     logger.info('Running sam2aln (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
             open(os.path.join(sample_scratch_path, 'aligned.csv'), 'wb') as aligned_csv, \
-            open(os.path.join(sample_out_path, 'conseq_ins.csv'), 'wb') as insert_csv, \
-            open(os.path.join(sample_out_path, 'failed_read.csv'), 'wb') as failed_csv:
+            open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'wb') as insert_csv, \
+            open(os.path.join(sample_scratch_path, 'failed_read.csv'), 'wb') as failed_csv:
 
         sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv)
 
     logger.info('Running aln2counts (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'aligned.csv'), 'rU') as aligned_csv, \
-            open(os.path.join(sample_out_path, 'nuc.csv'), 'wb') as nuc_csv, \
-            open(os.path.join(sample_out_path, 'amino.csv'), 'wb') as amino_csv, \
-            open(os.path.join(sample_out_path, 'coord_ins.csv'), 'wb') as coord_ins_csv, \
-            open(os.path.join(sample_out_path, 'conseq.csv'), 'wb') as conseq_csv, \
-            open(os.path.join(sample_out_path, 'failed_align.csv'), 'wb') as failed_align_csv, \
-            open(os.path.join(sample_out_path, 'nuc_variants.csv'), 'wb') as nuc_variants_csv, \
+            open(os.path.join(sample_scratch_path, 'nuc.csv'), 'wb') as nuc_csv, \
+            open(os.path.join(sample_scratch_path, 'amino.csv'), 'wb') as amino_csv, \
+            open(os.path.join(sample_scratch_path, 'coord_ins.csv'), 'wb') as coord_ins_csv, \
+            open(os.path.join(sample_scratch_path, 'conseq.csv'), 'wb') as conseq_csv, \
+            open(os.path.join(sample_scratch_path, 'failed_align.csv'), 'wb') as failed_align_csv, \
+            open(os.path.join(sample_scratch_path, 'nuc_variants.csv'), 'wb') as nuc_variants_csv, \
             open(os.path.join(sample_scratch_path, 'coverage_summary.csv'), 'wb') as coverage_summary_csv:
 
         aln2counts(aligned_csv,
@@ -311,12 +315,12 @@ def process_sample(sample_index, run_info, data_path, pssm):
                    coverage_summary_csv=coverage_summary_csv)
 
     logger.info('Running coverage_plots (%d of %d).', sample_index+1, len(run_info.samples))
-    coverage_path = os.path.join(sample_out_path, 'coverage')
-    with open(os.path.join(sample_out_path, 'amino.csv'), 'rU') as amino_csv, \
-            open(os.path.join(sample_out_path, 'coverage_scores.csv'), 'w') as coverage_scores_csv:
+    coverage_path = os.path.join(sample_qc_path, 'coverage')
+    with open(os.path.join(sample_scratch_path, 'amino.csv'), 'rU') as amino_csv, \
+            open(os.path.join(sample_scratch_path, 'coverage_scores.csv'), 'w') as coverage_scores_csv:
         coverage_plot(amino_csv, coverage_scores_csv, path_prefix=coverage_path)
 
-    with open(os.path.join(sample_out_path, 'coverage_scores.csv'), 'rU') as coverage_scores_csv:
+    with open(os.path.join(sample_scratch_path, 'coverage_scores.csv'), 'rU') as coverage_scores_csv:
         reader = csv.DictReader(coverage_scores_csv)
         is_v3loop_good = False
         for row in reader:
@@ -326,15 +330,10 @@ def process_sample(sample_index, run_info, data_path, pssm):
 
     if is_v3loop_good:
         logger.info('Running sam_g2p (%d of %d).', sample_index+1, len(run_info.samples))
-        g2p_path = create_app_result(data_path,
-                                     run_info,
-                                     sample_info,
-                                     description='Geno To Pheno results',
-                                     suffix='_G2P')
         with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
-                open(os.path.join(sample_out_path, 'nuc.csv'), 'rU') as nuc_csv, \
-                open(os.path.join(g2p_path, 'g2p.csv'), 'wb') as g2p_csv, \
-                open(os.path.join(g2p_path, 'g2p_summary.csv'), 'wb') as g2p_summary_csv:
+                open(os.path.join(sample_scratch_path, 'nuc.csv'), 'rU') as nuc_csv, \
+                open(os.path.join(sample_scratch_path, 'g2p.csv'), 'wb') as g2p_csv, \
+                open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'wb') as g2p_summary_csv:
 
             sam_g2p(pssm=pssm,
                     remap_csv=remap_csv,
@@ -364,12 +363,7 @@ def summarize_run(args, json):
     phix_path = os.path.join(interop_path, 'ErrorMetricsOut.bin')
     quality_path = os.path.join(args.data_path, 'scratch', 'quality.csv')
     bad_cycles_path = os.path.join(args.data_path, 'scratch', 'bad_cycles.csv')
-    summary_path = build_app_result_path(args.data_path,
-                                         json,
-                                         json.samples[0],
-                                         suffix='_QC')
-    makedirs(summary_path)
-    bad_tiles_path = os.path.join(summary_path, 'bad_tiles.csv')
+    bad_tiles_path = os.path.join(args.qc_path, 'bad_tiles.csv')
     with open(phix_path, 'rb') as phix, open(quality_path, 'w') as quality:
         records = error_metrics_parser.read_errors(phix)
         error_metrics_parser.write_phix_csv(quality,
@@ -392,11 +386,6 @@ def summarize_run(args, json):
 
 
 def summarize_samples(args, json, run_summary):
-    summary_path = build_app_result_path(args.data_path,
-                                         json,
-                                         json.samples[0],
-                                         suffix='_QC')
-
     score_sum = 0.0
     base_count = 0
     coverage_sum = 0.0
@@ -428,7 +417,7 @@ def summarize_samples(args, json, run_summary):
     if coverage_count > 0:
         run_summary['avg_coverage'] = coverage_sum / coverage_count
 
-    run_quality_path = os.path.join(summary_path, 'run_quality.csv')
+    run_quality_path = os.path.join(args.qc_path, 'run_quality.csv')
     with open(run_quality_path, 'w') as run_quality:
         writer = csv.DictWriter(run_quality,
                                 ['q30_fwd',
@@ -443,9 +432,46 @@ def summarize_samples(args, json, run_summary):
         writer.writeheader()
         writer.writerow(run_summary)
 
-    listing_path = os.path.join(summary_path, 'listing.txt')
-    with open(listing_path, 'w') as listing:
-        listing.write(subprocess.check_output(['ls', '-R', args.data_path]))
+
+def collate_samples(args, run_info):
+    scratch_path = os.path.join(args.data_path, 'scratch')
+    filenames = ['remap_counts.csv',
+                 'remap_conseq.csv',
+                 'conseq_ins.csv',
+                 'failed_read.csv',
+                 'nuc.csv',
+                 'amino.csv',
+                 'coord_ins.csv',
+                 'conseq.csv',
+                 'failed_align.csv',
+                 'nuc_variants.csv',
+                 'coverage_scores.csv',
+                 'g2p.csv',
+                 'g2p_summary.csv']
+    for filename in filenames:
+        out_path = args.qc_path if filename == 'coverage_scores.csv' else args.g2p_path
+        with open(os.path.join(out_path, filename), 'w') as fout:
+            writer = csv.writer(fout, lineterminator=os.linesep)
+            is_header_written = False
+            for sample_info in run_info.samples:
+                sample_name = sample_info['Name']
+                sample_scratch_path = os.path.join(scratch_path, sample_name)
+                srcfile = os.path.join(sample_scratch_path, filename)
+                try:
+                    with open(srcfile, 'rU') as fin:
+                        reader = csv.reader(fin)
+                        for i, row in enumerate(reader):
+                            if i == 0:
+                                if not is_header_written:
+                                    row.insert(0, 'sample')
+                                    writer.writerow(row)
+                                    is_header_written = True
+                            else:
+                                row.insert(0, sample_name)
+                                writer.writerow(row)
+                except IOError as ex:
+                    if ex.errno != errno.ENOENT:
+                        raise
 
 
 def makedirs(path):
@@ -477,6 +503,12 @@ def main():
             shutil.rmtree(filepath)
         else:
             os.remove(filepath)
+    args.qc_path = create_app_result(args.data_path,
+                                     json,
+                                     suffix='quality_control')
+    args.g2p_path = create_app_result(args.data_path,
+                                      json,
+                                      suffix='geno_to_pheno')
 
     if json.run_id is not None:
         logger.info('Summarizing run.')
@@ -485,10 +517,13 @@ def main():
     pool = Pool()
     pool.map(functools.partial(try_sample,
                                run_info=json,
-                               data_path=args.data_path,
+                               args=args,
                                pssm=pssm),
              range(len(json.samples)))
 
+    pool.close()
+    pool.join()
+    collate_samples(args, json)
     if json.run_id is not None:
         summarize_samples(args, json, run_summary)
     logger.info('Done.')
