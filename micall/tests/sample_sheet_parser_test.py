@@ -622,6 +622,9 @@ Disablecontamcheck:Sample3--Proj3--TRUE---Sample4--Proj4--TRUE,
 
 
 class OtherTest(unittest.TestCase):
+    def setUp(self):
+        self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
+
     def test_no_sample_name(self):
         """
         Throws an exception if the Data portion has no Sample_Name column.
@@ -647,11 +650,46 @@ There,Is,No,Sample,Name
 A,B,C,D,E
 """
 
-        self.assertRaisesRegexp(
-            ValueError,
-            "sample sheet data header does not include Sample_Name",
-            lambda: sample_sheet_parser(StringIO.StringIO(stub_sample_sheet))
-        )
+        with self.assertRaises(ValueError) as assertion:
+            sample_sheet_parser(StringIO.StringIO(stub_sample_sheet))
+        self.assertEqual("sample sheet data header does not include Sample_Name",
+                         assertion.exception.message)
+
+    def test_no_index2(self):
+        """
+        Throws an exception if the Data portion has no Sample_Name column.
+        """
+
+        stub_sample_sheet = """
+[Header]
+IEMFileVersion,3
+Investigator Name,RL
+Project Name,11-Jul-2014_nosamplenametest
+Experiment Name,11-Jul-2014_nosamplenametest
+Date,07/11/2014
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,Nextera
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Settings]
+[Data]
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,Sample_Project,Description,GenomeFolder
+CFE_SomeId_10-Jul-2014_N501_Sample1_Proj1,Sample1_Proj1,10-Jul-2014_testing,N/A,ACGTACGT,\
+10-Jul-2014_testing,Research:Sample1_Proj1:TRUE Comments:Sample1_Proj1:thisiscommentone \
+Disablecontamcheck:Sample1_Proj1:FALSE,
+CFE_SomeId_10-Jul-2014_N501_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,\
+10-Jul-2014_testing,Research:Sample2_Proj2:FALSE Comments:Sample2_Proj2:thisiscommenttwo \
+Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
+"""
+
+        ss = sample_sheet_parser(StringIO.StringIO(stub_sample_sheet))
+        sample = ss['Data']['Sample1-Proj1_S1']
+        self.assertEqual('ACGTACGT', sample['index1'])
+        self.assertEqual('X', sample['index2'])
+        self.assertEqual('N501-X', sample['tags'])
 
     def test_extra_commas(self):
         """

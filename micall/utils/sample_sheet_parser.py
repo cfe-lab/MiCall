@@ -61,11 +61,12 @@ def sample_sheet_parser(handle):
                 get_header = False
                 continue
 
-            index1 = tokens[header.index('index')]
-            index2 = tokens[header.index('index2')]
+            fields = dict(zip(header, tokens))
+            index1 = fields['index']
+            index2 = fields.get('index2', 'X')
 
             # parse Sample_Name field
-            filename = tokens[header.index('Sample_Name')]
+            filename = fields['Sample_Name']
             if(sample_sheet_version is None and
                 (sample_delimiter_v2 in filename or
                  project_delimiter_v2 in filename)):
@@ -82,8 +83,10 @@ def sample_sheet_parser(handle):
             clean_filename = re.sub('[_.;]', '-', filename)
             clean_filename += '_S%d' % sample_number  # should correspond to FASTQ filename
 
-            sample_id = tokens[header.index('Sample_ID')]
+            sample_id = fields['Sample_ID']
             tags = sample_id.split('_')[3]
+            if '-' not in tags:
+                tags += '-X'
 
             # July 9, 2014: also want to keep track of the *original*
             # Sample_Name as it appeared in the sample sheet.
@@ -104,7 +107,7 @@ def sample_sheet_parser(handle):
             # Parse Description field.  This uses some version-specific
             # code to handle version 1 (where semicolons and underscores were used)
             # to version 2 (where tildes and hashes are used).
-            desc = tokens[header.index('Description')]
+            desc = fields.get('Description', '')
             desc_fields = desc.split()  # whitespace-delimited
             for desc_field in desc_fields:
                 desc_field_label = desc_field.split(':')[0]  # research/chemistry/comments/disable_contam_check
@@ -206,3 +209,14 @@ def main():
 
 if __name__ == "__main__":
     main()
+elif __name__ == "__live_coding__":
+    import unittest
+    # sys.modules['micall.core'].remap = sys.modules['micall.core.remap']
+    from micall.tests.sample_sheet_parser_test import OtherTest
+
+    suite = unittest.TestSuite()
+    suite.addTest(OtherTest("test_no_index2"))
+    test_results = unittest.TextTestRunner().run(suite)
+
+    print(test_results.errors)
+    print(test_results.failures)
