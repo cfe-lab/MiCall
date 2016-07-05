@@ -429,7 +429,8 @@ def remap(fastq1,
           rdgopen=READ_GAP_OPEN,
           rfgopen=REF_GAP_OPEN,
           stderr=sys.stderr,
-          gzip=False):
+          gzip=False,
+          debug_file_prefix=None):
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
@@ -595,6 +596,11 @@ def remap(fastq1,
         unmapped2.seek(0)
         unmapped2.truncate()
 
+        if debug_file_prefix is None:
+            next_debug_prefix = None
+        else:
+            next_debug_prefix = '{}_remap{}'.format(debug_file_prefix,
+                                                    n_remaps+1)
         unmapped_count = map_to_reference(fastq1,
                                           fastq2,
                                           conseqs,
@@ -610,7 +616,8 @@ def remap(fastq1,
                                           nthreads,
                                           new_counts,
                                           stderr,
-                                          callback)
+                                          callback,
+                                          debug_file_prefix=next_debug_prefix)
 
         old_seed_names = set(conseqs.iterkeys())
         # regenerate consensus sequences
@@ -713,7 +720,8 @@ def map_to_reference(fastq1,
                      nthreads,
                      new_counts,
                      stderr,
-                     callback):
+                     callback,
+                     debug_file_prefix=None):
     """ Map a pair of FASTQ files to a set of reference sequences.
 
     @param fastq1: FASTQ file with the forward reads
@@ -734,6 +742,9 @@ def map_to_reference(fastq1,
     @param stderr: an open file object to receive stderr from the bowtie2 calls
     @param callback: a function to report progress with three optional
         parameters - callback(message, progress, max_progress)
+    @param debug_file_prefix: the prefix for the file path to write debug files.
+        If not None, this will be used to write a copy of the reference FASTA
+        file and the output SAM file.
     """
     # generate reference file from current set of consensus sequences
     outfile = open(reffile, 'w')
@@ -792,6 +803,9 @@ def map_to_reference(fastq1,
             new_counts[rname] += 1
         if callback:
             callback(progress=raw_count)
+    if debug_file_prefix is not None:
+        shutil.copy(reffile, debug_file_prefix + '_debug_ref.fasta')
+        shutil.copy(samfile, debug_file_prefix + '_debug.sam')
     return unmapped_count
 
 

@@ -172,9 +172,9 @@ def oc_test():
 
 
 # Main Delta Debugging algorithm.
-class DD:
+class DD(object):
     # Delta debugging base class.  To use this class for a particular
-    # setting, create a subclass with an overloaded `test()' method.
+    # setting, create a subclass with an overloaded `_test()' method.
     #
     # Main entry points are:
     # - `ddmin()' which computes a minimal failure-inducing configuration, and
