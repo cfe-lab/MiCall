@@ -38,6 +38,7 @@ class MicallDD(DD):
         nuc_filename = os.path.join(workdir, 'temp70.nuc.csv')
         amino_filename = os.path.join(workdir, 'temp70.amino.csv')
         failed_align_filename = os.path.join(workdir, 'temp70.failed_align.csv')
+        conseq_filename = os.path.join(workdir, 'temp70.conseq.csv')
         with open(prelim_filename, 'w+') as prelim_csv, \
                 open(remap_filename, 'w+') as remap_csv, \
                 open(remap_counts_filename, 'w+') as remap_counts_csv, \
@@ -45,6 +46,7 @@ class MicallDD(DD):
                 open(nuc_filename, 'w+') as nuc_csv, \
                 open(amino_filename, 'w+') as amino_csv, \
                 open(failed_align_filename, 'w+') as failed_align_csv, \
+                open(conseq_filename, 'w+') as conseq_csv, \
                 open(os.devnull, 'w+') as real_devnull:
             devnull = DevNullWrapper(real_devnull)
             prelim_map(simple_filename1,
@@ -73,7 +75,7 @@ class MicallDD(DD):
                        nuc_csv,
                        amino_csv,
                        devnull,
-                       devnull,
+                       conseq_csv,
                        devnull,
                        devnull)
 
@@ -104,6 +106,17 @@ class MicallDD(DD):
                     f1.write(line)
                 for line in lines[4:]:
                     f2.write(line)
+
+    def coerce(self, c):
+        blocks = []  # [[first, last]] indexes for all contiguous blocks
+        for i in c:
+            if (not blocks) or blocks[-1][-1] != i-1:
+                blocks.append([i, i])
+            else:
+                blocks[-1][-1] = i
+        return ', '.join(str(block[0]) if block[0] == block[1]
+                         else '{}-{}'.format(*block)
+                         for block in blocks)
 
 
 class DevNullWrapper(object):
