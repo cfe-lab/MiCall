@@ -12,7 +12,7 @@ from kiveapi.runstatus import RunStatus
 from requests.adapters import HTTPAdapter
 
 from micall.settings import kive_server_url, kive_user, kive_password, home, \
-    pipeline_version_kive_id
+    kive_pipelines
 from micall.core.miseq_logging import init_logging
 
 
@@ -80,7 +80,8 @@ def download_results(kive_runs, results_folder, run_folder):
                         'g2p',
                         'g2p_summary',
                         'coverage_scores',
-                        'coverage_maps_tar']
+                        'coverage_maps_tar',
+                        'counts']
         for output_name in output_names:
             dataset = outputs.get(output_name, None)
             if not dataset:
@@ -145,7 +146,7 @@ def find_batch_runs(kive, batch_name, batch_size):
             text_status = entry['run_progress']['status']
             pipeline_id = entry['pipeline']
             if (re.match(r'^\*+-\*+$', text_status) is None or
-                    pipeline_id != pipeline_version_kive_id):
+                    pipeline_id not in kive_pipelines):
                 continue
             display_match = re.match(r'^MiSeq - ([^_]*_S\d+) \((.*)\)$',
                                      entry['display_name'])

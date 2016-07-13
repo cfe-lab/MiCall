@@ -7,6 +7,7 @@ import itertools
 import logging
 from operator import itemgetter
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -48,6 +49,20 @@ class KiveLoader(object):
         self.batches = defaultdict(list)  # {folder: [run]}
         self.retry_counts = Counter()  # {folder: count}
         self.is_status_available = True
+        self.pipelines = {}
+
+    def add_pipeline(self, id, inputs, format='', pattern=''):
+        """ Add another pipeline definition for launching.
+
+        :param int id: the pipeline id in Kive
+        :param list(str) inputs: input names, in order
+        :param str format: format string for run names, for example:
+            'My Pipeline - {sample} ({folder})'
+        :param str pattern: regular expression to match sample names that this
+            pipeline should be launched for. Can match any part of the sample
+            name.
+        """
+        self.pipelines[id] = dict(inputs=inputs, format=format, pattern=pattern)
 
     def poll(self):
         try:
@@ -84,14 +99,19 @@ class KiveLoader(object):
             dataset2 = self.prepare_kive_dataset(file2,
                                                  'reverse ' + description,
                                                  None)
-            if self.preexisting_runs is None:
-                self.preexisting_runs = self.find_preexisting_runs()
-            run_key = self.get_run_key(self.quality_dataset, dataset1, dataset2)
-            run = self.preexisting_runs.pop(run_key, None)
-            if run is None:
-                run = self.launch_run(self.quality_dataset, dataset1, dataset2)
-            self.active_runs.append(run)
-            self.batches[self.folder].append(run)
+            for pipeline_id in self.pipelines:
+                if self.preexisting_runs is None:
+                    self.preexisting_runs = self.find_preexisting_runs()
+                run_key = self.get_run_key(pipeline_id, self.quality_dataset, dataset1, dataset2)
+                run = self.preexisting_runs.pop(run_key, None)
+                if run is None:
+                    run = self.launch(pipeline_id,
+                                      dataset1,
+                                      dataset2,
+                                      self.quality_dataset)
+                if run is not None:
+                    self.active_runs.append(run)
+                    self.batches[self.folder].append(run)
             return 0
         except StandardError as ex:
             failed_folder = self.downloading_folder or self.folder
@@ -277,8 +297,8 @@ class KiveLoader(object):
                                    settings.kive_user,
                                    settings.kive_password)
             # retrieve Pipeline object based on version
-            self.pipeline = self.kive.get_pipeline(
-                settings.pipeline_version_kive_id)
+            for pipeline_id, pipeline in self.pipelines.iteritems():
+                pipeline['kive'] = self.kive.get_pipeline(pipeline_id)
 
             # retrieve quality.csv compound data type
             self.quality_cdt = self.kive.get_cdt(settings.quality_cdt_kive_id)
@@ -385,29 +405,47 @@ class KiveLoader(object):
         sample_name = short_name + '_' + sample_num
         return sample_name
 
-    def launch_run(self, quality, fastq1, fastq2):
-        """ Launch a run on Kive.
-
-        @param folder: the path to the run folder
-        @param quality: a Dataset object for the quality file
-        @param fastq1: a Dataset object for the forward reads
-        @param fastq2: a Dataset object for the reverse reads
-        @return: (sample_name, run_status)
-        """
-        self.check_kive_connection()
-        sample_name = self.get_sample_name(fastq1)
-        name = '{} - {} ({})'.format(self.pipeline.family,
-                                     sample_name,
-                                     self.trimmed_folder)
+    def get_run_name(self, pipeline_id, sample_name):
+        pipeline = self.pipelines[pipeline_id]
+        name = pipeline['format'].format(sample=sample_name,
+                                         folder=self.trimmed_folder)
         name = name[:MAX_RUN_NAME_LENGTH]
+        return name
+
+    def launch(self, pipeline_id, fastq1, fastq2, quality):
+        """ Prepare and launch a run on Kive.
+
+        :param int pipeline_id: the pipeline to launch with
+        :param fastq1: a Dataset object for the forward reads
+        :param fastq2: a Dataset object for the reverse reads
+        :param quality: a Dataset object for the quality file
+        :return: (sample_name, run_status)
+        """
+        pipeline = self.pipelines[pipeline_id]
+        sample_name = self.get_sample_name(fastq1)
+        is_match = re.search(pipeline['pattern'], sample_name) is not None
+        if not is_match:
+            return
+        name = self.get_run_name(pipeline_id, sample_name)
+        inputs = self.build_inputs(pipeline_id, fastq1, fastq2, quality)
+        return sample_name, self.launch_run(pipeline_id, name, inputs)
+
+    def build_inputs(self, pipeline_id, fastq1, fastq2, quality):
+        # Note: order of inputs is critical
+        input_dict = dict(fastq1=fastq1, fastq2=fastq2, quality=quality)
+        pipeline = self.pipelines[pipeline_id]
+        return [input_dict[s] for s in pipeline['inputs']]
+
+    def launch_run(self, pipeline_id, name, inputs):
+        self.check_kive_connection()
 
         logger.info('launching %s', name)
-        # Note: order of inputs is critical
-        status = self.kive.run_pipeline(pipeline=self.pipeline,
-                                        inputs=[quality, fastq1, fastq2],
+        kive_pipeline = self.pipelines[pipeline_id]['kive']
+        status = self.kive.run_pipeline(pipeline=kive_pipeline,
+                                        inputs=inputs,
                                         name=name,
                                         groups=settings.kive_groups_allowed)
-        return sample_name, status
+        return status
 
     def find_preexisting_runs(self):
         """ Query Kive for all active runs, filter by pipeline.
@@ -417,23 +455,26 @@ class KiveLoader(object):
         runs = self.kive.find_runs(active=True)
         map = {}
         for run in runs:
-            if run.pipeline_id == self.pipeline.pipeline_id:
+            if run.pipeline_id in self.pipelines:
                 try:
                     run.is_complete()
                     inputs = sorted(run.raw['inputs'], key=itemgetter('index'))
                     fastq1 = self.kive.get_dataset(inputs[1]['dataset'])
                     sample_name = self.get_sample_name(fastq1)
                     input_ids = tuple(input['dataset'] for input in inputs)
-                    map[input_ids] = (sample_name, run)
+                    key = (run.pipeline_id, ) + input_ids
+                    map[key] = (sample_name, run)
                 except KiveRunFailedException:
                     # Failed or cancelled, rerun.
                     pass
         return map
 
-    def get_run_key(self, quality, fastq1, fastq2):
+    def get_run_key(self, pipeline_id, quality, fastq1, fastq2):
         """ Calculate the key to look up preexisting runs for the given inputs.
         """
-        return (quality.dataset_id, fastq1.dataset_id, fastq2.dataset_id)
+        inputs = self.build_inputs(pipeline_id, fastq1, fastq2, quality)
+        input_ids = tuple(inp.dataset_id for inp in inputs)
+        return (pipeline_id, ) + input_ids
 
     def is_run_complete(self, run):
         """ Check if a Kive run is complete.
@@ -502,76 +543,12 @@ class KiveLoader(object):
         return datetime.now()
 
 if __name__ == '__live_coding__':
+
     import unittest
-
-    def setUp(self):
-        logging.disable(logging.CRITICAL)  # avoid polluting test output
-        self.loader = KiveLoader()
-        self.existing_datasets = []
-        self.existing_runs = {}
-        self.uploaded = []
-        self.launched = []
-        self.completed = []
-        self.downloaded = []
-        self.now = datetime(2000, 1, 1)
-        self.quality_cdt = 'quality CDT'
-        self.disabled_folders = []
-        self.folder_retries = []
-
-        def check_kive_connection():
-            self.loader.quality_cdt = self.quality_cdt
-        self.loader.check_kive_connection = check_kive_connection
-        self.loader.find_folders = lambda: []
-        self.loader.find_files = lambda folder: []
-        self.loader.find_preexisting_runs = lambda: self.existing_runs
-        self.loader.get_run_key = lambda quality, fastq1, fastq2: (quality,
-                                                                   fastq1,
-                                                                   fastq2)
-        self.loader.upload_kive_dataset = lambda filename, description, cdt: (
-            self.uploaded.append((filename, description, cdt)) or filename)
-        self.loader.download_quality = lambda folder: folder + '/quality.csv'
-        self.loader.find_kive_dataset = lambda filename, cdt: (
-            filename if filename in self.existing_datasets else None)
-        self.loader.launch_run = lambda quality, fastq1, fastq2: (
-            self.launched.append((quality, fastq1, fastq2)) or
-            (quality, fastq1, fastq2))
-        self.loader.is_run_complete = lambda run: run in self.completed
-        self.loader.download_results = lambda folder, runs: (
-            self.downloaded.append((folder, runs)))
-        self.loader.get_time = lambda: self.now
-        self.loader.mark_folder_disabled = lambda folder, message, exc_info: (
-            self.disabled_folders.append(folder))
-        self.loader.log_retry = lambda folder: self.folder_retries.append(folder)
-
-    def test_something(self):
-        # def test_failed_results_download(self):
-        def download_results(folder):
-            raise StandardError('Mock Kive failure.')
-
-        self.loader.download_results = download_results
-
-        self.loader.find_folders = lambda: ['run1']
-        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
-        retry_delays = []
-
-        first_delay = self.loader.poll()  # launch 1
-        self.completed = self.launched[:]
-        retry_delays.append(self.loader.poll())
-        retry_delays.append(self.loader.poll())
-        retry_delays.append(self.loader.poll())
-        final_delay = self.loader.poll()
-
-        self.assertEqual(0, first_delay)
-        self.assertEqual(self.loader.retry_delay, sum(retry_delays))
-        self.assertEqual(0, final_delay)
-
-    class DummyTest(unittest.TestCase):
-        def test_delegation(self):
-            setUp(self)
-            test_something(self)
+    from micall.tests.kive_loader_test import KiveLoaderTest
 
     suite = unittest.TestSuite()
-    suite.addTest(DummyTest("test_delegation"))
+    suite.addTest(KiveLoaderTest("test_pipelines_diff_patterns"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

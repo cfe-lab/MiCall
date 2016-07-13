@@ -1,15 +1,23 @@
 from datetime import timedelta, datetime
 import logging
+import os
 import unittest
 
 from micall.monitor.kive_loader import KiveLoader
 from kiveapi.errors import KiveRunFailedException
 
 
+DEFAULT_PIPELINE_ID = 1234
+EXTRA_PIPELINE_ID = 9999
+
+
 class KiveLoaderTest(unittest.TestCase):
     def setUp(self):
         logging.disable(logging.CRITICAL)  # avoid polluting test output
         self.loader = KiveLoader()
+        self.loader.add_pipeline(id=DEFAULT_PIPELINE_ID,
+                                 inputs=['quality', 'fastq1', 'fastq2'],
+                                 format='Default - {sample} ({folder})')
         self.existing_datasets = []
         self.existing_runs = {}
         self.uploaded = []
@@ -27,24 +35,25 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.find_folders = lambda: []
         self.loader.find_files = lambda folder: []
         self.loader.find_preexisting_runs = lambda: self.existing_runs
-        self.loader.get_run_key = lambda quality, fastq1, fastq2: (quality,
-                                                                   fastq1,
-                                                                   fastq2)
         self.loader.upload_kive_dataset = lambda filename, description, cdt: (
             self.uploaded.append((filename, description, cdt)) or filename)
         self.loader.download_quality = lambda folder: folder + '/quality.csv'
         self.loader.find_kive_dataset = lambda filename, cdt: (
             filename if filename in self.existing_datasets else None)
-        self.loader.launch_run = lambda quality, fastq1, fastq2: (
-            self.launched.append((quality, fastq1, fastq2)) or
-            (quality, fastq1, fastq2))
-        self.loader.is_run_complete = lambda run: run in self.completed
+        self.loader.get_sample_name = lambda fastq1: os.path.basename(fastq1).split('_')[0]
+        self.loader.is_run_complete = lambda run: run[1] in self.completed
         self.loader.download_results = lambda folder, runs: (
             self.downloaded.append((folder, runs)))
         self.loader.get_time = lambda: self.now
         self.loader.mark_folder_disabled = lambda folder, message, exc_info: (
             self.disabled_folders.append(folder))
         self.loader.log_retry = lambda folder: self.folder_retries.append(folder)
+
+        # Note: get_run_key must match return value of launch_run
+        self.loader.get_run_key = lambda pipeline_id, quality, fastq1, fastq2: (
+            self.loader.get_run_name(pipeline_id, self.loader.get_sample_name(fastq1)))
+        self.loader.launch_run = lambda pipeline_id, run_name, inputs: (
+            self.launched.append(run_name) or run_name)
 
     def test_idle(self):
         delay = self.loader.poll()
@@ -73,9 +82,7 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.find_folders = lambda: ['run2', 'run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
                                                  folder + '/sample2_R1_x.fastq']
-        expected_launched = [('run2/quality.csv',
-                              'run2/sample1_R1_x.fastq',
-                              'run2/sample1_R2_x.fastq')]
+        expected_launched = ['Default - sample1 (run2)']
 
         self.loader.poll()
 
@@ -85,12 +92,8 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
                                                  folder + '/sample2_R1_x.fastq']
-        expected_launched = [('run1/quality.csv',
-                              'run1/sample1_R1_x.fastq',
-                              'run1/sample1_R2_x.fastq'),
-                             ('run1/quality.csv',
-                              'run1/sample2_R1_x.fastq',
-                              'run1/sample2_R2_x.fastq')]
+        expected_launched = ['Default - sample1 (run1)',
+                             'Default - sample2 (run1)']
 
         self.loader.poll()
         self.loader.poll()
@@ -100,24 +103,85 @@ class KiveLoaderTest(unittest.TestCase):
     def test_launch_two_folders(self):
         self.loader.find_folders = lambda: ['run2', 'run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
-        expected_launched = [('run2/quality.csv',
-                              'run2/sample1_R1_x.fastq',
-                              'run2/sample1_R2_x.fastq'),
-                             ('run1/quality.csv',
-                              'run1/sample1_R1_x.fastq',
-                              'run1/sample1_R2_x.fastq')]
+        expected_launched = ['Default - sample1 (run2)',
+                             'Default - sample1 (run1)']
 
         self.loader.poll()
         self.loader.poll()
 
         self.assertEqual(expected_launched, self.launched)
 
+    def test_launch_two_pipelines(self):
+        self.loader.add_pipeline(id=EXTRA_PIPELINE_ID,
+                                 inputs=['quality', 'fastq1', 'fastq2'],
+                                 format='Extra - {sample} ({folder})')
+        self.loader.find_folders = lambda: ['run2']
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
+                                                 folder + '/sample2_R1_x.fastq']
+        expected_launched = ['Default - sample1 (run2)',
+                             'Extra - sample1 (run2)',
+                             'Default - sample2 (run2)',
+                             'Extra - sample2 (run2)']
+        expected_downloaded = [('run2', [('sample1', 'Default - sample1 (run2)'),
+                                         ('sample1', 'Extra - sample1 (run2)'),
+                                         ('sample2', 'Default - sample2 (run2)'),
+                                         ('sample2', 'Extra - sample2 (run2)')])]
+
+        self.loader.poll()
+        self.loader.poll()
+
+        self.completed = expected_launched[:]
+        self.loader.poll()
+
+        self.assertEqual(expected_launched, self.launched)
+        self.assertEqual(expected_downloaded, self.downloaded)
+
+    def test_pipelines_diff_inputs(self):
+        self.loader.launch_run = lambda pipeline_id, run_name, inputs: (
+            self.launched.append((pipeline_id, inputs)))
+        self.loader.add_pipeline(id=EXTRA_PIPELINE_ID,
+                                 inputs=['fastq1'],
+                                 format='Extra - {sample} ({folder})')
+        self.loader.find_folders = lambda: ['run2', 'run1']
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
+                                                 folder + '/sample2_R1_x.fastq']
+        expected_launched = [(DEFAULT_PIPELINE_ID, ['run2/quality.csv',
+                                                    'run2/sample1_R1_x.fastq',
+                                                    'run2/sample1_R2_x.fastq']),
+                             (EXTRA_PIPELINE_ID, ['run2/sample1_R1_x.fastq'])]
+
+        self.loader.poll()
+
+        self.assertEqual(expected_launched, self.launched)
+
+    def test_pipelines_diff_patterns(self):
+        self.loader.add_pipeline(id=EXTRA_PIPELINE_ID,
+                                 inputs=['quality', 'fastq1', 'fastq2'],
+                                 pattern='HCV',
+                                 format='Extra - {sample} ({folder})')
+        self.loader.find_folders = lambda: ['run2']
+        self.loader.find_files = lambda folder: [folder + '/sample1-HIV_R1_x.fastq',
+                                                 folder + '/sample2-HCV_R1_x.fastq']
+        expected_launched = ['Default - sample1-HIV (run2)',
+                             'Default - sample2-HCV (run2)',
+                             'Extra - sample2-HCV (run2)']
+        expected_downloaded = [('run2', [('sample1-HIV', 'Default - sample1-HIV (run2)'),
+                                         ('sample2-HCV', 'Default - sample2-HCV (run2)'),
+                                         ('sample2-HCV', 'Extra - sample2-HCV (run2)')])]
+
+        self.loader.poll()
+        self.loader.poll()
+
+        self.completed = expected_launched[:]
+        self.loader.poll()
+
+        self.assertEqual(expected_launched, self.launched)
+        self.assertEqual(expected_downloaded, self.downloaded)
+
     def test_launch_finished(self):
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
-        expected_launched = [('run1/quality.csv',
-                              'run1/sample1_R1_x.fastq',
-                              'run1/sample1_R2_x.fastq')]
+        expected_launched = ['Default - sample1 (run1)']
 
         self.loader.poll()
         self.loader.poll()
@@ -169,9 +233,7 @@ class KiveLoaderTest(unittest.TestCase):
     def test_download_one_sample(self):
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
-        expected_downloaded = [('run1', [('run1/quality.csv',
-                                          'run1/sample1_R1_x.fastq',
-                                          'run1/sample1_R2_x.fastq')])]
+        expected_downloaded = [('run1', [('sample1', 'Default - sample1 (run1)')])]
 
         self.loader.poll()  # launches
         self.loader.poll()  # checks status, not finished
@@ -188,12 +250,8 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
                                                  folder + '/sample2_R1_x.fastq']
-        expected_downloaded = [('run1', [('run1/quality.csv',
-                                          'run1/sample1_R1_x.fastq',
-                                          'run1/sample1_R2_x.fastq'),
-                                         ('run1/quality.csv',
-                                          'run1/sample2_R1_x.fastq',
-                                          'run1/sample2_R2_x.fastq')])]
+        expected_downloaded = [('run1', [('sample1', 'Default - sample1 (run1)'),
+                                         ('sample2', 'Default - sample2 (run1)')])]
 
         self.loader.poll()  # launch 1
         self.loader.poll()  # launch 2
@@ -211,15 +269,9 @@ class KiveLoaderTest(unittest.TestCase):
     def test_download_two_folders(self):
         self.loader.find_folders = lambda: ['run2', 'run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
-        expected_downloaded1 = [('run2', [('run2/quality.csv',
-                                           'run2/sample1_R1_x.fastq',
-                                           'run2/sample1_R2_x.fastq')])]
-        expected_downloaded2 = [('run2', [('run2/quality.csv',
-                                           'run2/sample1_R1_x.fastq',
-                                           'run2/sample1_R2_x.fastq')]),
-                                ('run1', [('run1/quality.csv',
-                                           'run1/sample1_R1_x.fastq',
-                                           'run1/sample1_R2_x.fastq')])]
+        expected_downloaded1 = [('run2', [('sample1', 'Default - sample1 (run2)')])]
+        expected_downloaded2 = [('run2', [('sample1', 'Default - sample1 (run2)')]),
+                                ('run1', [('sample1', 'Default - sample1 (run1)')])]
 
         self.loader.poll()  # launch 1
         self.loader.poll()  # launch 2
@@ -239,27 +291,13 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.find_folders = lambda: ['run2', 'run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
                                                  folder + '/sample2_R1_x.fastq']
-        expected_launched1 = [('run2/quality.csv',
-                               'run2/sample1_R1_x.fastq',
-                               'run2/sample1_R2_x.fastq'),
-                              ('run2/quality.csv',
-                               'run2/sample2_R1_x.fastq',
-                               'run2/sample2_R2_x.fastq'),
-                              ('run1/quality.csv',
-                               'run1/sample1_R1_x.fastq',
-                               'run1/sample1_R2_x.fastq')]
-        expected_launched2 = [('run2/quality.csv',
-                               'run2/sample1_R1_x.fastq',
-                               'run2/sample1_R2_x.fastq'),
-                              ('run2/quality.csv',
-                               'run2/sample2_R1_x.fastq',
-                               'run2/sample2_R2_x.fastq'),
-                              ('run1/quality.csv',
-                               'run1/sample1_R1_x.fastq',
-                               'run1/sample1_R2_x.fastq'),
-                              ('run1/quality.csv',
-                               'run1/sample2_R1_x.fastq',
-                               'run1/sample2_R2_x.fastq')]
+        expected_launched1 = ['Default - sample1 (run2)',
+                              'Default - sample2 (run2)',
+                              'Default - sample1 (run1)']
+        expected_launched2 = ['Default - sample1 (run2)',
+                              'Default - sample2 (run2)',
+                              'Default - sample1 (run1)',
+                              'Default - sample2 (run1)']
 
         self.loader.poll()  # launch run2, sample1
         self.loader.poll()  # launch run2, sample2
@@ -280,12 +318,8 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.find_folders = lambda: ['run2', 'run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
                                                  folder + '/sample2_R1_x.fastq']
-        expected_launched = [('run2/quality.csv',
-                              'run2/sample1_R1_x.fastq',
-                              'run2/sample1_R2_x.fastq'),
-                             ('run2/quality.csv',
-                              'run2/sample2_R1_x.fastq',
-                              'run2/sample2_R2_x.fastq')]
+        expected_launched = ['Default - sample1 (run2)',
+                             'Default - sample2 (run2)']
 
         self.loader.poll()  # launch run1, sample1
         self.loader.poll()  # launch run1, sample2
@@ -307,15 +341,9 @@ class KiveLoaderTest(unittest.TestCase):
     def test_new_folder(self):
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
-        expected_launched1 = [('run1/quality.csv',
-                               'run1/sample1_R1_x.fastq',
-                               'run1/sample1_R2_x.fastq')]
-        expected_launched2 = [('run1/quality.csv',
-                               'run1/sample1_R1_x.fastq',
-                               'run1/sample1_R2_x.fastq'),
-                              ('run2/quality.csv',
-                               'run2/sample1_R1_x.fastq',
-                               'run2/sample1_R2_x.fastq')]
+        expected_launched1 = ['Default - sample1 (run1)']
+        expected_launched2 = ['Default - sample1 (run1)',
+                              'Default - sample1 (run2)']
 
         self.loader.poll()  # launch run1, sample1
         self.loader.find_folders = lambda: ['run2', 'run1']
@@ -336,12 +364,8 @@ class KiveLoaderTest(unittest.TestCase):
     def test_completed_folder_no_reset(self):
         self.loader.find_folders = lambda: ['run2', 'run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
-        expected_launched = [('run2/quality.csv',
-                              'run2/sample1_R1_x.fastq',
-                              'run2/sample1_R2_x.fastq'),
-                             ('run1/quality.csv',
-                              'run1/sample1_R1_x.fastq',
-                              'run1/sample1_R2_x.fastq')]
+        expected_launched = ['Default - sample1 (run2)',
+                             'Default - sample1 (run1)']
 
         self.loader.poll()  # launch 2
         self.loader.poll()  # launch 1
@@ -360,12 +384,8 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
                                                  folder + '/sample2_R1_x.fastq']
-        self.existing_runs = {('run1/quality.csv',
-                               'run1/sample1_R1_x.fastq',
-                               'run1/sample1_R2_x.fastq'): 'dummy run status'}
-        expected_launched = [('run1/quality.csv',
-                              'run1/sample2_R1_x.fastq',
-                              'run1/sample2_R2_x.fastq')]
+        self.existing_runs = {'Default - sample1 (run1)': 'dummy run status'}
+        expected_launched = ['Default - sample2 (run1)']
 
         self.loader.poll()
         self.loader.poll()
@@ -374,9 +394,7 @@ class KiveLoaderTest(unittest.TestCase):
 
     def test_failed_run(self):
         def is_run_complete(run):
-            if run == ('run1/quality.csv',
-                       'run1/sample2_R1_x.fastq',
-                       'run1/sample2_R2_x.fastq'):
+            if run == 'Default - sample2 (run1)':
                 raise KiveRunFailedException('Mock failure.')
             return True
 
@@ -385,12 +403,8 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
                                                  folder + '/sample2_R1_x.fastq']
-        expected_downloaded = [('run1', [('run1/quality.csv',
-                                          'run1/sample1_R1_x.fastq',
-                                          'run1/sample1_R2_x.fastq'),
-                                         ('run1/quality.csv',
-                                          'run1/sample2_R1_x.fastq',
-                                          'run1/sample2_R2_x.fastq')])]
+        expected_downloaded = [('run1', [('sample1', 'Default - sample1 (run1)'),
+                                         ('sample2', 'Default - sample2 (run1)')])]
 
         self.loader.poll()  # launch 1
         self.loader.poll()  # launch 2
@@ -411,9 +425,7 @@ class KiveLoaderTest(unittest.TestCase):
 
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
-        expected_downloaded = [('run1', [('run1/quality.csv',
-                                          'run1/sample1_R1_x.fastq',
-                                          'run1/sample1_R2_x.fastq')])]
+        expected_downloaded = [('run1', [('sample1', 'Default - sample1 (run1)')])]
 
         self.loader.poll()  # launch 1
         self.loader.poll()  # check status, catch exception

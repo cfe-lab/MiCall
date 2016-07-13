@@ -53,6 +53,9 @@ def main():
                             status_delay=args.status_delay,
                             folder_delay=args.folder_delay,
                             retry_delay=args.retry_delay)
+        for pipeline_id, options in settings.kive_pipelines.iteritems():
+            loader.add_pipeline(pipeline_id, **options)
+
         while True:
             delay = loader.poll()
             sleep(delay)
