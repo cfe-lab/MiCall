@@ -75,13 +75,22 @@ class SequenceReportTest(unittest.TestCase):
           "seed_region_names": ["R3-seed"]
         }
       ]
+    },
+    "R4": {
+      "max_variants": 10,
+      "regions": [
+        {
+          "coordinate_region": "R4",
+          "seed_region_names": ["R4-seed"]
+        }
+      ]
     }
   },
   "regions": {
     "R1-seed": {
       "is_nucleotide": true,
       "reference": [
-        "A"
+        "AAATTTAGG"
       ]
     },
     "R1": {
@@ -93,7 +102,7 @@ class SequenceReportTest(unittest.TestCase):
     "R2-seed": {
       "is_nucleotide": true,
       "reference": [
-        "A"
+        "AAATTTGGCCCGAGA"
       ]
     },
     "R2": {
@@ -105,13 +114,25 @@ class SequenceReportTest(unittest.TestCase):
     "R3-seed": {
       "is_nucleotide": true,
       "reference": [
-        "A"
+        "AAATTTCAGACCCCACGAGAGCAT"
       ]
     },
     "R3": {
       "is_nucleotide": false,
       "reference": [
         "KFQTPREH"
+      ]
+    },
+    "R4-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "ATGGCAAACTCAATCAAT"
+      ]
+    },
+    "R4": {
+      "is_nucleotide": false,
+      "reference": [
+        "SIN"
       ]
     },
     "R-NO-COORD": {
@@ -292,6 +313,37 @@ R1-seed,R1,15,,9,0,0,0,0
         self.report.read(aligned_reads)
         self.report.write_nuc_counts(self.report_file)
 
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testSubstitutionAtBoundary(self):
+        """ In this sample, there are nine identical reads with six codons.
+        ATG -> M
+        GCA -> A
+        AAC -> N
+        TGG -> W
+        ATC -> I
+        AAT -> N
+        The R4 coordinate reference is SIN, so its first position will not map.
+        However, the R4-seed reference matches the BAD and the IN, so the first
+        position should get treated as a substitution.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R4-seed,15,0,9,0,ATGGCAAACTGGATCAAT
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+R4-seed,R4,15,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
+R4-seed,R4,15,5,2,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0
+R4-seed,R4,15,6,3,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.write_amino_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_amino_counts(self.report_file)
+
+        self.maxDiff = None
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
     def testCoverageSummary(self):
@@ -612,7 +664,7 @@ R3-seed,R3,15,5,G,9,5
     "R3-seed": {
       "is_nucleotide": true,
       "reference": [
-        "A"
+        "AAATTTCAGACCGGGCCACGAGAGCAT"
       ]
     },
     "R3a": {
@@ -753,8 +805,8 @@ R1-seed,15,0,2,0,AAATTTCGATTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTAC
     "R3-seed": {
       "is_nucleotide": true,
       "reference": [
-        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        "TGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGG",
+        "TGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGTGGAAATTTAGG"
       ]
     },
     "R3": {
@@ -871,7 +923,7 @@ R-NO-COORD,15,0,9,0,AAATTT
     "R1-seed": {
       "is_nucleotide": true,
       "reference": [
-        "A"
+        "TGGAAATTTAGG"
       ]
     },
     "R1a": {
@@ -954,7 +1006,7 @@ R1-seed,15,R1,3,5,AAATTTTCA
     "R1-seed": {
       "is_nucleotide": true,
       "reference": [
-        "A"
+        "AAATTTAGG"
       ]
     },
     "R1": {
@@ -1126,7 +1178,7 @@ R1-seed,15,R1,1,8,---TTT
     "R1-seed": {
       "is_nucleotide": true,
       "reference": [
-        "A"
+        "AAATTTAGG"
       ]
     },
     "R1": {
@@ -1228,7 +1280,7 @@ R1-seed,15,R1,0,10,AAATTT
     "R1-seed": {
       "is_nucleotide": true,
       "reference": [
-        "A"
+        "AAATTTAGG"
       ]
     },
     "R1a": {

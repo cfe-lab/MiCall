@@ -198,7 +198,7 @@ class SequenceReport(object):
                 self.consensus[coordinate_name] = consensus
 
             # map to reference coordinates by aligning consensus
-            aref, aquery, score = self._pair_align(
+            _aref, _aquery, score = self._pair_align(
                 coordinate_ref,
                 consensus,
                 gap_open=GAP_OPEN_COORD,
@@ -206,39 +206,71 @@ class SequenceReport(object):
             if score < max_score:
                 continue
             max_score = score
-            best_alignment = (reading_frame,
-                              consensus,
-                              aquery,
-                              aref,
-                              frame_seed_aminos)
+            best_alignment = (reading_frame, consensus)
 
         report_aminos = []
         if best_alignment is not None:
-            (reading_frame,
-             consensus,
-             aquery,
-             aref,
-             frame_seed_aminos) = best_alignment
+            reading_frame, consensus = best_alignment
 
+            frame_seed_aminos = self.seed_aminos[reading_frame]
             self.reading_frames[coordinate_name] = reading_frame
             self.consensus[coordinate_name] = consensus
-            consensus_index = ref_index = 0
+            seed_nuc_seq = self.projects.getReference(self.seed)
+            max_seed_score = -1
+            for seed_frame in range(3):
+                seed_amino_seq = translate(seed_nuc_seq,
+                                           offset=seed_frame,
+                                           ambig_char='-')
+                # Map seed to coordinate reference to find relevant section.
+                aseed, aref, score = self._pair_align(
+                    seed_amino_seq,
+                    coordinate_ref,
+                    gap_open=GAP_OPEN_COORD,
+                    gap_extend=GAP_EXTEND_COORD)
+                if score < max_seed_score:
+                    continue
+                max_seed_score = score
+                best_seed_alignment = (seed_amino_seq, aseed, aref)
+            seed_amino_seq, aseed, aref = best_seed_alignment
+            ref2seed = {}
+            seed_index = ref_index = 0
+            for seed_aa, ref_aa in zip(aseed, aref):
+                if (seed_index < len(seed_amino_seq) and
+                        seed_aa == seed_amino_seq[seed_index]):
+                    ref2seed[ref_index] = seed_index
+                    seed_index += 1
+                if (ref_index < len(coordinate_ref) and
+                        ref_aa == coordinate_ref[ref_index]):
+                    ref_index += 1
+            # Map seed to consensus to handle insertions and deletions
+            aseed, aconseq, _score = self._pair_align(
+                seed_amino_seq,
+                consensus,
+                gap_open=GAP_OPEN_COORD,
+                gap_extend=GAP_EXTEND_COORD)
+            seed2conseq = {}
+            seed_index = conseq_index = 0
+            for seed_aa, conseq_aa in zip(aseed, aconseq):
+                if (conseq_index < len(consensus) and
+                        conseq_aa == consensus[conseq_index]):
+                    seed2conseq[seed_index] = conseq_index
+                    conseq_index += 1
+                if (seed_index < len(seed_amino_seq) and
+                        seed_aa == seed_amino_seq[seed_index]):
+                    seed_index += 1
             coordinate_inserts = set(range(len(consensus)))
             self.inserts[coordinate_name] = coordinate_inserts
             empty_seed_amino = SeedAmino(None)
-            for i in range(len(aref)):
-                if (consensus_index >= len(consensus) or
-                        aquery[i] != consensus[consensus_index]):
+            for ref_index in range(len(coordinate_ref)):
+                seed_index = ref2seed.get(ref_index)
+                conseq_index = seed2conseq.get(seed_index)
+                if conseq_index is None:
                     seed_amino = empty_seed_amino
                 else:
-                    seed_amino = frame_seed_aminos[consensus_index]
-                    consensus_index += 1
-                if (ref_index < len(coordinate_ref) and
-                        aref[i] == coordinate_ref[ref_index]):
-                    report_aminos.append(ReportAmino(seed_amino, ref_index + 1))
-                    if seed_amino.consensus_index is not None:
-                        coordinate_inserts.remove(seed_amino.consensus_index)
-                    ref_index += 1
+                    seed_amino = frame_seed_aminos[conseq_index]
+                report_aminos.append(ReportAmino(seed_amino, ref_index + 1))
+                if seed_amino.consensus_index is not None:
+                    coordinate_inserts.remove(seed_amino.consensus_index)
 
         self.reports[coordinate_name] = report_aminos
 
@@ -819,7 +851,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.aln2counts_test import SequenceReportTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SequenceReportTest("testConsensusLowQualitySections"))
+    suite.addTest(SequenceReportTest("testShiftedReadingFrameAminoReport"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)
