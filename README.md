@@ -133,6 +133,8 @@ This folder is populated outside of MiCall:
 The Monitor looks for folders with both of these flag files, and ignores ones
 without.
 
+[MiseqQCReport]: https://github.com/cfe-lab/MiSeqQCReport/tree/master/modules
+
 ### Hourly scan for new MiSeq runs ###
 
 Every hour, Monitor looks for new data to process with the following procedure.
