@@ -34,44 +34,55 @@ purchasing a license.
 
 ## Steps and their input / output files ##
 
-* run summary
+* `micall_basespace.summarize_run`: choose tiles and cycles to censor for high
+    error rates.
   * in - InterOp folder
   * in - read lengths from RunInfo.xml or BaseSpace run parameters
-  * run_quality.csv
-* prelim_map
+  * quality.csv
+* `prelim_map`: map reads to all references.
   * in - fastq1
   * in - fastq2
   * prelim.csv - SAM file format
-* remap
+* `remap`: iteratively use consensus from previous mapping as reference to try
+    and map more reads. Eliminate a consensus if it has changed into a
+    different reference.
   * in - fastq1
   * in - fastq2
   * in - prelim.csv
-  * remap.csv - SAM file format.
-  * remap_counts.csv - collated as collated_counts.csv
-  * remap_conseq.csv - consensus sequence
-  * unmapped1.fastq - FASTQ format (unstructured text) &rarr; results/unmapped
-  * unmapped2.fastq - FASTQ &rarr; results/unmapped
-* sam2aln
+  * remap.csv - SAM file format with commas instead of tabs.
+  * remap_counts.csv - downloaded - how many reads mapped to each reference at
+    each stage.
+  * remap_conseq.csv - downloaded - consensus sequence
+  * unmapped1.fastq - FASTQ format (unstructured text) reads that didn't map to
+    any of the final references.
+  * unmapped2.fastq - FASTQ
+* `sam2aln`: extract the aligned portion of each read from a CSV SAM file. Also
+    combines duplicates.
   * in - remap.csv
   * aligned.csv - reads aligned to consensus sequence
-  * conseq_ins.csv - collated - insertions relative to consensus sequence
-  * failed_read.csv - collated - reads that fail to merge
-* aln2counts
+  * conseq_ins.csv - downloaded - insertions relative to consensus sequence
+  * failed_read.csv - downloaded - reads that fail to merge
+* `aln2counts`: take the aligned reads, and count how many of each nucleotide
+    or amino acid appear at each position.
   * in - aligned.csv
-  * nuc.csv - collated as nucleotide_frequencies.csv - nucleotide counts
-  * amino.csv - collated as amino_frequencies.csv - amino counts
-  * coord_ins.csv - collated - insertions relative to coordinate reference
-  * conseq.csv - collated as collated_conseqs.csv - consensus sequence
-  * failed_align.csv - collated - any consensus that failed to align to its ref
-  * nuc_variants.csv - collated - top nucleotide variants for HLA
-* sam_g2p
+  * nuc.csv - downloaded - nucleotide counts at each position
+  * amino.csv - downloaded - amino counts at each position
+  * coord_ins.csv - downloaded - insertions relative to coordinate reference
+  * conseq.csv - downloaded - consensus sequence
+  * failed_align.csv - downloaded - any consensus that failed to align to its ref
+  * nuc_variants.csv - downloaded - top nucleotide variants for HLA
+* `sam_g2p`: use a position-specific scoring matrix on the V3LOOP region to
+    translate genotype to phenotype and predict whether a sample is X4 or R5. 
   * in - remap.csv
-  * g2p.csv - collated
-* coverage_plots
-  * in - amino.csv
   * in - nuc.csv
+  * g2p.csv - downloaded - calls each individual sequence X4, R5, or error.
+  * g2p_summary.csv - downloaded - calls the entire sample X4 or R5. 
+* `coverage_plots`: convert amino counts to a coverage graph for each gene
+    region.
+  * in - amino.csv
   * coverage_maps.tar - binary file &rarr; untar in results/coverage_maps
-  * coverage_scores.csv - collated
+  * coverage_scores.csv - downloaded - a score for each region based on the
+    coverage at key positions.
 
 ## File descriptions ##
 * run_quality.csv
@@ -167,9 +178,9 @@ that limit, Monitor looks at its list of Samples That Need Reprocessing and star
 the next one, moving it from that list to Samples In Progress.
 
 ### Ways to manipulate the order in which the Monitor processes data ###
+Sometimes, you want to do unusual things. Here are a few scenarios we've run into.
 
 #### You need to force Monitor to reprocess a given run #### 
-
 First, stop Monitor.  Remove the results subfolder for the current version of 
 MiCall.  Restart Monitor.  On the next hourly scan, Monitor will handle this 
 folder as if it had never been processed through the current version of MiCall.  That 
@@ -178,7 +189,6 @@ Samples In Progress, and if it's not The Newest Run, its samples will be added t
 Samples That Need Processing.
 
 #### You need Monitor to skip a folder and handle an older one first ####
- 
 Stop Monitor.  Add an `errorprocessing` flag to the run's folder in `RAW_DATA`.  
 This will make Monitor's next hourly scan believe that it's failed and should be 
 skipped, and Monitor will move on to the next one.  Note though that this has no 
@@ -192,7 +202,6 @@ Restart Monitor.  After all samples from this run have finished processing,
 remove the fake `errorprocessing` flag you set (no need to stop and restart Monitor).
 
 #### You need to stop what's currently running and handle an older run ####
-
 Stop Monitor.  In Kive, stop the processing tasks that you need to clear out, 
 but don't remove them; the progress you've already made can be reused later when 
 revisiting these tasks later.  Now, do the manipulations you need to do as in the
