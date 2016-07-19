@@ -180,7 +180,7 @@ the next one, moving it from that list to Samples In Progress.
 ### Ways to manipulate the order in which the Monitor processes data ###
 Sometimes, you want to do unusual things. Here are a few scenarios we've run into.
 
-#### You need to force Monitor to reprocess a given run #### 
+#### You need to force Monitor to reprocess a given run ####
 First, stop Monitor.  Remove the results subfolder for the current version of 
 MiCall.  Restart Monitor.  On the next hourly scan, Monitor will handle this 
 folder as if it had never been processed through the current version of MiCall.  That 
