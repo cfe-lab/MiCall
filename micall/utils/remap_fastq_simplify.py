@@ -8,8 +8,10 @@ from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from csv import DictReader
 from micall.core.sam2aln import sam2aln
-from micall.core.aln2counts import aln2counts, AMINO_ALPHABET
+from micall.core.aln2counts import aln2counts
 from micall.utils.dd import DD
+from micall.g2p.sam_g2p import sam_g2p, DEFAULT_MIN_COUNT
+from micall.g2p.pssm_lib import Pssm
 
 BOWTIE_THREADS = 11
 
@@ -17,7 +19,8 @@ BOWTIE_THREADS = 11
 class MicallDD(DD):
     def __init__(self, filename1):
         super(MicallDD, self).__init__()
-        self.filename1 = self.filter_fastqs(filename1)
+        self.filename1 = filename1  # self.filter_fastqs(filename1)
+        self.pssm = Pssm()
         reads = defaultdict(list)
         read_fastq(self.filename1, reads)
         read_count = len(reads)
@@ -70,16 +73,14 @@ class MicallDD(DD):
         aligned_filename = os.path.join(workdir, 'temp70.aligned.csv')
         nuc_filename = os.path.join(workdir, 'temp70.nuc.csv')
         amino_filename = os.path.join(workdir, 'temp70.amino.csv')
-        failed_align_filename = os.path.join(workdir, 'temp70.failed_align.csv')
-        conseq_filename = os.path.join(workdir, 'temp70.conseq.csv')
+        g2p_filename = os.path.join(workdir, 'temp70.g2p.csv')
         with open(prelim_filename, 'w+') as prelim_csv, \
                 open(remap_filename, 'w+') as remap_csv, \
                 open(remap_counts_filename, 'w+') as remap_counts_csv, \
                 open(aligned_filename, 'w+') as aligned_csv, \
                 open(nuc_filename, 'w+') as nuc_csv, \
                 open(amino_filename, 'w+') as amino_csv, \
-                open(failed_align_filename, 'w+') as failed_align_csv, \
-                open(conseq_filename, 'w+') as conseq_csv, \
+                open(g2p_filename, 'w+') as g2p_csv, \
                 open(os.devnull, 'w+') as real_devnull:
             devnull = DevNullWrapper(real_devnull)
             prelim_map(simple_filename1,
@@ -101,18 +102,26 @@ class MicallDD(DD):
             sam2aln(remap_csv,
                     aligned_csv,
                     devnull,
-                    failed_align_csv,
+                    devnull,
                     nthreads=BOWTIE_THREADS)
             aligned_csv.seek(0)
             aln2counts(aligned_csv,
                        nuc_csv,
                        amino_csv,
                        devnull,
-                       conseq_csv,
+                       devnull,
                        devnull,
                        devnull)
+            remap_csv.seek(0)
+            nuc_csv.seek(0)
+            sam_g2p(pssm=self.pssm,
+                    remap_csv=remap_csv,
+                    nuc_csv=nuc_csv,
+                    g2p_csv=g2p_csv,
+                    g2p_summary_csv=devnull,
+                    min_count=DEFAULT_MIN_COUNT)
 
-        return self.get_result(amino_filename, len(read_indexes))
+        return self.get_result(g2p_filename, len(read_indexes))
 
     def disabled_resolve(self, csub, c, direction):
         sub_size = len(csub)
@@ -131,45 +140,22 @@ class MicallDD(DD):
                     add_count -= 1
         return result
 
-    def get_result(self, amino_filename, read_count):
-        with open(amino_filename, 'rU') as amino_csv:
-            amino_reader = DictReader(amino_csv)
-            region_counts = [row
-                             for row in amino_reader
-                             if row['region'] == 'HCV1A-H77-NS2']
-        region_coverage = [sum(int(row[aa]) for aa in AMINO_ALPHABET if aa != '*')
-                           for row in region_counts]
-        if not region_coverage:
-            logging.info('PASS: no region coverage, read_count=%d.', read_count)
-            return DD.PASS
-        max_coverage = max(region_coverage)
-        if max_coverage < max(10, 0.1*read_count):
-            logging.info('PASS: max_coverage=%d, read_count=%d.',
-                         max_coverage,
+    def get_result(self, g2p_filename, read_count):
+        with open(g2p_filename, 'rU') as g2p_csv:
+            g2p_reader = DictReader(g2p_csv)
+            rows = list(g2p_reader)
+        good_counts = [int(row['count']) for row in rows if not row['error']]
+        good_sum = sum(good_counts)
+        good_max = good_counts and max(good_counts) or 0
+        bad_count = sum(int(row['count']) for row in rows if row['error'] == 'zerolength')
+        if good_max < 10 and (read_count - good_sum - bad_count != 0):
+            # Other errors can be distracting.
+            logging.info('PASS: %d good and %d bad out of %d.',
+                         good_sum,
+                         bad_count,
                          read_count)
             return DD.PASS
-        early_coverage = region_coverage[:76]
-        late_coverage = region_coverage[76:]
-        early_avg = sum(early_coverage)*1.0/len(early_coverage)
-        late_avg = sum(late_coverage)*1.0/len(late_coverage)
-        late_min = min(late_coverage)
-        if late_min < min(10, 0.5*max_coverage):
-            logging.info('PASS: late_min=%d, max_coverage=%d, read_count=%d',
-                         late_min,
-                         max_coverage,
-                         read_count)
-            return DD.PASS
-        if early_avg < 0.01*late_avg:
-            logging.info('FAIL: early_avg=%f, late_avg=%f, read_count=%d',
-                         early_avg,
-                         late_avg,
-                         read_count)
-            return DD.FAIL
-        logging.info('PASS: early_avg=%f, late_avg=%f, read_count=%d',
-                     early_avg,
-                     late_avg,
-                     read_count)
-        return DD.PASS
+        return DD.FAIL if 0.4 * good_sum < bad_count <= good_sum else DD.PASS
 
     def write_simple_fastq(self, filename1, read_indexes):
         selected_reads = imap(self.reads.__getitem__, read_indexes)
@@ -232,7 +218,7 @@ def main():
         logger.info('Starting.')
         fname = ('censored1.fastq')
         dd = MicallDD(fname)
-        read_indexes = range(len(dd.reads))[:500]
+        read_indexes = range(len(dd.reads))[800:1600]
         run_test = True
         if run_test:
             min_indexes = dd.ddmin(read_indexes)
