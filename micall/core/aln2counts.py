@@ -829,14 +829,6 @@ def aln2counts(aligned_csv,
     if coverage_summary_csv is not None:
         if coverage_summary:
             coverage_writer.writerow(coverage_summary)
-        coverage_summary_csv.close()
-    aligned_csv.close()
-    amino_csv.close()
-    nuc_csv.close()
-    conseq_csv.close()
-    coord_ins_csv.close()
-    failed_align_csv.close()
-    nuc_variants_csv.close()
 
 
 def main():

@@ -349,14 +349,14 @@ class DD(object):
              to CSUB.  Otherwise, resolve by removing deltas from CSUB."""
 
         if self.debug_resolve:
-            print "resolve(" + repr(csub) + ", " + self.coerce(c) + ", " + \
+            print "resolve(" + self.coerce(csub) + ", " + self.coerce(c) + ", " + \
                   repr(direction) + ")..."
 
         outcome = self._resolve(csub, c, direction)
 
         if self.debug_resolve:
-            print "resolve(" + repr(csub) + ", " + self.coerce(c) + ", " + \
-                  repr(direction) + ") = " + repr(outcome)
+            print "resolve(" + self.coerce(csub) + ", " + self.coerce(c) + ", " + \
+                  repr(direction) + ") = " + self.coerce(outcome)
 
         return outcome
 
@@ -893,8 +893,25 @@ if __name__ == '__main__':
                 return self.UNRESOLVED
             return self.PASS
 
+        def _resolve_a(self, csub, c, direction):
+            sub_size = len(csub)
+            if direction == DD.REMOVE:
+                result = csub[:sub_size/2]
+            else:
+                # ADD
+                add_count = (len(c) - sub_size + 1) / 2
+                result = []
+                for i in c:
+                    if i in csub:
+                        result.append(i)
+                    elif add_count > 0:
+                        result.append(i)
+                        add_count -= 1
+            return result
+
         def __init__(self):
             self._test = self._test_a
+            # self._resolve = self._resolve_a
             DD.__init__(self)
 
     print "WYNOT - a tool for delta debugging."

@@ -13,8 +13,8 @@ def read_records(data_file, min_version):
     header with the file version and the length of each record, followed by the
     records.
     :param int min_version: the minimum accepted file version.
-    :return: an iterator over the records of data in the file. Each record is a
-    dictionary with the following keys:
+    :return: an iterator over the records in the file. Each record will be a raw
+    byte string of the length from the header.
     """
     header = data_file.read(2)
     version, record_length = unpack('!BB', header)
