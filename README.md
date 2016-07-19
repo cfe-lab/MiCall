@@ -124,14 +124,14 @@ through the MiCall pipeline.  It periodically scans the `RAW_DATA` folder for da
 and when new data appears it interfaces with Kive to start the processing.
 This folder is populated outside of MiCall:
 
-* Runs get uploaded by Conan's script to `RAW_DATA`; at this point a `needsprocessing` 
-flag is set (i.e. a file named `needsprocessing` is created in the folder).
+* Runs get uploaded by the MiSeq to `RAW_DATA`.
+* The `watch_runs.rb` script in that folder watches for the files to finish
+    copying, and then creates a file named `needsprocessing` in the folder.
+* The [MiseqQCReport][] scripts upload the QC data to QAI, and then create a 
+`qc_uploaded` file.
 
-* Another of Conan's scripts uploads the QC data to QAI; when this is done a 
-`qc_uploaded` flag is set.
-
-The Monitor looks for folders with both of these flags, and ignores ones without.
-If the `needsprocessing` flag is removed, Conan's scripts will re-upload all the data.
+The Monitor looks for folders with both of these flag files, and ignores ones
+without.
 
 ### Hourly scan for new MiSeq runs ###
 
