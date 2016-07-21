@@ -1,5 +1,98 @@
 {
   "projects": {
+    "ERCC": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "ERCC-00002",
+          "coordinate_region_length": 353,
+          "key_positions": [],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region_names": [
+            "ERCC-00002-seed"
+          ]
+        },
+        {
+          "coordinate_region": "ERCC-00003",
+          "coordinate_region_length": 340,
+          "key_positions": [],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region_names": [
+            "ERCC-00003-seed"
+          ]
+        },
+        {
+          "coordinate_region": "ERCC-00007",
+          "coordinate_region_length": 378,
+          "key_positions": [],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region_names": [
+            "ERCC-00007-seed"
+          ]
+        },
+        {
+          "coordinate_region": "ERCC-00014",
+          "coordinate_region_length": 652,
+          "key_positions": [],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region_names": [
+            "ERCC-00014-seed"
+          ]
+        },
+        {
+          "coordinate_region": "ERCC-00017",
+          "coordinate_region_length": 378,
+          "key_positions": [],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region_names": [
+            "ERCC-00017-seed"
+          ]
+        },
+        {
+          "coordinate_region": "ERCC-00025",
+          "coordinate_region_length": 664,
+          "key_positions": [],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region_names": [
+            "ERCC-00025-seed"
+          ]
+        },
+        {
+          "coordinate_region": "ERCC-00033",
+          "coordinate_region_length": 673,
+          "key_positions": [],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region_names": [
+            "ERCC-00033-seed"
+          ]
+        },
+        {
+          "coordinate_region": "ERCC-00099",
+          "coordinate_region_length": 449,
+          "key_positions": [],
+          "min_coverage1": 1,
+          "min_coverage2": 101,
+          "min_coverage3": 1001,
+          "seed_region_names": [
+            "ERCC-00099-seed"
+          ]
+        }
+      ]
+    },
     "HCV": {
       "max_variants": 0,
       "regions": [
@@ -2104,7 +2197,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "INT-seed"
+            "HIV1B-pol-seed"
           ]
         },
         {
@@ -2180,7 +2273,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "PR-seed"
+            "HIV1B-pol-seed"
           ]
         },
         {
@@ -2312,7 +2405,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "RT-seed"
+            "HIV1B-pol-seed"
           ]
         },
         {

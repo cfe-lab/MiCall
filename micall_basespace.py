@@ -82,14 +82,21 @@ def parse_json(json_file):
 def link_json(run_path, data_path):
     """ Load the data from a run folder into the BaseSpace layout. """
     args = Args()
+    args.project_id = args.href_app_session = '1'
 
     shutil.rmtree(data_path, ignore_errors=True)
     makedirs(data_path)
 
+    results_path = os.path.join(run_path, 'Results', 'basespace')
+    makedirs(results_path)
+    appresults_path = os.path.join(data_path, 'output', 'appresults')
+    makedirs(appresults_path)
+    os.symlink(results_path, os.path.join(appresults_path, args.project_id))
+
     args.run_id = os.path.basename(run_path)
-    runs_path = os.path.join(data_path, 'input', 'runs')
-    makedirs(runs_path)
-    new_run_path = os.path.join(runs_path, args.run_id)
+    input_runs_path = os.path.join(data_path, 'input', 'runs')
+    makedirs(input_runs_path)
+    new_run_path = os.path.join(input_runs_path, args.run_id)
     os.symlink(run_path, new_run_path)
     run_info_path = os.path.join(new_run_path, 'RunInfo.xml')
     run_info = ElementTree.parse(run_info_path).getroot()
@@ -104,7 +111,6 @@ def link_json(run_path, data_path):
         args.index_length2 = 0
     else:
         args.index_length2 = int(index2.attrib['NumCycles'])
-    args.project_id = args.href_app_session = '1'
 
     args.samples = []
     samples_path = os.path.join(data_path, 'input', 'samples')
