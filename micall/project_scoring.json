@@ -6,7 +6,12 @@
         {
           "coordinate_region": "ERCC-00002",
           "coordinate_region_length": 353,
-          "key_positions": [],
+          "key_positions": [
+            {
+              "end_pos": 348,
+              "start_pos": 6
+            }
+          ],
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
@@ -17,7 +22,12 @@
         {
           "coordinate_region": "ERCC-00003",
           "coordinate_region_length": 340,
-          "key_positions": [],
+          "key_positions": [
+            {
+              "end_pos": 335,
+              "start_pos": 6
+            }
+          ],
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
@@ -28,7 +38,12 @@
         {
           "coordinate_region": "ERCC-00007",
           "coordinate_region_length": 378,
-          "key_positions": [],
+          "key_positions": [
+            {
+              "end_pos": 373,
+              "start_pos": 6
+            }
+          ],
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
@@ -39,7 +54,12 @@
         {
           "coordinate_region": "ERCC-00014",
           "coordinate_region_length": 652,
-          "key_positions": [],
+          "key_positions": [
+            {
+              "end_pos": 647,
+              "start_pos": 6
+            }
+          ],
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
@@ -50,7 +70,12 @@
         {
           "coordinate_region": "ERCC-00017",
           "coordinate_region_length": 378,
-          "key_positions": [],
+          "key_positions": [
+            {
+              "end_pos": 373,
+              "start_pos": 6
+            }
+          ],
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
@@ -61,7 +86,12 @@
         {
           "coordinate_region": "ERCC-00025",
           "coordinate_region_length": 664,
-          "key_positions": [],
+          "key_positions": [
+            {
+              "end_pos": 659,
+              "start_pos": 6
+            }
+          ],
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
@@ -72,7 +102,12 @@
         {
           "coordinate_region": "ERCC-00033",
           "coordinate_region_length": 673,
-          "key_positions": [],
+          "key_positions": [
+            {
+              "end_pos": 668,
+              "start_pos": 6
+            }
+          ],
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
@@ -83,7 +118,12 @@
         {
           "coordinate_region": "ERCC-00099",
           "coordinate_region_length": 449,
-          "key_positions": [],
+          "key_positions": [
+            {
+              "end_pos": 444,
+              "start_pos": 6
+            }
+          ],
           "min_coverage1": 1,
           "min_coverage2": 101,
           "min_coverage3": 1001,
