@@ -2528,7 +2528,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "INT-seed"
+            "HIV1B-pol-seed"
           ]
         }
       ]
@@ -2993,7 +2993,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "RT-seed"
+            "HIV1B-pol-seed"
           ]
         }
       ]
@@ -3074,7 +3074,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "PR-seed"
+            "HIV1B-pol-seed"
           ]
         },
         {
@@ -3206,7 +3206,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "RT-seed"
+            "HIV1B-pol-seed"
           ]
         }
       ]
@@ -3343,7 +3343,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "RT-seed"
+            "HIV1B-pol-seed"
           ]
         }
       ]

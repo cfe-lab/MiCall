@@ -58,6 +58,7 @@ def dump_json(json_object, filename):
 
 def main():
     dump = {}
+    used_regions = set()
     with qai_helper.Session() as session:
         session.login(settings.qai_project_path,
                       settings.qai_project_user,
@@ -71,10 +72,16 @@ def main():
             retries=0)
         for project in dump['projects'].itervalues():
             project['regions'].sort()
+            for region in project['regions']:
+                used_regions.add(region['coordinate_region'])
+                used_regions.update(region['seed_region_names'])
         errors = dump['projects'].get('errors')
         if errors:
             raise StandardError('\n'.join(errors))
         check_key_positions(dump['projects'], sys.stdout)
+    dump['regions'] = {key: value
+                       for key, value in dump['regions'].iteritems()
+                       if key in used_regions}
 
     dump_scoring = deepcopy(dump)
     for project in dump['projects'].itervalues():
