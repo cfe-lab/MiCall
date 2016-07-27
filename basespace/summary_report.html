@@ -59,7 +59,7 @@
                                 <tr>
                                     <th title="Average Phred score over all clusters and cycles">Avg quality</th>
                                     {% assign r = row['avg_quality'] | times: 10 | plus: 0.5 | modulo: 1 | minus: 0.5 | divided_by: 10 %}
-                                    <td>{{ row['avg_quality'] }}</td>
+                                    <td>{{ row['avg_quality'] | minus: r }}</td>
                                 </tr>
                                 <tr>
                                     <th title="Average coverage across the best region for each sample">Avg coverage</th>

@@ -72,7 +72,11 @@ purchasing a license.
   * failed_align.csv - downloaded - any consensus that failed to align to its ref
   * nuc_variants.csv - downloaded - top nucleotide variants for HLA
 * `sam_g2p`: use a position-specific scoring matrix on the V3LOOP region to
-    translate genotype to phenotype and predict whether a sample is X4 or R5. 
+    translate genotype to phenotype and predict whether a sample is X4 or R5.
+    HIV-1 particles use coreceptors to enter cells. Different particles can use
+    CXCR4, CCR5, or both. This analysis looks at the sequences from a virus
+    population and reports either "X4" (able to use CXCR4) or "R5" (only able
+    to use CCR5).
   * in - remap.csv
   * in - nuc.csv
   * g2p.csv - downloaded - calls each individual sequence X4, R5, or error.
@@ -116,6 +120,18 @@ purchasing a license.
 * nuc.csv
   * query.nuc.pos - the 1-based index of the base in the consensus sequence that
     came from this set of counts
+* coord_ins.csv - insertions in consensus sequence, relative to coordinate
+    reference.
+  * seed - seed reference the reads mapped to
+  * region - coordinate reference for reporting against, usually a gene
+  * qcut - minimum Phred quality score to include a nucleotide
+  * left - the one-based position within the consensus sequence of the first
+    amino acid in the insertion
+  * insert - the insertion sequence of amino acids
+  * count - the number of times the insertion occurred
+  * before - the one-based position within the coordinate reference that it
+    was inserted before
+  
 
 ## The MiCall Monitor ##
 
