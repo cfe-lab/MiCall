@@ -104,10 +104,17 @@ On Windows, you can install [Anaconda Python][anaconda].
     libraries:
 
         sudo apt-get install build-essential python-dev libcurl4-openssl-dev libcrypto++-dev libssl-dev
+        
+    On CentOS 6, the newest versions of HyPhy fail to compile.  The newest version that works is
+    v2.2.5.  In order to compile this version, assuming you're using the Software Collections `python27` package, 
+    you only need to add two packages, which you can do using `yum`:
+    
+        sudo yum install libcurl-devel openssl-devel
 
 4. There is a newer package for HyPhy in the
     [hyphy-python project][hyphy-python]. Consider testing that before the next
-    installation, but so far we've just downloaded the latest source.
+    installation, but so far we've just downloaded the latest source (or v2.2.5 on CentOS 6).
+    
 5. Download the latest [source for HyPhy][hyphy]. Right click the zip file and choose Expand Here. Then run the setup script:
 
         cd ~/Downloads/hyphy-master/src/lib
@@ -120,6 +127,7 @@ On Windows, you can install [Anaconda Python][anaconda].
 
 [bowtie2]: http://sourceforge.net/projects/bowtie-bio/files/bowtie2/
 [hyphy]: https://github.com/veg/hyphy
+
 
 ### Gotoh library ###
 MiCall uses an implementation of a modified Gotoh algorithm for pairwise sequence alignment.
