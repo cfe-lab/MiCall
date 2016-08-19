@@ -89,8 +89,15 @@ On Windows, you can install [Anaconda Python][anaconda].
         chmod g-w -R bowtie2-2.2.1
         sudo chown root:root -R bowtie2-2.2.1
         sudo mv bowtie2-2.2.1 /opt
-        sudo vi /etc/environment # add :/opt/bowtie2-2.2.1 and logout/login
-        bowtie2 --version # smoke test
+        # Do this for the default version of bowtie2
+        cd /opt/bowtie2-2.2.1
+        for f in bowtie2* ; do sudo ln -s /opt/bowtie2-2.2.1/$f /usr/local/bin/$f; done
+        # Do this for other versions that have to be called explicitly
+        cd /opt/bowtie2-2.2.8
+        for f in bowtie2* ; do sudo ln -s /opt/bowtie2-2.2.8/$f /usr/local/bin/$f-2.2.1; done
+        # Now try a smoke test.
+        cd ~
+        bowtie2 --version
 
 3. HyPhy is not needed by the main pipeline, only some of the helper utilities,
     so you can probably skip it. Before you can build HyPhy, you will need these
