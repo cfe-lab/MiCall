@@ -24,7 +24,7 @@ from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.sam_g2p import sam_g2p, DEFAULT_MIN_COUNT
 from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
-from micall.utils.coverage_plots import coverage_plot
+from micall.core.coverage_plots import coverage_plot
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
@@ -321,10 +321,14 @@ def process_sample(sample_index, run_info, args, pssm):
                    coverage_summary_csv=coverage_summary_csv)
 
     logger.info('Running coverage_plots (%d of %d).', sample_index+1, len(run_info.samples))
-    coverage_path = os.path.join(sample_qc_path, 'coverage')
+    coverage_maps_path = os.path.join(args.qc_path, 'coverage_maps')
+    makedirs(coverage_maps_path)
     with open(os.path.join(sample_scratch_path, 'amino.csv'), 'rU') as amino_csv, \
             open(os.path.join(sample_scratch_path, 'coverage_scores.csv'), 'w') as coverage_scores_csv:
-        coverage_plot(amino_csv, coverage_scores_csv, path_prefix=coverage_path)
+        coverage_plot(amino_csv,
+                      coverage_scores_csv,
+                      coverage_maps_path=coverage_maps_path,
+                      coverage_maps_prefix=sample_name)
 
     with open(os.path.join(sample_scratch_path, 'coverage_scores.csv'), 'rU') as coverage_scores_csv:
         reader = csv.DictReader(coverage_scores_csv)
