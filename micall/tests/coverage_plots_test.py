@@ -89,7 +89,9 @@ R1-and-R2,R1,R1-seed,15,5,1,-1,1
         expected_calls = [call('E1234.R1.R1.png'),
                           call('E1234.R1-and-R2.R1.png')]
 
-        coverage_plot(amino_csv, coverage_scores_csv=scores_csv)
+        coverage_plot(amino_csv,
+                      coverage_scores_csv=scores_csv,
+                      coverage_maps_prefix='E1234')
 
         self.assertEqual(expected_calls, savefig_mock.mock_calls)
         self.assertEqual(expected_scores, scores_csv.getvalue())
