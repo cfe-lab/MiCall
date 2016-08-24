@@ -127,6 +127,7 @@ On Windows, you can install [Anaconda Python][anaconda].
 
 [bowtie2]: http://sourceforge.net/projects/bowtie-bio/files/bowtie2/
 [hyphy]: https://github.com/veg/hyphy
+[hyphy-python]: https://github.com/veg/hyphy-python
 
 
 ### Gotoh library ###
