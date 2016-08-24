@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import argparse
 import errno
@@ -5,7 +7,7 @@ import itertools
 from collections import Counter
 from csv import DictReader, DictWriter
 from matplotlib import pyplot as plt, patches
-from matplotlib.ticker import ScalarFormatter
+from matplotlib.ticker import FuncFormatter
 from operator import itemgetter
 import tarfile
 
@@ -49,8 +51,7 @@ def coverage_plot(amino_csv,
     paths = []
 
     MAX_COVERAGE = 1000000
-    axis_formatter = ScalarFormatter()
-    axis_formatter.set_powerlimits((-8, 8))
+    axis_formatter = FuncFormatter(lambda x, p: format(int(x), ','))
     _fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
     for (seed, region), group in itertools.groupby(reader, itemgetter('seed',
                                                                       'region')):
@@ -113,6 +114,7 @@ def coverage_plot(amino_csv,
             plt.ylim([0.5, MAX_COVERAGE])
             plt.yscale('log')
             ax.yaxis.set_major_formatter(axis_formatter)
+            plt.tick_params(axis='both', labelsize=8)
             ax.add_patch(patches.Rectangle(xy=(left_margin, 0),
                                            width=-left_margin,
                                            height=10,
@@ -128,17 +130,12 @@ def coverage_plot(amino_csv,
                                            height=50,
                                            fc='yellow',
                                            ec='yellow'))
-            ax.add_patch(patches.Rectangle(xy=(left_margin, 50),
-                                           width=-left_margin,
-                                           height=50,
-                                           fc='yellow',
-                                           ec='yellow'))
             ax.add_patch(patches.Rectangle(xy=(left_margin, 100),
                                            width=-left_margin,
                                            height=MAX_COVERAGE-100,
                                            fc='lightgreen',
                                            ec='lightgreen'))
-            plt.hlines(100, 1, region_length, linestyles='dashed')
+            plt.plot((1, region_length), (100, 100), 'k--')
             plt.xlabel('Reference coordinates (AA)', fontsize=9)
             plt.ylabel('Coverage', fontsize=9)
             plt.tight_layout()
@@ -193,7 +190,8 @@ def main():
     with tarfile.open(fileobj=args.coverage_maps_tar, mode='w') as tar:
         for image_name in os.listdir(coverage_maps_path):
             image_path = os.path.join(coverage_maps_path, image_name)
-            tar.add(image_path)
+            archive_path = os.path.join('coverage_maps', image_name)
+            tar.add(image_path, archive_path)
 
 if __name__ == '__main__':
     # note, must be called from project root if executing directly
