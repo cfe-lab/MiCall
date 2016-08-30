@@ -37,6 +37,8 @@ def parse_args():
             os.makedirs(args.workfolder)
         if not os.path.isdir(args.resultfolder):
             os.makedirs(args.resultfolder)
+    if args.batchdate is not None and not args.batchsize:
+        parser.error('argument --batchsize is required with --batchdate')
     return args
 
 
@@ -158,7 +160,8 @@ def find_batch_runs(kive, batch_name, batch_size):
                 status_response = kive.get(entry['run_status'])
                 status_response.raise_for_status()
                 status_json = status_response.json()
-                quality_filename = status_json['inputs']['1']['dataset_name']
+                first_input = status_json['inputs'].get('1', None)
+                quality_filename = first_input and first_input['dataset_name']
                 if quality_filename != '{}_quality.csv'.format(batch_name):
                     continue
                 sample_filename = status_json['inputs']['2']['dataset_name']
