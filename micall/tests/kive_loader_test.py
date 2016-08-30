@@ -3,8 +3,8 @@ import logging
 import os
 import unittest
 
-from micall.monitor.kive_loader import KiveLoader
-from kiveapi.errors import KiveRunFailedException
+from micall.monitor.kive_loader import KiveLoader, RUN_COMPLETED, RUN_ACTIVE,\
+    RUN_CANCELLED, RUN_PURGED, RUN_FAILED
 
 
 DEFAULT_PIPELINE_ID = 1234
@@ -22,7 +22,10 @@ class KiveLoaderTest(unittest.TestCase):
         self.existing_runs = {}
         self.uploaded = []
         self.launched = []
+        self.cancelled = []
         self.completed = []
+        self.failed = []
+        self.purged = []
         self.downloaded = []
         self.now = datetime(2000, 1, 1)
         self.quality_cdt = 'quality CDT'
@@ -41,7 +44,17 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.find_kive_dataset = lambda filename, cdt: (
             filename if filename in self.existing_datasets else None)
         self.loader.get_sample_name = lambda fastq1: os.path.basename(fastq1).split('_')[0]
-        self.loader.is_run_complete = lambda run: run[1] in self.completed
+        self.loader.fetch_run_status = lambda run: (RUN_COMPLETED
+                                                    if run[1] in self.completed
+                                                    else RUN_CANCELLED
+                                                    if run[1] in self.cancelled
+                                                    else RUN_ACTIVE)
+        self.loader.fetch_output_status = lambda run: (RUN_PURGED
+                                                       if run[1] in self.purged
+                                                       else RUN_FAILED
+                                                       if run[1] in self.failed
+                                                       else RUN_COMPLETED)
+        self.loader.get_run_id = lambda run: run
         self.loader.download_results = lambda folder, runs: (
             self.downloaded.append((folder, runs)))
         self.loader.get_time = lambda: self.now
@@ -245,6 +258,7 @@ class KiveLoaderTest(unittest.TestCase):
 
         self.assertEqual([], downloaded1)
         self.assertEqual(expected_downloaded, downloaded2)
+        self.assertEqual({}, self.loader.batches)
 
     def test_download_two_samples(self):
         self.loader.find_folders = lambda: ['run1']
@@ -380,6 +394,48 @@ class KiveLoaderTest(unittest.TestCase):
 
         self.assertEqual(expected_launched, launched)
 
+    def test_cancelled_run(self):
+        self.loader.find_folders = lambda: ['run1']
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
+                                                 folder + '/sample2_R1_x.fastq']
+        expected_launched = ['Default - sample1 (run1)',
+                             'Default - sample2 (run1)',
+                             'Default - sample1 (run1)']
+        expected_downloaded = []
+
+        self.loader.poll()  # launch 1
+        self.loader.poll()  # launch 2
+        self.cancelled = self.launched[:1]  # cancel run 1
+        self.loader.poll()  # check status, rerun 1
+
+        launched = self.launched[:]
+        downloaded = self.downloaded[:]
+
+        self.assertEqual(expected_launched, launched)
+        self.assertEqual(expected_downloaded, downloaded)
+
+    def test_purged_run(self):
+        self.loader.find_folders = lambda: ['run1']
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
+                                                 folder + '/sample2_R1_x.fastq']
+        expected_launched = ['Default - sample1 (run1)',
+                             'Default - sample2 (run1)',
+                             'Default - sample1 (run1)']
+        expected_downloaded = []
+
+        self.loader.poll()  # launch 1
+        self.loader.poll()  # launch 2
+        self.completed = self.launched[:1]  # complete run 1
+        self.loader.poll()
+        self.purged = self.launched[:1]  # purge some results from run 1
+        self.loader.poll()  # check status, rerun 1
+
+        launched = self.launched[:]
+        downloaded = self.downloaded[:]
+
+        self.assertEqual(expected_launched, launched)
+        self.assertEqual(expected_downloaded, downloaded)
+
     def test_preexisting_runs(self):
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
@@ -392,36 +448,15 @@ class KiveLoaderTest(unittest.TestCase):
 
         self.assertEqual(expected_launched, self.launched)
 
-    def test_failed_run(self):
-        def is_run_complete(run):
-            if run == 'Default - sample2 (run1)':
-                raise KiveRunFailedException('Mock failure.')
-            return True
-
-        self.loader.is_run_complete = is_run_complete
-
-        self.loader.find_folders = lambda: ['run1']
-        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
-                                                 folder + '/sample2_R1_x.fastq']
-        expected_downloaded = [('run1', [('sample1', 'Default - sample1 (run1)'),
-                                         ('sample2', 'Default - sample2 (run1)')])]
-
-        self.loader.poll()  # launch 1
-        self.loader.poll()  # launch 2
-        self.loader.poll()  # check status, catch exception
-        downloaded = self.downloaded[:]
-
-        self.assertEqual(expected_downloaded, downloaded)
-
     def test_unable_to_check_status(self):
         is_kive_running = False
 
-        def is_run_complete(run):
+        def fetch_run_status(run):
             if not is_kive_running:
                 raise StandardError('Kive connection failed.')
-            return True
+            return RUN_COMPLETED
 
-        self.loader.is_run_complete = is_run_complete
+        self.loader.fetch_run_status = fetch_run_status
 
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']

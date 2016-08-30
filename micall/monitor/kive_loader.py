@@ -19,6 +19,11 @@ from micall.monitor import qai_helper, update_qai
 from micall.monitor.kive_download import kive_login, download_results
 
 MAX_RUN_NAME_LENGTH = 60
+RUN_ACTIVE = 'active'
+RUN_CANCELLED = 'cancelled'
+RUN_COMPLETED = 'completed'
+RUN_FAILED = 'failed'
+RUN_PURGED = 'purged'
 logger = logging.getLogger("kive_loader")
 
 
@@ -45,7 +50,8 @@ class KiveLoader(object):
         self.latest_folder = None
         self.kive = None
         self.preexisting_runs = None
-        self.active_runs = []
+        self.active_runs = []  # [(sample_name, run_status)]
+        self.active_inputs = {}  # {run_id: (pipeline_id, dataset1, dataset2, quality)}
         self.batches = defaultdict(list)  # {folder: [run]}
         self.retry_counts = Counter()  # {folder: count}
         self.is_status_available = True
@@ -112,6 +118,11 @@ class KiveLoader(object):
                 if run is not None:
                     self.active_runs.append(run)
                     self.batches[self.folder].append(run)
+                    run_id = self.get_run_id(run)
+                    self.active_inputs[run_id] = (pipeline_id,
+                                                  dataset1,
+                                                  dataset2,
+                                                  self.quality_dataset)
             return 0
         except StandardError as ex:
             failed_folder = self.downloading_folder or self.folder
@@ -156,6 +167,7 @@ class KiveLoader(object):
         self.files = []
         self.file_count = 0
         self.active_runs = []
+        self.active_inputs = {}
         self.preexisting_runs = None
         self.batches.clear()
 
@@ -165,29 +177,72 @@ class KiveLoader(object):
         return (self.folder == self.latest_folder or
                 len(self.active_runs) < self.launch_limit)
 
+    def get_run_id(self, run):
+        _sample_name, run_status = run
+        return run_status.run_id
+
     def check_run_status(self):
-        for i in reversed(range(len(self.active_runs))):
-            run = self.active_runs[i]
-            try:
-                is_complete = self.is_run_complete(run)
-                self.is_status_available = True
-            except KiveRunFailedException:
-                is_complete = True
-            except:
-                is_complete = False
-                if self.is_status_available:
-                    # First failure, so log it.
-                    logger.warn('Unable to check run status.', exc_info=True)
-                    self.is_status_available = False
-            if is_complete:
-                del self.active_runs[i]
         for folder, runs in self.batches.items():
-            if folder != self.folder and all(run not in self.active_runs
-                                             for run in runs):
+            is_batch_active = folder == self.folder
+            for run in runs:
+                try:
+                    active_index = self.active_runs.index(run)
+                except ValueError:
+                    active_index = None
+                if active_index is None:
+                    try:
+                        output_status = self.fetch_output_status(run)
+                        self.is_status_available = True
+                        if output_status == RUN_PURGED:
+                            self.relaunch(run, folder)
+                            is_batch_active = True
+                    except:
+                        if self.is_status_available:
+                            logger.warn('Unable to check output status.',
+                                        exc_info=True)
+                            self.is_status_available = False
+                else:
+                    try:
+                        run_status = self.fetch_run_status(run)
+                        self.is_status_available = True
+                        is_complete = run_status == RUN_COMPLETED
+                        if is_complete:
+                            del self.active_runs[active_index]
+                        else:
+                            is_batch_active = True
+                            if run_status == RUN_CANCELLED:
+                                # Rerun the cancelled run.
+                                self.relaunch(run, folder)
+                    except:
+                        is_batch_active = True
+                        if self.is_status_available:
+                            # First failure, so log it.
+                            logger.warn('Unable to check run status.',
+                                        exc_info=True)
+                            self.is_status_available = False
+            if not is_batch_active:
                 self.downloading_folder = folder
                 self.download_results(folder, runs)
+                for run in runs:
+                    del self.active_inputs[self.get_run_id(run)]
                 del self.batches[folder]
                 self.downloading_folder = None
+
+    def relaunch(self, run, batch_folder):
+        run_id = self.get_run_id(run)
+        inputs = self.active_inputs[run_id]
+        new_run = self.launch(*inputs)
+        new_run_id = self.get_run_id(new_run)
+        del self.active_inputs[run_id]
+        self.active_inputs[new_run_id] = inputs
+        batch_runs = self.batches[batch_folder]
+        batch_index = batch_runs.index(run)
+        batch_runs[batch_index] = new_run
+        try:
+            active_index = self.active_runs.index(run)
+            self.active_runs[active_index] = new_run
+        except ValueError:
+            self.active_runs.append(new_run)
 
     def find_folders(self):
         """ Find run folders ready to be processed.
@@ -476,13 +531,32 @@ class KiveLoader(object):
         input_ids = tuple(inp.dataset_id for inp in inputs)
         return (pipeline_id, ) + input_ids
 
-    def is_run_complete(self, run):
-        """ Check if a Kive run is complete.
+    def fetch_run_status(self, run):
+        """ Fetch the run status from Kive.
 
-        @param run: a pair of (sample_name, run_status)
+        :return: RUN_ACTIVE, RUN_COMPLETED, or RUN_CANCELLED
         """
         _sample_name, run_status = run
-        return run_status.is_complete()
+        details = self.kive.get_run(run_status.run_id).raw
+        if details['stopped_by'] is not None:
+            return RUN_CANCELLED
+        if details['end_time'] is not None:
+            return RUN_COMPLETED
+        return RUN_ACTIVE
+
+    def fetch_output_status(self, run):
+        """ Fetch the output status for a completed run from Kive.
+
+        :return: RUN_COMPLETED, RUN_FAILED, or RUN_PURGED
+        """
+        _sample_name, run_status = run
+        outputs = run_status.get_results()
+        for output in outputs.itervalues():
+            if output.raw['is_invalid']:
+                return RUN_FAILED
+            if output.raw['id'] is None:
+                return RUN_PURGED
+        return RUN_COMPLETED
 
     def mark_folder_disabled(self, folder, message, exc_info=None):
         """ Mark a run that failed, so it won't be processed again.
@@ -548,7 +622,7 @@ if __name__ == '__live_coding__':
     from micall.tests.kive_loader_test import KiveLoaderTest
 
     suite = unittest.TestSuite()
-    suite.addTest(KiveLoaderTest("test_pipelines_diff_patterns"))
+    suite.addTest(KiveLoaderTest("test_download_one_sample"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)
