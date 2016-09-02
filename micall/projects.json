@@ -1188,7 +1188,7 @@
           ]
         },
         {
-          "coordinate_region": "V3LOOP",
+          "coordinate_region": "gp120",
           "seed_region_names": [
             "HIV1B-env-seed"
           ]
@@ -1470,11 +1470,11 @@
       "max_variants": 0,
       "regions": []
     },
-    "V3LOOP": {
+    "gp120": {
       "max_variants": 0,
       "regions": [
         {
-          "coordinate_region": "V3LOOP",
+          "coordinate_region": "gp120",
           "seed_region_names": [
             "HIV1B-env-seed"
           ]
@@ -12646,10 +12646,16 @@
       ],
       "seed_group": null
     },
-    "V3LOOP": {
+    "gp120": {
       "is_nucleotide": false,
       "reference": [
-        "CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC"
+        "MRVKEKYQHLWRWGWRWGTMLLGMLMICSATEKLWVTVYYGVPVWKEATTTLFCASDAKAYDTEVHNVWATHACVPTDPN",
+        "PQEVVLVNVTENFNMWKNDMVEQMHEDIISLWDQSLKPCVKLTPLCVSLKCTDLKNDTNTNSSSGRMIMEKGEIKNCSFN",
+        "ISTSIRGKVQKEYAFFYKLDIIPIDNDTTSYKLTSCNTSVITQACPKVSFEPIPIHYCAPAGFAILKCNNKTFNGTGPCT",
+        "NVSTVQCTHGIRPVVSTQLLLNGSLAEEEVVIRSVNFTDNAKTIIVQLNTSVEINCTRPNNNTRKRIRIQRGPGRAFVTI",
+        "GKIGNMRQAHCNISRAKWNNTLKQIASKLREQFGNNKTIIFKQSSGGDPEIVTHSFNCGGEFFYCNSTQLFNSTWFNSTW",
+        "STEGSNNTEGSDTITLPCRIKQIINMWQKVGKAMYAPPISGQIRCSSNITGLLLTRDGGNSNNESEIFRPGGGDMRDNWR",
+        "SELYKYKVVKIEPLGVAPTKAKRRVVQREKR"
       ],
       "seed_group": null
     }
