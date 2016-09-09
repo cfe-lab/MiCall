@@ -9,6 +9,7 @@ import os
 import gotoh
 
 from micall.core.project_config import ProjectConfig
+import re
 
 
 def parse_args():
@@ -63,7 +64,7 @@ def plot(counts, filename, window_size=31):
     plt.savefig(filename)  # write image to file
     for i in range(2):
         for j in range(2):
-            axes[i][j].set_xlim((3000, 3500))
+            axes[i][j].set_xlim((3100, 3600))
     plt.savefig(filename + '_zoom.png')
 
 
@@ -168,6 +169,16 @@ def map_sequence(source_seq, dest_seq):
             positions.append(source_pos if source_nuc != '-' else None)
         if source_nuc != '-':
             source_pos += 1
+    hit_count = sum(position is not None for position in positions)
+    if hit_count < len(dest_seq) / 2:
+        pieces = re.split('(N+)', dest_seq)
+        sizes = [(len(p), i) for i, p in enumerate(pieces) if p and 'N' not in p]
+        if sizes:
+            sizes.sort(reverse=True)
+            big_piece = sizes[0][1]
+            offset = sum(len(p) for p in pieces[:big_piece])
+            positions = offset*[None] + map_sequence(source_seq,
+                                                     pieces[big_piece])
 
     return positions
 
