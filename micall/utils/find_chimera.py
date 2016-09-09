@@ -1,14 +1,14 @@
 from argparse import ArgumentParser
 from collections import defaultdict
 from csv import DictReader
+from itertools import groupby
 from matplotlib import pyplot as plt
+from operator import itemgetter
 import os
 
 import gotoh
 
 from micall.core.project_config import ProjectConfig
-# from micall.core.aln2counts import AMINO_ALPHABET
-# from micall.utils.translation import translate
 
 
 def parse_args():
@@ -23,7 +23,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def plot(counts, filename, window_size=51):
+def plot(counts, filename, window_size=31):
     window_counts = defaultdict(dict)  # {(seed, consensus): {mid_pos: (agree, disagree)}}
     for names, agreement_counts in counts.iteritems():
         for mid_pos in agreement_counts.iterkeys():
@@ -48,6 +48,7 @@ def plot(counts, filename, window_size=51):
         seed_name, consensus_name = names
 #         axis.set_yscale('log')
         axis.set_ylim((0.5, 20000))
+        axis.set_xlim((2500, 5500))
         axis.set_xlabel(consensus_name + ' nuc pos')
         axis.set_ylabel(seed_name + ' match counts')
         name_counts = window_counts[names]
@@ -60,6 +61,10 @@ def plot(counts, filename, window_size=51):
         plt.tight_layout()
 
     plt.savefig(filename)  # write image to file
+    for i in range(2):
+        for j in range(2):
+            axes[i][j].set_xlim((3000, 3500))
+    plt.savefig(filename + '_zoom.png')
 
 
 def main():
@@ -70,96 +75,70 @@ def main():
     print('Done.')
 
 
-def find_region_rows(f, sample_name):
-    reader = DictReader(f)
-    sample_rows = (row for row in reader
-                   if row['sample'] == sample_name)
-    region_rows = (row for row in sample_rows
-                   if row['region'].endswith('-NS2') or
-                   row['region'].endswith('-NS3'))
-    return region_rows
+def find_consensus(rows, seed_name, region_name):
+    max_nucs = {}  # {pos: max_nuc}
+    matching_rows = (row
+                     for row in rows
+                     if row['seed'] == seed_name and
+                     row['region'] == region_name)
+    for row in matching_rows:
+        max_count = 0
+        pos = int(row['refseq.nuc.pos'])
+        for nuc in 'ACGT':
+            nuc_count = int(row[nuc])
+            if nuc_count > max_count:
+                max_nucs[pos] = nuc
+                max_count = nuc_count
+    max_pos = max_nucs and max(max_nucs.iterkeys()) or 0
+    consensus = ''.join(max_nucs.get(i+1, 'N') for i in xrange(max_pos))
+    return consensus
 
 
 def process_file(sample_name, projects, args):
     print('Starting {}.'.format(sample_name))
 
-    # amino_counts = defaultdict(dict)  # {(seed, consensus): {pos: (agree, disagree
-    # amino_path = os.path.join(result_path, 'amino.csv')
-    # with open(amino_path, 'rU') as amino_csv:
-    #     region_rows = find_region_rows(amino_csv, sample_name)
-    #     seed_map = {row['seed']: projects.getReference(row['seed'])
-    #                 for row in region_rows}
-    #     amino_csv.seek(0)
-    #     region_rows = find_region_rows(amino_csv, sample_name)
-    #     for row in region_rows:
-    #         amino_pos = int(row['query.aa.pos'])
-    #         codon_end = amino_pos*3 - 1
-    #         codon_start = codon_end-3
-    #         for seed_name in seed_map.keys():
-    #             consensus_name = row['seed']
-    #             expected_nucs = position_map[seed_name][consensus_name]
-    #             expected_codon = expected_nucs[codon_start:codon_end]
-    #             expected_amino = translate(expected_codon)
-    #             agree_count = disagree_count = 0
-    #             for amino in AMINO_ALPHABET:
-    #                 count = int(row[amino])
-    #                 if amino == expected_amino:
-    #                     agree_count += count
-    #                 else:
-    #                     disagree_count += count
-    #             amino_counts[(seed_name, consensus_name)][amino_pos] = (
-    #                 agree_count,
-    #                 disagree_count)
-
-    nuc_counts = defaultdict(dict)  # {(seed, consensus): {pos: (agree, disagree)}}
+    nuc_counts = defaultdict(dict)  # {(source, dest): {pos: (agree, disagree)}}
     nucleotide_path = os.path.join(args.results, 'nuc.csv')
     with open(nucleotide_path, 'rU') as nuc_csv:
-        region_rows = find_region_rows(nuc_csv, sample_name)
-        seed_names = {row['seed'] for row in region_rows}
-        seed_map = {seed_name: projects.getReference(seed_name)
-                    for seed_name in seed_names}
-        # seed_map['HCV-2k'] = projects.getReference('HCV-3a')
-        position_map = build_position_map(seed_map)
-        nuc_csv.seek(0)
-        region_rows = find_region_rows(nuc_csv, sample_name)
-        nucleotides = 'ACGT'
-        report = []
-        for row in region_rows:
-            pos = int(row['query.nuc.pos'])
-            for seed_name in seed_map.iterkeys():
-                consensus_name = row['seed']
-                expected_nucs = position_map[seed_name][consensus_name]
-                if pos-2 >= len(expected_nucs):
-                    expected_nuc = '-'
-                else:
-                    expected_nuc = expected_nucs[pos-2]
+        reader = DictReader(nuc_csv)
+        sample_rows = (row for row in reader
+                       if row['sample'] == sample_name)
+        region_rows = (row for row in sample_rows
+                       if row['region'].endswith('-NS2') or
+                       row['region'].endswith('-NS3'))
+        combo_rows = {combo: list(group)
+                      for combo, group in groupby(region_rows,
+                                                  itemgetter('seed', 'region'))}
+    seed_names = {combo[0] for combo in combo_rows.iterkeys()}
+    seed_map = {seed_name: projects.getReference(seed_name)
+                for seed_name in seed_names}
+    consensus_map = {combo: find_consensus(rows, *combo)
+                     for combo, rows in combo_rows.iteritems()}
+    nucleotides = 'ACGT'
+    for combo, rows in combo_rows.iteritems():
+        seed_name, _region_name = combo
+        consensus = consensus_map[combo]
+        for dest_seed_name in seed_names:
+            dest_seed = seed_map[dest_seed_name]
+            # print seed_name, region_name, dest_seed_name
+            seed_positions = map_sequence(dest_seed, consensus)
+            for row in rows:
+                pos = int(row['refseq.nuc.pos'])
                 agree_count = disagree_count = 0
-                max_nuc = None
-                max_count = 0
+                if pos > len(seed_positions):
+                    continue
+                seed_pos = seed_positions[pos-1]
+                if seed_pos is None:
+                    continue
+                expected_nuc = dest_seed[seed_pos-1]
                 for nuc in nucleotides:
                     count = int(row[nuc])
-                    if count > max_count:
-                        max_count = count
-                        max_nuc = nuc
                     if nuc == expected_nuc:
                         agree_count += count
                     else:
                         disagree_count += count
-                nuc_counts[(seed_name, consensus_name)][pos] = (agree_count,
-                                                                disagree_count)
-                if 2900 <= pos <= 3000 or 4000 <= pos <= 4100:
-                    report.append(' '.join(map(str, (seed_name,
-                                                     consensus_name,
-                                                     pos,
-                                                     expected_nuc,
-                                                     max_nuc,
-                                                     agree_count,
-                                                     disagree_count))))
-    if 'HCV-2k' in seed_map:
-        report.sort()
-        for line in report:
-            print(line)
-        print(seed_map['HCV-2k'])
+                nuc_counts[(dest_seed_name, seed_name)][seed_pos] = (agree_count,
+                                                                     disagree_count)
 
     plot_path_pattern = os.path.join(args.plot_path,
                                      '{prefix}{sample}_agreement.png')
@@ -170,6 +149,10 @@ def process_file(sample_name, projects, args):
 
 
 def map_sequence(source_seq, dest_seq):
+    """ Find the portion of source_seq that dest_seq maps to.
+
+    :return: a list of 1-based positions in source_seq that it mapped to.
+    """
     gap_open = 15
     gap_extend = 5
     use_terminal_gap_penalty = 1
@@ -178,31 +161,16 @@ def map_sequence(source_seq, dest_seq):
                                                           gap_open,
                                                           gap_extend,
                                                           use_terminal_gap_penalty)
-    seed_nucs = []
-    dest_index = 0
+    positions = []
+    source_pos = 1
     for source_nuc, dest_nuc in zip(aligned_source, aligned_dest):
-        if dest_nuc != '-' or dest_nuc == dest_seq[dest_index]:
-            seed_nucs.append(source_nuc)
-            dest_index += 1
-        if dest_index >= len(dest_seq):
-            break
+        if dest_nuc != '-':
+            positions.append(source_pos if source_nuc != '-' else None)
+        if source_nuc != '-':
+            source_pos += 1
 
-    mapped_seq = ''.join(seed_nucs)
-    return mapped_seq
+    return positions
 
-
-def build_position_map(seed_map):
-    position_map = defaultdict(dict)  # {seed_name: {consensus_name: seed_seq}}
-    for source_region, source_seq in seed_map.iteritems():
-        for dest_region, dest_seq in seed_map.iteritems():
-            mapped_seq = map_sequence(source_seq, dest_seq)
-
-            position_map[source_region][dest_region] = mapped_seq
-            # if source_region == 'HCV-1a' and dest_region == 'HCV-1a':
-            #     print source_seq
-            #     print dest_seq
-            #     print position_map[source_region][dest_region]
-    return position_map
 
 if __name__ == '__main__':
     main()
