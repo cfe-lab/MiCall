@@ -10,6 +10,7 @@
 *.so
 *.fai
 *~
+.cache
 /micall/tests/working/*
 !/micall/tests/working/*.launch
 *.bt2

@@ -131,7 +131,41 @@ purchasing a license.
   * count - the number of times the insertion occurred
   * before - the one-based position within the coordinate reference that it
     was inserted before
-  
+* g2p.csv - calls individual sequences as either R5 or X4
+  * rank - ranks each sequence within the sample, starting at 1 for the most
+    common.
+  * count - how many times this sequence appeared in the sample. (Note that the
+    same amino acid sequence can be produced by different nucleotide sequences,
+    and these are counted separately.)
+  * g2p - the score from the geno2pheno algorithm
+  * fpr - the false positive rate
+  * call - blank if there was an error, R5 if fpr > 3.5, otherwise X4.
+  * seq - the amino acid sequence that was used
+  * aligned - how the amino acid sequence aligned with the reference sequence
+  * error - reason for rejecting a sequence
+    * low quality - more than half of the sequence had read quality with phred
+        score < 33
+    * notdiv3 - the sequence did not end on a codon boundary
+    * zerolength - none of the sequence mapped to the expected portion of the
+        reference sequence
+    * cysteines - the start or end of the amino acid sequence was not a cycsteine
+    * > 2 ambiguous - more than one amino acid was ambiguous, or one position
+        more than two possible amino acids
+    * stop codons - the sequence contained a stop codon
+    * length - the amino acid sequence length was outside of the range 32 to 40
+    * failed to align - the nucleotide sequence failed to align with the reference
+    * count < 3 - this is a summary line reporting how many reads were rejected
+        for low counts
+  * comment - a warning for sequences that had a problem but were good enough
+    to score
+    * ambiguous - one amino acid had two possible values
+* g2p_summary.csv - summarizes the sample and calls it either R5 or X4
+  * mapped - the number of reads that mapped to V3LOOP
+  * valid - the number of those reads that were valid sequences and not errors
+  * X4calls - the number of those reads that were called X4
+  * X4pct - X4calls as a percentage of valid
+  * final - the final decision: blank if valid is 0, X4 if X4pct >= 2, otherwise
+    R5
 
 ## The MiCall Monitor ##
 
