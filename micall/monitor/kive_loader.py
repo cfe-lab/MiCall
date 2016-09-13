@@ -586,29 +586,33 @@ class KiveLoader(object):
         @param folder: the run folder
         @param runs: [(sample_name, run_status)] a sequence of pairs
         """
-        # First, check that all runs in the batch were successful.
-        for sample_name, run_status in runs:
+        try:
             try:
-                run_status.is_successful()
+                # First, check that all runs in the batch were successful.
+                for sample_name, run_status in runs:
+                    run_status.is_successful()
             except KiveRunFailedException:
+                _, _, traceback = sys.exc_info()
                 message = 'Sample {} failed in Kive.'.format(sample_name)
-                self.mark_folder_disabled(folder, message, exc_info=True)
-                return
+                raise KiveRunFailedException, message, traceback
 
-        results_parent = os.path.join(folder, 'Results')
-        if not os.path.exists(results_parent):
-            os.mkdir(results_parent)
-        results_folder = os.path.join(results_parent,
-                                      'version_' + settings.pipeline_version)
-        if not os.path.exists(results_folder):
-            os.mkdir(results_folder)
-        run_folder = os.path.join(settings.home, os.path.basename(folder))
-        logger.info('downloading results for %r', folder)
-        download_results(runs, results_folder, run_folder)
-        update_qai.process_folder(results_folder)
-        with open(os.path.join(results_folder, settings.DONE_PROCESSING), 'w'):
-            pass  # Leave the file empty
-        logger.info('completed folder %r', folder)
+            results_parent = os.path.join(folder, 'Results')
+            if not os.path.exists(results_parent):
+                os.mkdir(results_parent)
+            results_folder = os.path.join(results_parent,
+                                          'version_' + settings.pipeline_version)
+            if not os.path.exists(results_folder):
+                os.mkdir(results_folder)
+            run_folder = os.path.join(settings.home, os.path.basename(folder))
+            logger.info('downloading results for %r', folder)
+            download_results(runs, results_folder, run_folder)
+            update_qai.process_folder(results_folder)
+            with open(os.path.join(results_folder, settings.DONE_PROCESSING), 'w'):
+                pass  # Leave the file empty
+            logger.info('completed folder %r', folder)
+        except StandardError:
+            message = 'Downloading results failed.'
+            self.mark_folder_disabled(folder, message, exc_info=True)
 
     def get_time(self):
         """ Get the current system time.
