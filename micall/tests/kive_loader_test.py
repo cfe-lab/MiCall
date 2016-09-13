@@ -22,6 +22,7 @@ class KiveLoaderTest(unittest.TestCase):
         self.existing_runs = {}
         self.uploaded = []
         self.launched = []
+        self.batches = []
         self.cancelled = []
         self.completed = []
         self.failed = []
@@ -65,8 +66,10 @@ class KiveLoaderTest(unittest.TestCase):
         # Note: get_run_key must match return value of launch_run
         self.loader.get_run_key = lambda pipeline_id, quality, fastq1, fastq2: (
             self.loader.get_run_name(pipeline_id, self.loader.get_sample_name(fastq1)))
-        self.loader.launch_run = lambda pipeline_id, run_name, inputs: (
+        self.loader.launch_run = lambda pipeline_id, run_name, inputs, batch_id: (
             self.launched.append(run_name) or run_name)
+        self.loader.create_batch = lambda batch_name: (
+            self.batches.append(batch_name) or len(self.batches))
 
     def test_idle(self):
         delay = self.loader.poll()
@@ -107,22 +110,26 @@ class KiveLoaderTest(unittest.TestCase):
                                                  folder + '/sample2_R1_x.fastq']
         expected_launched = ['Default - sample1 (run1)',
                              'Default - sample2 (run1)']
+        expected_batches = ['run1']
 
         self.loader.poll()
         self.loader.poll()
 
         self.assertEqual(expected_launched, self.launched)
+        self.assertEqual(expected_batches, self.batches)
 
     def test_launch_two_folders(self):
         self.loader.find_folders = lambda: ['run2', 'run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
         expected_launched = ['Default - sample1 (run2)',
                              'Default - sample1 (run1)']
+        expected_batches = ['run2', 'run1']
 
         self.loader.poll()
         self.loader.poll()
 
         self.assertEqual(expected_launched, self.launched)
+        self.assertEqual(expected_batches, self.batches)
 
     def test_launch_two_pipelines(self):
         self.loader.add_pipeline(id=EXTRA_PIPELINE_ID,
@@ -150,7 +157,7 @@ class KiveLoaderTest(unittest.TestCase):
         self.assertEqual(expected_downloaded, self.downloaded)
 
     def test_pipelines_diff_inputs(self):
-        self.loader.launch_run = lambda pipeline_id, run_name, inputs: (
+        self.loader.launch_run = lambda pipeline_id, run_name, inputs, batch_id: (
             self.launched.append((pipeline_id, inputs)))
         self.loader.add_pipeline(id=EXTRA_PIPELINE_ID,
                                  inputs=['fastq1'],

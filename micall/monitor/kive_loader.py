@@ -51,7 +51,7 @@ class KiveLoader(object):
         self.kive = None
         self.preexisting_runs = None
         self.active_runs = []  # [(sample_name, run_status)]
-        self.active_inputs = {}  # {run_id: (pipeline_id, dataset1, dataset2, quality)}
+        self.active_inputs = {}  # {run_id: (pipeline_id, dataset1, dataset2, quality, batch_id)}
         self.batches = defaultdict(list)  # {folder: [run]}
         self.retry_counts = Counter()  # {folder: count}
         self.is_status_available = True
@@ -89,6 +89,7 @@ class KiveLoader(object):
                         quality_file,
                         'phiX174 quality from MiSeq run ' + self.trimmed_folder,
                         self.quality_cdt)
+                    self.batch_id = self.create_batch(self.trimmed_folder)
             if not self.can_launch():
                 self.check_run_status()
             if not self.can_launch():
@@ -114,7 +115,8 @@ class KiveLoader(object):
                     run = self.launch(pipeline_id,
                                       dataset1,
                                       dataset2,
-                                      self.quality_dataset)
+                                      self.quality_dataset,
+                                      self.batch_id)
                 if run is not None:
                     self.active_runs.append(run)
                     self.batches[self.folder].append(run)
@@ -122,7 +124,8 @@ class KiveLoader(object):
                     self.active_inputs[run_id] = (pipeline_id,
                                                   dataset1,
                                                   dataset2,
-                                                  self.quality_dataset)
+                                                  self.quality_dataset,
+                                                  self.batch_id)
             return 0
         except StandardError as ex:
             failed_folder = self.downloading_folder or self.folder
@@ -148,6 +151,17 @@ class KiveLoader(object):
                 self.folders = None
                 self.reset_folders()
             return delay
+
+    def create_batch(self, trimmed_folder):
+        name = trimmed_folder + ' ' + settings.pipeline_version
+        description = 'MiCall batch for folder {}, pipeline version {}.'.format(
+            trimmed_folder,
+            settings.pipeline_version)
+        batch = self.kive.create_run_batch(name,
+                                           description=description,
+                                           users=[],
+                                           groups=settings.kive_groups_allowed)
+        return batch.id
 
     def check_folders(self):
         now = self.get_time()
@@ -467,7 +481,7 @@ class KiveLoader(object):
         name = name[:MAX_RUN_NAME_LENGTH]
         return name
 
-    def launch(self, pipeline_id, fastq1, fastq2, quality):
+    def launch(self, pipeline_id, fastq1, fastq2, quality, batch_id):
         """ Prepare and launch a run on Kive.
 
         :param int pipeline_id: the pipeline to launch with
@@ -483,7 +497,7 @@ class KiveLoader(object):
             return
         name = self.get_run_name(pipeline_id, sample_name)
         inputs = self.build_inputs(pipeline_id, fastq1, fastq2, quality)
-        return sample_name, self.launch_run(pipeline_id, name, inputs)
+        return sample_name, self.launch_run(pipeline_id, name, inputs, batch_id)
 
     def build_inputs(self, pipeline_id, fastq1, fastq2, quality):
         # Note: order of inputs is critical
@@ -491,7 +505,7 @@ class KiveLoader(object):
         pipeline = self.pipelines[pipeline_id]
         return [input_dict[s] for s in pipeline['inputs']]
 
-    def launch_run(self, pipeline_id, name, inputs):
+    def launch_run(self, pipeline_id, name, inputs, batch_id):
         self.check_kive_connection()
 
         logger.info('launching %s', name)
@@ -499,6 +513,7 @@ class KiveLoader(object):
         status = self.kive.run_pipeline(pipeline=kive_pipeline,
                                         inputs=inputs,
                                         name=name,
+                                        runbatch=batch_id,
                                         groups=settings.kive_groups_allowed)
         return status
 

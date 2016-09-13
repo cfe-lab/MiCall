@@ -34,8 +34,8 @@ kive_max_runs = 50  # Number of sample runs to have active at one time
 kive_status_delay = 30  # seconds between checking run status
 kive_folder_delay = 60*60  # seconds between scanning for new folders
 kive_retry_delay = 60*60  # seconds to continue retrying after error
-kive_pipelines = {000: dict(inputs=['quality', 'fastq1', 'fastq2'],
-                            format='MiSeq - {sample} ({folder})')}  # Change for each release
+kive_pipelines = {000: dict(format='MiSeq - {sample}',  # Change for each release
+                            inputs=['quality', 'fastq1', 'fastq2'])}
 quality_cdt_kive_id = 25        # Kive ID for CompoundDatatype (tile:integer, cycle:integer, errorrate:float?)
 """
 This can be retrieved by entering the Django shell with './manage.py shell'
