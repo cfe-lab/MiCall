@@ -47,7 +47,7 @@ class KiveLoader(object):
         self.folder_delay = folder_delay
         self.retry_delay = retry_delay
         self.folders = None
-        self.latest_folder = None
+        self.latest_folder = self.folder = None
         self.kive = None
         self.preexisting_runs = None
         self.active_runs = []  # [(sample_name, run_status)]
@@ -56,6 +56,8 @@ class KiveLoader(object):
         self.retry_counts = Counter()  # {folder: count}
         self.is_status_available = True
         self.pipelines = {}
+        self.miseq_runs_path = os.path.join(settings.rawdata_mount,
+                                            'MiSeq/runs')
 
     def add_pipeline(self, id, inputs, format='', pattern=''):
         """ Add another pipeline definition for launching.
@@ -268,8 +270,9 @@ class KiveLoader(object):
             processed
         """
         # flag indicates that Illumina MiseqReporter has completed pre-processing, files available on NAS
-        flag_files = glob(settings.rawdata_mount +
-                          'MiSeq/runs/*/{}'.format(settings.NEEDS_PROCESSING))
+        flag_files = glob(os.path.join(self.miseq_runs_path,
+                                       '*',
+                                       settings.NEEDS_PROCESSING))
         flag_files.sort(reverse=True)
         folders = []
         for i, flag_file in enumerate(flag_files):
@@ -372,6 +375,16 @@ class KiveLoader(object):
             # retrieve quality.csv compound data type
             self.quality_cdt = self.kive.get_cdt(settings.quality_cdt_kive_id)
 
+            # retrieve external file directory
+            directories = self.kive.get('/api/externalfiledirectories',
+                                        is_json=True).json()
+            self.external_directory_name = self.external_directory_path = None
+            for directory in directories:
+                if self.miseq_runs_path.startswith(directory['path']):
+                    self.external_directory_name = directory['name']
+                    self.external_directory_path = directory['path']
+                    break
+
     def upload_kive_dataset(self, filename, description, cdt):
         """ Upload a dataset to Kive.
 
@@ -380,12 +393,25 @@ class KiveLoader(object):
         self.check_kive_connection()
         dataset_name = os.path.basename(filename)
         logger.info('uploading dataset %r', dataset_name)
-        with open(filename, 'rb') as f:
-            dataset = self.kive.add_dataset(name=dataset_name,
-                                            description=description,
-                                            handle=f,
-                                            cdt=cdt,
-                                            groups=settings.kive_groups_allowed)
+        if self.external_directory_name is None:
+            with open(filename, 'rb') as f:
+                dataset = self.kive.add_dataset(
+                    name=dataset_name,
+                    description=description,
+                    handle=f,
+                    cdt=cdt,
+                    groups=settings.kive_groups_allowed)
+        else:
+            external_path = os.path.relpath(filename,
+                                            self.external_directory_path)
+            dataset = self.kive.add_dataset(
+                name=dataset_name,
+                description=description,
+                handle=None,
+                externalfiledirectory=self.external_directory_name,
+                external_path=external_path,
+                cdt=cdt,
+                groups=settings.kive_groups_allowed)
         return dataset
 
     def trim_folder(self, folder):
