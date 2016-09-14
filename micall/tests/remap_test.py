@@ -215,6 +215,15 @@ class SamToConseqsTest(unittest.TestCase):
         conseqs = remap.sam_to_conseqs(samIO)
         self.assertDictEqual(expected_conseqs, conseqs)
 
+    def testBigDeletionWithFrameShift(self):
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\n"
+            "test1\t99\ttest\t1\t44\t3M4D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
+        )
+        expected_conseqs = {'test': 'ACA----GGG'}
+        conseqs = remap.sam_to_conseqs(samIO)
+        self.assertDictEqual(expected_conseqs, conseqs)
+
     def testOverlapsCountOnce(self):
         samIO = StringIO.StringIO(
             "@SQ\tSN:test\n"
@@ -519,6 +528,44 @@ class SamToConseqsTest(unittest.TestCase):
                                        filter_coverage=2)
 
         self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testSeedsBothConverged(self):
+        """ Both references are now closer to the other seed than the start.
+
+        Don't drop both. Keep test because it has more reads.
+        """
+        # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
+        samIO = StringIO.StringIO(
+            "@SQ\tSN:test\tSN:other\tSN:unrelated\n"
+            "test1\t99\ttest\t1\t44\t8M\t=\t1\t10\tAAGCCGTA\tJJJJJJJJJJ\n"
+            "test2\t99\ttest\t1\t44\t8M\t=\t1\t10\tAAGCCGTA\tJJJJJJJJJJ\n"
+            "other1\t99\tother\t1\t44\t8M\t=\t1\t10\tATGAAGTA\tJJJJJJJJJJ\n"
+            "unrelated1\t99\tunrelated\t1\t44\t9M\t=\t1\t10\tGGGTTTGGG\tJJJJJJJJJ\n"
+        )
+        seeds = {'test': 'ATGAAGTA',
+                 'other': 'AAGCCGAA',
+                 'unrelated': 'GGGTTTGGG'}
+        expected_conseqs = {'test': 'AAGCCGTA',
+                            'unrelated': 'GGGTTTGGG'}
+        expected_distances = {'test': dict(seed_dist=3,
+                                           other_dist=1,
+                                           other_seed='other'),
+                              'other': dict(seed_dist=5,
+                                            other_dist=0,
+                                            other_seed='test'),
+                              'unrelated': dict(seed_dist=0,
+                                                other_dist=7,
+                                                other_seed='test')}
+        distances = {}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       is_filtered=True,
+                                       distance_report=distances)
+
+        self.maxDiff = 1000
+        self.assertEqual(expected_distances, distances)
+        self.assertEqual(expected_conseqs, conseqs)
 
     def testAllSeedsLowCoverage(self):
         "Multiple seeds mapped, but none have good coverage. Choose most reads."

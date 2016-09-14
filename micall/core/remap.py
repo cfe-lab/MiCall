@@ -191,7 +191,7 @@ def sam_to_conseqs(samfile,
         for key in debug_reports.iterkeys():
             debug_reports[key] = Counter()
 
-    # refmap structure: {refname: {pos: {nuc: count}}}
+    # refmap structure: {refname: {pos: Counter({nuc: count})}}
     refmap = {}
 
     pairs = matchmaker(samfile, include_singles=True)
@@ -246,53 +246,62 @@ def sam_to_conseqs(samfile,
             debug_reports[key] = ', '.join(mixtures)
 
     new_conseqs = counts_to_conseqs(refmap)
-    if not (seeds and is_filtered) or len(new_conseqs) < 2:
-        return new_conseqs
+    relevant_conseqs = None
+    is_filtering = seeds and is_filtered
 
     gap_open_penalty = 15
     gap_extend_penalty = 3
     use_terminal_gap_penalty = 1
-    filtered_conseqs = {}
-    for name in sorted(new_conseqs.iterkeys()):
-        conseq = new_conseqs[name]
-        counts = refmap[name]
-        relevant_conseq = u''
-        for pos, c in enumerate(conseq, 1):
-            pos_counts = sum(counts[pos].itervalues())
-            if pos_counts >= filter_coverage:
-                relevant_conseq += c
-        if not relevant_conseq:
-            # None of the coverage was acceptable.
-            continue
+    while is_filtering and len(new_conseqs) > 1:
+        drifted_seeds = []  # [(count, name)]
+        if relevant_conseqs is None:
+            relevant_conseqs = {}
+            for name in sorted(new_conseqs.iterkeys()):
+                conseq = new_conseqs[name]
+                counts = refmap[name]
+                relevant_conseq = u''
+                for pos, c in enumerate(conseq, 1):
+                    pos_counts = sum(counts[pos].itervalues())
+                    if pos_counts >= filter_coverage:
+                        relevant_conseq += c
+                relevant_conseqs[name] = relevant_conseq
+        for name in sorted(new_conseqs.iterkeys()):
+            relevant_conseq = relevant_conseqs[name]
+            if not relevant_conseq:
+                # None of the coverage was acceptable.
+                drifted_seeds.append((read_counts[name], name))
+                continue
 
-        other_seed = other_dist = None
-        for seed_name in sorted(new_conseqs.iterkeys()):
-            seed_ref = seeds[seed_name]
-            aligned_seed, aligned_conseq, _score = align_it(seed_ref,
-                                                            relevant_conseq,
-                                                            gap_open_penalty,
-                                                            gap_extend_penalty,
-                                                            use_terminal_gap_penalty)
-            relevant_seed = extract_relevant_seed(aligned_conseq, aligned_seed)
-            d = Levenshtein.distance(relevant_seed, relevant_conseq)
-            if seed_name == name:
-                seed_dist = d
-            elif other_dist is None or d < other_dist:
-                other_seed = seed_name
-                other_dist = d
+            other_seed = other_dist = None
+            for seed_name in sorted(new_conseqs.iterkeys()):
+                seed_ref = seeds[seed_name]
+                aligned_seed, aligned_conseq, _score = align_it(seed_ref,
+                                                                relevant_conseq,
+                                                                gap_open_penalty,
+                                                                gap_extend_penalty,
+                                                                use_terminal_gap_penalty)
+                relevant_seed = extract_relevant_seed(aligned_conseq, aligned_seed)
+                d = Levenshtein.distance(relevant_seed, relevant_conseq)
+                if seed_name == name:
+                    seed_dist = d
+                elif other_dist is None or d < other_dist:
+                    other_seed = seed_name
+                    other_dist = d
 
-        if seed_dist <= other_dist:
-            # Consensus is closer to starting seed than any other seed: keep it.
-            filtered_conseqs[name] = conseq
-        if distance_report is not None:
-            distance_report[name] = dict(seed_dist=seed_dist,
-                                         other_dist=other_dist,
-                                         other_seed=other_seed)
-    if not filtered_conseqs:
-        # No reference had acceptable coverage, choose one with most reads.
-        best_ref = read_counts.most_common(1)[0][0]
-        filtered_conseqs[best_ref] = new_conseqs[best_ref]
-    return filtered_conseqs
+            if seed_dist > other_dist:
+                # Consensus is farther from starting seed than another seed: drop it?
+                drifted_seeds.append((read_counts[name], name))
+            if distance_report is not None:
+                distance_report[name] = dict(seed_dist=seed_dist,
+                                             other_dist=other_dist,
+                                             other_seed=other_seed)
+        distance_report = None  # Only update during first iteration.
+        if drifted_seeds:
+            drifted_seeds.sort()
+            dropped_seed = drifted_seeds[0][1]
+            del new_conseqs[dropped_seed]
+        is_filtering = len(drifted_seeds) > 1
+    return new_conseqs
 
 
 def update_counts(rname,
@@ -992,7 +1001,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.remap_test import SamToConseqsTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SamToConseqsTest("testExtractRelevantSeeds"))
+    suite.addTest(SamToConseqsTest("testSeedsBothConverged"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)
