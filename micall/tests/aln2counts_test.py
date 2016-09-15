@@ -38,6 +38,7 @@ class StubbedSequenceReport(SequenceReport):
 
 class SequenceReportTest(unittest.TestCase):
     def setUp(self):
+        self.maxDiff = None
         self.insertion_file = StringIO.StringIO()
         insert_writer = InsertionWriter(
             insert_file=self.insertion_file)
@@ -272,10 +273,10 @@ R1-seed,15,0,9,0,AAATTT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.write_amino_header(self.report_file)
@@ -333,17 +334,16 @@ R4-seed,15,0,9,0,ATGGCAAACTGGATCAAT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
-R4-seed,R4,15,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
-R4-seed,R4,15,5,2,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0
-R4-seed,R4,15,6,3,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0
+seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
+R4-seed,R4,15,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0
+R4-seed,R4,15,5,2,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R4-seed,R4,15,6,3,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.write_amino_header(self.report_file)
         self.report.read(aligned_reads)
         self.report.write_amino_counts(self.report_file)
 
-        self.maxDiff = None
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
     def testCoverageSummary(self):
@@ -474,6 +474,44 @@ R1-seed,R1,15,,9,0,0,0,0,0,0
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testLowQualityAminoReport(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATNT
+""")
+
+        # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
+        expected_text = """\
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_amino_counts(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testPartialDeletionAminoReport(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAAT-T
+""")
+
+        # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
+        expected_text = """\
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_amino_counts(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testShiftedReadingFrameAminoReport(self):
         """ The seed's reading frame doesn't match the coordinate reference's
         reading frame, so there is an extra nucleotide at the beginning of the
@@ -487,11 +525,11 @@ R1-seed,15,0,9,0,GAAATTTCGA
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
         expected_text = """\
-R1-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,3,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
+R1-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,3,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -526,7 +564,6 @@ R1-seed,R1,15,9,9,0,0,9,0,0,0
         self.report.read(aligned_reads)
         self.report.write_nuc_counts(self.report_file)
 
-        self.maxDiff = None
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
     def testDeletionBetweenSeedAndCoordinateNucleotideReport(self):
@@ -576,13 +613,13 @@ R2-seed,15,0,9,0,AAATTTCCCCGA
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
         expected_text = """\
-R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,3,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
-R2-seed,R2,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
+R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,3,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -603,11 +640,11 @@ R1-seed,15,0,2,0,AAATTTCGA
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
         expected_text = """\
-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
+R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -627,16 +664,16 @@ R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
         expected_text = """\
-R3-seed,R3,15,4,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,6,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
-R3-seed,R3,15,7,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0
-R3-seed,R3,15,9,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0
-R3-seed,R3,15,10,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
-R3-seed,R3,15,11,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,12,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,4,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,6,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,7,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
+R3-seed,R3,15,9,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,10,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,11,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,12,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
         expected_insertions = """\
 seed,region,qcut,left,insert,count,before
@@ -756,7 +793,8 @@ R3-seed,R3a,15,5,G,9,5
         """ Lower-case n represents a gap between forward and reverse reads.
 
         Region R2 has sequence KFGPR, so this read has a gap at the end of G
-        and beginning of P. G is still unambiguous, but P is not.
+        and beginning of P. Partial codons at the ends of a read or next to the
+        gap are ignored, even though G is still unambiguous.
         """
         # refname,qcut,rank,count,offset,seq
         aligned_reads = self.prepareReads("""\
@@ -764,13 +802,13 @@ R2-seed,15,0,5,0,AAATTTGGnnCCCGA
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
         expected_text = """\
-R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,2,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,3,3,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0
+R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,2,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -1001,13 +1039,13 @@ R1-seed,15,0,9,0,AAATTT
 """)
 
         expected_text = """\
-R1-seed,R1a,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1a,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1a,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1b,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1b,15,1,2,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1b,15,2,3,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1a,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1a,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1a,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,1,2,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,2,3,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -1597,7 +1635,7 @@ class SeedAminoTest(unittest.TestCase):
         "Lower-case n represents a gap between the forward and reverse reads."
 
         nuc_seq = 'CTn'
-        expected_consensus = 'L'
+        expected_consensus = '-'
 
         self.amino.count_aminos(nuc_seq, 1)
         consensus = self.amino.get_consensus()

@@ -156,7 +156,8 @@ class SequenceReport(object):
 
                     # update amino acid counts
                     codon = offset_nuc_seq[nuc_pos:nuc_pos + 3]
-                    frame_seed_aminos[codon_index].count_aminos(codon, count)
+                    seed_amino = frame_seed_aminos[codon_index]
+                    seed_amino.count_aminos(codon, count)
         if self.callback:
             self.callback(progress=self.callback_max)
 
@@ -348,6 +349,7 @@ class SequenceReport(object):
                    'query.aa.pos',
                    'refseq.aa.pos']
         columns.extend(AMINO_ALPHABET)
+        columns.extend(('X', 'partial', 'del'))
         return csv.DictWriter(amino_file,
                               columns,
                               lineterminator=os.linesep)
@@ -371,7 +373,10 @@ class SequenceReport(object):
                        'region': region,
                        'q-cutoff': self.qcut,
                        'query.aa.pos': query_pos,
-                       'refseq.aa.pos': report_amino.position}
+                       'refseq.aa.pos': report_amino.position,
+                       'X': seed_amino.low_quality,
+                       'partial': seed_amino.partial,
+                       'del': seed_amino.deletions}
                 for letter in AMINO_ALPHABET:
                     letter_count = seed_amino.counts[letter]
                     row[letter] = letter_count
@@ -527,12 +532,18 @@ class SeedAmino(object):
     Records the frequencies of amino acids at a given position of the
     aligned reads as determined by the consensus sequence.
     """
-    def __init__(self, consensus_index):
+    def __init__(self, consensus_index, counts=None):
         self.consensus_index = consensus_index
-        self.counts = Counter()
+        self.counts = counts or Counter()
         self.nucleotides = [SeedNucleotide() for _ in range(3)]
+        self.low_quality = 0
+        self.partial = 0
+        self.deletions = 0
 
     def __repr__(self):
+        if self.counts:
+            return 'SeedAmino({!r}, {!r})'.format(self.consensus_index,
+                                                  dict(self.counts))
         return 'SeedAmino({})'.format(self.consensus_index)
 
     def count_aminos(self, codon_seq, count):
@@ -542,9 +553,14 @@ class SeedAmino(object):
                           or end of a sequence, or dashes for deletions
         @param count: the number of times they were read
         """
-        cleaned_codon = codon_seq.upper().replace(' ', '-')
-        amino = translate(cleaned_codon)
-        if amino in AMINO_ALPHABET:
+        if 'N' in codon_seq:
+            self.low_quality += count
+        elif '---' == codon_seq:
+            self.deletions += count
+        elif '-' in codon_seq:
+            self.partial += count
+        elif ' ' not in codon_seq and 'n' not in codon_seq:
+            amino = translate(codon_seq.upper())
             self.counts[amino] += count
         for i, nuc in enumerate(codon_seq):
             if nuc != ' ':
@@ -853,7 +869,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.aln2counts_test import SequenceReportTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SequenceReportTest("testPartialCodonNucleotideReport"))
+    suite.addTest(SequenceReportTest("testLowQualityAminoReport"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)
