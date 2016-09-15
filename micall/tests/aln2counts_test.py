@@ -297,16 +297,16 @@ R1-seed,15,0,9,0,AAATTT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
-R1-seed,R1,15,1,1,9,0,0,0
-R1-seed,R1,15,2,2,9,0,0,0
-R1-seed,R1,15,3,3,9,0,0,0
-R1-seed,R1,15,4,4,0,0,0,9
-R1-seed,R1,15,5,5,0,0,0,9
-R1-seed,R1,15,6,6,0,0,0,9
-R1-seed,R1,15,,7,0,0,0,0
-R1-seed,R1,15,,8,0,0,0,0
-R1-seed,R1,15,,9,0,0,0,0
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
+R1-seed,R1,15,1,1,9,0,0,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,9,0,0
+R1-seed,R1,15,5,5,0,0,0,9,0,0
+R1-seed,R1,15,6,6,0,0,0,9,0,0
+R1-seed,R1,15,,7,0,0,0,0,0,0
+R1-seed,R1,15,,8,0,0,0,0,0,0
+R1-seed,R1,15,,9,0,0,0,0,0,0
 """
 
         self.report.write_nuc_header(self.report_file)
@@ -408,17 +408,17 @@ R1-seed,15,0,1,3,TTT
 R1-seed,15,0,8,5,TCGA
 """)
 
-        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
         expected_text = """\
-R1-seed,R1,15,1,1,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0
-R1-seed,R1,15,3,3,0,0,0,0
-R1-seed,R1,15,4,4,0,0,0,1
-R1-seed,R1,15,5,5,0,0,0,1
-R1-seed,R1,15,6,6,0,0,0,9
-R1-seed,R1,15,7,7,0,8,0,0
-R1-seed,R1,15,8,8,0,0,8,0
-R1-seed,R1,15,9,9,8,0,0,0
+R1-seed,R1,15,1,1,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,0,0
+R1-seed,R1,15,3,3,0,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,1,0,0
+R1-seed,R1,15,5,5,0,0,0,1,0,0
+R1-seed,R1,15,6,6,0,0,0,9,0,0
+R1-seed,R1,15,7,7,0,8,0,0,0,0
+R1-seed,R1,15,8,8,0,0,8,0,0,0
+R1-seed,R1,15,9,9,8,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -432,17 +432,41 @@ R1-seed,R1,15,9,9,8,0,0,0
 R1-seed,15,0,9,0,AAATT
 """)
 
-        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
         expected_text = """\
-R1-seed,R1,15,1,1,9,0,0,0
-R1-seed,R1,15,2,2,9,0,0,0
-R1-seed,R1,15,3,3,9,0,0,0
-R1-seed,R1,15,4,4,0,0,0,9
-R1-seed,R1,15,5,5,0,0,0,9
-R1-seed,R1,15,6,6,0,0,0,0
-R1-seed,R1,15,,7,0,0,0,0
-R1-seed,R1,15,,8,0,0,0,0
-R1-seed,R1,15,,9,0,0,0,0
+R1-seed,R1,15,1,1,9,0,0,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,9,0,0
+R1-seed,R1,15,5,5,0,0,0,9,0,0
+R1-seed,R1,15,6,6,0,0,0,0,0,0
+R1-seed,R1,15,,7,0,0,0,0,0,0
+R1-seed,R1,15,,8,0,0,0,0,0,0
+R1-seed,R1,15,,9,0,0,0,0,0,0
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_nuc_counts(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testLowQualityNucleotideReport(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATNT
+""")
+
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
+        expected_text = """\
+R1-seed,R1,15,1,1,9,0,0,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,9,0,0
+R1-seed,R1,15,5,5,0,0,0,0,9,0
+R1-seed,R1,15,6,6,0,0,0,9,0,0
+R1-seed,R1,15,,7,0,0,0,0,0,0
+R1-seed,R1,15,,8,0,0,0,0,0,0
+R1-seed,R1,15,,9,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -475,6 +499,36 @@ R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testDeletionNucleotideReport(self):
+        """ Coordinate sequence is KFGPR, and this aligned read is KFPR.
+
+        Must be a deletion in the seed reference with respect to the coordinate
+        reference.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAA---AGG
+""")
+
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
+        expected_text = """\
+R1-seed,R1,15,1,1,9,0,0,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,0,0,9
+R1-seed,R1,15,5,5,0,0,0,0,0,9
+R1-seed,R1,15,6,6,0,0,0,0,0,9
+R1-seed,R1,15,7,7,9,0,0,0,0,0
+R1-seed,R1,15,8,8,0,0,9,0,0,0
+R1-seed,R1,15,9,9,0,0,9,0,0,0
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_nuc_counts(self.report_file)
+
+        self.maxDiff = None
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testDeletionBetweenSeedAndCoordinateNucleotideReport(self):
         """ Coordinate sequence is KFGPR, and this aligned read is KFPR.
 
@@ -486,23 +540,23 @@ R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
 R2-seed,15,0,9,0,AAATTTCCCCGA
 """)
 
-        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
         expected_text = """\
-R2-seed,R2,15,1,1,9,0,0,0
-R2-seed,R2,15,2,2,9,0,0,0
-R2-seed,R2,15,3,3,9,0,0,0
-R2-seed,R2,15,4,4,0,0,0,9
-R2-seed,R2,15,5,5,0,0,0,9
-R2-seed,R2,15,6,6,0,0,0,9
-R2-seed,R2,15,,7,0,0,0,0
-R2-seed,R2,15,,8,0,0,0,0
-R2-seed,R2,15,,9,0,0,0,0
-R2-seed,R2,15,7,10,0,9,0,0
-R2-seed,R2,15,8,11,0,9,0,0
-R2-seed,R2,15,9,12,0,9,0,0
-R2-seed,R2,15,10,13,0,9,0,0
-R2-seed,R2,15,11,14,0,0,9,0
-R2-seed,R2,15,12,15,9,0,0,0
+R2-seed,R2,15,1,1,9,0,0,0,0,0
+R2-seed,R2,15,2,2,9,0,0,0,0,0
+R2-seed,R2,15,3,3,9,0,0,0,0,0
+R2-seed,R2,15,4,4,0,0,0,9,0,0
+R2-seed,R2,15,5,5,0,0,0,9,0,0
+R2-seed,R2,15,6,6,0,0,0,9,0,0
+R2-seed,R2,15,,7,0,0,0,0,0,0
+R2-seed,R2,15,,8,0,0,0,0,0,0
+R2-seed,R2,15,,9,0,0,0,0,0,0
+R2-seed,R2,15,7,10,0,9,0,0,0,0
+R2-seed,R2,15,8,11,0,9,0,0,0,0
+R2-seed,R2,15,9,12,0,9,0,0,0,0
+R2-seed,R2,15,10,13,0,9,0,0,0,0
+R2-seed,R2,15,11,14,0,0,9,0,0,0
+R2-seed,R2,15,12,15,9,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -868,17 +922,17 @@ R1-seed,15,0,9,0,AAATTT
 R-NO-COORD,15,0,9,0,AAATTT
 """)
 
-        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
         expected_text = """\
-R-NO-COORD,R-NO-COORD,15,1,,9,0,0,0
-R-NO-COORD,R-NO-COORD,15,2,,9,0,0,0
-R-NO-COORD,R-NO-COORD,15,3,,9,0,0,0
-R-NO-COORD,R-NO-COORD,15,4,,0,0,0,9
-R-NO-COORD,R-NO-COORD,15,5,,0,0,0,9
-R-NO-COORD,R-NO-COORD,15,6,,0,0,0,9
-R-NO-COORD,R-NO-COORD,15,7,,0,0,0,0
-R-NO-COORD,R-NO-COORD,15,8,,0,0,0,0
-R-NO-COORD,R-NO-COORD,15,9,,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,1,,9,0,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,2,,9,0,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,3,,9,0,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,4,,0,0,0,9,0,0
+R-NO-COORD,R-NO-COORD,15,5,,0,0,0,9,0,0
+R-NO-COORD,R-NO-COORD,15,6,,0,0,0,9,0,0
+R-NO-COORD,R-NO-COORD,15,7,,0,0,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,8,,0,0,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,9,,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)

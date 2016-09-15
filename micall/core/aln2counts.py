@@ -144,9 +144,9 @@ class SequenceReport(object):
 
             # cycle through reading frames
             for reading_frame, frame_seed_aminos in self.seed_aminos.iteritems():
-                offset_nuc_seq = '-' * (reading_frame + offset) + nuc_seq
+                offset_nuc_seq = ' ' * (reading_frame + offset) + nuc_seq
                 # pad to a codon boundary
-                offset_nuc_seq += '-' * ((3 - (len(offset_nuc_seq) % 3)) % 3)
+                offset_nuc_seq += ' ' * ((3 - (len(offset_nuc_seq) % 3)) % 3)
                 start = offset - (offset % 3)
                 for nuc_pos in range(start, len(offset_nuc_seq), 3):
                     codon_index = nuc_pos / 3
@@ -396,7 +396,9 @@ class SequenceReport(object):
                                'A',
                                'C',
                                'G',
-                               'T'],
+                               'T',
+                               'N',
+                               'del'],
                               lineterminator=os.linesep)
 
     def write_nuc_header(self, nuc_file):
@@ -417,8 +419,9 @@ class SequenceReport(object):
                        'region': region,
                        'q-cutoff': self.qcut,
                        'query.nuc.pos': query_pos,
-                       'refseq.nuc.pos': ref_pos}
-                for base in 'ACTG':
+                       'refseq.nuc.pos': ref_pos,
+                       'del': seed_nuc.counts['-']}
+                for base in 'ACTGN':
                     row[base] = seed_nuc.counts[base]
                 nuc_writer.writerow(row)
         if not self.coordinate_refs:
@@ -535,14 +538,18 @@ class SeedAmino(object):
     def count_aminos(self, codon_seq, count):
         """ Record a set of reads at this position in the seed reference.
         @param codon_seq: a string of three nucleotides that were read at this
-                          position
+                          position, may be padded with spaces at the start
+                          or end of a sequence, or dashes for deletions
         @param count: the number of times they were read
         """
-        amino = translate(codon_seq.upper())
+        cleaned_codon = codon_seq.upper().replace(' ', '-')
+        amino = translate(cleaned_codon)
         if amino in AMINO_ALPHABET:
             self.counts[amino] += count
-        for i in range(3):
-            self.nucleotides[i].count_nucleotides(codon_seq[i], count)
+        for i, nuc in enumerate(codon_seq):
+            if nuc != ' ':
+                seed_nucleotide = self.nucleotides[i]
+                seed_nucleotide.count_nucleotides(nuc, count)
 
     def get_report(self):
         """ Build a report string with the counts of each amino acid.
@@ -569,8 +576,11 @@ class SeedNucleotide(object):
     Records the frequencies of nucleotides at a given position of the
     aligned reads as determined by the consensus sequence.
     """
-    def __init__(self):
-        self.counts = Counter()
+    def __init__(self, counts=None):
+        self.counts = counts or Counter()
+
+    def __repr__(self):
+        return 'SeedNucleotide({!r})'.format(dict(self.counts))
 
     def count_nucleotides(self, nuc_seq, count):
         """ Record a set of reads at this position in the seed reference.
@@ -843,7 +853,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.aln2counts_test import SequenceReportTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SequenceReportTest("testShiftedReadingFrameAminoReport"))
+    suite.addTest(SequenceReportTest("testPartialCodonNucleotideReport"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)
