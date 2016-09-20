@@ -8,7 +8,7 @@ clips).
 """
 
 import argparse
-import collections
+from collections import Counter, defaultdict
 from csv import DictReader, DictWriter
 import itertools
 import multiprocessing.forking
@@ -36,6 +36,9 @@ def parseArgs():
     parser.add_argument('failed_csv',
                         type=argparse.FileType('w'),
                         help='<output> CSV containing reads that failed to merge')
+    parser.add_argument('clipping_csv',
+                        type=argparse.FileType('w'),
+                        help='<output> CSV containing count of soft-clipped reads at each position')
     parser.add_argument('-p', type=int, default=None, help='(optional) number of threads')
 
     return parser.parse_args()
@@ -76,7 +79,14 @@ class Pool(multiprocessing.pool.Pool):
     Process = Process
 
 
-def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
+def apply_cigar(cigar,
+                seq,
+                qual,
+                pos=0,
+                clip_from=0,
+                clip_to=None,
+                mapped=None,
+                soft_clipped=None):
     """ Applies a cigar string to recreate a read, then clips the read.
 
     Use CIGAR string (Compact Idiosyncratic Gapped Alignment Report) in SAM data
@@ -95,6 +105,12 @@ def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
         zero-based consensus coordinates
     @param clip_to: last position to include after clipping, given in
         zero-based consensus coordinates, None means no clipping at the end
+    @param mapped: a set or None. If not None, the set will be filled with all
+        zero-based consensus positions that were mapped to a nucleotide in the
+        read
+    @param soft_clipped: a set or None. If not None, the set will be filled with
+        all zero-based consensus positions that would have been mapped to
+        nucleotides that got soft clipped
     @return: (sequence, quality, {pos: (insert_seq, insert_qual)}) - the new
         sequence, the new quality string, and a dictionary of insertions with
         the zero-based coordinate in the new sequence that follows each
@@ -116,6 +132,10 @@ def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
         length = int(length)
         # Matching sequence: carry it over
         if operation == 'M':
+            if mapped is not None:
+                curr_pos = len(newseq) + 1
+                for i in xrange(curr_pos, curr_pos + length):
+                    mapped.add(i)
             newseq += seq[left:(left+length)]
             newqual += qual[left:(left+length)]
             left += length
@@ -131,6 +151,16 @@ def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
             left += length
         # Soft clipping leaves the sequence in the SAM - so we should skip it
         elif operation == 'S':
+            if soft_clipped is not None:
+                curr_pos = len(newseq) + 1
+                if left == 0:
+                    start = curr_pos - length
+                    end = curr_pos
+                else:
+                    start = curr_pos
+                    end = curr_pos + length
+                for i in xrange(start, end):
+                    soft_clipped.add(i)
             left += length
         else:
             raise RuntimeError('Unsupported CIGAR token: {!r}.'.format(
@@ -314,94 +344,123 @@ def matchmaker(remap_csv):
         yield old_row, None
 
 
-def parse_sam(rows):
-    """ Merge two matched reads into a single aligned read.
+class PairProcessor(object):
+    """ Merges pairs of rows, and counts soft-clipped positions. """
+    def __init__(self, is_clipping=False):
+        # {rname: {pos: clipping_count}}
+        self.clipping_counts = defaultdict(Counter) if is_clipping else None
 
-    Also report insertions and failed merges.
-    @param rows: tuple holding a pair of matched rows - forward and reverse reads
-    @return: (refname, merged_seqs, insert_list, failed_list) where
-        merged_seqs is {qcut: seq} the merged sequence for each cutoff level
-        insert_list is [{'qname': query_name,
-                         'fwd_rev': 'F' or 'R',
-                         'refname': refname,
-                         'pos': pos,
-                         'insert': insertion_sequence,
-                         'qual': insertion_quality_sequence}] insertions
-        relative to the reference sequence.
-        failed_list is [{'qname': query_name,
-                         'qcut': qcut,
-                         'seq1': seq1,
-                         'qual1': qual1,
-                         'seq2': seq2,
-                         'qual2': qual2,
-                         'prop_N': proportion_of_Ns,
-                         'mseq': merged_sequence}] sequences that failed to
-        merge.
-    """
-    row1, row2 = rows
-    mseqs = {}
-    failed_list = []
-    insert_list = []
-    rname = row1['rname']
-    qname = row1['qname']
+    def process(self, rows):
+        """ Merge two matched reads into a single aligned read.
 
-    cigar1 = row1['cigar']
-    cigar2 = row2 and row2['cigar']
-    failure_cause = None
-    if row2 is None:
-        failure_cause = 'unmatched'
-    elif cigar1 == '*' or cigar2 == '*':
-        failure_cause = 'badCigar'
-    elif row1['rname'] != row2['rname']:
-        failure_cause = '2refs'
+        Also report insertions and failed merges.
+        @param rows: tuple holding a pair of matched rows - forward and reverse reads
+        @return: (refname, merged_seqs, insert_list, failed_list) where
+            merged_seqs is {qcut: seq} the merged sequence for each cutoff level
+            insert_list is [{'qname': query_name,
+                             'fwd_rev': 'F' or 'R',
+                             'refname': refname,
+                             'pos': pos,
+                             'insert': insertion_sequence,
+                             'qual': insertion_quality_sequence}] insertions
+            relative to the reference sequence.
+            failed_list is [{'qname': query_name,
+                             'qcut': qcut,
+                             'seq1': seq1,
+                             'qual1': qual1,
+                             'seq2': seq2,
+                             'qual2': qual2,
+                             'prop_N': proportion_of_Ns,
+                             'mseq': merged_sequence}] sequences that failed to
+            merge.
+        """
+        row1, row2 = rows
+        mseqs = {}
+        failed_list = []
+        insert_list = []
+        rname = row1['rname']
+        qname = row1['qname']
 
-    if not failure_cause:
-        pos1 = int(row1['pos'])-1  # convert 1-index to 0-index
-        seq1, qual1, inserts = apply_cigar(cigar1, row1['seq'], row1['qual'])
+        cigar1 = row1['cigar']
+        cigar2 = row2 and row2['cigar']
+        failure_cause = None
+        if row2 is None:
+            failure_cause = 'unmatched'
+        elif cigar1 == '*' or cigar2 == '*':
+            failure_cause = 'badCigar'
+        elif row1['rname'] != row2['rname']:
+            failure_cause = '2refs'
 
-        # report insertions relative to sample consensus
-        for left, (iseq, iqual) in inserts.iteritems():
-            insert_list.append({'qname': qname,
-                                'fwd_rev': 'F' if is_first_read(row1['flag']) else 'R',
-                                'refname': rname,
-                                'pos': pos1+left,
-                                'insert': iseq,
-                                'qual': iqual})
-
-        seq1 = '-'*pos1 + seq1  # pad sequence on left
-        qual1 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
-
-        # now process the mate
-        pos2 = int(row2['pos'])-1  # convert 1-index to 0-index
-        seq2, qual2, inserts = apply_cigar(cigar2, row2['seq'], row2['qual'])
-        for left, (iseq, iqual) in inserts.iteritems():
-            insert_list.append({'qname': qname,
-                                'fwd_rev': 'F' if is_first_read(row2['flag']) else 'R',
-                                'refname': rname,
-                                'pos': pos2+left,
-                                'insert': iseq,
-                                'qual': iqual})
-        seq2 = '-'*pos2 + seq2
-        qual2 = '!'*pos2 + qual2
-
-        # merge reads
-        for qcut in SAM2ALN_Q_CUTOFFS:
-            mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=qcut)
-            prop_N = mseq.count('N') / float(len(mseq.strip('-')))
-            if prop_N > MAX_PROP_N:
-                # fail read pair
-                failure_cause = 'manyNs'
+        if not failure_cause:
+            if self.clipping_counts is None:
+                mapped = soft_clipped = None
             else:
-                mseqs[qcut] = mseq
+                mapped = set()
+                soft_clipped = set()
+            pos1 = int(row1['pos'])-1  # convert 1-index to 0-index
+            seq1, qual1, inserts = apply_cigar(cigar1,
+                                               row1['seq'],
+                                               row1['qual'],
+                                               pos1,
+                                               mapped=mapped,
+                                               soft_clipped=soft_clipped)
 
-    if failure_cause:
-        failed_list.append({'qname': qname,
-                            'cause': failure_cause})
+            # report insertions relative to sample consensus
+            for left, (iseq, iqual) in inserts.iteritems():
+                insert_list.append({'qname': qname,
+                                    'fwd_rev': 'F' if is_first_read(row1['flag']) else 'R',
+                                    'refname': rname,
+                                    'pos': left,
+                                    'insert': iseq,
+                                    'qual': iqual})
 
-    return rname, mseqs, insert_list, failed_list
+            # now process the mate
+            pos2 = int(row2['pos'])-1  # convert 1-index to 0-index
+            seq2, qual2, inserts = apply_cigar(cigar2,
+                                               row2['seq'],
+                                               row2['qual'],
+                                               pos2,
+                                               mapped=mapped,
+                                               soft_clipped=soft_clipped)
+            for left, (iseq, iqual) in inserts.iteritems():
+                insert_list.append({'qname': qname,
+                                    'fwd_rev': 'F' if is_first_read(row2['flag']) else 'R',
+                                    'refname': rname,
+                                    'pos': left,
+                                    'insert': iseq,
+                                    'qual': iqual})
+            if self.clipping_counts is not None:
+                for i in soft_clipped - mapped:
+                    self.clipping_counts[rname][i] += 1
+
+            # merge reads
+            for qcut in SAM2ALN_Q_CUTOFFS:
+                mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=qcut)
+                prop_N = mseq.count('N') / float(len(mseq.strip('-')))
+                if prop_N > MAX_PROP_N:
+                    # fail read pair
+                    failure_cause = 'manyNs'
+                else:
+                    mseqs[qcut] = mseq
+
+        if failure_cause:
+            failed_list.append({'qname': qname,
+                                'cause': failure_cause})
+
+        return rname, mseqs, insert_list, failed_list
+
+    def write_clipping(self, clipping_writer):
+        for rname, counts in self.clipping_counts.iteritems():
+            positions = counts.keys()
+            positions.sort()
+            for pos in positions:
+                row = dict(refname=rname,
+                           pos=pos,
+                           count=counts[pos])
+                clipping_writer.writerow(row)
 
 
-def parse_sam_in_threads(remap_csv, nthreads):
+def parse_sam_in_threads(remap_csv, nthreads, pair_processor):
     """ Call parse_sam() in multiple processes.
 
     Launch a multiprocessing pool, walk through the iterator, and then be sure
@@ -409,7 +468,7 @@ def parse_sam_in_threads(remap_csv, nthreads):
     """
     pool = Pool(processes=nthreads)
     try:
-        reads = pool.imap(parse_sam, iterable=matchmaker(remap_csv), chunksize=100)
+        reads = pool.imap(pair_processor.process, iterable=matchmaker(remap_csv), chunksize=100)
         for read in reads:
             yield read
     finally:
@@ -417,22 +476,40 @@ def parse_sam_in_threads(remap_csv, nthreads):
         pool.join()
 
 
-def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
-    # prepare outputs
-    insert_fields = ['qname', 'fwd_rev', 'refname', 'pos', 'insert', 'qual']
-    insert_writer = DictWriter(insert_csv, insert_fields, lineterminator=os.linesep)
-    insert_writer.writeheader()
+def sam2aln(remap_csv,
+            aligned_csv,
+            insert_csv=None,
+            failed_csv=None,
+            nthreads=None,
+            clipping_csv=None):
+    if insert_csv is not None:
+        insert_fields = ['qname', 'fwd_rev', 'refname', 'pos', 'insert', 'qual']
+        insert_writer = DictWriter(insert_csv,
+                                   insert_fields,
+                                   lineterminator=os.linesep)
+        insert_writer.writeheader()
 
-    failed_fields = ['qname', 'cause']
-    failed_writer = DictWriter(failed_csv, failed_fields, lineterminator=os.linesep)
-    failed_writer.writeheader()
+    if failed_csv is not None:
+        failed_fields = ['qname', 'cause']
+        failed_writer = DictWriter(failed_csv,
+                                   failed_fields,
+                                   lineterminator=os.linesep)
+        failed_writer.writeheader()
 
-    empty_region = collections.defaultdict(collections.Counter)
-    aligned = collections.defaultdict(empty_region.copy)
+    if clipping_csv is not None:
+        clipping_fields = ['refname', 'pos', 'count']
+        clipping_writer = DictWriter(clipping_csv,
+                                     clipping_fields,
+                                     lineterminator=os.linesep)
+        clipping_writer.writeheader()
+
+    pair_processor = PairProcessor(is_clipping=clipping_csv is not None)
+    empty_region = defaultdict(Counter)
+    aligned = defaultdict(empty_region.copy)
     if nthreads:
-        iter = parse_sam_in_threads(remap_csv, nthreads)
+        iter = parse_sam_in_threads(remap_csv, nthreads, pair_processor)
     else:
-        iter = itertools.imap(parse_sam, matchmaker(remap_csv))
+        iter = itertools.imap(pair_processor.process, matchmaker(remap_csv))
 
     for rname, mseqs, insert_list, failed_list in iter:
         region = aligned[rname]
@@ -442,11 +519,16 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
             mseq_counter = region[qcut]
             mseq_counter[mseq] += 1
 
-        # write out inserts to CSV
-        insert_writer.writerows(insert_list)
+        if insert_csv is not None:
+            # write out inserts to CSV
+            insert_writer.writerows(insert_list)
 
-        # write out failed read mergers to CSV
-        failed_writer.writerows(failed_list)
+        if failed_csv is not None:
+            # write out failed read mergers to CSV
+            failed_writer.writerows(failed_list)
+
+    if clipping_csv is not None:
+        pair_processor.write_clipping(clipping_writer)
 
     # write out merged sequences to file
     aligned_fields = ['refname', 'qcut', 'rank', 'count', 'offset', 'seq']
@@ -472,16 +554,17 @@ def main():
             aligned_csv=args.aligned_csv,
             insert_csv=args.insert_csv,
             failed_csv=args.failed_csv,
+            clipping_csv=args.clipping_csv,
             nthreads=args.p)
 
 if __name__ == '__main__':
     main()
 elif __name__ == '__live_coding__':
     import unittest
-    from micall.tests.sam2aln_test import CigarTest
+    from micall.tests.sam2aln_test import RemapReaderTest
 
     suite = unittest.TestSuite()
-    suite.addTest(CigarTest("testInsertionAfterClipRegionWithOffset"))
+    suite.addTest(RemapReaderTest("test_soft_clipping"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

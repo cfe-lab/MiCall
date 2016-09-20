@@ -27,3 +27,7 @@ The scenarios that each file tests are:
 * 2080A-V3LOOP - PR contamination below remap threshold
 * 2090A-HCV - mixed infection of HCV 1A and 1B, in the NS5b region.
 * 2100A-HCV-1337B-V3LOOP - two samples using same tags on different regions
+* 2110A-V3LOOP - 5 clean codons, then 2 stop codons in codon 6, 3 partial
+  deletions in codon 8, 4 insertions in codon 9, 3 soft clipped reads in codons
+  10 and 11, 1 deletion in codon 12, followed by 6 clean codons with only 7
+  reads covering them

@@ -273,10 +273,10 @@ R1-seed,15,0,9,0,AAATTT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.write_amino_header(self.report_file)
@@ -298,21 +298,84 @@ R1-seed,15,0,9,0,AAATTT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
-R1-seed,R1,15,1,1,9,0,0,0,0,0
-R1-seed,R1,15,2,2,9,0,0,0,0,0
-R1-seed,R1,15,3,3,9,0,0,0,0,0
-R1-seed,R1,15,4,4,0,0,0,9,0,0
-R1-seed,R1,15,5,5,0,0,0,9,0,0
-R1-seed,R1,15,6,6,0,0,0,9,0,0
-R1-seed,R1,15,,7,0,0,0,0,0,0
-R1-seed,R1,15,,8,0,0,0,0,0,0
-R1-seed,R1,15,,9,0,0,0,0,0,0
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip
+R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,9,0,0,0,0
+R1-seed,R1,15,5,5,0,0,0,9,0,0,0,0
+R1-seed,R1,15,6,6,0,0,0,9,0,0,0,0
+R1-seed,R1,15,,7,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,8,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,9,0,0,0,0,0,0,0,0
 """
 
         self.report.write_nuc_header(self.report_file)
         self.report.read(aligned_reads)
         self.report.write_nuc_counts(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testSoftClippingNucleotideReport(self):
+        """ Combine the soft clipping data with the read counts.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,2,ATTTA
+""")
+        clipping = StringIO.StringIO("""\
+refname,pos,count
+R1-seed,1,9
+R1-seed,2,9
+R1-seed,8,9
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,9
+R1-seed,R1,15,2,2,0,0,0,0,0,0,0,9
+R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,9,0,0,0,0
+R1-seed,R1,15,5,5,0,0,0,9,0,0,0,0
+R1-seed,R1,15,6,6,0,0,0,9,0,0,0,0
+R1-seed,R1,15,7,7,9,0,0,0,0,0,0,0
+R1-seed,R1,15,8,8,0,0,0,0,0,0,0,9
+R1-seed,R1,15,9,9,0,0,0,0,0,0,0,0
+"""
+
+        self.report.read_clipping(clipping)
+        self.report.write_nuc_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_nuc_counts(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testSoftClippingAminoReport(self):
+        """ Combine the soft clipping data with the read counts.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,2,ATTTA
+""")
+        clipping = StringIO.StringIO("""\
+refname,pos,count
+R1-seed,1,9
+R1-seed,2,9
+R1-seed,8,9
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+"""
+
+        self.report.read_clipping(clipping)
+        self.report.write_amino_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_nuc_counts(StringIO.StringIO())  # calculates clip counts
+        self.report.write_amino_counts(self.report_file)
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -334,10 +397,10 @@ R4-seed,15,0,9,0,ATGGCAAACTGGATCAAT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
-R4-seed,R4,15,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0
-R4-seed,R4,15,5,2,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R4-seed,R4,15,6,3,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
+R4-seed,R4,15,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
+R4-seed,R4,15,5,2,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R4-seed,R4,15,6,3,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.write_amino_header(self.report_file)
@@ -408,17 +471,17 @@ R1-seed,15,0,1,3,TTT
 R1-seed,15,0,8,5,TCGA
 """)
 
-        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip
         expected_text = """\
-R1-seed,R1,15,1,1,0,0,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0,0,0
-R1-seed,R1,15,3,3,0,0,0,0,0,0
-R1-seed,R1,15,4,4,0,0,0,1,0,0
-R1-seed,R1,15,5,5,0,0,0,1,0,0
-R1-seed,R1,15,6,6,0,0,0,9,0,0
-R1-seed,R1,15,7,7,0,8,0,0,0,0
-R1-seed,R1,15,8,8,0,0,8,0,0,0
-R1-seed,R1,15,9,9,8,0,0,0,0,0
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,0,0,0,0
+R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,1,0,0,0,0
+R1-seed,R1,15,5,5,0,0,0,1,0,0,0,0
+R1-seed,R1,15,6,6,0,0,0,9,0,0,0,0
+R1-seed,R1,15,7,7,0,8,0,0,0,0,0,0
+R1-seed,R1,15,8,8,0,0,8,0,0,0,0,0
+R1-seed,R1,15,9,9,8,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -432,17 +495,17 @@ R1-seed,R1,15,9,9,8,0,0,0,0,0
 R1-seed,15,0,9,0,AAATT
 """)
 
-        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip
         expected_text = """\
-R1-seed,R1,15,1,1,9,0,0,0,0,0
-R1-seed,R1,15,2,2,9,0,0,0,0,0
-R1-seed,R1,15,3,3,9,0,0,0,0,0
-R1-seed,R1,15,4,4,0,0,0,9,0,0
-R1-seed,R1,15,5,5,0,0,0,9,0,0
-R1-seed,R1,15,6,6,0,0,0,0,0,0
-R1-seed,R1,15,,7,0,0,0,0,0,0
-R1-seed,R1,15,,8,0,0,0,0,0,0
-R1-seed,R1,15,,9,0,0,0,0,0,0
+R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,9,0,0,0,0
+R1-seed,R1,15,5,5,0,0,0,9,0,0,0,0
+R1-seed,R1,15,6,6,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,7,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,8,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,9,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -456,17 +519,17 @@ R1-seed,R1,15,,9,0,0,0,0,0,0
 R1-seed,15,0,9,0,AAATNT
 """)
 
-        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip
         expected_text = """\
-R1-seed,R1,15,1,1,9,0,0,0,0,0
-R1-seed,R1,15,2,2,9,0,0,0,0,0
-R1-seed,R1,15,3,3,9,0,0,0,0,0
-R1-seed,R1,15,4,4,0,0,0,9,0,0
-R1-seed,R1,15,5,5,0,0,0,0,9,0
-R1-seed,R1,15,6,6,0,0,0,9,0,0
-R1-seed,R1,15,,7,0,0,0,0,0,0
-R1-seed,R1,15,,8,0,0,0,0,0,0
-R1-seed,R1,15,,9,0,0,0,0,0,0
+R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,9,0,0,0,0
+R1-seed,R1,15,5,5,0,0,0,0,9,0,0,0
+R1-seed,R1,15,6,6,0,0,0,9,0,0,0,0
+R1-seed,R1,15,,7,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,8,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,9,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -481,11 +544,11 @@ R1-seed,15,0,9,0,AAATNT
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -500,11 +563,11 @@ R1-seed,15,0,9,0,AAAT-T
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0
-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -525,11 +588,11 @@ R1-seed,15,0,9,0,GAAATTTCGA
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
-R1-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,3,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,3,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -548,17 +611,17 @@ R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0
 R1-seed,15,0,9,0,AAA---AGG
 """)
 
-        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip
         expected_text = """\
-R1-seed,R1,15,1,1,9,0,0,0,0,0
-R1-seed,R1,15,2,2,9,0,0,0,0,0
-R1-seed,R1,15,3,3,9,0,0,0,0,0
-R1-seed,R1,15,4,4,0,0,0,0,0,9
-R1-seed,R1,15,5,5,0,0,0,0,0,9
-R1-seed,R1,15,6,6,0,0,0,0,0,9
-R1-seed,R1,15,7,7,9,0,0,0,0,0
-R1-seed,R1,15,8,8,0,0,9,0,0,0
-R1-seed,R1,15,9,9,0,0,9,0,0,0
+R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,0,0,9,0,0
+R1-seed,R1,15,5,5,0,0,0,0,0,9,0,0
+R1-seed,R1,15,6,6,0,0,0,0,0,9,0,0
+R1-seed,R1,15,7,7,9,0,0,0,0,0,0,0
+R1-seed,R1,15,8,8,0,0,9,0,0,0,0,0
+R1-seed,R1,15,9,9,0,0,9,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -577,23 +640,23 @@ R1-seed,R1,15,9,9,0,0,9,0,0,0
 R2-seed,15,0,9,0,AAATTTCCCCGA
 """)
 
-        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip
         expected_text = """\
-R2-seed,R2,15,1,1,9,0,0,0,0,0
-R2-seed,R2,15,2,2,9,0,0,0,0,0
-R2-seed,R2,15,3,3,9,0,0,0,0,0
-R2-seed,R2,15,4,4,0,0,0,9,0,0
-R2-seed,R2,15,5,5,0,0,0,9,0,0
-R2-seed,R2,15,6,6,0,0,0,9,0,0
-R2-seed,R2,15,,7,0,0,0,0,0,0
-R2-seed,R2,15,,8,0,0,0,0,0,0
-R2-seed,R2,15,,9,0,0,0,0,0,0
-R2-seed,R2,15,7,10,0,9,0,0,0,0
-R2-seed,R2,15,8,11,0,9,0,0,0,0
-R2-seed,R2,15,9,12,0,9,0,0,0,0
-R2-seed,R2,15,10,13,0,9,0,0,0,0
-R2-seed,R2,15,11,14,0,0,9,0,0,0
-R2-seed,R2,15,12,15,9,0,0,0,0,0
+R2-seed,R2,15,1,1,9,0,0,0,0,0,0,0
+R2-seed,R2,15,2,2,9,0,0,0,0,0,0,0
+R2-seed,R2,15,3,3,9,0,0,0,0,0,0,0
+R2-seed,R2,15,4,4,0,0,0,9,0,0,0,0
+R2-seed,R2,15,5,5,0,0,0,9,0,0,0,0
+R2-seed,R2,15,6,6,0,0,0,9,0,0,0,0
+R2-seed,R2,15,,7,0,0,0,0,0,9,0,0
+R2-seed,R2,15,,8,0,0,0,0,0,9,0,0
+R2-seed,R2,15,,9,0,0,0,0,0,9,0,0
+R2-seed,R2,15,7,10,0,9,0,0,0,0,0,0
+R2-seed,R2,15,8,11,0,9,0,0,0,0,0,0
+R2-seed,R2,15,9,12,0,9,0,0,0,0,0,0
+R2-seed,R2,15,10,13,0,9,0,0,0,0,0,0
+R2-seed,R2,15,11,14,0,0,9,0,0,0,0,0
+R2-seed,R2,15,12,15,9,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -613,13 +676,13 @@ R2-seed,15,0,9,0,AAATTTCCCCGA
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
-R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,3,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
+R2-seed,R2,15,3,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -640,11 +703,11 @@ R1-seed,15,0,2,0,AAATTTCGA
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0
+R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -664,16 +727,16 @@ R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
-R3-seed,R3,15,4,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,6,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,7,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
-R3-seed,R3,15,9,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,10,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,11,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,12,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,4,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,6,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,7,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,9,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,10,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,11,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,12,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
         expected_insertions = """\
 seed,region,qcut,left,insert,count,before
@@ -802,13 +865,13 @@ R2-seed,15,0,5,0,AAATTTGGnnCCCGA
 """)
 
         # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
-        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
-R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,2,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,2,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -960,17 +1023,17 @@ R1-seed,15,0,9,0,AAATTT
 R-NO-COORD,15,0,9,0,AAATTT
 """)
 
-        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip
         expected_text = """\
-R-NO-COORD,R-NO-COORD,15,1,,9,0,0,0,0,0
-R-NO-COORD,R-NO-COORD,15,2,,9,0,0,0,0,0
-R-NO-COORD,R-NO-COORD,15,3,,9,0,0,0,0,0
-R-NO-COORD,R-NO-COORD,15,4,,0,0,0,9,0,0
-R-NO-COORD,R-NO-COORD,15,5,,0,0,0,9,0,0
-R-NO-COORD,R-NO-COORD,15,6,,0,0,0,9,0,0
-R-NO-COORD,R-NO-COORD,15,7,,0,0,0,0,0,0
-R-NO-COORD,R-NO-COORD,15,8,,0,0,0,0,0,0
-R-NO-COORD,R-NO-COORD,15,9,,0,0,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,1,,9,0,0,0,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,2,,9,0,0,0,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,3,,9,0,0,0,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,4,,0,0,0,9,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,5,,0,0,0,9,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,6,,0,0,0,9,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,7,,0,0,0,0,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,8,,0,0,0,0,0,0,0,0
+R-NO-COORD,R-NO-COORD,15,9,,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -1039,13 +1102,13 @@ R1-seed,15,0,9,0,AAATTT
 """)
 
         expected_text = """\
-R1-seed,R1a,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1a,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1a,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1b,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1b,15,1,2,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1b,15,2,3,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1a,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1a,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1a,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,1,2,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,2,3,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)

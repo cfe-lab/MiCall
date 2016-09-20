@@ -297,12 +297,18 @@ def process_sample(sample_index, run_info, args, pssm):
     with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
             open(os.path.join(sample_scratch_path, 'aligned.csv'), 'wb') as aligned_csv, \
             open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'wb') as insert_csv, \
-            open(os.path.join(sample_scratch_path, 'failed_read.csv'), 'wb') as failed_csv:
+            open(os.path.join(sample_scratch_path, 'failed_read.csv'), 'wb') as failed_csv, \
+            open(os.path.join(sample_scratch_path, 'clipping.csv'), 'wb') as clipping_csv:
 
-        sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv)
+        sam2aln(remap_csv,
+                aligned_csv,
+                insert_csv,
+                failed_csv,
+                clipping_csv=clipping_csv)
 
     logger.info('Running aln2counts (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'aligned.csv'), 'rU') as aligned_csv, \
+            open(os.path.join(sample_scratch_path, 'clipping.csv'), 'rU') as clipping_csv, \
             open(os.path.join(sample_scratch_path, 'nuc.csv'), 'wb') as nuc_csv, \
             open(os.path.join(sample_scratch_path, 'amino.csv'), 'wb') as amino_csv, \
             open(os.path.join(sample_scratch_path, 'coord_ins.csv'), 'wb') as coord_ins_csv, \
@@ -318,7 +324,8 @@ def process_sample(sample_index, run_info, args, pssm):
                    conseq_csv,
                    failed_align_csv,
                    nuc_variants_csv,
-                   coverage_summary_csv=coverage_summary_csv)
+                   coverage_summary_csv=coverage_summary_csv,
+                   clipping_csv=clipping_csv)
 
     logger.info('Running coverage_plots (%d of %d).', sample_index+1, len(run_info.samples))
     coverage_maps_path = os.path.join(args.qc_path, 'coverage_maps')
@@ -351,6 +358,7 @@ def process_sample(sample_index, run_info, args, pssm):
                     g2p_csv=g2p_csv,
                     g2p_summary_csv=g2p_summary_csv,
                     min_count=DEFAULT_MIN_COUNT)
+    logger.info('Finished sample (%d of %d).', sample_index+1, len(run_info.samples))
 
 
 def summarize_run(args, json):

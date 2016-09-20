@@ -19,7 +19,7 @@ INT,15,0,1,0,TGTACAAGACCCAACAACAATACAAGAAAAAG
 V3LOOP,15,0,1,0,TGTACAAGACCCAACAACAATACAAGAAAAAG
 """
         actual_aligned_csv = StringIO()
-        sam2aln(remap_file, actual_aligned_csv, StringIO(), StringIO())
+        sam2aln(remap_file, actual_aligned_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -35,7 +35,7 @@ refname,qcut,rank,count,offset,seq
 V3LOOP,15,0,1,0,TNT
 """
         actual_aligned_csv = StringIO()
-        sam2aln(remap_file, actual_aligned_csv, StringIO(), StringIO())
+        sam2aln(remap_file, actual_aligned_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -65,8 +65,7 @@ qname,cause
         actual_failed_csv = StringIO()
         sam2aln(remap_file,
                 actual_aligned_csv,
-                StringIO(),
-                actual_failed_csv)
+                failed_csv=actual_failed_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -93,8 +92,7 @@ Example_read_1,manyNs
         actual_failed_csv = StringIO()
         sam2aln(remap_file,
                 actual_aligned_csv,
-                StringIO(),
-                actual_failed_csv)
+                failed_csv=actual_failed_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -117,8 +115,7 @@ Example_read_1,unmatched
         actual_failed_csv = StringIO()
         sam2aln(remap_file,
                 actual_aligned_csv,
-                StringIO(),
-                actual_failed_csv)
+                failed_csv=actual_failed_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -142,8 +139,7 @@ Example_read_1,badCigar
         actual_failed_csv = StringIO()
         sam2aln(remap_file,
                 actual_aligned_csv,
-                StringIO(),
-                actual_failed_csv)
+                failed_csv=actual_failed_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -167,8 +163,7 @@ Example_read_1,2refs
         actual_failed_csv = StringIO()
         sam2aln(remap_file,
                 actual_aligned_csv,
-                StringIO(),
-                actual_failed_csv)
+                failed_csv=actual_failed_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
@@ -194,13 +189,56 @@ Example_read_1,R,V3LOOP,12,AACAAC,AAAAAA
         actual_insert_csv = StringIO()
         sam2aln(remap_file,
                 actual_aligned_csv,
-                actual_insert_csv,
-                StringIO())
+                actual_insert_csv)
 
         self.assertMultiLineEqual(expected_aligned_csv,
                                   actual_aligned_csv.getvalue())
         self.assertMultiLineEqual(expected_insert_csv,
                                   actual_insert_csv.getvalue())
+
+    def test_soft_clipping(self):
+        remap_file = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+Example_read_1,99,V3LOOP,18,44,7S10M9S,=,1,-32,TGTACAAGACCCAATACAAGAAAAAG,AAAAAAAAAAAAAAAAAAAAAAAAAA
+Example_read_1,147,V3LOOP,18,44,3S10M13S,=,1,-32,CAAGACCCAATACAAGAAAAAGCAAC,AAAAAAAAAAAAAAAAAAAAAAAAAA
+""")
+        expected_aligned_csv = """\
+refname,qcut,rank,count,offset,seq
+V3LOOP,15,0,1,17,GACCCAATAC
+"""
+        expected_clipping_csv = """\
+refname,pos,count
+V3LOOP,11,1
+V3LOOP,12,1
+V3LOOP,13,1
+V3LOOP,14,1
+V3LOOP,15,1
+V3LOOP,16,1
+V3LOOP,17,1
+V3LOOP,28,1
+V3LOOP,29,1
+V3LOOP,30,1
+V3LOOP,31,1
+V3LOOP,32,1
+V3LOOP,33,1
+V3LOOP,34,1
+V3LOOP,35,1
+V3LOOP,36,1
+V3LOOP,37,1
+V3LOOP,38,1
+V3LOOP,39,1
+V3LOOP,40,1
+"""
+        actual_aligned_csv = StringIO()
+        actual_clipping_csv = StringIO()
+        sam2aln(remap_file,
+                actual_aligned_csv,
+                clipping_csv=actual_clipping_csv)
+
+        self.assertMultiLineEqual(expected_aligned_csv,
+                                  actual_aligned_csv.getvalue())
+        self.assertMultiLineEqual(expected_clipping_csv,
+                                  actual_clipping_csv.getvalue())
 
 
 class CigarTest(unittest.TestCase):

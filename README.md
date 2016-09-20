@@ -102,6 +102,20 @@ purchasing a license.
   (phiX error count/tile/cycle)
   * avg_quality - average Phred score over all clusters and cycles
   * avg_coverage - average coverage across the best region for each sample
+* aligned.csv
+  * refname - seed reference the reads mapped to
+  * qcut - minimum Phred quality score to include a nucleotide
+  * rank - sequences are sorted by count, with the most common at rank 0
+  * count - how many times exact copies of this sequence and soft clip counts
+    were found
+  * offset - offset of the read within the consensus, or number of dashes to
+    add at the start
+  * seq - the mapped sequence of the read, aligned to the consensus
+* clipping.csv
+  * refname - seed reference the reads mapped to
+  * pos - one-based nucleotide position within the consensus sequence
+  * count - number of read pairs that soft clipped instead of mapping to this
+    position
 * conseq.csv
   * consensus-percent-cutoff - to be included in a mixture, a variant must make
     up at least this fraction of the total valid counts
@@ -118,8 +132,38 @@ purchasing a license.
     whole consensus sequence may not be aligned with the seed reference because
     of insertions and deletions
 * nuc.csv
+  * seed - seed reference the reads mapped to
+  * region - coordinate reference for reporting against, usually a gene
+  * q-cutoff - minimum Phred quality score to include a nucleotide
   * query.nuc.pos - the 1-based index of the base in the consensus sequence that
     came from this set of counts
+  * refseq.nuc.pos - the 1-based index of the base in the coordinate reference
+  * A,C,G,T - counts for the nucleotides at this position
+  * N - count of reads with Phred quality score below the cutoff
+  * del - count of reads with a deletion at this position
+  * ins - count of reads with an insertion after this position, relative to the
+    coordinate reference
+  * clip - count of reads with soft clipping that would have mapped at this
+    position
+* amino.csv
+  * seed - seed reference the reads mapped to
+  * region - coordinate reference for reporting against, usually a gene
+  * q-cutoff - minimum Phred quality score to include a nucleotide
+  * query.aa.pos - the 1-based index of the amino acid in the consensus sequence
+    that came from this set of counts
+  * refseq.aa.pos - the 1-based index of the amino acid in the coordinate reference
+  * A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y - counts for the amino acids at this
+    position
+  * `*` - count of stop codons at this position
+  * X - count of codons with at least one nucleotide with a Phred quality score
+    below the cutoff
+  * partial - count of codons with a partial deletion within a read (partial
+    codons at either end of a read are not counted at all)
+  * del - count of codons with a deletion relative to the coordinate reference
+  * ins - count of codons with an insertion in or after them relative to the
+    coordinate reference
+  * clip - count of reads with soft clipping that would have mapped at this
+    codon
 * coord_ins.csv - insertions in consensus sequence, relative to coordinate
     reference.
   * seed - seed reference the reads mapped to

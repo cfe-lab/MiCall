@@ -13,7 +13,7 @@ This does not assume any reading frame (because of a frameshift in HLA-B).
 """
 
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict
 import csv
 from itertools import groupby
 import logging
@@ -37,7 +37,10 @@ def parseArgs():
 
     parser.add_argument('aligned_csv',
                         type=argparse.FileType('rU'),
-                        help='aligned CSF input')
+                        help='input CSV with aligned reads')
+    parser.add_argument('clipping_csv',
+                        type=argparse.FileType('rU'),
+                        help='input CSV with count of soft-clipped reads at each position')
     parser.add_argument('nuc_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing nucleotide frequencies')
@@ -88,6 +91,7 @@ class SequenceReport(object):
         self.conseq_mixture_cutoffs = list(conseq_mixture_cutoffs)
         self.conseq_mixture_cutoffs.insert(0, MAX_CUTOFF)
         self.callback = None
+        self.clipping_counts = defaultdict(Counter)  # {seed_name: {pos: count}}
 
     def enable_callback(self, callback, file_size):
         """ Enable callbacks to update progress while counting reads.
@@ -261,14 +265,27 @@ class SequenceReport(object):
                     seed_index += 1
             coordinate_inserts = set(range(len(consensus)))
             self.inserts[coordinate_name] = coordinate_inserts
-            empty_seed_amino = SeedAmino(None)
+            prev_conseq_index = None
             for ref_index in range(len(coordinate_ref)):
                 seed_index = ref2seed.get(ref_index)
                 conseq_index = seed2conseq.get(seed_index)
                 if conseq_index is None:
-                    seed_amino = empty_seed_amino
+                    seed_amino = SeedAmino(None)
+                    if (prev_conseq_index is not None and
+                            prev_conseq_index+1 < len(frame_seed_aminos)):
+                        prev_seed_amino = frame_seed_aminos[prev_conseq_index]
+                        prev_count = sum(prev_seed_amino.counts.values())
+                        prev_count += prev_seed_amino.deletions
+                        next_seed_amino = frame_seed_aminos[prev_conseq_index+1]
+                        next_count = sum(next_seed_amino.counts.values())
+                        next_count += next_seed_amino.deletions
+                        min_count = min(prev_count, next_count)
+                        seed_amino.deletions = min_count
+                        for nuc in seed_amino.nucleotides:
+                            nuc.count_nucleotides('-', min_count)
                 else:
                     seed_amino = frame_seed_aminos[conseq_index]
+                    prev_conseq_index = conseq_index
                 report_aminos.append(ReportAmino(seed_amino, ref_index + 1))
                 if seed_amino.consensus_index is not None:
                     coordinate_inserts.remove(seed_amino.consensus_index)
@@ -342,6 +359,12 @@ class SequenceReport(object):
                 coordinate_variants.sort(reverse=True)
                 self.variants[coordinate_name] = coordinate_variants[0:max_variants]
 
+    def read_clipping(self, clipping_csv):
+        for row in csv.DictReader(clipping_csv):
+            pos = int(row['pos'])
+            count = int(row['count'])
+            self.clipping_counts[row['refname']][pos] += count
+
     def _create_amino_writer(self, amino_file):
         columns = ['seed',
                    'region',
@@ -349,7 +372,7 @@ class SequenceReport(object):
                    'query.aa.pos',
                    'refseq.aa.pos']
         columns.extend(AMINO_ALPHABET)
-        columns.extend(('X', 'partial', 'del'))
+        columns.extend(('X', 'partial', 'del', 'ins', 'clip'))
         return csv.DictWriter(amino_file,
                               columns,
                               lineterminator=os.linesep)
@@ -358,6 +381,11 @@ class SequenceReport(object):
         self._create_amino_writer(amino_file).writeheader()
 
     def write_amino_counts(self, amino_file, coverage_summary=None):
+        """ Write amino counts file.
+
+        Must have already called write_nuc_counts() to calculate max_clip_count
+        for each ReportAmino.
+        """
         regions = self.reports.keys()
         regions.sort()
         amino_writer = self._create_amino_writer(amino_file)
@@ -376,7 +404,9 @@ class SequenceReport(object):
                        'refseq.aa.pos': report_amino.position,
                        'X': seed_amino.low_quality,
                        'partial': seed_amino.partial,
-                       'del': seed_amino.deletions}
+                       'del': seed_amino.deletions,
+                       'ins': 0,
+                       'clip': report_amino.max_clip_count}
                 for letter in AMINO_ALPHABET:
                     letter_count = seed_amino.counts[letter]
                     row[letter] = letter_count
@@ -403,7 +433,9 @@ class SequenceReport(object):
                                'G',
                                'T',
                                'N',
-                               'del'],
+                               'del',
+                               'ins',
+                               'clip'],
                               lineterminator=os.linesep)
 
     def write_nuc_header(self, nuc_file):
@@ -413,22 +445,32 @@ class SequenceReport(object):
         nuc_writer = self._create_nuc_writer(nuc_file)
 
         def write_counts(region, seed_amino, report_amino):
+            max_clip_count = 0
             for i, seed_nuc in enumerate(seed_amino.nucleotides):
-                query_pos = (str(i + 3*seed_amino.consensus_index + 1)
-                             if seed_amino.consensus_index is not None
-                             else '')
+                if seed_amino.consensus_index is None:
+                    query_pos_txt = ''
+                    clip_count = 0
+                else:
+                    query_pos = i + 3*seed_amino.consensus_index + 1
+                    query_pos_txt = str(query_pos)
+                    clip_count = self.clipping_counts[self.seed][query_pos]
+                    max_clip_count = max(clip_count, max_clip_count)
                 ref_pos = (str(i + 3*report_amino.position - 2)
                            if report_amino is not None
                            else '')
                 row = {'seed': self.seed,
                        'region': region,
                        'q-cutoff': self.qcut,
-                       'query.nuc.pos': query_pos,
+                       'query.nuc.pos': query_pos_txt,
                        'refseq.nuc.pos': ref_pos,
-                       'del': seed_nuc.counts['-']}
+                       'del': seed_nuc.counts['-'],
+                       'ins': 0,
+                       'clip': clip_count}
                 for base in 'ACTGN':
                     row[base] = seed_nuc.counts[base]
                 nuc_writer.writerow(row)
+            if report_amino is not None:
+                report_amino.max_clip_count = max_clip_count
         if not self.coordinate_refs:
             for seed_amino in self.seed_aminos[0]:
                 write_counts(self.seed, seed_amino, None)
@@ -668,6 +710,7 @@ class ReportAmino(object):
         """
         self.seed_amino = seed_amino
         self.position = position
+        self.max_clip_count = 0
 
     def __repr__(self):
         return 'ReportAmino({!r}, {})'.format(self.seed_amino, self.position)
@@ -792,7 +835,8 @@ def aln2counts(aligned_csv,
                failed_align_csv,
                nuc_variants_csv,
                callback=None,
-               coverage_summary_csv=None):
+               coverage_summary_csv=None,
+               clipping_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -807,7 +851,8 @@ def aln2counts(aligned_csv,
                                 variants.
     @param callback: a function to report progress with three optional
         parameters - callback(message, progress, max_progress)
-    @param coverage_summary_csv Open file handle to write coverage depth.
+    @param coverage_summary_csv: Open file handle to write coverage depth.
+    @param clipping_csv: Open file handle containing soft clipping counts
     """
     # load project information
     projects = project_config.ProjectConfig.loadDefault()
@@ -839,17 +884,20 @@ def aln2counts(aligned_csv,
             file_size = os.stat(aligned_filename).st_size
             report.enable_callback(callback, file_size)
 
+    if clipping_csv is not None:
+        report.read_clipping(clipping_csv)
+
     # parse CSV file containing aligned reads, grouped by reference and quality cutoff
     aligned_reader = csv.DictReader(aligned_csv)
     for _key, aligned_reads in groupby(aligned_reader,
                                        lambda row: (row['refname'], row['qcut'])):
         report.read(aligned_reads)
 
+        report.write_nuc_counts(nuc_csv)
         report.write_amino_counts(amino_csv, coverage_summary=coverage_summary)
         report.write_consensus(conseq_csv)
         report.write_failure(failed_align_csv)
         report.write_insertions()
-        report.write_nuc_counts(nuc_csv)
         report.write_nuc_variants(nuc_variants_csv)
 
     if coverage_summary_csv is not None:
@@ -859,8 +907,14 @@ def aln2counts(aligned_csv,
 
 def main():
     args = parseArgs()
-    aln2counts(args.aligned_csv, args.nuc_csv, args.amino_csv, args.coord_ins_csv, args.conseq_csv,
-               args.failed_align_csv, args.nuc_variants_csv)
+    aln2counts(args.aligned_csv,
+               args.nuc_csv,
+               args.amino_csv,
+               args.coord_ins_csv,
+               args.conseq_csv,
+               args.failed_align_csv,
+               args.nuc_variants_csv,
+               clipping_csv=args.clipping_csv)
 
 if __name__ == '__main__':
     main()
@@ -869,7 +923,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.aln2counts_test import SequenceReportTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SequenceReportTest("testLowQualityAminoReport"))
+    suite.addTest(SequenceReportTest("testSoftClippingAminoReport"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)
