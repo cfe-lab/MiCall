@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.python.pydev.debug.regularLaunchConfigurationType">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/miseqpipeline/micall/core/sam2aln.py"/>
+<listEntry value="/miseqpipeline/micall/core/coverage_plots.py"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:miseqpipeline/micall/core/sam2aln.py}"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:miseqpipeline/micall/core/coverage_plots.py}"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_OTHER_WORKING_DIRECTORY" value="${workspace_loc:miseqpipeline/micall/tests/working}"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.remap.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.aligned.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.conseq_ins.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.failed_read.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.clipping.csv"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.amino.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.coverage_scores.csv ${workspace_loc:/miseqpipeline/micall/tests/working}/1234A-V3LOOP_S1.coverage_maps.tar"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:miseqpipeline/micall/tests/working}"/>
 <stringAttribute key="org.python.pydev.debug.ATTR_INTERPRETER" value="__default"/>
 <stringAttribute key="org.python.pydev.debug.ATTR_PROJECT" value="miseqpipeline"/>
