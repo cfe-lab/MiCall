@@ -74,10 +74,10 @@ class CoveragePlotsTest(TestCase):
     def test_simple(self, config_mock, savefig_mock):
         config_mock.return_value = self.config
         amino_csv = StringIO("""\
-seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
-R1-seed,R1,15,100,1,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,101,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0
-R1-seed,R1,15,102,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0
+seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
+R1-seed,R1,15,100,1,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,101,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,102,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0
 """)
         expected_scores = """\
 project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score

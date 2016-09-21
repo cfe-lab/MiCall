@@ -62,9 +62,12 @@ purchasing a license.
   * aligned.csv - reads aligned to consensus sequence
   * conseq_ins.csv - downloaded - insertions relative to consensus sequence
   * failed_read.csv - downloaded - reads that fail to merge
+  * clipping.csv - count of soft-clipped reads at each position
 * `aln2counts`: take the aligned reads, and count how many of each nucleotide
     or amino acid appear at each position.
   * in - aligned.csv
+  * in - clipping.csv
+  * in - conseq_ins.csv
   * nuc.csv - downloaded - nucleotide counts at each position
   * amino.csv - downloaded - amino counts at each position
   * coord_ins.csv - downloaded - insertions relative to coordinate reference
@@ -111,6 +114,13 @@ purchasing a license.
   * offset - offset of the read within the consensus, or number of dashes to
     add at the start
   * seq - the mapped sequence of the read, aligned to the consensus
+* conseq_ins.csv
+  * qname - query name from the read
+  * fwd_rev - F for forward reads, R for reverse
+  * refname - seed reference the read mapped to
+  * pos - 1-based position in the consensus sequence that this insertion follows
+  * insert - the nucleotide sequence that was inserted
+  * qual - the Phred quality scores for the inserted sequence
 * clipping.csv
   * refname - seed reference the reads mapped to
   * pos - one-based nucleotide position within the consensus sequence

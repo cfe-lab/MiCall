@@ -4,7 +4,7 @@ import sys
 import unittest
 
 from micall.core.aln2counts import SequenceReport, SeedNucleotide,\
-    InsertionWriter, MAX_CUTOFF, SeedAmino
+    InsertionWriter, MAX_CUTOFF, SeedAmino, ReportAmino
 from micall.core import project_config
 
 
@@ -379,6 +379,69 @@ R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testInsertionBetweenReadAndConsensusNucleotideReport(self):
+        """ Combine the soft clipping data with the read counts.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTT
+""")
+        conseq_ins_csv = StringIO.StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,R1-seed,3,AAC,AAA
+Example_read_2,F,R1-seed,3,AAC,AAA
+Example_read_2,R,R1-seed,3,AAC,AAA
+Example_read_3,F,R2-seed,6,GTA,AAA
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip
+R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0,0,0,2,0
+R1-seed,R1,15,4,4,0,0,0,9,0,0,0,0
+R1-seed,R1,15,5,5,0,0,0,9,0,0,0,0
+R1-seed,R1,15,6,6,0,0,0,9,0,0,0,0
+R1-seed,R1,15,,7,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,8,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,9,0,0,0,0,0,0,0,0
+"""
+
+        self.report.read_insertions(conseq_ins_csv)
+        self.report.write_nuc_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_nuc_counts(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testInsertionBetweenReadAndConsensusAminoReport(self):
+        """ Combine the soft clipping data with the read counts.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTT
+""")
+        conseq_ins_csv = StringIO.StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,R1-seed,3,AAC,AAA
+Example_read_2,F,R1-seed,3,AAC,AAA
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0
+R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.read_insertions(conseq_ins_csv)
+        self.report.write_amino_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_nuc_counts(StringIO.StringIO())  # calculates ins counts
+        self.report.write_amino_counts(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testSubstitutionAtBoundary(self):
         """ In this sample, there are nine identical reads with six codons.
         ATG -> M
@@ -732,7 +795,7 @@ R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
 R3-seed,R3,15,4,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R3-seed,R3,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R3-seed,R3,15,6,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,7,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,7,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,9,0
 R3-seed,R3,15,9,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0
 R3-seed,R3,15,10,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
 R3-seed,R3,15,11,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -744,12 +807,57 @@ R3-seed,R3,15,8,G,9,5
 """
 
         self.report.read(aligned_reads)
-        self.report.write_amino_counts(self.report_file)
         self.report.write_insertions()
+        self.report.write_nuc_counts(StringIO.StringIO())  # calculates insertion counts
+        self.report.write_amino_counts(self.report_file)
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
         self.assertMultiLineEqual(expected_insertions,
                                   self.insertion_file.getvalue())
+
+    def testInsertionBetweenSeedAndCoordinateNucleotideReport(self):
+        """ Coordinate sequence is KFQTPREH, and this aligned read is HERKFQTGPREHQFK.
+
+        The G must be an insertion in the seed reference with respect to the
+        coordinate reference.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
+""")
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip
+        expected_text = """\
+R3-seed,R3,15,10,1,9,0,0,0,0,0,0,0
+R3-seed,R3,15,11,2,9,0,0,0,0,0,0,0
+R3-seed,R3,15,12,3,9,0,0,0,0,0,0,0
+R3-seed,R3,15,13,4,0,0,0,9,0,0,0,0
+R3-seed,R3,15,14,5,0,0,0,9,0,0,0,0
+R3-seed,R3,15,15,6,0,0,0,9,0,0,0,0
+R3-seed,R3,15,16,7,0,9,0,0,0,0,0,0
+R3-seed,R3,15,17,8,9,0,0,0,0,0,0,0
+R3-seed,R3,15,18,9,0,0,9,0,0,0,0,0
+R3-seed,R3,15,19,10,9,0,0,0,0,0,0,0
+R3-seed,R3,15,20,11,0,9,0,0,0,0,0,0
+R3-seed,R3,15,21,12,0,0,0,9,0,0,9,0
+R3-seed,R3,15,25,13,0,9,0,0,0,0,0,0
+R3-seed,R3,15,26,14,0,9,0,0,0,0,0,0
+R3-seed,R3,15,27,15,0,9,0,0,0,0,0,0
+R3-seed,R3,15,28,16,0,9,0,0,0,0,0,0
+R3-seed,R3,15,29,17,0,0,9,0,0,0,0,0
+R3-seed,R3,15,30,18,9,0,0,0,0,0,0,0
+R3-seed,R3,15,31,19,0,0,9,0,0,0,0,0
+R3-seed,R3,15,32,20,9,0,0,0,0,0,0,0
+R3-seed,R3,15,33,21,0,0,9,0,0,0,0,0
+R3-seed,R3,15,34,22,0,9,0,0,0,0,0,0
+R3-seed,R3,15,35,23,9,0,0,0,0,0,0,0
+R3-seed,R3,15,36,24,0,0,0,9,0,0,0,0
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_insertions()
+        self.report.write_nuc_counts(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
     def testInsertionInDifferentReadingFrame(self):
         """ Delete part of the first codon to throw off the reading frame.
@@ -1498,6 +1606,23 @@ R1-seed,R1,15,3,D,1,
         self.writer.write(inserts=[2], region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
+
+    def testInsertWithBefore(self):
+        expected_text = """\
+seed,region,qcut,left,insert,count,before
+R1-seed,R1,15,4,E,1,2
+"""
+        expected_counts = {('R1-seed', 'R1'): {1: 1}}
+        seed_amino_after = SeedAmino(consensus_index=4)
+        report_amino_after = ReportAmino(seed_amino_after, position=2)
+
+        self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
+        self.writer.write(inserts=[3],
+                          region='R1',
+                          report_aminos=[report_amino_after])
+
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
+        self.assertEqual(expected_counts, self.writer.insert_pos_counts)
 
     def testInsertDifferentReadingFrame(self):
         """ Add a partial codon at the start of the read to shift the reading

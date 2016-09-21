@@ -110,8 +110,10 @@ def coverage_plot(amino_csv,
                 ax.add_patch(patches.Rectangle(xy=(start, 50),
                                                width=end-start,
                                                height=150,
-                                               fc='grey',
-                                               ec='grey'))
+                                               fc='black',
+                                               ec='grey',
+                                               zorder=50,
+                                               alpha=.5))
             if min_coverage <= project_region['min_coverage1']:
                 coverage_score_on = 1
             elif min_coverage <= project_region['min_coverage2']:
@@ -132,10 +134,10 @@ def coverage_plot(amino_csv,
             plt.step(x, y_deletions, linewidth=2, where='mid', label='deletions', zorder=100)
             plt.step(x, y_stops, linewidth=2, where='mid', label='stop codons', zorder=101)
             plt.step(x, y_coverage, linewidth=2, where='mid', label='coverage', zorder=102)
-            plt.step(x, y_clipping, linewidth=2, where='mid', label='soft clipped')
-            plt.step(x, y_insertions, linewidth=2, where='mid', label='insertions')
-            plt.step(x, y_partials, linewidth=2, where='mid', label='partial dels')
-            plt.step(x, y_low_quality, linewidth=2, where='mid', label='low quality')
+            plt.step(x, y_clipping, linewidth=2, where='mid', label='soft clipped', zorder=99)
+            plt.step(x, y_insertions, linewidth=2, where='mid', label='insertions', zorder=98)
+            plt.step(x, y_partials, linewidth=2, where='mid', label='partial dels', zorder=97)
+            plt.step(x, y_low_quality, linewidth=2, where='mid', label='low quality', zorder=96)
             plt.legend(loc='best', fontsize=fontsize, fancybox=True)
             left_margin = -region_length / 50.0
             plt.xlim([left_margin, region_length])
@@ -163,7 +165,7 @@ def coverage_plot(amino_csv,
                                            height=MAX_COVERAGE-100,
                                            fc='lightgreen',
                                            ec='lightgreen'))
-            plt.plot((1, region_length), (100, 100), 'k--')
+            plt.plot((1, region_length), (100, 100), 'k--', zorder=51)
             plt.xlabel('Reference coordinates (AA)', fontsize=9)
             plt.ylabel('Read count', fontsize=9)
             plt.tight_layout()

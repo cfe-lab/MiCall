@@ -17,6 +17,7 @@ from collections import Counter, defaultdict
 import csv
 from itertools import groupby
 import logging
+from operator import itemgetter
 import os
 
 import gotoh
@@ -41,6 +42,9 @@ def parseArgs():
     parser.add_argument('clipping_csv',
                         type=argparse.FileType('rU'),
                         help='input CSV with count of soft-clipped reads at each position')
+    parser.add_argument('conseq_ins_csv',
+                        type=argparse.FileType('rU'),
+                        help='input CSV with insertions relative to consensus sequence')
     parser.add_argument('nuc_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing nucleotide frequencies')
@@ -92,6 +96,7 @@ class SequenceReport(object):
         self.conseq_mixture_cutoffs.insert(0, MAX_CUTOFF)
         self.callback = None
         self.clipping_counts = defaultdict(Counter)  # {seed_name: {pos: count}}
+        self.conseq_insertion_counts = defaultdict(Counter)  # {seed_name: {pos: count}
 
     def enable_callback(self, callback, file_size):
         """ Enable callbacks to update progress while counting reads.
@@ -365,6 +370,17 @@ class SequenceReport(object):
             count = int(row['count'])
             self.clipping_counts[row['refname']][pos] += count
 
+    def read_insertions(self, conseq_ins_csv):
+        reader = csv.DictReader(conseq_ins_csv)
+        for refname, rows in groupby(reader, itemgetter('refname')):
+            insertion_names = defaultdict(set)  # {pos: set([qname])}
+            for row in rows:
+                pos = int(row['pos'])
+                pos_names = insertion_names[pos]
+                pos_names.add(row['qname'])
+            self.conseq_insertion_counts[refname] = Counter(
+                {pos: len(names) for pos, names in insertion_names.iteritems()})
+
     def _create_amino_writer(self, amino_file):
         columns = ['seed',
                    'region',
@@ -405,7 +421,7 @@ class SequenceReport(object):
                        'X': seed_amino.low_quality,
                        'partial': seed_amino.partial,
                        'del': seed_amino.deletions,
-                       'ins': 0,
+                       'ins': report_amino.insertion_count,
                        'clip': report_amino.max_clip_count}
                 for letter in AMINO_ALPHABET:
                     letter_count = seed_amino.counts[letter]
@@ -446,31 +462,40 @@ class SequenceReport(object):
 
         def write_counts(region, seed_amino, report_amino):
             max_clip_count = 0
+            total_insertion_count = 0
+            seed_insertion_counts = self.conseq_insertion_counts[self.seed]
             for i, seed_nuc in enumerate(seed_amino.nucleotides):
                 if seed_amino.consensus_index is None:
                     query_pos_txt = ''
-                    clip_count = 0
+                    insertion_count = clip_count = 0
                 else:
                     query_pos = i + 3*seed_amino.consensus_index + 1
                     query_pos_txt = str(query_pos)
                     clip_count = self.clipping_counts[self.seed][query_pos]
                     max_clip_count = max(clip_count, max_clip_count)
+                    insertion_count = seed_insertion_counts[query_pos]
                 ref_pos = (str(i + 3*report_amino.position - 2)
                            if report_amino is not None
                            else '')
+                if i == 2 and report_amino is not None:
+                    insertion_counts = self.insert_writer.insert_pos_counts[
+                        (self.seed, region)]
+                    insertion_count += insertion_counts[report_amino.position]
+                total_insertion_count += insertion_count
                 row = {'seed': self.seed,
                        'region': region,
                        'q-cutoff': self.qcut,
                        'query.nuc.pos': query_pos_txt,
                        'refseq.nuc.pos': ref_pos,
                        'del': seed_nuc.counts['-'],
-                       'ins': 0,
+                       'ins': insertion_count,
                        'clip': clip_count}
                 for base in 'ACTGN':
                     row[base] = seed_nuc.counts[base]
                 nuc_writer.writerow(row)
             if report_amino is not None:
                 report_amino.max_clip_count = max_clip_count
+                report_amino.insertion_count = total_insertion_count
         if not self.coordinate_refs:
             for seed_amino in self.seed_aminos[0]:
                 write_counts(self.seed, seed_amino, None)
@@ -711,6 +736,7 @@ class ReportAmino(object):
         self.seed_amino = seed_amino
         self.position = position
         self.max_clip_count = 0
+        self.insertion_count = 0
 
     def __repr__(self):
         return 'ReportAmino({!r}, {})'.format(self.seed_amino, self.position)
@@ -732,6 +758,9 @@ class InsertionWriter(object):
                                              'before'],
                                             lineterminator=os.linesep)
         self.insert_writer.writeheader()
+
+        # {(seed, region): {pos: insert_count}}
+        self.insert_pos_counts = defaultdict(Counter)
 
     def start_group(self, seed, qcut):
         """ Start a new group of reads.
@@ -769,6 +798,7 @@ class InsertionWriter(object):
         if len(inserts) == 0:
             return
 
+        region_insert_pos_counts = self.insert_pos_counts[(self.seed, region)]
         inserts = list(inserts)
         inserts.sort()
 
@@ -786,7 +816,8 @@ class InsertionWriter(object):
         insert_targets = {}  # {left: inserted_before_pos}
         for left, right in insert_ranges:
             for report_amino in report_aminos:
-                if report_amino.seed_amino.consensus_index == right:
+                seed_amino = report_amino.seed_amino
+                if seed_amino.consensus_index == right:
                     insert_targets[left] = report_amino.position
                     break
             current_counts = Counter()
@@ -817,6 +848,8 @@ class InsertionWriter(object):
                                count=count,
                                before=insert_before)
                     self.insert_writer.writerow(row)
+                    if insert_before is not None:
+                        region_insert_pos_counts[insert_before-1] += count
 
 
 def format_cutoff(cutoff):
@@ -836,7 +869,8 @@ def aln2counts(aligned_csv,
                nuc_variants_csv,
                callback=None,
                coverage_summary_csv=None,
-               clipping_csv=None):
+               clipping_csv=None,
+               conseq_ins_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -853,6 +887,7 @@ def aln2counts(aligned_csv,
         parameters - callback(message, progress, max_progress)
     @param coverage_summary_csv: Open file handle to write coverage depth.
     @param clipping_csv: Open file handle containing soft clipping counts
+    @param conseq_ins_csv: Open file handle containing insertions relative to consensus sequence
     """
     # load project information
     projects = project_config.ProjectConfig.loadDefault()
@@ -886,6 +921,8 @@ def aln2counts(aligned_csv,
 
     if clipping_csv is not None:
         report.read_clipping(clipping_csv)
+    if conseq_ins_csv is not None:
+        report.read_insertions(conseq_ins_csv)
 
     # parse CSV file containing aligned reads, grouped by reference and quality cutoff
     aligned_reader = csv.DictReader(aligned_csv)
@@ -914,7 +951,8 @@ def main():
                args.conseq_csv,
                args.failed_align_csv,
                args.nuc_variants_csv,
-               clipping_csv=args.clipping_csv)
+               clipping_csv=args.clipping_csv,
+               conseq_ins_csv=args.conseq_ins_csv)
 
 if __name__ == '__main__':
     main()
@@ -923,7 +961,7 @@ elif __name__ == '__live_coding__':
     from micall.tests.aln2counts_test import SequenceReportTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SequenceReportTest("testSoftClippingAminoReport"))
+    suite.addTest(SequenceReportTest("testInsertionBetweenReadAndConsensusAminoReport"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)
