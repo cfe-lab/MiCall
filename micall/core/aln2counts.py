@@ -13,7 +13,7 @@ This does not assume any reading frame (because of a frameshift in HLA-B).
 """
 
 import argparse
-from collections import Counter, defaultdict
+from collections import Counter, defaultdict, OrderedDict
 import csv
 from itertools import groupby
 import logging
@@ -161,7 +161,8 @@ class SequenceReport(object):
                     codon_index = nuc_pos / 3
                     # append SeedAmino objects to this list if necessary
                     while len(frame_seed_aminos) <= codon_index:
-                        frame_seed_aminos.append(SeedAmino(len(frame_seed_aminos)))
+                        frame_seed_aminos.append(SeedAmino(
+                            len(frame_seed_aminos)*3-reading_frame))
 
                     # update amino acid counts
                     codon = offset_nuc_seq[nuc_pos:nuc_pos + 3]
@@ -268,7 +269,7 @@ class SequenceReport(object):
                 if (seed_index < len(seed_amino_seq) and
                         seed_aa == seed_amino_seq[seed_index]):
                     seed_index += 1
-            coordinate_inserts = set(range(len(consensus)))
+            coordinate_inserts = {i*3 - reading_frame for i in xrange(len(consensus))}
             self.inserts[coordinate_name] = coordinate_inserts
             prev_conseq_index = None
             for ref_index in range(len(coordinate_ref)):
@@ -292,8 +293,8 @@ class SequenceReport(object):
                     seed_amino = frame_seed_aminos[conseq_index]
                     prev_conseq_index = conseq_index
                 report_aminos.append(ReportAmino(seed_amino, ref_index + 1))
-                if seed_amino.consensus_index is not None:
-                    coordinate_inserts.remove(seed_amino.consensus_index)
+                if seed_amino.consensus_nuc_index is not None:
+                    coordinate_inserts.remove(seed_amino.consensus_nuc_index)
 
         self.reports[coordinate_name] = report_aminos
 
@@ -308,7 +309,7 @@ class SequenceReport(object):
         """
         aligned_reads = list(aligned_reads)  # lets us run multiple passes
 
-        self.seed_aminos = {}  # {reading_frame: [SeedAmino(consensus_index)]}
+        self.seed_aminos = {}  # {reading_frame: [SeedAmino(consensus_nuc_index)]}
         self.reports = {}  # {coord_name: [ReportAmino()]}
         self.reading_frames = {}  # {coord_name: reading_frame}
         self.inserts = {}  # {coord_name: set([consensus_index])}
@@ -329,7 +330,7 @@ class SequenceReport(object):
                 # as the seed reference, then skip next step.
                 seed_ref = self.projects.getReference(self.seed)
                 while len(self.seed_aminos[0])*3 < len(seed_ref):
-                    self.seed_aminos[0].append(SeedAmino(len(self.seed_aminos[0])))
+                    self.seed_aminos[0].append(SeedAmino(3*len(self.seed_aminos[0])))
 
         # iterate over coordinate references defined for this region
         for coordinate_name, coordinate_ref in self.coordinate_refs.iteritems():
@@ -339,17 +340,15 @@ class SequenceReport(object):
             if report_aminos and max_variants:
                 variant_counts = Counter()  # {seq: count}
                 for report_amino in report_aminos:
-                    first_amino_index = report_amino.seed_amino.consensus_index
+                    first_amino_index = report_amino.seed_amino.consensus_nuc_index
                     if first_amino_index is not None:
                         break
-                first_amino_index = first_amino_index or 0
-                start_pos = first_amino_index * 3
+                start_pos = first_amino_index or 0
                 for report_amino in reversed(report_aminos):
-                    last_amino_index = report_amino.seed_amino.consensus_index
+                    last_amino_index = report_amino.seed_amino.consensus_nuc_index
                     if last_amino_index is not None:
                         break
-                last_amino_index = last_amino_index or -1
-                end_pos = (last_amino_index+1) * 3
+                end_pos = (last_amino_index or -1) + 3
                 minimum_variant_length = len(coordinate_ref)/2
                 for row in aligned_reads:
                     count = int(row['count'])
@@ -385,7 +384,7 @@ class SequenceReport(object):
         columns = ['seed',
                    'region',
                    'q-cutoff',
-                   'query.aa.pos',
+                   'query.nuc.pos',
                    'refseq.aa.pos']
         columns.extend(AMINO_ALPHABET)
         columns.extend(('X', 'partial', 'del', 'ins', 'clip'))
@@ -410,13 +409,13 @@ class SequenceReport(object):
             pos_count = 0
             for report_amino in self.reports[region]:
                 seed_amino = report_amino.seed_amino
-                query_pos = (str(seed_amino.consensus_index + 1)
-                             if seed_amino.consensus_index is not None
+                query_pos = (str(seed_amino.consensus_nuc_index + 1)
+                             if seed_amino.consensus_nuc_index is not None
                              else '')
                 row = {'seed': self.seed,
                        'region': region,
                        'q-cutoff': self.qcut,
-                       'query.aa.pos': query_pos,
+                       'query.nuc.pos': query_pos,
                        'refseq.aa.pos': report_amino.position,
                        'X': seed_amino.low_quality,
                        'partial': seed_amino.partial,
@@ -465,11 +464,11 @@ class SequenceReport(object):
             total_insertion_count = 0
             seed_insertion_counts = self.conseq_insertion_counts[self.seed]
             for i, seed_nuc in enumerate(seed_amino.nucleotides):
-                if seed_amino.consensus_index is None:
+                if seed_amino.consensus_nuc_index is None:
                     query_pos_txt = ''
                     insertion_count = clip_count = 0
                 else:
-                    query_pos = i + 3*seed_amino.consensus_index + 1
+                    query_pos = i + seed_amino.consensus_nuc_index + 1
                     query_pos_txt = str(query_pos)
                     clip_count = self.clipping_counts[self.seed][query_pos]
                     max_clip_count = max(clip_count, max_clip_count)
@@ -525,7 +524,7 @@ class SequenceReport(object):
                 if offset is None:
                     if not seed_amino.counts:
                         continue
-                    offset = seed_amino.consensus_index*3
+                    offset = seed_amino.consensus_nuc_index
                 for seed_nuc in seed_amino.nucleotides:
                     consensus += seed_nuc.get_consensus(mixture_cutoff)
             if offset is not None:
@@ -599,8 +598,8 @@ class SeedAmino(object):
     Records the frequencies of amino acids at a given position of the
     aligned reads as determined by the consensus sequence.
     """
-    def __init__(self, consensus_index, counts=None):
-        self.consensus_index = consensus_index
+    def __init__(self, consensus_nuc_index, counts=None):
+        self.consensus_nuc_index = consensus_nuc_index
         self.counts = counts or Counter()
         self.nucleotides = [SeedNucleotide() for _ in range(3)]
         self.low_quality = 0
@@ -609,9 +608,9 @@ class SeedAmino(object):
 
     def __repr__(self):
         if self.counts:
-            return 'SeedAmino({!r}, {!r})'.format(self.consensus_index,
+            return 'SeedAmino({!r}, {!r})'.format(self.consensus_nuc_index,
                                                   dict(self.counts))
-        return 'SeedAmino({})'.format(self.consensus_index)
+        return 'SeedAmino({})'.format(self.consensus_nuc_index)
 
     def count_aminos(self, codon_seq, count):
         """ Record a set of reads at this position in the seed reference.
@@ -807,24 +806,23 @@ class InsertionWriter(object):
         for insert in inserts:
             if not insert_ranges or insert != insert_ranges[-1][1]:
                 # just starting or we hit a gap
-                insert_ranges.append([insert, insert + 1])
+                insert_ranges.append([insert, insert + 3])
             else:
-                insert_ranges[-1][1] += 1
+                insert_ranges[-1][1] += 3
 
         # enumerate insertions by popping out all AA sub-string variants
-        insert_counts = {}  # {left: {insert_seq: count}}
+        insert_counts = OrderedDict()  # {left: {insert_seq: count}}
         insert_targets = {}  # {left: inserted_before_pos}
         for left, right in insert_ranges:
             for report_amino in report_aminos:
                 seed_amino = report_amino.seed_amino
-                if seed_amino.consensus_index == right:
+                if seed_amino.consensus_nuc_index == right:
                     insert_targets[left] = report_amino.position
                     break
             current_counts = Counter()
             insert_counts[left] = current_counts
             for nuc_seq, count in self.nuc_seqs.iteritems():
-                framed_nuc_seq = reading_frame * '-' + nuc_seq
-                insert_nuc_seq = framed_nuc_seq[left*3:right*3]
+                insert_nuc_seq = nuc_seq[left:right]
                 is_valid = (insert_nuc_seq and
                             'n' not in insert_nuc_seq and
                             '-' not in insert_nuc_seq)
@@ -958,10 +956,10 @@ if __name__ == '__main__':
     main()
 elif __name__ == '__live_coding__':
     import unittest
-    from micall.tests.aln2counts_test import SequenceReportTest
+    from micall.tests.aln2counts_test import InsertionWriterTest
 
     suite = unittest.TestSuite()
-    suite.addTest(SequenceReportTest("testInsertionBetweenReadAndConsensusAminoReport"))
+    suite.addTest(InsertionWriterTest("testInsertDifferentReadingFrame"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

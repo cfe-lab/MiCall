@@ -8,10 +8,10 @@ from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from csv import DictReader
 from micall.core.sam2aln import sam2aln
-from micall.core.aln2counts import aln2counts
+from micall.core.aln2counts import aln2counts, AMINO_ALPHABET
 from micall.utils.dd import DD
-from micall.g2p.sam_g2p import sam_g2p, DEFAULT_MIN_COUNT
 from micall.g2p.pssm_lib import Pssm
+from operator import itemgetter
 
 BOWTIE_THREADS = 11
 
@@ -19,7 +19,10 @@ BOWTIE_THREADS = 11
 class MicallDD(DD):
     def __init__(self, filename1):
         super(MicallDD, self).__init__()
-        self.filename1 = filename1  # self.filter_fastqs(filename1)
+        if 'filter' in filename1:
+            self.filename1 = filename1
+        else:
+            self.filename1 = self.filter_fastqs(filename1)
         self.pssm = Pssm()
         reads = defaultdict(list)
         read_fastq(self.filename1, reads)
@@ -38,17 +41,34 @@ class MicallDD(DD):
         filename2 = get_reverse_filename(filename1)
         filter_name2 = filename2 + '_filter.fastq'
         workdir = os.path.dirname(filename1)
-        prelim_filename = os.path.join(workdir, 'temp70.prelim.csv')
-        with open(prelim_filename, 'w+') as prelim_csv:
+        prelim_filename = os.path.join(workdir, 'filter.prelim.csv')
+        remap_filename = os.path.join(workdir, 'filter.remap.csv')
+        with open(prelim_filename, 'w+') as prelim_csv, \
+                open(remap_filename, 'w') as remap_csv, \
+                open(os.devnull, 'w+') as real_devnull:
+            print('Preliminary mapping to filter.')
+            devnull = DevNullWrapper(real_devnull)
             prelim_map(filename1,
                        filename2,
                        prelim_csv,
                        nthreads=BOWTIE_THREADS)
             prelim_csv.seek(0)
-            reader = DictReader(prelim_csv)
+            print('Remapping to filter.')
+            remap(filename1,
+                  filename2,
+                  prelim_csv,
+                  remap_csv,
+                  devnull,
+                  devnull,
+                  devnull,
+                  devnull,
+                  nthreads=BOWTIE_THREADS)
+        with open(remap_filename, 'rU') as remap_csv:
+            print('Filtering.')
+            reader = DictReader(remap_csv)
             mapped_qnames = {row['qname']
                              for row in reader
-                             if row['rname'].startswith('HCV') and 2400 < int(row['pos']) < 3700}
+                             if row['rname'].startswith('HCV-1') and 2500 < int(row['pos']) < 3500}
         self.filter_reads(filename1, filter_name1, mapped_qnames)
         self.filter_reads(filename2, filter_name2, mapped_qnames)
         logging.info('Finished filtering with %d reads.', len(mapped_qnames))
@@ -67,20 +87,22 @@ class MicallDD(DD):
         self.write_simple_fastq(simple_filename1, read_indexes)
         workdir = os.path.dirname(self.filename1)
         simple_filename2 = get_reverse_filename(simple_filename1)
-        prelim_filename = os.path.join(workdir, 'temp70.prelim.csv')
-        remap_filename = os.path.join(workdir, 'temp70.remap.csv')
-        remap_counts_filename = os.path.join(workdir, 'temp70.remap_counts.csv')
-        aligned_filename = os.path.join(workdir, 'temp70.aligned.csv')
-        nuc_filename = os.path.join(workdir, 'temp70.nuc.csv')
-        amino_filename = os.path.join(workdir, 'temp70.amino.csv')
-        g2p_filename = os.path.join(workdir, 'temp70.g2p.csv')
+        prelim_filename = os.path.join(workdir, 'rerun.prelim.csv')
+        remap_filename = os.path.join(workdir, 'rerun.remap.csv')
+        remap_counts_filename = os.path.join(workdir, 'rerun.remap_counts.csv')
+        aligned_filename = os.path.join(workdir, 'rerun.aligned.csv')
+        clipping_filename = os.path.join(workdir, 'rerun.clipping.csv')
+        nuc_filename = os.path.join(workdir, 'rerun.nuc.csv')
+        amino_filename = os.path.join(workdir, 'rerun.amino.csv')
+        conseq_filename = os.path.join(workdir, 'rerun.conseq.csv')
         with open(prelim_filename, 'w+') as prelim_csv, \
                 open(remap_filename, 'w+') as remap_csv, \
                 open(remap_counts_filename, 'w+') as remap_counts_csv, \
                 open(aligned_filename, 'w+') as aligned_csv, \
+                open(clipping_filename, 'w+') as clipping_csv, \
                 open(nuc_filename, 'w+') as nuc_csv, \
                 open(amino_filename, 'w+') as amino_csv, \
-                open(g2p_filename, 'w+') as g2p_csv, \
+                open(conseq_filename, 'w+') as conseq_csv, \
                 open(os.devnull, 'w+') as real_devnull:
             devnull = DevNullWrapper(real_devnull)
             prelim_map(simple_filename1,
@@ -103,25 +125,20 @@ class MicallDD(DD):
                     aligned_csv,
                     devnull,
                     devnull,
-                    nthreads=BOWTIE_THREADS)
+                    clipping_csv=clipping_csv,
+                    nthreads=None)
             aligned_csv.seek(0)
+            clipping_csv.seek(0)
             aln2counts(aligned_csv,
                        nuc_csv,
                        amino_csv,
                        devnull,
+                       conseq_csv,
                        devnull,
                        devnull,
-                       devnull)
-            remap_csv.seek(0)
-            nuc_csv.seek(0)
-            sam_g2p(pssm=self.pssm,
-                    remap_csv=remap_csv,
-                    nuc_csv=nuc_csv,
-                    g2p_csv=g2p_csv,
-                    g2p_summary_csv=devnull,
-                    min_count=DEFAULT_MIN_COUNT)
+                       clipping_csv=clipping_csv)
 
-        return self.get_result(g2p_filename, len(read_indexes))
+        return self.get_result(amino_filename, len(read_indexes))
 
     def disabled_resolve(self, csub, c, direction):
         sub_size = len(csub)
@@ -140,22 +157,33 @@ class MicallDD(DD):
                     add_count -= 1
         return result
 
-    def get_result(self, g2p_filename, read_count):
-        with open(g2p_filename, 'rU') as g2p_csv:
-            g2p_reader = DictReader(g2p_csv)
-            rows = list(g2p_reader)
-        good_counts = [int(row['count']) for row in rows if not row['error']]
-        good_sum = sum(good_counts)
-        good_max = good_counts and max(good_counts) or 0
-        bad_count = sum(int(row['count']) for row in rows if row['error'] == 'zerolength')
-        if good_max < 10 and (read_count - good_sum - bad_count != 0):
-            # Other errors can be distracting.
-            logging.info('PASS: %d good and %d bad out of %d.',
-                         good_sum,
-                         bad_count,
-                         read_count)
+    def get_result(self, amino_filename, read_count):
+        rows = []
+        with open(amino_filename, 'rU') as amino_csv:
+            amino_reader = DictReader(amino_csv)
+            for row in amino_reader:
+                row['refseq.aa.pos'] = int(row['refseq.aa.pos'])
+                if 71 <= row['refseq.aa.pos'] <= 80 and row['region'] == 'HCV1A-H77-NS2':
+                    row['coverage'] = sum(map(int,
+                                              (row[amino]
+                                               for amino in AMINO_ALPHABET)))
+                    row['coverage'] += int(row['del'])
+                    row['clip'] = int(row['clip'])
+                    rows.append(row)
+        clipped_rows = [row
+                        for row in rows
+                        if 71 <= row['refseq.aa.pos'] <= 75]
+        unclipped_rows = [row
+                          for row in rows
+                          if 76 <= row['refseq.aa.pos'] <= 80]
+        if not (clipped_rows and unclipped_rows):
+            print len(clipped_rows), len(unclipped_rows)
             return DD.PASS
-        return DD.FAIL if 0.4 * good_sum < bad_count <= good_sum else DD.PASS
+        min_clips = min(row['clip'] for row in clipped_rows)
+        max_coverage = max(row['coverage'] for row in unclipped_rows)
+        print map(itemgetter('coverage'), rows)
+        print map(itemgetter('clip'), rows)
+        return DD.FAIL if max_coverage * 2 < min_clips else DD.PASS
 
     def write_simple_fastq(self, filename1, read_indexes):
         selected_reads = imap(self.reads.__getitem__, read_indexes)
@@ -218,7 +246,7 @@ def main():
         logger.info('Starting.')
         fname = ('censored1.fastq')
         dd = MicallDD(fname)
-        read_indexes = range(len(dd.reads))[800:1600]
+        read_indexes = range(len(dd.reads))
         run_test = True
         if run_test:
             min_indexes = dd.ddmin(read_indexes)

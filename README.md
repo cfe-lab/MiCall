@@ -180,7 +180,7 @@ purchasing a license.
   * region - coordinate reference for reporting against, usually a gene
   * qcut - minimum Phred quality score to include a nucleotide
   * left - the one-based position within the consensus sequence of the first
-    amino acid in the insertion
+    nucleotide in the insertion
   * insert - the insertion sequence of amino acids
   * count - the number of times the insertion occurred
   * before - the one-based position within the coordinate reference that it
