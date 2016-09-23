@@ -928,11 +928,11 @@ def aln2counts(aligned_csv,
                                        lambda row: (row['refname'], row['qcut'])):
         report.read(aligned_reads)
 
+        report.write_insertions()
         report.write_nuc_counts(nuc_csv)
         report.write_amino_counts(amino_csv, coverage_summary=coverage_summary)
         report.write_consensus(conseq_csv)
         report.write_failure(failed_align_csv)
-        report.write_insertions()
         report.write_nuc_variants(nuc_variants_csv)
 
     if coverage_summary_csv is not None:
