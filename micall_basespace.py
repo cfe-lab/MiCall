@@ -511,8 +511,21 @@ def main():
         json = link_json(args.link_run, args.data_path)
     else:
         json_path = os.path.join(args.data_path, 'input', 'AppSession.json')
-        with open(json_path, 'rU') as json_file:
-            json = parse_json(json_file)
+        try:
+            with open(json_path, 'rU') as json_file:
+                json = parse_json(json_file)
+        except:
+            if os.path.exists(json_path):
+                # copy the input file to the output dir for postmortem analysis
+                logger.error("Error occurred while parsing '%s'" % json_path)
+                with open(json_path, 'rU') as json_file:
+                    file_cont = json_file.read()
+                out_path = os.path.join(args.data_path, 'logs', 'AppSession.json')
+                with open(out_path, 'w') as json_file:
+                    json_file.write(file_cont)
+            else:
+                logger.error("Error: no such file as '%s'" % json_path)
+            raise
     pssm = Pssm()
 
     scratch_path = os.path.join(args.data_path, 'scratch')
