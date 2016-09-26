@@ -133,7 +133,7 @@ def apply_cigar(cigar,
         # Matching sequence: carry it over
         if operation == 'M':
             if mapped is not None:
-                curr_pos = len(newseq) + 1
+                curr_pos = len(newseq)
                 for i in xrange(curr_pos, curr_pos + length):
                     mapped.add(i)
             newseq += seq[left:(left+length)]
@@ -152,14 +152,14 @@ def apply_cigar(cigar,
         # Soft clipping leaves the sequence in the SAM - so we should skip it
         elif operation == 'S':
             if soft_clipped is not None:
-                curr_pos = len(newseq) + 1
+                curr_pos = len(newseq)
                 if left == 0:
-                    start = curr_pos - length
-                    end = curr_pos
+                    clip_start = curr_pos - length
+                    clip_end = curr_pos
                 else:
-                    start = curr_pos
-                    end = curr_pos + length
-                for i in xrange(start, end):
+                    clip_start = curr_pos
+                    clip_end = curr_pos + length
+                for i in xrange(clip_start, clip_end):
                     soft_clipped.add(i)
             left += length
         else:
@@ -431,7 +431,7 @@ class PairProcessor(object):
                                     'qual': iqual})
             if self.clipping_counts is not None:
                 for i in soft_clipped - mapped:
-                    self.clipping_counts[rname][i] += 1
+                    self.clipping_counts[rname][i+1] += 1
 
             # merge reads
             for qcut in SAM2ALN_Q_CUTOFFS:
@@ -561,10 +561,10 @@ if __name__ == '__main__':
     main()
 elif __name__ == '__live_coding__':
     import unittest
-    from micall.tests.sam2aln_test import RemapReaderTest
+    from micall.tests.sam2aln_test import CigarTest
 
     suite = unittest.TestSuite()
-    suite.addTest(RemapReaderTest("test_soft_clipping"))
+    suite.addTest(CigarTest("testSoftClipPositions"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

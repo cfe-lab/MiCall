@@ -493,6 +493,32 @@ class CigarTest(unittest.TestCase):
         self.assertEqual(expected_quality, clipped_quality)
         self.assertEqual({}, inserts)
 
+    def testSoftClipPositions(self):
+        cigar = '3S6M'
+        pos = 4
+        seq              =  'AAACAACCA'  # @IgnorePep8
+        quality          =  'BBBDDDEEE'  # @IgnorePep8
+        expected_seq     = '----CAACCA'  # @IgnorePep8
+        expected_quality = '!!!!DDDEEE'  # @IgnorePep8
+        mapped = set()
+        soft_clipped = set()
+        expected_mapped = {4, 5, 6, 7, 8, 9}
+        expected_soft_clipped = {1, 2, 3}
+
+        clipped_seq, clipped_quality, inserts = apply_cigar(
+            cigar,
+            seq,
+            quality,
+            pos=pos,
+            mapped=mapped,
+            soft_clipped=soft_clipped)
+
+        self.assertEqual(expected_seq, clipped_seq)
+        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual({}, inserts)
+        self.assertEqual(expected_mapped, mapped)
+        self.assertEqual(expected_soft_clipped, soft_clipped)
+
     def testInvalidCigar(self):
         cigar = '3M...6M'
         seq     = 'AAACAACCACCC'  # @IgnorePep8

@@ -273,9 +273,9 @@ R1-seed,15,0,9,0,AAATTT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
@@ -365,10 +365,10 @@ R1-seed,8,9
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """
 
         self.report.read_clipping(clipping)
@@ -428,9 +428,9 @@ Example_read_2,F,R1-seed,3,AAC,AAA
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0
-R1-seed,R1,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
@@ -460,10 +460,10 @@ R4-seed,15,0,9,0,ATGGCAAACTGGATCAAT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
-R4-seed,R4,15,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
-R4-seed,R4,15,5,2,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R4-seed,R4,15,6,3,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
+R4-seed,R4,15,10,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0
+R4-seed,R4,15,13,2,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R4-seed,R4,15,16,3,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.write_amino_header(self.report_file)
@@ -606,11 +606,11 @@ R1-seed,R1,15,,9,0,0,0,0,0,0,0,0
 R1-seed,15,0,9,0,AAATNT
 """)
 
-        # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        # seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,
         #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0
+R1-seed,R1,15,4,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
@@ -625,11 +625,11 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R1-seed,15,0,9,0,AAAT-T
 """)
 
-        # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        # seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,
         #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0
+R1-seed,R1,15,4,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
@@ -650,16 +650,46 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R1-seed,15,0,9,0,GAAATTTCGA
 """)
 
-        # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        # seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,
         #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
 R1-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,3,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,8,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
         self.report.write_amino_counts(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testShiftedReadingFrameNucleotideReport(self):
+        """ The seed's reading frame doesn't match the coordinate reference's
+        reading frame, so there is an extra nucleotide at the beginning of the
+        reads.
+        It will try padding the first codon to see which of the three possible
+        reading frames gives the highest alignment score.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,GAAATTTCGA
+""")
+
+        # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip
+        expected_text = """\
+R1-seed,R1,15,2,1,9,0,0,0,0,0,0,0
+R1-seed,R1,15,3,2,9,0,0,0,0,0,0,0
+R1-seed,R1,15,4,3,9,0,0,0,0,0,0,0
+R1-seed,R1,15,5,4,0,0,0,9,0,0,0,0
+R1-seed,R1,15,6,5,0,0,0,9,0,0,0,0
+R1-seed,R1,15,7,6,0,0,0,9,0,0,0,0
+R1-seed,R1,15,8,7,0,9,0,0,0,0,0,0
+R1-seed,R1,15,9,8,0,0,9,0,0,0,0,0
+R1-seed,R1,15,10,9,9,0,0,0,0,0,0,0
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_nuc_counts(self.report_file)
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -738,14 +768,14 @@ R2-seed,R2,15,12,15,9,0,0,0,0,0,0,0
 R2-seed,15,0,9,0,AAATTTCCCCGA
 """)
 
-        # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        # seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,
         #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
 R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
-R2-seed,R2,15,3,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,7,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,10,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -765,12 +795,12 @@ R1-seed,15,0,5,0,AAA---CGA
 R1-seed,15,0,2,0,AAATTTCGA
 """)
 
-        # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        # seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,
         #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,2,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0
-R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,4,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0
+R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -789,21 +819,21 @@ R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0
 R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
 """)
 
-        # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        # seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,
         #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
-R3-seed,R3,15,4,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,6,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,7,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,9,0
-R3-seed,R3,15,9,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,10,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,11,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R3-seed,R3,15,12,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,10,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,13,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,16,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,19,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,9,0
+R3-seed,R3,15,25,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,28,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,31,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R3-seed,R3,15,34,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
         expected_insertions = """\
 seed,region,qcut,left,insert,count,before
-R3-seed,R3,15,8,G,9,5
+R3-seed,R3,15,22,G,9,5
 """
 
         self.report.read(aligned_reads)
@@ -869,7 +899,7 @@ R3-seed,15,0,9,0,AATTTCAGACTGGGCCCCGAGAGCAT
 
         expected_insertions = """\
 seed,region,qcut,left,insert,count,before
-R3-seed,R3,15,5,G,9,5
+R3-seed,R3,15,12,G,9,5
 """
 
         self.report.read(aligned_reads)
@@ -891,7 +921,7 @@ R3-seed,15,2,4,0,AAATTTCAGACTG
 
         expected_insertions = """\
 seed,region,qcut,left,insert,count,before
-R3-seed,R3,15,5,G,9,5
+R3-seed,R3,15,13,G,9,5
 """
 
         self.report.read(aligned_reads)
@@ -951,7 +981,7 @@ R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
 
         expected_insertions = """\
 seed,region,qcut,left,insert,count,before
-R3-seed,R3a,15,5,G,9,5
+R3-seed,R3a,15,13,G,9,5
 """
 
         self.report.read(aligned_reads)
@@ -972,14 +1002,14 @@ R3-seed,R3a,15,5,G,9,5
 R2-seed,15,0,5,0,AAATTTGGnnCCCGA
 """)
 
-        # seed,region,q-cutoff,query.aa.pos,refseq.aa.pos,
+        # seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,
         #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
 R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,2,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,4,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,10,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,13,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.read(aligned_reads)
@@ -1211,11 +1241,11 @@ R1-seed,15,0,9,0,AAATTT
 
         expected_text = """\
 R1-seed,R1a,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1a,15,2,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1a,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1a,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1b,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1b,15,1,2,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1b,15,2,3,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1b,15,4,3,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
@@ -1599,25 +1629,25 @@ seed,region,qcut,left,insert,count,before
     def testInsert(self):
         expected_text = """\
 seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,3,D,1,
+R1-seed,R1,15,7,D,1,
 """
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
-        self.writer.write(inserts=[2], region='R1')
+        self.writer.write(inserts=[6], region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testInsertWithBefore(self):
         expected_text = """\
 seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,4,E,1,2
+R1-seed,R1,15,10,E,1,2
 """
         expected_counts = {('R1-seed', 'R1'): {1: 1}}
-        seed_amino_after = SeedAmino(consensus_index=4)
+        seed_amino_after = SeedAmino(12)
         report_amino_after = ReportAmino(seed_amino_after, position=2)
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
-        self.writer.write(inserts=[3],
+        self.writer.write(inserts=[9],
                           region='R1',
                           report_aminos=[report_amino_after])
 
@@ -1630,24 +1660,24 @@ R1-seed,R1,15,4,E,1,2
         """
         expected_text = """\
 seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,4,D,1,
+R1-seed,R1,15,8,D,1,
 """
 
         self.writer.add_nuc_read(offset_sequence='A' + self.nuc_seq_acdef,
                                  count=1)
-        self.writer.write(inserts=[3], region='R1', reading_frame=2)
+        self.writer.write(inserts=[7], region='R1', reading_frame=2)
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testInsertWithOffset(self):
         expected_text = """\
 seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,3,D,1,
+R1-seed,R1,15,7,D,1,
 """
 
         #                                            C  D  E  F
         self.writer.add_nuc_read(offset_sequence='---TGTGACGAGTTT', count=1)
-        self.writer.write(inserts=[2], region='R1')
+        self.writer.write(inserts=[6], region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
@@ -1658,56 +1688,56 @@ seed,region,qcut,left,insert,count,before
 
         #                                         C  D     E  F
         self.writer.add_nuc_read(offset_sequence='TGTGAC---GAGTTT', count=1)
-        self.writer.write(inserts=[1, 2], region='R1')
+        self.writer.write(inserts=[3, 6], region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testTwoInsertsWithOffset(self):
         expected_text = """\
 seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,3,D,1,
-R1-seed,R1,15,5,F,1,
+R1-seed,R1,15,7,D,1,
+R1-seed,R1,15,13,F,1,
 """
 
         #                                            C  D  E  F  G
         self.writer.add_nuc_read(offset_sequence='---TGTGACGAGTTTGGG', count=1)
-        self.writer.write(inserts=[2, 4], region='R1')
+        self.writer.write(inserts=[6, 12], region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testInsertsWithVariants(self):
         expected_text = """\
 seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,3,D,2,
+R1-seed,R1,15,7,D,2,
 """
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_afdef, count=1)
-        self.writer.write(inserts=[2], region='R1')
+        self.writer.write(inserts=[6], region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testDifferentInserts(self):
         expected_text = """\
 seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,2,C,2,
-R1-seed,R1,15,2,F,3,
+R1-seed,R1,15,4,C,2,
+R1-seed,R1,15,4,F,3,
 """
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=2)
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_afdef, count=3)
-        self.writer.write(inserts=[1], region='R1')
+        self.writer.write(inserts=[3], region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testMulticharacterInsert(self):
         expected_text = """\
 seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,3,DE,1,
+R1-seed,R1,15,7,DE,1,
 """
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
-        self.writer.write(inserts=[2, 3], region='R1')
+        self.writer.write(inserts=[6, 9], region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
@@ -1719,18 +1749,18 @@ seed,region,qcut,left,insert,count,before
 """
 
         self.writer.add_nuc_read(nuc_seq, count=1)
-        self.writer.write(inserts=[1], region='R1')
+        self.writer.write(inserts=[3], region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testUnsortedInserts(self):
         expected_text = """\
 seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,3,DE,1,
+R1-seed,R1,15,7,DE,1,
 """
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
-        self.writer.write(inserts=(3, 2), region='R1')
+        self.writer.write(inserts=(9, 6), region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
