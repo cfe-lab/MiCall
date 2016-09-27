@@ -12,6 +12,7 @@ from operator import itemgetter
 import os
 import shutil
 import socket
+import requests
 from xml.etree import ElementTree
 
 from micall.core.aln2counts import aln2counts
@@ -29,6 +30,114 @@ from micall.core.coverage_plots import coverage_plot
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
 logger = logging.getLogger('micall')
+
+
+class BSrequest:
+    """A class that wraps some of the Basespace API"""
+
+    def __init__(self,
+                 base_url="https://api.basespace.illumina.com/v1pre3",
+                 access_token=None):
+        self._burl = base_url
+        if access_token is None:
+            envtoken = os.getenv("AccessToken", None)
+            if envtoken is None:
+                logger.error("Cannot find environment variable called 'AccessToken'")
+            self._access_token = envtoken
+        else:
+            self._access_token = access_token
+
+    def _responsestatus(self, jobj):
+        """ Return the response code of jobj (expected to be a response from a API query).
+        This consists of an Basespace errorcode and a message (two strings).
+
+        The dictionary ResponseStatus can be empty if the request was successful.
+        Return empty strings in this case.
+
+        NOTE: There is an inconsistency in the API response codes:
+        If the API is given an unrecognised URL path, it returns an
+        empty ErrorCode, and a nonempty Message. For consistency, it should
+        return a nonempty ErrorCode in this case.
+        This would confuse routines calling this one, because they check for errors
+        like this:
+        err_code, err_msg = bs.responsestatus(jobj)
+        if err_code:
+           print "Houston, we have a problem"
+        else:
+           print "Everything is hunky dory"
+
+        """
+        resp = jobj["ResponseStatus"]
+        err_code = resp.get("ErrorCode", "")
+        err_msg = resp.get("Message", "")
+        # see docstring for the reasoning behind this logic
+        if err_msg and not err_code:
+            err_code = "API ERROR"
+        return err_code, err_msg
+
+    def _raw_get_file(self, locstr, paramdct=None):
+        if self._access_token is None:
+            logger.error("skipping _raw_get_file '%s': no access token" % locstr)
+            raise RuntimeError("no access_token for basespace API")
+        if paramdct is None:
+            pdct = {}
+        else:
+            pdct = paramdct.copy()
+        assert "access_token" not in pdct, " access_token may not be in paramdct"
+        pdct["access_token"] = self._access_token
+        reqstr = "/".join([self._burl, locstr])
+        logger.info("REQ '%s'" % reqstr)
+        return requests.get(reqstr, params=pdct)
+
+    def _runssamples(self, runid, Limit, Offset):
+        """ Return the json result of the runs/id/samples API request:
+        https://developer.basespace.illumina.com/docs/content/documentation/rest-api/api-reference#Samples
+        This returns a json object describing samples  belonging to a specified run, or
+        an object with an error message.
+
+        Limit: limit the number of responses to Limit number of items.
+        Offset: the offset of the first file to read in the whole collection
+        """
+        return self._raw_get_file("/".join(["runs", runid, "samples"]),
+                                  paramdct={"Limit": Limit, "Offset": Offset}).json()
+
+    def _get_all_sample_ids_from_run_id(self, runid):
+        """Retrieve a set of the sampleids of all the samples in the specified run.
+        Raise an Runtimeerror iff an API error occurs.
+
+        NOTE: This routine will download sample_id in batches of NUM_BATCH defined in
+        the routine itself.
+        """
+        NUM_BATCH = 1000
+        jobj = self._runssamples(runid, NUM_BATCH, 0)
+        err_code, err_msg = self._responsestatus(jobj)
+        if err_code:
+            raise RuntimeError("runsamples API error")
+        response = jobj["Response"]
+        retset = set([s["Id"] for s in response["Items"]])
+        numgot = response["DisplayedCount"]
+        numneed = response["TotalCount"]
+
+        while (numgot < numneed):
+            jobj = self._runssamples(runid, NUM_BATCH, numgot)
+            err_code, err_msg = self._responsestatus(jobj)
+            if err_code:
+                raise RuntimeError("runsamples API error")
+            response = jobj["Response"]
+            numgot += response["DisplayedCount"]
+            retset |= set([s["Id"] for s in response["Items"]])
+        return retset
+
+    def Check_Run_Sample_IDs(self, run_id_lst, sample_id_lst):
+        """"Make sure that all samples in the sample_id_lst
+        belong to runs specified in the run_id_lst.
+
+        Return a set of those sample_ids in sample_id_lst that are found in the
+        runs specified in run_id_lst.
+        """
+        # a: determine the set of all sampleids in all runs
+        sample_set = set().union(*[self._get_all_sample_ids_from_run_id(runid) for runid in run_id_lst])
+        return set(sample_id_lst) & sample_set
 
 
 def parse_args():
@@ -526,6 +635,15 @@ def main():
             else:
                 logger.error("Error: no such file as '%s'" % json_path)
             raise
+        # Do we have run_ids for all sample_ids ?
+        if json.run_id is None:
+            json.has_runinfo = False
+        else:
+            bs = BSrequest()
+            sample_id_lst = [s["Id"] for s in json.samples]
+            sample_id_set = bs.Check_Run_Sample_IDs([json.run_id], sample_id_lst)
+            json.has_runinfo = (len(sample_id_set) == len(json.samples))
+        logger.info("setting json.has_run_info to %s" % json.has_runinfo)
     pssm = Pssm()
 
     scratch_path = os.path.join(args.data_path, 'scratch')
