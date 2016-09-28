@@ -26,6 +26,7 @@ from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
 from micall.core.coverage_plots import coverage_plot
 
+EXCLUDED_SEEDS = ['HLA-B-seed']
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
 logger = logging.getLogger('micall')
@@ -272,7 +273,8 @@ def process_sample(sample_index, run_info, args, pssm):
         prelim_map(censored_path1,
                    censored_path2,
                    prelim_csv,
-                   work_path=sample_scratch_path)
+                   work_path=sample_scratch_path,
+                   excluded_seeds=EXCLUDED_SEEDS)
 
     logger.info('Running remap (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'rU') as prelim_csv, \

@@ -37,16 +37,19 @@ class ProjectConfig(object):
     def load(self, json_file):
         self.config = json.load(json_file)
 
-    def writeSeedFasta(self, fasta_file):
+    def writeSeedFasta(self, fasta_file, excluded_seeds=None):
         """ Write seed references to a FASTA file.
 
         @param fasta_file: an open file
+        @param excluded_seeds: a list of seed names to exclude from the file
         """
         seed_region_set = set()
         for project in self.config['projects'].itervalues():
             for region in project['regions']:
                 seed_region_set.update(region['seed_region_names'])
 
+        if excluded_seeds:
+            seed_region_set.difference_update(excluded_seeds)
         seed_region_list = list(seed_region_set)
         seed_name_map = {}  # {sequence: name}
         seed_region_list.sort()
@@ -135,7 +138,7 @@ if __name__ == '__live_coding__':
     from micall.tests.project_config_test import ProjectConfigurationTest
 
     suite = unittest.TestSuite()
-    suite.addTest(ProjectConfigurationTest("testProjectRegions"))
+    suite.addTest(ProjectConfigurationTest("testExcludeSeeds"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

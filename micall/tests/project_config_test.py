@@ -149,6 +149,81 @@ ACTGAAAGGG
 
         self.assertMultiLineEqual(expected_fasta, fasta.getvalue())
 
+    def testExcludeSeeds(self):
+        jsonIO = StringIO.StringIO("""\
+{
+  "projects": {
+    "R1": {
+      "regions": [
+        {
+          "coordinate_region": null,
+          "seed_region_names": ["R1-seed"]
+        }
+      ]
+    },
+    "R2": {
+      "regions": [
+        {
+          "coordinate_region": null,
+          "seed_region_names": ["R2-seed"]
+        }
+      ]
+    },
+    "R3": {
+      "regions": [
+        {
+          "coordinate_region": null,
+          "seed_region_names": ["R3-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R1-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "ACTGAAA",
+        "GGG"
+      ]
+    },
+    "R2-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "TTT"
+      ]
+    },
+    "R3-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "TAG"
+      ]
+    }
+  }
+}
+""")
+        expected_fasta = """\
+>R2-seed
+TTT
+"""
+        fasta = StringIO.StringIO()
+
+        self.config.load(jsonIO)
+        self.config.writeSeedFasta(fasta, excluded_seeds=['R1-seed', 'R3-seed'])
+
+        self.assertMultiLineEqual(expected_fasta, fasta.getvalue())
+
+    def testExcludeUnknownSeed(self):
+        expected_fasta = """\
+>R1-seed
+ACTGAAAGGG
+"""
+        fasta = StringIO.StringIO()
+
+        self.config.load(self.defaultJsonIO)
+        self.config.writeSeedFasta(fasta, excluded_seeds=['R99-seed'])
+
+        self.assertMultiLineEqual(expected_fasta, fasta.getvalue())
+
     def testDuplicateReference(self):
         jsonIO = StringIO.StringIO("""\
 {
