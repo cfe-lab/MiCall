@@ -1,19 +1,20 @@
 {% comment %}
     
-    Result report for MiCall.
+    Simplified result report for MiCall -- do not show g2p results, instead show all 
+    coverage plots, not just those for the V3LOOP.
    
 {% endcomment %}
 <!doctype html>
 <html>
 <head>
-    <title>{{ result.name }}</title>
+    <title>Results</title>
     <link rel="stylesheet" type="text/css"
         href="https://da1s119xsxmu0.cloudfront.net/libraries/basestrap/1.0.0/css/master.min.css" />
 </head>
 <body>
     <div class="row-fluid">
         <div class="col-xs-12">
-            <h3>{{ result.name }}</h3>
+            <h3>Results</h3>
             {% assign bad_tiles = '' %}
             {% for other_result in result.session.results %}
                 {% for file in other_result.files.where.ends_with['bad_tiles.csv'] %}
@@ -23,6 +24,8 @@
             {% if bad_tiles == '' %}
                 <h3>Warning: Error Rate data not included.</h3>
             {% endif %}
+            {% comment %}
+            <!-- The G2P feature is disabled for now. -->
             {% for g2p_file in result.files.where.ends_with['g2p_summary.csv'] %}
                 <h4>G2P Summary:</h4>
                 <table class="table bs-table bs-table-justify">
@@ -69,27 +72,30 @@
                     {% endfor %}
                 </table>
             {% endfor %}
+            {% endcomment %}
             {% for coverage_file in result.files.where.ends_with['coverage_scores.csv'] %}
                 <h4>Quality Control:</h4>
                 <table class="table bs-table bs-table-justify">
                     <tr>
                         <th>Sample</th>
+                        <th>Project</th>
+                        <th>Region</th>
                         <th title="Minimum coverage across key positions">Min</th>
                         <th title="Key position with the minimum coverage">Pos</th>
                         <th title="Overall coverage score (out of 4)">Score</th>
-                        <th title="Coverage levels across the region">V3LOOP Coverage</th>
+                        <th title="Coverage levels across the region">Coverage Plot</th>
                     </tr>
                     {% for row in result.files[coverage_file].parse.rows %}
-                        {% if row['project'] == 'V3LOOP' and row['region'] == 'V3LOOP'] %}
                             <tr>
                                 <td>{{ row['sample'] }}</td>
+                                <td>{{ row['project'] }}</td>
+                                <td>{{ row['region'] }}</td>
                                 <td>{{ row['min.coverage'] }}</td>
                                 <td>{{ row['which.key.pos'] }}</td>
                                 <td>{{ row['on.score'] }}</td>
-                                {% capture map_file_name %}{{ row['sample'] }}/coverage.{{ row['project'] }}.{{ row['region'] }}.png{% endcapture %}
+                                {% capture map_file_name %}{{ row['sample'] }}.{{ row['project'] }}.{{ row['region'] }}.png{% endcapture %}
                                 <td><img src="{{ result.files.where.ends_with[map_file_name].first.href }}"></td>
                             </tr>
-                        {% endif %}
                     {% endfor %}
                 </table>
             {% endfor %}

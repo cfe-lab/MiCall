@@ -109,7 +109,7 @@ class BSrequest:
         """
         jobj = self._raw_get_file("/".join(["runs", runid, "samples"]),
                                   paramdct={"Limit": Limit, "Offset": Offset}).json()
-        err_code, err_msg = self._responsestatus(jobj)
+        err_code, _err_msg = self._responsestatus(jobj)
         if err_code:
             raise RuntimeError("runsamples API error")
         return jobj
@@ -510,8 +510,8 @@ def summarize_run(args, json):
                                                 read_lengths,
                                                 summary)
         with open(quality_path, 'rU') as quality, \
-            open(bad_cycles_path, 'w') as bad_cycles, \
-            open(bad_tiles_path, 'w') as bad_tiles:
+                open(bad_cycles_path, 'w') as bad_cycles, \
+                open(bad_tiles_path, 'w') as bad_tiles:
             report_bad_cycles(quality, bad_cycles, bad_tiles)
 
         quality_metrics_path = os.path.join(interop_path, 'QMetricsOut.bin')
@@ -628,6 +628,7 @@ def main():
     args = parse_args()
     if args.link_run is not None:
         json = link_json(args.link_run, args.data_path)
+        json.has_runinfo = True
     else:
         json_path = os.path.join(args.data_path, 'input', 'AppSession.json')
         try:
