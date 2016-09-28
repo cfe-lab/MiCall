@@ -23,7 +23,7 @@
                             <tbody>
                                 {% for row in result.files[file].parse.rows %}
                                 <tr>
-                                    <th title="Percentage of clusters and cycles with Phred scores of at least 30 in forward reads">% Q30 fwd</th>
+                                    <th title="Percentage of clusters and cycles with Phred scores of at least 30 in R1 reads">% Q30 read 1</th>
                                     {% comment %}
                                     This hot mess is needed because we don't have
                                     a rounding operator yet.
@@ -32,7 +32,7 @@
                                     <td>{{ row['q30_fwd'] | times: 100 | minus: r }}</td>
                                 </tr>
                                 <tr>
-                                    <th title="Percentage of clusters and cycles with Phred scores of at least 30 in reverse reads">% Q30 rev</th>
+                                    <th title="Percentage of clusters and cycles with Phred scores of at least 30 in R2 reads">% Q30 read 2</th>
                                     {% assign r = row['q30_rev'] | times: 1000 | plus: 0.5 | modulo: 1 | minus: 0.5 | divided_by: 10 %}
                                     <td>{{ row['q30_rev'] | times: 100 | minus: r }}</td>
                                 </tr>
@@ -47,12 +47,12 @@
                                     <td>{{ row['pass_rate'] | times: 100 | minus: r }}</td>
                                 </tr>
                                 <tr>
-                                    <th title="Average error rate over tiles and cycles in forward reads (phiX error count/tile/cycle)">Error rate fwd</th>
+                                    <th title="Average error rate over tiles and cycles in R1 reads (phiX error count/tile/cycle)">% Error read 1</th>
                                     {% assign r = row['error_rate_fwd'] | times: 100 | plus: 0.5 | modulo: 1 | minus: 0.5 | divided_by: 100 %}
                                     <td>{{ row['error_rate_fwd'] | minus: r }}</td>
                                 </tr>
                                 <tr>
-                                    <th title="Average error rate over tiles and cycles in reverse reads (phiX error count/tile/cycle)">Error rate rev</th>
+                                    <th title="Average error rate over tiles and cycles in R2 reads (phiX error count/tile/cycle)">% Error read 2</th>
                                     {% assign r = row['error_rate_rev'] | times: 100 | plus: 0.5 | modulo: 1 | minus: 0.5 | divided_by: 100 %}
                                     <td>{{ row['error_rate_rev'] | minus: r }}</td>
                                 </tr>
