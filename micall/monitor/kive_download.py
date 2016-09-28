@@ -83,7 +83,9 @@ def download_results(kive_runs, results_folder, run_folder):
                         'g2p_summary',
                         'coverage_scores',
                         'coverage_maps_tar',
-                        'counts']
+                        'mixed_counts',
+                        'mixed_amino',
+                        'mixed_amino_merged']
         for output_name in output_names:
             dataset = outputs.get(output_name, None)
             if not dataset:
