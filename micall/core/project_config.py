@@ -120,9 +120,18 @@ class ProjectConfig(object):
 
         return self.config['regions'][seed_region]['seed_group']
 
-    def getProjectRegions(self, seed_name, coordinate_name):
-        project_names = self.config['projects'].keys()
-        project_names.sort()
+    def getProjectRegions(self, seed_name, coordinate_name, excluded_projects=None):
+        """ Find all project regions that use the seed and coordinate region.
+
+        @param seed_name: the needed seed reference
+        @param coordinate_name: the needed coordinate reference
+        @param excluded_projects: a list of project names to exclude
+        @return: a generator of project configuration dictionaries
+        """
+        project_names = set(self.config['projects'])
+        if excluded_projects is not None:
+            project_names.difference_update(excluded_projects)
+        project_names = sorted(project_names)
         for project_name in project_names:
             project = self.config['projects'][project_name]
             for region in project['regions']:
@@ -135,10 +144,10 @@ class ProjectConfig(object):
 
 if __name__ == '__live_coding__':
     import unittest
-    from micall.tests.project_config_test import ProjectConfigurationTest
+    from micall.tests.project_config_test import ProjectConfigurationProjectRegionsTest
 
     suite = unittest.TestSuite()
-    suite.addTest(ProjectConfigurationTest("testExcludeSeeds"))
+    suite.addTest(ProjectConfigurationProjectRegionsTest("testProjectExcluded"))
     test_results = unittest.TextTestRunner().run(suite)
 
     print(test_results.errors)

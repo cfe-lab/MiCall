@@ -460,8 +460,11 @@ ACTGAAAGGG
 
         self.assertEqual(expected_group, group)
 
-    def testProjectRegions(self):
-        jsonIO = StringIO.StringIO("""\
+
+class ProjectConfigurationProjectRegionsTest(unittest.TestCase):
+    def setUp(self):
+        self.config = ProjectConfig()
+        self.defaultJsonIO = StringIO.StringIO("""\
 {
   "projects": {
     "R1": {
@@ -510,6 +513,8 @@ ACTGAAAGGG
   }
 }
 """)
+
+    def testProjectRegions(self):
         expected_project_regions = [{"project_name": "R1",
                                      "coordinate_region_length": 3,
                                      "key_positions": [],
@@ -523,7 +528,24 @@ ACTGAAAGGG
                                      "min_coverage2": 50,
                                      "min_coverage3": 100}]
 
-        self.config.load(jsonIO)
+        self.config.load(self.defaultJsonIO)
         project_regions = list(self.config.getProjectRegions('R1-seed', 'R1'))
+
+        self.assertEqual(expected_project_regions, project_regions)
+
+    def testProjectExcluded(self):
+        excluded_projects = ['R1']
+        expected_project_regions = [{"project_name": "R1 and R2",
+                                     "coordinate_region_length": 3,
+                                     "key_positions": [1, 3],
+                                     "min_coverage1": 10,
+                                     "min_coverage2": 50,
+                                     "min_coverage3": 100}]
+
+        self.config.load(self.defaultJsonIO)
+        project_regions = list(self.config.getProjectRegions(
+            'R1-seed',
+            'R1',
+            excluded_projects))
 
         self.assertEqual(expected_project_regions, project_regions)

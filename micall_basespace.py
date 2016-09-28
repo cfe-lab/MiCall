@@ -27,7 +27,16 @@ from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
 from micall.core.coverage_plots import coverage_plot
 
-EXCLUDED_SEEDS = ['HLA-B-seed']
+EXCLUDED_SEEDS = ['HLA-B-seed']  # Not ready yet.
+EXCLUDED_PROJECTS = ['HCV-NS5a',
+                     'INT',
+                     'MidHCV',
+                     'MiniHCV',
+                     'MiniRT',
+                     'PR-RT',
+                     'RT',
+                     'V3LOOP',
+                     'wg1HCV']  # Avoid useless duplicates for BaseSpace version.
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
 logger = logging.getLogger('micall')
@@ -453,7 +462,8 @@ def process_sample(sample_index, run_info, args, pssm):
         coverage_plot(amino_csv,
                       coverage_scores_csv,
                       coverage_maps_path=coverage_maps_path,
-                      coverage_maps_prefix=sample_name)
+                      coverage_maps_prefix=sample_name,
+                      excluded_projects=EXCLUDED_PROJECTS)
 
     with open(os.path.join(sample_scratch_path, 'coverage_scores.csv'), 'rU') as coverage_scores_csv:
         reader = csv.DictReader(coverage_scores_csv)

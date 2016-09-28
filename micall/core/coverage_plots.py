@@ -2,28 +2,30 @@
 
 import os
 import argparse
-import errno
-import itertools
 from collections import Counter
 from csv import DictReader, DictWriter
-
-# NOTE: this must be performed BEFORE pyplot is imported
-# http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import pyplot as plt, patches
-from matplotlib.ticker import FuncFormatter
+import errno
+import itertools
 from operator import itemgetter
 import tarfile
 
+from matplotlib.ticker import FuncFormatter
+
 from micall.core import project_config, aln2counts
+
+# NOTE: this must be performed BEFORE pyplot is imported
+# http://stackoverflow.com/a/3054314/4794
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt, patches  # @IgnorePep8
 
 
 def coverage_plot(amino_csv,
                   coverage_scores_csv,
                   coverage_maps_path=None,
                   coverage_maps_prefix=None,
-                  filetype='png'):
+                  filetype='png',
+                  excluded_projects=None):
     """ Generate coverage plots.
 
     @param amino_csv: an open file object that holds amino acid frequencies
@@ -35,6 +37,7 @@ def coverage_plot(amino_csv,
     if there is no prefix.
     @param filetype: controls which file type will be saved, must be supported
     by matplotlib (probably png, pdf, ps, eps and svg).
+    @param excluded_projects: a list of project names to exclude
     @return: a list of full paths to the image files.
     """
     # imports project information from JSON
@@ -82,7 +85,10 @@ def coverage_plot(amino_csv,
             clipping_counts[pos] = int(row['clip'])
             qcut = row['q-cutoff']
         # use region to retrieve coordinate reference
-        for project_region in projects.getProjectRegions(seed, region):
+        for project_region in projects.getProjectRegions(
+                seed,
+                region,
+                excluded_projects=excluded_projects):
             min_coverage = None
             min_coverage_pos = None
             project_name = project_region['project_name']
