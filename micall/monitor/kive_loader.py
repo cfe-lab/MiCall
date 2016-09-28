@@ -551,11 +551,13 @@ class KiveLoader(object):
         runs = self.kive.find_runs(active=True)
         map = {}
         for run in runs:
-            if run.pipeline_id in self.pipelines:
+            pipeline_config = self.pipelines.get(run.pipeline_id)
+            if pipeline_config is not None:
                 try:
                     run.is_complete()
+                    fastq1_index = pipeline_config['inputs'].index('fastq1')
                     inputs = sorted(run.raw['inputs'], key=itemgetter('index'))
-                    fastq1 = self.kive.get_dataset(inputs[1]['dataset'])
+                    fastq1 = self.kive.get_dataset(inputs[fastq1_index]['dataset'])
                     sample_name = self.get_sample_name(fastq1)
                     input_ids = tuple(input['dataset'] for input in inputs)
                     key = (run.pipeline_id, ) + input_ids

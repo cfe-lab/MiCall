@@ -41,7 +41,8 @@ def prelim_map(fastq1,
                rfgopen=REF_GAP_OPEN,
                stderr=sys.stderr,
                gzip=False,
-               work_path=''):
+               work_path='',
+               excluded_seeds=None):
     """ Run the preliminary mapping step.
 
     @param fastq1: the file name for the forward reads in FASTQ format
@@ -55,6 +56,7 @@ def prelim_map(fastq1,
     @param rfgopen: a penalty for opening a gap in the reference sequence.
     @param stderr: where to write the standard error output from bowtie2 calls.
     @param work_path:  optional path to store working files
+    @param excluded_seeds: a list of seed names to exclude from mapping
     """
     try:
         bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
@@ -105,7 +107,7 @@ def prelim_map(fastq1,
     projects = project_config.ProjectConfig.loadDefault()
     ref_path = os.path.join(work_path, 'micall.fasta')
     with open(ref_path, 'w') as ref:
-        projects.writeSeedFasta(ref)
+        projects.writeSeedFasta(ref, excluded_seeds)
     reffile_template = os.path.join(work_path, 'reference')
     bowtie2_build.build(ref_path, reffile_template)
 
