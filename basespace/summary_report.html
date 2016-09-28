@@ -80,18 +80,25 @@
                 {% for result in session.results %}
                     {% for file in result.files.where.ends_with['/bad_tiles.csv'] %}
                         <h3>Bad Tiles</h3>
+                        {% assign tile_data = result.files[file].parse.to_array %}
+                        {% assign tile_row_count = tile_data | size | divided_by: 2 %}
+                        {% assign last_tile_row = tile_row_count | minus: 1 %}
                         <table class="table bs-table bs-table-justify">
                             <thead>
                                 <tr>
                                     <th>Tile</th><th>Bad Cycles</th>
+                                    <th>Tile</th><th>Bad Cycles</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for row in result.files[file].parse.rows %}
-                                <tr>
-                                    <td>{{ row['tile'] }}</td>
-                                    <td>{{ row['bad_cycles'] }}</td>
-                                </tr>
+                                {% for i in (0..last_tile_row) %}
+                                    {% assign j = i | plus: tile_row_count %}
+                                    <tr>
+                                        <td>{{ tile_data[i][0] }}</td>
+                                        <td>{{ tile_data[i][1] }}</td>
+                                        <td>{{ tile_data[j][0] }}</td>
+                                        <td>{{ tile_data[j][1] }}</td>
+                                    </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
