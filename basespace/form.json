@@ -15,9 +15,10 @@
         {
             "$type": "RunChooser",
             "size": 250,
-            "label": "run",
+            "label": "Run",
             "required": false,
-            "id": "run-id"
+            "id": "run-id",
+            "helpText": "A run does not have to be provided, however run quality information can only be produced if the selected samples were from the provided run"
         },
         {
             "$type": "SampleChooser",
@@ -63,3 +64,4 @@
         }
     ]
 }
+

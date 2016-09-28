@@ -33,7 +33,7 @@ logger = logging.getLogger('micall')
 
 
 class BSrequest:
-    """A class that wraps some of the Basespace API"""
+    """A class that wraps some of the Basespace RESTful API"""
 
     def __init__(self,
                  base_url="https://api.basespace.illumina.com/v1pre3",
@@ -76,6 +76,14 @@ class BSrequest:
         return err_code, err_msg
 
     def _raw_get_file(self, locstr, paramdct=None):
+        """ Perform a RESTful basespace API request using
+        locstr: the API request without the base URL, and
+        optional parameters in the paramdct.
+        These must be of the form defined the ine basespace API docs.
+
+        Return the requests object. Note that if this expected to contain a json
+        object, the this must be extracted by obj.json().
+        """
         if self._access_token is None:
             logger.error("skipping _raw_get_file '%s': no access token" % locstr)
             raise RuntimeError("no access_token for basespace API")
@@ -86,7 +94,7 @@ class BSrequest:
         assert "access_token" not in pdct, " access_token may not be in paramdct"
         pdct["access_token"] = self._access_token
         reqstr = "/".join([self._burl, locstr])
-        logger.info("REQ '%s'" % reqstr)
+        logger.info("API: '%s'" % reqstr)
         return requests.get(reqstr, params=pdct)
 
     def _runssamples(self, runid, Limit, Offset):
@@ -98,34 +106,31 @@ class BSrequest:
         Limit: limit the number of responses to Limit number of items.
         Offset: the offset of the first file to read in the whole collection
         """
-        return self._raw_get_file("/".join(["runs", runid, "samples"]),
+        jobj = self._raw_get_file("/".join(["runs", runid, "samples"]),
                                   paramdct={"Limit": Limit, "Offset": Offset}).json()
+        err_code, err_msg = self._responsestatus(jobj)
+        if err_code:
+            raise RuntimeError("runsamples API error")
+        return jobj
 
     def _get_all_sample_ids_from_run_id(self, runid):
         """Retrieve a set of the sampleids of all the samples in the specified run.
-        Raise an Runtimeerror iff an API error occurs.
+        Raise a Runtimeerror iff an API error occurs.
 
         NOTE: This routine will download sample_id in batches of NUM_BATCH defined in
         the routine itself.
         """
         NUM_BATCH = 1000
-        jobj = self._runssamples(runid, NUM_BATCH, 0)
-        err_code, err_msg = self._responsestatus(jobj)
-        if err_code:
-            raise RuntimeError("runsamples API error")
-        response = jobj["Response"]
-        retset = set([s["Id"] for s in response["Items"]])
-        numgot = response["DisplayedCount"]
-        numneed = response["TotalCount"]
-
-        while (numgot < numneed):
+        numgot = 0
+        retset = set()
+        needmore = True
+        while needmore:
             jobj = self._runssamples(runid, NUM_BATCH, numgot)
-            err_code, err_msg = self._responsestatus(jobj)
-            if err_code:
-                raise RuntimeError("runsamples API error")
             response = jobj["Response"]
-            numgot += response["DisplayedCount"]
             retset |= set([s["Id"] for s in response["Items"]])
+            numneed = response["TotalCount"]
+            numgot += response["DisplayedCount"]
+            needmore = (numgot < numneed)
         return retset
 
     def Check_Run_Sample_IDs(self, run_id_lst, sample_id_lst):
@@ -484,33 +489,36 @@ def summarize_run(args, json):
                     json.read_length2]
     summary = {}
 
-    interop_path = os.path.join(args.data_path,
-                                'input',
-                                'runs',
-                                json.run_id,
-                                'InterOp')
-    phix_path = os.path.join(interop_path, 'ErrorMetricsOut.bin')
-    quality_path = os.path.join(args.data_path, 'scratch', 'quality.csv')
-    bad_cycles_path = os.path.join(args.data_path, 'scratch', 'bad_cycles.csv')
-    bad_tiles_path = os.path.join(args.qc_path, 'bad_tiles.csv')
-    with open(phix_path, 'rb') as phix, open(quality_path, 'w') as quality:
-        records = error_metrics_parser.read_errors(phix)
-        error_metrics_parser.write_phix_csv(quality,
-                                            records,
-                                            read_lengths,
-                                            summary)
-    with open(quality_path, 'rU') as quality, \
+    has_error_metrics = json.has_runinfo
+
+    if has_error_metrics:
+        interop_path = os.path.join(args.data_path,
+                                    'input',
+                                    'runs',
+                                    json.run_id,
+                                    'InterOp')
+        phix_path = os.path.join(interop_path, 'ErrorMetricsOut.bin')
+        quality_path = os.path.join(args.data_path, 'scratch', 'quality.csv')
+        bad_cycles_path = os.path.join(args.data_path, 'scratch', 'bad_cycles.csv')
+        bad_tiles_path = os.path.join(args.qc_path, 'bad_tiles.csv')
+        with open(phix_path, 'rb') as phix, open(quality_path, 'w') as quality:
+            records = error_metrics_parser.read_errors(phix)
+            error_metrics_parser.write_phix_csv(quality,
+                                                records,
+                                                read_lengths,
+                                                summary)
+        with open(quality_path, 'rU') as quality, \
             open(bad_cycles_path, 'w') as bad_cycles, \
             open(bad_tiles_path, 'w') as bad_tiles:
-        report_bad_cycles(quality, bad_cycles, bad_tiles)
+            report_bad_cycles(quality, bad_cycles, bad_tiles)
 
-    quality_metrics_path = os.path.join(interop_path, 'QMetricsOut.bin')
-    quality_metrics_parser.summarize_quality(quality_metrics_path,
-                                             summary,
-                                             read_lengths)
+        quality_metrics_path = os.path.join(interop_path, 'QMetricsOut.bin')
+        quality_metrics_parser.summarize_quality(quality_metrics_path,
+                                                 summary,
+                                                 read_lengths)
 
-    tile_metrics_path = os.path.join(interop_path, 'TileMetricsOut.bin')
-    summarize_tiles(tile_metrics_path, summary)
+        tile_metrics_path = os.path.join(interop_path, 'TileMetricsOut.bin')
+        summarize_tiles(tile_metrics_path, summary)
     return summary
 
 
@@ -640,8 +648,8 @@ def main():
             json.has_runinfo = False
         else:
             bs = BSrequest()
-            sample_id_lst = [s["Id"] for s in json.samples]
-            sample_id_set = bs.Check_Run_Sample_IDs([json.run_id], sample_id_lst)
+            sample_id_set = bs.Check_Run_Sample_IDs([json.run_id],
+                                                    [s["Id"] for s in json.samples])
             json.has_runinfo = (len(sample_id_set) == len(json.samples))
         logger.info("setting json.has_run_info to %s" % json.has_runinfo)
     pssm = Pssm()
@@ -654,13 +662,8 @@ def main():
             shutil.rmtree(filepath)
         else:
             os.remove(filepath)
-    args.qc_path = create_app_result(args.data_path,
-                                     json,
-                                     suffix='quality_control')
-    args.g2p_path = create_app_result(args.data_path,
-                                      json,
-                                      suffix='geno_to_pheno')
-
+    args.g2p_path = args.qc_path = create_app_result(args.data_path,
+                                                     json, suffix='results')
     if json.run_id is not None:
         logger.info('Summarizing run.')
         run_summary = summarize_run(args, json)
