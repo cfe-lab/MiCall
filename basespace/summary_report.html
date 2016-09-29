@@ -11,6 +11,9 @@
         href="https://da1s119xsxmu0.cloudfront.net/libraries/basestrap/1.0.0/css/master.min.css" />
 </head>
 <body>
+    <style type="text/css">
+    .scosepcol { border-right: 1px solid #000; }
+    </style>
     <div class=col-sm-6>
         <section class="bs-panel">
             {% for result in session.results %}
@@ -19,9 +22,9 @@
                 <table class="table bs-table bs-table-justify">
                 <tbody>
                 <tr>
-                <th title="The amino acid counts for every sample, seed and region"> amino.csv </th> <td> <a href="{{ result.files.where.ends_with['amino.csv'].first.href }}"> amino.csv </a> </td>
+                <th title="The amino acid counts for every sample, seed and region"> Amino acid counts </th> <td> <a href="{{ result.files.where.ends_with['amino.csv'].first.href }}"> amino.csv </a> </td>
                 </tr><tr>
-                <th title="The nucleotide consensus sequence for every sample and region"> conseq.csv </th> <td> <a href="{{ result.files.where.ends_with['conseq.csv'].first.href }}"> conseq.csv </a> </td>
+                <th title="The nucleotide consensus sequence for every sample and region"> Nucleotide consensus sequences</th> <td> <a href="{{ result.files.where.ends_with['conseq.csv'].first.href }}"> conseq.csv </a> </td>
                 </tr><tr>
                 <th> Look in 'OUTPUT FILES' to see all results</th> <td>  </td>
                 </tr>
@@ -102,21 +105,21 @@
                         {% assign tile_data = result.files[file].parse.to_array %}
                         {% assign tile_row_count = tile_data | size | divided_by: 2 %}
                         {% assign last_tile_row = tile_row_count | minus: 1 %}
-                        <table class="table bs-table bs-table-justify">
+                        <table class="table bs-table">
                             <thead>
                                 <tr>
-                                    <th>Tile</th><th>Bad Cycles</th>
-                                    <th>Tile</th><th>Bad Cycles</th>
+                                    <th align="right">Tile side 1</th><th align="right" class="scosepcol">Bad Cycles</th>
+                                    <th align="right">Tile side 2</th><th align="right">Bad Cycles</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for i in (0..last_tile_row) %}
                                     {% assign j = i | plus: tile_row_count %}
                                     <tr>
-                                        <td>{{ tile_data[i][0] }}</td>
-                                        <td>{{ tile_data[i][1] }}</td>
-                                        <td>{{ tile_data[j][0] }}</td>
-                                        <td>{{ tile_data[j][1] }}</td>
+                                        <td align="right" class="scosepcol">{{ tile_data[i][0] }}</td>
+                                        <td align="right" class="scosepcol">{{ tile_data[i][1] }}</td>
+                                        <td align="right" class="scosepcol">{{ tile_data[j][0] }}</td>
+                                        <td align="right" class="scosepcol">{{ tile_data[j][1] }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -128,3 +131,4 @@
     </div>
 </body>
 </html>
+
