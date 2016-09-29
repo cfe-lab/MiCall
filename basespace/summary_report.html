@@ -11,6 +11,25 @@
         href="https://da1s119xsxmu0.cloudfront.net/libraries/basestrap/1.0.0/css/master.min.css" />
 </head>
 <body>
+    <div class=col-sm-6>
+        <section class="bs-panel">
+            {% for result in session.results %}
+                {% assign amino_file = result.files.where.ends_with[".csv"].first %}
+                <h3>Results</h3>
+                <table class="table bs-table bs-table-justify">
+                <tbody>
+                <tr>
+                <th title="The amino acid counts for every sample, seed and region"> amino.csv </th> <td> <a href="{{ result.files.where.ends_with['amino.csv'].first.href }}"> amino.csv </a> </td>
+                </tr><tr>
+                <th title="The nucleotide consensus sequence for every sample and region"> conseq.csv </th> <td> <a href="{{ result.files.where.ends_with['conseq.csv'].first.href }}"> conseq.csv </a> </td>
+                </tr><tr>
+                <th> Look in 'OUTPUT FILES' to see all results</th> <td>  </td>
+                </tr>
+                </tbody>
+                </table>
+            {% endfor %}
+        </section>
+    </div>  
     <div class="row-fluid">
         <div class="col-sm-6">
             <section class="bs-panel">
