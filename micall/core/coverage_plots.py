@@ -142,14 +142,7 @@ def coverage_plot(amino_csv,
                 coverage_score_off = -2
             else:
                 coverage_score_off = -3
-            plt.step(x, y_deletions, where='mid', label='deletions', zorder=100)
-            plt.step(x, y_stops, where='mid', label='stop codons', zorder=101)
-            plt.step(x, y_coverage, linewidth=2, where='mid', label='coverage', zorder=102)
-            plt.step(x, y_partials, where='mid', label='partial dels', zorder=99)
-            plt.step(x, y_clipping, where='mid', label='soft clipped', zorder=98)
-            plt.step(x, y_insertions, where='mid', label='insertions', zorder=97)
-            plt.step(x, y_low_quality, where='mid', label='low quality', zorder=96)
-            plt.legend(loc='best', fontsize=fontsize, fancybox=True)
+            plt.step(x, y_coverage, linewidth=2, where='mid', label='coverage', zorder=100)
             left_margin = -region_length / 25.0
             plt.xlim([left_margin, region_length])
             plt.ylim([0.5, MAX_COVERAGE])
@@ -183,10 +176,16 @@ def coverage_plot(amino_csv,
             figname_parts = [project_name, region, filetype]
             if coverage_maps_prefix:
                 figname_parts.insert(0, coverage_maps_prefix)
-            figname = '.'.join(figname_parts)
-            dest = os.path.join(coverage_maps_path, figname)
-            paths.append(dest)
-            plt.savefig(dest)  # write image to file
+            paths.append(save_figure(coverage_maps_path, figname_parts))
+            plt.step(x, y_deletions, where='mid', label='deletions', zorder=99)
+            plt.step(x, y_stops, where='mid', label='stop codons', zorder=98)
+            plt.step(x, y_partials, where='mid', label='partial dels', zorder=97)
+            plt.step(x, y_clipping, where='mid', label='soft clipped', zorder=96)
+            plt.step(x, y_insertions, where='mid', label='insertions', zorder=95)
+            plt.step(x, y_low_quality, where='mid', label='low quality', zorder=94)
+            plt.legend(loc='best', fontsize=fontsize, fancybox=True)
+            figname_parts.insert(-1, 'details')
+            paths.append(save_figure(coverage_maps_path, figname_parts))
             plt.cla()  # clear the axis, but don't remove the axis itself.
             row = {'project': project_name,
                    'region': region,
@@ -199,6 +198,20 @@ def coverage_plot(amino_csv,
             writer.writerow(row)
 
     return paths  # locations of image files
+
+
+def save_figure(coverage_maps_path, figname_parts):
+    """ Write the current figure to a file.
+
+    :param str coverage_maps_path: the folder to write the file in
+    :param list figname_parts: will be joined together with dots to make the
+        file name
+    :return: the file name it was written to
+    """
+    figname = '.'.join(figname_parts)
+    dest = os.path.join(coverage_maps_path, figname)
+    plt.savefig(dest)  # write image to file
+    return dest
 
 
 def make_tar_path(tar_path):

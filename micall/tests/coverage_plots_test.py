@@ -87,7 +87,9 @@ R1-and-R2,R1,R1-seed,15,5,1,-1,1
         scores_csv = StringIO()
         amino_csv.name = 'E1234.amino.csv'
         expected_calls = [call('E1234.R1.R1.png'),
-                          call('E1234.R1-and-R2.R1.png')]
+                          call('E1234.R1.R1.details.png'),
+                          call('E1234.R1-and-R2.R1.png'),
+                          call('E1234.R1-and-R2.R1.details.png')]
 
         coverage_plot(amino_csv,
                       coverage_scores_csv=scores_csv,

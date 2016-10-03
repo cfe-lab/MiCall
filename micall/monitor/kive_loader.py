@@ -393,7 +393,8 @@ class KiveLoader(object):
         self.check_kive_connection()
         dataset_name = os.path.basename(filename)
         logger.info('uploading dataset %r', dataset_name)
-        if self.external_directory_name is None:
+        if (self.external_directory_name is None or
+                not filename.startswith(self.external_directory_name)):
             with open(filename, 'rb') as f:
                 dataset = self.kive.add_dataset(
                     name=dataset_name,
