@@ -29,6 +29,8 @@ from micall.core.coverage_plots import coverage_plot
 
 EXCLUDED_SEEDS = ['HLA-B-seed']  # Not ready yet.
 EXCLUDED_PROJECTS = ['HCV-NS5a',
+                     'HIV-GP41',
+                     'HIV-PRI',
                      'INT',
                      'MidHCV',
                      'MiniHCV',
