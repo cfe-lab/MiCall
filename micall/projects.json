@@ -1195,6 +1195,40 @@
         }
       ]
     },
+    "HIV-GP41": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "GP41",
+          "seed_region_names": [
+            "HIV1B-env-seed"
+          ]
+        }
+      ]
+    },
+    "HIV-PRI": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "INT",
+          "seed_region_names": [
+            "HIV1B-pol-seed"
+          ]
+        },
+        {
+          "coordinate_region": "PR",
+          "seed_region_names": [
+            "HIV1B-pol-seed"
+          ]
+        },
+        {
+          "coordinate_region": "RT",
+          "seed_region_names": [
+            "HIV1B-pol-seed"
+          ]
+        }
+      ]
+    },
     "HLA-B": {
       "max_variants": 10,
       "regions": [
