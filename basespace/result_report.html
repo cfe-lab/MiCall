@@ -75,6 +75,22 @@
             {% endcomment %}
             {% for coverage_file in result.files.where.ends_with['coverage_scores.csv'] %}
                 <h4>Quality Control:</h4>
+                <style>
+                    td.coverage_map {
+                        height:300px;
+                        width: 400px;
+                    }
+                    {% for row in result.files[coverage_file].parse.rows %}
+                        {% capture map_file_name %}{{ row['sample'] }}.{{ row['project'] }}.{{ row['region'] }}.png{% endcapture %}
+                        {% capture map_details_file_name %}{{ map_file_name | replace: '\.png', '.details.png' }}{% endcapture %}
+                        #cov{{ map_file_name | replace: '\.', '_' }} {
+                            background-image: url('{{ result.files.where.ends_with[map_file_name].first.href }}');
+                        }
+                        #cov{{ map_file_name | replace: '\.', '_' }}:hover {
+                            background-image: url('{{ result.files.where.ends_with[map_details_file_name].first.href }}');
+                        }
+                    {% endfor %}
+                </style>
                 <table class="table bs-table bs-table-justify">
                     <tr>
                         <th>Sample</th>
@@ -83,7 +99,7 @@
                         <th title="Minimum coverage across key positions">Min</th>
                         <th title="Key position with the minimum coverage">Pos</th>
                         <th title="Overall coverage score (out of 4)">Score</th>
-                        <th title="Coverage levels across the region">Coverage Plot</th>
+                        <th title="Coverage levels across the region">Coverage Plot (hover for details)</th>
                     </tr>
                     {% for row in result.files[coverage_file].parse.rows %}
                             <tr>
@@ -94,7 +110,10 @@
                                 <td>{{ row['which.key.pos'] }}</td>
                                 <td>{{ row['on.score'] }}</td>
                                 {% capture map_file_name %}{{ row['sample'] }}.{{ row['project'] }}.{{ row['region'] }}.png{% endcapture %}
-                                <td><img src="{{ result.files.where.ends_with[map_file_name].first.href }}"></td>
+                                {% capture map_details_file_name %}{{ map_file_name }}.details.png{% endcapture %}
+                                <td class="coverage_map" id="cov{{ map_file_name | replace: '\.', '_' }}">
+                                    &nbsp;
+                                </td>
                             </tr>
                     {% endfor %}
                 </table>
