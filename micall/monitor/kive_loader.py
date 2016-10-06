@@ -596,7 +596,7 @@ class KiveLoader(object):
         _sample_name, run_status = run
         outputs = run_status.get_results()
         for output in outputs.itervalues():
-            if output.raw['is_invalid']:
+            if not output.raw['is_ok']:
                 return RUN_FAILED
             if output.raw['id'] is None:
                 return RUN_PURGED
