@@ -129,7 +129,7 @@ class KiveLoader(object):
                                                   self.quality_dataset,
                                                   self.batch_id)
             return 0
-        except StandardError as ex:
+        except Exception as ex:
             failed_folder = self.downloading_folder or self.folder
             is_reset_needed = True
             delay_fractions = [1.0/60, 5.0/60]

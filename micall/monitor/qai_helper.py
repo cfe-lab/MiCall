@@ -36,7 +36,7 @@ class Session(requests.Session):
                     headers=headers)
                 response.raise_for_status()
                 return response.json()
-            except StandardError:
+            except Exception:
                 if retries_remaining <= 0:
                     logger.error('JSON request failed for %s',
                                  path,
