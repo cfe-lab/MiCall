@@ -67,8 +67,15 @@ logging.config.dictConfig({
                           'formatter': 'basic',
                           'filename': '/data/miseq/micall.log',
                           'maxBytes': 1024*1024*15,  # 15MB
-                          'backupCount': 10}},
-    # This is the default logger.
+                          'backupCount': 10},
+                 'mail': {'class': 'logging.handlers.SMTPHandler',
+                          'level': 'WARN',
+                          'formatter': 'basic',
+                          'mailhost': 'mail.FILLINDOMAIN.com',
+                          'fromaddr': 'no.reply.micall.server@FILLINDOMAIN.com',
+                          'toaddrs': ['admin.team@FILLINDOMAIN.com'],
+                          'subject': 'Error logged in MiSeq Monitor'}},
+    # This is the default logger. Probably want to switch console to mail.
     'root': {'handlers': ['console', 'file'],
              'level': 'WARN'},
     'loggers': {"kive_loader": {"level": "INFO"},
