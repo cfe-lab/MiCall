@@ -271,7 +271,12 @@ are stored in a SAM file named for the seed region. You also have to edit the
 `cfe.fasta` file and rename that seed region to "0", because the SAM file uses
 the region name "0" instead of the proper region name. Once you've done that,
 you should be able to open an assembly in Tablet using the SAM file and the
-edited FASTA file.
+edited FASTA file. If the SAM file contains multiple regions, you'll probably
+have to sort it:
+
+    samtools view -Sb example.sam > example.bam
+    samtools sort example.bam example.sorted
+    samtools view -h -o example.sorted.sam example.sorted.bam
 
 [tablet]: http://ics.hutton.ac.uk/tablet/
 
@@ -306,18 +311,17 @@ similar steps to setting up a development workstation. Follow these steps:
         ps aux|grep MISEQ_MONITOR.py
         sudo kill -9 <process id from grep output>
 
-8. Get the code from Github into the server's development environment.
+8. Get the code from Github into the server's environment.
 
         ssh user@server
-        cd /usr/local/share/miseq/development/
+        cd /usr/local/share/miseq/production/
         git fetch
         git checkout tags/vX.Y
 
 9. Check if you need to set any new settings by running
-    `diff settings_default.py settings.py`. You will probably need to modify
-    the version number and pipeline id, at least. Make sure that
-    `production = False`, and the process counts are half the production values.
-    Do the same comparison of `hostfile`.
+    `diff micall/settings_default.py micall/settings.py`. You will probably need
+    to modify the version number and pipeline id, at least. Make sure that
+    `production = True`.
 10. Check if the gotoh package is up to date. If not, install it.
 
         cd /usr/local/share/miseq/development/micall/alignment
@@ -332,20 +336,6 @@ similar steps to setting up a development workstation. Follow these steps:
         pip show kiveapi
         cat api/setup.py
 
-12. Process one full run of data.
-
-        cd /usr/local/share/miseq/development/
-        ./run_processor.py /data/miseq/YYMMDD*
-
-13. Get the code from Github into the server's production environment.
-
-        ssh user@server
-        cd /usr/local/share/miseq/production/
-        git fetch
-        git checkout tags/vX.Y
-
-14. Review the settings just as you did in the
-    development environment, but make sure that `production = True`.
 15. Start the monitor, and tail the log to see that it begins processing all the
     runs with the new version of the pipeline. Before you launch, change all
     the working folders to be owned by the pipeline group.
