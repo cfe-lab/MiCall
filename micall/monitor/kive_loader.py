@@ -654,7 +654,7 @@ class KiveLoader(object):
             with open(os.path.join(results_folder, settings.DONE_PROCESSING), 'w'):
                 pass  # Leave the file empty
             logger.info('completed folder %r', folder)
-        except StandardError:
+        except Exception:
             message = 'Downloading results failed.'
             self.mark_folder_disabled(folder, message, exc_info=True)
 
