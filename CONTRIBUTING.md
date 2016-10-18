@@ -173,8 +173,8 @@ Docker image, tags it with the version number, and launches it for testing:
       echo Missing version tag.
       exit 1
     fi
-    sudo docker build -t docker.illumina.com/cfelab/micall:$1 https://github.com/cfe-lab/MiCall.git && \
-    sudo docker push docker.illumina.com/cfelab/micall:$1 && \
+    sudo docker build -t docker.illumina.com/cfe_lab/micall:$1 https://github.com/cfe-lab/MiCall.git && \
+    sudo docker push docker.illumina.com/cfe_lab/micall:$1 && \
     sudo spacedock -a <agent id from Form Builder> -m https://mission.basespace.illumina.com
 
 [bsvm]: https://developer.basespace.illumina.com/docs/content/documentation/native-apps/setup-dev-environment
@@ -302,8 +302,8 @@ similar steps to setting up a development workstation. Follow these steps:
     matches the version you used in `settings_default.py`. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
     so on. Mark the release as pre-release until you finish deploying it.
-6. Upgrade the scripts in Kive, and record the id of the new pipeline.
-7. Stop the `MISEQ_MONITOR.py` process after you check that it's not processing
+7. Upgrade the scripts in Kive, and record the id of the new pipeline.
+8. Stop the `MISEQ_MONITOR.py` process after you check that it's not processing
     any important runs.
 
         ssh user@server
@@ -311,32 +311,32 @@ similar steps to setting up a development workstation. Follow these steps:
         ps aux|grep MISEQ_MONITOR.py
         sudo kill -9 <process id from grep output>
 
-8. Get the code from Github into the server's environment.
+9. Get the code from Github into the server's environment.
 
         ssh user@server
         cd /usr/local/share/miseq/production/
         git fetch
         git checkout tags/vX.Y
 
-9. Check if you need to set any new settings by running
+10. Check if you need to set any new settings by running
     `diff micall/settings_default.py micall/settings.py`. You will probably need
     to modify the version number and pipeline id, at least. Make sure that
     `production = True`.
-10. Check if the gotoh package is up to date. If not, install it.
+11. Check if the gotoh package is up to date. If not, install it.
 
         cd /usr/local/share/miseq/development/micall/alignment
         pip show gotoh
         cat setup.py  # compare version numbers
         sudo python setup.py install
 
-11. Check that the kiveapi package is the same version you tested with. If not,
+12. Check that the kiveapi package is the same version you tested with. If not,
     do a Kive release first.
 
         cd /usr/local/share/Kive
         pip show kiveapi
         cat api/setup.py
 
-15. Start the monitor, and tail the log to see that it begins processing all the
+13. Start the monitor, and tail the log to see that it begins processing all the
     runs with the new version of the pipeline. Before you launch, change all
     the working folders to be owned by the pipeline group.
 
@@ -345,19 +345,22 @@ similar steps to setting up a development workstation. Follow these steps:
         python MISEQ_MONITOR.py &>/dev/null &
         tail -f /data/miseq/micall.log
 
-16. Launch the basespace virtual machine, and build a new Docker image
+14. Launch the basespace virtual machine, and build a new Docker image
     from GitHub. Tag it with the release number. See the bash scripts above for
     an easy way to do this.
 
-    sudo docker build -t docker.illumina.com/cfelab/micall:X.Y https://github.com/cfe-lab/MiCall.git#vX.Y
+    sudo docker build -t docker.illumina.com/cfe_lab/micall:vX.Y https://github.com/cfe-lab/MiCall.git
 
-17. Push the new image to the repository. You might have to log in to docker
+15. Push the new image to the repository. You might have to log in to docker
     before running this.
     
-    sudo docker push docker.illumina.com/cfelab/micall:X.Y
+        sudo docker push docker.illumina.com/cfe_lab/micall:vX.Y
 
-17. Send an e-mail to users describing the major changes in the release.
-18. Close the milestone for this release, create one for the next release, and
+16. Edit the `callbacks.js` in the form builder, and add the `:vX.Y` tag to the
+    `containerImageId` field.
+17. Activate the new revisions in the form builder and the report builder.
+18. Send an e-mail to users describing the major changes in the release.
+19. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
 
 [release]: https://help.github.com/categories/85/articles
