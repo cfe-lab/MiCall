@@ -30,11 +30,11 @@ logger = logging.getLogger("kive_loader")
 def kive_retries(target):
     def wrapper(self, *args, **kwargs):
         try:
-            target(self, *args, **kwargs)
+            return target(self, *args, **kwargs)
         except KiveClientException:
             logger.warn('Retrying with a fresh Kive login.', exc_info=True)
             self.refresh_login()
-            target(self, *args, **kwargs)
+            return target(self, *args, **kwargs)
 
     return wrapper
 
