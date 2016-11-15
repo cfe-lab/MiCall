@@ -13,7 +13,7 @@ import subprocess
 import sys
 from xml.etree import ElementTree
 
-from kiveapi.errors import KiveRunFailedException
+from kiveapi.errors import KiveRunFailedException, KiveClientException
 from micall import settings
 from micall.monitor import qai_helper, update_qai
 from micall.monitor.kive_download import kive_login, download_results
@@ -25,6 +25,18 @@ RUN_COMPLETED = 'completed'
 RUN_FAILED = 'failed'
 RUN_PURGED = 'purged'
 logger = logging.getLogger("kive_loader")
+
+
+def kive_retries(target):
+    def wrapper(self, *args, **kwargs):
+        try:
+            target(self, *args, **kwargs)
+        except KiveClientException:
+            logger.warn('Retrying with a fresh Kive login.', exc_info=True)
+            self.refresh_login()
+            target(self, *args, **kwargs)
+
+    return wrapper
 
 
 class KiveLoader(object):
@@ -365,9 +377,7 @@ class KiveLoader(object):
 
     def check_kive_connection(self):
         if self.kive is None:
-            self.kive = kive_login(settings.kive_server_url,
-                                   settings.kive_user,
-                                   settings.kive_password)
+            self.refresh_login()
             # retrieve Pipeline object based on version
             for pipeline_id, pipeline in self.pipelines.iteritems():
                 pipeline['kive'] = self.kive.get_pipeline(pipeline_id)
@@ -384,6 +394,11 @@ class KiveLoader(object):
                     self.external_directory_name = directory['name']
                     self.external_directory_path = directory['path']
                     break
+
+    def refresh_login(self):
+        self.kive = kive_login(settings.kive_server_url,
+                               settings.kive_user,
+                               settings.kive_password)
 
     def upload_kive_dataset(self, filename, description, cdt):
         """ Upload a dataset to Kive.
@@ -575,6 +590,7 @@ class KiveLoader(object):
         input_ids = tuple(inp.dataset_id for inp in inputs)
         return (pipeline_id, ) + input_ids
 
+    @kive_retries
     def fetch_run_status(self, run):
         """ Fetch the run status from Kive.
 
@@ -588,6 +604,7 @@ class KiveLoader(object):
             return RUN_COMPLETED
         return RUN_ACTIVE
 
+    @kive_retries
     def fetch_output_status(self, run):
         """ Fetch the output status for a completed run from Kive.
 
