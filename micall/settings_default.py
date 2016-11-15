@@ -59,6 +59,12 @@ logging.config.dictConfig({
     'formatters': {'basic': {
         'format': '%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s',
         'datefmt': '%Y-%m-%d %H:%M:%S'}},
+    'filters': {
+        'rate_limit': {'()': 'micall.utils.ratelimitingfilter.RateLimitingFilter',
+                       'rate': 1,
+                       'per': 300,
+                       'burst': 5}
+    },
     'handlers': {'console': {'class': 'logging.StreamHandler',
                              'level': 'DEBUG',
                              'formatter': 'basic'},
@@ -69,6 +75,7 @@ logging.config.dictConfig({
                           'maxBytes': 1024*1024*15,  # 15MB
                           'backupCount': 10},
                  'mail': {'class': 'logging.handlers.SMTPHandler',
+                          'filters': ['rate_limit'],
                           'level': 'WARN',
                           'formatter': 'basic',
                           'mailhost': 'mail.FILLINDOMAIN.com',
