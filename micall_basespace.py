@@ -16,7 +16,7 @@ import requests
 from xml.etree import ElementTree
 
 from micall.core.aln2counts import aln2counts
-from micall.core.censor_fastq import censor
+from micall.core.trim_fastqs import censor
 from micall.core.filter_quality import report_bad_cycles
 from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
@@ -402,6 +402,7 @@ def process_sample(sample_index, run_info, args, pssm):
                    excluded_seeds=EXCLUDED_SEEDS)
 
     logger.info('Running remap (%d of %d).', sample_index+1, len(run_info.samples))
+    debug_file_prefix = None  # os.path.join(sample_scratch_path, 'debug')
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'rU') as prelim_csv, \
             open(os.path.join(sample_scratch_path, 'remap.csv'), 'wb') as remap_csv, \
             open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'wb') as counts_csv, \
@@ -418,6 +419,7 @@ def process_sample(sample_index, run_info, args, pssm):
               unmapped1,
               unmapped2,
               sample_scratch_path,
+              debug_file_prefix=debug_file_prefix,
               nthreads=1)
 
     logger.info('Running sam2aln (%d of %d).', sample_index+1, len(run_info.samples))

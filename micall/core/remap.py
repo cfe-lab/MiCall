@@ -407,11 +407,6 @@ def build_conseqs(samfilename,
                                  filter_coverage=filter_coverage,
                                  distance_report=distance_report)
 
-    if False:
-        # Some debugging code to save the SAM file for testing.
-        copy_name = tempfile.mktemp(suffix='.sam', prefix=samfilename, dir='.')
-        shutil.copy(samfilename, copy_name)
-
     return conseqs
 
 
@@ -459,6 +454,11 @@ def remap(fastq1,
     @param count_threshold:  minimum number of reads that map to a region for it to be remapped
     @param rdgopen: read gap open penalty
     @param rfgopen: reference gap open penalty
+    @param stderr: an open file object to receive stderr from the bowtie2 calls
+    @param gzip: True if the FASTQ files are gzipped
+    @param debug_file_prefix: the prefix for the file path to write debug files.
+        If not None, this will be used to write a copy of the reference FASTA
+        files and the output SAM files.
     """
 
     reffile = os.path.join(work_path, 'temp.fasta')

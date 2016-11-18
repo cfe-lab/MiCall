@@ -1,7 +1,7 @@
 import StringIO
 import unittest
 
-from micall.core.censor_fastq import censor
+from micall.core.trim_fastqs import censor
 
 
 class CensorTest(unittest.TestCase):
