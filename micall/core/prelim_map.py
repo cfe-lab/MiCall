@@ -171,8 +171,8 @@ def main():
     parser.add_argument('prelim_csv',
                         type=argparse.FileType('w'),
                         help='<output> CSV containing preliminary mapping from bowtie2 (modified SAM)')
-    parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
-    parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
+    parser.add_argument("--rdgopen", default=READ_GAP_OPEN, help="<optional> read gap open penalty")
+    parser.add_argument("--rfgopen", default=REF_GAP_OPEN, help="<optional> reference gap open penalty")
     parser.add_argument("--gzip", action='store_true', help="<optional> FASTQs are compressed")
 
     args = parser.parse_args()

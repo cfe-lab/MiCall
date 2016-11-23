@@ -1,3 +1,5 @@
+import csv
+import os
 import StringIO
 import unittest
 
@@ -17,6 +19,10 @@ AAAA
         self.bad_cycles = []
         self.censored_file = StringIO.StringIO()
         self.summary_file = StringIO.StringIO()
+        self.summary_writer = csv.DictWriter(self.summary_file,
+                                             ['avg_quality', 'base_count'],
+                                             lineterminator=os.linesep)
+        self.summary_writer.writeheader()
 
     def testNoBadCycles(self):
         expected_text = self.original_text
@@ -156,7 +162,7 @@ avg_quality,base_count
                self.bad_cycles,
                self.censored_file,
                use_gzip=False,
-               summary_file=self.summary_file)
+               summary_writer=self.summary_writer)
 
         self.assertEqual(expected_summary, self.summary_file.getvalue())
 
@@ -178,7 +184,7 @@ avg_quality,base_count
                self.bad_cycles,
                self.censored_file,
                use_gzip=False,
-               summary_file=self.summary_file)
+               summary_writer=self.summary_writer)
 
         self.assertEqual(expected_summary, self.summary_file.getvalue())
 
@@ -194,6 +200,6 @@ avg_quality,base_count
                self.bad_cycles,
                self.censored_file,
                use_gzip=False,
-               summary_file=self.summary_file)
+               summary_writer=self.summary_writer)
 
         self.assertEqual(expected_summary, self.summary_file.getvalue())

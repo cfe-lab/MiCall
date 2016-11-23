@@ -16,7 +16,7 @@ import requests
 from xml.etree import ElementTree
 
 from micall.core.aln2counts import aln2counts
-from micall.core.trim_fastqs import censor
+from micall.core.trim_fastqs import censor, trim
 from micall.core.filter_quality import report_bad_cycles
 from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
@@ -263,18 +263,6 @@ def link_json(run_path, data_path):
     return args
 
 
-def censor_sample(filename, bad_cycles_path, censored_name, read_summary_name):
-    if not os.path.exists(bad_cycles_path):
-        bad_cycles = []
-    else:
-        with open(bad_cycles_path, 'rU') as bad_cycles:
-            bad_cycles = list(csv.DictReader(bad_cycles))
-    with open(filename, 'rb') as fastq_src,\
-            open(censored_name, 'w') as fastq_dest,\
-            open(read_summary_name, 'w') as read_summary:
-        censor(fastq_src, bad_cycles, fastq_dest, summary_file=read_summary)
-
-
 def build_app_result_path(data_path,
                           run_info,
                           sample_info=None,
@@ -380,23 +368,20 @@ def process_sample(sample_index, run_info, args, pssm):
     sample_scratch_path = os.path.join(scratch_path, sample_name)
     makedirs(sample_scratch_path)
 
-    censored_path1 = os.path.join(sample_scratch_path, 'censored1.fastq')
-    read_summary_path1 = os.path.join(sample_scratch_path, 'read1_summary.csv')
-    censor_sample(sample_path,
-                  os.path.join(scratch_path, 'bad_cycles.csv'),
-                  censored_path1,
-                  read_summary_path1)
-    censored_path2 = os.path.join(sample_scratch_path, 'censored2.fastq')
-    read_summary_path2 = os.path.join(sample_scratch_path, 'read2_summary.csv')
-    censor_sample(sample_path2,
-                  os.path.join(scratch_path, 'bad_cycles.csv'),
-                  censored_path2,
-                  read_summary_path2)
+    bad_cycles_path = os.path.join(scratch_path, 'bad_cycles.csv')
+    trimmed_path1 = os.path.join(sample_scratch_path, 'trimmed1.fastq')
+    read_summary_path = os.path.join(sample_scratch_path, 'read_summary.csv')
+    trimmed_path2 = os.path.join(sample_scratch_path, 'trimmed2.fastq')
+    with open(read_summary_path, 'w') as read_summary:
+        trim((sample_path, sample_path2),
+             bad_cycles_path,
+             (trimmed_path1, trimmed_path2),
+             summary_file=read_summary)
 
     logger.info('Running prelim_map (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'wb') as prelim_csv:
-        prelim_map(censored_path1,
-                   censored_path2,
+        prelim_map(trimmed_path1,
+                   trimmed_path2,
                    prelim_csv,
                    work_path=sample_scratch_path,
                    excluded_seeds=EXCLUDED_SEEDS)
@@ -410,8 +395,8 @@ def process_sample(sample_index, run_info, args, pssm):
             open(os.path.join(sample_qc_path, 'unmapped1.fastq'), 'w') as unmapped1, \
             open(os.path.join(sample_qc_path, 'unmapped2.fastq'), 'w') as unmapped2:
 
-        remap(censored_path1,
-              censored_path2,
+        remap(trimmed_path1,
+              trimmed_path2,
               prelim_csv,
               remap_csv,
               counts_csv,
@@ -547,11 +532,10 @@ def summarize_samples(args, json, run_summary):
         sample_scratch_path = os.path.join(args.data_path,
                                            'scratch',
                                            sample['Name'])
-        for filename in ('read1_summary.csv', 'read2_summary.csv'):
-            read_summary_path = os.path.join(sample_scratch_path, filename)
-            with open(read_summary_path, 'rU') as read_summary:
-                reader = csv.DictReader(read_summary)
-                row = reader.next()
+        read_summary_path = os.path.join(sample_scratch_path, 'read_summary.csv')
+        with open(read_summary_path, 'rU') as read_summary:
+            reader = csv.DictReader(read_summary)
+            for row in reader:
                 sample_base_count = int(row['base_count'])
                 if sample_base_count:
                     score_sum += float(row['avg_quality']) * sample_base_count

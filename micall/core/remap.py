@@ -977,8 +977,6 @@ def main():
     parser.add_argument('unmapped2',
                         type=argparse.FileType('w'),
                         help='<output> FASTQ R2 of reads that failed to map to any region')
-    parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
-    parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
     parser.add_argument("--gzip", help="<optional> FASTQ files are compressed",
                         action='store_true')
 
