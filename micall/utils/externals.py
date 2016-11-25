@@ -2,11 +2,14 @@ import subprocess
 import os
 import sys
 import re
+from subprocess import CalledProcessError
 
 
 class AssetWrapper(object):
     """ Wraps a packaged asset, and finds its path. """
-    def __init__(self, path):
+    def __init__(self, path, **kwargs):
+        # noinspection PyArgumentList
+        super(AssetWrapper, self).__init__(**kwargs)
         app_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         local_path = os.path.join(app_dir, path)
         if os.path.exists(local_path):
@@ -17,15 +20,15 @@ class AssetWrapper(object):
 
 class CommandWrapper(AssetWrapper):
     """ Wraps an external tool, and builds the command lines for it. """
-    def __init__(self, version, execname, logger=None, *args, **kwargs):
-        super(CommandWrapper, self).__init__(path=execname, *args, **kwargs)
+    def __init__(self, version, execname, logger=None, **kwargs):
+        super(CommandWrapper, self).__init__(path=execname, **kwargs)
         self.version = version
         self.logger = logger
 
     def build_args(self, args):
         return [self.path] + args
 
-    def check_output(self, args=[], *popenargs, **kwargs):
+    def check_output(self, args=None, *popenargs, **kwargs):
         """ Run command with arguments and return its output as a byte string.
 
         See subprocess.check_output() for details.
@@ -36,20 +39,23 @@ class CommandWrapper(AssetWrapper):
         """
         try:
             startupinfo = subprocess.STARTUPINFO()
+
+            # Needed on Windows, fails elsewhere.
+            # noinspection PyUnresolvedReferences
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             kwargs.setdefault('startupinfo', startupinfo)
-        except:
+        except AttributeError:
             pass
         kwargs.setdefault('universal_newlines', True)
         kwargs.setdefault('stdin', sys.stdin)
-        final_args = self.build_args(args)
+        final_args = self.build_args(args or [])
         try:
             return subprocess.check_output(final_args, *popenargs, **kwargs)
         except OSError as ex:
             ex.strerror += ' for command {}'.format(final_args)
             raise
 
-    def create_process(self, args=[], *popenargs, **kwargs):
+    def create_process(self, args=None, *popenargs, **kwargs):
         """ Execute a child program in a new process.
 
         See subprocess.Popen class for details.
@@ -60,13 +66,15 @@ class CommandWrapper(AssetWrapper):
         """
         try:
             startupinfo = subprocess.STARTUPINFO()
+            # Needed on Windows, fails elsewhere.
+            # noinspection PyUnresolvedReferences
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             kwargs.setdefault('startupinfo', startupinfo)
-        except:
+        except AttributeError:
             pass
         kwargs.setdefault('universal_newlines', True)
         kwargs.setdefault('stdin', sys.stdin)
-        return subprocess.Popen(self.build_args(args), *popenargs, **kwargs)
+        return subprocess.Popen(self.build_args(args or []), *popenargs, **kwargs)
 
     def check_logger(self):
         """ Raise an exception if no logger is set for this command. """
@@ -80,7 +88,6 @@ class CommandWrapper(AssetWrapper):
         small amount of output, and holds it all in memory before logging it.
         Logged output includes both stdout and stderr.
         @param args: A list of arguments to pass to check_output().
-        @param logger: the logger to log to
         @param format_string: A template for the debug message that will have
         each line of output formatted with it.
         """
@@ -144,21 +151,17 @@ class CommandWrapper(AssetWrapper):
             raise RuntimeError(message)
 
 
-class Samtools(CommandWrapper):
-    def __init__(self, version, execname='samtools', logger=None, *args, **kwargs):
-        super(Samtools, self).__init__(version, execname, logger, *args, **kwargs)
-        p = self.create_process(stderr=subprocess.PIPE)
-        _stdout, stderr = p.communicate()
-        version_lines = filter(lambda x: x.startswith('Version:'), stderr.split('\n'))
-
-        version_fields = version_lines and version_lines[0].split() or []
-        version_found = version_fields and version_fields[1] or 'unreadable'
+class CutAdapt(CommandWrapper):
+    def __init__(self, version, execname='cutadapt', logger=None, **kwargs):
+        super(CutAdapt, self).__init__(version, execname, logger, **kwargs)
+        stdout = self.check_output(['--version'], stderr=subprocess.STDOUT)
+        version_found = stdout.split('\n')[0].split()[-1]
         self.validate_version(version_found)
 
 
 class Bowtie2(CommandWrapper):
-    def __init__(self, version, execname='bowtie2', logger=None, *args, **kwargs):
-        super(Bowtie2, self).__init__(version, execname, logger, *args, **kwargs)
+    def __init__(self, version, execname='bowtie2', logger=None, **kwargs):
+        super(Bowtie2, self).__init__(version, execname, logger, **kwargs)
         stdout = self.check_output(['--version'], stderr=subprocess.STDOUT)
         version_found = stdout.split('\n')[0].split()[-1]
         self.validate_version(version_found)
@@ -169,12 +172,10 @@ class Bowtie2Build(CommandWrapper):
                  version,
                  execname='bowtie2-build',
                  logger=None,
-                 *args,
                  **kwargs):
         super(Bowtie2Build, self).__init__(version,
                                            execname,
                                            logger,
-                                           *args,
                                            **kwargs)
         stdout = self.check_output(['--version'], stderr=subprocess.STDOUT)
         version_found = stdout.split('\n')[0].split()[-1]
@@ -187,8 +188,8 @@ class Bowtie2Build(CommandWrapper):
             be small enough to use with a small index (4GB or less).
         @param reffile_template: file name template for the index files.
         """
-        SMALL_INDEX_MAX_SIZE = 4 * 1024**3 - 200  # From bowtie2-build wrapper
-        assert os.stat(ref_path).st_size <= SMALL_INDEX_MAX_SIZE
+        small_index_max_size = 4 * 1024**3 - 200  # From bowtie2-build wrapper
+        assert os.stat(ref_path).st_size <= small_index_max_size
         self.check_logger()
         for line in self.yield_output(['--wrapper',
                                        'micall-0',
@@ -201,7 +202,7 @@ class Bowtie2Build(CommandWrapper):
                 self.logger.debug(line)
 
 
-class LineCounter():
+class LineCounter(object):
     """ Run the wc command to count lines in a file.
 
     Fall back to pure Python if wc command is not available.
@@ -224,7 +225,7 @@ class LineCounter():
                                                         stderr=subprocess.STDOUT)
 
                 return int(wc_output.split()[0])
-            except:
+            except CalledProcessError:
                 self.command = None
         return self.buffered_count(filename)
 

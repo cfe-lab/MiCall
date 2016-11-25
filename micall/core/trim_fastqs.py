@@ -4,11 +4,17 @@
 
 import argparse
 import csv
-import subprocess
 from gzip import GzipFile
 import itertools
 import math
 import os
+
+from micall.utils.externals import CutAdapt
+
+# version of bowtie2, used for version control
+CUT_ADAPT_VERSION = '1.11'
+# path to executable, so you can install more than one version
+CUT_ADAPT_PATH = 'cutadapt-' + CUT_ADAPT_VERSION
 
 
 def parse_args():
@@ -62,9 +68,10 @@ def trim(original_fastq_filenames,
                                         ['avg_quality', 'base_count'],
                                         lineterminator=os.linesep)
         summary_writer.writeheader()
+    cut_adapt = CutAdapt(CUT_ADAPT_VERSION, CUT_ADAPT_PATH)
+
     censored_filenames = [filename + '.censored.fastq'
                           for filename in trimmed_fastq_filenames]
-    # censored_filenames = trimmed_fastq_filenames
     if not os.path.exists(bad_cycles_filename):
         bad_cycles = []
     else:
@@ -77,15 +84,14 @@ def trim(original_fastq_filenames,
     script_path = os.path.dirname(__file__)
     adapter_files = [os.path.join(script_path, 'adapters_read{}.fasta'.format(i))
                      for i in (1, 2)]
-    cutadapt_args = ['cutadapt',
-                     '-a', 'file:' + adapter_files[0],
+    cutadapt_args = ['-a', 'file:' + adapter_files[0],
                      '-A', 'file:' + adapter_files[1],
                      '-o', trimmed_fastq_filenames[0],
                      '-p', trimmed_fastq_filenames[1],
                      '--quiet',
                      censored_filenames[0],
                      censored_filenames[1]]
-    subprocess.check_call(cutadapt_args)
+    cut_adapt.check_output(cutadapt_args)
     for filename in censored_filenames:
         os.remove(filename)
 
