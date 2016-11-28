@@ -155,9 +155,7 @@ class KiveLoader(object):
             if retry_count > len(delay_fractions):
                 del self.retry_counts[failed_folder]
                 message = str(ex)
-                self.mark_folder_disabled(failed_folder,
-                                          message,
-                                          exc_info=True)
+                self.log_exception(failed_folder, message, exc_info=True)
                 delay = 0
             else:
                 self.log_retry(failed_folder)
@@ -257,7 +255,14 @@ class KiveLoader(object):
                             self.is_status_available = False
             if not is_batch_active:
                 self.downloading_folder = folder
-                self.download_results(folder, runs)
+                # noinspection PyBroadException
+                try:
+                    self.download_results(folder, runs)
+                    logger.info('completed folder %r', folder)
+                except Exception:
+                    message = 'Downloading results failed.'
+                    self.log_exception(folder, message, exc_info=True)
+
                 for run in runs:
                     del self.active_inputs[self.get_run_id(run)]
                 del self.batches[folder]
@@ -627,6 +632,11 @@ class KiveLoader(object):
                 return RUN_PURGED
         return RUN_COMPLETED
 
+    def log_exception(self, folder, message, exc_info=None):
+        self.folders.remove(folder)
+        self.folder_count -= 1
+        self.mark_folder_disabled(folder, message, exc_info)
+
     def mark_folder_disabled(self, folder, message, exc_info=None):
         """ Mark a run that failed, so it won't be processed again.
 
@@ -655,35 +665,29 @@ class KiveLoader(object):
         @param folder: the run folder
         @param runs: [(sample_name, run_status)] a sequence of pairs
         """
-        # noinspection PyBroadException
+        sample_name = None
         try:
-            sample_name = None
-            try:
-                # First, check that all runs in the batch were successful.
-                for sample_name, run_status in runs:
-                    run_status.is_successful()
-            except KiveRunFailedException:
-                _, _, traceback = sys.exc_info()
-                message = 'Sample {} failed in Kive.'.format(sample_name)
-                raise KiveRunFailedException, message, traceback
+            # First, check that all runs in the batch were successful.
+            for sample_name, run_status in runs:
+                run_status.is_successful()
+        except KiveRunFailedException:
+            _, _, traceback = sys.exc_info()
+            message = 'Sample {} failed in Kive.'.format(sample_name)
+            raise KiveRunFailedException, message, traceback
 
-            results_parent = os.path.join(folder, 'Results')
-            if not os.path.exists(results_parent):
-                os.mkdir(results_parent)
-            results_folder = os.path.join(results_parent,
-                                          'version_' + settings.pipeline_version)
-            if not os.path.exists(results_folder):
-                os.mkdir(results_folder)
-            run_folder = os.path.join(settings.home, os.path.basename(folder))
-            logger.info('downloading results for %r', folder)
-            download_results(runs, results_folder, run_folder)
-            update_qai.process_folder(results_folder)
-            with open(os.path.join(results_folder, settings.DONE_PROCESSING), 'w'):
-                pass  # Leave the file empty
-            logger.info('completed folder %r', folder)
-        except Exception:
-            message = 'Downloading results failed.'
-            self.mark_folder_disabled(folder, message, exc_info=True)
+        results_parent = os.path.join(folder, 'Results')
+        if not os.path.exists(results_parent):
+            os.mkdir(results_parent)
+        results_folder = os.path.join(results_parent,
+                                      'version_' + settings.pipeline_version)
+        if not os.path.exists(results_folder):
+            os.mkdir(results_folder)
+        run_folder = os.path.join(settings.home, os.path.basename(folder))
+        logger.info('downloading results for %r', folder)
+        download_results(runs, results_folder, run_folder)
+        update_qai.process_folder(results_folder)
+        with open(os.path.join(results_folder, settings.DONE_PROCESSING), 'w'):
+            pass  # Leave the file empty
 
     def get_time(self):
         """ Get the current system time.

@@ -499,23 +499,44 @@ class KiveLoaderTest(unittest.TestCase):
         self.assertEqual(0, final_delay)
 
     def test_failed_results_download(self):
-        # noinspection PyUnusedLocal
-        def download_results(folder):
-            raise StandardError('Mock Kive failure.')
-
-        self.loader.download_results = download_results
+        self.loader.download_results = lambda folder, runs: 1/0  # fails
+        expected_disabled = ['run1']
 
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
-        retry_delays = []
 
-        first_delay = self.loader.poll()  # launch 1
+        self.loader.poll()  # launch 1
         self.completed = self.launched[:]
-        retry_delays.append(self.loader.poll())
-        retry_delays.append(self.loader.poll())
-        retry_delays.append(self.loader.poll())
-        final_delay = self.loader.poll()
+        self.loader.poll()
 
-        self.assertEqual(0, first_delay)
-        self.assertEqual(self.loader.retry_delay, sum(retry_delays))
-        self.assertEqual(0, final_delay)
+        self.assertEqual(expected_disabled, self.disabled_folders)
+
+    def test_removing_failure_will_retry_folder(self):
+        self.loader.find_folders = lambda: ['run2', 'run1']
+        self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq']
+        expected_launched1 = ['Default - sample1 (run2)',
+                              'Default - sample1 (run1)']
+        expected_launched2 = ['Default - sample1 (run2)',
+                              'Default - sample1 (run1)',
+                              'Default - sample1 (run2)']
+
+        self.loader.poll()  # launch 2
+        self.loader.poll()  # launch 1
+        self.completed = self.launched[:1]  # fail run 2
+        self.loader.download_results = lambda folder, runs: 1/0  # fails
+        self.loader.poll()  # check status, mark 2 as failed
+
+        self.loader.find_folders = lambda: ['run1']  # run2 marked as failed
+        self.now += timedelta(seconds=self.loader.folder_delay)
+
+        self.loader.poll()  # Nothing to launch
+        launched1 = self.launched[:]
+
+        self.loader.find_folders = lambda: ['run2', 'run1']  # run2 unmarked
+        self.now += timedelta(seconds=self.loader.folder_delay)
+
+        self.loader.poll()  # Should relaunch run2
+        launched2 = self.launched[:]
+
+        self.assertEqual(expected_launched1, launched1)
+        self.assertEqual(expected_launched2, launched2)
