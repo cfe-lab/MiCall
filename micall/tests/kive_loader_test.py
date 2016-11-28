@@ -15,9 +15,9 @@ class KiveLoaderTest(unittest.TestCase):
     def setUp(self):
         logging.disable(logging.CRITICAL)  # avoid polluting test output
         self.loader = KiveLoader()
-        self.loader.add_pipeline(id=DEFAULT_PIPELINE_ID,
+        self.loader.add_pipeline(pipeline_id=DEFAULT_PIPELINE_ID,
                                  inputs=['quality', 'fastq1', 'fastq2'],
-                                 format='Default - {sample} ({folder})')
+                                 name_format='Default - {sample} ({folder})')
         self.existing_datasets = []
         self.existing_runs = {}
         self.uploaded = []
@@ -132,9 +132,9 @@ class KiveLoaderTest(unittest.TestCase):
         self.assertEqual(expected_batches, self.batches)
 
     def test_launch_two_pipelines(self):
-        self.loader.add_pipeline(id=EXTRA_PIPELINE_ID,
+        self.loader.add_pipeline(pipeline_id=EXTRA_PIPELINE_ID,
                                  inputs=['quality', 'fastq1', 'fastq2'],
-                                 format='Extra - {sample} ({folder})')
+                                 name_format='Extra - {sample} ({folder})')
         self.loader.find_folders = lambda: ['run2']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
                                                  folder + '/sample2_R1_x.fastq']
@@ -159,9 +159,9 @@ class KiveLoaderTest(unittest.TestCase):
     def test_pipelines_diff_inputs(self):
         self.loader.launch_run = lambda pipeline_id, run_name, inputs, batch_id: (
             self.launched.append((pipeline_id, inputs)))
-        self.loader.add_pipeline(id=EXTRA_PIPELINE_ID,
+        self.loader.add_pipeline(pipeline_id=EXTRA_PIPELINE_ID,
                                  inputs=['fastq1'],
-                                 format='Extra - {sample} ({folder})')
+                                 name_format='Extra - {sample} ({folder})')
         self.loader.find_folders = lambda: ['run2', 'run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
                                                  folder + '/sample2_R1_x.fastq']
@@ -175,10 +175,10 @@ class KiveLoaderTest(unittest.TestCase):
         self.assertEqual(expected_launched, self.launched)
 
     def test_pipelines_diff_patterns(self):
-        self.loader.add_pipeline(id=EXTRA_PIPELINE_ID,
+        self.loader.add_pipeline(pipeline_id=EXTRA_PIPELINE_ID,
                                  inputs=['quality', 'fastq1', 'fastq2'],
                                  pattern='HCV',
-                                 format='Extra - {sample} ({folder})')
+                                 name_format='Extra - {sample} ({folder})')
         self.loader.find_folders = lambda: ['run2']
         self.loader.find_files = lambda folder: [folder + '/sample1-HIV_R1_x.fastq',
                                                  folder + '/sample2-HCV_R1_x.fastq']
@@ -458,6 +458,7 @@ class KiveLoaderTest(unittest.TestCase):
     def test_unable_to_check_status(self):
         is_kive_running = False
 
+        # noinspection PyUnusedLocal
         def fetch_run_status(run):
             if not is_kive_running:
                 raise StandardError('Kive connection failed.')
@@ -481,6 +482,7 @@ class KiveLoaderTest(unittest.TestCase):
         self.assertEqual(expected_downloaded, downloaded2)
 
     def test_failed_quality_download(self):
+        # noinspection PyUnusedLocal
         def download_quality(folder):
             raise StandardError('Mock quality failure.')
 
@@ -489,17 +491,15 @@ class KiveLoaderTest(unittest.TestCase):
         self.loader.find_folders = lambda: ['run1']
         self.loader.find_files = lambda folder: [folder + '/sample1_R1_x.fastq',
                                                  folder + '/sample2_R1_x.fastq']
-        retry_delays = []
 
-        retry_delays.append(self.loader.poll())
-        retry_delays.append(self.loader.poll())
-        retry_delays.append(self.loader.poll())
+        retry_delays = [self.loader.poll(), self.loader.poll(), self.loader.poll()]
         final_delay = self.loader.poll()
 
         self.assertEqual(self.loader.retry_delay, sum(retry_delays))
         self.assertEqual(0, final_delay)
 
     def test_failed_results_download(self):
+        # noinspection PyUnusedLocal
         def download_results(folder):
             raise StandardError('Mock Kive failure.')
 

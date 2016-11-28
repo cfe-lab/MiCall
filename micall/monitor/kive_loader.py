@@ -70,19 +70,24 @@ class KiveLoader(object):
         self.pipelines = {}
         self.miseq_runs_path = os.path.join(settings.rawdata_mount,
                                             'MiSeq/runs')
+        self.downloading_folder = self.trimmed_folder = self.quality_cdt = None
+        self.batch_id = self.quality_dataset = self.folder_scan_time = None
+        self.external_directory_path = self.external_directory_name = None
+        self.files = []
+        self.file_count = self.folder_count = 0
 
-    def add_pipeline(self, id, inputs, format='', pattern=''):
+    def add_pipeline(self, pipeline_id, inputs, name_format='', pattern=''):
         """ Add another pipeline definition for launching.
 
-        :param int id: the pipeline id in Kive
+        :param int pipeline_id: the pipeline id in Kive
         :param list(str) inputs: input names, in order
-        :param str format: format string for run names, for example:
+        :param str name_format: format string for run names, for example:
             'My Pipeline - {sample} ({folder})'
         :param str pattern: regular expression to match sample names that this
             pipeline should be launched for. Can match any part of the sample
             name.
         """
-        self.pipelines[id] = dict(inputs=inputs, format=format, pattern=pattern)
+        self.pipelines[pipeline_id] = dict(inputs=inputs, name_format=name_format, pattern=pattern)
 
     def poll(self):
         try:
@@ -218,18 +223,20 @@ class KiveLoader(object):
                 except ValueError:
                     active_index = None
                 if active_index is None:
+                    # noinspection PyBroadException
                     try:
                         output_status = self.fetch_output_status(run)
                         self.is_status_available = True
                         if output_status == RUN_PURGED:
                             self.relaunch(run, folder)
                             is_batch_active = True
-                    except:
+                    except Exception:
                         if self.is_status_available:
                             logger.warn('Unable to check output status.',
                                         exc_info=True)
                             self.is_status_available = False
                 else:
+                    # noinspection PyBroadException
                     try:
                         run_status = self.fetch_run_status(run)
                         self.is_status_available = True
@@ -241,7 +248,7 @@ class KiveLoader(object):
                             if run_status == RUN_CANCELLED:
                                 # Rerun the cancelled run.
                                 self.relaunch(run, folder)
-                    except:
+                    except Exception:
                         is_batch_active = True
                         if self.is_status_available:
                             # First failure, so log it.
@@ -358,12 +365,12 @@ class KiveLoader(object):
         """
         self.check_kive_connection()
         dataset_name = os.path.basename(filename)
-        CHUNK_SIZE = 4096
-        hash = hashlib.md5()
+        chunk_size = 4096
+        digest = hashlib.md5()
         with open(filename, 'rb') as f:
-            for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
-                hash.update(chunk)
-            checksum = hash.hexdigest()
+            for chunk in iter(lambda: f.read(chunk_size), b""):
+                digest.update(chunk)
+            checksum = digest.hexdigest()
             datasets = self.kive.find_datasets(name=dataset_name,
                                                md5=checksum,
                                                cdt=cdt)
@@ -440,9 +447,9 @@ class KiveLoader(object):
         return '_'.join(run_name.split('_')[:2])
 
     def parse_run_info(self, run_info_path):
-        runInfoTree = ElementTree.parse(run_info_path)
-        runInfoRoot = runInfoTree.getroot()
-        run = runInfoRoot[0]
+        run_info_tree = ElementTree.parse(run_info_path)
+        run_info_root = run_info_tree.getroot()
+        run = run_info_root[0]
         miseq_run_id = run.attrib['Id']
         indexes_length = 0
         read_lengths = []
@@ -518,8 +525,8 @@ class KiveLoader(object):
 
     def get_run_name(self, pipeline_id, sample_name):
         pipeline = self.pipelines[pipeline_id]
-        name = pipeline['format'].format(sample=sample_name,
-                                         folder=self.trimmed_folder)
+        name = pipeline['name_format'].format(sample=sample_name,
+                                              folder=self.trimmed_folder)
         name = name[:MAX_RUN_NAME_LENGTH]
         return name
 
@@ -530,6 +537,7 @@ class KiveLoader(object):
         :param fastq1: a Dataset object for the forward reads
         :param fastq2: a Dataset object for the reverse reads
         :param quality: a Dataset object for the quality file
+        :param batch_id: batch to include run in
         :return: (sample_name, run_status)
         """
         pipeline = self.pipelines[pipeline_id]
@@ -565,7 +573,7 @@ class KiveLoader(object):
         @return: {(quality_id, fastq1_id, fastq2_id): run}
         """
         runs = self.kive.find_runs(active=True)
-        map = {}
+        run_map = {}
         for run in runs:
             pipeline_config = self.pipelines.get(run.pipeline_id)
             if pipeline_config is not None:
@@ -575,13 +583,13 @@ class KiveLoader(object):
                     inputs = sorted(run.raw['inputs'], key=itemgetter('index'))
                     fastq1 = self.kive.get_dataset(inputs[fastq1_index]['dataset'])
                     sample_name = self.get_sample_name(fastq1)
-                    input_ids = tuple(input['dataset'] for input in inputs)
+                    input_ids = tuple(inp['dataset'] for inp in inputs)
                     key = (run.pipeline_id, ) + input_ids
-                    map[key] = (sample_name, run)
+                    run_map[key] = (sample_name, run)
                 except KiveRunFailedException:
                     # Failed or cancelled, rerun.
                     pass
-        return map
+        return run_map
 
     def get_run_key(self, pipeline_id, quality, fastq1, fastq2):
         """ Calculate the key to look up preexisting runs for the given inputs.
@@ -647,7 +655,9 @@ class KiveLoader(object):
         @param folder: the run folder
         @param runs: [(sample_name, run_status)] a sequence of pairs
         """
+        # noinspection PyBroadException
         try:
+            sample_name = None
             try:
                 # First, check that all runs in the batch were successful.
                 for sample_name, run_status in runs:
