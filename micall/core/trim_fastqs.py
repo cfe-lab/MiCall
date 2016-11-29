@@ -22,19 +22,14 @@ def parse_args():
         description='Censor tiles and cycles from a FASTQ file.')
 
     parser.add_argument('original1_fastq',
-                        type=argparse.FileType('rb'),
                         help='<input> FASTQ.gz containing original reads (read 1)')
     parser.add_argument('original2_fastq',
-                        type=argparse.FileType('rb'),
                         help='<input> FASTQ.gz containing original reads (read 2)')
     parser.add_argument('bad_cycles_csv',
-                        type=argparse.FileType('rU'),
                         help='<input> List of tiles and cycles rejected for poor quality')
     parser.add_argument('trimmed1_fastq',
-                        type=argparse.FileType('w'),
                         help='<output> uncompressed FASTQ containing trimmed reads (read 1)')
     parser.add_argument('trimmed2_fastq',
-                        type=argparse.FileType('w'),
                         help='<output> uncompressed FASTQ containing trimmed reads (read 2)')
     parser.add_argument('--unzipped',
                         '-u',
@@ -166,10 +161,10 @@ def censor(original_file,
 if __name__ == '__main__':
     args = parse_args()
 
-    censor(args.original_fastq,
-           csv.DictReader(args.bad_cycles_csv),
-           args.censored_fastq,
-           not args.unzipped)
+    trim((args.original1_fastq, args.original2_fastq),
+         args.bad_cycles_csv,
+         (args.trimmed1_fastq, args.trimmed2_fastq),
+         use_gzip=not args.unzipped)
 elif __name__ == '__live_coding__':
     import unittest
     from micall.tests.trim_fastqs_test import CensorTest
