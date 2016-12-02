@@ -18,7 +18,7 @@ import os
 import re
 import shutil
 import sys
-import tempfile
+from threading import Semaphore
 
 from gotoh import align_it
 import Levenshtein
@@ -34,6 +34,8 @@ from micall.utils.translation import reverse_and_complement
 CONSENSUS_Q_CUTOFF = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
 MAX_REMAPS = 3                  # Number of remapping attempts if mapping efficiency unsatisfied
+READ_MERGE_CHUNK_SIZE = 100
+READ_MERGE_BUFFER_SIZE = BOWTIE_THREADS * READ_MERGE_CHUNK_SIZE * 10
 
 # SAM file format
 fieldnames = [
@@ -194,7 +196,8 @@ def sam_to_conseqs(samfile,
     # refmap structure: {refname: {pos: Counter({nuc: count})}}
     refmap = {}
 
-    pairs = matchmaker(samfile, include_singles=True)
+    semaphore = Semaphore(READ_MERGE_BUFFER_SIZE) if worker_pool is not None else None
+    pairs = matchmaker(samfile, include_singles=True, semaphore=semaphore)
     if worker_pool is None:
         merged_reads = itertools.imap(
             partial(merge_reads, quality_cutoff),
@@ -203,9 +206,11 @@ def sam_to_conseqs(samfile,
         merged_reads = worker_pool.imap_unordered(
             partial(merge_reads, quality_cutoff),
             pairs,
-            chunksize=100)
+            chunksize=READ_MERGE_CHUNK_SIZE)
     read_counts = Counter()
     for merged_read in merged_reads:
+        if semaphore is not None:
+            semaphore.release()
         if merged_read is None:
             continue
         rname, mseq, merged_inserts, qual1, qual2 = merged_read
@@ -902,7 +907,7 @@ class MixedReferenceSplitter(object):
         fastq.write('@{}\n{}\n+\n{}\n'.format(qname, seq, quality))
 
 
-def matchmaker(samfile, include_singles=False):
+def matchmaker(samfile, include_singles=False, semaphore=None):
     """
     An iterator that returns pairs of reads sharing a common qname from a SAM file.
     Note that unpaired reads will be left in the cached_rows dictionary and
@@ -910,6 +915,7 @@ def matchmaker(samfile, include_singles=False):
     @param samfile: open file handle to a SAM file
     @param include_singles: True if unpaired reads should be returned, paired
         with a None value: ([qname, flag, rname, ...], None)
+    @param semaphore: acquired before each pair is generated
     @return: yields a tuple for each read pair with fields split by tab chars:
         ([qname, flag, rname, ...], [qname, flag, rname, ...])
     """
@@ -933,10 +939,14 @@ def matchmaker(samfile, include_singles=False):
             if old_row is None:
                 cached_rows[qname] = row
             else:
+                if semaphore is not None:
+                    semaphore.acquire()
                 # current row should be the second read of the pair
                 yield old_row, row
     if include_singles:
         for row in cached_rows.itervalues():
+            if semaphore is not None:
+                semaphore.acquire()
             yield row, None
 
 
