@@ -1,3 +1,12 @@
+""" Set up raw data for the release test.
+
+Copies a set of run folders and selected FASTQ files from the main raw data
+folder to your developer workstation. Configure the set of samples to copy
+in test_samples.csv.
+You'll need to upload the QC data from the InterOp folders before you can
+start MISEQ_MONITOR.py.
+"""
+
 from argparse import ArgumentParser
 from csv import DictReader
 from datetime import datetime
@@ -6,9 +15,9 @@ from glob import glob
 from itertools import groupby
 from operator import attrgetter
 import os
-from shutil import copytree, copy
+from shutil import copytree, copy, rmtree
 
-from micall.settings import rawdata_mount
+from micall.settings import rawdata_mount, pipeline_version, ERROR_PROCESSING
 
 
 def parse_args():
@@ -87,30 +96,43 @@ class Sample(object):
     def setup_run(self):
         base_run_name = os.path.basename(self.run_name)
         target_run_path = os.path.join(rawdata_mount, 'MiSeq', 'runs', base_run_name)
-        if os.path.exists(target_run_path):
-            return target_run_path
         suspended_run_path = os.path.join(rawdata_mount,
                                           'MiSeq',
                                           'runs',
                                           'suspended',
                                           base_run_name)
-        if os.path.exists(suspended_run_path):
+        if os.path.exists(target_run_path):
+            pass
+        elif os.path.exists(suspended_run_path):
             os.rename(suspended_run_path, target_run_path)
-            return target_run_path
-
-        base_calls_path = os.path.join(target_run_path,
-                                       'Data',
-                                       'Intensities',
-                                       'BaseCalls')
-        os.makedirs(base_calls_path)
-        copytree(os.path.join(self.run_name, 'InterOp'),
-                 os.path.join(target_run_path, 'InterOp'))
-        for filename in ('RunInfo.xml',
-                         'runParameters.xml',
-                         'SampleSheet.csv',
-                         'needsprocessing'):
-            copy(os.path.join(self.run_name, filename),
-                 os.path.join(target_run_path, filename))
+        else:
+            base_calls_path = os.path.join(target_run_path,
+                                           'Data',
+                                           'Intensities',
+                                           'BaseCalls')
+            os.makedirs(base_calls_path)
+            copytree(os.path.join(self.run_name, 'InterOp'),
+                     os.path.join(target_run_path, 'InterOp'))
+            for filename in ('RunInfo.xml',
+                             'runParameters.xml',
+                             'SampleSheet.csv',
+                             'needsprocessing'):
+                copy(os.path.join(self.run_name, filename),
+                     os.path.join(target_run_path, filename))
+        results_path = os.path.join(target_run_path,
+                                    'Results',
+                                    'version_' + pipeline_version)
+        try:
+            rmtree(results_path)
+        except OSError as ex:
+            if ex.errno != errno.ENOENT:
+                raise
+        try:
+            os.remove(os.path.join(target_run_path,
+                                   ERROR_PROCESSING))
+        except OSError as ex:
+            if ex.errno != errno.ENOENT:
+                raise
         return target_run_path
 
 
