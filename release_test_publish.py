@@ -32,6 +32,8 @@ def main():
                                     'version_' + pipeline_version)
         done_path = os.path.join(results_path, DONE_PROCESSING)
         target_path = os.path.join(args.target_folder,
+                                   'MiSeq',
+                                   'runs',
                                    run_name,
                                    'Results',
                                    'version_' + pipeline_version)
