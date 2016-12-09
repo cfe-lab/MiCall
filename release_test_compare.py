@@ -42,18 +42,22 @@ def select_columns(csv_path,
         for row in reader:
             if row.get('on.score', None) == '1':
                 continue
+            x4_pct = row.get('X4pct', None)
+            if x4_pct not in (None, ''):
+                row['X4pct'] = str(int(round(float(x4_pct))))
             if all_sample_names is not None:
                 all_sample_names.add(row['sample'])
             if filter_sample_names is None or row['sample'] in filter_sample_names:
                 lines.append(',   '.join(itemgetter(*column_names)(row)) + '\n')
+    lines.sort()
     return lines
 
 
 def compare_coverage_scores(source_path, target_path):
     columns = ['sample',
-               'project',
-               'region',
                'seed',
+               'region',
+               'project',
                'on.score']
     filename = 'coverage_scores.csv'
     sample_names = set()
@@ -67,6 +71,25 @@ def compare_coverage_scores(source_path, target_path):
     for i, diff in enumerate(differ.compare(source_columns, target_columns)):
         if i == 0:
             print('Coverage score changes in {}:'.format(target_path))
+        print(diff, end='')
+
+
+def compare_g2p_scores(source_path, target_path):
+    columns = ['sample',
+               'X4pct',
+               'final']
+    filename = 'g2p_summary.csv'
+    sample_names = set()
+    target_columns = select_columns(os.path.join(target_path, filename),
+                                    columns,
+                                    all_sample_names=sample_names)
+    source_columns = select_columns(os.path.join(source_path, filename),
+                                    columns,
+                                    filter_sample_names=sample_names)
+    differ = Differ()
+    for i, diff in enumerate(differ.compare(source_columns, target_columns)):
+        if i == 0:
+            print('G2P changes in {}:'.format(target_path))
         print(diff, end='')
 
 
@@ -92,6 +115,7 @@ def main():
         source_versions.sort()
         source_path = os.path.join(source_results_path, source_versions[-1])
         compare_coverage_scores(source_path, target_path)
+        compare_g2p_scores(source_path, target_path)
         print('Done: ' + run_name)
     print('Done.')
 
