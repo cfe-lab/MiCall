@@ -3,6 +3,7 @@
 # To execute as a script, run python -m micall.monitor.update_qai
 
 import csv
+from collections import defaultdict
 from datetime import datetime
 from glob import glob
 import logging
@@ -173,11 +174,11 @@ def build_review_decisions(coverage_file,
         [((entry['project_name'], entry['coordinate_region_name']), entry['id'])
          for entry in project_regions])
     region_map = dict([(entry['name'], entry['id']) for entry in regions])
-    sample_tags = {}
-    for sample in sample_sheet['DataSplit']:
-        sample_tags[sample['filename']] = sample['tags']
+    sample_tags = dict(map(itemgetter('filename', 'tags'), sample_sheet['DataSplit']))
+    sample_names = dict(map(itemgetter('tags', 'filename'), sample_sheet['DataSplit']))
 
     counts_map = {}  # {tags: raw, (tags, seed): mapped]}
+    unreported_tags = set()
     # sample,type,count
     for counts in csv.DictReader(collated_counts_file):
         count = int(counts['count'])
@@ -185,11 +186,16 @@ def build_review_decisions(coverage_file,
         count_type = counts['type']
         if count_type == 'raw':
             counts_map[tags] = count
+            unreported_tags.add(tags)
         elif count_type != 'unmapped':
             seed = count_type.split(' ', 1)[1]
             key = tags, seed
             current_count = counts_map.get(key, 0)
             counts_map[key] = max(current_count, count)
+
+    sequencing_map = defaultdict(dict)  # {tags: {project: sequencing}}
+    for sequencing in sequencings:
+        sequencing_map[sequencing['tag']][sequencing['target_project']] = sequencing
 
     targeted_projects = set(map(itemgetter('target_project'), sequencings))
 
@@ -197,21 +203,16 @@ def build_review_decisions(coverage_file,
     # sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
     for coverage in csv.DictReader(coverage_file):
         tags = sample_tags[coverage['sample']]
-        score = int(coverage['off.score'])
-        sequencing_with_target = None
-        sequencing_with_tags = None
-        for sequencing in sequencings:
-            if sequencing['tag'] != tags:
-                continue
-            sequencing_with_tags = sequencing
-            if sequencing['target_project'] != coverage['project']:
-                continue
-            sequencing_with_target = sequencing
-            score = int(coverage['on.score'])
-            break
-        sequencing = sequencing_with_target or sequencing_with_tags
-        if sequencing is None:
+        project_map = sequencing_map.get(tags)
+        if project_map is None:
             raise StandardError("No sequencing found with tags '%s'." % tags)
+        sequencing = project_map.get(coverage['project'])
+        if sequencing is not None:
+            score = int(coverage['on.score'])
+        else:
+            score = int(coverage['off.score'])
+            first_project = sorted(project_map.iterkeys())[0]
+            sequencing = project_map[first_project]
         project_region_id = project_region_map[(
             coverage['project'],
             coverage['region'])]
@@ -238,6 +239,21 @@ def build_review_decisions(coverage_file,
                 'raw_reads': raw_count,
                 'mapped_reads': mapped_count
             }
+            unreported_tags.discard(tags)
+    for tags in unreported_tags:
+        sample_name = sample_names[tags]
+        project_map = sequencing_map.get(tags)
+        if project_map is None:
+            raise StandardError("No sequencing found with tags '%s'." % tags)
+        first_project = sorted(project_map.iterkeys())[0]
+        sequencing = project_map[first_project]
+        decision_key = sample_name
+        decisions[decision_key] = {
+            'sequencing_id': sequencing['id'],
+            'sample_name': sample_name,
+            'raw_reads': counts_map[tags],
+            'mapped_reads': 0
+        }
     return decisions.values()
 
 
@@ -407,9 +423,10 @@ def main():
                                        'Results/version_' + settings.pipeline_version)
 
             if os.path.exists(result_path):
+                # noinspection PyBroadException
                 try:
                     process_folder(result_path)
-                except:
+                except Exception:
                     logger.error('Failed to process %s',
                                  result_path,
                                  exc_info=True)
