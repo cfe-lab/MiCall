@@ -1,6 +1,7 @@
 """
-Reimplementation of Conan's pssm_lib.rb Ruby script in Python
-PSSM was an abbreviation of position-specific scoring matrix.
+Reimplementation of Conan's pssm_lib.rb Ruby script in Python.
+That script originally supported position-specific scoring matrix (PSSM)
+and geno2pheno (G2P), but this version only supports G2P.
 
 Based on work published at http://coreceptor.geno2pheno.org
 """
