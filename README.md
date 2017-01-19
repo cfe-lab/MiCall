@@ -85,7 +85,7 @@ purchasing a license.
   * conseq.csv - downloaded - consensus sequence
   * failed_align.csv - downloaded - any consensus that failed to align to its ref
   * nuc_variants.csv - downloaded - top nucleotide variants for HLA
-* `sam_g2p`: use a position-specific scoring matrix on the V3LOOP region to
+* `sam_g2p`: use the geno2pheno algorithm on the V3LOOP region to
     translate genotype to phenotype and predict whether a sample is X4 or R5.
     HIV-1 particles use coreceptors to enter cells. Different particles can use
     CXCR4, CCR5, or both. This analysis looks at the sequences from a virus
