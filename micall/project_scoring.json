@@ -1918,7 +1918,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-env-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -1929,7 +1929,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-gag-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -1940,7 +1940,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-nef-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -1951,7 +1951,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-vif-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -1962,7 +1962,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-vpr-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -1973,7 +1973,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-vpu-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -2013,7 +2013,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-pol-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -2089,7 +2089,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-pol-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -2221,7 +2221,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-pol-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -2232,7 +2232,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-env-seed"
+            "HIV1-Consensus-B-seed"
           ]
         }
       ]
@@ -2257,7 +2257,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-env-seed"
+            "HIV1-Consensus-B-seed"
           ]
         }
       ]
@@ -2302,7 +2302,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-pol-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -2378,7 +2378,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-pol-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -2510,7 +2510,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-pol-seed"
+            "HIV1-Consensus-B-seed"
           ]
         }
       ]
@@ -2582,7 +2582,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-pol-seed"
+            "HIV1-Consensus-B-seed"
           ]
         }
       ]
@@ -3047,7 +3047,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-pol-seed"
+            "HIV1-Consensus-B-seed"
           ]
         }
       ]
@@ -3128,7 +3128,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-pol-seed"
+            "HIV1-Consensus-B-seed"
           ]
         },
         {
@@ -3260,7 +3260,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-pol-seed"
+            "HIV1-Consensus-B-seed"
           ]
         }
       ]
@@ -3397,7 +3397,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-pol-seed"
+            "HIV1-Consensus-B-seed"
           ]
         }
       ]
@@ -3417,7 +3417,7 @@
           "min_coverage2": 50,
           "min_coverage3": 100,
           "seed_region_names": [
-            "HIV1B-env-seed"
+            "HIV1-Consensus-B-seed"
           ]
         }
       ]
