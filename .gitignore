@@ -1,5 +1,6 @@
 /micall/settings.py
 /micall/monitor/HIV1_COM_2015_genome_DNA.csv
+/micall/monitor/compare_454_samples.csv
 /micall/alignment/build
 /micall/alignment/dist
 /micall/alignment/gotoh.egg-info
