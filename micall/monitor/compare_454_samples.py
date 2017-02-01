@@ -1,11 +1,11 @@
 import csv
 import os
 from argparse import ArgumentParser, FileType
-from collections import Counter
+from collections import Counter, defaultdict
 from itertools import groupby
 from operator import itemgetter
 
-from collections import defaultdict
+from matplotlib import pyplot as plt
 
 from micall.monitor.samples_from_454 import format_sample_name
 
@@ -21,6 +21,20 @@ def parse_args():
 
 def format_percent(numerator, denominator):
     return '{:.0f}'.format(100.0 * numerator / denominator) if denominator else ''
+
+
+def plot(prelim_percents):
+    levels = sorted(prelim_percents.keys())
+    levels.append(levels.pop(0))  # move None to end
+    labels = ['<= {} seqs'.format(limit) for limit in levels]
+    labels[-1] = 'more'
+    level_counts = [prelim_percents[limit] for limit in levels]
+    plt.hist(level_counts, stacked=True, label=labels)
+    plt.xlabel('% mapped (prelim)')
+    plt.ylabel('# samples')
+    plt.title('Preliminary mapping success (Compendium refs)')
+    plt.legend()
+    plt.savefig('compare_454_samples.png')
 
 
 def main():
@@ -101,8 +115,11 @@ def main():
                                  'ambig',
                                  'unmapped',
                                  'stops',
+                                 'low_qual',
                                  'err_unmap_pct'])
         writer.writeheader()
+        read_limits = (10, 50, 100, None)
+        prelim_percents = {limit: [] for limit in read_limits}
         for sample in sorted(raw_counts.keys()):
             results = result_counts[sample]
             source_sample_counts = source_counts.pop(sample)
@@ -124,19 +141,25 @@ def main():
             length = results.pop('length', 0)
             ambiguous = results.pop('> 2 ambiguous', 0)
             stops = results.pop('stop codons', 0)
+            low_quality = results.pop('low quality', 0)
             assert not results, results
             err_unmapped_pct = format_percent(cysteines +
                                               notdiv3 +
                                               length +
                                               ambiguous +
-                                              unmapped_count,
+                                              unmapped_count +
+                                              low_quality,
                                               raw_count)
             prelim_count = prelim_counts[sample]
+            prelim_pct = format_percent(prelim_count, raw_count)
+            for limit in read_limits:
+                if limit is None or raw_count <= limit:
+                    prelim_percents[limit].append(float(prelim_pct))
+                    break
             writer.writerow(dict(sample=sample,
                                  raw=raw_count,
                                  prelim=prelim_count,
-                                 prelim_pct=format_percent(prelim_count,
-                                                           raw_count),
+                                 prelim_pct=prelim_pct,
                                  remap=remap_counts[sample],
                                  remap_pct=format_percent(remap_counts[sample],
                                                           raw_count),
@@ -153,10 +176,14 @@ def main():
                                  ambig=ambiguous,
                                  stops=stops,
                                  unmapped=unmapped_count,
+                                 low_qual=low_quality,
                                  err_unmap_pct=err_unmapped_pct))
 
     if source_counts:
         print('{} missing sources:'.format(len(source_counts)))
         print(', '.join(sorted(source_counts.keys())))
+
+    plot(prelim_percents)
+    print('Done.')
 
 main()
