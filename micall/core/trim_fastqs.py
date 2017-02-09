@@ -88,7 +88,11 @@ def trim(original_fastq_filenames,
                      censored_filenames[1]]
     cut_adapt.check_output(cutadapt_args)
     for filename in censored_filenames:
-        os.remove(filename)
+        try:
+            os.remove(filename)
+        except OSError:
+            # We tried to tidy up a temporary file, but it's not critical.
+            pass
 
 
 def censor(original_file,

@@ -127,6 +127,7 @@ def prelim_map(fastq1,
                    '--rfg', "{},{}".format(ref_gap_open_penalty,
                                            REF_GAP_EXTEND),
                    '--no-hd',  # no header lines (start with @)
+                   '--local',
                    '-X', '1200',
                    '-p', str(nthreads)]
 

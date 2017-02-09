@@ -32,7 +32,8 @@ def plot(prelim_percents):
     plt.hist(level_counts, stacked=True, label=labels)
     plt.xlabel('% mapped (prelim)')
     plt.ylabel('# samples')
-    plt.title('Preliminary mapping success (Compendium refs)')
+    plt.ylim(0, 10000)
+    plt.title('Preliminary mapping success (Consensus B ref, soft clip)')
     plt.legend()
     plt.savefig('compare_454_samples.png')
 
