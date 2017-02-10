@@ -1,4 +1,4 @@
-from cStringIO import StringIO
+from io import BytesIO
 from struct import pack
 from unittest import TestCase
 
@@ -16,7 +16,7 @@ class TileMetricsParserTest(TestCase):
                             100,    # metric code
                             4.0]    # metric value
         format_string = '<BBHHHf'
-        self.sample_stream = StringIO(pack(format_string, *self.sample_data))
+        self.sample_stream = BytesIO(pack(format_string, *self.sample_data))
 
     def test_load(self):
         expected_records = [dict(lane=1,

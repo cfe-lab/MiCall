@@ -734,8 +734,20 @@ void widen_gaps(string* seq)
         {NULL, NULL, 0, NULL}
     };
 
-    PyMODINIT_FUNC initgotoh (void) {
-        (void) Py_InitModule("gotoh", AlignmentMethods);
+    static struct PyModuleDef AlignmentModuleDef = {
+        PyModuleDef_HEAD_INIT,
+        "gotoh",
+        NULL,
+        -1,
+        AlignmentMethods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+    };
+
+    PyMODINIT_FUNC PyInit_gotoh(void) {
+        return PyModule_Create(&AlignmentModuleDef);
     }
 
 #else

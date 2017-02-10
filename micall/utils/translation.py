@@ -25,7 +25,7 @@ mixture_dict = {'W': 'AT', 'R': 'AG', 'K': 'GT', 'Y': 'CT', 'S': 'CG',
                 'M': 'AC', 'V': 'AGC', 'H': 'ATC', 'D': 'ATG',
                 'B': 'TGC', 'N': 'ATGC', '-': 'ATGC'}
 ambig_dict = dict(("".join(sorted(v)), k)
-                  for k, v in mixture_dict.iteritems()
+                  for k, v in mixture_dict.items()
                   if k != '-')
 complement_dict = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A',
                    'W': 'S', 'R': 'Y', 'K': 'M', 'Y': 'R', 'S': 'W', 'M': 'K',
@@ -73,7 +73,7 @@ def translate(seq,
         stats['max_aminos'] = 1 if seq else 0
 
     # loop over codon sites in nucleotide sequence
-    for codon_site in xrange(0, len(seq), 3):
+    for codon_site in range(0, len(seq), 3):
         codon = seq[codon_site:codon_site+3]
 
         if len(codon) < 3:

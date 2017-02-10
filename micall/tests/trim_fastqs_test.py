@@ -1,6 +1,6 @@
 import csv
 import os
-import StringIO
+from io import StringIO
 import unittest
 
 from micall.core.trim_fastqs import censor
@@ -15,10 +15,10 @@ ACGT
 +
 AAAA
 """
-        self.original_file = StringIO.StringIO(self.original_text)
+        self.original_file = StringIO(self.original_text)
         self.bad_cycles = []
-        self.censored_file = StringIO.StringIO()
-        self.summary_file = StringIO.StringIO()
+        self.censored_file = StringIO()
+        self.summary_file = StringIO()
         self.summary_writer = csv.DictWriter(self.summary_file,
                                              ['avg_quality', 'base_count'],
                                              lineterminator=os.linesep)
@@ -85,7 +85,7 @@ ACGT
 +
 AAAA
 """
-        self.original_file = StringIO.StringIO(self.original_text)
+        self.original_file = StringIO(self.original_text)
         self.bad_cycles = [{'tile': '1101', 'cycle': '3'}]
         expected_text = self.original_text
 
@@ -103,7 +103,7 @@ ACGT
 +
 AAAA
 """
-        self.original_file = StringIO.StringIO(self.original_text)
+        self.original_file = StringIO(self.original_text)
         self.bad_cycles = [{'tile': '1101', 'cycle': '-3'}]
         expected_text = """\
 @M01841:45:000000000-A5FEG:1:1101:5296:13227 2:N:0:9
@@ -130,7 +130,7 @@ TGCA
 +
 BBBB
 """
-        self.original_file = StringIO.StringIO(self.original_text)
+        self.original_file = StringIO(self.original_text)
         self.bad_cycles = [{'tile': '1101', 'cycle': '2'},
                            {'tile': '1102', 'cycle': '3'}]
         expected_text = """\
@@ -173,7 +173,7 @@ ACGT
 +
 AACC
 """
-        self.original_file = StringIO.StringIO(self.original_text)
+        self.original_file = StringIO(self.original_text)
         self.bad_cycles = [{'tile': '1101', 'cycle': '3'}]
         expected_summary = """\
 avg_quality,base_count
@@ -190,7 +190,7 @@ avg_quality,base_count
 
     def testSummaryEmpty(self):
         self.original_text = ""
-        self.original_file = StringIO.StringIO(self.original_text)
+        self.original_file = StringIO(self.original_text)
         expected_summary = """\
 avg_quality,base_count
 ,0

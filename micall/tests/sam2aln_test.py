@@ -1,5 +1,5 @@
 import unittest
-from StringIO import StringIO
+from io import StringIO
 
 from micall.core.sam2aln import sam2aln, apply_cigar, merge_pairs, merge_inserts
 
@@ -529,7 +529,7 @@ class CigarTest(unittest.TestCase):
 
         self.assertEqual(
             "Invalid CIGAR string: '3M...6M'.",
-            result.exception.message)
+            result.exception.args[0])
 
     def testUnsupportedCigarToken(self):
         cigar = '3M3X6M'
@@ -541,7 +541,7 @@ class CigarTest(unittest.TestCase):
 
         self.assertEqual(
             "Unsupported CIGAR token: '3X'.",
-            result.exception.message)
+            result.exception.args[0])
 
     def testShortCigar(self):
         cigar = '8M'
@@ -553,7 +553,7 @@ class CigarTest(unittest.TestCase):
 
         self.assertEqual(
             "CIGAR string '8M' is too short for sequence 'AAACAACCA'.",
-            result.exception.message)
+            result.exception.args[0])
 
     def testLongCigar(self):
         cigar = '10M'
@@ -565,7 +565,7 @@ class CigarTest(unittest.TestCase):
 
         self.assertEqual(
             "CIGAR string '10M' is too long for sequence 'AAACAACCA'.",
-            result.exception.message)
+            result.exception.args[0])
 
     def testInsertionAfterClipping(self):
         cigar = '3M3I3M'

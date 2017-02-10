@@ -1,5 +1,5 @@
 import os
-from StringIO import StringIO
+from io import StringIO
 import unittest
 
 from micall.g2p.pssm_lib import Pssm
@@ -56,7 +56,7 @@ Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
-1,1,0.0677537070158,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
+1,1,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
 """
         expected_summary_csv = """\
 mapped,valid,X4calls,X4pct,final
@@ -100,8 +100,8 @@ Example_read_3,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
-1,2,0.454349263704,2.6,X4,CMRPNNNTRKSIHIGPGRAFYATGEIIGDIRRAHC,CMRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RRAHC,,
-2,1,0.0677537070158,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
+1,2,0.454349,2.6,X4,CMRPNNNTRKSIHIGPGRAFYATGEIIGDIRRAHC,CMRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RRAHC,,
+2,1,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
 """
         expected_summary_csv = """\
 mapped,valid,X4calls,X4pct,final
@@ -196,7 +196,7 @@ Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
-1,1,0.0677537070158,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
+1,1,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -213,7 +213,7 @@ Example_read_1,147,HIV1B-env-seed,926,44,56M,=,877,-56,GGAGAGCATTTTATGCAACAGGAGA
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
-1,1,0.0663051848427,43.0,R5,CT[RS]PNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CT[RS]PN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,ambiguous
+1,1,0.066305,43.0,R5,CT[RS]PNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CT[RS]PN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,ambiguous
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)
@@ -322,7 +322,7 @@ Example_read_1,147,HIV1B-env-seed,925,44,48M,=,877,-48,AAAGGGGGGGGGGGGGGGGGGGGGG
 """)
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
-1,1,0.806326707173,1.5,X4,CGGGGGGGGGGGGGGGKGGGGGGGGGGGGGGC,---CG-GGG--GGGGGG---GGGG---GKGGG----GGGGGGG--GGGGC,,
+1,1,0.806327,1.5,X4,CGGGGGGGGGGGGGGGKGGGGGGGGGGGGGGC,---CG-GGG--GGGGGG---GGGG---GKGGG----GGGGGGG--GGGGC,,
 """
 
         sam_g2p(self.pssm, remap_csv, self.nuc_csv, self.g2p_csv)

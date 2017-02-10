@@ -219,7 +219,7 @@ def _build_row(seq, count, counts, pssm):
         call = 'X4'
         counts['x4'] += count
     counts['valid'] += count
-    row['g2p'] = str(score)
+    row['g2p'] = '{:06f}'.format(score)
     row['fpr'] = fpr
     row['call'] = call
     row['seq'] = aligned2.replace('-', '')

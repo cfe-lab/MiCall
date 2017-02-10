@@ -122,7 +122,7 @@ def censor(original_file,
     if use_gzip:
         src = GzipFile(fileobj=original_file)
 
-    for ident, seq, opt, qual in itertools.izip_longest(src, src, src, src):
+    for ident, seq, opt, qual in itertools.zip_longest(src, src, src, src):
         # returns an aggregate of 4 lines per call
         ident_fields, read_fields = map(str.split, ident.split(' '), '::')
         tile = ident_fields[4]

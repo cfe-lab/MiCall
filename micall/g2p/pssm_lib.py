@@ -24,8 +24,7 @@ class Pssm(object):
         elif std == 'g2p':
             self.std_v3 = 'CTRPNXNNTXXRKSIRIXXXGPGQXXXAFYATXXXXGDIIGDIXXRQAHC'
         else:
-            print 'ERROR: Unrecognized argument to std'
-            return
+            raise RuntimeError('Unrecognized argument to std')
 
         if path_to_lookup is None:
             lookup_paths = [os.path.join(os.path.dirname(__file__), 'g2p_fpr.txt'),
@@ -121,7 +120,7 @@ class Pssm(object):
         left = 0
         right = len(self.g2p_fpr_data)
         while True:
-            pivot = (right+left) / 2
+            pivot = (right+left) // 2
             pivot_g2p, pivot_fpr = self.g2p_fpr_data[pivot]
             if g2p == pivot_g2p:
                 # found an exact match
@@ -226,13 +225,13 @@ class Pssm(object):
 
         for seq in seqs:
             aa, _indels = self.align_aminos(seq, removeinserts=False, qachecks=(type(seq) is not list))
-            if aa < 0:
+            if not isinstance(aa, list) and aa < 0:
                 # failed alignment, try higher gap insert penalty
                 aa, _indels = self.align_aminos(seq,
                                                 gapIns=6,
                                                 removeinserts=False,
                                                 qachecks=(type(seq) is not list))  # :recall6
-            score = None if aa < 0 else self.g2p(aa)
+            score = None if not isinstance(aa, list) and aa < 0 else self.g2p(aa)
             scores.append(score)
             if aa == -1:
                 aa, _indels = self.align_aminos(seq,

@@ -11,11 +11,9 @@ import argparse
 from collections import Counter, defaultdict
 from csv import DictReader, DictWriter
 import itertools
-import multiprocessing.forking
-import multiprocessing.pool
 import os
 import re
-import sys
+from multiprocessing.pool import Pool
 
 SAM2ALN_Q_CUTOFFS = [15]  # Q-cutoff for base censoring
 MAX_PROP_N = 0.5                 # Drop reads with more censored bases than this proportion
@@ -46,37 +44,6 @@ def parseArgs():
 
 cigar_re = re.compile('[0-9]+[MIDNSHPX=]')  # CIGAR token
 gpfx = re.compile('^[-]+')  # length of gap prefix
-
-
-# From https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
-class _Popen(multiprocessing.forking.Popen):
-    def __init__(self, *args, **kw):
-        if hasattr(sys, 'frozen'):
-            # We have to set original _MEIPASS2 value from sys._MEIPASS
-            # to get --onefile mode working.
-            # Last character is stripped in C-loader. We have to add
-            # '/' or '\\' at the end.
-            os.putenv('_MEIPASS2', sys._MEIPASS)  # @UndefinedVariable
-        try:
-            super(_Popen, self).__init__(*args, **kw)
-        finally:
-            if hasattr(sys, 'frozen'):
-                # On some platforms (e.g. AIX) 'os.unsetenv()' is not
-                # available. In those cases we cannot delete the variable
-                # but only set it to the empty string. The bootloader
-                # can handle this case.
-                if hasattr(os, 'unsetenv'):
-                    os.unsetenv('_MEIPASS2')
-                else:
-                    os.putenv('_MEIPASS2', '')
-
-
-class Process(multiprocessing.Process):
-    _Popen = _Popen
-
-
-class Pool(multiprocessing.pool.Pool):
-    Process = Process
 
 
 def apply_cigar(cigar,
@@ -134,7 +101,7 @@ def apply_cigar(cigar,
         if operation == 'M':
             if mapped is not None:
                 curr_pos = len(newseq)
-                for i in xrange(curr_pos, curr_pos + length):
+                for i in range(curr_pos, curr_pos + length):
                     mapped.add(i)
             newseq += seq[left:(left+length)]
             newqual += qual[left:(left+length)]
@@ -159,7 +126,7 @@ def apply_cigar(cigar,
                 else:
                     clip_start = curr_pos
                     clip_end = curr_pos + length
-                for i in xrange(clip_start, clip_end):
+                for i in range(clip_start, clip_end):
                     soft_clipped.add(i)
             left += length
         else:
@@ -290,9 +257,9 @@ def merge_inserts(ins1, ins2, q_cutoff=10, minimum_q_delta=5):
     ins2 = {} if ins2 is None else ins2
     q_cutoff_char = chr(q_cutoff+33)
     merged = {pos: seq
-              for pos, (seq, qual) in ins1.iteritems()
+              for pos, (seq, qual) in ins1.items()
               if min(qual) > q_cutoff_char}
-    for pos, (seq2, qual2) in ins2.iteritems():
+    for pos, (seq2, qual2) in ins2.items():
         if min(qual2) > q_cutoff_char:
             seq1, qual1 = ins1.get(pos, ('', ''))
             merged[pos] = merge_pairs(seq1,
@@ -340,7 +307,7 @@ def matchmaker(remap_csv):
             yield old_row, row
 
     # Unmatched reads
-    for old_row in cached_rows.itervalues():
+    for old_row in cached_rows.values():
         yield old_row, None
 
 
@@ -406,7 +373,7 @@ class PairProcessor(object):
                                                soft_clipped=soft_clipped)
 
             # report insertions relative to sample consensus
-            for left, (iseq, iqual) in inserts.iteritems():
+            for left, (iseq, iqual) in inserts.items():
                 insert_list.append({'qname': qname,
                                     'fwd_rev': 'F' if is_first_read(row1['flag']) else 'R',
                                     'refname': rname,
@@ -422,7 +389,7 @@ class PairProcessor(object):
                                                pos2,
                                                mapped=mapped,
                                                soft_clipped=soft_clipped)
-            for left, (iseq, iqual) in inserts.iteritems():
+            for left, (iseq, iqual) in inserts.items():
                 insert_list.append({'qname': qname,
                                     'fwd_rev': 'F' if is_first_read(row2['flag']) else 'R',
                                     'refname': rname,
@@ -450,9 +417,8 @@ class PairProcessor(object):
         return rname, mseqs, insert_list, failed_list
 
     def write_clipping(self, clipping_writer):
-        for rname, counts in self.clipping_counts.iteritems():
-            positions = counts.keys()
-            positions.sort()
+        for rname, counts in self.clipping_counts.items():
+            positions = sorted(counts.keys())
             for pos in positions:
                 row = dict(refname=rname,
                            pos=pos,
@@ -509,12 +475,12 @@ def sam2aln(remap_csv,
     if nthreads:
         iter = parse_sam_in_threads(remap_csv, nthreads, pair_processor)
     else:
-        iter = itertools.imap(pair_processor.process, matchmaker(remap_csv))
+        iter = map(pair_processor.process, matchmaker(remap_csv))
 
     for rname, mseqs, insert_list, failed_list in iter:
         region = aligned[rname]
 
-        for qcut, mseq in mseqs.iteritems():
+        for qcut, mseq in mseqs.items():
             # collect identical merged sequences
             mseq_counter = region[qcut]
             mseq_counter[mseq] += 1
@@ -534,10 +500,11 @@ def sam2aln(remap_csv,
     aligned_fields = ['refname', 'qcut', 'rank', 'count', 'offset', 'seq']
     aligned_writer = DictWriter(aligned_csv, aligned_fields, lineterminator=os.linesep)
     aligned_writer.writeheader()
-    for rname, data in aligned.iteritems():
-        for qcut, data2 in data.iteritems():
+    for rname in sorted(aligned.keys()):
+        data = aligned[rname]
+        for qcut, data2 in data.items():
             # sort variants by count
-            intermed = [(count, len_gap_prefix(s), s) for s, count in data2.iteritems()]
+            intermed = [(count, len_gap_prefix(s), s) for s, count in data2.items()]
             intermed.sort(reverse=True)
             for rank, (count, offset, seq) in enumerate(intermed):
                 aligned_writer.writerow(dict(refname=rname,

@@ -1,5 +1,5 @@
 import unittest
-import StringIO
+from io import StringIO
 from micall.utils.sample_sheet_parser import sample_sheet_parser
 
 """
@@ -45,7 +45,7 @@ Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 
     def setUp(self):
         self.maxDiff = None
-        self.ss = sample_sheet_parser(StringIO.StringIO(self.stub_sample_sheet))
+        self.ss = sample_sheet_parser(StringIO(self.stub_sample_sheet))
 
     def test_keys_correct(self):
         """
@@ -180,7 +180,7 @@ Chemistry:Sample4--Proj4--BreakingBad Disablecontamcheck:Sample4--Proj4--TRUE,
     clean_filenames = ["Sample3--Proj3_S1", "Sample4--Proj4_S2"]
 
     def setUp(self):
-        self.ss = sample_sheet_parser(StringIO.StringIO(self.stub_sample_sheet))
+        self.ss = sample_sheet_parser(StringIO(self.stub_sample_sheet))
 
     def test_keys_correct(self):
         """
@@ -318,7 +318,7 @@ Disablecontamcheck:Sample3_Proj3:TRUE;Sample4_Proj4:TRUE,
     clean_filenames = ["Sample1-Proj1-Sample2-Proj2_S1", "Sample3-Proj3-Sample4-Proj4_S2"]
 
     def setUp(self):
-        self.ss = sample_sheet_parser(StringIO.StringIO(self.stub_sample_sheet))
+        self.ss = sample_sheet_parser(StringIO(self.stub_sample_sheet))
 
     def test_keys_correct(self):
         """
@@ -486,7 +486,7 @@ Disablecontamcheck:Sample3--Proj3--TRUE---Sample4--Proj4--TRUE,
     clean_filenames = ["Sample1--Proj1---Sample2--Proj2_S1", "Sample3--Proj3---Sample4--Proj4_S2"]
 
     def setUp(self):
-        self.ss = sample_sheet_parser(StringIO.StringIO(self.stub_sample_sheet))
+        self.ss = sample_sheet_parser(StringIO(self.stub_sample_sheet))
 
     def test_keys_correct(self):
         """
@@ -651,9 +651,9 @@ A,B,C,D,E
 """
 
         with self.assertRaises(ValueError) as assertion:
-            sample_sheet_parser(StringIO.StringIO(stub_sample_sheet))
+            sample_sheet_parser(StringIO(stub_sample_sheet))
         self.assertEqual("sample sheet data header does not include Sample_Name",
-                         assertion.exception.message)
+                         assertion.exception.args[0])
 
     def test_no_index2(self):
         """
@@ -685,7 +685,7 @@ CFE_SomeId_10-Jul-2014_N501_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,
 Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 """
 
-        ss = sample_sheet_parser(StringIO.StringIO(stub_sample_sheet))
+        ss = sample_sheet_parser(StringIO(stub_sample_sheet))
         sample = ss['Data']['Sample1-Proj1_S1']
         self.assertEqual('ACGTACGT', sample['index1'])
         self.assertEqual('X', sample['index2'])
@@ -721,5 +721,5 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing
 Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 """
 
-        ss = sample_sheet_parser(StringIO.StringIO(stub_sample_sheet))
+        ss = sample_sheet_parser(StringIO(stub_sample_sheet))
         self.assertEquals(ss["Experiment Name"], "10-Jul-2014")
