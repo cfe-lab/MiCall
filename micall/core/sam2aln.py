@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3.4
 
 """
 Takes SAM in CSV format as input.  Assumes that these data have been

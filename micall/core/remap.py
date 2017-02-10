@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3.4
 
 """
 Takes preliminary SAM as CSV input.  Iterative re-mapping of reads from

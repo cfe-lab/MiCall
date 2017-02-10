@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.4
 
 """ Censor reads based on phiX quality data, and also trim adapter sequences. """
 

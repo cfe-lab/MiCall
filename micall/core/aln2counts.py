@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3.4
 
 """
 Shipyard-style MiSeq pipeline, post-processing 1
