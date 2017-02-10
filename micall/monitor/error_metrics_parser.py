@@ -69,10 +69,10 @@ def read_errors(data_file):
 
 
 def _yield_cycles(records, read_lengths):
-    sorted_records = map(itemgetter('tile', 'cycle', 'error_rate'), records)
-    sorted_records.sort()
-    max_forward_cycle = read_lengths and read_lengths[0] or sys.maxint
-    min_reverse_cycle = read_lengths and sum(read_lengths[:-1])+1 or sys.maxint
+    sorted_records = sorted(map(itemgetter('tile', 'cycle', 'error_rate'),
+                                records))
+    max_forward_cycle = read_lengths and read_lengths[0] or sys.maxsize
+    min_reverse_cycle = read_lengths and sum(read_lengths[:-1])+1 or sys.maxsize
     for record in sorted_records:
         cycle = record[1]
         if cycle >= min_reverse_cycle:
@@ -115,7 +115,7 @@ def write_phix_csv(out_file, records, read_lengths=None, summary=None):
                 writer.writerow((record[0], previous_cycle))
                 previous_cycle += sign
             writer.writerow(record)
-            summary_index = (sign+1)/2
+            summary_index = (sign+1) // 2
             error_sums[summary_index] += record[2]
             error_counts[summary_index] += 1
         if read_lengths:

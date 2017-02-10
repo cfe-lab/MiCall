@@ -1,4 +1,4 @@
-import StringIO
+from io import StringIO
 import unittest
 
 from micall.core import remap
@@ -54,7 +54,7 @@ class IsFirstReadTest(unittest.TestCase):
 class SamToConseqsTest(unittest.TestCase):
     def testSimple(self):
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t12M\t=\t1\t12\tACAAGACCCAAC\tJJJJJJJJJJJJ\n"
         )
@@ -63,7 +63,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testOffset(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t147\ttest\t4\t44\t12M\t=\t3\t-12\tACAAGACCCAAC\tJJJJJJJJJJJJ\n"
         )
@@ -72,7 +72,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testHeaders(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SH\tsome header\n"
             "@MHI\tmost headers are ignored, except SQ for sequence reference\n"
             "@SQ\tSN:test\n"
@@ -83,7 +83,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testUnknownReferenceName(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:testX\n"
             "test1\t99\ttestY\t1\t44\t12M\t=\t1\t3\tACA\tJJJ\n"
         )
@@ -92,7 +92,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testHeaderFields(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tOF:other field: ignored\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACA\tJJJ\n"
         )
@@ -101,7 +101,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testExtraFields(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACA\tJJJ\tAS:i:236\tNM:i:12\n"
         )
@@ -110,7 +110,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testMaxConsensus(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACA\tJJJ\n"
             "test2\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACA\tJJJ\n"
@@ -121,7 +121,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testTie(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tGCA\tJJJ\n"
             "test2\t147\ttest\t1\t44\t3M\t=\t1\t-3\tTCA\tJJJ\n"
@@ -131,7 +131,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSoftClip(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3S5M1S\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJ\n"
         )
@@ -140,7 +140,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSimpleInsertion(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJ\n"
         )
@@ -149,7 +149,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testLowQualityInsertion(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJJJ/JJJJ\n"
         )
@@ -158,7 +158,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testInsertionAfterLowQuality(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJ/JJJJJJ\n"
         )
@@ -167,7 +167,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testInsertionAndOffset(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJJJJ\n"
             "test2\t99\ttest\t5\t44\t5M\t=\t1\t5\tGACCC\tJJJJJ\n"
@@ -178,7 +178,7 @@ class SamToConseqsTest(unittest.TestCase):
 
     def testComplexInsertion(self):
         # Insertions are ignored if not a multiple of three
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M1I3M2I6M\t=\t1\t12\tACAGAGAGGCCCAAC\tJJJJJJJJJJJJJJJ\n"
         )
@@ -187,7 +187,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testDeletion(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
         )
@@ -196,7 +196,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testDeletionInSomeReads(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
             "test2\t99\ttest\t1\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
@@ -207,7 +207,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testDeletionWithFrameShift(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M1D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
         )
@@ -216,7 +216,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testBigDeletionWithFrameShift(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M4D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
         )
@@ -225,7 +225,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testOverlapsCountOnce(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
             "test1\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n"
@@ -243,7 +243,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testReverseLeftOfForward(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t2\t44\t1M\t=\t1\t1\tC\tJ\n"
             "test1\t147\ttest\t1\t44\t1M\t=\t2\t-1\tA\tJ\n"
@@ -253,7 +253,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testPairMapsToTwoReferences(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:testX\n"
             "@SQ\tSN:testY\n"
             "test1\t99\ttestX\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
@@ -266,7 +266,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testLowQuality(self):
         # Note that we ignore the overlapped portion of the reverse read,
         # even if it has higher quality.
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJ/J\n"
         )
@@ -275,7 +275,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testLowQualityAtEnd(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJ/\n"
         )
@@ -284,7 +284,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testLowQualityForward(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t3\t3\tATA\tJJA\n"
             "test1\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
@@ -295,7 +295,7 @@ class SamToConseqsTest(unittest.TestCase):
 
     def testAllLowQuality(self):
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t147\ttest\t1\t24\t1M\t=\t1\t-1\tT\t#\n"
         )
@@ -311,7 +311,7 @@ class SamToConseqsTest(unittest.TestCase):
         SAM flag 145 does not have bit 2 for properly aligned.
         """
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t145\ttest\t1\t24\t1M\t=\t1\t-1\tT\tF\n"
         )
@@ -327,7 +327,7 @@ class SamToConseqsTest(unittest.TestCase):
         SAM flag 149 has bit 4 for unmapped. Region is irrelevant.
         """
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t149\ttest\t1\t24\t1M\t=\t1\t-1\tT\tF\n"
         )
@@ -338,7 +338,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertEqual(expected_conseqs, conseqs)
 
     def testLowQualityAndDeletion(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
             "test2\t99\ttest\t1\t44\t9M\t=\t3\t9\tACATTTGGG\tJJJ///JJJ\n"
@@ -350,7 +350,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSeeds(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJJ\n"
             "test2\t99\ttest\t10\t44\t3M\t=\t4\t-3\tCAC\tJJJ\n"
@@ -363,7 +363,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSeedsNeedSomeReads(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJJ\n"
         )
@@ -376,7 +376,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSeedsWithLowQuality(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJ/\n"
         )
@@ -390,7 +390,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testDebugReports(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I9M\t=\t1\t12\tACTGGGAGACCCAAC\tJIJJJJJJJJJJJJJ\n"
             "test1\t147\ttest\t1\t44\t3M3I9M\t=\t1\t-12\tACTGGGAGACCCAAC\tJIJJJJJJJJJJJJJ\n"
@@ -405,7 +405,7 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertDictEqual(expected_reports, reports)
 
     def testDebugReportsOnReverseRead(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I2M\t=\t1\t8\tACTGGGAG\tJJJJJJJJ\n"
             "test1\t147\ttest\t5\t44\t8M\t=\t1\t-8\tGACCCAAC\tJJJJJIJJ\n"
@@ -421,7 +421,7 @@ class SamToConseqsTest(unittest.TestCase):
 
     def testSeedsConverged(self):
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\tSN:other\tSN:wayoff\n"
             "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
             "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
@@ -454,7 +454,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testSeedsConvergedWithDifferentAlignment(self):
         """ Seeds have similar regions, but at different positions.
         """
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\tSN:other\n"
             "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
             "other1\t99\tother\t11\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
@@ -472,7 +472,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testSeedsConvergedWithDifferentAlignmentAndGap(self):
         """ Gaps between areas with coverage.
         """
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\tSN:other\n"
             "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
             "other1\t99\tother\t11\t44\t5M\t=\t1\t5\tATGAC\tJJJJJJJ\n"
@@ -491,7 +491,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testSeedsConvergedWithConfusingGap(self):
         """ Reads match other seed well, but with a big gap.
         """
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\tSN:other\n"
             "test1\t99\ttest\t1\t44\t8M\t=\t1\t8\tATGTCGTA\tJJJJJJJJ\n"
             "other1\t99\tother\t14\t44\t9M\t=\t1\t9\tAAGCTATAT\tJJJJJJJJJ\n"
@@ -510,7 +510,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testSeedsConvergedPlusOtherLowCoverage(self):
         """ Portion with decent coverage has converged, other hasn't.
         """
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\tSN:other\n"
             "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
             "test2\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
@@ -535,7 +535,7 @@ class SamToConseqsTest(unittest.TestCase):
         Don't drop both. Keep test because it has more reads.
         """
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\tSN:other\tSN:unrelated\n"
             "test1\t99\ttest\t1\t44\t8M\t=\t1\t10\tAAGCCGTA\tJJJJJJJJJJ\n"
             "test2\t99\ttest\t1\t44\t8M\t=\t1\t10\tAAGCCGTA\tJJJJJJJJJJ\n"
@@ -570,7 +570,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testAllSeedsLowCoverage(self):
         "Multiple seeds mapped, but none have good coverage. Choose most reads."
 
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\tSN:other\n"
             "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
             "test2\t99\ttest\t11\t44\t6M\t=\t1\t10\tCTCTCT\tJJJJJJ\n"
@@ -613,7 +613,7 @@ class SamToConseqsTest(unittest.TestCase):
                              (aligned_conseq, aligned_seed, relevant))
 
     def testNothingMapped(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:test\tSN:other\n"
         )
         seeds = {'test': 'ATGAAGTACTCTCT',
@@ -632,7 +632,7 @@ class MixedReferenceMemorySplitter(MixedReferenceSplitter):
     """ Dummy class to hold split reads in memory. Useful for testing. """
     def create_split_file(self, refname, direction):
         self.is_closed = False
-        return StringIO.StringIO()
+        return StringIO()
 
     def close_split_file(self, split_file):
         self.is_closed = True
@@ -644,7 +644,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
         self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
 
     def testSimple(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:r\n"
             "r1\t99\tr\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
             "r1\t147\tr\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n")
@@ -658,7 +658,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
         self.assertEqual(expected_rows, rows)
 
     def testTrimOptionalFields(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:r\n"
             "r1\t99\tr\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
             "r1\t147\tr\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n")
@@ -672,7 +672,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
         self.assertEqual(expected_rows, rows)
 
     def testUnmapped(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:r\n"
             "r1\t107\tr\t1\t44\t3M\t*\t1\t3\tACG\tJJJ\n"
             "r1\t149\t*\t*\t*\t*\tr\t*\t*\tACG\tJJJ\n")
@@ -690,7 +690,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
 
         Use the reference that gave the higher mapq score.
         """
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:r\n"
             "r1\t99\tRX\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
             "r1\t147\tRX\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n"
@@ -718,7 +718,7 @@ KJJ
         splits = splitter.splits
 
         self.assertEqual(expected_rows, rows)
-        self.assertEqual(['RX'], splits.keys())
+        self.assertEqual(['RX'], list(splits.keys()))
         fastq1, fastq2 = splits['RX']
         self.assertEqual(expected_fastq1, fastq1.getvalue())
         self.assertEqual(expected_fastq2, fastq2.getvalue())
@@ -729,7 +729,7 @@ KJJ
 
         Use the reference that gave the higher mapq score.
         """
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:r\n"
             "r1\t99\tRX\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
             "r1\t147\tRX\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n"
@@ -740,10 +740,10 @@ KJJ
         list(splitter.split(samIO))
         splits = splitter.splits
 
-        self.assertEqual(['RY'], splits.keys())
+        self.assertEqual(['RY'], list(splits.keys()))
 
     def testWalk(self):
-        samIO = StringIO.StringIO(
+        samIO = StringIO(
             "@SQ\tSN:r\n"
             "r1\t99\tRX\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
             "r1\t147\tRX\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n"

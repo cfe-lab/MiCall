@@ -18,7 +18,7 @@ def check_key_positions(projects, warning_file):
                    "coordinate region {}.\n")
     seed_warning = "WARNING: project {} has duplicate seed and coordinate: {}, {}\n"
     warnings = []
-    for project_name, project in projects.iteritems():
+    for project_name, project in projects.items():
         key_position_coordinates = Counter()
         seed_coordinate_pairs = Counter()
         for region in project['regions']:
@@ -70,21 +70,21 @@ def main():
             "/lab_miseq_projects?mode=dump&pipeline=" +
             settings.pipeline_version,
             retries=0)
-        for project in dump['projects'].itervalues():
+        for project in dump['projects'].values():
             project['regions'].sort()
             for region in project['regions']:
                 used_regions.add(region['coordinate_region'])
                 used_regions.update(region['seed_region_names'])
         errors = dump['projects'].get('errors')
         if errors:
-            raise StandardError('\n'.join(errors))
+            raise RuntimeError('\n'.join(errors))
         check_key_positions(dump['projects'], sys.stdout)
     dump['regions'] = {key: value
-                       for key, value in dump['regions'].iteritems()
+                       for key, value in dump['regions'].items()
                        if key in used_regions}
 
     dump_scoring = deepcopy(dump)
-    for project in dump['projects'].itervalues():
+    for project in dump['projects'].values():
         for region in project['regions']:
             del region['key_positions']
             del region['min_coverage1']
@@ -93,7 +93,7 @@ def main():
 
     dump_json(dump, "../projects.json")
 
-    for project in dump_scoring['projects'].itervalues():
+    for project in dump_scoring['projects'].values():
         for region in project['regions']:
             name = region['coordinate_region']
             seq = ''.join(dump_scoring['regions'][name]['reference'])
@@ -101,7 +101,7 @@ def main():
     del dump_scoring['regions']
     dump_json(dump_scoring, "../project_scoring.json")
 
-    print "Done."
+    print("Done.")
 
 if __name__ == "__main__":
     main()

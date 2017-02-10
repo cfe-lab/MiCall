@@ -1,4 +1,4 @@
-from cStringIO import StringIO
+from io import BytesIO
 from struct import pack
 from unittest import TestCase
 from micall.monitor.quality_metrics_parser import read_quality,\
@@ -15,7 +15,7 @@ class QualityMetricsParserTest(TestCase):
                             3]      # cycle
         self.sample_data.extend(range(101, 151))
         format_string = '<BBHHH' + 'L'*50
-        self.sample_stream = StringIO(pack(format_string, *self.sample_data))
+        self.sample_stream = BytesIO(pack(format_string, *self.sample_data))
 
     def test_load(self):
         expected_records = [dict(lane=1,
@@ -32,7 +32,7 @@ class QualityMetricsParserTest(TestCase):
         self.sample_data.append(42)
         self.sample_data.extend(self.sample_data[2:])
         format_string = '<BB' + 2*('HHH' + 50*'L' + 'B')
-        self.sample_stream = StringIO(pack(format_string, *self.sample_data))
+        self.sample_stream = BytesIO(pack(format_string, *self.sample_data))
         expected_records = [dict(lane=1,
                                  tile=2,
                                  cycle=3,

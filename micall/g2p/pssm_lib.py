@@ -36,7 +36,7 @@ class Pssm(object):
         for path in lookup_paths:
             self.g2p_fpr_data = []
             try:
-                with open(path, 'rU') as handle:
+                with open(path) as handle:
                     # load empirical curve of FPR to g2p scores from file
                     for line in handle:
                         g2p, fpr = map(float, line.strip('\n').split(','))
@@ -60,7 +60,7 @@ class Pssm(object):
             matrix_paths = [path_to_matrix]
         for path in matrix_paths:
             try:
-                with open(path, 'rU') as handle:
+                with open(path) as handle:
                     # load g2p score matrix
                     self.g2p_matrix = dict([(i, {}) for i in range(len(self.std_v3))])
                     for line in handle:

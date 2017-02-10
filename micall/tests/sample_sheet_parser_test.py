@@ -64,17 +64,17 @@ Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
         """
         Test that all of the header stuff, as well as the sample sheet version, was set correctly.
         """
-        self.assertEquals(self.ss["IEMFileVersion"], "3")
-        self.assertEquals(self.ss["Investigator Name"], "RL")
-        self.assertEquals(self.ss["Project Name"], "10-Jul-2014_v1test")
-        self.assertEquals(self.ss["Experiment Name"], "10-Jul-2014_v1test")
-        self.assertEquals(self.ss["Date"], "07/10/2014")
-        self.assertEquals(self.ss["Workflow"], "GenerateFASTQ")
-        self.assertEquals(self.ss["Assay"], "Nextera")
-        self.assertEquals(self.ss["Description"], "Nextera")
-        self.assertEquals(self.ss["Chemistry"], "Amplicon")
-        self.assertEquals(self.ss["sample_sheet_version"], 1)
-        self.assertEquals(self.ss["Reads"], [251, 251])
+        self.assertEqual(self.ss["IEMFileVersion"], "3")
+        self.assertEqual(self.ss["Investigator Name"], "RL")
+        self.assertEqual(self.ss["Project Name"], "10-Jul-2014_v1test")
+        self.assertEqual(self.ss["Experiment Name"], "10-Jul-2014_v1test")
+        self.assertEqual(self.ss["Date"], "07/10/2014")
+        self.assertEqual(self.ss["Workflow"], "GenerateFASTQ")
+        self.assertEqual(self.ss["Assay"], "Nextera")
+        self.assertEqual(self.ss["Description"], "Nextera")
+        self.assertEqual(self.ss["Chemistry"], "Amplicon")
+        self.assertEqual(self.ss["sample_sheet_version"], 1)
+        self.assertEqual(self.ss["Reads"], [251, 251])
 
     def test_data(self):
         """
@@ -199,16 +199,16 @@ Chemistry:Sample4--Proj4--BreakingBad Disablecontamcheck:Sample4--Proj4--TRUE,
         """
         Test that all of the header stuff, as well as the sample sheet version, was set correctly.
         """
-        self.assertEquals(self.ss["IEMFileVersion"], "3")
-        self.assertEquals(self.ss["Investigator Name"], "RL")
-        self.assertEquals(self.ss["Project Name"], "11-Jul-2014_v2test")
-        self.assertEquals(self.ss["Experiment Name"], "11-Jul-2014_v2test")
-        self.assertEquals(self.ss["Date"], "07/11/2014")
-        self.assertEquals(self.ss["Workflow"], "GenerateFASTQ")
-        self.assertEquals(self.ss["Assay"], "Nextera")
-        self.assertEquals(self.ss["Description"], "Nextera")
-        self.assertEquals(self.ss["Chemistry"], "Amplicon")
-        self.assertEquals(self.ss["sample_sheet_version"], 2)
+        self.assertEqual(self.ss["IEMFileVersion"], "3")
+        self.assertEqual(self.ss["Investigator Name"], "RL")
+        self.assertEqual(self.ss["Project Name"], "11-Jul-2014_v2test")
+        self.assertEqual(self.ss["Experiment Name"], "11-Jul-2014_v2test")
+        self.assertEqual(self.ss["Date"], "07/11/2014")
+        self.assertEqual(self.ss["Workflow"], "GenerateFASTQ")
+        self.assertEqual(self.ss["Assay"], "Nextera")
+        self.assertEqual(self.ss["Description"], "Nextera")
+        self.assertEqual(self.ss["Chemistry"], "Amplicon")
+        self.assertEqual(self.ss["sample_sheet_version"], 2)
 
     def test_data(self):
         """
@@ -337,16 +337,16 @@ Disablecontamcheck:Sample3_Proj3:TRUE;Sample4_Proj4:TRUE,
         """
         Test that all of the header stuff, as well as the sample sheet version, was set correctly.
         """
-        self.assertEquals(self.ss["IEMFileVersion"], "3")
-        self.assertEquals(self.ss["Investigator Name"], "RL")
-        self.assertEquals(self.ss["Project Name"], "11-Jul-2014_v1multisamplestest")
-        self.assertEquals(self.ss["Experiment Name"], "11-Jul-2014_v1multisamplestest")
-        self.assertEquals(self.ss["Date"], "07/11/2014")
-        self.assertEquals(self.ss["Workflow"], "GenerateFASTQ")
-        self.assertEquals(self.ss["Assay"], "Nextera")
-        self.assertEquals(self.ss["Description"], "Nextera")
-        self.assertEquals(self.ss["Chemistry"], "Amplicon")
-        self.assertEquals(self.ss["sample_sheet_version"], 1)
+        self.assertEqual(self.ss["IEMFileVersion"], "3")
+        self.assertEqual(self.ss["Investigator Name"], "RL")
+        self.assertEqual(self.ss["Project Name"], "11-Jul-2014_v1multisamplestest")
+        self.assertEqual(self.ss["Experiment Name"], "11-Jul-2014_v1multisamplestest")
+        self.assertEqual(self.ss["Date"], "07/11/2014")
+        self.assertEqual(self.ss["Workflow"], "GenerateFASTQ")
+        self.assertEqual(self.ss["Assay"], "Nextera")
+        self.assertEqual(self.ss["Description"], "Nextera")
+        self.assertEqual(self.ss["Chemistry"], "Amplicon")
+        self.assertEqual(self.ss["sample_sheet_version"], 1)
 
     def test_data(self):
         """
@@ -505,16 +505,16 @@ Disablecontamcheck:Sample3--Proj3--TRUE---Sample4--Proj4--TRUE,
         """
         Test that all of the header stuff, as well as the sample sheet version, was set correctly.
         """
-        self.assertEquals(self.ss["IEMFileVersion"], "3")
-        self.assertEquals(self.ss["Investigator Name"], "RL")
-        self.assertEquals(self.ss["Project Name"], "11-Jul-2014_v2multisamplestest")
-        self.assertEquals(self.ss["Experiment Name"], "11-Jul-2014_v2multisamplestest")
-        self.assertEquals(self.ss["Date"], "07/11/2014")
-        self.assertEquals(self.ss["Workflow"], "GenerateFASTQ")
-        self.assertEquals(self.ss["Assay"], "Nextera")
-        self.assertEquals(self.ss["Description"], "Nextera")
-        self.assertEquals(self.ss["Chemistry"], "Amplicon")
-        self.assertEquals(self.ss["sample_sheet_version"], 2)
+        self.assertEqual(self.ss["IEMFileVersion"], "3")
+        self.assertEqual(self.ss["Investigator Name"], "RL")
+        self.assertEqual(self.ss["Project Name"], "11-Jul-2014_v2multisamplestest")
+        self.assertEqual(self.ss["Experiment Name"], "11-Jul-2014_v2multisamplestest")
+        self.assertEqual(self.ss["Date"], "07/11/2014")
+        self.assertEqual(self.ss["Workflow"], "GenerateFASTQ")
+        self.assertEqual(self.ss["Assay"], "Nextera")
+        self.assertEqual(self.ss["Description"], "Nextera")
+        self.assertEqual(self.ss["Chemistry"], "Amplicon")
+        self.assertEqual(self.ss["sample_sheet_version"], 2)
 
     def test_data(self):
         """
@@ -722,4 +722,4 @@ Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 """
 
         ss = sample_sheet_parser(StringIO(stub_sample_sheet))
-        self.assertEquals(ss["Experiment Name"], "10-Jul-2014")
+        self.assertEqual(ss["Experiment Name"], "10-Jul-2014")

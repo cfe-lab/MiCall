@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from io import BytesIO, StringIO
 from struct import pack
 from unittest import TestCase
 from micall.monitor.error_metrics_parser import read_errors, write_phix_csv,\
@@ -8,21 +8,21 @@ from micall.monitor.error_metrics_parser import read_errors, write_phix_csv,\
 class RecordsParserTest(TestCase):
     def pack_data(self):
         format_string = '<bbcccc'
-        self.sample_stream = StringIO(pack(format_string, *self.sample_data))
+        self.sample_stream = BytesIO(pack(format_string, *self.sample_data))
         self.sample_stream.name = 'test_file'
 
     def setUp(self):
         self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
         self.sample_data = [1,      # file version
                             4,      # record size
-                            'A',    # field 1
-                            'B',    # field 2
-                            'C',    # field 3
-                            'D']    # field 4
+                            b'A',    # field 1
+                            b'B',    # field 2
+                            b'C',    # field 3
+                            b'D']    # field 4
         self.pack_data()
 
     def test_load(self):
-        expected_records = ['ABCD']
+        expected_records = [b'ABCD']
 
         records = list(read_records(self.sample_stream, min_version=1))
 
@@ -31,7 +31,7 @@ class RecordsParserTest(TestCase):
     def test_load_multiple_records(self):
         self.sample_data[1] = 2  # record size
         self.pack_data()
-        expected_records = ['AB', 'CD']
+        expected_records = [b'AB', b'CD']
 
         records = list(read_records(self.sample_stream, min_version=1))
 
@@ -41,22 +41,22 @@ class RecordsParserTest(TestCase):
 
         records = read_records(self.sample_stream, min_version=3)
 
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             IOError,
             'File version 1 is less than minimum version 3 in test_file.',
-            records.next)
+            records.__next__)
 
     def test_partial_record(self):
         self.sample_data[1] = 3
         self.pack_data()
         records = read_records(self.sample_stream, min_version=1)
-        record1 = records.next()
+        record1 = next(records)
 
-        self.assertEqual('ABC', record1)
-        self.assertRaisesRegexp(
+        self.assertEqual(b'ABC', record1)
+        self.assertRaisesRegex(
             IOError,
             'Partial record of length 1 found in test_file.',
-            records.next)
+            records.__next__)
 
 
 class ErrorMetricsParserTest(TestCase):
@@ -74,7 +74,7 @@ class ErrorMetricsParserTest(TestCase):
                             7,      # num reads with 3 errors
                             8]      # num reads with 4 errors
         format_string = '<bbHHHfLLLLL'
-        self.sample_stream = StringIO(pack(format_string, *self.sample_data))
+        self.sample_stream = BytesIO(pack(format_string, *self.sample_data))
 
     def test_load(self):
         expected_records = [dict(lane=1,
@@ -96,7 +96,7 @@ class ErrorMetricsParserTest(TestCase):
         self.sample_data.append(42)
         self.sample_data.extend(self.sample_data[2:])
         format_string = '<bbHHHfLLLLLbHHHfLLLLLb'
-        self.sample_stream = StringIO(pack(format_string, *self.sample_data))
+        self.sample_stream = BytesIO(pack(format_string, *self.sample_data))
         expected_records = [dict(lane=1,
                                  tile=2,
                                  cycle=3,

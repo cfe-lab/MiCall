@@ -1,6 +1,6 @@
-from mock import patch, call
+from unittest.mock import patch, call
 from unittest import TestCase
-from StringIO import StringIO
+from io import StringIO
 from micall.core.coverage_plots import coverage_plot
 from micall.core.project_config import ProjectConfig
 

@@ -1,5 +1,5 @@
 import csv
-import StringIO
+from io import StringIO
 import sys
 import unittest
 
@@ -30,7 +30,7 @@ class StubbedSequenceReport(SequenceReport):
                      query,
                      aligned_query,
                      aligned_reference,
-                     score=sys.maxint):
+                     score=sys.maxsize):
         self.overrides[(reference, query)] = (aligned_reference,
                                               aligned_query,
                                               score)
@@ -39,7 +39,7 @@ class StubbedSequenceReport(SequenceReport):
 class SequenceReportTest(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
-        self.insertion_file = StringIO.StringIO()
+        self.insertion_file = StringIO()
         insert_writer = InsertionWriter(
             insert_file=self.insertion_file)
         projects = project_config.ProjectConfig()
@@ -47,7 +47,7 @@ class SequenceReportTest(unittest.TestCase):
         # Content of seed regions is irrelevant. For R-NO-COORD, there is
         # no coordinate reference, so we use the seed reference for display, but
         # only the length matters.
-        projects.load(StringIO.StringIO("""\
+        projects.load(StringIO("""\
 {
   "projects": {
     "R1": {
@@ -149,11 +149,11 @@ class SequenceReportTest(unittest.TestCase):
         self.report = StubbedSequenceReport(insert_writer,
                                             projects,
                                             conseq_mixture_cutoffs)
-        self.report_file = StringIO.StringIO()
+        self.report_file = StringIO()
 
     def prepareReads(self, aligned_reads_text):
         full_text = "refname,qcut,rank,count,offset,seq\n" + aligned_reads_text
-        dummy_file = StringIO.StringIO(full_text)
+        dummy_file = StringIO(full_text)
         return csv.DictReader(dummy_file)
 
     def testEmptyAminoReport(self):
@@ -323,7 +323,7 @@ R1-seed,R1,15,,9,0,0,0,0,0,0,0,0
         aligned_reads = self.prepareReads("""\
 R1-seed,15,0,9,2,ATTTA
 """)
-        clipping = StringIO.StringIO("""\
+        clipping = StringIO("""\
 refname,pos,count
 R1-seed,1,9
 R1-seed,2,9
@@ -357,7 +357,7 @@ R1-seed,R1,15,9,9,0,0,0,0,0,0,0,0
         aligned_reads = self.prepareReads("""\
 R1-seed,15,0,9,2,ATTTA
 """)
-        clipping = StringIO.StringIO("""\
+        clipping = StringIO("""\
 refname,pos,count
 R1-seed,1,9
 R1-seed,2,9
@@ -374,7 +374,7 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         self.report.read_clipping(clipping)
         self.report.write_amino_header(self.report_file)
         self.report.read(aligned_reads)
-        self.report.write_nuc_counts(StringIO.StringIO())  # calculates clip counts
+        self.report.write_nuc_counts(StringIO())  # calculates clip counts
         self.report.write_amino_counts(self.report_file)
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
@@ -386,7 +386,7 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         aligned_reads = self.prepareReads("""\
 R1-seed,15,0,9,0,AAATTT
 """)
-        conseq_ins_csv = StringIO.StringIO("""\
+        conseq_ins_csv = StringIO("""\
 qname,fwd_rev,refname,pos,insert,qual
 Example_read_1,F,R1-seed,3,AAC,AAA
 Example_read_2,F,R1-seed,3,AAC,AAA
@@ -421,7 +421,7 @@ R1-seed,R1,15,,9,0,0,0,0,0,0,0,0
         aligned_reads = self.prepareReads("""\
 R1-seed,15,0,9,0,AAATTT
 """)
-        conseq_ins_csv = StringIO.StringIO("""\
+        conseq_ins_csv = StringIO("""\
 qname,fwd_rev,refname,pos,insert,qual
 Example_read_1,F,R1-seed,3,AAC,AAA
 Example_read_2,F,R1-seed,3,AAC,AAA
@@ -437,7 +437,7 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         self.report.read_insertions(conseq_ins_csv)
         self.report.write_amino_header(self.report_file)
         self.report.read(aligned_reads)
-        self.report.write_nuc_counts(StringIO.StringIO())  # calculates ins counts
+        self.report.write_nuc_counts(StringIO())  # calculates ins counts
         self.report.write_amino_counts(self.report_file)
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
@@ -838,7 +838,7 @@ R3-seed,R3,15,22,G,9,5
 
         self.report.read(aligned_reads)
         self.report.write_insertions()
-        self.report.write_nuc_counts(StringIO.StringIO())  # calculates insertion counts
+        self.report.write_nuc_counts(StringIO())  # calculates insertion counts
         self.report.write_amino_counts(self.report_file)
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
@@ -935,7 +935,7 @@ R3-seed,R3,15,13,G,9,5
         """ Two coordinate regions map the same seed region, the consensus
         has an insertion relative to only one of them.
         """
-        self.report.projects.load(StringIO.StringIO("""\
+        self.report.projects.load(StringIO("""\
 {
   "projects": {
     "R3": {
@@ -1081,7 +1081,7 @@ R1-seed,15,0,2,0,AAATTTCGATTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTAC
         Even when the consensus maps to the end of the seed, it should still
         only require a low alignment score.
         """
-        self.report.projects.load(StringIO.StringIO("""\
+        self.report.projects.load(StringIO("""\
 {
   "projects": {
     "R3": {
@@ -1195,7 +1195,7 @@ R-NO-COORD,15,0,9,0,AAATTT
     def testMultipleCoordinateAminoReport(self):
         """ Two coordinate regions map the same seed region, report both.
         """
-        self.report.projects.load(StringIO.StringIO("""\
+        self.report.projects.load(StringIO("""\
 {
   "projects": {
     "R1": {
@@ -1282,7 +1282,7 @@ R1-seed,15,R1,3,5,AAATTTTCA
     def testVariantLimit(self):
         """ Only report top 3 variants
         """
-        self.report.projects.load(StringIO.StringIO("""\
+        self.report.projects.load(StringIO("""\
 {
   "projects": {
     "R1": {
@@ -1454,7 +1454,7 @@ R1-seed,15,R1,1,8,---TTT
         should be combined. max_variants is applied after combining the clipped
         reads.
         """
-        self.report.projects.load(StringIO.StringIO("""\
+        self.report.projects.load(StringIO("""\
 {
   "projects": {
     "R1": {
@@ -1552,7 +1552,7 @@ R1-seed,15,R1,0,10,AAATTT
     def testMultipleCoordinateVariantReport(self):
         """ Two coordinate regions map the same seed region, report both.
         """
-        self.report.projects.load(StringIO.StringIO("""\
+        self.report.projects.load(StringIO("""\
 {
   "projects": {
     "R1": {
@@ -1610,7 +1610,7 @@ R1-seed,15,R1b,0,9,AAATTT
 
 class InsertionWriterTest(unittest.TestCase):
     def setUp(self):
-        self.insert_file = StringIO.StringIO()
+        self.insert_file = StringIO()
         self.writer = InsertionWriter(self.insert_file)
         self.writer.start_group(seed='R1-seed', qcut=15)
         self.nuc_seq_acdef = 'GCTTGTGACGAGTTT'
@@ -1721,14 +1721,17 @@ R1-seed,R1,15,7,D,2,
         expected_text = """\
 seed,region,qcut,left,insert,count,before
 R1-seed,R1,15,4,C,2,
-R1-seed,R1,15,4,F,3,
-"""
+R1-seed,R1,15,4,F,3,"""
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=2)
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_afdef, count=3)
         self.writer.write(inserts=[3], region='R1')
 
-        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
+        lines = self.insert_file.getvalue().splitlines()
+        lines.sort()
+        lines.insert(0, lines.pop())
+        text = '\n'.join(lines)
+        self.assertMultiLineEqual(expected_text, text)
 
     def testMulticharacterInsert(self):
         expected_text = """\
@@ -1850,7 +1853,7 @@ class SeedAminoTest(unittest.TestCase):
         self.assertEqual(consensus, '-')
 
     def testMissingData(self):
-        "Lower-case n represents a gap between the forward and reverse reads."
+        """ Lower-case n represents a gap between the forward and reverse reads. """
 
         nuc_seq = 'CTn'
         expected_consensus = '-'
@@ -2051,7 +2054,7 @@ class SeedNucleotideTest(unittest.TestCase):
         self.assertEqual(expected_consensus, consensus_mix)
 
     def testConsensusMissingPositions(self):
-        "Positions that are never read are ignored in the consensus."
+        """ Positions that are never read are ignored in the consensus. """
 
         # No counts added
 

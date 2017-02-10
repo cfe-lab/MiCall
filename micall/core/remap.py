@@ -153,7 +153,7 @@ def extract_relevant_seed(aligned_conseq, aligned_seed):
     consensus.
     """
     match = re.match('-*([^-](.*[^-])?)', aligned_conseq)
-    return unicode(aligned_seed[match.start(1):match.end(1)]).replace('-', '')
+    return aligned_seed[match.start(1):match.end(1)].replace('-', '')
 
 
 def sam_to_conseqs(samfile,
@@ -190,7 +190,7 @@ def sam_to_conseqs(samfile,
     """
 
     if debug_reports:
-        for key in debug_reports.iterkeys():
+        for key in debug_reports.keys():
             debug_reports[key] = Counter()
 
     # refmap structure: {refname: {pos: Counter({nuc: count})}}
@@ -199,7 +199,7 @@ def sam_to_conseqs(samfile,
     semaphore = Semaphore(READ_MERGE_BUFFER_SIZE) if worker_pool is not None else None
     pairs = matchmaker(samfile, include_singles=True, semaphore=semaphore)
     if worker_pool is None:
-        merged_reads = itertools.imap(
+        merged_reads = map(
             partial(merge_reads, quality_cutoff),
             pairs)
     else:
@@ -230,25 +230,25 @@ def sam_to_conseqs(samfile,
                       debug_reports)
 
     if debug_reports:
-        for key, counts in debug_reports.iteritems():
+        for key, counts in debug_reports.items():
             mixtures = []
             nucs = set()
             qualities = set()
-            for nuc, quality in counts.iterkeys():
+            for nuc, quality in counts.keys():
                 nucs.add(nuc)
                 qualities.add(quality)
             qualities = sorted(qualities)
             for min_quality in qualities:
                 filtered_counts = Counter()
-                for (nuc, nuc_qual), count in counts.iteritems():
+                for (nuc, nuc_qual), count in counts.items():
                     if nuc_qual >= min_quality:
                         filtered_counts[nuc] += count
                 mixture = []
-                for nuc, count in filtered_counts.iteritems():
+                for nuc, count in filtered_counts.items():
                     mixture.append('{}: {}'.format(nuc, count))
                 mixtures.append('{}{{{}}}'.format(min_quality,
-                                                  ', '.join(mixture)))
-            debug_reports[key] = ', '.join(mixtures)
+                                                  ', '.join(sorted(mixture))))
+            debug_reports[key] = ', '.join(sorted(mixtures))
 
     new_conseqs = counts_to_conseqs(refmap)
     relevant_conseqs = None
@@ -261,16 +261,16 @@ def sam_to_conseqs(samfile,
         drifted_seeds = []  # [(count, name)]
         if relevant_conseqs is None:
             relevant_conseqs = {}
-            for name in sorted(new_conseqs.iterkeys()):
+            for name in sorted(new_conseqs.keys()):
                 conseq = new_conseqs[name]
                 counts = refmap[name]
                 relevant_conseq = u''
                 for pos, c in enumerate(conseq, 1):
-                    pos_counts = sum(counts[pos].itervalues())
+                    pos_counts = sum(counts[pos].values())
                     if pos_counts >= filter_coverage:
                         relevant_conseq += c
                 relevant_conseqs[name] = relevant_conseq
-        for name in sorted(new_conseqs.iterkeys()):
+        for name in sorted(new_conseqs.keys()):
             relevant_conseq = relevant_conseqs[name]
             if not relevant_conseq:
                 # None of the coverage was acceptable.
@@ -278,7 +278,7 @@ def sam_to_conseqs(samfile,
                 continue
 
             other_seed = other_dist = None
-            for seed_name in sorted(new_conseqs.iterkeys()):
+            for seed_name in sorted(new_conseqs.keys()):
                 seed_ref = seeds[seed_name]
                 aligned_seed, aligned_conseq, _score = align_it(seed_ref,
                                                                 relevant_conseq,
@@ -354,9 +354,9 @@ def update_counts(rname,
 
 def counts_to_conseqs(refmap):
     conseqs = {}
-    for refname, pos_nucs in refmap.iteritems():
-        if not any((any(n > 0 for n in counts.itervalues())
-                    for counts in pos_nucs.itervalues())):
+    for refname, pos_nucs in refmap.items():
+        if not any((any(n > 0 for n in counts.values())
+                    for counts in pos_nucs.values())):
             # Nothing mapped, so no consensus.
             continue
         conseq = ''
@@ -417,7 +417,7 @@ def build_conseqs(samfilename,
 
 def write_remap_counts(remap_counts_writer, counts, title, distance_report=None):
     distance_report = distance_report or {}
-    for refname in sorted(counts.iterkeys()):
+    for refname in sorted(counts.keys()):
         row = distance_report.get(refname, {})
         row.update(type=title + ' ' + refname, count=counts[refname])
         remap_counts_writer.writerow(row)
@@ -512,7 +512,7 @@ def remap(fastq1,
     # retrieve reference sequences used for preliminary mapping
     projects = project_config.ProjectConfig.loadDefault()
     seeds = {}
-    for seed, vals in projects.config['regions'].iteritems():
+    for seed, vals in projects.config['regions'].items():
         seqs = vals['reference']
         seeds[seed] = ''.join(seqs)
     conseqs = dict(seeds)  # copy
@@ -536,7 +536,7 @@ def remap(fastq1,
     with open(samfile, 'w') as f:
         # write SAM header
         f.write('@HD\tVN:1.0\tSO:unsorted\n')
-        for rname, refseq in conseqs.iteritems():
+        for rname, refseq in conseqs.items():
             f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
         f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
@@ -582,14 +582,14 @@ def remap(fastq1,
                 refgroups[refgroup] = (refname, filtered_count)
 
     seed_counts = {best_ref: best_count
-                   for best_ref, best_count in refgroups.itervalues()}
+                   for best_ref, best_count in refgroups.values()}
     # regenerate consensus sequences based on preliminary map
     conseqs = build_conseqs(samfile, seeds=seeds, worker_pool=worker_pool)
 
     # exclude references with low counts (post filtering)
     new_conseqs = {}
     map_counts = {}
-    for rname, conseq in conseqs.iteritems():
+    for rname, conseq in conseqs.items():
         count = seed_counts.get(rname, None)
         if count is not None:
             map_counts[rname] = count  # transfer filtered counts to map counts for remap loop
@@ -633,7 +633,7 @@ def remap(fastq1,
                                           callback,
                                           debug_file_prefix=next_debug_prefix)
 
-        old_seed_names = set(conseqs.iterkeys())
+        old_seed_names = set(conseqs.keys())
         # regenerate consensus sequences
         distance_report = {}
         conseqs = build_conseqs(samfile,
@@ -642,7 +642,7 @@ def remap(fastq1,
                                 worker_pool=worker_pool,
                                 filter_coverage=count_threshold/2,  # pairs
                                 distance_report=distance_report)
-        new_seed_names = set(conseqs.iterkeys())
+        new_seed_names = set(conseqs.keys())
         n_remaps += 1
         write_remap_counts(remap_counts_writer,
                            new_counts,
@@ -652,7 +652,7 @@ def remap(fastq1,
         if new_seed_names == old_seed_names:
             # stopping criterion 1 - none of the regions gained reads
             if all((count <= map_counts[refname])
-                   for refname, count in new_counts.iteritems()):
+                   for refname, count in new_counts.items()):
                 break
 
             # stopping criterion 2 - a sufficient fraction of raw data has been mapped
@@ -680,7 +680,7 @@ def remap(fastq1,
         with open(samfile, 'rU') as f:
             for fields in splitter.split(f):
                 remap_writer.writerow(dict(zip(fieldnames, fields)))
-        for rname, (split_file1, split_file2) in splitter.splits.iteritems():
+        for rname, (split_file1, split_file2) in splitter.splits.items():
             refseqs = {rname: conseqs[rname]}
             unmapped_count += map_to_reference(split_file1.name,
                                                split_file2.name,
@@ -705,7 +705,7 @@ def remap(fastq1,
 
     # write consensus sequences and counts
     remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
-    for refname in new_counts.iterkeys():
+    for refname in new_counts.keys():
         # NOTE this is the consensus sequence to which the reads were mapped, NOT the
         # current consensus!
         conseq = conseqs.get(refname) or projects.getReference(refname)
@@ -762,7 +762,7 @@ def map_to_reference(fastq1,
     """
     # generate reference file from current set of consensus sequences
     outfile = open(reffile, 'w')
-    for region, conseq in refseqs.iteritems():
+    for region, conseq in refseqs.items():
         outfile.write('>%s\n%s\n' % (region, conseq))
     outfile.close()
 
@@ -793,7 +793,7 @@ def map_to_reference(fastq1,
     with open(samfile, 'w') as f:
         # write SAM header
         f.write('@HD\tVN:1.0\tSO:unsorted\n')
-        for rname, refseq in refseqs.iteritems():
+        for rname, refseq in refseqs.items():
             f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
         f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
@@ -880,7 +880,7 @@ class MixedReferenceSplitter(object):
                             fwd_read, rev_read = match, fields
                         self.write_fastq(fwd_read, fastq1)
                         self.write_fastq(rev_read, fastq2, is_reversed=True)
-        for fastq1, fastq2 in self.splits.itervalues():
+        for fastq1, fastq2 in self.splits.values():
             self.close_split_file(fastq1)
             self.close_split_file(fastq2)
 
@@ -944,7 +944,7 @@ def matchmaker(samfile, include_singles=False, semaphore=None):
                 # current row should be the second read of the pair
                 yield old_row, row
     if include_singles:
-        for row in cached_rows.itervalues():
+        for row in cached_rows.values():
             if semaphore is not None:
                 semaphore.acquire()
             yield row, None
@@ -1003,14 +1003,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-elif __name__ == '__live_coding__':
-    import unittest
-    sys.modules['micall.core'].remap = sys.modules['micall.core.remap']
-    from micall.tests.remap_test import SamToConseqsTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(SamToConseqsTest("testSeedsBothConverged"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

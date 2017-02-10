@@ -1,11 +1,11 @@
 import unittest
-import StringIO
+from io import StringIO
 from micall.core.project_config import ProjectConfig
 
 
 class ProjectConfigurationTest(unittest.TestCase):
     def setUp(self):
-        self.defaultJsonIO = StringIO.StringIO("""\
+        self.defaultJsonIO = StringIO("""\
 {
   "projects": {
     "R1": {
@@ -46,7 +46,7 @@ class ProjectConfigurationTest(unittest.TestCase):
 >R1-seed
 ACTGAAAGGG
 """
-        fasta = StringIO.StringIO()
+        fasta = StringIO()
 
         self.config.load(self.defaultJsonIO)
         self.config.writeSeedFasta(fasta)
@@ -54,7 +54,7 @@ ACTGAAAGGG
         self.assertMultiLineEqual(expected_fasta, fasta.getvalue())
 
     def testSharedRegions(self):
-        jsonIO = StringIO.StringIO("""\
+        jsonIO = StringIO("""\
 {
   "projects": {
     "R1": {
@@ -101,7 +101,7 @@ ACTGAAAGGG
 >R2-seed
 TTT
 """
-        fasta = StringIO.StringIO()
+        fasta = StringIO()
 
         self.config.load(jsonIO)
         self.config.writeSeedFasta(fasta)
@@ -109,7 +109,7 @@ TTT
         self.assertMultiLineEqual(expected_fasta, fasta.getvalue())
 
     def testUnusedRegion(self):
-        jsonIO = StringIO.StringIO("""\
+        jsonIO = StringIO("""\
 {
   "projects": {
     "R1": {
@@ -142,7 +142,7 @@ TTT
 >R1-seed
 ACTGAAAGGG
 """
-        fasta = StringIO.StringIO()
+        fasta = StringIO()
 
         self.config.load(jsonIO)
         self.config.writeSeedFasta(fasta)
@@ -150,7 +150,7 @@ ACTGAAAGGG
         self.assertMultiLineEqual(expected_fasta, fasta.getvalue())
 
     def testExcludeSeeds(self):
-        jsonIO = StringIO.StringIO("""\
+        jsonIO = StringIO("""\
 {
   "projects": {
     "R1": {
@@ -205,7 +205,7 @@ ACTGAAAGGG
 >R2-seed
 TTT
 """
-        fasta = StringIO.StringIO()
+        fasta = StringIO()
 
         self.config.load(jsonIO)
         self.config.writeSeedFasta(fasta, excluded_seeds=['R1-seed', 'R3-seed'])
@@ -217,7 +217,7 @@ TTT
 >R1-seed
 ACTGAAAGGG
 """
-        fasta = StringIO.StringIO()
+        fasta = StringIO()
 
         self.config.load(self.defaultJsonIO)
         self.config.writeSeedFasta(fasta, excluded_seeds=['R99-seed'])
@@ -225,7 +225,7 @@ ACTGAAAGGG
         self.assertMultiLineEqual(expected_fasta, fasta.getvalue())
 
     def testDuplicateReference(self):
-        jsonIO = StringIO.StringIO("""\
+        jsonIO = StringIO("""\
 {
   "projects": {
     "R1": {
@@ -253,13 +253,13 @@ ACTGAAAGGG
   }
 }
 """)
-        fasta = StringIO.StringIO()
+        fasta = StringIO()
         self.config.load(jsonIO)
 
-        self.assertRaisesRegexp(RuntimeError,
-                                "Duplicate references: R1a-seed and R1b-seed.",
-                                self.config.writeSeedFasta,
-                                fasta)
+        self.assertRaisesRegex(RuntimeError,
+                               "Duplicate references: R1a-seed and R1b-seed.",
+                               self.config.writeSeedFasta,
+                               fasta)
 
     def testGetReference(self):
         self.config.load(self.defaultJsonIO)
@@ -292,7 +292,7 @@ ACTGAAAGGG
         self.assertEqual(5, self.config.getMaxVariants(coordinate_region_name))
 
     def testMaxVariantsUnusedRegion(self):
-        jsonIO = StringIO.StringIO("""\
+        jsonIO = StringIO("""\
 {
   "projects": {
     "R1": {
@@ -337,7 +337,7 @@ ACTGAAAGGG
         """ If two projects specify a maximum for the same coordinate region,
         use the bigger of the two.
         """
-        jsonIO = StringIO.StringIO("""\
+        jsonIO = StringIO("""\
 {
   "projects": {
     "R1": {
@@ -392,7 +392,7 @@ ACTGAAAGGG
         self.assertEqual(9, self.config.getMaxVariants(coordinate_region_name))
 
     def testReload(self):
-        jsonIO1 = StringIO.StringIO("""\
+        jsonIO1 = StringIO("""\
 {
   "projects": {
     "R1": {
@@ -415,7 +415,7 @@ ACTGAAAGGG
   }
 }
 """)
-        jsonIO2 = StringIO.StringIO("""\
+        jsonIO2 = StringIO("""\
 {
   "projects": {
     "R2": {
@@ -464,7 +464,7 @@ ACTGAAAGGG
 class ProjectConfigurationProjectRegionsTest(unittest.TestCase):
     def setUp(self):
         self.config = ProjectConfig()
-        self.defaultJsonIO = StringIO.StringIO("""\
+        self.defaultJsonIO = StringIO("""\
 {
   "projects": {
     "R1": {

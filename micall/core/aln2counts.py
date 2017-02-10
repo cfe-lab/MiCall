@@ -152,13 +152,13 @@ class SequenceReport(object):
             self.insert_writer.add_nuc_read('-'*offset + nuc_seq, count)
 
             # cycle through reading frames
-            for reading_frame, frame_seed_aminos in self.seed_aminos.iteritems():
+            for reading_frame, frame_seed_aminos in self.seed_aminos.items():
                 offset_nuc_seq = ' ' * (reading_frame + offset) + nuc_seq
                 # pad to a codon boundary
                 offset_nuc_seq += ' ' * ((3 - (len(offset_nuc_seq) % 3)) % 3)
                 start = offset - (offset % 3)
                 for nuc_pos in range(start, len(offset_nuc_seq), 3):
-                    codon_index = nuc_pos / 3
+                    codon_index = nuc_pos // 3
                     # append SeedAmino objects to this list if necessary
                     while len(frame_seed_aminos) <= codon_index:
                         frame_seed_aminos.append(SeedAmino(
@@ -201,7 +201,7 @@ class SequenceReport(object):
         max_score = min(consensus_length, len(coordinate_ref))
 
         best_alignment = None
-        for reading_frame, frame_seed_aminos in self.seed_aminos.iteritems():
+        for reading_frame, frame_seed_aminos in self.seed_aminos.items():
             consensus = ''.join([seed_amino1.get_consensus()
                                 for seed_amino1 in frame_seed_aminos])
             if reading_frame == 0:
@@ -269,7 +269,7 @@ class SequenceReport(object):
                 if (seed_index < len(seed_amino_seq) and
                         seed_aa == seed_amino_seq[seed_index]):
                     seed_index += 1
-            coordinate_inserts = {i*3 - reading_frame for i in xrange(len(consensus))}
+            coordinate_inserts = {i*3 - reading_frame for i in range(len(consensus))}
             self.inserts[coordinate_name] = coordinate_inserts
             prev_conseq_index = None
             for ref_index in range(len(coordinate_ref)):
@@ -333,7 +333,7 @@ class SequenceReport(object):
                     self.seed_aminos[0].append(SeedAmino(3*len(self.seed_aminos[0])))
 
         # iterate over coordinate references defined for this region
-        for coordinate_name, coordinate_ref in self.coordinate_refs.iteritems():
+        for coordinate_name, coordinate_ref in self.coordinate_refs.items():
             self._map_to_coordinate_ref(coordinate_name, coordinate_ref)
             report_aminos = self.reports[coordinate_name]
             max_variants = self.projects.getMaxVariants(coordinate_name)
@@ -359,7 +359,7 @@ class SequenceReport(object):
                     if len(stripped_seq) > minimum_variant_length:
                         variant_counts[clipped_seq] += count
                 coordinate_variants = [(count, seq)
-                                       for seq, count in variant_counts.iteritems()]
+                                       for seq, count in variant_counts.items()]
                 coordinate_variants.sort(reverse=True)
                 self.variants[coordinate_name] = coordinate_variants[0:max_variants]
 
@@ -378,7 +378,7 @@ class SequenceReport(object):
                 pos_names = insertion_names[pos]
                 pos_names.add(row['qname'])
             self.conseq_insertion_counts[refname] = Counter(
-                {pos: len(names) for pos, names in insertion_names.iteritems()})
+                {pos: len(names) for pos, names in insertion_names.items()})
 
     def _create_amino_writer(self, amino_file):
         columns = ['seed',
@@ -401,8 +401,7 @@ class SequenceReport(object):
         Must have already called write_nuc_counts() to calculate max_clip_count
         for each ReportAmino.
         """
-        regions = self.reports.keys()
-        regions.sort()
+        regions = sorted(self.reports.keys())
         amino_writer = self._create_amino_writer(amino_file)
         for region in regions:
             coverage_sum = 0.0
@@ -499,7 +498,7 @@ class SequenceReport(object):
             for seed_amino in self.seed_aminos[0]:
                 write_counts(self.seed, seed_amino, None)
         else:
-            for region, report_aminos in self.reports.iteritems():
+            for region, report_aminos in self.reports.items():
                 for report_amino in report_aminos:
                     write_counts(region, report_amino.seed_amino, report_amino)
 
@@ -549,8 +548,7 @@ class SequenceReport(object):
         self._create_nuc_variants_writer(nuc_variants_file).writeheader()
 
     def write_nuc_variants(self, nuc_variants_file):
-        regions = self.variants.keys()
-        regions.sort()
+        regions = sorted(self.variants.keys())
         writer = self._create_nuc_variants_writer(nuc_variants_file)
         for coordinate_name in regions:
             for i, variant in enumerate(self.variants[coordinate_name]):
@@ -576,7 +574,7 @@ class SequenceReport(object):
 
     def write_failure(self, fail_file):
         fail_writer = self._create_failure_writer(fail_file)
-        for region, report_aminos in self.reports.iteritems():
+        for region, report_aminos in self.reports.items():
             if not report_aminos:
                 coordinate_ref = self.projects.getReference(region)
                 fail_writer.writerow(dict(seed=self.seed,
@@ -586,7 +584,7 @@ class SequenceReport(object):
                                           refseq=coordinate_ref))
 
     def write_insertions(self):
-        for coordinate_name, coordinate_inserts in self.inserts.iteritems():
+        for coordinate_name, coordinate_inserts in self.inserts.items():
             self.insert_writer.write(coordinate_inserts,
                                      coordinate_name,
                                      self.reading_frames[coordinate_name],
@@ -821,7 +819,7 @@ class InsertionWriter(object):
                     break
             current_counts = Counter()
             insert_counts[left] = current_counts
-            for nuc_seq, count in self.nuc_seqs.iteritems():
+            for nuc_seq, count in self.nuc_seqs.items():
                 insert_nuc_seq = nuc_seq[left:right]
                 is_valid = (insert_nuc_seq and
                             'n' not in insert_nuc_seq and
@@ -832,8 +830,8 @@ class InsertionWriter(object):
                         current_counts[insert_amino_seq] += count
 
         # record insertions to CSV
-        for left, counts in insert_counts.iteritems():
-            for insert_seq, count in counts.iteritems():
+        for left, counts in insert_counts.items():
+            for insert_seq, count in counts.items():
                 insert_before = insert_targets.get(left, None)
                 # Only care about insertions in the middle of the sequence,
                 # so ignore any that come before or after the reference

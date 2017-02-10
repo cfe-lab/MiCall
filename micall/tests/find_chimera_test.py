@@ -1,5 +1,5 @@
 from csv import DictReader
-from StringIO import StringIO
+from io import StringIO
 
 from micall.utils.find_chimera import find_consensus, map_sequence
 

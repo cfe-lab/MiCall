@@ -2,7 +2,7 @@
 
 import os
 from unittest.case import TestCase
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from micall.utils.ratelimitingfilter import RateLimitingFilter
 

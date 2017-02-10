@@ -44,7 +44,7 @@ class ProjectConfig(object):
         @param excluded_seeds: a list of seed names to exclude from the file
         """
         seed_region_set = set()
-        for project in self.config['projects'].itervalues():
+        for project in self.config['projects'].values():
             for region in project['regions']:
                 seed_region_set.update(region['seed_region_names'])
 
@@ -67,7 +67,7 @@ class ProjectConfig(object):
 
     def getReference(self, region_name):
         reference = self.config['regions'][region_name]['reference']
-        return ''.join(reference).encode('utf-8')
+        return ''.join(reference)
 
     def getCoordinateReferences(self, seed_region):
         """ Find any coordinate references that are linked to a seed reference.
@@ -77,7 +77,7 @@ class ProjectConfig(object):
             are no linked references.
         """
         coord_refs = {}
-        for project in self.config['projects'].itervalues():
+        for project in self.config['projects'].values():
             for region in project['regions']:
                 coord_region = region['coordinate_region']
                 if seed_region in region['seed_region_names'] and coord_region:
@@ -93,7 +93,7 @@ class ProjectConfig(object):
             that uses the coordinate region.
         """
         max_variants = 0
-        for project in self.config['projects'].itervalues():
+        for project in self.config['projects'].values():
             for region in project['regions']:
                 if region['coordinate_region'] == coordinate_region:
                     max_variants = max(project['max_variants'], max_variants)

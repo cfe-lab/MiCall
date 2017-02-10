@@ -1,5 +1,5 @@
 import json
-import StringIO
+from io import StringIO
 import unittest
 
 from micall.monitor.projects_dump import check_key_positions
@@ -7,7 +7,7 @@ from micall.monitor.projects_dump import check_key_positions
 
 class CheckKeyPositionsTest(unittest.TestCase):
     def setUp(self):
-        self.warningIO = StringIO.StringIO()
+        self.warningIO = StringIO()
 
     def testSingleRegion(self):
         projects = json.loads("""\

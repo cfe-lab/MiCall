@@ -43,7 +43,7 @@ class KiveLoader(object):
     RunInfo = namedtuple('RunInfo', 'miseq_run_id read_lengths indexes_length')
 
     def __init__(self,
-                 launch_limit=sys.maxint,
+                 launch_limit=sys.maxsize,
                  status_delay=30,
                  folder_delay=3600,
                  retry_delay=3600):
@@ -213,6 +213,7 @@ class KiveLoader(object):
         return run_status.run_id
 
     def check_run_status(self):
+        completed_batch_folders = []
         for folder, runs in self.batches.items():
             is_batch_active = folder == self.folder
             for run in runs:
@@ -250,8 +251,8 @@ class KiveLoader(object):
                         is_batch_active = True
                         if self.is_status_available:
                             # First failure, so log it.
-                            logger.warn('Unable to check run status.',
-                                        exc_info=True)
+                            logger.warning('Unable to check run status.',
+                                           exc_info=True)
                             self.is_status_available = False
             if not is_batch_active:
                 self.downloading_folder = folder
@@ -265,8 +266,10 @@ class KiveLoader(object):
 
                 for run in runs:
                     del self.active_inputs[self.get_run_id(run)]
-                del self.batches[folder]
+                completed_batch_folders.append(folder)
                 self.downloading_folder = None
+        for folder in completed_batch_folders:
+            del self.batches[folder]
 
     def relaunch(self, run, batch_folder):
         run_id = self.get_run_id(run)
@@ -490,7 +493,7 @@ class KiveLoader(object):
             metrics = session.get_json(
                 '/miseqqc_errormetrics?runid=' + run_info.miseq_run_id)
             if not metrics:
-                raise StandardError(
+                raise RuntimeError(
                     'No quality control metrics found for run ' + run_info.miseq_run_id)
 
         with open(destination, 'w') as f:
@@ -670,10 +673,9 @@ class KiveLoader(object):
             # First, check that all runs in the batch were successful.
             for sample_name, run_status in runs:
                 run_status.is_successful()
-        except KiveRunFailedException:
-            _, _, traceback = sys.exc_info()
+        except KiveRunFailedException as cause:
             message = 'Sample {} failed in Kive.'.format(sample_name)
-            raise KiveRunFailedException, message, traceback
+            raise KiveRunFailedException(message) from cause
 
         results_parent = os.path.join(folder, 'Results')
         if not os.path.exists(results_parent):

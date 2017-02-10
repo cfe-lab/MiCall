@@ -12,7 +12,7 @@ import os
 
 from micall import settings  # Import first for logging configuration.
 
-import qai_helper
+from micall.monitor import qai_helper
 from micall.utils import sample_sheet_parser
 from micall.core.project_config import ProjectConfig
 
@@ -205,7 +205,7 @@ def build_review_decisions(coverage_file,
         tags = sample_tags[coverage['sample']]
         project_map = sequencing_map.get(tags)
         if project_map is None:
-            raise StandardError("No sequencing found with tags '%s'." % tags)
+            raise KeyError("No sequencing found with tags '%s'." % tags)
         sequencing = project_map.get(coverage['project'])
         if sequencing is not None:
             score = int(coverage['on.score'])
@@ -244,8 +244,8 @@ def build_review_decisions(coverage_file,
         sample_name = sample_names[tags]
         project_map = sequencing_map.get(tags)
         if project_map is None:
-            raise StandardError("No sequencing found with tags '%s'." % tags)
-        first_project = sorted(project_map.iterkeys())[0]
+            raise KeyError("No sequencing found with tags '%s'." % tags)
+        first_project = sorted(project_map.keys())[0]
         sequencing = project_map[first_project]
         decision_key = sample_name
         decisions[decision_key] = {
