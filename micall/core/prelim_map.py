@@ -55,6 +55,7 @@ def prelim_map(fastq1,
     @param rdgopen: a penalty for opening a gap in the read sequence.
     @param rfgopen: a penalty for opening a gap in the reference sequence.
     @param stderr: where to write the standard error output from bowtie2 calls.
+    @param gzip: True if FASTQ files are in gzip format
     @param work_path:  optional path to store working files
     @param excluded_seeds: a list of seed names to exclude from mapping
     """
@@ -63,7 +64,7 @@ def prelim_map(fastq1,
         bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
                                      BOWTIE_BUILD_PATH,
                                      logger)
-    except:
+    except RuntimeError:
         bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH + '-' + BOWTIE_VERSION)
         bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
                                      BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
@@ -96,6 +97,7 @@ def prelim_map(fastq1,
                 pass
             fastq2 += '.gz'
 
+    total_reads = None
     if callback:
         # four lines per read, two files
         total_reads = line_counter.count(fastq1, gzip=gzip) / 2
@@ -154,7 +156,7 @@ def prelim_map(fastq1,
     writer.writeheader()
 
     # lines grouped by refname
-    for refname, lines in output.iteritems():
+    for refname, lines in output.items():
         for line in lines:
             writer.writerow(dict(zip(fieldnames, line)))
 

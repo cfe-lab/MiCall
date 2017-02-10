@@ -226,7 +226,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Generate coverage plots from MiCall outputs.')
     parser.add_argument('amino_csv', type=argparse.FileType('rU'),
                         help='<input> CSV containing amino acid frequency outputs.')
-    parser.add_argument('coverage_scores_csv', type=argparse.FileType('wb'),
+    parser.add_argument('coverage_scores_csv', type=argparse.FileType('w'),
                         help='<output> CSV coverage scores.')
     parser.add_argument('coverage_maps_tar',
                         type=argparse.FileType('wb'),
@@ -251,25 +251,3 @@ if __name__ == '__main__':
     # note, must be called from project root if executing directly
     # i.e., python micall/g2p/sam_g2p.py -h
     main()
-elif __name__ == '__live_coding__':
-    is_unit_test = False
-    if is_unit_test:
-        import unittest
-        from micall.tests.coverage_plots_test import CoveragePlotsTest
-
-        suite = unittest.TestSuite()
-        suite.addTest(CoveragePlotsTest("test_simple"))
-        test_results = unittest.TextTestRunner().run(suite)
-
-        print(test_results.errors)
-        print(test_results.failures)
-    else:
-        amino_path = '../tests/working/2110A-V3LOOP_S13.amino.csv'
-        coverage_scores_path = '../tests/working/2110A-V3LOOP_S13.coverage_scores.csv'
-        coverage_maps_path = '../tests/working/coverage_maps'
-        coverage_maps_prefix = '2110A-V3LOOP_S13'
-        make_tar_path(coverage_maps_path)
-
-        with open(amino_path, 'rU') as amino_csv, \
-                open(coverage_scores_path, 'wb') as coverage_scores_csv:
-            coverage_plot(amino_csv, coverage_scores_csv, coverage_maps_path, coverage_maps_prefix)

@@ -9,6 +9,8 @@ import itertools
 import math
 import os
 
+from io import TextIOWrapper
+
 from micall.utils.externals import CutAdapt
 
 # version of bowtie2, used for version control
@@ -121,6 +123,7 @@ def censor(original_file,
     score_sum = 0.0
     if use_gzip:
         src = GzipFile(fileobj=original_file)
+    src = TextIOWrapper(src)
 
     for ident, seq, opt, qual in itertools.zip_longest(src, src, src, src):
         # returns an aggregate of 4 lines per call
