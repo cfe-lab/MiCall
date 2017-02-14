@@ -291,7 +291,8 @@ def create_app_result(data_path,
     if sample_info is None:
         sample_properties = dict(Type='sample[]',
                                  Name='Input.Samples',
-                                 Items=map(itemgetter('Href'), run_info.samples))
+                                 Items=list(map(itemgetter('Href'),
+                                                run_info.samples)))
     else:
         sample_properties = dict(Type='sample',
                                  Name='Input.Samples',
@@ -379,7 +380,7 @@ def process_sample(sample_index, run_info, args, pssm):
              summary_file=read_summary)
 
     logger.info('Running prelim_map (%d of %d).', sample_index+1, len(run_info.samples))
-    with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'wb') as prelim_csv:
+    with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'w') as prelim_csv:
         prelim_map(trimmed_path1,
                    trimmed_path2,
                    prelim_csv,
@@ -389,9 +390,9 @@ def process_sample(sample_index, run_info, args, pssm):
     logger.info('Running remap (%d of %d).', sample_index+1, len(run_info.samples))
     debug_file_prefix = None  # os.path.join(sample_scratch_path, 'debug')
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'rU') as prelim_csv, \
-            open(os.path.join(sample_scratch_path, 'remap.csv'), 'wb') as remap_csv, \
-            open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'wb') as counts_csv, \
-            open(os.path.join(sample_scratch_path, 'remap_conseq.csv'), 'wb') as conseq_csv, \
+            open(os.path.join(sample_scratch_path, 'remap.csv'), 'w') as remap_csv, \
+            open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'w') as counts_csv, \
+            open(os.path.join(sample_scratch_path, 'remap_conseq.csv'), 'w') as conseq_csv, \
             open(os.path.join(sample_qc_path, 'unmapped1.fastq'), 'w') as unmapped1, \
             open(os.path.join(sample_qc_path, 'unmapped2.fastq'), 'w') as unmapped2:
 
@@ -409,10 +410,10 @@ def process_sample(sample_index, run_info, args, pssm):
 
     logger.info('Running sam2aln (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
-            open(os.path.join(sample_scratch_path, 'aligned.csv'), 'wb') as aligned_csv, \
-            open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'wb') as conseq_ins_csv, \
-            open(os.path.join(sample_scratch_path, 'failed_read.csv'), 'wb') as failed_csv, \
-            open(os.path.join(sample_scratch_path, 'clipping.csv'), 'wb') as clipping_csv:
+            open(os.path.join(sample_scratch_path, 'aligned.csv'), 'w') as aligned_csv, \
+            open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'w') as conseq_ins_csv, \
+            open(os.path.join(sample_scratch_path, 'failed_read.csv'), 'w') as failed_csv, \
+            open(os.path.join(sample_scratch_path, 'clipping.csv'), 'w') as clipping_csv:
 
         sam2aln(remap_csv,
                 aligned_csv,
@@ -424,13 +425,13 @@ def process_sample(sample_index, run_info, args, pssm):
     with open(os.path.join(sample_scratch_path, 'aligned.csv'), 'rU') as aligned_csv, \
             open(os.path.join(sample_scratch_path, 'clipping.csv'), 'rU') as clipping_csv, \
             open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'rU') as conseq_ins_csv, \
-            open(os.path.join(sample_scratch_path, 'nuc.csv'), 'wb') as nuc_csv, \
-            open(os.path.join(sample_scratch_path, 'amino.csv'), 'wb') as amino_csv, \
-            open(os.path.join(sample_scratch_path, 'coord_ins.csv'), 'wb') as coord_ins_csv, \
-            open(os.path.join(sample_scratch_path, 'conseq.csv'), 'wb') as conseq_csv, \
-            open(os.path.join(sample_scratch_path, 'failed_align.csv'), 'wb') as failed_align_csv, \
-            open(os.path.join(sample_scratch_path, 'nuc_variants.csv'), 'wb') as nuc_variants_csv, \
-            open(os.path.join(sample_scratch_path, 'coverage_summary.csv'), 'wb') as coverage_summary_csv:
+            open(os.path.join(sample_scratch_path, 'nuc.csv'), 'w') as nuc_csv, \
+            open(os.path.join(sample_scratch_path, 'amino.csv'), 'w') as amino_csv, \
+            open(os.path.join(sample_scratch_path, 'coord_ins.csv'), 'w') as coord_ins_csv, \
+            open(os.path.join(sample_scratch_path, 'conseq.csv'), 'w') as conseq_csv, \
+            open(os.path.join(sample_scratch_path, 'failed_align.csv'), 'w') as failed_align_csv, \
+            open(os.path.join(sample_scratch_path, 'nuc_variants.csv'), 'w') as nuc_variants_csv, \
+            open(os.path.join(sample_scratch_path, 'coverage_summary.csv'), 'w') as coverage_summary_csv:
 
         aln2counts(aligned_csv,
                    nuc_csv,
@@ -466,8 +467,8 @@ def process_sample(sample_index, run_info, args, pssm):
         logger.info('Running sam_g2p (%d of %d).', sample_index+1, len(run_info.samples))
         with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
                 open(os.path.join(sample_scratch_path, 'nuc.csv'), 'rU') as nuc_csv, \
-                open(os.path.join(sample_scratch_path, 'g2p.csv'), 'wb') as g2p_csv, \
-                open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'wb') as g2p_summary_csv:
+                open(os.path.join(sample_scratch_path, 'g2p.csv'), 'w') as g2p_csv, \
+                open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'w') as g2p_summary_csv:
 
             sam_g2p(pssm=pssm,
                     remap_csv=remap_csv,

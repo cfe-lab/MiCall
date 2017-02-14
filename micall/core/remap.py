@@ -518,7 +518,7 @@ def remap(fastq1,
     conseqs = dict(seeds)  # copy
 
     # record the raw read count
-    raw_count = line_counter.count(fastq1, gzip=gzip) / 2  # 4 lines per record in FASTQ, paired
+    raw_count = line_counter.count(fastq1, gzip=gzip) // 2  # 4 lines per record in FASTQ, paired
 
     remap_counts_writer = csv.DictWriter(
         remap_counts_csv,
