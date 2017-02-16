@@ -1,7 +1,4 @@
-""" Copy result files to shared folder so they can be compared.
-
-They should also be processed by the report scripts.
-"""
+""" Compare result files in shared folder with previous release. """
 from __future__ import print_function
 from argparse import ArgumentParser
 import csv
