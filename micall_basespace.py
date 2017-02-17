@@ -22,7 +22,7 @@ from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from micall.core.sam2aln import sam2aln
 from micall.monitor import error_metrics_parser, quality_metrics_parser
-from micall.g2p.sam_g2p import sam_g2p, DEFAULT_MIN_COUNT
+from micall.g2p.fastq_g2p import sam_g2p, DEFAULT_MIN_COUNT
 from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
 from micall.core.coverage_plots import coverage_plot

@@ -7,7 +7,7 @@ from tempfile import NamedTemporaryFile
 
 from micall.core.miseq_logging import init_logging_console_only
 from micall.g2p.pssm_lib import Pssm
-from micall.g2p.sam_g2p import sam_g2p
+from micall.g2p.fastq_g2p import sam_g2p
 
 
 def write_simple_sam(samfile, sam_lines):

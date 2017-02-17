@@ -241,11 +241,11 @@ def main():
 
 if __name__ == '__main__':
     # note, must be called from project root if executing directly
-    # i.e., python micall/g2p/sam_g2p.py -h
+    # i.e., python micall/g2p/fastq_g2p.py -h
     main()
 elif __name__ == '__live_coding__':
     import unittest
-    from micall.tests.sam_g2p_test import SamG2PTest
+    from micall.tests.fastq_g2p_test import SamG2PTest
 
     suite = unittest.TestSuite()
     suite.addTest(SamG2PTest("testAmbiguousMixture"))
