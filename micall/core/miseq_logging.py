@@ -23,7 +23,14 @@ class Timestamp(logging.Formatter):
 def init_logging_console_only(log_level=logging.DEBUG):
     import sys
     logger = logging.getLogger()
-    logger.handlers = []				# Clear previous handlers
+
+    # Clear previous handlers
+    for handler in logger.handlers:
+        stream = getattr(handler, 'stream', None)
+        if stream not in (None, sys.stdout, sys.stderr):
+            stream.close()
+    logger.handlers = []
+
     logger.setLevel(logging.DEBUG)
     console_logger = logging.StreamHandler(sys.stdout)
     console_logger.setLevel(log_level)

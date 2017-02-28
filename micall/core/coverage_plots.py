@@ -61,7 +61,7 @@ def coverage_plot(amino_csv,
     MAX_COVERAGE = 1000000
     fontsize = 8
     axis_formatter = FuncFormatter(lambda x, p: format(int(x), ','))
-    _fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
+    fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
     for (seed, region), group in itertools.groupby(reader, itemgetter('seed',
                                                                       'region')):
         coverage_counts = Counter()
@@ -197,6 +197,7 @@ def coverage_plot(amino_csv,
                    'on.score': coverage_score_on}
             writer.writerow(row)
 
+    plt.close(fig)
     return paths  # locations of image files
 
 

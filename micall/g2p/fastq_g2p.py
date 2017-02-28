@@ -3,11 +3,14 @@
 import argparse
 from collections import Counter
 import csv
+from operator import itemgetter
 import os
 import re
 
-from micall.core.sam2aln import merge_pairs, apply_cigar
-from micall.utils.translation import translate
+from gotoh import align_it
+
+from micall.core.sam2aln import merge_pairs
+from micall.utils.translation import translate, reverse_and_complement
 
 # screen for in-frame deletions
 pat = re.compile('([A-Z])(---)+([A-Z])')
@@ -16,15 +19,25 @@ QMIN = 20   # minimum base quality within insertions
 QCUT = 10   # minimum base quality to not be censored
 QDELTA = 5
 DEFAULT_MIN_COUNT = 3
+GAP_OPEN_COST = 10
+GAP_EXTEND_COST = 3
+USE_TERMINAL_COST = 1
+MIN_PAIR_ALIGNMENT_SCORE = 20
+# V3LOOP region of HIV HXB2, GenBank accession number K03455
+V3LOOP_REF = ('TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA'
+              'GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT')
+# V3LOOP_AA = translate(V3LOOP_REF)
+# PSSM_AREF = 'CTRPNXNNTXXRKSIRIXXXGPGQXXXAFYATXXXXGDIIGDIXXRQAHC'.replace('X', '')
+MIN_V3_ALIGNMENT_SCORE = len(V3LOOP_REF) // 2
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Calculate g2p scores from amino acid sequences.')
 
-    parser.add_argument('remap_csv', type=argparse.FileType('rU'),
-                        help='<input> CSV containing remap output (modified SAM)')
-    parser.add_argument('nuc_csv', type=argparse.FileType('rU'),
-                        help='<input> CSV containing nucleotide frequency output from aln2counts.py')
+    parser.add_argument('fastq1', type=argparse.FileType('rU'),
+                        help='<input> FASTQ file containing read 1 reads')
+    parser.add_argument('fastq2', type=argparse.FileType('rU'),
+                        help='<input> FASTQ file containing read 2 reads')
     parser.add_argument('g2p_csv', type=argparse.FileType('w'),
                         help='<output> CSV containing g2p predictions.')
     parser.add_argument('g2p_summary_csv', type=argparse.FileType('w'),
@@ -32,83 +45,16 @@ def parse_args():
     return parser.parse_args()
 
 
-class RegionTracker:
-    def __init__(self, tracked_region):
-        self.tracked_region = tracked_region
-        self.ranges = {}
+def fastq_g2p(pssm, fastq1, fastq2, g2p_csv, g2p_summary_csv=None, min_count=1):
+    reader = FastqReader(fastq1, fastq2)
+    merged_reads = merge_reads(reader)
+    trimmed_reads = trim_reads(merged_reads)
+    read_counts = count_reads(trimmed_reads)
 
-    def add_nuc(self, seed, region, query_pos):
-        """
-         # Add a nucleotide position to the tracker.
-        :param seed: name of the seed region
-        :param region: name of the coordinate region
-        :param query_pos: query position in the consensus coordinates
-        :return: unused
-        """
-        if region != self.tracked_region:
-            return
-
-        if seed in self.ranges:
-            range = self.ranges[seed]
-            if range[1] < query_pos:
-                range[1] = query_pos
-            elif query_pos < range[0]:
-                range[0] = query_pos
-        else:
-            self.ranges.update({seed: [query_pos, query_pos]})
-
-    def get_range(self, seed):
-        """
-        Get the minimum and maximum query positions that were seen for a seed.
-        :param seed: name of the seed region
-        :return: array of two integers
-        """
-        return self.ranges.get(seed, [None, None])
+    write_rows(pssm, read_counts, g2p_csv, g2p_summary_csv, min_count)
 
 
-def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None, min_count=1):
-    pairs = {}  # cache read for pairing
-    merged = Counter()  # { merged_nuc_seq: count }
-    tracker = RegionTracker('V3LOOP')
-
-    # look up clipping region for each read
-    reader = csv.DictReader(nuc_csv)
-    for row in reader:
-        if row['query.nuc.pos'] == '':
-            # skip deletions in query relative to reference
-            continue
-        tracker.add_nuc(row['seed'], row['region'], int(row['query.nuc.pos'])-1)
-
-    # parse contents of remap CSV output
-    reader = csv.DictReader(remap_csv)
-    for row in reader:
-        clip_from, clip_to = tracker.get_range(row['rname'])
-        if clip_from is None or row['cigar'] == '*':
-            # uninteresting region
-            continue
-
-        seq2, qual2, ins2 = apply_cigar(row['cigar'],
-                                        row['seq'],
-                                        row['qual'],
-                                        int(row['pos'])-1,
-                                        clip_from,
-                                        clip_to)
-
-        mate = pairs.pop(row['qname'], None)
-        if mate:
-            seq1 = mate['seq']
-            qual1 = mate['qual']
-            ins1 = mate['ins']
-
-            mseq = merge_pairs(seq1, seq2, qual1, qual2, ins1, ins2)
-
-            merged[mseq] += 1
-
-        else:
-            pairs.update({row['qname']: {'seq': seq2,
-                                         'qual': qual2,
-                                         'ins': ins2}})
-
+def write_rows(pssm, read_counts, g2p_csv, g2p_summary_csv=None, min_count=1):
     # apply g2p algorithm to merged reads
     g2p_writer = csv.DictWriter(
         g2p_csv,
@@ -125,7 +71,7 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None, min_count=1
     g2p_writer.writeheader()
     counts = Counter()
     skip_count = 0
-    for s, count in merged.most_common():
+    for s, count in read_counts:
         if count < min_count:
             skip_count += count
             continue
@@ -160,9 +106,8 @@ def sam_g2p(pssm, remap_csv, nuc_csv, g2p_csv, g2p_summary_csv=None, min_count=1
 def _build_row(seq, count, counts, pssm):
     counts['rank'] += 1
     counts['mapped'] += count
-    row = {}
-    row['rank'] = counts['rank']
-    row['count'] = count
+    row = {'rank': counts['rank'],
+           'count': count}
     seqlen = len(seq)
     if seq.upper().count('N') > (0.5*seqlen):
         # if more than 50% of the sequence is garbage
@@ -228,28 +173,98 @@ def _build_row(seq, count, counts, pssm):
     return row
 
 
+class FastqError(Exception):
+    pass
+
+
+class FastqReader:
+    def __init__(self, fastq1, fastq2):
+        self.fastq1 = fastq1
+        self.fastq2 = fastq2
+
+    def __iter__(self):
+        cache = {}  # {pair_name: (read_name, bases, qual)}
+        read2_iter = iter(self.get_reads(self.fastq2))
+        for pair_name, read1 in self.get_reads(self.fastq1):
+            read2 = cache.pop(pair_name, None)
+            while read2 is None:
+                try:
+                    pair_name2, read2 = next(read2_iter)
+                except StopIteration:
+                    raise FastqError('No match for read {}.'.format(pair_name))
+                if pair_name2 != pair_name:
+                    cache[pair_name2] = read2
+                    read2 = None
+            yield pair_name, read1, read2
+
+    def get_reads(self, fastq):
+        for header, bases, sep, quality in zip(fastq, fastq, fastq, fastq):
+            assert header.startswith('@'), header
+            assert sep.startswith('+'), sep
+            pair_name, read_name = header[1:].split()
+            yield pair_name, (read_name, bases.rstrip('\n'), quality.rstrip('\n'))
+
+
+def merge_reads(reads):
+    for pair_name, (_, seq1, qual1), (_, seq2, qual2) in reads:
+        seq2 = reverse_and_complement(seq2)
+        aligned1, aligned2, score = align_it(seq1,
+                                             seq2,
+                                             GAP_OPEN_COST,
+                                             GAP_EXTEND_COST,
+                                             USE_TERMINAL_COST)
+        if score >= MIN_PAIR_ALIGNMENT_SCORE and aligned1[0] != '-':
+            aligned_qual1 = align_quality(aligned1, qual1)
+            aligned_qual2 = align_quality(aligned2, reversed(qual2))
+            merged = merge_pairs(aligned1, aligned2, aligned_qual1, aligned_qual2)
+            yield (pair_name, merged)
+
+
+def align_quality(nucs, qual):
+    qual_iter = iter(qual)
+    qual = ''.join('!' if nuc == '-' else next(qual_iter)
+                   for nuc in nucs)
+    return qual
+
+
+def trim_reads(reads):
+    for pair_name, seq in reads:
+        aligned_ref, aligned_seq, score = align_it(V3LOOP_REF,
+                                                   seq,
+                                                   GAP_OPEN_COST,
+                                                   GAP_EXTEND_COST,
+                                                   USE_TERMINAL_COST)
+        if score < MIN_V3_ALIGNMENT_SCORE:
+            continue
+        left_padding = right_padding = 0
+        for left_padding, nuc in enumerate(aligned_ref):
+            if nuc != '-':
+                break
+        for right_padding, nuc in enumerate(reversed(aligned_ref)):
+            if nuc != '-':
+                break
+        trimmed_read = aligned_seq[left_padding:(-right_padding or None)]
+        stripped_read = trimmed_read.strip('-')
+        yield pair_name, stripped_read
+
+
+def count_reads(reads):
+    counts = Counter(map(itemgetter(1), reads))
+    return counts.most_common()
+
+
 def main():
     args = parse_args()
     from micall.g2p.pssm_lib import Pssm
     pssm = Pssm()
-    sam_g2p(pssm=pssm,
-            remap_csv=args.remap_csv,
-            nuc_csv=args.nuc_csv,
-            g2p_csv=args.g2p_csv,
-            g2p_summary_csv=args.g2p_summary_csv,
-            min_count=DEFAULT_MIN_COUNT)
+    fastq_g2p(pssm=pssm,
+              fastq1=args.fastq1,
+              fastq2=args.fastq2,
+              g2p_csv=args.g2p_csv,
+              g2p_summary_csv=args.g2p_summary_csv,
+              min_count=DEFAULT_MIN_COUNT)
 
 if __name__ == '__main__':
     # note, must be called from project root if executing directly
     # i.e., python micall/g2p/fastq_g2p.py -h
     main()
-elif __name__ == '__live_coding__':
-    import unittest
-    from micall.tests.fastq_g2p_test import SamG2PTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(SamG2PTest("testAmbiguousMixture"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

@@ -87,7 +87,7 @@ ACGT
 +
 AAAA
 """
-        self.original_file = BytesIO(self.original_text)
+        self.original_file = BytesIO(self.original_bytes)
         self.bad_cycles = [{'tile': '1101', 'cycle': '3'}]
         expected_text = self.original_bytes.decode()
 

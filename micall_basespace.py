@@ -22,7 +22,7 @@ from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from micall.core.sam2aln import sam2aln
 from micall.monitor import error_metrics_parser, quality_metrics_parser
-from micall.g2p.fastq_g2p import sam_g2p, DEFAULT_MIN_COUNT
+from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT
 from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
 from micall.core.coverage_plots import coverage_plot
@@ -463,19 +463,18 @@ def process_sample(sample_index, run_info, args, pssm):
                 is_v3loop_good = row['on.score'] == '4'
                 break
 
-    if is_v3loop_good:
-        logger.info('Running sam_g2p (%d of %d).', sample_index+1, len(run_info.samples))
-        with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
-                open(os.path.join(sample_scratch_path, 'nuc.csv'), 'rU') as nuc_csv, \
-                open(os.path.join(sample_scratch_path, 'g2p.csv'), 'w') as g2p_csv, \
-                open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'w') as g2p_summary_csv:
+    logger.info('Running sam_g2p (%d of %d).', sample_index+1, len(run_info.samples))
+    with open(os.path.join(sample_scratch_path, 'trimmed1.fastq'), 'rU') as fastq1, \
+            open(os.path.join(sample_scratch_path, 'trimmed2.fastq'), 'rU') as fastq2, \
+            open(os.path.join(sample_scratch_path, 'g2p.csv'), 'w') as g2p_csv, \
+            open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'w') as g2p_summary_csv:
 
-            sam_g2p(pssm=pssm,
-                    remap_csv=remap_csv,
-                    nuc_csv=nuc_csv,
-                    g2p_csv=g2p_csv,
-                    g2p_summary_csv=g2p_summary_csv,
-                    min_count=DEFAULT_MIN_COUNT)
+        fastq_g2p(pssm=pssm,
+                  fastq1=fastq1,
+                  fastq2=fastq2,
+                  g2p_csv=g2p_csv,
+                  g2p_summary_csv=g2p_summary_csv,
+                  min_count=DEFAULT_MIN_COUNT)
     logger.info('Finished sample (%d of %d).', sample_index+1, len(run_info.samples))
 
 
@@ -686,27 +685,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-elif __name__ == '__live_coding__':
-    from cStringIO import StringIO
-    json_file = StringIO("""\
-{"Href": "v1pre3/appsessions/1234",
- "Properties": {"Items": [{"Name": "Input.app-session-name",
-                           "Content": "MiCall 04/05/2016 3:14:23"},
-                          {"Name": "Input.sample-ids",
-                           "Items": [{"Id": "11111",
-                                      "Name": "Example-SampleB"},
-                                     {"Id": "22222",
-                                      "Name": "Example-SampleA"}]},
-                          {"Name": "Input.project-id",
-                           "Content": {"Id": "33333",
-                                       "Name": "Example-Project"}},
-                          {"Name": "Input.run-id",
-                           "Content": {"Id": "44444",
-                                       "Name": "160115_Project",
-                                       "SequencingStats": {
-                                            "NumCyclesIndex1": 6,
-                                            "NumCyclesIndex2": 0,
-                                            "NumCyclesRead1": 251,
-                                            "NumCyclesRead2": 251}}}]}}
-""")
-    parse_json(json_file)

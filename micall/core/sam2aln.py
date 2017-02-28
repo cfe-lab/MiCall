@@ -10,7 +10,6 @@ clips).
 import argparse
 from collections import Counter, defaultdict
 from csv import DictReader, DictWriter
-import itertools
 import os
 import re
 from multiprocessing.pool import Pool

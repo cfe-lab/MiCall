@@ -95,7 +95,7 @@ def main():
             category = row['call'] or row['error']
             counts[category] += row_count
 
-    with open('compare_454_samples.csv', 'wb') as result_file:
+    with open('compare_454_samples.csv', 'w') as result_file:
         writer = csv.DictWriter(result_file,
                                 ['sample',
                                  'raw',

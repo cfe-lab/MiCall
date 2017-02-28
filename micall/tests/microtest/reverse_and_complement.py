@@ -19,6 +19,8 @@ reverse_compare = ''.join([
 reverse_seq = reverse_and_complement(nuc_seq)
 pairs = zip(reverse_seq, reverse_compare)
 diffs = [' ' if a == b else '*' for a, b in pairs]
-print 'result ', reverse_seq
-print 'diffs  ', ''.join(diffs) if reverse_seq != reverse_compare else 'no diffs'
-print 'compare', reverse_compare
+print('result  {}'.format(reverse_seq))
+print('diffs   {}'.format(''.join(diffs)
+                          if reverse_seq != reverse_compare
+                          else 'no diffs'))
+print('compare {}'.format(reverse_compare))
