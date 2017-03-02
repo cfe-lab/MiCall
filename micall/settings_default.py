@@ -5,21 +5,12 @@ import logging.config
 
 pipeline_version = '7.6'        # Change for each release
 
-instrument_number = 'M01841'  # for Illumina MiSeq, second item in run folder name
-production = False  # set this to True to push results to NAS
-are_temp_folders_deleted = True  # Should FIFO worker clean up working folders?
+production = True  # set this to True to push results to NAS
 
 # Local path for writing data
 home = '/data/miseq/'
-nruns_to_store = 20  # protect X most recent runs from cleaning up intermediate files
-
-# Scheduling processes: these should be a multiple of the total number of slots
-# in your hostfile.
-mapping_processes = 36
-counting_processes = 144
 
 rawdata_mount = '/media/RAW_DATA/'  # NAS
-delay = 3600  # Delay (seconds) for polling NAS for unprocessed runs
 NEEDS_PROCESSING = 'needsprocessing'  # File flags
 ERROR_PROCESSING = 'errorprocessing'
 DONE_PROCESSING = 'doneprocessing'

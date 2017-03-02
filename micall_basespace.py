@@ -16,7 +16,7 @@ import requests
 from xml.etree import ElementTree
 
 from micall.core.aln2counts import aln2counts
-from micall.core.trim_fastqs import censor, trim
+from micall.core.trim_fastqs import trim
 from micall.core.filter_quality import report_bad_cycles
 from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
@@ -39,6 +39,7 @@ EXCLUDED_PROJECTS = ['HCV-NS5a',
                      'RT',
                      'V3LOOP',
                      'wg1HCV']  # Avoid useless duplicates for BaseSpace version.
+DOWNLOAD_BATCH_SIZE = 1000
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
 logger = logging.getLogger('micall')
@@ -59,7 +60,8 @@ class BSrequest:
         else:
             self._access_token = access_token
 
-    def _responsestatus(self, jobj):
+    @staticmethod
+    def _responsestatus(jobj):
         """ Return the response code of jobj (expected to be a response from a API query).
         This consists of an Basespace errorcode and a message (two strings).
 
@@ -109,7 +111,7 @@ class BSrequest:
         logger.info("API: '%s'" % reqstr)
         return requests.get(reqstr, params=pdct)
 
-    def _runssamples(self, runid, Limit, Offset):
+    def _runssamples(self, runid, limit, offset):
         """ Return the json result of the runs/id/samples API request:
         https://developer.basespace.illumina.com/docs/content/documentation/rest-api/api-reference#Samples
         This returns a json object describing samples  belonging to a specified run, or
@@ -119,7 +121,7 @@ class BSrequest:
         Offset: the offset of the first file to read in the whole collection
         """
         jobj = self._raw_get_file("/".join(["runs", runid, "samples"]),
-                                  paramdct={"Limit": Limit, "Offset": Offset}).json()
+                                  paramdct={"Limit": limit, "Offset": offset}).json()
         err_code, _err_msg = self._responsestatus(jobj)
         if err_code:
             raise RuntimeError("runsamples API error")
@@ -129,15 +131,13 @@ class BSrequest:
         """Retrieve a set of the sampleids of all the samples in the specified run.
         Raise a Runtimeerror iff an API error occurs.
 
-        NOTE: This routine will download sample_id in batches of NUM_BATCH defined in
-        the routine itself.
+        NOTE: This routine will download sample_id in batches of DOWNLOAD_BATCH_SIZE.
         """
-        NUM_BATCH = 1000
         numgot = 0
         retset = set()
         needmore = True
         while needmore:
-            jobj = self._runssamples(runid, NUM_BATCH, numgot)
+            jobj = self._runssamples(runid, DOWNLOAD_BATCH_SIZE, numgot)
             response = jobj["Response"]
             retset |= set([s["Id"] for s in response["Items"]])
             numneed = response["TotalCount"]
@@ -145,7 +145,7 @@ class BSrequest:
             needmore = (numgot < numneed)
         return retset
 
-    def Check_Run_Sample_IDs(self, run_id_lst, sample_id_lst):
+    def check_run_sample_ids(self, run_id_lst, sample_id_lst):
         """"Make sure that all samples in the sample_id_lst
         belong to runs specified in the run_id_lst.
 
@@ -455,14 +455,6 @@ def process_sample(sample_index, run_info, args, pssm):
                       coverage_maps_prefix=sample_name,
                       excluded_projects=EXCLUDED_PROJECTS)
 
-    with open(os.path.join(sample_scratch_path, 'coverage_scores.csv'), 'rU') as coverage_scores_csv:
-        reader = csv.DictReader(coverage_scores_csv)
-        is_v3loop_good = False
-        for row in reader:
-            if row['region'] == 'V3LOOP':
-                is_v3loop_good = row['on.score'] == '4'
-                break
-
     logger.info('Running sam_g2p (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'trimmed1.fastq'), 'rU') as fastq1, \
             open(os.path.join(sample_scratch_path, 'trimmed2.fastq'), 'rU') as fastq2, \
@@ -478,25 +470,25 @@ def process_sample(sample_index, run_info, args, pssm):
     logger.info('Finished sample (%d of %d).', sample_index+1, len(run_info.samples))
 
 
-def summarize_run(args, json):
+def summarize_run(args, run_json):
     """ Summarize the run data from the InterOp folder.
 
     Writes some summary files.
     :return: a dictionary with summary values.
     """
-    read_lengths = [json.read_length1,
-                    json.index_length1,
-                    json.index_length2,
-                    json.read_length2]
+    read_lengths = [run_json.read_length1,
+                    run_json.index_length1,
+                    run_json.index_length2,
+                    run_json.read_length2]
     summary = {}
 
-    has_error_metrics = json.has_runinfo
+    has_error_metrics = run_json.has_runinfo
 
     if has_error_metrics:
         interop_path = os.path.join(args.data_path,
                                     'input',
                                     'runs',
-                                    json.run_id,
+                                    run_json.run_id,
                                     'InterOp')
         phix_path = os.path.join(interop_path, 'ErrorMetricsOut.bin')
         quality_path = os.path.join(args.data_path, 'scratch', 'quality.csv')
@@ -523,12 +515,12 @@ def summarize_run(args, json):
     return summary
 
 
-def summarize_samples(args, json, run_summary):
+def summarize_samples(args, run_json, run_summary):
     score_sum = 0.0
     base_count = 0
     coverage_sum = 0.0
     coverage_count = 0
-    for sample in json.samples:
+    for sample in run_json.samples:
         sample_scratch_path = os.path.join(args.data_path,
                                            'scratch',
                                            sample['Name'])
@@ -619,19 +611,20 @@ def makedirs(path):
             raise
 
 
+# noinspection PyTypeChecker,PyUnresolvedReferences
 def main():
     logger.info("Starting on %s with %d CPU's.",
                 socket.gethostname(),
                 multiprocessing.cpu_count())
     args = parse_args()
     if args.link_run is not None:
-        json = link_json(args.link_run, args.data_path)
-        json.has_runinfo = True
+        run_json = link_json(args.link_run, args.data_path)
+        run_json.has_runinfo = True
     else:
         json_path = os.path.join(args.data_path, 'input', 'AppSession.json')
         try:
             with open(json_path, 'rU') as json_file:
-                json = parse_json(json_file)
+                run_json = parse_json(json_file)
         except:
             if os.path.exists(json_path):
                 # copy the input file to the output dir for postmortem analysis
@@ -645,14 +638,14 @@ def main():
                 logger.error("Error: no such file as '%s'" % json_path)
             raise
         # Do we have run_ids for all sample_ids ?
-        if json.run_id is None:
-            json.has_runinfo = False
+        if run_json.run_id is None:
+            run_json.has_runinfo = False
         else:
             bs = BSrequest()
-            sample_id_set = bs.Check_Run_Sample_IDs([json.run_id],
-                                                    [s["Id"] for s in json.samples])
-            json.has_runinfo = (len(sample_id_set) == len(json.samples))
-        logger.info("setting json.has_run_info to %s" % json.has_runinfo)
+            sample_id_set = bs.check_run_sample_ids([run_json.run_id],
+                                                    [s["Id"] for s in run_json.samples])
+            run_json.has_runinfo = (len(sample_id_set) == len(run_json.samples))
+        logger.info("setting json.has_run_info to %s" % run_json.has_runinfo)
     pssm = Pssm()
 
     scratch_path = os.path.join(args.data_path, 'scratch')
@@ -664,23 +657,25 @@ def main():
         else:
             os.remove(filepath)
     args.g2p_path = args.qc_path = create_app_result(args.data_path,
-                                                     json, suffix='results')
-    if json.run_id is not None:
+                                                     run_json, suffix='results')
+    if run_json.run_id is None:
+        run_summary = None
+    else:
         logger.info('Summarizing run.')
-        run_summary = summarize_run(args, json)
+        run_summary = summarize_run(args, run_json)
 
     pool = Pool()
     pool.map(functools.partial(try_sample,
-                               run_info=json,
+                               run_info=run_json,
                                args=args,
                                pssm=pssm),
-             range(len(json.samples)))
+             range(len(run_json.samples)))
 
     pool.close()
     pool.join()
-    collate_samples(args, json)
-    if json.run_id is not None:
-        summarize_samples(args, json, run_summary)
+    collate_samples(args, run_json)
+    if run_json.run_id is not None:
+        summarize_samples(args, run_json, run_summary)
     logger.info('Done.')
 
 if __name__ == '__main__':
