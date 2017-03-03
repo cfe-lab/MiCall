@@ -15,6 +15,7 @@
 .cache
 /.idea
 /micall/tests/working/*
+/micall/tests/microtest/Results
 !/micall/tests/working/*.launch
 *.bt2
 .DS_Store

@@ -225,26 +225,31 @@ def link_json(run_path, data_path):
     new_run_path = os.path.join(input_runs_path, args.run_id)
     os.symlink(run_path, new_run_path)
     run_info_path = os.path.join(new_run_path, 'RunInfo.xml')
-    run_info = ElementTree.parse(run_info_path).getroot()
-    read1 = run_info.find('.//Read[@Number="1"][@IsIndexedRead="N"]')
-    args.read_length1 = int(read1.attrib['NumCycles'])
-    read2 = run_info.find('.//Read[@IsIndexedRead="N"][last()]')
-    args.read_length2 = int(read2.attrib['NumCycles'])
-    index1 = run_info.find('.//Read[@Number="2"][@IsIndexedRead="Y"]')
-    args.index_length1 = int(index1.attrib['NumCycles'])
-    index2 = run_info.find('.//Read[@Number="3"][@IsIndexedRead="Y"]')
-    if index2 is None:
-        args.index_length2 = 0
+    if not os.path.exists(run_info_path):
+        args.run_id = None
     else:
-        args.index_length2 = int(index2.attrib['NumCycles'])
+        run_info = ElementTree.parse(run_info_path).getroot()
+        read1 = run_info.find('.//Read[@Number="1"][@IsIndexedRead="N"]')
+        args.read_length1 = int(read1.attrib['NumCycles'])
+        read2 = run_info.find('.//Read[@IsIndexedRead="N"][last()]')
+        args.read_length2 = int(read2.attrib['NumCycles'])
+        index1 = run_info.find('.//Read[@Number="2"][@IsIndexedRead="Y"]')
+        args.index_length1 = int(index1.attrib['NumCycles'])
+        index2 = run_info.find('.//Read[@Number="3"][@IsIndexedRead="Y"]')
+        if index2 is None:
+            args.index_length2 = 0
+        else:
+            args.index_length2 = int(index2.attrib['NumCycles'])
 
     args.samples = []
     samples_path = os.path.join(data_path, 'input', 'samples')
-    fastq_files = glob(os.path.join(run_path,
-                                    'Data',
-                                    'Intensities',
-                                    'BaseCalls',
-                                    '*_R1_*'))
+    fastq_files = (glob(os.path.join(run_path,
+                                     'Data',
+                                     'Intensities',
+                                     'BaseCalls',
+                                     '*_R1_*')) or
+                   glob(os.path.join(run_path,
+                                     '*_R1_*')))
     fastq_files.sort()
     for i, fastq_file in enumerate(fastq_files, 1):
         sample_file = os.path.basename(fastq_file)
@@ -377,7 +382,8 @@ def process_sample(sample_index, run_info, args, pssm):
         trim((sample_path, sample_path2),
              bad_cycles_path,
              (trimmed_path1, trimmed_path2),
-             summary_file=read_summary)
+             summary_file=read_summary,
+             use_gzip=sample_path.endswith('.gz'))
 
     logger.info('Running prelim_map (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'w') as prelim_csv:
