@@ -351,7 +351,7 @@ class KiveLoader(object):
                 p1 = subprocess.Popen(['gunzip', '-c', filepath], stdout=subprocess.PIPE)
                 p2 = subprocess.Popen(['wc', '-l'], stdin=p1.stdout, stdout=subprocess.PIPE)
                 output = p2.communicate()[0]
-                failed_demultiplexing = output.strip(' \n')
+                failed_demultiplexing = output.decode('utf-8').strip(' \n')
                 logger.info("%s reads failed to demultiplex in %s (skipping file)",
                             failed_demultiplexing,
                             filepath)
@@ -394,7 +394,7 @@ class KiveLoader(object):
         if self.kive is None:
             self.refresh_login()
             # retrieve Pipeline object based on version
-            for pipeline_id, pipeline in self.pipelines.iteritems():
+            for pipeline_id, pipeline in self.pipelines.items():
                 pipeline['kive'] = self.kive.get_pipeline(pipeline_id)
 
             # retrieve quality.csv compound data type
@@ -628,7 +628,7 @@ class KiveLoader(object):
         """
         _sample_name, run_status = run
         outputs = run_status.get_results()
-        for output in outputs.itervalues():
+        for output in outputs.values():
             if not output.raw['is_ok']:
                 return RUN_FAILED
             if output.raw['id'] is None:

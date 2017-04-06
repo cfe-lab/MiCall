@@ -211,7 +211,7 @@ def build_review_decisions(coverage_file,
             score = int(coverage['on.score'])
         else:
             score = int(coverage['off.score'])
-            first_project = sorted(project_map.iterkeys())[0]
+            first_project = sorted(project_map.keys())[0]
             sequencing = project_map[first_project]
         project_region_id = project_region_map[(
             coverage['project'],
@@ -254,7 +254,7 @@ def build_review_decisions(coverage_file,
             'raw_reads': counts_map[tags],
             'mapped_reads': 0
         }
-    return decisions.values()
+    return list(decisions.values())
 
 
 def upload_review_to_qai(coverage_file,

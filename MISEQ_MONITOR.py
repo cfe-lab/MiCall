@@ -16,8 +16,8 @@ from micall.monitor.kive_loader import KiveLoader
 from argparse import ArgumentParser
 
 logger = logging.getLogger('MISEQ_MONITOR')
-if sys.version_info[:2] != (2, 7):
-    raise Exception("Python 2.7 not detected")
+if sys.version_info[:2] != (3, 4):
+    raise Exception("Python 3.4 not detected")
 
 
 def parse_args():
@@ -48,17 +48,15 @@ def parse_args():
 def main():
     args = parse_args()
     logger.info('Starting up.')
-    try:
-        loader = KiveLoader(launch_limit=args.max,
-                            status_delay=args.status_delay,
-                            folder_delay=args.folder_delay,
-                            retry_delay=args.retry_delay)
-        for pipeline_id, options in settings.kive_pipelines.iteritems():
-            loader.add_pipeline(pipeline_id, **options)
+    loader = KiveLoader(launch_limit=args.max,
+                        status_delay=args.status_delay,
+                        folder_delay=args.folder_delay,
+                        retry_delay=args.retry_delay)
+    for pipeline_id, options in settings.kive_pipelines.items():
+        loader.add_pipeline(pipeline_id, **options)
 
-        while True:
-            delay = loader.poll()
-            sleep(delay)
-    except:
-        logger.error('Fatal error.', exc_info=True)
+    while True:
+        delay = loader.poll()
+        sleep(delay)
+
 main()
