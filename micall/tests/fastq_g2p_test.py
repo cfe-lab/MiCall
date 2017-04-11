@@ -190,7 +190,7 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
         counts = [("TGTACAGG", 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
-1,1,,,,,,notdiv3,
+1,1,,,,CT,,notdiv3,
 """
 
         write_rows(self.pssm, counts, self.g2p_csv, self.g2p_summary_csv)

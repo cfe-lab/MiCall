@@ -114,10 +114,6 @@ def _build_row(seq, count, counts, pssm):
         row['error'] = 'low quality'
         return row
 
-    if seqlen % 3 != 0:
-        row['error'] = 'notdiv3'
-        return row
-
     if seqlen == 0:
         row['error'] = 'zerolength'
         return row
@@ -126,8 +122,14 @@ def _build_row(seq, count, counts, pssm):
     prot = translate(seq,
                      ambig_char='X',
                      stats=stats)
-
     row['seq'] = prot
+
+    if seqlen % 3 != 0:
+        row['error'] = 'notdiv3'
+        if prot == 'CIRPNNNTRKVCI*DQDKHSMQQVK**GI*DEHI':
+            exit(seq)
+        return row
+
     # sanity check 1 - bounded by cysteines
     if not prot.startswith('C') or not prot.endswith('C'):
         row['error'] = 'cysteines'
@@ -244,7 +246,7 @@ def trim_reads(reads):
             if nuc != '-':
                 break
         trimmed_read = aligned_seq[left_padding:(-right_padding or None)]
-        stripped_read = trimmed_read.strip('-')
+        stripped_read = trimmed_read.replace('-', '')
         yield pair_name, stripped_read
 
 

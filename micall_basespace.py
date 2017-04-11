@@ -461,7 +461,7 @@ def process_sample(sample_index, run_info, args, pssm):
                       coverage_maps_prefix=sample_name,
                       excluded_projects=EXCLUDED_PROJECTS)
 
-    logger.info('Running sam_g2p (%d of %d).', sample_index+1, len(run_info.samples))
+    logger.info('Running fastq_g2p (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'trimmed1.fastq'), 'rU') as fastq1, \
             open(os.path.join(sample_scratch_path, 'trimmed2.fastq'), 'rU') as fastq2, \
             open(os.path.join(sample_scratch_path, 'g2p.csv'), 'w') as g2p_csv, \

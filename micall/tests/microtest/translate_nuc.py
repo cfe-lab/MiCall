@@ -21,6 +21,6 @@ aa_compare = ''.join([
 aa_seq = aln2counts.translate(nuc_seq)
 pairs = zip(aa_seq, aa_compare)
 diffs = [' ' if a == b else '*' for a, b in pairs]
-print 'result ', aa_seq
-print 'diffs  ', ''.join(diffs) if aa_seq != aa_compare else 'no diffs'
-print 'compare', aa_compare
+print('result ', aa_seq)
+print('diffs  ', ''.join(diffs) if aa_seq != aa_compare else 'no diffs')
+print('compare', aa_compare)
