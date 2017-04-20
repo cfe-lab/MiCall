@@ -1,5 +1,6 @@
 import json
 import sys
+from operator import itemgetter
 
 from micall.monitor import qai_helper
 from micall import settings
@@ -71,7 +72,7 @@ def main():
             settings.pipeline_version,
             retries=0)
         for project in dump['projects'].values():
-            project['regions'].sort()
+            project['regions'].sort(key=itemgetter('coordinate_region'))
             for region in project['regions']:
                 used_regions.add(region['coordinate_region'])
                 used_regions.update(region['seed_region_names'])

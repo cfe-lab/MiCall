@@ -30,7 +30,7 @@ from micall.core.coverage_plots import coverage_plot
 EXCLUDED_SEEDS = ['HLA-B-seed']  # Not ready yet.
 EXCLUDED_PROJECTS = ['HCV-NS5a',
                      'HIV-GP41',
-                     'HIV-PRI',
+                     'HIV',
                      'INT',
                      'MidHCV',
                      'MiniHCV',
@@ -385,10 +385,31 @@ def process_sample(sample_index, run_info, args, pssm):
              summary_file=read_summary,
              use_gzip=sample_path.endswith('.gz'))
 
+    logger.info('Running fastq_g2p (%d of %d).', sample_index+1, len(run_info.samples))
+    g2p_unmapped1_path = os.path.join(sample_scratch_path, 'g2p_unmapped1.fastq')
+    g2p_unmapped2_path = os.path.join(sample_scratch_path, 'g2p_unmapped2.fastq')
+    with open(os.path.join(sample_scratch_path, 'trimmed1.fastq'), 'rU') as fastq1, \
+            open(os.path.join(sample_scratch_path, 'trimmed2.fastq'), 'rU') as fastq2, \
+            open(os.path.join(sample_scratch_path, 'g2p.csv'), 'w') as g2p_csv, \
+            open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'w') as g2p_summary_csv, \
+            open(g2p_unmapped1_path, 'w') as g2p_unmapped1, \
+            open(g2p_unmapped2_path, 'w') as g2p_unmapped2, \
+            open(os.path.join(sample_scratch_path, 'g2p_aligned.csv'), 'w') as g2p_aligned_csv:
+
+        fastq_g2p(pssm=pssm,
+                  fastq1=fastq1,
+                  fastq2=fastq2,
+                  g2p_csv=g2p_csv,
+                  g2p_summary_csv=g2p_summary_csv,
+                  unmapped1=g2p_unmapped1,
+                  unmapped2=g2p_unmapped2,
+                  aligned_csv=g2p_aligned_csv,
+                  min_count=DEFAULT_MIN_COUNT)
+
     logger.info('Running prelim_map (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'w') as prelim_csv:
-        prelim_map(trimmed_path1,
-                   trimmed_path2,
+        prelim_map(g2p_unmapped1_path,
+                   g2p_unmapped2_path,
                    prelim_csv,
                    work_path=sample_scratch_path,
                    excluded_seeds=EXCLUDED_SEEDS)
@@ -402,8 +423,8 @@ def process_sample(sample_index, run_info, args, pssm):
             open(os.path.join(sample_qc_path, 'unmapped1.fastq'), 'w') as unmapped1, \
             open(os.path.join(sample_qc_path, 'unmapped2.fastq'), 'w') as unmapped2:
 
-        remap(trimmed_path1,
-              trimmed_path2,
+        remap(g2p_unmapped1_path,
+              g2p_unmapped2_path,
               prelim_csv,
               remap_csv,
               counts_csv,
@@ -429,6 +450,7 @@ def process_sample(sample_index, run_info, args, pssm):
 
     logger.info('Running aln2counts (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'aligned.csv'), 'rU') as aligned_csv, \
+            open(os.path.join(sample_scratch_path, 'g2p_aligned.csv'), 'rU') as g2p_aligned_csv, \
             open(os.path.join(sample_scratch_path, 'clipping.csv'), 'rU') as clipping_csv, \
             open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'rU') as conseq_ins_csv, \
             open(os.path.join(sample_scratch_path, 'nuc.csv'), 'w') as nuc_csv, \
@@ -448,7 +470,8 @@ def process_sample(sample_index, run_info, args, pssm):
                    nuc_variants_csv,
                    coverage_summary_csv=coverage_summary_csv,
                    clipping_csv=clipping_csv,
-                   conseq_ins_csv=conseq_ins_csv)
+                   conseq_ins_csv=conseq_ins_csv,
+                   g2p_aligned_csv=g2p_aligned_csv)
 
     logger.info('Running coverage_plots (%d of %d).', sample_index+1, len(run_info.samples))
     coverage_maps_path = os.path.join(args.qc_path, 'coverage_maps')
@@ -460,19 +483,6 @@ def process_sample(sample_index, run_info, args, pssm):
                       coverage_maps_path=coverage_maps_path,
                       coverage_maps_prefix=sample_name,
                       excluded_projects=EXCLUDED_PROJECTS)
-
-    logger.info('Running fastq_g2p (%d of %d).', sample_index+1, len(run_info.samples))
-    with open(os.path.join(sample_scratch_path, 'trimmed1.fastq'), 'rU') as fastq1, \
-            open(os.path.join(sample_scratch_path, 'trimmed2.fastq'), 'rU') as fastq2, \
-            open(os.path.join(sample_scratch_path, 'g2p.csv'), 'w') as g2p_csv, \
-            open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'w') as g2p_summary_csv:
-
-        fastq_g2p(pssm=pssm,
-                  fastq1=fastq1,
-                  fastq2=fastq2,
-                  g2p_csv=g2p_csv,
-                  g2p_summary_csv=g2p_summary_csv,
-                  min_count=DEFAULT_MIN_COUNT)
     logger.info('Finished sample (%d of %d).', sample_index+1, len(run_info.samples))
 
 

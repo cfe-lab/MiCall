@@ -38,8 +38,33 @@ purchasing a license.
     error rates.
   * in - InterOp folder
   * in - read lengths from RunInfo.xml or BaseSpace run parameters
-  * quality.csv
-* `prelim_map`: map reads to all references.
+  * quality.csv - QC error rate data, grouped by tile
+* `filter_quality`: Summarize phiX quality data, and decide which tiles and
+    cycles to censor.
+  * in - quality.csv
+  * bad_cycles.csv - List of tiles and cycles rejected for poor quality
+* `trim_fastqs`: Censor reads based on phiX quality data, and also trim adapter
+    sequences.
+  * in - original1.fastq
+  * in - original2.fastq
+  * in - bad_cycles.csv - List of tiles and cycles rejected for poor quality')
+  * trimmed1.fastq - uncompressed FASTQ containing trimmed reads (read 1)
+  * trimmed2.fastq - uncompressed FASTQ containing trimmed reads (read 2)
+* `fastq_g2p`: use pairwise alignment to map reads to the V3LOOP region,
+    then use the geno2pheno algorithm to
+    translate genotype to phenotype and predict whether a sample is X4 or R5.
+    HIV-1 particles use coreceptors to enter cells. Different particles can use
+    CXCR4, CCR5, or both. This analysis looks at the sequences from a virus
+    population and reports either "X4" (able to use CXCR4) or "R5" (only able
+    to use CCR5).
+  * in - fastq1
+  * in - fastq2
+  * g2p.csv - downloaded - calls each individual sequence X4, R5, or error.
+  * g2p_summary.csv - downloaded - calls the entire sample X4 or R5.
+  * g2p_aligned.csv - reads that mapped to V3LOOP, aligned to the HIV seed
+  * not_v3_r1.fastq - reads that did not map to V3LOOP (read 1)
+  * not_v3_r2.fastq - reads that did not map to V3LOOP (read 2)
+* `prelim_map`: map reads to all references. (Takes reads that did not map to V3LOOP.)
   * in - fastq1
   * in - fastq2
   * prelim.csv - SAM file format
@@ -77,6 +102,7 @@ purchasing a license.
 * `aln2counts`: take the aligned reads, and count how many of each nucleotide
     or amino acid appear at each position.
   * in - aligned.csv
+  * in - g2p_aligned.csv
   * in - clipping.csv
   * in - conseq_ins.csv
   * nuc.csv - downloaded - nucleotide counts at each position
@@ -85,16 +111,6 @@ purchasing a license.
   * conseq.csv - downloaded - consensus sequence
   * failed_align.csv - downloaded - any consensus that failed to align to its ref
   * nuc_variants.csv - downloaded - top nucleotide variants for HLA
-* `sam_g2p`: use the geno2pheno algorithm on the V3LOOP region to
-    translate genotype to phenotype and predict whether a sample is X4 or R5.
-    HIV-1 particles use coreceptors to enter cells. Different particles can use
-    CXCR4, CCR5, or both. This analysis looks at the sequences from a virus
-    population and reports either "X4" (able to use CXCR4) or "R5" (only able
-    to use CCR5).
-  * in - remap.csv
-  * in - nuc.csv
-  * g2p.csv - downloaded - calls each individual sequence X4, R5, or error.
-  * g2p_summary.csv - downloaded - calls the entire sample X4 or R5. 
 * `coverage_plots`: convert amino counts to a coverage graph for each gene
     region.
   * in - amino.csv
@@ -103,6 +119,10 @@ purchasing a license.
     coverage at key positions.
 
 ## File descriptions ##
+* quality.csv and bad_cycles.csv
+  * tile
+  * cycle
+  * errorrate - as a percentage
 * run_quality.csv
   * q30_fwd - portion of tiles and cycles with quality score of at least 30
   for forward reads
@@ -116,7 +136,7 @@ purchasing a license.
   (phiX error count/tile/cycle)
   * avg_quality - average Phred score over all clusters and cycles
   * avg_coverage - average coverage across the best region for each sample
-* aligned.csv
+* aligned.csv and g2p_aligned.csv
   * refname - seed reference the reads mapped to
   * qcut - minimum Phred quality score to include a nucleotide
   * rank - sequences are sorted by count, with the most common at rank 0
@@ -166,6 +186,8 @@ purchasing a license.
     coordinate reference
   * clip - count of reads with soft clipping that would have mapped at this
     position
+  * g2p_overlap - count of reads at this position that overlapped with the
+    V3LOOP G2P mapping and were ignored.
 * amino.csv
   * seed - seed reference the reads mapped to
   * region - coordinate reference for reporting against, usually a gene
@@ -185,6 +207,8 @@ purchasing a license.
     coordinate reference
   * clip - count of reads with soft clipping that would have mapped at this
     codon
+  * g2p_overlap - count of reads at this position that overlapped with the
+    V3LOOP G2P mapping and were ignored.
 * coord_ins.csv - insertions in consensus sequence, relative to coordinate
     reference.
   * seed - seed reference the reads mapped to

@@ -3,26 +3,26 @@
 import argparse
 from collections import Counter
 import csv
-from operator import itemgetter
+from itertools import takewhile
 import os
 import re
 
 from gotoh import align_it
 
-from micall.core.sam2aln import merge_pairs
+from micall.core.sam2aln import merge_pairs, SAM2ALN_Q_CUTOFFS
 from micall.utils.translation import translate, reverse_and_complement
+from micall.core.project_config import ProjectConfig
 
 # screen for in-frame deletions
 pat = re.compile('([A-Z])(---)+([A-Z])')
 
-QMIN = 20   # minimum base quality within insertions
-QCUT = 10   # minimum base quality to not be censored
-QDELTA = 5
+Q_CUTOFF = SAM2ALN_Q_CUTOFFS[0]
 DEFAULT_MIN_COUNT = 3
 GAP_OPEN_COST = 10
 GAP_EXTEND_COST = 3
 USE_TERMINAL_COST = 1
 MIN_PAIR_ALIGNMENT_SCORE = 20
+HIV_SEED_NAME = "HIV1-B-FR-K03455-seed"
 # V3LOOP region of HIV HXB2, GenBank accession number K03455
 V3LOOP_REF = ('TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA'
               'GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT')
@@ -42,14 +42,36 @@ def parse_args():
                         help='<output> CSV containing g2p predictions.')
     parser.add_argument('g2p_summary_csv', type=argparse.FileType('w'),
                         help='<output> CSV containing overall call for the sample.')
+    parser.add_argument('unmapped1',
+                        type=argparse.FileType('w'),
+                        help='<output> FASTQ file containing unmapped read 1 reads')
+    parser.add_argument('unmapped2',
+                        type=argparse.FileType('w'),
+                        help='<output> FASTQ file containing unmapped read 2 reads')
+    parser.add_argument('aligned_csv',
+                        type=argparse.FileType('w'),
+                        help='<output> CSV containing mapped reads aligned to HIV seed')
     return parser.parse_args()
 
 
-def fastq_g2p(pssm, fastq1, fastq2, g2p_csv, g2p_summary_csv=None, min_count=1):
+def fastq_g2p(pssm,
+              fastq1,
+              fastq2,
+              g2p_csv,
+              g2p_summary_csv=None,
+              unmapped1=None,
+              unmapped2=None,
+              aligned_csv=None,
+              min_count=1):
     reader = FastqReader(fastq1, fastq2)
     merged_reads = merge_reads(reader)
     trimmed_reads = trim_reads(merged_reads)
-    read_counts = count_reads(trimmed_reads)
+    mapped_reads = write_unmapped_reads(trimmed_reads, unmapped1, unmapped2)
+    read_counts = count_reads(mapped_reads)
+    if aligned_csv is not None:
+        project_config = ProjectConfig.loadDefault()
+        hiv_seed = project_config.getReference(HIV_SEED_NAME)
+        write_aligned_reads(read_counts, aligned_csv, hiv_seed)
 
     write_rows(pssm, read_counts, g2p_csv, g2p_summary_csv, min_count)
 
@@ -71,12 +93,11 @@ def write_rows(pssm, read_counts, g2p_csv, g2p_summary_csv=None, min_count=1):
     g2p_writer.writeheader()
     counts = Counter()
     skip_count = 0
-    for s, count in read_counts:
+    for (ref, s), count in read_counts:
         if count < min_count:
             skip_count += count
             continue
-        # remove in-frame deletions
-        seq = re.sub(pat, r'\g<1>\g<3>', s)
+        seq = s.replace('-', '')
 
         row = _build_row(seq, count, counts, pssm)
         g2p_writer.writerow(row)
@@ -126,8 +147,6 @@ def _build_row(seq, count, counts, pssm):
 
     if seqlen % 3 != 0:
         row['error'] = 'notdiv3'
-        if prot == 'CIRPNNNTRKVCI*DQDKHSMQQVK**GI*DEHI':
-            exit(seq)
         return row
 
     # sanity check 1 - bounded by cysteines
@@ -160,7 +179,7 @@ def _build_row(seq, count, counts, pssm):
                         for aa_list in aligned])
 
     fpr = pssm.g2p_to_fpr(score)
-    if fpr > 3.5:
+    if fpr >= 3.5:
         call = 'R5'
     else:
         call = 'X4'
@@ -181,6 +200,11 @@ class FastqError(Exception):
 
 class FastqReader:
     def __init__(self, fastq1, fastq2):
+        """ Creates an iterator over the reads in a FASTQ file.
+
+        Iterator items:
+        (pair_name, (read1_name, bases, quality), (read2_name, bases, quality))
+        """
         self.fastq1 = fastq1
         self.fastq2 = fastq2
 
@@ -208,18 +232,36 @@ class FastqReader:
 
 
 def merge_reads(reads):
-    for pair_name, (_, seq1, qual1), (_, seq2, qual2) in reads:
-        seq2 = reverse_and_complement(seq2)
+    """ Generator over merged reads.
+
+    :param reads: iterable of reads from FastqReader
+    Generator items (merged_bases may be None if merge fails):
+    (pair_name,
+     (read1_name, bases, quality),
+     (read2_name, bases, quality),
+     merged_bases)
+    """
+    for pair_name, (r1_name, seq1, qual1), (r2_name, seq2, qual2) in reads:
+        seq2_rev = reverse_and_complement(seq2)
         aligned1, aligned2, score = align_it(seq1,
-                                             seq2,
+                                             seq2_rev,
                                              GAP_OPEN_COST,
                                              GAP_EXTEND_COST,
                                              USE_TERMINAL_COST)
         if score >= MIN_PAIR_ALIGNMENT_SCORE and aligned1[0] != '-':
             aligned_qual1 = align_quality(aligned1, qual1)
             aligned_qual2 = align_quality(aligned2, reversed(qual2))
-            merged = merge_pairs(aligned1, aligned2, aligned_qual1, aligned_qual2)
-            yield (pair_name, merged)
+            merged = merge_pairs(aligned1,
+                                 aligned2,
+                                 aligned_qual1,
+                                 aligned_qual2,
+                                 q_cutoff=Q_CUTOFF)
+        else:
+            merged = None
+        yield (pair_name,
+               (r1_name, seq1, qual1),
+               (r2_name, seq2, qual2),
+               merged)
 
 
 def align_quality(nucs, qual):
@@ -230,29 +272,137 @@ def align_quality(nucs, qual):
 
 
 def trim_reads(reads):
-    for pair_name, seq in reads:
-        aligned_ref, aligned_seq, score = align_it(V3LOOP_REF,
-                                                   seq,
-                                                   GAP_OPEN_COST,
-                                                   GAP_EXTEND_COST,
-                                                   USE_TERMINAL_COST)
-        if score < MIN_V3_ALIGNMENT_SCORE:
-            continue
-        left_padding = right_padding = 0
-        for left_padding, nuc in enumerate(aligned_ref):
-            if nuc != '-':
-                break
-        for right_padding, nuc in enumerate(reversed(aligned_ref)):
-            if nuc != '-':
-                break
-        trimmed_read = aligned_seq[left_padding:(-right_padding or None)]
-        stripped_read = trimmed_read.replace('-', '')
-        yield pair_name, stripped_read
+    """ Generator over reads that are aligned to the reference and trimmed.
+
+    :param reads: generator from merge_reads()
+    Generator items (aligned_ref and aligned_seq may be None if merge or trim
+    fails):
+    (pair_name,
+     (read1_name, bases, quality),
+     (read2_name, bases, quality),
+     (aligned_ref, aligned_seq))
+    """
+    for pair_name, read1, read2, seq in reads:
+        trimmed_aligned_ref = trimmed_aligned_seq = None
+        if seq is not None:
+            aligned_ref, aligned_seq, score = align_it(V3LOOP_REF,
+                                                       seq,
+                                                       GAP_OPEN_COST,
+                                                       GAP_EXTEND_COST,
+                                                       USE_TERMINAL_COST)
+            if score >= MIN_V3_ALIGNMENT_SCORE:
+                left_padding = right_padding = 0
+                for left_padding, nuc in enumerate(aligned_ref):
+                    if nuc != '-':
+                        break
+                for right_padding, nuc in enumerate(reversed(aligned_ref)):
+                    if nuc != '-':
+                        break
+                start, end = left_padding, -right_padding or None
+                trimmed_aligned_ref = aligned_ref[start:end]
+                trimmed_aligned_seq = aligned_seq[start:end]
+        yield pair_name, read1, read2, (trimmed_aligned_ref,
+                                        trimmed_aligned_seq)
+
+
+def write_unmapped_reads(reads, unmapped1, unmapped2):
+    """ Write reads that failed to merge or align with V3LOOP reference.
+
+    :param reads: a generator with these items (aligned_ref and aligned_seq
+     are None if it failed to merge or align)
+    (pair_name,
+     (read1_name, bases, quality),
+     (read2_name, bases, quality),
+     (aligned_ref, aligned_seq))
+    :param unmapped1: open FASTQ file that the failed reads will be written to
+    :param unmapped2: open FASTQ file that the failed reads will be written to
+    :return: a generator with (aligned_ref, aligned_seq) for the reads that
+    didn't fail.
+    """
+    for pair_name, read1, read2, (aligned_ref, aligned_seq) in reads:
+        if aligned_ref is not None and aligned_seq is not None:
+            yield aligned_ref, aligned_seq
+        elif unmapped1 is not None and unmapped2 is not None:
+            write_fastq_read(unmapped1, pair_name, read1)
+            write_fastq_read(unmapped2, pair_name, read2)
+
+
+def write_fastq_read(fastq, pair_name, read):
+    read_name, bases, quality = read
+    fastq.write("""\
+@{} {}
+{}
++
+{}
+""".format(pair_name, read_name, bases, quality))
 
 
 def count_reads(reads):
-    counts = Counter(map(itemgetter(1), reads))
+    """ Count unique sequences in trimmed reads.
+
+    :param reads: a generator with items:
+    (pair_name,
+     (read1_name, bases, quality),
+     (read2_name, bases, quality),
+     (aligned_ref, aligned_seq))
+    :return: [((aligned_ref, aligned_seq), count)] by decreasing count
+    """
+    counts = Counter(reads)
     return counts.most_common()
+
+
+def write_aligned_reads(counts, aligned_csv, hiv_seed):
+    """ Write reads, aligned to the HIV seed sequence.
+
+    :param counts: [((aligned_ref, aligned_seq), count)]
+    :param aligned_csv: open CSV file to write the aligned reads to
+    :param hiv_seed: seed reference to align the V3LOOP ref to.
+    """
+    writer = csv.DictWriter(
+        aligned_csv,
+        ['refname', 'qcut', 'rank', 'count', 'offset', 'seq'],
+        lineterminator=os.linesep)
+    writer.writeheader()
+
+    seed_vs_v3, v3_vs_seed, score = align_it(hiv_seed,
+                                             V3LOOP_REF,
+                                             GAP_OPEN_COST,
+                                             GAP_EXTEND_COST,
+                                             USE_TERMINAL_COST)
+
+    # Count dashes at start of aligned_v3loop
+    v3_offset = sum(1 for _ in takewhile(lambda c: c == '-', v3_vs_seed))
+    seed_positions = list(zip(seed_vs_v3[v3_offset:], v3_vs_seed[v3_offset:]))
+
+    for rank, ((v3_vs_read, read_vs_v3), count) in enumerate(counts):
+        is_started = False
+        seq_offset = 0
+        seq = ''
+        read_positions = iter(zip(v3_vs_read, read_vs_v3))
+        for seed_char, v3_vs_seed_char in seed_positions:
+            if v3_vs_seed_char == '-':
+                seq += '-'
+                continue
+            try:
+                while True:
+                    v3_vs_read_char, read_char = next(read_positions)
+                    if v3_vs_read_char != '-':
+                        break
+            except StopIteration:
+                break
+            if seed_char != '-':
+                if read_char == '-' and not is_started:
+                    seq_offset += 1
+                else:
+                    is_started = True
+                    seq += read_char
+        seq = seq.rstrip('-')
+        writer.writerow(dict(refname=HIV_SEED_NAME,
+                             qcut=Q_CUTOFF,
+                             rank=rank,
+                             count=count,
+                             offset=v3_offset + seq_offset,
+                             seq=seq))
 
 
 def main():
@@ -264,6 +414,9 @@ def main():
               fastq2=args.fastq2,
               g2p_csv=args.g2p_csv,
               g2p_summary_csv=args.g2p_summary_csv,
+              unmapped1=args.unmapped1,
+              unmapped2=args.unmapped2,
+              aligned_csv=args.aligned_csv,
               min_count=DEFAULT_MIN_COUNT)
 
 if __name__ == '__main__':
