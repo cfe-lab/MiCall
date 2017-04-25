@@ -85,6 +85,15 @@ class SequenceReportTest(unittest.TestCase):
           "seed_region_names": ["R4-seed"]
         }
       ]
+    },
+    "R5": {
+      "max_variants": 10,
+      "regions": [
+        {
+          "coordinate_region": "R5",
+          "seed_region_names": ["R5-seed"]
+        }
+      ]
     }
   },
   "regions": {
@@ -134,6 +143,19 @@ class SequenceReportTest(unittest.TestCase):
       "is_nucleotide": false,
       "reference": [
         "SIN"
+      ]
+    },
+    "R5-seed": {
+      "comment": "Coord has G that's not in seed.",
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTCCGAGA"
+      ]
+    },
+    "R5": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFGPR"
       ]
     },
     "R-NO-COORD": {
@@ -936,6 +958,32 @@ R2-seed,R2,15,10,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
 
         self.report.read(aligned_reads)
         self.report.write_amino_header(self.report_file)
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testDeletionBetweenSeedAndConsensusAminoReport(self):
+        """ Coordinate and consensus are KFGPR, but seed is KFPR.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R5-seed,15,0,9,0,AAATTTGGCCCCCGA
+""")
+
+        # seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,
+        #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap
+R5-seed,R5,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R5-seed,R5,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R5-seed,R5,15,7,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R5-seed,R5,15,10,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R5-seed,R5,15,13,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.write_amino_header(self.report_file)
+        self.report.read(aligned_reads)
         self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())

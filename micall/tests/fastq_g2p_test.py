@@ -4,7 +4,8 @@ import unittest
 
 from micall.g2p.pssm_lib import Pssm
 from micall.g2p.fastq_g2p import fastq_g2p, FastqReader, FastqError, merge_reads, \
-    trim_reads, count_reads, write_rows, write_unmapped_reads, write_aligned_reads
+    trim_reads, count_reads, write_rows, write_unmapped_reads, write_aligned_reads, \
+    extract_target
 
 
 class DummyFile(StringIO):
@@ -326,6 +327,35 @@ mapped,valid,X4calls,X4pct,final
         self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
 
 
+class ExtractTargetTest(unittest.TestCase):
+    def test_extract(self):
+        seed = 'GCGGGGCATGCGAGTACA'  # Amino seq: AGHAST
+        coord = 'HAS'
+        expected_extract = 'CATGCGAGT'  # Amino seq: HAS
+
+        extract = extract_target(seed, coord)
+
+        self.assertEqual(expected_extract, extract)
+        
+    def test_reading_frame2(self):
+        seed = 'AGCGGGGCATGCGAGTACA'  # Amino seq: ?AGHAST (shifted two bases)
+        coord = 'HAS'
+        expected_extract = 'CATGCGAGT'  # Amino seq: HAS
+
+        extract = extract_target(seed, coord)
+
+        self.assertEqual(expected_extract, extract)
+        
+    def test_reading_frame1(self):
+        seed = 'AAGCGGGGCATGCGAGTACA'  # Amino seq: ?AGHAST (shifted one base)
+        coord = 'HAS'
+        expected_extract = 'CATGCGAGT'  # Amino seq: HAS
+
+        extract = extract_target(seed, coord)
+
+        self.assertEqual(expected_extract, extract)
+        
+
 class FastqReaderTest(unittest.TestCase):
     def test_one_pair(self):
         self.fastq1 = StringIO("""\
@@ -524,6 +554,7 @@ class MergeReadsTest(unittest.TestCase):
 
 class TrimReadsTest(unittest.TestCase):
     def test_untrimmed(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
@@ -532,16 +563,15 @@ class TrimReadsTest(unittest.TestCase):
             ("A:B:C",
              ("name1", "bases1", "qual1"),
              ("name2", "bases2", "qual2"),
-             ('TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGAGAGC'
-              'ATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT',
-              'TGTACAAGACC---------------------------------------------------'
-              '----------------------------------------------'))]
+             ('TGTACAAGACCCAACAAC',
+              'TGTACAAGACC-------'))]
 
-        trimmed_reads = list(trim_reads(reads))
+        trimmed_reads = list(trim_reads(reads, v3loop_ref))
 
         self.assertEqual(expected_reads, trimmed_reads)
 
     def test_trimmed(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
@@ -550,16 +580,15 @@ class TrimReadsTest(unittest.TestCase):
             ("A:B:C",
              ("name1", "bases1", "qual1"),
              ("name2", "bases2", "qual2"),
-             ('TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGAGAGC'
-              'ATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT',
-              'TGTACAAGACC---------------------------------------------------'
-              '----------------------------------------------'))]
+             ('TGTACAAGACCCAACAAC',
+              'TGTACAAGACC-------'))]
 
-        trimmed_reads = list(trim_reads(reads))
+        trimmed_reads = list(trim_reads(reads, v3loop_ref))
 
         self.assertEqual(expected_reads, trimmed_reads)
 
     def test_multiple(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
@@ -572,23 +601,20 @@ class TrimReadsTest(unittest.TestCase):
             ("A:B:C",
              ("name1", "bases1", "qual1"),
              ("name2", "bases2", "qual2"),
-             ('TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGAGAGC'
-              'ATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT',
-              'TGTACAAGACC---------------------------------------------------'
-              '----------------------------------------------')),
+             ('TGTACAAGACCCAACAAC',
+              'TGTACAAGACC-------')),
             ("A:B:E",
              ("name1", "bases1", "qual1"),
              ("name2", "bases2", "qual2"),
-             ('TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGAGAGC'
-              'ATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT',
-              'TGTACAAGACC---------------------------------------------------'
-              '----------------------------------------------'))]
+             ('TGTACAAGACCCAACAAC',
+              'TGTACAAGACC-------'))]
 
-        trimmed_reads = list(trim_reads(reads))
+        trimmed_reads = list(trim_reads(reads, v3loop_ref))
 
         self.assertEqual(expected_reads, trimmed_reads)
 
     def test_not_v3loop(self):
+        v3loop_ref = 'TGTACAAGACCCAACAACAATACAAGA'
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
@@ -598,11 +624,12 @@ class TrimReadsTest(unittest.TestCase):
                            ("name2", "bases2", "qual2"),
                            (None, None))]
 
-        trimmed_reads = list(trim_reads(reads))
+        trimmed_reads = list(trim_reads(reads, v3loop_ref))
 
         self.assertEqual(expected_reads, trimmed_reads)
 
     def test_not_merged(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
@@ -612,7 +639,7 @@ class TrimReadsTest(unittest.TestCase):
                            ("name2", "bases2", "qual2"),
                            (None, None))]
 
-        trimmed_reads = list(trim_reads(reads))
+        trimmed_reads = list(trim_reads(reads, v3loop_ref))
 
         self.assertEqual(expected_reads, trimmed_reads)
 
@@ -696,109 +723,117 @@ class CountReadsTest(unittest.TestCase):
 
 class WriteAlignedTest(unittest.TestCase):
     def test_counts(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC"), 2),
                   (("TGTACAAGACCCAAC", "AGAACAAGACCCAAC"), 1)]
         seed = "AAAAATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-B-FR-K03455-seed,15,0,2,5,TGTACAAGACCCAAC
-HIV1-B-FR-K03455-seed,15,1,1,5,AGAACAAGACCCAAC
+HIV1-C-BR-JX140663-seed,15,0,2,5,TGTACAAGACCCAAC
+HIV1-C-BR-JX140663-seed,15,1,1,5,AGAACAAGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, seed)
+        write_aligned_reads(counts, aligned_csv, seed, v3loop_ref)
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
     def test_seed_offset(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC"), 2)]
         hiv_seed = "ATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-B-FR-K03455-seed,15,0,2,1,TGTACAAGACCCAAC
+HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACAAGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed)
+        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
     def test_seq_offset(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         counts = [(("TGTACAAGACCCAAC", "---ACAAGACCCAAC"), 2)]
         hiv_seed = "ATGTACAAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-B-FR-K03455-seed,15,0,2,4,ACAAGACCCAAC
+HIV1-C-BR-JX140663-seed,15,0,2,4,ACAAGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed)
+        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
     def test_short_seq(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCC---"), 2)]
         hiv_seed = "ATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-B-FR-K03455-seed,15,0,2,1,TGTACAAGACCC
+HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACAAGACCC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed)
+        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
     def test_seq_deletion(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         counts = [(("TGTACAAGACCCAAC", "TGT---AGACCCAAC"), 2)]
         hiv_seed = "ATGTACAAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-B-FR-K03455-seed,15,0,2,1,TGT---AGACCCAAC
+HIV1-C-BR-JX140663-seed,15,0,2,1,TGT---AGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed)
+        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
     def test_ref_deletion(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         counts = [(("TGTACA---AGACCCAAC", "TGTACAGGGAGACCCAAC"), 2)]
         hiv_seed = "ATGTACAGGGAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-B-FR-K03455-seed,15,0,2,1,TGTACA---AGACCCAAC
+HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACA---AGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed)
+        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
     def test_ref_and_read_deletion(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC"), 2)]
         # deleted codon    vvv should be reported as dashes
         hiv_seed = "ATGTACAGGGAGACCCAACAACAATAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-B-FR-K03455-seed,15,0,2,1,TGTACA---AGACCCAAC
+HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACA---AGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed)
+        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
     def test_ref_insertion(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
         counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC"), 2)]
         # inserted codon   ^^^ shouldn't be included in aligned seq.
         hiv_seed = "ATGTACACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-B-FR-K03455-seed,15,0,2,1,TGTACACCCAAC
+HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed)
+        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())

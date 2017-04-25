@@ -15,7 +15,7 @@ The scenarios that each file tests are:
   fifth base
 * 2000A-V3LOOP - missing coverage of the first codon
 * 2010A-V3LOOP - five reads at the beginning of the reference and five reads at
-  the end
+  the end, with a one-codon gap between
 * 2020A-GP41 - starts at second codon and inserts extra codon after first five
 * 2030A-V3LOOP - garbage reads, all different
 * 2040-HLA-B - exon2 of HLA-B, half have a changed base at position 7 to test
@@ -31,3 +31,7 @@ The scenarios that each file tests are:
   codons in codon 7, 3 partial deletions in codon 8, 4 insertions in codon 9,
   3 soft clipped reads in codons 10 and 11, 1 deletion in codon 12, followed by
   6 clean codons with only 7 reads covering them
+* 2120A-PR - 5 clean codons, then 1 stop codon in codon 6, 2 low-quality
+  codons in codon 7, 3 partial deletions in codon 8, 4 insertions in codon 9,
+  3 soft clipped reads in codons 10 and 11, 1 deletion in codon 12, followed by
+  6 clean codons with only 7 reads covering them (soft clipped and insertions not working)

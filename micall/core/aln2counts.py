@@ -83,7 +83,9 @@ class SequenceReport(object):
     def __init__(self,
                  insert_writer,
                  projects,
-                 conseq_mixture_cutoffs):
+                 conseq_mixture_cutoffs,
+                 clipping_counts=None,
+                 conseq_insertion_counts=None):
         """ Create an object instance.
 
         @param insert_writer: InsertionWriter object that will track reads and
@@ -98,8 +100,13 @@ class SequenceReport(object):
         self.conseq_mixture_cutoffs = list(conseq_mixture_cutoffs)
         self.conseq_mixture_cutoffs.insert(0, MAX_CUTOFF)
         self.callback = None
-        self.clipping_counts = defaultdict(Counter)  # {seed_name: {pos: count}}
-        self.conseq_insertion_counts = defaultdict(Counter)  # {seed_name: {pos: count}
+
+        # {seed_name: {pos: count}}
+        self.clipping_counts = clipping_counts or defaultdict(Counter)
+
+        # {seed_name: {pos: count}
+        self.conseq_insertion_counts = (conseq_insertion_counts or
+                                        defaultdict(Counter))
         self.nuc_writer = self.amino_writer = self.conseq_writer = None
         self.fail_writer = self.nuc_variants_writer = None
 
@@ -214,7 +221,7 @@ class SequenceReport(object):
                 self.consensus[coordinate_name] = consensus
 
             # map to reference coordinates by aligning consensus
-            _aref, _aquery, score = self._pair_align(
+            a_coord, a_consensus, score = self._pair_align(
                 coordinate_ref,
                 consensus,
                 gap_open=GAP_OPEN_COORD,
@@ -222,16 +229,21 @@ class SequenceReport(object):
             if score < max_score:
                 continue
             max_score = score
-            best_alignment = (reading_frame, consensus)
+            best_alignment = (reading_frame, consensus, a_coord, a_consensus)
 
         report_aminos = []
         if best_alignment is not None:
-            reading_frame, consensus = best_alignment
+            reading_frame, consensus, a_coord, a_consensus = best_alignment
 
+            coord2conseq = self.map_sequences(coordinate_ref,
+                                              consensus,
+                                              a_coord,
+                                              a_consensus)
             frame_seed_aminos = self.seed_aminos[reading_frame]
             self.reading_frames[coordinate_name] = reading_frame
             self.consensus[coordinate_name] = consensus
             seed_nuc_seq = self.projects.getReference(self.seed)
+            best_seed_alignment = None
             max_seed_score = -1
             for seed_frame in range(3):
                 seed_amino_seq = translate(seed_nuc_seq,
@@ -248,38 +260,20 @@ class SequenceReport(object):
                 max_seed_score = score
                 best_seed_alignment = (seed_amino_seq, aseed, aref)
             seed_amino_seq, aseed, aref = best_seed_alignment
-            ref2seed = {}
-            seed_index = ref_index = 0
-            for seed_aa, ref_aa in zip(aseed, aref):
-                if (seed_index < len(seed_amino_seq) and
-                        seed_aa == seed_amino_seq[seed_index]):
-                    ref2seed[ref_index] = seed_index
-                    seed_index += 1
-                if (ref_index < len(coordinate_ref) and
-                        ref_aa == coordinate_ref[ref_index]):
-                    ref_index += 1
+            coord2seed = self.map_sequences(coordinate_ref,
+                                          seed_amino_seq,
+                                          aref,
+                                          aseed)
             # Map seed to consensus to handle insertions and deletions
-            aseed, aconseq, _score = self._pair_align(
-                seed_amino_seq,
-                consensus,
-                gap_open=GAP_OPEN_COORD,
-                gap_extend=GAP_EXTEND_COORD)
-            seed2conseq = {}
-            seed_index = conseq_index = 0
-            for seed_aa, conseq_aa in zip(aseed, aconseq):
-                if (conseq_index < len(consensus) and
-                        conseq_aa == consensus[conseq_index]):
-                    seed2conseq[seed_index] = conseq_index
-                    conseq_index += 1
-                if (seed_index < len(seed_amino_seq) and
-                        seed_aa == seed_amino_seq[seed_index]):
-                    seed_index += 1
+            seed2conseq = self.map_sequences(seed_amino_seq, consensus)
             coordinate_inserts = {i*3 - reading_frame for i in range(len(consensus))}
             self.inserts[coordinate_name] = coordinate_inserts
             prev_conseq_index = None
-            for ref_index in range(len(coordinate_ref)):
-                seed_index = ref2seed.get(ref_index)
-                conseq_index = seed2conseq.get(seed_index)
+            for coord_index in range(len(coordinate_ref)):
+                seed_index = coord2seed.get(coord_index)
+                # TODO: look up conseq_index in map if no match in seed, or always?
+                # conseq_index = seed2conseq.get(seed_index)
+                conseq_index = coord2conseq.get(coord_index)
                 if conseq_index is None:
                     seed_amino = SeedAmino(None)
                     if (prev_conseq_index is not None and
@@ -297,11 +291,30 @@ class SequenceReport(object):
                 else:
                     seed_amino = frame_seed_aminos[conseq_index]
                     prev_conseq_index = conseq_index
-                report_aminos.append(ReportAmino(seed_amino, ref_index + 1))
+                report_aminos.append(ReportAmino(seed_amino, coord_index + 1))
                 if seed_amino.consensus_nuc_index is not None:
                     coordinate_inserts.remove(seed_amino.consensus_nuc_index)
 
         self.reports[coordinate_name] = report_aminos
+
+    def map_sequences(self, from_seq, to_seq, from_aligned=None, to_aligned=None):
+        if from_aligned is None or to_aligned is None:
+            from_aligned, to_aligned, _score = self._pair_align(
+                from_seq,
+                to_seq,
+                gap_open=GAP_OPEN_COORD,
+                gap_extend=GAP_EXTEND_COORD)
+        seq_map = {}
+        from_index = to_index = 0
+        for from_aa, to_aa in zip(from_aligned, to_aligned):
+            if (to_index < len(to_seq) and
+                        to_aa == to_seq[to_index]):
+                seq_map[from_index] = to_index
+                to_index += 1
+            if (from_index < len(from_seq) and
+                        from_aa == from_seq[from_index]):
+                from_index += 1
+        return seq_map
 
     def process_reads(self, g2p_aligned_csv, aligned_csv, coverage_summary=None):
         subreports = {}  # {(refname, qcut): report}
@@ -316,7 +329,9 @@ class SequenceReport(object):
                 if not is_overlap:
                     subreport = SequenceReport(self.insert_writer,
                                                self.projects,
-                                               self.conseq_mixture_cutoffs)
+                                               self.conseq_mixture_cutoffs,
+                                               self.clipping_counts,
+                                               self.conseq_insertion_counts)
                     subreports[key] = subreport
                 subreport.read(aligned_reads, is_overlap)
 

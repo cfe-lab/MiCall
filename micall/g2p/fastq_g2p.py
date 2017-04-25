@@ -7,7 +7,7 @@ from itertools import takewhile
 import os
 import re
 
-from gotoh import align_it
+from gotoh import align_it, align_it_aa
 
 from micall.core.sam2aln import merge_pairs, SAM2ALN_Q_CUTOFFS
 from micall.utils.translation import translate, reverse_and_complement
@@ -22,13 +22,10 @@ GAP_OPEN_COST = 10
 GAP_EXTEND_COST = 3
 USE_TERMINAL_COST = 1
 MIN_PAIR_ALIGNMENT_SCORE = 20
-HIV_SEED_NAME = "HIV1-B-FR-K03455-seed"
-# V3LOOP region of HIV HXB2, GenBank accession number K03455
-V3LOOP_REF = ('TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA'
-              'GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT')
-# V3LOOP_AA = translate(V3LOOP_REF)
+# This seed best aligned with G2P ref in pssmlib
+HIV_SEED_NAME = "HIV1-C-BR-JX140663-seed"
+COORDINATE_REF_NAME = "V3LOOP"
 # PSSM_AREF = 'CTRPNXNNTXXRKSIRIXXXGPGQXXXAFYATXXXXGDIIGDIXXRQAHC'.replace('X', '')
-MIN_V3_ALIGNMENT_SCORE = len(V3LOOP_REF) // 2
 
 
 def parse_args():
@@ -63,15 +60,17 @@ def fastq_g2p(pssm,
               unmapped2=None,
               aligned_csv=None,
               min_count=1):
+    project_config = ProjectConfig.loadDefault()
+    hiv_seed = project_config.getReference(HIV_SEED_NAME)
+    coordinate_ref = project_config.getReference(COORDINATE_REF_NAME)
+    v3loop_ref = extract_target(hiv_seed, coordinate_ref)
     reader = FastqReader(fastq1, fastq2)
     merged_reads = merge_reads(reader)
-    trimmed_reads = trim_reads(merged_reads)
+    trimmed_reads = trim_reads(merged_reads, v3loop_ref)
     mapped_reads = write_unmapped_reads(trimmed_reads, unmapped1, unmapped2)
     read_counts = count_reads(mapped_reads)
     if aligned_csv is not None:
-        project_config = ProjectConfig.loadDefault()
-        hiv_seed = project_config.getReference(HIV_SEED_NAME)
-        write_aligned_reads(read_counts, aligned_csv, hiv_seed)
+        write_aligned_reads(read_counts, aligned_csv, hiv_seed, v3loop_ref)
 
     write_rows(pssm, read_counts, g2p_csv, g2p_summary_csv, min_count)
 
@@ -223,12 +222,44 @@ class FastqReader:
                     read2 = None
             yield pair_name, read1, read2
 
-    def get_reads(self, fastq):
+    @staticmethod
+    def get_reads(fastq):
         for header, bases, sep, quality in zip(fastq, fastq, fastq, fastq):
             assert header.startswith('@'), header
             assert sep.startswith('+'), sep
             pair_name, read_name = header[1:].split()
             yield pair_name, (read_name, bases.rstrip('\n'), quality.rstrip('\n'))
+
+
+def extract_target(seed_ref, coordinate_ref):
+    """ Extract a portion of the seed that aligns with the coordinate reference.
+
+    :param seed_ref: seed reference (nucleotide sequence)
+    :param coordinate_ref: coordinate reference (amino acid sequence)
+    :return: subsequence of seed_ref that maps to coordinate_ref
+    """
+    best_alignment = (-1000000, '', '', 0)
+    for frame_index in range(3):
+        seed_aminos = translate('-'*frame_index + seed_ref)
+        aseed, acoord, score = align_it_aa(seed_aminos,
+                                           coordinate_ref,
+                                           GAP_OPEN_COST,
+                                           GAP_EXTEND_COST,
+                                           USE_TERMINAL_COST)
+        best_alignment = max(best_alignment, (score, aseed, acoord, frame_index))
+    score, aseed, acoord, frame_index = best_alignment
+    assert score >= len(coordinate_ref) // 2, score
+
+    target = []
+    seed_index = -frame_index
+    for s, c in zip(aseed, acoord):
+        if s == '-':
+            continue
+        seed_index += 3
+        if c == '-':
+            continue
+        target.append(seed_ref[seed_index-3:seed_index])
+    return ''.join(target)
 
 
 def merge_reads(reads):
@@ -271,7 +302,7 @@ def align_quality(nucs, qual):
     return qual
 
 
-def trim_reads(reads):
+def trim_reads(reads, v3loop_ref):
     """ Generator over reads that are aligned to the reference and trimmed.
 
     :param reads: generator from merge_reads()
@@ -281,16 +312,19 @@ def trim_reads(reads):
      (read1_name, bases, quality),
      (read2_name, bases, quality),
      (aligned_ref, aligned_seq))
+    :param v3loop_ref: nucleotide sequence for V3LOOP
     """
+    min_v3_alignment_score = len(v3loop_ref) // 2
+
     for pair_name, read1, read2, seq in reads:
         trimmed_aligned_ref = trimmed_aligned_seq = None
         if seq is not None:
-            aligned_ref, aligned_seq, score = align_it(V3LOOP_REF,
+            aligned_ref, aligned_seq, score = align_it(v3loop_ref,
                                                        seq,
                                                        GAP_OPEN_COST,
                                                        GAP_EXTEND_COST,
                                                        USE_TERMINAL_COST)
-            if score >= MIN_V3_ALIGNMENT_SCORE:
+            if score >= min_v3_alignment_score:
                 left_padding = right_padding = 0
                 for left_padding, nuc in enumerate(aligned_ref):
                     if nuc != '-':
@@ -351,12 +385,13 @@ def count_reads(reads):
     return counts.most_common()
 
 
-def write_aligned_reads(counts, aligned_csv, hiv_seed):
+def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
     """ Write reads, aligned to the HIV seed sequence.
 
     :param counts: [((aligned_ref, aligned_seq), count)]
     :param aligned_csv: open CSV file to write the aligned reads to
-    :param hiv_seed: seed reference to align the V3LOOP ref to.
+    :param hiv_seed: seed reference to align the V3LOOP ref to
+    :param v3loop_ref: reference the reads were all aligned to
     """
     writer = csv.DictWriter(
         aligned_csv,
@@ -365,7 +400,7 @@ def write_aligned_reads(counts, aligned_csv, hiv_seed):
     writer.writeheader()
 
     seed_vs_v3, v3_vs_seed, score = align_it(hiv_seed,
-                                             V3LOOP_REF,
+                                             v3loop_ref,
                                              GAP_OPEN_COST,
                                              GAP_EXTEND_COST,
                                              USE_TERMINAL_COST)

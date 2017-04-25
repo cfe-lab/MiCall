@@ -8,7 +8,7 @@ class ProjectConfig(object):
         projects = None
         for project_path in project_paths:
             try:
-                with open(project_path, 'rU') as projects_file:
+                with open(project_path, 'r') as projects_file:
                     projects = cls()
                     projects.load(projects_file)
                     break

@@ -388,8 +388,8 @@ def process_sample(sample_index, run_info, args, pssm):
     logger.info('Running fastq_g2p (%d of %d).', sample_index+1, len(run_info.samples))
     g2p_unmapped1_path = os.path.join(sample_scratch_path, 'g2p_unmapped1.fastq')
     g2p_unmapped2_path = os.path.join(sample_scratch_path, 'g2p_unmapped2.fastq')
-    with open(os.path.join(sample_scratch_path, 'trimmed1.fastq'), 'rU') as fastq1, \
-            open(os.path.join(sample_scratch_path, 'trimmed2.fastq'), 'rU') as fastq2, \
+    with open(os.path.join(sample_scratch_path, 'trimmed1.fastq'), 'r') as fastq1, \
+            open(os.path.join(sample_scratch_path, 'trimmed2.fastq'), 'r') as fastq2, \
             open(os.path.join(sample_scratch_path, 'g2p.csv'), 'w') as g2p_csv, \
             open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'w') as g2p_summary_csv, \
             open(g2p_unmapped1_path, 'w') as g2p_unmapped1, \
@@ -416,7 +416,7 @@ def process_sample(sample_index, run_info, args, pssm):
 
     logger.info('Running remap (%d of %d).', sample_index+1, len(run_info.samples))
     debug_file_prefix = None  # os.path.join(sample_scratch_path, 'debug')
-    with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'rU') as prelim_csv, \
+    with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'r') as prelim_csv, \
             open(os.path.join(sample_scratch_path, 'remap.csv'), 'w') as remap_csv, \
             open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'w') as counts_csv, \
             open(os.path.join(sample_scratch_path, 'remap_conseq.csv'), 'w') as conseq_csv, \
@@ -436,7 +436,7 @@ def process_sample(sample_index, run_info, args, pssm):
               nthreads=1)
 
     logger.info('Running sam2aln (%d of %d).', sample_index+1, len(run_info.samples))
-    with open(os.path.join(sample_scratch_path, 'remap.csv'), 'rU') as remap_csv, \
+    with open(os.path.join(sample_scratch_path, 'remap.csv'), 'r') as remap_csv, \
             open(os.path.join(sample_scratch_path, 'aligned.csv'), 'w') as aligned_csv, \
             open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'w') as conseq_ins_csv, \
             open(os.path.join(sample_scratch_path, 'failed_read.csv'), 'w') as failed_csv, \
@@ -449,10 +449,10 @@ def process_sample(sample_index, run_info, args, pssm):
                 clipping_csv=clipping_csv)
 
     logger.info('Running aln2counts (%d of %d).', sample_index+1, len(run_info.samples))
-    with open(os.path.join(sample_scratch_path, 'aligned.csv'), 'rU') as aligned_csv, \
-            open(os.path.join(sample_scratch_path, 'g2p_aligned.csv'), 'rU') as g2p_aligned_csv, \
-            open(os.path.join(sample_scratch_path, 'clipping.csv'), 'rU') as clipping_csv, \
-            open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'rU') as conseq_ins_csv, \
+    with open(os.path.join(sample_scratch_path, 'aligned.csv'), 'r') as aligned_csv, \
+            open(os.path.join(sample_scratch_path, 'g2p_aligned.csv'), 'r') as g2p_aligned_csv, \
+            open(os.path.join(sample_scratch_path, 'clipping.csv'), 'r') as clipping_csv, \
+            open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'r') as conseq_ins_csv, \
             open(os.path.join(sample_scratch_path, 'nuc.csv'), 'w') as nuc_csv, \
             open(os.path.join(sample_scratch_path, 'amino.csv'), 'w') as amino_csv, \
             open(os.path.join(sample_scratch_path, 'coord_ins.csv'), 'w') as coord_ins_csv, \
@@ -476,7 +476,7 @@ def process_sample(sample_index, run_info, args, pssm):
     logger.info('Running coverage_plots (%d of %d).', sample_index+1, len(run_info.samples))
     coverage_maps_path = os.path.join(args.qc_path, 'coverage_maps')
     makedirs(coverage_maps_path)
-    with open(os.path.join(sample_scratch_path, 'amino.csv'), 'rU') as amino_csv, \
+    with open(os.path.join(sample_scratch_path, 'amino.csv'), 'r') as amino_csv, \
             open(os.path.join(sample_scratch_path, 'coverage_scores.csv'), 'w') as coverage_scores_csv:
         coverage_plot(amino_csv,
                       coverage_scores_csv,
@@ -516,7 +516,7 @@ def summarize_run(args, run_json):
                                                 records,
                                                 read_lengths,
                                                 summary)
-        with open(quality_path, 'rU') as quality, \
+        with open(quality_path, 'r') as quality, \
                 open(bad_cycles_path, 'w') as bad_cycles, \
                 open(bad_tiles_path, 'w') as bad_tiles:
             report_bad_cycles(quality, bad_cycles, bad_tiles)
@@ -541,7 +541,7 @@ def summarize_samples(args, run_json, run_summary):
                                            'scratch',
                                            sample['Name'])
         read_summary_path = os.path.join(sample_scratch_path, 'read_summary.csv')
-        with open(read_summary_path, 'rU') as read_summary:
+        with open(read_summary_path, 'r') as read_summary:
             reader = csv.DictReader(read_summary)
             for row in reader:
                 sample_base_count = int(row['base_count'])
@@ -550,7 +550,7 @@ def summarize_samples(args, run_json, run_summary):
                     base_count += sample_base_count
         coverage_summary_path = os.path.join(sample_scratch_path,
                                              'coverage_summary.csv')
-        with open(coverage_summary_path, 'rU') as coverage_summary:
+        with open(coverage_summary_path, 'r') as coverage_summary:
             reader = csv.DictReader(coverage_summary)
             for row in reader:
                 region_width = int(row['region_width'])
@@ -603,7 +603,7 @@ def collate_samples(args, run_info):
                 sample_scratch_path = os.path.join(scratch_path, sample_name)
                 srcfile = os.path.join(sample_scratch_path, filename)
                 try:
-                    with open(srcfile, 'rU') as fin:
+                    with open(srcfile, 'r') as fin:
                         reader = csv.reader(fin)
                         for i, row in enumerate(reader):
                             if i == 0:
@@ -639,13 +639,13 @@ def main():
     else:
         json_path = os.path.join(args.data_path, 'input', 'AppSession.json')
         try:
-            with open(json_path, 'rU') as json_file:
+            with open(json_path, 'r') as json_file:
                 run_json = parse_json(json_file)
         except:
             if os.path.exists(json_path):
                 # copy the input file to the output dir for postmortem analysis
                 logger.error("Error occurred while parsing '%s'" % json_path)
-                with open(json_path, 'rU') as json_file:
+                with open(json_path, 'r') as json_file:
                     file_cont = json_file.read()
                 out_path = os.path.join(args.data_path, 'logs', 'AppSession.json')
                 with open(out_path, 'w') as json_file:
