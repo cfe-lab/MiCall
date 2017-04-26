@@ -100,6 +100,8 @@ class SequenceReport(object):
         self.conseq_mixture_cutoffs = list(conseq_mixture_cutoffs)
         self.conseq_mixture_cutoffs.insert(0, MAX_CUTOFF)
         self.callback = None
+        self.g2p_overlap_aminos = None
+        self.g2p_overlap_region_name = None
 
         # {seed_name: {pos: count}}
         self.clipping_counts = clipping_counts or defaultdict(Counter)
@@ -127,7 +129,7 @@ class SequenceReport(object):
                       progress=0,
                       max_progress=self.callback_max)
 
-    def _count_reads(self, aligned_reads, is_overlap):
+    def _count_reads(self, aligned_reads):
         """
         Parses contents of aligned CSV.
 
@@ -152,16 +154,15 @@ class SequenceReport(object):
                     self.callback(progress=self.callback_progress)
                     self.callback_next += self.callback_chunk_size
 
-            if not is_overlap:
-                # first run, prepare containers
-                if not self.seed_aminos:
-                    self.insert_writer.start_group(self.seed,
-                                                   self.qcut)
-                    for reading_frame in range(3):
-                        self.seed_aminos[reading_frame] = []
+            # first run, prepare containers
+            if not self.seed_aminos:
+                self.insert_writer.start_group(self.seed,
+                                               self.qcut)
+                for reading_frame in range(3):
+                    self.seed_aminos[reading_frame] = []
 
-                # record this read to calculate insertions later
-                self.insert_writer.add_nuc_read('-'*offset + nuc_seq, count)
+            # record this read to calculate insertions later
+            self.insert_writer.add_nuc_read('-'*offset + nuc_seq, count)
 
             # cycle through reading frames
             for reading_frame, frame_seed_aminos in self.seed_aminos.items():
@@ -179,7 +180,7 @@ class SequenceReport(object):
                     # update amino acid counts
                     codon = offset_nuc_seq[nuc_pos:nuc_pos + 3]
                     seed_amino = frame_seed_aminos[codon_index]
-                    seed_amino.count_aminos(codon, count, is_overlap)
+                    seed_amino.count_aminos(codon, count)
         if self.callback:
             self.callback(progress=self.callback_max)
 
@@ -242,37 +243,10 @@ class SequenceReport(object):
             frame_seed_aminos = self.seed_aminos[reading_frame]
             self.reading_frames[coordinate_name] = reading_frame
             self.consensus[coordinate_name] = consensus
-            seed_nuc_seq = self.projects.getReference(self.seed)
-            best_seed_alignment = None
-            max_seed_score = -1
-            for seed_frame in range(3):
-                seed_amino_seq = translate(seed_nuc_seq,
-                                           offset=seed_frame,
-                                           ambig_char='-')
-                # Map seed to coordinate reference to find relevant section.
-                aseed, aref, score = self._pair_align(
-                    seed_amino_seq,
-                    coordinate_ref,
-                    gap_open=GAP_OPEN_COORD,
-                    gap_extend=GAP_EXTEND_COORD)
-                if score < max_seed_score:
-                    continue
-                max_seed_score = score
-                best_seed_alignment = (seed_amino_seq, aseed, aref)
-            seed_amino_seq, aseed, aref = best_seed_alignment
-            coord2seed = self.map_sequences(coordinate_ref,
-                                          seed_amino_seq,
-                                          aref,
-                                          aseed)
-            # Map seed to consensus to handle insertions and deletions
-            seed2conseq = self.map_sequences(seed_amino_seq, consensus)
             coordinate_inserts = {i*3 - reading_frame for i in range(len(consensus))}
             self.inserts[coordinate_name] = coordinate_inserts
             prev_conseq_index = None
             for coord_index in range(len(coordinate_ref)):
-                seed_index = coord2seed.get(coord_index)
-                # TODO: look up conseq_index in map if no match in seed, or always?
-                # conseq_index = seed2conseq.get(seed_index)
                 conseq_index = coord2conseq.get(coord_index)
                 if conseq_index is None:
                     seed_amino = SeedAmino(None)
@@ -291,6 +265,11 @@ class SequenceReport(object):
                 else:
                     seed_amino = frame_seed_aminos[conseq_index]
                     prev_conseq_index = conseq_index
+                if (coordinate_name == self.g2p_overlap_region_name and
+                        self.g2p_overlap_aminos):
+                    seed_amino.count_overlap(
+                        self.g2p_overlap_aminos[coord_index].seed_amino)
+
                 report_aminos.append(ReportAmino(seed_amino, coord_index + 1))
                 if seed_amino.consensus_nuc_index is not None:
                     coordinate_inserts.remove(seed_amino.consensus_nuc_index)
@@ -316,41 +295,37 @@ class SequenceReport(object):
                 from_index += 1
         return seq_map
 
-    def process_reads(self, g2p_aligned_csv, aligned_csv, coverage_summary=None):
-        subreports = {}  # {(refname, qcut): report}
-
+    def process_reads(self,
+                      g2p_aligned_csv,
+                      bowtie2_aligned_csv,
+                      coverage_summary=None,
+                      g2p_region_name='V3LOOP'):
         # parse CSV file containing aligned reads, grouped by reference and quality cutoff
-        for aligned_reader in (csv.DictReader(g2p_aligned_csv),
-                               csv.DictReader(aligned_csv)):
-            for key, aligned_reads in groupby(aligned_reader,
-                                               lambda row: (row['refname'], row['qcut'])):
-                subreport = subreports.get(key)
-                is_overlap = subreport is not None
-                if not is_overlap:
-                    subreport = SequenceReport(self.insert_writer,
-                                               self.projects,
-                                               self.conseq_mixture_cutoffs,
-                                               self.clipping_counts,
-                                               self.conseq_insertion_counts)
-                    subreports[key] = subreport
-                subreport.read(aligned_reads, is_overlap)
+        for aligned_csv in (bowtie2_aligned_csv, g2p_aligned_csv):
+            aligned_reader = csv.DictReader(aligned_csv)
+            if aligned_csv == bowtie2_aligned_csv:
+                g2p_overlap_region_name = g2p_region_name
+            else:
+                g2p_overlap_region_name = None
+            for _, aligned_reads in groupby(aligned_reader,
+                                            lambda row: (row['refname'], row['qcut'])):
+                self.read(aligned_reads, g2p_overlap_region_name)
 
-        for _, subreport in sorted(subreports.items()):
-            if self.insert_writer is not None:
-                subreport.write_insertions(self.insert_writer)
-            if self.nuc_writer is not None:
-                subreport.write_nuc_counts(self.nuc_writer)
-            if self.amino_writer is not None:
-                subreport.write_amino_counts(self.amino_writer,
-                                             coverage_summary=coverage_summary)
-            if self.conseq_writer is not None:
-                subreport.write_consensus(self.conseq_writer)
-            if self.fail_writer is not None:
-                subreport.write_failure(self.fail_writer)
-            if self.nuc_variants_writer is not None:
-                subreport.write_nuc_variants(self.nuc_variants_writer)
+                if self.insert_writer is not None:
+                    self.write_insertions(self.insert_writer)
+                if self.nuc_writer is not None:
+                    self.write_nuc_counts(self.nuc_writer)
+                if self.amino_writer is not None:
+                    self.write_amino_counts(self.amino_writer,
+                                            coverage_summary=coverage_summary)
+                if self.conseq_writer is not None:
+                    self.write_consensus(self.conseq_writer)
+                if self.fail_writer is not None:
+                    self.write_failure(self.fail_writer)
+                if self.nuc_variants_writer is not None:
+                    self.write_nuc_variants(self.nuc_variants_writer)
 
-    def read(self, aligned_reads, is_overlap=False):
+    def read(self, aligned_reads, g2p_overlap_region_name=None):
         """
         Reset all the counters, and read a new section of aligned reads.
         A section must have the same region, and qcut on all lines.
@@ -358,21 +333,20 @@ class SequenceReport(object):
         @param aligned_reads: an iterator of dicts generated by csv.DictReader
             Each dict corresponds to a row from an aligned.CSV file and
             corresponds to a single aligned read.
-        @param is_overlap: true if this group of reads should be reported as
-            G2P overlap.
+        @param g2p_overlap_region_name: coordinate region name to record as G2P
+            overlap instead of the usual reporting.
         """
         aligned_reads = list(aligned_reads)  # lets us run multiple passes
 
-        if not is_overlap:
-            self.seed_aminos = {}  # {reading_frame: [SeedAmino(consensus_nuc_index)]}
-            self.reports = {}  # {coord_name: [ReportAmino()]}
-            self.reading_frames = {}  # {coord_name: reading_frame}
-            self.inserts = {}  # {coord_name: set([consensus_index])}
-            self.consensus = {}  # {coord_name: consensus_amino_seq}
-            self.variants = {}  # {coord_name: [(count, nuc_seq)]}
+        self.seed_aminos = {}  # {reading_frame: [SeedAmino(consensus_nuc_index)]}
+        self.reports = {}  # {coord_name: [ReportAmino()]}
+        self.reading_frames = {}  # {coord_name: reading_frame}
+        self.inserts = {}  # {coord_name: set([consensus_index])}
+        self.consensus = {}  # {coord_name: consensus_amino_seq}
+        self.variants = {}  # {coord_name: [(count, nuc_seq)]}
 
         # populates these dictionaries, generates amino acid counts
-        self._count_reads(aligned_reads, is_overlap)
+        self._count_reads(aligned_reads)
 
         if not self.seed_aminos:
             # no valid reads were aligned to this region and counted, skip next step
@@ -391,6 +365,10 @@ class SequenceReport(object):
         for coordinate_name, coordinate_ref in self.coordinate_refs.items():
             self._map_to_coordinate_ref(coordinate_name, coordinate_ref)
             report_aminos = self.reports[coordinate_name]
+            if coordinate_name == g2p_overlap_region_name:
+                self.g2p_overlap_region_name = g2p_overlap_region_name
+                self.g2p_overlap_aminos = report_aminos
+                self.reports[coordinate_name] = report_aminos = []
             max_variants = self.projects.getMaxVariants(coordinate_name)
             if report_aminos and max_variants:
                 variant_counts = Counter()  # {seq: count}
@@ -717,6 +695,11 @@ class SeedAmino(object):
         consensus = self.counts.most_common(1)
         return '-' if not consensus else consensus[0][0]
 
+    def count_overlap(self, other):
+        for nuc1, nuc2 in zip(self.nucleotides, other.nucleotides):
+            nuc1.count_overlap(nuc2)
+            self.g2p_overlap = max(self.g2p_overlap, nuc1.g2p_overlap)
+
 
 class SeedNucleotide(object):
     """
@@ -794,6 +777,10 @@ class SeedNucleotide(object):
             # all reads were below the cutoff
             consensus = 'N'
         return consensus
+
+    def count_overlap(self, other):
+        for nuc in 'ACGT':
+            self.g2p_overlap += other.counts[nuc]
 
 
 class ReportAmino(object):

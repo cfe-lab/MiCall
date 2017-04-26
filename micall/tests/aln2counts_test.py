@@ -94,6 +94,15 @@ class SequenceReportTest(unittest.TestCase):
           "seed_region_names": ["R5-seed"]
         }
       ]
+    },
+    "R6": {
+      "max_variants": 10,
+      "regions": [
+        {
+          "coordinate_region": "R6",
+          "seed_region_names": ["R6a-seed", "R6b-seed"]
+        }
+      ]
     }
   },
   "regions": {
@@ -156,6 +165,26 @@ class SequenceReportTest(unittest.TestCase):
       "is_nucleotide": false,
       "reference": [
         "KFGPR"
+      ]
+    },
+    "R6a-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTAGG"
+      ],
+      "seed_group": "R6-seeds"
+    },
+    "R6b-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "GGGAAATTCAGGACAGGGGGGGGG"
+      ],
+      "seed_group": "R6-seeds"
+    },
+    "R6": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFR"
       ]
     },
     "R-NO-COORD": {
@@ -359,14 +388,14 @@ R2-seed,15,0,8,0,AAATTT
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap
-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R2-seed,R2,15,4,2,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R2-seed,R2,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.write_amino_header(self.report_file)
@@ -379,23 +408,73 @@ R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         """
         g2p_aligned_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq
-R1-seed,15,0,9,0,AAATTT
+R6a-seed,15,0,9,0,AAATTT
 """)
         aligned_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq
-R1-seed,15,0,8,0,AAATTT
+R6b-seed,15,0,8,3,AAATTT
 """)
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap
-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
-R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R6a-seed,R6,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
+R6a-seed,R6,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
+R6a-seed,R6,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.write_amino_header(self.report_file)
-        self.report.process_reads(g2p_aligned_csv, aligned_csv)
+        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R6')
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testAminoReportWithoutG2pOverlap(self):
+        """ Bowtie2 aligned reads don't overlap the coordinate reference at all.
+        """
+        g2p_aligned_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq
+R6a-seed,15,0,9,0,AAATTT
+""")
+        aligned_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq
+R6b-seed,15,0,8,15,GGGGGGGGG
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap
+R6a-seed,R6,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R6a-seed,R6,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R6a-seed,R6,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.write_amino_header(self.report_file)
+        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R6')
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testAminoReportWithIndirectG2pOverlap(self):
+        """ Bowtie2 aligned reads map to a different part of the coordinate ref.
+        """
+        g2p_aligned_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq
+R6a-seed,15,0,9,0,AAATTT
+""")
+        aligned_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq
+R6b-seed,15,0,8,9,AGG
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap
+R6a-seed,R6,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R6a-seed,R6,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R6a-seed,R6,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
+"""
+
+        self.report.write_amino_header(self.report_file)
+        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R6')
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -416,15 +495,6 @@ R2-seed,15,0,8,0,AAATTT
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap
-R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0,0
-R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0,0
-R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,0
-R1-seed,R1,15,4,4,0,0,0,9,0,0,0,0,0
-R1-seed,R1,15,5,5,0,0,0,9,0,0,0,0,0
-R1-seed,R1,15,6,6,0,0,0,9,0,0,0,0,0
-R1-seed,R1,15,,7,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,,8,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0
 R2-seed,R2,15,1,1,8,0,0,0,0,0,0,0,0
 R2-seed,R2,15,2,2,8,0,0,0,0,0,0,0,0
 R2-seed,R2,15,3,3,8,0,0,0,0,0,0,0,0
@@ -440,6 +510,15 @@ R2-seed,R2,15,,12,0,0,0,0,0,0,0,0,0
 R2-seed,R2,15,,13,0,0,0,0,0,0,0,0,0
 R2-seed,R2,15,,14,0,0,0,0,0,0,0,0,0
 R2-seed,R2,15,,15,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0,0
+R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0,0
+R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,0
+R1-seed,R1,15,4,4,0,0,0,9,0,0,0,0,0
+R1-seed,R1,15,5,5,0,0,0,9,0,0,0,0,0
+R1-seed,R1,15,6,6,0,0,0,9,0,0,0,0,0
+R1-seed,R1,15,,7,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,8,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0
 """
 
         self.report.write_nuc_header(self.report_file)
@@ -476,7 +555,7 @@ R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0
 """
 
         self.report.write_nuc_header(self.report_file)
-        self.report.process_reads(g2p_aligned_csv, aligned_csv)
+        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R1')
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -2122,6 +2201,34 @@ class SeedAminoTest(unittest.TestCase):
 
         self.assertEqual(expected_consensus, consensus)
 
+    def testOverlap(self):
+        self.amino.count_aminos('GGG', 4)
+        other = SeedAmino(consensus_nuc_index=7)
+        other.count_aminos('TAG', 5)
+        expected_counts = {'G': 4}
+        expected_g2p_overlap = 5
+
+        self.amino.count_overlap(other)
+
+        self.assertEqual(expected_counts, self.amino.counts)
+        self.assertEqual(expected_g2p_overlap, self.amino.g2p_overlap)
+        self.assertEqual(expected_g2p_overlap,
+                         self.amino.nucleotides[0].g2p_overlap)
+
+    def testOverlapPartialCodon(self):
+        self.amino.count_aminos('GGG', 4)
+        other = SeedAmino(consensus_nuc_index=7)
+        other.count_aminos('TA', 5)
+        expected_counts = {'G': 4}
+        expected_g2p_overlap = 5
+
+        self.amino.count_overlap(other)
+
+        self.assertEqual(expected_counts, self.amino.counts)
+        self.assertEqual(expected_g2p_overlap, self.amino.g2p_overlap)
+        self.assertEqual(expected_g2p_overlap,
+                         self.amino.nucleotides[0].g2p_overlap)
+
 
 class SeedNucleotideTest(unittest.TestCase):
     def setUp(self):
@@ -2310,3 +2417,15 @@ class SeedNucleotideTest(unittest.TestCase):
         expected_consensus = ''
         self.assertEqual(expected_consensus, consensus_max)
         self.assertEqual(expected_consensus, consensus_mix)
+
+    def testOverlap(self):
+        self.nuc.count_nucleotides('T', 4)
+        other = SeedNucleotide()
+        other.count_nucleotides('C', 5)
+        expected_counts = {'T': 4}
+        expected_g2p_overlap = 5
+
+        self.nuc.count_overlap(other)
+
+        self.assertEqual(expected_counts, self.nuc.counts)
+        self.assertEqual(expected_g2p_overlap, self.nuc.g2p_overlap)
