@@ -15,7 +15,7 @@ This does not assume any reading frame (because of a frameshift in HLA-B).
 import argparse
 from collections import Counter, defaultdict, OrderedDict
 import csv
-from itertools import groupby, chain
+from itertools import groupby
 import logging
 from operator import itemgetter
 import os
@@ -32,7 +32,7 @@ GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
 
 
-def parseArgs():
+def parse_args():
     parser = argparse.ArgumentParser(
         description='Post-processing of short-read alignments.')
 
@@ -95,6 +95,8 @@ class SequenceReport(object):
             determine what portion a variant must exceed before it will be
             included as a mixture in the consensus.
         """
+        self.callback_progress = 0
+        self.callback_next = self.callback_chunk_size = self.callback_max = None
         self.insert_writer = insert_writer
         self.projects = projects
         self.conseq_mixture_cutoffs = list(conseq_mixture_cutoffs)
@@ -102,6 +104,9 @@ class SequenceReport(object):
         self.callback = None
         self.g2p_overlap_aminos = None
         self.g2p_overlap_region_name = None
+        self.seed_aminos = self.reports = self.reading_frames = None
+        self.inserts = self.consensus = self.variants = None
+        self.coordinate_refs = None
 
         # {seed_name: {pos: count}}
         self.clipping_counts = clipping_counts or defaultdict(Counter)
@@ -124,7 +129,6 @@ class SequenceReport(object):
         self.callback_max = file_size
         self.callback_chunk_size = file_size / 100
         self.callback_next = self.callback_chunk_size
-        self.callback_progress = 0
         self.callback(message='... extracting statistics from alignments',
                       progress=0,
                       max_progress=self.callback_max)
@@ -287,11 +291,11 @@ class SequenceReport(object):
         from_index = to_index = 0
         for from_aa, to_aa in zip(from_aligned, to_aligned):
             if (to_index < len(to_seq) and
-                        to_aa == to_seq[to_index]):
+                    to_aa == to_seq[to_index]):
                 seq_map[from_index] = to_index
                 to_index += 1
             if (from_index < len(from_seq) and
-                        from_aa == from_seq[from_index]):
+                    from_aa == from_seq[from_index]):
                 from_index += 1
         return seq_map
 
@@ -372,6 +376,7 @@ class SequenceReport(object):
             max_variants = self.projects.getMaxVariants(coordinate_name)
             if report_aminos and max_variants:
                 variant_counts = Counter()  # {seq: count}
+                first_amino_index = last_amino_index = None
                 for report_amino in report_aminos:
                     first_amino_index = report_amino.seed_amino.consensus_nuc_index
                     if first_amino_index is not None:
@@ -413,7 +418,8 @@ class SequenceReport(object):
             self.conseq_insertion_counts[refname] = Counter(
                 {pos: len(names) for pos, names in insertion_names.items()})
 
-    def _create_amino_writer(self, amino_file):
+    @staticmethod
+    def _create_amino_writer(amino_file):
         columns = ['seed',
                    'region',
                    'q-cutoff',
@@ -470,7 +476,8 @@ class SequenceReport(object):
                     coverage_summary['coverage_region'] = region
                     coverage_summary['region_width'] = pos_count
 
-    def _create_nuc_writer(self, nuc_file):
+    @staticmethod
+    def _create_nuc_writer(nuc_file):
         return csv.DictWriter(nuc_file,
                               ['seed',
                                'region',
@@ -492,54 +499,64 @@ class SequenceReport(object):
         self.nuc_writer = self._create_nuc_writer(nuc_file)
         self.nuc_writer.writeheader()
 
+    def write_counts(self, region, seed_amino, report_amino, nuc_writer):
+        """ Write a row of nucleotide counts for a single position.
+
+        :param region: the coordinate reference name
+        :param seed_amino: the SeedAmino object for this position
+        :param ReportAmino? report_amino: the ReportAmino object for this position
+        :param nuc_writer: the CSV writer to write the row into
+        """
+        max_clip_count = 0
+        total_insertion_count = 0
+        seed_insertion_counts = self.conseq_insertion_counts[self.seed]
+        for i, seed_nuc in enumerate(seed_amino.nucleotides):
+            if seed_amino.consensus_nuc_index is None:
+                query_pos_txt = ''
+                insertion_count = clip_count = 0
+            else:
+                query_pos = i + seed_amino.consensus_nuc_index + 1
+                query_pos_txt = str(query_pos)
+                clip_count = self.clipping_counts[self.seed][query_pos]
+                max_clip_count = max(clip_count, max_clip_count)
+                insertion_count = seed_insertion_counts[query_pos]
+            ref_pos = (str(i + 3*report_amino.position - 2)
+                       if report_amino is not None
+                       else '')
+            if i == 2 and report_amino is not None:
+                insertion_counts = self.insert_writer.insert_pos_counts[
+                    (self.seed, region)]
+                insertion_count += insertion_counts[report_amino.position]
+            total_insertion_count += insertion_count
+            row = {'seed': self.seed,
+                   'region': region,
+                   'q-cutoff': self.qcut,
+                   'query.nuc.pos': query_pos_txt,
+                   'refseq.nuc.pos': ref_pos,
+                   'del': seed_nuc.counts['-'],
+                   'ins': insertion_count,
+                   'clip': clip_count,
+                   'g2p_overlap': seed_nuc.g2p_overlap}
+            for base in 'ACTGN':
+                row[base] = seed_nuc.counts[base]
+            nuc_writer.writerow(row)
+        if report_amino is not None:
+            report_amino.max_clip_count = max_clip_count
+            report_amino.insertion_count = total_insertion_count
+
     def write_nuc_counts(self, nuc_writer=None):
         nuc_writer = nuc_writer or self.nuc_writer
-        def write_counts(region, seed_amino, report_amino):
-            max_clip_count = 0
-            total_insertion_count = 0
-            seed_insertion_counts = self.conseq_insertion_counts[self.seed]
-            for i, seed_nuc in enumerate(seed_amino.nucleotides):
-                if seed_amino.consensus_nuc_index is None:
-                    query_pos_txt = ''
-                    insertion_count = clip_count = 0
-                else:
-                    query_pos = i + seed_amino.consensus_nuc_index + 1
-                    query_pos_txt = str(query_pos)
-                    clip_count = self.clipping_counts[self.seed][query_pos]
-                    max_clip_count = max(clip_count, max_clip_count)
-                    insertion_count = seed_insertion_counts[query_pos]
-                ref_pos = (str(i + 3*report_amino.position - 2)
-                           if report_amino is not None
-                           else '')
-                if i == 2 and report_amino is not None:
-                    insertion_counts = self.insert_writer.insert_pos_counts[
-                        (self.seed, region)]
-                    insertion_count += insertion_counts[report_amino.position]
-                total_insertion_count += insertion_count
-                row = {'seed': self.seed,
-                       'region': region,
-                       'q-cutoff': self.qcut,
-                       'query.nuc.pos': query_pos_txt,
-                       'refseq.nuc.pos': ref_pos,
-                       'del': seed_nuc.counts['-'],
-                       'ins': insertion_count,
-                       'clip': clip_count,
-                       'g2p_overlap': seed_nuc.g2p_overlap}
-                for base in 'ACTGN':
-                    row[base] = seed_nuc.counts[base]
-                nuc_writer.writerow(row)
-            if report_amino is not None:
-                report_amino.max_clip_count = max_clip_count
-                report_amino.insertion_count = total_insertion_count
+
         if not self.coordinate_refs:
             for seed_amino in self.seed_aminos[0]:
-                write_counts(self.seed, seed_amino, None)
+                self.write_counts(self.seed, seed_amino, None, nuc_writer)
         else:
             for region, report_aminos in self.reports.items():
                 for report_amino in report_aminos:
-                    write_counts(region, report_amino.seed_amino, report_amino)
+                    self.write_counts(region, report_amino.seed_amino, report_amino, nuc_writer)
 
-    def _create_consensus_writer(self, conseq_file):
+    @staticmethod
+    def _create_consensus_writer(conseq_file):
         return csv.DictWriter(conseq_file,
                               ['region',
                                'q-cutoff',
@@ -572,7 +589,8 @@ class SequenceReport(object):
                      'offset': offset,
                      'sequence': consensus})
 
-    def _create_nuc_variants_writer(self, nuc_variants_file):
+    @staticmethod
+    def _create_nuc_variants_writer(nuc_variants_file):
         return csv.DictWriter(nuc_variants_file,
                               ['seed',
                                'qcut',
@@ -599,7 +617,8 @@ class SequenceReport(object):
                                      count=count,
                                      seq=nuc_seq))
 
-    def _create_failure_writer(self, fail_file):
+    @staticmethod
+    def _create_failure_writer(fail_file):
         return csv.DictWriter(fail_file,
                               ['seed',
                                'region',
@@ -628,7 +647,6 @@ class SequenceReport(object):
         for coordinate_name, coordinate_inserts in self.inserts.items():
             insert_writer.write(coordinate_inserts,
                                 coordinate_name,
-                                self.reading_frames[coordinate_name],
                                 self.reports[coordinate_name])
 
 
@@ -652,17 +670,14 @@ class SeedAmino(object):
                                                   dict(self.counts))
         return 'SeedAmino({})'.format(self.consensus_nuc_index)
 
-    def count_aminos(self, codon_seq, count, is_overlap=False):
+    def count_aminos(self, codon_seq, count):
         """ Record a set of reads at this position in the seed reference.
         @param codon_seq: a string of three nucleotides that were read at this
                           position, may be padded with spaces at the start
                           or end of a sequence, or dashes for deletions
         @param count: the number of times they were read
-        @param is_overlap: is this read counted as G2P overlap?
         """
-        if is_overlap:
-            self.g2p_overlap += count
-        elif 'N' in codon_seq:
+        if 'N' in codon_seq:
             self.low_quality += count
         elif '---' == codon_seq:
             self.deletions += count
@@ -674,7 +689,7 @@ class SeedAmino(object):
         for i, nuc in enumerate(codon_seq):
             if nuc != ' ':
                 seed_nucleotide = self.nucleotides[i]
-                seed_nucleotide.count_nucleotides(nuc, count, is_overlap)
+                seed_nucleotide.count_nucleotides(nuc, count)
 
     def get_report(self):
         """ Build a report string with the counts of each amino acid.
@@ -713,18 +728,14 @@ class SeedNucleotide(object):
     def __repr__(self):
         return 'SeedNucleotide({!r})'.format(dict(self.counts))
 
-    def count_nucleotides(self, nuc_seq, count, is_overlap=False):
+    def count_nucleotides(self, nuc_seq, count):
         """ Record a set of reads at this position in the seed reference.
         @param nuc_seq: a single nucleotide letter that was read at this
         position
         @param count: the number of times it was read
-        @param is_overlap: is this read G2P overlap?
         """
         if nuc_seq == 'n':
             "Represents gap between forward and reverse read, ignore."
-        elif is_overlap:
-            if nuc_seq != '-':
-                self.g2p_overlap += count
         else:
             self.counts[nuc_seq] += count
 
@@ -739,7 +750,7 @@ class SeedNucleotide(object):
     def get_consensus(self, mixture_cutoff):
         """ Choose consensus nucleotide or mixture from the counts.
 
-        @param conseq_mixture_cutoffs: the minimum fraction of reads
+        @param mixture_cutoff: the minimum fraction of reads
             that a nucleotide must be found in for it to be considered,
             or MAX_CUTOFF to consider only the most common nucleotide.
         @return: The letter for the consensus nucleotide or mixture.
@@ -817,6 +828,7 @@ class InsertionWriter(object):
 
         # {(seed, region): {pos: insert_count}}
         self.insert_pos_counts = defaultdict(Counter)
+        self.seed = self.qcut = self.nuc_seqs = None
 
     def start_group(self, seed, qcut):
         """ Start a new group of reads.
@@ -838,7 +850,7 @@ class InsertionWriter(object):
         """
         self.nuc_seqs[offset_sequence] += count
 
-    def write(self, inserts, region, reading_frame=0, report_aminos=[]):
+    def write(self, inserts, region, report_aminos=None):
         """ Write any insert ranges to the file.
 
         Sequence data comes from the reads that were added to the current group.
@@ -846,13 +858,13 @@ class InsertionWriter(object):
             reported as insertions.
         @param region: the name of the coordinate region the current group was
             mapped to
-        @param reading_frame: the reading frame to use when translating
-            nucleotide sequences to amino acids - an integer from 0 to 2.
         @param report_aminos: a list of ReportAmino objects that represent the
             sequence that successfully mapped to the coordinate reference.
         """
         if len(inserts) == 0:
             return
+
+        report_aminos = report_aminos or []
 
         region_insert_pos_counts = self.insert_pos_counts[(self.seed, region)]
         inserts = list(inserts)
@@ -891,7 +903,7 @@ class InsertionWriter(object):
         # record insertions to CSV
         for left, counts in insert_counts.items():
             for insert_seq, count in counts.items():
-                insert_before = insert_targets.get(left, None)
+                insert_before = insert_targets.get(left)
                 # Only care about insertions in the middle of the sequence,
                 # so ignore any that come before or after the reference
                 if not report_aminos or insert_before not in (1, None):
@@ -944,6 +956,7 @@ def aln2counts(aligned_csv,
     @param coverage_summary_csv: Open file handle to write coverage depth.
     @param clipping_csv: Open file handle containing soft clipping counts
     @param conseq_ins_csv: Open file handle containing insertions relative to consensus sequence
+    @param g2p_aligned_csv: Open file handle containing aligned reads (from fastq_g2p)
     """
     # load project information
     projects = project_config.ProjectConfig.loadDefault()
@@ -959,7 +972,7 @@ def aln2counts(aligned_csv,
     report.write_nuc_header(nuc_csv)
     report.write_nuc_variants_header(nuc_variants_csv)
     if coverage_summary_csv is None:
-        coverage_summary = None
+        coverage_summary = coverage_writer = None
     else:
         coverage_writer = csv.DictWriter(coverage_summary_csv,
                                          ['avg_coverage',
@@ -988,7 +1001,7 @@ def aln2counts(aligned_csv,
 
 
 def main():
-    args = parseArgs()
+    args = parse_args()
     aln2counts(args.aligned_csv,
                args.nuc_csv,
                args.amino_csv,
@@ -999,16 +1012,3 @@ def main():
                clipping_csv=args.clipping_csv,
                conseq_ins_csv=args.conseq_ins_csv,
                g2p_aligned_csv=args.g2p_aligned_csv)
-
-if __name__ == '__main__':
-    main()
-elif __name__ == '__live_coding__':
-    import unittest
-    from micall.tests.aln2counts_test import InsertionWriterTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(InsertionWriterTest("testInsertDifferentReadingFrame"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

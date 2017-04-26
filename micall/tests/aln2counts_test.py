@@ -1990,7 +1990,7 @@ R1-seed,R1,15,8,D,1,
 
         self.writer.add_nuc_read(offset_sequence='A' + self.nuc_seq_acdef,
                                  count=1)
-        self.writer.write(inserts=[7], region='R1', reading_frame=2)
+        self.writer.write(inserts=[7], region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
