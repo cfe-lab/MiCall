@@ -27,11 +27,14 @@ The scenarios that each file tests are:
 * 2080A-V3LOOP - PR contamination below remap threshold
 * 2090A-HCV - mixed infection of HCV 1A and 1B, in the NS5b region.
 * 2100A-HCV-1337B-V3LOOP - two samples using same tags on different regions
-* 2110A-V3LOOP - 5 clean codons, then 1 stop codon in codon 6, 2 low-quality
-  codons in codon 7, 3 partial deletions in codon 8, 4 insertions in codon 9,
-  3 soft clipped reads in codons 10 and 11, 1 deletion in codon 12, followed by
-  6 clean codons with only 7 reads covering them
-* 2120A-PR - 5 clean codons, then 1 stop codon in codon 6, 2 low-quality
-  codons in codon 7, 3 partial deletions in codon 8, 4 insertions in codon 9,
-  3 soft clipped reads in codons 10 and 11, 1 deletion in codon 12, followed by
-  6 clean codons with only 7 reads covering them (soft clipped and insertions not working)
+* 2110A-V3LOOP - 5 clean codons, then 1 read with a stop codon in codon 6, 2
+  low-quality reads in codon 7, 3 reads with partial deletions in codon 8, 4
+  reads with insertions after codon 9, 3 soft clipped reads in codons 10 and 11,
+  1 read with a deletion in codon 12, followed by 6 clean codons with only 10
+  reads covering them. (Soft clipping and insertions are not being displayed
+  yet with G2P alignment.)
+* 2120A-PR - 29 codons with no coverage, clean codons from 30-46, then 1 read
+  with stop codons in codons 47-49, 2 low-quality reads in codons 50-52, 3
+  reads with partial deletions in codons 53 and 54, 4 reads with insertions
+  after codon 56, 3 soft clipped reads in codons 59-64, 1 read with a deletion
+  in codons 65-67, followed by 18 clean codons with only 10 reads covering them.

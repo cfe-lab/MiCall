@@ -478,6 +478,128 @@ R6a-seed,R6,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testAminoReportWithDifferingConsensus(self):
+        """ Some reads that didn't map in G2P, mapped to same seed with bowtie2.
+        """
+        self.report.projects.load(StringIO("""\
+{
+  "projects": {
+    "HIV": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "R1",
+          "seed_region_names": ["HIV1-C-BR-JX140663-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "HIV1-C-BR-JX140663-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "GAAATTTGGCCCGAGA"
+      ]
+    },
+    "R1": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFGPR"
+      ]
+    }
+  }
+}
+"""))
+        self.report.remap_conseqs = {'HIV1-C-BR-JX140663-seed': "GAAATTTCAAGGCCCGAGA"}
+        # Insert a Q in the middle                                      Q^^
+        g2p_aligned_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq
+HIV1-C-BR-JX140663-seed,15,0,9,1,AAATTTGGC
+""")
+        aligned_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq
+HIV1-C-BR-JX140663-seed,15,0,6,1,AAATTTCAAGGCCCG
+HIV1-C-BR-JX140663-seed,15,0,2,1,AA---TCAAGGCCCG
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap
+HIV1-C-BR-JX140663-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
+HIV1-C-BR-JX140663-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6
+HIV1-C-BR-JX140663-seed,R1,15,8,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
+HIV1-C-BR-JX140663-seed,R1,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
+HIV1-C-BR-JX140663-seed,R1,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.write_amino_header(self.report_file)
+        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R1')
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testAminoReportOverlapWithDifferentSeed(self):
+        """ Some reads that didn't map in G2P, mapped to different seed with bowtie2.
+        """
+        self.report.projects.load(StringIO("""\
+{
+  "projects": {
+    "HIV": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "R1",
+          "seed_region_names": ["HIV1-C-BR-JX140663-seed", "R1-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "HIV1-C-BR-JX140663-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "GAAATTTGGCCCGAGA"
+      ]
+    },
+    "R1-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTGGCCCGAGA"
+      ]
+    },
+    "R1": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFGPR"
+      ]
+    }
+  }
+}
+"""))
+        self.report.remap_conseqs = {'R1-seed': "AAATTTGGCCCGAGA"}
+        g2p_aligned_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq
+HIV1-C-BR-JX140663-seed,15,0,9,0,GAAATTTGGC
+""")
+        aligned_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq
+R1-seed,15,0,8,0,AAATTTGGCCCG
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap
+HIV1-C-BR-JX140663-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
+HIV1-C-BR-JX140663-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
+HIV1-C-BR-JX140663-seed,R1,15,8,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
+HIV1-C-BR-JX140663-seed,R1,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
+HIV1-C-BR-JX140663-seed,R1,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.write_amino_header(self.report_file)
+        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R1')
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testSecondSourceNucleotideReport(self):
         """ In this sample, there are two sequences, each with two codons.
 
@@ -1086,6 +1208,27 @@ R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1,15,4,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0
 R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0
 """
+
+        self.report.read(aligned_reads)
+        self.report.write_amino_header(self.report_file)
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testDeletionNotAlignedToCodons(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,5,0,AAAC---GA
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,4,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0
+R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0
+"""
+        self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
 
         self.report.read(aligned_reads)
         self.report.write_amino_header(self.report_file)
@@ -1931,6 +2074,182 @@ R1-seed,15,R1b,0,9,AAATTT
         self.report.write_nuc_variants()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testReadRemapConseqs(self):
+        remap_conseqs_csv = StringIO("""\
+region,sequence
+R1,ACATAGCCCGGG
+R2,GCCATTAAA
+""")
+        expected_conseqs = {'R1': 'ACATAGCCCGGG', 'R2': 'GCCATTAAA'}
+
+        self.report.read_remap_conseqs(remap_conseqs_csv)
+
+        self.assertEqual(expected_conseqs, self.report.remap_conseqs)
+
+    def testAlignDeletionsWithoutDeletion(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R1-seed,15,0,10,0,AAATTTAGG")
+        self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
+        expected_reads = [dict(refname='R1-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='0',
+                               seq='AAATTTAGG')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
+    def testAlignDeletionsNoChange(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R1-seed,15,0,10,0,AAA---AGG")
+        self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
+        expected_reads = [dict(refname='R1-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='0',
+                               seq='AAA---AGG')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
+    def testAlignDeletionsShiftedRight(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R1-seed,15,0,10,0,AAAA---GG")
+        self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
+        expected_reads = [dict(refname='R1-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='0',
+                               seq='AAA---AGG')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
+    def testAlignDeletionsShiftedLeft(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R1-seed,15,0,10,0,AA---AAGG")
+        self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
+        expected_reads = [dict(refname='R1-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='0',
+                               seq='AAA---AGG')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
+    def testAlignDeletionsUsingOffset(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R1-seed,15,0,10,1,AA---AGG")
+        self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
+        expected_reads = [dict(refname='R1-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='1',
+                               seq='AA---AGG')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
+    def testAlignDeletionsUsingReadingFrame1(self):
+        self.report.projects.load(StringIO("""\
+        {
+          "projects": {
+            "R1": {
+              "max_variants": 10,
+              "regions": [
+                {
+                  "coordinate_region": "R1",
+                  "seed_region_names": ["R1-seed"]
+                }
+              ]
+            }
+          },
+          "regions": {
+            "R1-seed": {
+              "is_nucleotide": true,
+              "reference": ["CCAAATTTAGG"]
+            },
+            "R1": {
+              "is_nucleotide": false,
+              "reference": ["KFR"]
+            }
+          }
+        }
+        """))
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R1-seed,15,0,10,2,AAA---AGG")
+        self.report.remap_conseqs = {'R1-seed': 'CCAAATTTAGG'}
+        expected_reads = [dict(refname='R1-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='2',
+                               seq='AAA---AGG')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
+    def testAlignDeletionsMultipleReadingFrames(self):
+        self.report.projects.load(StringIO("""\
+{
+  "projects": {
+    "Rs": {
+      "max_variants": 10,
+      "regions": [
+        {
+          "coordinate_region": "R1",
+          "seed_region_names": ["R-seed"]
+        },
+        {
+          "coordinate_region": "R2",
+          "seed_region_names": ["R-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R-seed": {
+      "is_nucleotide": true,
+      "reference": ["GAAATTTCAGTTTTCGAGAGCAT"],
+      "comment": "   ^KkkFffQqq^^^^RrrEeeHhh (two reading frames)"
+    },
+    "R1": {
+      "is_nucleotide": false,
+      "reference": ["KFQ"]
+    },
+    "R2": {
+      "is_nucleotide": false,
+      "reference": ["REH"]
+    }
+  }
+}
+"""))
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R-seed,15,0,10,1,AAA---CAGTTTTC---AGCAT")
+        self.report.remap_conseqs = {'R-seed': 'GAAATTTCAGTTTTCGAGAGCAT'}
+        expected_reads = [dict(refname='R-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='1',
+                               seq='AAA---CAGTTTT---CAGCAT')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
 
 
 class InsertionWriterTest(unittest.TestCase):

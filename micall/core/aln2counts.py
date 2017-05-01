@@ -7,12 +7,10 @@ Re-aligns sequence variants to lab standard references (e.g., HXB2).
 Reports nucleotide and amino acid frequencies by reference coordinates.
 Outputs consensus sequences in same coordinate system.
 This assumes a consistent reading frame across the entire region.
-
-Outputs nucleotide counts for HLA-B in nucleotide frequencies file.
-This does not assume any reading frame (because of a frameshift in HLA-B).
 """
 
 import argparse
+import re
 from collections import Counter, defaultdict, OrderedDict
 import csv
 from itertools import groupby
@@ -30,6 +28,7 @@ AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'
 CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
+G2P_SEED_NAME = "HIV1-C-BR-JX140663-seed"
 
 
 def parse_args():
@@ -37,16 +36,19 @@ def parse_args():
         description='Post-processing of short-read alignments.')
 
     parser.add_argument('aligned_csv',
-                        type=argparse.FileType('rU'),
+                        type=argparse.FileType('r'),
                         help='input CSV with aligned reads')
     parser.add_argument('g2p_aligned_csv',
-                        type=argparse.FileType('rU'),
+                        type=argparse.FileType('r'),
                         help='input CSV with aligned reads from G2P step')
     parser.add_argument('clipping_csv',
-                        type=argparse.FileType('rU'),
+                        type=argparse.FileType('r'),
                         help='input CSV with count of soft-clipped reads at each position')
+    parser.add_argument('remap_conseq_csv',
+                        type=argparse.FileType('r'),
+                        help='input CSV with consensus sequences from remap step')
     parser.add_argument('conseq_ins_csv',
-                        type=argparse.FileType('rU'),
+                        type=argparse.FileType('r'),
                         help='input CSV with insertions relative to consensus sequence')
     parser.add_argument('nuc_csv',
                         type=argparse.FileType('w'),
@@ -106,7 +108,7 @@ class SequenceReport(object):
         self.g2p_overlap_region_name = None
         self.seed_aminos = self.reports = self.reading_frames = None
         self.inserts = self.consensus = self.variants = None
-        self.coordinate_refs = None
+        self.coordinate_refs = self.remap_conseqs = None
 
         # {seed_name: {pos: count}}
         self.clipping_counts = clipping_counts or defaultdict(Counter)
@@ -189,7 +191,7 @@ class SequenceReport(object):
             self.callback(progress=self.callback_max)
 
     def _pair_align(self, reference, query, gap_open=15, gap_extend=5, use_terminal_gap_penalty=1):
-        """ Align a query sequence to a reference sequence.
+        """ Align a query sequence of amino acids to a reference sequence.
 
         @return: (aligned_ref, aligned_query, score)
         """
@@ -311,6 +313,9 @@ class SequenceReport(object):
                 g2p_overlap_region_name = g2p_region_name
             else:
                 g2p_overlap_region_name = None
+                if self.remap_conseqs is not None:
+                    self.remap_conseqs[G2P_SEED_NAME] = (
+                        self.projects.getReference(G2P_SEED_NAME))
             for _, aligned_reads in groupby(aligned_reader,
                                             lambda row: (row['refname'], row['qcut'])):
                 self.read(aligned_reads, g2p_overlap_region_name)
@@ -340,7 +345,7 @@ class SequenceReport(object):
         @param g2p_overlap_region_name: coordinate region name to record as G2P
             overlap instead of the usual reporting.
         """
-        aligned_reads = list(aligned_reads)  # lets us run multiple passes
+        aligned_reads = self.align_deletions(aligned_reads)
 
         self.seed_aminos = {}  # {reading_frame: [SeedAmino(consensus_nuc_index)]}
         self.reports = {}  # {coord_name: [ReportAmino()]}
@@ -649,6 +654,85 @@ class SequenceReport(object):
                                 coordinate_name,
                                 self.reports[coordinate_name])
 
+    def read_remap_conseqs(self, remap_conseq_csv):
+        self.remap_conseqs = dict(map(itemgetter('region', 'sequence'),
+                                      csv.DictReader(remap_conseq_csv)))
+
+    def align_deletions(self, aligned_reads):
+        """ Align codon deletions to the codon boundaries.
+
+        :param aligned_reads: group of rows from the CSV reader of the aligned
+            reads.
+        :return: a list of rows from the CSV reader with codon deletions
+            aligned to the codon boundaries.
+        """
+        result = list(aligned_reads)
+        if self.remap_conseqs is None:
+            return result
+        reading_frames = None
+        for row in result:
+            if reading_frames is None:
+                reading_frames = self.load_reading_frames(row['refname'])
+            seq = row['seq']
+            seq_offset = int(row['offset'])
+            chunks = []
+            length = 0
+            for match in re.finditer(r'-{3}', seq):
+                start = match.start()
+                end = match.end()
+                nuc_pos = seq_offset + start
+                reading_frame = reading_frames[nuc_pos]
+                offset = (nuc_pos + reading_frame) % 3
+                if offset == 1:
+                    chunks.append(seq[length:start - 1])
+                    chunks.append(match.group())
+                    chunks.append(seq[start - 1:start])
+                    length = end
+                elif offset == 2:
+                    chunks.append(seq[length:start])
+                    chunks.append(seq[end:end + 1])
+                    chunks.append(match.group())
+                    length = end + 1
+            chunks.append(seq[length:])
+            row['seq'] = ''.join(chunks)
+        return result
+
+    def load_reading_frames(self, seed_name):
+        """ Calculate reading frames along a consensus sequence.
+
+        :param seed_name: the name of the seed to look up
+        :return: {pos: frame} zero-based position and reading frame for each
+            position. Frame 1 needs one nucleotide inserted at start.
+        """
+        result = Counter()
+        conseq = self.remap_conseqs[seed_name]
+        coord_refs = self.projects.getCoordinateReferences(seed_name)
+        for coord_ref in coord_refs.values():
+            best_alignment = (-1000000, '', '', 0)
+            for frame_index in range(3):
+                conseq_aminos = translate('-'*frame_index + conseq)
+                aconseq, acoord, score = self._pair_align(conseq_aminos,
+                                                          coord_ref,
+                                                          GAP_OPEN_COORD,
+                                                          GAP_EXTEND_COORD)
+                best_alignment = max(best_alignment, (score, aconseq, acoord, frame_index))
+            score, aconseq, acoord, frame_index = best_alignment
+            if frame_index == 0:
+                continue  # defaults to 0, no need to record
+            conseq_codon_index = -1
+            coord_codon_index = -1
+            for conseq_amino, coord_amino in zip(aconseq, acoord):
+                if conseq_amino != '-':
+                    conseq_codon_index += 1
+                if coord_amino == '-':
+                    continue
+                coord_codon_index += 1
+                
+                nuc_pos = conseq_codon_index * 3 - frame_index
+                for i in range(3):
+                    result[nuc_pos+i] = frame_index
+        return result
+
 
 class SeedAmino(object):
     """
@@ -938,7 +1022,8 @@ def aln2counts(aligned_csv,
                coverage_summary_csv=None,
                clipping_csv=None,
                conseq_ins_csv=None,
-               g2p_aligned_csv=None):
+               g2p_aligned_csv=None,
+               remap_conseq_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -957,6 +1042,8 @@ def aln2counts(aligned_csv,
     @param clipping_csv: Open file handle containing soft clipping counts
     @param conseq_ins_csv: Open file handle containing insertions relative to consensus sequence
     @param g2p_aligned_csv: Open file handle containing aligned reads (from fastq_g2p)
+    @param remap_conseq_csv: Open file handle containing consensus sequences
+        from the remap step.
     """
     # load project information
     projects = project_config.ProjectConfig.loadDefault()
@@ -992,6 +1079,8 @@ def aln2counts(aligned_csv,
         report.read_clipping(clipping_csv)
     if conseq_ins_csv is not None:
         report.read_insertions(conseq_ins_csv)
+    if remap_conseq_csv is not None:
+        report.read_remap_conseqs(remap_conseq_csv)
 
     report.process_reads(g2p_aligned_csv, aligned_csv, coverage_summary)
 
@@ -1011,4 +1100,5 @@ def main():
                args.nuc_variants_csv,
                clipping_csv=args.clipping_csv,
                conseq_ins_csv=args.conseq_ins_csv,
-               g2p_aligned_csv=args.g2p_aligned_csv)
+               g2p_aligned_csv=args.g2p_aligned_csv,
+               remap_conseq_csv=args.remap_conseq_csv)

@@ -575,9 +575,8 @@ def remap(fastq1,
             if refname == '*':
                 continue
             refgroup = projects.getSeedGroup(refname)
-            seed_count_threshold = 1 if refgroup == 'HIV1-seed' else count_threshold
             _best_ref, best_count = refgroups.get(refgroup,
-                                                  (None, seed_count_threshold-1))
+                                                  (None, count_threshold - 1))
             if filtered_count > best_count:
                 refgroups[refgroup] = (refname, filtered_count)
 

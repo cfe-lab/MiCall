@@ -470,7 +470,7 @@ def sam2aln(remap_csv,
 
     pair_processor = PairProcessor(is_clipping=clipping_csv is not None)
     empty_region = defaultdict(Counter)
-    aligned = defaultdict(empty_region.copy)
+    aligned = defaultdict(empty_region.copy)  # {rname: {qcut: {mseq: count}}}
     if nthreads:
         iter = parse_sam_in_threads(remap_csv, nthreads, pair_processor)
     else:

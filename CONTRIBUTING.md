@@ -76,7 +76,7 @@ Check that Python is already installed.
 
     python --version
 
-We have tested with Python 2.7.
+We have tested with Python 3.4.
 
 On Windows, you can install [Anaconda Python][anaconda].
 

@@ -39,6 +39,7 @@ EXCLUDED_PROJECTS = ['HCV-NS5a',
                      'RT',
                      'V3LOOP',
                      'wg1HCV']  # Avoid useless duplicates for BaseSpace version.
+# EXCLUDED_SEEDS = EXCLUDED_PROJECTS = []
 DOWNLOAD_BATCH_SIZE = 1000
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
@@ -453,6 +454,7 @@ def process_sample(sample_index, run_info, args, pssm):
             open(os.path.join(sample_scratch_path, 'g2p_aligned.csv'), 'r') as g2p_aligned_csv, \
             open(os.path.join(sample_scratch_path, 'clipping.csv'), 'r') as clipping_csv, \
             open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'r') as conseq_ins_csv, \
+            open(os.path.join(sample_scratch_path, 'remap_conseq.csv'), 'r') as remap_conseq_csv, \
             open(os.path.join(sample_scratch_path, 'nuc.csv'), 'w') as nuc_csv, \
             open(os.path.join(sample_scratch_path, 'amino.csv'), 'w') as amino_csv, \
             open(os.path.join(sample_scratch_path, 'coord_ins.csv'), 'w') as coord_ins_csv, \
@@ -471,7 +473,8 @@ def process_sample(sample_index, run_info, args, pssm):
                    coverage_summary_csv=coverage_summary_csv,
                    clipping_csv=clipping_csv,
                    conseq_ins_csv=conseq_ins_csv,
-                   g2p_aligned_csv=g2p_aligned_csv)
+                   g2p_aligned_csv=g2p_aligned_csv,
+                   remap_conseq_csv=remap_conseq_csv)
 
     logger.info('Running coverage_plots (%d of %d).', sample_index+1, len(run_info.samples))
     coverage_maps_path = os.path.join(args.qc_path, 'coverage_maps')
