@@ -103,6 +103,19 @@ class SequenceReportTest(unittest.TestCase):
           "seed_region_names": ["R6a-seed", "R6b-seed"]
         }
       ]
+    },
+    "R7": {
+      "max_variants": 10,
+      "regions": [
+        {
+          "coordinate_region": "R7a",
+          "seed_region_names": ["R7-seed"]
+        },
+        {
+          "coordinate_region": "R7b",
+          "seed_region_names": ["R7-seed"]
+        }
+      ]
     }
   },
   "regions": {
@@ -185,6 +198,24 @@ class SequenceReportTest(unittest.TestCase):
       "is_nucleotide": false,
       "reference": [
         "KFR"
+      ]
+    },
+    "R7-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTCAGACCCCACGAGAGCAT"
+      ]
+    },
+    "R7a": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFQ"
+      ]
+    },
+    "R7b": {
+      "is_nucleotide": false,
+      "reference": [
+        "REH"
       ]
     },
     "R-NO-COORD": {
@@ -1578,6 +1609,42 @@ R1-seed,15,0,2,3,TTATCCTAC
         expected_text = """\
 seed,region,qcut,queryseq,refseq
 R1-seed,R1,15,-LSY,KFR
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_failure_header(self.report_file)
+        self.report.write_failure()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testMultipleCoordinateRefsNoAlignment(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R7-seed,15,0,2,0,TTATCCTAC
+""")
+
+        expected_text = """\
+seed,region,qcut,queryseq,refseq
+R7-seed,R7a,15,LSY,KFQ
+R7-seed,R7b,15,LSY,REH
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_failure_header(self.report_file)
+        self.report.write_failure()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testMultipleCoordinateRefsOneAlignment(self):
+        """ If one coordinate aligns, don't complain about the others.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R7-seed,15,0,2,0,AAATTT
+""")
+
+        expected_text = """\
+seed,region,qcut,queryseq,refseq
 """
 
         self.report.read(aligned_reads)

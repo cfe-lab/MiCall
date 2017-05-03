@@ -638,14 +638,15 @@ class SequenceReport(object):
 
     def write_failure(self, fail_writer=None):
         fail_writer = fail_writer or self.fail_writer
-        for region, report_aminos in self.reports.items():
-            if not report_aminos:
-                coordinate_ref = self.projects.getReference(region)
-                fail_writer.writerow(dict(seed=self.seed,
-                                          region=region,
-                                          qcut=self.qcut,
-                                          queryseq=self.consensus[region],
-                                          refseq=coordinate_ref))
+        if any(self.reports.values()):
+            return  # Successfully aligned at least one coordinate reference.
+        for region, report_aminos in sorted(self.reports.items()):
+            coordinate_ref = self.projects.getReference(region)
+            fail_writer.writerow(dict(seed=self.seed,
+                                      region=region,
+                                      qcut=self.qcut,
+                                      queryseq=self.consensus[region],
+                                      refseq=coordinate_ref))
 
     def write_insertions(self, insert_writer=None):
         insert_writer = insert_writer or self.insert_writer
