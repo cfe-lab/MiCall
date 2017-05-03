@@ -22,7 +22,7 @@ from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from micall.core.sam2aln import sam2aln
 from micall.monitor import error_metrics_parser, quality_metrics_parser
-from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT
+from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
 from micall.core.coverage_plots import coverage_plot
@@ -405,7 +405,9 @@ def process_sample(sample_index, run_info, args, pssm):
                   unmapped1=g2p_unmapped1,
                   unmapped2=g2p_unmapped2,
                   aligned_csv=g2p_aligned_csv,
-                  min_count=DEFAULT_MIN_COUNT)
+                  min_count=DEFAULT_MIN_COUNT,
+                  min_valid=MIN_VALID,
+                  min_valid_percent=MIN_VALID_PERCENT)
 
     logger.info('Running prelim_map (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'w') as prelim_csv:

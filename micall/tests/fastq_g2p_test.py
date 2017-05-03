@@ -60,8 +60,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
 """
         expected_summary_csv = """\
-mapped,valid,X4calls,X4pct,final
-1,1,0,0.00,R5
+mapped,valid,X4calls,X4pct,final,validpct
+1,1,0,0.00,R5,100.00
 """
 
         write_rows(self.pssm, counts, self.g2p_csv, self.g2p_summary_csv)
@@ -80,8 +80,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,,,,CTR,,cysteines,
 """
         expected_summary_csv = """\
-mapped,valid,X4calls,X4pct,final
-1,0,0,,
+mapped,valid,X4calls,X4pct,final,validpct
+1,0,0,,,0.00
 """
 
         write_rows(self.pssm, counts, self.g2p_csv, self.g2p_summary_csv)
@@ -106,11 +106,104 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 2,1,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
 """
         expected_summary_csv = """\
-mapped,valid,X4calls,X4pct,final
-3,3,2,66.67,X4
+mapped,valid,X4calls,X4pct,final,validpct
+3,3,2,66.67,X4,100.00
 """
 
         write_rows(self.pssm, counts, self.g2p_csv, self.g2p_summary_csv)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
+
+    def testSummaryThresholdsPassed(self):
+        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
+                    "TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"),
+                   300),
+                  (("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
+                    "TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------"),
+                   100)                  ]
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,300,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
+2,100,,,,CTR,,cysteines,
+"""
+        expected_summary_csv = """\
+mapped,valid,X4calls,X4pct,final,validpct
+400,300,0,0.00,R5,75.00
+"""
+
+        write_rows(self.pssm,
+                   counts,
+                   self.g2p_csv,
+                   self.g2p_summary_csv,
+                   min_valid=300,
+                   min_valid_percent=75.0)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
+
+    def testSummaryValidCountThresholdFailed(self):
+        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
+                    "TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"),
+                   300),
+                  (("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
+                    "TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------"),
+                   100)                  ]
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,300,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
+2,100,,,,CTR,,cysteines,
+"""
+        expected_summary_csv = """\
+mapped,valid,X4calls,X4pct,final,validpct
+400,300,0,0.00,,75.00
+"""
+
+        write_rows(self.pssm,
+                   counts,
+                   self.g2p_csv,
+                   self.g2p_summary_csv,
+                   min_valid=301,
+                   min_valid_percent=75.0)
+
+        self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
+        self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
+
+    def testSummaryValidPercentageThresholdFailed(self):
+        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
+                    "TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"),
+                   300),
+                  (("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
+                    "TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------"),
+                   100)                  ]
+        expected_g2p_csv = """\
+rank,count,g2p,fpr,call,seq,aligned,error,comment
+1,300,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
+2,100,,,,CTR,,cysteines,
+"""
+        expected_summary_csv = """\
+mapped,valid,X4calls,X4pct,final,validpct
+400,300,0,0.00,,75.00
+"""
+
+        write_rows(self.pssm,
+                   counts,
+                   self.g2p_csv,
+                   self.g2p_summary_csv,
+                   min_valid=300,
+                   min_valid_percent=75.1)
 
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
         self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
@@ -137,8 +230,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 2,4,,,,,,count < 3,
 """
         expected_summary_csv = """\
-mapped,valid,X4calls,X4pct,final
-7,0,0,,
+mapped,valid,X4calls,X4pct,final,validpct
+7,0,0,,,0.00
 """
 
         write_rows(self.pssm, counts, self.g2p_csv, self.g2p_summary_csv, min_count=3)
@@ -313,8 +406,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
 """
         expected_summary_csv = """\
-mapped,valid,X4calls,X4pct,final
-1,1,0,0.00,R5
+mapped,valid,X4calls,X4pct,final,validpct
+1,1,0,0.00,R5,100.00
 """
 
         fastq_g2p(self.pssm,

@@ -22,6 +22,8 @@ GAP_OPEN_COST = 10
 GAP_EXTEND_COST = 3
 USE_TERMINAL_COST = 1
 MIN_PAIR_ALIGNMENT_SCORE = 20
+MIN_VALID = 7500
+MIN_VALID_PERCENT = 75.0
 # This seed best aligned with G2P ref in pssmlib
 HIV_SEED_NAME = "HIV1-C-BR-JX140663-seed"
 COORDINATE_REF_NAME = "V3LOOP"
@@ -59,7 +61,9 @@ def fastq_g2p(pssm,
               unmapped1=None,
               unmapped2=None,
               aligned_csv=None,
-              min_count=1):
+              min_count=1,
+              min_valid=1,
+              min_valid_percent=0.0):
     project_config = ProjectConfig.loadDefault()
     hiv_seed = project_config.getReference(HIV_SEED_NAME)
     coordinate_ref = project_config.getReference(COORDINATE_REF_NAME)
@@ -72,11 +76,33 @@ def fastq_g2p(pssm,
     if aligned_csv is not None:
         write_aligned_reads(read_counts, aligned_csv, hiv_seed, v3loop_ref)
 
-    write_rows(pssm, read_counts, g2p_csv, g2p_summary_csv, min_count)
+    write_rows(pssm,
+               read_counts,
+               g2p_csv,
+               g2p_summary_csv,
+               min_count,
+               min_valid=min_valid,
+               min_valid_percent=min_valid_percent)
 
 
-def write_rows(pssm, read_counts, g2p_csv, g2p_summary_csv=None, min_count=1):
-    # apply g2p algorithm to merged reads
+def write_rows(pssm,
+               read_counts,
+               g2p_csv,
+               g2p_summary_csv=None,
+               min_count=1,
+               min_valid=1,
+               min_valid_percent=0.0):
+    """ Apply G2P algorithm to merged reads.
+
+    :param pssm: PSSM library to calculate scores.
+    :param read_counts: aligned reads and counts - [(ref, seq), count]
+    :param g2p_csv: open CSV file to write results to
+    :param g2p_summary_csv: open CSV file to write summary results to
+    :param min_count: minimum count for a sequence to include it in the results
+    :param min_valid: minimum valid reads to make the R5/X4 call in the summary
+    :param min_valid_percent: minimum percentage of valid reads out of all
+        reads to make the R5/X4 call in the summary
+    """
     g2p_writer = csv.DictWriter(
         g2p_csv,
         ['rank',
@@ -110,17 +136,27 @@ def write_rows(pssm, read_counts, g2p_csv, g2p_summary_csv=None, min_count=1):
         if counts['valid'] == 0:
             x4_pct_display = ''
             final_call = ''
+            valid_pct_display = '0.00'
         else:
             x4_pct = 100.0 * counts['x4'] / counts['valid']
-            final_call = 'X4' if x4_pct >= 2.0 else 'R5'
+            valid_pct = 100.0 * counts['valid'] / counts['mapped']
+            if counts['valid'] < min_valid or valid_pct < min_valid_percent:
+                final_call = ''
+            elif x4_pct >= 2.0:
+                final_call = 'X4'
+            else:
+                final_call = 'R5'
             x4_pct_display = '{:0.2f}'.format(x4_pct)
+            valid_pct_display = '{:0.2f}'.format(valid_pct)
         summary_writer = csv.writer(g2p_summary_csv, lineterminator=os.linesep)
-        summary_writer.writerow(['mapped', 'valid', 'X4calls', 'X4pct', 'final'])
+        summary_writer.writerow(
+            ['mapped', 'valid', 'X4calls', 'X4pct', 'final', 'validpct'])
         summary_writer.writerow([counts['mapped'],
                                  counts['valid'],
                                  counts['x4'],
                                  x4_pct_display,
-                                 final_call])
+                                 final_call,
+                                 valid_pct_display])
 
 
 def _build_row(seq, count, counts, pssm):
@@ -452,7 +488,9 @@ def main():
               unmapped1=args.unmapped1,
               unmapped2=args.unmapped2,
               aligned_csv=args.aligned_csv,
-              min_count=DEFAULT_MIN_COUNT)
+              min_count=DEFAULT_MIN_COUNT,
+              min_valid=MIN_VALID,
+              min_valid_percent=MIN_VALID_PERCENT)
 
 if __name__ == '__main__':
     # note, must be called from project root if executing directly
