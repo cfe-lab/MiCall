@@ -16,6 +16,7 @@ import requests
 from xml.etree import ElementTree
 
 from micall.core.aln2counts import aln2counts
+from micall.core.cascade_report import CascadeReport
 from micall.core.trim_fastqs import trim
 from micall.core.filter_quality import report_bad_cycles
 from micall.core.remap import remap
@@ -488,6 +489,17 @@ def process_sample(sample_index, run_info, args, pssm):
                       coverage_maps_path=coverage_maps_path,
                       coverage_maps_prefix=sample_name,
                       excluded_projects=EXCLUDED_PROJECTS)
+
+    logger.info('Running cascade_report (%d of %d).', sample_index+1, len(run_info.samples))
+    with open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'r') as g2p_summary_csv, \
+            open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'r') as remap_counts_csv, \
+            open(os.path.join(sample_scratch_path, 'aligned.csv'), 'r') as aligned_csv, \
+            open(os.path.join(sample_scratch_path, 'cascade.csv'), 'w') as cascade_csv:
+        cascade_report = CascadeReport(cascade_csv)
+        cascade_report.g2p_summary_csv = g2p_summary_csv
+        cascade_report.remap_counts_csv = remap_counts_csv
+        cascade_report.aligned_csv = aligned_csv
+        cascade_report.generate()
     logger.info('Finished sample (%d of %d).', sample_index+1, len(run_info.samples))
 
 
@@ -597,7 +609,8 @@ def collate_samples(args, run_info):
                  'nuc_variants.csv',
                  'coverage_scores.csv',
                  'g2p.csv',
-                 'g2p_summary.csv']
+                 'g2p_summary.csv',
+                 'cascade.csv']
     for filename in filenames:
         out_path = args.qc_path if filename == 'coverage_scores.csv' else args.g2p_path
         with open(os.path.join(out_path, filename), 'w') as fout:

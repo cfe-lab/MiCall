@@ -31,8 +31,9 @@ The scenarios that each file tests are:
   low-quality reads in codon 7, 3 reads with partial deletions in codon 8, 4
   reads with insertions after codon 9, 3 soft clipped reads in codons 10 and 11,
   1 read with a deletion in codon 12, followed by 6 clean codons with only 10
-  reads covering them. (Soft clipping and insertions are not being displayed
-  yet with G2P alignment.)
+  reads covering them. There are also 5 reads that map beyond V3LOOP to
+  demonstrate the G2P overlap counts. (Soft clipping and insertions are not
+  being displayed yet with G2P alignment.)
 * 2120A-PR - 29 codons with no coverage, clean codons from 30-46, then 1 read
   with stop codons in codons 47-49, 2 low-quality reads in codons 50-52, 3
   reads with partial deletions in codons 53 and 54, 4 reads with insertions
