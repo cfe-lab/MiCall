@@ -28,15 +28,15 @@ logger = logging.getLogger("kive_loader")
 
 
 def kive_retries(target):
-    def wrapper(self, *args, **kwargs):
+    def retry_wrapper(self, *args, **kwargs):
         try:
             return target(self, *args, **kwargs)
         except KiveClientException:
-            logger.warn('Retrying with a fresh Kive login.', exc_info=True)
+            logger.warning('Retrying with a fresh Kive login.', exc_info=True)
             self.refresh_login()
             return target(self, *args, **kwargs)
 
-    return wrapper
+    return retry_wrapper
 
 
 class KiveLoader(object):
@@ -231,8 +231,8 @@ class KiveLoader(object):
                             is_batch_active = True
                     except Exception:
                         if self.is_status_available:
-                            logger.warn('Unable to check output status.',
-                                        exc_info=True)
+                            logger.warning('Unable to check output status.',
+                                           exc_info=True)
                             self.is_status_available = False
                 else:
                     # noinspection PyBroadException
@@ -411,9 +411,12 @@ class KiveLoader(object):
                     break
 
     def refresh_login(self):
-        self.kive = kive_login(settings.kive_server_url,
-                               settings.kive_user,
-                               settings.kive_password)
+        if self.kive is not None:
+            self.kive.login(settings.kive_user, settings.kive_password)
+        else:
+            self.kive = kive_login(settings.kive_server_url,
+                                   settings.kive_user,
+                                   settings.kive_password)
 
     def upload_kive_dataset(self, filename, description, cdt):
         """ Upload a dataset to Kive.
