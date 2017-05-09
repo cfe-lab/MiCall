@@ -208,7 +208,8 @@ class KiveLoader(object):
         return (self.folder == self.latest_folder or
                 len(self.active_runs) < self.launch_limit)
 
-    def get_run_id(self, run):
+    @staticmethod
+    def get_run_id(run):
         _sample_name, run_status = run
         return run_status.run_id
 
@@ -328,13 +329,16 @@ class KiveLoader(object):
 
         return folders
 
-    def is_marked_as_disabled(self, folder):
+    @staticmethod
+    def is_marked_as_disabled(folder):
         return os.path.exists(os.path.join(folder, settings.ERROR_PROCESSING))
 
-    def is_quality_control_uploaded(self, folder):
+    @staticmethod
+    def is_quality_control_uploaded(folder):
         return os.path.exists(os.path.join(folder, settings.QC_UPLOADED))
 
-    def find_files(self, folder):
+    @staticmethod
+    def find_files(folder):
         """ Find FASTQ files within a folder.
 
         @return: a list of paths to the files within the folder.
@@ -448,7 +452,8 @@ class KiveLoader(object):
                 groups=settings.kive_groups_allowed)
         return dataset
 
-    def trim_folder(self, folder):
+    @staticmethod
+    def trim_folder(folder):
         """ Trim folder path to minimum unique name.
 
         Folder name is /some/path/YYMMDD_MACHINEID_SEQ_RANDOMNUMBER.
@@ -457,7 +462,8 @@ class KiveLoader(object):
         run_name = os.path.basename(folder)
         return '_'.join(run_name.split('_')[:2])
 
-    def parse_run_info(self, run_info_path):
+    @staticmethod
+    def parse_run_info(run_info_path):
         run_info_tree = ElementTree.parse(run_info_path)
         run_info_root = run_info_tree.getroot()
         run = run_info_root[0]
@@ -528,7 +534,8 @@ class KiveLoader(object):
                     expected_cycle += run_info.indexes_length
         return destination
 
-    def get_sample_name(self, fastq1):
+    @staticmethod
+    def get_sample_name(fastq1):
         """ Format sample name from a fastq1 Dataset object. """
         short_name, sample_num = fastq1.name.split('_')[:2]
         sample_name = short_name + '_' + sample_num
@@ -643,7 +650,8 @@ class KiveLoader(object):
         self.folder_count -= 1
         self.mark_folder_disabled(folder, message, exc_info)
 
-    def mark_folder_disabled(self, folder, message, exc_info=None):
+    @staticmethod
+    def mark_folder_disabled(folder, message, exc_info=None):
         """ Mark a run that failed, so it won't be processed again.
 
         @param folder: path to the run folder that had an error
@@ -662,10 +670,12 @@ class KiveLoader(object):
             sys.exit()
         return failure_message
 
-    def log_retry(self, folder):
-        logger.warn('Retrying folder %r.', folder, exc_info=True)
+    @staticmethod
+    def log_retry(folder):
+        logger.warning('Retrying folder %r.', folder, exc_info=True)
 
-    def download_results(self, folder, runs):
+    @staticmethod
+    def download_results(folder, runs):
         """ Download results from Kive.
 
         @param folder: the run folder
@@ -694,7 +704,8 @@ class KiveLoader(object):
         with open(os.path.join(results_folder, settings.DONE_PROCESSING), 'w'):
             pass  # Leave the file empty
 
-    def get_time(self):
+    @staticmethod
+    def get_time():
         """ Get the current system time.
 
         Wrapped in a method to make it easier to mock when testing."""
