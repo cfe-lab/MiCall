@@ -509,6 +509,26 @@ R6a-seed,R6,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testInsertionReportWithG2pOverlap(self):
+        """ If the same region appears in both sources, the second is overlap.
+        """
+        g2p_aligned_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq
+R7-seed,15,0,9,0,AAATTTCAGACCCCACGAGAGCAT
+""")
+        aligned_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq
+R7-seed,15,0,8,6,AAATTTCAGACCCCACGAGAGCAT
+""")
+
+        expected_text = """\
+seed,region,qcut,left,insert,count,before
+"""
+
+        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R7a')
+
+        self.assertMultiLineEqual(expected_text, self.insertion_file.getvalue())
+
     def testAminoReportWithDifferingConsensus(self):
         """ Some reads that didn't map in G2P, mapped to same seed with bowtie2.
         """
@@ -680,11 +700,6 @@ R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
     def testNucleotideReportWithG2pOverlap(self):
-        """ In this sample, there are two sequences, each with two codons.
-
-        The coordinate references have three codons and five codons, so the
-        later positions are empty.
-        """
         g2p_aligned_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq
 R1-seed,15,0,9,0,AAATTT

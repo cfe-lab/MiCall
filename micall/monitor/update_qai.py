@@ -22,7 +22,6 @@ logger = logging.getLogger('update_qai')
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser(
-        version=settings.pipeline_version,
         description="Update the Oracle database with conseq information")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--result_folder",
@@ -75,9 +74,13 @@ def build_conseqs(conseqs_file,
     #     FASTQ_lookup[sample_name] = fastq_filename
 
     projects = ProjectConfig.loadDefault()
-    target_regions = set()  # set([(project_name, tags)])
+    target_regions = set()  # set([(tags, seed_name)])
     for entry in sequencings:
-        seeds = projects.getProjectSeeds(entry['target_project'])
+        try:
+            seeds = projects.getProjectSeeds(entry['target_project'])
+        except KeyError:
+            logger.warning('Failed to load project seeds.', exc_info=True)
+            seeds = set()
         for seed in seeds:
             target_regions.add((entry['tag'], seed))
 
@@ -307,10 +310,10 @@ def upload_review_to_qai(coverage_file,
 def clean_runname(runname):
     try:
         rundate = datetime.strptime(runname, '%d-%b-%y')
-        clean_runname = datetime.strftime(rundate, '%d-%b-%Y')
+        cleaned_runname = datetime.strftime(rundate, '%d-%b-%Y')
     except ValueError:
-        clean_runname = runname
-    return clean_runname
+        cleaned_runname = runname
+    return cleaned_runname
 
 
 def find_run(session, runname):

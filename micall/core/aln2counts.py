@@ -378,6 +378,7 @@ class SequenceReport(object):
                 self.g2p_overlap_region_name = g2p_overlap_region_name
                 self.g2p_overlap_aminos = report_aminos
                 self.reports[coordinate_name] = report_aminos = []
+                self.inserts[coordinate_name] = []
             max_variants = self.projects.getMaxVariants(coordinate_name)
             if report_aminos and max_variants:
                 variant_counts = Counter()  # {seq: count}
@@ -990,7 +991,8 @@ class InsertionWriter(object):
             for insert_seq, count in counts.items():
                 insert_before = insert_targets.get(left)
                 # Only care about insertions in the middle of the sequence,
-                # so ignore any that come before or after the reference
+                # so ignore any that come before or after the reference.
+                # Also report if we're in test mode (no report_aminos).
                 if not report_aminos or insert_before not in (1, None):
                     row = dict(seed=self.seed,
                                region=region,
@@ -1103,3 +1105,6 @@ def main():
                conseq_ins_csv=args.conseq_ins_csv,
                g2p_aligned_csv=args.g2p_aligned_csv,
                remap_conseq_csv=args.remap_conseq_csv)
+
+if __name__ == '__main__':
+    main()
