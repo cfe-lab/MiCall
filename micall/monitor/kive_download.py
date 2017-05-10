@@ -2,6 +2,7 @@
 
 from argparse import ArgumentParser
 import logging
+from operator import itemgetter
 import os
 import re
 import shutil
@@ -118,7 +119,7 @@ def download_results(kive_runs, results_folder, run_folder):
 def find_old_runs(kive, **kwargs):
     params = {}
     param_count = 0
-    for key, val in kwargs.iteritems():
+    for key, val in kwargs.items():
         if val is not None:
             params['filters[{}][key]'.format(param_count)] = key
             params['filters[{}][val]'.format(param_count)] = val
@@ -141,6 +142,7 @@ def find_old_runs(kive, **kwargs):
 
 def find_batch_runs(kive, batch_name, batch_size):
     run_map = {}  # {sample_name: status}
+    run_count = 0
     for i in range(1, 201):
         response = kive.get('/api/runs/status/', params={'page_size': 25,
                                                          'page': i})
@@ -152,22 +154,26 @@ def find_batch_runs(kive, batch_name, batch_size):
             if (re.match(r'^\*+-\*+$', text_status) is None or
                     pipeline_id not in kive_pipelines):
                 continue
-            display_match = re.match(r'^MiSeq - ([^_]*_S\d+) \((.*)\)$',
+            display_match = re.match(r'^MiSeq - ([^_]*_S\d+)$',
                                      entry['display_name'])
             if display_match is not None:
-                if display_match.group(2) != batch_name:
+                if batch_name not in entry['runbatch_name']:
                     continue
                 sample_name = display_match.group(1)
             else:
                 status_response = kive.get(entry['run_status'])
                 status_response.raise_for_status()
                 status_json = status_response.json()
-                first_input = status_json['inputs'].get('1', None)
-                quality_filename = first_input and first_input['dataset_name']
-                if quality_filename != '{}_quality.csv'.format(batch_name):
+                is_match = False
+                sample_name = None
+                for input_dataset_name in map(itemgetter('dataset_name'),
+                                              status_json['inputs'].values()):
+                    if input_dataset_name.endswith('_quality.csv'):
+                        is_match = batch_name in input_dataset_name
+                    elif input_dataset_name.endswith('.fastq.gz'):
+                        sample_name = '_'.join(input_dataset_name.split('_')[:2])
+                if not is_match or sample_name is None:
                     continue
-                sample_filename = status_json['inputs']['2']['dataset_name']
-                sample_name = '_'.join(sample_filename.split('_')[:2])
             status = RunStatus(entry, kive)
             status.json = entry
             run_map[sample_name] = status
@@ -178,10 +184,10 @@ def find_batch_runs(kive, batch_name, batch_size):
         if run_count >= batch_size:
             break
     if run_count < batch_size:
-        raise StandardError('Expected {} samples, but only found {}.'.format(
+        raise Exception('Expected {} samples, but only found {}.'.format(
             batch_size,
             run_count))
-    runs = run_map.items()
+    runs = list(run_map.items())
     runs.sort()
     return runs
 
