@@ -343,6 +343,45 @@ region,q-cutoff,consensus-percent-cutoff,offset,sequence
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testConsensusLowCoverageInMiddle(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTTGGG
+R1-seed,15,0,1,0,AAAT
+R1-seed,15,0,1,6,GGG
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAAT--GGG
+R1-seed,15,0.100,0,AAAT--GGG
+"""
+        self.report.consensus_min_coverage=10
+
+        self.report.write_consensus_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusLowCoverageAtStart(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTTGGG
+R1-seed,15,0,1,3,TTTGGG
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,3,TTTGGG
+R1-seed,15,0.100,3,TTTGGG
+"""
+        self.report.consensus_min_coverage=10
+
+        self.report.write_consensus_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testSingleReadAminoReport(self):
         """ In this sample, there is a single read with two codons.
         AAA -> K

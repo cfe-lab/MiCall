@@ -29,6 +29,7 @@ CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
 G2P_SEED_NAME = "HIV1-C-BR-JX140663-seed"
+CONSENSUS_MIN_COVERAGE = 100
 
 
 def parse_args():
@@ -97,6 +98,7 @@ class SequenceReport(object):
             determine what portion a variant must exceed before it will be
             included as a mixture in the consensus.
         """
+        self.consensus_min_coverage = 0
         self.callback_progress = 0
         self.callback_next = self.callback_chunk_size = self.callback_max = None
         self.insert_writer = insert_writer
@@ -582,11 +584,18 @@ class SequenceReport(object):
             offset = None
             for seed_amino in self.seed_aminos[0]:
                 if offset is None:
-                    if not seed_amino.counts:
+                    amino_coverage = sum(seed_amino.counts.values())
+                    if (not amino_coverage or
+                            amino_coverage < self.consensus_min_coverage):
                         continue
                     offset = seed_amino.consensus_nuc_index
                 for seed_nuc in seed_amino.nucleotides:
-                    consensus += seed_nuc.get_consensus(mixture_cutoff)
+                    nuc_coverage = sum(seed_nuc.counts.values())
+                    if nuc_coverage < self.consensus_min_coverage:
+                        nuc_consensus = '-'
+                    else:
+                        nuc_consensus = seed_nuc.get_consensus(mixture_cutoff)
+                    consensus += nuc_consensus
             if offset is not None:
                 conseq_writer.writerow(
                     {'region': self.seed,
@@ -1056,6 +1065,7 @@ def aln2counts(aligned_csv,
     report = SequenceReport(insert_writer,
                             projects,
                             CONSEQ_MIXTURE_CUTOFFS)
+    report.consensus_min_coverage = CONSENSUS_MIN_COVERAGE
     report.write_amino_header(amino_csv)
     report.write_consensus_header(conseq_csv)
     report.write_failure_header(failed_align_csv)
