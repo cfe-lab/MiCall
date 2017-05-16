@@ -20,7 +20,8 @@ def parse_args():
                         help='aligned reads and their counts',
                         type=FileType('r'))
     parser.add_argument('cascade_csv',
-                        help='count of reads at each step')
+                        help='count of reads at each step',
+                        type=FileType('w'))
     return parser.parse_args()
 
 
