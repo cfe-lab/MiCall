@@ -40,7 +40,6 @@ EXCLUDED_PROJECTS = ['HCV-NS5a',
                      'RT',
                      'V3LOOP',
                      'wg1HCV']  # Avoid useless duplicates for BaseSpace version.
-# EXCLUDED_SEEDS = EXCLUDED_PROJECTS = []
 DOWNLOAD_BATCH_SIZE = 1000
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
@@ -168,6 +167,10 @@ def parse_args():
     parser.add_argument('--link_run',
                         '-l',
                         help='Run folder to link into the data folder')
+    parser.add_argument('--all_projects',
+                        '-a',
+                        action='store_true',
+                        help="Don't exclude any projects or seeds.")
     return parser.parse_args()
 
 
@@ -411,12 +414,13 @@ def process_sample(sample_index, run_info, args, pssm):
                   min_valid_percent=MIN_VALID_PERCENT)
 
     logger.info('Running prelim_map (%d of %d).', sample_index+1, len(run_info.samples))
+    excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'w') as prelim_csv:
         prelim_map(g2p_unmapped1_path,
                    g2p_unmapped2_path,
                    prelim_csv,
                    work_path=sample_scratch_path,
-                   excluded_seeds=EXCLUDED_SEEDS)
+                   excluded_seeds=excluded_seeds)
 
     logger.info('Running remap (%d of %d).', sample_index+1, len(run_info.samples))
     debug_file_prefix = None  # os.path.join(sample_scratch_path, 'debug')
@@ -482,13 +486,14 @@ def process_sample(sample_index, run_info, args, pssm):
     logger.info('Running coverage_plots (%d of %d).', sample_index+1, len(run_info.samples))
     coverage_maps_path = os.path.join(args.qc_path, 'coverage_maps')
     makedirs(coverage_maps_path)
+    excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
     with open(os.path.join(sample_scratch_path, 'amino.csv'), 'r') as amino_csv, \
             open(os.path.join(sample_scratch_path, 'coverage_scores.csv'), 'w') as coverage_scores_csv:
         coverage_plot(amino_csv,
                       coverage_scores_csv,
                       coverage_maps_path=coverage_maps_path,
                       coverage_maps_prefix=sample_name,
-                      excluded_projects=EXCLUDED_PROJECTS)
+                      excluded_projects=excluded_projects)
 
     logger.info('Running cascade_report (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'r') as g2p_summary_csv, \
