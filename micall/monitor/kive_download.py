@@ -84,6 +84,7 @@ def download_results(kive_runs, results_folder, run_folder):
                         'g2p_summary',
                         'coverage_scores',
                         'coverage_maps_tar',
+                        'cascade',
                         'mixed_counts',
                         'mixed_amino',
                         'mixed_amino_merged']
