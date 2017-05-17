@@ -137,7 +137,7 @@ class Sample(object):
 
 
 def suspend_inactive_runs(active_runs):
-    active_run_names = map(os.path.basename, active_runs)
+    active_run_names = set(map(os.path.basename, active_runs))
     local_runs = glob(os.path.join(rawdata_mount, 'MiSeq', 'runs', '*'))
     for run_path in local_runs:
         base_run_name = os.path.basename(run_path)

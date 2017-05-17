@@ -3,7 +3,7 @@ from __future__ import print_function
 from argparse import ArgumentParser
 import csv
 from difflib import Differ, SequenceMatcher
-from itertools import izip_longest
+from itertools import zip_longest
 from glob import glob
 from operator import itemgetter
 import os
@@ -100,8 +100,8 @@ def compare_consensus(source_path, target_path):
                                                  filter_sample_names=sample_names)
                           if (row['sample'], row['region']) in scored_samples),
                          key=keygetter)
-    target_keys = map(keygetter, target_rows)
-    source_keys = map(keygetter, source_rows)
+    target_keys = list(map(keygetter, target_rows))
+    source_keys = list(map(keygetter, source_rows))
     for source_row, target_row in zip(source_rows, target_rows):
         source_offset = int(source_row['offset'])
         target_offset = int(target_row['offset'])
@@ -125,7 +125,7 @@ def compare_consensus(source_path, target_path):
     matcher = SequenceMatcher(a=source_keys, b=target_keys, autojunk=False)
     for tag, alo, ahi, blo, bhi in matcher.get_opcodes():
         if tag == 'replace':
-            for source_index, target_index in izip_longest(range(alo, ahi), range(blo, bhi)):
+            for source_index, target_index in zip_longest(range(alo, ahi), range(blo, bhi)):
                 if source_index is None:
                     print('+ ' + format_key(target_keys[target_index]))
                 elif target_index is None:
