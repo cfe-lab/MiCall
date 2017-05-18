@@ -12,6 +12,6 @@ In issue #395, we found that samples with no HIV in them were still mapping
 some reads to V3LOOP, sometimes thousands of reads. When we plotted the
 alignment scores, it was clear that our minimum score was too low.
 
-![Alignment scores](images/v3loop_alignment_scores.png)
+![Alignment scores](../images/v3loop_alignment_scores.png)
 
 We changed the minimum score to be halfway between the two clusters of scores.
