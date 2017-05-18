@@ -350,7 +350,8 @@ def trim_reads(reads, v3loop_ref):
      (aligned_ref, aligned_seq))
     :param v3loop_ref: nucleotide sequence for V3LOOP
     """
-    min_v3_alignment_score = len(v3loop_ref) // 2
+    # Measured as roughly halfway between HCV reads and V3LOOP reads
+    min_v3_alignment_score = 200
 
     for pair_name, read1, read2, seq in reads:
         trimmed_aligned_ref = trimmed_aligned_seq = None
