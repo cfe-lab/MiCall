@@ -8,10 +8,9 @@ from glob import glob
 from operator import itemgetter
 import os
 
-
 from micall.settings import pipeline_version, DONE_PROCESSING
 
-
+MICALL_VERSION = '7.7'
 # set((sample, seed)) that had a coverage score better than 1 in source or target.
 scored_samples = set()
 
@@ -63,7 +62,7 @@ def select_columns(rows, *column_names):
         yield ',   '.join(itemgetter(*column_names)(row)) + '\n'
 
 
-def compare_files(source_path, target_path, filename, *columns):
+def compare_files(source_path, target_path, filename, *columns, should_skip=None):
     sample_names = set()
     target_rows = select_rows(os.path.join(target_path, filename),
                               all_sample_names=sample_names)
@@ -71,15 +70,16 @@ def compare_files(source_path, target_path, filename, *columns):
     source_rows = select_rows(os.path.join(source_path, filename),
                               filter_sample_names=sample_names)
     source_columns = sorted(select_columns(source_rows, *columns))
-    compare_columns(source_columns, target_columns, target_path, filename)
+    compare_columns(source_columns, target_columns, target_path, filename, should_skip)
 
 
-def compare_columns(source_columns, target_columns, target_path, filename):
+def compare_columns(source_columns, target_columns, target_path, filename, should_skip):
     differ = Differ()
     for i, diff in enumerate(differ.compare(source_columns, target_columns)):
         if i == 0:
             print('{} changes in {}:'.format(filename, target_path))
-        print(diff, end='')
+        if should_skip is None or not should_skip(diff):
+            print(diff, end='')
 
 
 def format_key(key):
@@ -95,11 +95,15 @@ def compare_consensus(source_path, target_path):
                                                  all_sample_names=sample_names)
                           if (row['sample'], row['region']) in scored_samples),
                          key=keygetter)
-    source_rows = sorted((row
-                          for row in select_rows(os.path.join(source_path, filename),
-                                                 filter_sample_names=sample_names)
-                          if (row['sample'], row['region']) in scored_samples),
-                         key=keygetter)
+    source_rows = list(row
+                       for row in select_rows(os.path.join(source_path, filename),
+                                              filter_sample_names=sample_names)
+                       if (row['sample'], row['region']) in scored_samples)
+    if MICALL_VERSION == '7.7':
+        for row in source_rows:
+            if row['region'] == 'HIV1B-env-seed':
+                row['region'] = 'HIV1-C-BR-JX140663-seed'
+    source_rows.sort(key=keygetter)
     target_keys = list(map(keygetter, target_rows))
     source_keys = list(map(keygetter, source_rows))
     for source_row, target_row in zip(source_rows, target_rows):
@@ -109,20 +113,26 @@ def compare_consensus(source_path, target_path):
         source_row['sequence'] = '-' * (source_offset-min_offset) + source_row['sequence']
         target_row['sequence'] = '-' * (target_offset-min_offset) + target_row['sequence']
         source_row['offset'] = target_row['offset'] = str(min_offset)
-    source_lines = list(select_columns(source_rows,
-                                       'sample',
-                                       'region',
-                                       'consensus-percent-cutoff',
-                                       'offset',
-                                       'sequence'))
-    target_lines = list(select_columns(target_rows,
-                                       'sample',
-                                       'region',
-                                       'consensus-percent-cutoff',
-                                       'offset',
-                                       'sequence'))
+
+    if MICALL_VERSION == '7.7':
+        # Version 7.7 made such big changes to consensus that they're not worth comparing.
+        source_lines, target_lines = source_keys, target_keys
+    else:
+        source_lines = list(select_columns(source_rows,
+                                           'sample',
+                                           'region',
+                                           'consensus-percent-cutoff',
+                                           'offset',
+                                           'sequence'))
+        target_lines = list(select_columns(target_rows,
+                                           'sample',
+                                           'region',
+                                           'consensus-percent-cutoff',
+                                           'offset',
+                                           'sequence'))
+
     print('{} changes in {}:'.format(filename, target_path))
-    matcher = SequenceMatcher(a=source_keys, b=target_keys, autojunk=False)
+    matcher = SequenceMatcher(a=source_lines, b=target_lines, autojunk=False)
     for tag, alo, ahi, blo, bhi in matcher.get_opcodes():
         if tag == 'replace':
             for source_index, target_index in zip_longest(range(alo, ahi), range(blo, bhi)):
@@ -142,15 +152,15 @@ def compare_consensus(source_path, target_path):
                     diff = line_diff(source_line, target_line)
                     print(''.join(diff), end='')
         elif tag == 'delete':
-            for key in source_keys[alo:ahi]:
-                print('- ' + ',  '.join(key))
+            # Version 7.7 started eliminating consensus for low coverage.
+            if MICALL_VERSION != '7.7':
+                for key in source_keys[alo:ahi]:
+                    print('- ' + ',  '.join(key))
         elif tag == 'insert':
             for key in target_keys[blo:bhi]:
                 print('+ ' + ',  '.join(key))
         else:
             assert tag == 'equal', tag
-            for key in source_keys[alo:ahi]:
-                print('  ' + ',  '.join(key) + '==')
 
 
 def line_diff(source_line, target_line):
@@ -174,6 +184,45 @@ def line_diff(source_line, target_line):
     lines[1] += '\n'
     lines[3] += '\n'
     return lines
+
+
+def should_skip_coverage_score(diff):
+    lines = diff.splitlines()
+    if len(lines) == 1:
+        return True
+    if MICALL_VERSION != '7.7':
+        return False
+    # Version 7.7 switched HIV seeds
+    source_fields = lines[0].split(',')
+    target_fields = lines[2].split(',')
+    source_seed = source_fields[1].strip()
+    target_seed = target_fields[1].strip()
+    if (source_seed == 'HIV1B-env-seed' and
+            target_seed == 'HIV1-C-BR-JX140663-seed'):
+        source_fields[1] = target_fields[1]
+    return source_fields == target_fields
+
+
+def should_skip_g2p_summary(diff):
+    lines = diff.splitlines()
+    if len(lines) == 1:
+        return True
+
+    source_fields = lines[0].split(',')
+    target_fields = lines[2].split(',')
+
+    if MICALL_VERSION == '7.7':
+        # Version 7.7 stopped making calls on low coverage.
+        target_call = target_fields[2]
+        if target_call.strip() == '':
+            source_fields[2] = target_fields[2]
+
+    # We can ignore small changes in %X4.
+    source_percent = int(source_fields[1])
+    target_percent = int(target_fields[1])
+    if abs(source_percent - target_percent) <= 1:
+        source_fields[1] = target_fields[1]
+    return source_fields == target_fields
 
 
 def main():
@@ -204,13 +253,15 @@ def main():
                       'seed',
                       'region',
                       'project',
-                      'on.score')
+                      'on.score',
+                      should_skip=should_skip_coverage_score)
         compare_files(source_path,
                       target_path,
                       'g2p_summary.csv',
                       'sample',
                       'X4pct',
-                      'final')
+                      'final',
+                      should_skip=should_skip_g2p_summary)
         compare_consensus(source_path, target_path)
         print('Done: ' + run_name)
     print('Done.')

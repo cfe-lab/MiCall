@@ -338,7 +338,7 @@ def align_quality(nucs, qual):
     return qual
 
 
-def trim_reads(reads, v3loop_ref):
+def trim_reads(reads, v3loop_ref, score_counts=None):
     """ Generator over reads that are aligned to the reference and trimmed.
 
     :param reads: generator from merge_reads()
@@ -349,6 +349,8 @@ def trim_reads(reads, v3loop_ref):
      (read2_name, bases, quality),
      (aligned_ref, aligned_seq))
     :param v3loop_ref: nucleotide sequence for V3LOOP
+    :param score_counts: {score: count} to report on the alignment score
+        distribution
     """
     # Measured as roughly halfway between HCV reads and V3LOOP reads
     min_v3_alignment_score = 200
@@ -361,6 +363,8 @@ def trim_reads(reads, v3loop_ref):
                                                        GAP_OPEN_COST,
                                                        GAP_EXTEND_COST,
                                                        USE_TERMINAL_COST)
+            if score_counts is not None:
+                score_counts[score] += 1
             if score >= min_v3_alignment_score:
                 left_padding = right_padding = 0
                 for left_padding, nuc in enumerate(aligned_ref):
