@@ -2,7 +2,7 @@
 from __future__ import print_function
 from argparse import ArgumentParser
 import csv
-from difflib import Differ, SequenceMatcher
+from difflib import SequenceMatcher
 from itertools import zip_longest
 from glob import glob
 from operator import itemgetter
@@ -74,12 +74,28 @@ def compare_files(source_path, target_path, filename, *columns, should_skip=None
 
 
 def compare_columns(source_columns, target_columns, target_path, filename, should_skip):
-    differ = Differ()
-    for i, diff in enumerate(differ.compare(source_columns, target_columns)):
-        if i == 0:
-            print('{} changes in {}:'.format(filename, target_path))
-        if should_skip is None or not should_skip(diff):
-            print(diff, end='')
+    print('{} changes in {}:'.format(filename, target_path))
+    matcher = SequenceMatcher(a=source_columns, b=target_columns, autojunk=False)
+    for tag, alo, ahi, blo, bhi in matcher.get_opcodes():
+        if tag == 'replace':
+            for source_index, target_index in zip_longest(range(alo, ahi), range(blo, bhi)):
+                if source_index is None:
+                    print('+ ' + target_columns[target_index])
+                elif target_index is None:
+                    print('- ' + source_columns[source_index])
+                else:
+                    diff = line_diff(source_columns[source_index],
+                                     target_columns[target_index])
+                    if should_skip is None or not should_skip(diff):
+                        print(''.join(diff), end='')
+        elif tag == 'delete':
+            for line in source_columns[alo:ahi]:
+                print('- ' + line)
+        elif tag == 'insert':
+            for line in target_columns[blo:bhi]:
+                print('+ ' + line)
+        else:
+            assert tag == 'equal', tag
 
 
 def format_key(key):
@@ -187,14 +203,13 @@ def line_diff(source_line, target_line):
 
 
 def should_skip_coverage_score(diff):
-    lines = diff.splitlines()
-    if len(lines) == 1:
+    if len(diff) == 1:
         return True
     if MICALL_VERSION != '7.7':
         return False
     # Version 7.7 switched HIV seeds
-    source_fields = lines[0].split(',')
-    target_fields = lines[2].split(',')
+    source_fields = diff[0][2:].split(',')
+    target_fields = diff[2][2:].split(',')
     source_seed = source_fields[1].strip()
     target_seed = target_fields[1].strip()
     if (source_seed == 'HIV1B-env-seed' and
@@ -204,18 +219,17 @@ def should_skip_coverage_score(diff):
 
 
 def should_skip_g2p_summary(diff):
-    lines = diff.splitlines()
-    if len(lines) == 1:
+    if len(diff) == 1:
         return True
 
-    source_fields = lines[0].split(',')
-    target_fields = lines[2].split(',')
+    source_fields = diff[0][2:].split(',')
+    target_fields = diff[2][2:].split(',')
 
     if MICALL_VERSION == '7.7':
         # Version 7.7 stopped making calls on low coverage.
         target_call = target_fields[2]
         if target_call.strip() == '':
-            source_fields[2] = target_fields[2]
+            return True
 
     # We can ignore small changes in %X4.
     source_percent = int(source_fields[1])
