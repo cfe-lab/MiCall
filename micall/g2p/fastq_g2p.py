@@ -353,7 +353,7 @@ def trim_reads(reads, v3loop_ref, score_counts=None):
         distribution
     """
     # Measured as roughly halfway between HCV reads and V3LOOP reads
-    min_v3_alignment_score = 200
+    min_v3_alignment_score = 2*len(v3loop_ref)
 
     for pair_name, read1, read2, seq in reads:
         trimmed_aligned_ref = trimmed_aligned_seq = None
