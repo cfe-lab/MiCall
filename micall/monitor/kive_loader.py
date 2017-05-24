@@ -389,7 +389,7 @@ class KiveLoader(object):
             needed_groups = set(settings.kive_groups_allowed)
             for dataset in datasets:
                 missing_groups = needed_groups - set(dataset.groups_allowed)
-                if not missing_groups:
+                if dataset.name == dataset_name and not missing_groups:
                     logger.info('dataset already in Kive: %r', dataset_name)
                     return dataset
         return None
