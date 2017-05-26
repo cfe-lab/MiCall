@@ -8,11 +8,14 @@ from glob import glob
 from operator import itemgetter
 import os
 
+from micall.core.aln2counts import AMINO_ALPHABET
 from micall.settings import pipeline_version, DONE_PROCESSING
 
 MICALL_VERSION = '7.7'
 # set((sample, seed)) that had a coverage score better than 1 in source or target.
 scored_samples = set()
+# set((sample, target_seed, region)) that had lowest coverage on a partial deletion that got fixed.
+fixed_deletions = set()
 
 
 def parse_args():
@@ -90,10 +93,10 @@ def compare_columns(source_columns, target_columns, target_path, filename, shoul
                         print(''.join(diff), end='')
         elif tag == 'delete':
             for line in source_columns[alo:ahi]:
-                print('- ' + line)
+                print('- ' + line, end='')
         elif tag == 'insert':
             for line in target_columns[blo:bhi]:
-                print('+ ' + line)
+                print('+ ' + line, end='')
         else:
             assert tag == 'equal', tag
 
@@ -115,10 +118,6 @@ def compare_consensus(source_path, target_path):
                        for row in select_rows(os.path.join(source_path, filename),
                                               filter_sample_names=sample_names)
                        if (row['sample'], row['region']) in scored_samples)
-    if MICALL_VERSION == '7.7':
-        for row in source_rows:
-            if row['region'] == 'HIV1B-env-seed':
-                row['region'] = 'HIV1-C-BR-JX140663-seed'
     source_rows.sort(key=keygetter)
     target_keys = list(map(keygetter, target_rows))
     source_keys = list(map(keygetter, source_rows))
@@ -166,7 +165,8 @@ def compare_consensus(source_path, target_path):
                         source_line = source_lines[source_index]
                         target_line = target_lines[target_index]
                     diff = line_diff(source_line, target_line)
-                    print(''.join(diff), end='')
+                    if not should_skip_consensus(diff):
+                        print(''.join(diff), end='')
         elif tag == 'delete':
             # Version 7.7 started eliminating consensus for low coverage.
             if MICALL_VERSION != '7.7':
@@ -202,9 +202,10 @@ def line_diff(source_line, target_line):
     return lines
 
 
-def should_skip_coverage_score(diff):
+def should_skip_consensus(diff):
     if len(diff) == 1:
         return True
+    assert len(diff) == 4, len(diff)
     if MICALL_VERSION != '7.7':
         return False
     # Version 7.7 switched HIV seeds
@@ -212,15 +213,41 @@ def should_skip_coverage_score(diff):
     target_fields = diff[2][2:].split(',')
     source_seed = source_fields[1].strip()
     target_seed = target_fields[1].strip()
-    if (source_seed == 'HIV1B-env-seed' and
-            target_seed == 'HIV1-C-BR-JX140663-seed'):
+    if (source_seed.startswith('HIV1B-') and
+            target_seed.startswith('HIV1-')):
         source_fields[1] = target_fields[1]
+    return source_fields == target_fields
+
+
+def should_skip_coverage_score(diff):
+    if len(diff) == 1:
+        return True
+    assert len(diff) == 4, len(diff)
+    if MICALL_VERSION != '7.7':
+        return False
+    # Version 7.7 switched HIV seeds.
+    source_fields = diff[0][2:].split(',')
+    target_fields = diff[2][2:].split(',')
+    source_seed = source_fields[1].strip()
+    target_seed = target_fields[1].strip()
+    if (source_seed.startswith('HIV1B-') and
+            target_seed.startswith('HIV1-')):
+        source_fields[1] = target_fields[1]
+    # Version 7.7 corrected some partial deletions to full deletions.
+    sample = source_fields[0]
+    region = source_fields[2].strip()
+    source_score = int(source_fields[4])
+    target_score = int(target_fields[4])
+    if (target_score > source_score and
+            (sample, target_seed, region) in fixed_deletions):
+        source_fields[4] = target_fields[4]
     return source_fields == target_fields
 
 
 def should_skip_g2p_summary(diff):
     if len(diff) == 1:
         return True
+    assert len(diff) == 4, len(diff)
 
     source_fields = diff[0][2:].split(',')
     target_fields = diff[2][2:].split(',')
@@ -237,6 +264,31 @@ def should_skip_g2p_summary(diff):
     if abs(source_percent - target_percent) <= 1:
         source_fields[1] = target_fields[1]
     return source_fields == target_fields
+
+
+def check_partial_deletions(source_path, target_path):
+    fixed_deletions.clear()
+    with open(os.path.join(source_path, 'coverage_scores.csv')) as old_scores:
+        min_coverages = {(row['sample'],
+                          'HIV' if row['seed'].startswith('HIV') else row['seed'],
+                          row['region'],
+                          int(row['which.key.pos'])): int(row['min.coverage'])
+                         for row in csv.DictReader(old_scores)}
+    coverage_fields = list(AMINO_ALPHABET) + ['del']
+    with open(os.path.join(target_path, 'amino.csv')) as new_amino:
+        for row in csv.DictReader(new_amino):
+            current_pos = int(row['refseq.aa.pos'])
+            new_deletions = int(row['del'])
+            if new_deletions > 0:
+                new_coverage = sum(int(row[field])
+                                   for field in coverage_fields)
+                seed = 'HIV' if row['seed'].startswith('HIV') else row['seed']
+                for pos in range(current_pos-10, current_pos+10):
+                    old_coverage = min_coverages.get(
+                        (row['sample'], seed, row['region'], pos))
+                    if old_coverage is not None:
+                        if new_deletions >= (new_coverage - old_coverage) * 0.9:
+                            fixed_deletions.add((row['sample'], row['seed'], row['region']))
 
 
 def main():
@@ -260,6 +312,9 @@ def main():
         source_versions = os.listdir(source_results_path)
         source_versions.sort()
         source_path = os.path.join(source_results_path, source_versions[-1])
+        scored_samples.clear()
+        if MICALL_VERSION == '7.7':
+            check_partial_deletions(source_path, target_path)
         compare_files(source_path,
                       target_path,
                       'coverage_scores.csv',
