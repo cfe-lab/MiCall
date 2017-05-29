@@ -7,7 +7,8 @@ from micall.hivdb.asi_algorithm import AsiAlgorithm, translate_complete_to_array
 class AsiAlgorithmTest(TestCase):
     def test_interpret(self):
         algorithm_hivdb = AsiAlgorithm("micall/hivdb/HIVDB_8.3.xml")
-        aa_seq = ['A'] * 40 + ['L'] + ['A']
+        aa_seq = [[amino] for amino in algorithm_hivdb.rt_std]
+        aa_seq[40] = ['L']
         compared_attrs = ('code', 'score', 'level', 'comments')
         expected_drugs = [('3TC', 0.0, 1, []),
                           ('ABC', 5.0, 1, []),
@@ -43,8 +44,9 @@ class TranslateSequenceTest(TestCase):
 
     def test_translate_mixture(self):
         nucs = 'CCCWTTAGT'
-        expected_aminos = [['P'], ['I', 'F'], ['S']]
+        expected_aminos = [['P'], ['F', 'I'], ['S']]
 
         aminos = translate_complete_to_array(nucs)
 
-        self.assertEqual(expected_aminos, aminos)
+        sorted_aminos = [sorted(choices) for choices in aminos]
+        self.assertEqual(expected_aminos, sorted_aminos)

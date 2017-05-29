@@ -154,7 +154,6 @@ class AsiAlgorithm:
         self.int_std = 'FLDGIDKAQDEHEKYHSNWRAMASDFNLPPVVAKEIVASCDKCQLKGEAMHGQVDCSPGIWQLDCTHLEGKVILVAVHVASGYIEAEVIPAETGQETAYFLLKLAGRWPVKTIHTDNGSNFTGATVRAACWWAGIKQEFGIPYNPQSQGVVESMNKELKKIIGQVRDQAEHLKTAVQMAVFIHNFKRKGGIGGYSAGERIVDIIATDIQTKELQKQITKIQNFRVYYRDSRNPLWKGPAKLLWKGEGAVVIQDNSDIKVVPRRKAKIIRDYGKQMAGDDCVASRQDED'
 
         # Algorithm info
-        self.debug = False
         self.alg_version = ''
         self.alg_name = ''
 
@@ -308,10 +307,6 @@ class AsiAlgorithm:
     # Hmm, what is this?  Oh not much, just a Backus-Naur Form parser.
     # booleancondition | scorecondition
     def bnf_statement(self, cond, aaseq):
-        if self.debug:
-            print
-            "statement: " + cond
-            # This is stupid because python is stupid and won't let me do assignments in conditions.
         for func in [self.bnf_booleancondition, self.bnf_scorecondition]:
             bnf = func(cond, aaseq)
             if bnf.cond:
@@ -320,9 +315,6 @@ class AsiAlgorithm:
 
     # condition condition2*;
     def bnf_booleancondition(self, cond, aaseq):
-        if self.debug:
-            print
-            "booleancondition: " + cond  # debug
         bnflist = []
         bnf = self.bnf_condition(cond, aaseq)
         if bnf.cond:
@@ -354,9 +346,6 @@ class AsiAlgorithm:
 
     # l_par booleancondition r_par | residue | excludestatement | selectstatement
     def bnf_condition(self, cond, aaseq):
-        if self.debug:
-            print
-            "condition: " + cond  # debug
         for func in [self.bnf_booleancondition, self.bnf_residue, self.bnf_excludestatement, self.bnf_selectstatement]:
             if func == self.bnf_booleancondition:
                 lpi = -1
@@ -397,9 +386,6 @@ class AsiAlgorithm:
 
     # logicsymbol condition;
     def bnf_condition2(self, cond, aaseq):
-        if self.debug:
-            print
-            "condition2: " + cond  # debug
         bnf_logic = self.bnf_logicsymbol(cond, aaseq)
         if bnf_logic.cond:
             bnf = self.bnf_condition(bnf_logic.cond, aaseq)
@@ -410,9 +396,6 @@ class AsiAlgorithm:
 
     # and | or
     def bnf_logicsymbol(self, cond, aaseq):
-        if self.debug:
-            print
-            "logicsymbol: " + cond  # debug
         if re.search('^\s*AND\s*', cond, flags=re.I):
             bnf = BNFVal(re.sub('^\s*AND\s*', '', cond))
             bnf.logic = 'AND'
@@ -427,18 +410,12 @@ class AsiAlgorithm:
     # not [originalaminoacid]:amino_acid? Integer [mutatedaminoacid]:amino_acid+ |
     # [originalaminoacid]:amino_acid? integer l_par not [mutatedaminoacid]:amino_acid+ r_par
     def bnf_residue(self, cond, aaseq):  # this looks hard yo
-        if self.debug:
-            print
-            "residue: " + cond  # debug
         # I think we'll have to go the regexp route here.  Haha.
         mo_a = re.search('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', cond)
         mo_b = re.search('^\s*NOT\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', cond)
         mo_c = re.search('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*\(\s*NOT\s*([ARNDCEQGHILKMFPSTWYVid]+)\s*\)', cond)
         truth = False
         if mo_a:
-            if self.debug:
-                print
-                'mo_a'
             loc = int(mo_a.group(1))
             aas = mo_a.group(2)
             if (len(aaseq) > loc):
@@ -447,14 +424,8 @@ class AsiAlgorithm:
                         truth = True
             # print '--test' + re.sub('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', '', cond)
             bnf = BNFVal(re.sub('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', '', cond), truth)
-            if self.debug:
-                print
-                "Residue: " + str(bnf.truth)
             return bnf
         elif mo_b:
-            if self.debug:
-                print
-                'mo_b'
             loc = int(mo_b.group(1))
             aas = mo_b.group(2)
             truth = True
@@ -466,14 +437,8 @@ class AsiAlgorithm:
                 truth = False  # ????UNKNOWN
             bnf = BNFVal(re.sub('^\s*NOT\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', '', cond),
                          truth)
-            if self.debug:
-                print
-                "Residue: " + str(bnf.truth)
             return bnf
         elif mo_c:
-            if self.debug:
-                print
-                'mo_c'
             loc = int(mo_c.group(1))
             aas = mo_c.group(2)
             truth = True
@@ -489,17 +454,11 @@ class AsiAlgorithm:
             bnf = BNFVal(
                 re.sub('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*\(\s*NOT\s*([ARNDCEQGHILKMFPSTWYVid]+)\s*\)', '', cond),
                 truth)
-            if self.debug:
-                print
-                "Residue: " + str(bnf.truth)
             return bnf
         return BNFVal(False)
 
     # exclude residue
     def bnf_excludestatement(self, cond, aaseq):
-        if self.debug:
-            print
-            "excludestatement: " + cond  # debug
         if re.search('^\s*EXCLUDE\s*', cond, flags=re.I):
             bnf = self.bnf_residue(re.sub('^\s*EXCLUDE\s*', '', cond), aaseq)
             if bnf.cond:
@@ -509,9 +468,6 @@ class AsiAlgorithm:
 
     # select selectstatement2
     def bnf_selectstatement(self, cond, aaseq):
-        if self.debug:
-            print
-            "selectstatement: " + cond  # debug
         if re.search('^\s*SELECT\s*', cond, flags=re.I):
             bnf = self.bnf_selectstatement2(re.sub('^\s*SELECT\s*', '', cond), aaseq)
             if bnf.cond:
@@ -523,9 +479,6 @@ class AsiAlgorithm:
     # notmorethan integer from l_par selectlist r_par |
     # atleast [atleastnumber]:integer logicsymbol notmorethan [notmorethannumber]:integer from l_par selectlist r_par
     def bnf_selectstatement2(self, cond, aaseq):
-        if self.debug:
-            print
-            "selectstatement2: " + cond  # debug
         lparen = -1
         rparen = -1
         cnt = 0
@@ -560,16 +513,10 @@ class AsiAlgorithm:
         for bnf in bnflist:
             if bnf.cond and bnf.truth:
                 cnt += 1
-        if self.debug:
-            print
-            "cnt: " + str(cnt)
         if re.search('^\s*ATLEAST\s*(\d+)\s*(AND|OR)\s*NOTMORETHAN', type, flags=re.I):
             atleastn = int(mo_a.group(3))
             logic = mo_a.group(4)
             atmostn = int(mo_a.group(5))
-            if self.debug:
-                print
-                "atleast: " + str(atleastn) + ", atmost: " + str(atmostn)
             if cnt >= atleastn and cnt <= atmostn:
                 return BNFVal(cond[rparen + 1:], truth=True)
             else:
@@ -577,9 +524,6 @@ class AsiAlgorithm:
         elif re.search('^\s*EXACTLY', type, flags=re.I):
             # print 'exactly'
             exactlyn = int(mo_a.group(2))
-            if self.debug:
-                print
-                "exactly: " + str(exactlyn)
             if cnt == exactlyn:
                 return BNFVal(cond[rparen + 1:], truth=True)
             else:
@@ -587,9 +531,6 @@ class AsiAlgorithm:
         elif re.search('^\s*ATLEAST', type, flags=re.I):
             # print 'atleastn'
             atleastn = int(mo_a.group(6))
-            if self.debug:
-                print
-                "atleast: " + str(atleastn)
             if cnt >= atleastn:
                 return BNFVal(cond[rparen + 1:], truth=True)
             else:
@@ -597,9 +538,6 @@ class AsiAlgorithm:
         elif re.search('^\s*NOTMORETHAN', type, flags=re.I):
             # print 'notmorethan'
             atmostn = int(mo_a.group(7))
-            if self.debug:
-                print
-                "atmost: " + str(atmostn)
             if cnt <= atmostn:
                 return BNFVal(cond[rparen + 1:], truth=True)
             else:
@@ -609,9 +547,6 @@ class AsiAlgorithm:
 
     # residue listitems*
     def bnf_selectlist(self, cond, aaseq):
-        if self.debug:
-            print
-            "selectlist: " + cond  # debug
         bnflist = []
         bnf = self.bnf_residue(cond, aaseq)
         if bnf.cond:
@@ -632,9 +567,6 @@ class AsiAlgorithm:
 
     # score from l_par scorelist r_par
     def bnf_scorecondition(self, cond, aaseq):
-        if self.debug:
-            print
-            "bnf_scorecondition: " + cond  # debug
         tmp = re.search('^\s*score\s*from\s*\((.+)\)\s*|', cond, flags=re.I)
         if tmp and tmp.group(1):
             score = 0.0
@@ -657,14 +589,8 @@ class AsiAlgorithm:
     # Should actually have a comma before each scoreitem*
     # scoreitem scoreitems*
     def bnf_scorelist(self, cond, aaseq):
-        if self.debug:
-            print
-            "bnf_scorelist: " + cond  # debug
         bnflist = []
         bnf = self.bnf_scoreitem(cond, aaseq)
-        if self.debug:
-            print
-            "S:" + str(bnf.score)
         if bnf.cond:
             bnflist.append(bnf)
             newcond = bnf.cond
@@ -677,9 +603,6 @@ class AsiAlgorithm:
                     bnf = self.bnf_scoreitem(newcond, aaseq)
                     if bnf.cond == False:
                         break
-                    if self.debug:
-                        print
-                        "S:" + str(bnf.score)
                     newcond = bnf.cond
                     bnflist.append(bnf)
                 else:
@@ -690,9 +613,6 @@ class AsiAlgorithm:
     # booleancondition mapper min? number |
     # max l_par scorelist r_par
     def bnf_scoreitem(self, cond, aaseq):
-        if self.debug:
-            print
-            "bnf_scoreitem: " + cond  # debug
         # mo_a has 4 groups, the booleanconditon, an optional pointless MIN, and the score, and then the rest of the string
         # I think we need to match a dash for negative numbers yo
         mo_a = re.search('^\s*([^=>]+)\s*=>\s*(min)?\s*(-?\d+\.?\d*)\s*(.+)$', cond, flags=re.I)
@@ -840,11 +760,6 @@ class AsiAlgorithm:
                     if interp:
                         score = interp[1]
                         truth = interp[0]
-                        if self.debug:
-                            print
-                            "Final Score:" + str(score)
-                            print
-                            "Final Score:" + str(truth)
                         if truth == False and score == 0.0:
                             continue
                         for act in actions:
