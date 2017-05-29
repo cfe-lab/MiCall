@@ -102,7 +102,7 @@ def generate(nuc):
 # Turns nucleotide sequence into an amino acid array
 def translate_complete_to_array(sequence):
     protseq = []
-    for i in range(0, len(sequence) / 3):
+    for i in range(0, len(sequence) // 3):
         alist = generate(sequence[i * 3: i * 3 + 3])
         newlist = []
         for entry in alist:
@@ -124,7 +124,7 @@ def translate_complete_to_array(sequence):
 
 def raw_translator(str, keepdashs=False):
     aa = ''
-    for i in range(0, (len(str) / 3)):
+    for i in range(0, (len(str) // 3)):
         if keepdashs and str[i * 3: i * 3 + 3] == '---':
             aa += 'd'  # lowercase d for deletion.
             continue
@@ -817,7 +817,7 @@ class AsiAlgorithm:
         result = AsiResult()
         result.alg_name = self.alg_name
         result.alg_version = self.alg_version
-        genes = filter((lambda e: e[0] == region), self.gene_def)[0][1]
+        genes = list(filter((lambda e: e[0] == region), self.gene_def))[0][1]
         drs = filter((lambda e: e[0] in genes), self.drug_class)
         # print drs
         for drcls in drs:
@@ -826,7 +826,7 @@ class AsiAlgorithm:
                 # Request the actual drug thingy
                 #        if drname != 'ABC':
                 #          continue
-                drug = filter((lambda e: e[0] == drname), self.drugs)[0]
+                drug = list(filter((lambda e: e[0] == drname), self.drugs))[0]
                 drug_result = AsiDrugResult()
                 drug_result.code = drug[0]
                 drug_result.name = drug[1]
@@ -916,7 +916,7 @@ class AsiAlgorithm:
                 interp = self.interp_condition(cond, aaseq)
                 if interp and interp[0]:
                     for act in actions:
-                        comm = filter(lambda e: (e[0] == act[1]), self.comment_def)[0]
+                        comm = list(filter(lambda e: (e[0] == act[1]), self.comment_def))[0]
                         comment = self.comment_filter(comm[1], aaseq, region)
                         result.mutation_comments.append(comment)
                 elif interp == None:
