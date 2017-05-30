@@ -9,18 +9,18 @@ class AsiAlgorithmTest(TestCase):
         algorithm_hivdb = AsiAlgorithm("micall/hivdb/HIVDB_8.3.xml")
         aa_seq = [[amino] for amino in algorithm_hivdb.rt_std]
         aa_seq[40] = ['L']
-        compared_attrs = ('code', 'score', 'level', 'comments')
-        expected_drugs = [('3TC', 0.0, 1, []),
-                          ('ABC', 5.0, 1, []),
-                          ('AZT', 15.0, 3, []),
-                          ('D4T', 15.0, 1, []),
-                          ('DDI', 10.0, 1, []),
-                          ('FTC', 0.0, 1, []),
-                          ('TDF', 5.0, 1, []),
-                          ('EFV', 0.0, 1, []),
-                          ('ETR', 0.0, 1, []),
-                          ('NVP', 0.0, 1, []),
-                          ('RPV', 0.0, 1, [])]
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('3TC', 0.0, 1, 'Susceptible'),
+                          ('ABC', 5.0, 1, 'Susceptible'),
+                          ('AZT', 15.0, 3, 'Low-Level Resistance'),
+                          ('D4T', 15.0, 3, 'Low-Level Resistance'),
+                          ('DDI', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('FTC', 0.0, 1, 'Susceptible'),
+                          ('TDF', 5.0, 1, 'Susceptible'),
+                          ('EFV', 0.0, 1, 'Susceptible'),
+                          ('ETR', 0.0, 1, 'Susceptible'),
+                          ('NVP', 0.0, 1, 'Susceptible'),
+                          ('RPV', 0.0, 1, 'Susceptible')]
         expected_mutation_comments = [
             'M41L is a TAM that usually occurs with T215Y. In combination, '
             'M41L plus T215Y confer intermediate / high-level resistance to '
@@ -28,9 +28,70 @@ class AsiAlgorithmTest(TestCase):
             'susceptibility.']
 
         result = algorithm_hivdb.interpret(aa_seq, 'RT')
+
         drugs = list(map(attrgetter(*compared_attrs), result.drugs))
         self.assertEqual(expected_drugs, drugs)
         self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    def test_protease(self):
+        self.maxDiff = None
+        algorithm_hivdb = AsiAlgorithm("micall/hivdb/HIVDB_8.3.xml")
+        aa_seq = [[amino] for amino in algorithm_hivdb.pr_std]
+        aa_seq[23] = ['I']
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('ATV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('DRV/r', 0.0, 1, 'Susceptible'),
+                          ('FPV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('IDV/r', 15.0, 3, 'Low-Level Resistance'),
+                          ('LPV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('NFV', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('SQV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('TPV/r', -5.0, 1, 'Susceptible')]
+        expected_mutation_comments = [
+            'L24I is a non-polymorphic mutation selected by IDV and LPV. It '
+            'contributes reduced susceptibility to each PI except DRV and TPV.']
+
+        result = algorithm_hivdb.interpret(aa_seq, 'PR')
+
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
+        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    def test_gaps(self):
+        self.maxDiff = None
+        algorithm_hivdb = AsiAlgorithm("micall/hivdb/HIVDB_8.3.xml")
+        aa_seq = [[]] * 23 + [['I']]
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('ATV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('DRV/r', 0.0, 1, 'Susceptible'),
+                          ('FPV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('IDV/r', 15.0, 3, 'Low-Level Resistance'),
+                          ('LPV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('NFV', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('SQV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('TPV/r', -5.0, 1, 'Susceptible')]
+        expected_mutation_comments = [
+            'L24I is a non-polymorphic mutation selected by IDV and LPV. It '
+            'contributes reduced susceptibility to each PI except DRV and TPV.']
+
+        result = algorithm_hivdb.interpret(aa_seq, 'PR')
+
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
+        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    # def test_mutations(self):
+    #     algorithm_hivdb = AsiAlgorithm("micall/hivdb/HIVDB_8.3.xml")
+    #     aa_seq = [[amino] for amino in algorithm_hivdb.rt_std]
+    #     self.assertNotEqual('L', aa_seq[40])
+    #     aa_seq[40] = ['L']
+    #     self.assertEqual('R', aa_seq[41])
+    #     aa_seq[41] = ['L']
+    #     expected_mutations = ['RT41L']
+    #
+    #     result = algorithm_hivdb.interpret(aa_seq, 'RT')
+    #
+    #     self.assertEqual(expected_mutations, result.mutations)
 
 
 class TranslateSequenceTest(TestCase):

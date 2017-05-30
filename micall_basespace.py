@@ -22,6 +22,7 @@ from micall.core.filter_quality import report_bad_cycles
 from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from micall.core.sam2aln import sam2aln
+from micall.hivdb.hivdb import hivdb
 from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.g2p.pssm_lib import Pssm
@@ -32,11 +33,9 @@ EXCLUDED_SEEDS = ['HLA-B-seed']  # Not ready yet.
 EXCLUDED_PROJECTS = ['HCV-NS5a',
                      'HIV-GP41',
                      'HIV',
-                     'INT',
                      'MidHCV',
                      'MiniHCV',
                      'MiniRT',
-                     'PR-RT',
                      'RT',
                      'V3LOOP',
                      'wg1HCV']  # Avoid useless duplicates for BaseSpace version.
@@ -495,6 +494,11 @@ def process_sample(sample_index, run_info, args, pssm):
                       coverage_maps_prefix=sample_name,
                       excluded_projects=excluded_projects)
 
+    logger.info('Running hivdb (%d of %d).', sample_index+1, len(run_info.samples))
+    with open(os.path.join(sample_scratch_path, 'amino.csv')) as amino_csv, \
+            open(os.path.join(sample_scratch_path, 'resistance.csv'), 'w') as resistance_csv:
+        hivdb(amino_csv, resistance_csv)
+
     logger.info('Running cascade_report (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'r') as g2p_summary_csv, \
             open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'r') as remap_counts_csv, \
@@ -615,6 +619,7 @@ def collate_samples(args, run_info):
                  'coverage_scores.csv',
                  'g2p.csv',
                  'g2p_summary.csv',
+                 'resistance.csv',
                  'cascade.csv']
     for filename in filenames:
         out_path = args.qc_path if filename == 'coverage_scores.csv' else args.g2p_path

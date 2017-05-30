@@ -1,10 +1,10 @@
 from io import StringIO
 from unittest import TestCase
 
-from micall.hivdb.hivdb import read_aminos
+from micall.hivdb.hivdb import read_aminos, write_resistance
 
 
-class HivDbTest(TestCase):
+class ReadAminosTest(TestCase):
     def test_simple(self):
         amino_csv = StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
@@ -134,3 +134,27 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         aminos = list(read_aminos(amino_csv, min_fraction))
 
         self.assertEqual(expected_aminos, aminos)
+
+
+class WriteResistanceTest(TestCase):
+    def test_simple(self):
+        aminos = [('RT', [['A']] * 40 + [['L'], ['A']])]
+        resistance_csv = StringIO()
+        expected_report = """\
+region,drug,level_name,level,score
+RT,3TC,Susceptible,1,0.0
+RT,ABC,Susceptible,1,5.0
+RT,AZT,Low-Level Resistance,3,15.0
+RT,D4T,Low-Level Resistance,3,15.0
+RT,DDI,Potential Low-Level Resistance,2,10.0
+RT,FTC,Susceptible,1,0.0
+RT,TDF,Susceptible,1,5.0
+RT,EFV,Susceptible,1,0.0
+RT,ETR,Susceptible,1,0.0
+RT,NVP,Susceptible,1,0.0
+RT,RPV,Susceptible,1,0.0
+"""
+
+        write_resistance(resistance_csv, aminos)
+
+        self.assertEqual(expected_report, resistance_csv.getvalue())

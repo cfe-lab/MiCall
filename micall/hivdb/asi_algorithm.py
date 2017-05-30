@@ -159,7 +159,7 @@ class AsiAlgorithm:
 
         # definitions
         self.gene_def = []  # [['PR', ['PI']], ['RT',['NNRTI','NRTI']], ...]
-        self.level_def = []  # [['1', 'Susceptible', 'S'], ...]
+        self.level_def = {}  # {'1': 'Susceptible'}
         self.drug_class = []  # [ ['PI', ['FPV/r', 'IDV/r', ...] ], ...]
         self.global_range = []  # [ ['-INF', '9', '1'] , ...]  #first two are the range, the third one is the res level
         self.comment_def = []  # something...
@@ -181,14 +181,14 @@ class AsiAlgorithm:
         for node in defs.getElementsByTagName('GENE_DEFINITION'):
             a = node.getElementsByTagName('NAME')[0].childNodes[0].nodeValue
             b = node.getElementsByTagName('DRUGCLASSLIST')[0].childNodes[0].nodeValue.split(',')
-            b = map((lambda e: e.strip()), b)
+            b = list(map((lambda e: e.strip()), b))
             self.gene_def.append([a.strip(), b])
 
         for node in defs.getElementsByTagName('LEVEL_DEFINITION'):
             a = node.getElementsByTagName('ORDER')[0].childNodes[0].nodeValue
             b = node.getElementsByTagName('ORIGINAL')[0].childNodes[0].nodeValue
             c = node.getElementsByTagName('SIR')[0].childNodes[0].nodeValue
-            self.level_def.append([a.strip(), b.strip(), c.strip()])
+            self.level_def[a.strip()] = b.strip()
 
         for node in defs.getElementsByTagName('DRUGCLASS'):
             a = node.getElementsByTagName('NAME')[0].childNodes[0].nodeValue
@@ -196,14 +196,13 @@ class AsiAlgorithm:
             b = map((lambda e: e.strip()), b)
             self.drug_class.append([a.strip(), b])
 
-        if defs.getElementsByTagName('GLOBALRANGE') != []:
+        if defs.getElementsByTagName('GLOBALRANGE'):
             self.global_range = defs.getElementsByTagName('GLOBALRANGE')[0].childNodes[0].nodeValue
             self.global_range = self.global_range.strip(")( \n").split(',')
-            self.global_range = map(
+            self.global_range = list(map(
                 lambda a: (list(re.match('\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*', a.strip("\n \t")).groups())),
-                self.global_range)
-        # print repr(self.global_range)
-        if defs.getElementsByTagName('COMMENT_DEFINITIONS') != []:
+                self.global_range))
+        if defs.getElementsByTagName('COMMENT_DEFINITIONS'):
             comment_defs = defs.getElementsByTagName('COMMENT_DEFINITIONS')[0]
             for node in comment_defs.getElementsByTagName('COMMENT_STRING'):
                 a = node.attributes.item(0).value
@@ -418,7 +417,7 @@ class AsiAlgorithm:
         if mo_a:
             loc = int(mo_a.group(1))
             aas = mo_a.group(2)
-            if (len(aaseq) > loc):
+            if len(aaseq) >= loc:
                 for aa in aaseq[loc - 1]:
                     if aa in aas:
                         truth = True
@@ -739,6 +738,8 @@ class AsiAlgorithm:
         result.alg_version = self.alg_version
         genes = list(filter((lambda e: e[0] == region), self.gene_def))[0][1]
         drs = filter((lambda e: e[0] in genes), self.drug_class)
+        default_level = 1
+        default_level_name = self.level_def['1']
         # print drs
         for drcls in drs:
             cls = drcls[0]
@@ -750,6 +751,8 @@ class AsiAlgorithm:
                 drug_result = AsiDrugResult()
                 drug_result.code = drug[0]
                 drug_result.name = drug[1]
+                drug_result.level = default_level
+                drug_result.level_name = default_level_name
                 drug_result.drug_class = cls
 
                 for rule in drug[2]:
@@ -767,6 +770,7 @@ class AsiAlgorithm:
                             if act[0] == 'level':
                                 if int(act[1]) > drug_result.level:
                                     drug_result.level = int(act[1])
+                                    drug_result.level_name = self.level_def[act[1]]
                             elif act[0] == 'comment':
                                 comm = act[1]
                                 comm = filter(lambda e: (e[0] == act[1]), self.comment_def)[0]
@@ -810,6 +814,7 @@ class AsiAlgorithm:
                                         #                    print str(rng)
                                         if int(rng[2]) > drug_result.level:
                                             drug_result.level = int(rng[2])
+                                            drug_result.level_name = self.level_def[rng[2]]
                                         break
                                 if (drug_result.level == None):
                                     raise "drug score range level parsing error"
@@ -874,7 +879,7 @@ class AsiDrugResult:
         self.code = ''
         self.drug_class = ''
         self.score = 0.0
-        self.level = 1
+        self.level = self.level_name = None
         self.comments = []  # Do we need this?
 
 
