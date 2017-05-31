@@ -1,5 +1,5 @@
 # Generate the Docker container to run MiCall on BaseSpace.
-FROM python:2.7
+FROM python:3.6
 
 MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 
@@ -10,7 +10,7 @@ RUN apt-get update -qq --fix-missing && apt-get install -qq -y \
   && rm -rf /var/lib/apt/lists/*
 
 ## Python packages, plus trigger matplotlib to build its font cache
-RUN pip install python-Levenshtein matplotlib requests && \
+RUN pip install python-Levenshtein matplotlib requests reportlab && \
   python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 ## bowtie2
@@ -31,7 +31,9 @@ RUN rm -r /opt/alignment
 ## MiCall
 COPY micall_basespace.py /opt/micall/
 COPY micall/__init__.py micall/project* /opt/micall/micall/
-COPY micall/core /opt/micall/micall/core/
-COPY micall/g2p /opt/micall/micall/g2p/
+
+COPY micall/core    /opt/micall/micall/core/
+COPY micall/g2p     /opt/micall/micall/g2p/
+COPY micall/hivdb   /opt/micall/micall/hivdb/
 COPY micall/monitor /opt/micall/micall/monitor/
-COPY micall/utils /opt/micall/micall/utils/
+COPY micall/utils   /opt/micall/micall/utils/
