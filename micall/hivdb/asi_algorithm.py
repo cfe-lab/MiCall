@@ -76,27 +76,20 @@ AMBIG = {
 
 # Generates all possible non-ambigious nucleotides from an ambiguous 3 nucleotide sequence
 def generate(nuc):
-    try:
-        posa = AMBIG[nuc[0]]
-        posb = AMBIG[nuc[1]]
-        posc = AMBIG[nuc[2]]
+    posa = AMBIG[nuc[0]]
+    posb = AMBIG[nuc[1]]
+    posc = AMBIG[nuc[2]]
 
-        if nuc == 'XXX':
-            return ['X']
+    if nuc == 'XXX':
+        return ['X']
 
-        nuclist = []
-        for a in posa:
-            for b in posb:
-                for c in posc:
-                    nuclist.append(a + b + c)
+    nuclist = []
+    for a in posa:
+        for b in posb:
+            for c in posc:
+                nuclist.append(a + b + c)
 
-        return nuclist
-    except Exception as ex:
-        print
-        ex
-        print
-        nuc
-        return None
+    return nuclist
 
 
 # Turns nucleotide sequence into an amino acid array
@@ -138,20 +131,46 @@ def raw_translator(str, keepdashs=False):
 
 # BNF Support code: ----------------------------------------------------------
 class BNFVal:
-    def __init__(self, cond, truth=False, score=0):
+    def __init__(self, cond, truth=False, score=0, mutations=None):
         self.truth = truth
         self.cond = cond
         self.score = score
         self.logic = None  # will be 'AND' or 'OR' if its from a condition2
+        if mutations is None:
+            self.mutations = set()  # mutations that triggered this, like 'M41L'
+        else:
+            self.mutations = mutations
+
+    def __repr__(self):
+        if len(self.cond) <= 21:
+            cond = self.cond
+        else:
+            cond = self.cond[:9] + '...' + self.cond[-9:]
+        return 'BNFVal({!r}, {!r}, {!r}, {!r})'.format(cond,
+                                                       self.truth,
+                                                       self.score,
+                                                       self.mutations)
 
 
 # Now the actual code:----------------------------------------------------------
 class AsiAlgorithm:
     def __init__(self, filename):
         # Extra hacks to conform to sierra's extra hacks
-        self.pr_std = 'PQVTLWQRPLVTIKIGGQLKEALLDTGADDTVLEEMSLPGRWKPKMIGGIGGFIKVRQYDQILIEICGHKAIGTVLVGPTPVNIIGRNLLTQIGCTLNF'
-        self.rt_std = 'PISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTEMEKEGKISKIGPENPYNTPVFAIKKKDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSVPLDEDFRKYTAFTIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPDIVIYQYMDDLYVGSDLEIGQHRTKIEELRQHLLRWGLTTPDKKHQKEPPFLWMGYELHPDKWTVQPIVLPEKDSWTVNDIQKLVGKLNWASQIYPGIKVRQLCKLLRGTKALTEVIPLTEEAELELAENREILKEPVHGVYYDPSKDLIAEIQKQGQGQWTYQIYQEPFKNLKTGKYARMRGAHTNDVKQLTEAVQKITTESIVIWGKTPKFKLPIQKETWET'
-        self.int_std = 'FLDGIDKAQDEHEKYHSNWRAMASDFNLPPVVAKEIVASCDKCQLKGEAMHGQVDCSPGIWQLDCTHLEGKVILVAVHVASGYIEAEVIPAETGQETAYFLLKLAGRWPVKTIHTDNGSNFTGATVRAACWWAGIKQEFGIPYNPQSQGVVESMNKELKKIIGQVRDQAEHLKTAVQMAVFIHNFKRKGGIGGYSAGERIVDIIATDIQTKELQKQITKIQNFRVYYRDSRNPLWKGPAKLLWKGEGAVVIQDNSDIKVVPRRKAKIIRDYGKQMAGDDCVASRQDED'
+        self.stds = {
+            'PR': 'PQVTLWQRPLVTIKIGGQLKEALLDTGADDTVLEEMSLPGRWKPKMIGGIGGFIKVRQY'
+                  'DQILIEICGHKAIGTVLVGPTPVNIIGRNLLTQIGCTLNF',
+            'RT': 'PISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTEMEKEGKISKIGPENPYNTP'
+                  'VFAIKKKDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSV'
+                  'PLDEDFRKYTAFTIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPD'
+                  'IVIYQYMDDLYVGSDLEIGQHRTKIEELRQHLLRWGLTTPDKKHQKEPPFLWMGYELHP'
+                  'DKWTVQPIVLPEKDSWTVNDIQKLVGKLNWASQIYPGIKVRQLCKLLRGTKALTEVIPL'
+                  'TEEAELELAENREILKEPVHGVYYDPSKDLIAEIQKQGQGQWTYQIYQEPFKNLKTGKY'
+                  'ARMRGAHTNDVKQLTEAVQKITTESIVIWGKTPKFKLPIQKETWET',
+            'IN': 'FLDGIDKAQDEHEKYHSNWRAMASDFNLPPVVAKEIVASCDKCQLKGEAMHGQVDCSPG'
+                  'IWQLDCTHLEGKVILVAVHVASGYIEAEVIPAETGQETAYFLLKLAGRWPVKTIHTDNG'
+                  'SNFTGATVRAACWWAGIKQEFGIPYNPQSQGVVESMNKELKKIIGQVRDQAEHLKTAVQ'
+                  'MAVFIHNFKRKGGIGGYSAGERIVDIIATDIQTKELQKQITKIQNFRVYYRDSRNPLWK'
+                  'GPAKLLWKGEGAVVIQDNSDIKVVPRRKAKIIRDYGKQMAGDDCVASRQDED'}
 
         # Algorithm info
         self.alg_version = ''
@@ -298,10 +317,10 @@ class AsiAlgorithm:
             return None
         elif bnf.truth:
             # print "RESULT IS TRUE, SCORE: " + str(bnf.score)
-            return [True, bnf.score]
+            return [True, bnf.score, bnf.mutations]
         else:
             # print "RESULT IS FALSE, SCORE: " + str(bnf.score)
-            return [False, bnf.score]
+            return [False, bnf.score, bnf.mutations]
 
     # Hmm, what is this?  Oh not much, just a Backus-Naur Form parser.
     # booleancondition | scorecondition
@@ -326,20 +345,23 @@ class AsiAlgorithm:
                     break
             # Use the logic
             left_truth = None
+            mutations = None
             for bnf in bnflist:
                 # print "boolean_truth " + str(bnf.truth)
-                if left_truth == None:
+                if left_truth is None:
                     left_truth = bnf.truth
+                    mutations = bnf.mutations
                 else:  # Not quite proper logic order, but I don't think anybody is randomly mixing OR's and AND's so it should be okay
-                    if bnf.logic == 'AND' and left_truth and bnf.truth:
-                        left_truth = True
-                    elif bnf.logic == 'AND':
-                        left_truth = False
-                    elif bnf.logic == 'OR' and (left_truth or bnf.truth):
-                        left_truth = True
+                    if bnf.logic == 'AND':
+                        left_truth = left_truth and bnf.truth
+                        if left_truth:
+                            mutations |= bnf.mutations
+                        else:
+                            mutations.clear()
                     elif bnf.logic == 'OR':
-                        left_truth = False
-            return BNFVal(bnflist[-1].cond, left_truth)
+                        left_truth = left_truth or bnf.truth
+                        mutations |= bnf.mutations
+            return BNFVal(bnflist[-1].cond, left_truth, mutations=mutations)
         else:
             return BNFVal(False)
 
@@ -414,15 +436,21 @@ class AsiAlgorithm:
         mo_b = re.search('^\s*NOT\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', cond)
         mo_c = re.search('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*\(\s*NOT\s*([ARNDCEQGHILKMFPSTWYVid]+)\s*\)', cond)
         truth = False
+        mutations = None
         if mo_a:
             loc = int(mo_a.group(1))
             aas = mo_a.group(2)
             if len(aaseq) >= loc:
-                for aa in aaseq[loc - 1]:
-                    if aa in aas:
-                        truth = True
+                mutations = {str(loc) + aa
+                             for aa in aaseq[loc - 1]
+                             if aa in aas}
+                truth = bool(mutations)
             # print '--test' + re.sub('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', '', cond)
-            bnf = BNFVal(re.sub('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', '', cond), truth)
+            bnf = BNFVal(re.sub('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)',
+                                '',
+                                cond),
+                         truth,
+                         mutations=mutations)
             return bnf
         elif mo_b:
             loc = int(mo_b.group(1))
@@ -570,18 +598,20 @@ class AsiAlgorithm:
         if tmp and tmp.group(1):
             score = 0.0
             bnf_list = self.bnf_scorelist(tmp.group(1) + '|', aaseq)
+            mutations = set()
             if bnf_list[0].cond:
                 newcond = cond
                 for bnf in bnf_list:
                     if bnf.cond:
                         newcond = bnf.cond
                         score += bnf.score
+                        mutations |= bnf.mutations
                     else:
                         break
             else:
                 return BNFVal(False)
             # I guess evalate the truth values?
-            return BNFVal(newcond, score=score)
+            return BNFVal(newcond, score=score, mutations=mutations)
             # return bnf
         return BNFVal(False)
 
@@ -643,14 +673,18 @@ class AsiAlgorithm:
             score = -999  # close enough to infinity.
 
             if bnflist[0].cond:
+                mutations = set()
                 for bnf in bnflist:
                     if bnf.cond:
                         newcond = bnf.cond
+                        mutations |= bnf.mutations
                         if bnf.score > score and bnf.score != 0.0:
                             score = bnf.score
                 if (score == -999):
                     score = 0.0
-                return BNFVal(cond[rparen + 1:], score=score)
+                return BNFVal(cond[rparen + 1:],
+                              score=score,
+                              mutations=mutations)
         elif mo_a:
             # print "to mo a, or not to mo a? "
             # print mo_a.group(1)
@@ -697,12 +731,9 @@ class AsiAlgorithm:
                     subs = list(subs)
                     subs.sort()
                     subs = ''.join(subs)
-                    if region == 'PR':
-                        final.append(self.pr_std[int(loc) - 1] + loc + subs)
-                    elif region == 'RT':
-                        final.append(self.rt_std[int(loc) - 1] + loc + subs)
-                    elif region == 'IN':
-                        final.append(self.int_std[int(loc) - 1] + loc + subs)
+                    std = self.stds.get(region)
+                    if std is not None:
+                        final.append(std[int(loc) - 1] + loc + subs)
                     else:
                         final.append(loc + subs)
 
@@ -734,6 +765,7 @@ class AsiAlgorithm:
     # Most important method.
     def interpret(self, aaseq, region):
         result = AsiResult()
+        raw_mutations = set()
         result.alg_name = self.alg_name
         result.alg_version = self.alg_version
         genes = list(filter((lambda e: e[0] == region), self.gene_def))[0][1]
@@ -763,6 +795,7 @@ class AsiAlgorithm:
                     if interp:
                         score = interp[1]
                         truth = interp[0]
+                        raw_mutations |= interp[2]
                         if truth == False and score == 0.0:
                             continue
                         for act in actions:
@@ -823,6 +856,11 @@ class AsiAlgorithm:
                         "ERROR in condition: " + cond
                 result.drugs.append(drug_result)
 
+        mutation_parts = sorted((int(mutation[:-1]), mutation[-1])
+                                for mutation in raw_mutations)
+        std = self.stds[region]
+        result.mutations.extend('{}{}{}'.format(std[pos-1], pos, amino)
+                                for pos, amino in mutation_parts)
         result.drugs.sort(key=lambda e: e.code)
         result.drugs.sort(key=lambda e: e.drug_class, reverse=True)
         # comments

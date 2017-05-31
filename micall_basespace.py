@@ -496,8 +496,9 @@ def process_sample(sample_index, run_info, args, pssm):
 
     logger.info('Running hivdb (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'amino.csv')) as amino_csv, \
-            open(os.path.join(sample_scratch_path, 'resistance.csv'), 'w') as resistance_csv:
-        hivdb(amino_csv, resistance_csv)
+            open(os.path.join(sample_scratch_path, 'resistance.csv'), 'w') as resistance_csv, \
+            open(os.path.join(sample_scratch_path, 'mutations.csv'), 'w') as mutations_csv:
+        hivdb(amino_csv, resistance_csv, mutations_csv)
 
     logger.info('Running cascade_report (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'r') as g2p_summary_csv, \
@@ -620,6 +621,7 @@ def collate_samples(args, run_info):
                  'g2p.csv',
                  'g2p_summary.csv',
                  'resistance.csv',
+                 'mutations.csv',
                  'cascade.csv']
     for filename in filenames:
         out_path = args.qc_path if filename == 'coverage_scores.csv' else args.g2p_path

@@ -81,8 +81,8 @@ R2-seed,R2,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 R2-seed,R2,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """)
         min_fraction = 0.2
-        reported_regions = ['R2']
-        expected_aminos = [('R2', [['K'], ['F'], ['C']])]
+        reported_regions = {'R2': 'Region2'}  # Others are skipped
+        expected_aminos = [('Region2', [['K'], ['F'], ['C']])]
 
         aminos = list(read_aminos(amino_csv,
                                   min_fraction,
@@ -138,23 +138,29 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 class WriteResistanceTest(TestCase):
     def test_simple(self):
-        aminos = [('RT', [['A']] * 40 + [['L'], ['A']])]
+        aminos = [('RT', [['A']] * 40 + [['L']])]
         resistance_csv = StringIO()
-        expected_report = """\
-region,drug,level_name,level,score
-RT,3TC,Susceptible,1,0.0
-RT,ABC,Susceptible,1,5.0
-RT,AZT,Low-Level Resistance,3,15.0
-RT,D4T,Low-Level Resistance,3,15.0
-RT,DDI,Potential Low-Level Resistance,2,10.0
-RT,FTC,Susceptible,1,0.0
-RT,TDF,Susceptible,1,5.0
-RT,EFV,Susceptible,1,0.0
-RT,ETR,Susceptible,1,0.0
-RT,NVP,Susceptible,1,0.0
-RT,RPV,Susceptible,1,0.0
+        mutations_csv = StringIO()
+        expected_resistance = """\
+region,drug,drug_name,level,level_name,score
+RT,3TC,lamivudine,1,Susceptible,0.0
+RT,ABC,abacavir,1,Susceptible,5.0
+RT,AZT,zidovudine,3,Low-Level Resistance,15.0
+RT,D4T,stavudine,3,Low-Level Resistance,15.0
+RT,DDI,didanosine,2,Potential Low-Level Resistance,10.0
+RT,FTC,emtricitabine,1,Susceptible,0.0
+RT,TDF,tenofovir,1,Susceptible,5.0
+RT,EFV,efavirenz,1,Susceptible,0.0
+RT,ETR,etravirine,1,Susceptible,0.0
+RT,NVP,nevirapine,1,Susceptible,0.0
+RT,RPV,rilpivirine,1,Susceptible,0.0
+"""
+        expected_mutations = """\
+region,mutation
+RT,M41L
 """
 
-        write_resistance(resistance_csv, aminos)
+        write_resistance(aminos, resistance_csv, mutations_csv)
 
-        self.assertEqual(expected_report, resistance_csv.getvalue())
+        self.assertEqual(expected_resistance, resistance_csv.getvalue())
+        self.assertEqual(expected_mutations, mutations_csv.getvalue())

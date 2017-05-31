@@ -6,10 +6,10 @@ from itertools import groupby
 from operator import itemgetter
 
 from micall.hivdb.asi_algorithm import AsiAlgorithm
-from ..core.aln2counts import AMINO_ALPHABET
+from micall.core.aln2counts import AMINO_ALPHABET
 
 MIN_FRACTION = 0.05  # prevalence of mutations to report
-REPORTED_REGIONS = ('PR', 'RT', 'INT')
+REPORTED_REGIONS = {'PR': 'PR', 'RT': 'RT', 'INT': 'IN'}
 RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.3.xml')
 
 
@@ -20,9 +20,9 @@ def parse_args():
     parser.add_argument('resistance_csv',
                         type=FileType('w'),
                         help='resistance calls')
-    # parser.add_argument('mutations_csv',
-    #                     type=FileType('w'),
-    #                     help='Relevant mutations present above a threshold')
+    parser.add_argument('mutations_csv',
+                        type=FileType('w'),
+                        help='Relevant mutations present above a threshold')
     return parser.parse_args()
 
 
@@ -32,8 +32,12 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
     report_names[-1] = 'd'
     for region, rows in groupby(DictReader(amino_csv),
                                 itemgetter('region')):
-        if reported_regions is not None and region not in reported_regions:
-            continue
+        if reported_regions is None:
+            translated_region = region
+        else:
+            translated_region = reported_regions.get(region)
+            if translated_region is None:
+                continue
         aminos = []
         for row in rows:
             counts = list(map(int, (row[f] for f in coverage_columns)))
@@ -46,33 +50,41 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
             if ins_count >= min_count:
                 pos_aminos.append('i')
             aminos.append(pos_aminos)
-        yield region, aminos
+        yield translated_region, aminos
 
 
-def write_resistance(resistance_csv, aminos):
-    writer = DictWriter(resistance_csv,
-                        ['region', 'drug', 'level_name', 'level', 'score'],
-                        lineterminator=os.linesep)
-    writer.writeheader()
+def write_resistance(aminos, resistance_csv, mutations_csv):
+    resistance_writer = DictWriter(
+        resistance_csv,
+        ['region', 'drug', 'drug_name', 'level', 'level_name', 'score'],
+        lineterminator=os.linesep)
+    resistance_writer.writeheader()
+    mutations_writer = DictWriter(mutations_csv,
+                                  ['region', 'mutation'],
+                                  lineterminator=os.linesep)
+    mutations_writer.writeheader()
     asi = AsiAlgorithm(RULES_PATH)
     for region, amino_seq in aminos:
         result = asi.interpret(amino_seq, region)
         for drug_result in result.drugs:
-            writer.writerow(dict(region=region,
-                                 drug=drug_result.code,
-                                 level_name=drug_result.level_name,
-                                 level=drug_result.level,
-                                 score=drug_result.score))
+            resistance_writer.writerow(dict(region=region,
+                                            drug=drug_result.code,
+                                            drug_name=drug_result.name,
+                                            level_name=drug_result.level_name,
+                                            level=drug_result.level,
+                                            score=drug_result.score))
+        for mutation in result.mutations:
+            mutations_writer.writerow(dict(region=region, mutation=mutation))
 
 
-def hivdb(amino_csv, resistance_csv):
+def hivdb(amino_csv, resistance_csv, mutations_csv):
     aminos = read_aminos(amino_csv, MIN_FRACTION, REPORTED_REGIONS)
-    write_resistance(resistance_csv, aminos)
+    write_resistance(aminos, resistance_csv, mutations_csv)
 
 
 def main():
     args = parse_args()
-    hivdb(args.amino_csv, args.resistance_csv)
+    hivdb(args.aminos_csv, args.resistance_csv, args.mutations_csv)
 
 if __name__ == '__main__':
     main()
