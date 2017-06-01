@@ -56,7 +56,7 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
 def write_resistance(aminos, resistance_csv, mutations_csv):
     resistance_writer = DictWriter(
         resistance_csv,
-        ['region', 'drug', 'drug_name', 'level', 'level_name', 'score'],
+        ['region', 'drug_class', 'drug', 'drug_name', 'level', 'level_name', 'score'],
         lineterminator=os.linesep)
     resistance_writer.writeheader()
     mutations_writer = DictWriter(mutations_csv,
@@ -68,6 +68,7 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
         result = asi.interpret(amino_seq, region)
         for drug_result in result.drugs:
             resistance_writer.writerow(dict(region=region,
+                                            drug_class=drug_result.drug_class,
                                             drug=drug_result.code,
                                             drug_name=drug_result.name,
                                             level_name=drug_result.level_name,

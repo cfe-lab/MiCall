@@ -138,22 +138,23 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 class WriteResistanceTest(TestCase):
     def test_simple(self):
+        self.maxDiff = None
         aminos = [('RT', [['A']] * 40 + [['L']])]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
-region,drug,drug_name,level,level_name,score
-RT,3TC,lamivudine,1,Susceptible,0.0
-RT,ABC,abacavir,1,Susceptible,5.0
-RT,AZT,zidovudine,3,Low-Level Resistance,15.0
-RT,D4T,stavudine,3,Low-Level Resistance,15.0
-RT,DDI,didanosine,2,Potential Low-Level Resistance,10.0
-RT,FTC,emtricitabine,1,Susceptible,0.0
-RT,TDF,tenofovir,1,Susceptible,5.0
-RT,EFV,efavirenz,1,Susceptible,0.0
-RT,ETR,etravirine,1,Susceptible,0.0
-RT,NVP,nevirapine,1,Susceptible,0.0
-RT,RPV,rilpivirine,1,Susceptible,0.0
+region,drug_class,drug,drug_name,level,level_name,score
+RT,NRTI,3TC,lamivudine,1,Susceptible,0.0
+RT,NRTI,ABC,abacavir,1,Susceptible,5.0
+RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0
+RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0
+RT,NRTI,DDI,didanosine,2,Potential Low-Level Resistance,10.0
+RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0
+RT,NRTI,TDF,tenofovir,1,Susceptible,5.0
+RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0
+RT,NNRTI,ETR,etravirine,1,Susceptible,0.0
+RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0
+RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0
 """
         expected_mutations = """\
 region,mutation
