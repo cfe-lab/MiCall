@@ -33,8 +33,9 @@ drug.level   #resistance level the algorithm assigned
 drug.comments  #list of comments associated with this drug
 """
 
-import xml.dom.minidom as minidom  # Bah Weep Granah Weep Mini Dom?
+from collections import defaultdict
 import re
+import xml.dom.minidom as minidom
 
 # utility code ---------------------------------------------------------------
 # random useful junk that should probably be in a util file.  Mostly translated
@@ -765,7 +766,7 @@ class AsiAlgorithm:
     # Most important method.
     def interpret(self, aaseq, region):
         result = AsiResult()
-        raw_mutations = set()
+        raw_mutations = defaultdict(set)
         result.alg_name = self.alg_name
         result.alg_version = self.alg_version
         genes = list(filter((lambda e: e[0] == region), self.gene_def))[0][1]
@@ -795,7 +796,7 @@ class AsiAlgorithm:
                     if interp:
                         score = interp[1]
                         truth = interp[0]
-                        raw_mutations |= interp[2]
+                        raw_mutations[cls] |= interp[2]
                         if truth == False and score == 0.0:
                             continue
                         for act in actions:
@@ -856,11 +857,12 @@ class AsiAlgorithm:
                         "ERROR in condition: " + cond
                 result.drugs.append(drug_result)
 
-        mutation_parts = sorted((int(mutation[:-1]), mutation[-1])
-                                for mutation in raw_mutations)
-        std = self.stds[region]
-        result.mutations.extend('{}{}{}'.format(std[pos-1], pos, amino)
-                                for pos, amino in mutation_parts)
+        for cls, cls_mutations in raw_mutations.items():
+            mutation_parts = sorted((int(mutation[:-1]), mutation[-1])
+                                    for mutation in cls_mutations)
+            std = self.stds[region]
+            result.mutations[cls] = ['{}{}{}'.format(std[pos-1], pos, amino)
+                                     for pos, amino in mutation_parts]
         result.drugs.sort(key=lambda e: e.code)
         result.drugs.sort(key=lambda e: e.drug_class, reverse=True)
         # comments
@@ -928,8 +930,7 @@ class AsiResult:
         self.alg_version = ''
 
         self.mutation_comments = []
-        self.mutations = []  # mut hash yo!  Don't forget yer proteins!  (Only used for HIVDB, and its a bit of a hack)
-        self.mutations_other = []  # mut hash yo!  Don't forget yer proteins!  (Only used for HIVDB, and its a bit of a hack)
+        self.mutations = {}
         self.drugs = []  # drug hash yo!  Don't forget your scores!
 
 

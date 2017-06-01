@@ -157,8 +157,8 @@ RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0
 RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0
 """
         expected_mutations = """\
-region,mutation
-RT,M41L
+drug_class,mutation
+NRTI,M41L
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv)

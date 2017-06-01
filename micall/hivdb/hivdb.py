@@ -60,7 +60,7 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
         lineterminator=os.linesep)
     resistance_writer.writeheader()
     mutations_writer = DictWriter(mutations_csv,
-                                  ['region', 'mutation'],
+                                  ['drug_class', 'mutation'],
                                   lineterminator=os.linesep)
     mutations_writer.writeheader()
     asi = AsiAlgorithm(RULES_PATH)
@@ -74,8 +74,10 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
                                             level_name=drug_result.level_name,
                                             level=drug_result.level,
                                             score=drug_result.score))
-        for mutation in result.mutations:
-            mutations_writer.writerow(dict(region=region, mutation=mutation))
+        for drug_class, class_mutations in result.mutations.items():
+            for mutation in class_mutations:
+                mutations_writer.writerow(dict(drug_class=drug_class,
+                                               mutation=mutation))
 
 
 def hivdb(amino_csv, resistance_csv, mutations_csv):
