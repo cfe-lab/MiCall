@@ -1,4 +1,5 @@
 import os
+from io import StringIO
 from operator import attrgetter
 from unittest import TestCase
 
@@ -155,6 +156,7 @@ class AsiAlgorithmTest(TestCase):
         expected_cond = ''
         expected_score = 0
         expected_mutations = {'2R'}
+        expected_repr = "BNFVal('', True, 0, {'2R'})"
 
         bnr = self.asi.bnf_residue(cond, aminos)
 
@@ -162,6 +164,7 @@ class AsiAlgorithmTest(TestCase):
         self.assertTrue(bnr.truth)
         self.assertEqual(expected_score, bnr.score)
         self.assertEqual(expected_mutations, bnr.mutations)
+        self.assertEqual(expected_repr, repr(bnr))
 
     def test_bnf_residue_multiple_choices(self):
         aminos = [['L'], ['R']]
@@ -218,6 +221,22 @@ class AsiAlgorithmTest(TestCase):
         self.assertTrue(bnr.truth)
         self.assertEqual(expected_score, bnr.score)
         self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_scoreitem_with_leftover(self):
+        aminos = [['L'], ['R']]
+        cond = '1R => 10, 2R => 30, 10R => 20, 20R => 19|'
+        expected_cond = ', 2R => 30, 10R => 20, 20R => 19|'
+        expected_score = 0.0
+        expected_mutations = set()
+        expected_repr = "BNFVal(', 2R => 3...0R => 19|', False, 0, set())"
+
+        bnr = self.asi.bnf_scoreitem(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertFalse(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+        self.assertEqual(expected_repr, repr(bnr))
 
     def test_bnf_scorecondition(self):
         aminos = [['L'], ['R']]
@@ -350,6 +369,163 @@ class AsiAlgorithmTest(TestCase):
         self.assertEqual(expected_mutations, bnr.mutations)
 
 
+class AsiAlgorithmNewRulesTest(TestCase):
+    default_drugs = """\
+  <DRUG>
+    <NAME>ABC</NAME>
+    <FULLNAME>abacavir</FULLNAME>
+    <RULE>
+      <CONDITION><![CDATA[SCORE FROM(41L => 15)]]></CONDITION>
+      <ACTIONS>
+        <SCORERANGE>
+          <USE_GLOBALRANGE/>
+        </SCORERANGE>
+      </ACTIONS>
+    </RULE>
+  </DRUG>
+"""
+    default_comments = ""
+
+    @staticmethod
+    def create_asi(drugs=default_drugs, comments=default_comments):
+        xml = """\
+<ALGORITHM>
+  <ALGNAME>HIVDB</ALGNAME>
+  <ALGVERSION>fake</ALGVERSION>
+  <ALGDATE>2017-03-02</ALGDATE>
+  <DEFINITIONS>
+    <GENE_DEFINITION>
+      <NAME>RT</NAME>
+      <DRUGCLASSLIST>NRTI</DRUGCLASSLIST>
+    </GENE_DEFINITION>
+    <LEVEL_DEFINITION>
+      <ORDER>1</ORDER>
+      <ORIGINAL>Susceptible</ORIGINAL>
+      <SIR>S</SIR>
+    </LEVEL_DEFINITION>
+    <LEVEL_DEFINITION>
+      <ORDER>5</ORDER>
+      <ORIGINAL>High-Level Resistance</ORIGINAL>
+      <SIR>R</SIR>
+    </LEVEL_DEFINITION>
+    <DRUGCLASS>
+      <NAME>NRTI</NAME>
+      <DRUGLIST>ABC</DRUGLIST>
+    </DRUGCLASS>
+    <GLOBALRANGE><![CDATA[(-INF TO 9 => 1,  10 TO INF => 5)]]></GLOBALRANGE>
+    <COMMENT_DEFINITIONS>
+      {comments}
+    </COMMENT_DEFINITIONS>
+  </DEFINITIONS>
+  {drugs}
+  <MUTATION_COMMENTS>
+  </MUTATION_COMMENTS>
+</ALGORITHM>
+""".format(drugs=drugs, comments=comments)
+        return AsiAlgorithm(StringIO(xml))
+
+    def test_interpret(self):
+        asi = self.create_asi()
+        aa_seq = [[amino] for amino in asi.stds['RT']]
+        aa_seq[40] = ['L']
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('ABC', 15.0, 5, 'High-Level Resistance')]
+        expected_mutation_comments = []
+
+        result = asi.interpret(aa_seq, 'RT')
+
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
+        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    def test_level_action(self):
+        drugs = """\
+  <DRUG>
+    <NAME>ABC</NAME>
+    <FULLNAME>abacavir</FULLNAME>
+    <RULE>
+      <CONDITION><![CDATA[41L]]></CONDITION>
+      <ACTIONS>
+        <LEVEL>5</LEVEL>
+      </ACTIONS>
+    </RULE>
+  </DRUG>
+"""
+
+        asi = self.create_asi(drugs=drugs)
+        aa_seq = [[amino] for amino in asi.stds['RT']]
+        aa_seq[40] = ['L']
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('ABC', 0.0, 5, 'High-Level Resistance')]
+        expected_mutation_comments = []
+
+        result = asi.interpret(aa_seq, 'RT')
+
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
+        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    def test_custom_score_range(self):
+        drugs = """\
+  <DRUG>
+    <NAME>ABC</NAME>
+    <FULLNAME>abacavir</FULLNAME>
+    <RULE>
+      <CONDITION><![CDATA[SCORE FROM(41L => 15)]]></CONDITION>
+      <ACTIONS>
+        <SCORERANGE>(-INF TO 20 => 1, 20 TO INF => 5)</SCORERANGE>
+      </ACTIONS>
+    </RULE>
+  </DRUG>
+"""
+
+        asi = self.create_asi(drugs=drugs)
+        aa_seq = [[amino] for amino in asi.stds['RT']]
+        aa_seq[40] = ['L']
+        compared_attrs = ('code', 'score', 'level')
+        expected_drugs = [('ABC', 15.0, 1)]
+        expected_mutation_comments = []
+
+        result = asi.interpret(aa_seq, 'RT')
+
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
+        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    def test_drug_comment(self):
+        drugs = """\
+  <DRUG>
+    <NAME>ABC</NAME>
+    <FULLNAME>abacavir</FULLNAME>
+    <RULE>
+      <CONDITION><![CDATA[41L]]></CONDITION>
+      <ACTIONS>
+        <COMMENT ref="RT41L"/>
+      </ACTIONS>
+    </RULE>
+  </DRUG>
+"""
+        comments = """\
+      <COMMENT_STRING id="RT41L">
+        <TEXT><![CDATA[Example comment.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+"""
+
+        asi = self.create_asi(drugs=drugs, comments=comments)
+        aa_seq = [[amino] for amino in asi.stds['RT']]
+        aa_seq[40] = ['L']
+        compared_attrs = ('code', 'score', 'level', 'level_name', 'comments')
+        expected_drugs = [('ABC', 0.0, 1, 'Susceptible', ['Example comment.'])]
+        expected_mutation_comments = []
+
+        result = asi.interpret(aa_seq, 'RT')
+
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
+        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+
 class TranslateSequenceTest(TestCase):
     def test_translate(self):
         nucs = 'CCCATTAGT'
@@ -362,6 +538,15 @@ class TranslateSequenceTest(TestCase):
     def test_translate_mixture(self):
         nucs = 'CCCWTTAGT'
         expected_aminos = [['P'], ['F', 'I'], ['S']]
+
+        aminos = translate_complete_to_array(nucs)
+
+        sorted_aminos = [sorted(choices) for choices in aminos]
+        self.assertEqual(expected_aminos, sorted_aminos)
+
+    def test_translate_synonymous_mixture(self):
+        nucs = 'CCCTTYAGT'
+        expected_aminos = [['P'], ['F'], ['S']]
 
         aminos = translate_complete_to_array(nucs)
 
