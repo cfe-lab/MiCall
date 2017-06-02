@@ -123,11 +123,31 @@ class AsiAlgorithmTest(TestCase):
         aa_seq[39] = ['L']
         self.assertEqual(['M'], aa_seq[40])
         aa_seq[40] = ['L']
-        expected_mutations = ['M41L']
+        expected_mutations = {'NRTI': ['M41L'], 'NNRTI': []}
 
         result = self.asi.interpret(aa_seq, 'RT')
 
         self.assertEqual(expected_mutations, result.mutations)
+
+    def test_drug_classes(self):
+        aa_seq = [[]]
+        compared_attrs = ('code', 'name', 'drug_class')
+        expected_drugs = [('3TC', 'lamivudine', 'NRTI'),
+                          ('ABC', 'abacavir', 'NRTI'),
+                          ('AZT', 'zidovudine', 'NRTI'),
+                          ('D4T', 'stavudine', 'NRTI'),
+                          ('DDI', 'didanosine', 'NRTI'),
+                          ('FTC', 'emtricitabine', 'NRTI'),
+                          ('TDF', 'tenofovir', 'NRTI'),
+                          ('EFV', 'efavirenz', 'NNRTI'),
+                          ('ETR', 'etravirine', 'NNRTI'),
+                          ('NVP', 'nevirapine', 'NNRTI'),
+                          ('RPV', 'rilpivirine', 'NNRTI')]
+
+        result = self.asi.interpret(aa_seq, 'RT')
+
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
 
     def test_bnf_residue(self):
         aminos = [['L'], ['R']]
