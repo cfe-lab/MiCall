@@ -178,13 +178,13 @@ class AsiAlgorithm:
         self.alg_name = ''
 
         # definitions
-        self.gene_def = []  # [['PR', ['PI']], ['RT',['NNRTI','NRTI']], ...]
+        self.gene_def = {}  # {code: [drug_class_code]}
         self.level_def = {}  # {'1': 'Susceptible'}
-        self.drug_class = []  # [ ['PI', ['FPV/r', 'IDV/r', ...] ], ...]
+        self.drug_class = {}  # {code: [drug_code]}
         self.global_range = []  # [ ['-INF', '9', '1'] , ...]  #first two are the range, the third one is the res level
         self.comment_def = []  # something...
 
-        self.drugs = []  # sub objects?  Hashes?
+        self.drugs = {}  # {code: (name, [condition, [(action_type, action_value)]])}
         self.mutation_comments = []  # maybe skip for now?  We don't really use this atm.
         self.mutations = []  # only for hivdb.  This is technically a hack that isn't part of the alg
 
@@ -201,8 +201,7 @@ class AsiAlgorithm:
         for node in defs.getElementsByTagName('GENE_DEFINITION'):
             a = node.getElementsByTagName('NAME')[0].childNodes[0].nodeValue
             b = node.getElementsByTagName('DRUGCLASSLIST')[0].childNodes[0].nodeValue.split(',')
-            b = list(map((lambda e: e.strip()), b))
-            self.gene_def.append([a.strip(), b])
+            self.gene_def[a.strip()] = [e.strip() for e in b]
 
         for node in defs.getElementsByTagName('LEVEL_DEFINITION'):
             a = node.getElementsByTagName('ORDER')[0].childNodes[0].nodeValue
@@ -213,8 +212,7 @@ class AsiAlgorithm:
         for node in defs.getElementsByTagName('DRUGCLASS'):
             a = node.getElementsByTagName('NAME')[0].childNodes[0].nodeValue
             b = node.getElementsByTagName('DRUGLIST')[0].childNodes[0].nodeValue.split(',')
-            b = map((lambda e: e.strip()), b)
-            self.drug_class.append([a.strip(), b])
+            self.drug_class[a.strip()] = [e.strip() for e in b]
 
         if defs.getElementsByTagName('GLOBALRANGE'):
             self.global_range = defs.getElementsByTagName('GLOBALRANGE')[0].childNodes[0].nodeValue
@@ -253,25 +251,25 @@ class AsiAlgorithm:
                 for action_node in rule_node.getElementsByTagName('ACTIONS'):
                     if action_node.getElementsByTagName('LEVEL') != []:
                         level = action_node.getElementsByTagName('LEVEL')[0].childNodes[0].nodeValue  # easyish
-                        actions.append(['level', int(level)])
+                        actions.append(('level', int(level)))
 
                     # Double check
                     if action_node.getElementsByTagName('COMMENT') != []:
                         comment = action_node.getElementsByTagName('COMMENT')[0]
-                        actions.append(['comment', comment.attributes.item(0).value])
+                        actions.append(('comment', comment.attributes.item(0).value))
 
                     if action_node.getElementsByTagName('SCORERANGE') != [] and action_node.getElementsByTagName(
                             'USE_GLOBALRANGE') != []:
-                        actions.append(['scorerange', 'useglobalrange'])
+                        actions.append(('scorerange', 'useglobalrange'))
                     elif action_node.getElementsByTagName('SCORERANGE') != []:
                         srange = action_node.getElementsByTagName('SCORERANGE')[0].childNodes[0].nodeValue
                         srange = srange.strip(")( \n").split(',')
                         srange = map(lambda a: (
                         list(re.match('\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*', a.strip("\n \t")).groups())), srange)
-                        actions.append(['scorerange', srange])
+                        actions.append(('scorerange', srange))
 
-                rules.append([condition, actions])  # hrmmm
-            self.drugs.append([name, fullname, rules])
+                rules.append((condition, actions))  # hrmmm
+            self.drugs[name] = (fullname, rules)
 
         # and now we do the comments!
         if dom.getElementsByTagName('MUTATION_COMMENTS') != []:
@@ -769,26 +767,20 @@ class AsiAlgorithm:
         raw_mutations = defaultdict(set)
         result.alg_name = self.alg_name
         result.alg_version = self.alg_version
-        genes = list(filter((lambda e: e[0] == region), self.gene_def))[0][1]
-        drs = filter((lambda e: e[0] in genes), self.drug_class)
+        drug_classes = self.gene_def[region]
         default_level = 1
         default_level_name = self.level_def['1']
-        # print drs
-        for drcls in drs:
-            cls = drcls[0]
-            for drname in drcls[1]:
-                # Request the actual drug thingy
-                #        if drname != 'ABC':
-                #          continue
-                drug = list(filter((lambda e: e[0] == drname), self.drugs))[0]
+        for drug_class in drug_classes:
+            for drug_code in self.drug_class[drug_class]:
+                drug_name, drug_rules = self.drugs[drug_code]
                 drug_result = AsiDrugResult()
-                drug_result.code = drug[0]
-                drug_result.name = drug[1]
+                drug_result.code = drug_code
+                drug_result.name = drug_name
                 drug_result.level = default_level
                 drug_result.level_name = default_level_name
-                drug_result.drug_class = cls
+                drug_result.drug_class = drug_class
 
-                for rule in drug[2]:
+                for rule in drug_rules:
                     cond = rule[0]
                     actions = rule[1]
                     interp = self.interp_condition(cond, aaseq)
@@ -796,7 +788,7 @@ class AsiAlgorithm:
                     if interp:
                         score = interp[1]
                         truth = interp[0]
-                        raw_mutations[cls] |= interp[2]
+                        raw_mutations[drug_class] |= interp[2]
                         if truth == False and score == 0.0:
                             continue
                         for act in actions:

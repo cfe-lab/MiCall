@@ -496,9 +496,10 @@ def process_sample(sample_index, run_info, args, pssm):
 
     logger.info('Running hivdb (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'amino.csv')) as amino_csv, \
+            open(os.path.join(sample_scratch_path, 'coverage_scores.csv')) as coverage_scores_csv, \
             open(os.path.join(sample_scratch_path, 'resistance.csv'), 'w') as resistance_csv, \
             open(os.path.join(sample_scratch_path, 'mutations.csv'), 'w') as mutations_csv:
-        hivdb(amino_csv, resistance_csv, mutations_csv)
+        hivdb(amino_csv, coverage_scores_csv, resistance_csv, mutations_csv)
 
     logger.info('Running cascade_report (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'r') as g2p_summary_csv, \
