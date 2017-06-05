@@ -43,12 +43,13 @@ def drug_class_table(cfg_dct, dc_name, level_coltab):
     resistance_dct = cfg_dct["res_results"]
     mutation_str = cfg_dct["mutation_strings"][dc_name]
     # header column: name of drug_class
-    t_data = [[dc_name]]
+    t_data = [["{} Drugs".format(dc_name)]]
     num_drugs = len(drug_lst)
     t_style = [("BOX", (0, 0), (1, 0), 1, colors.black),
-               ("GRID", (0, 1), (1, num_drugs), 1,
-                colors.black), ("BOX", (0, num_drugs + 1), (1, num_drugs + 2),
-                                1, colors.black)]
+               ("GRID", (0, 1), (1, num_drugs), 1, colors.black),
+               ("BOX", (0, num_drugs + 1), (1, num_drugs + 2), 1,
+                colors.black),
+               ("SPAN", (0, num_drugs + 1), (1, num_drugs + 1))]
     # list of drugs in this drug_class
     for tabline, dd in enumerate(drug_lst):
         drug_id, drug_name = dd
@@ -64,7 +65,7 @@ def drug_class_table(cfg_dct, dc_name, level_coltab):
                         bg_col))
         t_data.append([drug_name.capitalize(), level_name])
     # mutation string
-    t_data.append(["Relevant {} Mutations:".format(dc_name)])
+    t_data.append(["Relevant {} Mutations:".format(dc_name), ""])
     t_data.append([mutation_str])
     t = plat.Table(t_data, vAlign="TOP")  # , hAlign=lr_align)
     t.setStyle(t_style)
@@ -113,10 +114,11 @@ def write_report(cfg_dct, res_lst, mut_lst, fname, sample_name=None):
     big_table.append([tl[2], tl[3]])
 
     bt = plat.Table(big_table)
-    bt.setStyle([('VALIGN', (0, 0), (1, 3), 'TOP'),
-                 ('SPAN', (0, 1), (1, 1)),
-                 ('SPAN', (0, 0), (1, 0)),
-                 ])
+    bt.setStyle([
+        ('VALIGN', (0, 0), (1, 3), 'TOP'),
+        ('SPAN', (0, 1), (1, 1)),
+        ('SPAN', (0, 0), (1, 0)),
+    ])
     doc_els.append(bt)
     doc_els.append(bottom_para(cfg_dct["disclaimer_text"]))
     small_print = cfg_dct["generated_by_text"] + "\n" + cfg_dct["version_text"]
