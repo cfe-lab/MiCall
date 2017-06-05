@@ -61,8 +61,7 @@ AA_HASH = {
     'gtt': 'V', 'gct': 'A', 'gat': 'D', 'ggt': 'G',
     'gtc': 'V', 'gcc': 'A', 'gac': 'D', 'ggc': 'G',
     'gta': 'V', 'gca': 'A', 'gaa': 'E', 'gga': 'G',
-    'gtg': 'V', 'gcg': 'A', 'gag': 'E', 'ggg': 'G',
-    '---': '-',
+    'gtg': 'V', 'gcg': 'A', 'gag': 'E', 'ggg': 'G'
 }
 
 # Hash of Mixture nuc to list of un-mixed nucs
@@ -71,7 +70,7 @@ AMBIG = {
     'R': ['A', 'G'], 'Y': ['C', 'T'], 'K': ['G', 'T'],
     'M': ['A', 'C'], 'B': ['C', 'G', 'T'], 'D': ['A', 'G', 'T'],
     'H': ['A', 'C', 'T'], 'V': ['A', 'C', 'G'], 'S': ['C', 'G'],
-    'W': ['A', 'T'], 'N': ['A', 'C', 'G', 'T'], 'X': ['X'], '-': ['-']
+    'W': ['A', 'T'], 'N': ['A', 'C', 'G', 'T']
 }
 
 
@@ -80,9 +79,6 @@ def generate(nuc):
     posa = AMBIG[nuc[0]]
     posb = AMBIG[nuc[1]]
     posc = AMBIG[nuc[2]]
-
-    if nuc == 'XXX':
-        return ['X']
 
     nuclist = []
     for a in posa:
@@ -97,35 +93,17 @@ def generate(nuc):
 def translate_complete_to_array(sequence):
     protseq = []
     for i in range(0, len(sequence) // 3):
-        alist = generate(sequence[i * 3: i * 3 + 3])
-        newlist = []
-        for entry in alist:
-            if entry == 'X':
-                newlist.append('X')
-            else:
-                newlist.append(raw_translator(entry))
+        expanded_codon = generate(sequence[i * 3: i * 3 + 3])
+        aminos = {raw_translator(codon) for codon in expanded_codon}
 
-        alist = set(newlist)  # dunno if this works?
-
-        if len(alist) > 1:
-            protseq.append(list(alist))
-        elif len(alist) == 1:
-            protseq.append([list(alist)[0]])
-        else:
-            protseq.append(['*'])
+        protseq.append(list(aminos))
     return protseq
 
 
-def raw_translator(str, keepdashs=False):
+def raw_translator(nucs):
     aa = ''
-    for i in range(0, (len(str) // 3)):
-        if keepdashs and str[i * 3: i * 3 + 3] == '---':
-            aa += 'd'  # lowercase d for deletion.
-            continue
-
-        x = AA_HASH[str[i * 3: i * 3 + 3].lower()]
-        if x == None:
-            x = 'X'
+    for i in range(0, (len(nucs) // 3)):
+        x = AA_HASH[nucs[i * 3: i * 3 + 3].lower()]
         aa += x
     return aa
 
@@ -155,7 +133,9 @@ class BNFVal:
 
 # Now the actual code:----------------------------------------------------------
 class AsiAlgorithm:
-    def __init__(self, filename):
+    def __init__(self, file):
+        """ Load ASI rules from a file or file object. """
+
         # Extra hacks to conform to sierra's extra hacks
         self.stds = {
             'PR': 'PQVTLWQRPLVTIKIGGQLKEALLDTGADDTVLEEMSLPGRWKPKMIGGIGGFIKVRQY'
@@ -182,13 +162,13 @@ class AsiAlgorithm:
         self.level_def = {}  # {'1': 'Susceptible'}
         self.drug_class = {}  # {code: [drug_code]}
         self.global_range = []  # [ ['-INF', '9', '1'] , ...]  #first two are the range, the third one is the res level
-        self.comment_def = []  # something...
+        self.comment_def = {}  # {code: comment_text}
 
         self.drugs = {}  # {code: (name, [condition, [(action_type, action_value)]])}
         self.mutation_comments = []  # maybe skip for now?  We don't really use this atm.
         self.mutations = []  # only for hivdb.  This is technically a hack that isn't part of the alg
 
-        dom = minidom.parse(filename)
+        dom = minidom.parse(file)
 
         # algorithm info
         for node in dom.getElementsByTagName('ALGNAME'):
@@ -206,7 +186,6 @@ class AsiAlgorithm:
         for node in defs.getElementsByTagName('LEVEL_DEFINITION'):
             a = node.getElementsByTagName('ORDER')[0].childNodes[0].nodeValue
             b = node.getElementsByTagName('ORIGINAL')[0].childNodes[0].nodeValue
-            c = node.getElementsByTagName('SIR')[0].childNodes[0].nodeValue
             self.level_def[a.strip()] = b.strip()
 
         for node in defs.getElementsByTagName('DRUGCLASS'):
@@ -215,15 +194,16 @@ class AsiAlgorithm:
             self.drug_class[a.strip()] = [e.strip() for e in b]
 
         if defs.getElementsByTagName('GLOBALRANGE'):
-            self.global_range = defs.getElementsByTagName('GLOBALRANGE')[0].childNodes[0].nodeValue
-            self.global_range = self.global_range.strip(")( \n").split(',')
+            global_range_text = defs.getElementsByTagName('GLOBALRANGE')[0].childNodes[0].nodeValue
+            global_range_items = global_range_text.strip(")( \n").split(',')
             self.global_range = list(map(
-                lambda a: (list(re.match('\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*', a.strip("\n \t")).groups())),
-                self.global_range))
+                lambda item: (list(re.match('\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*',
+                                            item.strip("\n \t")).groups())),
+                global_range_items))
         if defs.getElementsByTagName('COMMENT_DEFINITIONS'):
             comment_defs = defs.getElementsByTagName('COMMENT_DEFINITIONS')[0]
             for node in comment_defs.getElementsByTagName('COMMENT_STRING'):
-                a = node.attributes.item(0).value
+                comment_id = node.attributes.item(0).value
                 b = node.getElementsByTagName('TEXT')[0].childNodes[0].nodeValue
                 c = node.getElementsByTagName('SORT_TAG')[0].childNodes[0].nodeValue
 
@@ -232,7 +212,7 @@ class AsiAlgorithm:
                 # if tmp:
                 #  self.mutations.append([tmp.group(1), tmp.group(2), tmp.group(3), tmp.group(4)])
 
-                self.comment_def.append([a, b, c])
+                self.comment_def[comment_id] = (b, c)
 
         # done with the definitions, on to more interesting pastures...
         for drug_node in dom.getElementsByTagName('DRUG'):
@@ -242,37 +222,35 @@ class AsiAlgorithm:
                 fullname = drug_node.getElementsByTagName('FULLNAME')[0].childNodes[0].nodeValue
             rules = []
             for rule_node in drug_node.getElementsByTagName('RULE'):
-                # Yeah, rules!
                 condition = rule_node.getElementsByTagName('CONDITION')[0].childNodes[0].nodeValue
                 condition = re.sub('\s+', ' ', condition)
                 actions = []
-                # Need to turn condition into science?
 
                 for action_node in rule_node.getElementsByTagName('ACTIONS'):
-                    if action_node.getElementsByTagName('LEVEL') != []:
+                    if action_node.getElementsByTagName('LEVEL'):
                         level = action_node.getElementsByTagName('LEVEL')[0].childNodes[0].nodeValue  # easyish
-                        actions.append(('level', int(level)))
+                        actions.append(('level', level))
 
-                    # Double check
-                    if action_node.getElementsByTagName('COMMENT') != []:
+                    if action_node.getElementsByTagName('COMMENT'):
                         comment = action_node.getElementsByTagName('COMMENT')[0]
                         actions.append(('comment', comment.attributes.item(0).value))
 
-                    if action_node.getElementsByTagName('SCORERANGE') != [] and action_node.getElementsByTagName(
-                            'USE_GLOBALRANGE') != []:
+                    if (action_node.getElementsByTagName('SCORERANGE') and
+                            action_node.getElementsByTagName('USE_GLOBALRANGE')):
                         actions.append(('scorerange', 'useglobalrange'))
-                    elif action_node.getElementsByTagName('SCORERANGE') != []:
+                    elif action_node.getElementsByTagName('SCORERANGE'):
                         srange = action_node.getElementsByTagName('SCORERANGE')[0].childNodes[0].nodeValue
                         srange = srange.strip(")( \n").split(',')
-                        srange = map(lambda a: (
-                        list(re.match('\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*', a.strip("\n \t")).groups())), srange)
+                        srange = [re.match('\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*',
+                                           item.strip("\n \t")).groups()
+                                  for item in srange]
                         actions.append(('scorerange', srange))
 
                 rules.append((condition, actions))  # hrmmm
             self.drugs[name] = (fullname, rules)
 
         # and now we do the comments!
-        if dom.getElementsByTagName('MUTATION_COMMENTS') != []:
+        if dom.getElementsByTagName('MUTATION_COMMENTS'):
             for gene_node in dom.getElementsByTagName('MUTATION_COMMENTS')[0].getElementsByTagName('GENE'):
                 gene_name = gene_node.getElementsByTagName('NAME')[0].childNodes[0].nodeValue
                 # rules and such again
@@ -285,23 +263,9 @@ class AsiAlgorithm:
                     # Need to turn condition into science?
 
                     for action_node in rule_node.getElementsByTagName('ACTIONS'):
-                        if action_node.getElementsByTagName('LEVEL') != []:
-                            level = action_node.getElementsByTagName('LEVEL')[0].childNodes[0].nodeValue  # easyish
-                            actions.append(['level', int(level)])
-
-                        if action_node.getElementsByTagName('COMMENT') != []:
+                        if action_node.getElementsByTagName('COMMENT'):
                             comment = action_node.getElementsByTagName('COMMENT')[0]
                             actions.append(['comment', comment.attributes.item(0).value])
-
-                        if action_node.getElementsByTagName('SCORERANGE') != [] and action_node.getElementsByTagName(
-                                'USE_GLOBALRANGE') != []:
-                            actions.append(['scorerange', 'useglobalrange'])
-                        elif action_node.getElementsByTagName('SCORERANGE') != []:
-                            srange = action_node.getElementsByTagName('SCORERANGE')[0].childNodes[0].nodeValue
-                            srange = srange.strip(")( \n").split(',')
-                            srange = map(lambda a: (
-                            list(re.match('\s*(\S+)\s*TO\s*(\S+)\s*:\s*(\S+)\s*', a.strip("\n \t")).groups())), srange)
-                            actions.append(['scorerange', srange])
                     rules.append([condition, actions])  # hrmm
                 self.mutation_comments.append([gene_name, rules])
 
@@ -309,17 +273,10 @@ class AsiAlgorithm:
     # starts the crazy BNF Parsing
     def interp_condition(self, cond, aaseq):
         bnf = self.bnf_statement(cond + '|', aaseq)
-        if bnf.cond == False:
-            print
-            "---Could not parse algorithm condition:  " + cond
-            exit()
-            return None
-        elif bnf.truth:
-            # print "RESULT IS TRUE, SCORE: " + str(bnf.score)
+        assert bnf.cond
+        if bnf.truth:
             return [True, bnf.score, bnf.mutations]
-        else:
-            # print "RESULT IS FALSE, SCORE: " + str(bnf.score)
-            return [False, bnf.score, bnf.mutations]
+        return [False, bnf.score, bnf.mutations]
 
     # Hmm, what is this?  Oh not much, just a Backus-Naur Form parser.
     # booleancondition | scorecondition
@@ -328,7 +285,6 @@ class AsiAlgorithm:
             bnf = func(cond, aaseq)
             if bnf.cond:
                 return bnf
-        return BNFVal(False)
 
     # condition condition2*;
     def bnf_booleancondition(self, cond, aaseq):
@@ -371,7 +327,7 @@ class AsiAlgorithm:
                 lpi = -1
                 rpi = -1
                 cnt = 0
-                # immediaate break if it doesn't match this regexp:
+                # immediate break if it doesn't match this regexp:
                 if not re.match('^\s*\(', cond):
                     continue
 
@@ -386,14 +342,8 @@ class AsiAlgorithm:
                         if cnt == 0:
                             rpi = i
                             break
-                            # elif cond[i] == ' ':
-                    # continue
-                    else:
-                        continue
-                        # break #no good
 
-                if lpi == -1 or rpi == -1:
-                    continue
+                assert lpi >= 0 and rpi >= 0, (lpi, rpi)
 
                 bnf = func(cond[lpi + 1: rpi] + ' |', aaseq)
                 if bnf.cond:
@@ -785,68 +735,45 @@ class AsiAlgorithm:
                     actions = rule[1]
                     interp = self.interp_condition(cond, aaseq)
 
-                    if interp:
-                        score = interp[1]
-                        truth = interp[0]
-                        raw_mutations[drug_class] |= interp[2]
-                        if truth == False and score == 0.0:
-                            continue
-                        for act in actions:
-                            # print act
-                            if act[0] == 'level':
-                                if int(act[1]) > drug_result.level:
-                                    drug_result.level = int(act[1])
-                                    drug_result.level_name = self.level_def[act[1]]
-                            elif act[0] == 'comment':
-                                comm = act[1]
-                                comm = filter(lambda e: (e[0] == act[1]), self.comment_def)[0]
-                                comment = comm[1]
-                                while (re.search('\$numberOfMutsIn{', comment) or re.search('\$listMutsIn{', comment)):
-                                    comment = self.comment_filter(comment, aaseq, region)
-                                drug_result.comments.append(comment)
-                            elif act[0] == 'scorerange':
-                                drug_result.score = score
-                                scorerange = act[1]
-                                if scorerange == 'useglobalrange':
-                                    scorerange = self.global_range
+                    score = interp[1]
+                    truth = interp[0]
+                    raw_mutations[drug_class] |= interp[2]
+                    if not truth and score == 0.0:
+                        continue
+                    for act in actions:
+                        if act[0] == 'level':
+                            if int(act[1]) > drug_result.level:
+                                drug_result.level = int(act[1])
+                                drug_result.level_name = self.level_def[act[1]]
+                        elif act[0] == 'comment':
+                            comment, _ = self.comment_def[act[1]]
+                            while (re.search('\$numberOfMutsIn{', comment) or
+                                   re.search('\$listMutsIn{', comment)):
+                                comment = self.comment_filter(comment, aaseq, region)
+                            drug_result.comments.append(comment)
+                        elif act[0] == 'scorerange':
+                            drug_result.score = score
+                            scorerange = act[1]
+                            if scorerange == 'useglobalrange':
+                                scorerange = self.global_range
+
+                            # use score range to determine level
+                            for low_score, high_score, level in scorerange:
+                                if low_score == '-INF':
+                                    low_score = -99999  # that is close enough to negative infinity.
                                 else:
-                                    pass
-                                    # I guess this was already done!
-                                    # print scorerange
-                                    # scorerange = scorerange.strip(")( \n").split(',')
-                                    # scorerange = map(lambda a: ( list(re.match('\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*', a.strip("\n \t")).groups()) ), scorerange)
-                                # use score range to determine level
+                                    low_score = float(low_score)
 
-                                for rng in scorerange:
-                                    if rng[0] == '-INF':
-                                        rng[0] = -99999  # that is close enough to negative infinity.
-                                    else:
-                                        try:
-                                            rng[0] = float(rng[0])
-                                        except:
-                                            rng[0] = float(rng[0])
+                                if high_score == 'INF':
+                                    high_score = 99999  # that is close enough to infinity.
+                                else:
+                                    high_score = float(high_score)
 
-                                    if rng[1] == 'INF':
-                                        rng[1] = 99999  # that is close enough to infinity.
-                                    else:
-                                        try:
-                                            rng[1] = float(rng[1])
-                                        except:
-                                            rng[1] = float(rng[1])
-
-                                    if drug_result.score >= rng[0] and drug_result.score <= rng[1]:
-                                        #                    print drug_result.score
-                                        #                    print drug_result.level
-                                        #                    print str(rng)
-                                        if int(rng[2]) > drug_result.level:
-                                            drug_result.level = int(rng[2])
-                                            drug_result.level_name = self.level_def[rng[2]]
-                                        break
-                                if (drug_result.level == None):
-                                    raise "drug score range level parsing error"
-                    elif interp == None:
-                        print
-                        "ERROR in condition: " + cond
+                                if low_score <= drug_result.score <= high_score:
+                                    if int(level) > drug_result.level:
+                                        drug_result.level = int(level)
+                                        drug_result.level_name = self.level_def[level]
+                                    break
                 result.drugs.append(drug_result)
 
         for cls, cls_mutations in raw_mutations.items():
@@ -866,41 +793,11 @@ class AsiAlgorithm:
                 actions = mut[1]
 
                 interp = self.interp_condition(cond, aaseq)
-                if interp and interp[0]:
+                if interp[0]:
                     for act in actions:
-                        comm = list(filter(lambda e: (e[0] == act[1]), self.comment_def))[0]
-                        comment = self.comment_filter(comm[1], aaseq, region)
+                        comment_template, _ = self.comment_def[act[1]]
+                        comment = self.comment_filter(comment_template, aaseq, region)
                         result.mutation_comments.append(comment)
-                elif interp == None:
-                    print
-                    "ERROR in condition: " + cond
-
-                    # mutations
-                    # ~ for mut in self.mutations:
-                    # ~ if mut[0] == region:
-                    # ~ aas = aaseq[int(mut[1]) - 1]
-                    # ~ subs = ''
-                    # ~ for aa in aas:
-                    # ~ if aa in mut[2]:
-                    # ~ subs += aa
-                    # ~ if subs != '':
-                    # ~ subs = list(subs)
-                    # ~ subs.sort()
-                    # ~ subs = ''.join(subs)
-                    # ~ moot = ''
-                    # ~ if region == 'PR':
-                    # ~ moot = self.pr_std[int(mut[1]) - 1] + mut[1] + subs
-                    # ~ elif region == 'RT':
-                    # ~ moot = self.rt_std[int(mut[1]) - 1] + mut[1] + subs
-                    # ~ elif region == 'IN':
-                    # ~ moot = self.int_std[int(mut[1]) - 1] + mut[1] + subs
-                    # ~ else:
-                    # ~ moot = loc + subs
-
-                    # ~ if mut[3] == 'Other':
-                    # ~ result.mutations_other.append(moot)
-                    # ~ else:
-                    # ~ result.mutations.append(moot)
 
         return result
 
@@ -924,34 +821,3 @@ class AsiResult:
         self.mutation_comments = []
         self.mutations = {}
         self.drugs = []  # drug hash yo!  Don't forget your scores!
-
-
-"""
-#Testing
-algorithm_hivdb = AsiAlgorithm("HIVDB_6.1.1F.xml")
-#algorithm_anrs = AsiAlgorithm("ANRS_max.xml")
-#algorithm_rega = AsiAlgorithm("RegaInst_max.xml")
-#print algorithm_hivdb.drugs[0][2]
-#print algorithm_hivdb.mutation_comments[0]
-
-
-int_seq = 'TTTTTAGATGGAATAGATAAGGCCCAAGATGAACATGAGAAATATCACAGTAATTGGAGAGCAATGGCTAGTGATTTTAACCTGCCACCTGTAGTAGCAAAAGAAATAGTAGCCAGCTGTGATAAATGTCAGCTAAAAGGAGAAGCCATGCATGGACAAGTAGACTGTAGTCCAGGAATATGGCAACTAGATTGTACACATTTAGAAGGAAAAGTTATCATGGTAGCAGTTCATGTAGCCAGTGGATATATAGAAGCAGAAGTTATTCCAGCAGAAACAGGGCAGGAAACAGCATATTTTCTTTTAAAATTAGCAGGAAGATGGCCGGTAAAAACAATACATACAGACAATGGCAGCAATTACACCAGTGCTACGGTTAAGGCCGCCTGTTGGTGGGCGGGAATCAAGCAGGAATTTGGAATTCCCTACAATCCCCAAAGTCAAGGAGTAATAGAATCTATGAATAAAGAATTAAAGAAAATTATAAGACAGGTAAGAGATCAGGCTGAACATCTTAAGACAGCAGTACAAATGGCAGTATTCATCCACAATTTTAAAAGAAAAGGGGGGATTGGGGGGTACAGTGCAGGGGAAAGAATAGTAGACATAATAGCAACAGACATACAAACTAAAGAATTACAAAAACAAATTACAAAAATTCAAAATTTTCGGGTTTATTACAGGGACAGCAGAAATCCACTTTGGAAAGGACCAGCAAAGCTCCTCTGGAAAGGTGAAGGGGCAGTAGTAATACAAGATAATAGTRACATAAAAGTAGTGCCAAGAAGAAAAGCAAAGATCATTAGGGATTATGGAAAACAGATGGCAGGTGATGATTGTGTGGCAAGTAGACAGGATGAGGAT'
-pr_seq = 'CCTCAAATCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGRGGGCAGCTAAMGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGACATGGARTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGRTACCCATAGAAATTTGTGGACAYAAAACTATAGGTWCAGTATTAATAGGACCTACACCWGTTAACATAATTGGAAGAAATCTGATGAYTCAGCTTGGTTGCACTTTAAATTTT'
-rt_seq = 'CCCATTAGTCCTATTGAAACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAGGTYAARCAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAAATGGAAAAGGAAGGRAAGATTTCAAAAATTGGACCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAARAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCYGCAGGGTTAAAAAAGAAMAAGTCAGTAACAGTACTRGATGTGGGTGATGCATATTTTTCAGTTCCCTTATATGAAGACTTCAGGAAGTATACTGCATTCACCATACCTAGYACAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTGCCACAAGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGATAAAAATCTTAGAGCCTTTCAGAAAACAAAATCCAGARATAGTCATCTATCAATACGTGGATGATTTGTATGTAGSATCTGACTTAGAAATAGGGCAGCATAGAACAAAGATAGAGGAACTGAGAGCACATCTRTTRAAGTGGGGATTTACCACACCAGACAAAAAACATCAGAAAGAGCCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACR'
-aa_seq = translate_complete_to_array(rt_seq)
-print aa_seq[0:15]
-
-#hrm.
-
-res = algorithm_hivdb.interpret(aa_seq, 'RT')
-print res
-for drug in res.drugs:
-  print drug.code + ":  SCORE: " + str(drug.score) + " , LEVEL: " + str(drug.level)
-  for com in drug.comments:
-    print com
-print "Mutation Comments:"
-for com in res.mutation_comments:
-  print com
-
-
-"""
