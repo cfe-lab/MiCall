@@ -8,7 +8,10 @@ from argparse import ArgumentParser, FileType
 import csv
 import yaml
 
-import pdfreport
+try:
+    import pdfreport
+except ImportError:
+    import micall.hivdb.pdfreport as pdfreport
 
 REPORT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'genreport.yaml')
 
@@ -52,7 +55,8 @@ single dict class, but found a {}""".format(REPORT_CONFIG_PATH, type(cfg_dct)))
     # The following keys must be present in the dict
     KNOWN_KEYS = frozenset([
         'known_drugs', 'known_drug_classes', 'known_regions',
-        'resistance_level_colours', 'disclaimer_text'
+        'resistance_level_colours', 'disclaimer_text', "generated_by_text",
+        "version_text"
     ])
     PRESENT_KEYS = set(cfg_dct.keys())
     missing_keys = KNOWN_KEYS - PRESENT_KEYS
@@ -63,12 +67,12 @@ single dict class, but found a {}""".format(REPORT_CONFIG_PATH, type(cfg_dct)))
         raise RuntimeError(err_string)
     # --- do some sanity checks of the configuration file ---
     # check resistance_level_colours
-    # there must be exactly five resistance levels colours [1--5]
+    # there must be exactly six resistance levels colours [0--5]
     fld_name = 'resistance_level_colours'
     coltab = cfg_dct[fld_name]
-    if list(range(1, 6)) != list(coltab.keys()):
+    if list(range(0, 6)) != list(coltab.keys()):
         raise RuntimeError(
-            "{}: {} must have levels [1..6]".format(err_string, fld_name))
+            "{}: {} must have levels [0..5]".format(err_string, fld_name))
     # convert this information into a dict for later.
     cfg_dct["res_level_dct"] = res_level_dct = {}
     for level, lev_tup in coltab.items():
@@ -141,25 +145,32 @@ def read_mutations(cfg_dct, csv_file):
     except csv.Error:
         print("{}: Failed to read csv file".format(err_string))
         raise
-    # print("GOO", res_data_lst)
     # make sure that all lines have exactly the required fields
     if sum([set(od.keys()) == exp_set for od in data_lst]) != len(data_lst):
         raise RuntimeError("{}: unexpected data found.".format(err_string))
     # simple sanity check of the fields
+    # generate a dict of drug_class -> string of mutations
+    # also set the strings to 'NONE' if appropriate
+    tmp_dct = {}
     known_drug_class_set = cfg_dct['known_drug_classes']
     glob_err = False
     for od_num, od in enumerate(data_lst):
         line_err = False
-        if od['drug_class'] not in known_drug_class_set:
-            print("unknown drug_class {}".format(od['drug_class']))
+        d_class, mut_str = od['drug_class'], od["mutation"]
+        if d_class not in known_drug_class_set:
+            print("unknown drug_class {}".format(d_class))
             line_err = True
         if line_err:
             print("{}: dataset {}: error with {}\n\n".format(
                 err_string, od_num + 1, od))
             glob_err = True
+        tmp_dct.setdefault(d_class, []).append(mut_str)
     if glob_err:
         raise RuntimeError(
             "{}: fatal error(s) detected: giving up...".format(err_string))
+    cfg_dct["mutation_strings"] = mut_dct = {}
+    for d_class in known_drug_class_set:
+        mut_dct[d_class] = " ,".join(tmp_dct[d_class]) if d_class in tmp_dct else "None"
     return data_lst
 
 
@@ -244,7 +255,7 @@ def gen_report(resistance_csv, mutations_csv, res_report_pdf,
     res_lst = read_resistance(cfg_dct, resistance_csv)
     mut_lst = read_mutations(cfg_dct, mutations_csv)
 
-    pdfreport.write_report(cfg_dct, res_lst, mut_lst, res_report_pdf)
+    pdfreport.write_report(cfg_dct, res_lst, mut_lst, res_report_pdf, sample_name)
 
 
 def main():
