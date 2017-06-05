@@ -12,6 +12,8 @@ from operator import itemgetter
 import os
 import shutil
 import socket
+from zipfile import ZipFile, ZIP_DEFLATED
+
 import requests
 from xml.etree import ElementTree
 
@@ -22,6 +24,7 @@ from micall.core.filter_quality import report_bad_cycles
 from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from micall.core.sam2aln import sam2aln
+from micall.hivdb.genreport import gen_report
 from micall.hivdb.hivdb import hivdb
 from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
@@ -501,6 +504,16 @@ def process_sample(sample_index, run_info, args, pssm):
             open(os.path.join(sample_scratch_path, 'mutations.csv'), 'w') as mutations_csv:
         hivdb(amino_csv, coverage_scores_csv, resistance_csv, mutations_csv)
 
+    logger.info('Running resistance report (%d of %d).', sample_index+1, len(run_info.samples))
+    reports_path = os.path.join(args.qc_path, 'resistance_reports')
+    makedirs(reports_path)
+    report_filename = os.path.join(reports_path,
+                                   sample_name + '_resistance.pdf')
+    with open(os.path.join(sample_scratch_path, 'resistance.csv')) as resistance_csv, \
+            open(os.path.join(sample_scratch_path, 'mutations.csv')) as mutations_csv, \
+            open(report_filename, 'wb') as report_pdf:
+        gen_report(resistance_csv, mutations_csv, report_pdf, sample_name)
+
     logger.info('Running cascade_report (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'r') as g2p_summary_csv, \
             open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'r') as remap_counts_csv, \
@@ -606,6 +619,15 @@ def summarize_samples(args, run_json, run_summary):
         writer.writerow(run_summary)
 
 
+def zip_folder(parent_path, folder_name):
+    source_path = os.path.join(parent_path, folder_name)
+    zip_filename = os.path.join(parent_path, folder_name + '.zip')
+    with ZipFile(zip_filename, mode='w', compression=ZIP_DEFLATED) as zip_file:
+        for filename in os.listdir(source_path):
+            zip_file.write(os.path.join(source_path, filename),
+                           os.path.join(folder_name, filename))
+
+
 def collate_samples(args, run_info):
     scratch_path = os.path.join(args.data_path, 'scratch')
     filenames = ['remap_counts.csv',
@@ -648,6 +670,8 @@ def collate_samples(args, run_info):
                 except IOError as ex:
                     if ex.errno != errno.ENOENT:
                         raise
+    zip_folder(args.g2p_path, 'resistance_reports')
+    zip_folder(args.g2p_path, 'coverage_maps')
 
 
 def makedirs(path):
