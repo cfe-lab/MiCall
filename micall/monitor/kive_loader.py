@@ -13,7 +13,11 @@ import subprocess
 import sys
 from xml.etree import ElementTree
 
-from kiveapi.errors import KiveRunFailedException, KiveClientException
+try:
+    from kiveapi.errors import KiveRunFailedException, KiveClientException
+except ImportError:
+    # Ignore import errors during testing.
+    KiveClientException = KiveRunFailedException = None
 from micall import settings
 from micall.monitor import qai_helper, update_qai
 from micall.monitor.kive_download import kive_login, download_results

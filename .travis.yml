@@ -2,6 +2,9 @@ language: python
 python:
     - "3.4"
 install: "pip install coverage python-Levenshtein matplotlib requests reportlab pyyaml cutadapt==1.11"
+before_script:
+    - "cp micall/settings_default.py micall/settings.py"
+    - "cd micall/alignment/ && python setup.py install"
 script: "coverage run -m unittest discover -p '*_test.py'"
 
 after_success:

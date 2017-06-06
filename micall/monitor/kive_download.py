@@ -8,8 +8,12 @@ import re
 import shutil
 import tarfile
 
-from kiveapi import KiveAPI
-from kiveapi.runstatus import RunStatus
+try:
+    from kiveapi import KiveAPI
+    from kiveapi.runstatus import RunStatus
+except ImportError:
+    # Ignore import errors during testing.
+    KiveAPI = RunStatus = None
 from requests.adapters import HTTPAdapter
 
 from micall.settings import kive_server_url, kive_user, kive_password, home, \
