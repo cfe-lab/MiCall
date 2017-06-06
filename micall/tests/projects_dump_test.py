@@ -1,8 +1,8 @@
 import json
-from io import StringIO
 import unittest
+from io import StringIO
 
-from micall.monitor.projects_dump import check_key_positions
+from micall.utils.projects_dump import check_key_positions
 
 
 class CheckKeyPositionsTest(unittest.TestCase):

@@ -7,7 +7,7 @@ from operator import itemgetter
 
 from matplotlib import pyplot as plt
 
-from micall.monitor.samples_from_454 import format_sample_name
+from micall.utils.samples_from_454 import format_sample_name
 
 
 def parse_args():

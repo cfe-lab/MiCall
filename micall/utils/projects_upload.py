@@ -80,7 +80,7 @@ def main():
                                        'start_pos': key_position['start_pos'],
                                        'end_pos': key_position['end_pos']})
 
-    print "Done."
+    print("Done.")
 
 if __name__ == "__main__":
     main()
