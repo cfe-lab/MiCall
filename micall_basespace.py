@@ -210,6 +210,7 @@ def parse_json(json_file):
     args.samples = sorted(arg_map['Input.sample-ids']['Items'],
                           key=itemgetter('Name'))
     args.project_id = arg_map['Input.project-id']['Content']['Id']
+    args.reports = arg_map['Input.reports']['Items']
 
     return args
 
@@ -218,6 +219,7 @@ def link_json(run_path, data_path):
     """ Load the data from a run folder into the BaseSpace layout. """
     args = Args()
     args.project_id = args.href_app_session = '1'
+    args.reports = ['PR_RT', 'INT']
 
     shutil.rmtree(data_path, ignore_errors=True)
     makedirs(data_path)
@@ -504,7 +506,11 @@ def process_sample(sample_index, run_info, args, pssm):
             open(os.path.join(sample_scratch_path, 'coverage_scores.csv')) as coverage_scores_csv, \
             open(os.path.join(sample_scratch_path, 'resistance.csv'), 'w') as resistance_csv, \
             open(os.path.join(sample_scratch_path, 'mutations.csv'), 'w') as mutations_csv:
-        hivdb(amino_csv, coverage_scores_csv, resistance_csv, mutations_csv)
+        hivdb(amino_csv,
+              coverage_scores_csv,
+              resistance_csv,
+              mutations_csv,
+              run_info.reports)
 
     logger.info('Running resistance report (%d of %d).', sample_index+1, len(run_info.samples))
     reports_path = os.path.join(args.qc_path, 'resistance_reports')
