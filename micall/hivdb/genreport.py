@@ -56,7 +56,7 @@ single dict class, but found a {}""".format(REPORT_CONFIG_PATH, type(cfg_dct)))
     KNOWN_KEYS = frozenset([
         'known_drugs', 'known_drug_classes', 'known_regions',
         'resistance_level_colours', 'disclaimer_text', "generated_by_text",
-        "version_text"
+        "report_title"
     ])
     PRESENT_KEYS = set(cfg_dct.keys())
     missing_keys = KNOWN_KEYS - PRESENT_KEYS
@@ -97,11 +97,14 @@ single dict class, but found a {}""".format(REPORT_CONFIG_PATH, type(cfg_dct)))
     # check known_drug_classes and turn it into a set of strings
     fld_name = 'known_drug_classes'
     known_drug_classes = cfg_dct[fld_name]
+    dc_names, dc_tableh = zip(*known_drug_classes)
     if not isinstance(known_drug_classes, list) or\
-       sum([isinstance(s, str) for s in known_drug_classes]) != len(known_drug_classes):
+       sum([isinstance(s, str) for s in dc_names]) != len(known_drug_classes):
         raise RuntimeError(
             "{}: {} must be a list of strings".format(err_string, fld_name))
-    known_drug_classes = cfg_dct[fld_name] = frozenset(known_drug_classes)
+    cfg_dct['drug_class_tableheaders'] = dict(known_drug_classes)
+    known_drug_classes = cfg_dct[fld_name] = frozenset(dc_names)
+    cfg_dct["known_dclass_list"] = dc_names
 
     # check known_drugs
     fld_name = "known_drugs"
@@ -170,7 +173,8 @@ def read_mutations(cfg_dct, csv_file):
             "{}: fatal error(s) detected: giving up...".format(err_string))
     cfg_dct["mutation_strings"] = mut_dct = {}
     for d_class in known_drug_class_set:
-        mut_dct[d_class] = " ,".join(tmp_dct[d_class]) if d_class in tmp_dct else "None"
+        mut_str = ", ".join(tmp_dct[d_class]) if d_class in tmp_dct else "None"
+        mut_dct[d_class] = "Relevant {} Mutations: ".format(d_class) + mut_str
     return data_lst
 
 
