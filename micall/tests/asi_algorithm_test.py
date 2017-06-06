@@ -3,7 +3,7 @@ from io import StringIO
 from operator import attrgetter
 from unittest import TestCase
 
-from micall.hivdb.asi_algorithm import AsiAlgorithm, translate_complete_to_array
+from micall.hivdb.asi_algorithm import AsiAlgorithm, translate_complete_to_array, BNFVal
 
 
 class AsiAlgorithmTest(TestCase):
@@ -149,6 +149,19 @@ class AsiAlgorithmTest(TestCase):
 
         drugs = list(map(attrgetter(*compared_attrs), result.drugs))
         self.assertEqual(expected_drugs, drugs)
+
+
+class AsiAlgorithmTinyRulesTest(TestCase):
+    def setUp(self):
+        xml = "<ALGORITHM><DEFINITIONS/></ALGORITHM>"
+        self.asi = AsiAlgorithm(StringIO(xml))
+
+    def test_bnf_default_repr(self):
+        expected_repr = "BNFVal(False, False, 0, set())"
+
+        bnf = BNFVal(False)
+
+        self.assertEqual(expected_repr, repr(bnf))
 
     def test_bnf_residue(self):
         aminos = [['L'], ['R']]
@@ -317,6 +330,146 @@ class AsiAlgorithmTest(TestCase):
 
         self.assertEqual(expected_cond, bnr.cond)
         self.assertFalse(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_select_at_least_less(self):
+        aminos = [['L'], ['F'], ['L']]
+        cond = 'SELECT ATLEAST 2 FROM (1P, 2F, 3R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = {'2F'}
+
+        bnr = self.asi.bnf_selectstatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertFalse(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_select_at_least_equal(self):
+        aminos = [['L'], ['F'], ['R']]
+        cond = 'SELECT ATLEAST 2 FROM (1P, 2F, 3R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = {'2F', '3R'}
+
+        bnr = self.asi.bnf_selectstatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertTrue(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_select_at_least_more(self):
+        aminos = [['P'], ['F'], ['R']]
+        cond = 'SELECT ATLEAST 2 FROM (1P, 2F, 3R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = {'1P', '2F', '3R'}
+
+        bnr = self.asi.bnf_selectstatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertTrue(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_select_at_most_less(self):
+        aminos = [['L'], ['F'], ['L']]
+        cond = 'SELECT NOTMORETHAN 2 FROM (1P, 2F, 3R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = {'2F'}
+
+        bnr = self.asi.bnf_selectstatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertTrue(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_select_at_most_equal(self):
+        aminos = [['L'], ['F'], ['R']]
+        cond = 'SELECT NOTMORETHAN 2 FROM (1P, 2F, 3R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = {'2F', '3R'}
+
+        bnr = self.asi.bnf_selectstatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertTrue(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_select_at_most_more(self):
+        aminos = [['P'], ['F'], ['R']]
+        cond = 'SELECT NOTMORETHAN 2 FROM (1P, 2F, 3R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = {'1P', '2F', '3R'}
+
+        bnr = self.asi.bnf_selectstatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertFalse(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_select_exactly(self):
+        aminos = [['P'], ['L'], ['R']]
+        cond = 'SELECT EXACTLY 2 FROM (1P, 2F, 3R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = {'1P', '3R'}
+
+        bnr = self.asi.bnf_selectstatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertTrue(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_select_combination_and(self):
+        aminos = [['P'], ['L'], ['R']]
+        cond = 'SELECT ATLEAST 2 AND NOTMORETHAN 2 FROM (1P, 2F, 3R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = {'1P', '3R'}
+
+        bnr = self.asi.bnf_selectstatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertTrue(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_select_combination_or(self):
+        aminos = [['I'], ['L'], ['R']]
+        cond = 'SELECT ATLEAST 3 OR NOTMORETHAN 1 FROM (1P, 2F, 3R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = {'3R'}
+
+        bnr = self.asi.bnf_selectstatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertTrue(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_select_nested_parentheses(self):
+        aminos = [['P'], ['F'], ['R']]
+        cond = 'SELECT EXACTLY 2 FROM (1P, 2(NOT F), 3R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = {'1P', '3R'}
+
+        bnr = self.asi.bnf_selectstatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertTrue(bnr.truth)
         self.assertEqual(expected_score, bnr.score)
         self.assertEqual(expected_mutations, bnr.mutations)
 

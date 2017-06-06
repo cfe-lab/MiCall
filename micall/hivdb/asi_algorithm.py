@@ -121,7 +121,7 @@ class BNFVal:
             self.mutations = mutations
 
     def __repr__(self):
-        if len(self.cond) <= 21:
+        if not self.cond or len(self.cond) <= 21:
             cond = self.cond
         else:
             cond = self.cond[:9] + '...' + self.cond[-9:]
@@ -306,7 +306,9 @@ class AsiAlgorithm:
                 if left_truth is None:
                     left_truth = bnf.truth
                     mutations = bnf.mutations
-                else:  # Not quite proper logic order, but I don't think anybody is randomly mixing OR's and AND's so it should be okay
+                else:
+                    # Not quite proper logic order, but I don't think anybody
+                    # is randomly mixing OR's and AND's so it should be okay
                     if bnf.logic == 'AND':
                         left_truth = left_truth and bnf.truth
                         if left_truth:
@@ -356,7 +358,7 @@ class AsiAlgorithm:
 
     # logicsymbol condition;
     def bnf_condition2(self, cond, aaseq):
-        bnf_logic = self.bnf_logicsymbol(cond, aaseq)
+        bnf_logic = self.bnf_logicsymbol(cond)
         if bnf_logic.cond:
             bnf = self.bnf_condition(bnf_logic.cond, aaseq)
             if bnf.cond:
@@ -365,7 +367,8 @@ class AsiAlgorithm:
         return BNFVal(False)
 
     # and | or
-    def bnf_logicsymbol(self, cond, aaseq):
+    @staticmethod
+    def bnf_logicsymbol(cond):
         if re.search('^\s*AND\s*', cond, flags=re.I):
             bnf = BNFVal(re.sub('^\s*AND\s*', '', cond))
             bnf.logic = 'AND'
@@ -379,7 +382,8 @@ class AsiAlgorithm:
     # [originalaminoacid]:amino_acid? integer [mutatedaminoacid]:amino_acid+ |
     # not [originalaminoacid]:amino_acid? Integer [mutatedaminoacid]:amino_acid+ |
     # [originalaminoacid]:amino_acid? integer l_par not [mutatedaminoacid]:amino_acid+ r_par
-    def bnf_residue(self, cond, aaseq):  # this looks hard yo
+    @staticmethod
+    def bnf_residue(cond, aaseq):  # this looks hard yo
         # I think we'll have to go the regexp route here.  Haha.
         mo_a = re.search(
             '^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)(.*)',
@@ -406,7 +410,6 @@ class AsiAlgorithm:
             match = mo_b or mo_c
             loc = int(match.group(1))
             aas = match.group(2)
-            truth = True
             if len(aaseq) >= loc:
                 truth = not any(aa in aas for aa in aaseq[loc - 1])
             else:
@@ -432,6 +435,11 @@ class AsiAlgorithm:
     # notmorethan integer from l_par selectlist r_par |
     # atleast [atleastnumber]:integer logicsymbol notmorethan [notmorethannumber]:integer from l_par selectlist r_par
     def bnf_selectstatement2(self, cond, aaseq):
+        """ Parse the details of a select statement.
+
+        :param str cond: the details of the select statement to parse.
+        :param aaseq: the list of amino acid lists for each position
+        """
         lparen = -1
         rparen = -1
         cnt = 0
@@ -448,55 +456,49 @@ class AsiAlgorithm:
             elif cond[i] == ')':
                 cnt -= 1
 
-        if (lparen == -1 or rparen == -1):
+        if lparen == -1 or rparen == -1:
             return BNFVal(False)
 
         # get the list items
         bnflist = self.bnf_selectlist(cond[lparen + 1:rparen] + ' |', aaseq)
 
         mo_a = re.search(
-            '^\s*(EXACTLY\s*(\d+)|ATLEAST\s*(\d+)\s*(AND|OR)\s*NOTMORETHAN\s*(\d+)|ATLEAST\s*(\d+)|NOTMORETHAN\s*(\d+))\s*from\s*\(\s*(.+)\s*\)',
+            '^\s*(EXACTLY\s*(\d+)|ATLEAST\s*(\d+)\s*(AND|OR)\s*'
+            'NOTMORETHAN\s*(\d+)|ATLEAST\s*(\d+)|NOTMORETHAN\s*(\d+))\s*'
+            'from\s*\(\s*(.+)\s*\)',
             cond, flags=re.I)
-        atleastn = -1
-        atmostn = -1
-        exactlyn = -1
         cnt = 0
-        logic = None
-        type = mo_a.group(1)
+        select_type = mo_a.group(1)
+        result = BNFVal(cond[rparen + 1:])
         for bnf in bnflist:
             if bnf.cond and bnf.truth:
                 cnt += 1
-        if re.search('^\s*ATLEAST\s*(\d+)\s*(AND|OR)\s*NOTMORETHAN', type, flags=re.I):
+                result.mutations |= bnf.mutations
+
+        if re.search('^\s*ATLEAST\s*(\d+)\s*(AND|OR)\s*NOTMORETHAN',
+                     select_type,
+                     flags=re.I):
             atleastn = int(mo_a.group(3))
             logic = mo_a.group(4)
             atmostn = int(mo_a.group(5))
-            if cnt >= atleastn and cnt <= atmostn:
-                return BNFVal(cond[rparen + 1:], truth=True)
+            if logic.upper() == 'AND':
+                result.truth = atleastn <= cnt <= atmostn
             else:
-                return BNFVal(cond[rparen + 1:], truth=False)
-        elif re.search('^\s*EXACTLY', type, flags=re.I):
+                result.truth = atleastn <= cnt or cnt <= atmostn
+        elif re.search('^\s*EXACTLY', select_type, flags=re.I):
             # print 'exactly'
             exactlyn = int(mo_a.group(2))
-            if cnt == exactlyn:
-                return BNFVal(cond[rparen + 1:], truth=True)
-            else:
-                return BNFVal(cond[rparen + 1:], truth=False)
-        elif re.search('^\s*ATLEAST', type, flags=re.I):
+            result.truth = cnt == exactlyn
+        elif re.search('^\s*ATLEAST', select_type, flags=re.I):
             # print 'atleastn'
             atleastn = int(mo_a.group(6))
-            if cnt >= atleastn:
-                return BNFVal(cond[rparen + 1:], truth=True)
-            else:
-                return BNFVal(cond[rparen + 1:], truth=False)
-        elif re.search('^\s*NOTMORETHAN', type, flags=re.I):
+            result.truth = cnt >= atleastn
+        elif re.search('^\s*NOTMORETHAN', select_type, flags=re.I):
             # print 'notmorethan'
             atmostn = int(mo_a.group(7))
-            if cnt <= atmostn:
-                return BNFVal(cond[rparen + 1:], truth=True)
-            else:
-                return BNFVal(cond[rparen + 1:], truth=False)
+            result.truth = cnt <= atmostn
 
-        return BNFVal(False)
+        return result
 
     # residue listitems*
     def bnf_selectlist(self, cond, aaseq):
@@ -506,7 +508,6 @@ class AsiAlgorithm:
             newcond = bnf.cond
             bnflist.append(bnf)
             while True:
-                tmp = re.search('^\s*,\s*', newcond)
                 newcond = re.sub('^\s*,\s*', '', newcond)
                 bnf = self.bnf_residue(newcond, aaseq)
                 if bnf.cond:
@@ -549,14 +550,14 @@ class AsiAlgorithm:
         if bnf.cond:
             bnflist.append(bnf)
             newcond = bnf.cond
-            while (newcond):
+            while newcond:
                 # check for comma?
                 # print "test:  " + newcond
                 tmp = re.search('^\s*,\s*', newcond)
                 if tmp:
                     newcond = re.sub('^\s*,\s*', '', newcond)
                     bnf = self.bnf_scoreitem(newcond, aaseq)
-                    if bnf.cond == False:
+                    if not bnf.cond:
                         break
                     newcond = bnf.cond
                     bnflist.append(bnf)
@@ -568,7 +569,8 @@ class AsiAlgorithm:
     # booleancondition mapper min? number |
     # max l_par scorelist r_par
     def bnf_scoreitem(self, cond, aaseq):
-        # mo_a has 4 groups, the booleanconditon, an optional pointless MIN, and the score, and then the rest of the string
+        # mo_a has 4 groups, the booleanconditon, an optional pointless MIN,
+        # and the score, and then the rest of the string
         # I think we need to match a dash for negative numbers yo
         mo_a = re.search('^\s*([^=>]+)\s*=>\s*(min)?\s*(-?\d+\.?\d*)\s*(.+)$', cond, flags=re.I)
 
@@ -592,7 +594,7 @@ class AsiAlgorithm:
                 elif cond[i] == ')':
                     cnt -= 1
 
-            if (lparen == -1 or rparen == -1):
+            if lparen == -1 or rparen == -1:
                 return BNFVal(False)
             newcond = cond[lparen + 1: rparen]
             bnflist = self.bnf_scorelist(newcond, aaseq)
@@ -602,11 +604,10 @@ class AsiAlgorithm:
                 mutations = set()
                 for bnf in bnflist:
                     if bnf.cond:
-                        newcond = bnf.cond
                         mutations |= bnf.mutations
                         if bnf.score > score and bnf.score != 0.0:
                             score = bnf.score
-                if (score == -999):
+                if score == -999:
                     score = 0.0
                 return BNFVal(cond[rparen + 1:],
                               score=score,
