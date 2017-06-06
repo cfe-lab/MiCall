@@ -36,9 +36,11 @@ EXCLUDED_SEEDS = ['HLA-B-seed']  # Not ready yet.
 EXCLUDED_PROJECTS = ['HCV-NS5a',
                      'HIV-GP41',
                      'HIV',
+                     'INT',
                      'MidHCV',
                      'MiniHCV',
                      'MiniRT',
+                     'PR-RT',
                      'RT',
                      'V3LOOP',
                      'wg1HCV']  # Avoid useless duplicates for BaseSpace version.
