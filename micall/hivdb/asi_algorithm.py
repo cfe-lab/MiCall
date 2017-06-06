@@ -381,9 +381,15 @@ class AsiAlgorithm:
     # [originalaminoacid]:amino_acid? integer l_par not [mutatedaminoacid]:amino_acid+ r_par
     def bnf_residue(self, cond, aaseq):  # this looks hard yo
         # I think we'll have to go the regexp route here.  Haha.
-        mo_a = re.search('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', cond)
-        mo_b = re.search('^\s*NOT\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', cond)
-        mo_c = re.search('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*\(\s*NOT\s*([ARNDCEQGHILKMFPSTWYVid]+)\s*\)', cond)
+        mo_a = re.search(
+            '^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)(.*)',
+            cond)
+        mo_b = re.search(
+            '^\s*(?:NOT|EXCLUDE)\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)(.*)',
+            cond)
+        mo_c = re.search(
+            '^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*\(\s*NOT\s*([ARNDCEQGHILKMFPSTWYVid]+)\s*\)(.*)',
+            cond)
         truth = False
         mutations = None
         if mo_a:
@@ -394,53 +400,24 @@ class AsiAlgorithm:
                              for aa in aaseq[loc - 1]
                              if aa in aas}
                 truth = bool(mutations)
-            # print '--test' + re.sub('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', '', cond)
-            bnf = BNFVal(re.sub('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)',
-                                '',
-                                cond),
-                         truth,
-                         mutations=mutations)
+            bnf = BNFVal(mo_a.group(3), truth, mutations=mutations)
             return bnf
-        elif mo_b:
-            loc = int(mo_b.group(1))
-            aas = mo_b.group(2)
+        elif mo_b or mo_c:
+            match = mo_b or mo_c
+            loc = int(match.group(1))
+            aas = match.group(2)
             truth = True
-            if (len(aaseq) > loc):
-                for aa in aaseq[loc - 1]:
-                    if aa in aas:
-                        truth = False
+            if len(aaseq) >= loc:
+                truth = not any(aa in aas for aa in aaseq[loc - 1])
             else:
                 truth = False  # ????UNKNOWN
-            bnf = BNFVal(re.sub('^\s*NOT\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)', '', cond),
-                         truth)
-            return bnf
-        elif mo_c:
-            loc = int(mo_c.group(1))
-            aas = mo_c.group(2)
-            truth = True
-            if (len(aaseq) > loc):
-                for aa in aaseq[loc - 1]:
-                    if aa in aas:
-                        truth = False  # I think this makes sense
-                    elif aa != '*':  # TODO, I'm not 100% sure this is correct.  (Seems to be right)
-                        truth = True  # TODO
-                        break  # TODO
-            else:
-                truth = False  # ????UNKNOWN
-            bnf = BNFVal(
-                re.sub('^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*\(\s*NOT\s*([ARNDCEQGHILKMFPSTWYVid]+)\s*\)', '', cond),
-                truth)
+            bnf = BNFVal(match.group(3), truth)
             return bnf
         return BNFVal(False)
 
     # exclude residue
     def bnf_excludestatement(self, cond, aaseq):
-        if re.search('^\s*EXCLUDE\s*', cond, flags=re.I):
-            bnf = self.bnf_residue(re.sub('^\s*EXCLUDE\s*', '', cond), aaseq)
-            if bnf.cond:
-                bnf.truth = not bnf.truth
-                return bnf
-        return BNFVal(False)
+        return self.bnf_residue(cond, aaseq)
 
     # select selectstatement2
     def bnf_selectstatement(self, cond, aaseq):

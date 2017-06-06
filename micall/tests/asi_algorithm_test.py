@@ -152,11 +152,11 @@ class AsiAlgorithmTest(TestCase):
 
     def test_bnf_residue(self):
         aminos = [['L'], ['R']]
-        cond = '2R'
-        expected_cond = ''
+        cond = '2R|'
+        expected_cond = '|'
         expected_score = 0
         expected_mutations = {'2R'}
-        expected_repr = "BNFVal('', True, 0, {'2R'})"
+        expected_repr = "BNFVal('|', True, 0, {'2R'})"
 
         bnr = self.asi.bnf_residue(cond, aminos)
 
@@ -168,8 +168,8 @@ class AsiAlgorithmTest(TestCase):
 
     def test_bnf_residue_multiple_choices(self):
         aminos = [['L'], ['R']]
-        cond = '2RFL'
-        expected_cond = ''
+        cond = '2RFL|'
+        expected_cond = '|'
         expected_score = 0
         expected_mutations = {'2R'}
 
@@ -182,8 +182,8 @@ class AsiAlgorithmTest(TestCase):
 
     def test_bnf_residue_multiple_choices_found(self):
         aminos = [['L'], ['R', 'F', 'K']]
-        cond = '2RFL'
-        expected_cond = ''
+        cond = '2RFL|'
+        expected_cond = '|'
         expected_score = 0
         expected_mutations = {'2R', '2F'}
 
@@ -191,6 +191,132 @@ class AsiAlgorithmTest(TestCase):
 
         self.assertEqual(expected_cond, bnr.cond)
         self.assertTrue(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_residue_negative_fails(self):
+        aminos = [['L'], ['R']]
+        cond = 'NOT 2R|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = set()
+
+        bnr = self.asi.bnf_residue(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertFalse(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_residue_negative_passes(self):
+        aminos = [['L'], ['F']]
+        cond = 'NOT 2R|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = set()
+
+        bnr = self.asi.bnf_residue(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertTrue(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_residue_negative_short(self):
+        aminos = [['L']]
+        cond = 'NOT 2R|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = set()
+
+        bnr = self.asi.bnf_residue(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertFalse(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_residue_negative2_fails(self):
+        aminos = [['L'], ['R']]
+        cond = '2(NOT R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = set()
+
+        bnr = self.asi.bnf_residue(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertFalse(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_residue_negative2_passes(self):
+        aminos = [['L'], ['F']]
+        cond = '2(NOT R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = set()
+
+        bnr = self.asi.bnf_residue(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertTrue(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_residue_negative2_short(self):
+        aminos = [['L']]
+        cond = '2(NOT R)|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = set()
+
+        bnr = self.asi.bnf_residue(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertFalse(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_exclude_fails(self):
+        aminos = [['L'], ['R']]
+        cond = 'EXCLUDE 2R|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = set()
+
+        bnr = self.asi.bnf_excludestatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertFalse(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_exclude_passes(self):
+        aminos = [['L'], ['F']]
+        cond = 'EXCLUDE 2R|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = set()
+
+        bnr = self.asi.bnf_excludestatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertTrue(bnr.truth)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
+    def test_bnf_exclude_short(self):
+        aminos = [['L']]
+        cond = 'EXCLUDE 2R|'
+        expected_cond = '|'
+        expected_score = 0
+        expected_mutations = set()
+
+        bnr = self.asi.bnf_excludestatement(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertFalse(bnr.truth)
         self.assertEqual(expected_score, bnr.score)
         self.assertEqual(expected_mutations, bnr.mutations)
 

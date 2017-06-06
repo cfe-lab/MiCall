@@ -10,13 +10,14 @@ RUN apt-get update -qq --fix-missing && apt-get install -qq -y \
   && rm -rf /var/lib/apt/lists/*
 
 ## Python packages, plus trigger matplotlib to build its font cache
-RUN pip install python-Levenshtein matplotlib requests reportlab pyyaml && \
+RUN pip install python-Levenshtein matplotlib requests reportlab pyyaml cutadapt==1.11 && \
+  ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11 && \
   python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 ## bowtie2
-RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip; \
-  unzip bowtie2.zip -d /opt/; \
-  ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2; \
+RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip && \
+  unzip bowtie2.zip -d /opt/ && \
+  ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2 && \
   rm bowtie2.zip
 
 ENV PATH $PATH:/opt/bowtie2

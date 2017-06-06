@@ -62,7 +62,7 @@ logging.config.dictConfig({
                  'file': {'class': 'logging.handlers.RotatingFileHandler',
                           'level': 'DEBUG',
                           'formatter': 'basic',
-                          'filename': '/data/miseq/micall.log',
+                          'filename': 'micall.log',
                           'maxBytes': 1024*1024*15,  # 15MB
                           'backupCount': 10},
                  'mail': {'class': 'logging.handlers.SMTPHandler',

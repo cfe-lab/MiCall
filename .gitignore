@@ -13,6 +13,7 @@
 *.fai
 *~
 .cache
+.coverage
 /.idea
 /micall/tests/working/*
 /micall/tests/microtest/Results

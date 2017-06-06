@@ -28,6 +28,14 @@ def parse_args():
     return parser.parse_args()
 
 
+def select_reported_regions(choices, reported_regions):
+    split_choices = set()
+    for choice in choices:
+        split_choices.update(choice.split('_'))
+    return {region: translation
+            for region, translation in reported_regions.items()
+            if region in split_choices}
+
 def find_good_regions(original_regions, coverage_scores_csv):
     good_regions = {region: [name, False] for region, name in original_regions.items()}
     for row in DictReader(coverage_scores_csv):
@@ -124,8 +132,16 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
                                                mutation=mutation))
 
 
-def hivdb(amino_csv, coverage_scores_csv, resistance_csv, mutations_csv):
-    good_regions = find_good_regions(REPORTED_REGIONS, coverage_scores_csv)
+def hivdb(amino_csv,
+          coverage_scores_csv,
+          resistance_csv,
+          mutations_csv,
+          region_choices=None):
+    if region_choices is None:
+        selected_regions = REPORTED_REGIONS
+    else:
+        selected_regions = select_reported_regions(region_choices, REPORTED_REGIONS)
+    good_regions = find_good_regions(selected_regions, coverage_scores_csv)
     aminos = read_aminos(amino_csv, MIN_FRACTION, good_regions)
     write_resistance(aminos, resistance_csv, mutations_csv)
 

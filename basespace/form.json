@@ -30,7 +30,24 @@
             "required": true,
             "id": "sample-ids",
             "rules": "sample-reader"
-        },      
+        },
+        {
+            "$type": "CheckBox",
+            "id": "reports",
+            "label": "Resistance Reports",
+            "choices": [
+                {
+                    "value": "PR_RT",
+                    "label": "PR/RT",
+                    "checked": true
+                },
+                {
+                    "value": "INT",
+                    "label": "INT",
+                    "checked": true
+                }
+            ]
+        },
         {
             "$type": "ProjectChooser",
             "size": 300,
@@ -47,7 +64,7 @@
             "$type": "SectionBreak"
         }
     ],
-    "rulesets":[
+    "rulesets": [
         {
             "$type": "PermissionValidationRule",
             "permissions": "Read",
@@ -64,4 +81,3 @@
         }
     ]
 }
-

@@ -1,7 +1,44 @@
 from io import StringIO
 from unittest import TestCase
 
-from micall.hivdb.hivdb import read_aminos, write_resistance, find_good_regions
+from micall.hivdb.hivdb import read_aminos, write_resistance, find_good_regions, select_reported_regions
+
+
+class SelectReportedRegionsTest(TestCase):
+    def test_all_regions(self):
+        choices = ['R1', 'R2', 'R3']
+        original_regions = {'R1': 'Region 1',
+                            'R2': 'Region 2',
+                            'R3': 'Region 3'}
+        expected_regions = original_regions.copy()
+
+        selected_regions = select_reported_regions(choices, original_regions)
+
+        self.assertEqual(expected_regions, selected_regions)
+
+    def test_some_regions(self):
+        choices = ['R1', 'R3']
+        original_regions = {'R1': 'Region 1',
+                            'R2': 'Region 2',
+                            'R3': 'Region 3'}
+        expected_regions = {'R1': 'Region 1',
+                            'R3': 'Region 3'}
+
+        selected_regions = select_reported_regions(choices, original_regions)
+
+        self.assertEqual(expected_regions, selected_regions)
+
+    def test_combined_regions(self):
+        choices = ['R1_R2']
+        original_regions = {'R1': 'Region 1',
+                            'R2': 'Region 2',
+                            'R3': 'Region 3'}
+        expected_regions = {'R1': 'Region 1',
+                            'R2': 'Region 2'}
+
+        selected_regions = select_reported_regions(choices, original_regions)
+
+        self.assertEqual(expected_regions, selected_regions)
 
 
 class FindGoodRegionsTest(TestCase):
