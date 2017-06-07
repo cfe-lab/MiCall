@@ -7,6 +7,7 @@ MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 RUN apt-get update -qq --fix-missing && apt-get install -qq -y \
   unzip \
   wget \
+  libpython3.4-dev \
   && rm -rf /var/lib/apt/lists/*
 
 ## Python packages, plus trigger matplotlib to build its font cache
@@ -27,7 +28,7 @@ COPY micall/alignment /opt/alignment
 WORKDIR /opt/alignment
 RUN python setup.py install
 WORKDIR /
-RUN rm -r /opt/alignment
+RUN rm -r /opt/alignment && python -c 'import gotoh'
 
 ## MiCall
 COPY micall_basespace.py /opt/micall/
