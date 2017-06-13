@@ -230,7 +230,7 @@ def read_resistance(cfg_dct, csv_file):
         else:
             resdct[drug_id] = (level, od["level_name"])
         try:
-            score = float(score_str)
+            float(score_str)
         except ValueError:
             print("score is not a float {}".format(score_str))
             line_err = True
@@ -259,7 +259,7 @@ def gen_report(resistance_csv, mutations_csv, res_report_pdf,
     res_lst = read_resistance(cfg_dct, resistance_csv)
     mut_lst = read_mutations(cfg_dct, mutations_csv)
 
-    pdfreport.write_report(cfg_dct, res_lst, mut_lst, res_report_pdf, sample_name)
+    pdfreport.write_report_one_column(cfg_dct, res_lst, mut_lst, res_report_pdf, sample_name)
 
 
 def main():
