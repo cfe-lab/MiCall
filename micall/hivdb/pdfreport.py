@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.4
 
 # The module that generates a report in PDF format
+import pytz
 import datetime
 
 from reportlab.lib import colors
@@ -14,6 +15,10 @@ import reportlab.platypus as plat
 # we currently only support North American letter paper -- no A4
 page_w, page_h = letter
 
+# Times are reported in this time zone
+TIME_ZONE_NAME = "America/Vancouver"
+time_zone = pytz.timezone(TIME_ZONE_NAME)
+
 # text size in the table in points
 TAB_FONT_SIZE = 8
 
@@ -21,19 +26,42 @@ TAB_FONT_SIZE = 8
 SMALL_PRINT_FONT_SIZE = 7
 
 # a style used for the 'relevant mutations' text
-mut_txt_style = ParagraphStyle("sconormal", fontSize=TAB_FONT_SIZE,
-                               leading=TAB_FONT_SIZE)
+mut_txt_style = ParagraphStyle("sconormal",
+                               fontSize=TAB_FONT_SIZE,
+                               leading=TAB_FONT_SIZE,
+                               fontName='Helvetica-Oblique')
+
+
+def get_now_string():
+    """Return the date and time in the configured time zone as a string"""
+    utc_now = datetime.datetime.now(tz=pytz.utc)
+    loc_now = utc_now.astimezone(time_zone)
+    # return loc_now.strftime('%Y-%b-%d %H:%M:%S %Z')
+    return loc_now.strftime('%Y-%b-%d (%Z)')
 
 
 def bottom_para(txt):
-    small_style = ParagraphStyle("small", fontSize=SMALL_PRINT_FONT_SIZE,
+    "Set the provided text into a form for the small print"
+    small_style = ParagraphStyle("small",
+                                 fontSize=SMALL_PRINT_FONT_SIZE,
                                  leading=SMALL_PRINT_FONT_SIZE-1)
+    return plat.Paragraph(txt, small_style)
+
+
+def test_details_para(txt):
+    "Set the provided text into a form for the test details"
+    small_style = ParagraphStyle("small",
+                                 fontSize=TAB_FONT_SIZE,
+                                 leading=TAB_FONT_SIZE-1)
     return plat.Paragraph(txt, small_style)
 
 
 def headertab_style(row_offset, colnum, dospan):
     """Generate a style list for the first row of a table with colnum columns.
-    dospan := turn the colnum columns into a single one with centred text"""
+    dospan := turn the colnum columns into a single one with centred text
+
+    This routine is responsible for the style in the table headings.
+    """
     lst = [("TEXTCOLOR", (0, row_offset), (colnum-1, row_offset), colors.white),
            ("BACKGROUND", (0, row_offset), (colnum-1, row_offset), colors.green),
            ("ALIGN", (0, row_offset), (colnum-1, row_offset), "CENTRE"),
@@ -96,17 +124,16 @@ def drug_class_table(cfg_dct, dc_name, level_coltab, tabwidth):
 
 
 def top_table(sample_name, table_width):
-    """Generate a mostly empty top table.
-    colwidth: the overall width of the table.
+    """Generate a (mostly empty) top table of three main columns.
+    table_width: the overall width of the table.
     """
     samp_name = sample_name or "None"
     mid_colwidth = table_width/2.8
     oth_colwidth = (table_width - mid_colwidth)/2.0
-    # get the time, ignoring microseconds
-    nowstr = str(datetime.datetime.utcnow().replace(microsecond=0))
+    nowstr = get_now_string()
     test_dl = [["Patient/Sample Details", "Test Details", "Physician Details"],
-               ["", "Sample ID: {}".format(samp_name), ""],
-               ["", "Report Date (UTC): {}".format(nowstr), ""],
+               ["", test_details_para("Sample ID: {}".format(samp_name)), ""],
+               ["", test_details_para("Report Date: {}".format(nowstr)), ""],
                ["", "", ""],
                ["", "", ""]
                ]
@@ -189,6 +216,7 @@ def write_report_one_column(cfg_dct, res_lst, mut_lst, fname, sample_name=None):
     doc = plat.SimpleDocTemplate(
         fname,
         pagesize=letter,
+        topMargin=1 * cm,
         title="basespace drug resistance report",
         author="BCCfE")
     # get the actual text width, (not the page width):
@@ -255,4 +283,5 @@ def simple_gen_testpage(fname):
 
 
 if __name__ == '__main__':
-    gen_testpage("testpage.pdf")
+    print("The local time is '{}'".format(get_now_string()))
+    # gen_testpage("testpage.pdf")

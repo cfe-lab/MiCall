@@ -33,8 +33,8 @@ known_drugs:
 known_drug_classes:
   #the order in this list determines the order of the drug_class tables.
   - [NRTI, NRTI/NtRTI]
+  - [NNRTI, NNRTI]
   - [PI, Protease Inhibitor]
-  - [NNRTI, NNRTI] 
   - [INSTI, Integrase Inhibitor]
 known_regions: [IN, PR, RT]
 resistance_level_colours:
