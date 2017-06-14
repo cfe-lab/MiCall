@@ -669,6 +669,30 @@ class SequenceReport(object):
         self.remap_conseqs = dict(map(itemgetter('region', 'sequence'),
                                       csv.DictReader(remap_conseq_csv)))
 
+    @staticmethod
+    def group_deletions(positions):
+        """ Group deletion positions into groups that are within 13 bases.
+
+        They also have to have at least 13 bases without deletions in between
+        the groups.
+        """
+        if not positions:
+            return
+        gap_size = 13
+        working_positions = positions[:]
+        # Avoid special check for end condition by adding an extra group.
+        working_positions.append(positions[-1] + gap_size)
+        next_yield = 0
+        for i, pos in enumerate(working_positions):
+            if i == 0:
+                continue
+            start = positions[next_yield]
+            end = positions[i-1]
+            if pos - end >= gap_size:
+                if end - start < gap_size and (i - next_yield) % 3 == 0:
+                    yield positions[next_yield:i]
+                next_yield = i
+
     def align_deletions(self, aligned_reads):
         """ Align codon deletions to the codon boundaries.
 
@@ -686,26 +710,29 @@ class SequenceReport(object):
                 reading_frames = self.load_reading_frames(row['refname'])
             seq = row['seq']
             seq_offset = int(row['offset'])
-            chunks = []
-            length = 0
-            for match in re.finditer(r'-{3}', seq):
-                start = match.start()
-                end = match.end()
-                nuc_pos = seq_offset + start
+            for old_positions in self.group_deletions(
+                    [match.start() for match in re.finditer('-', seq)]):
+                chars = list(seq)
+                anchor_index = len(old_positions)//2
+                anchor_pos = old_positions[anchor_index]
+                start_pos = anchor_pos-len(old_positions)//2
+                end_pos = start_pos + len(old_positions)
+                nuc_pos = seq_offset + start_pos
                 reading_frame = reading_frames[nuc_pos]
                 offset = (nuc_pos + reading_frame) % 3
                 if offset == 1:
-                    chunks.append(seq[length:start - 1])
-                    chunks.append(match.group())
-                    chunks.append(seq[start - 1:start])
-                    length = end
+                    start_pos -= 1
+                    end_pos -= 1
                 elif offset == 2:
-                    chunks.append(seq[length:start])
-                    chunks.append(seq[end:end + 1])
-                    chunks.append(match.group())
-                    length = end + 1
-            chunks.append(seq[length:])
-            row['seq'] = ''.join(chunks)
+                    start_pos += 1
+                    end_pos += 1
+                new_positions = list(range(start_pos, end_pos))
+                for pos in reversed(old_positions):
+                    del chars[pos]
+                for pos in new_positions:
+                    chars.insert(pos, '-')
+                seq = ''.join(chars)
+                row['seq'] = seq
         return result
 
     def load_reading_frames(self, seed_name):

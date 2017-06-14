@@ -14,9 +14,9 @@
 using namespace std;
 
 /*
-I think this application should do a complete alignment.  Unfortunately aligning is way to slow in perl,
+I think this application should do a complete alignment.  Unfortunately aligning is way too slow in perl,
 so I suspect the alignment, merging and possibly the gap widening should be done in c.  Another possibility
-is to call the C functions from perl, which would simpify things quite a bit!  Unfortunately, I'm not entirely
+is to call the C functions from perl, which would simplify things quite a bit!  Unfortunately, I'm not entirely
 confident in that perl can do this seamlessly(unlike nicer languages like ruby and python).
 */
 

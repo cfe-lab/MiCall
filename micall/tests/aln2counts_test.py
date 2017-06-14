@@ -2268,6 +2268,21 @@ R2,GCCATTAAA
 
         self.assertEqual(expected_reads, reads)
 
+    def testAlignDeletionsTwoCodons(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R2-seed,15,0,10,0,AA------ACCGAGA")
+        self.report.remap_conseqs = {'R2-seed': 'AAATTTGGCCCGAGA'}
+        expected_reads = [dict(refname='R2-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='0',
+                               seq='AAA------CCGAGA')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
     def testAlignDeletionsUsingOffset(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads = self.prepareReads("R1-seed,15,0,10,1,AA---AGG")
@@ -2344,8 +2359,8 @@ R2,GCCATTAAA
   "regions": {
     "R-seed": {
       "is_nucleotide": true,
-      "reference": ["GAAATTTCAGTTTTCGAGAGCAT"],
-      "comment": "   ^KkkFffQqq^^^^RrrEeeHhh (two reading frames)"
+      "reference": ["GAAATTTCAGTTTTTTTTCGAGAGCAT"],
+      "comment": "   ^KkkFffQqq^^^^^^^^RrrEeeHhh (two reading frames)"
     },
     "R1": {
       "is_nucleotide": false,
@@ -2359,14 +2374,93 @@ R2,GCCATTAAA
 }
 """))
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R-seed,15,0,10,1,AAA---CAGTTTTC---AGCAT")
-        self.report.remap_conseqs = {'R-seed': 'GAAATTTCAGTTTTCGAGAGCAT'}
+        aligned_reads = self.prepareReads("R-seed,15,0,10,1,AAA---CAGTTTTTTTTC---AGCAT")
+        self.report.remap_conseqs = {'R-seed': 'GAAATTTCAGTTTTTTTTCGAGAGCAT'}
         expected_reads = [dict(refname='R-seed',
                                qcut='15',
                                rank='0',
                                count='10',
                                offset='1',
-                               seq='AAA---CAGTTTT---CAGCAT')]
+                               seq='AAA---CAGTTTTTTTT---CAGCAT')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
+    def testCombineDeletions(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R2-seed,15,0,10,0,AA-TCG--CCCGAGA")
+        self.report.remap_conseqs = {'R2-seed': 'AAATTTGGCCCGAGA'}
+        expected_reads = [dict(refname='R2-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='0',
+                               seq='AATCGC---CCGAGA')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
+    def testCombineDeletionsTwoCodons(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R2-seed,15,0,10,0,AA--TC----CGAGA")
+        self.report.remap_conseqs = {'R2-seed': 'AAATTTGGCCCGAGA'}
+        expected_reads = [dict(refname='R2-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='0',
+                               seq='AAT------CCGAGA')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
+    def testCombineDeletionsMaxSpread(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R3-seed,15,0,10,0,AA--TTCAGACCCC-CGAGAGCAT")
+        self.report.remap_conseqs = {'R3-seed': 'AAATTTCAGACCCCACGAGAGCAT'}
+        expected_reads = [dict(refname='R3-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='0',
+                               seq='AAT---TCAGACCCCCGAGAGCAT')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
+    def testCombineDeletionsBeyondMaxSpread(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R3-seed,15,0,10,0,AA--TTCAGACCCCA-GAGAGCAT")
+        self.report.remap_conseqs = {'R3-seed': 'AAATTTCAGACCCCACGAGAGCAT'}
+        expected_reads = [dict(refname='R3-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='0',
+                               seq='AA--TTCAGACCCCA-GAGAGCAT')]
+
+        reads = self.report.align_deletions(aligned_reads)
+
+        self.assertEqual(expected_reads, reads)
+
+    def testCombineDeletionsTooCrowded(self):
+        """ There must be a buffer of 13 with no deletions.
+
+        Otherwise, sweeping is not allowed.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("R3-seed,15,0,10,0,AA--TTCAGACCCC-CGA---CAT")
+        self.report.remap_conseqs = {'R3-seed': 'AAATTTCAGACCCCACGAGAGCAT'}
+        expected_reads = [dict(refname='R3-seed',
+                               qcut='15',
+                               rank='0',
+                               count='10',
+                               offset='0',
+                               seq='AA--TTCAGACCCC-CGA---CAT')]
 
         reads = self.report.align_deletions(aligned_reads)
 

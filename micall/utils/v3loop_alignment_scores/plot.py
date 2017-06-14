@@ -8,8 +8,8 @@ import os
 
 from matplotlib import pyplot as plt
 
-from ...core.project_config import ProjectConfig
-from ...g2p.fastq_g2p import HIV_SEED_NAME, COORDINATE_REF_NAME, extract_target, \
+from micall.core.project_config import ProjectConfig
+from micall.g2p.fastq_g2p import HIV_SEED_NAME, COORDINATE_REF_NAME, extract_target, \
     FastqReader, merge_reads, trim_reads, GAP_OPEN_COST, GAP_EXTEND_COST, USE_TERMINAL_COST
 
 CURRENT_MINIMUM_SCORE = 52

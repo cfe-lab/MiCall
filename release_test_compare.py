@@ -1,5 +1,4 @@
 """ Compare result files in shared folder with previous release. """
-from __future__ import print_function
 from argparse import ArgumentParser
 import csv
 from difflib import SequenceMatcher
@@ -47,56 +46,104 @@ def select_rows(csv_path,
                 yield row
 
 
-def select_columns(rows, *column_names):
-    """ Yield lines from a CSV file with only some of the columns.
+def select_columns(rows, column_names, extra_names=''):
+    """ Build lines and lists from a CSV file with only some of the columns.
 
     :param rows: rows from a CSV file reader
-    :param column_names: columns to include
+    :param column_names: columns to include in lines, space delimited string
+    :param extra_names: columns to include in list, space delimited string
+    :return: [line], [columns], sorted by lines, columns include all columns
     """
+    main_names = column_names.split()
+    all_names = main_names + extra_names.split()
+    main_getter = itemgetter(*main_names)
+    all_getter = itemgetter(*all_names)
+    combined_results = []
     for row in rows:
         score = row.get('on.score', None)
-        if score == '1':
-            continue
-        if score is not None:
+        if score is not None and score != '1':
             scored_samples.add((row['sample'], row['seed']))
         x4_pct = row.get('X4pct', None)
         if x4_pct not in (None, ''):
             row['X4pct'] = str(int(round(float(x4_pct))))
-        yield ',   '.join(itemgetter(*column_names)(row)) + '\n'
+
+        if MICALL_VERSION == '7.7':
+            # Version 7.7 switched HIV seed
+            for field in ('seed', 'region'):
+                field_value = row.get(field, '')
+                if field_value.startswith('HIV1') and field_value.endswith('-seed'):
+                    row[field] = 'HIV1???-seed'
+        line = ',   '.join(main_getter(row)) + '\n'
+        fields = list(all_getter(row))
+        combined_results.append((line, fields))
+    combined_results.sort()
+    return zip(*combined_results)
 
 
-def compare_files(source_path, target_path, filename, *columns, should_skip=None):
+# noinspection PyUnusedLocal
+def should_never_skip(source_fields, target_fields):
+    """ Dummy function that reports all differences. """
+    return False
+
+
+def compare_files(source_path,
+                  target_path,
+                  filename,
+                  column_names,
+                  extra_names='',
+                  should_skip=should_never_skip):
+    """ Compare columns within a file.
+
+    Build text lines using column_names, and pass all columns in column_names
+    and extra_names to should_skip() if differences are found.
+    :param source_path: source folder
+    :param target_path: target folder
+    :param filename: the file name to read from both folders
+    :param column_names: space delimited string
+    :param extra_names: space delimited string, may be blank
+    :param should_skip: function to check if a difference is small enough to
+        skip.
+    """
     sample_names = set()
     target_rows = select_rows(os.path.join(target_path, filename),
                               all_sample_names=sample_names)
-    target_columns = sorted(select_columns(target_rows, *columns))
+    target_columns = select_columns(target_rows, column_names, extra_names)
     source_rows = select_rows(os.path.join(source_path, filename),
                               filter_sample_names=sample_names)
-    source_columns = sorted(select_columns(source_rows, *columns))
+    source_columns = select_columns(source_rows, column_names, extra_names)
     compare_columns(source_columns, target_columns, target_path, filename, should_skip)
 
 
 def compare_columns(source_columns, target_columns, target_path, filename, should_skip):
     print('{} changes in {}:'.format(filename, target_path))
-    matcher = SequenceMatcher(a=source_columns, b=target_columns, autojunk=False)
+    source_lines, source_fields = source_columns
+    target_lines, target_fields = target_columns
+    matcher = SequenceMatcher(a=source_lines, b=target_lines, autojunk=False)
     for tag, alo, ahi, blo, bhi in matcher.get_opcodes():
         if tag == 'replace':
             for source_index, target_index in zip_longest(range(alo, ahi), range(blo, bhi)):
                 if source_index is None:
-                    print('+ ' + target_columns[target_index])
+                    if not should_skip(None, target_fields[target_index]):
+                        print('+ ' + target_lines[target_index], end='')
                 elif target_index is None:
-                    print('- ' + source_columns[source_index])
+                    if not should_skip(source_fields[source_index], None):
+                        print('- ' + source_lines[source_index], end='')
                 else:
-                    diff = line_diff(source_columns[source_index],
-                                     target_columns[target_index])
-                    if should_skip is None or not should_skip(diff):
+                    diff = line_diff(source_lines[source_index],
+                                     target_lines[target_index])
+                    if not should_skip(source_fields[source_index],
+                                       target_fields[target_index]):
                         print(''.join(diff), end='')
         elif tag == 'delete':
-            for line in source_columns[alo:ahi]:
-                print('- ' + line, end='')
+            for line, fields in zip(source_lines[alo:ahi],
+                                    source_fields[alo:ahi]):
+                if not should_skip(fields, None):
+                    print('- ' + line, end='')
         elif tag == 'insert':
-            for line in target_columns[blo:bhi]:
-                print('+ ' + line, end='')
+            for line, fields in zip(target_lines[blo:bhi],
+                                    target_fields[blo:bhi]):
+                if not should_skip(None, fields):
+                    print('+ ' + line, end='')
         else:
             assert tag == 'equal', tag
 
@@ -108,75 +155,28 @@ def format_key(key):
 def compare_consensus(source_path, target_path):
     filename = 'conseq.csv'
     sample_names = set()
-    keygetter = itemgetter('sample', 'region', 'consensus-percent-cutoff')
-    target_rows = sorted((row
-                          for row in select_rows(os.path.join(target_path, filename),
-                                                 all_sample_names=sample_names)
-                          if (row['sample'], row['region']) in scored_samples),
-                         key=keygetter)
-    source_rows = list(row
-                       for row in select_rows(os.path.join(source_path, filename),
-                                              filter_sample_names=sample_names)
-                       if (row['sample'], row['region']) in scored_samples)
-    source_rows.sort(key=keygetter)
-    target_keys = list(map(keygetter, target_rows))
-    source_keys = list(map(keygetter, source_rows))
-    for source_row, target_row in zip(source_rows, target_rows):
-        source_offset = int(source_row['offset'])
-        target_offset = int(target_row['offset'])
-        min_offset = min(source_offset, target_offset)
-        source_row['sequence'] = '-' * (source_offset-min_offset) + source_row['sequence']
-        target_row['sequence'] = '-' * (target_offset-min_offset) + target_row['sequence']
-        source_row['offset'] = target_row['offset'] = str(min_offset)
+    target_rows = [row
+                   for row in select_rows(os.path.join(target_path, filename),
+                                          all_sample_names=sample_names)
+                   if (row['sample'], row['region']) in scored_samples]
+    source_rows = [row
+                   for row in select_rows(os.path.join(source_path, filename),
+                                          filter_sample_names=sample_names)
+                   if (row['sample'], row['region']) in scored_samples]
 
     if MICALL_VERSION == '7.7':
         # Version 7.7 made such big changes to consensus that they're not worth comparing.
-        source_lines, target_lines = source_keys, target_keys
+        field_names = 'sample region consensus-percent-cutoff'
     else:
-        source_lines = list(select_columns(source_rows,
-                                           'sample',
-                                           'region',
-                                           'consensus-percent-cutoff',
-                                           'offset',
-                                           'sequence'))
-        target_lines = list(select_columns(target_rows,
-                                           'sample',
-                                           'region',
-                                           'consensus-percent-cutoff',
-                                           'offset',
-                                           'sequence'))
+        field_names = 'sample region consensus-percent-cutoff offset sequence'
+    source_columns = select_columns(source_rows, field_names)
+    target_columns = select_columns(target_rows, field_names)
 
-    print('{} changes in {}:'.format(filename, target_path))
-    matcher = SequenceMatcher(a=source_lines, b=target_lines, autojunk=False)
-    for tag, alo, ahi, blo, bhi in matcher.get_opcodes():
-        if tag == 'replace':
-            for source_index, target_index in zip_longest(range(alo, ahi), range(blo, bhi)):
-                if source_index is None:
-                    print('+ ' + format_key(target_keys[target_index]))
-                elif target_index is None:
-                    print('- ' + format_key(source_keys[source_index]))
-                else:
-                    source_key = source_keys[source_index]
-                    target_key = target_keys[target_index]
-                    if source_key != target_key:
-                        source_line = format_key(source_key) + '\n'
-                        target_line = format_key(target_key) + '\n'
-                    else:
-                        source_line = source_lines[source_index]
-                        target_line = target_lines[target_index]
-                    diff = line_diff(source_line, target_line)
-                    if not should_skip_consensus(diff):
-                        print(''.join(diff), end='')
-        elif tag == 'delete':
-            # Version 7.7 started eliminating consensus for low coverage.
-            if MICALL_VERSION != '7.7':
-                for key in source_keys[alo:ahi]:
-                    print('- ' + ',  '.join(key))
-        elif tag == 'insert':
-            for key in target_keys[blo:bhi]:
-                print('+ ' + ',  '.join(key))
-        else:
-            assert tag == 'equal', tag
+    compare_columns(source_columns,
+                    target_columns,
+                    target_path,
+                    filename,
+                    should_skip_consensus)
 
 
 def line_diff(source_line, target_line):
@@ -202,56 +202,51 @@ def line_diff(source_line, target_line):
     return lines
 
 
-def should_skip_consensus(diff):
-    if len(diff) == 1:
-        return True
-    assert len(diff) == 4, len(diff)
+def should_skip_consensus(source_fields, target_fields):
     if MICALL_VERSION != '7.7':
         return False
-    # Version 7.7 switched HIV seeds
-    source_fields = diff[0][2:].split(',')
-    target_fields = diff[2][2:].split(',')
-    source_seed = source_fields[1].strip()
-    target_seed = target_fields[1].strip()
-    if (source_seed.startswith('HIV1B-') and
-            target_seed.startswith('HIV1-')):
-        source_fields[1] = target_fields[1]
+    # Version 7.7 started eliminating consensus for low coverage.
+    if target_fields is None:
+        return True
+    if source_fields is None:
+        return False
     return source_fields == target_fields
 
 
-def should_skip_coverage_score(diff):
-    if len(diff) == 1:
+def should_skip_coverage_score(source_fields, target_fields):
+    source_score = source_fields and int(source_fields[4])
+    target_score = target_fields and int(target_fields[4])
+    if source_fields is None:
+        return target_score == 1
+    if target_fields is None:
+        return source_score == 1
+    if source_score == 1 and target_score == 1:
         return True
-    assert len(diff) == 4, len(diff)
+
+    source_coverage = int(source_fields[5])
+    target_coverage = int(target_fields[5])
+    coverage_diff = source_coverage - target_coverage
+    if source_coverage != 0:
+        coverage_change = coverage_diff / float(source_coverage)
+    else:
+        coverage_change = 1.0
+    if coverage_diff < 10 or coverage_change < 0.01 or source_score == target_score:
+        source_fields[4:6] = target_fields[4:6]
+    if source_fields == target_fields:
+        return True
     if MICALL_VERSION != '7.7':
         return False
-    # Version 7.7 switched HIV seeds.
-    source_fields = diff[0][2:].split(',')
-    target_fields = diff[2][2:].split(',')
-    source_seed = source_fields[1].strip()
-    target_seed = target_fields[1].strip()
-    if (source_seed.startswith('HIV1B-') and
-            target_seed.startswith('HIV1-')):
-        source_fields[1] = target_fields[1]
     # Version 7.7 corrected some partial deletions to full deletions.
     sample = source_fields[0]
-    region = source_fields[2].strip()
-    source_score = int(source_fields[4])
-    target_score = int(target_fields[4])
+    region = source_fields[2]
+    target_seed = target_fields[1]
     if (target_score > source_score and
             (sample, target_seed, region) in fixed_deletions):
         source_fields[4] = target_fields[4]
     return source_fields == target_fields
 
 
-def should_skip_g2p_summary(diff):
-    if len(diff) == 1:
-        return True
-    assert len(diff) == 4, len(diff)
-
-    source_fields = diff[0][2:].split(',')
-    target_fields = diff[2][2:].split(',')
-
+def should_skip_g2p_summary(source_fields, target_fields):
     if MICALL_VERSION == '7.7':
         # Version 7.7 stopped making calls on low coverage.
         target_call = target_fields[2]
@@ -259,8 +254,8 @@ def should_skip_g2p_summary(diff):
             return True
 
     # We can ignore small changes in %X4.
-    source_percent = int(source_fields[1])
-    target_percent = int(target_fields[1])
+    source_percent = int(source_fields[1]) if source_fields[1] else -1000
+    target_percent = int(target_fields[1]) if target_fields[1] else -1000
     if abs(source_percent - target_percent) <= 1:
         source_fields[1] = target_fields[1]
     return source_fields == target_fields
@@ -318,18 +313,13 @@ def main():
         compare_files(source_path,
                       target_path,
                       'coverage_scores.csv',
-                      'sample',
-                      'seed',
-                      'region',
-                      'project',
-                      'on.score',
+                      'sample seed region project on.score',
+                      'min.coverage',
                       should_skip=should_skip_coverage_score)
         compare_files(source_path,
                       target_path,
                       'g2p_summary.csv',
-                      'sample',
-                      'X4pct',
-                      'final',
+                      'sample X4pct final',
                       should_skip=should_skip_g2p_summary)
         compare_consensus(source_path, target_path)
         print('Done: ' + run_name)
