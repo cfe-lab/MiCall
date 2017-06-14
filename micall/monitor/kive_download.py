@@ -48,6 +48,8 @@ def parse_args():
 
 
 def kive_login(server_url, user, password):
+    if KiveAPI is None:
+        raise ImportError('Kive API failed to import. Is it installed?')
     kive = KiveAPI(server_url)
     kive.mount('https://', HTTPAdapter(max_retries=20))
     kive.login(user, password)

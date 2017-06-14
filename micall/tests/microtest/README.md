@@ -21,7 +21,7 @@ The scenarios that each file tests are:
 * 2040-HLA-B - exon2 of HLA-B, half have a changed base at position 7 to test
   mixtures in the consensus
 * 2050-V3LOOP - low quality
-* 2060A-V3LOOP - clean read tests g2p with three codon overlap between forward
+* 2060A-V3LOOP - clean read tests g2p with four codon overlap between forward
   and reverse
 * 2070A-PR - seven reads with two deletions and three with one deletion
 * 2080A-V3LOOP - PR contamination below remap threshold
