@@ -29,9 +29,9 @@ The scenarios that each file tests are:
 * 2100A-HCV-1337B-V3LOOP - two samples using same tags on different regions
 * 2110A-V3LOOP - 5 clean codons, then 1 read with a stop codon in codon 6, 2
   low-quality reads in codon 7, 3 reads with partial deletions in codon 8, 4
-  reads with insertions after codon 9, 3 soft clipped reads in codons 10 and 11,
-  1 read with a deletion in codon 12, followed by 6 clean codons with only 10
-  reads covering them. There are also 5 reads that map beyond V3LOOP to
+  reads with insertions after codon 9,
+  4 reads with a deletion in codon 10, followed by 6 clean codons.
+  There are also 5 reads that map beyond V3LOOP to
   demonstrate the G2P overlap counts. (Soft clipping and insertions are not
   being displayed yet with G2P alignment.)
 * 2120A-PR - 29 codons with no coverage, clean codons from 30-46, then 1 read
