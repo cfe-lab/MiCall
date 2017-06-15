@@ -48,7 +48,15 @@ class Sample(object):
         self.extract_num = extract_num
         self.fastq_paths = None
 
-    def find(self, source_folder):
+    def find(self, source_folder, qai_run_names=None):
+        """ Find matching samples in the source folder.
+
+        Puts all the sample names in self.fastq_paths.
+        :param str source_folder: the folder to search for samples that match
+            self.extract_num
+        :param set qai_run_names: a set to add the new run name to as it would
+            be formatted on QAI.
+        """
         run_path = os.path.join(source_folder, 'MiSeq', 'runs', self.run_name)
         if os.path.exists(run_path):
             self.run_name = run_path
@@ -59,13 +67,17 @@ class Sample(object):
             format_string = '%d-%b-%y' if len(run_parts[0]) == 9 else '%d-%b-%Y'
             run_date = datetime.strptime(run_parts[0], format_string)
             base_run_name = run_date.strftime('%y%m%d') + '_' + run_parts[1]
-            pattern = os.path.join(source_folder, 'MiSeq', 'runs', base_run_name+'*')
+            pattern = os.path.join(source_folder,
+                                   'MiSeq',
+                                   'runs',
+                                   base_run_name+'*',
+                                   NEEDS_PROCESSING)
             matches = glob(pattern)
             if len(matches) != 1:
                 raise RuntimeError('Expected one match for {}, but found: {}'.format(
                     pattern,
                     matches))
-            self.run_name = matches[0]
+            self.run_name = os.path.dirname(matches[0])
 
         pattern = os.path.join(self.run_name,
                                'Data',
@@ -77,10 +89,11 @@ class Sample(object):
             raise RuntimeError('No matches found for ' + pattern)
         matches.sort()
         self.fastq_paths = matches
-        run_parts = os.path.basename(self.run_name).split('_')
-        run_date = datetime.strptime(run_parts[0], '%y%m%d')
-        qai_run_name = run_date.strftime('%d-%b-%Y') + '.' + str(run_parts[1])
-        print('LabMiseqRun.import("{}")'.format(qai_run_name))
+        if qai_run_names is not None:
+            run_parts = os.path.basename(self.run_name).split('_')
+            run_date = datetime.strptime(run_parts[0], '%y%m%d')
+            qai_run_name = run_date.strftime('%d-%b-%Y') + '.' + str(run_parts[1])
+            qai_run_names.add(qai_run_name)
 
     def setup_samples(self):
         base_run_name = os.path.basename(self.run_name)
@@ -211,8 +224,11 @@ def main():
         with open(args.samples_csv, 'rU') as samples_csv:
             samples = [Sample(row['run'], row['enum'])
                        for row in DictReader(samples_csv)]
+    qai_run_names = set()
     for sample in samples:
-        sample.find(args.source_folder)
+        sample.find(args.source_folder, qai_run_names)
+    for qai_run_name in sorted(qai_run_names):
+        print('LabMiseqRun.import("{}")'.format(qai_run_name))
     samples.sort(key=lambda s: (s.run_name, s.extract_num))
     runs = []
     for run, run_samples in groupby(samples, key=attrgetter('run_name')):
