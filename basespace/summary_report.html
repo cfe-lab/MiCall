@@ -22,6 +22,8 @@
                     <table class="table bs-table bs-table-justify">
                     <tbody>
                     <tr>
+                    <th title="HIV resistance reports for protease, reverse transcriptase, and integrase drugs"> Resistance reports </th> <td> <a href="{{ result.files.where.ends_with['/resistance_reports.zip'].first.href }}">resistance_reports.zip</a> </td>
+                    </tr><tr>
                     <th title="The amino acid counts for every sample, seed and region"> Amino acid counts </th> <td> <a href="{{ result.files.where.ends_with['/amino.csv'].first.href }}">amino.csv</a> </td>
                     </tr><tr>
                     <th title="The nucleotide consensus sequence for every sample and region"> Nucleotide consensus sequences</th> <td> <a href="{{ result.files.where.ends_with['/conseq.csv'].first.href }}">conseq.csv</a></td>
