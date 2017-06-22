@@ -302,7 +302,7 @@ def merge_reads(reads):
     """ Generator over merged reads.
 
     :param reads: iterable of reads from FastqReader
-    Generator items (merged_bases may be None if merge fails):
+    :return: a generator with items (merged_bases may be None if merge fails):
     (pair_name,
      (read1_name, bases, quality),
      (read2_name, bases, quality),
@@ -342,15 +342,15 @@ def trim_reads(reads, v3loop_ref, score_counts=None):
     """ Generator over reads that are aligned to the reference and trimmed.
 
     :param reads: generator from merge_reads()
-    Generator items (aligned_ref and aligned_seq may be None if merge or trim
-    fails):
+    :param v3loop_ref: nucleotide sequence for V3LOOP
+    :param score_counts: {score: count} to report on the alignment score
+        distribution
+    :return: Generator items (aligned_ref and aligned_seq may be None if merge
+    or trim fails):
     (pair_name,
      (read1_name, bases, quality),
      (read2_name, bases, quality),
      (aligned_ref, aligned_seq))
-    :param v3loop_ref: nucleotide sequence for V3LOOP
-    :param score_counts: {score: count} to report on the alignment score
-        distribution
     """
     # Measured as roughly halfway between HCV reads and V3LOOP reads
     min_v3_alignment_score = 2*len(v3loop_ref)
@@ -416,10 +416,7 @@ def count_reads(reads):
     """ Count unique sequences in trimmed reads.
 
     :param reads: a generator with items:
-    (pair_name,
-     (read1_name, bases, quality),
-     (read2_name, bases, quality),
-     (aligned_ref, aligned_seq))
+    (aligned_ref, aligned_seq)
     :return: [((aligned_ref, aligned_seq), count)] by decreasing count
     """
     counts = Counter(reads)
