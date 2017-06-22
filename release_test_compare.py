@@ -76,8 +76,10 @@ def select_columns(rows, column_names, extra_names=''):
         line = ',   '.join(main_getter(row)) + '\n'
         fields = list(all_getter(row))
         combined_results.append((line, fields))
-    combined_results.sort()
-    return zip(*combined_results)
+    if combined_results:
+        combined_results.sort()
+        return zip(*combined_results)
+    return [], []
 
 
 # noinspection PyUnusedLocal
