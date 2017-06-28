@@ -325,12 +325,12 @@ similar steps to setting up a development workstation. Follow these steps:
         ssh user@server
         tail /data/miseq/micall.log
         ps aux|grep MISEQ_MONITOR.py
-        sudo kill -9 <process id from grep output>
+        sudo kill -int <process id from grep output>
 
 9. Get the code from Github into the server's environment.
 
         ssh user@server
-        cd /usr/local/share/miseq/production/
+        cd /usr/local/share/MiCall
         git fetch
         git checkout tags/vX.Y
 
@@ -340,25 +340,25 @@ similar steps to setting up a development workstation. Follow these steps:
     `production = True`.
 11. Check if the gotoh package is up to date. If not, install it.
 
-        cd /usr/local/share/miseq/development/micall/alignment
-        pip show gotoh
+        cd /usr/local/share/MiCall/micall/alignment
+        pip3 show gotoh
         cat setup.py  # compare version numbers
-        sudo python setup.py install
+        sudo python3 setup.py install
 
 12. Check that the kiveapi package is the same version you tested with. If not,
     do a Kive release first.
 
         cd /usr/local/share/Kive
-        pip show kiveapi
+        pip3 show kiveapi
         cat api/setup.py
 
 13. Start the monitor, and tail the log to see that it begins processing all the
     runs with the new version of the pipeline. Before you launch, change all
     the working folders to be owned by the pipeline group.
 
-        cd /usr/local/share/miseq/production/
-        sudo chgrp -R pipeline /data/miseq
-        python MISEQ_MONITOR.py &>/dev/null &
+        cd /usr/local/share/MiCall
+        sudo chgrp -R micall /data/miseq
+        ./MISEQ_MONITOR.py &
         tail -f /data/miseq/micall.log
 
 14. Launch the basespace virtual machine, and build a new Docker image

@@ -26,7 +26,7 @@ def main():
         seed_group_ids = dict(map(itemgetter('name', 'id'), seed_groups))
         old_regions = session.get_json("/lab_miseq_regions", retries=0)
         regions = dict(((region['name'], region) for region in old_regions))
-        for region_name, region_data in project_config.config['regions'].iteritems():
+        for region_name, region_data in project_config.config['regions'].items():
             region = regions.get(region_name)
             if region is None:
                 seed_group_name = region_data['seed_group']
@@ -50,7 +50,7 @@ def main():
 
         old_projects = session.get_json("/lab_miseq_projects", retries=0)
         projects = dict(((project['name'], project) for project in old_projects))
-        for project_name, project_data in project_config.config['projects'].iteritems():
+        for project_name, project_data in project_config.config['projects'].items():
             project = projects.get(project_name)
             if project is None:
                 project = session.post_json(
