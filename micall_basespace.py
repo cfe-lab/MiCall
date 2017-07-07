@@ -473,7 +473,6 @@ def process_sample(sample_index, run_info, args, pssm):
             open(os.path.join(sample_scratch_path, 'coord_ins.csv'), 'w') as coord_ins_csv, \
             open(os.path.join(sample_scratch_path, 'conseq.csv'), 'w') as conseq_csv, \
             open(os.path.join(sample_scratch_path, 'failed_align.csv'), 'w') as failed_align_csv, \
-            open(os.path.join(sample_scratch_path, 'nuc_variants.csv'), 'w') as nuc_variants_csv, \
             open(os.path.join(sample_scratch_path, 'coverage_summary.csv'), 'w') as coverage_summary_csv:
 
         aln2counts(aligned_csv,
@@ -482,7 +481,6 @@ def process_sample(sample_index, run_info, args, pssm):
                    coord_ins_csv,
                    conseq_csv,
                    failed_align_csv,
-                   nuc_variants_csv,
                    coverage_summary_csv=coverage_summary_csv,
                    clipping_csv=clipping_csv,
                    conseq_ins_csv=conseq_ins_csv,
@@ -647,7 +645,6 @@ def collate_samples(args, run_info):
                  'coord_ins.csv',
                  'conseq.csv',
                  'failed_align.csv',
-                 'nuc_variants.csv',
                  'coverage_scores.csv',
                  'g2p.csv',
                  'g2p_summary.csv',

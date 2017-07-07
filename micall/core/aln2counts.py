@@ -66,9 +66,6 @@ def parse_args():
     parser.add_argument('failed_align_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing any consensus that failed to align')
-    parser.add_argument('nuc_variants_csv',
-                        type=argparse.FileType('w'),
-                        help='CSV containing top nucleotide variants')
 
     return parser.parse_args()
 
@@ -109,7 +106,7 @@ class SequenceReport(object):
         self.g2p_overlap_aminos = None
         self.g2p_overlap_region_name = None
         self.seed_aminos = self.reports = self.reading_frames = None
-        self.inserts = self.consensus = self.variants = None
+        self.inserts = self.consensus = None
         self.coordinate_refs = self.remap_conseqs = None
 
         # {seed_name: {pos: count}}
@@ -119,7 +116,7 @@ class SequenceReport(object):
         self.conseq_insertion_counts = (conseq_insertion_counts or
                                         defaultdict(Counter))
         self.nuc_writer = self.amino_writer = self.conseq_writer = None
-        self.fail_writer = self.nuc_variants_writer = None
+        self.fail_writer = None
 
     def enable_callback(self, callback, file_size):
         """ Enable callbacks to update progress while counting reads.
@@ -333,8 +330,6 @@ class SequenceReport(object):
                     self.write_consensus(self.conseq_writer)
                 if self.fail_writer is not None:
                     self.write_failure(self.fail_writer)
-                if self.nuc_variants_writer is not None:
-                    self.write_nuc_variants(self.nuc_variants_writer)
 
     def read(self, aligned_reads, g2p_overlap_region_name=None):
         """
@@ -354,7 +349,6 @@ class SequenceReport(object):
         self.reading_frames = {}  # {coord_name: reading_frame}
         self.inserts = {}  # {coord_name: set([consensus_index])}
         self.consensus = {}  # {coord_name: consensus_amino_seq}
-        self.variants = {}  # {coord_name: [(count, nuc_seq)]}
 
         # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
@@ -379,35 +373,8 @@ class SequenceReport(object):
             if coordinate_name == g2p_overlap_region_name:
                 self.g2p_overlap_region_name = g2p_overlap_region_name
                 self.g2p_overlap_aminos = report_aminos
-                self.reports[coordinate_name] = report_aminos = []
+                self.reports[coordinate_name] = []
                 self.inserts[coordinate_name] = []
-            max_variants = self.projects.getMaxVariants(coordinate_name)
-            if report_aminos and max_variants:
-                variant_counts = Counter()  # {seq: count}
-                first_amino_index = last_amino_index = None
-                for report_amino in report_aminos:
-                    first_amino_index = report_amino.seed_amino.consensus_nuc_index
-                    if first_amino_index is not None:
-                        break
-                start_pos = first_amino_index or 0
-                for report_amino in reversed(report_aminos):
-                    last_amino_index = report_amino.seed_amino.consensus_nuc_index
-                    if last_amino_index is not None:
-                        break
-                end_pos = (last_amino_index or -1) + 3
-                minimum_variant_length = len(coordinate_ref)/2
-                for row in aligned_reads:
-                    count = int(row['count'])
-                    offset = int(row['offset'])
-                    padded_seq = offset*'-' + row['seq']
-                    clipped_seq = padded_seq[start_pos:end_pos]
-                    stripped_seq = clipped_seq.replace('-', '')
-                    if len(stripped_seq) > minimum_variant_length:
-                        variant_counts[clipped_seq] += count
-                coordinate_variants = [(count, seq)
-                                       for seq, count in variant_counts.items()]
-                coordinate_variants.sort(reverse=True)
-                self.variants[coordinate_name] = coordinate_variants[0:max_variants]
 
     def read_clipping(self, clipping_csv):
         for row in csv.DictReader(clipping_csv):
@@ -603,34 +570,6 @@ class SequenceReport(object):
                      'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
                      'offset': offset,
                      'sequence': consensus})
-
-    @staticmethod
-    def _create_nuc_variants_writer(nuc_variants_file):
-        return csv.DictWriter(nuc_variants_file,
-                              ['seed',
-                               'qcut',
-                               'region',
-                               'index',
-                               'count',
-                               'seq'],
-                              lineterminator=os.linesep)
-
-    def write_nuc_variants_header(self, nuc_variants_file):
-        self.nuc_variants_writer = self._create_nuc_variants_writer(nuc_variants_file)
-        self.nuc_variants_writer.writeheader()
-
-    def write_nuc_variants(self, writer=None):
-        writer = writer or self.nuc_variants_writer
-        regions = sorted(self.variants.keys())
-        for coordinate_name in regions:
-            for i, variant in enumerate(self.variants[coordinate_name]):
-                count, nuc_seq = variant
-                writer.writerow(dict(seed=self.seed,
-                                     qcut=self.qcut,
-                                     region=coordinate_name,
-                                     index=i,
-                                     count=count,
-                                     seq=nuc_seq))
 
     @staticmethod
     def _create_failure_writer(fail_file):
@@ -1056,7 +995,6 @@ def aln2counts(aligned_csv,
                coord_ins_csv,
                conseq_csv,
                failed_align_csv,
-               nuc_variants_csv,
                callback=None,
                coverage_summary_csv=None,
                clipping_csv=None,
@@ -1073,8 +1011,6 @@ def aln2counts(aligned_csv,
     @param conseq_csv:          Open file handle to write consensus sequences.
     @param failed_align_csv:    Open file handle to write sample consensus sequences that failed to
                                 align to the coordinate reference.
-    @param nuc_variants_csv:    Open file handle to write the most frequent nucleotide sequence
-                                variants.
     @param callback: a function to report progress with three optional
         parameters - callback(message, progress, max_progress)
     @param coverage_summary_csv: Open file handle to write coverage depth.
@@ -1097,7 +1033,6 @@ def aln2counts(aligned_csv,
     report.write_consensus_header(conseq_csv)
     report.write_failure_header(failed_align_csv)
     report.write_nuc_header(nuc_csv)
-    report.write_nuc_variants_header(nuc_variants_csv)
     if coverage_summary_csv is None:
         coverage_summary = coverage_writer = None
     else:
@@ -1137,7 +1072,6 @@ def main():
                args.coord_ins_csv,
                args.conseq_csv,
                args.failed_align_csv,
-               args.nuc_variants_csv,
                clipping_csv=args.clipping_csv,
                conseq_ins_csv=args.conseq_ins_csv,
                g2p_aligned_csv=args.g2p_aligned_csv,
