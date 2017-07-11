@@ -272,20 +272,19 @@ and the MiseqQCReport so you can download QC data and upload results.
 
 ### Looking at SAM files ###
 When you don't understand the pipeline's output, it can be helpful to look at
-the raw reads in a sequence viewer like [Tablet][tablet]. Change the settings
-file on your workstation to not delete the temp folders, then run the pipeline
-on a run with a single sample. Look through the temp folders to find the one
-for the step you're interested in. For the remap step, the final remap results
-are stored in a SAM file named for the seed region. You also have to edit the
-`cfe.fasta` file and rename that seed region to "0", because the SAM file uses
-the region name "0" instead of the proper region name. Once you've done that,
-you should be able to open an assembly in Tablet using the SAM file and the
-edited FASTA file. If the SAM file contains multiple regions, you'll probably
-have to sort it:
+the raw reads in a sequence viewer like [Tablet][tablet]. Run the micall_basespace
+script on a run with a single sample, like this:
 
-    samtools view -Sb example.sam > example.bam
-    samtools sort example.bam example.sorted
-    samtools view -h -o example.sorted.sam example.sorted.bam
+    python micall_basespace.py --debug_remap --all_projects --link_run /path/to/run /working/path
+
+The options tell it to write the debug files, use all projects, link to the run
+with the sample you're interested in, and put all the working files in the 
+given folder. Look through the scratch folders under the working path to find
+the one for the sample you're interested in. The remap step writes the mapping
+results as `debug_remapX_debug.sam` and `debug_remapX_debug_ref.fasta`, where
+`X` is the remapping iteration number. You should be able to open an assembly
+in Tablet using those two files. If the SAM file contains multiple regions,
+you'll probably have to sort it with the `micall/utils/sort_sam.py` script.
 
 [tablet]: http://ics.hutton.ac.uk/tablet/
 

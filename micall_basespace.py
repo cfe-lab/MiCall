@@ -175,6 +175,10 @@ def parse_args():
                         '-a',
                         action='store_true',
                         help="Don't exclude any projects or seeds.")
+    parser.add_argument('--debug_remap',
+                        '-d',
+                        action='store_true',
+                        help="Write debug files for remapping steps.")
     return parser.parse_args()
 
 
@@ -429,7 +433,10 @@ def process_sample(sample_index, run_info, args, pssm):
                    excluded_seeds=excluded_seeds)
 
     logger.info('Running remap (%d of %d).', sample_index+1, len(run_info.samples))
-    debug_file_prefix = None  # os.path.join(sample_scratch_path, 'debug')
+    if args.debug_remap:
+        debug_file_prefix = os.path.join(sample_scratch_path, 'debug')
+    else:
+        debug_file_prefix = None
     with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'r') as prelim_csv, \
             open(os.path.join(sample_scratch_path, 'remap.csv'), 'w') as remap_csv, \
             open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'w') as counts_csv, \

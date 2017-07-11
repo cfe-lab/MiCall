@@ -1405,6 +1405,41 @@ R3-seed,R3,15,36,24,0,0,0,9,0,0,0,0,0
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testInsertionsSortedByCount(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
+R3-seed,15,0,8,0,CATGAGCGAAAATTTCAGACTAAACCCCGAGAGCATCAGTTTAAA
+""")
+        expected_insertions = """\
+seed,region,qcut,left,insert,count,before
+R3-seed,R3,15,22,G,9,5
+R3-seed,R3,15,22,K,8,5
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_insertions()
+
+        self.assertMultiLineEqual(expected_insertions,
+                                  self.insertion_file.getvalue())
+
+    def testInsertionsSortedByLeft(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAAAAGAGCATCAGTTTAAA
+""")
+        expected_insertions = """\
+seed,region,qcut,left,insert,count,before
+R3-seed,R3,15,22,G,9,5
+R3-seed,R3,15,31,K,9,7
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_insertions()
+
+        self.assertMultiLineEqual(expected_insertions,
+                                  self.insertion_file.getvalue())
+
     def testInsertionInDifferentReadingFrame(self):
         """ Delete part of the first codon to throw off the reading frame.
         """
@@ -1852,7 +1887,7 @@ R2,GCCATTAAA
                                offset='0',
                                seq='AAATTTAGG')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -1867,7 +1902,7 @@ R2,GCCATTAAA
                                offset='0',
                                seq='AAA---AGG')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -1882,7 +1917,7 @@ R2,GCCATTAAA
                                offset='0',
                                seq='AAA---AGG')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -1897,7 +1932,7 @@ R2,GCCATTAAA
                                offset='0',
                                seq='AAA---AGG')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -1912,7 +1947,7 @@ R2,GCCATTAAA
                                offset='0',
                                seq='AAA------CCGAGA')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -1927,7 +1962,7 @@ R2,GCCATTAAA
                                offset='1',
                                seq='AA---AGG')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -1967,7 +2002,7 @@ R2,GCCATTAAA
                                offset='2',
                                seq='AAA---AGG')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -2016,7 +2051,7 @@ R2,GCCATTAAA
                                offset='1',
                                seq='AAA---CAGTTTTTTTT---CAGCAT')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -2031,7 +2066,7 @@ R2,GCCATTAAA
                                offset='0',
                                seq='AATCGC---CCGAGA')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -2046,7 +2081,7 @@ R2,GCCATTAAA
                                offset='0',
                                seq='AAT------CCGAGA')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -2061,7 +2096,7 @@ R2,GCCATTAAA
                                offset='0',
                                seq='AAT---TCAGACCCCCGAGAGCAT')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -2076,7 +2111,7 @@ R2,GCCATTAAA
                                offset='0',
                                seq='AA--TTCAGACCCCA-GAGAGCAT')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 
@@ -2095,7 +2130,7 @@ R2,GCCATTAAA
                                offset='0',
                                seq='AA--TTCAGACCCC-CGA---CAT')]
 
-        reads = self.report.align_deletions(aligned_reads)
+        reads = list(self.report.align_deletions(aligned_reads))
 
         self.assertEqual(expected_reads, reads)
 

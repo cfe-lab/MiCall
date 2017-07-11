@@ -22,6 +22,7 @@ import gotoh
 
 from micall.core import miseq_logging
 from micall.core import project_config
+from micall.utils.big_counter import BigCounter
 from micall.utils.translation import translate, ambig_dict
 
 AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'
@@ -128,7 +129,7 @@ class SequenceReport(object):
 
         self.callback = callback
         self.callback_max = file_size
-        self.callback_chunk_size = file_size / 100
+        self.callback_chunk_size = file_size // 100
         self.callback_next = self.callback_chunk_size
         self.callback(message='... extracting statistics from alignments',
                       progress=0,
@@ -138,17 +139,14 @@ class SequenceReport(object):
         """
         Parses contents of aligned CSV.
 
-        :param aligned_reads: a List of Dicts from csv.DictReader
+        :param aligned_reads: a sequence of Dicts from csv.DictReader
         """
 
-        # skip everything if aligned_reads is empty
-        if len(aligned_reads) > 0:
-            # these will be the same for all rows, so just assign from the first
-            first_row = aligned_reads[0]
-            self.seed = first_row['refname']
-            self.qcut = first_row['qcut']
-
-        for row in aligned_reads:
+        for i, row in enumerate(aligned_reads):
+            if i == 0:
+                # these will be the same for all rows, so just assign from the first
+                self.seed = row['refname']
+                self.qcut = row['qcut']
             nuc_seq = row['seq']
             offset = int(row['offset'])
             count = int(row['count'])
@@ -249,8 +247,8 @@ class SequenceReport(object):
             self.reading_frames[coordinate_name] = reading_frame
             self.consensus[coordinate_name] = consensus
             coordinate_inserts = {i*3 - reading_frame for i in range(len(consensus))}
-            self.inserts[coordinate_name] = coordinate_inserts
             prev_conseq_index = None
+            prev_consensus_nuc_index = None
             for coord_index in range(len(coordinate_ref)):
                 conseq_index = coord2conseq.get(coord_index)
                 if conseq_index is None:
@@ -269,6 +267,10 @@ class SequenceReport(object):
                             nuc.count_nucleotides('-', min_count)
                 else:
                     seed_amino = frame_seed_aminos[conseq_index]
+                    if prev_conseq_index is None:
+                        coordinate_inserts = {i
+                                              for i in coordinate_inserts
+                                              if i >= seed_amino.consensus_nuc_index}
                     prev_conseq_index = conseq_index
                 if (coordinate_name == self.g2p_overlap_region_name and
                         self.g2p_overlap_aminos):
@@ -278,6 +280,14 @@ class SequenceReport(object):
                 report_aminos.append(ReportAmino(seed_amino, coord_index + 1))
                 if seed_amino.consensus_nuc_index is not None:
                     coordinate_inserts.remove(seed_amino.consensus_nuc_index)
+                    prev_consensus_nuc_index = seed_amino.consensus_nuc_index
+            if prev_consensus_nuc_index is None:
+                coordinate_inserts.clear()
+            else:
+                coordinate_inserts = {i
+                                      for i in coordinate_inserts
+                                      if i <= prev_consensus_nuc_index}
+            self.inserts[coordinate_name] = coordinate_inserts
 
         self.reports[coordinate_name] = report_aminos
 
@@ -637,14 +647,13 @@ class SequenceReport(object):
 
         :param aligned_reads: group of rows from the CSV reader of the aligned
             reads.
-        :return: a list of rows from the CSV reader with codon deletions
+        :return: a generator of rows from the CSV reader with codon deletions
             aligned to the codon boundaries.
         """
-        result = list(aligned_reads)
         if self.remap_conseqs is None:
-            return result
+            yield from aligned_reads
         reading_frames = None
-        for row in result:
+        for row in aligned_reads:
             if reading_frames is None:
                 reading_frames = self.load_reading_frames(row['refname'])
             seq = row['seq']
@@ -672,7 +681,7 @@ class SequenceReport(object):
                     chars.insert(pos, '-')
                 seq = ''.join(chars)
                 row['seq'] = seq
-        return result
+            yield row
 
     def load_reading_frames(self, seed_name):
         """ Calculate reading frames along a consensus sequence.
@@ -889,7 +898,19 @@ class InsertionWriter(object):
 
         # {(seed, region): {pos: insert_count}}
         self.insert_pos_counts = defaultdict(Counter)
-        self.seed = self.qcut = self.nuc_seqs = None
+        self.seed = self.qcut = None
+        self.insert_file_name = getattr(insert_file, 'name', None)
+        self.nuc_seqs = self.create_counter('nuc_read_counts')  # {nuc_seq: count}
+
+    def create_counter(self, base_name):
+        if self.insert_file_name is None:
+            counter = Counter()
+        else:
+            dirname = os.path.dirname(self.insert_file_name)
+            file_prefix = os.path.join(os.path.abspath(dirname),
+                                       base_name)
+            counter = BigCounter(file_prefix=file_prefix)
+        return counter
 
     def start_group(self, seed, qcut):
         """ Start a new group of reads.
@@ -899,7 +920,7 @@ class InsertionWriter(object):
         """
         self.seed = seed
         self.qcut = qcut
-        self.nuc_seqs = Counter()  # {nuc_seq: count}
+        self.nuc_seqs.clear()
 
     def add_nuc_read(self, offset_sequence, count):
         """ Add a read to the group.
@@ -963,7 +984,7 @@ class InsertionWriter(object):
 
         # record insertions to CSV
         for left, counts in insert_counts.items():
-            for insert_seq, count in counts.items():
+            for insert_seq, count in counts.most_common():
                 insert_before = insert_targets.get(left)
                 # Only care about insertions in the middle of the sequence,
                 # so ignore any that come before or after the reference.
