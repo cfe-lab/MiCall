@@ -16,9 +16,10 @@ from multiprocessing.pool import Pool
 
 SAM2ALN_Q_CUTOFFS = [15]  # Q-cutoff for base censoring
 MAX_PROP_N = 0.5                 # Drop reads with more censored bases than this proportion
+SAM_FLAG_IS_FIRST_SEGMENT = 0x40
 
 
-def parseArgs():
+def parse_args():
     parser = argparse.ArgumentParser(
         description='Conversion of SAM data into aligned format.')
     parser.add_argument('remap_csv',
@@ -157,11 +158,11 @@ def merge_pairs(seq1,
 
     Manage discordant base calls on the basis of quality scores, and add any
     insertions.
-    @param seq1: a read sequence of base calls in a string
-    @param seq2: a read sequence of base calls in a string, aligned with seq1
-    @param qual1: a string of quality scores for the base calls in seq1, each
+    @param str seq1: a read sequence of base calls in a string
+    @param str seq2: a read sequence of base calls in a string, aligned with seq1
+    @param str qual1: a string of quality scores for the base calls in seq1, each
         quality score is an ASCII character of the Phred-scaled base quality+33
-    @param qual2: a string of quality scores for the base calls in seq2
+    @param str qual2: a string of quality scores for the base calls in seq2
     @param ins1: { pos: (seq, qual) } a dictionary of insertions to seq1 with
         the zero-based position that follows each insertion as the
         key, and the insertion sequence and quality strings as the
@@ -283,8 +284,7 @@ def is_first_read(flag):
     Interpret bitwise flag from SAM field.
     Returns True or False indicating whether the read is the first read in a pair.
     """
-    IS_FIRST_SEGMENT = 0x40
-    return (int(flag) & IS_FIRST_SEGMENT) != 0
+    return (int(flag) & SAM_FLAG_IS_FIRST_SEGMENT) != 0
 
 
 def matchmaker(remap_csv):
@@ -320,7 +320,7 @@ class PairProcessor(object):
         """ Merge two matched reads into a single aligned read.
 
         Also report insertions and failed merges.
-        @param rows: tuple holding a pair of matched rows - forward and reverse reads
+        @param tuple rows: a pair of matched rows - forward and reverse reads
         @return: (refname, merged_seqs, insert_list, failed_list) where
             merged_seqs is {qcut: seq} the merged sequence for each cutoff level
             insert_list is [{'qname': query_name,
@@ -330,15 +330,8 @@ class PairProcessor(object):
                              'insert': insertion_sequence,
                              'qual': insertion_quality_sequence}] insertions
             relative to the reference sequence.
-            failed_list is [{'qname': query_name,
-                             'qcut': qcut,
-                             'seq1': seq1,
-                             'qual1': qual1,
-                             'seq2': seq2,
-                             'qual2': qual2,
-                             'prop_N': proportion_of_Ns,
-                             'mseq': merged_sequence}] sequences that failed to
-            merge.
+            failed_list is [{'qname': query_name, 'cause': cause}]
+                sequences that failed to merge.
         """
         row1, row2 = rows
         mseqs = {}
@@ -402,8 +395,8 @@ class PairProcessor(object):
             # merge reads
             for qcut in SAM2ALN_Q_CUTOFFS:
                 mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=qcut)
-                prop_N = mseq.count('N') / float(len(mseq.strip('-')))
-                if prop_N > MAX_PROP_N:
+                prop_n = mseq.count('N') / float(len(mseq.strip('-')))
+                if prop_n > MAX_PROP_N:
                     # fail read pair
                     failure_cause = 'manyNs'
                 else:
@@ -447,21 +440,27 @@ def sam2aln(remap_csv,
             failed_csv=None,
             nthreads=None,
             clipping_csv=None):
-    if insert_csv is not None:
+    if insert_csv is None:
+        insert_writer = None
+    else:
         insert_fields = ['qname', 'fwd_rev', 'refname', 'pos', 'insert', 'qual']
         insert_writer = DictWriter(insert_csv,
                                    insert_fields,
                                    lineterminator=os.linesep)
         insert_writer.writeheader()
 
-    if failed_csv is not None:
+    if failed_csv is None:
+        failed_writer = None
+    else:
         failed_fields = ['qname', 'cause']
         failed_writer = DictWriter(failed_csv,
                                    failed_fields,
                                    lineterminator=os.linesep)
         failed_writer.writeheader()
 
-    if clipping_csv is not None:
+    if clipping_csv is None:
+        clipping_writer = None
+    else:
         clipping_fields = ['refname', 'pos', 'count']
         clipping_writer = DictWriter(clipping_csv,
                                      clipping_fields,
@@ -472,11 +471,12 @@ def sam2aln(remap_csv,
     empty_region = defaultdict(Counter)
     aligned = defaultdict(empty_region.copy)  # {rname: {qcut: {mseq: count}}}
     if nthreads:
-        iter = parse_sam_in_threads(remap_csv, nthreads, pair_processor)
+        regions = parse_sam_in_threads(remap_csv, nthreads, pair_processor)
     else:
-        iter = map(pair_processor.process, matchmaker(remap_csv))
+        # noinspection PyTypeChecker
+        regions = map(pair_processor.process, matchmaker(remap_csv))
 
-    for rname, mseqs, insert_list, failed_list in iter:
+    for rname, mseqs, insert_list, failed_list in regions:
         region = aligned[rname]
 
         for qcut, mseq in mseqs.items():
@@ -484,15 +484,15 @@ def sam2aln(remap_csv,
             mseq_counter = region[qcut]
             mseq_counter[mseq] += 1
 
-        if insert_csv is not None:
+        if insert_writer is not None:
             # write out inserts to CSV
             insert_writer.writerows(insert_list)
 
-        if failed_csv is not None:
+        if failed_writer is not None:
             # write out failed read mergers to CSV
             failed_writer.writerows(failed_list)
 
-    if clipping_csv is not None:
+    if clipping_writer is not None:
         pair_processor.write_clipping(clipping_writer)
 
     # write out merged sequences to file
@@ -515,7 +515,7 @@ def sam2aln(remap_csv,
 
 
 def main():
-    args = parseArgs()
+    args = parse_args()
     sam2aln(remap_csv=args.remap_csv,
             aligned_csv=args.aligned_csv,
             insert_csv=args.insert_csv,
