@@ -84,6 +84,10 @@ class ProjectConfig(object):
                     coord_refs[coord_region] = self.getReference(coord_region)
         return coord_refs
 
+    def getAllReferences(self):
+        return {name: self.getReference(name)
+                for name in self.config['regions']}
+
     def getMaxVariants(self, coordinate_region):
         """ Find the maximum number of variants to report for a coordinate
         region.

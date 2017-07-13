@@ -113,8 +113,21 @@ def prelim_map(fastq1,
     reffile_template = os.path.join(work_path, 'reference')
     bowtie2_build.build(ref_path, reffile_template)
 
+    fieldnames = ['qname',
+                  'flag',
+                  'rname',
+                  'pos',
+                  'mapq',
+                  'cigar',
+                  'rnext',
+                  'pnext',
+                  'tlen',
+                  'seq',
+                  'qual']
+    writer = csv.writer(prelim_csv, lineterminator=os.linesep)
+    writer.writerow(fieldnames)
+
     # do preliminary mapping
-    output = {}
     read_gap_open_penalty = rdgopen
     ref_gap_open_penalty = rfgopen
 
@@ -135,29 +148,7 @@ def prelim_map(fastq1,
     for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
         if callback and i % 1000 == 0:
             callback(progress=i)
-        refname = line.split('\t')[2]  # read was mapped to this reference
-        if refname not in output:
-            output.update({refname: []})
-        output[refname].append(line.split('\t')[:11])  # discard optional items
-
-    fieldnames = ['qname',
-                  'flag',
-                  'rname',
-                  'pos',
-                  'mapq',
-                  'cigar',
-                  'rnext',
-                  'pnext',
-                  'tlen',
-                  'seq',
-                  'qual']
-    writer = csv.DictWriter(prelim_csv, fieldnames, lineterminator=os.linesep)
-    writer.writeheader()
-
-    # lines grouped by refname
-    for refname, lines in output.items():
-        for line in lines:
-            writer.writerow(dict(zip(fieldnames, line)))
+        writer.writerow(line.split('\t')[:11])  # discard optional items
 
     if callback:
         # Track progress for second half
@@ -178,12 +169,14 @@ def main():
     parser.add_argument("--gzip", action='store_true', help="<optional> FASTQs are compressed")
 
     args = parser.parse_args()
+    work_path = os.path.dirname(args.prelim_csv.name)
     prelim_map(fastq1=args.fastq1,
                fastq2=args.fastq2,
                prelim_csv=args.prelim_csv,
                rdgopen=args.rdgopen,
                rfgopen=args.rfgopen,
-               gzip=args.gzip)  # defaults to False
+               gzip=args.gzip,  # defaults to False
+               work_path=work_path)
 
 
 if __name__ == '__main__':

@@ -1,9 +1,12 @@
+from csv import DictWriter
 from io import StringIO
+import os
 import unittest
 
 from micall.core import remap
+from micall.core.project_config import ProjectConfig
 from micall.core.remap import is_first_read, is_short_read, \
-    MixedReferenceSplitter
+    MixedReferenceSplitter, write_remap_counts, convert_prelim
 
 
 class RemapTest(unittest.TestCase):
@@ -761,3 +764,318 @@ KJJ
 
         self.assertEqual(expected_rows, rows)
         self.assertEqual({}, splits)
+
+
+class RemapCountsTest(unittest.TestCase):
+    def test_simple(self):
+        report = StringIO()
+        writer = DictWriter(
+            report,
+            ['type', 'count', 'seed_dist', 'other_dist', 'other_seed'],
+            lineterminator=os.linesep)
+        counts = {'r1': 100, 'r2': 200}
+        expected_report = """\
+prelim r1,100,,,
+prelim r2,200,,,
+"""
+
+        write_remap_counts(writer, counts, 'prelim')
+
+        self.assertEqual(expected_report, report.getvalue())
+
+    def test_distance(self):
+        report = StringIO()
+        writer = DictWriter(
+            report,
+            ['type', 'count', 'seed_dist', 'other_dist', 'other_seed'],
+            lineterminator=os.linesep)
+        counts = {'r1': 100, 'r2': 200}
+        distance_report = {'r1': {'seed_dist': 1,
+                                  'other_dist': 10,
+                                  'other_seed': 'r2'},
+                           'r2': {'seed_dist': 2,
+                                  'other_dist': 20,
+                                  'other_seed': 'r1'}}
+        expected_report = """\
+remap r1,100,1,10,r2
+remap r2,200,2,20,r1
+"""
+
+        write_remap_counts(writer, counts, 'remap', distance_report)
+
+        self.assertEqual(expected_report, report.getvalue())
+
+
+class ConvertPrelimTest(unittest.TestCase):
+    def setUp(self):
+        self.projects = ProjectConfig()
+        self.projects.load(StringIO("""\
+            {
+              "regions": {
+                "R1-seed": {
+                  "seed_group": "main",
+                  "reference": ["ACTAAAGGG"]
+                },
+                "R2-seed": {
+                  "seed_group": "main",
+                  "reference": ["ACTAAAGGGAAA"]
+                }
+              }
+            }
+            """))
+        self.sam_file = StringIO()
+        self.remap_counts = StringIO()
+        self.remap_counts_writer = DictWriter(
+            self.remap_counts,
+            ['type', 'filtered_count', 'count'],
+            lineterminator=os.linesep)
+        self.remap_counts_writer.writeheader()
+
+    def test_simple(self):
+        prelim_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+example1,89,R1-seed,1,0,9M,=,1,0,AAACCCTTT,BBBBBBBBB
+""")
+        count_threshold = 2
+        expected_sam_file = """\
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:R1-seed	LN:9
+@SQ	SN:R2-seed	LN:12
+@PG	ID:bowtie2	PN:bowtie2	VN:2.2.3	CL:""
+example1\t89\tR1-seed\t1\t0\t9M\t=\t1\t0\tAAACCCTTT\tBBBBBBBBB
+"""
+        expected_remap_counts = """\
+type,filtered_count,count
+prelim R1-seed,0,1
+"""
+        expected_ref_groups = {}
+
+        ref_groups = convert_prelim(prelim_csv,
+                                    self.sam_file,
+                                    self.remap_counts_writer,
+                                    count_threshold,
+                                    self.projects)
+
+        self.assertEqual(expected_sam_file, self.sam_file.getvalue())
+        self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
+        self.assertEqual(expected_ref_groups, ref_groups)
+
+    def test_two_regions(self):
+        prelim_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+example1,89,R1-seed,1,0,9M,=,1,0,AAACCCTTT,BBBBBBBBB
+example2,89,R2-seed,1,0,9M,=,1,0,AAAACCTTT,BBBBBBBBB
+example3,89,R2-seed,1,0,9M,=,1,0,AAAAACTTT,BBBBBBBBB
+""")
+        count_threshold = 2
+        expected_sam_file = """\
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:R1-seed	LN:9
+@SQ	SN:R2-seed	LN:12
+@PG	ID:bowtie2	PN:bowtie2	VN:2.2.3	CL:""
+example1\t89\tR1-seed\t1\t0\t9M\t=\t1\t0\tAAACCCTTT\tBBBBBBBBB
+example2\t89\tR2-seed\t1\t0\t9M\t=\t1\t0\tAAAACCTTT\tBBBBBBBBB
+example3\t89\tR2-seed\t1\t0\t9M\t=\t1\t0\tAAAAACTTT\tBBBBBBBBB
+"""
+        expected_remap_counts = """\
+type,filtered_count,count
+prelim R1-seed,0,1
+prelim R2-seed,0,2
+"""
+        expected_ref_groups = {}
+
+        ref_groups = convert_prelim(prelim_csv,
+                                    self.sam_file,
+                                    self.remap_counts_writer,
+                                    count_threshold,
+                                    self.projects)
+
+        self.assertEqual(expected_sam_file, self.sam_file.getvalue())
+        self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
+        self.assertEqual(expected_ref_groups, ref_groups)
+
+    def test_long_reads(self):
+        self.maxDiff = None
+        prelim_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+example1,89,R1-seed,1,0,54M,=,1,0,\
+AAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example2,89,R1-seed,1,0,54M,=,1,0,\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+""")
+        count_threshold = 2
+        expected_sam_file = """\
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:R1-seed	LN:9
+@SQ	SN:R2-seed	LN:12
+@PG	ID:bowtie2	PN:bowtie2	VN:2.2.3	CL:""
+example1\t89\tR1-seed\t1\t0\t54M\t=\t1\t0\t\
+AAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example2\t89\tR1-seed\t1\t0\t54M\t=\t1\t0\t\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+"""
+        expected_remap_counts = """\
+type,filtered_count,count
+prelim R1-seed,2,2
+"""
+        expected_ref_groups = {'main': ('R1-seed', 2)}
+
+        ref_groups = convert_prelim(prelim_csv,
+                                    self.sam_file,
+                                    self.remap_counts_writer,
+                                    count_threshold,
+                                    self.projects)
+
+        self.assertEqual(expected_sam_file, self.sam_file.getvalue())
+        self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
+        self.assertEqual(expected_ref_groups, ref_groups)
+
+    def test_star_region(self):
+        self.maxDiff = None
+        prelim_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+example1,89,R1-seed,1,0,54M,=,1,0,\
+AAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example2,89,R1-seed,1,0,54M,=,1,0,\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example3,93,*,*,*,*,*,*,*,\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+""")
+        count_threshold = 2
+        expected_sam_file = """\
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:R1-seed	LN:9
+@SQ	SN:R2-seed	LN:12
+@PG	ID:bowtie2	PN:bowtie2	VN:2.2.3	CL:""
+example1\t89\tR1-seed\t1\t0\t54M\t=\t1\t0\t\
+AAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example2\t89\tR1-seed\t1\t0\t54M\t=\t1\t0\t\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example3\t93\t*\t*\t*\t*\t*\t*\t*\t\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+"""
+        expected_remap_counts = """\
+type,filtered_count,count
+prelim *,0,1
+prelim R1-seed,2,2
+"""
+        expected_ref_groups = {'main': ('R1-seed', 2)}
+
+        ref_groups = convert_prelim(prelim_csv,
+                                    self.sam_file,
+                                    self.remap_counts_writer,
+                                    count_threshold,
+                                    self.projects)
+
+        self.assertEqual(expected_sam_file, self.sam_file.getvalue())
+        self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
+        self.assertEqual(expected_ref_groups, ref_groups)
+
+    def test_best_in_group(self):
+        self.maxDiff = None
+        prelim_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+example1,89,R1-seed,1,0,54M,=,1,0,\
+AAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example2,89,R2-seed,1,0,54M,=,1,0,\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example3,89,R1-seed,1,0,54M,=,1,0,\
+AAAAAATTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example4,89,R2-seed,1,0,54M,=,1,0,\
+AAAAAAAATAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example5,89,R2-seed,1,0,54M,=,1,0,\
+AAAAAAAAAAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+""")
+        count_threshold = 2
+        expected_sam_file = """\
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:R1-seed	LN:9
+@SQ	SN:R2-seed	LN:12
+@PG	ID:bowtie2	PN:bowtie2	VN:2.2.3	CL:""
+example1\t89\tR1-seed\t1\t0\t54M\t=\t1\t0\t\
+AAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example2\t89\tR2-seed\t1\t0\t54M\t=\t1\t0\t\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example3\t89\tR1-seed\t1\t0\t54M\t=\t1\t0\t\
+AAAAAATTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example4\t89\tR2-seed\t1\t0\t54M\t=\t1\t0\t\
+AAAAAAAATAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example5\t89\tR2-seed\t1\t0\t54M\t=\t1\t0\t\
+AAAAAAAAAAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+"""
+        expected_remap_counts = """\
+type,filtered_count,count
+prelim R1-seed,2,2
+prelim R2-seed,3,3
+"""
+        expected_ref_groups = {'main': ('R2-seed', 3)}
+
+        ref_groups = convert_prelim(prelim_csv,
+                                    self.sam_file,
+                                    self.remap_counts_writer,
+                                    count_threshold,
+                                    self.projects)
+
+        self.assertEqual(expected_sam_file, self.sam_file.getvalue())
+        self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
+        self.assertEqual(expected_ref_groups, ref_groups)
+
+    def test_unmapped_read(self):
+        self.maxDiff = None
+        prelim_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+example1,89,R1-seed,1,0,54M,=,1,0,\
+AAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example2,93,R1-seed,1,0,54M,=,1,0,\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+""")
+        count_threshold = 2
+        expected_sam_file = """\
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:R1-seed	LN:9
+@SQ	SN:R2-seed	LN:12
+@PG	ID:bowtie2	PN:bowtie2	VN:2.2.3	CL:""
+example1\t89\tR1-seed\t1\t0\t54M\t=\t1\t0\t\
+AAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example2\t93\tR1-seed\t1\t0\t54M\t=\t1\t0\t\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+"""
+        expected_remap_counts = """\
+type,filtered_count,count
+prelim R1-seed,1,2
+"""
+        expected_ref_groups = {}
+
+        ref_groups = convert_prelim(prelim_csv,
+                                    self.sam_file,
+                                    self.remap_counts_writer,
+                                    count_threshold,
+                                    self.projects)
+
+        self.assertEqual(expected_sam_file, self.sam_file.getvalue())
+        self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
+        self.assertEqual(expected_ref_groups, ref_groups)

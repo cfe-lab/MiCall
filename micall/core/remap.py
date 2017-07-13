@@ -20,6 +20,7 @@ import shutil
 import sys
 from threading import Semaphore
 
+# noinspection PyUnresolvedReferences
 from gotoh import align_it
 import Levenshtein
 
@@ -36,9 +37,12 @@ MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
 MAX_REMAPS = 3                  # Number of remapping attempts if mapping efficiency unsatisfied
 READ_MERGE_CHUNK_SIZE = 100
 READ_MERGE_BUFFER_SIZE = BOWTIE_THREADS * READ_MERGE_CHUNK_SIZE * 10
+SAM_FLAG_IS_UNMAPPED = 0x4
+SAM_FLAG_IS_MATE_UNMAPPED = 0x8
+SAM_FLAG_IS_FIRST_SEGMENT = 0x40
 
 # SAM file format
-fieldnames = [
+SAM_FIELDS = [
     'qname',
     'flag',
     'rname',
@@ -64,8 +68,7 @@ def is_first_read(flag):
     Interpret bitwise flag from SAM field.
     Returns True or False indicating whether the read is the first read in a pair.
     """
-    IS_FIRST_SEGMENT = 0x40
-    return (int(flag) & IS_FIRST_SEGMENT) != 0
+    return (int(flag) & SAM_FLAG_IS_FIRST_SEGMENT) != 0
 
 
 def is_unmapped_read(flag):
@@ -73,8 +76,7 @@ def is_unmapped_read(flag):
     Interpret bitwise flag from SAM field.
     Returns True if the read is unmapped.
     """
-    IS_UNMAPPED = 0x4
-    return (int(flag) & IS_UNMAPPED) != 0
+    return (int(flag) & SAM_FLAG_IS_UNMAPPED) != 0
 
 
 def is_short_read(read_row, max_primer_length):
@@ -104,6 +106,7 @@ def merge_reads(quality_cutoff, read_pair):
         # region mismatch, ignore the read pair.
         return None
     filtered_reads = []
+    rname = None
     for read in read_pair:
         if not read:
             continue
@@ -419,7 +422,8 @@ def write_remap_counts(remap_counts_writer, counts, title, distance_report=None)
     distance_report = distance_report or {}
     for refname in sorted(counts.keys()):
         row = distance_report.get(refname, {})
-        row.update(type=title + ' ' + refname, count=counts[refname])
+        row['type'] = title + ' ' + refname
+        row['count'] = counts[refname]
         remap_counts_writer.writerow(row)
 
 
@@ -474,7 +478,7 @@ def remap(fastq1,
         bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
                                      BOWTIE_BUILD_PATH,
                                      logger)
-    except:
+    except RuntimeError:
         bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH + '-' + BOWTIE_VERSION)
         bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
                                      BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
@@ -511,11 +515,7 @@ def remap(fastq1,
 
     # retrieve reference sequences used for preliminary mapping
     projects = project_config.ProjectConfig.loadDefault()
-    seeds = {}
-    for seed, vals in projects.config['regions'].items():
-        seqs = vals['reference']
-        seeds[seed] = ''.join(seqs)
-    conseqs = dict(seeds)  # copy
+    seeds = projects.getAllReferences()
 
     # record the raw read count
     raw_count = line_counter.count(fastq1, gzip=gzip) // 2  # 4 lines per record in FASTQ, paired
@@ -528,57 +528,12 @@ def remap(fastq1,
     remap_counts_writer.writerow(dict(type='raw', count=raw_count))
 
     # convert preliminary CSV to SAM, count reads
-    if callback:
-        callback(message='... processing preliminary map',
-                 progress=0,
-                 max_progress=raw_count)
-
     with open(samfile, 'w') as f:
-        # write SAM header
-        f.write('@HD\tVN:1.0\tSO:unsorted\n')
-        for rname, refseq in conseqs.items():
-            f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
-        f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
-
-        # iterate through prelim CSV and record counts, transfer rows to SAM
-        refgroups = {}  # { group_name: (refname, count) }
-        reader = csv.DictReader(prelim_csv)
-        row_count = 0
-        for refname, group in itertools.groupby(reader, itemgetter('rname')):
-            count = 0
-            filtered_count = 0
-            for row in group:
-                if callback and row_count % 1000 == 0:
-                    callback(progress=row_count)
-
-                count += 1
-                row_count += 1
-
-                # write SAM row
-                f.write('\t'.join([row[field] for field in fieldnames]) + '\n')
-
-                if is_unmapped_read(row['flag']):
-                    continue
-                if is_short_read(row, max_primer_length=50):
-                    # exclude short reads
-                    continue
-
-                filtered_count += 1
-            if callback:
-                callback(progress=raw_count)
-
-            # report preliminary counts to file
-            remap_counts_writer.writerow(
-                dict(type='prelim %s' % refname,
-                     count=count,
-                     filtered_count=filtered_count))
-            if refname == '*':
-                continue
-            refgroup = projects.getSeedGroup(refname)
-            _best_ref, best_count = refgroups.get(refgroup,
-                                                  (None, count_threshold - 1))
-            if filtered_count > best_count:
-                refgroups[refgroup] = (refname, filtered_count)
+        refgroups = convert_prelim(prelim_csv,
+                                   f,
+                                   remap_counts_writer,
+                                   count_threshold,
+                                   projects)
 
     seed_counts = {best_ref: best_count
                    for best_ref, best_count in refgroups.values()}
@@ -639,7 +594,7 @@ def remap(fastq1,
                                 seeds=seeds,
                                 is_filtered=True,
                                 worker_pool=worker_pool,
-                                filter_coverage=count_threshold/2,  # pairs
+                                filter_coverage=count_threshold//2,  # pairs
                                 distance_report=distance_report)
         new_seed_names = set(conseqs.keys())
         n_remaps += 1
@@ -670,7 +625,7 @@ def remap(fastq1,
         worker_pool.close()
 
     # generate SAM CSV output
-    remap_writer = csv.DictWriter(remap_csv, fieldnames, lineterminator=os.linesep)
+    remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)
     remap_writer.writeheader()
     if new_counts:
         splitter = MixedReferenceSplitter()
@@ -678,7 +633,7 @@ def remap(fastq1,
         # At least one read was mapped, so samfile has relevant data
         with open(samfile, 'rU') as f:
             for fields in splitter.split(f):
-                remap_writer.writerow(dict(zip(fieldnames, fields)))
+                remap_writer.writerow(dict(zip(SAM_FIELDS, fields)))
         for rname, (split_file1, split_file2) in splitter.splits.items():
             refseqs = {rname: conseqs[rname]}
             unmapped_count += map_to_reference(split_file1.name,
@@ -700,7 +655,7 @@ def remap(fastq1,
             new_counts.update(split_counts)
             with open(samfile, 'rU') as f:
                 for fields in splitter.walk(f):
-                    remap_writer.writerow(dict(zip(fieldnames, fields)))
+                    remap_writer.writerow(dict(zip(SAM_FIELDS, fields)))
 
     # write consensus sequences and counts
     remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
@@ -716,6 +671,64 @@ def remap(fastq1,
     # report number of unmapped reads
     remap_counts_writer.writerow(dict(type='unmapped',
                                       count=unmapped_count))
+
+
+def convert_prelim(prelim_csv,
+                   target,
+                   remap_counts_writer,
+                   count_threshold,
+                   projects):
+    """ Convert prelim.csv to a SAM file.
+
+    Also count the reads that mapped to each seed, and find the best seed
+    for each seed group.
+    :param prelim_csv: open CSV file to read from
+    :param target: open text file to write SAM version to
+    :param remap_counts_writer: open CSV writer for counts
+    :param count_threshold: minimum read count to be returned
+    :param projects: project definitions
+    :return dict: { group_name: (refname, count) }
+    """
+    conseqs = projects.getAllReferences()
+    # write SAM header
+    target.write('@HD\tVN:1.0\tSO:unsorted\n')
+    for rname in sorted(conseqs.keys()):
+        refseq = conseqs[rname]
+        target.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
+    target.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
+    # iterate through prelim CSV and record counts, transfer rows to SAM
+    ref_counts = defaultdict(lambda: [0, 0])  # {rname: [filtered_count, count]}
+    reader = csv.DictReader(prelim_csv)
+    for row in reader:
+        counts = ref_counts[row['rname']]
+        counts[1] += 1  # full count
+
+        # write SAM row
+        target.write('\t'.join([row[field] for field in SAM_FIELDS]) + '\n')
+
+        if is_unmapped_read(row['flag']):
+            continue
+        if is_short_read(row, max_primer_length=50):
+            # exclude short reads
+            continue
+
+        counts[0] += 1  # filtered count
+
+    refgroups = {}  # { group_name: (refname, count) }
+    for refname, (filtered_count, count) in sorted(ref_counts.items()):
+        # report preliminary counts to file
+        remap_counts_writer.writerow(
+            dict(type='prelim %s' % refname,
+                 count=count,
+                 filtered_count=filtered_count))
+        if refname == '*':
+            continue
+        refgroup = projects.getSeedGroup(refname)
+        _best_ref, best_count = refgroups.get(refgroup,
+                                              (None, count_threshold - 1))
+        if filtered_count > best_count:
+            refgroups[refgroup] = (refname, filtered_count)
+    return refgroups
 
 
 def map_to_reference(fastq1,
@@ -829,24 +842,21 @@ class MixedReferenceSplitter(object):
     def close_split_file(self, split_file):
         split_file.close()
 
-    def walk(self, sam_lines):
+    @staticmethod
+    def walk(sam_lines):
         for line in sam_lines:
             if line.startswith('@'):
                 continue
             yield line.strip('\n').split('\t')
 
     def split(self, sam_lines):
-        FIRST_READ_FLAG = 64
-        READ_UNMAPPED_FLAG = 4
-        MATE_UNMAPPED_FLAG = 8
-        EITHER_UNMAPPED_MASK = READ_UNMAPPED_FLAG | MATE_UNMAPPED_FLAG
         unmatched = {}
         for fields in self.walk(sam_lines):
             if fields[6] == '=':
                 yield fields[:11]
             else:
                 flags = int(fields[1])
-                if flags & EITHER_UNMAPPED_MASK:
+                if flags & (SAM_FLAG_IS_UNMAPPED | SAM_FLAG_IS_MATE_UNMAPPED):
                     yield fields[:11]
                 else:
                     qname = fields[0]
@@ -873,7 +883,7 @@ class MixedReferenceSplitter(object):
                                           self.create_split_file(rname, 2))
                             self.splits[rname] = ref_splits
                         fastq1, fastq2 = ref_splits
-                        if flags & FIRST_READ_FLAG:
+                        if flags & SAM_FLAG_IS_FIRST_SEGMENT:
                             fwd_read, rev_read = fields, match
                         else:
                             fwd_read, rev_read = match, fields
@@ -883,12 +893,14 @@ class MixedReferenceSplitter(object):
             self.close_split_file(fastq1)
             self.close_split_file(fastq2)
 
-    def get_alignment_score(self, fields):
+    @staticmethod
+    def get_alignment_score(fields):
         for field in fields[11:]:
             if field.startswith('AS:i:'):
                 return int(field[5:])
 
-    def get_split_file_name(self, refname, direction):
+    @staticmethod
+    def get_split_file_name(refname, direction):
         suffix = '_R1.fastq' if direction == 1 else '_R2.fastq'
         return refname + suffix
 
@@ -896,7 +908,8 @@ class MixedReferenceSplitter(object):
         split_file_name = self.get_split_file_name(refname, direction)
         return open(split_file_name, 'w')
 
-    def write_fastq(self, fields, fastq, is_reversed=False):
+    @staticmethod
+    def write_fastq(fields, fastq, is_reversed=False):
         qname = fields[0]
         seq = fields[9]
         quality = fields[10]

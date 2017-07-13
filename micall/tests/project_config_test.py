@@ -279,6 +279,15 @@ ACTGAAAGGG
 
         self.assertDictEqual(expected_refs, coordinate_refs)
 
+    def testGetAllReferences(self):
+        expected_references = {'R1-seed': 'ACTGAAAGGG',
+                               'R1': 'RWNNWR'}
+
+        self.config.load(self.defaultJsonIO)
+        references = self.config.getAllReferences()
+
+        self.assertEqual(expected_references, references)
+
     def testUnknownReference(self):
         self.config.load(self.defaultJsonIO)
         seed_name = 'R-unknown'
