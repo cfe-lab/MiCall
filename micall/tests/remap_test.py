@@ -645,6 +645,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
     def setUp(self):
         super(MixedReferenceSplitterTest, self).setUp()
         self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
+        self.work_path = os.path.dirname(__file__)
 
     def testSimple(self):
         samIO = StringIO(
@@ -655,7 +656,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
             ["r1", "99", "r", "1", "44", "3M", "=", "1", "3", "ACG", "JJJ"],
             ["r1", "147", "r", "1", "44", "3M", "=", "1", "-3", "ACG", "JJJ"]]
 
-        splitter = MixedReferenceSplitter()
+        splitter = MixedReferenceSplitter(self.work_path)
         rows = list(splitter.split(samIO))
 
         self.assertEqual(expected_rows, rows)
@@ -669,7 +670,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
             ["r1", "99", "r", "1", "44", "3M", "=", "1", "3", "ACG", "JJJ"],
             ["r1", "147", "r", "1", "44", "3M", "=", "1", "-3", "ACG", "JJJ"]]
 
-        splitter = MixedReferenceSplitter()
+        splitter = MixedReferenceSplitter(self.work_path)
         rows = list(splitter.split(samIO))
 
         self.assertEqual(expected_rows, rows)
@@ -683,7 +684,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
             ["r1", "107", "r", "1", "44", "3M", "*", "1", "3", "ACG", "JJJ"],
             ["r1", "149", "*", "*", "*", "*", "r", "*", "*", "ACG", "JJJ"]]
 
-        splitter = MixedReferenceSplitter()
+        splitter = MixedReferenceSplitter(self.work_path)
         rows = list(splitter.split(samIO))
 
         self.assertEqual(expected_rows, rows)
@@ -715,7 +716,7 @@ GGT
 KJJ
 """
 
-        splitter = MixedReferenceMemorySplitter()
+        splitter = MixedReferenceMemorySplitter(self.work_path)
         rows = list(splitter.split(samIO))
         is_closed = splitter.is_closed
         splits = splitter.splits
@@ -739,7 +740,7 @@ KJJ
             "r2\t99\tRX\t1\t11\t3M\tRY\t1\t3\tACG\tJJJ\tAS:i:100\n"
             "r2\t147\tRY\t1\t11\t3M\tRX\t1\t-3\tACC\tJJK\tAS:i:200\n")
 
-        splitter = MixedReferenceMemorySplitter()
+        splitter = MixedReferenceMemorySplitter(self.work_path)
         list(splitter.split(samIO))
         splits = splitter.splits
 
@@ -758,7 +759,7 @@ KJJ
             ["r2", "99", "RX", "1", "44", "3M", "RY", "1", "3", "ACG", "JJJ", "AS:i:100"],
             ["r2", "147", "RY", "1", "44", "3M", "RX", "1", "-3", "ACT", "KKK", "AS:i:200"]]
 
-        splitter = MixedReferenceMemorySplitter()
+        splitter = MixedReferenceMemorySplitter(self.work_path)
         rows = list(splitter.walk(samIO))
         splits = splitter.splits
 

@@ -177,58 +177,52 @@ def merge_pairs(seq1,
         will be reported as an N.
     @return: the merged sequence of base calls in a string
     """
-    mseq = ''
     # force second read to be longest of the two
     if len(seq1) > len(seq2):
         seq1, seq2 = seq2, seq1
         qual1, qual2 = qual2, qual1
 
+    seq1_length = len(seq1)
+    mseq = list(seq1) + list(seq2[seq1_length:])
     q_cutoff_char = chr(q_cutoff+33)
     is_forward_started = False
     is_reverse_started = False
     for i, c2 in enumerate(seq2):
         if c2 != '-':
             is_reverse_started = True
-        if i < len(seq1):
+        if i < seq1_length:
             c1 = seq1[i]
             if not is_forward_started:
                 if c1 == '-' and c2 == '-':
                     continue
                 is_forward_started = True
-                mseq = seq1[:i]
             else:
                 if c1 == '-' and c2 == '-':
-                    mseq += '-'
                     continue
             q1 = qual1[i]
             q2 = qual2[i]
             if c1 == c2:  # Reads agree and at least one has sufficient confidence
-                if q1 > q_cutoff_char or q2 > q_cutoff_char:
-                    mseq += c1
-                else:
-                    mseq += 'N'  # neither base is confident
+                if q1 <= q_cutoff_char and q2 <= q_cutoff_char:
+                    mseq[i] = 'N'  # neither base is confident
             else:
                 if abs(ord(q2) - ord(q1)) >= minimum_q_delta:
                     if q1 > max(q2, q_cutoff_char):
-                        mseq += c1
+                        pass
                     elif q2 > max(q1, q_cutoff_char):
-                        mseq += c2
+                        mseq[i] = c2
                     else:
-                        mseq += 'N'
+                        mseq[i] = 'N'
                 else:
-                    mseq += 'N'  # cannot resolve between discordant bases
+                    mseq[i] = 'N'  # cannot resolve between discordant bases
         else:
             # past end of read 1
             if c2 == '-':
-                if is_reverse_started:
-                    mseq += c2
-                else:
-                    mseq += 'n'  # interval between reads
-            elif qual2[i] > q_cutoff_char:
-                mseq += c2
-            else:
-                mseq += 'N'
+                if not is_reverse_started:
+                    mseq[i] = 'n'  # interval between reads
+            elif qual2[i] <= q_cutoff_char:
+                mseq[i] = 'N'
 
+    mseq = ''.join(mseq)
     if ins1 or ins2:
         merged_inserts = merge_inserts(ins1, ins2, q_cutoff, minimum_q_delta)
         for pos in sorted(merged_inserts.keys(), reverse=True):

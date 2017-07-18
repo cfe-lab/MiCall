@@ -10,10 +10,8 @@ import argparse
 from collections import Counter, defaultdict
 import csv
 from functools import partial
-import itertools
 import logging
 import multiprocessing
-from operator import itemgetter
 import os
 import re
 import shutil
@@ -221,9 +219,6 @@ def sam_to_conseqs(samfile,
         pos_nucs = refmap.get(rname)
         if pos_nucs is None:
             pos_nucs = refmap[rname] = defaultdict(Counter)
-            if seeds:
-                for i, nuc in enumerate(seeds[rname], 1):
-                    pos_nucs[i][nuc] = 0
         update_counts(rname,
                       qual1,
                       qual2,
@@ -253,7 +248,7 @@ def sam_to_conseqs(samfile,
                                                   ', '.join(sorted(mixture))))
             debug_reports[key] = ', '.join(sorted(mixtures))
 
-    new_conseqs = counts_to_conseqs(refmap)
+    new_conseqs = counts_to_conseqs(refmap, seeds)
     relevant_conseqs = None
     is_filtering = seeds and is_filtered
 
@@ -355,7 +350,7 @@ def update_counts(rname,
                         counts[nuc + q] += 1
 
 
-def counts_to_conseqs(refmap):
+def counts_to_conseqs(refmap, seeds=None):
     conseqs = {}
     for refname, pos_nucs in refmap.items():
         if not any((any(n > 0 for n in counts.values())
@@ -364,12 +359,18 @@ def counts_to_conseqs(refmap):
             continue
         conseq = ''
         deletion = ''
+        seed = seeds and seeds.get(refname)
         end = max(pos_nucs.keys())+1
+        if seed:
+            end = max(end, len(seed)+1)
         for pos in range(1, end):
-            nuc_counts = pos_nucs[pos]
-            most_common = find_top_token(nuc_counts)
+            nuc_counts = pos_nucs.get(pos)
+            most_common = nuc_counts and find_top_token(nuc_counts) or None
             if most_common is None:
-                conseq += 'N'
+                if seed is None:
+                    conseq += 'N'
+                else:
+                    conseq += seed[pos-1]
             elif most_common == '-':
                 deletion += '-'
             else:
@@ -628,7 +629,7 @@ def remap(fastq1,
     remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)
     remap_writer.writeheader()
     if new_counts:
-        splitter = MixedReferenceSplitter()
+        splitter = MixedReferenceSplitter(work_path)
         split_counts = Counter()
         # At least one read was mapped, so samfile has relevant data
         with open(samfile, 'rU') as f:
@@ -836,7 +837,8 @@ def map_to_reference(fastq1,
 
 
 class MixedReferenceSplitter(object):
-    def __init__(self):
+    def __init__(self, work_path):
+        self.work_path = work_path
         self.splits = {}
 
     def close_split_file(self, split_file):
@@ -899,10 +901,9 @@ class MixedReferenceSplitter(object):
             if field.startswith('AS:i:'):
                 return int(field[5:])
 
-    @staticmethod
-    def get_split_file_name(refname, direction):
+    def get_split_file_name(self, refname, direction):
         suffix = '_R1.fastq' if direction == 1 else '_R2.fastq'
-        return refname + suffix
+        return os.path.join(self.work_path, refname + suffix)
 
     def create_split_file(self, refname, direction):
         split_file_name = self.get_split_file_name(refname, direction)
@@ -972,6 +973,8 @@ def find_top_token(base_counts):
             break
         if token < top_token:
             top_token = token
+    if top_token == 'N':
+        top_token = None
     return top_token
 
 
@@ -1003,6 +1006,7 @@ def main():
                         action='store_true')
 
     args = parser.parse_args()
+    work_path = os.path.dirname(args.remap_csv.name)
     remap(fastq1=args.fastq1,
           fastq2=args.fastq2,
           prelim_csv=args.prelim_csv,
@@ -1011,6 +1015,7 @@ def main():
           remap_conseq_csv=args.remap_conseq_csv,
           unmapped1=args.unmapped1,
           unmapped2=args.unmapped2,
+          work_path=work_path,
           gzip=args.gzip)  # defaults to False
 
 if __name__ == '__main__':
