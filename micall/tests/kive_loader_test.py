@@ -461,7 +461,7 @@ class KiveLoaderTest(unittest.TestCase):
         # noinspection PyUnusedLocal
         def fetch_run_status(run):
             if not is_kive_running:
-                raise StandardError('Kive connection failed.')
+                raise RuntimeError('Kive connection failed.')
             return RUN_COMPLETED
 
         self.loader.fetch_run_status = fetch_run_status
@@ -484,7 +484,7 @@ class KiveLoaderTest(unittest.TestCase):
     def test_failed_quality_download(self):
         # noinspection PyUnusedLocal
         def download_quality(folder):
-            raise StandardError('Mock quality failure.')
+            raise RuntimeError('Mock quality failure.')
 
         self.loader.download_quality = download_quality
 
@@ -540,3 +540,11 @@ class KiveLoaderTest(unittest.TestCase):
 
         self.assertEqual(expected_launched1, launched1)
         self.assertEqual(expected_launched2, launched2)
+
+    def test_get_sample_number(self):
+        fastq_name = '1234A-DEL-DRT-PR-RT_S71_L001_R1_001.fastq.gz'
+        expected_sample_number = 71
+
+        sample_number = self.loader.get_sample_number(fastq_name)
+
+        self.assertEqual(expected_sample_number, sample_number)

@@ -592,7 +592,7 @@ def remap(fastq1,
         # regenerate consensus sequences
         distance_report = {}
         conseqs = build_conseqs(samfile,
-                                seeds=seeds,
+                                seeds=conseqs,
                                 is_filtered=True,
                                 worker_pool=worker_pool,
                                 filter_coverage=count_threshold//2,  # pairs

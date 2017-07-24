@@ -118,41 +118,6 @@ def build_conseqs(conseqs_file,
     return result
 
 
-def build_hla_b_seqs(sample_file):
-    """
-    Build JSON hashes for HLA-B sequence records
-
-    @param sample_file: open file that holds the variant info
-    """
-
-    result = []
-    expected_exon_prefix = 'HLA-B-exon'
-    # sample,seed,qcut,region,index,count,seq
-    rows = csv.DictReader(sample_file)
-    for row in rows:
-        ind = int(row['index'])
-
-        sample_name = row['sample']
-        exon = row['region']
-        if exon.startswith(expected_exon_prefix):
-            exon_number = int(exon[len(expected_exon_prefix):])
-        else:
-            raise ValueError('Unexpected exon {!r}', exon)
-        qcutoff = row['qcut']
-        cnt = row['count']
-        curr_seq = row['seq']
-
-        result.append({'samplename': sample_name,
-                       'testcode': None,
-                       'exon': exon_number,
-                       'qcutoff': qcutoff,
-                       'ind': ind,
-                       'cnt': cnt,
-                       'string': curr_seq})
-
-    return result
-
-
 def build_review_decisions(coverage_file,
                            collated_counts_file,
                            sample_sheet,
@@ -265,7 +230,6 @@ def upload_review_to_qai(coverage_file,
                          run,
                          sample_sheet,
                          conseqs,
-                         hla_b_seqs,
                          session):
     """ Create a review.
 
@@ -276,8 +240,6 @@ def upload_review_to_qai(coverage_file,
     @param sample_sheet: details of the run so we can tell which sample used
         which tags
     @param conseqs: an array of JSON hashes to pass to QAI for the conseq
-        child records
-    @param hla_b_seqs: an array of JSON hashes to pass to QAI for the hla_b_seq
         child records
     @param session: the QAI session
     """
@@ -303,8 +265,7 @@ def upload_review_to_qai(coverage_file,
                       {'runid': runid,
                        'pipeline_id': find_pipeline_id(session),
                        'lab_miseq_review_decisions': decisions,
-                       'lab_miseq_conseqs': conseqs,
-                       'lab_miseq_hla_b_seqs': hla_b_seqs})
+                       'lab_miseq_conseqs': conseqs})
 
 
 def clean_runname(runname):
@@ -391,15 +352,12 @@ def process_folder(result_folder):
                                     run,
                                     sample_sheet,
                                     ok_sample_regions)
-        with open(nuc_variants, "rU") as f:
-            hla_b_seqs = build_hla_b_seqs(f)
         with open(coverage_scores, "rU") as f, open(collated_counts, "rU") as f2:
             upload_review_to_qai(f,
                                  f2,
                                  run,
                                  sample_sheet,
                                  conseqs,
-                                 hla_b_seqs,
                                  session)
 
 

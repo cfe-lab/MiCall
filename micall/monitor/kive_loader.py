@@ -189,7 +189,8 @@ class KiveLoader(object):
         if self.folders is None or now >= self.folder_scan_time:
             self.folder_scan_time = now + timedelta(seconds=self.folder_delay)
             new_folders = self.find_folders()
-            if self.folders is None or set(new_folders).difference(self.folders):
+            old_folders = self.folders or []
+            if self.folders is None or set(new_folders).difference(old_folders):
                 # First time or we found a new folder
                 self.folders = new_folders
                 self.reset_folders()
@@ -341,8 +342,7 @@ class KiveLoader(object):
     def is_quality_control_uploaded(folder):
         return os.path.exists(os.path.join(folder, settings.QC_UPLOADED))
 
-    @staticmethod
-    def find_files(folder):
+    def find_files(self, folder):
         """ Find FASTQ files within a folder.
 
         @return: a list of paths to the files within the folder.
@@ -364,7 +364,7 @@ class KiveLoader(object):
                             failed_demultiplexing,
                             filepath)
 
-        return sorted(gz_files)
+        return sorted(gz_files, key=self.get_sample_number, reverse=True)
 
     def prepare_kive_dataset(self, filename, description, cdt):
         """ Upload a dataset to Kive, if it's not already.
@@ -544,6 +544,11 @@ class KiveLoader(object):
         short_name, sample_num = fastq1.name.split('_')[:2]
         sample_name = short_name + '_' + sample_num
         return sample_name
+
+    @staticmethod
+    def get_sample_number(fastq1):
+        match = re.match(r'.*_S(\d+)_', fastq1)
+        return int(match.group(1))
 
     def get_run_name(self, pipeline_id, sample_name):
         pipeline = self.pipelines[pipeline_id]
