@@ -372,7 +372,10 @@ def counts_to_conseqs(refmap, seeds=None):
                 else:
                     conseq += seed[pos-1]
             elif most_common == '-':
-                deletion += '-'
+                if seed is None:
+                    deletion += '-'
+                else:
+                    conseq += seed[pos-1]
             else:
                 if deletion:
                     if len(deletion) % 3 != 0:

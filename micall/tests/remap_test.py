@@ -392,6 +392,34 @@ class SamToConseqsTest(unittest.TestCase):
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
+    def testSeedsWithPartialDeletion(self):
+        samIO = StringIO(
+            "@SQ\tSN:test\n"
+            "test1\t99\ttest\t4\t44\t1M1D1M\t=\t10\t3\tTT\tJJ\n"
+        )
+        seeds = {'test': 'ACATTTGGGCAC'}
+        expected_conseqs = {'test': 'ACATTTGGGCAC'}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       quality_cutoff=32)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
+    def testSeedsWithCodonDeletion(self):
+        samIO = StringIO(
+            "@SQ\tSN:test\n"
+            "test1\t99\ttest\t1\t44\t3M3D3M\t=\t10\t6\tACAGGG\tJJJJJJ\n"
+        )
+        seeds = {'test': 'ACATTTGGGCAC'}
+        expected_conseqs = {'test': 'ACATTTGGGCAC'}
+
+        conseqs = remap.sam_to_conseqs(samIO,
+                                       seeds=seeds,
+                                       quality_cutoff=32)
+
+        self.assertDictEqual(expected_conseqs, conseqs)
+
     def testDebugReports(self):
         samIO = StringIO(
             "@SQ\tSN:test\n"
