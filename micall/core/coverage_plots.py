@@ -187,7 +187,7 @@ def coverage_plot(amino_csv,
             plt.step(x, y_insertions, where='mid', label='insertions', zorder=95)
             plt.step(x, y_low_quality, where='mid', label='low quality', zorder=94)
             plt.step(x, y_g2p_overlap, where='mid', label='G2P overlap', zorder=93)
-            plt.legend(loc='best', fontsize=fontsize, fancybox=True)
+            plt.legend(loc='best', fontsize=fontsize, fancybox=True, ncol=2)
             figname_parts.insert(-1, 'details')
             paths.append(save_figure(coverage_maps_path, figname_parts))
             plt.cla()  # clear the axis, but don't remove the axis itself.
