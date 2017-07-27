@@ -475,6 +475,7 @@ class SamToConseqsTest(unittest.TestCase):
 
         conseqs = remap.sam_to_conseqs(samIO,
                                        seeds=seeds,
+                                       original_seeds=seeds,
                                        is_filtered=True,
                                        distance_report=distances)
 
@@ -496,6 +497,7 @@ class SamToConseqsTest(unittest.TestCase):
 
         conseqs = remap.sam_to_conseqs(samIO,
                                        seeds=seeds,
+                                       original_seeds=seeds,
                                        is_filtered=True)
 
         self.assertDictEqual(expected_conseqs, conseqs)
@@ -515,6 +517,7 @@ class SamToConseqsTest(unittest.TestCase):
 
         conseqs = remap.sam_to_conseqs(samIO,
                                        seeds=seeds,
+                                       original_seeds=seeds,
                                        is_filtered=True)
 
         self.assertDictEqual(expected_conseqs, conseqs)
@@ -534,6 +537,7 @@ class SamToConseqsTest(unittest.TestCase):
 
         conseqs = remap.sam_to_conseqs(samIO,
                                        seeds=seeds,
+                                       original_seeds=seeds,
                                        is_filtered=True)
 
         self.assertDictEqual(expected_conseqs, conseqs)
@@ -555,6 +559,7 @@ class SamToConseqsTest(unittest.TestCase):
 
         conseqs = remap.sam_to_conseqs(samIO,
                                        seeds=seeds,
+                                       original_seeds=seeds,
                                        is_filtered=True,
                                        filter_coverage=2)
 
@@ -591,6 +596,7 @@ class SamToConseqsTest(unittest.TestCase):
 
         conseqs = remap.sam_to_conseqs(samIO,
                                        seeds=seeds,
+                                       original_seeds=seeds,
                                        is_filtered=True,
                                        distance_report=distances)
 
@@ -613,6 +619,7 @@ class SamToConseqsTest(unittest.TestCase):
 
         conseqs = remap.sam_to_conseqs(samIO,
                                        seeds=seeds,
+                                       original_seeds=seeds,
                                        is_filtered=True,
                                        filter_coverage=2)
 
@@ -653,6 +660,7 @@ class SamToConseqsTest(unittest.TestCase):
 
         conseqs = remap.sam_to_conseqs(samIO,
                                        seeds=seeds,
+                                       original_seeds=seeds,
                                        is_filtered=True,
                                        filter_coverage=2)
 

@@ -164,7 +164,8 @@ def sam_to_conseqs(samfile,
                    is_filtered=False,
                    worker_pool=None,
                    filter_coverage=1,
-                   distance_report=None):
+                   distance_report=None,
+                   original_seeds=None):
     """ Build consensus sequences for each reference from a SAM file.
 
     @param samfile: an open file in the SAM format containing reads with their
@@ -187,6 +188,8 @@ def sam_to_conseqs(samfile,
     @param distance_report: empty dictionary or None. Dictionary will return:
         {rname: {'seed_dist': seed_dist, 'other_dist': other_dist,
         'other_seed': other_seed}}
+    @param original_seeds: {name: sequence} Original seed references used in
+        the distance report.
     @return: {reference_name: consensus_sequence}
     """
 
@@ -250,7 +253,7 @@ def sam_to_conseqs(samfile,
 
     new_conseqs = counts_to_conseqs(refmap, seeds)
     relevant_conseqs = None
-    is_filtering = seeds and is_filtered
+    is_filtering = original_seeds and is_filtered
 
     gap_open_penalty = 15
     gap_extend_penalty = 3
@@ -277,7 +280,7 @@ def sam_to_conseqs(samfile,
 
             other_seed = other_dist = None
             for seed_name in sorted(new_conseqs.keys()):
-                seed_ref = seeds[seed_name]
+                seed_ref = original_seeds[seed_name]
                 aligned_seed, aligned_conseq, _score = align_it(seed_ref,
                                                                 relevant_conseq,
                                                                 gap_open_penalty,
@@ -391,7 +394,8 @@ def build_conseqs(samfilename,
                   is_filtered=False,
                   worker_pool=None,
                   filter_coverage=1,
-                  distance_report=None):
+                  distance_report=None,
+                  original_seeds=None):
     """ Build the new consensus sequences from the mapping results.
 
     @param samfilename: the mapping results in SAM format
@@ -408,6 +412,8 @@ def build_conseqs(samfilename,
     @param distance_report: empty dictionary or None. Dictionary will return:
         {rname: {'seed_dist': seed_dist, 'other_dist': other_dist,
         'other_seed': other_seed}}
+    @param original_seeds: {name: sequence} Original seed references used in
+        the distance report.
     @return: {reference_name: consensus_sequence}
     """
     with open(samfilename, 'rU') as samfile:
@@ -417,7 +423,8 @@ def build_conseqs(samfilename,
                                  is_filtered=is_filtered,
                                  worker_pool=worker_pool,
                                  filter_coverage=filter_coverage,
-                                 distance_report=distance_report)
+                                 distance_report=distance_report,
+                                 original_seeds=original_seeds)
 
     return conseqs
 
@@ -599,7 +606,8 @@ def remap(fastq1,
                                 is_filtered=True,
                                 worker_pool=worker_pool,
                                 filter_coverage=count_threshold//2,  # pairs
-                                distance_report=distance_report)
+                                distance_report=distance_report,
+                                original_seeds=seeds)
         new_seed_names = set(conseqs.keys())
         n_remaps += 1
         write_remap_counts(remap_counts_writer,
