@@ -488,7 +488,7 @@ def sam2aln(remap_csv,
 
     for rname, mseqs, insert_list, failed_list in regions:
         # noinspection PyTypeChecker
-        region = aligned[str(rname)]  # str() works around a PyCharm bug.
+        region = aligned[rname]
 
         for qcut, mseq in mseqs.items():
             # collect identical merged sequences
