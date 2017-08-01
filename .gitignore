@@ -19,7 +19,6 @@
 /micall/tests/microtest/Results
 !/micall/tests/working/*.launch
 /timing.*
-*.bt2
 .DS_Store
 */.DS_Store
 *.log

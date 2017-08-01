@@ -12,7 +12,6 @@ from collections import Counter, defaultdict
 from csv import DictReader, DictWriter
 import os
 import re
-from multiprocessing.pool import Pool
 
 from micall.utils.big_counter import BigCounter
 
@@ -39,7 +38,6 @@ def parse_args():
     parser.add_argument('clipping_csv',
                         type=argparse.FileType('w'),
                         help='<output> CSV containing count of soft-clipped reads at each position')
-    parser.add_argument('-p', type=int, default=None, help='(optional) number of threads')
 
     return parser.parse_args()
 
@@ -414,22 +412,6 @@ class PairProcessor(object):
                 clipping_writer.writerow(row)
 
 
-def parse_sam_in_threads(remap_csv, nthreads, pair_processor):
-    """ Call parse_sam() in multiple processes.
-
-    Launch a multiprocessing pool, walk through the iterator, and then be sure
-    to close the pool at the end.
-    """
-    pool = Pool(processes=nthreads)
-    try:
-        reads = pool.imap(pair_processor.process, iterable=matchmaker(remap_csv), chunksize=100)
-        for read in reads:
-            yield read
-    finally:
-        pool.close()
-        pool.join()
-
-
 class CounterFactory:
     def __init__(self, aligned_file):
         self.aligned_file_name = getattr(aligned_file, 'name', None)
@@ -447,7 +429,6 @@ def sam2aln(remap_csv,
             aligned_csv,
             insert_csv=None,
             failed_csv=None,
-            nthreads=None,
             clipping_csv=None):
     if insert_csv is None:
         insert_writer = None
@@ -480,11 +461,8 @@ def sam2aln(remap_csv,
     counter_factory = CounterFactory(aligned_csv)
     empty_region = defaultdict(counter_factory.create_counter)
     aligned = defaultdict(empty_region.copy)  # {rname: {qcut: {mseq: count}}}
-    if nthreads:
-        regions = parse_sam_in_threads(remap_csv, nthreads, pair_processor)
-    else:
-        # noinspection PyTypeChecker
-        regions = map(pair_processor.process, matchmaker(remap_csv))
+    # noinspection PyTypeChecker
+    regions = map(pair_processor.process, matchmaker(remap_csv))
 
     for rname, mseqs, insert_list, failed_list in regions:
         # noinspection PyTypeChecker
@@ -528,8 +506,7 @@ def main():
             aligned_csv=args.aligned_csv,
             insert_csv=args.insert_csv,
             failed_csv=args.failed_csv,
-            clipping_csv=args.clipping_csv,
-            nthreads=args.p)
+            clipping_csv=args.clipping_csv)
 
 if __name__ == '__main__':
     main()
