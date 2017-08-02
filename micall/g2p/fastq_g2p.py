@@ -7,9 +7,11 @@ from itertools import takewhile
 import os
 import re
 
+# noinspection PyUnresolvedReferences
 from gotoh import align_it, align_it_aa
 
 from micall.core.sam2aln import merge_pairs, SAM2ALN_Q_CUTOFFS
+from micall.utils.big_counter import BigCounter
 from micall.utils.translation import translate, reverse_and_complement
 from micall.core.project_config import ProjectConfig
 
@@ -64,6 +66,12 @@ def fastq_g2p(pssm,
               min_count=1,
               min_valid=1,
               min_valid_percent=0.0):
+    g2p_filename = getattr(g2p_csv, 'name', None)
+    if g2p_filename is None:
+        count_prefix = None
+    else:
+        working_path = os.path.dirname(g2p_csv.name)
+        count_prefix = os.path.join(working_path, 'read_counts')
     project_config = ProjectConfig.loadDefault()
     hiv_seed = project_config.getReference(HIV_SEED_NAME)
     coordinate_ref = project_config.getReference(COORDINATE_REF_NAME)
@@ -72,9 +80,12 @@ def fastq_g2p(pssm,
     merged_reads = merge_reads(reader)
     trimmed_reads = trim_reads(merged_reads, v3loop_ref)
     mapped_reads = write_unmapped_reads(trimmed_reads, unmapped1, unmapped2)
-    read_counts = count_reads(mapped_reads)
+    read_counts = count_reads(mapped_reads, count_prefix)
     if aligned_csv is not None:
-        write_aligned_reads(read_counts, aligned_csv, hiv_seed, v3loop_ref)
+        read_counts = write_aligned_reads(read_counts,
+                                          aligned_csv,
+                                          hiv_seed,
+                                          v3loop_ref)
 
     write_rows(pssm,
                read_counts,
@@ -116,12 +127,9 @@ def write_rows(pssm,
          'comment'],
         lineterminator=os.linesep)
     g2p_writer.writeheader()
+    top_reads, skip_count = get_top_counts(read_counts, min_count)
     counts = Counter()
-    skip_count = 0
-    for (ref, s), count in read_counts:
-        if count < min_count:
-            skip_count += count
-            continue
+    for (ref, s), count in top_reads:
         seq = s.replace('-', '')
 
         row = _build_row(seq, count, counts, pssm)
@@ -309,12 +317,15 @@ def merge_reads(reads):
      merged_bases)
     """
     for pair_name, (r1_name, seq1, qual1), (r2_name, seq2, qual2) in reads:
-        seq2_rev = reverse_and_complement(seq2)
-        aligned1, aligned2, score = align_it(seq1,
-                                             seq2_rev,
-                                             GAP_OPEN_COST,
-                                             GAP_EXTEND_COST,
-                                             USE_TERMINAL_COST)
+        if not (seq1 and seq2):
+            score = -1
+        else:
+            seq2_rev = reverse_and_complement(seq2)
+            aligned1, aligned2, score = align_it(seq1,
+                                                 seq2_rev,
+                                                 GAP_OPEN_COST,
+                                                 GAP_EXTEND_COST,
+                                                 USE_TERMINAL_COST)
         if score >= MIN_PAIR_ALIGNMENT_SCORE and aligned1[0] != '-':
             aligned_qual1 = align_quality(aligned1, qual1)
             aligned_qual2 = align_quality(aligned2, reversed(qual2))
@@ -412,15 +423,42 @@ def write_fastq_read(fastq, pair_name, read):
 """.format(pair_name, read_name, bases, quality))
 
 
-def count_reads(reads):
+def count_reads(reads, file_prefix):
     """ Count unique sequences in trimmed reads.
 
     :param reads: a generator with items:
     (aligned_ref, aligned_seq)
-    :return: [((aligned_ref, aligned_seq), count)] by decreasing count
+    :param file_prefix: used to store temp files for counting sequences
+    :return: generator of ((aligned_ref, aligned_seq), count)
     """
-    counts = Counter(reads)
-    return counts.most_common()
+    if file_prefix is None:
+        all_counts = Counter()
+    else:
+        all_counts = BigCounter(file_prefix)
+    for aligned_ref, aligned_seq in reads:
+        key = aligned_ref + '\t' + aligned_seq
+        all_counts[key] += 1
+    for key, count in all_counts.items():
+        yield tuple(key.split('\t')), count
+
+
+def get_top_counts(read_counts, min_count=1):
+    """ Report most common reads, in descending order.
+
+    :param read_counts: a generator with items ((aligned_ref, aligned_seq), count)
+    :param min_count: the minimum count to be included in the result
+    :return: [((aligned_ref, aligned_seq), count)], ignored_count where the
+        items are by descending count, and the ignored_count is the total of
+        all counts less than min_count
+    """
+    counts = Counter()
+    ignored_count = 0
+    for read, count in read_counts:
+        if count < min_count:
+            ignored_count += count
+        else:
+            counts[read] += count
+    return counts.most_common(), ignored_count
 
 
 def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
@@ -447,7 +485,9 @@ def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
     v3_offset = sum(1 for _ in takewhile(lambda c: c == '-', v3_vs_seed))
     seed_positions = list(zip(seed_vs_v3[v3_offset:], v3_vs_seed[v3_offset:]))
 
-    for rank, ((v3_vs_read, read_vs_v3), count) in enumerate(counts):
+    for rank, read_count in enumerate(counts):
+        yield read_count
+        (v3_vs_read, read_vs_v3), count = read_count
         is_started = False
         seq_offset = 0
         seq = ''

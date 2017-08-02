@@ -1,7 +1,6 @@
 # Steps and their input / output files #
 
-* `micall_basespace.summarize_run`: choose tiles and cycles to censor for high
-    error rates.
+* `micall_basespace.summarize_run`: extract phiX error rates from MiSeq data.
   * in - InterOp folder
   * in - read lengths from RunInfo.xml or BaseSpace run parameters
   * quality.csv - QC error rate data, grouped by tile
@@ -83,6 +82,8 @@
   * coverage_maps.tar - binary file &rarr; untar in results/coverage_maps
   * coverage_scores.csv - downloaded - a score for each region based on the
     coverage at key positions.
+* `cascade_report`: summarize how many reads made it through each step of the
+    pipeline. 
 
 [fastq_g2p_design]: http://cfe-lab.github.io/MiCall/design/fastq_g2p
 
@@ -200,22 +201,22 @@
   * seq - the amino acid sequence that was used
   * aligned - how the amino acid sequence aligned with the reference sequence
   * error - reason for rejecting a sequence
-    * low quality - more than half of the sequence had read quality with phred
+    * `low quality` - more than half of the sequence had read quality with phred
         score < 33
-    * notdiv3 - the sequence did not end on a codon boundary
-    * zerolength - none of the sequence mapped to the expected portion of the
+    * `notdiv3` - the sequence did not end on a codon boundary
+    * `zerolength` - none of the sequence mapped to the expected portion of the
         reference sequence
-    * cysteines - the start or end of the amino acid sequence was not a cycsteine
-    * > 2 ambiguous - more than one amino acid was ambiguous, or one position
-        more than two possible amino acids
-    * stop codons - the sequence contained a stop codon
-    * length - the amino acid sequence length was outside of the range 32 to 40
-    * failed to align - the nucleotide sequence failed to align with the reference
-    * count < 3 - this is a summary line reporting how many reads were rejected
+    * `cysteines` - the start or end of the amino acid sequence was not a cycsteine
+    * `> 2 ambiguous` - more than one amino acid was ambiguous, or one position
+        had more than two possible amino acids
+    * `stop codons` - the sequence contained a stop codon
+    * `length` - the amino acid sequence length was outside of the range 32 to 40
+    * `failed to align` - the nucleotide sequence failed to align with the reference
+    * `count < 3` - this is a summary line reporting how many reads were rejected
         for low counts
   * comment - a warning for sequences that had a problem but were good enough
     to score
-    * ambiguous - one amino acid had two possible values
+    * `ambiguous` - one amino acid had two possible values
 * g2p_summary.csv - summarizes the sample and calls it either R5 or X4
   * mapped - the number of reads that mapped to V3LOOP
   * valid - the number of those reads that were valid sequences and not errors

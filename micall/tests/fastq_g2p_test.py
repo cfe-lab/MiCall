@@ -5,7 +5,9 @@ import unittest
 from micall.g2p.pssm_lib import Pssm
 from micall.g2p.fastq_g2p import fastq_g2p, FastqReader, FastqError, merge_reads, \
     trim_reads, count_reads, write_rows, write_unmapped_reads, write_aligned_reads, \
-    extract_target
+    extract_target, get_top_counts
+
+TEMP_PREFIX = os.path.join(os.path.dirname(__file__), 'g2p_temp')
 
 
 class DummyFile(StringIO):
@@ -806,12 +808,51 @@ class CountReadsTest(unittest.TestCase):
         reads = [("TGTACAAGACACACA", "TGTACAAGA------"),
                  ("TGTACAAGACACACA", "AGAACAAGA------"),
                  ("TGTACAAGACACACA", "TGTACAAGA------")]
-        expected_counts = [(("TGTACAAGACACACA", "TGTACAAGA------"), 2),
-                           (("TGTACAAGACACACA", "AGAACAAGA------"), 1)]
+        expected_counts = [(("TGTACAAGACACACA", "AGAACAAGA------"), 1),
+                           (("TGTACAAGACACACA", "TGTACAAGA------"), 2)]
 
-        counts = count_reads(reads)
+        counts = list(count_reads(reads, file_prefix=TEMP_PREFIX))
 
         self.assertEqual(expected_counts, counts)
+
+    def test_without_temp_files(self):
+        reads = [("TGTACAAGACACACA", "TGTACAAGA------"),
+                 ("TGTACAAGACACACA", "AGAACAAGA------"),
+                 ("TGTACAAGACACACA", "TGTACAAGA------")]
+        expected_counts = [(("TGTACAAGACACACA", "AGAACAAGA------"), 1),
+                           (("TGTACAAGACACACA", "TGTACAAGA------"), 2)]
+
+        counts = sorted(count_reads(reads, file_prefix=None))
+
+        self.assertEqual(expected_counts, counts)
+
+
+class TopReadsTest(unittest.TestCase):
+    def test_top(self):
+        counts = iter([(("TGTACAAGACACACA", "AGAACAAGA------"), 1),
+                       (("TGTACAAGACACACA", "TGTACAAGA------"), 2)])
+        expected_top = [(("TGTACAAGACACACA", "TGTACAAGA------"), 2),
+                        (("TGTACAAGACACACA", "AGAACAAGA------"), 1)]
+        expected_ignored = 0
+
+        top_counts, ignored_count = get_top_counts(counts)
+
+        self.assertEqual(expected_top, top_counts)
+        self.assertEqual(expected_ignored, ignored_count)
+
+    def test_min_count(self):
+        counts = iter([(("TGTACAAGACACACA", "AGAACAAGA------"), 1),
+                       (("TGTACAAGACACACA", "CGAACAAGA------"), 4),
+                       (("TGTACAAGACACACA", "GGAACAAGA------"), 2),
+                       (("TGTACAAGACACACA", "TGAACAAGA------"), 3)])
+        expected_top = [(("TGTACAAGACACACA", "CGAACAAGA------"), 4),
+                        (("TGTACAAGACACACA", "TGAACAAGA------"), 3)]
+        expected_ignored = 3
+
+        top_counts, ignored_count = get_top_counts(counts, min_count=3)
+
+        self.assertEqual(expected_top, top_counts)
+        self.assertEqual(expected_ignored, ignored_count)
 
 
 class WriteAlignedTest(unittest.TestCase):
@@ -827,9 +868,10 @@ HIV1-C-BR-JX140663-seed,15,0,2,5,TGTACAAGACCCAAC
 HIV1-C-BR-JX140663-seed,15,1,1,5,AGAACAAGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, seed, v3loop_ref)
+        counts2 = list(write_aligned_reads(counts, aligned_csv, seed, v3loop_ref))
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
+        self.assertEqual(counts, counts2)
 
     def test_seed_offset(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
@@ -841,7 +883,7 @@ refname,qcut,rank,count,offset,seq
 HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACAAGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
+        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
@@ -855,7 +897,7 @@ refname,qcut,rank,count,offset,seq
 HIV1-C-BR-JX140663-seed,15,0,2,4,ACAAGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
+        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
@@ -869,7 +911,7 @@ refname,qcut,rank,count,offset,seq
 HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACAAGACCC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
+        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
@@ -883,7 +925,7 @@ refname,qcut,rank,count,offset,seq
 HIV1-C-BR-JX140663-seed,15,0,2,1,TGT---AGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
+        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
@@ -897,7 +939,7 @@ refname,qcut,rank,count,offset,seq
 HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACA---AGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
+        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
@@ -912,7 +954,7 @@ refname,qcut,rank,count,offset,seq
 HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACA---AGACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
+        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
@@ -927,6 +969,6 @@ refname,qcut,rank,count,offset,seq
 HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACACCCAAC
 """
 
-        write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref)
+        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())

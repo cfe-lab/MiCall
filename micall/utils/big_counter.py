@@ -1,11 +1,12 @@
 from collections import Counter
 from csv import DictWriter, DictReader
+import os
 from tempfile import TemporaryFile
 
 
 class BigCounter:
     def __init__(self, file_prefix, max_size=5000):
-        self.file_prefix = file_prefix
+        self.file_prefix = os.path.abspath(file_prefix)
         self.max_size = max_size
         self.cache_files = []
         self.active_counts = Counter()
