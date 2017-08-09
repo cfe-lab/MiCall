@@ -83,7 +83,13 @@
   * coverage_scores.csv - downloaded - a score for each region based on the
     coverage at key positions.
 * `cascade_report`: summarize how many reads made it through each step of the
-    pipeline. 
+    pipeline.
+* `hivdb`: Use the Stanford HIVdb algorithm rules to call a sample's resistance
+    levels to HIV drugs.
+  * in - amino.csv
+  * in - coverage_scores.csv
+  * resistance.csv - resistance level to each HIV drug
+  * mutations.csv - significant mutations found
 
 [fastq_g2p_design]: http://cfe-lab.github.io/MiCall/design/fastq_g2p
 
@@ -224,3 +230,14 @@
   * X4pct - X4calls as a percentage of valid
   * final - the final decision: blank if valid is 0, X4 if X4pct >= 2, otherwise
     R5
+* resistance.csv
+  * region - the region code, like PR or RT
+  * drug_class - the drug class code from the HIVdb rules, like NRTI
+  * drug - the drug code from the HIVdb rules, like ABC
+  * drug_name - the drug name from the HIVdb rules, like abacavir
+  * level - resistance level as a number
+  * level_name - resistance level's name, like "Susceptible"
+  * score - numeric score calculated by the HIVdb rules
+* mutations.csv
+  * drug_class - the drug class code from the HIVdb rules, like NRTI
+  * mutation - the wild-type amino, position, and resistant amino, like Q80K
