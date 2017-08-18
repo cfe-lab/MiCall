@@ -611,6 +611,46 @@ class CigarTest(unittest.TestCase):
         self.assertEqual(expected_quality, clipped_quality)
         self.assertEqual({3: ('TAG', 'BBB')}, inserts)
 
+    def testInsertionAfterInsertion(self):
+        cigar = '3M3I3M3I3M'
+        (seq,
+         quality,
+         expected_seq,
+         expected_quality) = ('TTTGGGCCCAAATTT',
+                              '111222333444555',
+                              'TTTCCCTTT',
+                              '111333555')
+        expected_inserts = {3: ('GGG', '222'), 6: ('AAA', '444')}
+
+        seq, quality, inserts = apply_cigar(
+          cigar,
+          seq,
+          quality)
+
+        self.assertEqual(expected_seq, seq)
+        self.assertEqual(expected_quality, quality)
+        self.assertEqual(expected_inserts, inserts)
+
+    def testInsertionAfterDeletion(self):
+        cigar = '3M3D3M3I3M'
+        (seq,
+         quality,
+         expected_seq,
+         expected_quality) = ('TTTCCCAAATTT',
+                              '111222333444',
+                              'TTT---CCCTTT',
+                              '111   222444')
+        expected_inserts = {9: ('AAA', '333')}
+
+        seq, quality, inserts = apply_cigar(
+          cigar,
+          seq,
+          quality)
+
+        self.assertEqual(expected_seq, seq)
+        self.assertEqual(expected_quality, quality)
+        self.assertEqual(expected_inserts, inserts)
+
 
 class MergePairsTest(unittest.TestCase):
     def setUp(self):

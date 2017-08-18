@@ -10,6 +10,7 @@ clips).
 import argparse
 from collections import Counter, defaultdict
 from csv import DictReader, DictWriter
+import numpy as np
 import os
 import re
 
@@ -112,9 +113,10 @@ def apply_cigar(cigar,
             newqual += ' '*length  # Assign fake placeholder score (Q=-1)
         # Insertion relative to reference
         elif operation == 'I':
-            if end is None or left+pos < end:
-                insertions[left+pos-clip_from] = (seq[left:(left+length)],
-                                                  qual[left:(left+length)])
+            ins_pos = len(newseq)
+            if end is None or ins_pos < end:
+                insertions[ins_pos-clip_from] = (seq[left:(left+length)],
+                                                 qual[left:(left+length)])
             left += length
         # Soft clipping leaves the sequence in the SAM - so we should skip it
         elif operation == 'S':
@@ -180,47 +182,32 @@ def merge_pairs(seq1,
         seq1, seq2 = seq2, seq1
         qual1, qual2 = qual2, qual1
 
-    seq1_length = len(seq1)
-    mseq = list(seq1) + list(seq2[seq1_length:])
-    q_cutoff_char = chr(q_cutoff+33)
-    is_forward_started = False
-    is_reverse_started = False
-    for i, c2 in enumerate(seq2):
-        if c2 != '-':
-            is_reverse_started = True
-        if i < seq1_length:
-            c1 = seq1[i]
-            if not is_forward_started:
-                if c1 == '-' and c2 == '-':
-                    continue
-                is_forward_started = True
-            else:
-                if c1 == '-' and c2 == '-':
-                    continue
-            q1 = qual1[i]
-            q2 = qual2[i]
-            if c1 == c2:  # Reads agree and at least one has sufficient confidence
-                if q1 <= q_cutoff_char and q2 <= q_cutoff_char:
-                    mseq[i] = 'N'  # neither base is confident
-            else:
-                if abs(ord(q2) - ord(q1)) >= minimum_q_delta:
-                    if q1 > max(q2, q_cutoff_char):
-                        pass
-                    elif q2 > max(q1, q_cutoff_char):
-                        mseq[i] = c2
-                    else:
-                        mseq[i] = 'N'
-                else:
-                    mseq[i] = 'N'  # cannot resolve between discordant bases
-        else:
-            # past end of read 1
-            if c2 == '-':
-                if not is_reverse_started:
-                    mseq[i] = 'n'  # interval between reads
-            elif qual2[i] <= q_cutoff_char:
-                mseq[i] = 'N'
+    seq_arr = np.array([seq1, seq2]).view('U1').reshape(2, len(seq2))
+    qual_arr = np.array([qual1.encode('UTF-8'),
+                         qual2.encode('UTF-8')]).view('int8').reshape(2, len(seq2))
+    seq_arr1 = seq_arr[0]
+    seq_arr2 = seq_arr[1]
+    qual_arr1 = qual_arr[0]
+    qual_arr2 = qual_arr[1]
+    max_qual = qual_arr.max(axis=0)
+    diff_indexes = seq_arr1 != seq_arr2
+    diff_qual = qual_arr2 - qual_arr1
+    close_qual = (-minimum_q_delta < diff_qual) & (diff_qual < minimum_q_delta)
+    close_qual &= diff_indexes
+    bad_indexes = close_qual | (max_qual <= q_cutoff+33)
+    copy_indexes = seq_arr1 == ''
+    copy_indexes |= diff_indexes & (diff_qual > minimum_q_delta)
+    seq_arr1[copy_indexes] = seq_arr2[copy_indexes]
+    bad_indexes &= seq_arr1 != '-'
+    seq_arr1[bad_indexes] = 'N'
+    gap_indexes = (qual_arr1 == 0)
+    body2 = seq2.lstrip('-')
+    gap_end = len(seq2) - len(body2)
+    gap_indexes[gap_end:] = False
+    seq_arr1[gap_indexes] = 'n'
 
-    mseq = ''.join(mseq)
+    merged_view = seq_arr1.view(np.dtype(('U', len(seq2))))
+    mseq = merged_view[0]
     if ins1 or ins2:
         merged_inserts = merge_inserts(ins1, ins2, q_cutoff, minimum_q_delta)
         for pos in sorted(merged_inserts.keys(), reverse=True):

@@ -18,7 +18,7 @@ from micall.core import miseq_logging
 from micall.core import project_config
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 
-BOWTIE_THREADS = 4    # Bowtie performance roughly scales with number of threads
+BOWTIE_THREADS = 1    # Bowtie performance roughly scales with number of threads
 BOWTIE_VERSION = '2.2.8'        # version of bowtie2, used for version control
 BOWTIE_PATH = 'bowtie2-align-s'         # path to executable, so you can install more than one version
 BOWTIE_BUILD_PATH = 'bowtie2-build-s'
