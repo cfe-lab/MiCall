@@ -11,7 +11,7 @@ from operator import itemgetter
 import os
 
 from micall import settings  # Import first for logging configuration.
-
+from micall.g2p.fastq_g2p import HIV_SEED_NAME
 from micall.monitor import qai_helper
 from micall.utils import sample_sheet_parser
 from micall.core.project_config import ProjectConfig
@@ -120,6 +120,7 @@ def build_conseqs(conseqs_file,
 
 def build_review_decisions(coverage_file,
                            collated_counts_file,
+                           cascade_file,
                            sample_sheet,
                            sequencings,
                            project_regions,
@@ -129,6 +130,7 @@ def build_review_decisions(coverage_file,
 
     @param coverage_file: CSV file with coverage scores
     @param collated_counts_file: CSV file with read counts
+    @param cascade_file: CSV file with read counts throughout the pipeline
     @param sample_sheet: the sample sheet for the run
     @param sequencings: the sequencing records from QAI
     @param project_regions: [{"id": project_region_id,
@@ -146,20 +148,24 @@ def build_review_decisions(coverage_file,
     sample_names = dict(map(itemgetter('tags', 'filename'), sample_sheet['DataSplit']))
 
     counts_map = {}  # {tags: raw, (tags, seed): mapped]}
-    unreported_tags = set()
     # sample,type,count
     for counts in csv.DictReader(collated_counts_file):
         count = int(counts['count'])
         tags = sample_tags[counts['sample']]
         count_type = counts['type']
-        if count_type == 'raw':
-            counts_map[tags] = count
-            unreported_tags.add(tags)
-        elif count_type != 'unmapped':
+        if count_type not in ('raw', 'unmapped'):
             seed = count_type.split(' ', 1)[1]
             key = tags, seed
-            current_count = counts_map.get(key, 0)
-            counts_map[key] = max(current_count, count)
+            counts_map[key] = count
+
+    unreported_tags = set()
+    for counts in csv.DictReader(cascade_file):
+        tags = sample_tags[counts['sample']]
+        counts_map[tags] = int(counts['demultiplexed'])*2
+        unreported_tags.add(tags)
+
+        key = tags, HIV_SEED_NAME
+        counts_map[key] = int(counts['v3loop'])*2
 
     sequencing_map = defaultdict(dict)  # {tags: {project: sequencing}}
     for sequencing in sequencings:
@@ -227,6 +233,7 @@ def build_review_decisions(coverage_file,
 
 def upload_review_to_qai(coverage_file,
                          collated_counts_file,
+                         cascade_file,
                          run,
                          sample_sheet,
                          conseqs,
@@ -235,6 +242,7 @@ def upload_review_to_qai(coverage_file,
 
     @param coverage_file: the coverage scores to upload
     @param collated_counts_file: CSV file of read counts to upload
+    @param cascade_file: CSV file of read counts throughout the pipeline
     @param run: a hash with the attributes of the run record, including a
         sequencing summary of all the samples and their target projects
     @param sample_sheet: details of the run so we can tell which sample used
@@ -256,6 +264,7 @@ def upload_review_to_qai(coverage_file,
 
     decisions = build_review_decisions(coverage_file,
                                        collated_counts_file,
+                                       cascade_file,
                                        sample_sheet,
                                        sequencings,
                                        project_regions,
@@ -330,7 +339,7 @@ def process_folder(result_folder):
     logger.info('Uploading data to Oracle from {}'.format(result_folder))
     collated_conseqs = os.path.join(result_folder, 'conseq.csv')
     collated_counts = os.path.join(result_folder, 'remap_counts.csv')
-    nuc_variants = os.path.join(result_folder, 'nuc_variants.csv')
+    cascade = os.path.join(result_folder, 'cascade.csv')
     coverage_scores = os.path.join(result_folder, 'coverage_scores.csv')
     all_results_path, _ = os.path.split(os.path.normpath(result_folder))
     run_path, _ = os.path.split(all_results_path)
@@ -352,9 +361,12 @@ def process_folder(result_folder):
                                     run,
                                     sample_sheet,
                                     ok_sample_regions)
-        with open(coverage_scores, "rU") as f, open(collated_counts, "rU") as f2:
+        with open(coverage_scores, "rU") as f, \
+                open(collated_counts, "rU") as f2, \
+                open(cascade, "rU") as f3:
             upload_review_to_qai(f,
                                  f2,
+                                 f3,
                                  run,
                                  sample_sheet,
                                  conseqs,
