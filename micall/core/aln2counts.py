@@ -411,7 +411,8 @@ class SequenceReport(object):
                    'query.nuc.pos',
                    'refseq.aa.pos']
         columns.extend(AMINO_ALPHABET)
-        columns.extend(('X', 'partial', 'del', 'ins', 'clip', 'g2p_overlap'))
+        columns.extend(
+            ('X', 'partial', 'del', 'ins', 'clip', 'g2p_overlap', 'coverage'))
         return csv.DictWriter(amino_file,
                               columns,
                               lineterminator=os.linesep)
@@ -446,11 +447,13 @@ class SequenceReport(object):
                        'del': seed_amino.deletions,
                        'ins': report_amino.insertion_count,
                        'clip': report_amino.max_clip_count,
-                       'g2p_overlap': seed_amino.g2p_overlap}
+                       'g2p_overlap': seed_amino.g2p_overlap,
+                       'coverage': seed_amino.deletions}
                 for letter in AMINO_ALPHABET:
                     letter_count = seed_amino.counts[letter]
                     row[letter] = letter_count
                     coverage_sum += letter_count
+                    row['coverage'] += letter_count
                 amino_writer.writerow(row)
                 pos_count += 1
             if coverage_summary is not None and pos_count > 0:
@@ -477,7 +480,8 @@ class SequenceReport(object):
                                'del',
                                'ins',
                                'clip',
-                               'g2p_overlap'],
+                               'g2p_overlap',
+                               'coverage'],
                               lineterminator=os.linesep)
 
     def write_nuc_header(self, nuc_file):
@@ -521,9 +525,13 @@ class SequenceReport(object):
                    'del': seed_nuc.counts['-'],
                    'ins': insertion_count,
                    'clip': clip_count,
-                   'g2p_overlap': seed_nuc.g2p_overlap}
+                   'g2p_overlap': seed_nuc.g2p_overlap,
+                   'coverage': seed_nuc.counts['-']}
             for base in 'ACTGN':
-                row[base] = seed_nuc.counts[base]
+                nuc_count = seed_nuc.counts[base]
+                row[base] = nuc_count
+                if base != 'N':
+                    row['coverage'] += nuc_count
             nuc_writer.writerow(row)
         if report_amino is not None:
             report_amino.max_clip_count = max_clip_count

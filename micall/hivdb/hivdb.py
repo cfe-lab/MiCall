@@ -70,14 +70,14 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
         aminos = []
         for row in rows:
             counts = list(map(int, (row[f] for f in coverage_columns)))
-            coverage = sum(counts)
+            coverage = int(row['coverage'])
             min_count = max(1, coverage * min_fraction)  # needs at least 1
-            pos_aminos = [report_names[i]
+            pos_aminos = {report_names[i]: count/coverage
                           for i, count in enumerate(counts)
-                          if count >= min_count and report_names[i] != '*']
+                          if count >= min_count and report_names[i] != '*'}
             ins_count = int(row['ins'])
             if ins_count >= min_count:
-                pos_aminos.append('i')
+                pos_aminos['i'] = ins_count / coverage
             aminos.append(pos_aminos)
         yield translated_region, aminos
     for region in missing_regions:
@@ -109,7 +109,7 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
         lineterminator=os.linesep)
     resistance_writer.writeheader()
     mutations_writer = DictWriter(mutations_csv,
-                                  ['drug_class', 'mutation'],
+                                  ['drug_class', 'mutation', 'prevalence'],
                                   lineterminator=os.linesep)
     mutations_writer.writeheader()
     asi = AsiAlgorithm(RULES_PATH)
@@ -128,8 +128,13 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
                                             score=drug_result.score))
         for drug_class, class_mutations in result.mutations.items():
             for mutation in class_mutations:
+                amino = mutation[-1]
+                pos = int(mutation[1:-1])
+                pos_aminos = amino_seq[pos-1]
+                prevalence = pos_aminos[amino]
                 mutations_writer.writerow(dict(drug_class=drug_class,
-                                               mutation=mutation))
+                                               mutation=mutation,
+                                               prevalence=prevalence))
 
 
 def hivdb(amino_csv,

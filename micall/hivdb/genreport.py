@@ -6,6 +6,8 @@ import os
 
 from argparse import ArgumentParser, FileType
 import csv
+from collections import defaultdict
+
 import yaml
 
 try:
@@ -142,7 +144,7 @@ def read_mutations(cfg_dct, csv_file):
     Returns a list of dictionaries.
     """
     err_string = "Error in mutations file '{}'".format(csv_file.name)
-    exp_set = frozenset("drug_class,mutation".split(","))
+    exp_set = frozenset("drug_class,mutation,prevalence".split(","))
     try:
         data_lst = list(csv.DictReader(csv_file, restkey="dummy"))
     except csv.Error:
@@ -154,7 +156,7 @@ def read_mutations(cfg_dct, csv_file):
     # simple sanity check of the fields
     # generate a dict of drug_class -> string of mutations
     # also set the strings to 'NONE' if appropriate
-    tmp_dct = {}
+    tmp_dct = defaultdict(list)
     known_drug_class_set = cfg_dct['known_drug_classes']
     glob_err = False
     for od_num, od in enumerate(data_lst):
@@ -167,7 +169,9 @@ def read_mutations(cfg_dct, csv_file):
             print("{}: dataset {}: error with {}\n\n".format(
                 err_string, od_num + 1, od))
             glob_err = True
-        tmp_dct.setdefault(d_class, []).append(mut_str)
+        tmp_dct[d_class].append('{}({:.0f}%)'.format(
+            mut_str,
+            100*float(od['prevalence'])))
     if glob_err:
         raise RuntimeError(
             "{}: fatal error(s) detected: giving up...".format(err_string))
