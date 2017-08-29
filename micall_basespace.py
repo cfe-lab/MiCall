@@ -518,6 +518,13 @@ def process_sample(sample_index, run_info, args, pssm):
               run_info.reports)
 
     logger.info('Running resistance report (%d of %d).', sample_index+1, len(run_info.samples))
+    source_path = os.path.dirname(__file__)
+    version_filename = os.path.join(source_path, 'version.txt')
+    if not os.path.exists(version_filename):
+        git_version = 'v0-dev'
+    else:
+        with open(version_filename) as version_file:
+            git_version = version_file.read().strip()
     reports_path = os.path.join(args.qc_path, 'resistance_reports')
     makedirs(reports_path)
     report_filename = os.path.join(reports_path,
@@ -525,7 +532,11 @@ def process_sample(sample_index, run_info, args, pssm):
     with open(os.path.join(sample_scratch_path, 'resistance.csv')) as resistance_csv, \
             open(os.path.join(sample_scratch_path, 'mutations.csv')) as mutations_csv, \
             open(report_filename, 'wb') as report_pdf:
-        gen_report(resistance_csv, mutations_csv, report_pdf, sample_name)
+        gen_report(resistance_csv,
+                   mutations_csv,
+                   report_pdf,
+                   sample_name,
+                   git_version=git_version)
 
     logger.info('Running cascade_report (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'r') as g2p_summary_csv, \

@@ -163,28 +163,14 @@ Set up the [native apps virtual machine][bsvm], and configure a shared folder
 called MiCall that points to the source code. Make sure you have a developer
 account on illumina.com.
 
-Here's a little bash script to build the Docker image from the local version
-of the source code, and launch it for testing:
+Use the `docker_build.py` script to build a Docker image and push it to
+BaseSpace. If you add `-t vX.Y`, it will add a tag to the Docker image. If you
+add `-a <agent id>`, it will launch the spacedock tool to process samples as a
+local agent. You can also set the `BASESPACE_AGENT_ID` environment variable so
+you don't have to supply it every time. You can get the agent id from the Form
+Builder page on BaseSpace.
 
-    #!/bin/sh
-    sudo docker build -t docker.illumina.com/cfelab/micall /media/sf_MiCall/ && \
-    sudo docker push docker.illumina.com/cfelab/micall && \
-    sudo spacedock -a <agent id from Form Builder> -m https://mission.basespace.illumina.com
-
-That doesn't put a version number tag on the Docker image. You'll need to put
-your own agent id in place, get it from the Form Builder page.
-
-Here's a related script that pulls master from GitHub, builds the
-Docker image, tags it with the version number, and launches it for testing:
-
-    #!/bin/sh
-    if [ -z $1 ]; then
-      echo Missing version tag.
-      exit 1
-    fi
-    sudo docker build -t docker.illumina.com/cfe_lab/micall:$1 https://github.com/cfe-lab/MiCall.git && \
-    sudo docker push docker.illumina.com/cfe_lab/micall:$1 && \
-    sudo spacedock -a <agent id from Form Builder> -m https://mission.basespace.illumina.com
+    sudo /media/sf_MiCall/docker_build.py -a abcde12345
 
 [bsvm]: https://developer.basespace.illumina.com/docs/content/documentation/native-apps/setup-dev-environment
 

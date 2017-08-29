@@ -31,7 +31,7 @@ WORKDIR /
 RUN rm -r /opt/alignment && python -c 'import gotoh'
 
 ## MiCall
-COPY micall_basespace.py /opt/micall/
+COPY micall_basespace.py version.txt /opt/micall/
 COPY micall/__init__.py micall/project* /opt/micall/micall/
 
 COPY micall/core    /opt/micall/micall/core/

@@ -35,10 +35,12 @@ resistance call file and a mutations call file, both in csv format""")
     return parser.parse_args()
 
 
-def read_config():
+def read_config(git_version):
     """Read in a configuration file for generating reports."""
     cfg_name = REPORT_CONFIG_PATH
+    cfg_dct = None
     with open(cfg_name, "r") as fi:
+        # noinspection PyUnresolvedReferences
         try:
             cfg_dct = yaml.safe_load(fi)
         except yaml.scanner.ScannerError as e:
@@ -50,19 +52,21 @@ def read_config():
         except:
             print("failed to read config file {}".format(cfg_name))
             raise
+    cfg_dct['generated_by_text'] = (
+        cfg_dct['generated_by_text'].format(git_version))
     err_string = "Error in configuration file"
     if not isinstance(cfg_dct, dict):
         raise RuntimeError("""Configuration in {} must be a
 single dict class, but found a {}""".format(REPORT_CONFIG_PATH, type(cfg_dct)))
     # The following keys must be present in the dict
-    KNOWN_KEYS = frozenset([
+    known_keys = frozenset([
         'known_drugs', 'known_drug_classes', 'known_regions',
         'resistance_level_colours', 'disclaimer_text', "generated_by_text",
         "report_title"
     ])
-    PRESENT_KEYS = set(cfg_dct.keys())
-    missing_keys = KNOWN_KEYS - PRESENT_KEYS
-    unknown_keys = PRESENT_KEYS - KNOWN_KEYS
+    present_keys = set(cfg_dct.keys())
+    missing_keys = known_keys - present_keys
+    unknown_keys = present_keys - known_keys
     if missing_keys != set() or unknown_keys != set():
         print("Missing keys: {}".format(", ".join(missing_keys)))
         print("Unknown keys: {}".format(", ".join(unknown_keys)))
@@ -255,11 +259,20 @@ def read_resistance(cfg_dct, csv_file):
     return data_lst
 
 
-def gen_report(resistance_csv, mutations_csv, res_report_pdf,
-               sample_name=None):
-    """Read in resistance_csv, validate its input and generate
-    a PDF report to res_report+pdf"""
-    cfg_dct = read_config()
+def gen_report(resistance_csv,
+               mutations_csv,
+               res_report_pdf,
+               sample_name=None,
+               git_version=None):
+    """ Generate a PDF report file.
+
+    :param resistance_csv: open CSV file with resistance calls
+    :param mutations_csv: open CSV file with mutation calls
+    :param res_report_pdf: PDF file name to write to
+    :param sample_name: name to describe the sample on the report
+    :param git_version: source code version to display
+    """
+    cfg_dct = read_config(git_version)
     res_lst = read_resistance(cfg_dct, resistance_csv)
     mut_lst = read_mutations(cfg_dct, mutations_csv)
 
