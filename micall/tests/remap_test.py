@@ -31,204 +31,204 @@ class RemapTest(unittest.TestCase):
 class IsFirstReadTest(unittest.TestCase):
     def testFirstRead(self):
         flag = '99'
-        isFirstExpected = True
+        is_first_expected = True
 
-        isFirst = is_first_read(flag)
+        is_first = is_first_read(flag)
 
-        self.assertEqual(isFirstExpected, isFirst)
+        self.assertEqual(is_first_expected, is_first)
 
     def testSecondRead(self):
         flag = '147'
-        isFirstExpected = False
+        is_first_expected = False
 
-        isFirst = is_first_read(flag)
+        is_first = is_first_read(flag)
 
-        self.assertEqual(isFirstExpected, isFirst)
+        self.assertEqual(is_first_expected, is_first)
 
     def testSmallFlag(self):
         flag = '3'
-        isFirstExpected = False
+        is_first_expected = False
 
-        isFirst = is_first_read(flag)
+        is_first = is_first_read(flag)
 
-        self.assertEqual(isFirstExpected, isFirst)
+        self.assertEqual(is_first_expected, is_first)
 
 
 class SamToConseqsTest(unittest.TestCase):
     def testSimple(self):
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t12M\t=\t1\t12\tACAAGACCCAAC\tJJJJJJJJJJJJ\n"
         )
         expected_conseqs = {'test': 'ACAAGACCCAAC'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testOffset(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t147\ttest\t4\t44\t12M\t=\t3\t-12\tACAAGACCCAAC\tJJJJJJJJJJJJ\n"
         )
         expected_conseqs = {'test': 'NNNACAAGACCCAAC'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testHeaders(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SH\tsome header\n"
             "@MHI\tmost headers are ignored, except SQ for sequence reference\n"
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACA\tJJJ\n"
         )
         expected_conseqs = {'test': 'ACA'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testUnknownReferenceName(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:testX\n"
             "test1\t99\ttestY\t1\t44\t12M\t=\t1\t3\tACA\tJJJ\n"
         )
         expected_conseqs = {}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testHeaderFields(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tOF:other field: ignored\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACA\tJJJ\n"
         )
         expected_conseqs = {'test': 'ACA'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testExtraFields(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACA\tJJJ\tAS:i:236\tNM:i:12\n"
         )
         expected_conseqs = {'test': 'ACA'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testMaxConsensus(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACA\tJJJ\n"
             "test2\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACA\tJJJ\n"
             "test3\t99\ttest\t1\t44\t3M\t=\t1\t3\tTCA\tJJJ\n"
         )
         expected_conseqs = {'test': 'ACA'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testTie(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tGCA\tJJJ\n"
             "test2\t147\ttest\t1\t44\t3M\t=\t1\t-3\tTCA\tJJJ\n"
         )
         expected_conseqs = {'test': 'GCA'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSoftClip(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3S5M1S\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJ\n"
         )
         expected_conseqs = {'test': 'GGGAG'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSimpleInsertion(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJ\n"
         )
         expected_conseqs = {'test': 'ACAGGGAGA'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testLowQualityInsertion(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJJJ/JJJJ\n"
         )
         expected_conseqs = {'test': 'ACAAGA'}
-        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+        conseqs = remap.sam_to_conseqs(sam_file, quality_cutoff=32)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testInsertionAfterLowQuality(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJ/JJJJJJ\n"
         )
         expected_conseqs = {'test': 'ACNAGA'}
-        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+        conseqs = remap.sam_to_conseqs(sam_file, quality_cutoff=32)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testInsertionAndOffset(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I3M\t=\t1\t9\tACAGGGAGA\tJJJJJJJJJJJJ\n"
             "test2\t99\ttest\t5\t44\t5M\t=\t1\t5\tGACCC\tJJJJJ\n"
         )
         expected_conseqs = {'test': 'ACAGGGAGACCC'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testComplexInsertion(self):
         # Insertions are ignored if not a multiple of three
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M1I3M2I6M\t=\t1\t12\tACAGAGAGGCCCAAC\tJJJJJJJJJJJJJJJ\n"
         )
         expected_conseqs = {'test': 'ACAAGACCCAAC'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testDeletion(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
         )
         expected_conseqs = {'test': 'ACAGGG'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testDeletionInSomeReads(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
             "test2\t99\ttest\t1\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
             "test3\t99\ttest\t1\t44\t9M\t=\t3\t9\tACATTTGGG\tJJJJJJJJJ\n"
         )
         expected_conseqs = {'test': 'ACATTTGGG'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testDeletionWithFrameShift(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M1D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
         )
         expected_conseqs = {'test': 'ACA-GGG'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testBigDeletionWithFrameShift(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M4D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
         )
         expected_conseqs = {'test': 'ACA----GGG'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testOverlapsCountOnce(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
             "test1\t147\ttest\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n"
@@ -242,69 +242,69 @@ class SamToConseqsTest(unittest.TestCase):
             "test5\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
         )
         expected_conseqs = {'test': 'ATGCC'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testReverseLeftOfForward(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t2\t44\t1M\t=\t1\t1\tC\tJ\n"
             "test1\t147\ttest\t1\t44\t1M\t=\t2\t-1\tA\tJ\n"
         )
         expected_conseqs = {'test': 'AC'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testPairMapsToTwoReferences(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:testX\n"
             "@SQ\tSN:testY\n"
             "test1\t99\ttestX\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
             "test1\t147\ttestY\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n"
         )
         expected_conseqs = {}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testLowQuality(self):
         # Note that we ignore the overlapped portion of the reverse read,
         # even if it has higher quality.
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJ/J\n"
         )
         expected_conseqs = {'test': 'ANG'}
-        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+        conseqs = remap.sam_to_conseqs(sam_file, quality_cutoff=32)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testLowQualityAtEnd(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t1\t3\tACG\tJJ/\n"
         )
         expected_conseqs = {'test': 'ACN'}
-        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+        conseqs = remap.sam_to_conseqs(sam_file, quality_cutoff=32)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testLowQualityForward(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M\t=\t3\t3\tATA\tJJA\n"
             "test1\t147\ttest\t3\t44\t3M\t=\t1\t-3\tGCC\tJJJ\n"
         )
         expected_conseqs = {'test': 'ATGCC'}
-        conseqs = remap.sam_to_conseqs(samIO)
+        conseqs = remap.sam_to_conseqs(sam_file)
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testAllLowQuality(self):
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t147\ttest\t1\t24\t1M\t=\t1\t-1\tT\t#\n"
         )
         expected_conseqs = {}
 
-        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+        conseqs = remap.sam_to_conseqs(sam_file, quality_cutoff=32)
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
@@ -314,13 +314,13 @@ class SamToConseqsTest(unittest.TestCase):
         SAM flag 145 does not have bit 2 for properly aligned.
         """
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t145\ttest\t1\t24\t1M\t=\t1\t-1\tT\tF\n"
         )
         expected_conseqs = {'test': 'T'}
 
-        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+        conseqs = remap.sam_to_conseqs(sam_file, quality_cutoff=32)
 
         self.assertEqual(expected_conseqs, conseqs)
 
@@ -330,30 +330,30 @@ class SamToConseqsTest(unittest.TestCase):
         SAM flag 149 has bit 4 for unmapped. Region is irrelevant.
         """
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t149\ttest\t1\t24\t1M\t=\t1\t-1\tT\tF\n"
         )
         expected_conseqs = {}
 
-        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+        conseqs = remap.sam_to_conseqs(sam_file, quality_cutoff=32)
 
         self.assertEqual(expected_conseqs, conseqs)
 
     def testLowQualityAndDeletion(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3D3M\t=\t3\t6\tACAGGG\tJJJJJJ\n"
             "test2\t99\ttest\t1\t44\t9M\t=\t3\t9\tACATTTGGG\tJJJ///JJJ\n"
         )
         expected_conseqs = {'test': 'ACANNNGGG'}
 
-        conseqs = remap.sam_to_conseqs(samIO, quality_cutoff=32)
+        conseqs = remap.sam_to_conseqs(sam_file, quality_cutoff=32)
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSeeds(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJJ\n"
             "test2\t99\ttest\t10\t44\t3M\t=\t4\t-3\tCAC\tJJJ\n"
@@ -361,12 +361,12 @@ class SamToConseqsTest(unittest.TestCase):
         seeds = {'test': 'ACATTTGGGCAC'}
         expected_conseqs = {'test': 'ACATATGGGCAC'}
 
-        conseqs = remap.sam_to_conseqs(samIO, seeds=seeds)
+        conseqs = remap.sam_to_conseqs(sam_file, seeds=seeds)
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSeedsNeedSomeReads(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJJ\n"
         )
@@ -374,54 +374,54 @@ class SamToConseqsTest(unittest.TestCase):
                  'other': 'TATGCACCC'}
         expected_conseqs = {'test': 'ACATATGGGCAC'}
 
-        conseqs = remap.sam_to_conseqs(samIO, seeds=seeds)
+        conseqs = remap.sam_to_conseqs(sam_file, seeds=seeds)
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSeedsWithLowQuality(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t4\t44\t3M\t=\t10\t3\tTAT\tJJ/\n"
         )
         seeds = {'test': 'ACATTTGGGCAC'}
         expected_conseqs = {'test': 'ACATATGGGCAC'}
 
-        conseqs = remap.sam_to_conseqs(samIO,
+        conseqs = remap.sam_to_conseqs(sam_file,
                                        seeds=seeds,
                                        quality_cutoff=32)
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSeedsWithPartialDeletion(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t4\t44\t1M1D1M\t=\t10\t3\tTT\tJJ\n"
         )
         seeds = {'test': 'ACATTTGGGCAC'}
         expected_conseqs = {'test': 'ACATTTGGGCAC'}
 
-        conseqs = remap.sam_to_conseqs(samIO,
+        conseqs = remap.sam_to_conseqs(sam_file,
                                        seeds=seeds,
                                        quality_cutoff=32)
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testSeedsWithCodonDeletion(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3D3M\t=\t10\t6\tACAGGG\tJJJJJJ\n"
         )
         seeds = {'test': 'ACATTTGGGCAC'}
         expected_conseqs = {'test': 'ACATTTGGGCAC'}
 
-        conseqs = remap.sam_to_conseqs(samIO,
+        conseqs = remap.sam_to_conseqs(sam_file,
                                        seeds=seeds,
                                        quality_cutoff=32)
 
         self.assertDictEqual(expected_conseqs, conseqs)
 
     def testDebugReports(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I9M\t=\t1\t12\tACTGGGAGACCCAAC\tJIJJJJJJJJJJJJJ\n"
             "test1\t147\ttest\t1\t44\t3M3I9M\t=\t1\t-12\tACTGGGAGACCCAAC\tJIJJJJJJJJJJJJJ\n"
@@ -431,12 +431,12 @@ class SamToConseqsTest(unittest.TestCase):
         reports = {('test', 2): None}
         expected_reports = {('test', 2): 'H{C: 1, T: 1}, I{C: 1}'}
 
-        remap.sam_to_conseqs(samIO, debug_reports=reports)
+        remap.sam_to_conseqs(sam_file, debug_reports=reports)
 
         self.assertDictEqual(expected_reports, reports)
 
     def testDebugReportsOnReverseRead(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\n"
             "test1\t99\ttest\t1\t44\t3M3I2M\t=\t1\t8\tACTGGGAG\tJJJJJJJJ\n"
             "test1\t147\ttest\t5\t44\t8M\t=\t1\t-8\tGACCCAAC\tJJJJJIJJ\n"
@@ -446,13 +446,13 @@ class SamToConseqsTest(unittest.TestCase):
         reports = {('test', 10): None}
         expected_reports = {('test', 10): 'H{A: 2}, I{A: 1}'}
 
-        remap.sam_to_conseqs(samIO, debug_reports=reports)
+        remap.sam_to_conseqs(sam_file, debug_reports=reports)
 
         self.assertDictEqual(expected_reports, reports)
 
     def testSeedsConverged(self):
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\tSN:other\tSN:wayoff\n"
             "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
             "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
@@ -473,7 +473,7 @@ class SamToConseqsTest(unittest.TestCase):
                                              other_seed='test')}
         distances = {}
 
-        conseqs = remap.sam_to_conseqs(samIO,
+        conseqs = remap.sam_to_conseqs(sam_file,
                                        seeds=seeds,
                                        original_seeds=seeds,
                                        is_filtered=True,
@@ -486,7 +486,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testSeedsConvergedWithDifferentAlignment(self):
         """ Seeds have similar regions, but at different positions.
         """
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\tSN:other\n"
             "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
             "other1\t99\tother\t11\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
@@ -495,7 +495,7 @@ class SamToConseqsTest(unittest.TestCase):
                  'other': 'TCTCTCTCTCAAGCCGAA'}
         expected_conseqs = {'test': 'ATGAGGAGTA'}
 
-        conseqs = remap.sam_to_conseqs(samIO,
+        conseqs = remap.sam_to_conseqs(sam_file,
                                        seeds=seeds,
                                        original_seeds=seeds,
                                        is_filtered=True)
@@ -505,7 +505,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testSeedsConvergedWithDifferentAlignmentAndGap(self):
         """ Gaps between areas with coverage.
         """
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\tSN:other\n"
             "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
             "other1\t99\tother\t11\t44\t5M\t=\t1\t5\tATGAC\tJJJJJJJ\n"
@@ -515,7 +515,7 @@ class SamToConseqsTest(unittest.TestCase):
                  'other': 'TCTCTCTCTCAAGCTATATATATACGAA'}
         expected_conseqs = {'test': 'ATGAGGAGTA'}
 
-        conseqs = remap.sam_to_conseqs(samIO,
+        conseqs = remap.sam_to_conseqs(sam_file,
                                        seeds=seeds,
                                        original_seeds=seeds,
                                        is_filtered=True)
@@ -525,7 +525,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testSeedsConvergedWithConfusingGap(self):
         """ Reads match other seed well, but with a big gap.
         """
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\tSN:other\n"
             "test1\t99\ttest\t1\t44\t8M\t=\t1\t8\tATGTCGTA\tJJJJJJJJ\n"
             "other1\t99\tother\t14\t44\t9M\t=\t1\t9\tAAGCTATAT\tJJJJJJJJJ\n"
@@ -535,7 +535,7 @@ class SamToConseqsTest(unittest.TestCase):
         expected_conseqs = {'test': 'ATGTCGTA',
                             'other': 'ATGTCTCTCTCTCAAGCTATATATATACGAAGTA'}
 
-        conseqs = remap.sam_to_conseqs(samIO,
+        conseqs = remap.sam_to_conseqs(sam_file,
                                        seeds=seeds,
                                        original_seeds=seeds,
                                        is_filtered=True)
@@ -545,7 +545,7 @@ class SamToConseqsTest(unittest.TestCase):
     def testSeedsConvergedPlusOtherLowCoverage(self):
         """ Portion with decent coverage has converged, other hasn't.
         """
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\tSN:other\n"
             "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
             "test2\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
@@ -557,7 +557,7 @@ class SamToConseqsTest(unittest.TestCase):
                  'other': 'AAGCCGAAGTGTGT'}
         expected_conseqs = {'test': 'ATGAGGAGTACTCT'}
 
-        conseqs = remap.sam_to_conseqs(samIO,
+        conseqs = remap.sam_to_conseqs(sam_file,
                                        seeds=seeds,
                                        original_seeds=seeds,
                                        is_filtered=True,
@@ -571,7 +571,7 @@ class SamToConseqsTest(unittest.TestCase):
         Don't drop both. Keep test because it has more reads.
         """
         # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\tSN:other\tSN:unrelated\n"
             "test1\t99\ttest\t1\t44\t8M\t=\t1\t10\tAAGCCGTA\tJJJJJJJJJJ\n"
             "test2\t99\ttest\t1\t44\t8M\t=\t1\t10\tAAGCCGTA\tJJJJJJJJJJ\n"
@@ -594,7 +594,7 @@ class SamToConseqsTest(unittest.TestCase):
                                                 other_seed='test')}
         distances = {}
 
-        conseqs = remap.sam_to_conseqs(samIO,
+        conseqs = remap.sam_to_conseqs(sam_file,
                                        seeds=seeds,
                                        original_seeds=seeds,
                                        is_filtered=True,
@@ -605,9 +605,12 @@ class SamToConseqsTest(unittest.TestCase):
         self.assertEqual(expected_conseqs, conseqs)
 
     def testAllSeedsLowCoverage(self):
-        "Multiple seeds mapped, but none have good coverage. Choose most reads."
+        """ Multiple seeds mapped, but none have good coverage.
 
-        samIO = StringIO(
+        Choose most reads.
+        """
+
+        sam_file = StringIO(
             "@SQ\tSN:test\tSN:other\n"
             "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
             "test2\t99\ttest\t11\t44\t6M\t=\t1\t10\tCTCTCT\tJJJJJJ\n"
@@ -617,7 +620,7 @@ class SamToConseqsTest(unittest.TestCase):
                  'other': 'AAGCCGAAGTGTGT'}
         expected_conseqs = {'test': 'ATGAGGAGTACTCTCT'}
 
-        conseqs = remap.sam_to_conseqs(samIO,
+        conseqs = remap.sam_to_conseqs(sam_file,
                                        seeds=seeds,
                                        original_seeds=seeds,
                                        is_filtered=True,
@@ -651,14 +654,14 @@ class SamToConseqsTest(unittest.TestCase):
                              (aligned_conseq, aligned_seed, relevant))
 
     def testNothingMapped(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:test\tSN:other\n"
         )
         seeds = {'test': 'ATGAAGTACTCTCT',
                  'other': 'AAGCCGAAGTGTGT'}
         expected_conseqs = {}
 
-        conseqs = remap.sam_to_conseqs(samIO,
+        conseqs = remap.sam_to_conseqs(sam_file,
                                        seeds=seeds,
                                        original_seeds=seeds,
                                        is_filtered=True,
@@ -669,6 +672,10 @@ class SamToConseqsTest(unittest.TestCase):
 
 class MixedReferenceMemorySplitter(MixedReferenceSplitter):
     """ Dummy class to hold split reads in memory. Useful for testing. """
+    def __init__(self, work_path):
+        super().__init__(work_path)
+        self.is_closed = True
+
     def create_split_file(self, refname, direction):
         self.is_closed = False
         return StringIO()
@@ -684,7 +691,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
         self.work_path = os.path.dirname(__file__)
 
     def testSimple(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:r\n"
             "r1\t99\tr\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\n"
             "r1\t147\tr\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\n")
@@ -693,12 +700,12 @@ class MixedReferenceSplitterTest(unittest.TestCase):
             ["r1", "147", "r", "1", "44", "3M", "=", "1", "-3", "ACG", "JJJ"]]
 
         splitter = MixedReferenceSplitter(self.work_path)
-        rows = list(splitter.split(samIO))
+        rows = list(splitter.split(sam_file))
 
         self.assertEqual(expected_rows, rows)
 
     def testTrimOptionalFields(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:r\n"
             "r1\t99\tr\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
             "r1\t147\tr\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n")
@@ -707,12 +714,12 @@ class MixedReferenceSplitterTest(unittest.TestCase):
             ["r1", "147", "r", "1", "44", "3M", "=", "1", "-3", "ACG", "JJJ"]]
 
         splitter = MixedReferenceSplitter(self.work_path)
-        rows = list(splitter.split(samIO))
+        rows = list(splitter.split(sam_file))
 
         self.assertEqual(expected_rows, rows)
 
     def testUnmapped(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:r\n"
             "r1\t107\tr\t1\t44\t3M\t*\t1\t3\tACG\tJJJ\n"
             "r1\t149\t*\t*\t*\t*\tr\t*\t*\tACG\tJJJ\n")
@@ -721,7 +728,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
             ["r1", "149", "*", "*", "*", "*", "r", "*", "*", "ACG", "JJJ"]]
 
         splitter = MixedReferenceSplitter(self.work_path)
-        rows = list(splitter.split(samIO))
+        rows = list(splitter.split(sam_file))
 
         self.assertEqual(expected_rows, rows)
 
@@ -730,7 +737,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
 
         Use the reference that gave the higher mapq score.
         """
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:r\n"
             "r1\t99\tRX\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
             "r1\t147\tRX\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n"
@@ -753,7 +760,7 @@ KJJ
 """
 
         splitter = MixedReferenceMemorySplitter(self.work_path)
-        rows = list(splitter.split(samIO))
+        rows = list(splitter.split(sam_file))
         is_closed = splitter.is_closed
         splits = splitter.splits
 
@@ -769,7 +776,7 @@ KJJ
 
         Use the reference that gave the higher mapq score.
         """
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:r\n"
             "r1\t99\tRX\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
             "r1\t147\tRX\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n"
@@ -777,13 +784,13 @@ KJJ
             "r2\t147\tRY\t1\t11\t3M\tRX\t1\t-3\tACC\tJJK\tAS:i:200\n")
 
         splitter = MixedReferenceMemorySplitter(self.work_path)
-        list(splitter.split(samIO))
+        list(splitter.split(sam_file))
         splits = splitter.splits
 
         self.assertEqual(['RY'], list(splits.keys()))
 
     def testWalk(self):
-        samIO = StringIO(
+        sam_file = StringIO(
             "@SQ\tSN:r\n"
             "r1\t99\tRX\t1\t44\t3M\t=\t1\t3\tACG\tJJJ\tAS:i:100\n"
             "r1\t147\tRX\t1\t44\t3M\t=\t1\t-3\tACG\tJJJ\tYS:Z:UP\n"
@@ -796,7 +803,7 @@ KJJ
             ["r2", "147", "RY", "1", "44", "3M", "RX", "1", "-3", "ACT", "KKK", "AS:i:200"]]
 
         splitter = MixedReferenceMemorySplitter(self.work_path)
-        rows = list(splitter.walk(samIO))
+        rows = list(splitter.walk(sam_file))
         splits = splitter.splits
 
         self.assertEqual(expected_rows, rows)
