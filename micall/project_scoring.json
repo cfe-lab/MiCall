@@ -2642,7 +2642,15 @@
           "key_positions": [
             {
               "end_pos": null,
+              "start_pos": 51
+            },
+            {
+              "end_pos": null,
               "start_pos": 66
+            },
+            {
+              "end_pos": null,
+              "start_pos": 74
             },
             {
               "end_pos": null,
@@ -2650,7 +2658,23 @@
             },
             {
               "end_pos": null,
+              "start_pos": 95
+            },
+            {
+              "end_pos": null,
+              "start_pos": 97
+            },
+            {
+              "end_pos": null,
+              "start_pos": 118
+            },
+            {
+              "end_pos": null,
               "start_pos": 121
+            },
+            {
+              "end_pos": null,
+              "start_pos": 138
             },
             {
               "end_pos": null,
@@ -2661,12 +2685,36 @@
               "start_pos": 143
             },
             {
+              "end_pos": 148,
+              "start_pos": 145
+            },
+            {
               "end_pos": null,
-              "start_pos": 148
+              "start_pos": 151
+            },
+            {
+              "end_pos": null,
+              "start_pos": 153
             },
             {
               "end_pos": null,
               "start_pos": 155
+            },
+            {
+              "end_pos": null,
+              "start_pos": 157
+            },
+            {
+              "end_pos": null,
+              "start_pos": 163
+            },
+            {
+              "end_pos": null,
+              "start_pos": 230
+            },
+            {
+              "end_pos": null,
+              "start_pos": 263
             }
           ],
           "min_coverage1": 10,
@@ -2812,10 +2860,6 @@
             },
             {
               "end_pos": null,
-              "start_pos": 35
-            },
-            {
-              "end_pos": null,
               "start_pos": 43
             },
             {
@@ -2833,10 +2877,6 @@
             {
               "end_pos": null,
               "start_pos": 58
-            },
-            {
-              "end_pos": null,
-              "start_pos": 71
             },
             {
               "end_pos": 74,
@@ -2989,8 +3029,12 @@
               "start_pos": 62
             },
             {
-              "end_pos": 71,
+              "end_pos": null,
               "start_pos": 65
+            },
+            {
+              "end_pos": 70,
+              "start_pos": 67
             },
             {
               "end_pos": 75,
@@ -2999,10 +3043,6 @@
             {
               "end_pos": null,
               "start_pos": 77
-            },
-            {
-              "end_pos": null,
-              "start_pos": 90
             },
             {
               "end_pos": null,
@@ -3086,15 +3126,7 @@
             },
             {
               "end_pos": null,
-              "start_pos": 236
-            },
-            {
-              "end_pos": null,
               "start_pos": 238
-            },
-            {
-              "end_pos": null,
-              "start_pos": 318
             }
           ],
           "min_coverage1": 10,
@@ -3481,7 +3513,15 @@
           "key_positions": [
             {
               "end_pos": null,
+              "start_pos": 51
+            },
+            {
+              "end_pos": null,
               "start_pos": 66
+            },
+            {
+              "end_pos": null,
+              "start_pos": 74
             },
             {
               "end_pos": null,
@@ -3489,7 +3529,23 @@
             },
             {
               "end_pos": null,
+              "start_pos": 95
+            },
+            {
+              "end_pos": null,
+              "start_pos": 97
+            },
+            {
+              "end_pos": null,
+              "start_pos": 118
+            },
+            {
+              "end_pos": null,
               "start_pos": 121
+            },
+            {
+              "end_pos": null,
+              "start_pos": 138
             },
             {
               "end_pos": null,
@@ -3500,12 +3556,36 @@
               "start_pos": 143
             },
             {
+              "end_pos": 148,
+              "start_pos": 145
+            },
+            {
               "end_pos": null,
-              "start_pos": 148
+              "start_pos": 151
+            },
+            {
+              "end_pos": null,
+              "start_pos": 153
             },
             {
               "end_pos": null,
               "start_pos": 155
+            },
+            {
+              "end_pos": null,
+              "start_pos": 157
+            },
+            {
+              "end_pos": null,
+              "start_pos": 163
+            },
+            {
+              "end_pos": null,
+              "start_pos": 230
+            },
+            {
+              "end_pos": null,
+              "start_pos": 263
             }
           ],
           "min_coverage1": 10,
@@ -3651,10 +3731,6 @@
             },
             {
               "end_pos": null,
-              "start_pos": 35
-            },
-            {
-              "end_pos": null,
               "start_pos": 43
             },
             {
@@ -3672,10 +3748,6 @@
             {
               "end_pos": null,
               "start_pos": 58
-            },
-            {
-              "end_pos": null,
-              "start_pos": 71
             },
             {
               "end_pos": 74,
@@ -3828,8 +3900,12 @@
               "start_pos": 62
             },
             {
-              "end_pos": 71,
+              "end_pos": null,
               "start_pos": 65
+            },
+            {
+              "end_pos": 70,
+              "start_pos": 67
             },
             {
               "end_pos": 75,
@@ -3838,10 +3914,6 @@
             {
               "end_pos": null,
               "start_pos": 77
-            },
-            {
-              "end_pos": null,
-              "start_pos": 90
             },
             {
               "end_pos": null,
@@ -3925,15 +3997,7 @@
             },
             {
               "end_pos": null,
-              "start_pos": 236
-            },
-            {
-              "end_pos": null,
               "start_pos": 238
-            },
-            {
-              "end_pos": null,
-              "start_pos": 318
             }
           ],
           "min_coverage1": 10,
@@ -4091,7 +4155,15 @@
           "key_positions": [
             {
               "end_pos": null,
+              "start_pos": 51
+            },
+            {
+              "end_pos": null,
               "start_pos": 66
+            },
+            {
+              "end_pos": null,
+              "start_pos": 74
             },
             {
               "end_pos": null,
@@ -4099,7 +4171,23 @@
             },
             {
               "end_pos": null,
+              "start_pos": 95
+            },
+            {
+              "end_pos": null,
+              "start_pos": 97
+            },
+            {
+              "end_pos": null,
+              "start_pos": 118
+            },
+            {
+              "end_pos": null,
               "start_pos": 121
+            },
+            {
+              "end_pos": null,
+              "start_pos": 138
             },
             {
               "end_pos": null,
@@ -4110,12 +4198,36 @@
               "start_pos": 143
             },
             {
+              "end_pos": 148,
+              "start_pos": 145
+            },
+            {
               "end_pos": null,
-              "start_pos": 148
+              "start_pos": 151
+            },
+            {
+              "end_pos": null,
+              "start_pos": 153
             },
             {
               "end_pos": null,
               "start_pos": 155
+            },
+            {
+              "end_pos": null,
+              "start_pos": 157
+            },
+            {
+              "end_pos": null,
+              "start_pos": 163
+            },
+            {
+              "end_pos": null,
+              "start_pos": 230
+            },
+            {
+              "end_pos": null,
+              "start_pos": 263
             }
           ],
           "min_coverage1": 10,
@@ -4610,10 +4722,6 @@
           "key_positions": [
             {
               "end_pos": null,
-              "start_pos": 90
-            },
-            {
-              "end_pos": null,
               "start_pos": 98
             },
             {
@@ -4841,10 +4949,6 @@
             },
             {
               "end_pos": null,
-              "start_pos": 35
-            },
-            {
-              "end_pos": null,
               "start_pos": 43
             },
             {
@@ -4862,10 +4966,6 @@
             {
               "end_pos": null,
               "start_pos": 58
-            },
-            {
-              "end_pos": null,
-              "start_pos": 71
             },
             {
               "end_pos": 74,
@@ -5018,8 +5118,12 @@
               "start_pos": 62
             },
             {
-              "end_pos": 71,
+              "end_pos": null,
               "start_pos": 65
+            },
+            {
+              "end_pos": 70,
+              "start_pos": 67
             },
             {
               "end_pos": 75,
@@ -5028,10 +5132,6 @@
             {
               "end_pos": null,
               "start_pos": 77
-            },
-            {
-              "end_pos": null,
-              "start_pos": 90
             },
             {
               "end_pos": null,
@@ -5115,15 +5215,7 @@
             },
             {
               "end_pos": null,
-              "start_pos": 236
-            },
-            {
-              "end_pos": null,
               "start_pos": 238
-            },
-            {
-              "end_pos": null,
-              "start_pos": 318
             }
           ],
           "min_coverage1": 10,
@@ -5265,8 +5357,12 @@
               "start_pos": 62
             },
             {
-              "end_pos": 71,
+              "end_pos": null,
               "start_pos": 65
+            },
+            {
+              "end_pos": 70,
+              "start_pos": 67
             },
             {
               "end_pos": 75,
@@ -5275,10 +5371,6 @@
             {
               "end_pos": null,
               "start_pos": 77
-            },
-            {
-              "end_pos": null,
-              "start_pos": 90
             },
             {
               "end_pos": null,
@@ -5362,15 +5454,7 @@
             },
             {
               "end_pos": null,
-              "start_pos": 236
-            },
-            {
-              "end_pos": null,
               "start_pos": 238
-            },
-            {
-              "end_pos": null,
-              "start_pos": 318
             }
           ],
           "min_coverage1": 10,

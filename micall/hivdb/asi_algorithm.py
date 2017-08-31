@@ -278,6 +278,17 @@ class AsiAlgorithm:
             return [True, bnf.score, bnf.mutations]
         return [False, bnf.score, bnf.mutations]
 
+    def get_gene_positions(self, gene):
+        positions = set()
+        for drug_class in self.gene_def[gene]:
+            for drug_code in self.drug_class[drug_class]:
+                drug_config = self.drugs[drug_code]
+                rules = drug_config[1]
+                for condition, _ in rules:
+                    for match in re.finditer(r'(\d+)[A-Zid]', condition):
+                        positions.add(int(match.group(1)))
+        return positions
+
     # Hmm, what is this?  Oh not much, just a Backus-Naur Form parser.
     # booleancondition | scorecondition
     def bnf_statement(self, cond, aaseq):

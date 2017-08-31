@@ -744,6 +744,160 @@ class AsiAlgorithmNewRulesTest(TestCase):
         self.assertEqual(expected_drugs, drugs)
         self.assertEqual(expected_mutation_comments, result.mutation_comments)
 
+    def test_get_gene_positions(self):
+        drugs = """\
+          <DRUG>
+            <NAME>ABC</NAME>
+            <FULLNAME>abacavir</FULLNAME>
+            <RULE>
+              <CONDITION><![CDATA[SCORE FROM(41L => 15)]]></CONDITION>
+              <ACTIONS>
+                <SCORERANGE>
+                  <USE_GLOBALRANGE/>
+                </SCORERANGE>
+              </ACTIONS>
+            </RULE>
+          </DRUG>
+        """
+        expected_positions = {41}
+        asi = self.create_asi(drugs=drugs)
+
+        positions = asi.get_gene_positions('RT')
+
+        self.assertEqual(expected_positions, positions)
+
+    def test_score_list_positions(self):
+        drugs = """\
+          <DRUG>
+            <NAME>ABC</NAME>
+            <FULLNAME>abacavir</FULLNAME>
+            <RULE>
+              <CONDITION><![CDATA[SCORE FROM(41L => 15, 99F => 30)]]></CONDITION>
+              <ACTIONS>
+                <SCORERANGE>
+                  <USE_GLOBALRANGE/>
+                </SCORERANGE>
+              </ACTIONS>
+            </RULE>
+          </DRUG>
+        """
+        expected_positions = {41, 99}
+        asi = self.create_asi(drugs=drugs)
+
+        positions = asi.get_gene_positions('RT')
+
+        self.assertEqual(expected_positions, positions)
+
+    def test_and_positions(self):
+        drugs = """\
+          <DRUG>
+            <NAME>ABC</NAME>
+            <FULLNAME>abacavir</FULLNAME>
+            <RULE>
+              <CONDITION><![CDATA[SCORE FROM((41L AND 99F) => 15)]]></CONDITION>
+              <ACTIONS>
+                <SCORERANGE>
+                  <USE_GLOBALRANGE/>
+                </SCORERANGE>
+              </ACTIONS>
+            </RULE>
+          </DRUG>
+        """
+        expected_positions = {41, 99}
+        asi = self.create_asi(drugs=drugs)
+
+        positions = asi.get_gene_positions('RT')
+
+        self.assertEqual(expected_positions, positions)
+
+    def test_or_position(self):
+        drugs = """\
+          <DRUG>
+            <NAME>ABC</NAME>
+            <FULLNAME>abacavir</FULLNAME>
+            <RULE>
+              <CONDITION><![CDATA[SCORE FROM((41L OR 99F) => 15)]]></CONDITION>
+              <ACTIONS>
+                <SCORERANGE>
+                  <USE_GLOBALRANGE/>
+                </SCORERANGE>
+              </ACTIONS>
+            </RULE>
+          </DRUG>
+        """
+        expected_positions = {41, 99}
+        asi = self.create_asi(drugs=drugs)
+
+        positions = asi.get_gene_positions('RT')
+
+        self.assertEqual(expected_positions, positions)
+
+    def test_max_position(self):
+        drugs = """\
+          <DRUG>
+            <NAME>ABC</NAME>
+            <FULLNAME>abacavir</FULLNAME>
+            <RULE>
+              <CONDITION><![CDATA[SCORE FROM(MAX (41A => 30, 99C => 60))]]></CONDITION>
+              <ACTIONS>
+                <SCORERANGE>
+                  <USE_GLOBALRANGE/>
+                </SCORERANGE>
+              </ACTIONS>
+            </RULE>
+          </DRUG>
+        """
+        expected_positions = {41, 99}
+        asi = self.create_asi(drugs=drugs)
+
+        positions = asi.get_gene_positions('RT')
+
+        self.assertEqual(expected_positions, positions)
+
+    def test_negative_positions(self):
+        drugs = """\
+          <DRUG>
+            <NAME>ABC</NAME>
+            <FULLNAME>abacavir</FULLNAME>
+            <RULE>
+              <CONDITION><![CDATA[SCORE FROM(41A => -10)]]></CONDITION>
+              <ACTIONS>
+                <SCORERANGE>
+                  <USE_GLOBALRANGE/>
+                </SCORERANGE>
+              </ACTIONS>
+            </RULE>
+          </DRUG>
+        """
+        expected_positions = {41}
+        asi = self.create_asi(drugs=drugs)
+
+        positions = asi.get_gene_positions('RT')
+
+        self.assertEqual(expected_positions, positions)
+
+    def test(self):
+        drugs = """\
+          <DRUG>
+            <NAME>ABC</NAME>
+            <FULLNAME>abacavir</FULLNAME>
+            <RULE>
+              <CONDITION><![CDATA[SCORE FROM(MAX((41A AND 99F) => 5, 62K => 10))]]></CONDITION>
+              <ACTIONS>
+                <SCORERANGE>
+                  <USE_GLOBALRANGE/>
+                </SCORERANGE>
+              </ACTIONS>
+            </RULE>
+          </DRUG>
+        """
+        expected_positions = {41, 99, 62}
+        asi = self.create_asi(drugs=drugs)
+
+        positions = asi.get_gene_positions('RT')
+
+        self.assertEqual(expected_positions, positions)
+
     def test_custom_score_range(self):
         drugs = """\
   <DRUG>

@@ -36,6 +36,7 @@ def select_reported_regions(choices, reported_regions):
             for region, translation in reported_regions.items()
             if region in split_choices}
 
+
 def find_good_regions(original_regions, coverage_scores_csv):
     good_regions = {region: [name, False] for region, name in original_regions.items()}
     for row in DictReader(coverage_scores_csv):

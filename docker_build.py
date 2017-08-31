@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 import os
-from subprocess import check_call, CalledProcessError, check_output
+from subprocess import check_call, CalledProcessError
 
 import errno
 
