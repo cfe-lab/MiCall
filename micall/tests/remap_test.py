@@ -2,14 +2,16 @@ from csv import DictWriter
 from io import StringIO
 import os
 import unittest
+from unittest.mock import patch, Mock, DEFAULT
 
 from micall.core import remap
 from micall.core.project_config import ProjectConfig
 from micall.core.remap import is_first_read, is_short_read, \
     MixedReferenceSplitter, write_remap_counts, convert_prelim
+from micall.utils.externals import Bowtie2, Bowtie2Build
 
 
-class RemapTest(unittest.TestCase):
+class IsShortReadTest(unittest.TestCase):
     def assertCigarIsPrimer(self, cigar, is_primer_expected):
         row = {'cigar': cigar}
         max_primer_length = 29
@@ -892,17 +894,17 @@ example1\t89\tR1-seed\t1\t0\t9M\t=\t1\t0\tAAACCCTTT\tBBBBBBBBB
 type,filtered_count,count
 prelim R1-seed,0,1
 """
-        expected_ref_groups = {}
+        expected_seed_counts = {}
 
-        ref_groups = convert_prelim(prelim_csv,
-                                    self.sam_file,
-                                    self.remap_counts_writer,
-                                    count_threshold,
-                                    self.projects)
+        seed_counts = convert_prelim(prelim_csv,
+                                     self.sam_file,
+                                     self.remap_counts_writer,
+                                     count_threshold,
+                                     self.projects)
 
         self.assertEqual(expected_sam_file, self.sam_file.getvalue())
         self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
-        self.assertEqual(expected_ref_groups, ref_groups)
+        self.assertEqual(expected_seed_counts, seed_counts)
 
     def test_two_regions(self):
         prelim_csv = StringIO("""\
@@ -926,17 +928,17 @@ type,filtered_count,count
 prelim R1-seed,0,1
 prelim R2-seed,0,2
 """
-        expected_ref_groups = {}
+        expected_seed_counts = {}
 
-        ref_groups = convert_prelim(prelim_csv,
-                                    self.sam_file,
-                                    self.remap_counts_writer,
-                                    count_threshold,
-                                    self.projects)
+        seed_counts = convert_prelim(prelim_csv,
+                                     self.sam_file,
+                                     self.remap_counts_writer,
+                                     count_threshold,
+                                     self.projects)
 
         self.assertEqual(expected_sam_file, self.sam_file.getvalue())
         self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
-        self.assertEqual(expected_ref_groups, ref_groups)
+        self.assertEqual(expected_seed_counts, seed_counts)
 
     def test_long_reads(self):
         self.maxDiff = None
@@ -966,17 +968,17 @@ BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 type,filtered_count,count
 prelim R1-seed,2,2
 """
-        expected_ref_groups = {'main': ('R1-seed', 2)}
+        expected_seed_counts = {'R1-seed': 2}
 
-        ref_groups = convert_prelim(prelim_csv,
-                                    self.sam_file,
-                                    self.remap_counts_writer,
-                                    count_threshold,
-                                    self.projects)
+        seed_counts = convert_prelim(prelim_csv,
+                                     self.sam_file,
+                                     self.remap_counts_writer,
+                                     count_threshold,
+                                     self.projects)
 
         self.assertEqual(expected_sam_file, self.sam_file.getvalue())
         self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
-        self.assertEqual(expected_ref_groups, ref_groups)
+        self.assertEqual(expected_seed_counts, seed_counts)
 
     def test_star_region(self):
         self.maxDiff = None
@@ -1013,17 +1015,17 @@ type,filtered_count,count
 prelim *,0,1
 prelim R1-seed,2,2
 """
-        expected_ref_groups = {'main': ('R1-seed', 2)}
+        expected_seed_counts = {'R1-seed': 2}
 
-        ref_groups = convert_prelim(prelim_csv,
-                                    self.sam_file,
-                                    self.remap_counts_writer,
-                                    count_threshold,
-                                    self.projects)
+        seed_counts = convert_prelim(prelim_csv,
+                                     self.sam_file,
+                                     self.remap_counts_writer,
+                                     count_threshold,
+                                     self.projects)
 
         self.assertEqual(expected_sam_file, self.sam_file.getvalue())
         self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
-        self.assertEqual(expected_ref_groups, ref_groups)
+        self.assertEqual(expected_seed_counts, seed_counts)
 
     def test_best_in_group(self):
         self.maxDiff = None
@@ -1072,17 +1074,17 @@ type,filtered_count,count
 prelim R1-seed,2,2
 prelim R2-seed,3,3
 """
-        expected_ref_groups = {'main': ('R2-seed', 3)}
+        expected_seed_counts = {'R2-seed': 3}
 
-        ref_groups = convert_prelim(prelim_csv,
-                                    self.sam_file,
-                                    self.remap_counts_writer,
-                                    count_threshold,
-                                    self.projects)
+        seed_counts = convert_prelim(prelim_csv,
+                                     self.sam_file,
+                                     self.remap_counts_writer,
+                                     count_threshold,
+                                     self.projects)
 
         self.assertEqual(expected_sam_file, self.sam_file.getvalue())
         self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
-        self.assertEqual(expected_ref_groups, ref_groups)
+        self.assertEqual(expected_seed_counts, seed_counts)
 
     def test_unmapped_read(self):
         self.maxDiff = None
@@ -1112,14 +1114,88 @@ BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 type,filtered_count,count
 prelim R1-seed,1,2
 """
-        expected_ref_groups = {}
+        expected_seed_counts = {}
 
-        ref_groups = convert_prelim(prelim_csv,
-                                    self.sam_file,
-                                    self.remap_counts_writer,
-                                    count_threshold,
-                                    self.projects)
+        seed_counts = convert_prelim(prelim_csv,
+                                     self.sam_file,
+                                     self.remap_counts_writer,
+                                     count_threshold,
+                                     self.projects)
 
         self.assertEqual(expected_sam_file, self.sam_file.getvalue())
         self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
-        self.assertEqual(expected_ref_groups, ref_groups)
+        self.assertEqual(expected_seed_counts, seed_counts)
+
+
+class RemapTest(unittest.TestCase):
+    def setUp(self):
+        patcher = patch.multiple(Bowtie2, __init__=Mock(return_value=None), yield_output=DEFAULT)
+        self.bowtie2_output = []
+        mocks = patcher.start()
+        mocks['yield_output'].return_value = self.bowtie2_output
+
+        self.addCleanup(patcher.stop)
+        patcher = patch.multiple(Bowtie2Build,
+                                 __init__=Mock(return_value=None),
+                                 build=DEFAULT)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        patcher = patch.object(ProjectConfig, 'loadDefault')
+        mock_projects = patcher.start()
+        self.addCleanup(patcher.stop)
+        mock_projects.return_value.getAllReferences.return_value = {'R1': 'GTGGG'}
+        patcher = patch('micall.core.remap.is_short_read', Mock(return_value=False))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test(self):
+        test_path = os.path.dirname(__file__)
+        prelim_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+read1,99,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
+read1,147,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
+read2,99,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
+read2,147,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
+read3,99,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
+read3,147,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
+read4,99,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
+read4,147,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
+read5,99,R1,1,0,5M,=,1,-78,ATAAA,AAAAA
+read5,147,R1,1,0,5M,=,1,-78,ATAAA,AAAAA
+""")
+        self.bowtie2_output.extend([
+            "read1\t99\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
+            "read1\t147\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
+            "read2\t99\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
+            "read2\t147\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
+            "read3\t99\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
+            "read3\t147\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
+            "read4\t99\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
+            "read4\t147\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
+            "read5\t77\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA",
+            "read5\t141\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA"])
+        expected_remap_counts_csv = """\
+type,count,filtered_count,seed_dist,other_dist,other_seed
+raw,20,,,,
+prelim R1,10,10,,,
+remap-1 R1,8,,,,
+remap-final R1,8,,,,
+unmapped,2,,,,
+"""
+        remap_counts_csv = StringIO()
+
+        remap.remap(os.path.join(test_path,
+                                 'microtest',
+                                 '1234A-V3LOOP_S1_L001_R1_001.fastq'),
+                    os.path.join(test_path,
+                                 'microtest',
+                                 '1234A-V3LOOP_S1_L001_R2_001.fastq'),
+                    prelim_csv,
+                    StringIO(),
+                    remap_counts_csv,
+                    StringIO(),
+                    StringIO(),
+                    StringIO(),
+                    work_path=os.path.join(test_path, 'working'))
+
+        self.assertEqual(expected_remap_counts_csv, remap_counts_csv.getvalue())

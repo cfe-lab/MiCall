@@ -11,12 +11,10 @@ from collections import Counter, defaultdict
 import csv
 from functools import partial
 import logging
-import multiprocessing
 import os
 import re
 import shutil
 import sys
-from threading import Semaphore
 
 # noinspection PyUnresolvedReferences
 from gotoh import align_it
@@ -26,7 +24,7 @@ from micall.core import miseq_logging, project_config
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall.core.prelim_map import BOWTIE_THREADS, BOWTIE_BUILD_PATH, \
     BOWTIE_PATH, BOWTIE_VERSION, READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
-    REF_GAP_EXTEND
+    REF_GAP_EXTEND, check_fastq
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 from micall.utils.translation import reverse_and_complement
 
@@ -162,7 +160,6 @@ def sam_to_conseqs(samfile,
                    debug_reports=None,
                    seeds=None,
                    is_filtered=False,
-                   worker_pool=None,
                    filter_coverage=1,
                    distance_report=None,
                    original_seeds=None):
@@ -182,7 +179,6 @@ def sam_to_conseqs(samfile,
     @param is_filtered: if True, then any consensus that has migrated so far
         from its seed that it is closer to a different seed, will not be
         included as a new consensus.
-    @param worker_pool: a pool to do some distributed processing
     @param filter_coverage: when filtering on consensus distance, only include
         portions with at least this depth of coverage
     @param distance_report: empty dictionary or None. Dictionary will return:
@@ -200,21 +196,10 @@ def sam_to_conseqs(samfile,
     # refmap structure: {refname: {pos: Counter({nuc: count})}}
     refmap = {}
 
-    semaphore = Semaphore(READ_MERGE_BUFFER_SIZE) if worker_pool is not None else None
-    pairs = matchmaker(samfile, include_singles=True, semaphore=semaphore)
-    if worker_pool is None:
-        merged_reads = map(
-            partial(merge_reads, quality_cutoff),
-            pairs)
-    else:
-        merged_reads = worker_pool.imap_unordered(
-            partial(merge_reads, quality_cutoff),
-            pairs,
-            chunksize=READ_MERGE_CHUNK_SIZE)
+    pairs = matchmaker(samfile, include_singles=True)
+    merged_reads = map(partial(merge_reads, quality_cutoff), pairs)
     read_counts = Counter()
     for merged_read in merged_reads:
-        if semaphore is not None:
-            semaphore.release()
         if merged_read is None:
             continue
         rname, mseq, merged_inserts, qual1, qual2 = merged_read
@@ -392,7 +377,6 @@ def counts_to_conseqs(refmap, seeds=None):
 def build_conseqs(samfilename,
                   seeds=None,
                   is_filtered=False,
-                  worker_pool=None,
                   filter_coverage=1,
                   distance_report=None,
                   original_seeds=None):
@@ -406,7 +390,6 @@ def build_conseqs(samfilename,
     @param is_filtered: if True, then any consensus that has migrated so far
         from its seed that it is closer to a different seed, will not be
         included as a new consensus.
-    @param worker_pool: a pool to do some distributed processing
     @param filter_coverage: when filtering on consensus distance, only include
         portions with at least this depth of coverage
     @param distance_report: empty dictionary or None. Dictionary will return:
@@ -416,12 +399,11 @@ def build_conseqs(samfilename,
         the distance report.
     @return: {reference_name: consensus_sequence}
     """
-    with open(samfilename, 'rU') as samfile:
+    with open(samfilename) as samfile:
         conseqs = sam_to_conseqs(samfile,
                                  CONSENSUS_Q_CUTOFF,
                                  seeds=seeds,
                                  is_filtered=is_filtered,
-                                 worker_pool=worker_pool,
                                  filter_coverage=filter_coverage,
                                  distance_report=distance_report,
                                  original_seeds=original_seeds)
@@ -447,7 +429,6 @@ def remap(fastq1,
           unmapped1,
           unmapped2,
           work_path='',
-          nthreads=BOWTIE_THREADS,
           callback=None,
           count_threshold=10,
           rdgopen=READ_GAP_OPEN,
@@ -468,7 +449,6 @@ def remap(fastq1,
     @param unmapped1:  output FASTQ containing R1 reads that did not map to any region
     @param unmapped2:  output FASTQ containing R2 reads that did not map to any region
     @param work_path:  optional path to store working files
-    @param nthreads:  optional setting to modify the number of threads used by bowtie2
     @param callback: a function to report progress with three optional
         parameters - callback(message, progress, max_progress)
     @param count_threshold:  minimum number of reads that map to a region for it to be remapped
@@ -494,35 +474,9 @@ def remap(fastq1,
         bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
                                      BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
                                      logger)
-
     # check that the inputs exist
-    if not os.path.exists(fastq1):
-        logger.error('No FASTQ found at %s', fastq1)
-        sys.exit(1)
-
-    if not os.path.exists(fastq2):
-        logger.error('No FASTQ found at %s', fastq2)
-        sys.exit(1)
-
-    # append .gz extension if necessary
-    if gzip:
-        if not fastq1.endswith('.gz'):
-            try:
-                os.symlink(fastq1, fastq1+'.gz')
-            except OSError:
-                # symbolic link already exists
-                pass
-            fastq1 += '.gz'
-
-        if not fastq2.endswith('.gz'):
-            try:
-                os.symlink(fastq2, fastq2+'.gz')
-            except OSError:
-                # symbolic link already exists
-                pass
-            fastq2 += '.gz'
-
-    worker_pool = multiprocessing.Pool(processes=nthreads) if nthreads > 1 else None
+    fastq1 = check_fastq(fastq1, gzip)
+    fastq2 = check_fastq(fastq2, gzip)
 
     # retrieve reference sequences used for preliminary mapping
     projects = project_config.ProjectConfig.loadDefault()
@@ -540,35 +494,26 @@ def remap(fastq1,
 
     # convert preliminary CSV to SAM, count reads
     with open(samfile, 'w') as f:
-        refgroups = convert_prelim(prelim_csv,
-                                   f,
-                                   remap_counts_writer,
-                                   count_threshold,
-                                   projects)
+        # transfer filtered counts to map counts for remap loop
+        map_counts = convert_prelim(prelim_csv,
+                                    f,
+                                    remap_counts_writer,
+                                    count_threshold,
+                                    projects)
 
-    seed_counts = {best_ref: best_count
-                   for best_ref, best_count in refgroups.values()}
     # regenerate consensus sequences based on preliminary map
-    conseqs = build_conseqs(samfile, seeds=seeds, worker_pool=worker_pool)
+    prelim_conseqs = build_conseqs(samfile, seeds=seeds)
 
     # exclude references with low counts (post filtering)
-    new_conseqs = {}
-    map_counts = {}
-    for rname, conseq in conseqs.items():
-        count = seed_counts.get(rname, None)
-        if count is not None:
-            map_counts[rname] = count  # transfer filtered counts to map counts for remap loop
-            new_conseqs[rname] = conseq
-    conseqs = new_conseqs
+    conseqs = {rname: prelim_conseqs[rname]
+               for rname in map_counts
+               if rname in prelim_conseqs}
 
     # start remapping loop
     n_remaps = 0
     new_counts = Counter()
     unmapped_count = raw_count
     while conseqs:
-        if callback:
-            callback(message='... remap iteration %d' % n_remaps, progress=0)
-
         # reset unmapped files with each iteration
         unmapped1.seek(0)
         unmapped1.truncate()
@@ -592,7 +537,6 @@ def remap(fastq1,
                                           raw_count,
                                           rdgopen,
                                           rfgopen,
-                                          nthreads,
                                           new_counts,
                                           stderr,
                                           callback,
@@ -604,7 +548,6 @@ def remap(fastq1,
         conseqs = build_conseqs(samfile,
                                 seeds=conseqs,
                                 is_filtered=True,
-                                worker_pool=worker_pool,
                                 filter_coverage=count_threshold//2,  # pairs
                                 distance_report=distance_report,
                                 original_seeds=seeds)
@@ -633,9 +576,6 @@ def remap(fastq1,
         map_counts = dict(new_counts)
 
     # finished iterative phase
-    if worker_pool is not None:
-        worker_pool.close()
-
     # generate SAM CSV output
     remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)
     remap_writer.writeheader()
@@ -643,7 +583,7 @@ def remap(fastq1,
         splitter = MixedReferenceSplitter(work_path)
         split_counts = Counter()
         # At least one read was mapped, so samfile has relevant data
-        with open(samfile, 'rU') as f:
+        with open(samfile) as f:
             for fields in splitter.split(f):
                 remap_writer.writerow(dict(zip(SAM_FIELDS, fields)))
         for rname, (split_file1, split_file2) in splitter.splits.items():
@@ -660,7 +600,6 @@ def remap(fastq1,
                                                raw_count,
                                                rdgopen,
                                                rfgopen,
-                                               nthreads,
                                                split_counts,
                                                stderr,
                                                callback)
@@ -699,7 +638,7 @@ def convert_prelim(prelim_csv,
     :param remap_counts_writer: open CSV writer for counts
     :param count_threshold: minimum read count to be returned
     :param projects: project definitions
-    :return dict: { group_name: (refname, count) }
+    :return dict: { refname: count }
     """
     conseqs = projects.getAllReferences()
     # write SAM header
@@ -740,7 +679,10 @@ def convert_prelim(prelim_csv,
                                               (None, count_threshold - 1))
         if filtered_count > best_count:
             refgroups[refgroup] = (refname, filtered_count)
-    return refgroups
+
+    seed_counts = {best_ref: best_count
+                   for best_ref, best_count in refgroups.values()}
+    return seed_counts
 
 
 def map_to_reference(fastq1,
@@ -755,7 +697,6 @@ def map_to_reference(fastq1,
                      raw_count,
                      rdgopen,
                      rfgopen,
-                     nthreads,
                      new_counts,
                      stderr,
                      callback,
@@ -774,7 +715,6 @@ def map_to_reference(fastq1,
     @param raw_count: the number of reads in fastq1
     @param rdgopen: read gap open penalty
     @param rfgopen: reference gap open penalty
-    @param nthreads:  optional setting to modify the number of threads used by bowtie2
     @param new_counts: a Counter to track how many reads are mapped to each
         reference
     @param stderr: an open file object to receive stderr from the bowtie2 calls
@@ -809,7 +749,7 @@ def map_to_reference(fastq1,
                    '--no-hd',  # no header lines (start with @)
                    '--local',
                    '-X', '1200',
-                   '-p', str(nthreads)]
+                   '-p', '1']
 
     new_counts.clear()
     unmapped_count = 0
@@ -852,6 +792,7 @@ class MixedReferenceSplitter(object):
         self.work_path = work_path
         self.splits = {}
 
+    # noinspection PyMethodMayBeStatic
     def close_split_file(self, split_file):
         split_file.close()
 
@@ -931,7 +872,7 @@ class MixedReferenceSplitter(object):
         fastq.write('@{}\n{}\n+\n{}\n'.format(qname, seq, quality))
 
 
-def matchmaker(samfile, include_singles=False, semaphore=None):
+def matchmaker(samfile, include_singles=False):
     """
     An iterator that returns pairs of reads sharing a common qname from a SAM file.
     Note that unpaired reads will be left in the cached_rows dictionary and
@@ -939,7 +880,6 @@ def matchmaker(samfile, include_singles=False, semaphore=None):
     @param samfile: open file handle to a SAM file
     @param include_singles: True if unpaired reads should be returned, paired
         with a None value: ([qname, flag, rname, ...], None)
-    @param semaphore: acquired before each pair is generated
     @return: yields a tuple for each read pair with fields split by tab chars:
         ([qname, flag, rname, ...], [qname, flag, rname, ...])
     """
@@ -963,14 +903,10 @@ def matchmaker(samfile, include_singles=False, semaphore=None):
             if old_row is None:
                 cached_rows[qname] = row
             else:
-                if semaphore is not None:
-                    semaphore.acquire()
                 # current row should be the second read of the pair
                 yield old_row, row
     if include_singles:
         for row in cached_rows.values():
-            if semaphore is not None:
-                semaphore.acquire()
             yield row, None
 
 

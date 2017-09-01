@@ -453,8 +453,7 @@ def process_sample(sample_index, run_info, args, pssm):
               unmapped1,
               unmapped2,
               sample_scratch_path,
-              debug_file_prefix=debug_file_prefix,
-              nthreads=1)
+              debug_file_prefix=debug_file_prefix)
 
     logger.info('Running sam2aln (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'remap.csv'), 'r') as remap_csv, \

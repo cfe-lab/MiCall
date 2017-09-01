@@ -36,7 +36,6 @@ def prelim_map(fastq1,
                fastq2,
                prelim_csv,
                nthreads=BOWTIE_THREADS,
-               callback=None,
                rdgopen=READ_GAP_OPEN,
                rfgopen=REF_GAP_OPEN,
                stderr=sys.stderr,
@@ -50,8 +49,6 @@ def prelim_map(fastq1,
     @param prelim_csv: an open file object for the output file - all the reads
         mapped to references in CSV version of the SAM format
     @param nthreads: the number of threads to use.
-    @param callback: a function to report progress with three optional
-        parameters - callback(message, progress, max_progress)
     @param rdgopen: a penalty for opening a gap in the read sequence.
     @param rfgopen: a penalty for opening a gap in the reference sequence.
     @param stderr: where to write the standard error output from bowtie2 calls.
@@ -71,39 +68,8 @@ def prelim_map(fastq1,
                                      logger)
 
     # check that the inputs exist
-    if not os.path.exists(fastq1):
-        logger.error('No FASTQ found at %s', fastq1)
-        sys.exit(1)
-
-    if not os.path.exists(fastq2):
-        logger.error('No FASTQ found at %s', fastq2)
-        sys.exit(1)
-
-    # append .gz extension if necessary
-    if gzip:
-        if not fastq1.endswith('.gz'):
-            try:
-                os.symlink(fastq1, fastq1+'.gz')
-            except OSError:
-                # symbolic link already exists
-                pass
-            fastq1 += '.gz'
-
-        if not fastq2.endswith('.gz'):
-            try:
-                os.symlink(fastq2, fastq2+'.gz')
-            except OSError:
-                # symbolic link already exists
-                pass
-            fastq2 += '.gz'
-
-    total_reads = None
-    if callback:
-        # four lines per read, two files
-        total_reads = line_counter.count(fastq1, gzip=gzip) / 2
-        callback(message='... preliminary mapping',
-                 progress=0,
-                 max_progress=total_reads)
+    fastq1 = check_fastq(fastq1, gzip)
+    fastq2 = check_fastq(fastq2, gzip)
 
     # generate initial reference files
     projects = project_config.ProjectConfig.loadDefault()
@@ -146,13 +112,21 @@ def prelim_map(fastq1,
                    '-p', str(nthreads)]
 
     for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
-        if callback and i % 1000 == 0:
-            callback(progress=i)
         writer.writerow(line.split('\t')[:11])  # discard optional items
 
-    if callback:
-        # Track progress for second half
-        callback(progress=total_reads)
+
+def check_fastq(filename, gzip=False):
+    if not os.path.exists(filename):
+        sys.exit('No FASTQ found at ' + filename)
+    if gzip:
+        if not filename.endswith('.gz'):
+            new_filename = filename + '.gz'
+            try:
+                os.symlink(filename, new_filename)
+            except FileExistsError:
+                pass
+            filename = new_filename
+    return filename
 
 
 def main():
