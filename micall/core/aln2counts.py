@@ -22,6 +22,7 @@ import gotoh
 
 from micall.core import miseq_logging
 from micall.core import project_config
+from micall.g2p import fastq_g2p
 from micall.utils.big_counter import BigCounter
 from micall.utils.translation import translate, ambig_dict
 
@@ -29,7 +30,7 @@ AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'
 CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
-G2P_SEED_NAME = "HIV1-C-BR-JX140663-seed"
+G2P_SEED_NAME = fastq_g2p.HIV_SEED_NAME
 CONSENSUS_MIN_COVERAGE = 100
 
 

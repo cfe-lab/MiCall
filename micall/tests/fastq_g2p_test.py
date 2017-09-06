@@ -864,8 +864,8 @@ class WriteAlignedTest(unittest.TestCase):
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-C-BR-JX140663-seed,15,0,2,5,TGTACAAGACCCAAC
-HIV1-C-BR-JX140663-seed,15,1,1,5,AGAACAAGACCCAAC
+HIV1-CON-XX-Consensus-seed,15,0,2,5,TGTACAAGACCCAAC
+HIV1-CON-XX-Consensus-seed,15,1,1,5,AGAACAAGACCCAAC
 """
 
         counts2 = list(write_aligned_reads(counts, aligned_csv, seed, v3loop_ref))
@@ -880,7 +880,7 @@ HIV1-C-BR-JX140663-seed,15,1,1,5,AGAACAAGACCCAAC
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACAAGACCCAAC
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -894,7 +894,7 @@ HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACAAGACCCAAC
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-C-BR-JX140663-seed,15,0,2,4,ACAAGACCCAAC
+HIV1-CON-XX-Consensus-seed,15,0,2,4,ACAAGACCCAAC
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -908,7 +908,7 @@ HIV1-C-BR-JX140663-seed,15,0,2,4,ACAAGACCCAAC
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACAAGACCC
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCC
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -922,7 +922,7 @@ HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACAAGACCC
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-C-BR-JX140663-seed,15,0,2,1,TGT---AGACCCAAC
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGT---AGACCCAAC
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -936,7 +936,7 @@ HIV1-C-BR-JX140663-seed,15,0,2,1,TGT---AGACCCAAC
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACA---AGACCCAAC
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -951,7 +951,7 @@ HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACA---AGACCCAAC
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACA---AGACCCAAC
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -966,7 +966,7 @@ HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACA---AGACCCAAC
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq
-HIV1-C-BR-JX140663-seed,15,0,2,1,TGTACACCCAAC
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACACCCAAC
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))

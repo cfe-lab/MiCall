@@ -579,13 +579,13 @@ seed,region,qcut,left,insert,count,before
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_region_names": ["HIV1-C-BR-JX140663-seed"]
+          "seed_region_names": ["HIV1-CON-XX-Consensus-seed"]
         }
       ]
     }
   },
   "regions": {
-    "HIV1-C-BR-JX140663-seed": {
+    "HIV1-CON-XX-Consensus-seed": {
       "is_nucleotide": true,
       "reference": [
         "GAAATTTGGCCCGAGA"
@@ -600,26 +600,26 @@ seed,region,qcut,left,insert,count,before
   }
 }
 """))
-        self.report.remap_conseqs = {'HIV1-C-BR-JX140663-seed': "GAAATTTCAAGGCCCGAGA"}
+        self.report.remap_conseqs = {'HIV1-CON-XX-Consensus-seed': "GAAATTTCAAGGCCCGAGA"}
         # Insert a Q in the middle                                      Q^^
         g2p_aligned_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq
-HIV1-C-BR-JX140663-seed,15,0,9,1,AAATTTGGC
+HIV1-CON-XX-Consensus-seed,15,0,9,1,AAATTTGGC
 """)
         aligned_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq
-HIV1-C-BR-JX140663-seed,15,0,6,1,AAATTTCAAGGCCCG
-HIV1-C-BR-JX140663-seed,15,0,2,1,AA---TCAAGGCCCG
+HIV1-CON-XX-Consensus-seed,15,0,6,1,AAATTTCAAGGCCCG
+HIV1-CON-XX-Consensus-seed,15,0,2,1,AA---TCAAGGCCCG
 """)
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
-HIV1-C-BR-JX140663-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-HIV1-C-BR-JX140663-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,9
-HIV1-C-BR-JX140663-seed,R1,15,8,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-HIV1-C-BR-JX140663-seed,R1,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0
-HIV1-C-BR-JX140663-seed,R1,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+HIV1-CON-XX-Consensus-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
+HIV1-CON-XX-Consensus-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,9
+HIV1-CON-XX-Consensus-seed,R1,15,8,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
+HIV1-CON-XX-Consensus-seed,R1,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0
+HIV1-CON-XX-Consensus-seed,R1,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.write_amino_header(self.report_file)
@@ -638,13 +638,13 @@ HIV1-C-BR-JX140663-seed,R1,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
       "regions": [
         {
           "coordinate_region": "R1",
-          "seed_region_names": ["HIV1-C-BR-JX140663-seed", "R1-seed"]
+          "seed_region_names": ["HIV1-CON-XX-Consensus-seed", "R1-seed"]
         }
       ]
     }
   },
   "regions": {
-    "HIV1-C-BR-JX140663-seed": {
+    "HIV1-CON-XX-Consensus-seed": {
       "is_nucleotide": true,
       "reference": [
         "GAAATTTGGCCCGAGA"
@@ -668,7 +668,7 @@ HIV1-C-BR-JX140663-seed,R1,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         self.report.remap_conseqs = {'R1-seed': "AAATTTGGCCCGAGA"}
         g2p_aligned_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq
-HIV1-C-BR-JX140663-seed,15,0,9,0,GAAATTTGGC
+HIV1-CON-XX-Consensus-seed,15,0,9,0,GAAATTTGGC
 """)
         aligned_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq
@@ -678,11 +678,11 @@ R1-seed,15,0,8,0,AAATTTGGCCCG
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
-HIV1-C-BR-JX140663-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-HIV1-C-BR-JX140663-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-HIV1-C-BR-JX140663-seed,R1,15,8,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-HIV1-C-BR-JX140663-seed,R1,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0
-HIV1-C-BR-JX140663-seed,R1,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+HIV1-CON-XX-Consensus-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
+HIV1-CON-XX-Consensus-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
+HIV1-CON-XX-Consensus-seed,R1,15,8,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
+HIV1-CON-XX-Consensus-seed,R1,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0
+HIV1-CON-XX-Consensus-seed,R1,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """
 
         self.report.write_amino_header(self.report_file)
