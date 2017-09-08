@@ -499,8 +499,6 @@ class KiveLoader(object):
 
         run_info_path = os.path.join(folder, 'RunInfo.xml')
         run_info = self.parse_run_info(run_info_path)
-        direction_params = [(run_info.read_lengths[0], 1),
-                            (run_info.read_lengths[1], -1)]
         with qai_helper.Session() as session:
             session.login(settings.qai_path, settings.qai_user, settings.qai_password)
             metrics = session.get_json(
@@ -510,33 +508,39 @@ class KiveLoader(object):
                     'No quality control metrics found for run ' + run_info.miseq_run_id)
 
         with open(destination, 'w') as f:
-            writer = csv.DictWriter(f,
-                                    ['tile', 'cycle', 'errorrate'],
-                                    lineterminator=os.linesep)
-            writer.writeheader()
-            for tile, tile_metrics in itertools.groupby(metrics,
-                                                        itemgetter('tile')):
-                expected_cycle = 0
-                metric = next(tile_metrics)
-                for cycles, sign in direction_params:
-                    report_cycle = sign
-                    for _ in range(1, cycles+1):
-                        expected_cycle += 1
-                        cycle = int(metric['cycle'])
-                        if cycle == expected_cycle:
-                            errorrate = metric['errorrate']
-                            try:
-                                metric = next(tile_metrics)
-                            except StopIteration:
-                                metric = dict(cycle=-1)
-                        else:
-                            errorrate = ''
-                        writer.writerow(dict(tile=tile,
-                                             cycle=report_cycle,
-                                             errorrate=errorrate))
-                        report_cycle += sign
-                    expected_cycle += run_info.indexes_length
+            self.write_quality(f, metrics, run_info)
         return destination
+
+    @staticmethod
+    def write_quality(quality_csv, metrics, run_info):
+        writer = csv.DictWriter(quality_csv,
+                                ['tile', 'cycle', 'errorrate'],
+                                lineterminator=os.linesep)
+        writer.writeheader()
+        direction_params = [(run_info.read_lengths[0], 1),
+                            (run_info.read_lengths[1], -1)]
+        for tile, tile_metrics in itertools.groupby(metrics,
+                                                    itemgetter('tile')):
+            expected_cycle = 0
+            metric = next(tile_metrics)
+            for cycles, sign in direction_params:
+                report_cycle = sign
+                for _ in range(1, cycles + 1):
+                    expected_cycle += 1
+                    cycle = int(metric['cycle'])
+                    if cycle == expected_cycle:
+                        errorrate = metric['errorrate']
+                        try:
+                            metric = next(tile_metrics)
+                        except StopIteration:
+                            metric = dict(cycle=-1)
+                    else:
+                        errorrate = ''
+                    writer.writerow(dict(tile=tile,
+                                         cycle=report_cycle,
+                                         errorrate=errorrate))
+                    report_cycle += sign
+                expected_cycle += run_info.indexes_length
 
     @staticmethod
     def get_sample_name(fastq1):
@@ -719,15 +723,3 @@ class KiveLoader(object):
 
         Wrapped in a method to make it easier to mock when testing."""
         return datetime.now()
-
-if __name__ == '__live_coding__':
-
-    import unittest
-    from micall.tests.kive_loader_test import KiveLoaderTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(KiveLoaderTest("test_download_one_sample"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

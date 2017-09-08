@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime
+from io import StringIO
 import logging
 import os
 import unittest
@@ -32,6 +33,8 @@ class KiveLoaderTest(unittest.TestCase):
         self.quality_cdt = 'quality CDT'
         self.disabled_folders = []
         self.folder_retries = []
+        self.run_info_path = os.path.join(os.path.dirname(__file__),
+                                          'kive_loader_run_info.xml')
 
         def check_kive_connection():
             self.loader.quality_cdt = self.quality_cdt
@@ -548,3 +551,40 @@ class KiveLoaderTest(unittest.TestCase):
         sample_number = self.loader.get_sample_number(fastq_name)
 
         self.assertEqual(expected_sample_number, sample_number)
+
+    def test_parse_run_info(self):
+        expected_read_lengths = [5, 5]
+
+        run_info = KiveLoader.parse_run_info(self.run_info_path)
+
+        self.assertEqual(expected_read_lengths, run_info.read_lengths)
+
+    def test_write_quality(self):
+        quality_csv = StringIO()
+        metrics = [{"tile": 1101,
+                    "cycle": 1,
+                    "errorrate": "0.01"},
+                   {"tile": 1101,
+                    "cycle": 2,
+                    "errorrate": "0.02"},
+                   {"tile": 1101,
+                    "cycle": 12,
+                    "errorrate": "0.12"}]
+        run_info = KiveLoader.parse_run_info(self.run_info_path)
+        expected_quality = """\
+tile,cycle,errorrate
+1101,1,0.01
+1101,2,0.02
+1101,3,
+1101,4,
+1101,5,
+1101,-1,0.12
+1101,-2,
+1101,-3,
+1101,-4,
+1101,-5,
+"""
+
+        KiveLoader.write_quality(quality_csv, metrics, run_info)
+
+        self.assertEqual(expected_quality, quality_csv.getvalue())
