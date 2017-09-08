@@ -396,7 +396,7 @@ R1-seed,15,0,9,0,AAATTT
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -421,7 +421,7 @@ R1-seed,15,0,9,0,AAATTT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,0,9
@@ -457,7 +457,7 @@ R2-seed,15,0,8,0,AAATTT
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
 R2-seed,R2,15,4,2,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
 R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -487,7 +487,7 @@ R6b-seed,15,0,8,3,AAATTT
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R6a-seed,R6,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
 R6a-seed,R6,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
 R6a-seed,R6,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -512,7 +512,7 @@ R6b-seed,15,0,8,15,GGGGGGGGG
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R6a-seed,R6,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R6a-seed,R6,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R6a-seed,R6,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -537,7 +537,7 @@ R6b-seed,15,0,8,9,AGG
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R6a-seed,R6,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R6a-seed,R6,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R6a-seed,R6,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0
@@ -614,7 +614,7 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,AA---TCAAGGCCCG
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 HIV1-CON-XX-Consensus-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
 HIV1-CON-XX-Consensus-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,9
 HIV1-CON-XX-Consensus-seed,R1,15,8,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
@@ -677,7 +677,7 @@ R1-seed,15,0,8,0,AAATTTGGCCCG
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 HIV1-CON-XX-Consensus-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
 HIV1-CON-XX-Consensus-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
 HIV1-CON-XX-Consensus-seed,R1,15,8,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
@@ -706,7 +706,7 @@ R2-seed,15,0,8,0,AAATTT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R2-seed,R2,15,1,1,8,0,0,0,0,0,0,0,0,8
 R2-seed,R2,15,2,2,8,0,0,0,0,0,0,0,0,8
 R2-seed,R2,15,3,3,8,0,0,0,0,0,0,0,0,8
@@ -749,7 +749,7 @@ R1-seed,15,0,8,0,AAATTT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0,8,9
 R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0,8,9
 R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,8,9
@@ -781,7 +781,7 @@ R1-seed,8,9
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,9,0,0
 R1-seed,R1,15,2,2,0,0,0,0,0,0,0,9,0,0
 R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,0,9
@@ -816,7 +816,7 @@ R1-seed,8,9
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
 R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
@@ -847,7 +847,7 @@ Example_read_3,F,R2-seed,6,GTA,AAA
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,3,3,9,0,0,0,0,0,2,0,0,9
@@ -881,7 +881,7 @@ Example_read_2,F,R1-seed,3,AAC,AAA
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,9
 R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -915,7 +915,7 @@ R4-seed,15,0,9,0,ATGGCAAACTGGATCAAT
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R4-seed,R4,15,10,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,9
 R4-seed,R4,15,13,2,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R4-seed,R4,15,16,3,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
@@ -990,7 +990,7 @@ R1-seed,15,0,8,5,TCGA
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1,15,2,2,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1,15,3,3,0,0,0,0,0,0,0,0,0,0
@@ -1015,7 +1015,7 @@ R1-seed,15,0,9,0,AAATT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,0,9
@@ -1040,7 +1040,7 @@ R1-seed,15,0,9,0,AAATNT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,0,9
@@ -1066,7 +1066,7 @@ R1-seed,15,0,9,0,AAATNT
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,4,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -1086,7 +1086,7 @@ R1-seed,15,0,9,0,AAAT-T
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,4,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -1112,7 +1112,7 @@ R1-seed,15,0,9,0,GAAATTTCGA
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,8,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
@@ -1137,7 +1137,7 @@ R1-seed,15,0,9,0,GAAATTTCGA
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,2,1,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,3,2,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,4,3,9,0,0,0,0,0,0,0,0,9
@@ -1167,7 +1167,7 @@ R1-seed,15,0,9,0,AAA---AGG
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,0,9
@@ -1197,7 +1197,7 @@ R2-seed,15,0,9,0,AAATTTCCCCGA
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R2-seed,R2,15,1,1,9,0,0,0,0,0,0,0,0,9
 R2-seed,R2,15,2,2,9,0,0,0,0,0,0,0,0,9
 R2-seed,R2,15,3,3,9,0,0,0,0,0,0,0,0,9
@@ -1234,7 +1234,7 @@ R2-seed,15,0,9,0,AAATTTCCCCGA
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R2-seed,R2,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,9
@@ -1260,7 +1260,7 @@ R5-seed,15,0,9,0,AAATTTGGCCCCCGA
         #         A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R5-seed,R5,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R5-seed,R5,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R5-seed,R5,15,7,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
@@ -1288,7 +1288,7 @@ R1-seed,15,0,2,0,AAATTTCGA
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7
 R1-seed,R1,15,4,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,7
 R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,7
@@ -1308,7 +1308,7 @@ R1-seed,15,0,5,0,AAAC---GA
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
 R1-seed,R1,15,4,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,5
 R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,5
@@ -1334,7 +1334,7 @@ R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R3-seed,R3,15,10,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,13,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,16,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
@@ -1371,7 +1371,7 @@ R3-seed,R3,15,22,G,9,5
 R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
 """)
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R3-seed,R3,15,10,1,9,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,11,2,9,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,12,3,9,0,0,0,0,0,0,0,0,9
@@ -1557,7 +1557,7 @@ R2-seed,15,0,5,0,AAATTTGGnnCCCGA
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
 R2-seed,R2,15,4,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
 R2-seed,R2,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -1765,7 +1765,7 @@ R-NO-COORD,15,0,9,0,AAATTT
 """)
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,g2p_overlap,coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 R-NO-COORD,R-NO-COORD,15,1,,9,0,0,0,0,0,0,0,0,9
 R-NO-COORD,R-NO-COORD,15,2,,9,0,0,0,0,0,0,0,0,9
 R-NO-COORD,R-NO-COORD,15,3,,9,0,0,0,0,0,0,0,0,9
@@ -1848,7 +1848,7 @@ R1-seed,15,0,9,0,AAATTT
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R1-seed,R1a,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1a,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1a,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -2408,28 +2408,28 @@ class SeedAminoTest(unittest.TestCase):
         other = SeedAmino(consensus_nuc_index=7)
         other.count_aminos('TAG', 5)
         expected_counts = {'G': 4}
-        expected_g2p_overlap = 5
+        expected_v3_overlap = 5
 
         self.amino.count_overlap(other)
 
         self.assertEqual(expected_counts, self.amino.counts)
-        self.assertEqual(expected_g2p_overlap, self.amino.g2p_overlap)
-        self.assertEqual(expected_g2p_overlap,
-                         self.amino.nucleotides[0].g2p_overlap)
+        self.assertEqual(expected_v3_overlap, self.amino.v3_overlap)
+        self.assertEqual(expected_v3_overlap,
+                         self.amino.nucleotides[0].v3_overlap)
 
     def testOverlapPartialCodon(self):
         self.amino.count_aminos('GGG', 4)
         other = SeedAmino(consensus_nuc_index=7)
         other.count_aminos('TA', 5)
         expected_counts = {'G': 4}
-        expected_g2p_overlap = 5
+        expected_v3_overlap = 5
 
         self.amino.count_overlap(other)
 
         self.assertEqual(expected_counts, self.amino.counts)
-        self.assertEqual(expected_g2p_overlap, self.amino.g2p_overlap)
-        self.assertEqual(expected_g2p_overlap,
-                         self.amino.nucleotides[0].g2p_overlap)
+        self.assertEqual(expected_v3_overlap, self.amino.v3_overlap)
+        self.assertEqual(expected_v3_overlap,
+                         self.amino.nucleotides[0].v3_overlap)
 
 
 class SeedNucleotideTest(unittest.TestCase):
@@ -2625,9 +2625,9 @@ class SeedNucleotideTest(unittest.TestCase):
         other = SeedNucleotide()
         other.count_nucleotides('C', 5)
         expected_counts = {'T': 4}
-        expected_g2p_overlap = 5
+        expected_v3_overlap = 5
 
         self.nuc.count_overlap(other)
 
         self.assertEqual(expected_counts, self.nuc.counts)
-        self.assertEqual(expected_g2p_overlap, self.nuc.g2p_overlap)
+        self.assertEqual(expected_v3_overlap, self.nuc.v3_overlap)

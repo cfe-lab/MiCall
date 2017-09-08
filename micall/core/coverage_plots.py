@@ -17,7 +17,10 @@ from micall.core import project_config, aln2counts
 # http://stackoverflow.com/a/3054314/4794
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt, patches  # @IgnorePep8
+from matplotlib import pyplot as plt, patches  # noqa
+
+MAX_COVERAGE = 1000000
+FONT_SIZE = 8
 
 
 def coverage_plot(amino_csv,
@@ -58,9 +61,8 @@ def coverage_plot(amino_csv,
     writer.writeheader()
     paths = []
 
-    MAX_COVERAGE = 1000000
-    fontsize = 8
-    axis_formatter = FuncFormatter(lambda x, p: format(int(x), ','))
+    axis_formatter = FuncFormatter(lambda y, p: format(int(y), ','))
+    # noinspection PyTypeChecker
     fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
     for (seed, region), group in itertools.groupby(reader, itemgetter('seed',
                                                                       'region')):
@@ -71,7 +73,8 @@ def coverage_plot(amino_csv,
         partial_counts = Counter()
         insertion_counts = Counter()
         clipping_counts = Counter()
-        g2p_overlap_counts = Counter()
+        v3_overlap_counts = Counter()
+        qcut = None
         for row in group:
             pos = int(row['refseq.aa.pos'])
             deletion_count = int(row['del'])
@@ -84,7 +87,7 @@ def coverage_plot(amino_csv,
             partial_counts[pos] = int(row['partial'])
             insertion_counts[pos] = int(row['ins'])
             clipping_counts[pos] = int(row['clip'])
-            g2p_overlap_counts[pos] = int(row['g2p_overlap'])
+            v3_overlap_counts[pos] = int(row['v3_overlap'])
             qcut = row['q-cutoff']
         # use region to retrieve coordinate reference
         for project_region in projects.getProjectRegions(
@@ -103,7 +106,7 @@ def coverage_plot(amino_csv,
             y_partials = [partial_counts[pos] for pos in x]
             y_insertions = [insertion_counts[pos] for pos in x]
             y_clipping = [clipping_counts[pos] for pos in x]
-            y_g2p_overlap = [g2p_overlap_counts[pos] for pos in x]
+            y_v3_overlap = [v3_overlap_counts[pos] for pos in x]
 
             key_positions = project_region['key_positions']
             if not key_positions:
@@ -151,7 +154,7 @@ def coverage_plot(amino_csv,
             plt.ylim([0.5, MAX_COVERAGE])
             plt.yscale('log')
             ax.yaxis.set_major_formatter(axis_formatter)
-            plt.tick_params(axis='both', labelsize=fontsize)
+            plt.tick_params(axis='both', labelsize=FONT_SIZE)
             ax.add_patch(patches.Rectangle(xy=(left_margin*0.5, 0),
                                            width=-left_margin*0.4,
                                            height=10,
@@ -186,8 +189,8 @@ def coverage_plot(amino_csv,
             plt.step(x, y_clipping, where='mid', label='soft clipped', zorder=96)
             plt.step(x, y_insertions, where='mid', label='insertions', zorder=95)
             plt.step(x, y_low_quality, where='mid', label='low quality', zorder=94)
-            plt.step(x, y_g2p_overlap, where='mid', label='G2P overlap', zorder=93)
-            plt.legend(loc='best', fontsize=fontsize, fancybox=True, ncol=2)
+            plt.step(x, y_v3_overlap, where='mid', label='V3 overlap', zorder=93)
+            plt.legend(loc='best', fontsize=FONT_SIZE, fancybox=True, ncol=2)
             figname_parts.insert(-1, 'details')
             paths.append(save_figure(coverage_maps_path, figname_parts))
             plt.cla()  # clear the axis, but don't remove the axis itself.
@@ -251,6 +254,7 @@ def main():
             image_path = os.path.join(coverage_maps_path, image_name)
             archive_path = os.path.join('coverage_maps', image_name)
             tar.add(image_path, archive_path)
+
 
 if __name__ == '__main__':
     # note, must be called from project root if executing directly
