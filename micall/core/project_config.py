@@ -1,6 +1,8 @@
 import json
 import os
 
+G2P_SEED_NAME = "HIV1-CON-XX-Consensus-seed"
+
 
 class ProjectConfig(object):
     @classmethod

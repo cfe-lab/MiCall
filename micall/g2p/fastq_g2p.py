@@ -13,7 +13,7 @@ from gotoh import align_it, align_it_aa
 from micall.core.sam2aln import merge_pairs, SAM2ALN_Q_CUTOFFS
 from micall.utils.big_counter import BigCounter
 from micall.utils.translation import translate, reverse_and_complement
-from micall.core.project_config import ProjectConfig
+from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 
 # screen for in-frame deletions
 pat = re.compile('([A-Z])(---)+([A-Z])')
@@ -26,8 +26,6 @@ USE_TERMINAL_COST = 1
 MIN_PAIR_ALIGNMENT_SCORE = 20
 MIN_VALID = 7500
 MIN_VALID_PERCENT = 75.0
-# This seed best aligned with G2P ref in pssmlib
-HIV_SEED_NAME = "HIV1-CON-XX-Consensus-seed"
 COORDINATE_REF_NAME = "V3LOOP"
 # PSSM_AREF = 'CTRPNXNNTXXRKSIRIXXXGPGQXXXAFYATXXXXGDIIGDIXXRQAHC'.replace('X', '')
 
@@ -73,7 +71,7 @@ def fastq_g2p(pssm,
         working_path = os.path.dirname(g2p_csv.name)
         count_prefix = os.path.join(working_path, 'read_counts')
     project_config = ProjectConfig.loadDefault()
-    hiv_seed = project_config.getReference(HIV_SEED_NAME)
+    hiv_seed = project_config.getReference(G2P_SEED_NAME)
     coordinate_ref = project_config.getReference(COORDINATE_REF_NAME)
     v3loop_ref = extract_target(hiv_seed, coordinate_ref)
     reader = FastqReader(fastq1, fastq2)
@@ -510,7 +508,7 @@ def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
                     is_started = True
                     seq += read_char
         seq = seq.rstrip('-')
-        writer.writerow(dict(refname=HIV_SEED_NAME,
+        writer.writerow(dict(refname=G2P_SEED_NAME,
                              qcut=Q_CUTOFF,
                              rank=rank,
                              count=count,
@@ -533,6 +531,7 @@ def main():
               min_count=DEFAULT_MIN_COUNT,
               min_valid=MIN_VALID,
               min_valid_percent=MIN_VALID_PERCENT)
+
 
 if __name__ == '__main__':
     # note, must be called from project root if executing directly

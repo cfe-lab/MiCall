@@ -9,7 +9,7 @@ from gotoh import align_it_aa
 import requests
 
 from micall.core import aln2counts
-from micall.g2p.fastq_g2p import GAP_OPEN_COST, GAP_EXTEND_COST, USE_TERMINAL_COST, HIV_SEED_NAME
+from micall.g2p.fastq_g2p import GAP_OPEN_COST, GAP_EXTEND_COST, USE_TERMINAL_COST
 from micall.core.project_config import ProjectConfig
 
 # From pssmlib
@@ -162,6 +162,7 @@ def compare_config(project, project_config, sequences, ref_names=None):
             
         yield '\n'
     yield '{} differences\n'.format(diff_count)
+
 
 if __name__ == '__main__':
     main()

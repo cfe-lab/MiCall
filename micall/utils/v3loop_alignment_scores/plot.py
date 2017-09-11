@@ -1,5 +1,6 @@
 from collections import Counter
 from csv import DictReader, DictWriter
+# noinspection PyUnresolvedReferences
 from gotoh import align_it
 from datetime import datetime
 
@@ -9,7 +10,7 @@ import os
 from matplotlib import pyplot as plt
 
 from micall.core.project_config import ProjectConfig
-from micall.g2p.fastq_g2p import HIV_SEED_NAME, COORDINATE_REF_NAME, extract_target, \
+from micall.g2p.fastq_g2p import G2P_SEED_NAME, COORDINATE_REF_NAME, extract_target, \
     FastqReader, merge_reads, trim_reads, GAP_OPEN_COST, GAP_EXTEND_COST, USE_TERMINAL_COST
 
 CURRENT_MINIMUM_SCORE = 52
@@ -33,7 +34,7 @@ def extract_v3loop_ref():
             v3loop_ref = f.read()
     except FileNotFoundError:
         project_config = ProjectConfig.loadDefault()
-        hiv_seed = project_config.getReference(HIV_SEED_NAME)
+        hiv_seed = project_config.getReference(G2P_SEED_NAME)
         coordinate_ref = project_config.getReference(COORDINATE_REF_NAME)
         v3loop_ref = extract_target(hiv_seed, coordinate_ref)
         with open(ref_filename, 'w') as f:
@@ -102,5 +103,6 @@ def main():
     plt.xlabel('Gotoh alignment score')
     plt.ylabel('Fraction of reads')
     plt.savefig('docs/images/v3loop_alignment_scores.png')
+
 
 main()

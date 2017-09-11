@@ -11,10 +11,9 @@ from operator import itemgetter
 import os
 
 from micall import settings  # Import first for logging configuration.
-from micall.g2p.fastq_g2p import HIV_SEED_NAME
 from micall.monitor import qai_helper
 from micall.utils import sample_sheet_parser
-from micall.core.project_config import ProjectConfig
+from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 
 logger = logging.getLogger('update_qai')
 
@@ -164,7 +163,7 @@ def build_review_decisions(coverage_file,
         counts_map[tags] = int(counts['demultiplexed'])*2
         unreported_tags.add(tags)
 
-        key = tags, HIV_SEED_NAME
+        key = tags, G2P_SEED_NAME
         counts_map[key] = int(counts['v3loop'])*2
 
     sequencing_map = defaultdict(dict)  # {tags: {project: sequencing}}
