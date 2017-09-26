@@ -22,7 +22,7 @@ import Levenshtein
 
 from micall.core import miseq_logging, project_config
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
-from micall.core.prelim_map import BOWTIE_THREADS, BOWTIE_BUILD_PATH, \
+from micall.core.prelim_map import BOWTIE_BUILD_PATH, \
     BOWTIE_PATH, BOWTIE_VERSION, READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
     REF_GAP_EXTEND, check_fastq
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
@@ -31,8 +31,6 @@ from micall.utils.translation import reverse_and_complement
 CONSENSUS_Q_CUTOFF = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
 MAX_REMAPS = 3                  # Number of remapping attempts if mapping efficiency unsatisfied
-READ_MERGE_CHUNK_SIZE = 100
-READ_MERGE_BUFFER_SIZE = BOWTIE_THREADS * READ_MERGE_CHUNK_SIZE * 10
 SAM_FLAG_IS_UNMAPPED = 0x4
 SAM_FLAG_IS_MATE_UNMAPPED = 0x8
 SAM_FLAG_IS_FIRST_SEGMENT = 0x40
@@ -964,6 +962,7 @@ def main():
           unmapped2=args.unmapped2,
           work_path=work_path,
           gzip=args.gzip)  # defaults to False
+
 
 if __name__ == '__main__':
     main()

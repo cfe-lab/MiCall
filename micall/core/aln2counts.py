@@ -545,7 +545,7 @@ class SequenceReport(object):
             for seed_amino in self.seed_aminos[0]:
                 self.write_counts(self.seed, seed_amino, None, nuc_writer)
         else:
-            for region, report_aminos in self.reports.items():
+            for region, report_aminos in sorted(self.reports.items()):
                 for report_amino in report_aminos:
                     self.write_counts(region, report_amino.seed_amino, report_amino, nuc_writer)
 
