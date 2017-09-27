@@ -1,6 +1,6 @@
 ---
 title: Design of the FASTQ Geno2Pheno Step
-subtitle: Alignment vs. Mapping
+description: Alignment vs. Mapping
 ---
 
 ## Using Gotoh mapping ##

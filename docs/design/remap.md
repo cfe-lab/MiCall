@@ -1,6 +1,6 @@
 ---
 title: Remap Design
-subtitle: How seeds are chosen
+description: How seeds are chosen
 ---
 
 Choose which seeds to use as follows:

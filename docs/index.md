@@ -1,6 +1,6 @@
 ---
 title: MiCall
-subtitle: Processing FASTQ data from an Illumina MiSeq ##
+description: Processing FASTQ data from an Illumina MiSeq ##
 ---
 
 Maps all the reads from a sample against a set of reference sequences, then
