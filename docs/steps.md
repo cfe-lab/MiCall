@@ -1,6 +1,6 @@
 ---
 title: Steps and their input / output files
-subtitle:
+subtitle: Where the data goes
 ---
 
 * `micall_basespace.summarize_run`: extract phiX error rates from MiSeq data.

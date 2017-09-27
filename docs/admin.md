@@ -1,6 +1,6 @@
 ---
 title: Admin Tasks for the MiCall Pipeline
-subtitle:
+subtitle: Getting things done
 ---
 
 ## The MiCall Monitor ##
