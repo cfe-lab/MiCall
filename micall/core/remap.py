@@ -4,6 +4,7 @@
 Takes preliminary SAM as CSV input.  Iterative re-mapping of reads from
 original FASTQ files.
 Also report the number of reads mapped before and after processing.
+See docs/design/remap.md for a detailed description.
 """
 
 import argparse

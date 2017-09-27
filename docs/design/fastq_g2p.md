@@ -1,4 +1,8 @@
-# Design of the FASTQ Geno2Pheno Step #
+---
+title: Design of the FASTQ Geno2Pheno Step
+subtitle:
+---
+
 ## Using Gotoh mapping ##
 Until version 7.6, this was the sam_g2p step, because we first mapped the reads
 with bowtie2, then applied the G2P algorithm to bowtie2's SAM output. Some of

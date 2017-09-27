@@ -1,4 +1,7 @@
-# Steps and their input / output files #
+---
+title: Steps and their input / output files
+subtitle:
+---
 
 * `micall_basespace.summarize_run`: extract phiX error rates from MiSeq data.
   * in - InterOp folder
@@ -34,7 +37,7 @@
   * in - fastq2
   * prelim.csv - SAM file format
 * `remap`: iteratively use consensus from previous mapping as reference to try
-    and map more reads.
+    and map more reads. See [remap design] for more details.
   * in - fastq1
   * in - fastq2
   * in - prelim.csv
@@ -45,18 +48,6 @@
   * unmapped1.fastq - FASTQ format (unstructured text) reads that didn't map to
     any of the final references.
   * unmapped2.fastq - FASTQ 
-  * Choose which seeds to use as follows:
-    1. Count all the reads that the prelim_map step mapped to all the seeds,
-      skipping any shorter than 50 bases, because they are often primers.
-    2. Look at how many reads mapped to each seed, and drop any that mapped
-      fewer than ten.
-    3. If more than one seed from the same seed group (HCV-1a, 1b, 2, 3, 4, etc.)
-      pass the threshold, select the one with the most reads. In case of a tie,
-      choose the first seed, alphabetically.
-    4. Each iteration of remapping, look at the consensus sequence for each seed.
-      If it has drifted closer to one of the other seeds than to its original seed,
-      drop it. Drop one at a time, and recalculate distances, because two seeds can
-      drift toward each other and both be candidates for dropping.
 * `sam2aln`: extract the aligned portion of each read from a CSV SAM file. Also
     combines duplicates.
   * in - remap.csv
@@ -92,6 +83,7 @@
   * mutations.csv - significant mutations found
 
 [fastq_g2p_design]: http://cfe-lab.github.io/MiCall/design/fastq_g2p
+[remap design]: http://cfe-lab.github.io/MiCall/design/remap
 
 ## File descriptions ##
 * quality.csv and bad_cycles.csv

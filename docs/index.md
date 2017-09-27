@@ -1,5 +1,8 @@
-# MiCall #
-## Processing FASTQ data from an Illumina MiSeq ##
+---
+title: MiCall
+subtitle: Processing FASTQ data from an Illumina MiSeq ##
+---
+
 Maps all the reads from a sample against a set of reference sequences, then
 stitches all the reads into consensus sequences and coverage maps.
 

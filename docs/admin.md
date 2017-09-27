@@ -1,4 +1,8 @@
-# Admin Tasks for the MiCall Pipeline #
+---
+title: Admin Tasks for the MiCall Pipeline
+subtitle:
+---
+
 ## The MiCall Monitor ##
 
 MiCall Monitor (or just Monitor) handles the automated processing of new MiSeq data
