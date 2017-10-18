@@ -608,7 +608,7 @@ class AsiAlgorithm:
             if lparen == -1 or rparen == -1:
                 return BNFVal(False)
             newcond = cond[lparen + 1: rparen]
-            bnflist = self.bnf_scorelist(newcond, aaseq)
+            bnflist = self.bnf_scorelist(newcond + '|', aaseq)
             score = -999  # close enough to infinity.
 
             if bnflist[0].cond:

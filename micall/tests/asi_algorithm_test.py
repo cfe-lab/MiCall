@@ -647,6 +647,19 @@ class AsiAlgorithmTinyRulesTest(TestCase):
         self.assertEqual(expected_score, bnr.score)
         self.assertEqual(expected_mutations, bnr.mutations)
 
+    def test_bnf_scorecondition_max_no_trailing_space(self):
+        aminos = [['F'], ['R']]
+        cond = 'SCORE FROM(MAX ( 1F => 10, 2R => 20))|'
+        expected_cond = '|'
+        expected_score = 20
+        expected_mutations = {'1F', '2R'}
+
+        bnr = self.asi.bnf_scorecondition(cond, aminos)
+
+        self.assertEqual(expected_cond, bnr.cond)
+        self.assertEqual(expected_score, bnr.score)
+        self.assertEqual(expected_mutations, bnr.mutations)
+
 
 class AsiAlgorithmNewRulesTest(TestCase):
     default_drugs = """\
