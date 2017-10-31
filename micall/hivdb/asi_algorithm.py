@@ -36,99 +36,18 @@ drug.comments  #list of comments associated with this drug
 from collections import defaultdict
 import re
 import xml.dom.minidom as minidom
+from pyvdrm.asi2 import ASI2
+from pyvdrm.vcf import MutationSet
 
-# utility code ---------------------------------------------------------------
-# random useful junk that should probably be in a util file.  Mostly translated
-# over from my ruby code.
-
-# nuc to amino hash
-AA_HASH = {
-    'ttt': 'F', 'tct': 'S', 'tat': 'Y', 'tgt': 'C',
-    'ttc': 'F', 'tcc': 'S', 'tac': 'Y', 'tgc': 'C',
-    'tta': 'L', 'tca': 'S', 'taa': '*', 'tga': '*',
-    'ttg': 'L', 'tcg': 'S', 'tag': '*', 'tgg': 'W',
-
-    'ctt': 'L', 'cct': 'P', 'cat': 'H', 'cgt': 'R',
-    'ctc': 'L', 'ccc': 'P', 'cac': 'H', 'cgc': 'R',
-    'cta': 'L', 'cca': 'P', 'caa': 'Q', 'cga': 'R',
-    'ctg': 'L', 'ccg': 'P', 'cag': 'Q', 'cgg': 'R',
-
-    'att': 'I', 'act': 'T', 'aat': 'N', 'agt': 'S',
-    'atc': 'I', 'acc': 'T', 'aac': 'N', 'agc': 'S',
-    'ata': 'I', 'aca': 'T', 'aaa': 'K', 'aga': 'R',
-    'atg': 'M', 'acg': 'T', 'aag': 'K', 'agg': 'R',
-
-    'gtt': 'V', 'gct': 'A', 'gat': 'D', 'ggt': 'G',
-    'gtc': 'V', 'gcc': 'A', 'gac': 'D', 'ggc': 'G',
-    'gta': 'V', 'gca': 'A', 'gaa': 'E', 'gga': 'G',
-    'gtg': 'V', 'gcg': 'A', 'gag': 'E', 'ggg': 'G'
-}
-
-# Hash of Mixture nuc to list of un-mixed nucs
-AMBIG = {
-    'A': ['A'], 'G': ['G'], 'T': ['T'], 'C': ['C'],
-    'R': ['A', 'G'], 'Y': ['C', 'T'], 'K': ['G', 'T'],
-    'M': ['A', 'C'], 'B': ['C', 'G', 'T'], 'D': ['A', 'G', 'T'],
-    'H': ['A', 'C', 'T'], 'V': ['A', 'C', 'G'], 'S': ['C', 'G'],
-    'W': ['A', 'T'], 'N': ['A', 'C', 'G', 'T']
-}
-
-
-# Generates all possible non-ambigious nucleotides from an ambiguous 3 nucleotide sequence
-def generate(nuc):
-    posa = AMBIG[nuc[0]]
-    posb = AMBIG[nuc[1]]
-    posc = AMBIG[nuc[2]]
-
-    nuclist = []
-    for a in posa:
-        for b in posb:
-            for c in posc:
-                nuclist.append(a + b + c)
-
-    return nuclist
-
-
-# Turns nucleotide sequence into an amino acid array
-def translate_complete_to_array(sequence):
-    protseq = []
-    for i in range(0, len(sequence) // 3):
-        expanded_codon = generate(sequence[i * 3: i * 3 + 3])
-        aminos = {raw_translator(codon) for codon in expanded_codon}
-
-        protseq.append(list(aminos))
-    return protseq
-
-
-def raw_translator(nucs):
-    aa = ''
-    for i in range(0, (len(nucs) // 3)):
-        x = AA_HASH[nucs[i * 3: i * 3 + 3].lower()]
-        aa += x
-    return aa
-
-
-# BNF Support code: ----------------------------------------------------------
-class BNFVal:
-    def __init__(self, cond, truth=False, score=0, mutations=None):
-        self.truth = truth
-        self.cond = cond
-        self.score = score
-        self.logic = None  # will be 'AND' or 'OR' if its from a condition2
-        if mutations is None:
-            self.mutations = set()  # mutations that triggered this, like 'M41L'
-        else:
-            self.mutations = mutations
-
-    def __repr__(self):
-        if not self.cond or len(self.cond) <= 21:
-            cond = self.cond
-        else:
-            cond = self.cond[:9] + '...' + self.cond[-9:]
-        return 'BNFVal({!r}, {!r}, {!r}, {!r})'.format(cond,
-                                                       self.truth,
-                                                       self.score,
-                                                       self.mutations)
+def call_mutations(aaseq):
+    '''shim to shoehorn new DRM evaluator -- replace'''
+    muset = set([])
+    for pos, mus in zip(range(1, len(aaseq) + 1), aaseq):
+        mus = ''.join(mus)
+        if mus == '':
+            continue
+        muset |= MutationSet.from_string("{}{}".format(pos, mus)).mutations
+    return muset
 
 
 # Now the actual code:----------------------------------------------------------
@@ -269,17 +188,8 @@ class AsiAlgorithm:
                     rules.append([condition, actions])  # hrmm
                 self.mutation_comments.append([gene_name, rules])
 
-    # This is going to be harder than I thought.  Darn you BNF!
-    # starts the crazy BNF Parsing
-    def interp_condition(self, cond, aaseq):
-        bnf = self.bnf_statement(cond + '|', aaseq)
-        assert bnf.cond
-        if bnf.truth:
-            return [True, bnf.score, bnf.mutations]
-        return [False, bnf.score, bnf.mutations]
-
     def get_gene_positions(self, gene):
-        positions = set()
+        positions = set([])
         for drug_class in self.gene_def[gene]:
             for drug_code in self.drug_class[drug_class]:
                 drug_config = self.drugs[drug_code]
@@ -288,353 +198,6 @@ class AsiAlgorithm:
                     for match in re.finditer(r'(\d+)[A-Zid]', condition):
                         positions.add(int(match.group(1)))
         return positions
-
-    # Hmm, what is this?  Oh not much, just a Backus-Naur Form parser.
-    # booleancondition | scorecondition
-    def bnf_statement(self, cond, aaseq):
-        for func in [self.bnf_booleancondition, self.bnf_scorecondition]:
-            bnf = func(cond, aaseq)
-            if bnf.cond:
-                return bnf
-
-    # condition condition2*;
-    def bnf_booleancondition(self, cond, aaseq):
-        bnflist = []
-        bnf = self.bnf_condition(cond, aaseq)
-        if bnf.cond:
-            bnflist.append(bnf)
-            while True:
-                bnf = self.bnf_condition2(bnf.cond, aaseq)
-                if bnf.cond:
-                    bnflist.append(bnf)
-                else:
-                    break
-            # Use the logic
-            left_truth = None
-            mutations = None
-            for bnf in bnflist:
-                # print "boolean_truth " + str(bnf.truth)
-                if left_truth is None:
-                    left_truth = bnf.truth
-                    mutations = bnf.mutations
-                else:
-                    # Not quite proper logic order, but I don't think anybody
-                    # is randomly mixing OR's and AND's so it should be okay
-                    if bnf.logic == 'AND':
-                        left_truth = left_truth and bnf.truth
-                        if left_truth:
-                            mutations |= bnf.mutations
-                        else:
-                            mutations.clear()
-                    elif bnf.logic == 'OR':
-                        left_truth = left_truth or bnf.truth
-                        mutations |= bnf.mutations
-            return BNFVal(bnflist[-1].cond, left_truth, mutations=mutations)
-        else:
-            return BNFVal(False)
-
-    # l_par booleancondition r_par | residue | excludestatement | selectstatement
-    def bnf_condition(self, cond, aaseq):
-        for func in [self.bnf_booleancondition, self.bnf_residue, self.bnf_excludestatement, self.bnf_selectstatement]:
-            if func == self.bnf_booleancondition:
-                lpi = -1
-                rpi = -1
-                cnt = 0
-                # immediate break if it doesn't match this regexp:
-                if not re.match('^\s*\(', cond):
-                    continue
-
-                # Search for parens
-                for i in range(0, len(cond)):
-                    if cond[i] == '(':
-                        if lpi == -1:
-                            lpi = i
-                        cnt += 1
-                    elif cond[i] == ')':
-                        cnt -= 1
-                        if cnt == 0:
-                            rpi = i
-                            break
-
-                assert lpi >= 0 and rpi >= 0, (lpi, rpi)
-
-                bnf = func(cond[lpi + 1: rpi] + ' |', aaseq)
-                if bnf.cond:
-                    return bnf
-            else:
-                bnf = func(cond, aaseq)
-                if bnf.cond:
-                    return bnf
-        return BNFVal(False)
-
-    # logicsymbol condition;
-    def bnf_condition2(self, cond, aaseq):
-        bnf_logic = self.bnf_logicsymbol(cond)
-        if bnf_logic.cond:
-            bnf = self.bnf_condition(bnf_logic.cond, aaseq)
-            if bnf.cond:
-                bnf.logic = bnf_logic.logic
-                return bnf
-        return BNFVal(False)
-
-    # and | or
-    @staticmethod
-    def bnf_logicsymbol(cond):
-        if re.search('^\s*AND\s*', cond, flags=re.I):
-            bnf = BNFVal(re.sub('^\s*AND\s*', '', cond))
-            bnf.logic = 'AND'
-            return bnf
-        elif re.search('^\s*OR\s*', cond, flags=re.I):
-            bnf = BNFVal(re.sub('^\s*OR\s*', '', cond))
-            bnf.logic = 'OR'  # I think this works????
-            return bnf
-        return BNFVal(False)
-
-    # [originalaminoacid]:amino_acid? integer [mutatedaminoacid]:amino_acid+ |
-    # not [originalaminoacid]:amino_acid? Integer [mutatedaminoacid]:amino_acid+ |
-    # [originalaminoacid]:amino_acid? integer l_par not [mutatedaminoacid]:amino_acid+ r_par
-    @staticmethod
-    def bnf_residue(cond, aaseq):  # this looks hard yo
-        # I think we'll have to go the regexp route here.  Haha.
-        mo_a = re.search(
-            '^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)(.*)',
-            cond)
-        mo_b = re.search(
-            '^\s*(?:NOT|EXCLUDE)\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*([ARNDCEQGHILKMFPSTWYVid]+)(.*)',
-            cond)
-        mo_c = re.search(
-            '^\s*[ARNDCEQGHILKMFPSTWYVid]?\s*(\d+)\s*\(\s*NOT\s*([ARNDCEQGHILKMFPSTWYVid]+)\s*\)(.*)',
-            cond)
-        truth = False
-        mutations = None
-        if mo_a:
-            loc = int(mo_a.group(1))
-            aas = mo_a.group(2)
-            if len(aaseq) >= loc:
-                mutations = {str(loc) + aa
-                             for aa in aaseq[loc - 1]
-                             if aa in aas}
-                truth = bool(mutations)
-            bnf = BNFVal(mo_a.group(3), truth, mutations=mutations)
-            return bnf
-        elif mo_b or mo_c:
-            match = mo_b or mo_c
-            loc = int(match.group(1))
-            aas = match.group(2)
-            if len(aaseq) >= loc:
-                truth = not any(aa in aas for aa in aaseq[loc - 1])
-            else:
-                truth = False  # ????UNKNOWN
-            bnf = BNFVal(match.group(3), truth)
-            return bnf
-        return BNFVal(False)
-
-    # exclude residue
-    def bnf_excludestatement(self, cond, aaseq):
-        return self.bnf_residue(cond, aaseq)
-
-    # select selectstatement2
-    def bnf_selectstatement(self, cond, aaseq):
-        if re.search('^\s*SELECT\s*', cond, flags=re.I):
-            bnf = self.bnf_selectstatement2(re.sub('^\s*SELECT\s*', '', cond), aaseq)
-            if bnf.cond:
-                return bnf
-        return BNFVal(False)
-
-    # exactly integer from l_par selectlist r_par |
-    # atleast integer from l_par selectlist r_par |
-    # notmorethan integer from l_par selectlist r_par |
-    # atleast [atleastnumber]:integer logicsymbol notmorethan [notmorethannumber]:integer from l_par selectlist r_par
-    def bnf_selectstatement2(self, cond, aaseq):
-        """ Parse the details of a select statement.
-
-        :param str cond: the details of the select statement to parse.
-        :param aaseq: the list of amino acid lists for each position
-        """
-        lparen = -1
-        rparen = -1
-        cnt = 0
-        for i in range(0, len(cond)):
-            if cond[i] == '(' and cnt == 0:
-                lparen = i
-                cnt += 1
-            elif cond[i] == '(':
-                cnt += 1
-            elif cond[i] == ')' and cnt == 1:
-                rparen = i
-                cnt -= 1
-                break
-            elif cond[i] == ')':
-                cnt -= 1
-
-        if lparen == -1 or rparen == -1:
-            return BNFVal(False)
-
-        # get the list items
-        bnflist = self.bnf_selectlist(cond[lparen + 1:rparen] + ' |', aaseq)
-
-        mo_a = re.search(
-            '^\s*(EXACTLY\s*(\d+)|ATLEAST\s*(\d+)\s*(AND|OR)\s*'
-            'NOTMORETHAN\s*(\d+)|ATLEAST\s*(\d+)|NOTMORETHAN\s*(\d+))\s*'
-            'from\s*\(\s*(.+)\s*\)',
-            cond, flags=re.I)
-        cnt = 0
-        select_type = mo_a.group(1)
-        result = BNFVal(cond[rparen + 1:])
-        for bnf in bnflist:
-            if bnf.cond and bnf.truth:
-                cnt += 1
-                result.mutations |= bnf.mutations
-
-        if re.search('^\s*ATLEAST\s*(\d+)\s*(AND|OR)\s*NOTMORETHAN',
-                     select_type,
-                     flags=re.I):
-            atleastn = int(mo_a.group(3))
-            logic = mo_a.group(4)
-            atmostn = int(mo_a.group(5))
-            if logic.upper() == 'AND':
-                result.truth = atleastn <= cnt <= atmostn
-            else:
-                result.truth = atleastn <= cnt or cnt <= atmostn
-        elif re.search('^\s*EXACTLY', select_type, flags=re.I):
-            # print 'exactly'
-            exactlyn = int(mo_a.group(2))
-            result.truth = cnt == exactlyn
-        elif re.search('^\s*ATLEAST', select_type, flags=re.I):
-            # print 'atleastn'
-            atleastn = int(mo_a.group(6))
-            result.truth = cnt >= atleastn
-        elif re.search('^\s*NOTMORETHAN', select_type, flags=re.I):
-            # print 'notmorethan'
-            atmostn = int(mo_a.group(7))
-            result.truth = cnt <= atmostn
-
-        return result
-
-    # residue listitems*
-    def bnf_selectlist(self, cond, aaseq):
-        bnflist = []
-        bnf = self.bnf_residue(cond, aaseq)
-        if bnf.cond:
-            newcond = bnf.cond
-            bnflist.append(bnf)
-            while True:
-                newcond = re.sub('^\s*,\s*', '', newcond)
-                bnf = self.bnf_residue(newcond, aaseq)
-                if bnf.cond:
-                    bnflist.append(bnf)
-                    newcond = bnf.cond
-                else:
-                    break
-            return bnflist
-
-        return [BNFVal(False)]
-
-    # score from l_par scorelist r_par
-    def bnf_scorecondition(self, cond, aaseq):
-        tmp = re.search('^\s*score\s*from\s*\((.+)\)\s*|', cond, flags=re.I)
-        if tmp and tmp.group(1):
-            score = 0.0
-            bnf_list = self.bnf_scorelist(tmp.group(1) + '|', aaseq)
-            mutations = set()
-            if bnf_list[0].cond:
-                newcond = cond
-                for bnf in bnf_list:
-                    if bnf.cond:
-                        newcond = bnf.cond
-                        score += bnf.score
-                        mutations |= bnf.mutations
-                    else:
-                        break
-            else:
-                return BNFVal(False)
-            # I guess evalate the truth values?
-            return BNFVal(newcond, score=score, mutations=mutations)
-            # return bnf
-        return BNFVal(False)
-
-    # Should actually have a comma before each scoreitem*
-    # scoreitem scoreitems*
-    def bnf_scorelist(self, cond, aaseq):
-        bnflist = []
-        bnf = self.bnf_scoreitem(cond, aaseq)
-        if bnf.cond:
-            bnflist.append(bnf)
-            newcond = bnf.cond
-            while newcond:
-                # check for comma?
-                # print "test:  " + newcond
-                tmp = re.search('^\s*,\s*', newcond)
-                if tmp:
-                    newcond = re.sub('^\s*,\s*', '', newcond)
-                    bnf = self.bnf_scoreitem(newcond, aaseq)
-                    if not bnf.cond:
-                        break
-                    newcond = bnf.cond
-                    bnflist.append(bnf)
-                else:
-                    break
-            return bnflist
-        return [BNFVal(False)]
-
-    # booleancondition mapper min? number |
-    # max l_par scorelist r_par
-    def bnf_scoreitem(self, cond, aaseq):
-        # mo_a has 4 groups, the booleanconditon, an optional pointless MIN,
-        # and the score, and then the rest of the string
-        # I think we need to match a dash for negative numbers yo
-        mo_a = re.search('^\s*([^=>]+)\s*=>\s*(min)?\s*(-?\d+\.?\d*)\s*(.+)$', cond, flags=re.I)
-
-        # Trickier than we think, as the subexpressions could have parens.  Need to do the counting game.  Sadly.
-        mo_b = re.search('^\s*MAX\s*\(', cond, flags=re.I)
-        if mo_b:
-            # print "to mob, or not to mob?"
-            lparen = -1
-            rparen = -1
-            cnt = 0
-            for i in range(0, len(cond)):
-                if cond[i] == '(' and cnt == 0:
-                    lparen = i
-                    cnt += 1
-                elif cond[i] == '(':
-                    cnt += 1
-                elif cond[i] == ')' and cnt == 1:
-                    rparen = i
-                    cnt -= 1
-                    break
-                elif cond[i] == ')':
-                    cnt -= 1
-
-            if lparen == -1 or rparen == -1:
-                return BNFVal(False)
-            newcond = cond[lparen + 1: rparen]
-            bnflist = self.bnf_scorelist(newcond, aaseq)
-            score = -999  # close enough to infinity.
-
-            if bnflist[0].cond:
-                mutations = set()
-                for bnf in bnflist:
-                    if bnf.cond:
-                        mutations |= bnf.mutations
-                        if bnf.score > score and bnf.score != 0.0:
-                            score = bnf.score
-                if score == -999:
-                    score = 0.0
-                return BNFVal(cond[rparen + 1:],
-                              score=score,
-                              mutations=mutations)
-        elif mo_a:
-            # print "to mo a, or not to mo a? "
-            # print mo_a.group(1)
-            # print mo_a.group(3)
-            bnf = self.bnf_booleancondition(mo_a.group(1), aaseq)
-            bnf_score = float(mo_a.group(3))
-            if bnf.cond:
-                if bnf.truth:
-                    bnf.score = bnf_score
-                bnf.cond = mo_a.group(4)
-                return bnf
-        return BNFVal(False)
 
     # handles a couple undocumented comment filtering things.
     def comment_filter(self, comment, aaseq, region=None):
@@ -709,6 +272,9 @@ class AsiAlgorithm:
         drug_classes = self.gene_def[region]
         default_level = 1
         default_level_name = self.level_def['1']
+
+        mutations = call_mutations(aaseq)
+
         for drug_class in drug_classes:
             for drug_code in self.drug_class[drug_class]:
                 drug_name, drug_rules = self.drugs[drug_code]
@@ -719,30 +285,32 @@ class AsiAlgorithm:
                 drug_result.level_name = default_level_name
                 drug_result.drug_class = drug_class
 
-                for rule in drug_rules:
-                    cond = rule[0]
-                    actions = rule[1]
-                    interp = self.interp_condition(cond, aaseq)
+                for condition, actions in drug_rules:
 
-                    score = interp[1]
-                    truth = interp[0]
-                    raw_mutations[drug_class] |= interp[2]
-                    if not truth and score == 0.0:
+                    rule = ASI2(condition)
+                    rule_result = rule.dtree(mutations)
+
+                    if rule_result is None:
                         continue
-                    for act in actions:
-                        if act[0] == 'level':
-                            if int(act[1]) > drug_result.level:
-                                drug_result.level = int(act[1])
-                                drug_result.level_name = self.level_def[act[1]]
-                        elif act[0] == 'comment':
-                            comment, _ = self.comment_def[act[1]]
+
+                    score = float(rule_result.score)
+                    m = rule_result.residues
+                    raw_mutations[drug_class] |= m
+
+                    for action, comment in actions:
+                        if action == 'level':
+                            if int(comment) > drug_result.level:
+                                drug_result.level = int(comment)
+                                drug_result.level_name = self.level_def[comment]
+                        elif action == 'comment':
+                            comment, _ = self.comment_def[comment]
                             while (re.search('\$numberOfMutsIn{', comment) or
                                    re.search('\$listMutsIn{', comment)):
                                 comment = self.comment_filter(comment, aaseq, region)
                             drug_result.comments.append(comment)
-                        elif act[0] == 'scorerange':
+                        elif action == 'scorerange':
                             drug_result.score = score
-                            scorerange = act[1]
+                            scorerange = comment
                             if scorerange == 'useglobalrange':
                                 scorerange = self.global_range
 
@@ -766,25 +334,26 @@ class AsiAlgorithm:
                 result.drugs.append(drug_result)
 
         for cls, cls_mutations in raw_mutations.items():
-            mutation_parts = sorted((int(mutation[:-1]), mutation[-1])
-                                    for mutation in cls_mutations)
-            std = self.stds[region]
-            result.mutations[cls] = ['{}{}{}'.format(std[pos-1], pos, amino)
-                                     for pos, amino in mutation_parts]
+            for m in cls_mutations:
+                m.setWt(self.stds[region])
+            result.mutations[cls] = [str(m) for m in cls_mutations]
+
         result.drugs.sort(key=lambda e: e.code)
         result.drugs.sort(key=lambda e: e.drug_class, reverse=True)
         # comments
-        for gene in self.mutation_comments:
-            if gene[0] != region:
+        for target_region, results in self.mutation_comments:
+            if target_region != region:
                 continue
-            for mut in gene[1]:
-                cond = mut[0]
-                actions = mut[1]
+            for cond, actions in results:
 
-                interp = self.interp_condition(cond, aaseq)
-                if interp[0]:
-                    for act in actions:
-                        comment_template, _ = self.comment_def[act[1]]
+                # Why are we evaluating the mutations twice???
+                # this code should be considered broken
+                rule = ASI2(cond)
+                scoring = rule(mutations)
+
+                if scoring:
+                    for _, act in actions:
+                        comment_template, _ = self.comment_def[act]
                         comment = self.comment_filter(comment_template, aaseq, region)
                         result.mutation_comments.append(comment)
 
