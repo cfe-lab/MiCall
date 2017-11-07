@@ -146,29 +146,58 @@ class CompareSampleTest(TestCase):
 
         self.assertEqual(expected_report, report)
 
-    def test_missing_coverage_seed(self):
+    def test_missing_coverage_same_remap_counts(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(coverage_scores=[{'project': 'HIV',
-                                                      'region': 'PR',
-                                                      'seed': 'HIV1-seed',
+                        SampleFiles(coverage_scores=[{'project': 'HCV',
+                                                      'region': 'HCV1-E1',
+                                                      'seed': 'HCV1-seed',
                                                       'on.score': '2'},
                                                      {'project': 'HCV',
-                                                      'region': 'E2',
+                                                      'region': 'HCV2-E1',
+                                                      'seed': 'HCV2-seed',
+                                                      'on.score': '3'}],
+                                    remap_counts=[{'type': 'remap-1 HCV1-seed'},
+                                                  {'type': 'remap-1 HCV2-seed'}]),
+                        SampleFiles(coverage_scores=[{'project': 'HCV',
+                                                      'region': 'HCV1-E1',
                                                       'seed': 'HCV1-seed',
                                                       'on.score': '2'}],
-                                    remap_counts=[{'type': 'remap-1 HIV1-seed'},
-                                                  {'type': 'remap-1 HCV1-seed'}]),
-                        SampleFiles(coverage_scores=[{'project': 'HIV',
-                                                      'region': 'PR',
-                                                      'seed': 'HIV1-seed',
-                                                      'on.score': '2'}],
-                                    remap_counts=[{'type': 'remap-1 HIV1-seed'}]))
-        expected_report = 'run1:sample42 coverage: HCV E2 2 => -\n'
+                                    remap_counts=[{'type': 'remap-1 HCV1-seed'},
+                                                  {'type': 'remap-1 HCV2-seed'}]))
+        expected_report = 'run1:sample42 coverage: HCV HCV2-E1 3 => -\n'
+        expected_scenario_counts = {}
 
-        report, _ = compare_sample(sample)
+        report, scenario_counts = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
+        self.assertEqual(expected_scenario_counts, scenario_counts)
+
+    def test_missing_coverage_different_remap_counts(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(coverage_scores=[{'project': 'HCV',
+                                                      'region': 'HCV1-E1',
+                                                      'seed': 'HCV1-seed',
+                                                      'on.score': '2'},
+                                                     {'project': 'HCV',
+                                                      'region': 'HCV2-E1',
+                                                      'seed': 'HCV2-seed',
+                                                      'on.score': '3'}],
+                                    remap_counts=[{'type': 'remap-1 HCV1-seed'},
+                                                  {'type': 'remap-1 HCV2-seed'}]),
+                        SampleFiles(coverage_scores=[{'project': 'HCV',
+                                                      'region': 'HCV1-E1',
+                                                      'seed': 'HCV1-seed',
+                                                      'on.score': '2'}],
+                                    remap_counts=[{'type': 'remap-1 HCV1-seed'}]))
+        expected_report = ''
+        expected_scenario_counts = {'different remap counts': 1}
+
+        report, scenario_counts = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+        self.assertEqual(expected_scenario_counts, scenario_counts)
 
     def test_missing_coverage_to_low(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),

@@ -525,29 +525,17 @@ def map_coverage(coverage_scores):
             for score in coverage_scores}
 
 
-def get_seed_remaps(counts, seed):
-    if seed is None:
-        return None
-    row_parts = (row['type'].split() for row in counts)
-    matches = (parts[0]
-               for parts in row_parts
-               if len(parts) == 2 and parts[1] == seed)
-    count_parts = (match.split('-') for match in matches)
-    counts = (int(parts[1])
-              for parts in count_parts
-              if parts[0] != 'prelim' and parts[1] != 'final')
-    return max(counts)
-
-
-def remap_counts_changed(sample, source_seed, target_seed):
-    source_counts = sample.source_files.remap_counts
-    target_counts = sample.target_files.remap_counts
-    if source_counts == target_counts:
-        return False
-    source_remaps = get_seed_remaps(source_counts, source_seed)
-    target_remaps = get_seed_remaps(target_counts, target_seed)
-    return (source_remaps != target_remaps and
-            None not in (source_remaps, target_remaps))
+def map_remap_counts(counts):
+    if counts is None:
+        return {}
+    row_parts = [row['type'].split() for row in counts]
+    count_parts = [(parts[0].split('-'), parts[1])
+                   for parts in row_parts
+                   if len(parts) == 2]
+    seed_counts = {parts[1]: int(parts[0][1])
+                   for parts in count_parts
+                   if len(parts[0]) == 2 and parts[0][1] != 'final'}
+    return seed_counts
 
 
 def compare_coverage(sample, diffs, scenario_counts):
@@ -557,6 +545,8 @@ def compare_coverage(sample, diffs, scenario_counts):
     target_scores = map_coverage(sample.target_files.coverage_scores)
     if source_scores == target_scores:
         return
+    source_counts = map_remap_counts(sample.source_files.remap_counts)
+    target_counts = map_remap_counts(sample.target_files.remap_counts)
     run_name = os.path.basename(
         os.path.dirname(os.path.dirname(sample.run.target_path)))
     keys = sorted(set(source_scores.keys()) | target_scores.keys())
@@ -569,7 +559,7 @@ def compare_coverage(sample, diffs, scenario_counts):
         target_compare = '-' if target_score == '1' else target_score
         if source_compare != target_compare:
             project, region = key
-            if remap_counts_changed(sample, source_seed, target_seed):
+            if source_counts != target_counts:
                 scenario_counts['different remap counts'] += 1
             elif (MICALL_VERSION == '7.8' and
                   region == 'RT' and
