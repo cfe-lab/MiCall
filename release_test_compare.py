@@ -23,8 +23,8 @@ MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
 SampleFiles = namedtuple(
     'SampleFiles',
-    'cascade coverage_scores g2p_summary consensus')
-SampleFiles.__new__.__defaults__ = (None,) * 4
+    'cascade coverage_scores g2p_summary consensus remap_counts')
+SampleFiles.__new__.__defaults__ = (None,) * 5
 Sample = namedtuple('Sample', 'run name source_files target_files')
 
 
@@ -441,6 +441,14 @@ def read_samples(runs):
                                                      'g2p_summary.csv'))
             target_g2ps = group_samples(os.path.join(run.target_path,
                                                      'g2p_summary.csv'))
+            source_coverages = group_samples(os.path.join(run.source_path,
+                                                          'coverage_scores.csv'))
+            target_coverages = group_samples(os.path.join(run.target_path,
+                                                          'coverage_scores.csv'))
+            source_counts = group_samples(os.path.join(run.source_path,
+                                                       'remap_counts.csv'))
+            target_counts = group_samples(os.path.join(run.target_path,
+                                                       'remap_counts.csv'))
         except FileNotFoundError as ex:
             missing_files.append(str(ex))
             continue
@@ -450,13 +458,15 @@ def read_samples(runs):
             yield Sample(run,
                          sample_name,
                          SampleFiles(source_cascades.get(sample_name),
-                                     None,
+                                     source_coverages.get(sample_name),
                                      source_g2ps.get(sample_name),
-                                     None),
-                         SampleFiles(target_cascades.get(sample_name),
                                      None,
+                                     source_counts.get(sample_name)),
+                         SampleFiles(target_cascades.get(sample_name),
+                                     target_coverages.get(sample_name),
                                      target_g2ps.get(sample_name),
-                                     None))
+                                     None,
+                                     target_counts.get(sample_name)))
     if missing_targets:
         print('Missing targets: ', missing_targets)
     if missing_sources:
@@ -478,8 +488,20 @@ def compare_g2p(sample, diffs):
         return
     assert len(source_fields) == 1, source_fields
     assert len(target_fields) == 1, target_fields
+    run_name = os.path.basename(
+        os.path.dirname(os.path.dirname(sample.run.target_path)))
     source_x4_pct = source_fields[0]['X4pct']
     target_x4_pct = target_fields[0]['X4pct']
+    source_final = source_fields[0].get('final')
+    target_final = target_fields[0].get('final')
+    if source_final != target_final:
+        diffs.append('{}:{} G2P: {} {} => {} {}'.format(run_name,
+                                                        sample.name,
+                                                        source_final,
+                                                        source_x4_pct,
+                                                        target_final,
+                                                        target_x4_pct))
+        return
     if source_x4_pct == target_x4_pct:
         return
     try:
@@ -488,19 +510,88 @@ def compare_g2p(sample, diffs):
             return
     except ValueError:
         pass
-    run_name = os.path.basename(
-        os.path.dirname(os.path.dirname(sample.run.target_path)))
     diffs.append('{}:{} G2P: {} => {}'.format(run_name,
                                               sample.name,
                                               source_x4_pct,
                                               target_x4_pct))
-    
+
+
+def map_coverage(coverage_scores):
+    if coverage_scores is None:
+        return {}
+    return {(score['project'], score['region']): (score['on.score'],
+                                                  score.get('seed'),
+                                                  score.get('which.key.pos'))
+            for score in coverage_scores}
+
+
+def get_seed_remaps(counts, seed):
+    if seed is None:
+        return None
+    row_parts = (row['type'].split() for row in counts)
+    matches = (parts[0]
+               for parts in row_parts
+               if len(parts) == 2 and parts[1] == seed)
+    count_parts = (match.split('-') for match in matches)
+    counts = (int(parts[1])
+              for parts in count_parts
+              if parts[0] != 'prelim' and parts[1] != 'final')
+    return max(counts)
+
+
+def remap_counts_changed(sample, source_seed, target_seed):
+    source_counts = sample.source_files.remap_counts
+    target_counts = sample.target_files.remap_counts
+    if source_counts == target_counts:
+        return False
+    source_remaps = get_seed_remaps(source_counts, source_seed)
+    target_remaps = get_seed_remaps(target_counts, target_seed)
+    return (source_remaps != target_remaps and
+            None not in (source_remaps, target_remaps))
+
+
+def compare_coverage(sample, diffs, scenario_counts):
+    if sample.source_files.coverage_scores == sample.target_files.coverage_scores:
+        return
+    source_scores = map_coverage(sample.source_files.coverage_scores)
+    target_scores = map_coverage(sample.target_files.coverage_scores)
+    if source_scores == target_scores:
+        return
+    run_name = os.path.basename(
+        os.path.dirname(os.path.dirname(sample.run.target_path)))
+    keys = sorted(set(source_scores.keys()) | target_scores.keys())
+    for key in keys:
+        (source_score,
+         source_seed,
+         source_key_pos) = source_scores.get(key, ('-', None, None))
+        target_score, target_seed, _ = target_scores.get(key, ('-', None, None))
+        source_compare = '-' if source_score == '1' else source_score
+        target_compare = '-' if target_score == '1' else target_score
+        if source_compare != target_compare:
+            project, region = key
+            if remap_counts_changed(sample, source_seed, target_seed):
+                scenario_counts['different remap counts'] += 1
+            elif (MICALL_VERSION == '7.8' and
+                  region == 'RT' and
+                  source_key_pos == '318'):
+                scenario_counts['removed key pos 318'] += 1
+            else:
+                diffs.append('{}:{} coverage: {} {} {} => {}'.format(
+                    run_name,
+                    sample.name,
+                    project,
+                    region,
+                    source_score,
+                    target_score))
+
 
 def compare_sample(sample):
+    scenario_counts = Counter()
     diffs = []
     compare_g2p(sample, diffs)
+    compare_coverage(sample, diffs, scenario_counts)
     diffs.append('')
-    return '\n'.join(diffs)
+    return '\n'.join(diffs), scenario_counts
 
 
 def main():
@@ -510,10 +601,16 @@ def main():
     runs = find_runs(args.source_folder, args.target_folder)
     runs = report_source_versions(runs)
     samples = read_samples(runs)
-    reports = pool.imap(compare_sample, samples, chunksize=50)
+    results = pool.imap(compare_sample,
+                        samples,
+                        chunksize=50)
+    scenario_totals = Counter()
     i = None
-    for i, report in enumerate(reports):
+    for i, (report, scenario_counts) in enumerate(results):
         print(report, end='')
+        scenario_totals += scenario_counts
+    for key, count in sorted(scenario_totals.items()):
+        print(key, count)
     print('Finished {} samples.'.format(i))
     # run_paths = glob(os.path.join(args.target_folder, 'MiSeq', 'runs', '*'))
     # run_paths.sort()
