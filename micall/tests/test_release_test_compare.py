@@ -353,3 +353,159 @@ class CompareSampleTest(TestCase):
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
+
+    def test_consensus_change(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAT'}]))
+        expected_report = ('run1:sample42 consensus: R1 MAX\n'
+                           '- 100 ACACAC\n'
+                           '?          ^\n'
+                           '+ 100 ACACAT\n'
+                           '?          ^\n')
+
+        report, _ = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+
+    def test_same_consensus(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]))
+        expected_report = ''
+
+        report, _ = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+
+    def test_consensus_ignores_trailing_dashes(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC---'}]))
+        expected_report = ''
+
+        report, _ = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+
+    def test_one_consensus_changes(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'},
+                                               {'region': 'R2',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'},
+                                               {'region': 'R2',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAM'}]))
+        expected_report = ('run1:sample42 consensus: R2 MAX\n'
+                           '- 100 ACACAC\n'
+                           '?          ^\n'
+                           '+ 100 ACACAM\n'
+                           '?          ^\n')
+
+        report, _ = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+
+    def test_ignore_lower_consensus_mixtures(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'},
+                                               {'region': 'R1',
+                                                'consensus-percent-cutoff': '0.1',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'},
+                                               {'region': 'R1',
+                                                'consensus-percent-cutoff': '0.1',
+                                                'offset': '100',
+                                                'sequence': 'ACACAM'}]))
+        expected_report = ''
+
+        report, _ = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+
+    def test_consensus_missing(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[]))
+        expected_report = ('run1:sample42 consensus: R1 MAX\n'
+                           '- 100 ACACAC\n')
+
+        report, _ = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+
+    def test_consensus_added(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]))
+        expected_report = ('run1:sample42 consensus: R1 MAX\n'
+                           '+ 100 ACACAC\n')
+
+        report, _ = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+
+    def test_hiv_seed_changed(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'HIV1-X',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[{'region': 'HIV1-Y',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '200',
+                                                'sequence': 'ACACAC'}]))
+        expected_report = ''
+
+        report, _ = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
