@@ -248,258 +248,258 @@ class CigarTest(unittest.TestCase):
 
     def testTrivial(self):
         cigar = '9M'
-        seq     = 'AAACAACCA'  # @IgnorePep8
-        quality = 'BBBBBBBBB'
-        expected_seq = seq
-        expected_quality = quality
+        inp_sequence = 'AAACAACCA'
+        inp__quality = 'BBBBBBBBB'
+        exp_sequence = inp_sequence
+        exp__quality = inp__quality
 
-        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, seq, quality)
+        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, inp_sequence, inp__quality)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({}, inserts)
 
     def testDeletion(self):
         cigar = '6M3D3M'
-        seq              = 'AAACAACCA'  # @IgnorePep8
-        quality          = 'BBBDDDEEE'  # @IgnorePep8
-        expected_seq     = 'AAACAA---CCA'  # @IgnorePep8
-        expected_quality = 'BBBDDD   EEE'
+        inp_sequence = 'AAACAACCA'
+        inp__quality = 'BBBDDDEEE'
+        exp_sequence = 'AAACAA---CCA'
+        exp__quality = 'BBBDDD   EEE'
 
-        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, seq, quality)
+        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, inp_sequence, inp__quality)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({}, inserts)
 
     def testSoftClip(self):
         cigar = '3S6M'
-        seq              = 'AAACAACCA'  # @IgnorePep8
-        quality          = 'BBBDDDEEE'  # @IgnorePep8
-        expected_seq     =    'CAACCA'  # @IgnorePep8
-        expected_quality =    'DDDEEE'  # @IgnorePep8
+        inp_sequence = 'AAACAACCA'
+        inp__quality = 'BBBDDDEEE'
+        expect_sequence = 'CAACCA'
+        expect__quality = 'DDDEEE'
 
-        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, seq, quality)
+        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, inp_sequence, inp__quality)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(expect_sequence, clipped_seq)
+        self.assertEqual(expect__quality, clipped_quality)
         self.assertEqual({}, inserts)
 
     def testInsertion(self):
         cigar = '3M3I6M'
-        seq              = 'AAACAACCACCC'  # @IgnorePep8
-        quality          = 'BBBDDDEEEFFF'  # @IgnorePep8
-        expected_seq     = 'AAACCACCC'  # @IgnorePep8
-        expected_quality = 'BBBEEEFFF'
+        inp_sequence = 'AAACAACCACCC'
+        inp__quality = 'BBBDDDEEEFFF'
+        exp_sequence = 'AAACCACCC'
+        exp__quality = 'BBBEEEFFF'
 
-        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, seq, quality)
+        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, inp_sequence, inp__quality)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({3: ('CAA', 'DDD')}, inserts)
 
     def testInsertionLowQuality(self):
         cigar = '3M3I6M'
-        seq              = 'AAACAACCACCC'  # @IgnorePep8
-        quality          = 'BBBD*DEEEFFF'  # @IgnorePep8
-        expected_seq     = 'AAACCACCC'  # @IgnorePep8
-        expected_quality = 'BBBEEEFFF'
+        inp_sequence = 'AAACAACCACCC'
+        inp__quality = 'BBBD*DEEEFFF'
+        exp_sequence = 'AAACCACCC'
+        exp__quality = 'BBBEEEFFF'
 
-        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, seq, quality)
+        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, inp_sequence, inp__quality)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({3: ('CAA', 'D*D')}, inserts)
 
     def testLargeToken(self):
         cigar = '12M'
-        seq     = 'AAACAACCACCC'  # @IgnorePep8
-        quality = 'BBBBBBBBBBBB'
-        expected_seq = seq
-        expected_quality = quality
+        inp_sequence = 'AAACAACCACCC'
+        inp__quality = 'BBBBBBBBBBBB'
+        exp_sequence = inp_sequence
+        exp__quality = inp__quality
 
-        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, seq, quality)
+        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, inp_sequence, inp__quality)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({}, inserts)
 
     def testPadding(self):
         cigar = '12M'
-        seq              = 'AAACAACCACCC'  # @IgnorePep8
-        quality          = 'BBBDDDEEEFFF'  # @IgnorePep8
+        inp_sequence = 'AAACAACCACCC'
+        inp__quality = 'BBBDDDEEEFFF'
         pos = 3
-        expected_seq     = '---AAACAACCACCC'  # @IgnorePep8
-        expected_quality = '!!!BBBDDDEEEFFF'
+        exp_sequence = '---AAACAACCACCC'
+        exp__quality = '!!!BBBDDDEEEFFF'
 
-        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, seq, quality, pos)
+        clipped_seq, clipped_quality, inserts = apply_cigar(cigar, inp_sequence, inp__quality, pos)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({}, inserts)
 
     def testClipping(self):
         cigar = '12M'
-        seq              = 'AAACAACCACCC'  # @IgnorePep8
-        quality          = 'BBBDDDEEEFFF'  # @IgnorePep8
+        inp_sequence = 'AAACAACCACCC'
+        inp__quality = 'BBBDDDEEEFFF'
         pos = 0
         clip_from = 3
         clip_to = 8
-        expected_seq     = 'CAACCA'  # @IgnorePep8
-        expected_quality = 'DDDEEE'
+        exp_sequence = 'CAACCA'
+        exp__quality = 'DDDEEE'
 
         clipped_seq, clipped_quality, inserts = apply_cigar(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
+            cigar,
+            inp_sequence,
+            inp__quality,
+            pos,
+            clip_from,
+            clip_to)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({}, inserts)
 
     def testClipInsertion(self):
         cigar = '6M3I6M'
-        seq              = 'AAACAAGGGCCACCC'  # @IgnorePep8
-        quality          = 'BBBDDDHHHEEEFFF'  # @IgnorePep8
+        inp_sequence = 'AAACAAGGGCCACCC'
+        inp__quality = 'BBBDDDHHHEEEFFF'
         pos = 0
         clip_from = 3
         clip_to = 8
-        expected_seq     = 'CAACCA'  # @IgnorePep8
-        expected_quality = 'DDDEEE'  # @IgnorePep8
+        exp_sequence = 'CAACCA'
+        exp__quality = 'DDDEEE'
 
         clipped_seq, clipped_quality, inserts = apply_cigar(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
+            cigar,
+            inp_sequence,
+            inp__quality,
+            pos,
+            clip_from,
+            clip_to)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({3: ('GGG', 'HHH')}, inserts)
 
     def testClipInsertionLowQuality(self):
         cigar = '6M3I6M'
-        seq              = 'AAACAAGGGCCACCC'  # @IgnorePep8
-        quality          = 'BBBDDDHH*EEEFFF'  # @IgnorePep8
+        inp_sequence = 'AAACAAGGGCCACCC'
+        inp__quality = 'BBBDDDHH*EEEFFF'
         pos = 0
         clip_from = 3
         clip_to = 8
-        expected_seq     = 'CAACCA'  # @IgnorePep8
-        expected_quality = 'DDDEEE'
+        exp_sequence = 'CAACCA'
+        exp__quality = 'DDDEEE'
 
         clipped_seq, clipped_quality, inserts = apply_cigar(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
+            cigar,
+            inp_sequence,
+            inp__quality,
+            pos,
+            clip_from,
+            clip_to)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({3: ('GGG', 'HH*')}, inserts)
 
     def testInsertionBeforeClip(self):
         cigar = '3M3I9M'
-        seq              = 'AAAGGGCAACCACCC'  # @IgnorePep8
-        quality          = 'BBBHHHDDDEEEFFF'  # @IgnorePep8
+        inp_sequence = 'AAAGGGCAACCACCC'
+        inp__quality = 'BBBHHHDDDEEEFFF'
         pos = 0
         clip_from = 3
         clip_to = 8
-        expected_seq     = 'CAACCA'  # @IgnorePep8
-        expected_quality = 'DDDEEE'
+        exp_sequence = 'CAACCA'
+        exp__quality = 'DDDEEE'
 
         clipped_seq, clipped_quality, inserts = apply_cigar(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
+            cigar,
+            inp_sequence,
+            inp__quality,
+            pos,
+            clip_from,
+            clip_to)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({0: ('GGG', 'HHH')}, inserts)
 
     def testInsertionInsideClipRegionWithOffset(self):
         cigar = '2M1I2M'
-        seq     = 'TAGCT'  # @IgnorePep8
-        quality = 'AABCC'
+        inp_sequence = 'TAGCT'
+        inp__quality = 'AABCC'
         pos = 3
         clip_from = 4
         clip_to = 20
-        expected_seq     = 'ACT'  # @IgnorePep8
-        expected_quality = 'ACC'
+        exp_sequence = 'ACT'
+        exp__quality = 'ACC'
 
         clipped_seq, clipped_quality, inserts = apply_cigar(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
+            cigar,
+            inp_sequence,
+            inp__quality,
+            pos,
+            clip_from,
+            clip_to)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({1: ('G', 'B')}, inserts)
 
     def testInsertionAfterClipRegionWithOffset(self):
         cigar = '5M1I2M'
-        seq     = 'TAGCTCAG'  # @IgnorePep8
-        quality = 'AAAAABCC'
+        inp_sequence = 'TAGCTCAG'
+        inp__quality = 'AAAAABCC'
         pos = 10
         clip_from = 10
         clip_to = 13
-        expected_seq     = 'TAGC'  # @IgnorePep8
-        expected_quality = 'AAAA'
+        exp_sequence = 'TAGC'
+        exp__quality = 'AAAA'
         expected_inserts = {}
 
         clipped_seq, clipped_quality, inserts = apply_cigar(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
+            cigar,
+            inp_sequence,
+            inp__quality,
+            pos,
+            clip_from,
+            clip_to)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual(expected_inserts, inserts)
 
     def testClippingEverything(self):
         cigar = '12M'
-        seq              = 'AAACAACCACCC'  # @IgnorePep8
-        quality          = 'BBBDDDEEEFFF'  # @IgnorePep8
+        inp_sequence = 'AAACAACCACCC'
+        inp__quality = 'BBBDDDEEEFFF'
         pos = 0
         clip_from = 100
         clip_to = 108
-        expected_seq     = ''  # @IgnorePep8
-        expected_quality = ''
+        exp_sequence = ''
+        exp__quality = ''
 
         clipped_seq, clipped_quality, inserts = apply_cigar(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
+            cigar,
+            inp_sequence,
+            inp__quality,
+            pos,
+            clip_from,
+            clip_to)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({}, inserts)
 
     def testSoftClipPositions(self):
         cigar = '3S6M'
         pos = 4
-        seq              =  'AAACAACCA'  # @IgnorePep8
-        quality          =  'BBBDDDEEE'  # @IgnorePep8
-        expected_seq     = '----CAACCA'  # @IgnorePep8
-        expected_quality = '!!!!DDDEEE'  # @IgnorePep8
+        inp__sequence = 'AAACAACCA'
+        inp___quality = 'BBBDDDEEE'
+        exp_sequence = '----CAACCA'
+        exp__quality = '!!!!DDDEEE'
         mapped = set()
         soft_clipped = set()
         expected_mapped = {4, 5, 6, 7, 8, 9}
@@ -507,25 +507,25 @@ class CigarTest(unittest.TestCase):
 
         clipped_seq, clipped_quality, inserts = apply_cigar(
             cigar,
-            seq,
-            quality,
+            inp__sequence,
+            inp___quality,
             pos=pos,
             mapped=mapped,
             soft_clipped=soft_clipped)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({}, inserts)
         self.assertEqual(expected_mapped, mapped)
         self.assertEqual(expected_soft_clipped, soft_clipped)
 
     def testInvalidCigar(self):
         cigar = '3M...6M'
-        seq     = 'AAACAACCACCC'  # @IgnorePep8
-        quality = 'BBBDDDEEEFFF'
+        inp_sequence = 'AAACAACCACCC'
+        inp__quality = 'BBBDDDEEEFFF'
 
         with self.assertRaises(RuntimeError) as result:
-            apply_cigar(cigar, seq, quality)
+            apply_cigar(cigar, inp_sequence, inp__quality)
 
         self.assertEqual(
             "Invalid CIGAR string: '3M...6M'.",
@@ -533,11 +533,11 @@ class CigarTest(unittest.TestCase):
 
     def testUnsupportedCigarToken(self):
         cigar = '3M3X6M'
-        seq     = 'AAACAACCACCC'  # @IgnorePep8
-        quality = 'BBBDDDEEEFFF'
+        inp_sequence = 'AAACAACCACCC'
+        inp__quality = 'BBBDDDEEEFFF'
 
         with self.assertRaises(RuntimeError) as result:
-            apply_cigar(cigar, seq, quality)
+            apply_cigar(cigar, inp_sequence, inp__quality)
 
         self.assertEqual(
             "Unsupported CIGAR token: '3X'.",
@@ -545,11 +545,11 @@ class CigarTest(unittest.TestCase):
 
     def testShortCigar(self):
         cigar = '8M'
-        seq     = 'AAACAACCA'  # @IgnorePep8
-        quality = 'BBBDDDEEE'
+        inp_sequence = 'AAACAACCA'
+        inp__quality = 'BBBDDDEEE'
 
         with self.assertRaises(RuntimeError) as result:
-            apply_cigar(cigar, seq, quality)
+            apply_cigar(cigar, inp_sequence, inp__quality)
 
         self.assertEqual(
             "CIGAR string '8M' is too short for sequence 'AAACAACCA'.",
@@ -557,11 +557,11 @@ class CigarTest(unittest.TestCase):
 
     def testLongCigar(self):
         cigar = '10M'
-        seq     = 'AAACAACCA'  # @IgnorePep8
-        quality = 'BBBDDDEEE'
+        inp_sequence = 'AAACAACCA'
+        inp__quality = 'BBBDDDEEE'
 
         with self.assertRaises(RuntimeError) as result:
-            apply_cigar(cigar, seq, quality)
+            apply_cigar(cigar, inp_sequence, inp__quality)
 
         self.assertEqual(
             "CIGAR string '10M' is too long for sequence 'AAACAACCA'.",
@@ -569,46 +569,46 @@ class CigarTest(unittest.TestCase):
 
     def testInsertionAfterClipping(self):
         cigar = '3M3I3M'
-        seq     = "ACTTAGAAA"  # @IgnorePep8
-        quality = 'AAABBBDDD'
+        inp_sequence = "ACTTAGAAA"
+        inp__quality = 'AAABBBDDD'
         pos = 0
         clip_from = 0
         clip_to = 2
-        expected_seq     = 'ACT'  # @IgnorePep8
-        expected_quality = 'AAA'
+        exp_sequence = 'ACT'
+        exp__quality = 'AAA'
 
         clipped_seq, clipped_quality, inserts = apply_cigar(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
+            cigar,
+            inp_sequence,
+            inp__quality,
+            pos,
+            clip_from,
+            clip_to)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({}, inserts)
 
     def testInsertionAtEndOfClipping(self):
         cigar = '3M3I3M'
-        seq     = "ACTTAGAAA"  # @IgnorePep8
-        quality = 'AAABBBDDD'
+        inp_sequence = "ACTTAGAAA"
+        inp__quality = 'AAABBBDDD'
         pos = 0
         clip_from = 0
         clip_to = 3
-        expected_seq     = 'ACTA'  # @IgnorePep8
-        expected_quality = 'AAAD'
+        exp_sequence = 'ACTA'
+        exp__quality = 'AAAD'
 
         clipped_seq, clipped_quality, inserts = apply_cigar(
-          cigar,
-          seq,
-          quality,
-          pos,
-          clip_from,
-          clip_to)
+            cigar,
+            inp_sequence,
+            inp__quality,
+            pos,
+            clip_from,
+            clip_to)
 
-        self.assertEqual(expected_seq, clipped_seq)
-        self.assertEqual(expected_quality, clipped_quality)
+        self.assertEqual(exp_sequence, clipped_seq)
+        self.assertEqual(exp__quality, clipped_quality)
         self.assertEqual({3: ('TAG', 'BBB')}, inserts)
 
     def testInsertionAfterInsertion(self):
@@ -657,153 +657,153 @@ class MergePairsTest(unittest.TestCase):
         self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
 
     def testSimple(self):
-        seq1          = 'ACTGCA'  # @IgnorePep8
-        seq2          = 'ACTGCA'  # @IgnorePep8
-        qual1         = 'JJJJJJ'  # @IgnorePep8
-        qual2         = 'JJJJJJ'  # @IgnorePep8
-        expected_mseq = 'ACTGCA'
+        sequence1 = 'ACTGCA'
+        sequence2 = 'ACTGCA'
+        quality_1 = 'JJJJJJ'
+        quality_2 = 'JJJJJJ'
+        exp_m_seq = 'ACTGCA'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testDifferentLength(self):
-        seq1          = 'ACTGCATCT'  # @IgnorePep8
-        seq2          = 'ACTGCA'  # @IgnorePep8
-        qual1         = 'JJJJJJJJJ'  # @IgnorePep8
-        qual2         = 'JJJJJJ'  # @IgnorePep8
-        expected_mseq = 'ACTGCATCT'
+        sequence1 = 'ACTGCATCT'
+        sequence2 = 'ACTGCA'
+        quality_1 = 'JJJJJJJJJ'
+        quality_2 = 'JJJJJJ'
+        exp_m_seq = 'ACTGCATCT'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testOffset(self):
-        seq1          = '-CTGCA'  # @IgnorePep8
-        seq2          = '---GCATCT'  # @IgnorePep8
-        qual1         = '!JJJJJ'  # @IgnorePep8
-        qual2         = '!!!JJJJJJ'  # @IgnorePep8
-        expected_mseq = '-CTGCATCT'
+        sequence1 = '-CTGCA'
+        sequence2 = '---GCATCT'
+        quality_1 = '!JJJJJ'
+        quality_2 = '!!!JJJJJJ'
+        exp_m_seq = '-CTGCATCT'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testForwardDeletion(self):
-        seq1          = 'C-GCA'  # @IgnorePep8
-        seq2          = '---CATCT'  # @IgnorePep8
-        qual1         = 'J!JJJ'  # @IgnorePep8
-        qual2         = '!!!JJJJJ'  # @IgnorePep8
-        expected_mseq = 'C-GCATCT'
+        sequence1 = 'C-GCA'
+        sequence2 = '---CATCT'
+        quality_1 = 'J!JJJ'
+        quality_2 = '!!!JJJJJ'
+        exp_m_seq = 'C-GCATCT'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testReverseDeletion(self):
-        seq1          = 'CTGCA'  # @IgnorePep8
-        seq2          = '--GCAT-T'  # @IgnorePep8
-        qual1         = 'JJJJJ'  # @IgnorePep8
-        qual2         = '!!JJJJ!J'  # @IgnorePep8
-        expected_mseq = 'CTGCAT-T'
+        sequence1 = 'CTGCA'
+        sequence2 = '--GCAT-T'
+        quality_1 = 'JJJJJ'
+        quality_2 = '!!JJJJ!J'
+        exp_m_seq = 'CTGCAT-T'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testDisagreementWithDifferentQuality(self):
-        seq1          = 'AGTGCA'  # @IgnorePep8
-        seq2          = 'ACTGCA'  # @IgnorePep8
-        qual1         = 'JAJJJJ'  # @IgnorePep8
-        qual2         = 'JJJJJJ'  # @IgnorePep8
-        expected_mseq = 'ACTGCA'
+        sequence1 = 'AGTGCA'
+        sequence2 = 'ACTGCA'
+        quality_1 = 'JAJJJJ'
+        quality_2 = 'JJJJJJ'
+        exp_m_seq = 'ACTGCA'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testDisagreementWithCloseQuality(self):
-        seq1          = 'AGTGCA'  # @IgnorePep8
-        seq2          = 'ACTGCA'  # @IgnorePep8
-        qual1         = 'JHJJJJ'  # @IgnorePep8
-        qual2         = 'JJJJJJ'  # @IgnorePep8
-        expected_mseq = 'ANTGCA'
+        sequence1 = 'AGTGCA'
+        sequence2 = 'ACTGCA'
+        quality_1 = 'JHJJJJ'
+        quality_2 = 'JJJJJJ'
+        exp_m_seq = 'ANTGCA'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testDisagreementWithLowQuality(self):
-        seq1          = 'AGTGCA'  # @IgnorePep8
-        seq2          = 'ACTGCA'  # @IgnorePep8
-        qual1         = 'J!JJJJ'  # @IgnorePep8
-        qual2         = 'J*JJJJ'  # @IgnorePep8
-        expected_mseq = 'ANTGCA'
+        sequence1 = 'AGTGCA'
+        sequence2 = 'ACTGCA'
+        quality_1 = 'J!JJJJ'
+        quality_2 = 'J*JJJJ'
+        exp_m_seq = 'ANTGCA'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testGap(self):
-        seq1          = 'AGT'  # @IgnorePep8
-        seq2          = '------GCA'  # @IgnorePep8
-        qual1         = 'JJJ'  # @IgnorePep8
-        qual2         = '!!!!!!JJJ'  # @IgnorePep8
-        expected_mseq = 'AGTnnnGCA'
+        sequence1 = 'AGT'
+        sequence2 = '------GCA'
+        quality_1 = 'JJJ'
+        quality_2 = '!!!!!!JJJ'
+        exp_m_seq = 'AGTnnnGCA'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testLowQualityInSecondRead(self):
-        seq1          = 'AGT'  # @IgnorePep8
-        seq2          = '---GCA'  # @IgnorePep8
-        qual1         = 'JJJ'  # @IgnorePep8
-        qual2         = '!!!J*J'  # @IgnorePep8
-        expected_mseq = 'AGTGNA'
+        sequence1 = 'AGT'
+        sequence2 = '---GCA'
+        quality_1 = 'JJJ'
+        quality_2 = '!!!J*J'
+        exp_m_seq = 'AGTGNA'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testOneInsertion(self):
-        seq1          = 'AGT'  # @IgnorePep8
-        seq2          = '---GCA'  # @IgnorePep8
-        qual1         = 'JJJ'  # @IgnorePep8
-        qual2         = '!!!JJJ'  # @IgnorePep8
+        sequence1 = 'AGT'
+        sequence2 = '---GCA'
+        quality_1 = 'JJJ'
+        quality_2 = '!!!JJJ'
         ins1 = {2: ('CCC', 'JJJ')}
         ins2 = {}
-        expected_mseq = 'AGCCCTGCA'
+        exp_m_seq = 'AGCCCTGCA'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2, ins1, ins2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2, ins1, ins2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testTwoInsertions(self):
-        seq1          = 'AGT'  # @IgnorePep8
-        seq2          = '---GCA'  # @IgnorePep8
-        qual1         = 'JJJ'  # @IgnorePep8
-        qual2         = '!!!JJJ'  # @IgnorePep8
+        sequence1 = 'AGT'
+        sequence2 = '---GCA'
+        quality_1 = 'JJJ'
+        quality_2 = '!!!JJJ'
         ins1 = {2: ('CCC', 'JJJ')}
         ins2 = {5: ('TTT', 'JJJ')}
-        expected_mseq = 'AGCCCTGCTTTA'
+        exp_m_seq = 'AGCCCTGCTTTA'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2, ins1, ins2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2, ins1, ins2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
     def testConflictingInsertions(self):
-        seq1          = 'AGTGCA'  # @IgnorePep8
-        seq2          = 'AGTGCA'  # @IgnorePep8
-        qual1         = 'JJJJJJ'  # @IgnorePep8
-        qual2         = 'JJJJJJ'  # @IgnorePep8
+        sequence1 = 'AGTGCA'
+        sequence2 = 'AGTGCA'
+        quality_1 = 'JJJJJJ'
+        quality_2 = 'JJJJJJ'
         ins1 = {2: ('CCC', 'JJJ')}
         ins2 = {2: ('CTC', 'JAJ')}
-        expected_mseq = 'AGCCCTGCA'
+        exp_m_seq = 'AGCCCTGCA'
 
-        mseq = merge_pairs(seq1, seq2, qual1, qual2, ins1, ins2)
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2, ins1, ins2)
 
-        self.assertEqual(expected_mseq, mseq)
+        self.assertEqual(exp_m_seq, mseq)
 
 
 class MergeInsertionsTest(unittest.TestCase):
