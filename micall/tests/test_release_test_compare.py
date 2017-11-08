@@ -192,7 +192,8 @@ class CompareSampleTest(TestCase):
                                                       'on.score': '2'}],
                                     remap_counts=[{'type': 'remap-1 HCV1-seed'}]))
         expected_report = ''
-        expected_scenario_counts = {'different remap counts': 1}
+        expected_scenario_counts = {'different remap counts': [
+            '  run1:sample42 coverage: HCV HCV2-E1 3 => -\n']}
 
         report, scenario_counts = compare_sample(sample)
 
@@ -227,7 +228,8 @@ class CompareSampleTest(TestCase):
                                     remap_counts=[{'type': 'remap-1 HIV1-seed'},
                                                   {'type': 'remap-2 HIV1-seed'}]))
         expected_report = ''
-        expected_scenario_counts = {'different remap counts': 1}
+        expected_scenario_counts = {'different remap counts': [
+            '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
         report, scenario_counts = compare_sample(sample)
 
@@ -251,7 +253,8 @@ class CompareSampleTest(TestCase):
                                                   {'type': 'remap-1 HIV1-seed'},
                                                   {'type': 'remap-2 HIV1-seed'}]))
         expected_report = ''
-        expected_scenario_counts = {'different remap counts': 1}
+        expected_scenario_counts = {'different remap counts': [
+            '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
         report, scenario_counts = compare_sample(sample)
 
@@ -275,7 +278,8 @@ class CompareSampleTest(TestCase):
                                                   {'type': 'remap-2 HIV1-seed'},
                                                   {'type': 'remap-final HIV1-seed'}]))
         expected_report = ''
-        expected_scenario_counts = {'different remap counts': 1}
+        expected_scenario_counts = {'different remap counts': [
+            '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
         report, scenario_counts = compare_sample(sample)
 
@@ -299,7 +303,8 @@ class CompareSampleTest(TestCase):
                                     remap_counts=[{'type': 'remap-1 HIV1-seed'},
                                                   {'type': 'remap-2 HIV1-seed'}]))
         expected_report = ''
-        expected_scenario_counts = {'different remap counts': 1}
+        expected_scenario_counts = {'different remap counts': [
+            '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
         report, scenario_counts = compare_sample(sample)
 
@@ -341,7 +346,8 @@ class CompareSampleTest(TestCase):
                                                       'which.key.pos': '230',
                                                       'on.score': '4'}]))
         expected_report = ''
-        expected_scenario_counts = {'removed key pos 318': 1}
+        expected_scenario_counts = {'key pos removed RT 318': [
+            '  run1:sample42 coverage: HIV RT 1 => 4\n']}
 
         report, scenario_counts = compare_sample(sample)
 

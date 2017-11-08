@@ -538,7 +538,7 @@ def map_remap_counts(counts):
     return seed_counts
 
 
-def compare_coverage(sample, diffs, scenario_counts):
+def compare_coverage(sample, diffs, scenarios):
     if sample.source_files.coverage_scores == sample.target_files.coverage_scores:
         return
     source_scores = map_coverage(sample.source_files.coverage_scores)
@@ -554,34 +554,43 @@ def compare_coverage(sample, diffs, scenario_counts):
         (source_score,
          source_seed,
          source_key_pos) = source_scores.get(key, ('-', None, None))
-        target_score, target_seed, _ = target_scores.get(key, ('-', None, None))
+        (target_score,
+         target_seed,
+         target_key_pos) = target_scores.get(key, ('-', None, None))
         source_compare = '-' if source_score == '1' else source_score
         target_compare = '-' if target_score == '1' else target_score
         if source_compare != target_compare:
             project, region = key
+            message = '{}:{} coverage: {} {} {} => {}'.format(
+                run_name,
+                sample.name,
+                project,
+                region,
+                source_score,
+                target_score)
+            scenario = '  ' + message + '\n'
             if source_counts != target_counts:
-                scenario_counts['different remap counts'] += 1
+                scenarios['different remap counts'].append(scenario)
             elif (MICALL_VERSION == '7.8' and
-                  region == 'RT' and
-                  source_key_pos == '318'):
-                scenario_counts['removed key pos 318'] += 1
+                  (region, source_key_pos) == ('RT', '318')):
+                scenarios['key pos removed RT 318'].append(scenario)
+            elif (MICALL_VERSION == '7.8' and
+                  (region, target_key_pos) == ('INT', '263')):
+                scenarios['key pos added INT 263'].append(scenario)
+            elif (MICALL_VERSION == '7.8' and
+                  (region, target_key_pos) == ('INT', '163')):
+                scenarios['key pos added INT 163'].append(scenario)
             else:
-                diffs.append('{}:{} coverage: {} {} {} => {}'.format(
-                    run_name,
-                    sample.name,
-                    project,
-                    region,
-                    source_score,
-                    target_score))
+                diffs.append(message)
 
 
 def compare_sample(sample):
-    scenario_counts = Counter()
+    scenarios = defaultdict(list)
     diffs = []
     compare_g2p(sample, diffs)
-    compare_coverage(sample, diffs, scenario_counts)
+    compare_coverage(sample, diffs, scenarios)
     diffs.append('')
-    return '\n'.join(diffs), scenario_counts
+    return '\n'.join(diffs), scenarios
 
 
 def main():
@@ -594,13 +603,17 @@ def main():
     results = pool.imap(compare_sample,
                         samples,
                         chunksize=50)
-    scenario_totals = Counter()
+    scenario_summaries = defaultdict(list)
     i = None
-    for i, (report, scenario_counts) in enumerate(results):
+    for i, (report, scenarios) in enumerate(results):
         print(report, end='')
-        scenario_totals += scenario_counts
-    for key, count in sorted(scenario_totals.items()):
-        print(key, count)
+        for key, messages in scenarios.items():
+            scenario_summaries[key] += scenarios[key]
+    for key, messages in sorted(scenario_summaries.items()):
+        if messages:
+            sample_names = {message.split()[0] for message in messages}
+            print(key, len(messages), 'changes in', len(sample_names), 'samples')
+            print(''.join(messages), end='')
     print('Finished {} samples.'.format(i))
     # run_paths = glob(os.path.join(args.target_folder, 'MiSeq', 'runs', '*'))
     # run_paths.sort()
