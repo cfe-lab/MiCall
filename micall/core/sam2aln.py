@@ -196,7 +196,7 @@ def merge_pairs(seq1,
     close_qual &= diff_indexes
     bad_indexes = close_qual | (max_qual <= q_cutoff+33)
     copy_indexes = seq_arr1 == ''
-    copy_indexes |= diff_indexes & (diff_qual > minimum_q_delta)
+    copy_indexes |= diff_indexes & (diff_qual >= minimum_q_delta)
     seq_arr1[copy_indexes] = seq_arr2[copy_indexes]
     bad_indexes &= seq_arr1 != '-'
     seq_arr1[bad_indexes] = 'N'

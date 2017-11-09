@@ -711,10 +711,32 @@ class MergePairsTest(unittest.TestCase):
 
         self.assertEqual(exp_m_seq, mseq)
 
-    def testDisagreementWithDifferentQuality(self):
+    def testDisagreementWithDifferentQualityFirstHigher(self):
         sequence1 = 'AGTGCA'
         sequence2 = 'ACTGCA'
-        quality_1 = 'JAJJJJ'
+        quality_1 = 'JJJJJJ'
+        quality_2 = 'JEJJJJ'
+        exp_m_seq = 'AGTGCA'
+
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
+
+        self.assertEqual(exp_m_seq, mseq)
+
+    def testDisagreementWithCloseQualityFirstHigher(self):
+        sequence1 = 'AGTGCA'
+        sequence2 = 'ACTGCA'
+        quality_1 = 'JJJJJJ'
+        quality_2 = 'JFJJJJ'
+        exp_m_seq = 'ANTGCA'
+
+        mseq = merge_pairs(sequence1, sequence2, quality_1, quality_2)
+
+        self.assertEqual(exp_m_seq, mseq)
+
+    def testDisagreementWithDifferentQualitySecondHigher(self):
+        sequence1 = 'AGTGCA'
+        sequence2 = 'ACTGCA'
+        quality_1 = 'JEJJJJ'
         quality_2 = 'JJJJJJ'
         exp_m_seq = 'ACTGCA'
 
@@ -722,10 +744,10 @@ class MergePairsTest(unittest.TestCase):
 
         self.assertEqual(exp_m_seq, mseq)
 
-    def testDisagreementWithCloseQuality(self):
+    def testDisagreementWithCloseQualitySecondHigher(self):
         sequence1 = 'AGTGCA'
         sequence2 = 'ACTGCA'
-        quality_1 = 'JHJJJJ'
+        quality_1 = 'JFJJJJ'
         quality_2 = 'JJJJJJ'
         exp_m_seq = 'ANTGCA'
 
