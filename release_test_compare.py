@@ -3,6 +3,8 @@ from argparse import ArgumentParser
 import csv
 from collections import namedtuple, defaultdict
 from difflib import Differ
+from enum import IntEnum
+from functools import partial
 from itertools import groupby
 from glob import glob
 from multiprocessing.pool import Pool
@@ -20,6 +22,17 @@ SampleFiles = namedtuple(
     'cascade coverage_scores g2p_summary consensus remap_counts')
 SampleFiles.__new__.__defaults__ = (None,) * 5
 Sample = namedtuple('Sample', 'run name source_files target_files')
+
+
+class Scenarios(IntEnum):
+    NONE = 0
+    REMAP_COUNTS_CHANGED = 1
+    MAIN_CONSENSUS_CHANGED = 2
+    OTHER_CONSENSUS_CHANGED = 4
+    V78_KEY_POS_REMOVED_RT318 = 8
+    V78_KEY_POS_ADDED_INT263 = 16
+    V78_KEY_POS_ADDED_INT163 = 32
+
 
 differ = Differ()
 
@@ -193,7 +206,7 @@ def map_remap_counts(counts):
     return seed_counts
 
 
-def compare_coverage(sample, diffs, scenarios):
+def compare_coverage(sample, diffs, scenarios_reported, scenarios):
     if sample.source_files.coverage_scores == sample.target_files.coverage_scores:
         return
     source_scores = map_coverage(sample.source_files.coverage_scores)
@@ -223,17 +236,21 @@ def compare_coverage(sample, diffs, scenarios):
                 source_score,
                 target_score)
             scenario = '  ' + message + '\n'
-            if source_counts != target_counts:
-                scenarios['different remap counts'].append(scenario)
+            if (source_counts != target_counts and
+                    scenarios_reported & Scenarios.REMAP_COUNTS_CHANGED):
+                scenarios[Scenarios.REMAP_COUNTS_CHANGED].append(scenario)
             elif (MICALL_VERSION == '7.8' and
-                  (region, source_key_pos) == ('RT', '318')):
-                scenarios['key pos removed RT 318'].append(scenario)
+                  (region, source_key_pos) == ('RT', '318') and
+                  scenarios_reported & Scenarios.V78_KEY_POS_REMOVED_RT318):
+                scenarios[Scenarios.V78_KEY_POS_REMOVED_RT318].append(scenario)
             elif (MICALL_VERSION == '7.8' and
-                  (region, target_key_pos) == ('INT', '263')):
-                scenarios['key pos added INT 263'].append(scenario)
+                  (region, target_key_pos) == ('INT', '263') and
+                  scenarios_reported & Scenarios.V78_KEY_POS_ADDED_INT263):
+                scenarios[Scenarios.V78_KEY_POS_ADDED_INT263].append(scenario)
             elif (MICALL_VERSION == '7.8' and
-                  (region, target_key_pos) == ('INT', '163')):
-                scenarios['key pos added INT 163'].append(scenario)
+                  (region, target_key_pos) == ('INT', '163') and
+                  scenarios_reported & Scenarios.V78_KEY_POS_ADDED_INT163):
+                scenarios[Scenarios.V78_KEY_POS_ADDED_INT163].append(scenario)
             else:
                 diffs.append(message)
 
@@ -250,10 +267,10 @@ def adjust_offset(offset, region):
     return offset
 
 
-def is_consensus_interesting(row):
-    if row['region'].startswith('HLA-'):
-        return row['consensus-percent-cutoff'] == '0.250'
-    return row['consensus-percent-cutoff'] == 'MAX'
+def is_consensus_interesting(region, cutoff):
+    if region.startswith('HLA-'):
+        return cutoff == '0.250'
+    return cutoff == 'MAX'
 
 
 def map_consensus_sequences(rows):
@@ -261,8 +278,7 @@ def map_consensus_sequences(rows):
              row['consensus-percent-cutoff']): (adjust_offset(row['offset'],
                                                               row['region']),
                                                 row['sequence'].rstrip('-'))
-            for row in rows
-            if is_consensus_interesting(row)}
+            for row in rows}
 
 
 def display_consensus(fields):
@@ -272,7 +288,7 @@ def display_consensus(fields):
     return [offset + ' ' + seq + '\n']
 
 
-def compare_consensus(sample, diffs):
+def compare_consensus(sample, diffs, scenarios_reported, scenarios):
     if sample.source_files.consensus == sample.target_files.consensus:
         return
     run_name = get_run_name(sample)
@@ -285,21 +301,28 @@ def compare_consensus(sample, diffs):
         target_fields = target_seqs.get(key)
         if source_fields == target_fields:
             continue
-        diffs.append('{}:{} consensus: {} {}'.format(run_name,
-                                                     sample.name,
-                                                     region,
-                                                     cutoff))
-        diff = list(differ.compare(display_consensus(source_fields),
-                                   display_consensus(target_fields)))
-        diffs.extend(line.rstrip() for line in diff)
+        is_main = is_consensus_interesting(region, cutoff)
+        if is_main and scenarios_reported & Scenarios.MAIN_CONSENSUS_CHANGED:
+            scenarios[Scenarios.MAIN_CONSENSUS_CHANGED].append('.')
+        elif (not is_main and
+                scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
+            scenarios[Scenarios.OTHER_CONSENSUS_CHANGED].append('.')
+        else:
+            diffs.append('{}:{} consensus: {} {}'.format(run_name,
+                                                         sample.name,
+                                                         region,
+                                                         cutoff))
+            diff = list(differ.compare(display_consensus(source_fields),
+                                       display_consensus(target_fields)))
+            diffs.extend(line.rstrip() for line in diff)
 
 
-def compare_sample(sample):
+def compare_sample(sample, scenarios_reported=Scenarios.NONE):
     scenarios = defaultdict(list)
     diffs = []
     compare_g2p(sample, diffs)
-    compare_coverage(sample, diffs, scenarios)
-    compare_consensus(sample, diffs)
+    compare_coverage(sample, diffs, scenarios_reported, scenarios)
+    compare_consensus(sample, diffs, scenarios_reported, scenarios)
     diffs.append('')
     return '\n'.join(diffs), scenarios
 
@@ -311,7 +334,9 @@ def main():
     runs = find_runs(args.source_folder, args.target_folder)
     runs = report_source_versions(runs)
     samples = read_samples(runs)
-    results = pool.imap(compare_sample,
+    # noinspection PyTypeChecker
+    results = pool.imap(partial(compare_sample,
+                                scenarios_reported=sum(Scenarios)),
                         samples,
                         chunksize=50)
     scenario_summaries = defaultdict(list)
@@ -328,8 +353,12 @@ def main():
     for key, messages in sorted(scenario_summaries.items()):
         if messages:
             sample_names = {message.split()[0] for message in messages}
-            print(key, len(messages), 'changes in', len(sample_names), 'samples')
-            print(''.join(messages), end='')
+            summary = [key, len(messages), 'changes']
+            body = ''.join(messages).rstrip('.')
+            if body:
+                summary.extend(['in', len(sample_names), 'samples'])
+            print(*summary, end='.\n')
+            print(body, end='')
     print('Finished {} samples.'.format(i))
 
 

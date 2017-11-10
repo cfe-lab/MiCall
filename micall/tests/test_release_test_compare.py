@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from release_test_compare import compare_sample, SampleFiles, Sample, MiseqRun
+from release_test_compare import compare_sample, SampleFiles, Sample, MiseqRun, Scenarios
 
 
 class CompareSampleTest(TestCase):
@@ -192,10 +192,36 @@ class CompareSampleTest(TestCase):
                                                       'on.score': '2'}],
                                     remap_counts=[{'type': 'remap-1 HCV1-seed'}]))
         expected_report = ''
-        expected_scenario_counts = {'different remap counts': [
+        expected_scenario_counts = {Scenarios.REMAP_COUNTS_CHANGED: [
             '  run1:sample42 coverage: HCV HCV2-E1 3 => -\n']}
 
-        report, scenario_counts = compare_sample(sample)
+        report, scenario_counts = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
+
+        self.assertEqual(expected_report, report)
+        self.assertEqual(expected_scenario_counts, scenario_counts)
+
+    def test_missing_coverage_different_remap_counts_no_scenarios(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(coverage_scores=[{'project': 'HCV',
+                                                      'region': 'HCV1-E1',
+                                                      'seed': 'HCV1-seed',
+                                                      'on.score': '2'},
+                                                     {'project': 'HCV',
+                                                      'region': 'HCV2-E1',
+                                                      'seed': 'HCV2-seed',
+                                                      'on.score': '3'}],
+                                    remap_counts=[{'type': 'remap-1 HCV1-seed'},
+                                                  {'type': 'remap-1 HCV2-seed'}]),
+                        SampleFiles(coverage_scores=[{'project': 'HCV',
+                                                      'region': 'HCV1-E1',
+                                                      'seed': 'HCV1-seed',
+                                                      'on.score': '2'}],
+                                    remap_counts=[{'type': 'remap-1 HCV1-seed'}]))
+        expected_report = 'run1:sample42 coverage: HCV HCV2-E1 3 => -\n'
+        expected_scenario_counts = {}
+
+        report, scenario_counts = compare_sample(sample, Scenarios.NONE)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -228,10 +254,10 @@ class CompareSampleTest(TestCase):
                                     remap_counts=[{'type': 'remap-1 HIV1-seed'},
                                                   {'type': 'remap-2 HIV1-seed'}]))
         expected_report = ''
-        expected_scenario_counts = {'different remap counts': [
+        expected_scenario_counts = {Scenarios.REMAP_COUNTS_CHANGED: [
             '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
-        report, scenario_counts = compare_sample(sample)
+        report, scenario_counts = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -253,10 +279,10 @@ class CompareSampleTest(TestCase):
                                                   {'type': 'remap-1 HIV1-seed'},
                                                   {'type': 'remap-2 HIV1-seed'}]))
         expected_report = ''
-        expected_scenario_counts = {'different remap counts': [
+        expected_scenario_counts = {Scenarios.REMAP_COUNTS_CHANGED: [
             '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
-        report, scenario_counts = compare_sample(sample)
+        report, scenario_counts = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -278,10 +304,10 @@ class CompareSampleTest(TestCase):
                                                   {'type': 'remap-2 HIV1-seed'},
                                                   {'type': 'remap-final HIV1-seed'}]))
         expected_report = ''
-        expected_scenario_counts = {'different remap counts': [
+        expected_scenario_counts = {Scenarios.REMAP_COUNTS_CHANGED: [
             '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
-        report, scenario_counts = compare_sample(sample)
+        report, scenario_counts = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -303,10 +329,10 @@ class CompareSampleTest(TestCase):
                                     remap_counts=[{'type': 'remap-1 HIV1-seed'},
                                                   {'type': 'remap-2 HIV1-seed'}]))
         expected_report = ''
-        expected_scenario_counts = {'different remap counts': [
+        expected_scenario_counts = {Scenarios.REMAP_COUNTS_CHANGED: [
             '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
-        report, scenario_counts = compare_sample(sample)
+        report, scenario_counts = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -346,10 +372,12 @@ class CompareSampleTest(TestCase):
                                                       'which.key.pos': '230',
                                                       'on.score': '4'}]))
         expected_report = ''
-        expected_scenario_counts = {'key pos removed RT 318': [
+        expected_scenario_counts = {Scenarios.V78_KEY_POS_REMOVED_RT318: [
             '  run1:sample42 coverage: HIV RT 1 => 4\n']}
 
-        report, scenario_counts = compare_sample(sample)
+        report, scenario_counts = compare_sample(
+            sample,
+            Scenarios.V78_KEY_POS_REMOVED_RT318)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -374,6 +402,90 @@ class CompareSampleTest(TestCase):
         report, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
+
+    def test_consensus_change_scenario(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAT'}]))
+        expected_report = ''
+        expected_scenarios = {Scenarios.MAIN_CONSENSUS_CHANGED: ['.']}
+
+        report, scenarios = compare_sample(
+            sample,
+            Scenarios.MAIN_CONSENSUS_CHANGED | Scenarios.OTHER_CONSENSUS_CHANGED)
+
+        self.assertEqual(expected_report, report)
+        self.assertEqual(expected_scenarios, scenarios)
+
+    def test_other_consensus_change(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': '0.250',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': '0.250',
+                                                'offset': '100',
+                                                'sequence': 'ACACAT'}]))
+        expected_report = ('run1:sample42 consensus: R1 0.250\n'
+                           '- 100 ACACAC\n'
+                           '?          ^\n'
+                           '+ 100 ACACAT\n'
+                           '?          ^\n')
+
+        report, _ = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+
+    def test_other_consensus_change_scenario(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': '0.250',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': '0.250',
+                                                'offset': '100',
+                                                'sequence': 'ACACAT'}]))
+        expected_report = ''
+        expected_scenarios = {Scenarios.OTHER_CONSENSUS_CHANGED: ['.']}
+
+        report, scenarios = compare_sample(
+            sample,
+            Scenarios.MAIN_CONSENSUS_CHANGED | Scenarios.OTHER_CONSENSUS_CHANGED)
+
+        self.assertEqual(expected_report, report)
+        self.assertEqual(expected_scenarios, scenarios)
+
+    def test_hla_consensus_change_scenario(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'HLA-1',
+                                                'consensus-percent-cutoff': '0.250',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[{'region': 'HLA-1',
+                                                'consensus-percent-cutoff': '0.250',
+                                                'offset': '100',
+                                                'sequence': 'ACACAT'}]))
+        expected_report = ''
+        expected_scenarios = {Scenarios.MAIN_CONSENSUS_CHANGED: ['.']}
+
+        report, scenarios = compare_sample(
+            sample,
+            Scenarios.MAIN_CONSENSUS_CHANGED | Scenarios.OTHER_CONSENSUS_CHANGED)
+
+        self.assertEqual(expected_report, report)
+        self.assertEqual(expected_scenarios, scenarios)
 
     def test_same_consensus(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
@@ -433,31 +545,6 @@ class CompareSampleTest(TestCase):
                            '?          ^\n'
                            '+ 100 ACACAM\n'
                            '?          ^\n')
-
-        report, _ = compare_sample(sample)
-
-        self.assertEqual(expected_report, report)
-
-    def test_ignore_lower_consensus_mixtures(self):
-        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
-                        'sample42',
-                        SampleFiles(consensus=[{'region': 'R1',
-                                                'consensus-percent-cutoff': 'MAX',
-                                                'offset': '100',
-                                                'sequence': 'ACACAC'},
-                                               {'region': 'R1',
-                                                'consensus-percent-cutoff': '0.1',
-                                                'offset': '100',
-                                                'sequence': 'ACACAC'}]),
-                        SampleFiles(consensus=[{'region': 'R1',
-                                                'consensus-percent-cutoff': 'MAX',
-                                                'offset': '100',
-                                                'sequence': 'ACACAC'},
-                                               {'region': 'R1',
-                                                'consensus-percent-cutoff': '0.1',
-                                                'offset': '100',
-                                                'sequence': 'ACACAM'}]))
-        expected_report = ''
 
         report, _ = compare_sample(sample)
 
