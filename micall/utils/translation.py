@@ -139,14 +139,3 @@ def translate(seq,
             else:
                 aa_seq += aminos[0]
     return aa_list if return_list else aa_seq
-
-if __name__ == '__live_coding__':
-    import unittest
-    from micall.tests.translation_test import TranslateTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(TranslateTest("testMixturesNotTranslated2"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

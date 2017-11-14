@@ -495,15 +495,6 @@ def main():
             failed_csv=args.failed_csv,
             clipping_csv=args.clipping_csv)
 
+
 if __name__ == '__main__':
     main()
-elif __name__ == '__live_coding__':
-    import unittest
-    from micall.tests.sam2aln_test import CigarTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(CigarTest("testSoftClipPositions"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

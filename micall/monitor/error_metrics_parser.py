@@ -127,15 +127,3 @@ def write_phix_csv(out_file, records, read_lengths=None, summary=None):
         summary['error_rate_fwd'] = error_sums[1]/error_counts[1]
     if error_counts[0] > 0 and summary is not None:
         summary['error_rate_rev'] = error_sums[0]/error_counts[0]
-
-if __name__ == '__live_coding__':
-    import unittest
-    from micall.tests.error_metrics_parser_test import ErrorMetricsParserTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(ErrorMetricsParserTest("test_summary_reverse"))
-    suite.addTest(ErrorMetricsParserTest("test_write_reverse"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

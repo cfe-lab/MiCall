@@ -147,14 +147,3 @@ class ProjectConfig(object):
                     del project_region['seed_region_names']
                     project_region['project_name'] = project_name
                     yield project_region
-
-if __name__ == '__live_coding__':
-    import unittest
-    from micall.tests.project_config_test import ProjectConfigurationProjectRegionsTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(ProjectConfigurationProjectRegionsTest("testProjectExcluded"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)
