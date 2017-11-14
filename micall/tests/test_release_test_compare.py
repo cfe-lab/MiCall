@@ -580,6 +580,27 @@ class CompareSampleTest(TestCase):
 
         self.assertEqual(expected_report, report)
 
+    def test_duplicate_consensus(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'},
+                                               {'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACACAC'}]))
+        expected_report = 'run1:sample42 duplicate consensus: R1 MAX\n'
+
+        report, _ = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+
     def test_hiv_seed_changed(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',

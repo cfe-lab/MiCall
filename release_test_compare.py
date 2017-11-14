@@ -1,7 +1,7 @@
 """ Compare result files in shared folder with previous release. """
 from argparse import ArgumentParser
 import csv
-from collections import namedtuple, defaultdict
+from collections import namedtuple, defaultdict, Counter
 from difflib import Differ
 from enum import IntEnum
 from functools import partial
@@ -85,6 +85,7 @@ def read_samples(runs):
     missing_sources = []
     missing_targets = []
     missing_files = []
+    bad_files = []
     for run in runs:
         if run.source_path is None:
             missing_sources.append(run.target_path)
@@ -116,6 +117,9 @@ def read_samples(runs):
         except FileNotFoundError as ex:
             missing_files.append(str(ex))
             continue
+        except Exception as ex:
+            bad_files.append((ex, run.target_path))
+            continue
 
         sample_names = sorted(target_cascades.keys())
         for sample_name in sample_names:
@@ -136,6 +140,8 @@ def read_samples(runs):
     if missing_sources:
         print('Missing sources: ', missing_sources)
     print('\n'.join(missing_files))
+    if bad_files:
+        print(bad_files)
 
 
 def group_samples(output_file):
@@ -288,7 +294,27 @@ def display_consensus(fields):
     return [offset + ' ' + seq + '\n']
 
 
+def find_duplicates(sample):
+    rows = sample.target_files.consensus
+    if rows is None:
+        return
+    counts = Counter((row['region'], row['consensus-percent-cutoff'])
+                     for row in rows)
+    duplicate_keys = sorted(key
+                            for key, count in counts.items()
+                            if count > 1)
+    return ['{}:{} duplicate consensus: {} {}'.format(get_run_name(sample),
+                                                      sample.name,
+                                                      region,
+                                                      cutoff)
+            for region, cutoff in duplicate_keys]
+
+
 def compare_consensus(sample, diffs, scenarios_reported, scenarios):
+    duplicates = find_duplicates(sample)
+    if duplicates:
+        diffs.extend(duplicates)
+        return
     if sample.source_files.consensus == sample.target_files.consensus:
         return
     run_name = get_run_name(sample)
