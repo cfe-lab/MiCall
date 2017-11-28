@@ -11,6 +11,11 @@ from multiprocessing.pool import Pool
 from operator import itemgetter
 import os
 
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+import Levenshtein
+
 from micall.settings import pipeline_version, DONE_PROCESSING
 
 MICALL_VERSION = '7.8'
@@ -22,6 +27,11 @@ SampleFiles = namedtuple(
     'cascade coverage_scores g2p_summary consensus remap_counts')
 SampleFiles.__new__.__defaults__ = (None,) * 5
 Sample = namedtuple('Sample', 'run name source_files target_files')
+ConsensusDistance = namedtuple('ConsensusDistance', 'target_seed cutoff distance')
+SampleComparison = namedtuple('SampleComparison',
+                              ['diffs',  # multi-line string
+                               'scenarios',  # {Scenarios: [description]}
+                               'consensus_distances'])  # [ConsensusDistance]
 
 
 class Scenarios(IntEnum):
@@ -310,13 +320,43 @@ def find_duplicates(sample):
             for region, cutoff in duplicate_keys]
 
 
-def compare_consensus(sample, diffs, scenarios_reported, scenarios):
+def calculate_distance(region, cutoff, source_fields, target_fields):
+    if source_fields is None or target_fields is None:
+        return
+    offset1, sequence1 = source_fields
+    offset2, sequence2 = target_fields
+    try:
+        offset1 = int(offset1)
+        offset2 = int(offset2)
+    except ValueError:
+        offset1 = offset2 = 0
+    if offset1 > offset2:
+        sequence1 = '-'*(offset1-offset2) + sequence1
+    else:
+        sequence2 = '-'*(offset2-offset1) + sequence2
+    if len(sequence1) > len(sequence2):
+        sequence2 += '-' * (len(sequence1) - len(sequence2))
+    elif len(sequence2) > len(sequence1):
+        sequence1 += '-' * (len(sequence2) - len(sequence1))
+    distance = Levenshtein.distance(sequence1, sequence2)
+    if False and distance == 0:
+        return None
+    return ConsensusDistance(target_seed=region[:3],
+                             cutoff=cutoff,
+                             distance=distance)
+
+
+def compare_consensus(sample,
+                      diffs,
+                      scenarios_reported,
+                      scenarios):
+    consensus_distances = []
     duplicates = find_duplicates(sample)
     if duplicates:
         diffs.extend(duplicates)
-        return
+        return consensus_distances
     if sample.source_files.consensus == sample.target_files.consensus:
-        return
+        return consensus_distances
     run_name = get_run_name(sample)
     source_seqs = map_consensus_sequences(sample.source_files.consensus)
     target_seqs = map_consensus_sequences(sample.target_files.consensus)
@@ -325,6 +365,9 @@ def compare_consensus(sample, diffs, scenarios_reported, scenarios):
         region, cutoff = key
         source_fields = source_seqs.get(key)
         target_fields = target_seqs.get(key)
+        consensus_distance = calculate_distance(region, cutoff, source_fields, target_fields)
+        if consensus_distance is not None:
+            consensus_distances.append(consensus_distance)
         if source_fields == target_fields:
             continue
         is_main = is_consensus_interesting(region, cutoff)
@@ -341,16 +384,67 @@ def compare_consensus(sample, diffs, scenarios_reported, scenarios):
             diff = list(differ.compare(display_consensus(source_fields),
                                        display_consensus(target_fields)))
             diffs.extend(line.rstrip() for line in diff)
+    return consensus_distances
 
 
-def compare_sample(sample, scenarios_reported=Scenarios.NONE):
+def compare_sample(sample,
+                   scenarios_reported=Scenarios.NONE):
     scenarios = defaultdict(list)
     diffs = []
     compare_g2p(sample, diffs)
     compare_coverage(sample, diffs, scenarios_reported, scenarios)
-    compare_consensus(sample, diffs, scenarios_reported, scenarios)
+    consensus_distances = compare_consensus(sample,
+                                            diffs,
+                                            scenarios_reported,
+                                            scenarios)
     diffs.append('')
-    return '\n'.join(diffs), scenarios
+    return SampleComparison(diffs='\n'.join(diffs),
+                            scenarios=scenarios,
+                            consensus_distances=consensus_distances)
+
+
+def format_cutoff(row):
+    cutoff = row['cutoff']
+    count = row['count']
+    try:
+        cutoff = float(cutoff)
+        cutoff = int(100 * cutoff)
+        cutoff = str(cutoff)
+    except ValueError:
+        pass
+    return cutoff + '_' + str(count)
+
+
+def plot_distances(distance_data, filename, title):
+    seeds = sorted(set(distance_data['target_seed']))
+    distance_data = distance_data.sort_values(['target_seed', 'cutoff'])
+    sns.set()
+    num_plots = len(seeds)
+    figure, axes_sets = plt.subplots(nrows=num_plots, ncols=1)
+    for ax, seed in zip(axes_sets, seeds):
+        seed_data = distance_data[distance_data['target_seed'] == seed]
+        seed_data = seed_data.assign(
+            count=lambda df: df['cutoff'].map(
+                df.groupby(by=['cutoff'])['distance'].count()))
+        seed_data['cutoff_n'] = seed_data.apply(format_cutoff, 'columns')
+
+        sns.violinplot(x='cutoff_n',
+                       y='distance',
+                       data=seed_data,
+                       cut=0,
+                       alpha=0.7,
+                       ax=ax)
+        plt.setp(ax.lines, zorder=100)
+        plt.setp(ax.collections, zorder=100)
+        sns.swarmplot(x='cutoff_n',
+                      y='distance',
+                      data=seed_data,
+                      color='k',
+                      ax=ax)
+        ax.set_ylabel(seed + ' distance')
+        ax.get_yaxis().set_label_coords(-0.07, 0.5)
+    axes_sets[0].set_title(title)
+    plt.savefig(filename)
 
 
 def main():
@@ -367,13 +461,15 @@ def main():
                         chunksize=50)
     scenario_summaries = defaultdict(list)
     i = None
+    all_consensus_distances = []
     report_count = 0
-    for i, (report, scenarios) in enumerate(results):
+    for i, (report, scenarios, consensus_distances) in enumerate(results):
         if report:
             report_count += 1
             if report_count > 100:
                 break
         print(report, end='')
+        all_consensus_distances.extend(consensus_distances)
         for key, messages in scenarios.items():
             scenario_summaries[key] += scenarios[key]
     for key, messages in sorted(scenario_summaries.items()):
@@ -385,6 +481,14 @@ def main():
                 summary.extend(['in', len(sample_names), 'samples'])
             print(*summary, end='.\n')
             print(body, end='')
+
+    distance_data = pd.DataFrame(all_consensus_distances)
+    plot_distances(distance_data,
+                   'consensus_distances.svg',
+                   'Consensus Distances Between v7.7 and v7.8')
+    plot_distances(distance_data[distance_data['distance'] != 0],
+                   'consensus_distances_nonzero.svg',
+                   'Non-zero Consensus Distances Between v7.7 and v7.8')
     print('Finished {} samples.'.format(i))
 
 

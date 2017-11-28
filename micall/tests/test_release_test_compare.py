@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from release_test_compare import compare_sample, SampleFiles, Sample, MiseqRun, Scenarios
+from release_test_compare import compare_sample, SampleFiles, Sample, MiseqRun, Scenarios, ConsensusDistance
 
 
 class CompareSampleTest(TestCase):
@@ -11,7 +11,7 @@ class CompareSampleTest(TestCase):
                         SampleFiles())
         expected_report = ''
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -22,7 +22,7 @@ class CompareSampleTest(TestCase):
                         SampleFiles(g2p_summary=[dict(X4pct='60.00')]))
         expected_report = 'run1:sample42 G2P: 50.00 => 60.00\n'
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -33,7 +33,7 @@ class CompareSampleTest(TestCase):
                         SampleFiles(g2p_summary=[dict(X4pct='51.00')]))
         expected_report = ''
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -44,7 +44,7 @@ class CompareSampleTest(TestCase):
                         SampleFiles(g2p_summary=[dict(X4pct='')]))
         expected_report = 'run1:sample42 G2P: 50.00 => \n'
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -55,7 +55,7 @@ class CompareSampleTest(TestCase):
                         SampleFiles(g2p_summary=[dict(X4pct='', other='y')]))
         expected_report = ''
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -66,7 +66,7 @@ class CompareSampleTest(TestCase):
                         SampleFiles(g2p_summary=[dict(X4pct='3.01', final='X4')]))
         expected_report = ''
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -77,7 +77,7 @@ class CompareSampleTest(TestCase):
                         SampleFiles(g2p_summary=[dict(X4pct='2.01', final='X4')]))
         expected_report = 'run1:sample42 G2P: R5 1.99 => X4 2.01\n'
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -92,7 +92,7 @@ class CompareSampleTest(TestCase):
                                                       'on.score': '4'}]))
         expected_report = ''
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -107,7 +107,7 @@ class CompareSampleTest(TestCase):
                                                       'on.score': '3'}]))
         expected_report = 'run1:sample42 coverage: HIV PR 4 => 3\n'
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -129,7 +129,7 @@ class CompareSampleTest(TestCase):
         expected_report = ('run1:sample42 coverage: HIV PR 3 => 4\n'
                            'run1:sample42 coverage: HIV RT 2 => 3\n')
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -142,7 +142,7 @@ class CompareSampleTest(TestCase):
                                                       'on.score': '2'}]))
         expected_report = 'run1:sample42 coverage: HIV PR - => 2\n'
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -168,7 +168,7 @@ class CompareSampleTest(TestCase):
         expected_report = 'run1:sample42 coverage: HCV HCV2-E1 3 => -\n'
         expected_scenario_counts = {}
 
-        report, scenario_counts = compare_sample(sample)
+        report, scenario_counts, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -195,7 +195,7 @@ class CompareSampleTest(TestCase):
         expected_scenario_counts = {Scenarios.REMAP_COUNTS_CHANGED: [
             '  run1:sample42 coverage: HCV HCV2-E1 3 => -\n']}
 
-        report, scenario_counts = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
+        report, scenario_counts, _ = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -221,7 +221,7 @@ class CompareSampleTest(TestCase):
         expected_report = 'run1:sample42 coverage: HCV HCV2-E1 3 => -\n'
         expected_scenario_counts = {}
 
-        report, scenario_counts = compare_sample(sample, Scenarios.NONE)
+        report, scenario_counts, _ = compare_sample(sample, Scenarios.NONE)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -235,7 +235,7 @@ class CompareSampleTest(TestCase):
                                                       'on.score': '1'}]))
         expected_report = ''
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -257,7 +257,7 @@ class CompareSampleTest(TestCase):
         expected_scenario_counts = {Scenarios.REMAP_COUNTS_CHANGED: [
             '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
-        report, scenario_counts = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
+        report, scenario_counts, _ = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -282,7 +282,7 @@ class CompareSampleTest(TestCase):
         expected_scenario_counts = {Scenarios.REMAP_COUNTS_CHANGED: [
             '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
-        report, scenario_counts = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
+        report, scenario_counts, _ = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -307,7 +307,7 @@ class CompareSampleTest(TestCase):
         expected_scenario_counts = {Scenarios.REMAP_COUNTS_CHANGED: [
             '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
-        report, scenario_counts = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
+        report, scenario_counts, _ = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -332,7 +332,7 @@ class CompareSampleTest(TestCase):
         expected_scenario_counts = {Scenarios.REMAP_COUNTS_CHANGED: [
             '  run1:sample42 coverage: HIV PR 3 => 4\n']}
 
-        report, scenario_counts = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
+        report, scenario_counts, _ = compare_sample(sample, Scenarios.REMAP_COUNTS_CHANGED)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -355,7 +355,7 @@ class CompareSampleTest(TestCase):
         expected_report = 'run1:sample42 coverage: HIV PR 3 => 4\n'
         expected_scenario_counts = {}
 
-        report, scenario_counts = compare_sample(sample)
+        report, scenario_counts, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
@@ -375,7 +375,7 @@ class CompareSampleTest(TestCase):
         expected_scenario_counts = {Scenarios.V78_KEY_POS_REMOVED_RT318: [
             '  run1:sample42 coverage: HIV RT 1 => 4\n']}
 
-        report, scenario_counts = compare_sample(
+        report, scenario_counts, _ = compare_sample(
             sample,
             Scenarios.V78_KEY_POS_REMOVED_RT318)
 
@@ -399,7 +399,7 @@ class CompareSampleTest(TestCase):
                            '+ 100 ACACAT\n'
                            '?          ^\n')
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -417,7 +417,7 @@ class CompareSampleTest(TestCase):
         expected_report = ''
         expected_scenarios = {Scenarios.MAIN_CONSENSUS_CHANGED: ['.']}
 
-        report, scenarios = compare_sample(
+        report, scenarios, _ = compare_sample(
             sample,
             Scenarios.MAIN_CONSENSUS_CHANGED | Scenarios.OTHER_CONSENSUS_CHANGED)
 
@@ -441,7 +441,7 @@ class CompareSampleTest(TestCase):
                            '+ 100 ACACAT\n'
                            '?          ^\n')
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -459,7 +459,7 @@ class CompareSampleTest(TestCase):
         expected_report = ''
         expected_scenarios = {Scenarios.OTHER_CONSENSUS_CHANGED: ['.']}
 
-        report, scenarios = compare_sample(
+        report, scenarios, _ = compare_sample(
             sample,
             Scenarios.MAIN_CONSENSUS_CHANGED | Scenarios.OTHER_CONSENSUS_CHANGED)
 
@@ -480,7 +480,7 @@ class CompareSampleTest(TestCase):
         expected_report = ''
         expected_scenarios = {Scenarios.MAIN_CONSENSUS_CHANGED: ['.']}
 
-        report, scenarios = compare_sample(
+        report, scenarios, _ = compare_sample(
             sample,
             Scenarios.MAIN_CONSENSUS_CHANGED | Scenarios.OTHER_CONSENSUS_CHANGED)
 
@@ -500,7 +500,7 @@ class CompareSampleTest(TestCase):
                                                 'sequence': 'ACACAC'}]))
         expected_report = ''
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -516,10 +516,12 @@ class CompareSampleTest(TestCase):
                                                 'offset': '100',
                                                 'sequence': 'ACACAC---'}]))
         expected_report = ''
+        expected_consensus_distances = []
 
-        report, _ = compare_sample(sample)
+        report, _, consensus_distances = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
+        self.assertEqual(expected_consensus_distances, consensus_distances)
 
     def test_one_consensus_changes(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
@@ -545,10 +547,70 @@ class CompareSampleTest(TestCase):
                            '?          ^\n'
                            '+ 100 ACACAM\n'
                            '?          ^\n')
+        expected_consensus_distances = [ConsensusDistance(target_seed='R2',
+                                                          cutoff='MAX',
+                                                          distance=1)]
 
-        report, _ = compare_sample(sample)
+        report, _, consensus_distances = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
+        self.assertEqual(expected_consensus_distances, consensus_distances)
+
+    def test_one_consensus_offset_changes(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACTTAC'},
+                                               {'region': 'R2',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACTTAC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACTTAC'},
+                                               {'region': 'R2',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '102',
+                                                'sequence': 'TTAC'}]))
+        expected_report = ('run1:sample42 consensus: R2 MAX\n'
+                           '- 100 ACTTAC\n'
+                           '?   ^ --\n'
+                           '+ 102 TTAC\n'
+                           '?   ^\n')
+        expected_consensus_distances = [ConsensusDistance(target_seed='R2',
+                                                          cutoff='MAX',
+                                                          distance=2)]
+
+        report, _, consensus_distances = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+        self.assertEqual(expected_consensus_distances, consensus_distances)
+
+    def test_consensus_trailing_change(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACTTAC-----GTAC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACTTAC'}]))
+        expected_report = ('run1:sample42 consensus: R1 MAX\n'
+                           '- 100 ACTTAC-----GTAC\n'
+                           '+ 100 ACTTAC\n')
+        expected_consensus_distances = [ConsensusDistance(target_seed='R1',
+                                                          cutoff='MAX',
+                                                          distance=4)]
+
+        report, _, consensus_distances = compare_sample(sample)
+
+        self.assertEqual(expected_report, report)
+        self.assertEqual(expected_consensus_distances, consensus_distances)
 
     def test_consensus_missing(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
@@ -560,10 +622,12 @@ class CompareSampleTest(TestCase):
                         SampleFiles(consensus=[]))
         expected_report = ('run1:sample42 consensus: R1 MAX\n'
                            '- 100 ACACAC\n')
+        expected_consensus_distances = []
 
-        report, _ = compare_sample(sample)
+        report, _, consensus_distances = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
+        self.assertEqual(expected_consensus_distances, consensus_distances)
 
     def test_consensus_added(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
@@ -576,7 +640,7 @@ class CompareSampleTest(TestCase):
         expected_report = ('run1:sample42 consensus: R1 MAX\n'
                            '+ 100 ACACAC\n')
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -597,7 +661,7 @@ class CompareSampleTest(TestCase):
                                                 'sequence': 'ACACAC'}]))
         expected_report = 'run1:sample42 duplicate consensus: R1 MAX\n'
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
 
@@ -614,6 +678,6 @@ class CompareSampleTest(TestCase):
                                                 'sequence': 'ACACAC'}]))
         expected_report = ''
 
-        report, _ = compare_sample(sample)
+        report, _, _ = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
