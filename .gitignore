@@ -5,8 +5,8 @@
 /micall/alignment/build
 /micall/alignment/dist
 /micall/alignment/gotoh.egg-info
-/consensus_distances.svg
-/consensus_distances_nonzero.svg
+/consensus_diffs*.svg
+/consensus_distances*.svg
 /build
 /dist
 *.pyc

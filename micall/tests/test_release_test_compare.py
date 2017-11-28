@@ -516,7 +516,10 @@ class CompareSampleTest(TestCase):
                                                 'offset': '100',
                                                 'sequence': 'ACACAC---'}]))
         expected_report = ''
-        expected_consensus_distances = []
+        expected_consensus_distances = [ConsensusDistance(target_seed='R1',
+                                                          cutoff='MAX',
+                                                          distance=0,
+                                                          pct_diff=0)]
 
         report, _, consensus_distances = compare_sample(sample)
 
@@ -529,27 +532,32 @@ class CompareSampleTest(TestCase):
                         SampleFiles(consensus=[{'region': 'R1',
                                                 'consensus-percent-cutoff': 'MAX',
                                                 'offset': '100',
-                                                'sequence': 'ACACAC'},
+                                                'sequence': 'ACACACGT'},
                                                {'region': 'R2',
                                                 'consensus-percent-cutoff': 'MAX',
                                                 'offset': '100',
-                                                'sequence': 'ACACAC'}]),
+                                                'sequence': 'ACACACGT'}]),
                         SampleFiles(consensus=[{'region': 'R1',
                                                 'consensus-percent-cutoff': 'MAX',
                                                 'offset': '100',
-                                                'sequence': 'ACACAC'},
+                                                'sequence': 'ACACACGT'},
                                                {'region': 'R2',
                                                 'consensus-percent-cutoff': 'MAX',
                                                 'offset': '100',
-                                                'sequence': 'ACACAM'}]))
+                                                'sequence': 'ACACAMGT'}]))
         expected_report = ('run1:sample42 consensus: R2 MAX\n'
-                           '- 100 ACACAC\n'
+                           '- 100 ACACACGT\n'
                            '?          ^\n'
-                           '+ 100 ACACAM\n'
+                           '+ 100 ACACAMGT\n'
                            '?          ^\n')
-        expected_consensus_distances = [ConsensusDistance(target_seed='R2',
+        expected_consensus_distances = [ConsensusDistance(target_seed='R1',
                                                           cutoff='MAX',
-                                                          distance=1)]
+                                                          distance=0,
+                                                          pct_diff=0),
+                                        ConsensusDistance(target_seed='R2',
+                                                          cutoff='MAX',
+                                                          distance=1,
+                                                          pct_diff=12.5)]
 
         report, _, consensus_distances = compare_sample(sample)
 
@@ -562,27 +570,32 @@ class CompareSampleTest(TestCase):
                         SampleFiles(consensus=[{'region': 'R1',
                                                 'consensus-percent-cutoff': 'MAX',
                                                 'offset': '100',
-                                                'sequence': 'ACTTAC'},
+                                                'sequence': 'ACTTACGT'},
                                                {'region': 'R2',
                                                 'consensus-percent-cutoff': 'MAX',
                                                 'offset': '100',
-                                                'sequence': 'ACTTAC'}]),
+                                                'sequence': 'ACTTACGT'}]),
                         SampleFiles(consensus=[{'region': 'R1',
                                                 'consensus-percent-cutoff': 'MAX',
                                                 'offset': '100',
-                                                'sequence': 'ACTTAC'},
+                                                'sequence': 'ACTTACGT'},
                                                {'region': 'R2',
                                                 'consensus-percent-cutoff': 'MAX',
                                                 'offset': '102',
-                                                'sequence': 'TTAC'}]))
+                                                'sequence': 'TTACGT'}]))
         expected_report = ('run1:sample42 consensus: R2 MAX\n'
-                           '- 100 ACTTAC\n'
+                           '- 100 ACTTACGT\n'
                            '?   ^ --\n'
-                           '+ 102 TTAC\n'
+                           '+ 102 TTACGT\n'
                            '?   ^\n')
-        expected_consensus_distances = [ConsensusDistance(target_seed='R2',
+        expected_consensus_distances = [ConsensusDistance(target_seed='R1',
                                                           cutoff='MAX',
-                                                          distance=2)]
+                                                          distance=0,
+                                                          pct_diff=0),
+                                        ConsensusDistance(target_seed='R2',
+                                                          cutoff='MAX',
+                                                          distance=2,
+                                                          pct_diff=25)]
 
         report, _, consensus_distances = compare_sample(sample)
 
@@ -595,21 +608,89 @@ class CompareSampleTest(TestCase):
                         SampleFiles(consensus=[{'region': 'R1',
                                                 'consensus-percent-cutoff': 'MAX',
                                                 'offset': '100',
-                                                'sequence': 'ACTTAC-----GTAC'}]),
+                                                'sequence': 'ACTTAC------GTAC'}]),
                         SampleFiles(consensus=[{'region': 'R1',
                                                 'consensus-percent-cutoff': 'MAX',
                                                 'offset': '100',
                                                 'sequence': 'ACTTAC'}]))
         expected_report = ('run1:sample42 consensus: R1 MAX\n'
-                           '- 100 ACTTAC-----GTAC\n'
+                           '- 100 ACTTAC------GTAC\n'
                            '+ 100 ACTTAC\n')
         expected_consensus_distances = [ConsensusDistance(target_seed='R1',
                                                           cutoff='MAX',
-                                                          distance=4)]
+                                                          distance=4,
+                                                          pct_diff=25)]
 
         report, _, consensus_distances = compare_sample(sample)
 
         self.assertEqual(expected_report, report)
+        self.assertEqual(expected_consensus_distances, consensus_distances)
+
+    def test_has_coverage(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACTTATGC'},
+                                               {'region': 'R2',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACTTATGC'}]),
+                        SampleFiles(consensus=[{'region': 'R1',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACTTACGC'},
+                                               {'region': 'R2',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACTTACGC'}],
+                                    coverage_scores=[{'seed': 'R1',
+                                                      'project': 'Rs',
+                                                      'region': 'R1',
+                                                      'on.score': '4'},
+                                                     {'seed': 'R2',
+                                                      'project': 'Rs',
+                                                      'region': 'R1',
+                                                      'on.score': '1'}]))
+        expected_consensus_distances = [ConsensusDistance(target_seed='R1',
+                                                          cutoff='MAX',
+                                                          distance=1,
+                                                          pct_diff=12.5,
+                                                          has_coverage=True),
+                                        ConsensusDistance(target_seed='R2',
+                                                          cutoff='MAX',
+                                                          distance=1,
+                                                          pct_diff=12.5,
+                                                          has_coverage=False)]
+
+        _, _, consensus_distances = compare_sample(sample)
+
+        self.assertEqual(expected_consensus_distances, consensus_distances)
+
+    def test_consensus_coverage_hiv(self):
+        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
+                        'sample42',
+                        SampleFiles(consensus=[{'region': 'HIV1-old-seed',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACTTATGC'}]),
+                        SampleFiles(consensus=[{'region': 'HIV1-new-seed',
+                                                'consensus-percent-cutoff': 'MAX',
+                                                'offset': '100',
+                                                'sequence': 'ACTTACGC'}],
+                                    coverage_scores=[{'seed': 'HIV1-new-seed',
+                                                      'project': 'HIV',
+                                                      'region': 'V3LOOP',
+                                                      'on.score': '4'}]))
+        expected_consensus_distances = [ConsensusDistance(target_seed='HIV',
+                                                          cutoff='MAX',
+                                                          distance=1,
+                                                          pct_diff=12.5,
+                                                          has_coverage=True)]
+
+        _, _, consensus_distances = compare_sample(sample)
+
         self.assertEqual(expected_consensus_distances, consensus_distances)
 
     def test_consensus_missing(self):

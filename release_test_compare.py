@@ -27,7 +27,9 @@ SampleFiles = namedtuple(
     'cascade coverage_scores g2p_summary consensus remap_counts')
 SampleFiles.__new__.__defaults__ = (None,) * 5
 Sample = namedtuple('Sample', 'run name source_files target_files')
-ConsensusDistance = namedtuple('ConsensusDistance', 'target_seed cutoff distance')
+ConsensusDistance = namedtuple('ConsensusDistance',
+                               'target_seed cutoff distance pct_diff has_coverage')
+ConsensusDistance.__new__.__defaults__ = (None,) * 5
 SampleComparison = namedtuple('SampleComparison',
                               ['diffs',  # multi-line string
                                'scenarios',  # {Scenarios: [description]}
@@ -320,7 +322,7 @@ def find_duplicates(sample):
             for region, cutoff in duplicate_keys]
 
 
-def calculate_distance(region, cutoff, source_fields, target_fields):
+def calculate_distance(region, cutoff, source_fields, target_fields, has_coverage):
     if source_fields is None or target_fields is None:
         return
     offset1, sequence1 = source_fields
@@ -339,11 +341,11 @@ def calculate_distance(region, cutoff, source_fields, target_fields):
     elif len(sequence2) > len(sequence1):
         sequence1 += '-' * (len(sequence2) - len(sequence1))
     distance = Levenshtein.distance(sequence1, sequence2)
-    if False and distance == 0:
-        return None
     return ConsensusDistance(target_seed=region[:3],
                              cutoff=cutoff,
-                             distance=distance)
+                             distance=distance,
+                             pct_diff=distance/len(sequence1)*100,
+                             has_coverage=has_coverage)
 
 
 def compare_consensus(sample,
@@ -358,6 +360,12 @@ def compare_consensus(sample,
     if sample.source_files.consensus == sample.target_files.consensus:
         return consensus_distances
     run_name = get_run_name(sample)
+    if sample.target_files.coverage_scores is None:
+        covered_seeds = None
+    else:
+        covered_seeds = {adjust_region(row['seed'])
+                         for row in sample.target_files.coverage_scores
+                         if row['on.score'] == '4'}
     source_seqs = map_consensus_sequences(sample.source_files.consensus)
     target_seqs = map_consensus_sequences(sample.target_files.consensus)
     keys = sorted(set(source_seqs.keys()) | target_seqs.keys())
@@ -365,7 +373,12 @@ def compare_consensus(sample,
         region, cutoff = key
         source_fields = source_seqs.get(key)
         target_fields = target_seqs.get(key)
-        consensus_distance = calculate_distance(region, cutoff, source_fields, target_fields)
+        has_coverage = covered_seeds and (region in covered_seeds)
+        consensus_distance = calculate_distance(region,
+                                                cutoff,
+                                                source_fields,
+                                                target_fields,
+                                                has_coverage)
         if consensus_distance is not None:
             consensus_distances.append(consensus_distance)
         if source_fields == target_fields:
@@ -415,7 +428,7 @@ def format_cutoff(row):
     return cutoff + '_' + str(count)
 
 
-def plot_distances(distance_data, filename, title):
+def plot_distances(distance_data, filename, title, plot_variable='distance'):
     seeds = sorted(set(distance_data['target_seed']))
     distance_data = distance_data.sort_values(['target_seed', 'cutoff'])
     sns.set()
@@ -425,11 +438,11 @@ def plot_distances(distance_data, filename, title):
         seed_data = distance_data[distance_data['target_seed'] == seed]
         seed_data = seed_data.assign(
             count=lambda df: df['cutoff'].map(
-                df.groupby(by=['cutoff'])['distance'].count()))
+                df.groupby(by=['cutoff'])[plot_variable].count()))
         seed_data['cutoff_n'] = seed_data.apply(format_cutoff, 'columns')
 
         sns.violinplot(x='cutoff_n',
-                       y='distance',
+                       y=plot_variable,
                        data=seed_data,
                        cut=0,
                        alpha=0.7,
@@ -437,12 +450,12 @@ def plot_distances(distance_data, filename, title):
         plt.setp(ax.lines, zorder=100)
         plt.setp(ax.collections, zorder=100)
         sns.swarmplot(x='cutoff_n',
-                      y='distance',
+                      y=plot_variable,
                       data=seed_data,
                       color='k',
                       ax=ax)
-        ax.set_ylabel(seed + ' distance')
-        ax.get_yaxis().set_label_coords(-0.07, 0.5)
+        ax.set_ylabel(seed + ' ' + plot_variable)
+        ax.get_yaxis().set_label_coords(-0.09, 0.5)
     axes_sets[0].set_title(title)
     plt.savefig(filename)
 
@@ -489,6 +502,29 @@ def main():
     plot_distances(distance_data[distance_data['distance'] != 0],
                    'consensus_distances_nonzero.svg',
                    'Non-zero Consensus Distances Between v7.7 and v7.8')
+    plot_distances(distance_data,
+                   'consensus_diffs.svg',
+                   'Consensus Differences Between v7.7 and v7.8',
+                   'pct_diff')
+    plot_distances(distance_data[distance_data['distance'] != 0],
+                   'consensus_diffs_nonzero.svg',
+                   'Non-zero Consensus Differences Between v7.7 and v7.8',
+                   'pct_diff')
+    distance_data = distance_data[distance_data['has_coverage'] == True]
+    plot_distances(distance_data,
+                   'consensus_distances_covered.svg',
+                   'Covered Consensus Distances Between v7.7 and v7.8')
+    plot_distances(distance_data[distance_data['distance'] != 0],
+                   'consensus_distances_nonzero_covered.svg',
+                   'Covered, Non-zero Consensus Distances Between v7.7 and v7.8')
+    plot_distances(distance_data,
+                   'consensus_diffs_covered.svg',
+                   'Covered Consensus Differences Between v7.7 and v7.8',
+                   'pct_diff')
+    plot_distances(distance_data[distance_data['distance'] != 0],
+                   'consensus_diffs_nonzero_covered.svg',
+                   'Covered, Non-zero Consensus Differences Between v7.7 and v7.8',
+                   'pct_diff')
     print('Finished {} samples.'.format(i))
 
 
