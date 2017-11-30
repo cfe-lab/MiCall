@@ -5,7 +5,7 @@ from collections import namedtuple, defaultdict, Counter
 from difflib import Differ
 from enum import IntEnum
 from functools import partial
-from itertools import groupby
+from itertools import groupby, zip_longest
 from glob import glob
 from multiprocessing.pool import Pool
 from operator import itemgetter
@@ -24,12 +24,12 @@ MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
 SampleFiles = namedtuple(
     'SampleFiles',
-    'cascade coverage_scores g2p_summary consensus remap_counts')
-SampleFiles.__new__.__defaults__ = (None,) * 5
+    'cascade coverage_scores g2p_summary consensus nuc_limits remap_counts')
+SampleFiles.__new__.__defaults__ = (None,) * 6
 Sample = namedtuple('Sample', 'run name source_files target_files')
 ConsensusDistance = namedtuple('ConsensusDistance',
-                               'target_seed cutoff distance pct_diff has_coverage')
-ConsensusDistance.__new__.__defaults__ = (None,) * 5
+                               'region cutoff distance pct_diff')
+ConsensusDistance.__new__.__defaults__ = (None,) * 4
 SampleComparison = namedtuple('SampleComparison',
                               ['diffs',  # multi-line string
                                'scenarios',  # {Scenarios: [description]}
@@ -122,6 +122,10 @@ def read_samples(runs):
                                                           'conseq.csv'))
             target_consensus = group_samples(os.path.join(run.target_path,
                                                           'conseq.csv'))
+            source_nuc_limits = group_nucs(os.path.join(run.source_path,
+                                                        'nuc.csv'))
+            target_nuc_limits = group_nucs(os.path.join(run.target_path,
+                                                        'nuc.csv'))
             source_counts = group_samples(os.path.join(run.source_path,
                                                        'remap_counts.csv'))
             target_counts = group_samples(os.path.join(run.target_path,
@@ -141,11 +145,13 @@ def read_samples(runs):
                                      source_coverages.get(sample_name),
                                      source_g2ps.get(sample_name),
                                      source_consensus.get(sample_name),
+                                     source_nuc_limits.get(sample_name),
                                      source_counts.get(sample_name)),
                          SampleFiles(target_cascades.get(sample_name),
                                      target_coverages.get(sample_name),
                                      target_g2ps.get(sample_name),
                                      target_consensus.get(sample_name),
+                                     target_nuc_limits.get(sample_name),
                                      target_counts.get(sample_name)))
     if missing_targets:
         print('Missing targets: ', missing_targets)
@@ -156,11 +162,37 @@ def read_samples(runs):
         print(bad_files)
 
 
-def group_samples(output_file):
-    with open(output_file) as f:
-        reader = csv.DictReader(f)
-        return {key: list(rows)
-                for key, rows in groupby(reader, itemgetter('sample'))}
+def group_samples(output_file_name):
+    with open(output_file_name) as output_file:
+        return group_samples_file(output_file)
+
+
+def group_samples_file(output_file):
+    reader = csv.DictReader(output_file)
+    return {key: list(rows)
+            for key, rows in groupby(reader, itemgetter('sample'))}
+
+
+def group_nucs(output_file_name):
+    with open(output_file_name) as output_file:
+        return group_nucs_file(output_file)
+
+
+def group_nucs_file(output_file):
+    reader = csv.DictReader(output_file)
+    groups = {}
+    for sample, sample_rows in groupby(reader, itemgetter('sample')):
+        sample_limits = {}
+        for seed, seed_rows in groupby(sample_rows, itemgetter('seed')):
+            seed_limits = []
+            for region, region_rows in groupby(seed_rows, itemgetter('region')):
+                positions = [int(row['query.nuc.pos'])
+                             for row in region_rows
+                             if row['query.nuc.pos'] != '']
+                seed_limits.append((region, min(positions), max(positions)))
+            sample_limits[seed] = seed_limits
+        groups[sample] = sample_limits
+    return groups
 
 
 def get_run_name(sample):
@@ -274,8 +306,9 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
 
 
 def adjust_region(region):
-    if MICALL_VERSION == '7.8' and region.startswith('HIV1-'):
-        return 'HIV1-???'
+    if region.startswith('HCV'):
+        parts = region.split('-')
+        return 'HCV-' + parts[-1]
     return region
 
 
@@ -291,19 +324,39 @@ def is_consensus_interesting(region, cutoff):
     return cutoff == 'MAX'
 
 
-def map_consensus_sequences(rows):
-    return {(adjust_region(row['region']),
-             row['consensus-percent-cutoff']): (adjust_offset(row['offset'],
-                                                              row['region']),
-                                                row['sequence'].rstrip('-'))
-            for row in rows}
+def map_consensus_sequences(files):
+    consensus_sequences = {}
+    if None in (files.coverage_scores, files.nuc_limits, files.consensus):
+        return consensus_sequences
+    covered_regions = {(row.get('seed'), row.get('region'))
+                       for row in files.coverage_scores
+                       if row['on.score'] == '4'}
+    # noinspection PyArgumentList
+    region_limits = defaultdict(list,
+                                {seed: [(adjust_region(region), first, last)
+                                        for (region, first, last) in regions
+                                        if (seed, region) in covered_regions]
+                                 for seed, regions in files.nuc_limits.items()})
+
+    for row in files.consensus:
+        seed = row['region']
+        cutoff = row['consensus-percent-cutoff']
+        sequence = row['sequence'].rstrip('-')
+        offset = int(row['offset'])
+        for region, first, last in region_limits[seed]:
+            if first > offset:
+                subsequence = sequence[first-offset-1:]
+            else:
+                subsequence = '-' * (offset-first+1) + sequence
+            subsequence = subsequence[:last-first+1]
+            consensus_sequences[(seed, region, cutoff)] = subsequence
+    return consensus_sequences
 
 
-def display_consensus(fields):
-    if fields is None:
+def display_consensus(sequence):
+    if sequence is None:
         return []
-    offset, seq = fields
-    return [offset + ' ' + seq + '\n']
+    return [sequence + '\n']
 
 
 def find_duplicates(sample):
@@ -322,33 +375,23 @@ def find_duplicates(sample):
             for region, cutoff in duplicate_keys]
 
 
-def calculate_distance(region, cutoff, source_fields, target_fields, has_coverage):
-    if source_fields is None or target_fields is None:
+def calculate_distance(region, cutoff, sequence1, sequence2):
+    if sequence1 is None or sequence2 is None:
         return
-    offset1, sequence1 = source_fields
-    offset2, sequence2 = target_fields
-    try:
-        offset1 = int(offset1)
-        offset2 = int(offset2)
-    except ValueError:
-        offset1 = offset2 = 0
-    if offset1 > offset2:
-        sequence1 = '-'*(offset1-offset2) + sequence1
-    else:
-        sequence2 = '-'*(offset2-offset1) + sequence2
     if len(sequence1) > len(sequence2):
         sequence2 += '-' * (len(sequence1) - len(sequence2))
     elif len(sequence2) > len(sequence1):
         sequence1 += '-' * (len(sequence2) - len(sequence1))
     distance = Levenshtein.distance(sequence1, sequence2)
-    return ConsensusDistance(target_seed=region[:3],
+    return ConsensusDistance(region=region,
                              cutoff=cutoff,
                              distance=distance,
-                             pct_diff=distance/len(sequence1)*100,
-                             has_coverage=has_coverage)
+                             pct_diff=distance/len(sequence1)*100)
 
 
 def compare_consensus(sample,
+                      source_seqs,
+                      target_seqs,
                       diffs,
                       scenarios_reported,
                       scenarios):
@@ -357,28 +400,16 @@ def compare_consensus(sample,
     if duplicates:
         diffs.extend(duplicates)
         return consensus_distances
-    if sample.source_files.consensus == sample.target_files.consensus:
-        return consensus_distances
     run_name = get_run_name(sample)
-    if sample.target_files.coverage_scores is None:
-        covered_seeds = None
-    else:
-        covered_seeds = {adjust_region(row['seed'])
-                         for row in sample.target_files.coverage_scores
-                         if row['on.score'] == '4'}
-    source_seqs = map_consensus_sequences(sample.source_files.consensus)
-    target_seqs = map_consensus_sequences(sample.target_files.consensus)
     keys = sorted(set(source_seqs.keys()) | target_seqs.keys())
     for key in keys:
-        region, cutoff = key
+        seed, region, cutoff = key
         source_fields = source_seqs.get(key)
         target_fields = target_seqs.get(key)
-        has_coverage = covered_seeds and (region in covered_seeds)
         consensus_distance = calculate_distance(region,
                                                 cutoff,
                                                 source_fields,
-                                                target_fields,
-                                                has_coverage)
+                                                target_fields)
         if consensus_distance is not None:
             consensus_distances.append(consensus_distance)
         if source_fields == target_fields:
@@ -390,10 +421,11 @@ def compare_consensus(sample,
                 scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
             scenarios[Scenarios.OTHER_CONSENSUS_CHANGED].append('.')
         else:
-            diffs.append('{}:{} consensus: {} {}'.format(run_name,
-                                                         sample.name,
-                                                         region,
-                                                         cutoff))
+            diffs.append('{}:{} consensus: {} {} {}'.format(run_name,
+                                                            sample.name,
+                                                            seed,
+                                                            region,
+                                                            cutoff))
             diff = list(differ.compare(display_consensus(source_fields),
                                        display_consensus(target_fields)))
             diffs.extend(line.rstrip() for line in diff)
@@ -406,7 +438,11 @@ def compare_sample(sample,
     diffs = []
     compare_g2p(sample, diffs)
     compare_coverage(sample, diffs, scenarios_reported, scenarios)
+    source_seqs = map_consensus_sequences(sample.source_files)
+    target_seqs = map_consensus_sequences(sample.target_files)
     consensus_distances = compare_consensus(sample,
+                                            source_seqs,
+                                            target_seqs,
                                             diffs,
                                             scenarios_reported,
                                             scenarios)
@@ -429,13 +465,13 @@ def format_cutoff(row):
 
 
 def plot_distances(distance_data, filename, title, plot_variable='distance'):
-    seeds = sorted(set(distance_data['target_seed']))
-    distance_data = distance_data.sort_values(['target_seed', 'cutoff'])
+    seeds = sorted(set(distance_data['region']))
+    distance_data = distance_data.sort_values(['region', 'cutoff'])
     sns.set()
     num_plots = len(seeds)
     figure, axes_sets = plt.subplots(nrows=num_plots, ncols=1)
     for ax, seed in zip(axes_sets, seeds):
-        seed_data = distance_data[distance_data['target_seed'] == seed]
+        seed_data = distance_data[distance_data['region'] == seed]
         seed_data = seed_data.assign(
             count=lambda df: df['cutoff'].map(
                 df.groupby(by=['cutoff'])[plot_variable].count()))
@@ -454,7 +490,7 @@ def plot_distances(distance_data, filename, title, plot_variable='distance'):
                       data=seed_data,
                       color='k',
                       ax=ax)
-        ax.set_ylabel(seed + ' ' + plot_variable)
+        ax.set_ylabel(seed + ' ' + plot_variable, rotation=85)
         ax.get_yaxis().set_label_coords(-0.09, 0.5)
     axes_sets[0].set_title(title)
     plt.savefig(filename)
@@ -496,35 +532,18 @@ def main():
             print(body, end='')
 
     distance_data = pd.DataFrame(all_consensus_distances)
-    plot_distances(distance_data,
-                   'consensus_distances.svg',
-                   'Consensus Distances Between v7.7 and v7.8')
-    plot_distances(distance_data[distance_data['distance'] != 0],
-                   'consensus_distances_nonzero.svg',
-                   'Non-zero Consensus Distances Between v7.7 and v7.8')
-    plot_distances(distance_data,
-                   'consensus_diffs.svg',
-                   'Consensus Differences Between v7.7 and v7.8',
-                   'pct_diff')
-    plot_distances(distance_data[distance_data['distance'] != 0],
-                   'consensus_diffs_nonzero.svg',
-                   'Non-zero Consensus Differences Between v7.7 and v7.8',
-                   'pct_diff')
-    distance_data = distance_data[distance_data['has_coverage'] == True]
-    plot_distances(distance_data,
-                   'consensus_distances_covered.svg',
-                   'Covered Consensus Distances Between v7.7 and v7.8')
-    plot_distances(distance_data[distance_data['distance'] != 0],
-                   'consensus_distances_nonzero_covered.svg',
-                   'Covered, Non-zero Consensus Distances Between v7.7 and v7.8')
-    plot_distances(distance_data,
-                   'consensus_diffs_covered.svg',
-                   'Covered Consensus Differences Between v7.7 and v7.8',
-                   'pct_diff')
-    plot_distances(distance_data[distance_data['distance'] != 0],
-                   'consensus_diffs_nonzero_covered.svg',
-                   'Covered, Non-zero Consensus Differences Between v7.7 and v7.8',
-                   'pct_diff')
+    non_zero_distances = distance_data[distance_data['distance'] != 0]
+    region_names = sorted(non_zero_distances['region'].unique())
+    names_iter = iter(region_names)
+    for page_num, region_group in enumerate(zip_longest(names_iter, names_iter, names_iter), 1):
+        group_distances = distance_data[distance_data['region'].isin(region_group)]
+        plot_distances(group_distances,
+                       'consensus_distances_{}.svg'.format(page_num),
+                       'Consensus Distances Between v7.7 and v7.8')
+        plot_distances(group_distances,
+                       'consensus_diffs_{}.svg'.format(page_num),
+                       'Consensus Differences Between v7.7 and v7.8',
+                       'pct_diff')
     print('Finished {} samples.'.format(i))
 
 
