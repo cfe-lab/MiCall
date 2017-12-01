@@ -66,14 +66,3 @@ def summarize_quality(filename, summary, read_lengths=None):
     with open(filename, 'rb') as data_file:
         records = read_quality(data_file)
         summarize_quality_records(records, summary, read_lengths)
-
-if __name__ == '__live_coding__':
-    import unittest
-    from micall.tests.quality_metrics_parser_test import QualityMetricsParserTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(QualityMetricsParserTest("test_summarize_blank"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

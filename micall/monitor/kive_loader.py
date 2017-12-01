@@ -366,6 +366,7 @@ class KiveLoader(object):
 
         return sorted(gz_files, key=self.get_sample_number, reverse=True)
 
+    @kive_retries
     def prepare_kive_dataset(self, filename, description, cdt):
         """ Upload a dataset to Kive, if it's not already.
 
@@ -598,6 +599,7 @@ class KiveLoader(object):
                                         groups=settings.kive_groups_allowed)
         return status
 
+    @kive_retries
     def find_preexisting_runs(self):
         """ Query Kive for all active runs, filter by pipeline.
 

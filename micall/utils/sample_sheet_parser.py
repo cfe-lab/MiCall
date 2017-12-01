@@ -207,16 +207,6 @@ def main():
         ss = sample_sheet_parser(f)
         print(ss)
 
+
 if __name__ == "__main__":
     main()
-elif __name__ == "__live_coding__":
-    import unittest
-    # sys.modules['micall.core'].remap = sys.modules['micall.core.remap']
-    from micall.tests.sample_sheet_parser_test import OtherTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(OtherTest("test_no_index2"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

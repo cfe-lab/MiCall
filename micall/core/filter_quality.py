@@ -67,15 +67,6 @@ def main():
     with args.quality_csv, args.bad_cycles_csv:
         report_bad_cycles(args.quality_csv, args.bad_cycles_csv)
 
+
 if __name__ == '__main__':
     main()
-elif __name__ == '__live_coding__':
-    import unittest
-    from micall.tests.filter_quality_test import FilterQualityTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(FilterQualityTest("test_tile_count"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

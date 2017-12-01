@@ -196,7 +196,7 @@ def merge_pairs(seq1,
     close_qual &= diff_indexes
     bad_indexes = close_qual | (max_qual <= q_cutoff+33)
     copy_indexes = seq_arr1 == ''
-    copy_indexes |= diff_indexes & (diff_qual > minimum_q_delta)
+    copy_indexes |= diff_indexes & (diff_qual >= minimum_q_delta)
     seq_arr1[copy_indexes] = seq_arr2[copy_indexes]
     bad_indexes &= seq_arr1 != '-'
     seq_arr1[bad_indexes] = 'N'
@@ -495,15 +495,6 @@ def main():
             failed_csv=args.failed_csv,
             clipping_csv=args.clipping_csv)
 
+
 if __name__ == '__main__':
     main()
-elif __name__ == '__live_coding__':
-    import unittest
-    from micall.tests.sam2aln_test import CigarTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(CigarTest("testSoftClipPositions"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

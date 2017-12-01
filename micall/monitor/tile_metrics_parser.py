@@ -70,15 +70,3 @@ def summarize_tiles(filename, summary):
     with open(filename, 'rb') as data_file:
         records = read_tiles(data_file)
         summarize_tile_records(records, summary)
-
-if __name__ == '__live_coding__':
-    import unittest
-    from micall.tests.tile_metrics_parser_test import TileMetricsParserTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(TileMetricsParserTest("test_summarize_passing_clusters"))
-    suite.addTest(TileMetricsParserTest("test_summarize"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)

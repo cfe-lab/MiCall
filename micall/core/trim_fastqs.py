@@ -172,13 +172,3 @@ if __name__ == '__main__':
          args.bad_cycles_csv,
          (args.trimmed1_fastq, args.trimmed2_fastq),
          use_gzip=not args.unzipped)
-elif __name__ == '__live_coding__':
-    import unittest
-    from micall.tests.trim_fastqs_test import CensorTest
-
-    suite = unittest.TestSuite()
-    suite.addTest(CensorTest("testSummaryEmpty"))
-    test_results = unittest.TextTestRunner().run(suite)
-
-    print(test_results.errors)
-    print(test_results.failures)
