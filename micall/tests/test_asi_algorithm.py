@@ -459,6 +459,8 @@ class AsiAlgorithmNewRulesTest(TestCase):
         drugs = list(map(attrgetter(*compared_attrs), result.drugs))
         self.assertEqual(expected_drugs, drugs)
         self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+
 class AsiAlgorithmNewRulesTest(TestCase):
     default_drugs = """\
   <DRUG>
