@@ -2,10 +2,14 @@ import json
 import sys
 from operator import itemgetter
 
-from micall.monitor import qai_helper
 from micall import settings
 from collections import Counter
 from copy import deepcopy
+try:
+    from micall.monitor import qai_helper
+except ImportError:
+    # Ignore import errors to allow tests without request module
+    qai_helper = None
 
 
 def check_key_positions(projects, warning_file):
@@ -103,6 +107,7 @@ def main():
     dump_json(dump_scoring, "../project_scoring.json")
 
     print("Done.")
+
 
 if __name__ == "__main__":
     main()

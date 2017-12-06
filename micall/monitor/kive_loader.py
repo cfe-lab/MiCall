@@ -15,12 +15,13 @@ from xml.etree import ElementTree
 
 try:
     from kiveapi.errors import KiveRunFailedException, KiveClientException
+    from micall.monitor import qai_helper, update_qai
+    from micall.monitor.kive_download import kive_login, download_results
 except ImportError:
     # Ignore import errors during testing.
     KiveClientException = KiveRunFailedException = None
+    qai_helper = update_qai = kive_login = download_results = None
 from micall import settings
-from micall.monitor import qai_helper, update_qai
-from micall.monitor.kive_download import kive_login, download_results
 
 MAX_RUN_NAME_LENGTH = 60
 RUN_ACTIVE = 'active'
@@ -423,6 +424,7 @@ class KiveLoader(object):
         if self.kive is not None:
             self.kive.login(settings.kive_user, settings.kive_password)
         else:
+            assert kive_login is not None, "Are kiveapi and requests installed?"
             self.kive = kive_login(settings.kive_server_url,
                                    settings.kive_user,
                                    settings.kive_password)

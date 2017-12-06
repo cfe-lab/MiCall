@@ -1,0 +1,5 @@
+# Requirements for running the tests, doing development, and using utilities
+-r requirements-test.txt
+-r requirements-monitor.txt
+# Used for plotting profiling results.
+gprof2dot==2016.10.13

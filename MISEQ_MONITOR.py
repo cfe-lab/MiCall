@@ -54,6 +54,7 @@ def main():
                         retry_delay=args.retry_delay)
     for pipeline_id, options in settings.kive_pipelines.items():
         loader.add_pipeline(pipeline_id, **options)
+    loader.check_kive_connection()
 
     while True:
         delay = loader.poll()

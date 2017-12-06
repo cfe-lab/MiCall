@@ -1,0 +1,5 @@
+# Requirements for running the tests
+-r requirements.txt
+coverage==4.3.4
+pandas==0.21.0
+seaborn==0.8.1

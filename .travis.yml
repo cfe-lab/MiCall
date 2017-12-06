@@ -1,10 +1,9 @@
 language: python
 python:
     - "3.4"
-install: "pip install coverage python-Levenshtein matplotlib requests reportlab pyyaml cutadapt==1.11 pandas seaborn git+https://github.com/jeff-k/pyvdrm.git"
+install: "pip install -r requirements-test.txt"
 before_script:
     - "cp micall/settings_default.py micall/settings.py"
-    - "cd micall/alignment/ && python setup.py install && cd ../.."
 script: "coverage run --source=micall/core,micall/g2p,micall/hivdb,micall/monitor -m unittest discover"
 
 after_success:

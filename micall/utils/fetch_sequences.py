@@ -6,7 +6,11 @@ from time import sleep
 
 # noinspection PyUnresolvedReferences
 from gotoh import align_it_aa
-import requests
+try:
+    import requests
+except ImportError:
+    # Allow tests to run without requests module
+    requests = None
 
 from micall.core import aln2counts
 from micall.g2p.fastq_g2p import GAP_OPEN_COST, GAP_EXTEND_COST, USE_TERMINAL_COST
