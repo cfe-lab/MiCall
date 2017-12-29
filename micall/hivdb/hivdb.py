@@ -1,4 +1,5 @@
 #! /usr/bin/env python3.4
+import json
 import os
 from argparse import ArgumentParser, FileType
 from csv import DictReader, DictWriter
@@ -10,8 +11,9 @@ from micall.core.aln2counts import AMINO_ALPHABET
 
 MIN_FRACTION = 0.05  # prevalence of mutations to report
 MIN_COVERAGE_SCORE = 4
-REPORTED_REGIONS = {'PR': 'PR', 'RT': 'RT', 'INT': 'IN'}
-RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.3.xml')
+REPORTED_REGIONS = {'PR', 'RT', 'IN', 'NS3', 'NS5a', 'NS5b'}
+HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.3.xml')
+HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.json')
 
 
 def parse_args():
@@ -32,19 +34,31 @@ def select_reported_regions(choices, reported_regions):
     split_choices = set()
     for choice in choices:
         split_choices.update(choice.split('_'))
-    return {region: translation
-            for region, translation in reported_regions.items()
-            if region in split_choices}
+    return split_choices & reported_regions
+
+
+def get_reported_region(reference):
+    if reference == 'INT':
+        return 'IN'
+    for region in ('NS3', 'NS5a', 'NS5b'):
+        if reference.startswith('HCV') and reference.endswith(region):
+            return region
+    return reference
 
 
 def find_good_regions(original_regions, coverage_scores_csv):
-    good_regions = {region: [name, False] for region, name in original_regions.items()}
+    good_regions = {}
     for row in DictReader(coverage_scores_csv):
-        score = int(row['on.score'])
         region_code = row['region']
-        region = good_regions.get(region_code)
-        if region is not None:
-            region[1] |= score >= MIN_COVERAGE_SCORE
+        entry = good_regions.get(region_code)
+        if entry is None:
+            reported_region = get_reported_region(region_code)
+            if reported_region not in original_regions:
+                continue
+            entry = [reported_region, False]
+            good_regions[region_code] = entry
+        score = int(row['on.score'])
+        entry[1] |= score >= MIN_COVERAGE_SCORE
     return good_regions
 
 
@@ -57,16 +71,14 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
         missing_regions.update(reported_regions.keys())
     for region, rows in groupby(DictReader(amino_csv),
                                 itemgetter('region')):
-        if reported_regions is None:
-            translated_region = region
-        else:
+        if reported_regions is not None:
             missing_regions.discard(region)
             translated_region, is_reported = reported_regions.get(region,
                                                                   (None, None))
             if translated_region is None:
                 continue
             if not is_reported:
-                yield translated_region, None
+                yield region, None
                 continue
         aminos = []
         for row in rows:
@@ -80,13 +92,9 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
             if ins_count >= min_count:
                 pos_aminos['i'] = ins_count / coverage
             aminos.append(pos_aminos)
-        yield translated_region, aminos
+        yield region, aminos
     for region in missing_regions:
-        if reported_regions is None:
-            translated_region = region
-        else:
-            translated_region, _ = reported_regions.get(region, (None, None))
-        yield translated_region, None
+        yield region, None
 
 
 def write_insufficient_data(resistance_writer, region, asi):
@@ -113,14 +121,18 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
                                   ['drug_class', 'mutation', 'prevalence'],
                                   lineterminator=os.linesep)
     mutations_writer.writeheader()
-    asi = AsiAlgorithm(RULES_PATH)
+    algorithms = load_asi()
     for region, amino_seq in aminos:
+        asi = algorithms.get(region)
+        if asi is None:
+            continue
+        reported_region = get_reported_region(region)
         if amino_seq is None:
-            write_insufficient_data(resistance_writer, region, asi)
+            write_insufficient_data(resistance_writer, reported_region, asi)
             continue
         result = asi.interpret(amino_seq, region)
         for drug_result in result.drugs:
-            resistance_writer.writerow(dict(region=region,
+            resistance_writer.writerow(dict(region=reported_region,
                                             drug_class=drug_result.drug_class,
                                             drug=drug_result.code,
                                             drug_name=drug_result.name,
@@ -136,6 +148,23 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
                 mutations_writer.writerow(dict(drug_class=drug_class,
                                                mutation=mutation,
                                                prevalence=prevalence))
+
+
+def load_asi():
+    asi = AsiAlgorithm(HIV_RULES_PATH)
+    algorithms = {'PR': asi,
+                  'RT': asi,
+                  'INT': asi}
+    with open(HCV_RULES_PATH) as f:
+        hcv_rules = json.load(f)
+    references = {genotype['reference']
+                  for rule in hcv_rules
+                  for genotype in rule['genotypes']}
+    for reference in references:
+        algorithms[reference] = AsiAlgorithm(rules_json=hcv_rules,
+                                             reference=reference)
+
+    return algorithms
 
 
 def hivdb(amino_csv,
@@ -158,6 +187,7 @@ def main():
           args.coverage_scores_csv,
           args.resistance_csv,
           args.mutations_csv)
+
 
 if __name__ == '__main__':
     main()

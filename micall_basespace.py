@@ -223,7 +223,7 @@ def link_json(run_path, data_path):
     """ Load the data from a run folder into the BaseSpace layout. """
     args = Args()
     args.project_id = args.href_app_session = '1'
-    args.reports = ['PR_RT', 'INT']
+    args.reports = ['PR_RT', 'IN', 'NS3', 'NS5a', 'NS5b']
 
     shutil.rmtree(data_path, ignore_errors=True)
     makedirs(data_path)

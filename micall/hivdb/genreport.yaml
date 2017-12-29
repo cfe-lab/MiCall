@@ -30,13 +30,32 @@ known_drugs:
     - [ETR, etravirine]
     - [NVP, nevirapine]
     - [RPV, rilpivirine]
+  NS3:
+    - [BPV, Boceprevir]
+    - [TPV, Telaprevir]
+    - [SPV, Simeprevir]
+    - [PTV, Paritaprevir]
+    - [GZR, Grazoprevir]
+  NS5a:
+    - [DCV, Daclatasvir]
+    - [LDV, Ledipasvir]
+    - [VEL, Velpatasvir]
+    - [EBV, Elbasvir]
+    - [OBV, Ombitasvir]
+  NS5b:
+    - [SOF-HAR, "Sofosbuvir (Harvoni)"]
+    - [SOF-EPC, "Sofosbuvir (Epclusa)"]
+    - [DSV, Dasabuvir]
 known_drug_classes:
   #the order in this list determines the order of the drug_class tables.
   - [NRTI, NRTI/NtRTI]
   - [NNRTI, NNRTI]
   - [PI, Protease Inhibitor]
   - [INSTI, Integrase Inhibitor]
-known_regions: [IN, PR, RT]
+  - [NS3, NS3]
+  - [NS5a, NS5a]
+  - [NS5b, NS5b]
+known_regions: [IN, PR, RT, NS3, NS5a, NS5b]
 resistance_level_colours:
   # these are 'name, bg_colour, fg_colour
   0: ['Insufficient data available', 0xFFFFFF, 0x000000]

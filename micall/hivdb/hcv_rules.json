@@ -1,0 +1,356 @@
+[
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 36AM => 8, 54AS => 8, 55AI => 8, 107I => 4, 155K => 8, 156ST => 8, 158I => 4, 168N => 4, 170FTV => 8 )",
+        "reference": "HCV1A-H77-NS3",
+        "region": "NS3",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 36MA => 8, 54CGSA => 8, 55A => 8, 107I => 4, 155CK => 8, 156TVS => 8, 158I => 4, 170TA => 8, 175L => 4, 170I => 0 )",
+        "reference": "HCV1B-Con1-NS3",
+        "region": "NS3",
+        "genotype": "1B"
+      }
+    ],
+    "name": "BPV",
+    "code": "BPV"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 24RG => 4, 24N => 0, 26E => 0, 28AT => 8, 28SV => 4, 30EHKNRYDG => 8, 30T => 4, 30L => 0, 31IMV => 8, 54R => 4, 58D => 8, 58PR => 4, 92K => 0, 93CHNS => 8, 93F => 0 )",
+        "reference": "HCV1A-H77-NS5a",
+        "region": "NS5a",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 28MT => 4, 29XS => 4, 30GHPQ => 4, 31FV => 8, 31IM => 4, 32X => 8, 32L => 4, 58S => 4, 62D => 4, 92K => 4, 93H => 8, 93N => 4 )",
+        "reference": "HCV1B-Con1-NS5a",
+        "region": "NS5a",
+        "genotype": "1B"
+      },
+      {
+        "rules": "SCORE FROM ( 28SC => 8, 31M => 8, 92R => 8, 93H => 8 )",
+        "reference": "HCV2-JFH-1-NS5a",
+        "region": "NS5a",
+        "genotype": "2"
+      },
+      {
+        "rules": "SCORE FROM ( 28T => 0, 28V => 0, 30K => 8, 30S => 4, 30TV => 0, 31FIMV => 8, 31P => 4, 62ALIRPT => 4, 93H => 8 )",
+        "reference": "HCV3-S52-NS5a",
+        "region": "NS5a",
+        "genotype": "3"
+      }
+    ],
+    "name": "DCV",
+    "code": "DCV"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 307R => 4, 314H => 8, 316Y => 8, 395G => 8, 414ITV => 8, 444K => 8, 444D => 0, 446KQ => 8, 448CH => 8, 450V => 4, 553TV => 8, 553I => 4, 554S => 8, 556GR => 8, 558R => 4, 559GINV => 4, 561H => 8 )",
+        "reference": "HCV1A-H77-NS5b",
+        "region": "NS5b",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 307R => 0, 316HNY => 8, 316W => 4, 368T => 8, 411S => 8, 414ITV => 8, 445FY => 4, 448CH => 8, 553V => 8, 556G => 8, 556R => 4, 559G => 8 )",
+        "reference": "HCV1B-Con1-NS5b",
+        "region": "NS5b",
+        "genotype": "1B"
+      }
+    ],
+    "name": "DSV",
+    "code": "DSV"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 28AGT => 8, 28V => 0, 30DEGHR => 8, 30KY => 4, 30L => 0, 31IMFV => 8, 58D => 8, 93CHNS => 8 )",
+        "reference": "HCV1A-H77-NS5a",
+        "region": "NS5a",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 28M => 4, 31FMV => 8, 93H => 8 )",
+        "reference": "HCV1B-Con1-NS5a",
+        "region": "NS5a",
+        "genotype": "1B"
+      },
+      {
+        "rules": "SCORE FROM ( 30DK => 8, 31FM => 8, 93H => 8 )",
+        "reference": "HCV3-S52-NS5a",
+        "region": "NS5a",
+        "genotype": "3"
+      },
+      {
+        "rules": "SCORE FROM ( 30HF => 8, 30S => 0, 31V => 8, 31I => 4, 32L => 4, 58D => 8, 93H => 8 )",
+        "reference": "HCV4-ED43-NS5a",
+        "region": "NS5a",
+        "genotype": "4"
+      }
+    ],
+    "name": "EBV",
+    "code": "EBV"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 36ALM => 4, 56H => 8, 56F => 4, 107I => 4, 122GT => 4, 122R => 0, 155GIKS => 4, 156GLTV => 8, 156M => 4, 156S => 0, 158A => 4, 168AEFGHIKLTVY => 8, 168CNS => 4, 170V => 4, 170T => 0 )",
+        "reference": "HCV1A-H77-NS3",
+        "region": "NS3",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 56H => 8, 56F => 4, 107I => 4, 155GTW => 8, 155K => 0, 156TV => 8, 156G => 4, 168AFGHIKLTV => 8, 168ENY => 4 )",
+        "reference": "HCV1B-Con1-NS3",
+        "region": "NS3",
+        "genotype": "1B"
+      },
+      {
+        "rules": "SCORE FROM ( NOT 56Y => 8, 77S => 8, NOT 122S => 8, NOT 155R => 8, NOT 156A => 8, 168QR => 8, NOT 170I => 8, 178R => 8 )",
+        "reference": "HCV3-S52-NS3",
+        "region": "NS3",
+        "genotype": "3"
+      },
+      {
+        "rules": "SCORE FROM ( NOT 56Y => 8, 107I => 4, 122G => 4, NOT 155R => 8, 156GMTV => 4, 158I => 4, 168AV => 8, 168CEGNY => 4, 170I => 4 )",
+        "reference": "HCV4-ED43-NS3",
+        "region": "NS3",
+        "genotype": "4"
+      }
+    ],
+    "name": "GZR",
+    "code": "GZR"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 24RGN => 4, 28AGT => 8, 28V => 4, 30EGHKNRY => 8, 30LT => 4, 31IMV => 8, 31P => 4, 32L => 8, 38F => 8, 58D => 8, 58P => 4, 92P => 8, 92T => 4, 93CHNS => 8, 93F => 4 )",
+        "reference": "HCV1A-H77-NS5a",
+        "region": "NS5a",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 28M => 4, 31IV => 8, 31M => 4, 31F => 0, 32L => 0, 58D => 8, 92K => 8, 92T => 4, 93H => 8, 93C => 4, 93S => 0 )",
+        "reference": "HCV1B-Con1-NS5a",
+        "region": "NS5a",
+        "genotype": "1B"
+      }
+    ],
+    "name": "LDV",
+    "code": "LDV"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 24R => 4, 28TV => 8, 28A => 4, 30EKRY => 8, 30HLNT => 0, 31V => 8, 31MI => 0, 32L => 4, 54Y => 4, 58D => 8, 58PR => 4, 93CFHLNS => 8 )",
+        "reference": "HCV1A-H77-NS5a",
+        "region": "NS5a",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 28T => 8, 28M => 4, 29X => 8, 30GHPQ => 4, 31FV => 8, 31MT => 4, 31I => 0, 32X => 4, 54Y => 4, 58AS => 4, 92E => 4, 93HNS => 8 )",
+        "reference": "HCV1B-Con1-NS5a",
+        "region": "NS5a",
+        "genotype": "1B"
+      },
+      {
+        "rules": "SCORE FROM ( 28V => 8, 28S => 4, 31I => 4, 31L => 0, 58S => 4, 58AP => 0 )",
+        "reference": "HCV4-ED43-NS5a",
+        "region": "NS5a",
+        "genotype": "4"
+      }
+    ],
+    "name": "OBV",
+    "code": "OBV"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 36AMT => 4, 36L => 0, 43L => 8, 55I => 4, 56H => 4, 80KL => 4, 80R => 0, 132V => 4, 155GKTW => 8, 155S => 4, 156T => 8, 156GVS => 4, 168AEFHILNTVY => 8, 334S => 4, 342P => 4, 357K => 4, 406AI => 4, 449I => 4, 470S => 4 )",
+        "reference": "HCV1A-H77-NS3",
+        "region": "NS3",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 56H => 4, 155K => 8, 156V => 8, 156T => 4, 156S => 0, 168AFHKTVY => 8, 168ILN => 4, 168E => 0, 357K => 4 )",
+        "reference": "HCV1B-Con1-NS3",
+        "region": "NS3",
+        "genotype": "1B"
+      },
+      {
+        "rules": "SCORE FROM ( 56H => 8, 155C => 8, 156TV => 8, 168HV => 8 )",
+        "reference": "HCV4-ED43-NS3",
+        "region": "NS3",
+        "genotype": "4"
+      }
+    ],
+    "name": "PTV",
+    "code": "PTV"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 61G => 4, 112T => 4, 159F => 4, 237G => 4, 282T => 8, NOT 316C => 8, 320V => 4, 321I => 4, 321A => 4, 355H => 4, 473T => 4 )",
+        "reference": "HCV1A-H77-NS5b",
+        "region": "NS5b",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 142S => 4, NOT 159L => 8, 282T => 8, NOT 316C => 8, NOT 320L => 8, 321I => 4 )",
+        "reference": "HCV1B-Con1-NS5b",
+        "region": "NS5b",
+        "genotype": "1B"
+      },
+      {
+        "rules": "SCORE FROM ( NOT 159L => 8, 282T => 8, NOT 316C => 8, NOT 320L => 8, NOT 321V => 8 )",
+        "reference": "HCV2-JFH-1-NS5b",
+        "region": "NS5b",
+        "genotype": "2"
+      },
+      {
+        "rules": "SCORE FROM ( 142T => 4, 159F => 4, 237G => 4, 282T => 8, 314IFP => 4, NOT 316C => 8, NOT 320L => 8, 321A => 4, 355H => 4 )",
+        "reference": "HCV3-S52-NS5b",
+        "region": "NS5b",
+        "genotype": "3"
+      },
+      {
+        "rules": "SCORE FROM ( NOT 159L => 8, 237G => 4, 282T => 8, NOT 316C => 8, NOT 320L => 8, 321I => 4 )",
+        "reference": "HCV4-ED43-NS5b",
+        "region": "NS5b",
+        "genotype": "4"
+      },
+      {
+        "rules": "SCORE FROM ( NOT 159L => 8, 282T => 8, 289I => 4, NOT 316C => 8, NOT 320L => 8, NOT 321V => 8 )",
+        "reference": "HCV5-SA13-NS5b",
+        "region": "NS5b",
+        "genotype": "5"
+      },
+      {
+        "rules": "SCORE FROM ( NOT 159L => 8, 282T => 8, NOT 316C => 8, NOT 320L => 8, NOT 321V => 8 )",
+        "reference": "HCV6-EUHK2-NS5b",
+        "region": "NS5b",
+        "genotype": "6"
+      }
+    ],
+    "name": "SOF-EPC",
+    "code": "SOF-EPC"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 61G => 4, 112T => 4, 159F => 4, 237G => 4, 282T => 8, NOT 316C => 8, 320V => 4, 321I => 4, 321A => 4, 355H => 4, 473T => 4 )",
+        "reference": "HCV1A-H77-NS5b",
+        "region": "NS5b",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 142S => 4, NOT 159L => 8, 282T => 8, NOT 316C => 8, NOT 320L => 8, 321I => 4 )",
+        "reference": "HCV1B-Con1-NS5b",
+        "region": "NS5b",
+        "genotype": "1B"
+      },
+      {
+        "rules": "SCORE FROM ( 142T => 4, 159F => 4, 237G => 4, 282T => 8, 314IFP => 4, 321A => 4, 355H => 4 )",
+        "reference": "HCV3-S52-NS5b",
+        "region": "NS5b",
+        "genotype": "3"
+      }
+    ],
+    "name": "SOF-HAR",
+    "code": "SOF-HAR"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 36L => 4, 43LIV => 4, 54S => 4, 80KR => 8, 80GHMIL => 4, 122GR => 8, 122ANIT => 4, 155KT => 8, 155GIMQSW => 4, 156GTV => 8, 156LMS => 4, 168AEHV => 8, 168CFGIKLNSTY => 4, 170T => 8, 170V => 4 )",
+        "reference": "HCV1A-H77-NS3",
+        "region": "NS3",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 41R => 8, 43SIV => 8, 43L => 4, 80KR => 8, 80HIM => 4, 80GL => 0, 122AIRT => 8, 155KGQTW => 8, 155C => 4, 155IM => 0, 156GTV => 8, 156S => 4, 168AEFGHINQTVY => 8, 168KL => 4, 170T => 4, 170A => 0 )",
+        "reference": "HCV1B-Con1-NS3",
+        "region": "NS3",
+        "genotype": "1B"
+      },
+      {
+        "rules": "SCORE FROM ( 155K => 8, 156G => 8, 156M => 0 )",
+        "reference": "HCV4-ED43-NS3",
+        "region": "NS3",
+        "genotype": "4"
+      }
+    ],
+    "name": "SPV",
+    "code": "SPV"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 36AGILM => 8, 54AS => 8, 132V => 4, 155GMTK => 8, 156STV => 8, 168N => 4 )",
+        "reference": "HCV1A-H77-NS3",
+        "region": "NS3",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 36GILMA => 8, 54SA => 8, 155K => 8, 156FTVS => 8 )",
+        "reference": "HCV1B-Con1-NS3",
+        "region": "NS3",
+        "genotype": "1B"
+      }
+    ],
+    "name": "TPV",
+    "code": "TPV"
+  },
+  {
+    "genotypes": [
+      {
+        "rules": "SCORE FROM ( 24RTM => 4, 28GT => 8, 28V => 4, 30EK => 8, 30HLR => 4, 31MV => 8, 31I => 4, 32L => 8, 58D => 8, 58P => 4, 92K => 4, 93CHNRSW => 8 )",
+        "reference": "HCV1A-H77-NS5a",
+        "region": "NS5a",
+        "genotype": "1A"
+      },
+      {
+        "rules": "SCORE FROM ( 24K => 0, 30S => 0, 31MVI => 4, 58RT => 0, 92K => 8, 93CHNS => 4 )",
+        "reference": "HCV1B-Con1-NS5a",
+        "region": "NS5a",
+        "genotype": "1B"
+      },
+      {
+        "rules": "SCORE FROM ( 28S => 8, 31V => 8, 31MI => 4, 31L => 0, 58A => 0, 58S => 0, 92T => 8, 93HN => 8 )",
+        "reference": "HCV2-JFH-1-NS5a",
+        "region": "NS5a",
+        "genotype": "2"
+      },
+      {
+        "rules": "SCORE FROM ( 30K => 8, 30V => 4, 31M => 8, 31VP => 4, 38P => 4, 58L => 4, 92K => 4, 93HS => 8, 93NR => 4 )",
+        "reference": "HCV3-S52-NS5a",
+        "region": "NS5a",
+        "genotype": "3"
+      },
+      {
+        "rules": "SCORE FROM ( 28T => 4, 30HS => 4, 31V => 4, 32L => 4, 93CHNSW => 4 )",
+        "reference": "HCV4-ED43-NS5a",
+        "region": "NS5a",
+        "genotype": "4"
+      },
+      {
+        "rules": "SCORE FROM ( NOT 28M => 8, NOT 30Q => 8, NOT 31L => 8, NOT 58H => 8, NOT 92A => 8, NOT 93Y => 8 )",
+        "reference": "HCV5-SA13-NS5a",
+        "region": "NS5a",
+        "genotype": "5"
+      },
+      {
+        "rules": "SCORE FROM ( NOT 28M => 8, NOT 30Q => 8, 31V => 8, 32ALQR => 8, NOT 58H => 8, NOT 92A => 8, NOT 93Y => 8 )",
+        "reference": "HCV6-EUHK2-NS5a",
+        "region": "NS5a",
+        "genotype": "6"
+      }
+    ],
+    "name": "VEL",
+    "code": "VEL"
+  }
+]

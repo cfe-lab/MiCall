@@ -32,45 +32,26 @@ drug.score  #score the algorithm assigned
 drug.level   #resistance level the algorithm assigned
 drug.comments  #list of comments associated with this drug
 """
-
 from collections import defaultdict
 import re
 import xml.dom.minidom as minidom
 from pyvdrm.asi2 import ASI2
-from pyvdrm.vcf import MutationSet
+from pyvdrm.vcf import VariantCalls
 
-def call_mutations(aaseq):
-    '''shim to shoehorn new DRM evaluator -- replace'''
-    muset = set([])
-    for pos, mus in zip(range(1, len(aaseq) + 1), aaseq):
-        mus = ''.join(mus)
-        if mus == '':
-            continue
-        muset |= MutationSet.from_string("{}{}".format(pos, mus)).mutations
-    return muset
+from micall.core.project_config import ProjectConfig
 
 
 # Now the actual code:----------------------------------------------------------
 class AsiAlgorithm:
-    def __init__(self, file):
+    def __init__(self, file=None, rules_json=None, reference=None):
         """ Load ASI rules from a file or file object. """
 
         # Extra hacks to conform to sierra's extra hacks
+        projects = ProjectConfig.loadDefault()
+        references = projects.getAllReferences()
         self.stds = {
-            'PR': 'PQVTLWQRPLVTIKIGGQLKEALLDTGADDTVLEEMSLPGRWKPKMIGGIGGFIKVRQY'
-                  'DQILIEICGHKAIGTVLVGPTPVNIIGRNLLTQIGCTLNF',
-            'RT': 'PISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTEMEKEGKISKIGPENPYNTP'
-                  'VFAIKKKDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSV'
-                  'PLDEDFRKYTAFTIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPD'
-                  'IVIYQYMDDLYVGSDLEIGQHRTKIEELRQHLLRWGLTTPDKKHQKEPPFLWMGYELHP'
-                  'DKWTVQPIVLPEKDSWTVNDIQKLVGKLNWASQIYPGIKVRQLCKLLRGTKALTEVIPL'
-                  'TEEAELELAENREILKEPVHGVYYDPSKDLIAEIQKQGQGQWTYQIYQEPFKNLKTGKY'
-                  'ARMRGAHTNDVKQLTEAVQKITTESIVIWGKTPKFKLPIQKETWET',
-            'IN': 'FLDGIDKAQDEHEKYHSNWRAMASDFNLPPVVAKEIVASCDKCQLKGEAMHGQVDCSPG'
-                  'IWQLDCTHLEGKVILVAVHVASGYIEAEVIPAETGQETAYFLLKLAGRWPVKTIHTDNG'
-                  'SNFTGATVRAACWWAGIKQEFGIPYNPQSQGVVESMNKELKKIIGQVRDQAEHLKTAVQ'
-                  'MAVFIHNFKRKGGIGGYSAGERIVDIIATDIQTKELQKQITKIQNFRVYYRDSRNPLWK'
-                  'GPAKLLWKGEGAVVIQDNSDIKVVPRRKAKIIRDYGKQMAGDDCVASRQDED'}
+            name if name != 'INT' else 'IN': ref
+            for name, ref in references.items()}
 
         # Algorithm info
         self.alg_version = ''
@@ -79,7 +60,7 @@ class AsiAlgorithm:
         # definitions
         self.gene_def = {}  # {code: [drug_class_code]}
         self.level_def = {}  # {'1': 'Susceptible'}
-        self.drug_class = {}  # {code: [drug_code]}
+        self.drug_class = defaultdict(list)  # {code: [drug_code]}
         self.global_range = []  # [ ['-INF', '9', '1'] , ...]  #first two are the range, the third one is the res level
         self.comment_def = {}  # {code: comment_text}
 
@@ -87,6 +68,12 @@ class AsiAlgorithm:
         self.mutation_comments = []  # maybe skip for now?  We don't really use this atm.
         self.mutations = []  # only for hivdb.  This is technically a hack that isn't part of the alg
 
+        if file is not None:
+            self.load_xml(file)
+        elif rules_json is not None:
+            self.load_json(rules_json, reference)
+
+    def load_xml(self, file):
         dom = minidom.parse(file)
 
         # algorithm info
@@ -188,6 +175,23 @@ class AsiAlgorithm:
                     rules.append([condition, actions])  # hrmm
                 self.mutation_comments.append([gene_name, rules])
 
+    def load_json(self, rules_config, reference):
+        self.level_def = {'1': 'Susceptible',
+                          '3': 'Low-level Resistance',
+                          '5': 'High-level Resistance'}
+        self.global_range = [('-INF', '3', '1'), ('4', '7', '3'), ('8', 'INF', '5')]
+        for drug in rules_config:
+            drug_code = drug['code']
+            drug_rules = []
+            for genotype_config in drug['genotypes']:
+                if genotype_config['reference'] == reference:
+                    drug_rules.append((genotype_config['rules'],
+                                       [('scorerange', 'useglobalrange')]))
+                    region = genotype_config['region']
+                    self.gene_def[genotype_config['reference']] = [region]
+                    self.drug_class[region].append(drug_code)
+            self.drugs[drug_code] = (drug['name'], drug_rules)
+
     def get_gene_positions(self, gene):
         positions = set([])
         for drug_class in self.gene_def[gene]:
@@ -202,7 +206,7 @@ class AsiAlgorithm:
     # handles a couple undocumented comment filtering things.
     def comment_filter(self, comment, aaseq, region=None):
         # listMutsIn
-        tmp = re.match('^.*\$listMutsIn\{([^\}]+)\}.*$', comment)
+        tmp = re.match(r'^.*\$listMutsIn{([^}]+)}.*$', comment)
         if tmp:
             tmporig = tmp.group(1)
             tmporig = tmporig.replace('(', '\(').replace(')', '\)')
@@ -218,6 +222,7 @@ class AsiAlgorithm:
                     loc = tmpa.group(1)
                     match = 'ARNDCEQGHILKMFPSTWYVid'
                     for ch in tmpa.group(2):
+                        # noinspection PyTypeChecker
                         match = match.replace(ch, '')
                 elif tmpb:
                     loc = tmpb.group(1)
@@ -238,11 +243,11 @@ class AsiAlgorithm:
                     else:
                         final.append(loc + subs)
 
-            comment = re.sub('\$listMutsIn\{' + tmporig + '\}', ', '.join(final), comment)
-            comment = re.sub(' \(\)', '', comment)  # get rid of empty brackets.
+            comment = re.sub(r'\$listMutsIn{' + tmporig + '}', ', '.join(final), comment)
+            comment = re.sub(r' \(\)', '', comment)  # get rid of empty brackets.
 
         # numberOfMutsIn
-        tmp = re.match('^.+\$numberOfMutsIn\{([^\}]+)\}.+$', comment)
+        tmp = re.match(r'^.+\$numberOfMutsIn{([^}]+)}.+$', comment)
         if tmp:
             tmpmatch = tmp.group(1)
             muts = tmp.group(1).split(',')
@@ -255,9 +260,9 @@ class AsiAlgorithm:
                         cnt += 1
                         # break
 
-            comment = re.sub('\$numberOfMutsIn\{' + tmpmatch + '\}', str(cnt), comment)
+            comment = re.sub(r'\$numberOfMutsIn{' + tmpmatch + '}', str(cnt), comment)
 
-        comment = re.sub('  ', ' ', comment)  # Make spacing more like sierra
+        comment = re.sub(' '*2, ' ', comment)  # Make spacing more like sierra
         unicod = u'\uf0b1'
         comment = re.sub(unicod, '+/-', comment)  # Fixing crazy unicode characters
 
@@ -273,7 +278,7 @@ class AsiAlgorithm:
         default_level = 1
         default_level_name = self.level_def['1']
 
-        mutations = call_mutations(aaseq)
+        mutations = VariantCalls(reference=(self.stds[region]), sample=aaseq)
 
         for drug_class in drug_classes:
             for drug_code in self.drug_class[drug_class]:
@@ -334,8 +339,6 @@ class AsiAlgorithm:
                 result.drugs.append(drug_result)
 
         for cls, cls_mutations in raw_mutations.items():
-            for m in cls_mutations:
-                m.setWt(self.stds[region])
             result.mutations[cls] = [str(m) for m in cls_mutations]
 
         result.drugs.sort(key=lambda e: e.code)
@@ -346,8 +349,8 @@ class AsiAlgorithm:
                 continue
             for cond, actions in results:
 
-                # Why are we evaluating the mutations twice???
-                # this code should be considered broken
+                # This evaluates comment rules.
+                # Previous evaluation was scoring rules.
                 rule = ASI2(cond)
                 scoring = rule(mutations)
 

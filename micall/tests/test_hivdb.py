@@ -6,10 +6,8 @@ from micall.hivdb.hivdb import read_aminos, write_resistance, find_good_regions,
 
 class SelectReportedRegionsTest(TestCase):
     def test_all_regions(self):
-        choices = ['R1', 'R2', 'R3']
-        original_regions = {'R1': 'Region 1',
-                            'R2': 'Region 2',
-                            'R3': 'Region 3'}
+        choices = ['PR', 'RT', 'IN']
+        original_regions = {'PR', 'RT', 'IN'}
         expected_regions = original_regions.copy()
 
         selected_regions = select_reported_regions(choices, original_regions)
@@ -17,24 +15,18 @@ class SelectReportedRegionsTest(TestCase):
         self.assertEqual(expected_regions, selected_regions)
 
     def test_some_regions(self):
-        choices = ['R1', 'R3']
-        original_regions = {'R1': 'Region 1',
-                            'R2': 'Region 2',
-                            'R3': 'Region 3'}
-        expected_regions = {'R1': 'Region 1',
-                            'R3': 'Region 3'}
+        choices = ['PR', 'IN']
+        original_regions = {'PR', 'RT', 'IN'}
+        expected_regions = {'PR', 'IN'}
 
         selected_regions = select_reported_regions(choices, original_regions)
 
         self.assertEqual(expected_regions, selected_regions)
 
     def test_combined_regions(self):
-        choices = ['R1_R2']
-        original_regions = {'R1': 'Region 1',
-                            'R2': 'Region 2',
-                            'R3': 'Region 3'}
-        expected_regions = {'R1': 'Region 1',
-                            'R2': 'Region 2'}
+        choices = ['PR_RT']
+        original_regions = {'PR', 'RT', 'IN'}
+        expected_regions = {'PR', 'RT'}
 
         selected_regions = select_reported_regions(choices, original_regions)
 
@@ -45,16 +37,14 @@ class FindGoodRegionsTest(TestCase):
     def test_good_coverage(self):
         coverage_scores_csv = StringIO("""\
 project,region,on.score
-R1,R1,4
-R2,R2,4
-R3,R3,4
+PR,PR,4
+RT,RT,4
+INT,INT,4
 """)
-        original_regions = {'R1': 'Region 1',
-                            'R2': 'Region 2',
-                            'R3': 'Region 3'}
-        expected_regions = {'R1': ['Region 1', True],
-                            'R2': ['Region 2', True],
-                            'R3': ['Region 3', True]}
+        original_regions = {'PR', 'RT', 'IN'}
+        expected_regions = {'PR': ['PR', True],
+                            'RT': ['RT', True],
+                            'INT': ['IN', True]}
 
         good_regions = find_good_regions(original_regions, coverage_scores_csv)
 
@@ -63,16 +53,14 @@ R3,R3,4
     def test_bad_coverage(self):
         coverage_scores_csv = StringIO("""\
 project,region,on.score
-R1,R1,4
-R2,R2,3
-R3,R3,4
+PR,PR,4
+RT,RT,3
+INT,INT,4
 """)
-        original_regions = {'R1': 'Region 1',
-                            'R2': 'Region 2',
-                            'R3': 'Region 3'}
-        expected_regions = {'R1': ['Region 1', True],
-                            'R2': ['Region 2', False],
-                            'R3': ['Region 3', True]}
+        original_regions = {'PR', 'RT', 'IN'}
+        expected_regions = {'PR': ['PR', True],
+                            'RT': ['RT', False],
+                            'INT': ['IN', True]}
 
         good_regions = find_good_regions(original_regions, coverage_scores_csv)
 
@@ -81,17 +69,15 @@ R3,R3,4
     def test_mixed_coverage(self):
         coverage_scores_csv = StringIO("""\
 project,region,on.score
-R1,R1,4
-R2,R2,4
-R2,R2,3
-R3,R3,4
+PR,PR,4
+RT,RT,4
+RT,RT,3
+INT,INT,4
 """)
-        original_regions = {'R1': 'Region 1',
-                            'R2': 'Region 2',
-                            'R3': 'Region 3'}
-        expected_regions = {'R1': ['Region 1', True],
-                            'R2': ['Region 2', True],
-                            'R3': ['Region 3', True]}
+        original_regions = {'PR', 'RT', 'IN'}
+        expected_regions = {'PR': ['PR', True],
+                            'RT': ['RT', True],
+                            'INT': ['IN', True]}
 
         good_regions = find_good_regions(original_regions, coverage_scores_csv)
 
@@ -100,17 +86,15 @@ R3,R3,4
     def test_other_regions(self):
         coverage_scores_csv = StringIO("""\
 project,region,on.score
-R1,R1,4
-R2,R2,4
-R3,R3,4
+PR,PR,4
+RT,RT,4
+INT,INT,4
 R4,R4,4
 """)
-        original_regions = {'R1': 'Region 1',
-                            'R2': 'Region 2',
-                            'R3': 'Region 3'}
-        expected_regions = {'R1': ['Region 1', True],
-                            'R2': ['Region 2', True],
-                            'R3': ['Region 3', True]}
+        original_regions = {'PR', 'RT', 'IN'}
+        expected_regions = {'PR': ['PR', True],
+                            'RT': ['RT', True],
+                            'INT': ['IN', True]}
 
         good_regions = find_good_regions(original_regions, coverage_scores_csv)
 
@@ -119,15 +103,12 @@ R4,R4,4
     def test_missing_regions(self):
         coverage_scores_csv = StringIO("""\
 project,region,on.score
-R2,R2,4
-R3,R3,4
+RT,RT,4
+INT,INT,4
 """)
-        original_regions = {'R1': 'Region 1',
-                            'R2': 'Region 2',
-                            'R3': 'Region 3'}
-        expected_regions = {'R1': ['Region 1', False],
-                            'R2': ['Region 2', True],
-                            'R3': ['Region 3', True]}
+        original_regions = {'PR', 'RT', 'IN'}
+        expected_regions = {'RT': ['RT', True],
+                            'INT': ['IN', True]}
 
         good_regions = find_good_regions(original_regions, coverage_scores_csv)
 
@@ -216,8 +197,8 @@ R3-seed,R3,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         min_fraction = 0.2
         reported_regions = {'R1': ['Region1', False],  # No data
                             'R2': ['Region2', True]}   # Others are skipped
-        expected_aminos = [('Region1', None),
-                           ('Region2', [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}])]
+        expected_aminos = [('R1', None),
+                           ('R2', [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}])]
 
         aminos = list(read_aminos(amino_csv,
                                   min_fraction,
@@ -236,8 +217,8 @@ R2-seed,R2,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         min_fraction = 0.2
         reported_regions = {'R1': ['Region1', False],  # No data
                             'R2': ['Region2', True]}   # Others are skipped
-        expected_aminos = [('Region2', [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}]),
-                           ('Region1', None)]
+        expected_aminos = [('R2', [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}]),
+                           ('R1', None)]
 
         aminos = list(read_aminos(amino_csv,
                                   min_fraction,
@@ -294,7 +275,7 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 class WriteResistanceTest(TestCase):
     def test_simple(self):
         self.maxDiff = None
-        aminos = [('RT', [{'A': 1.0}] * 40 + [{'L': 1.0}])]
+        aminos = [('RT', [{'A': 1.0}] * 40 + [{'L': 1.0}] + [{}] * 399)]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
@@ -323,7 +304,7 @@ NRTI,M41L,1.0
 
     def test_low_coverage(self):
         aminos = [('PR', None),
-                  ('RT', [{'A': 1.0}] * 40 + [{'L': 1.0}])]
+                  ('RT', [{'A': 1.0}] * 40 + [{'L': 1.0}] + [{}] * 399)]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
@@ -360,7 +341,7 @@ NRTI,M41L,1.0
 
     def test_mixture(self):
         self.maxDiff = None
-        aminos = [('RT', [{'A': 1.0}] * 40 + [{'L': 0.3}])]
+        aminos = [('RT', [{'A': 1.0}] * 40 + [{'L': 0.3}] + [{}] * 399)]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\

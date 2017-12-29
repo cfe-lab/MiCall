@@ -3,7 +3,7 @@ To make pipeline portable, allow user to specify local paths and thread counts.
 """
 import logging.config
 
-pipeline_version = '7.7'        # Change for each release
+pipeline_version = '7.8'        # Change for each release
 
 production = True  # set this to True to push results to NAS
 

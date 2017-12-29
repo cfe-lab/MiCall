@@ -6,7 +6,7 @@ import os
 
 from argparse import ArgumentParser, FileType
 import csv
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 import yaml
 
@@ -53,7 +53,7 @@ def read_config(git_version):
             print("failed to read config file {}".format(cfg_name))
             raise
     cfg_dct['generated_by_text'] = (
-        cfg_dct['generated_by_text'].format(git_version))
+        cfg_dct['generated_by_text'].format(git_version or ''))
     err_string = "Error in configuration file"
     if not isinstance(cfg_dct, dict):
         raise RuntimeError("""Configuration in {} must be a
@@ -124,17 +124,31 @@ single dict class, but found a {}""".format(REPORT_CONFIG_PATH, type(cfg_dct)))
     if known_drug_classes != got_drug_classes:
         raise RuntimeError("{}: {} inconsistent drug_classes".format(
             err_string, fld_name))
-    # drug_names must be unique
-    numdrugs, drug_set, drugname_set = 0, set(), set()
-    for ll in drug_dct.values():
-        numdrugs += len(ll)
-        dd_set, dn_set = [set(l) for l in zip(*ll)]
-        drug_set |= dd_set
-        drugname_set |= dn_set
-    if len(drug_set) != numdrugs:
-        raise RuntimeError("{}: {} drug identifiers are not unique!".format(err_string, fld_name))
-    if len(drugname_set) != numdrugs:
-        raise RuntimeError("{}: {} drug_names are not unique!".format(err_string, fld_name))
+    # Drug names and codes must be unique.
+    drug_code_counts = Counter(drug[0]
+                               for drug_class in drug_dct.values()
+                               for drug in drug_class)
+    drug_name_counts = Counter(drug[1]
+                               for drug_class in drug_dct.values()
+                               for drug in drug_class)
+    duplicate_drug_codes = ', '.join(sorted(
+        drug_code
+        for drug_code, count in drug_code_counts.items()
+        if count > 1))
+    duplicate_drug_names = ', '.join(sorted(
+        drug_name
+        for drug_name, count in drug_name_counts.items()
+        if count > 1))
+    if duplicate_drug_codes:
+        raise RuntimeError("{}: {} duplicate drug identifiers: {}.".format(
+            err_string,
+            fld_name,
+            duplicate_drug_codes))
+    if duplicate_drug_names:
+        raise RuntimeError("{}: {} duplicate drug names: {}.".format(
+            err_string,
+            fld_name,
+            duplicate_drug_names))
     # now generate a helper dict: drug : (drug_class, drugname)
     cfg_dct["drug_dct"] = dct = {}
     for d_class, ll in drug_dct.items():
