@@ -478,7 +478,7 @@ class AsiAlgorithmJsonRulesTest(TestCase):
                            reference='HCV1A-H77-NS5a')
         aa_seq = [['A']] * 40 + [['L']] + [['A']] * 407
         compared_attrs = ('code', 'score', 'level', 'level_name')
-        expected_drugs = [('MDP', 4.0, 3, 'Low-level Resistance')]
+        expected_drugs = [('MDP', 4.0, 2, 'Resistance Possible')]
         expected_mutation_comments = []
 
         result = asi.interpret(aa_seq, 'HCV1A-H77-NS5a')

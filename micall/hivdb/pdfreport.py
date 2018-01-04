@@ -41,7 +41,7 @@ def get_now_string():
 
 
 def bottom_para(txt):
-    "Set the provided text into a form for the small print"
+    """Set the provided text into a form for the small print"""
     small_style = ParagraphStyle("small",
                                  fontSize=SMALL_PRINT_FONT_SIZE,
                                  leading=SMALL_PRINT_FONT_SIZE-1)
@@ -49,7 +49,7 @@ def bottom_para(txt):
 
 
 def test_details_para(txt):
-    "Set the provided text into a form for the test details"
+    """Set the provided text into a form for the test details"""
     small_style = ParagraphStyle("small",
                                  fontSize=TAB_FONT_SIZE,
                                  leading=TAB_FONT_SIZE-1)
@@ -74,11 +74,12 @@ def headertab_style(row_offset, colnum, dospan):
     return lst
 
 
-def drug_class_tablst(row_offset, cfg_dct, dc_name, level_coltab, compact=False):
+def drug_class_tablst(row_offset, report_page, dc_name, level_coltab):
+    cfg_dct = report_page.virus_config
     drug_lst = cfg_dct["known_drugs"][dc_name]
     table_header_str = cfg_dct['drug_class_tableheaders'][dc_name]
-    resistance_dct = cfg_dct["res_results"]
-    mutation_str = cfg_dct["mutation_strings"][dc_name]
+    resistance_dct = report_page.resistance_calls
+    mutation_str = report_page.mutations[dc_name]
     # 1) row 0: header column: name of drug_class
     t_data = [["{} Drugs".format(table_header_str), ""]]
     t_style = headertab_style(row_offset, 2, dospan=True)
@@ -149,70 +150,9 @@ def top_table(sample_name, table_width):
                       hAlign="CENTRE")
 
 
-def write_report_two_columns(cfg_dct, res_lst, mut_lst, fname, sample_name=None):
+def write_report_one_column(report_pages, fname, sample_name=None):
     """Generate a PDF report to a given output file name
     """
-    col_tab = cfg_dct["resistance_level_colours"]
-    level_coltab = dict([(k, (colors.HexColor(v[1]), colors.HexColor(v[2])))
-                         for k, v in col_tab.items()])
-    doc = plat.SimpleDocTemplate(
-        fname,
-        pagesize=letter,
-        title="basespace HIV drug resistance genotype report",
-        author="BCCfE in HIV/AIDS")
-    # get the actual text width, (not the page width):
-    txt_w = page_w - doc.leftMargin - doc.rightMargin
-    w_half, top_table_col_width = txt_w * 0.5, txt_w / 3.3333
-    doc_els = [plat.Spacer(1, 1.5 * cm)]
-    ti_style = ParagraphStyle("scotitle", alignment=TA_CENTER, fontSize=20)
-    doc_els.append(plat.Paragraph(cfg_dct["report_title"], ti_style))
-    re_style = ParagraphStyle("scored", fontSize=15, textColor=colors.red,
-                              spaceBefore=5 * mm, spaceAfter=5 * mm)
-    doc_els.append(plat.Paragraph("For research use only", re_style))
-    # -- top table
-    doc_els.append(top_table(sample_name, top_table_col_width))
-    lc, rc = 0, 1
-    big_table, btstyle = [], []
-    # now drug classes tables, two per line
-    known_dc_lst = cfg_dct["known_dclass_list"]
-    # from the resistance, we determine which drug_classes to write a table for:
-    # we only write a table if we are given resistance data for it.
-    got_dc_set = set([dc["drug_class"] for dc in res_lst])
-    tl = [drug_class_table(cfg_dct, dc, level_coltab, w_half) for dc in known_dc_lst if dc in got_dc_set]
-    d_rowmin = 0
-    while len(tl) > 0:
-        row_lst = [tl.pop(0)]
-        if len(tl) > 0:
-            row_lst.append(tl.pop(0))
-        else:
-            row_lst.append("")
-        big_table.append(row_lst)
-    d_rowmax = len(big_table) - 1
-    btstyle.extend([
-        ("ALIGN", (lc, d_rowmin), (lc, d_rowmax), "RIGHT"),
-        ("ALIGN", (rc, d_rowmin), (rc, d_rowmax), "LEFT"),
-        ('VALIGN', (lc, d_rowmin), (rc, d_rowmax), 'TOP')])
-    # this is for layout debugging
-    # big_table = [["l0", "r0"], ["l1", "r1"], ["l2", "r2"]]
-    # debug_lst = [("GRID", (lc, 0), (rc, d_rowmax), 1, colors.red)]
-    # btstyle.extend(debug_lst)
-    assert sum(len(row) == 2 for row in big_table) == len(big_table), "big_table lines are wonky"
-    doc_els.append(plat.Table(big_table,
-                              style=btstyle,
-                              colWidths=[w_half, w_half],
-                              hAlign="CENTRE"))
-    # bottom paragraphs
-    doc_els.append(bottom_para(cfg_dct["disclaimer_text"]))
-    doc_els.append(bottom_para(cfg_dct["generated_by_text"]))
-    doc.build(doc_els)
-
-
-def write_report_one_column(cfg_dct, res_lst, mut_lst, fname, sample_name=None):
-    """Generate a PDF report to a given output file name
-    """
-    col_tab = cfg_dct["resistance_level_colours"]
-    level_coltab = dict([(k, (colors.HexColor(v[1]), colors.HexColor(v[2])))
-                         for k, v in col_tab.items()])
     doc = plat.SimpleDocTemplate(
         fname,
         pagesize=letter,
@@ -220,66 +160,54 @@ def write_report_one_column(cfg_dct, res_lst, mut_lst, fname, sample_name=None):
         title="basespace drug resistance report",
         author="BCCfE")
     # get the actual text width, (not the page width):
+    # noinspection PyUnresolvedReferences
     txt_w = page_w - doc.leftMargin - doc.rightMargin
     table_width = txt_w - 1 * cm
     doc_els = []
     ti_style = ParagraphStyle("scotitle", alignment=TA_CENTER, fontSize=20)
-    doc_els.append(plat.Paragraph(cfg_dct["report_title"], ti_style))
     re_style = ParagraphStyle("scored", fontSize=15, textColor=colors.red,
                               spaceBefore=5 * mm, spaceAfter=5 * mm)
-    doc_els.append(plat.Paragraph("For research use only", re_style))
-    # -- top table
-    doc_els.append(top_table(sample_name, table_width))
-    # now drug classes tables, two per line
-    known_dc_lst = cfg_dct["known_dclass_list"]
-    # from the resistance, we determine which drug_classes to write a table for:
-    # we only write a table if we are given resistance data for it.
-    got_dc_set = set([dc["drug_class"] for dc in res_lst])
-    tot_tab, tot_style = [], []
-    for dc in [dc for dc in known_dc_lst if dc in got_dc_set]:
-        tl, t_style = drug_class_tablst(len(tot_tab), cfg_dct, dc, level_coltab, compact=True)
-        tot_tab.extend(tl)
-        tot_style.extend(t_style)
-    # adjust the overall table style
-    num_rows = len(tot_tab)
-    tot_style.extend([("VALIGN", (0, 0), (1, num_rows-1), "TOP"),
-                      ("FONTSIZE", (0, 0), (1, num_rows-1), TAB_FONT_SIZE),
-                      ("LEADING", (0, 0), (1, num_rows-1), TAB_FONT_SIZE)])
-    left_col_w = table_width * 0.36
-    right_col_w = table_width - left_col_w
-    doc_els.append(plat.Table(tot_tab,
-                              vAlign="TOP",
-                              hAlign="CENTRE", style=tot_style,
-                              colWidths=[left_col_w, right_col_w]))
-    # this is for layout debugging
-    # big_table = [["l0", "r0"], ["l1", "r1"], ["l2", "r2"]]
-    # debug_lst = [("GRID", (lc, 0), (rc, d_rowmax), 1, colors.red)]
-    # btstyle.extend(debug_lst)
-    # bottom paragraphs
-    doc_els.append(bottom_para(cfg_dct["disclaimer_text"]))
-    doc_els.append(bottom_para(cfg_dct["generated_by_text"]))
-    doc.build(doc_els)
-
-
-def gen_testpage(fname):
-    write_report_two_columns({}, [], [], fname)
-
-
-def simple_gen_testpage(fname):
-    """Generate a simple test page"""
-    # NOTE: this example taken from
-    # https://www.blog.pythonlibrary.org/2010/09/21/reportlab-tables-creating-tables-in-pdfs-with-python/
-    doc = plat.SimpleDocTemplate(fname, pagesize=letter)
-    elements = []
-    data = [['00', '01', '02', '03', '04'], ['10', '11', '12', '13', '14'],
-            ['20', '21', '22', '23', '24'], ['30', '31', '32', '33', '34']]
-    t = plat.Table(data)
-    t.setStyle(
-        plat.TableStyle([('BACKGROUND', (1, 1), (-2, -2), colors.green), (
-            'TEXTCOLOR', (0, 0), (1, -1), colors.red)]))
-    elements.append(t)
-    # write the document to disk
-    doc.build(elements)
+    for report_page in report_pages:
+        # from the resistance, we determine which drug_classes to write a table for:
+        # we only write a table if we are given resistance data for it.
+        got_dc_set = report_page.get_reported_drug_classes()
+        if not got_dc_set:
+            continue
+        cfg_dct = report_page.virus_config
+        col_tab = cfg_dct["resistance_level_colours"]
+        level_coltab = dict([(k, (colors.HexColor(v[1]), colors.HexColor(v[2])))
+                             for k, v in col_tab.items()])
+        doc_els.append(plat.Paragraph(cfg_dct["report_title"], ti_style))
+        doc_els.append(plat.Paragraph("For research use only", re_style))
+        # -- top table
+        doc_els.append(top_table(sample_name, table_width))
+        # now drug classes tables, two per line
+        known_dc_lst = cfg_dct["known_dclass_list"]
+        tot_tab, tot_style = [], []
+        for dc in [dc for dc in known_dc_lst if dc in got_dc_set]:
+            tl, t_style = drug_class_tablst(len(tot_tab), report_page, dc, level_coltab)
+            tot_tab.extend(tl)
+            tot_style.extend(t_style)
+        # adjust the overall table style
+        num_rows = len(tot_tab)
+        tot_style.extend([("VALIGN", (0, 0), (1, num_rows-1), "TOP"),
+                          ("FONTSIZE", (0, 0), (1, num_rows-1), TAB_FONT_SIZE),
+                          ("LEADING", (0, 0), (1, num_rows-1), TAB_FONT_SIZE)])
+        left_col_w = table_width * 0.36
+        right_col_w = table_width - left_col_w
+        doc_els.append(plat.Table(tot_tab,
+                                  vAlign="TOP",
+                                  hAlign="CENTRE", style=tot_style,
+                                  colWidths=[left_col_w, right_col_w]))
+        # this is for layout debugging
+        # big_table = [["l0", "r0"], ["l1", "r1"], ["l2", "r2"]]
+        # debug_lst = [("GRID", (lc, 0), (rc, d_rowmax), 1, colors.red)]
+        # btstyle.extend(debug_lst)
+        # bottom paragraphs
+        doc_els.append(bottom_para(cfg_dct["disclaimer_text"]))
+        doc_els.append(bottom_para(cfg_dct["generated_by_text"]))
+    if doc_els:
+        doc.build(doc_els)
 
 
 if __name__ == '__main__':

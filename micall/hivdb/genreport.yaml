@@ -1,89 +1,110 @@
 # configuration file for genreport.py
-#NOTE THis file should be one large dictionary
-known_drugs:
-  # drug_class: [ (drug, drug_name) ]
-  # NOTE: The order of the drugs in each drug_class will determine the order
-  # in the report tables.
-  INSTI:
-    - [DTG, dolutegravir]
-    - [EVG, elvitegravir]
-    - [RAL, raltegravir]
-  PI:
-    - [ATV/r, atazanavir/r]
-    - [DRV/r, darunavir/r]
-    - [FPV/r, fosamprenavir/r]
-    - [IDV/r, indinavir/r]
-    - [LPV/r, lopinavir/r]
-    - [NFV, nelfinavir]
-    - [SQV/r, saquinavir/r]
-    - [TPV/r, tipranavir/r]
-  NRTI:
-    - [3TC, lamivudine]
-    - [ABC, abacavir]
-    - [AZT, zidovudine]
-    - [D4T, stavudine]
-    - [DDI, didanosine]
-    - [FTC, emtricitabine]
-    - [TDF, tenofovir]
-  NNRTI:
-    - [EFV, efavirenz]
-    - [ETR, etravirine]
-    - [NVP, nevirapine]
-    - [RPV, rilpivirine]
-  NS3:
-    - [BPV, Boceprevir]
-    - [TPV, Telaprevir]
-    - [SPV, Simeprevir]
-    - [PTV, Paritaprevir]
-    - [GZR, Grazoprevir]
-  NS5a:
-    - [DCV, Daclatasvir]
-    - [LDV, Ledipasvir]
-    - [VEL, Velpatasvir]
-    - [EBV, Elbasvir]
-    - [OBV, Ombitasvir]
-  NS5b:
-    - [SOF-HAR, "Sofosbuvir (Harvoni)"]
-    - [SOF-EPC, "Sofosbuvir (Epclusa)"]
-    - [DSV, Dasabuvir]
-known_drug_classes:
-  #the order in this list determines the order of the drug_class tables.
-  - [NRTI, NRTI/NtRTI]
-  - [NNRTI, NNRTI]
-  - [PI, Protease Inhibitor]
-  - [INSTI, Integrase Inhibitor]
-  - [NS3, NS3]
-  - [NS5a, NS5a]
-  - [NS5b, NS5b]
-known_regions: [IN, PR, RT, NS3, NS5a, NS5b]
-resistance_level_colours:
-  # these are 'name, bg_colour, fg_colour
-  0: ['Insufficient data available', 0xFFFFFF, 0x000000]
-  1: ['Susceptible',               0xDEFBDE, 0x000000]
-  2: ['Susceptible',             0xDEFBDE, 0x000000]
-  #2: ['Potential Low-Level Resistance',0xDEFBDE, 0x000000]
-  3: ['Low-level Resistance',    0xF8DE7E, 0x000000]
-  4: ['Intermediate Resistance', 0xF8DE7E, 0x000000]
-  5: ['High-level Resistance',   0xDD0000, 0xFFFFFF]
+-
+  report_title: "HIV Drug Resistance Genotype Report"
+  known_drugs:
+    # drug_class: [ (drug, drug_name) ]
+    # NOTE: The order of the drugs in each drug_class will determine the order
+    # in the report tables.
+    INSTI:
+      - [DTG, dolutegravir]
+      - [EVG, elvitegravir]
+      - [RAL, raltegravir]
+    PI:
+      - [ATV/r, atazanavir/r]
+      - [DRV/r, darunavir/r]
+      - [FPV/r, fosamprenavir/r]
+      - [IDV/r, indinavir/r]
+      - [LPV/r, lopinavir/r]
+      - [NFV, nelfinavir]
+      - [SQV/r, saquinavir/r]
+      - [TPV/r, tipranavir/r]
+    NRTI:
+      - [3TC, lamivudine]
+      - [ABC, abacavir]
+      - [AZT, zidovudine]
+      - [D4T, stavudine]
+      - [DDI, didanosine]
+      - [FTC, emtricitabine]
+      - [TDF, tenofovir]
+    NNRTI:
+      - [EFV, efavirenz]
+      - [ETR, etravirine]
+      - [NVP, nevirapine]
+      - [RPV, rilpivirine]
+  known_drug_classes:
+    #the order in this list determines the order of the drug_class tables.
+    - [NRTI, NRTI/NtRTI]
+    - [NNRTI, NNRTI]
+    - [PI, Protease Inhibitor]
+    - [INSTI, Integrase Inhibitor]
+  known_regions: [IN, PR, RT]
+  resistance_level_colours:
+    # these are 'name, bg_colour, fg_colour
+    0: ['Insufficient data available', 0xFFFFFF, 0x000000]
+    1: ['Susceptible',               0xDEFBDE, 0x000000]
+    2: ['Susceptible',             0xDEFBDE, 0x000000]
+    #2: ['Potential Low-Level Resistance',0xDEFBDE, 0x000000]
+    3: ['Low-level Resistance',    0xF8DE7E, 0x000000]
+    4: ['Intermediate Resistance', 0xF8DE7E, 0x000000]
+    5: ['High-level Resistance',   0xDD0000, 0xFFFFFF]
 
-disclaimer_text: >
-  The genotyping assay was developed and its performance characteristics
-  determined by the testing laboratory. The sequence results were generated
-  by the testing laboratory, and sequence interpretations performed via an
-  automated service developed at the BC Centre for Excellence in HIV/AIDS and
-  hosted on Illumina BaseSpace. Interpretation is done by Stanford HIVdb
-  algorithm, of phenotypic change for protease/RT and integrase sequences.
-  Please see https://hivdb.stanford.edu/ for further information. Mutations
-  detected above a prevalence of 5% of the total reads are reported here, and
-  resistance levels were based on HIVdb scores of Susceptible (0-14),
-  Low-level Resistance (15-29), Intermediate Resistance(30-59), and
-  High-level Resistance(60+). The BC Centre (and Illumina) cannot be held
-  responsible for the quality, integrity and correctness of the sequence
-  results or use of this report in clinical care. For US clients, this report
-  has not been cleared or approved by the U.S. Food and Drug Administration.
+  disclaimer_text: >
+    The genotyping assay was developed and its performance characteristics
+    determined by the testing laboratory. The sequence results were generated
+    by the testing laboratory, and sequence interpretations performed via an
+    automated service developed at the BC Centre for Excellence in HIV/AIDS and
+    hosted on Illumina BaseSpace. Interpretation is done by Stanford HIVdb
+    algorithm, of phenotypic change for protease/RT and integrase sequences.
+    Please see https://hivdb.stanford.edu/ for further information. Mutations
+    detected above a prevalence of 5% of the total reads are reported here, and
+    resistance levels were based on HIVdb scores of Susceptible (0-14),
+    Low-level Resistance (15-29), Intermediate Resistance(30-59), and
+    High-level Resistance(60+). The BC Centre (and Illumina) cannot be held
+    responsible for the quality, integrity and correctness of the sequence
+    results or use of this report in clinical care. For US clients, this report
+    has not been cleared or approved by the U.S. Food and Drug Administration.
 
-generated_by_text: >
-  Generated by MiCall {} on Illumina BaseSpace using Stanford HIVdb
-  8.3, modified on 2017-06-13.
+  generated_by_text: >
+    Generated by MiCall {} on Illumina BaseSpace using Stanford HIVdb
+    8.3, modified on 2017-06-13.
 
-report_title: "HIV Drug Resistance Genotype Report"
+-
+  report_title: "Hepatitis C Drug Resistance Genotype Report"
+  known_drugs:
+    # drug_class: [ (drug, drug_name) ]
+    # NOTE: The order of the drugs in each drug_class will determine the order
+    # in the report tables.
+    NS3:
+      - [BPV, Boceprevir]
+      - [GZR, Grazoprevir]
+      - [PTV, Paritaprevir]
+      - [SPV, Simeprevir]
+      - [TPV, Telaprevir]
+    NS5a:
+      - [DCV, Daclatasvir]
+      - [EBV, Elbasvir]
+      - [LDV, Ledipasvir]
+      - [OBV, Ombitasvir]
+      - [VEL, Velpatasvir]
+    NS5b:
+      - [DSV, Dasabuvir]
+      - [SOF-EPC, "Sofosbuvir (Epclusa)"]
+      - [SOF-HAR, "Sofosbuvir (Harvoni)"]
+  known_drug_classes:
+    #the order in this list determines the order of the drug_class tables.
+    - [NS3, HCV NS3]
+    - [NS5a, HCV NS5A]
+    - [NS5b, HCV NS5B]
+  known_regions: [NS3, NS5a, NS5b]
+  resistance_level_colours:
+    # these are 'name, bg_colour, fg_colour
+    0: ['Insufficient data available', 0xFFFFFF, 0x000000]
+    1: ['Likely Susceptible',          0xDEFBDE, 0x000000]
+    2: ['Resistance Possible',         0xF8DE7E, 0x000000]
+    3: ['Resistance Likely',           0xDD0000, 0xFFFFFF]
+
+  disclaimer_text: >
+    TODO: HCV disclaimer text
+
+  generated_by_text: >
+    Generated by MiCall {} on Illumina BaseSpace using ???, modified on ???.

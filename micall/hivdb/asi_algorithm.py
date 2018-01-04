@@ -176,10 +176,10 @@ class AsiAlgorithm:
                 self.mutation_comments.append([gene_name, rules])
 
     def load_json(self, rules_config, reference):
-        self.level_def = {'1': 'Susceptible',
-                          '3': 'Low-level Resistance',
-                          '5': 'High-level Resistance'}
-        self.global_range = [('-INF', '3', '1'), ('4', '7', '3'), ('8', 'INF', '5')]
+        self.level_def = {'1': 'Likely Susceptible',
+                          '2': 'Resistance Possible',
+                          '3': 'Resistance Likely'}
+        self.global_range = [('-INF', '3', '1'), ('4', '7', '2'), ('8', 'INF', '3')]
         for drug in rules_config:
             drug_code = drug['code']
             drug_rules = []

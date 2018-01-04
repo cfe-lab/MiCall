@@ -536,6 +536,8 @@ def process_sample(sample_index, run_info, args, pssm):
                    report_pdf,
                    sample_name,
                    git_version=git_version)
+    if not os.stat(report_filename).st_size:
+        os.remove(report_filename)
 
     logger.info('Running cascade_report (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'r') as g2p_summary_csv, \

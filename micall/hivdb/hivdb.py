@@ -98,11 +98,12 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
 
 
 def write_insufficient_data(resistance_writer, region, asi):
+    reported_region = get_reported_region(region)
     drug_classes = asi.gene_def[region]
     for drug_class in drug_classes:
         for drug_code in asi.drug_class[drug_class]:
             drug_name = asi.drugs[drug_code][0]
-            resistance_writer.writerow(dict(region=region,
+            resistance_writer.writerow(dict(region=reported_region,
                                             drug_class=drug_class,
                                             drug=drug_code,
                                             drug_name=drug_name,
@@ -128,7 +129,7 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
             continue
         reported_region = get_reported_region(region)
         if amino_seq is None:
-            write_insufficient_data(resistance_writer, reported_region, asi)
+            write_insufficient_data(resistance_writer, region, asi)
             continue
         result = asi.interpret(amino_seq, region)
         for drug_result in result.drugs:
