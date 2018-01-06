@@ -252,12 +252,6 @@
         "reference": "HCV1B-Con1-NS5b",
         "region": "NS5b",
         "genotype": "1B"
-      },
-      {
-        "rules": "SCORE FROM ( 142T => 4, 159F => 4, 237G => 4, 282T => 8, 314IFP => 4, 321A => 4, 355H => 4 )",
-        "reference": "HCV3-S52-NS5b",
-        "region": "NS5b",
-        "genotype": "3"
       }
     ],
     "name": "SOF-HAR",

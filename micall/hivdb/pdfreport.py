@@ -96,7 +96,7 @@ def drug_class_tablst(row_offset, report_page, dc_name, level_coltab):
             level, level_name = resistance_dct[drug_id]
         else:
             level, level_name = 1, "NOT REPORTED"
-        t_data.append([drug_name.capitalize(), level_name])
+        t_data.append([drug_name, level_name])
         # determine colours for the level
         bg_col, fg_col = level_coltab[level]
         t_style.extend([('TEXTCOLOR', (1, tabline + drow_min), (1, tabline + drow_min), fg_col),
@@ -114,17 +114,7 @@ def drug_class_tablst(row_offset, report_page, dc_name, level_coltab):
     return t_data, t_style
 
 
-def drug_class_table(cfg_dct, dc_name, level_coltab, tabwidth):
-    """Generate a resistance report for a given drug class.
-    tabwidth: the total width allocated for the table.
-    """
-    # NOTE: this fudge factor ensures that the left, drug_name column, is not too wide.
-    t_data, t_style = drug_class_tablst(0, cfg_dct, dc_name, level_coltab)
-    colw = tabwidth * 0.36
-    return plat.Table(t_data, vAlign="TOP", style=t_style, colWidths=[colw, None])
-
-
-def top_table(sample_name, table_width):
+def top_table(sample_name, table_width, genotype):
     """Generate a (mostly empty) top table of three main columns.
     table_width: the overall width of the table.
     """
@@ -135,7 +125,10 @@ def top_table(sample_name, table_width):
     test_dl = [["Patient/Sample Details", "Test Details", "Physician Details"],
                ["", test_details_para("Sample ID: {}".format(samp_name)), ""],
                ["", test_details_para("Report Date: {}".format(nowstr)), ""],
-               ["", "", ""],
+               ["",
+                (genotype or "") and
+                test_details_para("Genotype: " + genotype),
+                ""],
                ["", "", ""]
                ]
     rn_min, rn_max = 1, len(test_dl) - 1
@@ -180,7 +173,7 @@ def write_report_one_column(report_pages, fname, sample_name=None):
         doc_els.append(plat.Paragraph(cfg_dct["report_title"], ti_style))
         doc_els.append(plat.Paragraph("For research use only", re_style))
         # -- top table
-        doc_els.append(top_table(sample_name, table_width))
+        doc_els.append(top_table(sample_name, table_width, report_page.genotype))
         # now drug classes tables, two per line
         known_dc_lst = cfg_dct["known_dclass_list"]
         tot_tab, tot_style = [], []
@@ -193,7 +186,7 @@ def write_report_one_column(report_pages, fname, sample_name=None):
         tot_style.extend([("VALIGN", (0, 0), (1, num_rows-1), "TOP"),
                           ("FONTSIZE", (0, 0), (1, num_rows-1), TAB_FONT_SIZE),
                           ("LEADING", (0, 0), (1, num_rows-1), TAB_FONT_SIZE)])
-        left_col_w = table_width * 0.36
+        left_col_w = table_width * 0.5
         right_col_w = table_width - left_col_w
         doc_els.append(plat.Table(tot_tab,
                                   vAlign="TOP",

@@ -60,7 +60,7 @@ class GenReportTest(TestCase):
 
         self.assertEqual(expected_repr, r)
 
-    def test(self):
+    def test_get_reported_drug_classes(self):
         page = ReportPage(dict(known_drug_classes=[('C1', 'Class 1'),
                                                    ('C2', 'Class 2')],
                                known_drugs={'C1': [('D1', 'Drug 1')],

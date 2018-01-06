@@ -2,6 +2,7 @@
 import json
 import os
 from argparse import ArgumentParser, FileType
+from collections import namedtuple
 from csv import DictReader, DictWriter
 from itertools import groupby
 from operator import itemgetter
@@ -14,6 +15,8 @@ MIN_COVERAGE_SCORE = 4
 REPORTED_REGIONS = {'PR', 'RT', 'IN', 'NS3', 'NS5a', 'NS5b'}
 HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.3.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.json')
+
+AminoList = namedtuple('AminoList', 'region aminos seed')
 
 
 def parse_args():
@@ -46,6 +49,17 @@ def get_reported_region(reference):
     return reference
 
 
+def get_genotype(seed):
+    if seed is None:
+        return None
+    parts = seed.split('-')
+    virus = parts[0]
+    if virus != 'HCV':
+        return None
+    full_genotype = parts[1]
+    return full_genotype[0]
+
+
 def find_good_regions(original_regions, coverage_scores_csv):
     good_regions = {}
     for row in DictReader(coverage_scores_csv):
@@ -69,8 +83,8 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
     missing_regions = set()
     if reported_regions:
         missing_regions.update(reported_regions.keys())
-    for region, rows in groupby(DictReader(amino_csv),
-                                itemgetter('region')):
+    for (region, seed), rows in groupby(DictReader(amino_csv),
+                                itemgetter('region', 'seed')):
         if reported_regions is not None:
             missing_regions.discard(region)
             translated_region, is_reported = reported_regions.get(region,
@@ -78,7 +92,7 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
             if translated_region is None:
                 continue
             if not is_reported:
-                yield region, None
+                yield AminoList(region, None, None)
                 continue
         aminos = []
         for row in rows:
@@ -92,9 +106,9 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
             if ins_count >= min_count:
                 pos_aminos['i'] = ins_count / coverage
             aminos.append(pos_aminos)
-        yield region, aminos
+        yield AminoList(region, aminos, seed)
     for region in missing_regions:
-        yield region, None
+        yield AminoList(region, None, None)
 
 
 def write_insufficient_data(resistance_writer, region, asi):
@@ -113,21 +127,42 @@ def write_insufficient_data(resistance_writer, region, asi):
 
 
 def write_resistance(aminos, resistance_csv, mutations_csv):
+    """ Calculate resistance scores and write them to files.
+
+    :param list[AminoList] aminos: region is the coordinate
+        reference name that this gene region was mapped to, and prevalance is a
+        float between 0.0 and 1.0
+    :param resistance_csv: open file to write resistance calls to, grouped by
+        genotype, region, drug_class
+    :param mutations_csv: open file to write mutations to, grouped by genotype,
+        drug_class
+    """
     resistance_writer = DictWriter(
         resistance_csv,
-        ['region', 'drug_class', 'drug', 'drug_name', 'level', 'level_name', 'score'],
+        ['region',
+         'drug_class',
+         'drug',
+         'drug_name',
+         'level',
+         'level_name',
+         'score',
+         'genotype'],
         lineterminator=os.linesep)
     resistance_writer.writeheader()
     mutations_writer = DictWriter(mutations_csv,
-                                  ['drug_class', 'mutation', 'prevalence'],
+                                  ['drug_class',
+                                   'mutation',
+                                   'prevalence',
+                                   'genotype'],
                                   lineterminator=os.linesep)
     mutations_writer.writeheader()
     algorithms = load_asi()
-    for region, amino_seq in aminos:
+    for region, amino_seq, seed in aminos:
         asi = algorithms.get(region)
         if asi is None:
             continue
         reported_region = get_reported_region(region)
+        genotype = get_genotype(seed)
         if amino_seq is None:
             write_insufficient_data(resistance_writer, region, asi)
             continue
@@ -139,7 +174,8 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
                                             drug_name=drug_result.name,
                                             level_name=drug_result.level_name,
                                             level=drug_result.level,
-                                            score=drug_result.score))
+                                            score=drug_result.score,
+                                            genotype=genotype))
         for drug_class, class_mutations in result.mutations.items():
             for mutation in class_mutations:
                 amino = mutation[-1]
@@ -148,7 +184,8 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
                 prevalence = pos_aminos[amino]
                 mutations_writer.writerow(dict(drug_class=drug_class,
                                                mutation=mutation,
-                                               prevalence=prevalence))
+                                               prevalence=prevalence,
+                                               genotype=genotype))
 
 
 def load_asi():

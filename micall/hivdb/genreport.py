@@ -173,10 +173,11 @@ class ReportPage:
 
 def read_mutations(drug_classes, csv_file):
     """Read in a mutations file from CSV.
+
     Returns a list of dictionaries.
     """
     err_string = "Error in mutations file '{}'".format(csv_file.name)
-    exp_set = frozenset("drug_class,mutation,prevalence".split(","))
+    exp_set = frozenset("drug_class,mutation,prevalence,genotype".split(","))
     data_lst = list(csv.DictReader(csv_file, restkey="dummy"))
     # make sure that all lines have exactly the required fields
     if sum([set(od.keys()) == exp_set for od in data_lst]) != len(data_lst):
@@ -206,7 +207,7 @@ def read_resistance(regions, csv_file):
     """
     err_string = "Error in resistance file '{}'".format(csv_file.name)
     exp_set = frozenset(
-        "region,drug_class,drug,drug_name,level,level_name,score".split(","))
+        "region,drug_class,drug,drug_name,level,level_name,score,genotype".split(","))
     data_lst = list(csv.DictReader(csv_file, restkey="dummy"))
     # make sure that all lines have exactly the required fields
     if sum([set(od.keys()) == exp_set for od in data_lst]) != len(data_lst):
@@ -215,6 +216,7 @@ def read_resistance(regions, csv_file):
         report_page = regions[od['region']]
         level = int(od['level'])
         drug_id = od['drug']
+        report_page.genotype = od['genotype']
         report_page.resistance_calls[drug_id] = (level, od["level_name"])
 
 

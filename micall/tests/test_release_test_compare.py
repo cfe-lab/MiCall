@@ -660,32 +660,6 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_diffs, diffs)
         self.assertEqual(expected_consensus_distances, consensus_distances)
 
-    @skip
-    def test_consensus_coverage_hiv(self):
-        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
-                        'sample42',
-                        SampleFiles(consensus=[{'region': 'HIV1-old-seed',
-                                                'consensus-percent-cutoff': 'MAX',
-                                                'offset': '100',
-                                                'sequence': 'ACTTATGC'}]),
-                        SampleFiles(consensus=[{'region': 'HIV1-new-seed',
-                                                'consensus-percent-cutoff': 'MAX',
-                                                'offset': '100',
-                                                'sequence': 'ACTTACGC'}],
-                                    coverage_scores=[{'seed': 'HIV1-new-seed',
-                                                      'project': 'HIV',
-                                                      'region': 'V3LOOP',
-                                                      'on.score': '4'}]))
-        expected_consensus_distances = [ConsensusDistance(target_seed='HIV',
-                                                          cutoff='MAX',
-                                                          distance=1,
-                                                          pct_diff=12.5,
-                                                          has_coverage=True)]
-
-        _, _, consensus_distances = compare_sample(sample)
-
-        self.assertEqual(expected_consensus_distances, consensus_distances)
-
     def test_consensus_missing(self):
         source_seqs = {('R1-seed', 'R1', 'MAX'): 'ACTTAC'}
         target_seqs = {}
@@ -734,7 +708,6 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_diffs, diffs)
         self.assertEqual(expected_consensus_distances, consensus_distances)
 
-    @skip
     def test_hiv_seed_changed(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
