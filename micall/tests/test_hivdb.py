@@ -222,9 +222,9 @@ R3-seed,R3,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """)
         min_fraction = 0.2
-        reported_regions = {'R1': ['Region1', False],  # No data
+        reported_regions = {'R1': ['Region1', False],  # Bad coverage
                             'R2': ['Region2', True]}   # Others are skipped
-        expected_aminos = [AminoList('R1', None, None),
+        expected_aminos = [AminoList('R1', None, 'R1-seed'),
                            AminoList('R2',
                                      [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
                                      'R2-seed')]
@@ -342,7 +342,7 @@ NRTI,M41L,1.0,
         self.assertEqual(expected_mutations, mutations_csv.getvalue())
 
     def test_low_coverage(self):
-        aminos = [AminoList('PR', None, None),
+        aminos = [AminoList('PR', None, 'HIV1-A1-CD-AM000053-seed'),
                   AminoList('RT',
                             [{'A': 1.0}] * 40 + [{'L': 1.0}] + [{}] * 399,
                             'HIV1-A1-CD-AM000053-seed')]
@@ -425,6 +425,24 @@ NS5b,NS5b,SOF-EPC,SOF-EPC,3,Resistance Likely,40.0,6
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype
 NS5b,S282T,1.0,6
+"""
+
+        write_resistance(aminos, resistance_csv, mutations_csv)
+
+        self.assertEqual(expected_resistance, resistance_csv.getvalue())
+        self.assertEqual(expected_mutations, mutations_csv.getvalue())
+
+    def test_hcv_low_coverage(self):
+        self.maxDiff = None
+        aminos = [AminoList('HCV6-EUHK2-NS5b', None, 'HCV-6f')]
+        resistance_csv = StringIO()
+        mutations_csv = StringIO()
+        expected_resistance = """\
+region,drug_class,drug,drug_name,level,level_name,score,genotype
+NS5b,NS5b,SOF-EPC,SOF-EPC,0,Insufficient data available,0.0,6
+"""
+        expected_mutations = """\
+drug_class,mutation,prevalence,genotype
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv)

@@ -94,7 +94,7 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
             if translated_region is None:
                 continue
             if not is_reported:
-                yield AminoList(region, None, None)
+                yield AminoList(region, None, seed)
                 continue
         aminos = []
         for row in rows:
@@ -113,7 +113,7 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
         yield AminoList(region, None, None)
 
 
-def write_insufficient_data(resistance_writer, region, asi):
+def write_insufficient_data(resistance_writer, region, asi, genotype):
     reported_region = get_reported_region(region)
     drug_classes = asi.gene_def[region]
     for drug_class in drug_classes:
@@ -125,7 +125,8 @@ def write_insufficient_data(resistance_writer, region, asi):
                                             drug_name=drug_name,
                                             level_name='Insufficient data available',
                                             level=0,
-                                            score=0.0))
+                                            score=0.0,
+                                            genotype=genotype))
 
 
 def write_resistance(aminos, resistance_csv, mutations_csv):
@@ -166,7 +167,7 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
         reported_region = get_reported_region(region)
         genotype = get_genotype(seed)
         if amino_seq is None:
-            write_insufficient_data(resistance_writer, region, asi)
+            write_insufficient_data(resistance_writer, region, asi, genotype)
             continue
         result = asi.interpret(amino_seq, region)
         for drug_result in result.drugs:
