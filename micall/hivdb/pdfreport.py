@@ -13,6 +13,8 @@ from reportlab.lib.styles import ParagraphStyle
 import reportlab.platypus as plat
 
 # we currently only support North American letter paper -- no A4
+from reportlab.platypus import PageBreak
+
 page_w, page_h = letter
 
 # Times are reported in this time zone
@@ -74,12 +76,15 @@ def headertab_style(row_offset, colnum, dospan):
     return lst
 
 
-def drug_class_tablst(row_offset, report_page, dc_name, level_coltab):
-    cfg_dct = report_page.virus_config
-    drug_lst = cfg_dct["known_drugs"][dc_name]
-    table_header_str = cfg_dct['drug_class_tableheaders'][dc_name]
+def drug_class_tablst(row_offset, report_template, genotype, drug_class_code, level_coltab):
+    cfg_dct = report_template.virus_config
+    drug_lst = cfg_dct["known_drugs"][drug_class_code]
+    table_header_str = cfg_dct['drug_class_tableheaders'][drug_class_code]
+    report_page = report_template.genotype_pages[genotype]
     resistance_dct = report_page.resistance_calls
-    mutation_str = report_page.mutations[dc_name]
+    mutation_str = report_page.mutations.get(drug_class_code, 'None')
+    mutation_str = "Relevant {} Mutations: {}".format(drug_class_code,
+                                                      mutation_str)
     # 1) row 0: header column: name of drug_class
     t_data = [["{} Drugs".format(table_header_str), ""]]
     t_style = headertab_style(row_offset, 2, dospan=True)
@@ -95,7 +100,7 @@ def drug_class_tablst(row_offset, report_page, dc_name, level_coltab):
         if drug_id in resistance_dct:
             level, level_name = resistance_dct[drug_id]
         else:
-            level, level_name = 1, "NOT REPORTED"
+            level, level_name = 0, "Not indicated: genotype " + genotype
         t_data.append([drug_name, level_name])
         # determine colours for the level
         bg_col, fg_col = level_coltab[level]
@@ -143,7 +148,7 @@ def top_table(sample_name, table_width, genotype):
                       hAlign="CENTRE")
 
 
-def write_report_one_column(report_pages, fname, sample_name=None):
+def write_report_one_column(report_templates, fname, sample_name=None):
     """Generate a PDF report to a given output file name
     """
     doc = plat.SimpleDocTemplate(
@@ -160,45 +165,53 @@ def write_report_one_column(report_pages, fname, sample_name=None):
     ti_style = ParagraphStyle("scotitle", alignment=TA_CENTER, fontSize=20)
     re_style = ParagraphStyle("scored", fontSize=15, textColor=colors.red,
                               spaceBefore=5 * mm, spaceAfter=5 * mm)
-    for report_page in report_pages:
+    for report_template in report_templates:
         # from the resistance, we determine which drug_classes to write a table for:
         # we only write a table if we are given resistance data for it.
-        got_dc_set = report_page.get_reported_drug_classes()
-        if not got_dc_set:
+        reported_genotypes = report_template.get_reported_genotypes()
+        if not reported_genotypes:
             continue
-        cfg_dct = report_page.virus_config
-        col_tab = cfg_dct["resistance_level_colours"]
-        level_coltab = dict([(k, (colors.HexColor(v[1]), colors.HexColor(v[2])))
-                             for k, v in col_tab.items()])
-        doc_els.append(plat.Paragraph(cfg_dct["report_title"], ti_style))
-        doc_els.append(plat.Paragraph("For research use only", re_style))
-        # -- top table
-        doc_els.append(top_table(sample_name, table_width, report_page.genotype))
-        # now drug classes tables, two per line
-        known_dc_lst = cfg_dct["known_dclass_list"]
-        tot_tab, tot_style = [], []
-        for dc in [dc for dc in known_dc_lst if dc in got_dc_set]:
-            tl, t_style = drug_class_tablst(len(tot_tab), report_page, dc, level_coltab)
-            tot_tab.extend(tl)
-            tot_style.extend(t_style)
-        # adjust the overall table style
-        num_rows = len(tot_tab)
-        tot_style.extend([("VALIGN", (0, 0), (1, num_rows-1), "TOP"),
-                          ("FONTSIZE", (0, 0), (1, num_rows-1), TAB_FONT_SIZE),
-                          ("LEADING", (0, 0), (1, num_rows-1), TAB_FONT_SIZE)])
-        left_col_w = table_width * 0.5
-        right_col_w = table_width - left_col_w
-        doc_els.append(plat.Table(tot_tab,
-                                  vAlign="TOP",
-                                  hAlign="CENTRE", style=tot_style,
-                                  colWidths=[left_col_w, right_col_w]))
-        # this is for layout debugging
-        # big_table = [["l0", "r0"], ["l1", "r1"], ["l2", "r2"]]
-        # debug_lst = [("GRID", (lc, 0), (rc, d_rowmax), 1, colors.red)]
-        # btstyle.extend(debug_lst)
-        # bottom paragraphs
-        doc_els.append(bottom_para(cfg_dct["disclaimer_text"]))
-        doc_els.append(bottom_para(cfg_dct["generated_by_text"]))
+        for genotype in reported_genotypes:
+            if doc_els:
+                doc_els.append(PageBreak())
+            got_dc_set = report_template.get_reported_drug_classes(genotype)
+            cfg_dct = report_template.virus_config
+            col_tab = cfg_dct["resistance_level_colours"]
+            level_coltab = dict([(k, (colors.HexColor(v[1]), colors.HexColor(v[2])))
+                                 for k, v in col_tab.items()])
+            doc_els.append(plat.Paragraph(cfg_dct["report_title"], ti_style))
+            doc_els.append(plat.Paragraph("For research use only", re_style))
+            # -- top table
+            doc_els.append(top_table(sample_name, table_width, genotype))
+            # now drug classes tables, two per line
+            known_dc_lst = cfg_dct["known_dclass_list"]
+            tot_tab, tot_style = [], []
+            for dc in [dc for dc in known_dc_lst if dc in got_dc_set]:
+                tl, t_style = drug_class_tablst(len(tot_tab),
+                                                report_template,
+                                                genotype,
+                                                dc,
+                                                level_coltab)
+                tot_tab.extend(tl)
+                tot_style.extend(t_style)
+            # adjust the overall table style
+            num_rows = len(tot_tab)
+            tot_style.extend([("VALIGN", (0, 0), (1, num_rows-1), "TOP"),
+                              ("FONTSIZE", (0, 0), (1, num_rows-1), TAB_FONT_SIZE),
+                              ("LEADING", (0, 0), (1, num_rows-1), TAB_FONT_SIZE)])
+            left_col_w = table_width * 0.5
+            right_col_w = table_width - left_col_w
+            doc_els.append(plat.Table(tot_tab,
+                                      vAlign="TOP",
+                                      hAlign="CENTRE", style=tot_style,
+                                      colWidths=[left_col_w, right_col_w]))
+            # this is for layout debugging
+            # big_table = [["l0", "r0"], ["l1", "r1"], ["l2", "r2"]]
+            # debug_lst = [("GRID", (lc, 0), (rc, d_rowmax), 1, colors.red)]
+            # btstyle.extend(debug_lst)
+            # bottom paragraphs
+            doc_els.append(bottom_para(cfg_dct["disclaimer_text"]))
+            doc_els.append(bottom_para(cfg_dct["generated_by_text"]))
     if doc_els:
         doc.build(doc_els)
 

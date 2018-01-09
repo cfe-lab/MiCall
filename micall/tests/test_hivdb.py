@@ -167,6 +167,23 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
         self.assertEqual(expected_aminos, aminos)
 
+    def test_insertion_before_coverage(self):
+        amino_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0
+R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+""")
+        min_fraction = 0.2
+        expected_aminos = [AminoList('R1',
+                                     [{}, {'F': 1.0}, {'L': 1.0}],
+                                     'R1-seed')]
+
+        aminos = list(read_aminos(amino_csv, min_fraction))
+
+        self.assertEqual(expected_aminos, aminos)
+
     def test_multiple_regions(self):
         amino_csv = StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
@@ -408,6 +425,31 @@ NS5b,NS5b,SOF-EPC,SOF-EPC,3,Resistance Likely,40.0,6
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype
 NS5b,S282T,1.0,6
+"""
+
+        write_resistance(aminos, resistance_csv, mutations_csv)
+
+        self.assertEqual(expected_resistance, resistance_csv.getvalue())
+        self.assertEqual(expected_mutations, mutations_csv.getvalue())
+
+    def test_multiple_mutations(self):
+        self.maxDiff = None
+        aminos = [AminoList('HCV1A-H77-NS5b',
+                            [{'R': 1.0}] * 591,
+                            'HCV-1a')]
+        resistance_csv = StringIO()
+        mutations_csv = StringIO()
+        expected_resistance = """\
+region,drug_class,drug,drug_name,level,level_name,score,genotype
+NS5b,NS5b,DSV,DSV,3,Resistance Likely,16.0,1
+NS5b,NS5b,SOF-EPC,SOF-EPC,3,Resistance Likely,8.0,1
+NS5b,NS5b,SOF-HAR,SOF-HAR,3,Resistance Likely,8.0,1
+"""
+        expected_mutations = """\
+drug_class,mutation,prevalence,genotype
+NS5b,G307R,1.0,1
+NS5b,S556R,1.0,1
+NS5b,G558R,1.0,1
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv)

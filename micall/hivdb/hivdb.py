@@ -7,6 +7,8 @@ from csv import DictReader, DictWriter
 from itertools import groupby
 from operator import itemgetter
 
+from pyvdrm.vcf import Mutation
+
 from micall.hivdb.asi_algorithm import AsiAlgorithm
 from micall.core.aln2counts import AMINO_ALPHABET
 
@@ -84,7 +86,7 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
     if reported_regions:
         missing_regions.update(reported_regions.keys())
     for (region, seed), rows in groupby(DictReader(amino_csv),
-                                itemgetter('region', 'seed')):
+                                        itemgetter('region', 'seed')):
         if reported_regions is not None:
             missing_regions.discard(region)
             translated_region, is_reported = reported_regions.get(region,
@@ -103,7 +105,7 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
                           for i, count in enumerate(counts)
                           if count >= min_count and report_names[i] != '*'}
             ins_count = int(row['ins'])
-            if ins_count >= min_count:
+            if ins_count >= min_count and coverage > 0:
                 pos_aminos['i'] = ins_count / coverage
             aminos.append(pos_aminos)
         yield AminoList(region, aminos, seed)
@@ -177,9 +179,11 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
                                             score=drug_result.score,
                                             genotype=genotype))
         for drug_class, class_mutations in result.mutations.items():
-            for mutation in class_mutations:
-                amino = mutation[-1]
-                pos = int(mutation[1:-1])
+            mutations = [Mutation(m) for m in class_mutations]
+            mutations.sort()
+            for mutation in mutations:
+                amino = mutation.variant
+                pos = mutation.pos
                 pos_aminos = amino_seq[pos-1]
                 prevalence = pos_aminos[amino]
                 mutations_writer.writerow(dict(drug_class=drug_class,

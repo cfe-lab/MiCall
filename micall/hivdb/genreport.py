@@ -6,7 +6,7 @@ import os
 
 from argparse import ArgumentParser, FileType
 import csv
-from collections import defaultdict, Counter
+from collections import defaultdict, Counter, namedtuple
 
 import yaml
 
@@ -36,19 +36,21 @@ def read_config(git_version):
     """Read in a configuration file for generating reports."""
     with open(REPORT_CONFIG_PATH) as fi:
         virus_configs = yaml.safe_load(fi)
-    report_pages = []
+    report_templates = []
     for virus_config in virus_configs:
         virus_config['generated_by_text'] = (
             virus_config['generated_by_text'].format(git_version or ''))
-        report_pages.append(ReportPage(virus_config))
-    return report_pages
+        report_templates.append(ReportTemplate(virus_config))
+    return report_templates
 
 
-class ReportPage:
+ReportPage = namedtuple('ReportPage', 'resistance_calls mutations')
+
+
+class ReportTemplate:
     def __init__(self, virus_config, raise_missing=False):
         self.virus_config = virus_config
-        self.resistance_calls = {}
-        self.mutations = {}
+        self.genotype_pages = defaultdict(lambda: ReportPage({}, {}))
         err_string = "Error in configuration file"
         if not isinstance(virus_config, dict):
             raise RuntimeError("""Configuration in {} must be a
@@ -163,8 +165,11 @@ class ReportPage:
         report_title = self.virus_config.get('report_title')
         return "ReportPage({{'report_title': {!r}}})".format(report_title)
 
-    def get_reported_drug_classes(self):
-        reported_drug_codes = set(self.resistance_calls.keys())
+    def get_reported_genotypes(self):
+        return sorted(self.genotype_pages.keys())
+
+    def get_reported_drug_classes(self, genotype):
+        reported_drug_codes = set(self.genotype_pages[genotype].resistance_calls.keys())
         return {class_code
                 for class_code, drugs in self.virus_config['known_drugs'].items()
                 if any(drug_code in reported_drug_codes
@@ -185,23 +190,21 @@ def read_mutations(drug_classes, csv_file):
     tmp_dct = defaultdict(list)
     for od_num, od in enumerate(data_lst):
         d_class, mut_str = od['drug_class'], od["mutation"]
-        tmp_dct[d_class].append('{}({:.0f}%)'.format(
+        genotype = od['genotype']
+        tmp_dct[(genotype, d_class)].append('{}({:.0f}%)'.format(
             mut_str,
             100*float(od['prevalence'])))
-    report_pages = set(drug_classes.values())
-    for report_page in report_pages:
-        for d_class in report_page.virus_config['known_drug_classes']:
-            mutations = tmp_dct[d_class]
-            mut_str = ", ".join(mutations) if mutations else "None"
-            report_page.mutations[d_class] = "Relevant {} Mutations: {}".format(
-                d_class,
-                mut_str)
+    for (genotype, drug_class), mutations in tmp_dct.items():
+        report_template = drug_classes[drug_class]
+        report_page = report_template.genotype_pages[genotype]
+        mutation_display = ', '.join(mutations)
+        report_page.mutations[drug_class] = mutation_display
 
 
 def read_resistance(regions, csv_file):
     """Read in a resistance call file from CSV.
 
-    :param regions: {region: ReportPage} each ReportPage will receive the
+    :param regions: {region: ReportTemplate} each ReportPage will receive the
         resistance calls from its regions
     :param csv_file: the resistance calls to load
     """
@@ -213,10 +216,11 @@ def read_resistance(regions, csv_file):
     if sum([set(od.keys()) == exp_set for od in data_lst]) != len(data_lst):
         raise RuntimeError("{}: unexpected data found.".format(err_string))
     for od in data_lst:
-        report_page = regions[od['region']]
+        template = regions[od['region']]
         level = int(od['level'])
         drug_id = od['drug']
-        report_page.genotype = od['genotype']
+        genotype = od['genotype']
+        report_page = template.genotype_pages[genotype]
         report_page.resistance_calls[drug_id] = (level, od["level_name"])
 
 
@@ -233,16 +237,16 @@ def gen_report(resistance_csv,
     :param sample_name: name to describe the sample on the report
     :param git_version: source code version to display
     """
-    report_pages = read_config(git_version)
+    report_templates = read_config(git_version)
     regions = {}
     drug_classes = {}
-    for report_page in report_pages:
-        report_page.register_regions(regions)
-        report_page.register_drug_classes(drug_classes)
+    for report_template in report_templates:
+        report_template.register_regions(regions)
+        report_template.register_drug_classes(drug_classes)
     read_resistance(regions, resistance_csv)
     read_mutations(drug_classes, mutations_csv)
 
-    pdfreport.write_report_one_column(report_pages, res_report_pdf, sample_name)
+    pdfreport.write_report_one_column(report_templates, res_report_pdf, sample_name)
 
 
 def main():
