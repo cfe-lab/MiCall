@@ -474,8 +474,7 @@ class AsiAlgorithmJsonRulesTest(TestCase):
                       "code": "MDP"}]
 
     def test_interpret(self):
-        asi = AsiAlgorithm(rules_json=self.default_drugs,
-                           reference='HCV1A-H77-NS5a')
+        asi = AsiAlgorithm(rules_yaml=self.default_drugs, genotype='1A')
         aa_seq = [['A']] * 40 + [['L']] + [['A']] * 407
         compared_attrs = ('code', 'score', 'level', 'level_name')
         expected_drugs = [('MDP', 4.0, 2, 'Resistance Possible')]

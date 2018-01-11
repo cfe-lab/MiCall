@@ -1,5 +1,4 @@
 #! /usr/bin/env python3.4
-import json
 import os
 from argparse import ArgumentParser, FileType
 from collections import namedtuple
@@ -7,6 +6,7 @@ from csv import DictReader, DictWriter
 from itertools import groupby
 from operator import itemgetter
 
+import yaml
 from pyvdrm.vcf import Mutation
 
 from micall.hivdb.asi_algorithm import AsiAlgorithm
@@ -16,9 +16,9 @@ MIN_FRACTION = 0.05  # prevalence of mutations to report
 MIN_COVERAGE_SCORE = 4
 REPORTED_REGIONS = {'PR', 'RT', 'IN', 'NS3', 'NS5a', 'NS5b'}
 HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.3.xml')
-HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.json')
+HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
 
-AminoList = namedtuple('AminoList', 'region aminos seed')
+AminoList = namedtuple('AminoList', 'region aminos genotype')
 
 
 def parse_args():
@@ -58,7 +58,13 @@ def get_genotype(seed):
     virus = parts[0]
     if virus != 'HCV':
         return None
-    full_genotype = parts[1]
+    full_genotype = parts[1].upper()
+    if full_genotype.startswith('1'):
+        if full_genotype == '1B':
+            return full_genotype
+        return '1A'
+    if full_genotype == '6E':
+        return full_genotype
     return full_genotype[0]
 
 
@@ -82,19 +88,16 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
     coverage_columns = list(AMINO_ALPHABET) + ['del']
     report_names = coverage_columns[:]
     report_names[-1] = 'd'
-    missing_regions = set()
-    if reported_regions:
-        missing_regions.update(reported_regions.keys())
     for (region, seed), rows in groupby(DictReader(amino_csv),
                                         itemgetter('region', 'seed')):
+        genotype = get_genotype(seed)
         if reported_regions is not None:
-            missing_regions.discard(region)
             translated_region, is_reported = reported_regions.get(region,
                                                                   (None, None))
             if translated_region is None:
                 continue
             if not is_reported:
-                yield AminoList(region, None, seed)
+                yield AminoList(region, None, genotype)
                 continue
         aminos = []
         for row in rows:
@@ -108,9 +111,28 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None):
             if ins_count >= min_count and coverage > 0:
                 pos_aminos['i'] = ins_count / coverage
             aminos.append(pos_aminos)
-        yield AminoList(region, aminos, seed)
-    for region in missing_regions:
-        yield AminoList(region, None, None)
+        # Need original region to look up wild type.
+        yield AminoList(region, aminos, genotype)
+
+
+def get_algorithm_regions(algorithm):
+    return ('INT' if region == 'IN' else region
+            for region in algorithm.gene_def)
+
+
+def filter_aminos(all_aminos, algorithms):
+    all_aminos = list(all_aminos)
+    good_aminos = [amino_list for amino_list in all_aminos if amino_list.aminos]
+    good_genotypes = {amino_list.genotype for amino_list in good_aminos}
+    good_regions = {(amino_list.genotype, amino_list.region)
+                    for amino_list in good_aminos}
+    expected_regions = {(genotype, region)
+                        for genotype in good_genotypes
+                        for region in get_algorithm_regions(algorithms[genotype])}
+    missing_regions = sorted(expected_regions - good_regions)
+    good_aminos += [AminoList(region, None, genotype)
+                    for genotype, region in missing_regions]
+    return good_aminos
 
 
 def write_insufficient_data(resistance_writer, region, asi, genotype):
@@ -129,7 +151,7 @@ def write_insufficient_data(resistance_writer, region, asi, genotype):
                                             genotype=genotype))
 
 
-def write_resistance(aminos, resistance_csv, mutations_csv):
+def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
     """ Calculate resistance scores and write them to files.
 
     :param list[AminoList] aminos: region is the coordinate
@@ -139,6 +161,7 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
         genotype, region, drug_class
     :param mutations_csv: open file to write mutations to, grouped by genotype,
         drug_class
+    :param dict algorithms: {region: AsiAlgorithm}
     """
     resistance_writer = DictWriter(
         resistance_csv,
@@ -159,13 +182,13 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
                                    'genotype'],
                                   lineterminator=os.linesep)
     mutations_writer.writeheader()
-    algorithms = load_asi()
-    for region, amino_seq, seed in aminos:
-        asi = algorithms.get(region)
+    if algorithms is None:
+        algorithms = load_asi()
+    for region, amino_seq, genotype in aminos:
+        asi = algorithms.get(genotype)
         if asi is None:
             continue
         reported_region = get_reported_region(region)
-        genotype = get_genotype(seed)
         if amino_seq is None:
             write_insufficient_data(resistance_writer, region, asi, genotype)
             continue
@@ -195,17 +218,15 @@ def write_resistance(aminos, resistance_csv, mutations_csv):
 
 def load_asi():
     asi = AsiAlgorithm(HIV_RULES_PATH)
-    algorithms = {'PR': asi,
-                  'RT': asi,
-                  'INT': asi}
+    algorithms = {None: asi}
     with open(HCV_RULES_PATH) as f:
-        hcv_rules = json.load(f)
-    references = {genotype['reference']
-                  for rule in hcv_rules
-                  for genotype in rule['genotypes']}
-    for reference in references:
-        algorithms[reference] = AsiAlgorithm(rules_json=hcv_rules,
-                                             reference=reference)
+        hcv_rules = yaml.safe_load(f)
+    genotypes = {genotype['genotype']
+                 for rule in hcv_rules
+                 for genotype in rule['genotypes']}
+    for genotype in genotypes:
+        algorithms[genotype] = AsiAlgorithm(rules_yaml=hcv_rules,
+                                            genotype=genotype)
 
     return algorithms
 
@@ -221,7 +242,9 @@ def hivdb(amino_csv,
         selected_regions = select_reported_regions(region_choices, REPORTED_REGIONS)
     good_regions = find_good_regions(selected_regions, coverage_scores_csv)
     aminos = read_aminos(amino_csv, MIN_FRACTION, good_regions)
-    write_resistance(aminos, resistance_csv, mutations_csv)
+    algorithms = load_asi()
+    filtered_aminos = filter_aminos(aminos, algorithms)
+    write_resistance(filtered_aminos, resistance_csv, mutations_csv, algorithms)
 
 
 def main():

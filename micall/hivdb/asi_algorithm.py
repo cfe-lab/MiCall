@@ -35,7 +35,7 @@ drug.comments  #list of comments associated with this drug
 from collections import defaultdict
 import re
 import xml.dom.minidom as minidom
-from pyvdrm.asi2 import ASI2
+from pyvdrm.hcvr import HCVR
 from pyvdrm.vcf import VariantCalls
 
 from micall.core.project_config import ProjectConfig
@@ -43,7 +43,7 @@ from micall.core.project_config import ProjectConfig
 
 # Now the actual code:----------------------------------------------------------
 class AsiAlgorithm:
-    def __init__(self, file=None, rules_json=None, reference=None):
+    def __init__(self, file=None, rules_yaml=None, genotype=None):
         """ Load ASI rules from a file or file object. """
 
         # Extra hacks to conform to sierra's extra hacks
@@ -66,12 +66,11 @@ class AsiAlgorithm:
 
         self.drugs = {}  # {code: (name, [condition, [(action_type, action_value)]])}
         self.mutation_comments = []  # maybe skip for now?  We don't really use this atm.
-        self.mutations = []  # only for hivdb.  This is technically a hack that isn't part of the alg
 
         if file is not None:
             self.load_xml(file)
-        elif rules_json is not None:
-            self.load_json(rules_json, reference)
+        elif rules_yaml is not None:
+            self.load_yaml(rules_yaml, genotype)
 
     def load_xml(self, file):
         dom = minidom.parse(file)
@@ -175,7 +174,7 @@ class AsiAlgorithm:
                     rules.append([condition, actions])  # hrmm
                 self.mutation_comments.append([gene_name, rules])
 
-    def load_json(self, rules_config, reference):
+    def load_yaml(self, rules_config, genotype):
         self.level_def = {'1': 'Likely Susceptible',
                           '2': 'Resistance Possible',
                           '3': 'Resistance Likely'}
@@ -184,7 +183,7 @@ class AsiAlgorithm:
             drug_code = drug['code']
             drug_rules = []
             for genotype_config in drug['genotypes']:
-                if genotype_config['reference'] == reference:
+                if genotype_config['genotype'] == genotype:
                     drug_rules.append((genotype_config['rules'],
                                        [('scorerange', 'useglobalrange')]))
                     region = genotype_config['region']
@@ -292,7 +291,7 @@ class AsiAlgorithm:
 
                 for condition, actions in drug_rules:
 
-                    rule = ASI2(condition)
+                    rule = HCVR(condition)
                     rule_result = rule.dtree(mutations)
 
                     if rule_result is None:
@@ -351,7 +350,7 @@ class AsiAlgorithm:
 
                 # This evaluates comment rules.
                 # Previous evaluation was scoring rules.
-                rule = ASI2(cond)
+                rule = HCVR(cond)
                 scoring = rule(mutations)
 
                 if scoring:

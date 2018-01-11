@@ -59,7 +59,7 @@ class ReportTemplate:
         known_keys = frozenset([
             'known_drugs', 'known_drug_classes', 'known_regions',
             'resistance_level_colours', 'disclaimer_text', "generated_by_text",
-            "report_title"
+            "report_title", 'failure_message'
         ])
         present_keys = set(virus_config.keys())
         missing_keys = known_keys - present_keys
@@ -154,11 +154,11 @@ class ReportTemplate:
 
     def register_regions(self, regions):
         """ Register this report page for all of its known regions. """
-        for region in self.virus_config['known_regions']:
+        for region in self.virus_config.get('known_regions', []):
             regions[region] = self
 
     def register_drug_classes(self, drug_classes):
-        for drug_class in self.virus_config['known_drug_classes']:
+        for drug_class in self.virus_config.get('known_drug_classes', []):
             drug_classes[drug_class] = self
 
     def __repr__(self):

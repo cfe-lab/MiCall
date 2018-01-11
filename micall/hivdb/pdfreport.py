@@ -141,7 +141,7 @@ def top_table(sample_name, table_width, genotype):
     st_lst = headertab_style(0, 3, dospan=False)
     st_lst.extend([("BOX", (lc, rn_min), (lc, rn_max), 0.5, colors.black),
                    ("BOX", (rc, rn_min), (rc, rn_max), 0.5, colors.black),
-                   # ("GRID", (mc, rn_min), (mc, rn_max), 0.5, colors.black),
+                   ("GRID", (mc, rn_max+1), (mc, rn_max), 0.5, colors.black),
                    ("FONTSIZE", (lc, rn_min), (rc, rn_max), 8)])
     return plat.Table(test_dl, style=st_lst,
                       colWidths=[oth_colwidth, mid_colwidth, oth_colwidth],
@@ -165,7 +165,11 @@ def write_report_one_column(report_templates, fname, sample_name=None):
     ti_style = ParagraphStyle("scotitle", alignment=TA_CENTER, fontSize=20)
     re_style = ParagraphStyle("scored", fontSize=15, textColor=colors.red,
                               spaceBefore=5 * mm, spaceAfter=5 * mm)
+    failure_template = None
     for report_template in report_templates:
+        if 'failure_message' in report_template.virus_config:
+            failure_template = report_template
+            continue
         # from the resistance, we determine which drug_classes to write a table for:
         # we only write a table if we are given resistance data for it.
         reported_genotypes = report_template.get_reported_genotypes()
@@ -179,10 +183,13 @@ def write_report_one_column(report_templates, fname, sample_name=None):
             col_tab = cfg_dct["resistance_level_colours"]
             level_coltab = dict([(k, (colors.HexColor(v[1]), colors.HexColor(v[2])))
                                  for k, v in col_tab.items()])
-            doc_els.append(plat.Paragraph(cfg_dct["report_title"], ti_style))
-            doc_els.append(plat.Paragraph("For research use only", re_style))
-            # -- top table
-            doc_els.append(top_table(sample_name, table_width, genotype))
+            append_header(doc_els,
+                          cfg_dct,
+                          table_width,
+                          re_style,
+                          ti_style,
+                          sample_name,
+                          genotype)
             # now drug classes tables, two per line
             known_dc_lst = cfg_dct["known_dclass_list"]
             tot_tab, tot_style = [], []
@@ -209,11 +216,42 @@ def write_report_one_column(report_templates, fname, sample_name=None):
             # big_table = [["l0", "r0"], ["l1", "r1"], ["l2", "r2"]]
             # debug_lst = [("GRID", (lc, 0), (rc, d_rowmax), 1, colors.red)]
             # btstyle.extend(debug_lst)
-            # bottom paragraphs
-            doc_els.append(bottom_para(cfg_dct["disclaimer_text"]))
-            doc_els.append(bottom_para(cfg_dct["generated_by_text"]))
-    if doc_els:
-        doc.build(doc_els)
+            append_footer(doc_els, cfg_dct)
+    assert failure_template is not None
+    if not doc_els:
+        cfg_dct = failure_template.virus_config
+        append_header(doc_els,
+                      cfg_dct,
+                      table_width,
+                      re_style,
+                      ti_style,
+                      sample_name)
+        doc_els.append(plat.Paragraph(
+            "Sequence does not meet quality-control standards",
+            re_style))
+        append_footer(doc_els, cfg_dct)
+    doc.build(doc_els)
+
+
+def append_footer(doc_els, cfg_dct):
+    # bottom paragraphs
+    for field_name in ('disclaimer_text', 'generated_by_text'):
+        field_text = cfg_dct.get(field_name)
+        if field_text:
+            doc_els.append(bottom_para(field_text))
+
+
+def append_header(doc_els,
+                  cfg_dct,
+                  table_width,
+                  re_style,
+                  ti_style,
+                  sample_name,
+                  genotype=None):
+    doc_els.append(plat.Paragraph(cfg_dct["report_title"], ti_style))
+    doc_els.append(plat.Paragraph("For research use only", re_style))
+    # -- top table
+    doc_els.append(top_table(sample_name, table_width, genotype))
 
 
 if __name__ == '__main__':

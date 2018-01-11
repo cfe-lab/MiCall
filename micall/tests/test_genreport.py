@@ -15,8 +15,9 @@ class GenReportTest(TestCase):
     def test_missing_keys(self):
         with self.assertRaisesRegex(
                 ValueError,
-                r"Missing configuration: generated_by_text, known_drug_classes, "
-                r"known_drugs, report_title, resistance_level_colours."):
+                r"Missing configuration: failure_message, generated_by_text, "
+                r"known_drug_classes, known_drugs, report_title, "
+                r"resistance_level_colours."):
             ReportTemplate(dict(known_regions=['R1', 'R2'],
                                 disclaimer_text="Hello."),
                            raise_missing=True)
