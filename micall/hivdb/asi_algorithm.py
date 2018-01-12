@@ -43,12 +43,16 @@ from micall.core.project_config import ProjectConfig
 
 # Now the actual code:----------------------------------------------------------
 class AsiAlgorithm:
-    def __init__(self, file=None, rules_yaml=None, genotype=None):
+    def __init__(self,
+                 file=None,
+                 rules_yaml=None,
+                 genotype=None,
+                 references=None):
         """ Load ASI rules from a file or file object. """
 
-        # Extra hacks to conform to sierra's extra hacks
-        projects = ProjectConfig.loadDefault()
-        references = projects.getAllReferences()
+        if references is None:
+            projects = ProjectConfig.loadDefault()
+            references = projects.getAllReferences()
         self.stds = {
             name if name != 'INT' else 'IN': ref
             for name, ref in references.items()}
@@ -175,20 +179,28 @@ class AsiAlgorithm:
                 self.mutation_comments.append([gene_name, rules])
 
     def load_yaml(self, rules_config, genotype):
-        self.level_def = {'1': 'Likely Susceptible',
-                          '2': 'Resistance Possible',
-                          '3': 'Resistance Likely'}
-        self.global_range = [('-INF', '3', '1'), ('4', '7', '2'), ('8', 'INF', '3')]
+        self.level_def = {'-2': 'Resistance Interpretation Not Available',
+                          '-1': 'Not Indicated',
+                          '0': 'Sequence does not meet quality-control standards',
+                          '1': 'Likely Susceptible',
+                          '2': 'Mutations Detected; Effect Unknown',
+                          '3': 'Resistance Possible',
+                          '4': 'Resistance Likely'}
+        self.global_range = [('-INF', '3', '1'), ('4', '7', '3'), ('8', 'INF', '4')]
         for drug in rules_config:
             drug_code = drug['code']
             drug_rules = []
+            region = None
             for genotype_config in drug['genotypes']:
+                region = genotype_config['region']
                 if genotype_config['genotype'] == genotype:
-                    drug_rules.append((genotype_config['rules'],
-                                       [('scorerange', 'useglobalrange')]))
-                    region = genotype_config['region']
+                    rule_text = genotype_config['rules']
                     self.gene_def[genotype_config['reference']] = [region]
-                    self.drug_class[region].append(drug_code)
+                    break
+            else:
+                rule_text = 'SCORE FROM ( TRUE => "Not available" )'
+            drug_rules.append((rule_text, [('scorerange', 'useglobalrange')]))
+            self.drug_class[region].append(drug_code)
             self.drugs[drug_code] = (drug['name'], drug_rules)
 
     def get_gene_positions(self, gene):
@@ -273,7 +285,7 @@ class AsiAlgorithm:
         raw_mutations = defaultdict(set)
         result.alg_name = self.alg_name
         result.alg_version = self.alg_version
-        drug_classes = self.gene_def[region]
+        drug_classes = self.gene_def.get(region, {})
         default_level = 1
         default_level_name = self.level_def['1']
 
@@ -298,6 +310,7 @@ class AsiAlgorithm:
                         continue
 
                     score = float(rule_result.score)
+                    flags = rule_result.flags
                     m = rule_result.residues
                     raw_mutations[drug_class] |= m
 
@@ -317,24 +330,32 @@ class AsiAlgorithm:
                             scorerange = comment
                             if scorerange == 'useglobalrange':
                                 scorerange = self.global_range
+                            if score == 0:
+                                if 'Not available' in flags:
+                                    drug_result.level = -2
+                                elif 'Not indicated' in flags:
+                                    drug_result.level = -1
+                                elif 'Effect unknown' in flags:
+                                    drug_result.level = 2
+                            else:
+                                # use score range to determine level
+                                for low_score, high_score, level in scorerange:
+                                    if low_score == '-INF':
+                                        low_score = -99999  # that is close enough to negative infinity.
+                                    else:
+                                        low_score = float(low_score)
 
-                            # use score range to determine level
-                            for low_score, high_score, level in scorerange:
-                                if low_score == '-INF':
-                                    low_score = -99999  # that is close enough to negative infinity.
-                                else:
-                                    low_score = float(low_score)
+                                    if high_score == 'INF':
+                                        high_score = 99999  # that is close enough to infinity.
+                                    else:
+                                        high_score = float(high_score)
 
-                                if high_score == 'INF':
-                                    high_score = 99999  # that is close enough to infinity.
-                                else:
-                                    high_score = float(high_score)
-
-                                if low_score <= drug_result.score <= high_score:
-                                    if int(level) > drug_result.level:
-                                        drug_result.level = int(level)
-                                        drug_result.level_name = self.level_def[level]
-                                    break
+                                    if low_score <= drug_result.score <= high_score:
+                                        if int(level) > drug_result.level:
+                                            drug_result.level = int(level)
+                                        break
+                            drug_result.level_name = self.level_def[
+                                str(drug_result.level)]
                 result.drugs.append(drug_result)
 
         for cls, cls_mutations in raw_mutations.items():

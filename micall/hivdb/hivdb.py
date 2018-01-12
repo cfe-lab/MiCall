@@ -141,14 +141,15 @@ def write_insufficient_data(resistance_writer, region, asi, genotype):
     for drug_class in drug_classes:
         for drug_code in asi.drug_class[drug_class]:
             drug_name = asi.drugs[drug_code][0]
-            resistance_writer.writerow(dict(region=reported_region,
-                                            drug_class=drug_class,
-                                            drug=drug_code,
-                                            drug_name=drug_name,
-                                            level_name='Insufficient data available',
-                                            level=0,
-                                            score=0.0,
-                                            genotype=genotype))
+            resistance_writer.writerow(dict(
+                region=reported_region,
+                drug_class=drug_class,
+                drug=drug_code,
+                drug_name=drug_name,
+                level_name='Sequence does not meet quality-control standards',
+                level=0,
+                score=0.0,
+                genotype=genotype))
 
 
 def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):

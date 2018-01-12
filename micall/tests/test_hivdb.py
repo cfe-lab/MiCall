@@ -444,14 +444,14 @@ NRTI,M41L,1.0,
         mutations_csv = StringIO()
         expected_resistance = """\
 region,drug_class,drug,drug_name,level,level_name,score,genotype
-PR,PI,ATV/r,atazanavir/r,0,Insufficient data available,0.0,
-PR,PI,DRV/r,darunavir/r,0,Insufficient data available,0.0,
-PR,PI,FPV/r,fosamprenavir/r,0,Insufficient data available,0.0,
-PR,PI,IDV/r,indinavir/r,0,Insufficient data available,0.0,
-PR,PI,LPV/r,lopinavir/r,0,Insufficient data available,0.0,
-PR,PI,NFV,nelfinavir,0,Insufficient data available,0.0,
-PR,PI,SQV/r,saquinavir/r,0,Insufficient data available,0.0,
-PR,PI,TPV/r,tipranavir/r,0,Insufficient data available,0.0,
+PR,PI,ATV/r,atazanavir/r,0,Sequence does not meet quality-control standards,0.0,
+PR,PI,DRV/r,darunavir/r,0,Sequence does not meet quality-control standards,0.0,
+PR,PI,FPV/r,fosamprenavir/r,0,Sequence does not meet quality-control standards,0.0,
+PR,PI,IDV/r,indinavir/r,0,Sequence does not meet quality-control standards,0.0,
+PR,PI,LPV/r,lopinavir/r,0,Sequence does not meet quality-control standards,0.0,
+PR,PI,NFV,nelfinavir,0,Sequence does not meet quality-control standards,0.0,
+PR,PI,SQV/r,saquinavir/r,0,Sequence does not meet quality-control standards,0.0,
+PR,PI,TPV/r,tipranavir/r,0,Sequence does not meet quality-control standards,0.0,
 RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,
 RT,NRTI,ABC,abacavir,1,Susceptible,5.0,
 RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,
@@ -514,9 +514,9 @@ NRTI,M41L,0.3,
         mutations_csv = StringIO()
         expected_resistance = """\
 region,drug_class,drug,drug_name,level,level_name,score,genotype
-NS5b,NS5b,DSV,DSV,1,Likely Susceptible,0.0,6
-NS5b,NS5b,SOF-EPC,SOF-EPC,3,Resistance Likely,8.0,6
-NS5b,NS5b,SOF-HAR,SOF-HAR,1,Likely Susceptible,0.0,6
+NS5b,NS5b,DSV,DSV,-1,Not Indicated,0.0,6
+NS5b,NS5b,SOF-EPC,SOF-EPC,4,Resistance Likely,8.0,6
+NS5b,NS5b,SOF-HAR,SOF-HAR,-1,Not Indicated,0.0,6
 """
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype
@@ -554,9 +554,9 @@ drug_class,mutation,prevalence,genotype
         mutations_csv = StringIO()
         expected_resistance = """\
 region,drug_class,drug,drug_name,level,level_name,score,genotype
-NS5b,NS5b,DSV,DSV,3,Resistance Likely,16.0,1A
-NS5b,NS5b,SOF-EPC,SOF-EPC,1,Likely Susceptible,0.0,1A
-NS5b,NS5b,SOF-HAR,SOF-HAR,1,Likely Susceptible,0.0,1A
+NS5b,NS5b,DSV,DSV,4,Resistance Likely,16.0,1A
+NS5b,NS5b,SOF-EPC,SOF-EPC,2,Mutations Detected; Effect Unknown,0.0,1A
+NS5b,NS5b,SOF-HAR,SOF-HAR,2,Mutations Detected; Effect Unknown,0.0,1A
 """
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype

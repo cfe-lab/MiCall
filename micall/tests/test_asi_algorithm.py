@@ -467,20 +467,111 @@ class AsiAlgorithmJsonRulesTest(TestCase):
                                      "genotype": "1A",
                                      "region": "NS5a",
                                      "reference": "HCV1A-H77-NS5a"},
-                                    {"rules": "SCORE FROM(42L => 8)",
+                                    {"rules": 'SCORE FROM(42L => 8, '
+                                              '43L => "Effect unknown")',
                                      "genotype": "1B",
                                      "region": "NS5a",
-                                     "reference": "HCV1B-Con1-NS5a"}],
-                      "code": "MDP"}]
+                                     "reference": "HCV1B-Con1-NS5a"},
+                                    {"rules": 'SCORE FROM( TRUE => "Not indicated" )',
+                                     "genotype": "2",
+                                     "region": "NS5a",
+                                     "reference": "HCV2-JFH-1-NS5a"}],
+                      "code": "MDP"},
+                     {"name": "sillyvir",
+                      "genotypes": [{"rules": "SCORE FROM(41L => 4)",
+                                     "genotype": "1A",
+                                     "region": "NS5a",
+                                     "reference": "HCV1A-H77-NS5a"},
+                                    {"rules": 'SCORE FROM(42L => 8, '
+                                              '43L => "Effect unknown")',
+                                     "genotype": "1B",
+                                     "region": "NS5a",
+                                     "reference": "HCV1B-Con1-NS5a"},
+                                    {"rules": 'SCORE FROM( TRUE => "Not indicated" )',
+                                     "genotype": "2",
+                                     "region": "NS5a",
+                                     "reference": "HCV2-JFH-1-NS5a"},
+                                    {"rules": 'SCORE FROM( TRUE => "Not indicated" )',
+                                     "genotype": "3",
+                                     "region": "NS5a",
+                                     "reference": "HCV3-S52-NS5a"}],
+                      "code": "SIL"}]
+    references = {'HCV1A-H77-NS5a': 'A'*100,
+                  'HCV1B-Con1-NS5a': 'A'*100,
+                  'HCV2-JFH-1-NS5a': 'A'*100,
+                  'HCV3-S52-NS5a': 'A'*100}
 
     def test_interpret(self):
-        asi = AsiAlgorithm(rules_yaml=self.default_drugs, genotype='1A')
-        aa_seq = [['A']] * 40 + [['L']] + [['A']] * 407
+        asi = AsiAlgorithm(rules_yaml=self.default_drugs,
+                           genotype='1A',
+                           references=self.references)
+        aa_seq = [['A']] * 40 + [['L']] + [['A']] * 59
         compared_attrs = ('code', 'score', 'level', 'level_name')
-        expected_drugs = [('MDP', 4.0, 2, 'Resistance Possible')]
+        expected_drugs = [('MDP', 4.0, 3, 'Resistance Possible'),
+                          ('SIL', 4.0, 3, 'Resistance Possible')]
         expected_mutation_comments = []
 
         result = asi.interpret(aa_seq, 'HCV1A-H77-NS5a')
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
+        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    def test_score_and_flag(self):
+        asi = AsiAlgorithm(rules_yaml=self.default_drugs,
+                           genotype='1B',
+                           references=self.references)
+        aa_seq = [['A']] * 41 + [['L']] * 2 + [['A']] * 57
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('MDP', 8.0, 4, 'Resistance Likely'),
+                          ('SIL', 8.0, 4, 'Resistance Likely')]
+        expected_mutation_comments = []
+
+        result = asi.interpret(aa_seq, 'HCV1B-Con1-NS5a')
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
+        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    def test_flag_only(self):
+        asi = AsiAlgorithm(rules_yaml=self.default_drugs,
+                           genotype='1B',
+                           references=self.references)
+        aa_seq = [['A']] * 42 + [['L']] + [['A']] * 57
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('MDP', 0.0, 2, 'Mutations Detected; Effect Unknown'),
+                          ('SIL', 0.0, 2, 'Mutations Detected; Effect Unknown')]
+        expected_mutation_comments = []
+
+        result = asi.interpret(aa_seq, 'HCV1B-Con1-NS5a')
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
+        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    def test_not_indicated(self):
+        asi = AsiAlgorithm(rules_yaml=self.default_drugs,
+                           genotype='2',
+                           references=self.references)
+        aa_seq = [['A']] * 100
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('MDP', 0.0, -1, 'Not Indicated'),
+                          ('SIL', 0.0, -1, 'Not Indicated')]
+        expected_mutation_comments = []
+
+        result = asi.interpret(aa_seq, 'HCV2-JFH-1-NS5a')
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
+        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    def test_not_available(self):
+        asi = AsiAlgorithm(rules_yaml=self.default_drugs,
+                           genotype='3',
+                           references=self.references)
+        aa_seq = [['A']] * 100
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('MDP', 0.0, -2, 'Resistance Interpretation Not Available'),
+                          ('SIL', 0.0, -1, 'Not Indicated')]
+        expected_mutation_comments = []
+
+        result = asi.interpret(aa_seq, 'HCV3-S52-NS5a')
         drugs = list(map(attrgetter(*compared_attrs), result.drugs))
         self.assertEqual(expected_drugs, drugs)
         self.assertEqual(expected_mutation_comments, result.mutation_comments)
