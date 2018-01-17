@@ -97,13 +97,13 @@
   known_regions: [NS3, NS5a, NS5b]
   resistance_level_colours:
     # these are 'name, bg_colour, fg_colour
-    -2: ['Resistance Interpretation Not Available', 0xFFFFFF, 0x000000]
-    -1: ['Not Indicated', 0xFFFFFF, 0x000000]
+    -1: ['Resistance Interpretation Not Available', 0xFFFFFF, 0x000000]
     0: ['Sequence does not meet quality-control standards', 0xFFFFFF, 0x000000]
-    1: ['Likely Susceptible',          0xDEFBDE, 0x000000]
-    2: ['Mutations Detected; Effect Unknown', 0xF8DE7E, 0x000000]
-    3: ['Resistance Possible',         0xF8DE7E, 0x000000]
-    4: ['Resistance Likely',           0xDD0000, 0xFFFFFF]
+    1: ['Likely Susceptible', 0xDEFBDE, 0x000000]
+    2: ['Not Indicated', 0xFFFFFF, 0x000000]
+    3: ['Mutations Detected; Effect Unknown', 0xF8DE7E, 0x000000]
+    4: ['Resistance Possible', 0xF8DE7E, 0x000000]
+    5: ['Resistance Likely', 0xDD0000, 0xFFFFFF]
 
   disclaimer_text: >
     Mutations in NS3, NS5A and NS5B were detected by deep sequencing of HCV.

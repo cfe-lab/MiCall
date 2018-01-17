@@ -130,6 +130,16 @@ class AsiAlgorithmTest(TestCase):
 
         self.assertEqual(expected_mutations, result.mutations)
 
+    def test_mutations_have_wildtype(self):
+        aa_seq = [[amino] for amino in self.asi.stds['RT']]
+        self.assertEqual(['M'], aa_seq[40])
+        aa_seq[40] = ['L', 'R']
+        expected_mutations = {'NRTI': ['M41L'], 'NNRTI': []}
+
+        result = self.asi.interpret(aa_seq, 'RT')
+
+        self.assertEqual(expected_mutations, result.mutations)
+
     def test_drug_classes(self):
         aa_seq = [[]] * 440
         compared_attrs = ('code', 'name', 'drug_class')

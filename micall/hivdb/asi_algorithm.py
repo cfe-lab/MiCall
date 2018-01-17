@@ -179,14 +179,14 @@ class AsiAlgorithm:
                 self.mutation_comments.append([gene_name, rules])
 
     def load_yaml(self, rules_config, genotype):
-        self.level_def = {'-2': 'Resistance Interpretation Not Available',
-                          '-1': 'Not Indicated',
+        self.level_def = {'-1': 'Resistance Interpretation Not Available',
                           '0': 'Sequence does not meet quality-control standards',
                           '1': 'Likely Susceptible',
-                          '2': 'Mutations Detected; Effect Unknown',
-                          '3': 'Resistance Possible',
-                          '4': 'Resistance Likely'}
-        self.global_range = [('-INF', '3', '1'), ('4', '7', '3'), ('8', 'INF', '4')]
+                          '2': 'Not Indicated',
+                          '3': 'Mutations Detected; Effect Unknown',
+                          '4': 'Resistance Possible',
+                          '5': 'Resistance Likely'}
+        self.global_range = [('-INF', '3', '1'), ('4', '7', '4'), ('8', 'INF', '5')]
         for drug in rules_config:
             drug_code = drug['code']
             drug_rules = []
@@ -311,7 +311,11 @@ class AsiAlgorithm:
 
                     score = float(rule_result.score)
                     flags = rule_result.flags
-                    m = rule_result.residues
+                    # rule_result.residues doesn't always have wild types.
+                    m = {mutation
+                         for mutation_set in mutations
+                         for mutation in mutation_set
+                         if mutation in rule_result.residues}
                     raw_mutations[drug_class] |= m
 
                     for action, comment in actions:
@@ -332,11 +336,11 @@ class AsiAlgorithm:
                                 scorerange = self.global_range
                             if score == 0:
                                 if 'Not available' in flags:
-                                    drug_result.level = -2
-                                elif 'Not indicated' in flags:
                                     drug_result.level = -1
-                                elif 'Effect unknown' in flags:
+                                elif 'Not indicated' in flags:
                                     drug_result.level = 2
+                                elif 'Effect unknown' in flags:
+                                    drug_result.level = 3
                             else:
                                 # use score range to determine level
                                 for low_score, high_score, level in scorerange:
