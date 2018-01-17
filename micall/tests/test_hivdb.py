@@ -514,13 +514,17 @@ NRTI,M41L,0.3,
         mutations_csv = StringIO()
         expected_resistance = """\
 region,drug_class,drug,drug_name,level,level_name,score,genotype
-NS5b,NS5b,DSV,DSV,-1,Not Indicated,0.0,6
-NS5b,NS5b,SOF-EPC,SOF-EPC,4,Resistance Likely,8.0,6
-NS5b,NS5b,SOF-HAR,SOF-HAR,-1,Not Indicated,0.0,6
+NS5b,NS5b,DSV,DSV,2,Not Indicated,0.0,6
+NS5b,NS5b,SOF-EPC,SOF-EPC,5,Resistance Likely,8.0,6
+NS5b,NS5b,SOF-HAR,SOF-HAR,2,Not Indicated,0.0,6
 """
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype
+NS5b,L159T,1.0,6
 NS5b,S282T,1.0,6
+NS5b,C316T,1.0,6
+NS5b,L320T,1.0,6
+NS5b,V321T,1.0,6
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv)
@@ -538,31 +542,6 @@ region,drug_class,drug,drug_name,level,level_name,score,genotype
 """
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype
-"""
-
-        write_resistance(aminos, resistance_csv, mutations_csv)
-
-        self.assertEqual(expected_resistance, resistance_csv.getvalue())
-        self.assertEqual(expected_mutations, mutations_csv.getvalue())
-
-    def test_multiple_mutations(self):
-        self.maxDiff = None
-        aminos = [AminoList('HCV1A-H77-NS5b',
-                            [{'R': 1.0}] * 591,
-                            '1A')]
-        resistance_csv = StringIO()
-        mutations_csv = StringIO()
-        expected_resistance = """\
-region,drug_class,drug,drug_name,level,level_name,score,genotype
-NS5b,NS5b,DSV,DSV,4,Resistance Likely,16.0,1A
-NS5b,NS5b,SOF-EPC,SOF-EPC,2,Mutations Detected; Effect Unknown,0.0,1A
-NS5b,NS5b,SOF-HAR,SOF-HAR,2,Mutations Detected; Effect Unknown,0.0,1A
-"""
-        expected_mutations = """\
-drug_class,mutation,prevalence,genotype
-NS5b,G307R,1.0,1A
-NS5b,S556R,1.0,1A
-NS5b,G558R,1.0,1A
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv)

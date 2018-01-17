@@ -517,8 +517,8 @@ class AsiAlgorithmJsonRulesTest(TestCase):
                            references=self.references)
         aa_seq = [['A']] * 40 + [['L']] + [['A']] * 59
         compared_attrs = ('code', 'score', 'level', 'level_name')
-        expected_drugs = [('MDP', 4.0, 3, 'Resistance Possible'),
-                          ('SIL', 4.0, 3, 'Resistance Possible')]
+        expected_drugs = [('MDP', 4.0, 4, 'Resistance Possible'),
+                          ('SIL', 4.0, 4, 'Resistance Possible')]
         expected_mutation_comments = []
 
         result = asi.interpret(aa_seq, 'HCV1A-H77-NS5a')
@@ -532,8 +532,8 @@ class AsiAlgorithmJsonRulesTest(TestCase):
                            references=self.references)
         aa_seq = [['A']] * 41 + [['L']] * 2 + [['A']] * 57
         compared_attrs = ('code', 'score', 'level', 'level_name')
-        expected_drugs = [('MDP', 8.0, 4, 'Resistance Likely'),
-                          ('SIL', 8.0, 4, 'Resistance Likely')]
+        expected_drugs = [('MDP', 8.0, 5, 'Resistance Likely'),
+                          ('SIL', 8.0, 5, 'Resistance Likely')]
         expected_mutation_comments = []
 
         result = asi.interpret(aa_seq, 'HCV1B-Con1-NS5a')
@@ -547,8 +547,8 @@ class AsiAlgorithmJsonRulesTest(TestCase):
                            references=self.references)
         aa_seq = [['A']] * 42 + [['L']] + [['A']] * 57
         compared_attrs = ('code', 'score', 'level', 'level_name')
-        expected_drugs = [('MDP', 0.0, 2, 'Mutations Detected; Effect Unknown'),
-                          ('SIL', 0.0, 2, 'Mutations Detected; Effect Unknown')]
+        expected_drugs = [('MDP', 0.0, 3, 'Mutations Detected; Effect Unknown'),
+                          ('SIL', 0.0, 3, 'Mutations Detected; Effect Unknown')]
         expected_mutation_comments = []
 
         result = asi.interpret(aa_seq, 'HCV1B-Con1-NS5a')
@@ -562,8 +562,8 @@ class AsiAlgorithmJsonRulesTest(TestCase):
                            references=self.references)
         aa_seq = [['A']] * 100
         compared_attrs = ('code', 'score', 'level', 'level_name')
-        expected_drugs = [('MDP', 0.0, -1, 'Not Indicated'),
-                          ('SIL', 0.0, -1, 'Not Indicated')]
+        expected_drugs = [('MDP', 0.0, 2, 'Not Indicated'),
+                          ('SIL', 0.0, 2, 'Not Indicated')]
         expected_mutation_comments = []
 
         result = asi.interpret(aa_seq, 'HCV2-JFH-1-NS5a')
@@ -577,8 +577,8 @@ class AsiAlgorithmJsonRulesTest(TestCase):
                            references=self.references)
         aa_seq = [['A']] * 100
         compared_attrs = ('code', 'score', 'level', 'level_name')
-        expected_drugs = [('MDP', 0.0, -2, 'Resistance Interpretation Not Available'),
-                          ('SIL', 0.0, -1, 'Not Indicated')]
+        expected_drugs = [('MDP', 0.0, -1, 'Resistance Interpretation Not Available'),
+                          ('SIL', 0.0, 2, 'Not Indicated')]
         expected_mutation_comments = []
 
         result = asi.interpret(aa_seq, 'HCV3-S52-NS5a')
