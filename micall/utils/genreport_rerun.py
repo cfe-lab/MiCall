@@ -74,19 +74,45 @@ def parse_sample_info(sample_name):
                       name=sample_name)
 
 
+def rewrite_file(filename):
+    backup_csv = filename + '.original.csv'
+    os.rename(filename, backup_csv)
+    with open(backup_csv) as source, open(filename, 'w') as dest:
+        reader = DictReader(source)
+        writer = DictWriter(dest, reader.fieldnames)
+        writer.writeheader()
+        for row in reader:
+            yield row  # Caller can modify it.
+            if row:  # Skips a row that got cleared.
+                writer.writerow(row)
+
+
 def combine_files(base_path, groups):
     amino_columns = list(AMINO_ALPHABET) + ['del', 'coverage']
     for group in groups:
         src_filename = os.path.join(base_path,
                                     group.names[1],
                                     'coverage_scores.csv')
+        midi_covered_seeds = set()
         with open(src_filename) as src:
             reader = DictReader(src)
-            has_good_coverage = False
             for row in reader:
-                if row['region'].endswith('-NS5b') and row['on.score'] == '4':
-                    has_good_coverage = True
+                if (row['region'].endswith('-NS5b') and
+                        row['project'] == 'MidHCV' and
+                        row['on.score'] == '4'):
+                    midi_covered_seeds.add(row['seed'])
                     break
+        dest_filename = os.path.join(base_path,
+                                     group.names[0],
+                                     'coverage_scores.csv')
+        has_good_coverage = False
+        for row in rewrite_file(dest_filename):
+            if (row['region'].endswith('-NS5b') and
+                    row['on.score'] == '4'):
+                if row['seed'] in midi_covered_seeds:
+                    has_good_coverage = True
+                else:
+                    row['on.score'] = '1'
         if has_good_coverage:
             dest_filename = os.path.join(base_path,
                                          group.names[0],
