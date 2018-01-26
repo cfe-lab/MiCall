@@ -75,7 +75,8 @@ class AsiAlgorithmTest(TestCase):
         self.assertEqual(expected_mutation_comments, result.mutation_comments)
 
     def test_gaps(self):
-        aa_seq = [[]] * 23 + [['I']] + [[]] * 75
+        aa_seq = [{c: 1.0} for c in self.asi.stds['PR']]
+        aa_seq[23] = {'I': 1.0}
         compared_attrs = ('code', 'score', 'level', 'level_name')
         expected_drugs = [('ATV/r', 10.0, 2, 'Potential Low-Level Resistance'),
                           ('DRV/r', 0.0, 1, 'Susceptible'),
@@ -96,8 +97,10 @@ class AsiAlgorithmTest(TestCase):
         self.assertEqual(expected_mutation_comments, result.mutation_comments)
 
     def test_multiple_regions(self):
-        aa_seq1 = [[]] * 40 + [['L']] + [[]] * 399
-        aa_seq2 = [[]] * 23 + [['I']] + [[]] * 75
+        aa_seq1 = [{c: 1.0} for c in self.asi.stds['RT']]
+        aa_seq1[40] = {'L': 1.0}
+        aa_seq2 = [{c: 1.0} for c in self.asi.stds['PR']]
+        aa_seq2[23] = {'I': 1.0}
         compared_attrs = ('code', 'score', 'level', 'level_name')
         expected_drugs = [('ATV/r', 10.0, 2, 'Potential Low-Level Resistance'),
                           ('DRV/r', 0.0, 1, 'Susceptible'),
@@ -460,8 +463,8 @@ class AsiAlgorithmNewRulesTest(TestCase):
         asi = self.create_asi(drugs=drugs, comments=comments)
         aa_seq = [[amino] for amino in asi.stds['RT']]
         aa_seq[40] = ['L']
-        compared_attrs = ('code', 'score', 'level', 'level_name', 'comments')
-        expected_drugs = [('ABC', 0.0, 1, 'Susceptible', ['Example comment.'])]
+        compared_attrs = ('code', 'comments')
+        expected_drugs = [('ABC', ['Example comment.'])]
         expected_mutation_comments = []
 
         result = asi.interpret(aa_seq, 'RT')
@@ -519,6 +522,27 @@ class AsiAlgorithmJsonRulesTest(TestCase):
         compared_attrs = ('code', 'score', 'level', 'level_name')
         expected_drugs = [('MDP', 4.0, 4, 'Resistance Possible'),
                           ('SIL', 4.0, 4, 'Resistance Possible')]
+        expected_mutation_comments = []
+
+        result = asi.interpret(aa_seq, 'HCV1A-H77-NS5a')
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        self.assertEqual(expected_drugs, drugs)
+        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    def test_low_coverage(self):
+        asi = AsiAlgorithm(rules_yaml=self.default_drugs,
+                           genotype='1A',
+                           references=self.references)
+        aa_seq = [[]] * 100
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('MDP',
+                           0.0,
+                           0,
+                           'Sequence does not meet quality-control standards'),
+                          ('SIL',
+                           0.0,
+                           0,
+                           'Sequence does not meet quality-control standards')]
         expected_mutation_comments = []
 
         result = asi.interpret(aa_seq, 'HCV1A-H77-NS5a')

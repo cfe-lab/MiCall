@@ -131,10 +131,7 @@ def main():
                 open(os.path.join(working_path, 'coverage_scores.csv')) as coverage_scores_csv, \
                 open(os.path.join(working_path, 'resistance.csv'), 'w') as resistance_csv, \
                 open(os.path.join(working_path, 'mutations.csv'), 'w') as mutations_csv:
-            hivdb(amino_csv,
-                  coverage_scores_csv,
-                  resistance_csv,
-                  mutations_csv)
+            hivdb(amino_csv, resistance_csv, mutations_csv)
         sample_name = os.path.basename(working_path)
         with open(os.path.join(working_path, 'resistance.csv')) as resistance_csv, \
                 open(os.path.join(working_path, 'mutations.csv')) as mutations_csv, \

@@ -32,13 +32,28 @@ drug.score  #score the algorithm assigned
 drug.level   #resistance level the algorithm assigned
 drug.comments  #list of comments associated with this drug
 """
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 import re
 import xml.dom.minidom as minidom
+from enum import Enum
+
+from pyvdrm.drm import MissingPositionError
 from pyvdrm.hcvr import HCVR
 from pyvdrm.vcf import VariantCalls
 
 from micall.core.project_config import ProjectConfig
+
+ResistanceLevel = namedtuple('ResistanceLevel', 'level name')
+
+
+class ResistanceLevels(ResistanceLevel, Enum):
+    NA = ResistanceLevel(-1, 'Resistance Interpretation Not Available')
+    FAIL = ResistanceLevel(0, 'Sequence does not meet quality-control standards')
+    SUSCEPTIBLE = ResistanceLevel(1, 'Likely Susceptible')
+    NOT_INDICATED = ResistanceLevel(2, 'Not Indicated')
+    UNKNOWN_MUTATIONS = ResistanceLevel(3, 'Mutations Detected; Effect Unknown')
+    RESISTANCE_POSSIBLE = ResistanceLevel(4, 'Resistance Possible')
+    RESISTANCE_LIKELY = ResistanceLevel(5, 'Resistance Likely')
 
 
 # Now the actual code:----------------------------------------------------------
@@ -92,6 +107,7 @@ class AsiAlgorithm:
             b = node.getElementsByTagName('DRUGCLASSLIST')[0].childNodes[0].nodeValue.split(',')
             self.gene_def[a.strip()] = [e.strip() for e in b]
 
+        self.level_def[str(ResistanceLevels.FAIL.level)] = ResistanceLevels.FAIL.name
         for node in defs.getElementsByTagName('LEVEL_DEFINITION'):
             a = node.getElementsByTagName('ORDER')[0].childNodes[0].nodeValue
             b = node.getElementsByTagName('ORIGINAL')[0].childNodes[0].nodeValue
@@ -286,8 +302,8 @@ class AsiAlgorithm:
         result.alg_name = self.alg_name
         result.alg_version = self.alg_version
         drug_classes = self.gene_def.get(region, {})
-        default_level = 1
-        default_level_name = self.level_def['1']
+        default_level = ResistanceLevels.FAIL.level
+        default_level_name = self.level_def[str(default_level)]
 
         mutations = VariantCalls(reference=(self.stds[region]), sample=aaseq)
 
@@ -304,62 +320,63 @@ class AsiAlgorithm:
                 for condition, actions in drug_rules:
 
                     rule = HCVR(condition)
-                    rule_result = rule.dtree(mutations)
+                    try:
+                        rule_result = rule.dtree(mutations)
 
-                    if rule_result is None:
-                        continue
+                        score = float(rule_result.score)
+                        flags = rule_result.flags
+                        # rule_result.residues doesn't always have wild types.
+                        m = {mutation
+                             for mutation_set in mutations
+                             for mutation in mutation_set
+                             if mutation in rule_result.residues}
+                        raw_mutations[drug_class] |= m
 
-                    score = float(rule_result.score)
-                    flags = rule_result.flags
-                    # rule_result.residues doesn't always have wild types.
-                    m = {mutation
-                         for mutation_set in mutations
-                         for mutation in mutation_set
-                         if mutation in rule_result.residues}
-                    raw_mutations[drug_class] |= m
+                        for action, comment in actions:
+                            if action == 'level':
+                                if int(comment) > drug_result.level:
+                                    drug_result.level = int(comment)
+                                    drug_result.level_name = self.level_def[comment]
+                            elif action == 'comment':
+                                comment, _ = self.comment_def[comment]
+                                while (re.search('\$numberOfMutsIn{', comment) or
+                                       re.search('\$listMutsIn{', comment)):
+                                    comment = self.comment_filter(comment, aaseq, region)
+                                drug_result.comments.append(comment)
+                            elif action == 'scorerange':
+                                drug_result.score = score
+                                scorerange = comment
+                                if scorerange == 'useglobalrange':
+                                    scorerange = self.global_range
+                                if score == 0 and flags:
+                                    if 'Not available' in flags:
+                                        drug_result.level = ResistanceLevels.NA.level
+                                    elif 'Not indicated' in flags:
+                                        drug_result.level = ResistanceLevels.NOT_INDICATED.level
+                                    elif 'Effect unknown' in flags:
+                                        drug_result.level = ResistanceLevels.UNKNOWN_MUTATIONS.level
+                                else:
+                                    # use score range to determine level
+                                    for low_score, high_score, level in scorerange:
+                                        if low_score == '-INF':
+                                            low_score = -99999  # that is close enough to negative infinity.
+                                        else:
+                                            low_score = float(low_score)
 
-                    for action, comment in actions:
-                        if action == 'level':
-                            if int(comment) > drug_result.level:
-                                drug_result.level = int(comment)
-                                drug_result.level_name = self.level_def[comment]
-                        elif action == 'comment':
-                            comment, _ = self.comment_def[comment]
-                            while (re.search('\$numberOfMutsIn{', comment) or
-                                   re.search('\$listMutsIn{', comment)):
-                                comment = self.comment_filter(comment, aaseq, region)
-                            drug_result.comments.append(comment)
-                        elif action == 'scorerange':
-                            drug_result.score = score
-                            scorerange = comment
-                            if scorerange == 'useglobalrange':
-                                scorerange = self.global_range
-                            if score == 0:
-                                if 'Not available' in flags:
-                                    drug_result.level = -1
-                                elif 'Not indicated' in flags:
-                                    drug_result.level = 2
-                                elif 'Effect unknown' in flags:
-                                    drug_result.level = 3
-                            else:
-                                # use score range to determine level
-                                for low_score, high_score, level in scorerange:
-                                    if low_score == '-INF':
-                                        low_score = -99999  # that is close enough to negative infinity.
-                                    else:
-                                        low_score = float(low_score)
+                                        if high_score == 'INF':
+                                            high_score = 99999  # that is close enough to infinity.
+                                        else:
+                                            high_score = float(high_score)
 
-                                    if high_score == 'INF':
-                                        high_score = 99999  # that is close enough to infinity.
-                                    else:
-                                        high_score = float(high_score)
+                                        if low_score <= drug_result.score <= high_score:
+                                            if int(level) > drug_result.level:
+                                                drug_result.level = int(level)
+                                            break
+                    except MissingPositionError:
+                        drug_result.level = ResistanceLevels.FAIL.level
 
-                                    if low_score <= drug_result.score <= high_score:
-                                        if int(level) > drug_result.level:
-                                            drug_result.level = int(level)
-                                        break
-                            drug_result.level_name = self.level_def[
-                                str(drug_result.level)]
+                    drug_result.level_name = self.level_def[
+                        str(drug_result.level)]
                 result.drugs.append(drug_result)
 
         for cls, cls_mutations in raw_mutations.items():
@@ -376,13 +393,16 @@ class AsiAlgorithm:
                 # This evaluates comment rules.
                 # Previous evaluation was scoring rules.
                 rule = HCVR(cond)
-                scoring = rule(mutations)
+                try:
+                    scoring = rule(mutations)
 
-                if scoring:
-                    for _, act in actions:
-                        comment_template, _ = self.comment_def[act]
-                        comment = self.comment_filter(comment_template, aaseq, region)
-                        result.mutation_comments.append(comment)
+                    if scoring:
+                        for _, act in actions:
+                            comment_template, _ = self.comment_def[act]
+                            comment = self.comment_filter(comment_template, aaseq, region)
+                            result.mutation_comments.append(comment)
+                except MissingPositionError:
+                    pass
 
         return result
 

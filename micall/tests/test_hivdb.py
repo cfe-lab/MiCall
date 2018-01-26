@@ -1,7 +1,7 @@
 from io import StringIO
 from unittest import TestCase
 
-from micall.hivdb.hivdb import read_aminos, write_resistance, find_good_regions, select_reported_regions, AminoList, \
+from micall.hivdb.hivdb import read_aminos, write_resistance, select_reported_regions, AminoList, \
     filter_aminos, load_asi, get_genotype
 
 
@@ -32,88 +32,6 @@ class SelectReportedRegionsTest(TestCase):
         selected_regions = select_reported_regions(choices, original_regions)
 
         self.assertEqual(expected_regions, selected_regions)
-
-
-class FindGoodRegionsTest(TestCase):
-    def test_good_coverage(self):
-        coverage_scores_csv = StringIO("""\
-project,region,on.score
-PR,PR,4
-RT,RT,4
-INT,INT,4
-""")
-        original_regions = {'PR', 'RT', 'IN'}
-        expected_regions = {'PR': ['PR', True],
-                            'RT': ['RT', True],
-                            'INT': ['IN', True]}
-
-        good_regions = find_good_regions(original_regions, coverage_scores_csv)
-
-        self.assertEqual(expected_regions, good_regions)
-
-    def test_bad_coverage(self):
-        coverage_scores_csv = StringIO("""\
-project,region,on.score
-PR,PR,4
-RT,RT,3
-INT,INT,4
-""")
-        original_regions = {'PR', 'RT', 'IN'}
-        expected_regions = {'PR': ['PR', True],
-                            'RT': ['RT', False],
-                            'INT': ['IN', True]}
-
-        good_regions = find_good_regions(original_regions, coverage_scores_csv)
-
-        self.assertEqual(expected_regions, good_regions)
-
-    def test_mixed_coverage(self):
-        coverage_scores_csv = StringIO("""\
-project,region,on.score
-PR,PR,4
-RT,RT,4
-RT,RT,3
-INT,INT,4
-""")
-        original_regions = {'PR', 'RT', 'IN'}
-        expected_regions = {'PR': ['PR', True],
-                            'RT': ['RT', True],
-                            'INT': ['IN', True]}
-
-        good_regions = find_good_regions(original_regions, coverage_scores_csv)
-
-        self.assertEqual(expected_regions, good_regions)
-
-    def test_other_regions(self):
-        coverage_scores_csv = StringIO("""\
-project,region,on.score
-PR,PR,4
-RT,RT,4
-INT,INT,4
-R4,R4,4
-""")
-        original_regions = {'PR', 'RT', 'IN'}
-        expected_regions = {'PR': ['PR', True],
-                            'RT': ['RT', True],
-                            'INT': ['IN', True]}
-
-        good_regions = find_good_regions(original_regions, coverage_scores_csv)
-
-        self.assertEqual(expected_regions, good_regions)
-
-    def test_missing_regions(self):
-        coverage_scores_csv = StringIO("""\
-project,region,on.score
-RT,RT,4
-INT,INT,4
-""")
-        original_regions = {'PR', 'RT', 'IN'}
-        expected_regions = {'RT': ['RT', True],
-                            'INT': ['IN', True]}
-
-        good_regions = find_good_regions(original_regions, coverage_scores_csv)
-
-        self.assertEqual(expected_regions, good_regions)
 
 
 class ReadAminosTest(TestCase):
@@ -240,9 +158,10 @@ R3-seed,R3,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """)
         min_fraction = 0.2
-        reported_regions = {'R1': ['Region1', False],  # Bad coverage
-                            'R2': ['Region2', True]}   # Others are skipped
-        expected_aminos = [AminoList('R1', None, None),
+        reported_regions = {'R1', 'R2'}
+        expected_aminos = [AminoList('R1',
+                                     [{'K': 1.0}, {'F': 1.0}, {}],
+                                     None),
                            AminoList('R2',
                                      [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
                                      None)]
@@ -250,6 +169,37 @@ R3-seed,R3,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         aminos = list(read_aminos(amino_csv,
                                   min_fraction,
                                   reported_regions=reported_regions))
+
+        self.assertEqual(expected_aminos, aminos)
+
+    def test_low_coverage(self):
+        amino_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R1-seed,R1,15,7,3,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
+R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R2-seed,R2,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R2-seed,R2,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+""")
+        min_fraction = 0.2
+        min_coverage = 9
+        reported_regions = {'R1', 'R2'}
+        expected_aminos = [AminoList('R1',
+                                     [{'K': 1.0}, {'F': 1.0}, {}],
+                                     None),
+                           AminoList('R2',
+                                     [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
+                                     None)]
+
+        aminos = list(read_aminos(amino_csv,
+                                  min_fraction,
+                                  reported_regions=reported_regions,
+                                  min_coverage=min_coverage))
 
         self.assertEqual(expected_aminos, aminos)
 
@@ -262,8 +212,7 @@ R2-seed,R2,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R2-seed,R2,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """)
         min_fraction = 0.2
-        reported_regions = {'R1': ['Region1', False],  # No data
-                            'R2': ['Region2', True]}   # Others are skipped
+        reported_regions = {'R1', 'R2'}
         expected_aminos = [AminoList('R2',
                                      [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
                                      None)]
@@ -329,6 +278,7 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 class FilterAminosTest(TestCase):
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         cls.algorithms = load_asi()
 
     def test_all(self):
@@ -354,8 +304,8 @@ class FilterAminosTest(TestCase):
         expected_aminos = [AminoList('RT',
                                      [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
                                      None),
-                           AminoList('INT', None, None),
-                           AminoList('PR', None, None)]
+                           AminoList('INT', [{}]*288, None),
+                           AminoList('PR', [{}]*99, None)]
 
         aminos = filter_aminos(all_aminos, self.algorithms)
 
@@ -368,8 +318,8 @@ class FilterAminosTest(TestCase):
         expected_aminos = [AminoList('HCV1A-H77-NS5b',
                                      [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
                                      '1A'),
-                           AminoList('HCV1A-H77-NS3', None, '1A'),
-                           AminoList('HCV1A-H77-NS5a', None, '1A')]
+                           AminoList('HCV1A-H77-NS3', [{}]*631, '1A'),
+                           AminoList('HCV1A-H77-NS5a', [{}]*448, '1A')]
 
         aminos = filter_aminos(all_aminos, self.algorithms)
 
@@ -379,23 +329,33 @@ class FilterAminosTest(TestCase):
         all_aminos = [AminoList('PR',
                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
                                 None),
-                      AminoList('RT', None, None),
-                      AminoList('INT', None, None),
-                      AminoList('NS3', None, '1A')]
+                      AminoList('RT',
+                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                None),
+                      AminoList('INT',
+                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                None),
+                      AminoList('NS3',
+                                [{}, {}, {}],
+                                '1A')]
         expected_aminos = [AminoList('PR',
                                      [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
                                      None),
-                           AminoList('INT', None, None),
-                           AminoList('RT', None, None)]
+                           AminoList('RT',
+                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                     None),
+                           AminoList('INT',
+                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                     None)]
 
         aminos = filter_aminos(all_aminos, self.algorithms)
 
         self.assertEqual(expected_aminos, aminos)
 
     def test_no_good(self):
-        all_aminos = [AminoList('PR', None, None),
-                      AminoList('RT', None, None),
-                      AminoList('HCV1A-H77-NS3', None, '1A')]
+        all_aminos = [AminoList('PR', [{}, {}, {}], None),
+                      AminoList('RT', [{}, {}, {}], None),
+                      AminoList('HCV1A-H77-NS3', [{}, {}, {}], '1A')]
         expected_aminos = []
 
         aminos = filter_aminos(all_aminos, self.algorithms)
@@ -404,11 +364,15 @@ class FilterAminosTest(TestCase):
 
 
 class WriteResistanceTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.algorithms = load_asi()
+
     def test_simple(self):
-        self.maxDiff = None
-        aminos = [AminoList('RT',
-                            [{'A': 1.0}] * 40 + [{'L': 1.0}] + [{}] * 399,
-                            None)]
+        rt_aminos = [{c: 1.0} for c in self.algorithms[None].stds['RT']]
+        rt_aminos[40] = {'L': 1.0}  # pos 41
+        aminos = [AminoList('RT', rt_aminos, None)]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
@@ -430,16 +394,16 @@ drug_class,mutation,prevalence,genotype
 NRTI,M41L,1.0,
 """
 
-        write_resistance(aminos, resistance_csv, mutations_csv)
+        write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
 
         self.assertEqual(expected_resistance, resistance_csv.getvalue())
         self.assertEqual(expected_mutations, mutations_csv.getvalue())
 
     def test_low_coverage(self):
-        aminos = [AminoList('PR', None, None),
-                  AminoList('RT',
-                            [{'A': 1.0}] * 40 + [{'L': 1.0}] + [{}] * 399,
-                            None)]
+        rt_aminos = [{c: 1.0} for c in self.algorithms[None].stds['RT']]
+        rt_aminos[40] = {'L': 1.0}  # pos 41
+        aminos = [AminoList('PR', [{}]*99, None),
+                  AminoList('RT', rt_aminos, None)]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
@@ -469,16 +433,15 @@ drug_class,mutation,prevalence,genotype
 NRTI,M41L,1.0,
 """
 
-        write_resistance(aminos, resistance_csv, mutations_csv)
+        write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
 
         self.assertEqual(expected_resistance, resistance_csv.getvalue())
         self.assertEqual(expected_mutations, mutations_csv.getvalue())
 
     def test_mixture(self):
-        self.maxDiff = None
-        aminos = [AminoList('RT',
-                            [{'A': 1.0}] * 40 + [{'L': 0.3}] + [{}] * 399,
-                            None)]
+        rt_aminos = [{c: 1.0} for c in self.algorithms[None].stds['RT']]
+        rt_aminos[40] = {'L': 0.3, 'd': 0.7}  # pos 41
+        aminos = [AminoList('RT', rt_aminos, None)]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
@@ -500,13 +463,12 @@ drug_class,mutation,prevalence,genotype
 NRTI,M41L,0.3,
 """
 
-        write_resistance(aminos, resistance_csv, mutations_csv)
+        write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
 
         self.assertEqual(expected_resistance, resistance_csv.getvalue())
         self.assertEqual(expected_mutations, mutations_csv.getvalue())
 
     def test_hcv(self):
-        self.maxDiff = None
         aminos = [AminoList('HCV6-EUHK2-NS5b',
                             [{'T': 1.0}] * 591,
                             '6')]
@@ -527,13 +489,12 @@ NS5b,L320T,1.0,6
 NS5b,V321T,1.0,6
 """
 
-        write_resistance(aminos, resistance_csv, mutations_csv)
+        write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
 
         self.assertEqual(expected_resistance, resistance_csv.getvalue())
         self.assertEqual(expected_mutations, mutations_csv.getvalue())
 
     def test_hcv_low_coverage(self):
-        self.maxDiff = None
         aminos = []
         resistance_csv = StringIO()
         mutations_csv = StringIO()
@@ -544,7 +505,25 @@ region,drug_class,drug,drug_name,level,level_name,score,genotype
 drug_class,mutation,prevalence,genotype
 """
 
-        write_resistance(aminos, resistance_csv, mutations_csv)
+        write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
+
+        self.assertEqual(expected_resistance, resistance_csv.getvalue())
+        self.assertEqual(expected_mutations, mutations_csv.getvalue())
+
+    def test_hcv_mostly_low_coverage(self):
+        aminos = [AminoList('HCV1A-H77-NS5b',
+                            [{'T': 1.0}] + [{}] * 590,
+                            '1A')]
+        resistance_csv = StringIO()
+        mutations_csv = StringIO()
+        expected_resistance = """\
+region,drug_class,drug,drug_name,level,level_name,score,genotype
+"""
+        expected_mutations = """\
+drug_class,mutation,prevalence,genotype
+"""
+
+        write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
 
         self.assertEqual(expected_resistance, resistance_csv.getvalue())
         self.assertEqual(expected_mutations, mutations_csv.getvalue())
