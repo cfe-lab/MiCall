@@ -68,7 +68,7 @@ def get_genotype(seed):
     return full_genotype[0]
 
 
-def read_aminos(amino_csv, min_fraction, reported_regions=None, min_coverage=1):
+def read_aminos(amino_csv, min_fraction, reported_regions=None, min_coverage=0):
     coverage_columns = list(AMINO_ALPHABET) + ['del']
     report_names = coverage_columns[:]
     report_names[-1] = 'd'
@@ -80,10 +80,26 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None, min_coverage=1):
             if translated_region not in reported_regions:
                 continue
         aminos = []
+        total_coverage = 0
+        if region.endswith('-NS3'):
+            max_pos = 181
+        elif region.endswith('-NS5a'):
+            max_pos = 101
+        elif region.endswith('-NS5b'):
+            max_pos = 561
+        else:
+            max_pos = None
+        # TODO: Remove last_coverage check after validating against Ruby version.
+        last_coverage = 0
         for row in rows:
             counts = list(map(int, (row[f] for f in coverage_columns)))
             coverage = int(row['coverage'])
-            if coverage < min_coverage:
+            pos = int(row['refseq.aa.pos'])
+            if max_pos and pos <= max_pos:
+                total_coverage += coverage
+            if pos == max_pos:
+                last_coverage = coverage
+            if coverage == 0 or coverage < min_coverage:
                 pos_aminos = {}
             else:
                 min_count = max(1, coverage * min_fraction)  # needs at least 1
@@ -94,8 +110,10 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None, min_coverage=1):
                 if ins_count >= min_count:
                     pos_aminos['i'] = ins_count / coverage
             aminos.append(pos_aminos)
-        # Need original region to look up wild type.
-        yield AminoList(region, aminos, genotype)
+        if max_pos is None or min(last_coverage,
+                                  total_coverage // max_pos) >= min_coverage:
+            # Need original region to look up wild type.
+            yield AminoList(region, aminos, genotype)
 
 
 def get_algorithm_regions(algorithm):
