@@ -273,6 +273,25 @@ HCV-1a,HCV-Foo-NS5a,15,4,100,0,0,0,0,404,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
         self.assertEqual(expected_aminos, aminos)
 
+    def test_resistant_even_with_missing_midi(self):
+        amino_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+HCV-1a,HCV1A-H77-NS5b,15,1,395,0,0,0,0,0,5000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5000
+HCV-1a,HCV1A-H77-NS5b,15,4,396,0,0,0,0,5000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5000
+""")
+        min_fraction = 0.2
+        min_coverage = 9
+        expected_aminos = [AminoList('HCV1A-H77-NS5b',
+                                     [{'G': 1.0}, {'F': 1.0}],
+                                     '1A')]
+
+        aminos = list(read_aminos(amino_csv,
+                                  min_fraction,
+                                  min_coverage=min_coverage))
+
+        self.assertEqual(expected_aminos, aminos)
+
     def test_missing_region(self):
         amino_csv = StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
@@ -557,6 +576,28 @@ NS5b,S282T,1.0,6
 NS5b,C316T,1.0,6
 NS5b,L320T,1.0,6
 NS5b,V321T,1.0,6
+"""
+
+        write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
+
+        self.assertEqual(expected_resistance, resistance_csv.getvalue())
+        self.assertEqual(expected_mutations, mutations_csv.getvalue())
+
+    def test_hcv_missing_midi(self):
+        aminos = [AminoList('HCV1A-H77-NS5b',
+                            [{}]*394 + [{'G': 1.0}] + [{}]*196,
+                            '1A')]
+        resistance_csv = StringIO()
+        mutations_csv = StringIO()
+        expected_resistance = """\
+region,drug_class,drug,drug_name,level,level_name,score,genotype
+NS5b,NS5b,DSV,DSV,5,Resistance Likely,8.0,1A
+NS5b,NS5b,SOF-EPC,SOF-EPC,0,Sequence does not meet quality-control standards,0.0,1A
+NS5b,NS5b,SOF-HAR,SOF-HAR,0,Sequence does not meet quality-control standards,0.0,1A
+"""
+        expected_mutations = """\
+drug_class,mutation,prevalence,genotype
+NS5b,A395G,1.0,1A
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)

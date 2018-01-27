@@ -305,7 +305,7 @@ class AsiAlgorithm:
         default_level = ResistanceLevels.FAIL.level
         default_level_name = self.level_def[str(default_level)]
 
-        mutations = VariantCalls(reference=(self.stds[region]), sample=aaseq)
+        mutations = VariantCalls(reference=self.stds[region], sample=aaseq)
 
         for drug_class in drug_classes:
             for drug_code in self.drug_class[drug_class]:

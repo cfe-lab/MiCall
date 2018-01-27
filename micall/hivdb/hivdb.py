@@ -91,6 +91,7 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None, min_coverage=0):
             max_pos = None
         # TODO: Remove last_coverage check after validating against Ruby version.
         last_coverage = 0
+        last_covered_pos = None
         for row in rows:
             counts = list(map(int, (row[f] for f in coverage_columns)))
             coverage = int(row['coverage'])
@@ -102,6 +103,7 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None, min_coverage=0):
             if coverage == 0 or coverage < min_coverage:
                 pos_aminos = {}
             else:
+                last_covered_pos = pos
                 min_count = max(1, coverage * min_fraction)  # needs at least 1
                 pos_aminos = {report_names[i]: count/coverage
                               for i, count in enumerate(counts)
@@ -110,6 +112,11 @@ def read_aminos(amino_csv, min_fraction, reported_regions=None, min_coverage=0):
                 if ins_count >= min_count:
                     pos_aminos['i'] = ins_count / coverage
             aminos.append(pos_aminos)
+        if (region.endswith('-NS5b') and
+                last_covered_pos is not None and
+                last_covered_pos < 400):
+            # Override last_coverage check when MIDI is missing.
+            last_coverage = min_coverage
         if max_pos is None or min(last_coverage,
                                   total_coverage // max_pos) >= min_coverage:
             # Need original region to look up wild type.
@@ -186,7 +193,7 @@ def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
             asi = algorithms.get(genotype)
             if asi is None:
                 continue
-            result = asi.interpret(amino_seq, region)
+            result = interpret(asi, amino_seq, region)
             region_results.append((region, amino_seq, result))
         if all(drug_result.level == ResistanceLevels.FAIL.level
                for region, amino_seq, result in region_results
@@ -215,6 +222,43 @@ def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
                                                    mutation=mutation,
                                                    prevalence=prevalence,
                                                    genotype=genotype))
+
+
+def interpret(asi, amino_seq, region):
+    # TODO: Make this more general instead of only applying to missing MIDI.
+    result = asi.interpret(amino_seq, region)
+    if not region.endswith('-NS5b'):
+        return result
+    for drug_result in result.drugs:
+        if drug_result.level == ResistanceLevels.FAIL.level:
+            break
+    else:
+        return result
+    i = 0
+    for i, aminos in reversed(list(enumerate(amino_seq))):
+        if aminos:
+            break
+    if i <= 400:
+        # Missing the MIDI coverage, see if we can report resistance.
+        ref_seq = asi.stds[region]
+        new_amino_seq = []
+        for i, old_aminos in enumerate(amino_seq):
+            if old_aminos:
+                new_amino_seq.append(old_aminos)
+            else:
+                # Assume wild type.
+                new_amino_seq.append({ref_seq[i]: 1.0})
+        new_result = asi.interpret(new_amino_seq, region)
+        result.mutations = new_result.mutations
+        for old_drug_result, new_drug_result in zip(result.drugs, new_result.drugs):
+            if new_drug_result.level == ResistanceLevels.RESISTANCE_LIKELY.level:
+                old_drug_result.level = new_drug_result.level
+                old_drug_result.level_name = new_drug_result.level_name
+                old_drug_result.score = new_drug_result.score
+
+
+
+    return result
 
 
 def load_asi():
