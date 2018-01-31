@@ -6,7 +6,6 @@ from csv import DictReader, DictWriter
 from itertools import groupby
 from operator import itemgetter
 
-from micall.core.aln2counts import AMINO_ALPHABET
 from micall.hivdb.genreport import gen_report
 from micall.hivdb.hivdb import hivdb
 from micall.utils.sample_sheet_parser import sample_sheet_parser
@@ -62,51 +61,28 @@ def rewrite_file(filename):
                 writer.writerow(row)
 
 
-def combine_files(base_path, groups):
-    for group in groups:
-        if group.names[1] is not None:
-            combine_midi(base_path, group.names[0], group.names[1])
-        yield os.path.join(base_path, group.names[0])
-
-
-def combine_midi(base_path, wide_name, midi_name):
-    amino_columns = list(AMINO_ALPHABET) + ['del', 'coverage']
-    dest_filename = os.path.join(base_path,
-                                 wide_name,
-                                 'amino.csv')
-    src_filename = os.path.join(base_path,
-                                midi_name,
-                                'amino.csv')
-    with open(src_filename) as src:
-        reader = DictReader(src)
-        source_rows = {(row['region'], row['refseq.aa.pos']): row
-                       for row in reader
-                       if row['region'].endswith('-NS5b')}
-    for row in rewrite_file(dest_filename):
-        source_row = source_rows.get((row['region'], row['refseq.aa.pos']))
-        if source_row is not None:
-            pos = int(row['refseq.aa.pos'])
-            wide_coverage = int(row['coverage'])
-            midi_coverage = int(source_row['coverage'])
-            if pos > 336 or (pos >= 227 and midi_coverage > wide_coverage):
-                for column in amino_columns:
-                    row[column] = source_row[column]
-
-
 def main():
     args = parse_args()
     working_paths = split_files(args)
 
     sorted_working_paths = sorted(working_paths)
-    groups = find_groups(sorted_working_paths, args.source)
-    combined_working_paths = list(combine_files(args.working, groups))
-    failed_working_paths = set(combined_working_paths)
-    for working_path in combined_working_paths:
+    groups = list(find_groups(sorted_working_paths, args.source))
+    for group in groups:
+        working_path = os.path.join(args.working, group.names[0])
+        midi_path = working_path if group.names[1] is None else os.path.join(
+            args.working,
+            group.names[1])
         print(working_path)
         with open(os.path.join(working_path, 'amino.csv')) as amino_csv, \
+                open(os.path.join(midi_path, 'amino.csv')) as midi_amino_csv, \
                 open(os.path.join(working_path, 'resistance.csv'), 'w') as resistance_csv, \
-                open(os.path.join(working_path, 'mutations.csv'), 'w') as mutations_csv:
-            hivdb(amino_csv, resistance_csv, mutations_csv)
+                open(os.path.join(working_path, 'mutations.csv'), 'w') as mutations_csv, \
+                open(os.path.join(working_path, 'resistance_fail.csv'), 'w') as resistance_fail_csv:
+            hivdb(amino_csv,
+                  midi_amino_csv,
+                  resistance_csv,
+                  mutations_csv,
+                  resistance_fail_csv)
         sample_name = os.path.basename(working_path)
         with open(os.path.join(working_path, 'resistance.csv')) as resistance_csv, \
                 open(os.path.join(working_path, 'mutations.csv')) as mutations_csv, \
@@ -116,10 +92,11 @@ def main():
                        resistance_report_csv,
                        sample_name=sample_name)
 
-    for file_name in ('resistance.csv', 'mutations.csv'):
+    for file_name in ('resistance.csv', 'mutations.csv', 'resistance_fail.csv'):
         with open(os.path.join(args.working, file_name), 'w') as dest:
             dest_writer = csv.writer(dest)
-            for i, working_path in enumerate(combined_working_paths):
+            for i, group in enumerate(groups):
+                working_path = os.path.join(args.working, group.names[0])
                 sample_name = os.path.basename(working_path)
                 with open(os.path.join(working_path, file_name), 'r') as source:
                     source_reader = csv.reader(source)
@@ -130,15 +107,7 @@ def main():
                             row.insert(0, 'sample')
                         else:
                             continue
-                        if j == 1:
-                            failed_working_paths.discard(working_path)
                         dest_writer.writerow(row)
-
-    with open(os.path.join(args.working, 'failed.csv'), 'w') as dest:
-        dest_writer = csv.writer(dest)
-        dest_writer.writerow(['sample'])
-        for working_path in sorted(failed_working_paths):
-            dest_writer.writerow([os.path.basename(working_path)])
 
 
 def split_files(args):

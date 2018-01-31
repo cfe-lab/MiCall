@@ -1,9 +1,9 @@
 #! /usr/bin/env python3.4
 import os
 from argparse import ArgumentParser, FileType
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from csv import DictReader, DictWriter
-from itertools import groupby
+from itertools import groupby, chain, zip_longest
 from operator import itemgetter, attrgetter
 
 import yaml
@@ -21,17 +21,26 @@ HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
 AminoList = namedtuple('AminoList', 'region aminos genotype')
 
 
+class LowCoverageError(Exception):
+    pass
+
+
 def parse_args():
     parser = ArgumentParser(
         description='Make resistance calls and list mutations from amino counts.')
     parser.add_argument('aminos_csv', type=FileType(), help='amino counts')
-    parser.add_argument('coverage_scores_csv', type=FileType())
+    parser.add_argument('midi_aminos_csv',
+                        type=FileType(),
+                        help='amino counts for HCV MIDI region or the same as aminos_csv')
     parser.add_argument('resistance_csv',
                         type=FileType('w'),
                         help='resistance calls')
     parser.add_argument('mutations_csv',
                         type=FileType('w'),
                         help='Relevant mutations present above a threshold')
+    parser.add_argument('resistance_fail_csv',
+                        type=FileType('w'),
+                        help='regions that failed to make a resistance call')
     return parser.parse_args()
 
 
@@ -68,11 +77,106 @@ def get_genotype(seed):
     return full_genotype[0]
 
 
-def read_aminos(amino_csv, min_fraction, reported_regions=None, min_coverage=0):
+def create_fail_writer(fail_csv):
+    writer = DictWriter(fail_csv,
+                        ['seed', 'region', 'reason'],
+                        lineterminator=os.linesep)
+    writer.writeheader()
+    return writer
+
+
+def check_coverage(region, rows, start_pos=1, end_pos=None):
+    if end_pos is None:
+        if region.endswith('-NS3'):
+            end_pos = 181
+        elif region.endswith('-NS5a'):
+            end_pos = 101
+        elif region.endswith('-NS5b'):
+            end_pos = 228
+        else:
+            return
+    start_coverage = 0
+    end_coverage = 0
+    total_coverage = 0
+    for row in rows:
+        pos = int(row['refseq.aa.pos'])
+        if start_pos <= pos <= end_pos:
+            coverage = int(row['coverage'])
+            total_coverage += coverage
+            if pos == start_pos:
+                start_coverage = coverage
+            if pos == end_pos:
+                end_coverage = coverage
+    average_coverage = total_coverage / (end_pos - start_pos + 1)
+    if average_coverage < MIN_COVERAGE:
+        raise LowCoverageError('low average coverage')
+    if (end_coverage < MIN_COVERAGE or
+            (start_pos == 1 and start_coverage < MIN_COVERAGE)):
+        raise LowCoverageError('not enough high-coverage amino acids')
+
+
+def combine_aminos(amino_csv, midi_amino_csv, fail_writer):
+    midi_rows = defaultdict(list)  # {seed: [row]}
+    if midi_amino_csv.name != amino_csv.name:
+        for (seed, region), rows in groupby(DictReader(midi_amino_csv),
+                                            itemgetter('seed', 'region')):
+            if not region.endswith('-NS5b'):
+                continue
+            rows = list(rows)
+            try:
+                check_coverage(region, rows, start_pos=231, end_pos=561)
+            except LowCoverageError as ex:
+                fail_writer.writerow(dict(seed=seed,
+                                          region=region,
+                                          reason='MIDI: ' + ex.args[0]))
+                continue
+            midi_rows[seed] = [row
+                               for row in rows
+                               if 226 < int(row['refseq.aa.pos'])]
+    for (seed, region), rows in groupby(DictReader(amino_csv),
+                                        itemgetter('seed', 'region')):
+        rows = list(rows)
+        try:
+            check_coverage(region, rows)
+        except LowCoverageError as ex:
+            fail_writer.writerow(dict(seed=seed,
+                                      region=region,
+                                      reason=ex.args[0]))
+            continue
+        if region.endswith('-NS5b'):
+            region_midi_rows = midi_rows[seed]
+            rows = combine_midi_rows(rows, region_midi_rows)
+        yield from rows
+
+
+def combine_midi_rows(main_rows, midi_rows):
+    main_row_map = {int(row['refseq.aa.pos']): row
+                    for row in main_rows}
+    midi_row_map = {int(row['refseq.aa.pos']): row
+                    for row in midi_rows}
+    positions = sorted({pos
+                        for pos in chain(main_row_map.keys(),
+                                         midi_row_map.keys())})
+    for pos in positions:
+        main_row = main_row_map.get(pos)
+        midi_row = midi_row_map.get(pos)
+        if midi_row is None:
+            if pos <= 336:
+                yield main_row
+        elif main_row is None:
+            yield midi_row
+        elif (pos <= 336 and
+              int(main_row['coverage']) > int(midi_row['coverage'])):
+            yield main_row
+        else:
+            yield midi_row
+            
+
+def read_aminos(amino_rows, min_fraction, reported_regions=None, min_coverage=0):
     coverage_columns = list(AMINO_ALPHABET) + ['del']
     report_names = coverage_columns[:]
     report_names[-1] = 'd'
-    for (region, seed), rows in groupby(DictReader(amino_csv),
+    for (region, seed), rows in groupby(amino_rows,
                                         itemgetter('region', 'seed')):
         genotype = get_genotype(seed)
         if reported_regions is not None:
@@ -226,38 +330,30 @@ def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
 
 def interpret(asi, amino_seq, region):
     # TODO: Make this more general instead of only applying to missing MIDI.
+    is_missing_midi = False
+    if region.endswith('-NS5b'):
+        ref_seq = asi.stds[region]
+        if len(amino_seq) < len(ref_seq):
+            # Missing MIDI, assume wild type and look for known resistance.
+            is_missing_midi = True
+            new_amino_seq = []
+            for wild_type, old_aminos in zip_longest(ref_seq, amino_seq):
+                if old_aminos is not None:
+                    new_amino_seq.append(old_aminos)
+                else:
+                    new_amino_seq.append({wild_type: 1.0})
+            amino_seq = new_amino_seq
+
     result = asi.interpret(amino_seq, region)
-    if not region.endswith('-NS5b'):
+    if not is_missing_midi:
         return result
     for drug_result in result.drugs:
-        if drug_result.level == ResistanceLevels.FAIL.level:
-            break
-    else:
-        return result
-    i = 0
-    for i, aminos in reversed(list(enumerate(amino_seq))):
-        if aminos:
-            break
-    if i <= 400:
-        # Missing the MIDI coverage, see if we can report resistance.
-        ref_seq = asi.stds[region]
-        new_amino_seq = []
-        for i, old_aminos in enumerate(amino_seq):
-            if old_aminos:
-                new_amino_seq.append(old_aminos)
-            else:
-                # Assume wild type.
-                new_amino_seq.append({ref_seq[i]: 1.0})
-        new_result = asi.interpret(new_amino_seq, region)
-        result.mutations = new_result.mutations
-        for old_drug_result, new_drug_result in zip(result.drugs, new_result.drugs):
-            if new_drug_result.level == ResistanceLevels.RESISTANCE_LIKELY.level:
-                old_drug_result.level = new_drug_result.level
-                old_drug_result.level_name = new_drug_result.level_name
-                old_drug_result.score = new_drug_result.score
-
-
-
+        if drug_result.level not in (ResistanceLevels.FAIL.level,
+                                     ResistanceLevels.RESISTANCE_LIKELY.level,
+                                     ResistanceLevels.NOT_INDICATED.level):
+            drug_result.level = ResistanceLevels.FAIL.level
+            drug_result.level_name = ResistanceLevels.FAIL.name
+            drug_result.score = 0.0
     return result
 
 
@@ -277,14 +373,18 @@ def load_asi():
 
 
 def hivdb(amino_csv,
+          midi_amino_csv,
           resistance_csv,
           mutations_csv,
+          fail_csv,
           region_choices=None):
     if region_choices is None:
         selected_regions = REPORTED_REGIONS
     else:
         selected_regions = select_reported_regions(region_choices, REPORTED_REGIONS)
-    aminos = read_aminos(amino_csv, MIN_FRACTION, selected_regions, MIN_COVERAGE)
+    fail_writer = create_fail_writer(fail_csv)
+    amino_rows = combine_aminos(amino_csv, midi_amino_csv, fail_writer)
+    aminos = read_aminos(amino_rows, MIN_FRACTION, selected_regions, MIN_COVERAGE)
     algorithms = load_asi()
     filtered_aminos = filter_aminos(aminos, algorithms)
     write_resistance(filtered_aminos, resistance_csv, mutations_csv, algorithms)
@@ -292,7 +392,11 @@ def hivdb(amino_csv,
 
 def main():
     args = parse_args()
-    hivdb(args.aminos_csv, args.resistance_csv, args.mutations_csv)
+    hivdb(args.aminos_csv,
+          args.midi_aminos_csv,
+          args.resistance_csv,
+          args.mutations_csv,
+          args.resistance_fail_csv)
 
 
 if __name__ == '__main__':
