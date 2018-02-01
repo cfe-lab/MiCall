@@ -321,7 +321,7 @@ def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
                     amino = mutation.variant
                     pos = mutation.pos
                     pos_aminos = amino_seq[pos-1]
-                    prevalence = pos_aminos[amino]
+                    prevalence = pos_aminos.get(amino, 0)
                     mutations_writer.writerow(dict(drug_class=drug_class,
                                                    mutation=mutation,
                                                    prevalence=prevalence,
@@ -329,20 +329,20 @@ def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
 
 
 def interpret(asi, amino_seq, region):
+    ref_seq = asi.stds[region]
     # TODO: Make this more general instead of only applying to missing MIDI.
-    is_missing_midi = False
-    if region.endswith('-NS5b'):
-        ref_seq = asi.stds[region]
-        if len(amino_seq) < len(ref_seq):
-            # Missing MIDI, assume wild type and look for known resistance.
-            is_missing_midi = True
-            new_amino_seq = []
-            for wild_type, old_aminos in zip_longest(ref_seq, amino_seq):
-                if old_aminos is not None:
-                    new_amino_seq.append(old_aminos)
-                else:
-                    new_amino_seq.append({wild_type: 1.0})
-            amino_seq = new_amino_seq
+    is_missing_midi = region.endswith('-NS5b') and len(amino_seq) < len(ref_seq)
+
+    # TODO: Put back the check that all mutation positions have minimum coverage.
+    if any(amino_seq):
+        # At least some data found, assume wild type in gaps.
+        new_amino_seq = []
+        for wild_type, old_aminos in zip_longest(ref_seq, amino_seq):
+            if old_aminos:
+                new_amino_seq.append(old_aminos)
+            else:
+                new_amino_seq.append({wild_type: 1.0})
+        amino_seq = new_amino_seq
 
     result = asi.interpret(amino_seq, region)
     if not is_missing_midi:
