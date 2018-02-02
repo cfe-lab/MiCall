@@ -1131,6 +1131,31 @@ NS5b,C316Y,1.0,1A
         self.assertEqual(expected_resistance, resistance_csv.getvalue())
         self.assertEqual(expected_mutations, mutations_csv.getvalue())
 
+    def test_hcv_ns3_coverage_gap(self):
+        self.maxDiff = None
+        ns3_aminos = [{c: 1.0}
+                       for c in self.algorithms[None].stds['HCV1A-H77-NS3']]
+        ns3_aminos[53] = {}  # Coverage gap at position 54
+        aminos = [AminoList('HCV1A-H77-NS3', ns3_aminos, '1A')]
+        resistance_csv = StringIO()
+        mutations_csv = StringIO()
+        expected_resistance = """\
+region,drug_class,drug,drug_name,level,level_name,score,genotype
+NS3,NS3,BPV,BPV,0,Sequence does not meet quality-control standards,0.0,1A
+NS3,NS3,GZR,GZR,1,Likely Susceptible,0.0,1A
+NS3,NS3,PTV,PTV,1,Likely Susceptible,0.0,1A
+NS3,NS3,SPV,SPV,0,Sequence does not meet quality-control standards,0.0,1A
+NS3,NS3,TPV,TPV,0,Sequence does not meet quality-control standards,0.0,1A
+"""
+        expected_mutations = """\
+drug_class,mutation,prevalence,genotype
+"""
+
+        write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
+
+        self.assertEqual(expected_resistance, resistance_csv.getvalue())
+        self.assertEqual(expected_mutations, mutations_csv.getvalue())
+
     def test_hcv_low_coverage(self):
         aminos = []
         resistance_csv = StringIO()
