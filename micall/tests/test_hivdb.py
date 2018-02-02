@@ -510,6 +510,37 @@ HCV-1a,HCV1A-H77-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
         self.check_combination(amino_csv, midi_amino_csv, expected_csv)
 
+    def test_combine_midi_only(self):
+        amino_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+HCV-1a,HCV1A-H77-NS5b,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+""")
+        amino_csv.name = 'main_amino.csv'
+        midi_amino_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+HCV-1a,HCV1A-H77-NS5b,15,1,558,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,1,559,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,4,560,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,7,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+""")
+        midi_amino_csv.name = 'midi_amino.csv'
+        expected_csv = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+HCV-1a,HCV1A-H77-NS5b,15,1,558,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,1,559,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,4,560,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,7,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+"""
+        expected_fail_csv = """\
+seed,region,reason
+HCV-1a,HCV1A-H77-NS5b,low average coverage
+"""
+
+        self.check_combination(amino_csv, midi_amino_csv, expected_csv, expected_fail_csv)
+
 
 class ReadAminosTest(TestCase):
     def test_simple(self):
@@ -690,7 +721,7 @@ HCV-1a,HCV-Foo-NS5a,15,4,101,0,0,0,0,404,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         min_fraction = 0.2
         min_coverage = 9
         expected_aminos = [AminoList('HCV-Foo-NS5a',
-                                     [{'K': 1.0}, {'F': 1.0}],
+                                     [{}]*99 + [{'K': 1.0}, {'F': 1.0}],
                                      '1A')]
 
         aminos = list(read_aminos(amino_csv,
@@ -760,7 +791,7 @@ HCV-1a,HCV1A-H77-NS5b,15,4,396,0,0,0,0,5000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
         min_fraction = 0.2
         min_coverage = 9
         expected_aminos = [AminoList('HCV1A-H77-NS5b',
-                                     [{'G': 1.0}, {'F': 1.0}],
+                                     [{}]*394 + [{'G': 1.0}, {'F': 1.0}],
                                      '1A')]
 
         aminos = list(read_aminos(amino_csv,
@@ -834,6 +865,22 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         min_fraction = 0.2
         expected_aminos = [AminoList('R1',
                                      [{'K': 0.9}, {'F': 0.8}, {}],
+                                     None)]
+
+        aminos = list(read_aminos(amino_csv, min_fraction))
+
+        self.assertEqual(expected_aminos, aminos)
+
+    def test_missing_position(self):
+        amino_csv = DictReader(StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R1-seed,R1,15,7,3,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+"""))
+        min_fraction = 0.2
+        expected_aminos = [AminoList('R1',
+                                     [{}, {'F': 1.0}, {'A': 1.0}],
                                      None)]
 
         aminos = list(read_aminos(amino_csv, min_fraction))

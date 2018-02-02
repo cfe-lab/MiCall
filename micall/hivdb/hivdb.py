@@ -142,7 +142,7 @@ def combine_aminos(amino_csv, midi_amino_csv, fail_writer):
             fail_writer.writerow(dict(seed=seed,
                                       region=region,
                                       reason=ex.args[0]))
-            continue
+            rows = []
         if region.endswith('-NS5b'):
             region_midi_rows = midi_rows[seed]
             rows = combine_midi_rows(rows, region_midi_rows)
@@ -200,6 +200,8 @@ def read_aminos(amino_rows, min_fraction, reported_regions=None, min_coverage=0)
             counts = list(map(int, (row[f] for f in coverage_columns)))
             coverage = int(row['coverage'])
             pos = int(row['refseq.aa.pos'])
+            while pos > len(aminos) + 1:
+                aminos.append({})
             if max_pos and pos <= max_pos:
                 total_coverage += coverage
             if pos == max_pos:
@@ -333,12 +335,11 @@ def interpret(asi, amino_seq, region):
     # TODO: Make this more general instead of only applying to missing MIDI.
     is_missing_midi = region.endswith('-NS5b') and len(amino_seq) < len(ref_seq)
 
-    # TODO: Put back the check that all mutation positions have minimum coverage.
-    if any(amino_seq):
+    if is_missing_midi:
         # At least some data found, assume wild type in gaps.
         new_amino_seq = []
         for wild_type, old_aminos in zip_longest(ref_seq, amino_seq):
-            if old_aminos:
+            if old_aminos is not None:
                 new_amino_seq.append(old_aminos)
             else:
                 new_amino_seq.append({wild_type: 1.0})
