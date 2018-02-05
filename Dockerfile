@@ -34,6 +34,6 @@ COPY micall/__init__.py micall/project* /opt/micall/micall/
 
 COPY micall/core    /opt/micall/micall/core/
 COPY micall/g2p     /opt/micall/micall/g2p/
-COPY micall/hivdb   /opt/micall/micall/hivdb/
+COPY micall/resistance   /opt/micall/micall/resistance/
 COPY micall/monitor /opt/micall/micall/monitor/
 COPY micall/utils   /opt/micall/micall/utils/

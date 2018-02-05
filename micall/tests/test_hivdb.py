@@ -2,7 +2,7 @@ from csv import DictReader, DictWriter
 from io import StringIO
 from unittest import TestCase
 
-from micall.hivdb.hivdb import read_aminos, write_resistance, select_reported_regions, AminoList, \
+from micall.resistance.resistance import read_aminos, write_resistance, select_reported_regions, AminoList, \
     filter_aminos, load_asi, get_genotype, combine_aminos, create_fail_writer
 
 

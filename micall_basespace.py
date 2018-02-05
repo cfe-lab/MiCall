@@ -24,8 +24,8 @@ from micall.core.filter_quality import report_bad_cycles
 from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from micall.core.sam2aln import sam2aln
-from micall.hivdb.genreport import gen_report
-from micall.hivdb.hivdb import hivdb
+from micall.resistance.genreport import gen_report
+from micall.resistance.resistance import report_resistance
 from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.g2p.pssm_lib import Pssm
@@ -505,17 +505,17 @@ def process_sample(sample_index, run_info, args, pssm):
                       coverage_maps_prefix=sample_name,
                       excluded_projects=excluded_projects)
 
-    logger.info('Running hivdb (%d of %d).', sample_index+1, len(run_info.samples))
+    logger.info('Running resistance (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'amino.csv')) as amino_csv, \
             open(os.path.join(sample_scratch_path, 'resistance.csv'), 'w') as resistance_csv, \
             open(os.path.join(sample_scratch_path, 'mutations.csv'), 'w') as mutations_csv, \
             open(os.path.join(sample_scratch_path, 'resistance_fail.csv'), 'w') as fail_csv:
-        hivdb(amino_csv,
-              amino_csv,  # TODO: match with MIDI sample
-              resistance_csv,
-              mutations_csv,
-              fail_csv,
-              run_info.reports)
+        report_resistance(amino_csv,
+                          amino_csv,  # TODO: match with MIDI sample
+                          resistance_csv,
+                          mutations_csv,
+                          fail_csv,
+                          run_info.reports)
 
     logger.info('Running resistance report (%d of %d).', sample_index+1, len(run_info.samples))
     source_path = os.path.dirname(__file__)

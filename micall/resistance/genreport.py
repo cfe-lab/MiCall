@@ -10,7 +10,7 @@ from collections import defaultdict, Counter, namedtuple
 
 import yaml
 
-import micall.hivdb.pdfreport as pdfreport
+import micall.resistance.pdfreport as pdfreport
 
 REPORT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'genreport.yaml')
 

@@ -3,14 +3,14 @@ from io import StringIO
 from operator import attrgetter
 from unittest import TestCase
 
-from micall.hivdb.asi_algorithm import AsiAlgorithm
+from micall.resistance.asi_algorithm import AsiAlgorithm
 
 
 class AsiAlgorithmTest(TestCase):
     def setUp(self):
         self.asi = AsiAlgorithm(os.path.join(os.path.dirname(__file__),
                                              "..",
-                                             "hivdb",
+                                             "resistance",
                                              "HIVDB_8.3.xml"))
 
     def test_interpret(self):

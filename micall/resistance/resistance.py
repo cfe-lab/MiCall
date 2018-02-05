@@ -9,7 +9,7 @@ from operator import itemgetter, attrgetter
 import yaml
 from pyvdrm.vcf import Mutation
 
-from micall.hivdb.asi_algorithm import AsiAlgorithm, ResistanceLevels
+from micall.resistance.asi_algorithm import AsiAlgorithm, ResistanceLevels
 from micall.core.aln2counts import AMINO_ALPHABET
 
 MIN_FRACTION = 0.05  # prevalence of mutations to report
@@ -400,12 +400,12 @@ def load_asi():
     return algorithms
 
 
-def hivdb(amino_csv,
-          midi_amino_csv,
-          resistance_csv,
-          mutations_csv,
-          fail_csv,
-          region_choices=None):
+def report_resistance(amino_csv,
+                      midi_amino_csv,
+                      resistance_csv,
+                      mutations_csv,
+                      fail_csv,
+                      region_choices=None):
     if region_choices is None:
         selected_regions = REPORTED_REGIONS
     else:
@@ -420,11 +420,11 @@ def hivdb(amino_csv,
 
 def main():
     args = parse_args()
-    hivdb(args.aminos_csv,
-          args.midi_aminos_csv,
-          args.resistance_csv,
-          args.mutations_csv,
-          args.resistance_fail_csv)
+    report_resistance(args.aminos_csv,
+                      args.midi_aminos_csv,
+                      args.resistance_csv,
+                      args.mutations_csv,
+                      args.resistance_fail_csv)
 
 
 if __name__ == '__main__':

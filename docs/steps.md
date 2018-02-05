@@ -75,12 +75,18 @@ description: Where the data goes
     coverage at key positions.
 * `cascade_report`: summarize how many reads made it through each step of the
     pipeline.
-* `hivdb`: Use the Stanford HIVdb algorithm rules to call a sample's resistance
-    levels to HIV drugs.
+* `resistance`: Use the Stanford HIVdb algorithm rules to call a sample's resistance
+    levels to HIV drugs, or other rules for Hepatitis C drugs.
   * in - amino.csv
-  * in - coverage_scores.csv
+  * in - amino_midi.csv - amino counts from the HCV-MIDI sample (ignored if
+    it's the same file as amino.csv)
   * resistance.csv - resistance level to each HIV drug
   * mutations.csv - significant mutations found
+  * resistance_fail.csv - failure reasons
+* `genreport`: Generate the resistance report
+  * in - resistance.csv
+  * in - mutations.csv
+  * report.pdf - the report, ready to print
 
 [fastq_g2p_design]: http://cfe-lab.github.io/MiCall/design/fastq_g2p
 [remap design]: http://cfe-lab.github.io/MiCall/design/remap

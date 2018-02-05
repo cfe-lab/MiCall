@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from micall.hivdb.genreport import ReportTemplate, ReportPage
+from micall.resistance.genreport import ReportTemplate, ReportPage
 
 
 class GenReportTest(TestCase):
