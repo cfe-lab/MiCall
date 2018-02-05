@@ -211,7 +211,7 @@ def parse_json(json_file):
         args.read_length2 = run_content['SequencingStats']['NumCyclesRead2']
         args.index_length1 = run_content['SequencingStats']['NumCyclesIndex1']
         args.index_length2 = run_content['SequencingStats']['NumCyclesIndex2']
-    args.samples = sorted(arg_map['Input.sample-ids']['Items'],
+    args.samples = sorted(arg_map['Input.sample-ids.main']['Items'],
                           key=itemgetter('Name'))
     args.project_id = arg_map['Input.project-id']['Content']['Id']
     args.reports = arg_map['Input.reports']['Items']
@@ -334,7 +334,7 @@ def try_sample(sample_index, run_info, args, pssm):
     """
     try:
         process_sample(sample_index, run_info, args, pssm)
-    except:
+    except Exception:
         message = 'Failed to process sample {}.'.format(sample_index+1)
         logger.error(message, exc_info=True)
         raise RuntimeError(message)
@@ -508,8 +508,14 @@ def process_sample(sample_index, run_info, args, pssm):
     logger.info('Running hivdb (%d of %d).', sample_index+1, len(run_info.samples))
     with open(os.path.join(sample_scratch_path, 'amino.csv')) as amino_csv, \
             open(os.path.join(sample_scratch_path, 'resistance.csv'), 'w') as resistance_csv, \
-            open(os.path.join(sample_scratch_path, 'mutations.csv'), 'w') as mutations_csv:
-        hivdb(amino_csv, resistance_csv, mutations_csv, run_info.reports)
+            open(os.path.join(sample_scratch_path, 'mutations.csv'), 'w') as mutations_csv, \
+            open(os.path.join(sample_scratch_path, 'resistance_fail.csv'), 'w') as fail_csv:
+        hivdb(amino_csv,
+              amino_csv,  # TODO: match with MIDI sample
+              resistance_csv,
+              mutations_csv,
+              fail_csv,
+              run_info.reports)
 
     logger.info('Running resistance report (%d of %d).', sample_index+1, len(run_info.samples))
     source_path = os.path.dirname(__file__)
@@ -715,7 +721,7 @@ def main():
         try:
             with open(json_path, 'r') as json_file:
                 run_json = parse_json(json_file)
-        except:
+        except IOError:
             if os.path.exists(json_path):
                 # copy the input file to the output dir for postmortem analysis
                 logger.error("Error occurred while parsing '%s'" % json_path)
@@ -767,6 +773,7 @@ def main():
     if run_json.run_id is not None:
         summarize_samples(args, run_json, run_summary)
     logger.info('Done.')
+
 
 if __name__ == '__main__':
     main()

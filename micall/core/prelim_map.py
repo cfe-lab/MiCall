@@ -76,7 +76,7 @@ def prelim_map(fastq1,
     ref_path = os.path.join(work_path, 'micall.fasta')
     all_excluded_seeds = {project_config.G2P_SEED_NAME}
     if excluded_seeds:
-        all_excluded_seeds |= excluded_seeds
+        all_excluded_seeds.update(excluded_seeds)
     with open(ref_path, 'w') as ref:
         projects.writeSeedFasta(ref, all_excluded_seeds)
     reffile_template = os.path.join(work_path, 'reference')

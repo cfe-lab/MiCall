@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import os
 from subprocess import check_call, CalledProcessError
 
@@ -8,7 +8,8 @@ import errno
 
 def parse_args():
     parser = ArgumentParser(
-        description="Build docker image from local source code or a tag.")
+        description="Build docker image from local source code or a tag.",
+        formatter_class=ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('-a',
                         '--agent_id',

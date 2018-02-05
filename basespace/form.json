@@ -21,15 +21,29 @@
             "helpText": "A run does not have to be provided, however run quality information can only be produced if the selected samples were from the provided run"
         },
         {
-            "$type": "SampleChooser",
-            "size": 300,
-            "valueType": "Input",
-            "allowedPermissions": "read",
-            "label": "Sample",
-            "multiselect": true,
-            "required": true,
-            "id": "sample-ids",
-            "rules": "sample-reader"
+            "$type": "ResourceMatcher",
+        	"required": true,
+        	"id": "sample-ids",
+        	"label": "Sample Pairs",
+        	"buttonText": "Select Pairs",
+        	"maxRows": 100,
+        	"columns": [
+        		{
+        			"id": "main",
+        			"label": "Main Samples",
+        			"resourceType": "Sample",
+        			"rules": null
+        		},
+        		{
+        			"id": "midi",
+        			"label": "NS5b-MIDI Samples",
+        			"resourceType": "Sample",
+        			"rules": null
+        		}
+        	],
+            "allowunpairedcells": true,
+        	"rules": null,
+            "helpText": "MiCall expects Hepatitis C samples to come in two sections: the main section, and the NS5b-MIDI section (amino acids 336 to 560 in NS5b)."
         },
         {
             "$type": "CheckBox",

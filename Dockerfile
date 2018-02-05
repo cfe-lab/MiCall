@@ -10,11 +10,6 @@ RUN apt-get update -qq --fix-missing && apt-get install -qq -y \
   libpython3.4-dev \
   && rm -rf /var/lib/apt/lists/*
 
-## Python packages, plus trigger matplotlib to build its font cache
-RUN pip install python-Levenshtein matplotlib requests reportlab pyyaml cutadapt==1.11 && \
-  ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11 && \
-  python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
-
 ## bowtie2
 RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip && \
   unzip bowtie2.zip -d /opt/ && \
@@ -24,11 +19,14 @@ RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/downl
 ENV PATH $PATH:/opt/bowtie2
 
 ## Gotoh
-COPY micall/alignment /opt/alignment
-WORKDIR /opt/alignment
-RUN python setup.py install
-WORKDIR /
-RUN rm -r /opt/alignment && python -c 'import gotoh'
+COPY micall/alignment /opt/micall/alignment
+COPY requirements.txt requirements-basespace.txt /opt/micall/
+
+## Python packages, plus trigger matplotlib to build its font cache
+WORKDIR /opt
+RUN pip install -r /opt/micall/requirements-basespace.txt && \
+  ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11 && \
+  python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 ## MiCall
 COPY micall_basespace.py version.txt /opt/micall/
