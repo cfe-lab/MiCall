@@ -43,7 +43,7 @@
         	],
             "allowunpairedcells": true,
         	"rules": null,
-            "helpText": "MiCall expects Hepatitis C samples to come in two sections: the main section, and the NS5b-MIDI section (amino acids 336 to 560 in NS5b)."
+            "helpText": "For most samples, just use the main samples column. MiCall expects Hepatitis C samples to come in two sections: the main section, and the NS5b-MIDI section (amino acids 336 to 560 in NS5b)."
         },
         {
             "$type": "CheckBox",
@@ -53,12 +53,17 @@
             "choices": [
                 {
                     "value": "PR_RT",
-                    "label": "PR/RT",
+                    "label": "HIV: PR/RT",
                     "checked": true
                 },
                 {
                     "value": "INT",
-                    "label": "INT",
+                    "label": "HIV: INT",
+                    "checked": true
+                },
+                {
+                    "value": "NS3_NS5a_NS5b",
+                    "label": "HCV: NS3/NS5a/NS5b",
                     "checked": true
                 }
             ]
