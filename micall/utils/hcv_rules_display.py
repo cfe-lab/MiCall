@@ -10,6 +10,8 @@ from operator import itemgetter
 
 import sys
 import yaml
+from collections import defaultdict
+from pyvdrm.hcvr import HCVR, AsiScoreCond, ScoreList, ScoreExpr, BoolTrue
 
 
 def parse_args():
@@ -84,24 +86,65 @@ deciding on a resistance report.
 
 Here are the rules used for each of the drugs.
 
-| Gene | Drug | Genotype | Rules |
-|------|------|----------|-------|
+| Gene | Drug | Genotype | Score | Mutations |
+|------|------|----------|-------|-----------|
 """
     report_file.write(header)
     name_width = max(len(rule['name']) for rule in rules)
+    displays = ('8',
+                '4',
+                'Not available',
+                'Not indicated',
+                'Effect unknown')
     for region, drugs in groupby(rules, itemgetter('region')):
         for drug_num, drug in enumerate(drugs):
             drug_name = drug['name']
             for genotype_num, genotype in enumerate(drug['genotypes']):
-                rule_text = genotype['rules'].replace(' => ', '=>')
-                report_file.write('| {:4} | {:{}} | {:2} | {} |\n'.format(
-                    region,
-                    drug_name,
-                    name_width,
-                    genotype['genotype'],
-                    rule_text))
-                region = ''
-                drug_name = ''
+                rule_text = genotype['rules']
+                genotype_text = genotype['genotype']
+                mutations = parse_rule(rule_text)
+                for display in displays:
+                    display_mutations = mutations[display]
+                    if display_mutations:
+                        report_file.write(
+                            '| {:4} | {:{}} | {:2} | {} | {} |\n'.format(
+                                region,
+                                drug_name,
+                                name_width,
+                                genotype_text,
+                                display,
+                                ', '.join(display_mutations)))
+                        region = ''
+                        drug_name = ''
+                        genotype_text = ''
+
+
+def parse_rule(rule_text):
+    rule = HCVR(rule_text)
+    assert isinstance(rule.dtree, AsiScoreCond), repr(rule.dtree)
+    score_list = rule.dtree.children[0]
+    assert isinstance(score_list, ScoreList), repr(score_list)
+    mutations = defaultdict(list)
+    for score_expr in score_list.children:
+        assert isinstance(score_expr, ScoreExpr)
+        children = score_expr.children
+        if len(children) == 4:
+            # Flag
+            mutation, _, flag, _ = children
+            display = flag
+        elif len(children) == 2:
+            # Numeric score
+            mutation, score = children
+            display = score
+        else:
+            raise ValueError('Unexpected score expression: {!r}'.format(
+                children))
+        if isinstance(mutation, BoolTrue):
+            mutation = 'TRUE'
+        else:
+            mutation = str(mutation.mutations)
+        mutations[display].append(mutation)
+    return mutations
 
 
 def main():
