@@ -108,7 +108,7 @@
   disclaimer_text: >
     Mutations in NS3, NS5A and NS5B were detected by deep sequencing of HCV.
     The mutations considered and the interpretation algorithm can be found at
-    http://cfe-lab.github.io/MiCall . Mutations relative to genotype-specific
+    http://cfe-lab.github.io/MiCall/hcv_rules . Mutations relative to genotype-specific
     reference sequences detected above a prevalence of 5% of the total coverage
     are reported here. This resistance scoring algorithm is still in
     development and should be regarded as investigational; it is currently

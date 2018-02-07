@@ -491,7 +491,7 @@
   - genotype: 6E
     reference: HCV6-EUHK2-NS5b
     region: NS5b
-    rules: SCORE FROM ( TRUE => "Not indicated" )
+    rules: SCORE FROM ( TRUE => "Not available" )
   name: SOF-HAR
 - code: SPV
   genotypes:
