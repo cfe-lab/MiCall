@@ -2,7 +2,6 @@ import csv
 import os
 import shutil
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
-from collections import namedtuple
 from csv import DictReader, DictWriter
 from glob import glob
 from itertools import groupby
@@ -10,12 +9,9 @@ from operator import itemgetter
 
 from datetime import datetime
 
-from micall.hivdb.genreport import gen_report
-from micall.hivdb.hivdb import hivdb
+from micall.resistance.genreport import gen_report
+from micall.resistance.resistance import find_groups, report_resistance
 from micall.settings import NEEDS_PROCESSING, pipeline_version, DONE_PROCESSING
-from micall.utils.sample_sheet_parser import sample_sheet_parser
-
-SampleGroup = namedtuple('SampleGroup', 'enum names')
 
 
 def parse_args():
@@ -54,34 +50,6 @@ def parse_args():
     return args
 
 
-def find_groups(working_paths, source_path):
-    sample_sheet_path = os.path.join(source_path, '../../SampleSheet.csv')
-    with open(sample_sheet_path) as sample_sheet_file:
-        run_info = sample_sheet_parser(sample_sheet_file)
-
-    midi_files = {row['sample']: row['filename']
-                  for row in run_info['DataSplit']
-                  if row['project'] == 'MidHCV'}
-    wide_names = {row['filename']: row['sample']
-                  for row in run_info['DataSplit']
-                  if row['project'] == 'HCV'}
-    for path in working_paths:
-        wide_file = os.path.basename(path)
-        sample_name = wide_names.get(wide_file)
-        if sample_name is None:
-            # Not an HCV sample.
-            continue
-        if not os.path.exists(path):
-            # No results
-            continue
-        midi_file = midi_files.get(sample_name + 'MIDI')
-        if midi_file and not os.path.exists(os.path.join(os.path.dirname(path),
-                                                         midi_file)):
-            # No MIDI results
-            midi_file = None
-        yield SampleGroup(sample_name, (wide_file, midi_file))
-
-
 def rewrite_file(filename):
     backup_csv = filename + '.original.csv'
     os.rename(filename, backup_csv)
@@ -104,8 +72,12 @@ def genreport_rerun(source, working):
     os.makedirs(publish_path)
     print('##', run_name)
     working_paths = split_files(source, working)
-    sorted_working_paths = sorted(working_paths)
-    groups = list(find_groups(sorted_working_paths, source))
+    file_names = (os.path.basename(working_path) for working_path in working_paths)
+    sorted_file_names = sorted(file_names)
+    sample_sheet_path = os.path.join(source, '../../SampleSheet.csv')
+    groups = list(find_groups(sorted_file_names,
+                              sample_sheet_path,
+                              included_projects={'HCV'}))
     for group in groups:
         working_path = os.path.join(working, group.names[0])
         if group.names[1] is None:
@@ -116,17 +88,20 @@ def genreport_rerun(source, working):
             midi_path = os.path.join(
                 working,
                 group.names[1])
+            if not os.path.isdir(midi_path):
+                midi_name = 'failed MidHCV'
+                midi_path = working_path
         print(working_path, midi_name)
         with open(os.path.join(working_path, 'amino.csv')) as amino_csv, \
                 open(os.path.join(midi_path, 'amino.csv')) as midi_amino_csv, \
                 open(os.path.join(working_path, 'resistance.csv'), 'w') as resistance_csv, \
                 open(os.path.join(working_path, 'mutations.csv'), 'w') as mutations_csv, \
                 open(os.path.join(working_path, 'resistance_fail.csv'), 'w') as resistance_fail_csv:
-            hivdb(amino_csv,
-                  midi_amino_csv,
-                  resistance_csv,
-                  mutations_csv,
-                  resistance_fail_csv)
+            report_resistance(amino_csv,
+                              midi_amino_csv,
+                              resistance_csv,
+                              mutations_csv,
+                              resistance_fail_csv)
         sample_name = os.path.basename(working_path)
         with open(os.path.join(working_path, 'resistance.csv')) as resistance_csv, \
                 open(os.path.join(working_path, 'mutations.csv')) as mutations_csv, \
@@ -162,10 +137,6 @@ def split_files(source, working):
         for sample, rows in groupby(reader, itemgetter('sample')):
             working_path = os.path.join(working, sample)
             working_paths.add(working_path)
-            if __name__ == '__live_coding__':
-                if len(working_paths) > 20:
-                    break
-                continue
             os.makedirs(working_path, exist_ok=True)
             target_path = os.path.join(working_path, file_name)
             with open(target_path, 'w') as target_csv:

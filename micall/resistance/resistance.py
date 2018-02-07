@@ -11,6 +11,7 @@ from pyvdrm.vcf import Mutation
 
 from micall.resistance.asi_algorithm import AsiAlgorithm, ResistanceLevels
 from micall.core.aln2counts import AMINO_ALPHABET
+from micall.utils.sample_sheet_parser import sample_sheet_parser
 
 MIN_FRACTION = 0.05  # prevalence of mutations to report
 MIN_COVERAGE = 100
@@ -19,6 +20,8 @@ HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.3.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
 
 AminoList = namedtuple('AminoList', 'region aminos genotype')
+
+SampleGroup = namedtuple('SampleGroup', 'enum names')
 
 
 class LowCoverageError(Exception):
@@ -299,6 +302,8 @@ def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
             asi = algorithms.get(genotype)
             if asi is None:
                 continue
+            if region == 'INT':
+                region = 'IN'
             result = interpret(asi, amino_seq, region)
             region_results.append((region, amino_seq, result))
         if all(drug_result.level == ResistanceLevels.FAIL.level
@@ -398,6 +403,28 @@ def load_asi():
                                             genotype=genotype)
 
     return algorithms
+
+
+def find_groups(file_names, sample_sheet_path, included_projects=None):
+    with open(sample_sheet_path) as sample_sheet_file:
+        run_info = sample_sheet_parser(sample_sheet_file)
+
+    midi_files = {row['sample']: row['filename']
+                  for row in run_info['DataSplit']
+                  if row['project'] == 'MidHCV'}
+    wide_names = {row['filename']: row['sample']
+                  for row in run_info['DataSplit']
+                  if (row['project'] != 'MidHCV' and
+                      (included_projects is None or
+                       row['project'] in included_projects))}
+    for file_name in file_names:
+        trimmed_file_name = '_'.join(file_name.split('_')[:2])
+        sample_name = wide_names.get(trimmed_file_name)
+        if sample_name is None:
+            # Project was not included.
+            continue
+        midi_file = midi_files.get(sample_name + 'MIDI')
+        yield SampleGroup(sample_name, (file_name, midi_file))
 
 
 def report_resistance(amino_csv,

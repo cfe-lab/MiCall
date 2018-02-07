@@ -25,7 +25,7 @@ from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from micall.core.sam2aln import sam2aln
 from micall.resistance.genreport import gen_report
-from micall.resistance.resistance import report_resistance
+from micall.resistance.resistance import report_resistance, find_groups
 from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.g2p.pssm_lib import Pssm
@@ -211,8 +211,8 @@ def parse_json(json_file):
         args.read_length2 = run_content['SequencingStats']['NumCyclesRead2']
         args.index_length1 = run_content['SequencingStats']['NumCyclesIndex1']
         args.index_length2 = run_content['SequencingStats']['NumCyclesIndex2']
-    args.samples = sorted(arg_map['Input.sample-ids.main']['Items'],
-                          key=itemgetter('Name'))
+    args.main_samples = arg_map['Input.sample-ids.main']['Items']
+    args.midi_samples = arg_map['Input.sample-ids.midi']['Items']
     args.project_id = arg_map['Input.project-id']['Content']['Id']
     args.reports = arg_map['Input.reports']['Items']
 
@@ -256,7 +256,8 @@ def link_json(run_path, data_path):
         else:
             args.index_length2 = int(index2.attrib['NumCycles'])
 
-    args.samples = []
+    args.main_samples = []
+    args.midi_samples = []
     samples_path = os.path.join(data_path, 'input', 'samples')
     fastq_files = (glob(os.path.join(run_path,
                                      'Data',
@@ -266,21 +267,52 @@ def link_json(run_path, data_path):
                    glob(os.path.join(run_path,
                                      '*_R1_*')))
     fastq_files.sort()
-    for i, fastq_file in enumerate(fastq_files, 1):
-        sample_file = os.path.basename(fastq_file)
+    source_folder = fastq_files and os.path.dirname(fastq_files[0])
+    file_names = (os.path.basename(fastq_file) for fastq_file in fastq_files)
+    groups = find_groups(file_names,
+                         os.path.join(run_path, 'SampleSheet.csv'))
+    sample_count = 0
+    for group in groups:
+        sample_file = group.names[0]
         if not sample_file.startswith('Undetermined'):
-            sample_id = str(i)
-            sample_path = os.path.join(samples_path, sample_id)
-            makedirs(sample_path)
-            os.symlink(fastq_file, os.path.join(sample_path, sample_file))
-            fastq_file = fastq_file.replace('_R1_', '_R2_')
-            sample_file = os.path.basename(fastq_file)
-            os.symlink(fastq_file, os.path.join(sample_path, sample_file))
-            sample_name = '_'.join(sample_file.split('_')[:2])
-            args.samples.append(dict(Id=sample_id,
-                                     Href="v1pre3/samples/" + sample_id,
-                                     Name=sample_name))
+            sample_count += 1
+            sample_id = str(sample_count)
+            sample_entry = link_sample(source_folder,
+                                       sample_file,
+                                       samples_path,
+                                       sample_id)
+            args.main_samples.append(sample_entry)
+            if group.names[1] is None:
+                args.midi_samples.append(None)
+            else:
+                sample_count += 1
+                midi_pattern = os.path.join(source_folder,
+                                            group.names[1] + '*_R1_*')
+                matches = glob(midi_pattern)
+                assert len(matches) == 1, (midi_pattern, len(matches))
+                sample_file = os.path.basename(matches[0])
+                sample_id = str(sample_count)
+                sample_entry = link_sample(source_folder,
+                                           sample_file,
+                                           samples_path,
+                                           sample_id)
+                args.midi_samples.append(sample_entry)
+
     return args
+
+
+def link_sample(source_folder, sample_file, target_folder, sample_id):
+    fastq_file = os.path.join(source_folder, sample_file)
+    sample_path = os.path.join(target_folder, sample_id)
+    makedirs(sample_path)
+    os.symlink(fastq_file, os.path.join(sample_path, sample_file))
+    fastq_file = fastq_file.replace('_R1_', '_R2_')
+    sample_file = os.path.basename(fastq_file)
+    os.symlink(fastq_file, os.path.join(sample_path, sample_file))
+    sample_name = '_'.join(sample_file.split('_')[:2])
+    return dict(Id=sample_id,
+                Href="v1pre3/samples/" + sample_id,
+                Name=sample_name)
 
 
 def build_app_result_path(data_path,
@@ -326,20 +358,6 @@ def create_app_result(data_path,
     return sample_out_path
 
 
-def try_sample(sample_index, run_info, args, pssm):
-    """ Try processing a single sample.
-
-    Tracebacks and some errors can't be pickled across process boundaries, so
-    log detailed error before raising a RuntimeError.
-    """
-    try:
-        process_sample(sample_index, run_info, args, pssm)
-    except Exception:
-        message = 'Failed to process sample {}.'.format(sample_index+1)
-        logger.error(message, exc_info=True)
-        raise RuntimeError(message)
-
-
 def process_sample(sample_index, run_info, args, pssm):
     """ Process a single sample.
 
@@ -348,209 +366,236 @@ def process_sample(sample_index, run_info, args, pssm):
     :param args: the command-line arguments
     :param pssm: the pssm library for running G2P analysis
     """
-    scratch_path = os.path.join(args.data_path, 'scratch')
-    sample_info = run_info.samples[sample_index]
-    sample_id = sample_info['Id']
-    sample_name = sample_info['Name']
-    sample_dir = os.path.join(args.data_path,
-                              'input',
-                              'samples',
-                              sample_id,
-                              'Data',
-                              'Intensities',
-                              'BaseCalls')
-    if not os.path.exists(sample_dir):
+    try:
+        scratch_path = os.path.join(args.data_path, 'scratch')
+        sample_info = run_info.samples[sample_index]
+        sample_id = sample_info['Id']
+        sample_name = sample_info['Name']
         sample_dir = os.path.join(args.data_path,
                                   'input',
                                   'samples',
-                                  sample_id)
-    sample_path = None
-    for root, _dirs, files in os.walk(sample_dir):
-        sample_paths = fnmatch.filter(files, '*_R1_*')
-        if sample_paths:
-            sample_path = os.path.join(root, sample_paths[0])
-            break
-    if sample_path is None:
-        raise RuntimeError('No R1 file found for sample id {}.'.format(sample_id))
-    sample_path2 = sample_path.replace('_R1_', '_R2_')
-    if not os.path.exists(sample_path2):
-        raise RuntimeError('R2 file missing for sample id {}: {!r}.'.format(
-            sample_id,
-            sample_path2))
-    logger.info('Processing sample %s (%d of %d): %s (%s).',
+                                  sample_id,
+                                  'Data',
+                                  'Intensities',
+                                  'BaseCalls')
+        if not os.path.exists(sample_dir):
+            sample_dir = os.path.join(args.data_path,
+                                      'input',
+                                      'samples',
+                                      sample_id)
+        sample_path = None
+        for root, _dirs, files in os.walk(sample_dir):
+            sample_paths = fnmatch.filter(files, '*_R1_*')
+            if sample_paths:
+                sample_path = os.path.join(root, sample_paths[0])
+                break
+        if sample_path is None:
+            raise RuntimeError('No R1 file found for sample id {}.'.format(sample_id))
+        sample_path2 = sample_path.replace('_R1_', '_R2_')
+        if not os.path.exists(sample_path2):
+            raise RuntimeError('R2 file missing for sample id {}: {!r}.'.format(
                 sample_id,
-                sample_index+1,
-                len(run_info.samples),
-                sample_name,
-                sample_path)
+                sample_path2))
+        logger.info('Processing sample %s (%d of %d): %s (%s).',
+                    sample_id,
+                    sample_index+1,
+                    len(run_info.samples),
+                    sample_name,
+                    sample_path)
 
-    sample_qc_path = os.path.join(args.qc_path, sample_name)
-    makedirs(sample_qc_path)
-    sample_scratch_path = os.path.join(scratch_path, sample_name)
-    makedirs(sample_scratch_path)
+        sample_qc_path = os.path.join(args.qc_path, sample_name)
+        makedirs(sample_qc_path)
+        sample_scratch_path = os.path.join(scratch_path, sample_name)
+        makedirs(sample_scratch_path)
 
-    bad_cycles_path = os.path.join(scratch_path, 'bad_cycles.csv')
-    trimmed_path1 = os.path.join(sample_scratch_path, 'trimmed1.fastq')
-    read_summary_path = os.path.join(sample_scratch_path, 'read_summary.csv')
-    trimmed_path2 = os.path.join(sample_scratch_path, 'trimmed2.fastq')
-    with open(read_summary_path, 'w') as read_summary:
-        trim((sample_path, sample_path2),
-             bad_cycles_path,
-             (trimmed_path1, trimmed_path2),
-             summary_file=read_summary,
-             use_gzip=sample_path.endswith('.gz'))
+        bad_cycles_path = os.path.join(scratch_path, 'bad_cycles.csv')
+        trimmed_path1 = os.path.join(sample_scratch_path, 'trimmed1.fastq')
+        read_summary_path = os.path.join(sample_scratch_path, 'read_summary.csv')
+        trimmed_path2 = os.path.join(sample_scratch_path, 'trimmed2.fastq')
+        with open(read_summary_path, 'w') as read_summary:
+            trim((sample_path, sample_path2),
+                 bad_cycles_path,
+                 (trimmed_path1, trimmed_path2),
+                 summary_file=read_summary,
+                 use_gzip=sample_path.endswith('.gz'))
 
-    logger.info('Running fastq_g2p (%d of %d).', sample_index+1, len(run_info.samples))
-    g2p_unmapped1_path = os.path.join(sample_scratch_path, 'g2p_unmapped1.fastq')
-    g2p_unmapped2_path = os.path.join(sample_scratch_path, 'g2p_unmapped2.fastq')
-    with open(os.path.join(sample_scratch_path, 'trimmed1.fastq'), 'r') as fastq1, \
-            open(os.path.join(sample_scratch_path, 'trimmed2.fastq'), 'r') as fastq2, \
-            open(os.path.join(sample_scratch_path, 'g2p.csv'), 'w') as g2p_csv, \
-            open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'w') as g2p_summary_csv, \
-            open(g2p_unmapped1_path, 'w') as g2p_unmapped1, \
-            open(g2p_unmapped2_path, 'w') as g2p_unmapped2, \
-            open(os.path.join(sample_scratch_path, 'g2p_aligned.csv'), 'w') as g2p_aligned_csv:
+        logger.info('Running fastq_g2p (%d of %d).', sample_index+1, len(run_info.samples))
+        g2p_unmapped1_path = os.path.join(sample_scratch_path, 'g2p_unmapped1.fastq')
+        g2p_unmapped2_path = os.path.join(sample_scratch_path, 'g2p_unmapped2.fastq')
+        with open(os.path.join(sample_scratch_path, 'trimmed1.fastq'), 'r') as fastq1, \
+                open(os.path.join(sample_scratch_path, 'trimmed2.fastq'), 'r') as fastq2, \
+                open(os.path.join(sample_scratch_path, 'g2p.csv'), 'w') as g2p_csv, \
+                open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'w') as g2p_summary_csv, \
+                open(g2p_unmapped1_path, 'w') as g2p_unmapped1, \
+                open(g2p_unmapped2_path, 'w') as g2p_unmapped2, \
+                open(os.path.join(sample_scratch_path, 'g2p_aligned.csv'), 'w') as g2p_aligned_csv:
 
-        fastq_g2p(pssm=pssm,
-                  fastq1=fastq1,
-                  fastq2=fastq2,
-                  g2p_csv=g2p_csv,
-                  g2p_summary_csv=g2p_summary_csv,
-                  unmapped1=g2p_unmapped1,
-                  unmapped2=g2p_unmapped2,
-                  aligned_csv=g2p_aligned_csv,
-                  min_count=DEFAULT_MIN_COUNT,
-                  min_valid=MIN_VALID,
-                  min_valid_percent=MIN_VALID_PERCENT)
+            fastq_g2p(pssm=pssm,
+                      fastq1=fastq1,
+                      fastq2=fastq2,
+                      g2p_csv=g2p_csv,
+                      g2p_summary_csv=g2p_summary_csv,
+                      unmapped1=g2p_unmapped1,
+                      unmapped2=g2p_unmapped2,
+                      aligned_csv=g2p_aligned_csv,
+                      min_count=DEFAULT_MIN_COUNT,
+                      min_valid=MIN_VALID,
+                      min_valid_percent=MIN_VALID_PERCENT)
 
-    logger.info('Running prelim_map (%d of %d).', sample_index+1, len(run_info.samples))
-    excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
-    with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'w') as prelim_csv:
-        prelim_map(g2p_unmapped1_path,
-                   g2p_unmapped2_path,
-                   prelim_csv,
-                   work_path=sample_scratch_path,
-                   excluded_seeds=excluded_seeds)
+        logger.info('Running prelim_map (%d of %d).', sample_index+1, len(run_info.samples))
+        excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
+        with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'w') as prelim_csv:
+            prelim_map(g2p_unmapped1_path,
+                       g2p_unmapped2_path,
+                       prelim_csv,
+                       work_path=sample_scratch_path,
+                       excluded_seeds=excluded_seeds)
 
-    logger.info('Running remap (%d of %d).', sample_index+1, len(run_info.samples))
-    if args.debug_remap:
-        debug_file_prefix = os.path.join(sample_scratch_path, 'debug')
-    else:
-        debug_file_prefix = None
-    with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'r') as prelim_csv, \
-            open(os.path.join(sample_scratch_path, 'remap.csv'), 'w') as remap_csv, \
-            open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'w') as counts_csv, \
-            open(os.path.join(sample_scratch_path, 'remap_conseq.csv'), 'w') as conseq_csv, \
-            open(os.path.join(sample_qc_path, 'unmapped1.fastq'), 'w') as unmapped1, \
-            open(os.path.join(sample_qc_path, 'unmapped2.fastq'), 'w') as unmapped2:
+        logger.info('Running remap (%d of %d).', sample_index+1, len(run_info.samples))
+        if args.debug_remap:
+            debug_file_prefix = os.path.join(sample_scratch_path, 'debug')
+        else:
+            debug_file_prefix = None
+        with open(os.path.join(sample_scratch_path, 'prelim.csv'), 'r') as prelim_csv, \
+                open(os.path.join(sample_scratch_path, 'remap.csv'), 'w') as remap_csv, \
+                open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'w') as counts_csv, \
+                open(os.path.join(sample_scratch_path, 'remap_conseq.csv'), 'w') as conseq_csv, \
+                open(os.path.join(sample_qc_path, 'unmapped1.fastq'), 'w') as unmapped1, \
+                open(os.path.join(sample_qc_path, 'unmapped2.fastq'), 'w') as unmapped2:
 
-        remap(g2p_unmapped1_path,
-              g2p_unmapped2_path,
-              prelim_csv,
-              remap_csv,
-              counts_csv,
-              conseq_csv,
-              unmapped1,
-              unmapped2,
-              sample_scratch_path,
-              debug_file_prefix=debug_file_prefix)
+            remap(g2p_unmapped1_path,
+                  g2p_unmapped2_path,
+                  prelim_csv,
+                  remap_csv,
+                  counts_csv,
+                  conseq_csv,
+                  unmapped1,
+                  unmapped2,
+                  sample_scratch_path,
+                  debug_file_prefix=debug_file_prefix)
 
-    logger.info('Running sam2aln (%d of %d).', sample_index+1, len(run_info.samples))
-    with open(os.path.join(sample_scratch_path, 'remap.csv'), 'r') as remap_csv, \
-            open(os.path.join(sample_scratch_path, 'aligned.csv'), 'w') as aligned_csv, \
-            open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'w') as conseq_ins_csv, \
-            open(os.path.join(sample_scratch_path, 'failed_read.csv'), 'w') as failed_csv, \
-            open(os.path.join(sample_scratch_path, 'clipping.csv'), 'w') as clipping_csv:
+        logger.info('Running sam2aln (%d of %d).', sample_index+1, len(run_info.samples))
+        with open(os.path.join(sample_scratch_path, 'remap.csv'), 'r') as remap_csv, \
+                open(os.path.join(sample_scratch_path, 'aligned.csv'), 'w') as aligned_csv, \
+                open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'w') as conseq_ins_csv, \
+                open(os.path.join(sample_scratch_path, 'failed_read.csv'), 'w') as failed_csv, \
+                open(os.path.join(sample_scratch_path, 'clipping.csv'), 'w') as clipping_csv:
 
-        sam2aln(remap_csv,
-                aligned_csv,
-                conseq_ins_csv,
-                failed_csv,
-                clipping_csv=clipping_csv)
+            sam2aln(remap_csv,
+                    aligned_csv,
+                    conseq_ins_csv,
+                    failed_csv,
+                    clipping_csv=clipping_csv)
 
-    logger.info('Running aln2counts (%d of %d).', sample_index+1, len(run_info.samples))
-    with open(os.path.join(sample_scratch_path, 'aligned.csv'), 'r') as aligned_csv, \
-            open(os.path.join(sample_scratch_path, 'g2p_aligned.csv'), 'r') as g2p_aligned_csv, \
-            open(os.path.join(sample_scratch_path, 'clipping.csv'), 'r') as clipping_csv, \
-            open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'r') as conseq_ins_csv, \
-            open(os.path.join(sample_scratch_path, 'remap_conseq.csv'), 'r') as remap_conseq_csv, \
-            open(os.path.join(sample_scratch_path, 'nuc.csv'), 'w') as nuc_csv, \
-            open(os.path.join(sample_scratch_path, 'amino.csv'), 'w') as amino_csv, \
-            open(os.path.join(sample_scratch_path, 'coord_ins.csv'), 'w') as coord_ins_csv, \
-            open(os.path.join(sample_scratch_path, 'conseq.csv'), 'w') as conseq_csv, \
-            open(os.path.join(sample_scratch_path, 'failed_align.csv'), 'w') as failed_align_csv, \
-            open(os.path.join(sample_scratch_path, 'coverage_summary.csv'), 'w') as coverage_summary_csv:
+        logger.info('Running aln2counts (%d of %d).', sample_index+1, len(run_info.samples))
+        with open(os.path.join(sample_scratch_path, 'aligned.csv'), 'r') as aligned_csv, \
+                open(os.path.join(sample_scratch_path, 'g2p_aligned.csv'), 'r') as g2p_aligned_csv, \
+                open(os.path.join(sample_scratch_path, 'clipping.csv'), 'r') as clipping_csv, \
+                open(os.path.join(sample_scratch_path, 'conseq_ins.csv'), 'r') as conseq_ins_csv, \
+                open(os.path.join(sample_scratch_path, 'remap_conseq.csv'), 'r') as remap_conseq_csv, \
+                open(os.path.join(sample_scratch_path, 'nuc.csv'), 'w') as nuc_csv, \
+                open(os.path.join(sample_scratch_path, 'amino.csv'), 'w') as amino_csv, \
+                open(os.path.join(sample_scratch_path, 'coord_ins.csv'), 'w') as coord_ins_csv, \
+                open(os.path.join(sample_scratch_path, 'conseq.csv'), 'w') as conseq_csv, \
+                open(os.path.join(sample_scratch_path, 'failed_align.csv'), 'w') as failed_align_csv, \
+                open(os.path.join(sample_scratch_path, 'coverage_summary.csv'), 'w') as coverage_summary_csv:
 
-        aln2counts(aligned_csv,
-                   nuc_csv,
-                   amino_csv,
-                   coord_ins_csv,
-                   conseq_csv,
-                   failed_align_csv,
-                   coverage_summary_csv=coverage_summary_csv,
-                   clipping_csv=clipping_csv,
-                   conseq_ins_csv=conseq_ins_csv,
-                   g2p_aligned_csv=g2p_aligned_csv,
-                   remap_conseq_csv=remap_conseq_csv)
+            aln2counts(aligned_csv,
+                       nuc_csv,
+                       amino_csv,
+                       coord_ins_csv,
+                       conseq_csv,
+                       failed_align_csv,
+                       coverage_summary_csv=coverage_summary_csv,
+                       clipping_csv=clipping_csv,
+                       conseq_ins_csv=conseq_ins_csv,
+                       g2p_aligned_csv=g2p_aligned_csv,
+                       remap_conseq_csv=remap_conseq_csv)
 
-    logger.info('Running coverage_plots (%d of %d).', sample_index+1, len(run_info.samples))
-    coverage_maps_path = os.path.join(args.qc_path, 'coverage_maps')
-    makedirs(coverage_maps_path)
-    excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
-    with open(os.path.join(sample_scratch_path, 'amino.csv'), 'r') as amino_csv, \
-            open(os.path.join(sample_scratch_path, 'coverage_scores.csv'), 'w') as coverage_scores_csv:
-        coverage_plot(amino_csv,
-                      coverage_scores_csv,
-                      coverage_maps_path=coverage_maps_path,
-                      coverage_maps_prefix=sample_name,
-                      excluded_projects=excluded_projects)
+        logger.info('Running coverage_plots (%d of %d).', sample_index+1, len(run_info.samples))
+        coverage_maps_path = os.path.join(args.qc_path, 'coverage_maps')
+        makedirs(coverage_maps_path)
+        excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
+        with open(os.path.join(sample_scratch_path, 'amino.csv'), 'r') as amino_csv, \
+                open(os.path.join(sample_scratch_path, 'coverage_scores.csv'), 'w') as coverage_scores_csv:
+            coverage_plot(amino_csv,
+                          coverage_scores_csv,
+                          coverage_maps_path=coverage_maps_path,
+                          coverage_maps_prefix=sample_name,
+                          excluded_projects=excluded_projects)
 
-    logger.info('Running resistance (%d of %d).', sample_index+1, len(run_info.samples))
-    with open(os.path.join(sample_scratch_path, 'amino.csv')) as amino_csv, \
-            open(os.path.join(sample_scratch_path, 'resistance.csv'), 'w') as resistance_csv, \
-            open(os.path.join(sample_scratch_path, 'mutations.csv'), 'w') as mutations_csv, \
-            open(os.path.join(sample_scratch_path, 'resistance_fail.csv'), 'w') as fail_csv:
-        report_resistance(amino_csv,
-                          amino_csv,  # TODO: match with MIDI sample
-                          resistance_csv,
-                          mutations_csv,
-                          fail_csv,
-                          run_info.reports)
+        logger.info('Running cascade_report (%d of %d).', sample_index+1, len(run_info.samples))
+        with open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'r') as g2p_summary_csv, \
+                open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'r') as remap_counts_csv, \
+                open(os.path.join(sample_scratch_path, 'aligned.csv'), 'r') as aligned_csv, \
+                open(os.path.join(sample_scratch_path, 'cascade.csv'), 'w') as cascade_csv:
+            cascade_report = CascadeReport(cascade_csv)
+            cascade_report.g2p_summary_csv = g2p_summary_csv
+            cascade_report.remap_counts_csv = remap_counts_csv
+            cascade_report.aligned_csv = aligned_csv
+            cascade_report.generate()
+        logger.info('Finished sample (%d of %d).', sample_index+1, len(run_info.samples))
+    except Exception:
+        message = 'Failed to process sample {}.'.format(sample_index + 1)
+        logger.error(message, exc_info=True)
+        raise RuntimeError(message)
 
-    logger.info('Running resistance report (%d of %d).', sample_index+1, len(run_info.samples))
-    source_path = os.path.dirname(__file__)
-    version_filename = os.path.join(source_path, 'version.txt')
-    if not os.path.exists(version_filename):
-        git_version = 'v0-dev'
-    else:
-        with open(version_filename) as version_file:
-            git_version = version_file.read().strip()
-    reports_path = os.path.join(args.qc_path, 'resistance_reports')
-    makedirs(reports_path)
-    report_filename = os.path.join(reports_path,
-                                   sample_name + '_resistance.pdf')
-    with open(os.path.join(sample_scratch_path, 'resistance.csv')) as resistance_csv, \
-            open(os.path.join(sample_scratch_path, 'mutations.csv')) as mutations_csv, \
-            open(report_filename, 'wb') as report_pdf:
-        gen_report(resistance_csv,
-                   mutations_csv,
-                   report_pdf,
-                   sample_name,
-                   git_version=git_version)
-    if not os.stat(report_filename).st_size:
-        os.remove(report_filename)
 
-    logger.info('Running cascade_report (%d of %d).', sample_index+1, len(run_info.samples))
-    with open(os.path.join(sample_scratch_path, 'g2p_summary.csv'), 'r') as g2p_summary_csv, \
-            open(os.path.join(sample_scratch_path, 'remap_counts.csv'), 'r') as remap_counts_csv, \
-            open(os.path.join(sample_scratch_path, 'aligned.csv'), 'r') as aligned_csv, \
-            open(os.path.join(sample_scratch_path, 'cascade.csv'), 'w') as cascade_csv:
-        cascade_report = CascadeReport(cascade_csv)
-        cascade_report.g2p_summary_csv = g2p_summary_csv
-        cascade_report.remap_counts_csv = remap_counts_csv
-        cascade_report.aligned_csv = aligned_csv
-        cascade_report.generate()
-    logger.info('Finished sample (%d of %d).', sample_index+1, len(run_info.samples))
+def process_resistance(sample_index, run_info, args):
+    try:
+        scratch_path = os.path.join(args.data_path, 'scratch')
+        sample_info = run_info.main_samples[sample_index]
+        sample_name = sample_info['Name']
+        sample_scratch_path = os.path.join(scratch_path, sample_name)
+        midi_info = run_info.midi_samples[sample_index]
+        if midi_info is None:
+            midi_scratch_path = sample_scratch_path
+        else:
+            midi_sample_name = midi_info['Name']
+            midi_scratch_path = os.path.join(scratch_path, midi_sample_name)
+        logger.info('Running resistance (%d of %d).', sample_index + 1, len(run_info.main_samples))
+        with open(os.path.join(sample_scratch_path, 'amino.csv')) as amino_csv, \
+                open(os.path.join(midi_scratch_path, 'amino.csv')) as midi_amino_csv, \
+                open(os.path.join(sample_scratch_path, 'resistance.csv'), 'w') as resistance_csv, \
+                open(os.path.join(sample_scratch_path, 'mutations.csv'), 'w') as mutations_csv, \
+                open(os.path.join(sample_scratch_path, 'resistance_fail.csv'), 'w') as fail_csv:
+            report_resistance(amino_csv,
+                              midi_amino_csv,
+                              resistance_csv,
+                              mutations_csv,
+                              fail_csv,
+                              run_info.reports)
+
+        logger.info('Running resistance report (%d of %d).', sample_index + 1, len(run_info.main_samples))
+        source_path = os.path.dirname(__file__)
+        version_filename = os.path.join(source_path, 'version.txt')
+        if not os.path.exists(version_filename):
+            git_version = 'v0-dev'
+        else:
+            with open(version_filename) as version_file:
+                git_version = version_file.read().strip()
+        reports_path = os.path.join(args.qc_path, 'resistance_reports')
+        makedirs(reports_path)
+        report_filename = os.path.join(reports_path,
+                                       sample_name + '_resistance.pdf')
+        with open(os.path.join(sample_scratch_path, 'resistance.csv')) as resistance_csv, \
+                open(os.path.join(sample_scratch_path, 'mutations.csv')) as mutations_csv, \
+                open(report_filename, 'wb') as report_pdf:
+            gen_report(resistance_csv,
+                       mutations_csv,
+                       report_pdf,
+                       sample_name,
+                       git_version=git_version)
+        if not os.stat(report_filename).st_size:
+            os.remove(report_filename)
+        logger.info('Finished resistance of sample (%d of %d).',
+                    sample_index + 1,
+                    len(run_info.main_samples))
+    except Exception:
+        message = 'Failed to process resistance of sample {}.'.format(
+            sample_index + 1)
+        logger.error(message, exc_info=True)
+        raise RuntimeError(message)
 
 
 def summarize_run(args, run_json):
@@ -752,8 +797,11 @@ def main():
             shutil.rmtree(filepath)
         else:
             os.remove(filepath)
+    run_json.samples = (run_json.main_samples +
+                        list(filter(None, run_json.midi_samples)))
     args.g2p_path = args.qc_path = create_app_result(args.data_path,
-                                                     run_json, suffix='results')
+                                                     run_json,
+                                                     suffix='results')
     if run_json.run_id is None:
         run_summary = None
     else:
@@ -761,11 +809,19 @@ def main():
         run_summary = summarize_run(args, run_json)
 
     pool = Pool()
-    pool.map(functools.partial(try_sample,
+    pool.map(functools.partial(process_sample,
                                run_info=run_json,
                                args=args,
                                pssm=pssm),
              range(len(run_json.samples)))
+
+    pool.close()
+    pool.join()
+    pool = Pool()
+    pool.map(functools.partial(process_resistance,
+                               run_info=run_json,
+                               args=args),
+             range(len(run_json.main_samples)))
 
     pool.close()
     pool.join()

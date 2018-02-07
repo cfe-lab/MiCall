@@ -14,6 +14,7 @@
 *.so
 *.fai
 *~
+/*.bsfs.json
 .cache
 .coverage
 /.idea
