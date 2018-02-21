@@ -43,6 +43,7 @@ from pyvdrm.vcf import VariantCalls
 
 from micall.core.project_config import ProjectConfig
 
+LEVEL_NAME_CHANGES = {'Potential Low-Level Resistance': 'Susceptible'}
 ResistanceLevel = namedtuple('ResistanceLevel', 'level name')
 
 
@@ -111,7 +112,9 @@ class AsiAlgorithm:
         for node in defs.getElementsByTagName('LEVEL_DEFINITION'):
             a = node.getElementsByTagName('ORDER')[0].childNodes[0].nodeValue
             b = node.getElementsByTagName('ORIGINAL')[0].childNodes[0].nodeValue
-            self.level_def[a.strip()] = b.strip()
+            b = b.strip()
+            b = LEVEL_NAME_CHANGES.get(b, b)
+            self.level_def[a.strip()] = b
 
         for node in defs.getElementsByTagName('DRUGCLASS'):
             a = node.getElementsByTagName('NAME')[0].childNodes[0].nodeValue

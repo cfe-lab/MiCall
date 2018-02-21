@@ -4,27 +4,31 @@ description: version cfe-hcv 1.5 - 07-Dec-2016
 ---
 
 Rules are applied for each drug and each genotype found in a sample. Each rule
-contains a mutation description, the `=>` symbol, and an action. A mutation
-description is the position number of an amino acid within the gene region,
-plus a variant amino acid. An exclamation mark in the mutation means any
-variant except those listed. A "TRUE" mutation is always applied for that
-genotype. An action is either a number that adds to the score, or a name in
-quotes. The program adds up all the scores and collects all the names, before
-deciding on a resistance report.
+contains a score and a list of the mutation descriptions that receive that
+score. A mutation description is the position number of an amino acid within
+the gene region, plus a variant amino acid. An exclamation mark in the mutation
+means any variant except those listed. A "TRUE" mutation is always applied for
+that genotype. A score is either a number, or a name in quotes. The program
+adds up all the numerical scores and collects all the names, before deciding on
+a resistance report.
 
 * If the score is 4, then it reports "Resistance Possible".
 * If the score is 8 or more, then it reports "Resistance Likely".
 * If the score is 0 with the "Not available" name, then it reports "Resistance
-    Interpretation Not Available".
+    Interpretation Not Available", which means that resistance interpretation
+    is not available for the specified genotype and drug.
 * If the score is 0 with the "Not indicated" name, then it reports
-    "Not Indicated".
+    "Not Indicated", which means that the drug is not indicated for use in
+    Canada.
 * If the score is 0 with the "Effect unknown" name, then it reports "Mutations
     Detected; Effect Unknown".
-* If there are gaps in coverage for some of the mutation locations, then it
-    reports "Sequence does not meet quality-control standards".
+* If there is insufficient there are gaps in coverage due to poor
+    amplification, sequencing, or mapping, then it reports "Sequence does not
+    meet quality-control standards".
 * Otherwise, it reports "Likely Susceptible".
 
-Here are the rules used for each of the drugs.
+Here are the rules used for each of the drugs. Below that is a description of
+how the scores are chosen.
 
 | Gene | Drug | Genotype | Score | Mutations |
 |------|------|----------|-------|-----------|
@@ -209,3 +213,35 @@ Here are the rules used for each of the drugs.
 |      |                                                           | 5  | Not indicated | TRUE |
 |      |                                                           | 6  | Not indicated | TRUE |
 |      |                                                           | 6E | Not available | TRUE |
+
+Scores are chosen based on reported growth rates of strains with each mutation.
+The growth rate of a mutant is compared with the growth rate of the wild type
+(WT), and the fold change is reported. For example, a mutant that grows five
+times faster than the wild type reports a fold change of 5.
+
+Some studies describe a mutant with a single amino acid changed from the wild
+type, and some describe a mutant with more than one change.
+
+Another type of study reports mutations that are observed in clinical patients
+with virological failure.
+
+Based on all these study results, we assign the scores shown in the table
+above. For each drug and genotype combination, we choose a middle range of fold
+change values. Any mutations that fall in that middle range get a score of
+4 (resistance possible), mutations above that range get a score of 8
+(resistance likely), and mutations below that range get no score (susceptible).
+Mutations observed in clinical patients with virological failure get a score of
+4 (resistance possible).
+
+If reports for mutants with more than one change disagree with the reports for
+the individual changes, then the combination takes precedence.
+
+As an example, here are the fold change ranges for NS3 drugs, genotype 1a:
+
+| Drugs | Middle Range |
+|-------|--------------|
+|Grazoprevir, Paritaprevir, Glecaprevir, Simeprevir, Asunaprevir| 5 - 10 |
+|Voxilaprevir| 2.6 - 10* |
+
+`*` Some studies only reported ranges of fold changes, so we used the 2.5 - 20
+range as a middle range for those studies.
