@@ -22,9 +22,8 @@ a resistance report.
     Canada.
 * If the score is 0 with the "Effect unknown" name, then it reports "Mutations
     Detected; Effect Unknown".
-* If there is insufficient there are gaps in coverage due to poor
-    amplification, sequencing, or mapping, then it reports "Sequence does not
-    meet quality-control standards".
+* If there is insufficient coverage due to poor amplification, sequencing, or
+    mapping, then it reports "Sequence does not meet quality-control standards".
 * Otherwise, it reports "Likely Susceptible".
 
 Here are the rules used for each of the drugs. Below that is a description of
@@ -214,24 +213,26 @@ how the scores are chosen.
 |      |                                                           | 6  | Not indicated | TRUE |
 |      |                                                           | 6E | Not available | TRUE |
 
-Scores are chosen based on reported growth rates of strains with each mutation.
-The growth rate of a mutant is compared with the growth rate of the wild type
-(WT), and the fold change is reported. For example, a mutant that grows five
-times faster than the wild type reports a fold change of 5.
+The overall resistance scores of a mutant strain are derived from drug
+susceptibility and clinical observations.
 
-Some studies describe a mutant with a single amino acid changed from the wild
-type, and some describe a mutant with more than one change.
+The drug susceptibility of a mutant is compared with the drug susceptibility of
+the wild type, and the fold change is reported. For example, a mutant with five
+times lower drug susceptibility than the wild type reports a fold change of 5.
+
+Some mutants have a single amino acid changed from the wild type, and some
+mutants have more than one change.
 
 Another type of study reports mutations that are observed in clinical patients
 with virological failure.
 
 Based on all these study results, we assign the scores shown in the table
 above. For each drug and genotype combination, we choose a middle range of fold
-change values. Any mutations that fall in that middle range get a score of
-4 (resistance possible), mutations above that range get a score of 8
-(resistance likely), and mutations below that range get no score (susceptible).
-Mutations observed in clinical patients with virological failure get a score of
-4 (resistance possible).
+change values for drug susceptibility. Any mutations that fall in that middle
+range get a score of 4 (resistance possible), mutations above that range get a
+score of 8 (resistance likely), and mutations below that range get no score
+(susceptible). Mutations observed in clinical patients with virological failure
+get a score of 4 (resistance possible).
 
 If reports for mutants with more than one change disagree with the reports for
 the individual changes, then the combination takes precedence.
