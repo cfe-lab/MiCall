@@ -21,7 +21,7 @@ class AsiAlgorithmTest(TestCase):
                           ('ABC', 5.0, 1, 'Susceptible'),
                           ('AZT', 15.0, 3, 'Low-Level Resistance'),
                           ('D4T', 15.0, 3, 'Low-Level Resistance'),
-                          ('DDI', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('DDI', 10.0, 2, 'Susceptible'),
                           ('FTC', 0.0, 1, 'Susceptible'),
                           ('TDF', 5.0, 1, 'Susceptible'),
                           ('EFV', 0.0, 1, 'Susceptible'),
@@ -44,13 +44,13 @@ class AsiAlgorithmTest(TestCase):
         aa_seq = [[amino] for amino in self.asi.stds['PR']]
         aa_seq[23] = ['I']
         compared_attrs = ('code', 'score', 'level', 'level_name')
-        expected_drugs = [('ATV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+        expected_drugs = [('ATV/r', 10.0, 2, 'Susceptible'),
                           ('DRV/r', 0.0, 1, 'Susceptible'),
-                          ('FPV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('FPV/r', 10.0, 2, 'Susceptible'),
                           ('IDV/r', 15.0, 3, 'Low-Level Resistance'),
-                          ('LPV/r', 10.0, 2, 'Potential Low-Level Resistance'),
-                          ('NFV', 10.0, 2, 'Potential Low-Level Resistance'),
-                          ('SQV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('LPV/r', 10.0, 2, 'Susceptible'),
+                          ('NFV', 10.0, 2, 'Susceptible'),
+                          ('SQV/r', 10.0, 2, 'Susceptible'),
                           ('TPV/r', -5.0, 1, 'Susceptible')]
         expected_mutation_comments = [
             'L24I is a non-polymorphic mutation selected by IDV and LPV. It '
@@ -78,13 +78,13 @@ class AsiAlgorithmTest(TestCase):
         aa_seq = [{c: 1.0} for c in self.asi.stds['PR']]
         aa_seq[23] = {'I': 1.0}
         compared_attrs = ('code', 'score', 'level', 'level_name')
-        expected_drugs = [('ATV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+        expected_drugs = [('ATV/r', 10.0, 2, 'Susceptible'),
                           ('DRV/r', 0.0, 1, 'Susceptible'),
-                          ('FPV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('FPV/r', 10.0, 2, 'Susceptible'),
                           ('IDV/r', 15.0, 3, 'Low-Level Resistance'),
-                          ('LPV/r', 10.0, 2, 'Potential Low-Level Resistance'),
-                          ('NFV', 10.0, 2, 'Potential Low-Level Resistance'),
-                          ('SQV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('LPV/r', 10.0, 2, 'Susceptible'),
+                          ('NFV', 10.0, 2, 'Susceptible'),
+                          ('SQV/r', 10.0, 2, 'Susceptible'),
                           ('TPV/r', -5.0, 1, 'Susceptible')]
         expected_mutation_comments = [
             'L24I is a non-polymorphic mutation selected by IDV and LPV. It '
@@ -102,13 +102,13 @@ class AsiAlgorithmTest(TestCase):
         aa_seq2 = [{c: 1.0} for c in self.asi.stds['PR']]
         aa_seq2[23] = {'I': 1.0}
         compared_attrs = ('code', 'score', 'level', 'level_name')
-        expected_drugs = [('ATV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+        expected_drugs = [('ATV/r', 10.0, 2, 'Susceptible'),
                           ('DRV/r', 0.0, 1, 'Susceptible'),
-                          ('FPV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('FPV/r', 10.0, 2, 'Susceptible'),
                           ('IDV/r', 15.0, 3, 'Low-Level Resistance'),
-                          ('LPV/r', 10.0, 2, 'Potential Low-Level Resistance'),
-                          ('NFV', 10.0, 2, 'Potential Low-Level Resistance'),
-                          ('SQV/r', 10.0, 2, 'Potential Low-Level Resistance'),
+                          ('LPV/r', 10.0, 2, 'Susceptible'),
+                          ('NFV', 10.0, 2, 'Susceptible'),
+                          ('SQV/r', 10.0, 2, 'Susceptible'),
                           ('TPV/r', -5.0, 1, 'Susceptible')]
         expected_mutation_comments = [
             'L24I is a non-polymorphic mutation selected by IDV and LPV. It '
