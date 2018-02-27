@@ -24,12 +24,13 @@ class CreateRuleSetTest(TestCase):
 
 class WriteRulesTest(TestCase):
     def test_single(self):
-        rule_sets = [RuleSet('R1', '1a', 'Paritaprevir', 99, {'R10V': 4})]
+        rule_sets = [RuleSet('NS3', '1a', 'Paritaprevir', 99, {'R10V': 4})]
         expected_rules_text = """\
 - code: PTV
   genotypes:
   - genotype: 1A
-    region: R1
+    reference: HCV1A-H77-NS3
+    region: NS3
     rules: SCORE FROM ( R10V => 4 )
   name: Paritaprevir
 """
@@ -40,16 +41,18 @@ class WriteRulesTest(TestCase):
         self.assertEqual(expected_rules_text, rules_file.getvalue())
 
     def test_two_genotypes(self):
-        rule_sets = [RuleSet('R1', '1a', 'Paritaprevir', 99, {'R10V': 4}),
-                     RuleSet('R1', '1b', 'Paritaprevir', 99, {'A20L': 8})]
+        rule_sets = [RuleSet('NS3', '1a', 'Paritaprevir', 99, {'R10V': 4}),
+                     RuleSet('NS3', '1b', 'Paritaprevir', 99, {'A20L': 8})]
         expected_rules_text = """\
 - code: PTV
   genotypes:
   - genotype: 1A
-    region: R1
+    reference: HCV1A-H77-NS3
+    region: NS3
     rules: SCORE FROM ( R10V => 4 )
   - genotype: 1B
-    region: R1
+    reference: HCV1B-Con1-NS3
+    region: NS3
     rules: SCORE FROM ( A20L => 8 )
   name: Paritaprevir
 """
@@ -60,19 +63,21 @@ class WriteRulesTest(TestCase):
         self.assertEqual(expected_rules_text, rules_file.getvalue())
 
     def test_two_drugs(self):
-        rule_sets = [RuleSet('R1', '1a', 'Paritaprevir', 99, {'R10V': 4}),
-                     RuleSet('R1', '1b', 'Boceprevir', 99, {'A20L': 8})]
+        rule_sets = [RuleSet('NS3', '1a', 'Paritaprevir', 99, {'R10V': 4}),
+                     RuleSet('NS3', '1b', 'Boceprevir', 99, {'A20L': 8})]
         expected_rules_text = """\
 - code: BPV
   genotypes:
   - genotype: 1B
-    region: R1
+    reference: HCV1B-Con1-NS3
+    region: NS3
     rules: SCORE FROM ( A20L => 8 )
   name: Boceprevir
 - code: PTV
   genotypes:
   - genotype: 1A
-    region: R1
+    reference: HCV1A-H77-NS3
+    region: NS3
     rules: SCORE FROM ( R10V => 4 )
   name: Paritaprevir
 """
@@ -83,12 +88,13 @@ class WriteRulesTest(TestCase):
         self.assertEqual(expected_rules_text, rules_file.getvalue())
 
     def test_two_mutations(self):
-        rule_sets = [RuleSet('R1', '1a', 'Paritaprevir', 99, {'R10V': 4, 'A20L': 8})]
+        rule_sets = [RuleSet('NS3', '1a', 'Paritaprevir', 99, {'R10V': 4, 'A20L': 8})]
         expected_rules_text = """\
 - code: PTV
   genotypes:
   - genotype: 1A
-    region: R1
+    reference: HCV1A-H77-NS3
+    region: NS3
     rules: SCORE FROM ( R10V => 4, A20L => 8 )
   name: Paritaprevir
 """
@@ -99,12 +105,13 @@ class WriteRulesTest(TestCase):
         self.assertEqual(expected_rules_text, rules_file.getvalue())
 
     def test_two_variants(self):
-        rule_sets = [RuleSet('R1', '1a', 'Paritaprevir', 99, {'R10A': 4, 'R10V': 4})]
+        rule_sets = [RuleSet('NS3', '1a', 'Paritaprevir', 99, {'R10A': 4, 'R10V': 4})]
         expected_rules_text = """\
 - code: PTV
   genotypes:
   - genotype: 1A
-    region: R1
+    reference: HCV1A-H77-NS3
+    region: NS3
     rules: SCORE FROM ( R10AV => 4 )
   name: Paritaprevir
 """
@@ -115,14 +122,15 @@ class WriteRulesTest(TestCase):
         self.assertEqual(expected_rules_text, rules_file.getvalue())
 
     def test_combination_unchanged(self):
-        rule_sets = [RuleSet('R1', '1a', 'Paritaprevir', 99, {'R10A': 4,
+        rule_sets = [RuleSet('NS3', '1a', 'Paritaprevir', 99, {'R10A': 4,
                                                               'A20L': 4,
                                                               'R10A+A20L': 8})]
         expected_rules_text = """\
 - code: PTV
   genotypes:
   - genotype: 1A
-    region: R1
+    reference: HCV1A-H77-NS3
+    region: NS3
     rules: SCORE FROM ( R10A => 4, A20L => 4 )
   name: Paritaprevir
 """
@@ -133,18 +141,19 @@ class WriteRulesTest(TestCase):
         self.assertEqual(expected_rules_text, rules_file.getvalue())
 
     def test(self):
-        rule_sets = [RuleSet('R1', '1a', 'Paritaprevir', 99, {'R1A': 4,
-                                                              'R2A': 4,
-                                                              'R3A': 4,
-                                                              'R4A': 4,
-                                                              'R5A': 4,
-                                                              'R6ACLNV': 4,
-                                                              'R7A': 4})]
+        rule_sets = [RuleSet('NS3', '1a', 'Paritaprevir', 99, {'R1A': 4,
+                                                               'R2A': 4,
+                                                               'R3A': 4,
+                                                               'R4A': 4,
+                                                               'R5A': 4,
+                                                               'R6ACLNV': 4,
+                                                               'R7A': 4})]
         expected_rules_text = """\
 - code: PTV
   genotypes:
   - genotype: 1A
-    region: R1
+    reference: HCV1A-H77-NS3
+    region: NS3
     rules: SCORE FROM ( R1A => 4, R2A => 4, R3A => 4, R4A => 4, R5A => 4,
        R6ACLNV => 4, R7A => 4 )
   name: Paritaprevir

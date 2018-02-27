@@ -1,3 +1,4 @@
+import re
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from collections import namedtuple, defaultdict
 from functools import partial
@@ -7,6 +8,8 @@ from operator import itemgetter
 
 import yaml
 from pyvdrm.vcf import MutationSet
+
+from micall.core.project_config import ProjectConfig
 
 READY_TABS = ('NS3_GT1a', 'NS3_GT1b')
 PHENOTYPE_SCORES = {'likely susceptible': 0,
@@ -120,6 +123,20 @@ def load_drug_codes():
     return drug_codes
 
 
+def load_reference_names():
+    projects = ProjectConfig.loadDefault()
+    reference_names = {}  # {(genotype, region): ref_name}
+    for ref_name, _ in projects.getAllReferences().items():
+        match = re.match(r'HCV(.*?)-.*-([^-]+)$', ref_name)
+        if match:
+            genotype = match.group(1)
+            region = match.group(2)
+            reference_names[(genotype, region)] = ref_name
+            if genotype == '6':
+                reference_names[('6E', region)] = ref_name
+    return reference_names
+
+
 def get_short_drug_name(name):
     return name.split()[0]
 
@@ -153,6 +170,7 @@ def find_rule_sets(ws, header_rows):
 
 def write_rules(rule_sets, rules_file):
     drug_codes = load_drug_codes()
+    reference_names = load_reference_names()
     drug_summaries = {}
     for rule_set in rule_sets:
         drug_name = rule_set.drug_name
@@ -187,8 +205,11 @@ def write_rules(rule_sets, rules_file):
         score_formula = 'SCORE FROM ( {} )'.format(', '.join(
             '{} => {}'.format(mutation_set, score)
             for mutation_set, score in score_terms))
-        drug_summary['genotypes'].append(dict(genotype=rule_set.genotype.upper(),
+        genotype = rule_set.genotype.upper()
+        reference_name = reference_names[(genotype, rule_set.region)]
+        drug_summary['genotypes'].append(dict(genotype=genotype,
                                               region=rule_set.region,
+                                              reference=reference_name,
                                               rules=score_formula))
     drugs = sorted(drug_summaries.values(), key=itemgetter('code'))
     yaml.dump(drugs, rules_file, default_flow_style=False, Dumper=SplitDumper)
