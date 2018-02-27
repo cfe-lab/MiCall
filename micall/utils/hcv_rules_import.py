@@ -6,7 +6,6 @@ import os
 from operator import itemgetter
 
 import yaml
-from openpyxl import load_workbook
 from pyvdrm.vcf import MutationSet
 
 READY_TABS = ('NS3_GT1a', 'NS3_GT1b')
@@ -14,6 +13,7 @@ PHENOTYPE_SCORES = {'likely susceptible': 0,
                     'resistance possible': 4,
                     'resistance likely': 8,
                     'effect unknown': 'effect unknown'}
+load_workbook = None  # Optional import from openpyxl
 RuleSet = namedtuple(
     'RuleSet',
     'region genotype drug_name phenotype_column mutations')
@@ -195,4 +195,6 @@ def write_rules(rule_sets, rules_file):
 
 
 if __name__ == '__main__':
+    from openpyxl import load_workbook
+
     main()

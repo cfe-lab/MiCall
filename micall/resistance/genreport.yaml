@@ -78,18 +78,18 @@
       - [PTV, Paritaprevir (a component of Technivie™ and Holkira Pak™)]
       - [SPV, Simeprevir (Galexos™)]
       - [TPV, Telaprevir (Incivek™)]
-      - [VPV, Voxilaprevir (XXX)]
-      - [GPV, Glecaprevir (XXX)]
-      - [ASV, Asunaprevir (XXX)]
+      - [VOX, Voxilaprevir (a component of Vosevi™)]
+      - [GLE, Glecaprevir (a component of Mavyret™)]
+      - [ASV, Asunaprevir (a component of Sunvepra™)]
     NS5a:
       - [DCV, Daclatasvir (Daklinza™)]
       - [EBV, Elbasvir (a component of Zepatier™)]
       - [LDV, Ledipasvir (a component of Harvoni™)]
       - [OBV, Ombitasvir (a component of Technivie™ and Holkira Pak™)]
-      - [VEL, Velpatasvir (a component of Epclusa™)]
+      - [VEL, Velpatasvir (a component of Epclusa™ and Vosevi™)]
     NS5b:
       - [DSV, Dasabuvir (a component of Holkira Pak™)]
-      - [SOF-EPC, Sofosbuvir (a component of Epclusa™)]
+      - [SOF-EPC, Sofosbuvir (a component of Epclusa™ and Vosevi™)]
       - [SOF-HAR, Sofosbuvir (a component of Harvoni™)]
 
   known_drug_classes:
