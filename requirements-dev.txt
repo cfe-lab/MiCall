@@ -3,5 +3,3 @@
 -r requirements-monitor.txt
 # Used for plotting profiling results.
 gprof2dot==2016.10.13
-# For reading HCV rules from an Excel file.
-openpyxl==2.5.0
