@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from io import StringIO
 
@@ -143,10 +143,8 @@ class ReadRuleSetTest(TestCase):
             ['V36A', '',              'resistance possible', '',  '',        '',  'likely susceptible'],
             ['T40A', '',              'resistance possible', '',  '',        '',  'likely susceptible'],
             ['V36A+T40A', '',         'resistance likely',  '',  '',         '',  'likely susceptible'],
-            ['',     'Ignored footer row'],
-            ['',     'Positions monitored...'],
-            ['',     '40',            '',                   '',  '',         'Positions monitored:'],
-            ['',     '',              '',                   '',  '',         'None']]
+            ['',     'Positions monitored...', '',          '',  '',         'Positions monitored:'],
+            ['',     '36',          '',                   '',  '',         'None']]
         expected_rule_sets = [RuleSet('NS3',
                                       '1a',
                                       'Example1',
@@ -155,7 +153,8 @@ class ReadRuleSetTest(TestCase):
                                       4,
                                       {'V36A': 4,
                                        'T40A': 4,
-                                       'T40!AT': 'Effect unknown'}),
+                                       'V36A+T40A': 8,
+                                       'V36!AV': 'Effect unknown'}),
                               RuleSet('NS3',
                                       '1a',
                                       'Example2',
@@ -414,6 +413,45 @@ class WriteRulesTest(TestCase):
         write_rules(rule_sets, REFERENCES, rules_file)
 
         self.assertEqual(expected_rules_text, rules_file.getvalue())
+
+    @skip('HCV mutation combinations not implemented yet.')
+    def test_combination_weakened(self):
+        rule_sets = [RuleSet('NS3',
+                             '1a',
+                             'Paritaprevir',
+                             1,
+                             2,
+                             3,
+                             {'R10A': 4, 'A20L': 4, 'R10A+A20L': 4, 'T30V': 8})]
+        expected_rules_text = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( T30V => 8, MIN( R10A => 4, A20L => 4 ) )
+  name: Paritaprevir
+"""
+        rules_file = StringIO()
+
+        write_rules(rule_sets, REFERENCES, rules_file)
+
+        self.assertEqual(expected_rules_text, rules_file.getvalue())
+
+    def test_combination_bad(self):
+        rule_sets = [RuleSet('NS3',
+                             '1a',
+                             'Paritaprevir',
+                             1,
+                             2,
+                             3,
+                             {'R10A': 4, 'A20L': 4, 'V10A+A20L': 4})]
+        rules_file = StringIO()
+
+        with self.assertRaisesRegex(
+                ValueError,
+                r"Components score could not be calculated for NS3 1a V10A\+A20L\."):
+            write_rules(rule_sets, REFERENCES, rules_file)
 
     def test_line_wrap(self):
         rule_sets = [RuleSet('NS3', '1a', 'Paritaprevir', 1, 2, 3, {'R1A': 4,

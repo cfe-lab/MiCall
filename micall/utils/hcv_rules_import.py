@@ -7,7 +7,8 @@ import os
 from operator import itemgetter
 
 import yaml
-from pyvdrm.vcf import MutationSet
+from pyvdrm.hcvr import HCVR
+from pyvdrm.vcf import MutationSet, VariantCalls
 from openpyxl import load_workbook
 
 from micall.core.project_config import ProjectConfig
@@ -17,10 +18,22 @@ PHENOTYPE_SCORES = {'likely susceptible': 0,
                     'resistance possible': 4,
                     'resistance likely': 8,
                     'effect unknown': 'effect unknown'}
-DATA_CHANGES = {'NS3_GT1a': {'A65': ('V132I', 'I132I'),
-                             'A104': ('I/V170F', 'I170F'),
-                             'A105': ('I/V170T', 'I170T')},
-                'NS3_GT1b': {'A138': ('NS4A V23A', None)}}
+DATA_CHANGES = {
+    'NS3_GT1a': {
+        'A65': ('V132I', 'I132I'),  # conflicting wild type
+        'A104': ('I/V170F', 'I170F'),  # multiple wild types
+        'A105': ('I/V170T', 'I170T'),  # multiple wild types
+        'A116': ('Q9+A156T', 'Q9!Q+A156T'),  # needs variants, use ! to mean "anything except"
+        'A160': ('Q80K/R+D168E', 'Q80KR+D168E'),  # slash not allowed or needed
+        'A171': ('Q80K+V170T', 'Q80K+I170T'),  # conflicting wild type
+        'A190': ('R155K+I/V170T', 'R155K+I170T'),  # multiple wild types
+        'A215': ('E357K+D168any', 'E357K+D168!D'),  # use ! to mean "anything except"
+        'A216': ('N36L+Q80K+R155S', 'V36L+Q80K+R155S'),  # conflicting wild type
+        'A261': ('V23A(NS4A)', None),  # this scares me
+        'A262': ('V23V(NS4A)+D168V', None),  # this scares me
+        'A263': ('V23V(NS4A)+D168Y', None)},  # this scares me
+    'NS3_GT1b': {
+        'A138': ('NS4A V23A', None)}}  # this scares me
 RuleSet = namedtuple(
     'RuleSet',
     ['region',
@@ -150,6 +163,8 @@ def monitor_positions(worksheet, rule_sets, references, col, positions):
                         worksheet.title,
                         positions))
             for mutation in rule_set.mutations:
+                if '+' in mutation or ' ' in mutation:
+                    continue
                 match = re.match(r'^([A-Z])(\d+)([A-Z]+)$', mutation)
                 assert match, mutation
                 wild_type = match.group(1)
@@ -173,8 +188,6 @@ def monitor_positions(worksheet, rule_sets, references, col, positions):
 
 def find_phenotype_scores(row, rule_sets):
     mutation = row[0].value
-    if '+' in mutation:
-        return
     for rule_set in rule_sets:
         phenotype_cell = row[rule_set.phenotype_column-1]
         phenotype = phenotype_cell.value
@@ -301,8 +314,10 @@ def write_rules(rule_sets, references, rules_file):
                                                             code=drug_code,
                                                             genotypes=[])
         positions = defaultdict(dict)  # {pos: {score: MutationSet}}
+        combinations = {}  # {mutation: score}
         for mutation, score in rule_set.mutations.items():
             if '+' in mutation or ' ' in mutation:
+                combinations[mutation] = score
                 continue
             try:
                 new_mutation_set = MutationSet(mutation)
@@ -318,21 +333,58 @@ def write_rules(rule_sets, references, rules_file):
                     mutations=(old_mutation_set.mutations |
                                new_mutation_set.mutations))
             pos_scores[score] = new_mutation_set
-        score_terms = sorted((mutation_set, format_score(score))
-                             for pos, pos_scores in positions.items()
-                             for score, mutation_set in pos_scores.items())
-        score_formula = 'SCORE FROM ( {} )'.format(', '.join(
-            '{} => {}'.format(mutation_set, score)
-            for mutation_set, score in score_terms))
+        combination_changes = []
+        for combination, combination_score in combinations.items():
+            try:
+                component_score = calculate_component_score(combination, positions)
+            except ValueError:
+                message = 'Components score could not be calculated for {} {} {}.'.format(
+                    rule_set.region,
+                    rule_set.genotype,
+                    combination)
+                raise ValueError(message)
+
+            component_score = min(component_score, 8)
+            if component_score != combination_score:
+                combination_changes.append((combination, combination_score, component_score))
+        if combination_changes:
+            print('Combination changes for',
+                  rule_set.region,
+                  rule_set.genotype,
+                  rule_set.drug_name)
+        for combination, combination_score, component_score in combination_changes:
+            print(' ', combination, combination_score, component_score)
         genotype = rule_set.genotype.upper()
         reference = references[(genotype, rule_set.region)]
         reference_name = reference.name
+        score_formula = build_score_formula(positions)
         drug_summary['genotypes'].append(dict(genotype=genotype,
                                               region=rule_set.region,
                                               reference=reference_name,
                                               rules=score_formula))
     drugs = sorted(drug_summaries.values(), key=itemgetter('code'))
     yaml.dump(drugs, rules_file, default_flow_style=False, Dumper=SplitDumper)
+
+
+def calculate_component_score(combination, positions):
+    variant_calls = VariantCalls(combination.replace('+', ' '))
+    combination_positions = {
+        mutation_set.pos: positions[mutation_set.pos]
+        for mutation_set in variant_calls}
+    score_formula = build_score_formula(combination_positions)
+    rule = HCVR(score_formula)
+    component_score = rule(variant_calls)
+    return component_score
+
+
+def build_score_formula(positions):
+    score_terms = sorted((mutation_set, format_score(score))
+                         for pos, pos_scores in positions.items()
+                         for score, mutation_set in pos_scores.items())
+    score_formula = 'SCORE FROM ( {} )'.format(', '.join(
+        '{} => {}'.format(mutation_set, score)
+        for mutation_set, score in score_terms))
+    return score_formula
 
 
 if __name__ == '__main__':
