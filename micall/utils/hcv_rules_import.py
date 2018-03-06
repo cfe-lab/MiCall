@@ -20,20 +20,9 @@ PHENOTYPE_SCORES = {'likely susceptible': 0,
                     'effect unknown': 'effect unknown'}
 DATA_CHANGES = {
     'NS3_GT1a': {
-        'A65': ('V132I', 'I132I'),  # conflicting wild type
-        'A104': ('I/V170F', 'I170F'),  # multiple wild types
-        'A105': ('I/V170T', 'I170T'),  # multiple wild types
-        'A116': ('Q9+A156T', 'Q9!Q+A156T'),  # needs variants, use ! to mean "anything except"
-        'A160': ('Q80K/R+D168E', 'Q80KR+D168E'),  # slash not allowed or needed
-        'A171': ('Q80K+V170T', 'Q80K+I170T'),  # conflicting wild type
-        'A190': ('R155K+I/V170T', 'R155K+I170T'),  # multiple wild types
-        'A215': ('E357K+D168any', 'E357K+D168!D'),  # use ! to mean "anything except"
-        'A216': ('N36L+Q80K+R155S', 'V36L+Q80K+R155S'),  # conflicting wild type
-        'A261': ('V23A(NS4A)', None),  # this scares me
-        'A262': ('V23V(NS4A)+D168V', None),  # this scares me
-        'A263': ('V23V(NS4A)+D168Y', None)},  # this scares me
-    'NS3_GT1b': {
-        'A138': ('NS4A V23A', None)}}  # this scares me
+        # 'A1': ('OLD', 'NEW'),
+    },
+    'NS3_GT1b': {}}
 RuleSet = namedtuple(
     'RuleSet',
     ['region',
@@ -115,7 +104,7 @@ def read_rule_sets(ws, references):
                 find_phenotype_scores(row, rule_sets)
             else:
                 header_rows.append(row)
-        elif row[0].value is not None:
+        elif row[0].value is not None and not row[0].font.strike:
             find_phenotype_scores(row, rule_sets)
         else:
             # In footer rows.
@@ -368,11 +357,18 @@ def write_rules(rule_sets, references, rules_file):
 
 def calculate_component_score(combination, positions):
     variant_calls = VariantCalls(combination.replace('+', ' '))
-    combination_positions = {
-        mutation_set.pos: positions[mutation_set.pos]
-        for mutation_set in variant_calls}
+    combination_positions = {}
+    for mutation_set in variant_calls:
+        position_scores = positions[mutation_set.pos]
+        if position_scores:
+            combination_positions[mutation_set.pos] = position_scores
+    if not combination_positions:
+        return 0
     score_formula = build_score_formula(combination_positions)
-    rule = HCVR(score_formula)
+    try:
+        rule = HCVR(score_formula)
+    except Exception as ex:
+        raise ValueError('Bad formula for {}.'.format(combination)) from ex
     component_score = rule(variant_calls)
     return component_score
 

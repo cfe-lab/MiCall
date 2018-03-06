@@ -438,6 +438,29 @@ class WriteRulesTest(TestCase):
 
         self.assertEqual(expected_rules_text, rules_file.getvalue())
 
+    def test_combination_with_susceptible_components(self):
+        rule_sets = [RuleSet('NS3',
+                             '1a',
+                             'Paritaprevir',
+                             1,
+                             2,
+                             3,
+                             {'T30V': 8, 'R10A+A20L': 8})]
+        expected_rules_text = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( T30V => 8 )
+  name: Paritaprevir
+"""
+        rules_file = StringIO()
+
+        write_rules(rule_sets, REFERENCES, rules_file)
+
+        self.assertEqual(expected_rules_text, rules_file.getvalue())
+
     def test_combination_bad(self):
         rule_sets = [RuleSet('NS3',
                              '1a',
