@@ -10,11 +10,12 @@ clips).
 import argparse
 from collections import Counter, defaultdict
 from csv import DictReader, DictWriter
+from io import StringIO
+from tempfile import TemporaryFile
+
 import numpy as np
 import os
 import re
-
-from micall.utils.big_counter import BigCounter
 
 SAM2ALN_Q_CUTOFFS = [15]  # Q-cutoff for base censoring
 MAX_PROP_N = 0.5                 # Drop reads with more censored bases than this proportion
@@ -399,17 +400,24 @@ class PairProcessor(object):
                 clipping_writer.writerow(row)
 
 
-class CounterFactory:
+class TempFileFactory:
     def __init__(self, aligned_file):
         self.aligned_file_name = getattr(aligned_file, 'name', None)
 
-    def create_counter(self):
+    def open(self):
         if self.aligned_file_name is None:
-            return Counter()
+            return StringIO()
         dirname = os.path.dirname(self.aligned_file_name)
         file_prefix = os.path.join(os.path.abspath(dirname),
-                                   'merged_seq_counts')
-        return BigCounter(file_prefix=file_prefix)
+                                   'aligned_temp')
+        return TemporaryFile(mode='w+', prefix=file_prefix, suffix='.csv')
+
+    def create_writer(self):
+        f = self.open()
+        writer = create_aligned_writer(f)
+        writer.file = f
+        writer.line_count = 0
+        return writer
 
 
 def sam2aln(remap_csv,
@@ -445,9 +453,9 @@ def sam2aln(remap_csv,
         clipping_writer.writeheader()
 
     pair_processor = PairProcessor(is_clipping=clipping_csv is not None)
-    counter_factory = CounterFactory(aligned_csv)
-    empty_region = defaultdict(counter_factory.create_counter)
-    aligned = defaultdict(empty_region.copy)  # {rname: {qcut: {mseq: count}}}
+    temp_files = TempFileFactory(aligned_csv)
+    empty_region = defaultdict(temp_files.create_writer)
+    aligned = defaultdict(empty_region.copy)  # {rname: {qcut: aligned_file}}
     # noinspection PyTypeChecker
     regions = map(pair_processor.process, matchmaker(remap_csv))
 
@@ -456,9 +464,14 @@ def sam2aln(remap_csv,
         region = aligned[rname]
 
         for qcut, mseq in mseqs.items():
-            # collect identical merged sequences
-            mseq_counter = region[qcut]
-            mseq_counter[mseq] += 1
+            temp_writer = region[qcut]
+            temp_writer.writerow(dict(refname=rname,
+                                      qcut=qcut,
+                                      rank=temp_writer.line_count,
+                                      count=1,
+                                      offset=len_gap_prefix(mseq),
+                                      seq=mseq.strip('-')))
+            temp_writer.line_count += 1
 
         if insert_writer is not None:
             # write out inserts to CSV
@@ -472,19 +485,21 @@ def sam2aln(remap_csv,
         pair_processor.write_clipping(clipping_writer)
 
     # write out merged sequences to file
-    aligned_fields = ['refname', 'qcut', 'rank', 'count', 'offset', 'seq']
-    aligned_writer = DictWriter(aligned_csv, aligned_fields, lineterminator=os.linesep)
+    aligned_writer = create_aligned_writer(aligned_csv)
     aligned_writer.writeheader()
     for rname in sorted(aligned.keys()):
         region = aligned[rname]
-        for qcut, mseq_counter in region.items():
-            for rank, (seq, count) in enumerate(mseq_counter.items()):
-                aligned_writer.writerow(dict(refname=rname,
-                                             qcut=qcut,
-                                             rank=rank,
-                                             count=count,
-                                             offset=len_gap_prefix(seq),
-                                             seq=seq.strip('-')))
+        for qcut in sorted(region.keys()):
+            temp_writer = region[qcut]
+            temp_writer.file.seek(0)
+            for line in temp_writer.file:
+                aligned_csv.write(line)
+
+
+def create_aligned_writer(aligned_csv):
+    aligned_fields = ['refname', 'qcut', 'rank', 'count', 'offset', 'seq']
+    aligned_writer = DictWriter(aligned_csv, aligned_fields, lineterminator=os.linesep)
+    return aligned_writer
 
 
 def main():
