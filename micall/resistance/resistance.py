@@ -417,14 +417,16 @@ def find_groups(file_names, sample_sheet_path, included_projects=None):
                   if (row['project'] != 'MidHCV' and
                       (included_projects is None or
                        row['project'] in included_projects))}
-    for file_name in file_names:
-        trimmed_file_name = '_'.join(file_name.split('_')[:2])
-        sample_name = wide_names.get(trimmed_file_name)
+    trimmed_names = {'_'.join(file_name.split('_')[:2]): file_name
+                     for file_name in file_names}
+    for trimmed_name, file_name in sorted(trimmed_names.items()):
+        sample_name = wide_names.get(trimmed_name)
         if sample_name is None:
             # Project was not included.
             continue
-        midi_file = midi_files.get(sample_name + 'MIDI')
-        yield SampleGroup(sample_name, (file_name, midi_file))
+        midi_trimmed = midi_files.get(sample_name + 'MIDI')
+        midi_name = trimmed_names.get(midi_trimmed)
+        yield SampleGroup(sample_name, (file_name, midi_name))
 
 
 def report_resistance(amino_csv,

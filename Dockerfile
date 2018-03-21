@@ -29,10 +29,11 @@ RUN pip install -r /opt/micall/requirements-basespace.txt && \
   python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 ## MiCall
-COPY micall_basespace.py version.txt /opt/micall/
+COPY micall_basespace.py micall_kive.py micall_kive_resistance.py version.tx[t] /opt/micall/
 COPY micall/__init__.py micall/project* /opt/micall/micall/
 
 COPY micall/core    /opt/micall/micall/core/
+COPY micall/drivers    /opt/micall/micall/drivers/
 COPY micall/g2p     /opt/micall/micall/g2p/
 COPY micall/resistance   /opt/micall/micall/resistance/
 COPY micall/monitor /opt/micall/micall/monitor/

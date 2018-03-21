@@ -1,0 +1,104 @@
+import logging
+import shutil
+import tarfile
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+
+import os
+
+from micall.drivers.sample import Sample
+from micall.g2p.pssm_lib import Pssm
+
+logger = logging.getLogger('foo')
+
+
+def parse_args():
+    parser = ArgumentParser(description='Map FASTQ files to references.',
+                            formatter_class=ArgumentDefaultsHelpFormatter)
+    # inputs
+    parser.add_argument('fastq1',
+                        help='FASTQ containing forward reads')
+    parser.add_argument('fastq2',
+                        help='FASTQ containing reverse reads')
+    parser.add_argument('bad_cycles_csv',
+                        help='list of tiles and cycles rejected for poor quality')
+
+    # outputs
+    parser.add_argument('g2p_csv',
+                        help='CSV containing g2p predictions.')
+    parser.add_argument('g2p_summary_csv',
+                        help='CSV containing overall call for the sample.')
+    parser.add_argument('remap_counts_csv',
+                        help='CSV containing numbers of mapped reads')
+    parser.add_argument('remap_conseq_csv',
+                        help='CSV containing mapping consensus sequences')
+    parser.add_argument('unmapped1_fastq',
+                        help='FASTQ R1 of reads that failed to map to any region')
+    parser.add_argument('unmapped2_fastq',
+                        help='FASTQ R2 of reads that failed to map to any region')
+    parser.add_argument('conseq_ins_csv',
+                        help='CSV containing insertions relative to sample consensus')
+    parser.add_argument('failed_csv',
+                        help='CSV containing reads that failed to merge')
+    parser.add_argument('cascade_csv',
+                        help='count of reads at each step')
+    parser.add_argument('nuc_csv',
+                        help='CSV containing nucleotide frequencies')
+    parser.add_argument('amino_csv',
+                        help='CSV containing amino frequencies')
+    parser.add_argument('coord_ins_csv',
+                        help='CSV containing insertions relative to coordinate reference')
+    parser.add_argument('conseq_csv',
+                        help='CSV containing consensus sequences')
+    parser.add_argument('failed_align_csv',
+                        help='CSV containing any consensus that failed to align')
+    parser.add_argument('coverage_scores_csv',
+                        help='CSV coverage scores.')
+    parser.add_argument('coverage_maps_tar',
+                        help='tar file of coverage maps.')
+
+    return parser.parse_args()
+
+
+def load_sample(args):
+    """ Load the data from Kive's command-line arguments. """
+    scratch_path = os.path.join(os.path.dirname(args.fastq1), 'scratch')
+    shutil.rmtree(scratch_path, ignore_errors=True)
+
+    sample = Sample(fastq1=args.fastq1,
+                    fastq2=args.fastq2,
+                    bad_cycles_csv=args.bad_cycles_csv,
+                    g2p_csv=args.g2p_csv,
+                    g2p_summary_csv=args.g2p_summary_csv,
+                    remap_counts_csv=args.remap_counts_csv,
+                    remap_conseq_csv=args.remap_conseq_csv,
+                    unmapped1_fastq=args.unmapped1_fastq,
+                    unmapped2_fastq=args.unmapped2_fastq,
+                    conseq_ins_csv=args.conseq_ins_csv,
+                    failed_csv=args.failed_csv,
+                    cascade_csv=args.cascade_csv,
+                    nuc_csv=args.nuc_csv,
+                    amino_csv=args.amino_csv,
+                    coord_ins_csv=args.coord_ins_csv,
+                    conseq_csv=args.conseq_csv,
+                    failed_align_csv=args.failed_align_csv,
+                    coverage_scores_csv=args.coverage_scores_csv,
+                    scratch_path=scratch_path)
+    return sample
+
+
+def main():
+    logging.basicConfig(level=logging.WARN)
+    args = parse_args()
+    sample = load_sample(args)
+
+    pssm = Pssm()
+    sample.process(pssm)
+
+    with tarfile.open(args.coverage_maps_tar, mode='w') as tar:
+        for image_name in os.listdir(sample.coverage_maps):
+            image_path = os.path.join(sample.coverage_maps, image_name)
+            archive_path = os.path.join('coverage_maps', image_name)
+            tar.add(image_path, archive_path)
+
+
+main()

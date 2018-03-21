@@ -1,40 +1,69 @@
+from collections import namedtuple
 from gotoh import align_it_aa
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.translation import translate, reverse_and_complement
 
+FastqSection = namedtuple('FastqSection', 'coord_name start_pos end_pos count')
+CodonMutation = namedtuple('CodonMutation', 'pos codon')
+FastqFile = namedtuple('FastqFile', 'name extract_num is_reversed sections mutations')
+
 
 def main():
-    coord_name = 'HCV2-JFH-1-NS5b'
-    extract_num = '2130'
-    start_pos, end_pos = 396, 561
-    read_count = 100
-    ref_name = None  # 'HCV-2a'
-    ref_start, ref_end = 0, 0
-    is_reversed = True
+    fastq_files = [FastqFile('2130A-HCV_S15_L001_R1_001.fastq',
+                             '2130',
+                             False,
+                             (FastqSection('HCV2-JFH-1-NS5b', 1, 60, 100),
+                              FastqSection('HCV2-JFH-1-NS5b', 117, 176, 100)),
+                             (CodonMutation(159, 'GTC'),)),
+                   FastqFile('2130A-HCV_S15_L001_R2_001.fastq',
+                             '2130',
+                             True,
+                             (FastqSection('HCV2-JFH-1-NS5b', 57, 116, 100),
+                              FastqSection('HCV2-JFH-1-NS5b', 171, 230, 100)),
+                             (CodonMutation(159, 'GTC'),)),
+                   FastqFile('2130AMIDI-MidHCV_S16_L001_R1_001.fastq',
+                             '2130',
+                             False,
+                             (FastqSection('HCV2-JFH-1-NS5b', 231, 313, 100),
+                              FastqSection('HCV2-JFH-1-NS5b', 396, 478, 100)),
+                             (CodonMutation(316, 'AGC'),)),
+                   FastqFile('2130AMIDI-MidHCV_S16_L001_R2_001.fastq',
+                             '2130',
+                             True,
+                             (FastqSection('HCV2-JFH-1-NS5b', 313, 395, 100),
+                              FastqSection('HCV2-JFH-1-NS5b', 479, 561, 100)),
+                             (CodonMutation(316, 'AGC'),))]
     projects = ProjectConfig.loadDefault()
-    if ref_name is None:
-        ref_name, ref_start, ref_end = find_coord_pos(projects,
-                                                      coord_name,
-                                                      start_pos,
-                                                      end_pos)
-    ref_nuc_seq = projects.getReference(ref_name)
-    ref_nuc_section = list(ref_nuc_seq[ref_start:ref_end])
-    # ref_nuc_section[(316-231)*3] = 'A'
-    ref_nuc_section = ''.join(ref_nuc_section)
-    # print(ref_nuc_section[(316-231)*3:(317-231)*3])
-    if is_reversed:
-        ref_nuc_section = reverse_and_complement(ref_nuc_section)
-    phred_scores = 'A' * (ref_end-ref_start)
-    file_num = '2' if is_reversed else '1'
-    for cluster in range(read_count):
-        print('@M01234:01:000000000-AAAAA:1:1101:{}:{:04} {}:N:0:1'.format(
-            extract_num,
-            cluster+1,
-            file_num))
-        print(ref_nuc_section)
-        print('+')
-        print(phred_scores)
+    for fastq_file in fastq_files:
+        with open(fastq_file.name, 'w') as f:
+            next_cluster = 1
+            for section in fastq_file.sections:
+                ref_name, ref_start, ref_end = find_coord_pos(projects,
+                                                              section.coord_name,
+                                                              section.start_pos,
+                                                              section.end_pos)
+
+                ref_nuc_seq = projects.getReference(ref_name)
+                ref_nuc_section = list(ref_nuc_seq[ref_start:ref_end])
+                for mutation in fastq_file.mutations:
+                    if section.start_pos <= mutation.pos <= section.end_pos:
+                        section_pos = (mutation.pos - section.start_pos) * 3
+                        ref_nuc_section[section_pos:section_pos+3] = list(mutation.codon)
+                ref_nuc_section = ''.join(ref_nuc_section)
+                if fastq_file.is_reversed:
+                    ref_nuc_section = reverse_and_complement(ref_nuc_section)
+                phred_scores = 'A' * (ref_end-ref_start)
+                file_num = '2' if fastq_file.is_reversed else '1'
+                for cluster in range(section.count):
+                    f.write('@M01234:01:000000000-AAAAA:1:1101:{}:{:04} {}:N:0:1\n'.format(
+                        fastq_file.extract_num,
+                        cluster + next_cluster,
+                        file_num))
+                    f.write(ref_nuc_section+'\n')
+                    f.write('+\n')
+                    f.write(phred_scores+'\n')
+                next_cluster += section.count
 
 
 def find_coord_pos(projects, coord_name, start_pos, end_pos):
@@ -60,7 +89,6 @@ def find_coord_pos(projects, coord_name, start_pos, end_pos):
                 highest_score = score
                 best_match = (ref_name, nuc_offset, aligned_coord, aligned_ref)
     ref_name, nuc_offset, aligned_coord, aligned_ref = best_match
-    print(highest_score, ref_name, nuc_offset)
     coord_pos = ref_pos = 0
     ref_start = ref_end = None
     for coord_amino, ref_amino in zip(aligned_coord, aligned_ref):
@@ -72,7 +100,6 @@ def find_coord_pos(projects, coord_name, start_pos, end_pos):
             ref_start = ref_pos * 3 - nuc_offset - 3
         if coord_pos == end_pos:
             ref_end = ref_pos * 3 - nuc_offset
-    print(ref_start, ref_end)
     return ref_name, ref_start, ref_end
 
 
