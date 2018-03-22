@@ -164,7 +164,7 @@ class Sample:
         with open(self.remap_csv) as remap_csv, \
                 open(self.aligned_csv, 'w') as aligned_csv, \
                 open(self.conseq_ins_csv, 'w') as conseq_ins_csv, \
-                open(self.failed_read_csv, 'w') as failed_csv, \
+                open(self.failed_csv, 'w') as failed_csv, \
                 open(self.clipping_csv, 'w') as clipping_csv:
 
             sam2aln(remap_csv,
