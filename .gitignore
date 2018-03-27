@@ -17,7 +17,7 @@
 /*.bsfs.json
 .cache
 .coverage
-/.pytest_cache
+.pytest_cache
 /.idea
 /micall/tests/working/*
 /micall/tests/microtest/Results

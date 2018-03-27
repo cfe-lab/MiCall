@@ -90,6 +90,12 @@ def create_raw_data_with_hcv_pair(tmpdir):
     return create_run(tmpdir, '140101_M01234', '2130A*.fastq')
 
 
+@pytest.fixture(name='raw_data_with_two_samples')
+def create_raw_data_with_two_samples(tmpdir):
+    # Install samples 2110A and 2120A in a single run.
+    return create_run(tmpdir, '140101_M01234', '21[12]0A*.fastq')
+
+
 @pytest.fixture(name='raw_data_with_two_runs')
 def create_raw_data_with_two_runs(tmpdir):
     raw_data = create_run(tmpdir, '140101_M01234', '2000A*.fastq')
@@ -185,12 +191,9 @@ def test_starts_empty():
     assert not kive_watcher.is_full()
 
 
-def test(raw_data_with_two_runs, mock_open_kive, default_config):
-    base_calls = (raw_data_with_two_runs /
-                  "MiSeq/runs/140201_M01234/Data/Intensities/BaseCalls")
-    default_config.kive_server = 'https://devnull.com:8000'
-    default_config.kive_user = 'ishmael'
-    default_config.kive_password = 'moby'
+def test_first_sample(raw_data_with_two_samples, mock_open_kive, default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
     mock_pipeline = mock_session.get_pipeline.return_value
     mock_input = mock_pipeline.inputs.__getitem__.return_value
@@ -198,33 +201,63 @@ def test(raw_data_with_two_runs, mock_open_kive, default_config):
 
     kive_watcher.add_sample_group(
         base_calls=base_calls,
-        sample_group=SampleGroup('2010A',
-                                 ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
                                   None)))
 
     mock_open_kive.assert_called_once_with(default_config.kive_server)
     mock_session.login.assert_called_once_with(default_config.kive_user,
                                                default_config.kive_password)
     mock_session.create_run_batch.assert_called_once_with(
-        '140201_M01234 v0-dev',
-        description='MiCall batch for folder 140201_M01234, pipeline version v0-dev.',
+        '140101_M01234 v0-dev',
+        description='MiCall batch for folder 140101_M01234, pipeline version v0-dev.',
         users=[],
         groups=['Everyone'])
     mock_session.get_pipeline.assert_called_once_with(
         default_config.micall_filter_quality_pipeline_id)
     mock_session.find_datasets.assert_called_once_with(
         cdt=mock_input.compounddatatype,
-        name='140201_M01234_quality.csv',
+        name='140101_M01234_quality.csv',
         uploaded=True,
         md5='6861a4a0bfd71b62c0048ff9a4910223')  # MD5 of header with no records.
     add_args_list = mock_session.add_dataset.call_args_list
     assert len(add_args_list) == 1
-    assert add_args_list[0][1]['name'] == '140201_M01234_quality.csv'
-    assert add_args_list[0][1]['description'] == 'Error rates for 140201_M01234 run.'
+    assert add_args_list[0][1]['name'] == '140101_M01234_quality.csv'
+    assert add_args_list[0][1]['description'] == 'Error rates for 140101_M01234 run.'
     assert add_args_list[0][1]['cdt'] == mock_input.compounddatatype
     mock_session.run_pipeline.assert_called_once_with(
         mock_session.get_pipeline.return_value,
         [mock_session.add_dataset.return_value],
-        'MiCall filter quality on 140201_M01234',
+        'MiCall filter quality on 140101_M01234',
+        runbatch=mock_session.create_run_batch.return_value,
+        groups=['Everyone'])
+
+
+def test(raw_data_with_two_samples, mock_open_kive, default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    kive_watcher = KiveWatcher(default_config)
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2120A',
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                  None)))
+
+    mock_session.create_run_batch.assert_called_once_with(
+        '140101_M01234 v0-dev',
+        description='MiCall batch for folder 140101_M01234, pipeline version v0-dev.',
+        users=[],
+        groups=['Everyone'])
+    mock_session.run_pipeline.assert_called_once_with(
+        mock_session.get_pipeline.return_value,
+        [mock_session.add_dataset.return_value],
+        'MiCall filter quality on 140101_M01234',
         runbatch=mock_session.create_run_batch.return_value,
         groups=['Everyone'])

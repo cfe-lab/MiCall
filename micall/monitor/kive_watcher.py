@@ -81,6 +81,8 @@ class KiveWatcher:
     def __init__(self, config=None):
         self.config = config
         self.session = None
+        self.current_run_folder = None
+        self.run_batches = {}  # {run_folder: run_batch}
 
     def is_full(self):
         return False
@@ -163,7 +165,13 @@ class KiveWatcher:
             self.session.login(self.config.kive_user, self.config.kive_password)
         run_folder = (base_calls / "../../..").resolve()
         run_name = '_'.join(run_folder.name.split('_')[:2])
+        run_batch = self.run_batches.get(run_folder)
+        if run_batch is not None:
+            return
+
         run_batch = self.create_batch(run_name)
+        self.run_batches[run_folder] = run_batch
+
         read_sizes = parse_read_sizes(run_folder / "RunInfo.xml")
         read_lengths = [read_sizes.read1,
                         read_sizes.index1,
