@@ -4,7 +4,7 @@ python:
 install: "pip install -r requirements-test.txt"
 before_script:
     - "cp micall/settings_default.py micall/settings.py"
-script: "coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m unittest discover"
+script: "coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest"
 
 after_success:
     - pip install codecov

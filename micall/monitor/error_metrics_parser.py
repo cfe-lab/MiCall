@@ -114,7 +114,7 @@ def write_phix_csv(out_file, records, read_lengths=None, summary=None):
             cycle = record[1]
             previous_cycle += sign
             while previous_cycle*sign < cycle*sign:
-                writer.writerow((record[0], previous_cycle))
+                writer.writerow((record[0], previous_cycle, ''))
                 previous_cycle += sign
             writer.writerow(record)
             summary_index = (sign+1) // 2

@@ -39,3 +39,7 @@ The scenarios that each file tests are:
   reads with partial deletions in codons 53 and 54, 4 reads with insertions
   after codon 56, 3 soft clipped reads in codons 59-64, 1 read with a deletion
   in codons 65-67, followed by 18 clean codons with only 10 reads covering them.
+* 2130A-HCV - full coverage of the whole genome portion of NS5b, with a couple
+  of mutations. See the `make_sample.py` script for details.
+* 2130AMIDI-MidHCV - full coverage of the MIDI portion of NS5b, with a couple
+  of mutations. See the `make_sample.py` script for details.

@@ -26,8 +26,8 @@ def parse_args():
 
 def plot(counts, filename, window_size=31):
     window_counts = defaultdict(dict)  # {(seed, consensus): {mid_pos: (agree, disagree)}}
-    for names, agreement_counts in counts.iteritems():
-        for mid_pos in agreement_counts.iterkeys():
+    for names, agreement_counts in counts.items():
+        for mid_pos in agreement_counts.keys():
             hit_count = 0
             window_start = mid_pos - window_size/2
             window_end = window_start + window_size
@@ -44,7 +44,7 @@ def plot(counts, filename, window_size=31):
                                                  disagree_sum/hit_count)
 
     _fig, axes = plt.subplots(nrows=2, ncols=2)
-    for axis_index, names in enumerate(sorted(window_counts.iterkeys())):
+    for axis_index, names in enumerate(sorted(window_counts.keys())):
         axis = axes[axis_index % 2][axis_index / 2]
         seed_name, consensus_name = names
 #         axis.set_yscale('log')
@@ -53,7 +53,7 @@ def plot(counts, filename, window_size=31):
         axis.set_xlabel(consensus_name + ' nuc pos')
         axis.set_ylabel(seed_name + ' match counts')
         name_counts = window_counts[names]
-        x = sorted(name_counts.iterkeys())
+        x = sorted(name_counts.keys())
         y1 = [name_counts[pos][0] for pos in x]
         y2 = [sum(name_counts[pos]) for pos in x]
         axis.step(x, y1, 'r', linewidth=2, where='mid', label='agree')
@@ -90,8 +90,8 @@ def find_consensus(rows, seed_name, region_name):
             if nuc_count > max_count:
                 max_nucs[pos] = nuc
                 max_count = nuc_count
-    max_pos = max_nucs and max(max_nucs.iterkeys()) or 0
-    consensus = ''.join(max_nucs.get(i+1, 'N') for i in xrange(max_pos))
+    max_pos = max_nucs and max(max_nucs.keys()) or 0
+    consensus = ''.join(max_nucs.get(i+1, 'N') for i in range(max_pos))
     return consensus
 
 
@@ -110,13 +110,13 @@ def process_file(sample_name, projects, args):
         combo_rows = {combo: list(group)
                       for combo, group in groupby(region_rows,
                                                   itemgetter('seed', 'region'))}
-    seed_names = {combo[0] for combo in combo_rows.iterkeys()}
+    seed_names = {combo[0] for combo in combo_rows.keys()}
     seed_map = {seed_name: projects.getReference(seed_name)
                 for seed_name in seed_names}
     consensus_map = {combo: find_consensus(rows, *combo)
-                     for combo, rows in combo_rows.iteritems()}
+                     for combo, rows in combo_rows.items()}
     nucleotides = 'ACGT'
-    for combo, rows in combo_rows.iteritems():
+    for combo, rows in combo_rows.items():
         seed_name, _region_name = combo
         consensus = consensus_map[combo]
         for dest_seed_name in seed_names:

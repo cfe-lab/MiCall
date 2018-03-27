@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from queue import Full
 
 from io import StringIO, BytesIO
-from requests.adapters import HTTPAdapter
 
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
@@ -17,6 +16,12 @@ except ImportError:
     # Ignore import errors during testing.
     KiveAPI = RunStatus = None
 
+try:
+    from requests.adapters import HTTPAdapter
+except ImportError:
+    # Ignore import errors during testing.
+    HTTPAdapter = None
+
 logger = logging.getLogger(__name__)
 ALLOWED_GROUPS = ['Everyone']
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
@@ -25,6 +30,8 @@ FOLDER_SCAN_INTERVAL = timedelta(hours=1)
 def open_kive(server_url):
     if KiveAPI is None:
         raise ImportError('Kive API failed to import. Is it installed?')
+    if HTTPAdapter is None:
+        raise ImportError('requests module failed to import. Is it installed?')
     session = KiveAPI(server_url)
     session.mount('https://', HTTPAdapter(max_retries=20))
     return session
