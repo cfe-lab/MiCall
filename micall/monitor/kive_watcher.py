@@ -7,6 +7,7 @@ from io import StringIO, BytesIO
 
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
+from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS
 from micall.resistance.resistance import find_groups
 
 try:
@@ -23,7 +24,6 @@ except ImportError:
     HTTPAdapter = None
 
 logger = logging.getLogger(__name__)
-ALLOWED_GROUPS = ['Everyone']
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
 
 
@@ -81,26 +81,45 @@ class KiveWatcher:
     def __init__(self, config=None):
         self.config = config
         self.session = None
-        self.current_run_folder = None
-        self.run_batches = {}  # {run_folder: run_batch}
+        self.folder_watchers = {}  # {base_calls_folder: FolderWatcher}
+        self.pipelines = {}  # {pipeline_id: pipeline}
+        self.input_pipeline_ids = dict(
+            quality_csv=config.micall_filter_quality_pipeline_id,
+            bad_cycles_csv=config.micall_main_pipeline_id,
+            main_amino_csv=config.micall_resistance_pipeline_id,
+            midi_amino_csv=config.micall_resistance_pipeline_id)
 
     def is_full(self):
         return False
 
     def get_kive_pipeline(self, pipeline_id):
-        kive_pipeline = self.session.get_pipeline(pipeline_id)
+        self.check_session()
+        kive_pipeline = self.pipelines.get(pipeline_id)
+        if kive_pipeline is None:
+            kive_pipeline = self.session.get_pipeline(pipeline_id)
+            self.pipelines[pipeline_id] = kive_pipeline
         return kive_pipeline
 
-    def create_batch(self, run_name):
-        batch_name = run_name + ' ' + self.config.pipeline_version
+    def get_kive_input(self, input_name):
+        pipeline_id = self.input_pipeline_ids[input_name]
+        kive_pipeline = self.get_kive_pipeline(pipeline_id)
+        for kive_input in kive_pipeline.inputs:
+            if kive_input.dataset_name == input_name:
+                return kive_input
+        raise ValueError('Input {} not found on pipeline id {}.'.format(
+            input_name,
+            pipeline_id))
+
+    def create_batch(self, folder_watcher):
+        batch_name = folder_watcher.run_name + ' ' + self.config.pipeline_version
         description = 'MiCall batch for folder {}, pipeline version {}.'.format(
-            run_name,
+            folder_watcher.run_name,
             self.config.pipeline_version)
         batch = self.session.create_run_batch(batch_name,
                                               description=description,
                                               users=[],
                                               groups=ALLOWED_GROUPS)
-        return batch
+        folder_watcher.batch = batch
 
     def find_kive_dataset(self, source_file, dataset_name, cdt):
         """ Search for a dataset in Kive by name and checksum.
@@ -160,19 +179,28 @@ class KiveWatcher:
         return dataset
 
     def add_sample_group(self, base_calls, sample_group):
-        if self.session is None:
-            self.session = open_kive(self.config.kive_server)
-            self.session.login(self.config.kive_user, self.config.kive_password)
-        run_folder = (base_calls / "../../..").resolve()
-        run_name = '_'.join(run_folder.name.split('_')[:2])
-        run_batch = self.run_batches.get(run_folder)
-        if run_batch is not None:
-            return
+        self.check_session()
+        folder_watcher = self.folder_watchers.get(base_calls)
+        if folder_watcher is None:
+            folder_watcher = FolderWatcher(base_calls,
+                                           self.session,
+                                           self.config.pipeline_version)
+            self.folder_watchers[base_calls] = folder_watcher
+            self.create_batch(folder_watcher)
 
-        run_batch = self.create_batch(run_name)
-        self.run_batches[run_folder] = run_batch
+            self.run_filter_quality(folder_watcher)
+        fastq1 = sample_group.names[0]
+        fastq2 = fastq1.replace('_R1_', '_R2_')
+        for fastq_name, direction in ((fastq1, 'forward'), (fastq2, 'reverse')):
+            with (base_calls / fastq_name).open('rb') as fastq_file:
+                self.find_or_upload_dataset(
+                    fastq_file,
+                    fastq_name,
+                    direction + ' read from MiSeq run ' + folder_watcher.run_name,
+                    compounddatatype=None)
 
-        read_sizes = parse_read_sizes(run_folder / "RunInfo.xml")
+    def run_filter_quality(self, folder_watcher):
+        read_sizes = parse_read_sizes(folder_watcher.run_folder / "RunInfo.xml")
         read_lengths = [read_sizes.read1,
                         read_sizes.index1,
                         read_sizes.index2,
@@ -180,7 +208,7 @@ class KiveWatcher:
         quality_pipeline = self.get_kive_pipeline(
             self.config.micall_filter_quality_pipeline_id)
         quality_input = quality_pipeline.inputs[0]
-        error_path = run_folder / "InterOp/ErrorMetricsOut.bin"
+        error_path = folder_watcher.run_folder / "InterOp/ErrorMetricsOut.bin"
         quality_csv = StringIO()
         with error_path.open('rb') as error_file:
             records = error_metrics_parser.read_errors(error_file)
@@ -190,18 +218,32 @@ class KiveWatcher:
         quality_csv_bytes = BytesIO()
         quality_csv_bytes.write(quality_csv.getvalue().encode('utf8'))
         quality_csv_bytes.seek(0)
-        quality_file_name = run_name + '_quality.csv'
-        quality_dataset = self.find_kive_dataset(quality_csv_bytes,
-                                                 quality_file_name,
-                                                 quality_input.compounddatatype)
+        quality_dataset = self.find_or_upload_dataset(
+            quality_csv_bytes,
+            folder_watcher.run_name + '_quality.csv',
+            'Error rates for {} run.'.format(folder_watcher.run_name),
+            quality_input.compounddatatype)
+        folder_watcher.filter_quality_run = self.session.run_pipeline(
+            quality_pipeline,
+            [quality_dataset],
+            'MiCall filter quality on ' + folder_watcher.run_name,
+            runbatch=folder_watcher.batch,
+            groups=ALLOWED_GROUPS)
+
+    def check_session(self):
+        if self.session is None:
+            self.session = open_kive(self.config.kive_server)
+            self.session.login(self.config.kive_user, self.config.kive_password)
+
+    def find_or_upload_dataset(self, dataset_file, dataset_name, description, compounddatatype):
+        quality_dataset = self.find_kive_dataset(dataset_file,
+                                                 dataset_name,
+                                                 compounddatatype)
         if quality_dataset is None:
+            dataset_file.seek(0)
             quality_dataset = self.upload_kive_dataset(
-                quality_csv_bytes,
-                quality_file_name,
-                quality_input.compounddatatype,
-                'Error rates for {} run.'.format(run_name))
-        self.session.run_pipeline(quality_pipeline,
-                                  [quality_dataset],
-                                  'MiCall filter quality on ' + run_name,
-                                  runbatch=run_batch,
-                                  groups=ALLOWED_GROUPS)
+                dataset_file,
+                dataset_name,
+                compounddatatype,
+                description)
+        return quality_dataset

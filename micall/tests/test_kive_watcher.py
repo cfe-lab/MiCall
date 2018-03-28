@@ -1,8 +1,7 @@
-from argparse import Namespace
 from gzip import GzipFile
 from pathlib import Path
 from queue import Full
-from unittest.mock import patch
+from unittest.mock import patch, ANY, Mock, call
 
 import pytest
 from datetime import datetime, timedelta
@@ -29,8 +28,14 @@ def create_mock_open_kive():
 
 @pytest.fixture(name='default_config')
 def create_default_config():
-    config = parse_args(argv=['--micall_filter_quality_pipeline_id', '42'])
-    yield config
+    default_config = parse_args(argv=['--micall_filter_quality_pipeline_id', '42'])
+    yield default_config
+
+
+@pytest.fixture(name='pipelines_config')
+def create_pipelines_config(default_config):
+    default_config.micall_main_pipeline_id = 43
+    yield default_config
 
 
 class DummyQueueSink:
@@ -185,10 +190,62 @@ def test_scan_for_new_runs(raw_data_with_two_runs, mock_clock):
     sample_queue.verify()
 
 
-def test_starts_empty():
-    kive_watcher = KiveWatcher(Namespace())
+def test_starts_empty(default_config):
+    kive_watcher = KiveWatcher(default_config)
 
     assert not kive_watcher.is_full()
+
+
+def test_get_kive_pipeline(mock_open_kive, pipelines_config):
+    mock_session = mock_open_kive.return_value
+    expected_pipeline = mock_session.get_pipeline.return_value
+    kive_watcher = KiveWatcher(pipelines_config)
+
+    pipeline1 = kive_watcher.get_kive_pipeline(
+        pipelines_config.micall_main_pipeline_id)
+
+    assert expected_pipeline is pipeline1
+    mock_session.get_pipeline.assert_called_once_with(
+        pipelines_config.micall_main_pipeline_id)
+
+
+def test_get_pipeline_cached(mock_open_kive, pipelines_config):
+    mock_session = mock_open_kive.return_value
+    kive_watcher = KiveWatcher(pipelines_config)
+
+    pipeline1 = kive_watcher.get_kive_pipeline(pipelines_config.micall_main_pipeline_id)
+    pipeline2 = kive_watcher.get_kive_pipeline(pipelines_config.micall_main_pipeline_id)
+
+    assert pipeline1 is pipeline2
+    mock_session.get_pipeline.assert_called_once_with(
+        pipelines_config.micall_main_pipeline_id)
+
+
+def test_get_kive_input(pipelines_config):
+    kive_watcher = KiveWatcher(pipelines_config)
+    mock_pipeline = Mock()
+    kive_watcher.pipelines[
+        pipelines_config.micall_main_pipeline_id] = mock_pipeline
+    expected_input = Mock(dataset_name='bad_cycles_csv')
+    mock_pipeline.inputs = [Mock(), expected_input]
+
+    kive_input = kive_watcher.get_kive_input('bad_cycles_csv')
+
+    assert expected_input is kive_input
+
+
+def test_get_kive_input_wrong_pipeline(pipelines_config):
+    pipelines_config.micall_resistance_pipeline_id = 44
+    kive_watcher = KiveWatcher(pipelines_config)
+    mock_pipeline = Mock(name='resistance_pipeline')
+    kive_watcher.pipelines[
+        pipelines_config.micall_resistance_pipeline_id] = mock_pipeline
+    mock_pipeline.inputs = [Mock(), Mock(dataset_name='bad_cycles_csv')]
+
+    with pytest.raises(
+            ValueError,
+            match=r'Input main_amino_csv not found on pipeline id 44\.'):
+        kive_watcher.get_kive_input('main_amino_csv')
 
 
 def test_first_sample(raw_data_with_two_samples, mock_open_kive, default_config):
@@ -196,7 +253,8 @@ def test_first_sample(raw_data_with_two_samples, mock_open_kive, default_config)
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
     mock_pipeline = mock_session.get_pipeline.return_value
-    mock_input = mock_pipeline.inputs.__getitem__.return_value
+    mock_input = Mock(dataset_name='quality_csv')
+    mock_pipeline.inputs = [mock_input]
     kive_watcher = KiveWatcher(default_config)
 
     kive_watcher.add_sample_group(
@@ -215,16 +273,34 @@ def test_first_sample(raw_data_with_two_samples, mock_open_kive, default_config)
         groups=['Everyone'])
     mock_session.get_pipeline.assert_called_once_with(
         default_config.micall_filter_quality_pipeline_id)
-    mock_session.find_datasets.assert_called_once_with(
-        cdt=mock_input.compounddatatype,
-        name='140101_M01234_quality.csv',
-        uploaded=True,
-        md5='6861a4a0bfd71b62c0048ff9a4910223')  # MD5 of header with no records.
-    add_args_list = mock_session.add_dataset.call_args_list
-    assert len(add_args_list) == 1
-    assert add_args_list[0][1]['name'] == '140101_M01234_quality.csv'
-    assert add_args_list[0][1]['description'] == 'Error rates for 140101_M01234 run.'
-    assert add_args_list[0][1]['cdt'] == mock_input.compounddatatype
+    assert [call(cdt=mock_input.compounddatatype,
+                 name='140101_M01234_quality.csv',
+                 uploaded=True,
+                 # MD5 of header with no records.
+                 md5='6861a4a0bfd71b62c0048ff9a4910223'),
+            call(cdt=None,
+                 name='2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                 uploaded=True,
+                 md5=ANY),
+            call(cdt=None,
+                 name='2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
+                 uploaded=True,
+                 md5=ANY)] == mock_session.find_datasets.call_args_list
+    assert [call(name='140101_M01234_quality.csv',
+                 description='Error rates for 140101_M01234 run.',
+                 handle=ANY,
+                 cdt=mock_input.compounddatatype,
+                 groups=['Everyone']),
+            call(name='2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                 description='forward read from MiSeq run 140101_M01234',
+                 handle=ANY,
+                 cdt=None,
+                 groups=['Everyone']),
+            call(name='2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
+                 description='reverse read from MiSeq run 140101_M01234',
+                 handle=ANY,
+                 cdt=None,
+                 groups=['Everyone'])] == mock_session.add_dataset.call_args_list
     mock_session.run_pipeline.assert_called_once_with(
         mock_session.get_pipeline.return_value,
         [mock_session.add_dataset.return_value],
@@ -233,10 +309,12 @@ def test_first_sample(raw_data_with_two_samples, mock_open_kive, default_config)
         groups=['Everyone'])
 
 
-def test(raw_data_with_two_samples, mock_open_kive, default_config):
+def test_second_sample(raw_data_with_two_samples, mock_open_kive, default_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
+    mock_session.get_pipeline.return_value.inputs = [
+        Mock(dataset_name='quality_csv')]
     kive_watcher = KiveWatcher(default_config)
 
     kive_watcher.add_sample_group(
@@ -261,3 +339,6 @@ def test(raw_data_with_two_samples, mock_open_kive, default_config):
         'MiCall filter quality on 140101_M01234',
         runbatch=mock_session.create_run_batch.return_value,
         groups=['Everyone'])
+    expected_dataset_count = 5  # quality_csv + 2 pairs of FASTQ files
+    assert expected_dataset_count == len(
+        mock_session.find_datasets.call_args_list)
