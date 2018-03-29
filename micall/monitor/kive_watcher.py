@@ -7,7 +7,7 @@ from io import StringIO, BytesIO
 
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
-from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS
+from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType
 from micall.resistance.resistance import find_groups
 
 try:
@@ -90,7 +90,9 @@ class KiveWatcher:
             midi_amino_csv=config.micall_resistance_pipeline_id)
 
     def is_full(self):
-        return False
+        active_count = sum(len(folder_watcher.active_samples)
+                           for folder_watcher in self.folder_watchers.values())
+        return active_count >= self.config.max_active
 
     def get_kive_pipeline(self, pipeline_id):
         self.check_session()
@@ -182,32 +184,85 @@ class KiveWatcher:
         self.check_session()
         folder_watcher = self.folder_watchers.get(base_calls)
         if folder_watcher is None:
-            folder_watcher = FolderWatcher(base_calls,
-                                           self.session,
-                                           self.config.pipeline_version)
+            folder_watcher = FolderWatcher(base_calls, self)
             self.folder_watchers[base_calls] = folder_watcher
             self.create_batch(folder_watcher)
+            self.upload_filter_quality(folder_watcher)
 
-            self.run_filter_quality(folder_watcher)
-        fastq1 = sample_group.names[0]
-        fastq2 = fastq1.replace('_R1_', '_R2_')
-        for fastq_name, direction in ((fastq1, 'forward'), (fastq2, 'reverse')):
-            with (base_calls / fastq_name).open('rb') as fastq_file:
-                self.find_or_upload_dataset(
-                    fastq_file,
-                    fastq_name,
-                    direction + ' read from MiSeq run ' + folder_watcher.run_name,
-                    compounddatatype=None)
+        sample_watcher = SampleWatcher(sample_group)
+        for fastq1 in filter(None, sample_group.names):
+            fastq2 = fastq1.replace('_R1_', '_R2_')
+            for fastq_name, direction in ((fastq1, 'forward'), (fastq2, 'reverse')):
+                with (base_calls / fastq_name).open('rb') as fastq_file:
+                    fastq_dataset = self.find_or_upload_dataset(
+                        fastq_file,
+                        fastq_name,
+                        direction + ' read from MiSeq run ' + folder_watcher.run_name,
+                        compounddatatype=None)
+                    sample_watcher.fastq_datasets.append(fastq_dataset)
+        folder_watcher.sample_watchers.append(sample_watcher)
 
-    def run_filter_quality(self, folder_watcher):
+    def poll_runs(self):
+        for folder_watcher in self.folder_watchers.values():
+            folder_watcher.poll_runs()
+
+    def run_pipeline(self, folder_watcher, sample_watcher, pipeline_type):
+        if pipeline_type == PipelineType.FILTER_QUALITY:
+            quality_pipeline = self.get_kive_pipeline(
+                self.config.micall_filter_quality_pipeline_id)
+            return self.session.run_pipeline(
+                quality_pipeline,
+                [folder_watcher.quality_dataset],
+                'MiCall filter quality on ' + folder_watcher.run_name,
+                runbatch=folder_watcher.batch,
+                groups=ALLOWED_GROUPS)
+        if pipeline_type == PipelineType.RESISTANCE:
+            resistance_pipeline = self.get_kive_pipeline(
+                self.config.micall_resistance_pipeline_id)
+            inputs = [run.get_results()['amino_csv']
+                      for run in sample_watcher.main_runs]
+            if len(inputs) == 1:
+                inputs *= 2
+            return self.session.run_pipeline(
+                resistance_pipeline,
+                inputs,
+                'MiCall resistance on ' + sample_watcher.sample_group.enum,
+                runbatch=folder_watcher.batch,
+                groups=ALLOWED_GROUPS)
+        if pipeline_type == PipelineType.MAIN:
+            fastq1, fastq2 = sample_watcher.fastq_datasets[:2]
+            sample_name = sample_watcher.sample_group.names[0]
+        else:
+            assert pipeline_type == PipelineType.MIDI
+            fastq1, fastq2 = sample_watcher.fastq_datasets[2:]
+            sample_name = sample_watcher.sample_group.names[1]
+        main_pipeline = self.get_kive_pipeline(
+            self.config.micall_main_pipeline_id)
+        if folder_watcher.bad_cycles_dataset is None:
+            results = folder_watcher.filter_quality_run.get_results()
+            folder_watcher.bad_cycles_dataset = results['bad_cycles_csv']
+            bad_cycles_input = self.get_kive_input('bad_cycles_csv')
+            folder_watcher.bad_cycles_dataset.cdt = bad_cycles_input.compounddatatype
+
+        run_name = 'MiCall main on ' + '_'.join(sample_name.split('_')[:2])
+        return self.session.run_pipeline(
+            main_pipeline,
+            [fastq1, fastq2, folder_watcher.bad_cycles_dataset],
+            run_name,
+            runbatch=folder_watcher.batch,
+            groups=ALLOWED_GROUPS)
+
+    @staticmethod
+    def fetch_run_status(run):
+        return run.is_complete()
+
+    def upload_filter_quality(self, folder_watcher):
         read_sizes = parse_read_sizes(folder_watcher.run_folder / "RunInfo.xml")
         read_lengths = [read_sizes.read1,
                         read_sizes.index1,
                         read_sizes.index2,
                         read_sizes.read2]
-        quality_pipeline = self.get_kive_pipeline(
-            self.config.micall_filter_quality_pipeline_id)
-        quality_input = quality_pipeline.inputs[0]
+        quality_input = self.get_kive_input('quality_csv')
         error_path = folder_watcher.run_folder / "InterOp/ErrorMetricsOut.bin"
         quality_csv = StringIO()
         with error_path.open('rb') as error_file:
@@ -218,17 +273,11 @@ class KiveWatcher:
         quality_csv_bytes = BytesIO()
         quality_csv_bytes.write(quality_csv.getvalue().encode('utf8'))
         quality_csv_bytes.seek(0)
-        quality_dataset = self.find_or_upload_dataset(
+        folder_watcher.quality_dataset = self.find_or_upload_dataset(
             quality_csv_bytes,
             folder_watcher.run_name + '_quality.csv',
             'Error rates for {} run.'.format(folder_watcher.run_name),
             quality_input.compounddatatype)
-        folder_watcher.filter_quality_run = self.session.run_pipeline(
-            quality_pipeline,
-            [quality_dataset],
-            'MiCall filter quality on ' + folder_watcher.run_name,
-            runbatch=folder_watcher.batch,
-            groups=ALLOWED_GROUPS)
 
     def check_session(self):
         if self.session is None:

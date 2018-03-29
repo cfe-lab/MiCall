@@ -81,7 +81,7 @@ def main():
                            daemon=True)
     finder_thread.start()
     while True:
-        # TODO: check progress
+        kive_watcher.poll_runs()
         if kive_watcher.is_full():
             sleep(POLLING_DELAY)
         else:
