@@ -615,6 +615,98 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
     assert mock_session.run_pipeline.return_value is run
 
 
+def test_launch_mixed_hcv_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_config):
+    pipelines_config.mixed_hcv_pipeline_id = 47
+    base_calls = (raw_data_with_hcv_pair /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    quality_csv = Mock(name='quality_csv')
+    main_fastq1 = Mock(name='main_fastq1')
+    main_fastq2 = Mock(name='main_fastq2')
+    midi_fastq1 = Mock(name='midi_fastq1')
+    midi_fastq2 = Mock(name='midi_fastq2')
+    mock_session = mock_open_kive.return_value
+    mock_quality_pipeline = Mock(name='quality_pipeline')
+    mock_mixed_hcv_pipeline = Mock(name='main_pipeline')
+    mock_session.get_pipeline.side_effect = [mock_quality_pipeline,
+                                             mock_mixed_hcv_pipeline]
+    mock_session.add_dataset.side_effect = [quality_csv,
+                                            main_fastq1,
+                                            main_fastq2,
+                                            midi_fastq1,
+                                            midi_fastq2]
+    mock_input = Mock(dataset_name='quality_csv')
+    mock_quality_pipeline.inputs = [mock_input]
+    mock_mixed_hcv_pipeline.inputs = [Mock(dataset_name='FASTQ1'),
+                                      Mock(dataset_name='FASTQ2')]
+    kive_watcher = KiveWatcher(pipelines_config)
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2130A',
+                                 ('2130A-HCV_S15_L001_R1_001.fastq.gz',
+                                  '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+    folder_watcher, = kive_watcher.folder_watchers.values()
+    sample_watcher, = folder_watcher.sample_watchers
+
+    run = kive_watcher.run_pipeline(folder_watcher,
+                                    sample_watcher,
+                                    PipelineType.MIXED_HCV)
+
+    assert [call(pipelines_config.micall_filter_quality_pipeline_id),
+            call(pipelines_config.mixed_hcv_pipeline_id)
+            ] == mock_session.get_pipeline.call_args_list
+    mock_session.run_pipeline.assert_called_once_with(
+        mock_mixed_hcv_pipeline,
+        [main_fastq1, main_fastq2],
+        'Mixed HCV on 2130A',
+        runbatch=mock_session.create_run_batch.return_value,
+        groups=['Everyone'])
+    assert mock_session.run_pipeline.return_value is run
+
+
+def test_launch_mixed_hcv_disabled(raw_data_with_hcv_pair, mock_open_kive, pipelines_config):
+    pipelines_config.mixed_hcv_pipeline_id = None
+    base_calls = (raw_data_with_hcv_pair /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    quality_csv = Mock(name='quality_csv')
+    main_fastq1 = Mock(name='main_fastq1')
+    main_fastq2 = Mock(name='main_fastq2')
+    midi_fastq1 = Mock(name='midi_fastq1')
+    midi_fastq2 = Mock(name='midi_fastq2')
+    mock_session = mock_open_kive.return_value
+    mock_quality_pipeline = Mock(name='quality_pipeline')
+    mock_mixed_hcv_pipeline = Mock(name='main_pipeline')
+    mock_session.get_pipeline.side_effect = [mock_quality_pipeline,
+                                             mock_mixed_hcv_pipeline]
+    mock_session.add_dataset.side_effect = [quality_csv,
+                                            main_fastq1,
+                                            main_fastq2,
+                                            midi_fastq1,
+                                            midi_fastq2]
+    mock_input = Mock(dataset_name='quality_csv')
+    mock_quality_pipeline.inputs = [mock_input]
+    mock_mixed_hcv_pipeline.inputs = [Mock(dataset_name='FASTQ1'),
+                                      Mock(dataset_name='FASTQ2')]
+    kive_watcher = KiveWatcher(pipelines_config)
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2130A',
+                                 ('2130A-HCV_S15_L001_R1_001.fastq.gz',
+                                  '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+    folder_watcher, = kive_watcher.folder_watchers.values()
+    sample_watcher, = folder_watcher.sample_watchers
+
+    run = kive_watcher.run_pipeline(folder_watcher,
+                                    sample_watcher,
+                                    PipelineType.MIXED_HCV)
+
+    assert [call(pipelines_config.micall_filter_quality_pipeline_id)
+            ] == mock_session.get_pipeline.call_args_list
+    mock_session.run_pipeline.assert_not_called()
+    assert None is run
+
+
 def test_full_with_two_samples(raw_data_with_two_samples, mock_open_kive, pipelines_config):
     pipelines_config.max_active = 2
     base_calls = (raw_data_with_two_samples /

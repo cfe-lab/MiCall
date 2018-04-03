@@ -233,6 +233,18 @@ class KiveWatcher:
                 'MiCall resistance on ' + sample_watcher.sample_group.enum,
                 runbatch=folder_watcher.batch,
                 groups=ALLOWED_GROUPS)
+        if pipeline_type == PipelineType.MIXED_HCV:
+            if self.config.mixed_hcv_pipeline_id is None:
+                return None
+            mixed_hcv_pipeline = self.get_kive_pipeline(
+                self.config.mixed_hcv_pipeline_id)
+            input_datasets = sample_watcher.fastq_datasets[:2]
+            return self.session.run_pipeline(
+                mixed_hcv_pipeline,
+                input_datasets,
+                'Mixed HCV on ' + sample_watcher.sample_group.enum,
+                runbatch=folder_watcher.batch,
+                groups=ALLOWED_GROUPS)
         if pipeline_type == PipelineType.MAIN:
             fastq1, fastq2 = sample_watcher.fastq_datasets[:2]
             sample_name = sample_watcher.sample_group.names[0]
