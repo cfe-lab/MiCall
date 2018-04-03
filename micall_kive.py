@@ -92,7 +92,7 @@ def main():
     sample = load_sample(args)
 
     pssm = Pssm()
-    sample.process(pssm)
+    sample.process(pssm, force_gzip=True)  # dataset files change .gz to .raw
 
     with tarfile.open(args.coverage_maps_tar, mode='w') as tar:
         for image_name in os.listdir(sample.coverage_maps):
