@@ -442,6 +442,9 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
     mock_session.get_pipeline.side_effect = [mock_quality_pipeline, mock_main_pipeline]
     mock_input = Mock(dataset_name='quality_csv')
     mock_quality_pipeline.inputs = [mock_input]
+    mock_main_pipeline.inputs = [Mock(dataset_name='fastq1'),
+                                 Mock(dataset_name='fastq1'),
+                                 Mock(dataset_name='bad_cycles_csv')]
     mock_session.add_dataset.side_effect = [quality_csv, fastq1, fastq2]
     kive_watcher = KiveWatcher(pipelines_config)
 
