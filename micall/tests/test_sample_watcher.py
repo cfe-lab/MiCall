@@ -167,3 +167,22 @@ def test_resistance_finished():
     assert [] == session.active_runs
     assert set() == folder_watcher.active_samples
     assert folder_watcher.is_complete
+
+
+def test_hcv_filter_quality_finished():
+    base_calls_folder = '/path/Data/Intensities/BaseCalls'
+    session = DummySession()
+    folder_watcher = FolderWatcher(base_calls_folder, runner=session)
+    sample_watcher = SampleWatcher(SampleGroup(
+        '2130A',
+        ('2130A-HCV_S15_L001_R1_001.fastq.gz',
+         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+    folder_watcher.sample_watchers.append(sample_watcher)
+
+    folder_watcher.poll_runs()   # Start filter_quality
+    session.active_runs.clear()  # Finish filter_quality
+
+    folder_watcher.poll_runs()   # start main
+
+    assert [(folder_watcher, sample_watcher, PipelineType.MAIN),
+            (folder_watcher, sample_watcher, PipelineType.MIDI)] == session.active_runs

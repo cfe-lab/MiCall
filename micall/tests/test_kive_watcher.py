@@ -535,6 +535,8 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
     mock_session.get_pipeline.side_effect = [mock_quality_pipeline, mock_resistance_pipeline]
     mock_input = Mock(dataset_name='quality_csv')
     mock_quality_pipeline.inputs = [mock_input]
+    mock_resistance_pipeline.inputs = [Mock(dataset_name='main_amino_csv'),
+                                       Mock(dataset_name='midi_amino_csv')]
     kive_watcher = KiveWatcher(pipelines_config)
 
     kive_watcher.add_sample_group(
@@ -573,10 +575,13 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
     midi_amino_csv = Mock(name='midi_amino_csv')
     mock_session = mock_open_kive.return_value
     mock_quality_pipeline = Mock(name='quality_pipeline')
-    mock_main_pipeline = Mock(name='main_pipeline')
-    mock_session.get_pipeline.side_effect = [mock_quality_pipeline, mock_main_pipeline]
+    mock_resistance_pipeline = Mock(name='main_pipeline')
+    mock_session.get_pipeline.side_effect = [mock_quality_pipeline,
+                                             mock_resistance_pipeline]
     mock_input = Mock(dataset_name='quality_csv')
     mock_quality_pipeline.inputs = [mock_input]
+    mock_resistance_pipeline.inputs = [Mock(dataset_name='main_amino_csv'),
+                                       Mock(dataset_name='midi_amino_csv')]
     kive_watcher = KiveWatcher(pipelines_config)
 
     kive_watcher.add_sample_group(
@@ -602,7 +607,7 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
             call(pipelines_config.micall_resistance_pipeline_id)
             ] == mock_session.get_pipeline.call_args_list
     mock_session.run_pipeline.assert_called_once_with(
-        mock_main_pipeline,
+        mock_resistance_pipeline,
         [main_amino_csv, midi_amino_csv],
         'MiCall resistance on 2130A',
         runbatch=mock_session.create_run_batch.return_value,

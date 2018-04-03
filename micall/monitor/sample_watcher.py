@@ -75,8 +75,13 @@ class FolderWatcher:
                 self,
                 sample_watcher,
                 PipelineType.MAIN))
+            if sample_watcher.sample_group.names[1] is not None:
+                sample_watcher.main_runs.append(self.runner.run_pipeline(
+                    self,
+                    sample_watcher,
+                    PipelineType.MIDI))
             self.active_runs.update(sample_watcher.main_runs)
-            # Launched main run, nothing more to check on sample.
+            # Launched main and midi runs, nothing more to check on sample.
             return False
         for run in sample_watcher.main_runs:
             if run in self.active_runs:

@@ -219,13 +219,17 @@ class KiveWatcher:
         if pipeline_type == PipelineType.RESISTANCE:
             resistance_pipeline = self.get_kive_pipeline(
                 self.config.micall_resistance_pipeline_id)
-            inputs = [run.get_results()['amino_csv']
-                      for run in sample_watcher.main_runs]
-            if len(inputs) == 1:
-                inputs *= 2
+            input_datasets = [run.get_results()['amino_csv']
+                              for run in sample_watcher.main_runs]
+            main_aminos_input = self.get_kive_input('main_amino_csv')
+            for input_dataset in input_datasets:
+                # TODO: remove this when Kive API sets CDT properly (issue #729)
+                input_dataset.cdt = main_aminos_input.compounddatatype
+            if len(input_datasets) == 1:
+                input_datasets *= 2
             return self.session.run_pipeline(
                 resistance_pipeline,
-                inputs,
+                input_datasets,
                 'MiCall resistance on ' + sample_watcher.sample_group.enum,
                 runbatch=folder_watcher.batch,
                 groups=ALLOWED_GROUPS)
@@ -242,6 +246,7 @@ class KiveWatcher:
             results = folder_watcher.filter_quality_run.get_results()
             folder_watcher.bad_cycles_dataset = results['bad_cycles_csv']
             bad_cycles_input = self.get_kive_input('bad_cycles_csv')
+            # TODO: remove this when Kive API sets CDT properly (issue #729)
             folder_watcher.bad_cycles_dataset.cdt = bad_cycles_input.compounddatatype
 
         run_name = 'MiCall main on ' + '_'.join(sample_name.split('_')[:2])
