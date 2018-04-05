@@ -25,6 +25,24 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
+DOWNLOADED_RESULTS = ['remap_counts_csv',
+                      'conseq_csv',
+                      'conseq_ins_csv',
+                      'failed_csv',
+                      'nuc_csv',
+                      'amino_csv',
+                      'coord_ins_csv',
+                      'failed_align_csv',
+                      'g2p_csv',
+                      'g2p_summary_csv',
+                      'coverage_scores_csv',
+                      'coverage_maps_tar',
+                      'cascade_csv',
+                      'mixed_counts_csv',
+                      'mixed_amino_csv',
+                      'mixed_amino_merged_csv',
+                      'resistance_csv',
+                      'mutations_csv']
 
 
 def open_kive(server_url):
@@ -77,17 +95,21 @@ def scan_samples(raw_data_folder, sample_queue):
     return True
 
 
+def trim_name(sample_name):
+    return '_'.join(sample_name.split('_')[:2])
+
+
 class KiveWatcher:
     def __init__(self, config=None):
         self.config = config
         self.session = None
         self.folder_watchers = {}  # {base_calls_folder: FolderWatcher}
         self.pipelines = {}  # {pipeline_id: pipeline}
-        self.input_pipeline_ids = dict(
+        self.input_pipeline_ids = config and dict(
             quality_csv=config.micall_filter_quality_pipeline_id,
             bad_cycles_csv=config.micall_main_pipeline_id,
             main_amino_csv=config.micall_resistance_pipeline_id,
-            midi_amino_csv=config.micall_resistance_pipeline_id)
+            midi_amino_csv=config.micall_resistance_pipeline_id) or {}
 
     def is_full(self):
         active_count = sum(len(folder_watcher.active_samples)
@@ -113,7 +135,7 @@ class KiveWatcher:
             pipeline_id))
 
     def create_batch(self, folder_watcher):
-        batch_name = folder_watcher.run_name + ' ' + self.config.pipeline_version
+        batch_name = folder_watcher.run_name + ' v' + self.config.pipeline_version
         description = 'MiCall batch for folder {}, pipeline version {}.'.format(
             folder_watcher.run_name,
             self.config.pipeline_version)
@@ -233,16 +255,23 @@ class KiveWatcher:
                 'MiCall resistance on ' + sample_watcher.sample_group.enum,
                 runbatch=folder_watcher.batch,
                 groups=ALLOWED_GROUPS)
-        if pipeline_type == PipelineType.MIXED_HCV:
+        if pipeline_type in (PipelineType.MIXED_HCV_MAIN,
+                             PipelineType.MIXED_HCV_MIDI):
             if self.config.mixed_hcv_pipeline_id is None:
                 return None
             mixed_hcv_pipeline = self.get_kive_pipeline(
                 self.config.mixed_hcv_pipeline_id)
-            input_datasets = sample_watcher.fastq_datasets[:2]
+            if pipeline_type == PipelineType.MIXED_HCV_MAIN:
+                input_datasets = sample_watcher.fastq_datasets[:2]
+                sample_name = sample_watcher.sample_group.names[0]
+            else:
+                input_datasets = sample_watcher.fastq_datasets[2:]
+                sample_name = sample_watcher.sample_group.names[1]
+            sample_name = trim_name(sample_name)
             return self.session.run_pipeline(
                 mixed_hcv_pipeline,
                 input_datasets,
-                'Mixed HCV on ' + sample_watcher.sample_group.enum,
+                'Mixed HCV on ' + trim_name(sample_name),
                 runbatch=folder_watcher.batch,
                 groups=ALLOWED_GROUPS)
         if pipeline_type == PipelineType.MAIN:
@@ -261,7 +290,7 @@ class KiveWatcher:
             # TODO: remove this when Kive API sets CDT properly (issue #729)
             folder_watcher.bad_cycles_dataset.cdt = bad_cycles_input.compounddatatype
 
-        run_name = 'MiCall main on ' + '_'.join(sample_name.split('_')[:2])
+        run_name = 'MiCall main on ' + trim_name(sample_name)
         return self.session.run_pipeline(
             main_pipeline,
             [fastq1, fastq2, folder_watcher.bad_cycles_dataset],
@@ -269,9 +298,27 @@ class KiveWatcher:
             runbatch=folder_watcher.batch,
             groups=ALLOWED_GROUPS)
 
-    @staticmethod
-    def fetch_run_status(run):
-        return run.is_complete()
+    def fetch_run_status(self, run, folder_watcher, sample_watcher, pipeline_type):
+        is_complete = run.is_complete()
+        if is_complete and pipeline_type != PipelineType.FILTER_QUALITY:
+            sample_name = (sample_watcher.sample_group.names[1]
+                           if pipeline_type in (PipelineType.MIDI,
+                                                PipelineType.MIXED_HCV_MIDI)
+                           else sample_watcher.sample_group.names[0])
+            version_name = f'version_{self.config.pipeline_version}'
+            results_path = folder_watcher.run_folder / "Results" / version_name
+            scratch_path = results_path / "scratch" / trim_name(sample_name)
+            scratch_path.mkdir(parents=True, exist_ok=True)
+            results = run.get_results()
+            for output_name in DOWNLOADED_RESULTS:
+                dataset = results.get(output_name)
+                if dataset is None:
+                    continue
+                filename = '.'.join(output_name.rsplit('_', 1))
+                with (scratch_path / filename).open('wb') as f:
+                    dataset.download(f)
+
+        return is_complete
 
     def upload_filter_quality(self, folder_watcher):
         read_sizes = parse_read_sizes(folder_watcher.run_folder / "RunInfo.xml")

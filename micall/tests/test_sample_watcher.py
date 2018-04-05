@@ -11,7 +11,7 @@ class DummySession:
         :param set skipped_types: {PipelineType} types that won't run
         """
         self.skipped_types = skipped_types
-        self.active_runs = []
+        self.active_runs = []  # [(folder_watcher, sample_watcher, pipeline_type)]
 
     def run_pipeline(self, folder_watcher, sample_watcher, pipeline_type):
         if pipeline_type in self.skipped_types:
@@ -20,8 +20,18 @@ class DummySession:
         self.active_runs.append(run)
         return run
 
-    def fetch_run_status(self, run):
+    def fetch_run_status(self,
+                         run,
+                         _folder_watcher,
+                         _sample_watcher,
+                         _pipeline_type):
         return run not in self.active_runs
+
+    def finish_run(self, run):
+        self.active_runs.remove(run)
+
+    def finish_all_runs(self):
+        self.active_runs.clear()
 
 
 def test_folder_watcher_repr():
@@ -99,7 +109,7 @@ def test_filter_quality_finished():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
-    session.active_runs.clear()  # Finish filter_quality
+    session.finish_all_runs()  # Finish filter_quality
 
     folder_watcher.poll_runs()   # start main
 
@@ -114,7 +124,7 @@ def test_main_running():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
-    session.active_runs.clear()  # Finish filter_quality
+    session.finish_all_runs()  # Finish filter_quality
 
     folder_watcher.poll_runs()   # start main
     folder_watcher.poll_runs()   # main still running
@@ -130,9 +140,9 @@ def test_main_finished():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
-    session.active_runs.clear()  # Finish filter_quality
+    session.finish_all_runs()  # Finish filter_quality
     folder_watcher.poll_runs()   # Start main
-    session.active_runs.clear()  # Finish main
+    session.finish_all_runs()  # Finish main
     folder_watcher.poll_runs()   # Start resistance
 
     assert [(folder_watcher, sample_watcher, PipelineType.RESISTANCE)] == session.active_runs
@@ -147,9 +157,9 @@ def test_resistance_running():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
-    session.active_runs.clear()  # Finish filter_quality
+    session.finish_all_runs()  # Finish filter_quality
     folder_watcher.poll_runs()   # Start main
-    session.active_runs.clear()  # Finish main
+    session.finish_all_runs()  # Finish main
     folder_watcher.poll_runs()   # Start resistance
     folder_watcher.poll_runs()   # resistance still running
 
@@ -166,11 +176,11 @@ def test_resistance_finished():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
-    session.active_runs.clear()  # Finish filter_quality
+    session.finish_all_runs()  # Finish filter_quality
     folder_watcher.poll_runs()   # Start main
-    session.active_runs.clear()  # Finish main
+    session.finish_all_runs()  # Finish main
     folder_watcher.poll_runs()   # Start resistance
-    session.active_runs.clear()  # Finish resistance
+    session.finish_all_runs()  # Finish resistance
     folder_watcher.poll_runs()   # Finish sample
 
     assert not session.active_runs
@@ -190,15 +200,16 @@ def test_hcv_filter_quality_finished():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
-    session.active_runs.clear()  # Finish filter_quality
+    session.finish_all_runs()  # Finish filter_quality
 
     folder_watcher.poll_runs()   # start main, midi, and mixed HCV
 
-    assert [(folder_watcher, sample_watcher, PipelineType.MIXED_HCV),
+    assert [(folder_watcher, sample_watcher, PipelineType.MIXED_HCV_MAIN),
+            (folder_watcher, sample_watcher, PipelineType.MIXED_HCV_MIDI),
             (folder_watcher, sample_watcher, PipelineType.MAIN),
             (folder_watcher, sample_watcher, PipelineType.MIDI)
             ] == session.active_runs
-    assert 3 == len(folder_watcher.active_runs)
+    assert 4 == len(folder_watcher.active_runs)
 
 
 def test_hcv_mixed_hcv_running():
@@ -212,16 +223,17 @@ def test_hcv_mixed_hcv_running():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
-    session.active_runs.clear()  # Finish filter_quality
+    session.finish_all_runs()  # Finish filter_quality
 
     folder_watcher.poll_runs()   # start main, midi, and mixed HCV
     folder_watcher.poll_runs()   # main, midi, and mixed HCV still running
 
-    assert [(folder_watcher, sample_watcher, PipelineType.MIXED_HCV),
+    assert [(folder_watcher, sample_watcher, PipelineType.MIXED_HCV_MAIN),
+            (folder_watcher, sample_watcher, PipelineType.MIXED_HCV_MIDI),
             (folder_watcher, sample_watcher, PipelineType.MAIN),
             (folder_watcher, sample_watcher, PipelineType.MIDI)
             ] == session.active_runs
-    assert 3 == len(folder_watcher.active_runs)
+    assert 4 == len(folder_watcher.active_runs)
 
 
 def test_hcv_mixed_hcv_finished():
@@ -235,12 +247,15 @@ def test_hcv_mixed_hcv_finished():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
-    session.active_runs.clear()  # Finish filter_quality
+    session.finish_all_runs()  # Finish filter_quality
 
     folder_watcher.poll_runs()   # start main, midi, and mixed HCV
-    session.active_runs.remove(
-        (folder_watcher, sample_watcher, PipelineType.MIXED_HCV))  # Finish mixed HCV
-    folder_watcher.poll_runs()   # main, midi, and mixed HCV still running
+    # Finish mixed HCV
+    session.finish_run(
+        (folder_watcher, sample_watcher, PipelineType.MIXED_HCV_MAIN))
+    session.finish_run(
+        (folder_watcher, sample_watcher, PipelineType.MIXED_HCV_MIDI))
+    folder_watcher.poll_runs()   # main and midi still running
 
     assert [(folder_watcher, sample_watcher, PipelineType.MAIN),
             (folder_watcher, sample_watcher, PipelineType.MIDI)
@@ -259,27 +274,29 @@ def test_hcv_mixed_hcv_not_finished():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
-    session.active_runs.clear()  # Finish filter_quality
+    session.finish_all_runs()  # Finish filter_quality
 
     folder_watcher.poll_runs()   # start main, midi, and mixed HCV
-    session.active_runs.remove(
+    session.finish_run(
         (folder_watcher, sample_watcher, PipelineType.MAIN))  # Finish main
-    session.active_runs.remove(
+    session.finish_run(
         (folder_watcher, sample_watcher, PipelineType.MIDI))  # Finish midi
     folder_watcher.poll_runs()   # mixed HCV still running, resistance started
-    session.active_runs.remove(
+    session.finish_run(
         (folder_watcher, sample_watcher, PipelineType.RESISTANCE))  # Finish res
     folder_watcher.poll_runs()   # mixed HCV still running, resistance finished
 
-    assert [(folder_watcher, sample_watcher, PipelineType.MIXED_HCV)
+    assert [(folder_watcher, sample_watcher, PipelineType.MIXED_HCV_MAIN),
+            (folder_watcher, sample_watcher, PipelineType.MIXED_HCV_MIDI)
             ] == session.active_runs
-    assert 1 == len(folder_watcher.active_runs)
+    assert 2 == len(folder_watcher.active_runs)
     assert not folder_watcher.is_complete
 
 
 def test_mixed_hcv_skipped():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
-    session = DummySession(skipped_types={PipelineType.MIXED_HCV})
+    session = DummySession(skipped_types={PipelineType.MIXED_HCV_MAIN,
+                                          PipelineType.MIXED_HCV_MIDI})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
@@ -288,7 +305,7 @@ def test_mixed_hcv_skipped():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
-    session.active_runs.clear()  # Finish filter_quality
+    session.finish_all_runs()  # Finish filter_quality
 
     folder_watcher.poll_runs()   # start main and midi
 
@@ -300,7 +317,8 @@ def test_mixed_hcv_skipped():
 
 def test_mixed_hcv_skipped_and_complete():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
-    session = DummySession(skipped_types={PipelineType.MIXED_HCV})
+    session = DummySession(skipped_types={PipelineType.MIXED_HCV_MAIN,
+                                          PipelineType.MIXED_HCV_MIDI})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
@@ -309,11 +327,11 @@ def test_mixed_hcv_skipped_and_complete():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
-    session.active_runs.clear()  # Finish filter_quality
+    session.finish_all_runs()  # Finish filter_quality
     folder_watcher.poll_runs()   # start main and midi
-    session.active_runs.clear()  # Finish main and midi
+    session.finish_all_runs()  # Finish main and midi
     folder_watcher.poll_runs()   # start resistance
-    session.active_runs.clear()  # Finish resistance
+    session.finish_all_runs()  # Finish resistance
     folder_watcher.poll_runs()   # done
 
     assert not session.active_runs

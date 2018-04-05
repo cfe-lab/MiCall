@@ -3,8 +3,9 @@ from pathlib import Path
 
 ALLOWED_GROUPS = ['Everyone']
 # noinspection PyArgumentList
-PipelineType = Enum('PipelineType',
-                    'FILTER_QUALITY MAIN MIDI RESISTANCE MIXED_HCV')
+PipelineType = Enum(
+    'PipelineType',
+    'FILTER_QUALITY MAIN MIDI RESISTANCE MIXED_HCV_MAIN MIXED_HCV_MIDI')
 
 
 class FolderWatcher:
@@ -19,8 +20,13 @@ class FolderWatcher:
             methods:
             run_pipeline(folder_watcher, sample_watcher, pipeline_type)
                 returns run, or None if that pipeline_type is not configured.
-            fetch_run_status(run) => True if successfully finished, raise if
-                run failed
+            fetch_run_status(
+                run,
+                folder_watcher,
+                sample_watcher,
+                pipeline_type) => True if successfully finished, raise if
+                run failed, also saves the outputs to temporary files in the
+                results folder when the run is finished
         """
         self.base_calls_folder = Path(base_calls_folder)
         self.runner = runner
@@ -31,7 +37,7 @@ class FolderWatcher:
         self.quality_dataset = None
         self.filter_quality_run = None
         self.bad_cycles_dataset = None
-        self.active_runs = set()
+        self.active_runs = {}  # {run: (sample_watcher, pipeline_type)}
         self.completed_samples = set()  # {fastq1_name}
 
     def __repr__(self):
@@ -51,18 +57,15 @@ class FolderWatcher:
 
     def poll_runs(self):
         if self.filter_quality_run is None:
-            self.filter_quality_run = self.runner.run_pipeline(
-                self,
+            self.filter_quality_run = self.run_pipeline(
                 None,
                 PipelineType.FILTER_QUALITY)
-            self.active_runs.add(self.filter_quality_run)
             # Launched filter run, nothing more to check.
             return
         if self.filter_quality_run in self.active_runs:
-            if not self.runner.fetch_run_status(self.filter_quality_run):
+            if not self.fetch_run_status(self.filter_quality_run):
                 # Still running, nothing more to check.
                 return
-            self.active_runs.remove(self.filter_quality_run)
         for sample_watcher in self.sample_watchers:
             is_finished = self.poll_sample_runs(sample_watcher)
             if is_finished:
@@ -73,65 +76,80 @@ class FolderWatcher:
 
     def poll_sample_runs(self, sample_watcher):
         is_mixed_hcv_complete = False
-        if sample_watcher.mixed_hcv_run is None:
+        if not sample_watcher.mixed_hcv_runs:
             if 'HCV' not in sample_watcher.sample_group.names[0]:
                 is_mixed_hcv_complete = True
             else:
-                sample_watcher.mixed_hcv_run = self.runner.run_pipeline(
-                    self,
+                mixed_hcv_run = self.run_pipeline(
                     sample_watcher,
-                    PipelineType.MIXED_HCV)
-                if sample_watcher.mixed_hcv_run is None:
+                    PipelineType.MIXED_HCV_MAIN)
+                if mixed_hcv_run is None:
                     is_mixed_hcv_complete = True
                 else:
-                    self.active_runs.add(sample_watcher.mixed_hcv_run)
-        elif sample_watcher.mixed_hcv_run in self.active_runs:
-            if self.runner.fetch_run_status(sample_watcher.mixed_hcv_run):
-                is_mixed_hcv_complete = True
-                self.active_runs.remove(sample_watcher.mixed_hcv_run)
+                    sample_watcher.mixed_hcv_runs.append(mixed_hcv_run)
+                    if sample_watcher.sample_group.names[1] is not None:
+                        mixed_hcv_run = self.run_pipeline(
+                            sample_watcher,
+                            PipelineType.MIXED_HCV_MIDI)
+                        sample_watcher.mixed_hcv_runs.append(mixed_hcv_run)
         else:
-            is_mixed_hcv_complete = True
+            active_mixed_runs = [
+                run
+                for run in sample_watcher.mixed_hcv_runs
+                if run in self.active_runs and not self.fetch_run_status(run)]
+            is_mixed_hcv_complete = not active_mixed_runs
 
         if not sample_watcher.main_runs:
-            sample_watcher.main_runs.append(self.runner.run_pipeline(
-                self,
+            sample_watcher.main_runs.append(self.run_pipeline(
                 sample_watcher,
                 PipelineType.MAIN))
             if sample_watcher.sample_group.names[1] is not None:
-                sample_watcher.main_runs.append(self.runner.run_pipeline(
-                    self,
+                sample_watcher.main_runs.append(self.run_pipeline(
                     sample_watcher,
                     PipelineType.MIDI))
-            self.active_runs.update(sample_watcher.main_runs)
             # Launched main and midi runs, nothing more to check on sample.
             return False
-        for run in sample_watcher.main_runs:
-            if run in self.active_runs:
-                if not self.runner.fetch_run_status(run):
-                    # Still running, nothing more to check on sample
-                    return False
-                self.active_runs.remove(run)
+        active_main_runs = [
+            run
+            for run in sample_watcher.main_runs
+            if run in self.active_runs and not self.fetch_run_status(run)]
+        if active_main_runs:
+            # Still running, nothing more to check on sample
+            return False
         if sample_watcher.resistance_run is None:
-            sample_watcher.resistance_run = self.runner.run_pipeline(
-                self,
+            sample_watcher.resistance_run = self.run_pipeline(
                 sample_watcher,
                 PipelineType.RESISTANCE)
-            self.active_runs.add(sample_watcher.resistance_run)
             # Launched resistance run, nothing more to check on sample.
             return False
         if sample_watcher.resistance_run in self.active_runs:
-            if not self.runner.fetch_run_status(sample_watcher.resistance_run):
+            if not self.fetch_run_status(sample_watcher.resistance_run):
                 # Still running, nothing more to check on sample.
                 return False
-            self.active_runs.remove(sample_watcher.resistance_run)
         return is_mixed_hcv_complete
+
+    def run_pipeline(self, sample_watcher, pipeline_type):
+        run = self.runner.run_pipeline(self, sample_watcher, pipeline_type)
+        if run is not None:
+            self.active_runs[run] = (sample_watcher, pipeline_type)
+        return run
+
+    def fetch_run_status(self, run):
+        sample_watcher, pipeline_type = self.active_runs[run]
+        is_complete = self.runner.fetch_run_status(run,
+                                                   self,
+                                                   sample_watcher,
+                                                   pipeline_type)
+        if is_complete:
+            del self.active_runs[run]
+        return is_complete
 
 
 class SampleWatcher:
     def __init__(self, sample_group):
         self.sample_group = sample_group
         self.fastq_datasets = []
-        self.mixed_hcv_run = None
+        self.mixed_hcv_runs = []
         self.main_runs = []
         self.resistance_run = None
 
