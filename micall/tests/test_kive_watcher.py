@@ -1,6 +1,9 @@
+import tarfile
 from gzip import GzipFile
+from io import BytesIO
 from pathlib import Path
 from queue import Full
+from tarfile import TarInfo
 from unittest.mock import patch, ANY, Mock, call
 
 import pytest
@@ -135,8 +138,9 @@ def test_hcv_pair(raw_data_with_hcv_pair):
          "Data/Intensities/BaseCalls",
          SampleGroup('2130A', ('2130A-HCV_S15_L001_R1_001.fastq.gz',
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'))))
+    pipeline_version = 'XXX'
 
-    find_samples(raw_data_with_hcv_pair, sample_queue, wait=False)
+    find_samples(raw_data_with_hcv_pair, pipeline_version, sample_queue, wait=False)
 
     sample_queue.verify()
 
@@ -153,8 +157,31 @@ def test_two_runs(raw_data_with_two_runs):
          "Data/Intensities/BaseCalls",
          SampleGroup('2000A', ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
                                None))))
+    pipeline_version = 'XXX'
 
-    find_samples(raw_data_with_two_runs, sample_queue, wait=False)
+    find_samples(raw_data_with_two_runs, pipeline_version, sample_queue, wait=False)
+
+    sample_queue.verify()
+
+
+def test_skip_done_runs(raw_data_with_two_runs):
+    done_run = raw_data_with_two_runs / "MiSeq/runs/140201_M01234"
+    results_path = done_run / "Results/version_0-dev"
+    results_path.mkdir(parents=True)
+    done_path = results_path / "doneprocessing"
+    done_path.touch()
+    pipeline_version = '0-dev'
+    sample_queue = DummyQueueSink()
+    sample_queue.expect_put(
+        (raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+         "Data/Intensities/BaseCalls",
+         SampleGroup('2000A', ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
+                               None))))
+
+    find_samples(raw_data_with_two_runs,
+                 pipeline_version,
+                 sample_queue,
+                 wait=False)
 
     sample_queue.verify()
 
@@ -172,8 +199,12 @@ def test_full_queue(raw_data_with_two_runs):
                                    None)))
     sample_queue.expect_put(item2, is_full=True)
     sample_queue.expect_put(item2)
+    pipeline_version = 'XXX'
 
-    find_samples(raw_data_with_two_runs, sample_queue, wait=False)
+    find_samples(raw_data_with_two_runs,
+                 pipeline_version,
+                 sample_queue,
+                 wait=False)
 
     sample_queue.verify()
 
@@ -203,8 +234,12 @@ def test_scan_for_new_runs(raw_data_with_two_runs, mock_clock):
                             callback=increment_clock)
     sample_queue.expect_put(item2)
     sample_queue.expect_put(item1)
+    pipeline_version = 'XXX'
 
-    find_samples(raw_data_with_two_runs, sample_queue, wait=False)
+    find_samples(raw_data_with_two_runs,
+                 pipeline_version,
+                 sample_queue,
+                 wait=False)
 
     sample_queue.verify()
 
@@ -274,6 +309,10 @@ def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_con
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
+    result_path = base_calls / "../../../Results/version_0-dev"
+    result_path.mkdir(parents=True)
+    old_stuff_csv = result_path / 'old_stuff.csv'
+    old_stuff_csv.write_text('out of date')
     dataset1 = Mock(name='quality_csv')
     dataset2 = Mock(name='fastq1')
     dataset3 = Mock(name='fastq2')
@@ -331,6 +370,7 @@ def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_con
     folder_watcher = kive_watcher.folder_watchers[base_calls]
     assert dataset1 is folder_watcher.quality_dataset
     assert [dataset2, dataset3] == folder_watcher.sample_watchers[0].fastq_datasets
+    assert not old_stuff_csv.exists()
 
 
 def test_poll_first_sample(raw_data_with_two_samples, mock_open_kive, default_config):
@@ -1033,3 +1073,120 @@ def test_fetch_run_status_main_and_midi(raw_data_with_hcv_pair, pipelines_config
     assert is_midi_complete
     assert expected_main_nuc_path.exists()
     assert expected_midi_nuc_path.exists()
+
+
+def test_folder_completed(raw_data_with_two_samples, mock_open_kive, default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    mock_pipeline = mock_session.get_pipeline.return_value
+    mock_input = Mock(dataset_name='quality_csv')
+    mock_pipeline.inputs = [mock_input]
+    resistance_run1 = Mock(name='resistance_run1',
+                           **{'is_complete.return_value': True,
+                              'get_results.return_value': create_datasets(['resistance_csv'])})
+    resistance_run2 = Mock(name='resistance_run2',
+                           **{'is_complete.return_value': True,
+                              'get_results.return_value': create_datasets(['resistance_csv'])})
+    kive_watcher = KiveWatcher(default_config)
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2120A',
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.finish_folder()
+    folder_watcher, = kive_watcher.folder_watchers.values()
+    folder_watcher.filter_quality_run = Mock()
+    sample1_watcher, sample2_watcher = folder_watcher.sample_watchers
+    sample1_watcher.main_runs.append(Mock())
+    sample1_watcher.resistance_run = resistance_run1
+    sample2_watcher.main_runs.append(Mock())
+    sample2_watcher.resistance_run = resistance_run2
+    folder_watcher.active_runs = {
+        resistance_run1: (sample1_watcher, PipelineType.RESISTANCE),
+        resistance_run2: (sample2_watcher, PipelineType.RESISTANCE)}
+    results_path = base_calls / "../../../Results/version_0-dev"
+    scratch_path = results_path / "scratch"
+    expected_coverage_map_content = b'This is a coverage map.'
+    sample_scratch_path = scratch_path / "2110A-V3LOOP_S13"
+    sample_scratch_path.mkdir(parents=True)
+    coverage_maps_path = sample_scratch_path / "coverage_maps.tar"
+    with tarfile.open(coverage_maps_path, 'w') as coverage_maps_tar:
+        content = BytesIO(expected_coverage_map_content)
+        tar_info = TarInfo('coverage_maps/R1_coverage.txt')
+        tar_info.size = len(expected_coverage_map_content)
+        coverage_maps_tar.addfile(tar_info, content)
+    expected_coverage_map_path = (
+            results_path / "coverage_maps/2110A-V3LOOP_S13.R1_coverage.txt")
+    expected_done_path = results_path / "doneprocessing"
+    expected_mutations_path = results_path / "mutations.csv"
+    expected_resistance_path = results_path / "resistance.csv"
+    expected_resistance_content = """\
+sample,row,name
+2110A-V3LOOP_S13,0,resistance_csv
+2110A-V3LOOP_S13,1,resistance_csv
+2110A-V3LOOP_S13,2,resistance_csv
+2120A-PR_S14,0,resistance_csv
+2120A-PR_S14,1,resistance_csv
+2120A-PR_S14,2,resistance_csv
+"""
+
+    kive_watcher.poll_runs()
+
+    assert not scratch_path.exists()
+    assert not expected_mutations_path.exists()
+    assert expected_resistance_content == expected_resistance_path.read_text()
+    assert expected_coverage_map_content == expected_coverage_map_path.read_bytes()
+    assert expected_done_path.exists()
+
+
+def test_folder_not_finished(raw_data_with_two_samples, mock_open_kive, default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    mock_pipeline = mock_session.get_pipeline.return_value
+    mock_input = Mock(dataset_name='quality_csv')
+    mock_pipeline.inputs = [mock_input]
+    resistance_run1 = Mock(name='resistance_run1',
+                           **{'is_complete.return_value': True,
+                              'get_results.return_value': create_datasets(['resistance_csv'])})
+    resistance_run2 = Mock(name='resistance_run2',
+                           **{'is_complete.return_value': True,
+                              'get_results.return_value': create_datasets(['resistance_csv'])})
+    kive_watcher = KiveWatcher(default_config)
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2120A',
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                  None)))
+    # Did not call kive_watcher.finish_folder(), more samples could be coming.
+    folder_watcher, = kive_watcher.folder_watchers.values()
+    folder_watcher.filter_quality_run = Mock()
+    sample1_watcher, sample2_watcher = folder_watcher.sample_watchers
+    sample1_watcher.main_runs.append(Mock())
+    sample1_watcher.resistance_run = resistance_run1
+    sample2_watcher.main_runs.append(Mock())
+    sample2_watcher.resistance_run = resistance_run2
+    folder_watcher.active_runs = {
+        resistance_run1: (sample1_watcher, PipelineType.RESISTANCE),
+        resistance_run2: (sample2_watcher, PipelineType.RESISTANCE)}
+    results_path = base_calls / "../../../Results/version_0-dev"
+    scratch_path = results_path / "scratch"
+    expected_resistance_path = results_path / "resistance.csv"
+
+    kive_watcher.poll_runs()
+
+    assert scratch_path.exists()
+    assert not expected_resistance_path.exists()

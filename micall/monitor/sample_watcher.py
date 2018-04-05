@@ -44,12 +44,16 @@ class FolderWatcher:
         return f'FolderWatcher({str(self.base_calls_folder)!r})'
 
     @property
+    def all_samples(self):
+        for sample_watcher in self.sample_watchers:
+            for name in sample_watcher.sample_group.names:
+                if name is not None:
+                    yield name
+
+    @property
     def active_samples(self):
-        started_samples = {name
-                           for sample_watcher in self.sample_watchers
-                           for name in sample_watcher.sample_group.names
-                           if name is not None}
-        return started_samples - self.completed_samples
+        all_samples = set(self.all_samples)
+        return all_samples - self.completed_samples
 
     @property
     def is_complete(self):

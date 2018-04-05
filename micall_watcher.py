@@ -76,8 +76,12 @@ def main():
     args = parse_args()
     kive_watcher = KiveWatcher(args)
     sample_queue = Queue(maxsize=2)
+    wait = True
     finder_thread = Thread(target=find_samples,
-                           args=(args.raw_data, sample_queue, False),
+                           args=(args.raw_data,
+                                 args.pipeline_version,
+                                 sample_queue,
+                                 wait),
                            daemon=True)
     finder_thread.start()
     while True:
@@ -90,7 +94,8 @@ def main():
                     timeout=POLLING_DELAY)
                 kive_watcher.add_sample_group(base_calls, sample_group)
             except Empty:
-                pass
+                # No more samples coming for now.
+                kive_watcher.finish_folder()
 
 
 if __name__ == '__main__':

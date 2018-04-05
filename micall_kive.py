@@ -83,6 +83,7 @@ def load_sample(args):
                     failed_align_csv=args.failed_align_csv,
                     coverage_scores_csv=args.coverage_scores_csv,
                     scratch_path=scratch_path)
+    sample.name = None  # Since the file names are messy in Kive.
     return sample
 
 
