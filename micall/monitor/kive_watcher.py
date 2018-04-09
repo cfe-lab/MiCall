@@ -12,6 +12,7 @@ from time import sleep
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
 from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType
+from micall.monitor.update_qai import process_folder
 from micall.resistance.resistance import find_groups
 
 try:
@@ -264,7 +265,14 @@ class KiveWatcher:
                 completed_folders.append(folder)
         for folder in completed_folders:
             folder_watcher = self.folder_watchers.pop(folder)
-            self.collate_folder(folder_watcher)
+            results_path = self.collate_folder(folder_watcher)
+            if (results_path / "coverage_scores.csv").exists():
+                process_folder(results_path,
+                               self.config.qai_server,
+                               self.config.qai_user,
+                               self.config.qai_password,
+                               self.config.pipeline_version)  # Upload to QAI.
+            (results_path / "doneprocessing").touch()
             if not self.folder_watchers:
                 logger.info('No more folders to process.')
 
@@ -300,7 +308,7 @@ class KiveWatcher:
             if not source_count:
                 target_path.unlink()
         shutil.rmtree(scratch_path)
-        (results_path / "doneprocessing").touch()
+        return results_path
 
     def extract_coverage_maps(self, folder_watcher):
         results_path = self.get_results_path(folder_watcher)

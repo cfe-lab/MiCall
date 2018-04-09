@@ -58,6 +58,18 @@ def parse_args(argv=None):
         default=SUPPRESS,
         help='password for Kive server (default not shown)')
     parser.add_argument(
+        '--qai_server',
+        default=os.environ.get('MICALL_QAI_SERVER', 'http://localhost:3000'),
+        help='server to post reviews on')
+    parser.add_argument(
+        '--qai_user',
+        default=os.environ.get('MICALL_QAI_USER', 'bob'),
+        help='user name for QAI server')
+    parser.add_argument(
+        '--qai_password',
+        default=SUPPRESS,
+        help='password for QAI server (default not shown)')
+    parser.add_argument(
         '--max_active',
         type=int,
         default=os.environ.get('MICALL_MAX_ACTIVE', 5),
@@ -66,6 +78,8 @@ def parse_args(argv=None):
     args = parser.parse_args(argv)
     if not hasattr(args, 'kive_password'):
         args.kive_password = os.environ.get('MICALL_KIVE_PASSWORD', 'kive')
+    if not hasattr(args, 'qai_password'):
+        args.qai_password = os.environ.get('MICALL_QAI_PASSWORD', 'testing')
     if args.micall_filter_quality_pipeline_id is None:
         parser.error('Missing micall_filter_quality_pipeline_id. Set the '
                      'argument or environment variable.')
