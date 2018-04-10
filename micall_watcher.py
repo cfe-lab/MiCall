@@ -1,12 +1,14 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 
 import os
+from functools import partial
 
 from pathlib import Path
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep
 
+from micall.monitor import update_qai
 from micall.monitor.kive_watcher import find_samples, KiveWatcher
 
 POLLING_DELAY = 10  # seconds between scans for new samples or finished runs
@@ -88,7 +90,13 @@ def parse_args(argv=None):
 
 def main():
     args = parse_args()
-    kive_watcher = KiveWatcher(args)
+    result_handler = partial(update_qai.process_folder,
+                             qai_server=args.qai_server,
+                             qai_user=args.qai_user,
+                             qai_password=args.qai_password,
+                             pipeline_version=args.pipeline_version)
+    kive_watcher = KiveWatcher(args, result_handler)
+
     sample_queue = Queue(maxsize=2)
     wait = True
     finder_thread = Thread(target=find_samples,

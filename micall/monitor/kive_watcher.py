@@ -4,6 +4,7 @@ import os
 import shutil
 import tarfile
 from datetime import datetime, timedelta
+from pathlib import Path
 from queue import Full
 
 from io import StringIO, BytesIO
@@ -12,7 +13,6 @@ from time import sleep
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
 from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType
-from micall.monitor.update_qai import process_folder
 from micall.resistance.resistance import find_groups
 
 try:
@@ -126,12 +126,21 @@ def get_output_filename(output_name):
 
 
 class KiveWatcher:
-    def __init__(self, config=None):
+    def __init__(self,
+                 config=None,
+                 result_handler=lambda result_folder: None):
+        """ Initialize.
+
+        :param config: command line arguments
+        :param result_handler: called when a run folder has collated all the
+            results into a result folder"""
         self.config = config
+        self.result_handler = result_handler
         self.session = None
         self.current_folder = None
         self.folder_watchers = {}  # {base_calls_folder: FolderWatcher}
         self.pipelines = {}  # {pipeline_id: pipeline}
+        self.external_directory_path = self.external_directory_name = None
         self.input_pipeline_ids = config and dict(
             quality_csv=config.micall_filter_quality_pipeline_id,
             bad_cycles_csv=config.micall_main_pipeline_id,
@@ -207,26 +216,26 @@ class KiveWatcher:
         :return: the dataset object from the Kive API wrapper, or None
         """
         logger.info('uploading dataset %r', dataset_name)
-        dataset = self.session.add_dataset(
-            name=dataset_name,
-            description=description,
-            handle=source_file,
-            cdt=cdt,
-            groups=ALLOWED_GROUPS)
-        # TODO: external data sets
-        # if (self.external_directory_name is None or
-        #         not filename.startswith(self.external_directory_name)):
-        # else:
-        #     external_path = os.path.relpath(filename,
-        #                                     self.external_directory_path)
-        #     dataset = self.kive.add_dataset(
-        #         name=dataset_name,
-        #         description=description,
-        #         handle=None,
-        #         externalfiledirectory=self.external_directory_name,
-        #         external_path=external_path,
-        #         cdt=cdt,
-        #         groups=settings.kive_groups_allowed)
+        filepath = Path(getattr(source_file, 'name', ''))
+        if (self.external_directory_name is None or
+                self.external_directory_path not in filepath.parents):
+            dataset = self.session.add_dataset(
+                name=dataset_name,
+                description=description,
+                handle=source_file,
+                cdt=cdt,
+                groups=ALLOWED_GROUPS)
+        else:
+            external_path = os.path.relpath(filepath,
+                                            self.external_directory_path)
+            dataset = self.session.add_dataset(
+                name=dataset_name,
+                description=description,
+                handle=None,
+                externalfiledirectory=self.external_directory_name,
+                external_path=external_path,
+                cdt=cdt,
+                groups=ALLOWED_GROUPS)
         return dataset
 
     def add_sample_group(self, base_calls, sample_group):
@@ -267,11 +276,7 @@ class KiveWatcher:
             folder_watcher = self.folder_watchers.pop(folder)
             results_path = self.collate_folder(folder_watcher)
             if (results_path / "coverage_scores.csv").exists():
-                process_folder(results_path,
-                               self.config.qai_server,
-                               self.config.qai_user,
-                               self.config.qai_password,
-                               self.config.pipeline_version)  # Upload to QAI.
+                self.result_handler(results_path)
             (results_path / "doneprocessing").touch()
             if not self.folder_watchers:
                 logger.info('No more folders to process.')
@@ -453,15 +458,31 @@ class KiveWatcher:
             self.session = open_kive(self.config.kive_server)
             self.session.login(self.config.kive_user, self.config.kive_password)
 
-    def find_or_upload_dataset(self, dataset_file, dataset_name, description, compounddatatype):
-        quality_dataset = self.find_kive_dataset(dataset_file,
-                                                 dataset_name,
-                                                 compounddatatype)
-        if quality_dataset is None:
+            # retrieve external file directory
+            directories = self.session.get('/api/externalfiledirectories',
+                                           is_json=True).json()
+            self.external_directory_name = self.external_directory_path = None
+            for directory in directories:
+                directory_path = Path(directory['path'])
+                if (directory_path == self.config.raw_data or
+                        directory_path in self.config.raw_data.parents):
+                    self.external_directory_name = directory['name']
+                    self.external_directory_path = directory_path
+                    break
+
+    def find_or_upload_dataset(self,
+                               dataset_file,
+                               dataset_name,
+                               description,
+                               compounddatatype):
+        dataset = self.find_kive_dataset(dataset_file,
+                                         dataset_name,
+                                         compounddatatype)
+        if dataset is None:
             dataset_file.seek(0)
-            quality_dataset = self.upload_kive_dataset(
+            dataset = self.upload_kive_dataset(
                 dataset_file,
                 dataset_name,
                 compounddatatype,
                 description)
-        return quality_dataset
+        return dataset

@@ -373,6 +373,66 @@ def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_con
     assert not old_stuff_csv.exists()
 
 
+def test_add_external_dataset(raw_data_with_two_samples, mock_open_kive, default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    default_config.raw_data = raw_data_with_two_samples
+    mock_session = mock_open_kive.return_value
+    mock_session.get.return_value.json.return_value = [
+        dict(name='raw_data', path=str(raw_data_with_two_samples))]
+    dataset1 = Mock(name='quality_csv')
+    dataset2 = Mock(name='fastq1')
+    dataset3 = Mock(name='fastq2')
+    mock_session.add_dataset.side_effect = [dataset1, dataset2, dataset3]
+    mock_pipeline = mock_session.get_pipeline.return_value
+    mock_input = Mock(dataset_name='quality_csv')
+    mock_pipeline.inputs = [mock_input]
+    kive_watcher = KiveWatcher(default_config)
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+
+    mock_session.get.assert_called_once_with('/api/externalfiledirectories',
+                                             is_json=True)
+    assert [call(cdt=mock_input.compounddatatype,
+                 name='140101_M01234_quality.csv',
+                 uploaded=True,
+                 # MD5 of header with no records.
+                 md5='6861a4a0bfd71b62c0048ff9a4910223'),
+            call(cdt=None,
+                 name='2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                 uploaded=True,
+                 md5=ANY),
+            call(cdt=None,
+                 name='2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
+                 uploaded=True,
+                 md5=ANY)] == mock_session.find_datasets.call_args_list
+    assert [call(name='140101_M01234_quality.csv',
+                 description='Error rates for 140101_M01234 run.',
+                 handle=ANY,
+                 cdt=mock_input.compounddatatype,
+                 groups=['Everyone']),
+            call(name='2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                 description='forward read from MiSeq run 140101_M01234',
+                 handle=None,
+                 externalfiledirectory='raw_data',
+                 external_path='MiSeq/runs/140101_M01234/Data/Intensities/'
+                               'BaseCalls/2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                 cdt=None,
+                 groups=['Everyone']),
+            call(name='2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
+                 description='reverse read from MiSeq run 140101_M01234',
+                 handle=None,
+                 externalfiledirectory='raw_data',
+                 external_path='MiSeq/runs/140101_M01234/Data/Intensities/'
+                               'BaseCalls/2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
+                 cdt=None,
+                 groups=['Everyone'])] == mock_session.add_dataset.call_args_list
+
+
 def test_poll_first_sample(raw_data_with_two_samples, mock_open_kive, default_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
