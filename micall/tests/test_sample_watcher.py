@@ -13,7 +13,7 @@ class DummySession:
         self.skipped_types = skipped_types
         self.active_runs = []  # [(folder_watcher, sample_watcher, pipeline_type)]
 
-    def run_pipeline(self, folder_watcher, sample_watcher, pipeline_type):
+    def run_pipeline(self, folder_watcher, pipeline_type, sample_watcher):
         if pipeline_type in self.skipped_types:
             return None
         run = (folder_watcher, sample_watcher, pipeline_type)
@@ -23,8 +23,8 @@ class DummySession:
     def fetch_run_status(self,
                          run,
                          _folder_watcher,
-                         _sample_watcher,
-                         _pipeline_type):
+                         _pipeline_type,
+                         _sample_watcher):
         return run not in self.active_runs
 
     def finish_run(self, run):

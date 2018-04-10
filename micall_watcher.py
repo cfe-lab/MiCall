@@ -8,8 +8,12 @@ from queue import Queue, Empty
 from threading import Thread
 from time import sleep
 
-from micall.monitor import update_qai
 from micall.monitor.kive_watcher import find_samples, KiveWatcher
+try:
+    from micall.monitor import update_qai
+except ImportError:
+    # Swallow import error to allow testing. Check again at start of main().
+    update_qai = None
 
 POLLING_DELAY = 10  # seconds between scans for new samples or finished runs
 
@@ -89,6 +93,9 @@ def parse_args(argv=None):
 
 
 def main():
+    if update_qai is None:
+        raise RuntimeError(
+            'Failed to import update_qai. Is the requests library installed?')
     args = parse_args()
     result_handler = partial(update_qai.process_folder,
                              qai_server=args.qai_server,

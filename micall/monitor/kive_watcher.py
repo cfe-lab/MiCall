@@ -243,8 +243,7 @@ class KiveWatcher:
         self.current_folder = base_calls
         folder_watcher = self.folder_watchers.get(base_calls)
         if folder_watcher is None:
-            folder_watcher = FolderWatcher(base_calls, self)
-            self.folder_watchers[base_calls] = folder_watcher
+            folder_watcher = self.add_folder(base_calls)
             self.create_batch(folder_watcher)
             self.upload_filter_quality(folder_watcher)
             shutil.rmtree(self.get_results_path(folder_watcher),
@@ -262,6 +261,12 @@ class KiveWatcher:
                         compounddatatype=None)
                     sample_watcher.fastq_datasets.append(fastq_dataset)
         folder_watcher.sample_watchers.append(sample_watcher)
+        return sample_watcher
+
+    def add_folder(self, base_calls):
+        folder_watcher = FolderWatcher(base_calls, self)
+        self.folder_watchers[base_calls] = folder_watcher
+        return folder_watcher
 
     def finish_folder(self):
         self.current_folder = None
@@ -334,7 +339,7 @@ class KiveWatcher:
             except FileNotFoundError:
                 pass
 
-    def run_pipeline(self, folder_watcher, sample_watcher, pipeline_type):
+    def run_pipeline(self, folder_watcher, pipeline_type, sample_watcher):
         if pipeline_type == PipelineType.FILTER_QUALITY:
             quality_pipeline = self.get_kive_pipeline(
                 self.config.micall_filter_quality_pipeline_id)
@@ -347,8 +352,12 @@ class KiveWatcher:
         if pipeline_type == PipelineType.RESISTANCE:
             resistance_pipeline = self.get_kive_pipeline(
                 self.config.micall_resistance_pipeline_id)
+            main_runs = filter(None,
+                               (sample_watcher.runs.get(pipeline_type)
+                                for pipeline_type in (PipelineType.MAIN,
+                                                      PipelineType.MIDI)))
             input_datasets = [run.get_results()['amino_csv']
-                              for run in sample_watcher.main_runs]
+                              for run in main_runs]
             main_aminos_input = self.get_kive_input('main_amino_csv')
             for input_dataset in input_datasets:
                 # TODO: remove this when Kive API sets CDT properly (issue #729)
@@ -404,7 +413,7 @@ class KiveWatcher:
             runbatch=folder_watcher.batch,
             groups=ALLOWED_GROUPS)
 
-    def fetch_run_status(self, run, folder_watcher, sample_watcher, pipeline_type):
+    def fetch_run_status(self, run, folder_watcher, pipeline_type, sample_watcher):
         is_complete = run.is_complete()
         if is_complete and pipeline_type != PipelineType.FILTER_QUALITY:
             sample_name = (sample_watcher.sample_group.names[1]
