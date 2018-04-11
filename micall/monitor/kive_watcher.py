@@ -3,7 +3,9 @@ import logging
 import os
 import shutil
 import tarfile
+from collections import namedtuple
 from datetime import datetime, timedelta
+from enum import Enum
 from pathlib import Path
 from queue import Full
 
@@ -29,7 +31,7 @@ except ImportError:
     HTTPAdapter = None
 
 logger = logging.getLogger(__name__)
-FOLDER_SCAN_INTERVAL = timedelta(hours=1)
+FOLDER_SCAN_INTERVAL = timedelta(minutes=2)
 SLEEP_SECONDS = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_csv',
@@ -49,6 +51,10 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'mixed_amino_merged_csv',
                       'resistance_csv',
                       'mutations_csv']
+
+# noinspection PyArgumentList
+FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
+FolderEvent = namedtuple('FolderEvent', 'base_calls type sample_group')
 
 
 def open_kive(server_url):
@@ -97,24 +103,38 @@ def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
         file_names = [f.name for f in fastq_files]
         for sample_group in find_groups(file_names, sample_sheet_path):
             is_found = True
-            is_sent = False
-            while not is_sent and now() < next_scan:
-                try:
-                    sample_queue.put((base_calls_path, sample_group),
-                                     timeout=SLEEP_SECONDS)
-                    logger.debug('Put %s, %s in queue.',
-                                 base_calls_path,
-                                 sample_group)
-                    is_sent = True
-                except Full:
-                    pass
-            if now() >= next_scan:
+            is_sent = send_event(sample_queue,
+                                 FolderEvent(base_calls_path,
+                                             FolderEventType.ADD_SAMPLE,
+                                             sample_group),
+                                 next_scan)
+            if not is_sent:
                 return False
+        is_sent = send_event(sample_queue,
+                             FolderEvent(base_calls_path,
+                                         FolderEventType.FINISH_FOLDER,
+                                         None),
+                             next_scan)
+        if not is_sent:
+            return False
     if not is_found:
         logger.info('No folders need processing.')
     while wait and now() < next_scan:
         sleep(SLEEP_SECONDS)
     return True
+
+
+def send_event(sample_queue, folder_event, next_scan):
+    is_sent = False
+    while not is_sent and now() < next_scan:
+        try:
+            sample_queue.put(folder_event,
+                             timeout=SLEEP_SECONDS)
+            logger.debug('Put %s in queue.', folder_event)
+            is_sent = True
+        except Full:
+            pass
+    return is_sent
 
 
 def trim_name(sample_name):
@@ -137,7 +157,7 @@ class KiveWatcher:
         self.config = config
         self.result_handler = result_handler
         self.session = None
-        self.current_folder = None
+        self.loaded_folders = set()  # base_calls folders with all samples loaded
         self.folder_watchers = {}  # {base_calls_folder: FolderWatcher}
         self.pipelines = {}  # {pipeline_id: pipeline}
         self.external_directory_path = self.external_directory_name = None
@@ -240,7 +260,6 @@ class KiveWatcher:
 
     def add_sample_group(self, base_calls, sample_group):
         self.check_session()
-        self.current_folder = base_calls
         folder_watcher = self.folder_watchers.get(base_calls)
         if folder_watcher is None:
             folder_watcher = self.add_folder(base_calls)
@@ -248,6 +267,10 @@ class KiveWatcher:
             self.upload_filter_quality(folder_watcher)
             shutil.rmtree(self.get_results_path(folder_watcher),
                           ignore_errors=True)
+
+        for sample_watcher in folder_watcher.sample_watchers:
+            if sample_watcher.sample_group == sample_group:
+                return sample_watcher
 
         sample_watcher = SampleWatcher(sample_group)
         for fastq1 in filter(None, sample_group.names):
@@ -268,14 +291,18 @@ class KiveWatcher:
         self.folder_watchers[base_calls] = folder_watcher
         return folder_watcher
 
-    def finish_folder(self):
-        self.current_folder = None
+    def finish_folder(self, base_calls):
+        """ Record that all samples have been loaded for a folder.
+
+        Processing isn't finished yet, but all samples have been loaded.
+        """
+        self.loaded_folders.add(base_calls)
 
     def poll_runs(self):
         completed_folders = []
         for folder, folder_watcher in self.folder_watchers.items():
             folder_watcher.poll_runs()
-            if folder != self.current_folder and folder_watcher.is_complete:
+            if folder in self.loaded_folders and folder_watcher.is_complete:
                 completed_folders.append(folder)
         for folder in completed_folders:
             folder_watcher = self.folder_watchers.pop(folder)

@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 from struct import pack
 
-from micall.monitor.kive_watcher import find_samples, KiveWatcher
+from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, FolderEventType
 from micall.monitor.sample_watcher import PipelineType, ALLOWED_GROUPS, FolderWatcher, SampleWatcher
 from micall.resistance.resistance import SampleGroup
 from micall_watcher import parse_args
@@ -140,10 +140,17 @@ def create_raw_data_with_two_runs(tmpdir):
 def test_hcv_pair(raw_data_with_hcv_pair):
     sample_queue = DummyQueueSink()
     sample_queue.expect_put(
-        (raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234" /
-         "Data/Intensities/BaseCalls",
-         SampleGroup('2130A', ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-                               '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'))))
+        FolderEvent(raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2130A',
+                                ('2130A-HCV_S15_L001_R1_001.fastq.gz',
+                                 '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'))))
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.FINISH_FOLDER,
+                    None))
     pipeline_version = 'XXX'
 
     find_samples(raw_data_with_hcv_pair, pipeline_version, sample_queue, wait=False)
@@ -154,15 +161,29 @@ def test_hcv_pair(raw_data_with_hcv_pair):
 def test_two_runs(raw_data_with_two_runs):
     sample_queue = DummyQueueSink()
     sample_queue.expect_put(
-        (raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
-         "Data/Intensities/BaseCalls",
-         SampleGroup('2010A', ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
-                               None))))
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2010A',
+                                ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
+                                 None))))
     sample_queue.expect_put(
-        (raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
-         "Data/Intensities/BaseCalls",
-         SampleGroup('2000A', ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                               None))))
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.FINISH_FOLDER,
+                    None))
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2000A',
+                                ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
+                                 None))))
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.FINISH_FOLDER,
+                    None))
     pipeline_version = 'XXX'
 
     find_samples(raw_data_with_two_runs, pipeline_version, sample_queue, wait=False)
@@ -179,10 +200,17 @@ def test_skip_done_runs(raw_data_with_two_runs):
     pipeline_version = '0-dev'
     sample_queue = DummyQueueSink()
     sample_queue.expect_put(
-        (raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
-         "Data/Intensities/BaseCalls",
-         SampleGroup('2000A', ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                               None))))
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2000A',
+                                ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
+                                 None))))
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.FINISH_FOLDER,
+                    None))
 
     find_samples(raw_data_with_two_runs,
                  pipeline_version,
@@ -195,16 +223,30 @@ def test_skip_done_runs(raw_data_with_two_runs):
 def test_full_queue(raw_data_with_two_runs):
     sample_queue = DummyQueueSink()
     sample_queue.expect_put(
-        (raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
-         "Data/Intensities/BaseCalls",
-         SampleGroup('2010A', ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
-                               None))))
-    item2 = (raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
-             "Data/Intensities/BaseCalls",
-             SampleGroup('2000A', ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                                   None)))
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2010A',
+                                ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
+                                 None))))
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.FINISH_FOLDER,
+                    None))
+    item2 = FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                        "Data/Intensities/BaseCalls",
+                        FolderEventType.ADD_SAMPLE,
+                        SampleGroup('2000A',
+                                    ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
+                                     None)))
     sample_queue.expect_put(item2, is_full=True)
     sample_queue.expect_put(item2)
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.FINISH_FOLDER,
+                    None))
     pipeline_version = 'XXX'
 
     find_samples(raw_data_with_two_runs,
@@ -224,14 +266,26 @@ def test_scan_for_new_runs(raw_data_with_two_runs, mock_clock):
                          "MiSeq/runs/140201_M01234/needsprocessing")
     needs_processing2.unlink()
     sample_queue = DummyQueueSink()
-    item1 = (raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
-             "Data/Intensities/BaseCalls",
-             SampleGroup('2000A', ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                                   None)))
-    item2 = (raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
-             "Data/Intensities/BaseCalls",
-             SampleGroup('2010A', ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
-                                   None)))
+    item1 = FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                        "Data/Intensities/BaseCalls",
+                        FolderEventType.ADD_SAMPLE,
+                        SampleGroup('2000A',
+                                    ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
+                                     None)))
+    finish1 = FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                          "Data/Intensities/BaseCalls",
+                          FolderEventType.FINISH_FOLDER,
+                          None)
+    item2 = FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
+                        "Data/Intensities/BaseCalls",
+                        FolderEventType.ADD_SAMPLE,
+                        SampleGroup('2010A',
+                                    ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
+                                     None)))
+    finish2 = FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
+                          "Data/Intensities/BaseCalls",
+                          FolderEventType.FINISH_FOLDER,
+                          None)
     sample_queue.expect_put(item1,
                             is_full=True,
                             callback=needs_processing2.touch)
@@ -239,7 +293,9 @@ def test_scan_for_new_runs(raw_data_with_two_runs, mock_clock):
                             is_full=True,
                             callback=increment_clock)
     sample_queue.expect_put(item2)
+    sample_queue.expect_put(finish2)
     sample_queue.expect_put(item1)
+    sample_queue.expect_put(finish1)
     pipeline_version = 'XXX'
 
     find_samples(raw_data_with_two_runs,
@@ -1032,7 +1088,7 @@ def test_folder_completed(raw_data_with_two_samples, mock_open_kive, default_con
         sample_group=SampleGroup('2120A',
                                  ('2120A-PR_S14_L001_R1_001.fastq.gz',
                                   None)))
-    kive_watcher.finish_folder()
+    kive_watcher.finish_folder(base_calls)
     folder_watcher.add_run(Mock(name='filter_quality_run'),
                            PipelineType.FILTER_QUALITY,
                            is_complete=True)
@@ -1134,3 +1190,72 @@ def test_folder_not_finished(raw_data_with_two_samples, mock_open_kive, default_
 
     assert scratch_path.exists()
     assert not expected_resistance_path.exists()
+
+
+def test_folder_not_finished_before_new_start(raw_data_with_two_runs,
+                                              mock_open_kive,
+                                              default_config):
+    assert mock_open_kive
+    base_calls1 = (raw_data_with_two_runs /
+                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    base_calls2 = (raw_data_with_two_runs /
+                   "MiSeq/runs/140201_M01234/Data/Intensities/BaseCalls")
+    resistance_run = Mock(name='resistance_run',
+                          **{'is_complete.return_value': True,
+                             'get_results.return_value': create_datasets(['resistance_csv'])})
+    kive_watcher = KiveWatcher(default_config)
+
+    folder_watcher1 = kive_watcher.add_folder(base_calls1)
+    sample1_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls1,
+        sample_group=SampleGroup('2000A',
+                                 ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
+                                  None)))
+    # Did not call kive_watcher1.finish_folder(), more samples could be coming.
+    kive_watcher.add_folder(base_calls2)
+    kive_watcher.add_sample_group(
+        base_calls=base_calls2,
+        sample_group=SampleGroup('2010A',
+                                 ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
+                                  None)))
+    folder_watcher1.add_run(Mock(name='filter_quality_run'),
+                            PipelineType.FILTER_QUALITY,
+                            is_complete=True)
+    folder_watcher1.add_run(Mock(name='main_run'),
+                            PipelineType.MAIN,
+                            sample1_watcher,
+                            is_complete=True)
+    folder_watcher1.add_run(resistance_run,
+                            PipelineType.RESISTANCE,
+                            sample1_watcher)
+    results_path = base_calls1 / "../../../Results/version_0-dev"
+    scratch_path = results_path / "scratch"
+    expected_resistance_path = results_path / "resistance.csv"
+
+    kive_watcher.poll_runs()
+
+    assert not expected_resistance_path.exists()
+    assert scratch_path.exists()
+
+
+def test_add_duplicate_sample(raw_data_with_two_samples,
+                              mock_open_kive,
+                              default_config):
+    """ Could happen when restarting a run after finishing a newer one. """
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    assert mock_open_kive
+    kive_watcher = KiveWatcher(default_config)
+
+    sample_watcher1 = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    sample_watcher2 = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+
+    assert sample_watcher1 is sample_watcher2

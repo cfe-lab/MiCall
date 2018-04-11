@@ -8,7 +8,8 @@ from queue import Queue, Empty
 from threading import Thread
 from time import sleep
 
-from micall.monitor.kive_watcher import find_samples, KiveWatcher
+from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEventType
+
 try:
     from micall.monitor import update_qai
 except ImportError:
@@ -119,12 +120,14 @@ def main():
             sleep(POLLING_DELAY)
         else:
             try:
-                base_calls, sample_group = sample_queue.get(
-                    timeout=POLLING_DELAY)
-                kive_watcher.add_sample_group(base_calls, sample_group)
+                folder_event = sample_queue.get(timeout=POLLING_DELAY)
+                if folder_event.type == FolderEventType.ADD_SAMPLE:
+                    kive_watcher.add_sample_group(folder_event.base_calls,
+                                                  folder_event.sample_group)
+                else:
+                    kive_watcher.finish_folder(folder_event.base_calls)
             except Empty:
-                # No more samples coming for now.
-                kive_watcher.finish_folder()
+                pass
 
 
 if __name__ == '__main__':
