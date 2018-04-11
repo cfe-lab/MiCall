@@ -31,7 +31,7 @@ except ImportError:
     HTTPAdapter = None
 
 logger = logging.getLogger(__name__)
-FOLDER_SCAN_INTERVAL = timedelta(minutes=2)
+FOLDER_SCAN_INTERVAL = timedelta(hours=1)
 SLEEP_SECONDS = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_csv',
@@ -259,10 +259,26 @@ class KiveWatcher:
         return dataset
 
     def add_sample_group(self, base_calls, sample_group):
+        """ Add a sample group (main and optional midi sample) to process.
+
+        Also checks to see whether the folder finished processing since the
+        last folder scan.
+        :param base_calls: path to the BaseCalls folder with FASTQ files in it
+        :param SampleGroup sample_group: the sample(s) to add
+        :return: SampleWatcher for the sample group, or None if that folder has
+            already finished processing
+        """
         self.check_session()
         folder_watcher = self.folder_watchers.get(base_calls)
         if folder_watcher is None:
             folder_watcher = self.add_folder(base_calls)
+
+            # Check if folder has finished since it was scanned.
+            done_path = self.get_results_path(folder_watcher) / "doneprocessing"
+            if done_path.exists():
+                del self.folder_watchers[base_calls]
+                return None
+
             self.create_batch(folder_watcher)
             self.upload_filter_quality(folder_watcher)
             shutil.rmtree(self.get_results_path(folder_watcher),

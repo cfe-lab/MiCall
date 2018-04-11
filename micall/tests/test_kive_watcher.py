@@ -1259,3 +1259,27 @@ def test_add_duplicate_sample(raw_data_with_two_samples,
                                   None)))
 
     assert sample_watcher1 is sample_watcher2
+
+
+def test_add_finished_sample(raw_data_with_two_samples,
+                             mock_open_kive,
+                             default_config):
+    """ The folder finished processing since the folder was scanned. """
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    assert mock_open_kive
+    done_run = base_calls / "../../.."
+    results_path = done_run / "Results/version_0-dev"
+    results_path.mkdir(parents=True)
+    done_path = results_path / "doneprocessing"
+    done_path.touch()
+    kive_watcher = KiveWatcher(default_config)
+
+    sample_watcher1 = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+
+    assert done_path.exists()
+    assert sample_watcher1 is None
