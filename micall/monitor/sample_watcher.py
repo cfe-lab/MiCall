@@ -1,6 +1,8 @@
 from enum import Enum
 from pathlib import Path
 
+from kiveapi import KiveRunFailedException
+
 ALLOWED_GROUPS = ['Everyone']
 # noinspection PyArgumentList
 PipelineType = Enum(
@@ -78,6 +80,14 @@ class FolderWatcher:
                     if name is not None)
 
     def poll_sample_runs(self, sample_watcher):
+        """ Poll all active runs for a sample.
+
+        :param sample_watcher: details about the sample to poll
+        :return: True if the sample is complete (success or failure), otherwise
+            False
+        """
+        if sample_watcher.is_failed:
+            return True
         is_mixed_hcv_complete = False
         mixed_hcv_run = sample_watcher.runs.get(PipelineType.MIXED_HCV_MAIN)
         if mixed_hcv_run is None:
@@ -107,7 +117,7 @@ class FolderWatcher:
             if sample_watcher.sample_group.names[1] is not None:
                 self.run_pipeline(PipelineType.MIDI, sample_watcher)
             # Launched main and midi runs, nothing more to check on sample.
-            return False
+            return sample_watcher.is_failed
         midi_run = sample_watcher.runs.get(PipelineType.MIDI)
         active_main_runs = [
             run
@@ -115,19 +125,22 @@ class FolderWatcher:
             if run in self.active_runs and not self.fetch_run_status(run)]
         if active_main_runs:
             # Still running, nothing more to check on sample
-            return False
+            return sample_watcher.is_failed
         resistance_run = sample_watcher.runs.get(PipelineType.RESISTANCE)
         if resistance_run is None:
             self.run_pipeline(PipelineType.RESISTANCE, sample_watcher)
             # Launched resistance run, nothing more to check on sample.
-            return False
+            return sample_watcher.is_failed
         if resistance_run in self.active_runs:
             if not self.fetch_run_status(resistance_run):
                 # Still running, nothing more to check on sample.
-                return False
-        return is_mixed_hcv_complete
+                return sample_watcher.is_failed
+        return is_mixed_hcv_complete or sample_watcher.is_failed
 
     def run_pipeline(self, pipeline_type, sample_watcher=None):
+        if sample_watcher and sample_watcher.is_failed:
+            # Don't start runs when the sample has already failed.
+            return None
         run = self.runner.run_pipeline(self, pipeline_type, sample_watcher)
         if run is not None:
             self.add_run(run, pipeline_type, sample_watcher)
@@ -143,10 +156,14 @@ class FolderWatcher:
 
     def fetch_run_status(self, run):
         sample_watcher, pipeline_type = self.active_runs[run]
-        is_complete = self.runner.fetch_run_status(run,
-                                                   self,
-                                                   pipeline_type,
-                                                   sample_watcher)
+        try:
+            is_complete = self.runner.fetch_run_status(run,
+                                                       self,
+                                                       pipeline_type,
+                                                       sample_watcher)
+        except KiveRunFailedException:
+            sample_watcher.is_failed = True
+            is_complete = True
         if is_complete:
             del self.active_runs[run]
         return is_complete
@@ -157,6 +174,7 @@ class SampleWatcher:
         self.sample_group = sample_group
         self.fastq_datasets = []
         self.runs = {}  # {pipeline_type: run}
+        self.is_failed = False
 
     def __repr__(self):
         enum = self.sample_group.enum

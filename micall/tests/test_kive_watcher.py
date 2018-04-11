@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 
 from struct import pack
 
+from kiveapi import KiveClientException, KiveRunFailedException
+
 from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, FolderEventType
 from micall.monitor.sample_watcher import PipelineType, ALLOWED_GROUPS, FolderWatcher, SampleWatcher
 from micall.resistance.resistance import SampleGroup
@@ -433,6 +435,27 @@ def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_con
     assert dataset1 is folder_watcher.quality_dataset
     assert [dataset2, dataset3] == folder_watcher.sample_watchers[0].fastq_datasets
     assert not old_stuff_csv.exists()
+
+
+def test_create_batch_with_expired_session(raw_data_with_two_samples,
+                                           mock_open_kive,
+                                           default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    mock_batch = Mock(name='batch')
+    mock_session.create_run_batch.side_effect = [KiveClientException('expired'),
+                                                 mock_batch]
+    kive_watcher = KiveWatcher(default_config)
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+
+    folder_watcher, = kive_watcher.folder_watchers.values()
+    assert mock_batch is folder_watcher.batch
 
 
 def test_add_external_dataset(raw_data_with_two_samples, mock_open_kive, default_config):
@@ -1065,6 +1088,31 @@ def test_fetch_run_status_main_and_midi(raw_data_with_hcv_pair, pipelines_config
     assert expected_midi_nuc_path.exists()
 
 
+def test_fetch_run_status_session_expired(raw_data_with_two_runs,
+                                          mock_open_kive,
+                                          pipelines_config):
+    assert mock_open_kive
+    base_calls = (raw_data_with_two_runs /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_run = Mock(**{'is_complete.side_effect': [KiveClientException('expired'),
+                                                   True],
+                       'get_results.return_value': {}})
+
+    kive_watcher = KiveWatcher(pipelines_config)
+
+    sample_watcher = kive_watcher.add_sample_group(
+        base_calls,
+        SampleGroup('2000A', ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz', None)))
+    folder_watcher, = kive_watcher.folder_watchers.values()
+
+    is_complete = kive_watcher.fetch_run_status(mock_run,
+                                                folder_watcher,
+                                                PipelineType.MAIN,
+                                                sample_watcher)
+
+    assert is_complete
+
+
 def test_folder_completed(raw_data_with_two_samples, mock_open_kive, default_config):
     assert mock_open_kive
     base_calls = (raw_data_with_two_samples /
@@ -1236,6 +1284,56 @@ def test_folder_not_finished_before_new_start(raw_data_with_two_runs,
 
     assert not expected_resistance_path.exists()
     assert scratch_path.exists()
+
+
+def test_folder_failed(raw_data_with_two_samples, mock_open_kive, default_config):
+    assert mock_open_kive
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    main_run1 = Mock(
+        name='main_run1',
+        **{'is_complete.side_effect': KiveRunFailedException('failed')})
+    resistance_run2 = Mock(
+        name='resistance_run2',
+        **{'is_complete.return_value': True,
+           'get_results.return_value': create_datasets(['resistance_csv'])})
+    kive_watcher = KiveWatcher(default_config)
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    sample1_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    sample2_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2120A',
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.finish_folder(base_calls)
+    folder_watcher.add_run(Mock(name='filter_quality_run'),
+                           PipelineType.FILTER_QUALITY,
+                           is_complete=True)
+    folder_watcher.add_run(main_run1,
+                           PipelineType.MAIN,
+                           sample1_watcher)
+    folder_watcher.add_run(Mock(name='main_run2'),
+                           PipelineType.MAIN,
+                           sample2_watcher,
+                           is_complete=True)
+    folder_watcher.add_run(resistance_run2,
+                           PipelineType.RESISTANCE,
+                           sample2_watcher)
+    run_path = base_calls / "../../.."
+    results_path = run_path / "Results/version_0-dev"
+    expected_done_path = results_path / "doneprocessing"
+    expected_error_path = run_path / "errorprocessing"
+    expected_error_message = "Samples failed in Kive: 2110A.\n"
+
+    kive_watcher.poll_runs()
+
+    assert not expected_done_path.exists()
+    assert expected_error_message == expected_error_path.read_text()
 
 
 def test_add_duplicate_sample(raw_data_with_two_samples,

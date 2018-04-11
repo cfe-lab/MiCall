@@ -12,17 +12,12 @@ from queue import Full
 from io import StringIO, BytesIO
 from time import sleep
 
+from kiveapi import KiveAPI, KiveClientException
+
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
 from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType
 from micall.resistance.resistance import find_groups
-
-try:
-    from kiveapi import KiveAPI
-    from kiveapi.runstatus import RunStatus
-except ImportError:
-    # Ignore import errors during testing.
-    KiveAPI = RunStatus = None
 
 try:
     from requests.adapters import HTTPAdapter
@@ -130,7 +125,6 @@ def send_event(sample_queue, folder_event, next_scan):
         try:
             sample_queue.put(folder_event,
                              timeout=SLEEP_SECONDS)
-            logger.debug('Put %s in queue.', folder_event)
             is_sent = True
         except Full:
             pass
@@ -176,7 +170,8 @@ class KiveWatcher:
         self.check_session()
         kive_pipeline = self.pipelines.get(pipeline_id)
         if kive_pipeline is None:
-            kive_pipeline = self.session.get_pipeline(pipeline_id)
+            kive_pipeline = self.kive_retry(
+                lambda: self.session.get_pipeline(pipeline_id))
             self.pipelines[pipeline_id] = kive_pipeline
         return kive_pipeline
 
@@ -195,10 +190,11 @@ class KiveWatcher:
         description = 'MiCall batch for folder {}, pipeline version {}.'.format(
             folder_watcher.run_name,
             self.config.pipeline_version)
-        batch = self.session.create_run_batch(batch_name,
-                                              description=description,
-                                              users=[],
-                                              groups=ALLOWED_GROUPS)
+        batch = self.kive_retry(
+            lambda: self.session.create_run_batch(batch_name,
+                                                  description=description,
+                                                  users=[],
+                                                  groups=ALLOWED_GROUPS))
         folder_watcher.batch = batch
 
     def find_kive_dataset(self, source_file, dataset_name, cdt):
@@ -214,10 +210,11 @@ class KiveWatcher:
         for chunk in iter(lambda: source_file.read(chunk_size), b""):
             digest.update(chunk)
         checksum = digest.hexdigest()
-        datasets = self.session.find_datasets(name=dataset_name,
-                                              md5=checksum,
-                                              cdt=cdt,
-                                              uploaded=True)
+        datasets = self.kive_retry(
+            lambda: self.session.find_datasets(name=dataset_name,
+                                               md5=checksum,
+                                               cdt=cdt,
+                                               uploaded=True))
         needed_groups = set(ALLOWED_GROUPS)
         for dataset in datasets:
             missing_groups = needed_groups - set(dataset.groups_allowed)
@@ -323,6 +320,8 @@ class KiveWatcher:
         for folder in completed_folders:
             folder_watcher = self.folder_watchers.pop(folder)
             results_path = self.collate_folder(folder_watcher)
+            if results_path is None:
+                continue
             if (results_path / "coverage_scores.csv").exists():
                 self.result_handler(results_path)
             (results_path / "doneprocessing").touch()
@@ -330,7 +329,22 @@ class KiveWatcher:
                 logger.info('No more folders to process.')
 
     def collate_folder(self, folder_watcher):
+        """ Collate scratch files for a run folder.
+
+        :param FolderWatcher folder_watcher: holds details about the run folder
+        """
         results_path = self.get_results_path(folder_watcher)
+        failed_sample_names = [
+            sample_watcher.sample_group.enum
+            for sample_watcher in folder_watcher.sample_watchers
+            if sample_watcher.is_failed]
+        if failed_sample_names:
+            run_path = (results_path / "../..").resolve()
+            error_message = 'Samples failed in Kive: {}.'.format(
+                ', '.join(failed_sample_names))
+            (run_path / 'errorprocessing').write_text(error_message + '\n')
+            logger.error('Error in folder %s: %s', run_path, error_message)
+            return
         logger.info('Collating results in %s', results_path)
         scratch_path = results_path / "scratch"
         for output_name in DOWNLOADED_RESULTS:
@@ -456,8 +470,20 @@ class KiveWatcher:
             runbatch=folder_watcher.batch,
             groups=ALLOWED_GROUPS)
 
+    def kive_retry(self, target):
+        """ Add a single retry to a Kive API call.
+
+        Tries to call the target function, then refreshes the session login if
+        the call fails and tries a second time.
+        """
+        try:
+            return target()
+        except KiveClientException:
+            self.session.login(self.config.kive_user, self.config.kive_password)
+            return target()
+
     def fetch_run_status(self, run, folder_watcher, pipeline_type, sample_watcher):
-        is_complete = run.is_complete()
+        is_complete = self.kive_retry(run.is_complete)
         if is_complete and pipeline_type != PipelineType.FILTER_QUALITY:
             sample_name = (sample_watcher.sample_group.names[1]
                            if pipeline_type in (PipelineType.MIDI,
@@ -466,14 +492,14 @@ class KiveWatcher:
             results_path = self.get_results_path(folder_watcher)
             scratch_path = results_path / "scratch" / trim_name(sample_name)
             scratch_path.mkdir(parents=True, exist_ok=True)
-            results = run.get_results()
+            results = self.kive_retry(run.get_results)
             for output_name in DOWNLOADED_RESULTS:
                 dataset = results.get(output_name)
                 if dataset is None:
                     continue
                 filename = get_output_filename(output_name)
                 with (scratch_path / filename).open('wb') as f:
-                    dataset.download(f)
+                    self.kive_retry(lambda: dataset.download(f))
 
         return is_complete
 

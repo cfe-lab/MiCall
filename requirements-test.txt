@@ -1,6 +1,7 @@
 # Requirements for running the tests
 
 -r requirements.txt
+-r requirements-monitor.txt
 pytest==3.5.0
 coverage==4.3.4
 pandas==0.21.0
