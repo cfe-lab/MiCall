@@ -4,7 +4,7 @@ from io import BytesIO
 from pathlib import Path
 from queue import Full
 from tarfile import TarInfo
-from unittest.mock import patch, ANY, Mock, call
+from unittest.mock import patch, ANY, Mock, call, MagicMock
 
 import pytest
 from datetime import datetime, timedelta
@@ -589,7 +589,37 @@ def test_poll_first_sample_twice(raw_data_with_two_samples, mock_open_kive, defa
     kive_watcher.poll_runs()
     kive_watcher.poll_runs()
 
+    mock_session.run_pipeline.assert_called_once()
     mock_run.is_complete.assert_called_once_with()
+
+
+def test_poll_first_sample_already_running(raw_data_with_two_samples,
+                                           mock_open_kive,
+                                           default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    quality_dataset_id = 100
+    dataset1 = Mock(name='quality_csv',
+                    groups_allowed=ALLOWED_GROUPS,
+                    dataset_id=quality_dataset_id)
+    dataset1.name = '140101_M01234_quality.csv'
+    mock_session.find_datasets.side_effect = [[dataset1], [], []]
+    filter_run = MagicMock(
+        name='filter_run',
+        pipeline_id=default_config.micall_filter_quality_pipeline_id,
+        raw=dict(inputs=[dict(index=1, dataset=quality_dataset_id)]))
+    mock_session.find_runs.return_value = [filter_run]
+    kive_watcher = KiveWatcher(default_config)
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.poll_runs()
+
+    mock_session.run_pipeline.assert_not_called()
 
 
 def test_second_sample(raw_data_with_two_samples, mock_open_kive, default_config):
@@ -643,7 +673,7 @@ def test_sample_fails_to_upload(raw_data_with_two_samples,
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
-    kive_watcher = KiveWatcher(default_config)
+    kive_watcher = KiveWatcher(default_config, retry=True)
     mock_session.add_dataset.side_effect = [ConnectionError('server down'),
                                             Mock(name='quality_csv'),
                                             Mock(name='fastq1'),
@@ -669,7 +699,7 @@ def test_create_batch_fails(raw_data_with_two_samples,
     mock_batch = Mock(name='batch')
     mock_session.create_run_batch.side_effect = [ConnectionError('server down'),
                                                  mock_batch]
-    kive_watcher = KiveWatcher(default_config)
+    kive_watcher = KiveWatcher(default_config, retry=True)
 
     sample_watcher = kive_watcher.add_sample_group(
         base_calls=base_calls,
@@ -796,7 +826,7 @@ def test_launch_main_run_after_connection_error(raw_data_with_two_samples,
                                  Mock(dataset_name='fastq1'),
                                  Mock(dataset_name='bad_cycles_csv')]
     mock_session.add_dataset.side_effect = [fastq1, fastq2]
-    kive_watcher = KiveWatcher(pipelines_config)
+    kive_watcher = KiveWatcher(pipelines_config, retry=True)
 
     folder_watcher = kive_watcher.add_folder(base_calls)
     folder_watcher.batch = Mock('batch')
@@ -1392,7 +1422,7 @@ def test_folder_not_finished_before_new_start(raw_data_with_two_runs,
                                  ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
                                   None)))
     # Did not call kive_watcher1.finish_folder(), more samples could be coming.
-    kive_watcher.add_folder(base_calls2)
+    folder_watcher2 = kive_watcher.add_folder(base_calls2)
     kive_watcher.add_sample_group(
         base_calls=base_calls2,
         sample_group=SampleGroup('2010A',
@@ -1408,6 +1438,7 @@ def test_folder_not_finished_before_new_start(raw_data_with_two_runs,
     folder_watcher1.add_run(resistance_run,
                             PipelineType.RESISTANCE,
                             sample1_watcher)
+    folder_watcher2.quality_dataset = Mock(name='quality2_csv')
     results_path = base_calls1 / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
     expected_resistance_path = results_path / "resistance.csv"

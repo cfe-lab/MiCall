@@ -103,7 +103,7 @@ def main():
                              qai_user=args.qai_user,
                              qai_password=args.qai_password,
                              pipeline_version=args.pipeline_version)
-    kive_watcher = KiveWatcher(args, result_handler)
+    kive_watcher = KiveWatcher(args, result_handler, retry=True)
 
     sample_queue = Queue(maxsize=2)
     wait = True

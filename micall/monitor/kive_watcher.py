@@ -7,6 +7,7 @@ from collections import namedtuple
 from datetime import datetime, timedelta
 from enum import Enum
 from itertools import count
+from operator import itemgetter
 from pathlib import Path
 from queue import Full
 
@@ -14,7 +15,7 @@ from io import StringIO, BytesIO
 from time import sleep
 
 from requests.adapters import HTTPAdapter
-from kiveapi import KiveAPI, KiveClientException
+from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
 
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
@@ -154,14 +155,18 @@ def calculate_retry_wait(min_wait, max_wait, attempt_count):
 class KiveWatcher:
     def __init__(self,
                  config=None,
-                 result_handler=lambda result_folder: None):
+                 result_handler=lambda result_folder: None,
+                 retry=False):
         """ Initialize.
 
         :param config: command line arguments
         :param result_handler: called when a run folder has collated all the
-            results into a result folder"""
+            results into a result folder
+        :param bool retry: should the main methods retry forever?
+        """
         self.config = config
         self.result_handler = result_handler
+        self.retry = retry
         self.session = None
         self.loaded_folders = set()  # base_calls folders with all samples loaded
         self.folder_watchers = {}  # {base_calls_folder: FolderWatcher}
@@ -172,6 +177,9 @@ class KiveWatcher:
             bad_cycles_csv=config.micall_main_pipeline_id,
             main_amino_csv=config.micall_resistance_pipeline_id,
             midi_amino_csv=config.micall_resistance_pipeline_id) or {}
+
+        # Active runs started by other users.
+        self.other_runs = None  # {(pipeline_id, dataset_id, dataset_id, ...): run}
 
     def is_full(self):
         active_count = sum(len(folder_watcher.active_samples)
@@ -317,6 +325,8 @@ class KiveWatcher:
                 folder_watcher.sample_watchers.append(sample_watcher)
                 return sample_watcher
             except Exception:
+                if not self.retry:
+                    raise
                 wait_for_retry(attempt_count)
 
     def add_folder(self, base_calls):
@@ -335,6 +345,8 @@ class KiveWatcher:
         for attempt_count in count(1):
             # noinspection PyBroadException
             try:
+                self.check_session()
+                self.find_other_runs()
                 completed_folders = []
                 for folder, folder_watcher in self.folder_watchers.items():
                     folder_watcher.poll_runs()
@@ -352,7 +364,33 @@ class KiveWatcher:
                         logger.info('No more folders to process.')
                 return
             except Exception:
+                if not self.retry:
+                    raise
+                self.other_runs = None  # Scan again.
                 wait_for_retry(attempt_count)
+
+    def find_other_runs(self):
+        """ Check for runs started by other users. """
+        if self.other_runs is not None:
+            # Already checked.
+            return
+        runs = self.kive_retry(lambda: self.session.find_runs(active=True))
+        run_map = {}
+        pipeline_ids = set(self.input_pipeline_ids.values())
+        for run in runs:
+            if run.pipeline_id not in pipeline_ids:
+                continue
+            try:
+                self.kive_retry(run.is_complete)
+                input_list = run.raw['inputs']
+                inputs = sorted(input_list, key=itemgetter('index'))
+                input_ids = tuple(inp['dataset'] for inp in inputs)
+                key = (run.pipeline_id, ) + input_ids
+                run_map[key] = run
+            except KiveRunFailedException:
+                # Failed or cancelled, rerun.
+                pass
+        self.other_runs = run_map
 
     def collate_folder(self, folder_watcher):
         """ Collate scratch files for a run folder.
@@ -424,17 +462,12 @@ class KiveWatcher:
 
     def run_pipeline(self, folder_watcher, pipeline_type, sample_watcher):
         if pipeline_type == PipelineType.FILTER_QUALITY:
-            quality_pipeline = self.get_kive_pipeline(
-                self.config.micall_filter_quality_pipeline_id)
-            return self.session.run_pipeline(
-                quality_pipeline,
+            return self.find_or_launch_run(
+                self.config.micall_filter_quality_pipeline_id,
                 [folder_watcher.quality_dataset],
                 'MiCall filter quality on ' + folder_watcher.run_name,
-                runbatch=folder_watcher.batch,
-                groups=ALLOWED_GROUPS)
+                folder_watcher.batch)
         if pipeline_type == PipelineType.RESISTANCE:
-            resistance_pipeline = self.get_kive_pipeline(
-                self.config.micall_resistance_pipeline_id)
             main_runs = filter(None,
                                (sample_watcher.runs.get(pipeline_type)
                                 for pipeline_type in (PipelineType.MAIN,
@@ -447,18 +480,15 @@ class KiveWatcher:
                 input_dataset.cdt = main_aminos_input.compounddatatype
             if len(input_datasets) == 1:
                 input_datasets *= 2
-            return self.session.run_pipeline(
-                resistance_pipeline,
+            return self.find_or_launch_run(
+                self.config.micall_resistance_pipeline_id,
                 input_datasets,
                 'MiCall resistance on ' + sample_watcher.sample_group.enum,
-                runbatch=folder_watcher.batch,
-                groups=ALLOWED_GROUPS)
+                folder_watcher.batch)
         if pipeline_type in (PipelineType.MIXED_HCV_MAIN,
                              PipelineType.MIXED_HCV_MIDI):
             if self.config.mixed_hcv_pipeline_id is None:
                 return None
-            mixed_hcv_pipeline = self.get_kive_pipeline(
-                self.config.mixed_hcv_pipeline_id)
             if pipeline_type == PipelineType.MIXED_HCV_MAIN:
                 input_datasets = sample_watcher.fastq_datasets[:2]
                 sample_name = sample_watcher.sample_group.names[0]
@@ -466,12 +496,11 @@ class KiveWatcher:
                 input_datasets = sample_watcher.fastq_datasets[2:]
                 sample_name = sample_watcher.sample_group.names[1]
             sample_name = trim_name(sample_name)
-            return self.session.run_pipeline(
-                mixed_hcv_pipeline,
+            return self.find_or_launch_run(
+                self.config.mixed_hcv_pipeline_id,
                 input_datasets,
                 'Mixed HCV on ' + trim_name(sample_name),
-                runbatch=folder_watcher.batch,
-                groups=ALLOWED_GROUPS)
+                folder_watcher.batch)
         if pipeline_type == PipelineType.MAIN:
             fastq1, fastq2 = sample_watcher.fastq_datasets[:2]
             sample_name = sample_watcher.sample_group.names[0]
@@ -479,8 +508,6 @@ class KiveWatcher:
             assert pipeline_type == PipelineType.MIDI
             fastq1, fastq2 = sample_watcher.fastq_datasets[2:]
             sample_name = sample_watcher.sample_group.names[1]
-        main_pipeline = self.get_kive_pipeline(
-            self.config.micall_main_pipeline_id)
         if folder_watcher.bad_cycles_dataset is None:
             results = folder_watcher.filter_quality_run.get_results()
             folder_watcher.bad_cycles_dataset = results['bad_cycles_csv']
@@ -489,12 +516,27 @@ class KiveWatcher:
             folder_watcher.bad_cycles_dataset.cdt = bad_cycles_input.compounddatatype
 
         run_name = 'MiCall main on ' + trim_name(sample_name)
-        return self.session.run_pipeline(
-            main_pipeline,
+        return self.find_or_launch_run(
+            self.config.micall_main_pipeline_id,
             [fastq1, fastq2, folder_watcher.bad_cycles_dataset],
             run_name,
-            runbatch=folder_watcher.batch,
-            groups=ALLOWED_GROUPS)
+            folder_watcher.batch)
+
+    def find_or_launch_run(self,
+                           pipeline_id,
+                           inputs,
+                           run_name,
+                           run_batch):
+        run_key = (pipeline_id,) + tuple(inp.dataset_id for inp in inputs)
+        run = self.other_runs.get(run_key)
+        if run is not None:
+            return run
+        pipeline = self.get_kive_pipeline(pipeline_id)
+        return self.session.run_pipeline(pipeline,
+                                         inputs,
+                                         run_name,
+                                         runbatch=run_batch,
+                                         groups=ALLOWED_GROUPS)
 
     def kive_retry(self, target):
         """ Add a single retry to a Kive API call.
