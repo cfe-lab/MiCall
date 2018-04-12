@@ -12,8 +12,9 @@ from datetime import datetime, timedelta
 from struct import pack
 
 from kiveapi import KiveClientException, KiveRunFailedException
+from requests import ConnectionError
 
-from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, FolderEventType
+from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, FolderEventType, calculate_retry_wait
 from micall.monitor.sample_watcher import PipelineType, ALLOWED_GROUPS, FolderWatcher, SampleWatcher
 from micall.resistance.resistance import SampleGroup
 from micall_watcher import parse_args
@@ -55,6 +56,12 @@ def create_mock_open_kive():
         mock_pipeline.inputs = [mock_input]
 
         yield mock_open_kive
+
+
+@pytest.fixture(name='mock_wait')
+def create_mock_wait():
+    with patch('micall.monitor.kive_watcher.wait_for_retry') as mock_wait:
+        yield mock_wait
 
 
 @pytest.fixture(name='default_config')
@@ -199,6 +206,33 @@ def test_skip_done_runs(raw_data_with_two_runs):
     results_path.mkdir(parents=True)
     done_path = results_path / "doneprocessing"
     done_path.touch()
+    pipeline_version = '0-dev'
+    sample_queue = DummyQueueSink()
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2000A',
+                                ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
+                                 None))))
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.FINISH_FOLDER,
+                    None))
+
+    find_samples(raw_data_with_two_runs,
+                 pipeline_version,
+                 sample_queue,
+                 wait=False)
+
+    sample_queue.verify()
+
+
+def test_skip_failed_runs(raw_data_with_two_runs):
+    error_run_path = raw_data_with_two_runs / "MiSeq/runs/140201_M01234"
+    error_path = error_run_path / "errorprocessing"
+    error_path.touch()
     pipeline_version = '0-dev'
     sample_queue = DummyQueueSink()
     sample_queue.expect_put(
@@ -602,6 +636,58 @@ def test_sample_with_hcv_pair(raw_data_with_hcv_pair, mock_open_kive, default_co
         mock_session.find_datasets.call_args_list)
 
 
+def test_sample_fails_to_upload(raw_data_with_two_samples,
+                                mock_open_kive,
+                                mock_wait,
+                                default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    kive_watcher = KiveWatcher(default_config)
+    mock_session.add_dataset.side_effect = [ConnectionError('server down'),
+                                            Mock(name='quality_csv'),
+                                            Mock(name='fastq1'),
+                                            Mock(name='fastq2')]
+
+    sample_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+
+    assert sample_watcher is not None
+    mock_wait.assert_called_once_with(1)
+
+
+def test_create_batch_fails(raw_data_with_two_samples,
+                            mock_open_kive,
+                            mock_wait,
+                            default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    mock_batch = Mock(name='batch')
+    mock_session.create_run_batch.side_effect = [ConnectionError('server down'),
+                                                 mock_batch]
+    kive_watcher = KiveWatcher(default_config)
+
+    sample_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.poll_runs()
+
+    assert sample_watcher is not None
+    mock_wait.assert_called_once_with(1)
+    mock_session.run_pipeline.assert_called_once_with(
+        ANY,
+        ANY,
+        ANY,
+        runbatch=mock_batch,
+        groups=ANY)
+
+
 def test_sample_already_uploaded(raw_data_with_two_samples, mock_open_kive, default_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
@@ -692,6 +778,52 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
         'MiCall main on 2110A-V3LOOP_S13',
         runbatch=folder_watcher.batch,
         groups=['Everyone'])
+
+
+def test_launch_main_run_after_connection_error(raw_data_with_two_samples,
+                                                mock_open_kive,
+                                                mock_wait,
+                                                pipelines_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    fastq1 = Mock(name='fastq1')
+    fastq2 = Mock(name='fastq2')
+    bad_cycles_csv = Mock(name='bad_cycles_csv')
+    mock_session = mock_open_kive.return_value
+    mock_main_pipeline = Mock(name='main_pipeline')
+    mock_session.get_pipeline.return_value = mock_main_pipeline
+    mock_main_pipeline.inputs = [Mock(dataset_name='fastq1'),
+                                 Mock(dataset_name='fastq1'),
+                                 Mock(dataset_name='bad_cycles_csv')]
+    mock_session.add_dataset.side_effect = [fastq1, fastq2]
+    kive_watcher = KiveWatcher(pipelines_config)
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = Mock('batch')
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    folder_watcher.add_run(
+        Mock(name='quality_run',
+             **{'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv),
+                'is_complete.side_effect': [ConnectionError('server down'),
+                                            ConnectionError('server down'),
+                                            True]}),
+        PipelineType.FILTER_QUALITY)
+
+    kive_watcher.poll_runs()
+
+    mock_session.run_pipeline.assert_called_once_with(
+        mock_main_pipeline,
+        [fastq1,
+         fastq2,
+         bad_cycles_csv],
+        'MiCall main on 2110A-V3LOOP_S13',
+        runbatch=folder_watcher.batch,
+        groups=['Everyone'])
+    assert [call(1), call(2)] == mock_wait.call_args_list
 
 
 def test_launch_midi_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_config):
@@ -1381,3 +1513,52 @@ def test_add_finished_sample(raw_data_with_two_samples,
 
     assert done_path.exists()
     assert sample_watcher1 is None
+
+
+def test_add_failed_sample(raw_data_with_two_samples,
+                           mock_open_kive,
+                           default_config):
+    """ The folder failed since the folder was scanned. """
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    assert mock_open_kive
+    failed_run_path = base_calls / "../../.."
+    error_path = failed_run_path / "errorprocessing"
+    error_path.touch()
+    kive_watcher = KiveWatcher(default_config)
+
+    sample_watcher1 = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+
+    assert sample_watcher1 is None
+
+
+def test_calculate_retry_wait():
+    min_wait = timedelta(minutes=1)
+    max_wait = timedelta(minutes=9)
+
+    assert timedelta(minutes=1) == calculate_retry_wait(min_wait,
+                                                        max_wait,
+                                                        attempt_count=1)
+    assert timedelta(minutes=2) == calculate_retry_wait(min_wait,
+                                                        max_wait,
+                                                        attempt_count=2)
+    assert timedelta(minutes=4) == calculate_retry_wait(min_wait,
+                                                        max_wait,
+                                                        attempt_count=3)
+    assert timedelta(minutes=8) == calculate_retry_wait(min_wait,
+                                                        max_wait,
+                                                        attempt_count=4)
+    assert timedelta(minutes=9) == calculate_retry_wait(min_wait,
+                                                        max_wait,
+                                                        attempt_count=5)
+    assert timedelta(minutes=9) == calculate_retry_wait(min_wait,
+                                                        max_wait,
+                                                        attempt_count=6)
+
+    assert timedelta(minutes=9) == calculate_retry_wait(min_wait,
+                                                        max_wait,
+                                                        attempt_count=10000)
