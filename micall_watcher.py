@@ -1,22 +1,22 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
-
-import os
 from functools import partial
-
+import logging.config
+import os
 from pathlib import Path
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep
 
 from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEventType
-
+from micall.monitor import update_qai
 try:
-    from micall.monitor import update_qai
+    from micall_logging_override import LOGGING
 except ImportError:
-    # Swallow import error to allow testing. Check again at start of main().
-    update_qai = None
+    from micall_logging_config import LOGGING
 
 POLLING_DELAY = 10  # seconds between scans for new samples or finished runs
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger(__name__)
 
 
 def parse_args(argv=None):
@@ -81,6 +81,10 @@ def parse_args(argv=None):
         type=int,
         default=os.environ.get('MICALL_MAX_ACTIVE', 5),
         help='maximum number of active jobs in Kive')
+    parser.add_argument(
+        '--quit',
+        action='store_true',
+        help='quit when all runs are processed')
 
     args = parser.parse_args(argv)
     if not hasattr(args, 'kive_password'):
@@ -94,10 +98,8 @@ def parse_args(argv=None):
 
 
 def main():
-    if update_qai is None:
-        raise RuntimeError(
-            'Failed to import update_qai. Is the requests library installed?')
     args = parse_args()
+    logger.info('Starting up.')
     result_handler = partial(update_qai.process_folder,
                              qai_server=args.qai_server,
                              qai_user=args.qai_user,
@@ -127,7 +129,9 @@ def main():
                 else:
                     kive_watcher.finish_folder(folder_event.base_calls)
             except Empty:
-                pass
+                if args.quit and kive_watcher.is_idle():
+                    logger.info('Shutting down.')
+                    break
 
 
 if __name__ == '__main__':

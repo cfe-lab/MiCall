@@ -14,13 +14,11 @@ import re
 from collections import Counter, defaultdict, OrderedDict
 import csv
 from itertools import groupby
-import logging
 from operator import itemgetter
 import os
 
 import gotoh
 
-from micall.core import miseq_logging
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 from micall.utils.big_counter import BigCounter
 from micall.utils.translation import translate, ambig_dict
@@ -30,6 +28,7 @@ CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
 CONSENSUS_MIN_COVERAGE = 100
+MAX_CUTOFF = 'MAX'
 
 
 def parse_args():
@@ -68,11 +67,6 @@ def parse_args():
                         help='CSV containing any consensus that failed to align')
 
     return parser.parse_args()
-
-
-logger = miseq_logging.init_logging_console_only(logging.DEBUG)
-
-MAX_CUTOFF = 'MAX'
 
 
 class SequenceReport(object):

@@ -8,7 +8,7 @@ import os
 from micall.drivers.sample import Sample
 from micall.g2p.pssm_lib import Pssm
 
-logger = logging.getLogger('foo')
+logger = logging.getLogger(__name__)
 
 
 def parse_args():

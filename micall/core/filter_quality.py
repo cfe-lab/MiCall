@@ -1,19 +1,14 @@
-#! /usr/bin/env python3.4
-
 import argparse
 import csv
 import itertools
-import logging
 import math
 from operator import itemgetter
 import os
 
-from micall.core import miseq_logging
-
 BAD_ERROR_RATE = 7.5
 
 
-def parseArgs():
+def parse_args():
     parser = argparse.ArgumentParser(
         description='Post-processing of short-read alignments.')
 
@@ -26,8 +21,6 @@ def parseArgs():
 
     return parser.parse_args()
 
-logger = miseq_logging.init_logging_console_only(logging.DEBUG)
-
 
 def direction_grouper(cycle):
     return math.copysign(1, int(cycle['cycle']))
@@ -39,7 +32,9 @@ def report_bad_cycles(quality_csv, bad_cycles_csv, bad_tiles_csv=None):
                             ['tile', 'cycle', 'errorrate'],
                             lineterminator=os.linesep)
     writer.writeheader()
-    if bad_tiles_csv is not None:
+    if bad_tiles_csv is None:
+        tile_writer = None
+    else:
         tile_writer = csv.DictWriter(bad_tiles_csv,
                                      ['tile', 'bad_cycles'],
                                      lineterminator=os.linesep)
@@ -58,12 +53,12 @@ def report_bad_cycles(quality_csv, bad_cycles_csv, bad_tiles_csv=None):
                 if is_bad:
                     writer.writerow(cycle)
                     bad_cycle_count += 1
-        if bad_tiles_csv is not None:
+        if tile_writer is not None:
             tile_writer.writerow(dict(tile=tile, bad_cycles=bad_cycle_count))
 
 
 def main():
-    args = parseArgs()
+    args = parse_args()
     with args.quality_csv, args.bad_cycles_csv:
         report_bad_cycles(args.quality_csv, args.bad_cycles_csv)
 

@@ -319,11 +319,11 @@ def link_samples(run_path, data_path):
 
     sample_groups = []
     run_info_path = os.path.join(run_path, 'RunInfo.xml')
-    if not os.path.exists(run_info_path):
+    interop_path = os.path.join(run_path, 'InterOp')
+    if not (os.path.exists(run_info_path) and os.path.exists(interop_path)):
         read_sizes = None
     else:
         read_sizes = parse_read_sizes(run_info_path)
-    interop_path = os.path.join(run_path, 'Interop')
     run_info = RunInfo(sample_groups,
                        reports=['PR_RT', 'IN', 'NS3', 'NS5a', 'NS5b'],
                        interop_path=interop_path,

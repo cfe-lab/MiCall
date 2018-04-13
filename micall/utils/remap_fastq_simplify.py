@@ -1,10 +1,8 @@
 import csv
 from collections import defaultdict
-from itertools import imap
 import logging
 import os
 
-from micall.core.miseq_logging import init_logging_console_only
 from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from csv import DictReader
@@ -159,7 +157,7 @@ class MicallDD(DD):
         return DD.FAIL if diff >= 20 else DD.PASS
 
     def write_simple_fastq(self, filename1, read_indexes):
-        selected_reads = imap(self.reads.__getitem__, read_indexes)
+        selected_reads = map(self.reads.__getitem__, read_indexes)
         filename2 = get_reverse_filename(filename1)
         with open(filename1, 'w') as f1, open(filename2, 'w') as f2:
             for lines in selected_reads:
@@ -219,7 +217,7 @@ def read_fastq(filename, reads):
 
 
 def main():
-    logger = init_logging_console_only(logging.INFO)
+    logger = logging.getLogger(__name__)
     try:
         logger.info('Starting.')
         fname = 'censored1.fastq'

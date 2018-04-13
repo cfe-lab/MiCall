@@ -5,9 +5,8 @@ import os
 from subprocess import check_call, call
 from tempfile import NamedTemporaryFile
 
-from micall.core.miseq_logging import init_logging_console_only
 from micall.g2p.pssm_lib import Pssm
-from micall.g2p.fastq_g2p import sam_g2p
+from micall.g2p.fastq_g2p import fastq_g2p
 
 
 def write_simple_sam(samfile, sam_lines):
@@ -37,8 +36,9 @@ def test(remap_lines, temp_prefix, pssm, ruby_script, delete_results=True):
                        cwd=ruby_path)
             with open(nuc_filename, 'rU') as nuc_csv, \
                  open(python_out_filename, 'wb') as g2p_csv:
-                
-                sam_g2p(pssm, remap_file, nuc_csv, g2p_csv)
+
+                # TODO: update this to the new arguments.
+                fastq_g2p(pssm, remap_file, nuc_csv, g2p_csv)
             
             with open(os.devnull, 'w') as devnull:
                 is_diff = call(['diff', '-q', ruby_out_filename, python_out_filename],
@@ -110,7 +110,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     
-    logger = init_logging_console_only(logging.INFO)
+    logger = logging.getLogger(__name__)
     pssm = Pssm(path_to_lookup='../g2p/g2p_fpr.txt',
                 path_to_matrix='../g2p/g2p.matrix')
     for txtfilename in sorted(glob.glob(os.path.join(args.workdir, args.pattern))):

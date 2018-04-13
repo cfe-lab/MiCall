@@ -1,0 +1,50 @@
+""" Logging configuration for the MiCall pipeline.
+
+You can override the settings in micall_logging_config.py by copying the whole
+file to micall_logging_override.py. The original settings in
+micall_logging_config.py should be useful defaults for developers, with extra
+settings available for production use, but disabled.
+
+For a detailed description of the settings, see the Python documentation:
+https://docs.python.org/3/library/logging.config.html#logging-config-dictschema
+
+Do not commit micall_logging_override.py to source control.
+"""
+
+LOGGING = {
+    # This is the default logger. Probably want to switch console to mail.
+    'root': {'handlers': ['console', 'file'],
+             'level': 'INFO'},
+    'loggers': {"__main__": {"level": "INFO"}},
+
+    # This lets you call logging.getLogger() before the configuration is done.
+    'disable_existing_loggers': False,
+
+    'version': 1,
+    'formatters': {'basic': {
+        'format': '%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s',
+        'datefmt': '%Y-%m-%d %H:%M:%S'}},
+    'filters': {
+        'rate_limit': {'()': 'micall.utils.ratelimitingfilter.RateLimitingFilter',
+                       'rate': 1,
+                       'per': 300,
+                       'burst': 5}
+    },
+    'handlers': {'console': {'class': 'logging.StreamHandler',
+                             'level': 'DEBUG',
+                             'formatter': 'basic'},
+                 'file': {'class': 'logging.handlers.RotatingFileHandler',
+                          'level': 'DEBUG',
+                          'formatter': 'basic',
+                          'filename': 'micall.log',
+                          'maxBytes': 1024*1024*15,  # 15MB
+                          'backupCount': 10},
+                 'mail': {'class': 'logging.handlers.SMTPHandler',
+                          'filters': ['rate_limit'],
+                          'level': 'WARN',
+                          'formatter': 'basic',
+                          'mailhost': 'mail.FILLINDOMAIN.com',
+                          'fromaddr': 'no.reply.micall.server@FILLINDOMAIN.com',
+                          'toaddrs': ['admin.team@FILLINDOMAIN.com'],
+                          'subject': 'Error logged in MiCall Watcher'}},
+}

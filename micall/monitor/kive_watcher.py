@@ -186,6 +186,9 @@ class KiveWatcher:
                            for folder_watcher in self.folder_watchers.values())
         return active_count >= self.config.max_active
 
+    def is_idle(self):
+        return not self.folder_watchers
+
     def get_kive_pipeline(self, pipeline_id):
         self.check_session()
         kive_pipeline = self.pipelines.get(pipeline_id)

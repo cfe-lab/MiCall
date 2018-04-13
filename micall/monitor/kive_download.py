@@ -16,9 +16,8 @@ except ImportError:
     KiveAPI = RunStatus = None
 from requests.adapters import HTTPAdapter
 
-from micall.settings import kive_server_url, kive_user, kive_password, home, \
+from micall.settings import kive_server_url, kive_user, kive_password, \
     kive_pipelines
-from micall.core.miseq_logging import init_logging
 
 
 def parse_args():
@@ -200,9 +199,7 @@ def find_batch_runs(kive, batch_name, batch_size):
 
 
 def main():
-    logger = init_logging(os.path.join(home, 'kive_download.log'),
-                          file_log_level=logging.INFO,
-                          console_log_level=logging.INFO)
+    logger = logging.getLogger(__name__)
     args = parse_args()
 
     logger.info('Starting.')
@@ -231,6 +228,7 @@ def main():
     if args.workfolder or args.resultfolder:
         download_results(runs, args.resultfolder, args.workfolder)
     logger.info('%d runs found (%d unfinished).', len(runs), unfinished_count)
+
 
 if __name__ == '__main__':
     main()

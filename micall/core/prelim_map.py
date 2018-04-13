@@ -1,7 +1,5 @@
-#! /usr/bin/env python3.4
-
 """
-Shipyard-style bowtie2
+Kive-style bowtie2
 Run bowtie2 on paired-end FASTQ data sets with user-supplied *.bt2
 bowtie2 SAM format output to <stdout> for redirection via subprocess.Popen
 Sort outputs by refname.
@@ -14,7 +12,6 @@ import logging
 import os
 import sys
 
-from micall.core import miseq_logging
 from micall.core import project_config
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 
@@ -28,7 +25,7 @@ READ_GAP_EXTEND = 3
 REF_GAP_OPEN = 10
 REF_GAP_EXTEND = 3
 
-logger = miseq_logging.init_logging_console_only(logging.DEBUG)
+logger = logging.getLogger(__name__)
 line_counter = LineCounter()
 
 
