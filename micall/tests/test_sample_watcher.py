@@ -25,7 +25,9 @@ class DummySession:
                          _folder_watcher,
                          _pipeline_type,
                          _sample_watcher):
-        return run not in self.active_runs
+        if run not in self.active_runs:
+            return None
+        return run
 
     def finish_run(self, run):
         self.active_runs.remove(run)
@@ -96,7 +98,7 @@ def test_filter_quality_running():
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()  # Start filter_quality
-    folder_watcher.poll_runs()  # Start filter_quality
+    folder_watcher.poll_runs()  # filter_quality still running
 
     assert [(folder_watcher, None, PipelineType.FILTER_QUALITY)] == session.active_runs
 

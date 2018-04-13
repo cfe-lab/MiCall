@@ -528,9 +528,10 @@ class KiveWatcher:
                            run_name,
                            run_batch):
         run_key = (pipeline_id,) + tuple(inp.dataset_id for inp in inputs)
-        run = self.other_runs.get(run_key)
-        if run is not None:
-            return run
+        if self.other_runs:
+            run = self.other_runs.pop(run_key, None)
+            if run is not None:
+                return run
         pipeline = self.get_kive_pipeline(pipeline_id)
         return self.session.run_pipeline(pipeline,
                                          inputs,
@@ -551,7 +552,13 @@ class KiveWatcher:
             return target()
 
     def fetch_run_status(self, run, folder_watcher, pipeline_type, sample_watcher):
-        is_complete = self.kive_retry(run.is_complete)
+        self.check_session()
+        refreshed_run = self.kive_retry(lambda: self.session.get_run(run.run_id))
+        stopped_by = refreshed_run.raw['stopped_by']
+        if stopped_by is not None:
+            return self.run_pipeline(folder_watcher, pipeline_type, sample_watcher)
+        end_time = refreshed_run.raw['end_time']
+        is_complete = end_time is not None
         if is_complete and pipeline_type != PipelineType.FILTER_QUALITY:
             sample_name = (sample_watcher.sample_group.names[1]
                            if pipeline_type in (PipelineType.MIDI,
@@ -569,7 +576,9 @@ class KiveWatcher:
                 with (scratch_path / filename).open('wb') as f:
                     self.kive_retry(lambda: dataset.download(f))
 
-        return is_complete
+        if is_complete:
+            return None
+        return run
 
     def get_results_path(self, folder_watcher):
         version_name = f'version_{self.config.pipeline_version}'

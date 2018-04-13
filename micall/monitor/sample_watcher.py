@@ -23,12 +23,13 @@ class FolderWatcher:
             run_pipeline(folder_watcher, pipeline_type, sample_watcher)
                 returns run, or None if that pipeline_type is not configured.
             fetch_run_status(
-                run,
+                old_run,
                 folder_watcher,
                 pipeline_type,
-                sample_watcher) => True if successfully finished, raise if
-                run failed, also saves the outputs to temporary files in the
-                results folder when the run is finished
+                sample_watcher) => None if successfully finished, raise if
+                run failed, new_run if user cancelled the old one, or old_run
+                if it's still running. Also saves the outputs to temporary
+                files in the results folder when the run is finished
         """
         self.base_calls_folder = Path(base_calls_folder)
         self.runner = runner
@@ -156,11 +157,18 @@ class FolderWatcher:
 
     def fetch_run_status(self, run):
         sample_watcher, pipeline_type = self.active_runs[run]
+        is_complete = False
         try:
-            is_complete = self.runner.fetch_run_status(run,
-                                                       self,
-                                                       pipeline_type,
-                                                       sample_watcher)
+            new_run = self.runner.fetch_run_status(run,
+                                                   self,
+                                                   pipeline_type,
+                                                   sample_watcher)
+            if new_run is None:
+                is_complete = True
+            elif new_run is not run:
+                del self.active_runs[run]
+                self.add_run(new_run, pipeline_type, sample_watcher)
+
         except KiveRunFailedException:
             sample_watcher.is_failed = True
             is_complete = True
