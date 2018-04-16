@@ -639,10 +639,43 @@ def test_poll_first_sample_with_other_running(raw_data_with_two_samples,
                     dataset_id=quality_dataset_id)
     dataset1.name = '140101_M01234_quality.csv'
     mock_session.find_datasets.side_effect = [[dataset1], [], []]
-    filter_run = MagicMock(
-        name='filter_run',
+    other_run = MagicMock(
+        name='other_run',
         pipeline_id=default_config.micall_main_pipeline_id,
         raw=dict(inputs=[dict(index=1, dataset=quality_dataset_id)]))
+    mock_session.find_runs.return_value = [other_run]
+    kive_watcher = KiveWatcher(default_config)
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.poll_runs()
+
+    mock_session.run_pipeline.assert_called_once()
+
+
+def test_poll_first_sample_with_other_purged(raw_data_with_two_samples,
+                                             mock_open_kive,
+                                             default_config):
+    """ A matching run finished recently, but it was purged. """
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    quality_dataset_id = 100
+    dataset1 = Mock(name='quality_csv',
+                    groups_allowed=ALLOWED_GROUPS,
+                    dataset_id=quality_dataset_id)
+    dataset1.name = '140101_M01234_quality.csv'
+    purged_dataset = Mock(name='purged_csv',
+                          dataset_id=None)
+    mock_session.find_datasets.side_effect = [[dataset1], [], []]
+    filter_run = MagicMock(
+        name='filter_run',
+        pipeline_id=default_config.micall_filter_quality_pipeline_id,
+        raw=dict(inputs=[dict(index=1, dataset=quality_dataset_id)]),
+        **{'get_results.return_value': dict(purged_csv=purged_dataset)})
     mock_session.find_runs.return_value = [filter_run]
     kive_watcher = KiveWatcher(default_config)
 

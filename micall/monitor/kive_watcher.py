@@ -385,6 +385,11 @@ class KiveWatcher:
                 continue
             try:
                 self.kive_retry(run.is_complete)
+                outputs = self.kive_retry(run.get_results)
+                if any(output.dataset_id is None
+                       for output in outputs.values()):
+                    # Output has been purged, can't reuse the run.
+                    continue
                 input_list = run.raw['inputs']
                 inputs = sorted(input_list, key=itemgetter('index'))
                 input_ids = tuple(inp['dataset'] for inp in inputs)
