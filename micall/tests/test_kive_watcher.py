@@ -150,6 +150,66 @@ def create_raw_data_with_two_runs(tmpdir):
     return raw_data
 
 
+def test_find_default_pipelines(mock_open_kive):
+    mock_session = mock_open_kive.return_value
+    mock_session.get.side_effect = [
+        Mock(name='get external file directories',
+             **{'json.return_value': []}),
+        Mock(name='get pipeline families',
+             **{'json.return_value': [
+                 dict(id=42,
+                      name='Other MiCall',
+                      members=[dict(id=420)]),
+                 dict(id=43,
+                      name='MiCall Filter Quality',
+                      members=[dict(id=435),
+                               dict(id=432)]),
+                 dict(id=44,
+                      name='MiCall Main',
+                      members=[dict(id=440)]),
+                 dict(id=45,
+                      name='MiCall Resistance',
+                      members=[dict(id=450)])]})]
+    expected_filter_quality_pipeline_id = 435
+    expected_main_pipeline_id = 440
+    expected_resistance_pipeline_id = 450
+    args = parse_args([])  # No parameters: all defaults.
+
+    kive_watcher = KiveWatcher(args)
+
+    assert expected_filter_quality_pipeline_id == \
+        kive_watcher.config.micall_filter_quality_pipeline_id
+    assert expected_main_pipeline_id == \
+        kive_watcher.config.micall_main_pipeline_id
+    assert expected_resistance_pipeline_id == \
+        kive_watcher.config.micall_resistance_pipeline_id
+
+
+def test_default_pipeline_not_found(mock_open_kive):
+    mock_session = mock_open_kive.return_value
+    mock_session.get.side_effect = [
+        Mock(name='get external file directories',
+             **{'json.return_value': []}),
+        Mock(name='get pipeline families',
+             **{'json.return_value': [
+                 dict(id=43,
+                      name='MiCall Filter Quality',
+                      members=[dict(id=435)]),
+                 dict(id=44,
+                      name='MiCrawl Main',  # <== Typo
+                      members=[dict(id=440)]),
+                 dict(id=45,
+                      name='MiCall Resistance',
+                      members=[dict(id=450)])]})]
+    args = parse_args([])  # No parameters: all defaults.
+
+    with pytest.raises(
+            RuntimeError,
+            match=r"Argument micall_main_pipeline_id not set, and no "
+                  r"pipeline found named 'micall main'\."):
+        KiveWatcher(args)
+
+
 def test_hcv_pair(raw_data_with_hcv_pair):
     sample_queue = DummyQueueSink()
     sample_queue.expect_put(

@@ -91,9 +91,6 @@ def parse_args(argv=None):
         args.kive_password = os.environ.get('MICALL_KIVE_PASSWORD', 'kive')
     if not hasattr(args, 'qai_password'):
         args.qai_password = os.environ.get('MICALL_QAI_PASSWORD', 'testing')
-    if args.micall_filter_quality_pipeline_id is None:
-        parser.error('Missing micall_filter_quality_pipeline_id. Set the '
-                     'argument or environment variable.')
     return args
 
 

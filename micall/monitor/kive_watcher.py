@@ -172,6 +172,7 @@ class KiveWatcher:
         self.folder_watchers = {}  # {base_calls_folder: FolderWatcher}
         self.pipelines = {}  # {pipeline_id: pipeline}
         self.external_directory_path = self.external_directory_name = None
+        self.find_default_pipelines()
         self.input_pipeline_ids = config and dict(
             quality_csv=config.micall_filter_quality_pipeline_id,
             bad_cycles_csv=config.micall_main_pipeline_id,
@@ -180,6 +181,34 @@ class KiveWatcher:
 
         # Active runs started by other users.
         self.other_runs = None  # {(pipeline_id, dataset_id, dataset_id, ...): run}
+
+    def find_default_pipelines(self):
+        default_family_names = ['filter quality',
+                                'main',
+                                'resistance']
+        family_data = None
+        for family_name in default_family_names:
+            attribute_name = (
+                    'micall_' + family_name.replace(' ', '_') + '_pipeline_id')
+            if getattr(self.config, attribute_name) is not None:
+                continue
+            if family_data is None:
+                self.check_session()
+                filter_text = 'filters[0][key]=smart&filters[0][val]=micall'
+                family_data = self.session.get(
+                    '@api_pipeline_families',
+                    context={'filters': filter_text}).json()
+
+            search_text = 'micall ' + family_name
+            for family in family_data:
+                if search_text in family['name'].lower():
+                    for member in family['members']:
+                        setattr(self.config, attribute_name, member['id'])
+                        break
+                    break
+            else:
+                raise RuntimeError(f'Argument {attribute_name} not set, and '
+                                   f'no pipeline found named {search_text!r}.')
 
     def is_full(self):
         active_count = sum(len(folder_watcher.active_samples)
