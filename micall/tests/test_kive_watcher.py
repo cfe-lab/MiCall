@@ -70,13 +70,15 @@ def create_mock_wait():
 
 @pytest.fixture(name='default_config')
 def create_default_config():
-    default_config = parse_args(argv=['--micall_filter_quality_pipeline_id', '42'])
+    default_config = parse_args(argv=['--micall_filter_quality_pipeline_id', '42',
+                                      '--micall_main_pipeline_id', '43',
+                                      '--micall_resistance_pipeline_id', '494'])
     yield default_config
 
 
 @pytest.fixture(name='pipelines_config')
 def create_pipelines_config(default_config):
-    default_config.micall_main_pipeline_id = 43
+    # This used to be different from the default, but now they're the same.
     yield default_config
 
 
