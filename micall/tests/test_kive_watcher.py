@@ -16,7 +16,7 @@ from requests import ConnectionError
 
 from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, FolderEventType, calculate_retry_wait
 from micall.monitor.sample_watcher import PipelineType, ALLOWED_GROUPS, FolderWatcher, SampleWatcher
-from micall.resistance.resistance import SampleGroup
+from micall.monitor.find_groups import SampleGroup
 from micall_watcher import parse_args
 
 

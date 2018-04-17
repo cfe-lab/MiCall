@@ -20,7 +20,7 @@ from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
 from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType
-from micall.resistance.resistance import find_groups
+from micall.monitor.find_groups import find_groups
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)

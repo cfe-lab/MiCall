@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from micall.monitor.sample_watcher import FolderWatcher, SampleWatcher, PipelineType
-from micall.resistance.resistance import SampleGroup
+from micall.monitor.find_groups import SampleGroup
 
 
 class DummySession:

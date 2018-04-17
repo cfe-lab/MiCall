@@ -10,7 +10,8 @@ from operator import itemgetter
 from datetime import datetime
 
 from micall.resistance.genreport import gen_report
-from micall.resistance.resistance import find_groups, report_resistance
+from micall.monitor.find_groups import find_groups
+from micall.resistance.resistance import report_resistance
 from micall.settings import NEEDS_PROCESSING, pipeline_version, DONE_PROCESSING
 
 
