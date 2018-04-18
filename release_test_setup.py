@@ -15,17 +15,24 @@ from glob import glob
 from itertools import groupby
 from operator import attrgetter
 import os
-from shutil import copytree, copy, rmtree
+from pathlib import Path
+from shutil import copy, rmtree
 
-from micall.settings import rawdata_mount, pipeline_version, ERROR_PROCESSING, \
-    NEEDS_PROCESSING
+NEEDS_PROCESSING = 'needsprocessing'
+ERROR_PROCESSING = 'errorprocessing'
 
 
 def parse_args():
     parser = ArgumentParser(description='Prepare sample runs for testing a new release.')
     parser.add_argument(
-        'source_folder',
+        'old_folder',
         help='Main RAWDATA folder that will be copied to local RAWDATA.')
+    parser.add_argument(
+        'test_folder',
+        type=Path,
+        default=os.environ.get('MICALL_RAW_DATA',
+                               Path.home() / "data/RAW_DATA"),
+        help='Local RAWDATA folder that will be used to run tests.')
     parser.add_argument(
         '-s',
         '--samples_csv',
@@ -35,17 +42,18 @@ def parse_args():
         '-m',
         '--min_run_name',
         help='Select all later runs, (e.g., "161201"). Overrides samples_csv.')
-    # parser.add_argument('-r', '--run_name',
-    #                     help='Run name to set up. Overrides samples_csv.')
-    # parser.add_argument('-e', '--enum',
-    #                     help='Extraction number to set up. Requires run_name.')
+    parser.add_argument(
+        '--pipeline_version',
+        default='0-dev',
+        help='version suffix for folder names')
     return parser.parse_args()
 
 
 class Sample(object):
-    def __init__(self, run_name, extract_num):
+    def __init__(self, run_name, extract_num, config):
         self.run_name = run_name
         self.extract_num = extract_num
+        self.config = config
         self.fastq_paths = None
 
     def find(self, source_folder, qai_run_names=None):
@@ -61,7 +69,7 @@ class Sample(object):
         if os.path.exists(run_path):
             self.run_name = run_path
         else:
-            run_parts = self.run_name.split('.')
+            run_parts = str(self.run_name).split('.')
             if len(run_parts) < 2:
                 run_parts.append('M01841')
             format_string = '%d-%b-%y' if len(run_parts[0]) == 9 else '%d-%b-%Y'
@@ -97,7 +105,7 @@ class Sample(object):
 
     def setup_samples(self):
         base_run_name = os.path.basename(self.run_name)
-        target_data_path = os.path.join(rawdata_mount,
+        target_data_path = os.path.join(self.config.test_folder,
                                         'MiSeq',
                                         'runs',
                                         base_run_name,
@@ -124,8 +132,11 @@ class Sample(object):
 
     def setup_run(self):
         base_run_name = os.path.basename(self.run_name)
-        target_run_path = os.path.join(rawdata_mount, 'MiSeq', 'runs', base_run_name)
-        suspended_run_path = os.path.join(rawdata_mount,
+        target_run_path = os.path.join(self.config.test_folder,
+                                       'MiSeq',
+                                       'runs',
+                                       base_run_name)
+        suspended_run_path = os.path.join(self.config.test_folder,
                                           'MiSeq',
                                           'runs',
                                           'suspended',
@@ -150,7 +161,7 @@ class Sample(object):
                      os.path.join(target_run_path, filename))
         results_path = os.path.join(target_run_path,
                                     'Results',
-                                    'version_' + pipeline_version)
+                                    'version_' + self.config.pipeline_version)
         try:
             rmtree(results_path)
         except OSError as ex:
@@ -165,7 +176,7 @@ class Sample(object):
         return target_run_path
 
 
-def suspend_inactive_runs(active_runs):
+def suspend_inactive_runs(active_runs, rawdata_mount):
     active_run_names = set(map(os.path.basename, active_runs))
     local_runs = glob(os.path.join(rawdata_mount, 'MiSeq', 'runs', '*'))
     for run_path in local_runs:
@@ -218,15 +229,15 @@ def find_run_folders(source_folder, min_run_name):
 def main():
     args = parse_args()
     if args.min_run_name is not None:
-        run_folders = find_run_folders(args.source_folder, args.min_run_name)
-        samples = [Sample(folder, '*') for folder in run_folders]
+        run_folders = find_run_folders(args.old_folder, args.min_run_name)
+        samples = [Sample(folder, '*', args) for folder in run_folders]
     else:
         with open(args.samples_csv, 'rU') as samples_csv:
-            samples = [Sample(row['run'], row['enum'])
+            samples = [Sample(row['run'], row['enum'], args)
                        for row in DictReader(samples_csv)]
     qai_run_names = set()
     for sample in samples:
-        sample.find(args.source_folder, qai_run_names)
+        sample.find(args.old_folder, qai_run_names)
     for qai_run_name in sorted(qai_run_names):
         print('LabMiseqRun.import("{}")'.format(qai_run_name))
     samples.sort(key=lambda s: (s.run_name, s.extract_num))
@@ -242,7 +253,8 @@ def main():
             sample_paths.extend(sample.setup_samples())
             print('  ' + ', '.join(map(os.path.basename, sample.fastq_paths)))
         suspend_inactive_samples(run_path, active_sample_paths=sample_paths)
-    suspend_inactive_runs(active_runs=runs)
+    suspend_inactive_runs(active_runs=runs, rawdata_mount=args.test_folder)
+
 
 if __name__ == '__main__':
     main()

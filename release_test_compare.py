@@ -16,8 +16,6 @@ import pandas as pd
 import seaborn as sns
 import Levenshtein
 
-from micall.settings import pipeline_version, DONE_PROCESSING
-
 MICALL_VERSION = '7.8'
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
@@ -65,8 +63,8 @@ def find_runs(source_folder, target_folder):
         run_name = os.path.basename(run_path)
         target_path = os.path.join(run_path,
                                    'Results',
-                                   'version_' + pipeline_version)
-        done_path = os.path.join(target_path, DONE_PROCESSING)
+                                   'version_' + MICALL_VERSION)
+        done_path = os.path.join(target_path, 'doneprocessing')
         is_done = os.path.exists(done_path)
         source_results_path = os.path.join(source_folder,
                                            'MiSeq',

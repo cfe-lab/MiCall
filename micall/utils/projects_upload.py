@@ -1,26 +1,54 @@
 import json
+import os
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 from operator import itemgetter
 
-from micall import settings
 from micall.core.project_config import ProjectConfig
 from micall.monitor import qai_helper
 
 
+def parse_args():
+    parser = ArgumentParser(description='Upload project definitions to QAI.',
+                            formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '--qai_server',
+        default=os.environ.get('MICALL_QAI_SERVER', 'http://localhost:3000'),
+        help='server to post reviews on')
+    parser.add_argument(
+        '--qai_user',
+        default=os.environ.get('MICALL_QAI_USER', 'bob'),
+        help='user name for QAI server')
+    parser.add_argument(
+        '--qai_password',
+        default=SUPPRESS,
+        help='password for QAI server (default not shown)')
+    parser.add_argument(
+        '--pipeline_version',
+        default='0-dev',
+        help='version number')
+
+    args = parser.parse_args()
+    if not hasattr(args, 'qai_password'):
+        args.qai_password = os.environ.get('MICALL_QAI_PASSWORD', 'testing')
+    return args
+
+
 def main():
+    args = parse_args()
     project_config = ProjectConfig.loadDefault()
     with open('../project_scoring.json', 'rU') as scoring_file:
         scoring_config = json.load(scoring_file)
     with qai_helper.Session() as session:
-        session.login(settings.qai_path,
-                      settings.qai_user,
-                      settings.qai_password)
+        session.login(args.qai_server,
+                      args.qai_user,
+                      args.qai_password)
 
         pipelines = session.get_json(
-            "/lab_miseq_pipelines?version=" + settings.pipeline_version,
+            "/lab_miseq_pipelines?version=" + args.pipeline_version,
             retries=0)
         if pipelines:
             raise RuntimeError('Pipeline {} already exists.'.format(
-                settings.pipeline_version))
+                args.pipeline_version))
 
         seed_groups = session.get_json("/lab_miseq_seed_groups")
         seed_group_ids = dict(map(itemgetter('name', 'id'), seed_groups))
@@ -45,7 +73,7 @@ def main():
                 regions[region_name] = region
 
         pipeline = session.post_json("/lab_miseq_pipelines",
-                                     {'version': settings.pipeline_version})
+                                     {'version': args.pipeline_version})
         pipeline_id = pipeline['id']
 
         old_projects = session.get_json("/lab_miseq_projects", retries=0)
@@ -81,6 +109,7 @@ def main():
                                        'end_pos': key_position['end_pos']})
 
     print("Done.")
+
 
 if __name__ == "__main__":
     main()

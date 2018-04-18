@@ -1,6 +1,7 @@
 import hashlib
 import logging
 import os
+import re
 import shutil
 import tarfile
 from collections import namedtuple
@@ -94,7 +95,10 @@ def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
         fastq_files = base_calls_path.glob("*_R1_*.fastq.gz")
         sample_sheet_path = run_path / "SampleSheet.csv"
         file_names = [f.name for f in fastq_files]
-        for sample_group in find_groups(file_names, sample_sheet_path):
+        sample_groups = list(find_groups(file_names, sample_sheet_path))
+        sample_groups.sort(key=lambda group: get_sample_number(group.names[0]),
+                           reverse=True)
+        for sample_group in sample_groups:
             is_found = True
             is_sent = send_event(sample_queue,
                                  FolderEvent(base_calls_path,
@@ -115,6 +119,11 @@ def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
     while wait and now() < next_scan:
         sleep(SLEEP_SECONDS)
     return True
+
+
+def get_sample_number(fastq_name):
+    match = re.match(r'.*_S(\d+)_', fastq_name)
+    return int(match.group(1))
 
 
 def send_event(sample_queue, folder_event, next_scan):

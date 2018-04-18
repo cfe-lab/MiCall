@@ -1,8 +1,9 @@
 import json
+import os
 import sys
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 from operator import itemgetter
 
-from micall import settings
 from collections import Counter
 from copy import deepcopy
 try:
@@ -10,6 +11,32 @@ try:
 except ImportError:
     # Ignore import errors to allow tests without request module
     qai_helper = None
+
+
+def parse_args():
+    parser = ArgumentParser(description='Dump project definitions from QAI.',
+                            formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '--qai_server',
+        default=os.environ.get('MICALL_QAI_SERVER', 'http://localhost:3000'),
+        help='server to post reviews on')
+    parser.add_argument(
+        '--qai_user',
+        default=os.environ.get('MICALL_QAI_USER', 'bob'),
+        help='user name for QAI server')
+    parser.add_argument(
+        '--qai_password',
+        default=SUPPRESS,
+        help='password for QAI server (default not shown)')
+    parser.add_argument(
+        '--pipeline_version',
+        default='0-dev',
+        help='version number')
+
+    args = parser.parse_args()
+    if not hasattr(args, 'qai_password'):
+        args.qai_password = os.environ.get('MICALL_QAI_PASSWORD', 'testing')
+    return args
 
 
 def check_key_positions(projects, warning_file):
@@ -62,18 +89,19 @@ def dump_json(json_object, filename):
 
 
 def main():
+    args = parse_args()
     dump = {}
     used_regions = set()
     with qai_helper.Session() as session:
-        session.login(settings.qai_project_path,
-                      settings.qai_project_user,
-                      settings.qai_project_password)
+        session.login(args.qai_server,
+                      args.qai_user,
+                      args.qai_password)
 
         dump['regions'] = session.get_json("/lab_miseq_regions?mode=dump",
                                            retries=0)
         dump['projects'] = session.get_json(
             "/lab_miseq_projects?mode=dump&pipeline=" +
-            settings.pipeline_version,
+            args.pipeline_version,
             retries=0)
         for project in dump['projects'].values():
             project['regions'].sort(key=itemgetter('coordinate_region'))

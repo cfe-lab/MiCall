@@ -12,7 +12,6 @@ from datetime import datetime
 from micall.resistance.genreport import gen_report
 from micall.monitor.find_groups import find_groups
 from micall.resistance.resistance import report_resistance
-from micall.settings import NEEDS_PROCESSING, pipeline_version, DONE_PROCESSING
 
 
 def parse_args():
@@ -41,6 +40,10 @@ def parse_args():
         '-m',
         '--min_run_name',
         help='Select all later runs, (e.g., "161201").')
+    parser.add_argument(
+        '--pipeline_version',
+        default='0-dev',
+        help='version number')
     args = parser.parse_args()
     source_names = ('results', 'samples_csv', 'min_run_name')
     source_count = sum(1 for name in source_names if getattr(args, name) is not None)
@@ -150,7 +153,7 @@ def split_files(source, working):
     return working_paths
 
 
-def find_recent_results(min_run_name, source_folder):
+def find_recent_results(min_run_name, source_folder, pipeline_version):
     pattern = os.path.join(source_folder, 'MiSeq', 'runs', '*')
     matches = glob(pattern)
     folder_names = [os.path.basename(match) for match in matches]
@@ -165,11 +168,11 @@ def find_recent_results(min_run_name, source_folder):
     folders_with_data = [
         folder
         for folder in recent_folders
-        if os.path.exists(os.path.join(folder, DONE_PROCESSING))]
+        if os.path.exists(os.path.join(folder, 'doneprocessing'))]
     return folders_with_data
 
 
-def find_sample_results(samples_csv, source_folder):
+def find_sample_results(samples_csv, source_folder, pipeline_version):
     run_names = {row['run'] for row in DictReader(samples_csv)}
     run_paths = []
     for run_name in run_names:
@@ -187,7 +190,7 @@ def find_sample_results(samples_csv, source_folder):
                                    'MiSeq',
                                    'runs',
                                    base_run_name+'*',
-                                   NEEDS_PROCESSING)
+                                   'needsprocessing')
             matches = glob(pattern)
             if len(matches) != 1:
                 raise RuntimeError('Expected one match for {}, but found: {}'.format(
@@ -203,7 +206,7 @@ def find_sample_results(samples_csv, source_folder):
                                             run_path,
                                             'Results',
                                             'version_' + pipeline_version,
-                                            DONE_PROCESSING)
+                                            'doneprocessing')
         if os.path.exists(done_processing_file):
             results_folders.append(os.path.dirname(done_processing_file))
         else:
@@ -226,9 +229,13 @@ def main():
     if args.results is not None:
         results_folders = [args.results]
     elif args.min_run_name:
-        results_folders = find_recent_results(args.min_run_name, args.raw_data)
+        results_folders = find_recent_results(args.min_run_name,
+                                              args.raw_data,
+                                              args.pipeline_version)
     else:
-        results_folders = find_sample_results(args.samples_csv, args.raw_data)
+        results_folders = find_sample_results(args.samples_csv,
+                                              args.raw_data,
+                                              args.pipeline_version)
     rerun_results_path = os.path.join(args.working, 'rerun_results')
     shutil.rmtree(rerun_results_path, ignore_errors=True)
     for results_folder in results_folders:

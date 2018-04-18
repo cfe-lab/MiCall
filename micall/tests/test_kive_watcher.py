@@ -266,6 +266,34 @@ def test_two_runs(raw_data_with_two_runs):
     sample_queue.verify()
 
 
+def test_two_samples(raw_data_with_two_samples):
+    sample_queue = DummyQueueSink()
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2120A',
+                                ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                 None))))
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2110A',
+                                ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                 None))))
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.FINISH_FOLDER,
+                    None))
+    pipeline_version = 'XXX'
+
+    find_samples(raw_data_with_two_samples, pipeline_version, sample_queue, wait=False)
+
+    sample_queue.verify()
+
+
 def test_skip_done_runs(raw_data_with_two_runs):
     done_run = raw_data_with_two_runs / "MiSeq/runs/140201_M01234"
     results_path = done_run / "Results/version_0-dev"
