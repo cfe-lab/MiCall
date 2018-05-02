@@ -43,7 +43,7 @@ LOGGING = {
                           'filters': ['rate_limit'],
                           'level': 'WARN',
                           'formatter': 'basic',
-                          'mailhost': 'mail.FILLINDOMAIN.com',
+                          'mailhost': 'localhost',  # Needs postfix to forward.
                           'fromaddr': 'no.reply.micall.server@FILLINDOMAIN.com',
                           'toaddrs': ['admin.team@FILLINDOMAIN.com'],
                           'subject': 'Error logged in MiCall Watcher'}},
