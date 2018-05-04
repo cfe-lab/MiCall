@@ -299,18 +299,18 @@ similar steps to setting up a development workstation. Follow these steps:
     matches the version you used in `settings_default.py`. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
     so on. Mark the release as pre-release until you finish deploying it.
-7. Upgrade the scripts in Kive, and record the id of the new pipeline. You might
+7. Upgrade the scripts and docker image in Kive, and record the id of the new
+    pipeline. You might
     find the Kive project's `dump_pipeline.py` and `upload_pipeline.py` scripts
     helpful. They are in the `utils` folder. First upgrade them on the test
     server, run them on a few samples, then upgrade them on the production
     server and run them on a few samples.
-8. Stop the `MISEQ_MONITOR.py` process after you check that it's not processing
+8. Stop the micall_watcher service after you check that it's not processing
     any important runs.
 
         ssh user@server
-        tail /data/miseq/micall.log
-        ps aux|grep MISEQ_MONITOR.py
-        sudo kill -int <process id from grep output>
+        tail /var/log/micall/micall.log
+        sudo systemctl stop micall_watcher
 
 9. Get the code from Github into the server's environment.
 
@@ -319,32 +319,30 @@ similar steps to setting up a development workstation. Follow these steps:
         git fetch
         git checkout tags/vX.Y
 
-10. Check if you need to set any new settings by running
-    `diff micall/settings_default.py micall/settings.py`. You will probably need
-    to modify the version number and pipeline id, at least. Make sure that
-    `production = True`.
-11. Check if the gotoh package is up to date. If not, install it.
-
-        cd /usr/local/share/MiCall/micall/alignment
-        pip3 show gotoh
-        cat setup.py  # compare version numbers
-        sudo python3 setup.py install
+10. Look for changes in [`micall_watcher.py`'s `parse_args()` function][parse_args].
+    Either look at the blame annotations at the link above, or review the
+    changes in the new release. If there are new or changed settings, adjust
+    the configuration in `/etc/systemd/system/micall_watcher.service` or
+    `/etc/micall/micall.conf`. If you change the configuration, reload it:
+    
+        sudo systemctl daemon-reload
 
 12. Check that the kiveapi package is the same version you tested with. If not,
     do a Kive release first.
 
         cd /usr/local/share/Kive
-        pip3 show kiveapi
+        /usr/local/share/venv-micall/bin/pip show kiveapi
         cat api/setup.py
 
-13. Start the monitor, and tail the log to see that it begins processing all the
-    runs with the new version of the pipeline. Before you launch, change all
-    the working folders to be owned by the pipeline group.
+13. Start the micall_watcher service, and tail the log to see that it begins
+    processing all the runs with the new version of the pipeline.
 
-        cd /usr/local/share/MiCall
-        sudo chgrp -R micall /data/miseq
-        ./MISEQ_MONITOR.py &
-        tail -f /data/miseq/micall.log
+        sudo systemctl start micall_watcher
+        sudo systemctl status micall_watcher
+        tail -f /var/log/micall/micall.log
+    
+    If the log doesn't help, look in `/var/log/messages` on CentOS or
+    `/var/log/syslog` on Ubuntu.
 
 14. Launch the basespace virtual machine, and build a new Docker image
     from GitHub. Tag it with the release number. See the bash scripts above for
@@ -365,3 +363,4 @@ similar steps to setting up a development workstation. Follow these steps:
     decide which issues you will include in that milestone.
 
 [release]: https://help.github.com/categories/85/articles
+[parse_args]: https://github.com/cfe-lab/MiCall/blame/master/micall_watcher.py

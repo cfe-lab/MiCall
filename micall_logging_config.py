@@ -11,6 +11,10 @@ https://docs.python.org/3/library/logging.config.html#logging-config-dictschema
 Do not commit micall_logging_override.py to source control.
 """
 
+# Production server probably needs /var/log/micall/micall.log
+# Don't forget to create the folder and change owner to micall.
+LOG_FILE = 'micall.log'
+
 LOGGING = {
     # This is the default logger. Probably want to switch console to mail.
     'root': {'handlers': ['console', 'file'],
@@ -36,7 +40,7 @@ LOGGING = {
                  'file': {'class': 'logging.handlers.RotatingFileHandler',
                           'level': 'DEBUG',
                           'formatter': 'basic',
-                          'filename': 'micall.log',
+                          'filename': LOG_FILE,
                           'maxBytes': 1024*1024*15,  # 15MB
                           'backupCount': 10},
                  'mail': {'class': 'logging.handlers.SMTPHandler',
