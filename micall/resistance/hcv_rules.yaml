@@ -1,50 +1,302 @@
+- code: ASV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( V36GLM => 4, V36!GLMV => "Effect unknown", T54S => 4,
+       V55A => 4, Q80KLR => 4, Q80!KLQR => "Effect unknown", S122GINT => 4,
+       S122!GINST => "Effect unknown", R155GQ => 4, R155K => 8,
+       R155!GKQR => "Effect unknown", A156!A => "Effect unknown", D168AEGVY => 8,
+       D168FHNT => 4, D168CIKLMPQRSW => "Effect unknown", I170T => 4 )
+  - genotype: 1B
+    reference: HCV1B-Con1-NS3
+    region: NS3
+    rules: SCORE FROM ( V36GM => 4, V36!GMV => "Effect unknown", T54S => 4,
+       Y56HL => 4, Y56!HLY => "Effect unknown", N77S => 4, Q80K => 8, Q80LR => 4,
+       Q80!KLQR => "Effect unknown", S122DGINT => 4,
+       S122!DGINST => "Effect unknown", R155GQ => 4, R155K => 8,
+       R155!GKQR => "Effect unknown", A156ST => 4, A156V => 8,
+       A156!ASTV => "Effect unknown", D168ACEFGHVY => 8, D168NT => 4,
+       D168IKLMPQRSW => "Effect unknown", V170A => 4 )
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 8 )
+  - genotype: '3'
+    reference: HCV3-S52-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 8 )
+  - genotype: '4'
+    reference: HCV4-ED43-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  - genotype: '5'
+    reference: HCV5-SA13-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  - genotype: '6'
+    reference: HCV6-EUHK2-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  name: Asunaprevir
 - code: BPV
   genotypes:
   - genotype: 1A
     reference: HCV1A-H77-NS3
     region: NS3
-    rules: SCORE FROM ( 36AM => 8, 54AS => 8, 55AI => 8, 107I => 4, 155K => 8,
-       156ST => 8, 158I => 4, 168N => 4, 170FTV => 8,
-       R155!KR => "Effect unknown", V36!AMV => "Effect unknown",
-       T54!AST => "Effect unknown", V55!AIV => "Effect unknown",
-       D168!ND => "Effect unknown", I170!FTVI => "Effect unknown",
-       V107!IV => "Effect unknown", A156!STA => "Effect unknown",
-       V158!IV => "Effect unknown" )
+    rules: SCORE FROM ( V36AM => 8, V36!AMV => "Effect unknown", T54AS => 8,
+       T54!AST => "Effect unknown", V55AI => 8, V55!AIV => "Effect unknown",
+       V107I => 8, V107!IV => "Effect unknown", R155K => 8,
+       R155!KR => "Effect unknown", A156ST => 8, A156!AST => "Effect unknown",
+       V158I => 4, V158!IV => "Effect unknown", D168N => 8,
+       D168!DN => "Effect unknown", I170FTV => 8, I170!FITV => "Effect unknown" )
   - genotype: 1B
     reference: HCV1B-Con1-NS3
     region: NS3
-    rules: SCORE FROM ( 36MA => 8, 54CGSA => 8, 55A => 8, 107I => 4, 155CK => 8,
-       156TVS => 8, 158I => 4, 170TA => 8, 175L => 4, 170I => 0,
-       R155!CKR => "Effect unknown", V36!MAV => "Effect unknown",
-       T54!CGSAT => "Effect unknown", V55!AV => "Effect unknown",
-       V170!TAIV => "Effect unknown", V107!IV => "Effect unknown",
-       A156!TVSA => "Effect unknown", V158!IV => "Effect unknown",
-       M175!LM => "Effect unknown" )
+    rules: SCORE FROM ( V36AM => 8, V36!AMV => "Effect unknown", T54ACGS => 8,
+       T54!ACGST => "Effect unknown", V55A => 8, V55!AV => "Effect unknown",
+       V107I => 8, V107!IV => "Effect unknown", R155CK => 8,
+       R155!CKR => "Effect unknown", A156STV => 8, A156!ASTV => "Effect unknown",
+       V158I => 8, V158!IV => "Effect unknown", V170AT => 8,
+       V170!ATV => "Effect unknown", M175L => 8, M175!LM => "Effect unknown" )
+  name: Boceprevir
+- code: GLE
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( V36AFM => 4, V36!AFMV => "Effect unknown", V55AI => 4,
+       V55!AIV => "Effect unknown", Y56H => 4, Q80KL => 4,
+       Q80!KLQ => "Effect unknown", I132V => 4, R155KT => 4,
+       R155!KRT => "Effect unknown", A156GV => 4, A156T => 8,
+       A156!AGTV => "Effect unknown", D168AFVY => 8, D168EHT => 4,
+       D168!ADEFHTVY => "Effect unknown" )
+  - genotype: 1B
+    reference: HCV1B-Con1-NS3
+    region: NS3
+    rules: SCORE FROM ( Y56F => 4, A156TV => 8, A156!ATV => "Effect unknown",
+       D168FT => 4, D168K => 8, D168!DFKT => "Effect unknown", E176G => 4 )
   - genotype: '2'
     reference: HCV2-JFH-1-NS3
     region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
+    rules: SCORE FROM ( I132L => 4, A156MTV => 8, A156!AMTV => "Effect unknown",
+       D168EFHT => 4, D168!DEFHT => "Effect unknown" )
   - genotype: '3'
     reference: HCV3-S52-NS3
     region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
+    rules: SCORE FROM ( T54S => 4, Y56HN => 4, Y56!HNY => "Effect unknown",
+       Q80KR => 8, Q80!KQR => "Effect unknown", V107I => 4, L132I => 4,
+       A156G => 8, A156!AG => "Effect unknown", A166STY => 4,
+       A166!ASTY => "Effect unknown", Q168K => 4, Q168LR => 8,
+       Q168!KLQR => "Effect unknown", D186LR => 4, D186!DLR => "Effect unknown",
+       I366V => 4 )
   - genotype: '4'
     reference: HCV4-ED43-NS3
     region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
+    rules: SCORE FROM ( Y56H => 4, G90R => 4, A156TV => 8,
+       A156!ATV => "Effect unknown", D168H => 8, D168V => 4,
+       D168!DHV => "Effect unknown" )
   - genotype: '5'
     reference: HCV5-SA13-NS3
     region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
+    rules: SCORE FROM ( A156!A => "Effect unknown", D168E => 4,
+       D168!DE => "Effect unknown" )
   - genotype: '6'
     reference: HCV6-EUHK2-NS3
     region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: 6E
+    rules: SCORE FROM ( L80R => 8, L80!LR => "Effect unknown",
+       A156!A => "Effect unknown", D168AGHVY => 8,
+       D168!ADGHVY => "Effect unknown" )
+  name: Glecaprevir
+- code: GZR
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( V36ALM => 4, V36!ALMV => "Effect unknown", Q41R => 4,
+       I48V => 4, V55A => 4, Y56F => 4, Y56H => 8, Y56!FHY => "Effect unknown",
+       Q80KL => 8, Q80S => 4, Q80!KLQS => "Effect unknown", V107I => 4,
+       S122GT => 4, S122!GST => "Effect unknown", I132V => 4, R155GIS => 4,
+       R155KQTW => 8, R155!GIKQRSTW => "Effect unknown", A156GLTV => 8,
+       A156!AGLTV => "Effect unknown", V158A => 4, D168!CDMPQRSW => 8, D168C => 4,
+       D168MPQRSW => "Effect unknown", I170V => 4, T185S => 4, E357GK => 4 )
+  - genotype: 1B
+    reference: HCV1B-Con1-NS3
+    region: NS3
+    rules: SCORE FROM ( T54S => 4, Y56H => 8, Y56F => 4,
+       Y56!FHY => "Effect unknown", Q80L => 4, V107I => 4, S122NRT => 4,
+       S122!NRST => "Effect unknown", V132IL => 4, V132!ILV => "Effect unknown",
+       R155GTW => 8, R155Q => 4, R155!GQRTW => "Effect unknown", A156TV => 8,
+       A156!ATV => "Effect unknown", D168AEFGHIKLTV => 8, D168NY => 4,
+       D168CMPQRSW => "Effect unknown", V170I => 4, T185S => 4, E357K => 4 )
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  - genotype: '3'
+    reference: HCV3-S52-NS3
+    region: NS3
+    rules: SCORE FROM ( Y56H => 4, A156TV => 8, A156!ATV => "Effect unknown",
+       Q168!Q => "Effect unknown", Q178R => 4 )
+  - genotype: '4'
+    reference: HCV4-ED43-NS3
+    region: NS3
+    rules: SCORE FROM ( V107I => 4, A156MTV => 4, A156!AMTV => "Effect unknown",
+       D168AV => 8, D168G => 4, D168!ADGV => "Effect unknown", V170I => 4 )
+  - genotype: '5'
+    reference: HCV5-SA13-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  - genotype: '6'
     reference: HCV6-EUHK2-NS3
     region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  name: BPV
+    rules: SCORE FROM ( V36IL => 4, V36!ILV => "Effect unknown", Y56H => 4,
+       L80KQ => 4, L80!KLQ => "Effect unknown", I132L => 4, A156MTV => 4,
+       A156!AMTV => "Effect unknown", D168CEY => 4, D168!CDEY => "Effect unknown",
+       I170V => 4 )
+  name: Grazoprevir
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( V36AMT => 4, V36!AMTV => "Effect unknown", F43L => 8,
+       F43!FL => "Effect unknown", V55I => 4, Y56H => 4, Q80KL => 4,
+       Q80!KLQ => "Effect unknown", I132V => 4, R155GKTW => 8, R155SV => 4,
+       R155!GKRSTVW => "Effect unknown", A156G => 4, A156T => 8,
+       A156!AGT => "Effect unknown", D168!CDGMPQRSW => 8,
+       D168CGMPQRSW => "Effect unknown", P334S => 4, S342P => 4, E357K => 4,
+       V406AI => 4, V406!AIV => "Effect unknown", T449I => 4, P470S => 4 )
+  - genotype: 1B
+    reference: HCV1B-Con1-NS3
+    region: NS3
+    rules: SCORE FROM ( Y56FH => 4, R155K => 8, R155!KR => "Effect unknown",
+       A156T => 4, A156V => 8, A156!ATV => "Effect unknown", D168AFHKTVY => 8,
+       D168ILN => 4, D168CEGMPQRSW => "Effect unknown", E357K => 4 )
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  - genotype: '3'
+    reference: HCV3-S52-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 8, Y56H => 4, Q168V => 8 )
+  - genotype: '4'
+    reference: HCV4-ED43-NS3
+    region: NS3
+    rules: SCORE FROM ( Y56H => 8, Y56!HY => "Effect unknown", R155C => 8,
+       R155!CR => "Effect unknown", A156TV => 8, A156!ATV => "Effect unknown",
+       D168HV => 8, D168!DHV => "Effect unknown" )
+  - genotype: '5'
+    reference: HCV5-SA13-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  - genotype: '6'
+    reference: HCV6-EUHK2-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  name: Paritaprevir
+- code: SPV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( A5V => 4, V36L => 4, Q41R => 4, T54S => 4, Q80KR => 8,
+       Q80L => 4, Q80!KLQR => "Effect unknown", G120S => 4, S122ACGIT => 4,
+       S122NR => 8, S122!ACGINRST => "Effect unknown", R123M => 4, I132L => 4,
+       R155GQ => 4, R155KT => 8, R155!GKQRT => "Effect unknown", A156GTV => 8,
+       A156!AGTV => "Effect unknown", D168AEHV => 8, D168FT => 4,
+       D168!ADEFHTV => "Effect unknown", I170T => 8, I170V => 4,
+       I170!ITV => "Effect unknown", N174RS => 4, T178I => 4, P264S => 4,
+       T343N => 4, T344I => 4, L356F => 4, A477T => 4, V511I => 4, G534S => 4,
+       E555D => 4 )
+  - genotype: 1B
+    reference: HCV1B-Con1-NS3
+    region: NS3
+    rules: SCORE FROM ( A39T => 4, F43ISV => 8, F43!FISV => "Effect unknown",
+       T46S => 4, V48I => 4, S61L => 4, I71I => 4, Q80H => 4, Q80KR => 8,
+       Q80!HKQR => "Effect unknown", Q86R => 4, S122AGIT => 4, S122R => 8,
+       S122!AGIRST => "Effect unknown", R155GKQTW => 8,
+       R155!GKQRTW => "Effect unknown", A156GTV => 8,
+       A156!AGTV => "Effect unknown", D168AEHINQTVY => 8, D168F => 4,
+       D168CGKLMPRSW => "Effect unknown", V170IT => 4,
+       V170!ITV => "Effect unknown", S174F => 4, T344A => 4, T358F => 4,
+       G383S => 4, I426V => 4, T448A => 4, I472V => 4, V535A => 4, P574AS => 4 )
+  - genotype: '3'
+    reference: HCV3-S52-NS3
+    region: NS3
+    rules: SCORE FROM ( Q168V => 4 )
+  - genotype: '4'
+    reference: HCV4-ED43-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80!Q => "Effect unknown", T122!T => "Effect unknown",
+       R155K => 8, R155!KR => "Effect unknown", A156G => 8,
+       A156!AG => "Effect unknown", D168!D => "Effect unknown",
+       V170!V => "Effect unknown" )
+  - genotype: '6'
+    reference: HCV6-EUHK2-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  name: Simeprevir
+- code: TPV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( V36AGILM => 8, V36!AGILMV => "Effect unknown", T54AS => 8,
+       T54!AST => "Effect unknown", I132V => 4, I132!IV => "Effect unknown",
+       R155GKMT => 8, R155!GKMRT => "Effect unknown", A156STV => 8,
+       A156!ASTV => "Effect unknown", D168N => 4, D168!DN => "Effect unknown" )
+  - genotype: 1B
+    reference: HCV1B-Con1-NS3
+    region: NS3
+    rules: SCORE FROM ( V36AGILM => 8, V36!AGILMV => "Effect unknown", T54AS => 8,
+       T54!AST => "Effect unknown", R155K => 8, R155!KR => "Effect unknown",
+       A156FSTV => 8, A156!AFSTV => "Effect unknown" )
+  name: Telaprevir
+- code: VOX
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( V36AG => 4, V36!AGV => "Effect unknown", Q41R => 4,
+       F43S => 4, Q80K => 4, R155G => 4, R155W => 8, R155!GRW => "Effect unknown",
+       A156IMPV => 4, A156LT => 8, A156!AILMPTV => "Effect unknown",
+       D168AFITV => 4, D168KLR => 8, D168!ADFIKLRTV => "Effect unknown" )
+  - genotype: 1B
+    reference: HCV1B-Con1-NS3
+    region: NS3
+    rules: SCORE FROM ( V36AM => 4, V36!AMV => "Effect unknown", S122D => 4,
+       R155W => 8, R155!RW => "Effect unknown", A156S => 4, A156TV => 8,
+       A156!ASTV => "Effect unknown", D168VY => 4, D168!DVY => "Effect unknown",
+       V170A => 4 )
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( F43V => 4, A156LTV => 8, A156!ALTV => "Effect unknown" )
+  - genotype: '3'
+    reference: HCV3-S52-NS3
+    region: NS3
+    rules: SCORE FROM ( Q41K => 8, Q41R => 4, Q41!KQR => "Effect unknown",
+       F43Y => 4, V55A => 4, Q80K => 8, Q80!KQ => "Effect unknown", A156TV => 8,
+       A156!ATV => "Effect unknown", Q168R => 8, Q168!QR => "Effect unknown",
+       L175M => 4, A294V => 4 )
+  - genotype: '4'
+    reference: HCV4-ED43-NS3
+    region: NS3
+    rules: SCORE FROM ( Q41R => 4, A156LTV => 8, A156!ALTV => "Effect unknown",
+       D168ETV => 4, D168!DETV => "Effect unknown", T185S => 4, T382S => 4 )
+  - genotype: '5'
+    reference: HCV5-SA13-NS3
+    region: NS3
+    rules: SCORE FROM ( A156!A => "Effect unknown", D168AKY => 4, D168HR => 8,
+       D168!ADHKRY => "Effect unknown" )
+  - genotype: '6'
+    reference: HCV6-EUHK2-NS3
+    region: NS3
+    rules: SCORE FROM ( Q41KR => 4, Q41!KQR => "Effect unknown", Y56H => 4,
+       A156!A => "Effect unknown", D168AEH => 4, D168!ADEH => "Effect unknown" )
+  name: Voxilaprevir
 - code: DCV
   genotypes:
   - genotype: 1A
@@ -194,61 +446,6 @@
     region: NS5a
     rules: SCORE FROM ( TRUE => "Not indicated" )
   name: EBV
-- code: GZR
-  genotypes:
-  - genotype: 1A
-    reference: HCV1A-H77-NS3
-    region: NS3
-    rules: SCORE FROM ( 36ALM => 4, 56H => 8, 56F => 4, 107I => 4, 122GT => 4,
-       122R => 0, 155GIKS => 4, 156GLTV => 8, 156M => 4, 156S => 0, 158A => 4,
-       168AEFGHIKLTVY => 8, 168CNS => 4, 170V => 4, 170T => 0,
-       D168!AEFGHIKLTVYCNSD => "Effect unknown",
-       R155!GIKSR => "Effect unknown", V36!ALMV => "Effect unknown",
-       Y56!HFY => "Effect unknown", S122!GTRS => "Effect unknown",
-       V107!IV => "Effect unknown", A156!GLTVMSA => "Effect unknown",
-       I170!VTI => "Effect unknown", V158!AV => "Effect unknown" )
-  - genotype: 1B
-    reference: HCV1B-Con1-NS3
-    region: NS3
-    rules: SCORE FROM ( 56H => 8, 56F => 4, 107I => 4, 155GTW => 8, 155K => 0,
-       156TV => 8, 156G => 4, 168AFGHIKLTV => 8, 168ENY => 4,
-       Y56!HFY => "Effect unknown", A156!TVGA => "Effect unknown",
-       V107!IV => "Effect unknown", R155!GTWKR => "Effect unknown",
-       D168!AFGHIKLTVENYD => "Effect unknown" )
-  - genotype: '2'
-    reference: HCV2-JFH-1-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '3'
-    reference: HCV3-S52-NS3
-    region: NS3
-    rules: SCORE FROM ( 77S => 8, 168QR => 8, 178R => 8,
-       Q168!QRQ => "Effect unknown", Q178!RQ => "Effect unknown",
-       V170!V => "Effect unknown", Y56!Y => "Effect unknown",
-       S122!S => "Effect unknown", R155!R => "Effect unknown",
-       A156!A => "Effect unknown", N77!SN => "Effect unknown" )
-  - genotype: '4'
-    reference: HCV4-ED43-NS3
-    region: NS3
-    rules: SCORE FROM ( 107I => 4, 122G => 4, 156GMTV => 4, 158I => 4, 168AV => 8,
-       168CEGNY => 4, 170I => 4, D168!AVCEGNYD => "Effect unknown",
-       R155!R => "Effect unknown", Y56!Y => "Effect unknown",
-       T122!GT => "Effect unknown", V107!IV => "Effect unknown",
-       A156!GMTVA => "Effect unknown", V170!IV => "Effect unknown",
-       V158!IV => "Effect unknown" )
-  - genotype: '5'
-    reference: HCV5-SA13-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '6'
-    reference: HCV6-EUHK2-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: 6E
-    reference: HCV6-EUHK2-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  name: GZR
 - code: LDV
   genotypes:
   - genotype: 1A
@@ -343,57 +540,6 @@
     region: NS5a
     rules: SCORE FROM ( TRUE => "Not indicated" )
   name: OBV
-- code: PTV
-  genotypes:
-  - genotype: 1A
-    reference: HCV1A-H77-NS3
-    region: NS3
-    rules: SCORE FROM ( 36AMT => 4, 36L => 0, 43L => 8, 55I => 4, 56H => 4,
-       80KL => 4, 80R => 0, 132V => 4, 155GKTW => 8, 155S => 4, 156T => 8,
-       156GVS => 4, 168AEFHILNTVY => 8, 334S => 4, 342P => 4, 357K => 4,
-       406AI => 4, 449I => 4, 470S => 4, T449!IT => "Effect unknown",
-       V36!AMTLV => "Effect unknown", E357!KE => "Effect unknown",
-       V406!AIV => "Effect unknown", D168!AEFHILNTVYD => "Effect unknown",
-       P470!SP => "Effect unknown", F43!LF => "Effect unknown",
-       P334!SP => "Effect unknown", Q80!KLRQ => "Effect unknown",
-       S342!PS => "Effect unknown", V55!IV => "Effect unknown",
-       Y56!HY => "Effect unknown", I132!VI => "Effect unknown",
-       R155!GKTWSR => "Effect unknown", A156!TGVSA => "Effect unknown" )
-  - genotype: 1B
-    reference: HCV1B-Con1-NS3
-    region: NS3
-    rules: SCORE FROM ( 56H => 4, 155K => 8, 156V => 8, 156T => 4, 156S => 0,
-       168AFHKTVY => 8, 168ILN => 4, 168E => 0, 357K => 4,
-       Y56!HY => "Effect unknown", D168!AFHKTVYILNED => "Effect unknown",
-       R155!KR => "Effect unknown", A156!VTSA => "Effect unknown",
-       E357!KE => "Effect unknown" )
-  - genotype: '2'
-    reference: HCV2-JFH-1-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '3'
-    reference: HCV3-S52-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '4'
-    reference: HCV4-ED43-NS3
-    region: NS3
-    rules: SCORE FROM ( 56H => 8, 155C => 8, 156TV => 8, 168HV => 8,
-       Y56!HY => "Effect unknown", D168!HVD => "Effect unknown",
-       R155!CR => "Effect unknown", A156!TVA => "Effect unknown" )
-  - genotype: '5'
-    reference: HCV5-SA13-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '6'
-    reference: HCV6-EUHK2-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: 6E
-    reference: HCV6-EUHK2-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  name: PTV
 - code: SOF-EPC
   genotypes:
   - genotype: 1A
@@ -493,96 +639,6 @@
     region: NS5b
     rules: SCORE FROM ( TRUE => "Not available" )
   name: SOF-HAR
-- code: SPV
-  genotypes:
-  - genotype: 1A
-    reference: HCV1A-H77-NS3
-    region: NS3
-    rules: SCORE FROM ( 36L => 4, 43LIV => 4, 54S => 4, 80KR => 8, 80GHMIL => 4,
-       122GR => 8, 122ANIT => 4, 155KT => 8, 155GIMQSW => 4, 156GTV => 8,
-       156LMS => 4, 168AEHV => 8, 168CFGIKLNSTY => 4, 170T => 8, 170V => 4,
-       Q80!KRGHMILQ => "Effect unknown", R155!KTGIMQSWR => "Effect unknown",
-       V36!LV => "Effect unknown", T54!ST => "Effect unknown",
-       D168!AEHVCFGIKLNSTYD => "Effect unknown",
-       S122!GRANITS => "Effect unknown", F43!LIVF => "Effect unknown",
-       A156!GTVLMSA => "Effect unknown", I170!TVI => "Effect unknown" )
-  - genotype: 1B
-    reference: HCV1B-Con1-NS3
-    region: NS3
-    rules: SCORE FROM ( 41R => 8, 43SIV => 8, 43L => 4, 80KR => 8, 80HIM => 4,
-       80GL => 0, 122AIRT => 8, 155KGQTW => 8, 155C => 4, 155IM => 0, 156GTV => 8,
-       156S => 4, 168AEFGHINQTVY => 8, 168KL => 4, 170T => 4, 170A => 0,
-       Q80!KRHIMGLQ => "Effect unknown", R155!KGQTWCIMR => "Effect unknown",
-       D168!AEFGHINQTVYKLD => "Effect unknown", Q41!RQ => "Effect unknown",
-       S122!AIRTS => "Effect unknown", F43!SIVLF => "Effect unknown",
-       A156!GTVSA => "Effect unknown", V170!TAV => "Effect unknown" )
-  - genotype: '2'
-    reference: HCV2-JFH-1-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '3'
-    reference: HCV3-S52-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '4'
-    reference: HCV4-ED43-NS3
-    region: NS3
-    rules: SCORE FROM ( 155K => 8, 156G => 8, 156M => 0,
-       R155!KR => "Effect unknown", A156!GMA => "Effect unknown" )
-  - genotype: '5'
-    reference: HCV5-SA13-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '6'
-    reference: HCV6-EUHK2-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: 6E
-    reference: HCV6-EUHK2-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  name: SPV
-- code: TPV
-  genotypes:
-  - genotype: 1A
-    reference: HCV1A-H77-NS3
-    region: NS3
-    rules: SCORE FROM ( 36AGILM => 8, 54AS => 8, 132V => 4, 155GMTK => 8,
-       156STV => 8, 168N => 4, I132!VI => "Effect unknown",
-       T54!AST => "Effect unknown", D168!ND => "Effect unknown",
-       V36!AGILMV => "Effect unknown", R155!GMTKR => "Effect unknown",
-       A156!STVA => "Effect unknown" )
-  - genotype: 1B
-    reference: HCV1B-Con1-NS3
-    region: NS3
-    rules: SCORE FROM ( 36GILMA => 8, 54SA => 8, 155K => 8, 156FTVS => 8,
-       A156!FTVSA => "Effect unknown", R155!KR => "Effect unknown",
-       V36!GILMAV => "Effect unknown", T54!SAT => "Effect unknown" )
-  - genotype: '2'
-    reference: HCV2-JFH-1-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '3'
-    reference: HCV3-S52-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '4'
-    reference: HCV4-ED43-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '5'
-    reference: HCV5-SA13-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: '6'
-    reference: HCV6-EUHK2-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: 6E
-    reference: HCV6-EUHK2-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => "Not indicated" )
-  name: TPV
 - code: VEL
   genotypes:
   - genotype: 1A

@@ -13,7 +13,13 @@ from openpyxl import load_workbook
 
 from micall.core.project_config import ProjectConfig
 
-READY_TABS = ('NS3_GT1a', 'NS3_GT1b')
+READY_TABS = ('NS3_GT1a',
+              'NS3_GT1b',
+              'NS3_GT2',
+              'NS3_GT3',
+              'NS3_GT4',
+              'NS3_GT5',
+              'NS3_GT6')
 PHENOTYPE_SCORES = {'likely susceptible': 0,
                     'resistance possible': 4,
                     'resistance likely': 8,
@@ -21,8 +27,61 @@ PHENOTYPE_SCORES = {'likely susceptible': 0,
 DATA_CHANGES = {
     'NS3_GT1a': {
         # 'A1': ('OLD', 'NEW'),
+        'A131': ('S343N', 'T343N'),  # Wild type mismatch
+        'A222': ('R155K_D168A', 'R155K+D168A'),
+        'A149': ('Q9Any+A156T', 'Q9!Q+A156T'),
+        'A259': ('E357K+D168Any', 'E357K+D168!D')
     },
-    'NS3_GT1b': {}}
+    'NS3_GT1b': {
+        'A40': ('V71I', 'I71I')
+    },
+    'NS3_GT2': {
+        'Y6': ('Aunaprevir in GT2', 'Asunaprevir in GT2'),
+        'E120': (None, 'positions monitored'),
+        'E121': (None, 'None'),  # Replace blank with the word None so I know it's not a mistake.
+        'J120': (None, 'positions monitored'),
+        'J121': (None, 'None'),
+        'AA120': (None, 'positions monitored'),
+        'AA121': (None, 'None'),
+    },
+    'NS3_GT3': {
+        # 'J26': # TODO: How to handle resistant WT with other mutations? Ignored for now.
+        'I131': (None, 'None'),
+        'AB131': (None, 'None'),
+        'AI130': (None, 'positions monitored'),
+        'AI131': (None, 'None'),
+        'A76': ('Q186L', 'D186L'),
+        'A77': ('Q186R', 'D186R'),
+        'A98': ('Y56H+D168V', 'Y56H+Q168V'),  # TODO: Any chance there's confusion between D186 and Q168?
+        'A85': ('Q41R+V551', 'Q41R+V551!V'),
+        'A99': ('Q80R+S166T', 'Q80R+A166T'),
+    },
+    'NS3_GT4': {
+        'T7': ('Gelcaprevir in GT4', 'Glecaprevir in GT4'),
+        'U106': (156168, '156, 168'),  # Put a space after comma so Excel knows it's text.
+        'N111': (156168, '156, 168'),
+        'AG106': (None, 'None'),
+    },
+    'NS3_GT5': {
+        'G6': ('Paritapavir in GT5', 'Paritaprevir in GT5'),
+        'D85': (None, 'positions monitored'),
+        'D86': (None, 'None'),
+        'I85': (None, 'positions monitored'),
+        'I86': (None, 'None'),
+        'Y85': (None, 'positions monitored'),
+        'Y86': (None, 'None'),
+        'S86': (156168, '156, 168'),
+    },
+    'NS3_GT6': {
+        'J106': (None, 'positions monitored'),
+        'J107': (None, 'None'),
+        'Z106': (None, 'positions monitored'),
+        'Z107': (None, 'None'),
+        'AE106': (None, 'positions monitored'),
+        'AE107': (None, 'None'),
+        'N113': (41156168, '41, 156, 168'),
+        'T108': (80156168, '80, 156, 168'),
+    }}
 RuleSet = namedtuple(
     'RuleSet',
     ['region',
@@ -144,7 +203,7 @@ def monitor_positions(worksheet, rule_sets, references, col, positions):
             reference = references[(rule_set.genotype.upper(), rule_set.region)]
             try:
                 seen_variants = {int(pos): set()
-                                 for pos in positions.split(',')}
+                                 for pos in str(positions).split(',')}
             except ValueError:
                 raise ValueError(
                     'Invalid monitored position for {} in {}: {!r}.'.format(
@@ -158,14 +217,22 @@ def monitor_positions(worksheet, rule_sets, references, col, positions):
                 assert match, mutation
                 wild_type = match.group(1)
                 pos = int(match.group(2))
-                assert wild_type == reference.sequence[pos-1], (reference.name,
-                                                                mutation)
+                expected_wild_type = reference.sequence[pos - 1]
+                assert wild_type == expected_wild_type, (reference.name,
+                                                         mutation,
+                                                         expected_wild_type)
                 variants = match.group(3)
                 pos_variants = seen_variants.get(pos)
                 if pos_variants is not None:
                     pos_variants.update(variants)
             for pos, pos_variants in seen_variants.items():
-                wild_type = reference.sequence[pos - 1]
+                try:
+                    wild_type = reference.sequence[pos - 1]
+                except IndexError:
+                    ref_size = len(reference.sequence)
+                    raise IndexError(
+                        f'Position {pos} is beyond maximum of {ref_size} for '
+                        f'{rule_set.drug_name}.')
                 mutation = '{}{}!{}{}'.format(wild_type,
                                               pos,
                                               ''.join(sorted(pos_variants)),
@@ -189,7 +256,8 @@ def find_phenotype_scores(row, rule_sets):
                     mutation,
                     phenotype))
             if score:
-                rule_set.mutations[mutation] = score
+                condition = None if mutation.startswith('WT') else mutation
+                rule_set.mutations[condition] = score
 
 
 def create_rule_set(sheet_name,
@@ -305,6 +373,10 @@ def write_rules(rule_sets, references, rules_file):
         positions = defaultdict(dict)  # {pos: {score: MutationSet}}
         combinations = {}  # {mutation: score}
         for mutation, score in rule_set.mutations.items():
+            if mutation is None:
+                # noinspection PyTypeChecker
+                positions[None][score] = 'TRUE'
+                continue
             if '+' in mutation or ' ' in mutation:
                 combinations[mutation] = score
                 continue
@@ -374,9 +446,14 @@ def calculate_component_score(combination, positions):
 
 
 def build_score_formula(positions):
+    wild_type_score = positions.pop(None, {})
     score_terms = sorted((mutation_set, format_score(score))
                          for pos, pos_scores in positions.items()
                          for score, mutation_set in pos_scores.items())
+    for score, condition in sorted(wild_type_score.items()):
+        score_terms.insert(0, (condition, score))
+    if not score_terms:
+        score_terms.append(('TRUE', '0'))
     score_formula = 'SCORE FROM ( {} )'.format(', '.join(
         '{} => {}'.format(mutation_set, score)
         for mutation_set, score in score_terms))

@@ -1141,11 +1141,14 @@ NS5b,C316Y,1.0,1A
         mutations_csv = StringIO()
         expected_resistance = """\
 region,drug_class,drug,drug_name,level,level_name,score,genotype
-NS3,NS3,BPV,BPV,0,Sequence does not meet quality-control standards,0.0,1A
-NS3,NS3,GZR,GZR,1,Likely Susceptible,0.0,1A
-NS3,NS3,PTV,PTV,1,Likely Susceptible,0.0,1A
-NS3,NS3,SPV,SPV,0,Sequence does not meet quality-control standards,0.0,1A
-NS3,NS3,TPV,TPV,0,Sequence does not meet quality-control standards,0.0,1A
+NS3,NS3,ASV,Asunaprevir,0,Sequence does not meet quality-control standards,0.0,1A
+NS3,NS3,BPV,Boceprevir,0,Sequence does not meet quality-control standards,0.0,1A
+NS3,NS3,GLE,Glecaprevir,1,Likely Susceptible,0.0,1A
+NS3,NS3,GZR,Grazoprevir,1,Likely Susceptible,0.0,1A
+NS3,NS3,PTV,Paritaprevir,1,Likely Susceptible,0.0,1A
+NS3,NS3,SPV,Simeprevir,0,Sequence does not meet quality-control standards,0.0,1A
+NS3,NS3,TPV,Telaprevir,0,Sequence does not meet quality-control standards,0.0,1A
+NS3,NS3,VOX,Voxilaprevir,1,Likely Susceptible,0.0,1A
 """
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype

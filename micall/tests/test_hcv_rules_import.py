@@ -134,7 +134,7 @@ class ReadRuleSetTest(TestCase):
 
         self.assertEqual(expected_rule_sets, rule_sets)
 
-    def test(self):
+    def test_combination(self):
         row_data = [
             ['',     'Ignored header row'],
             ['',     'Example1 drug', '<',                  '<', 'Example2', '<', '<'],
@@ -249,6 +249,39 @@ class ReadRuleSetTest(TestCase):
                 r"No mutation started with WT in NS3_GT1a\."):
             read_rule_sets(ws, REFERENCES)
 
+    def test_wild_type_resistance(self):
+        row_data = [
+            ['',     'Ignored header row'],
+            ['',     'Example1 drug', '<',                  '<', 'Example2', '<', '<'],
+            ['',     'a',             'Phenotype',          'b', 'a',        'b', 'Phenotype'],
+            ['WT',   '',              'resistance likely',  '',  '',         '',  'likely susceptible'],
+            ['V36A', '',              '',                   '',  '',         '',  'likely susceptible'],
+            ['T40A', '',              '',                   '',  '',         '',  'resistance possible'],
+            ['',     'Ignored footer row'],
+            ['',     'Positions monitored...'],
+            ['',     'None',          '',                   '',  '',         'Positions monitored:'],
+            ['',     '',              '',                   '',  '',         'None']]
+        expected_rule_sets = [RuleSet('NS3',
+                                      '1a',
+                                      'Example1',
+                                      2,
+                                      3,
+                                      4,
+                                      {None: 8}),
+                              RuleSet('NS3',
+                                      '1a',
+                                      'Example2',
+                                      5,
+                                      7,
+                                      7,
+                                      {'T40A': 4})]
+
+        ws = create_worksheet('NS3_GT1a', row_data)
+
+        rule_sets = read_rule_sets(ws, REFERENCES)
+
+        self.assertEqual(expected_rule_sets, rule_sets)
+
     def test_unknown_phenotype(self):
         row_data = [
             ['',     'Ignored header row'],
@@ -300,6 +333,58 @@ class WriteRulesTest(TestCase):
     reference: HCV1A-H77-NS3
     region: NS3
     rules: SCORE FROM ( R10V => 4 )
+  name: Paritaprevir
+"""
+        rules_file = StringIO()
+
+        write_rules(rule_sets, REFERENCES, rules_file)
+
+        self.assertEqual(expected_rules_text, rules_file.getvalue())
+
+    def test_resistant_wild_type(self):
+        rule_sets = [RuleSet('NS3', '1a', 'Paritaprevir', 1, 2, 3, {None: 4})]
+        expected_rules_text = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 4 )
+  name: Paritaprevir
+"""
+        rules_file = StringIO()
+
+        write_rules(rule_sets, REFERENCES, rules_file)
+
+        self.assertEqual(expected_rules_text, rules_file.getvalue())
+
+    def test_resistant_wild_type_plus_other(self):
+        rule_sets = [RuleSet('NS3', '1a', 'Paritaprevir', 1, 2, 3, {None: 4,
+                                                                    'R10V': 4})]
+        expected_rules_text = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 4, R10V => 4 )
+  name: Paritaprevir
+"""
+        rules_file = StringIO()
+
+        write_rules(rule_sets, REFERENCES, rules_file)
+
+        self.assertEqual(expected_rules_text, rules_file.getvalue())
+
+    def test_empty_rule_set(self):
+        rule_sets = [RuleSet('NS3', '1a', 'Paritaprevir', 1, 2, 3, {})]
+        expected_rules_text = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
   name: Paritaprevir
 """
         rules_file = StringIO()
