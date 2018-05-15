@@ -121,80 +121,91 @@ how the scores are chosen.
 |      |                                                           |    | Effect unknown | A156!A, D168!ADHKRY |
 |      |                                                           | 6  | 4 | Q41KR, Y56H, D168AEH |
 |      |                                                           |    | Effect unknown | Q41!KQR, A156!A, D168!ADEH |
-| NS5a | Daclatasvir (Daklinza™)                                   | 1A | 8 | 28AT, 30DEGHKNRY, 31IMV, 58D, 93CHNS |
-|      |                                                           |    | 4 | 24GR, 28SV, 30T, 54R, 58PR |
-|      |                                                           |    | Effect unknown | H54!HR, Y93!CFHNSY, K24!GKNR, A92!AK, K26!EK, M28!AMSTV, H58!DHPR, Q30ACFIMPSVW, L31!ILMV |
-|      |                                                           | 1B | 8 | 31FV, 32X, 93H |
-|      |                                                           |    | 4 | 28MT, 29SX, 30GHPQ, 31IM, 32L, 58S, 62D, 92K, 93N |
-|      |                                                           |    | Effect unknown | P32!LP, Q62!DQ, Y93!HNY, A92!AK, P58!PS, L28!LMT, P29!PS, R30!GHPQR, L31!FILMV |
-|      |                                                           | 2  | 8 | 28CS, 31M, 92R, 93H |
-|      |                                                           |    | Effect unknown | C92!CR, F28!CFS, Y93!HY, L31!LM |
-|      |                                                           | 3  | 8 | 30K, 31FIMV, 93H |
-|      |                                                           |    | 4 | 30S, 31P, 62AILPRT |
-|      |                                                           |    | Effect unknown | Y93!HY, M28!MTV, S62!AILPRST, A30!AKSTV, L31!FILMPV |
-|      |                                                           | 4  | Not indicated | TRUE |
-|      |                                                           | 5  | Not indicated | TRUE |
-|      |                                                           | 6  | Not indicated | TRUE |
-|      |                                                           | 6E | Not indicated | TRUE |
-|      | Elbasvir (a component of Zepatier™)                       | 1A | 8 | 28AGT, 30DEGHR, 31FIMV, 58D, 93CHNS |
-|      |                                                           |    | 4 | 30KY |
-|      |                                                           |    | Effect unknown | H58!DH, M28!AGMTV, Y93!CHNSY, Q30!DEGHKLQRY, L31!FILMV |
-|      |                                                           | 1B | 8 | 31FMV, 93H |
-|      |                                                           |    | 4 | 28M |
-|      |                                                           |    | Effect unknown | L28!LM, Y93!HY, L31!FLMV |
-|      |                                                           | 2  | Not indicated | TRUE |
-|      |                                                           | 3  | 8 | 30DK, 31FM, 93H |
-|      |                                                           |    | Effect unknown | Y93!HY, A30!ADK, L31!FLM |
-|      |                                                           | 4  | 8 | 30FH, 31V, 58D, 93H |
-|      |                                                           |    | 4 | 31I, 32L |
-|      |                                                           |    | Effect unknown | P32!LP, P58!DP, Y93!HY, L30!FHLS, M31!IMV |
-|      |                                                           | 5  | Not indicated | TRUE |
-|      |                                                           | 6  | Not indicated | TRUE |
-|      |                                                           | 6E | Not indicated | TRUE |
-|      | Ledipasvir (a component of Harvoni™)                      | 1A | 8 | 28AGT, 30EGHKNRY, 31IMV, 32L, 38F, 58D, 92P, 93CHNS |
-|      |                                                           |    | 4 | 24GNR, 28V, 30LT, 31P, 58P, 92T, 93F |
-|      |                                                           |    | Effect unknown | P32!LP, S38!FS, K24!GKNR, A92!APT, H58!DHP, M28!AGMTV, Y93!CFHNSY, Q30ACDFIMPSVW, L31!ILMPV |
-|      |                                                           | 1B | 8 | 31IV, 58D, 92K, 93H |
-|      |                                                           |    | 4 | 28M, 31M, 92T, 93C |
-|      |                                                           |    | Effect unknown | P32!LP, L28!LM, P58!DP, A92!AKT, Y93!CHSY, L31!FILMV |
-|      |                                                           | 2  | Not indicated | TRUE |
-|      |                                                           | 3  | Not indicated | TRUE |
-|      |                                                           | 4  | Not indicated | TRUE |
-|      |                                                           | 5  | Not indicated | TRUE |
-|      |                                                           | 6  | Not indicated | TRUE |
-|      |                                                           | 6E | Not indicated | TRUE |
-|      | Ombitasvir (a component of Technivie™ and Holkira Pak™)   | 1A | 8 | 28TV, 30EKRY, 31V, 58D, 93CFHLNS |
-|      |                                                           |    | 4 | 24R, 28A, 32L, 54Y, 58PR |
-|      |                                                           |    | Effect unknown | P32!LP, H54!HY, K24!KR, H58!DHPR, M28!AMTV, Y93!CFHLNSY, Q30!EHKLNQRTY, L31!ILMV |
-|      |                                                           | 1B | 8 | 28T, 29X, 31FV, 93HNS |
-|      |                                                           |    | 4 | 28M, 30GHPQ, 31MT, 32X, 54Y, 58AS, 92E |
-|      |                                                           |    | Effect unknown | P32!P, Q54!QY, Y93!HNSY, A92!AE, P58!APS, L28!LMT, P29!P, R30!GHPQR, L31!FILMTV |
-|      |                                                           | 2  | Not indicated | TRUE |
-|      |                                                           | 3  | Not indicated | TRUE |
-|      |                                                           | 4  | 8 | 28V |
-|      |                                                           |    | 4 | 28S, 31I, 58S |
-|      |                                                           |    | Effect unknown | P58!APS, L28!LSV, M31!ILM |
-|      |                                                           | 5  | Not indicated | TRUE |
-|      |                                                           | 6  | Not indicated | TRUE |
-|      |                                                           | 6E | Not indicated | TRUE |
-|      | Velpatasvir (a component of Epclusa™ and Vosevi™)         | 1A | 8 | 28GT, 30EK, 31MV, 32L, 58D, 93CHNRSW |
-|      |                                                           |    | 4 | 24MRT, 28V, 30HLR, 31I, 58P, 92K |
-|      |                                                           |    | Effect unknown | P32!LP, K24!KMRT, A92!AK, H58!DHP, M28!GMTV, Y93!CHNRSWY, Q30!EHKLQR, L31!ILMV |
-|      |                                                           | 1B | 8 | 92K |
-|      |                                                           |    | 4 | 31IMV, 93CHNS |
-|      |                                                           |    | Effect unknown | Q24!KQ, P58!PRT, A92!AK, Y93!CHNSY, R30!RS, L31!ILMV |
-|      |                                                           | 2  | 8 | 28S, 31V, 92T, 93HN |
-|      |                                                           |    | 4 | 31IM |
-|      |                                                           |    | Effect unknown | C92!CT, P58!APS, F28!FS, Y93!HNY, L31!ILMV |
-|      |                                                           | 3  | 8 | 30K, 31M, 93HS |
-|      |                                                           |    | 4 | 30V, 31PV, 38P, 58L, 92K, 93NR |
-|      |                                                           |    | Effect unknown | S38!PS, P58!LP, E92!EK, Y93!HNRSY, A30!AKV, L31!LMPV |
-|      |                                                           | 4  | 4 | 28T, 30HS, 31V, 32L, 93CHNSW |
-|      |                                                           |    | Effect unknown | P32!LP, L28!LT, Y93!CHNSWY, L30!HLS, M31!MV |
-|      |                                                           | 5  | Effect unknown | L28!L, P58!P, A92!A, T93!T, Q30!Q, L31!L |
-|      |                                                           | 6  | 8 | 31V, 32ALQR |
-|      |                                                           |    | Effect unknown | P32!ALPQR, A92!A, T58!T, F28!F, T93!T, R30!R, L31!LV |
-|      |                                                           | 6E | 8 | TRUE |
+| NS5a | Daclatasvir (Daklinza™)                                   | 1A | 8 | K24T, M28AGT, Q30DEGHKNRY, L31IMV, P32L, H58D, A92K, Y93CHNST |
+|      |                                                           |    | 4 | K24R, M28V, Q30T, H54RY, H58P, A92P, Y93FR |
+|      |                                                           |    | Effect unknown | M28!AGMTV, Q30ACFILMPSVW, L31!ILMV, P32!LP, H54!HRY, H58!DHP, A92!AKP, Y93!CFHNRSTY |
+|      |                                                           | 1B | 8 | P29d, L31V, P32d, A92K, Y93H |
+|      |                                                           |    | 4 | L28M, R30GHQ, L31FIMW, Q54H, P58S, Q62E, A92E, Y93N |
+|      |                                                           |    | Effect unknown | L28!LM, R30!GHQR, L31!FILMVW, P32!P, A92!AEK, Y93!HNY |
+|      |                                                           | 2  | 8 | TRUE, F28CS, L31M, C92R, Y93H |
+|      |                                                           |    | Effect unknown | F28!CFS, L31!LM, C92!CR, Y93!HY |
+|      |                                                           | 3  | 8 | M28K, A30EK, L31FIMV, Y93H |
+|      |                                                           |    | 4 | M28T, A30SV, L31P, S62AILPRT |
+|      |                                                           |    | Effect unknown | M28!KMT, A30!AEKSV, L31!FILMPV, S62!AILPRST, Y93!HY |
+|      |                                                           | 4  | 8 | L28M, L30GHRS, Y93HRSW |
+|      |                                                           |    | 4 | L30CPQY, M31V |
+|      |                                                           | 5  | 8 | L31FV |
+|      |                                                           | 6  | 8 | Q24H, L31M, P32LS, T58ANS |
+|      | Elbasvir (a component of Zepatier™)                       | 1A | 8 | M28AGT, Q30DEGHKR, L31FIMV, H58D, Y93CHN |
+|      |                                                           |    | 4 | K24R, M28V, Q30LY, E62D, Y93S, D427N |
+|      |                                                           |    | Effect unknown | M28!AGMTV, Q30!DEGHKLQRY, L31!FILMV, H58!DH, Y93!CHNSY |
+|      |                                                           | 1B | 8 | L31FMV, Y93H |
+|      |                                                           |    | 4 | L28M, R30Q, P58S |
+|      |                                                           |    | Effect unknown | L31!FLMV, Y93!HY |
+|      |                                                           | 2  | 4 | T24AS, F28CL, L31IM, P58S |
+|      |                                                           | 3  | 8 | A30DK, L31FM, Y93H |
+|      |                                                           |    | 4 | P58S, S62APT |
+|      |                                                           |    | Effect unknown | A30!ADK, L31!FLM, P58!PS, S62!APST, Y93!HY |
+|      |                                                           | 4  | 8 | L30FH, P58D, Y93H |
+|      |                                                           |    | 4 | L28MST, L30RS, M31IV, P32L, H54Y, P58TY, Y93C |
+|      |                                                           |    | Effect unknown | L30!FHLRS, M31!IMV, P58!DPTY, Y93!CHY |
+|      |                                                           | 6  | 4 | F28LM, L31M |
+|      | Ledipasvir (a component of Harvoni™)                      | 1A | 8 | M28AGT, Q30EGHKNRY, L31IMV, P32L, S38F, H58D, A92K, Y93CHLNRSTW |
+|      |                                                           |    | 4 | K24R, M28V, Q30LT, L31P, H58PR, Y93F |
+|      |                                                           |    | Effect unknown | M28!AGMTV, Q30ACDFIMPSVW, L31!ILMPV, P32!LP, S38!FS, H58!DHPR, A92!AK, Y93ADEGIKMPQV |
+|      |                                                           | 1B | 8 | P58D, A92K, Y93HNS |
+|      |                                                           |    | 4 | L28M, L31IV, A92T, Y93C |
+|      |                                                           |    | Effect unknown | L31!ILV, P58!DP, A92!AKT, Y93!CHNSY |
+|      |                                                           | 2  | 8 | TRUE, L31M |
+|      |                                                           | 3  | 8 | TRUE, A30KSV, Y93H |
+|      |                                                           | 4  | 8 | L28M, L30R, Y93HSW |
+|      |                                                           |    | 4 | L30S, M31V, Y93C |
+|      |                                                           | 5  | 4 | L31M |
+|      |                                                           | 6  | 8 | TRUE |
+|      |                                                           |    | 4 | Q24K, F28V, R30A, T58P |
+|      | Ombitasvir (a component of Technivie™ and Holkira Pak™)   | 1A | 8 | M28TV, Q30EKRY, L31V, H58D, Y93CFHLNS |
+|      |                                                           |    | 4 | K24R, M28A, P32L, H54Y, H58PR, E62D |
+|      |                                                           |    | Effect unknown | M28!AMTV, Q30!EKQRY, L31!LV, H58!DHPR, Y93!CFHLNSY |
+|      |                                                           | 1B | 8 | L28T, P29d, Y93HN |
+|      |                                                           |    | 4 | L28M, R30Q, L31FMV, Q54Y, P58S, Y93S |
+|      |                                                           |    | Effect unknown | L28!LMT, P29!P, L31!FLMV, Y93!HNSY |
+|      |                                                           | 2  | 8 | L31MV |
+|      |                                                           |    | 4 | T24A, F28F, Y93H |
+|      |                                                           | 3  | 8 | M28T, Y93H |
+|      |                                                           |    | 4 | L31F |
+|      |                                                           | 4  | 4 | L28S, M31I, P58S |
+|      |                                                           |    | Effect unknown | L28!LS |
+|      |                                                           | 5  | 8 | L28I, L31FV |
+|      |                                                           | 6  | 8 | L31V, T58N |
+|      |                                                           |    | 4 | T58AS |
+|      | Pibrentasvir (a component of Mavyret™)                    | 1A | 8 | M28G, Q30Dd, E62A, Y93N |
+|      |                                                           |    | 4 | K24EQR, M28ATV, P29QR, Q30EGHKLR, L31M, H58CDY, Y93H |
+|      |                                                           |    | Effect unknown | K24!EKQR, M28!AGMTV, P29!PQR, Q30!DEGHKLQR, H58!CDHY, E62!AE, Y93!HNY |
+|      |                                                           | 1B | 8 | P32d |
+|      |                                                           |    | 4 | L28M, P29d, R30Q, L31K, P32KNRT |
+|      |                                                           |    | Effect unknown | P32!KNPRT |
+|      |                                                           | 2  | 4 | L31M |
+|      |                                                           | 3  | 4 | S24FG, M28GK, P29Q, A30GK, L31FIM, Y93H |
+|      |                                                           |    | Effect unknown | S24!FGS, M28!GKM, A30!AGK, L31!FILM, E92!E, Y93!HY |
+|      | Velpatasvir (a component of Epclusa™ and Vosevi™)         | 1A | 8 | M28GT, Q30EK, L31IMV, P32L, H58D, A92K, Y93CHNRSW |
+|      |                                                           |    | 4 | K24MT, M28AV, Q30GHLRT, L31F, S38Y, H58NPR, S85N, Y93LT, L153V, A213A, T377T |
+|      |                                                           |    | Effect unknown | K24!KMT, M28!AGMTV, Q30!EGHKLQRT, L31!FILMV, P32!LP, H58!DHNPR, A92!AK, Y93!CHLNRSTWY |
+|      |                                                           | 1B | 8 | A92K, Y93HN |
+|      |                                                           |    | 4 | Q24K, L31IMV, P58T, Y93CRST |
+|      |                                                           |    | Effect unknown | L31!ILMV, A92!AK, Y93!CHNRSTY |
+|      |                                                           | 2  | 8 | F28S, Y93HN |
+|      |                                                           |    | 4 | F28CF, L31IMV, C92R |
+|      |                                                           |    | Effect unknown | F28!CFS, L31!ILMV, C92!CR, Y93!HNY |
+|      |                                                           | 3  | 8 | M28T, A30K, L31FM, Y93HS |
+|      |                                                           |    | 4 | S14E, A30HRV, L31PV, S38PY, K41K, V52M, P58GLT, H85Y, E92K, Y93NR, S103DP, A291P, S379P, S385Q, R404K, P407S |
+|      |                                                           |    | Effect unknown | M28!MT, A30!AHKRV, L31!FLMPV, S38!PSY, P58!GLPT, Y93!HNRSY |
+|      |                                                           | 4  | 8 | L28T, Y93S |
+|      |                                                           |    | 4 | L30R, M31V, P32L, H54R, Y93HNW |
+|      |                                                           |    | Effect unknown | L28!LT, Y93!HNSWY |
+|      |                                                           | 5  | 4 | L31I |
+|      |                                                           | 6  | 8 | TRUE, L31V, P32ALQR |
+|      |                                                           |    | 4 | F28MV, L31IM, T58GH, A92T, T93AHNS |
+|      |                                                           |    | Effect unknown | F28!FMV, L31!ILMV, P32!ALPQR, T58!GHT, T93!AHNST |
 | NS5b | Dasabuvir (a component of Holkira Pak™)                   | 1A | 8 | 314H, 316Y, 395G, 414ITV, 444K, 446KQ, 448CH, 553TV, 554S, 556GR, 561H |
 |      |                                                           |    | 4 | 307R, 450V, 553I, 558R, 559GINV |
 |      |                                                           |    | Effect unknown | Y448!CHY, A450!AV, A553!AITV, G554!GS, A395!AG, S556!GRS, G558!GR, D559!DGINV, Y561!HY, G307!GR, M414!IMTV, C316!CY, L314!HL, N444!DKN, E446!EKQ |

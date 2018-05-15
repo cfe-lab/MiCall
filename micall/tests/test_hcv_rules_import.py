@@ -134,6 +134,43 @@ class ReadRuleSetTest(TestCase):
 
         self.assertEqual(expected_rule_sets, rule_sets)
 
+    def test_ns5a_positions_monitored(self):
+        row_data = [
+            ['',     'Ignored header row'],
+            ['',     'Example1 drug', '<',                  '<', 'Example2', '<', '<'],
+            ['',     'a',             'Phenotype',          'b', 'a',        'b', 'Phenotype'],
+            ['WT',   '',              'likely susceptible', '',  '',         '',  'likely susceptible'],
+            ['F36A', '',              'resistance likely',  '',  '',         '',  'likely susceptible'],
+            ['Q40A', '',              'resistance likely', '',  '',         '',  'resistance possible'],
+            ['',     'Ignored footer row'],
+            ['',     'Positions monitored...'],
+            ['',     '36,54, 62',     '',                   '',  '',         'Positions monitored:'],
+            ['',     '',              '',                   '',  '',         'None']]
+        expected_rule_sets = [RuleSet('NS5a',
+                                      '1a',
+                                      'Example1',
+                                      2,
+                                      3,
+                                      4,
+                                      {'F36A': 8,
+                                       'Q40A': 8,
+                                       'F36!AF': 'Effect unknown',
+                                       'H54!H': 'Effect unknown',
+                                       'E62!E': 'Effect unknown'}),
+                              RuleSet('NS5a',
+                                      '1a',
+                                      'Example2',
+                                      5,
+                                      7,
+                                      7,
+                                      {'Q40A': 4})]
+
+        ws = create_worksheet('NS5A_GT1a', row_data)
+
+        rule_sets = read_rule_sets(ws, REFERENCES)
+
+        self.assertEqual(expected_rule_sets, rule_sets)
+
     def test_combination(self):
         row_data = [
             ['',     'Ignored header row'],
@@ -268,6 +305,40 @@ class ReadRuleSetTest(TestCase):
                                       3,
                                       4,
                                       {None: 8}),
+                              RuleSet('NS3',
+                                      '1a',
+                                      'Example2',
+                                      5,
+                                      7,
+                                      7,
+                                      {'T40A': 4})]
+
+        ws = create_worksheet('NS3_GT1a', row_data)
+
+        rule_sets = read_rule_sets(ws, REFERENCES)
+
+        self.assertEqual(expected_rule_sets, rule_sets)
+
+    def test_wild_type_resistance_with_monitoring(self):
+        row_data = [
+            ['',     'Ignored header row'],
+            ['',     'Example1 drug', '<',                  '<', 'Example2', '<', '<'],
+            ['',     'a',             'Phenotype',          'b', 'a',        'b', 'Phenotype'],
+            ['WT',   '',              'resistance likely',  '',  '',         '',  'likely susceptible'],
+            ['V36A', '',              '',                   '',  '',         '',  'likely susceptible'],
+            ['T40A', '',              '',                   '',  '',         '',  'resistance possible'],
+            ['',     'Ignored footer row'],
+            ['',     'Positions monitored...'],
+            ['',     '36',          '',                   '',  '',         'Positions monitored:'],
+            ['',     '',              '',                   '',  '',         'None']]
+        expected_rule_sets = [RuleSet('NS3',
+                                      '1a',
+                                      'Example1',
+                                      2,
+                                      3,
+                                      4,
+                                      {None: 8,
+                                       'V36!V': 'Effect unknown'}),
                               RuleSet('NS3',
                                       '1a',
                                       'Example2',
@@ -559,6 +630,28 @@ class WriteRulesTest(TestCase):
         with self.assertRaisesRegex(
                 ValueError,
                 r"Components score could not be calculated for NS3 1a V10A\+A20L\."):
+            write_rules(rule_sets, REFERENCES, rules_file)
+
+    def test_unknown_drug(self):
+        rule_sets = [RuleSet('NS3',
+                             '1a',
+                             'Paulrevir',
+                             1,
+                             2,
+                             3,
+                             {'R10A': 4, 'A20L': 4, 'V10A+A20L': 4}),
+                     RuleSet('NS3',
+                             '1b',
+                             'Paulrevir',
+                             1,
+                             2,
+                             3,
+                             {'R10A': 4, 'A20L': 4, 'V10A+A20L': 4})]
+        rules_file = StringIO()
+
+        with self.assertRaisesRegex(
+                ValueError,
+                r"Unknown drug: Paulrevir found in NS3 1a\."):
             write_rules(rule_sets, REFERENCES, rules_file)
 
     def test_line_wrap(self):
