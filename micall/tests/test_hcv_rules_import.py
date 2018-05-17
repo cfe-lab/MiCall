@@ -97,6 +97,137 @@ class ReadRuleSetTest(TestCase):
 
         self.assertEqual(expected_rule_sets, rule_sets)
 
+    def test_check_phenotypes(self):
+        row_data = [
+            ['',     'Ignored header row'],
+            ['',     'Example1 drug', '<', '<',               '<'],
+            ['',     'Fold-shift', 'a', 'Phenotype',          'b'],
+            ['WT',   '1x',         '',  'likely susceptible', ''],
+            ['V36A', '200x',       '',  'resistance likely',  ''],
+            ['T40A', '2x',         '',  'likely susceptible', ''],
+            ['',     'Ignored footer row'],
+            ['',     'In vitro drug susceptibility:'],
+            ['',     '<20x FS, likely susceptible'],
+            ['',     '20-100x FS, resistance possible'],
+            ['',     '>100x FS, resistance likely'],
+            ['',     'Positions monitored...'],
+            ['',     'None']]
+        expected_rule_sets = [RuleSet('NS3',
+                                      '1a',
+                                      'Example1',
+                                      2,
+                                      4,
+                                      5,
+                                      {'V36A': 8},
+                                      {})]
+
+        ws = create_worksheet('NS3_GT1a', row_data)
+
+        rule_sets = read_rule_sets(ws, REFERENCES, check_phenotypes=True)
+
+        self.assertEqual(expected_rule_sets, rule_sets)
+
+    def test_phenotype_typos(self):
+        row_data = [
+            ['',     'Ignored header row'],
+            ['',     'Example1 drug', '<', '<',               '<'],
+            ['',     'Fold-shift', 'a', 'Phenotype',          'b'],
+            ['WT',   '1x',         '',  'likely susceptible', ''],
+            ['V36A', '200x',       '',  'resistance likely',  ''],
+            ['T40A', '2x',         '',  'likely susceptible', ''],
+            ['',     'Ignored footer row'],
+            ['',     'In virto Drug Susecptibility:'],
+            ['',     '<20x FS, likely susceptible'],
+            ['',     '20-100x FS, resistance possible'],
+            ['',     '>100x FS, resistance likely'],
+            ['',     'Positions monitored...'],
+            ['',     'None']]
+        expected_rule_sets = [RuleSet('NS3',
+                                      '1a',
+                                      'Example1',
+                                      2,
+                                      4,
+                                      5,
+                                      {'V36A': 8},
+                                      {})]
+
+        ws = create_worksheet('NS3_GT1a', row_data)
+
+        rule_sets = read_rule_sets(ws, REFERENCES, check_phenotypes=True)
+
+        self.assertEqual(expected_rule_sets, rule_sets)
+
+    def test_bad_phenotype(self):
+        row_data = [
+            ['',     'Ignored header row'],
+            ['',     'Example1 drug', '<', '<',                '<'],
+            ['',     'Fold-shift', 'a', 'Phenotype',           'b'],
+            ['WT',   '1x',         '',  'likely susceptible',  ''],
+            ['V36A', '200x',       '',  'resistance possible', ''],
+            ['T40A', '2x',         '',  'likely susceptible',  ''],
+            ['',     'Ignored footer row'],
+            ['',     'In vitro drug susceptibility:'],
+            ['',     '<20x FS, likely susceptible'],
+            ['',     '20-100x FS, resistance possible'],
+            ['',     '>100x FS, resistance likely'],
+            ['',     'Positions monitored...'],
+            ['',     'None']]
+
+        ws = create_worksheet('NS3_GT1a', row_data)
+
+        with self.assertRaisesRegex(ValueError,
+                                    r'Expected phenotype resistance likely for '
+                                    r'V36A in NS3_GT1a but found resistance '
+                                    r'possible'):
+            read_rule_sets(ws, REFERENCES, check_phenotypes=True)
+
+    def test_invalid_fold_shift(self):
+        row_data = [
+            ['',     'Ignored header row'],
+            ['',     'Example1 drug', '<', '<',                 '<'],
+            ['',     'Fold-shift',  'a', 'Phenotype',           'b'],
+            ['WT',   '1x',          '',  'likely susceptible',  ''],
+            ['V36A', 'three times', '',  'resistance possible', ''],
+            ['T40A', '2x',          '',  'likely susceptible',  ''],
+            ['',     'Ignored footer row'],
+            ['',     'In vitro drug susceptibility:'],
+            ['',     '<20x FS, likely susceptible'],
+            ['',     '20-100x FS, resistance possible'],
+            ['',     '>100x FS, resistance likely'],
+            ['',     'Positions monitored...'],
+            ['',     'None']]
+
+        ws = create_worksheet('NS3_GT1a', row_data)
+
+        with self.assertRaisesRegex(ValueError,
+                                    r"Invalid fold shift of 'three times' for "
+                                    r"V36A in NS3_GT1a\."):
+            read_rule_sets(ws, REFERENCES, check_phenotypes=True)
+
+    def test_invalid_upper_fold_shift(self):
+        row_data = [
+            ['',     'Ignored header row'],
+            ['',     'Example1 drug', '<', '<',                 '<'],
+            ['',     'Fold-shift',  'a', 'Phenotype',           'b'],
+            ['WT',   '1x',          '',  'likely susceptible',  ''],
+            ['V36A', '200x',        '',  'resistance possible', ''],
+            ['T40A', '2x',          '',  'likely susceptible',  ''],
+            ['',     'Ignored footer row'],
+            ['',     'In vitro drug susceptibility:'],
+            ['',     '<20x FS, likely susceptible'],
+            ['',     '20-100x FS, resistance possible'],
+            ['',     'over 100, bad'],
+            ['',     'Positions monitored...'],
+            ['',     'None']]
+
+        ws = create_worksheet('NS3_GT1a', row_data)
+
+        with self.assertRaisesRegex(
+                ValueError,
+                r"Invalid upper fold shift of 'over 100, bad' for Example1 "
+                r"in NS3_GT1a\."):
+            read_rule_sets(ws, REFERENCES, check_phenotypes=True)
+
     def test_positions_monitored(self):
         row_data = [
             ['',     'Ignored header row'],

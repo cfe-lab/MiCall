@@ -181,7 +181,9 @@ RuleSet = namedtuple(
      'first_column',
      'phenotype_column',
      'last_column',
-     'mutations'])
+     'mutations',  # {condition: score}
+     'fold_shifts'])  # {condition: shift_text}
+RuleSet.__new__.__defaults__ = (None, )
 Reference = namedtuple('Reference', 'name sequence')
 
 
@@ -216,6 +218,87 @@ class SplitDumper(yaml.SafeDumper):
         super(SplitDumper, self).write_plain(buffer)
 
 
+class FoldShiftChecker:
+    def __init__(self):
+        self.lower_pattern = r'<(\d+)x? FS, likely susceptible$'
+        self.lower_score = PHENOTYPE_SCORES['likely susceptible']
+        self.upper_pattern = r'>(\d+)x? FS, resistance likely$'
+        self.upper_score = PHENOTYPE_SCORES['resistance likely']
+        self.middle_score = PHENOTYPE_SCORES['resistance possible']
+        self.level_descriptions = {
+            score: description
+            for description, score in PHENOTYPE_SCORES.items()}
+
+    def check(self, worksheet, rule_sets, col, section_entries):
+        for rule_set in rule_sets:
+            if rule_set.first_column <= col <= rule_set.last_column:
+                lower_entry = section_entries[0]
+                match = re.match(self.lower_pattern, lower_entry)
+                lower = int(match.group(1))
+                upper_entry = section_entries[2]
+                match = re.match(self.upper_pattern, upper_entry)
+                if match is None:
+                    message = "Invalid upper fold shift of {!r} for {} in {}.".format(
+                        upper_entry,
+                        rule_set.drug_name,
+                        worksheet.title)
+                    raise ValueError(message)
+                upper = int(match.group(1))
+                for mutation, score in rule_set.mutations.items():
+                    fold_shift_text = rule_set.fold_shifts.pop(mutation)
+                    self.check_text(fold_shift_text,
+                                    score,
+                                    mutation,
+                                    lower,
+                                    upper,
+                                    worksheet)
+                for mutation, fold_shift_text in rule_set.fold_shifts.items():
+                    self.check_text(fold_shift_text,
+                                    0,
+                                    mutation,
+                                    lower,
+                                    upper,
+                                    worksheet)
+                rule_set.fold_shifts.clear()
+                break
+
+    def check_text(self, fold_shift_text, score, mutation, lower, upper, worksheet):
+        match = re.match(r'(\d+)x$', fold_shift_text)
+        if match is None:
+            message = "Invalid fold shift of {!r} for {} in {}.".format(
+                fold_shift_text,
+                mutation,
+                worksheet.title)
+            raise ValueError(message)
+        fold_shift = int(match.group(1))
+        if fold_shift < lower:
+            expected_score = self.lower_score
+        elif fold_shift > upper:
+            expected_score = self.upper_score
+        else:
+            expected_score = self.middle_score
+        if score != expected_score:
+            expected_description = self.level_descriptions[
+                expected_score]
+            description = self.level_descriptions[score]
+            message = ('Expected phenotype {} for {} in {} but '
+                       'found {}.').format(expected_description,
+                                           mutation,
+                                           worksheet.title,
+                                           description)
+            raise ValueError(message)
+
+    @staticmethod
+    def check_missing(worksheet, rule_sets):
+        for rule_set in rule_sets:
+            if rule_set.fold_shifts:
+                message = (
+                    'Fold-shift levels not found in {} footer on {}'.format(
+                        rule_set.drug_name,
+                        worksheet.title))
+                raise ValueError(message)
+
+
 def main():
     args = parse_args()
     references = load_references()
@@ -228,7 +311,7 @@ def main():
         if not ws.title.startswith('NS'):
             print('Skipped.')
             continue
-        rule_sets = read_rule_sets(ws, references)
+        rule_sets = read_rule_sets(ws, references, check_phenotypes=True)
         all_rule_sets.extend(rule_sets)
     write_rules(all_rule_sets, references, args.rules_yaml)
 
@@ -247,23 +330,26 @@ def make_data_changes(wb):
                 ws[coordinate] = new
 
 
-def read_rule_sets(ws, references):
+def read_rule_sets(ws, references, check_phenotypes=False):
     header_rows = []
     monitored_drugs = set()
+    fold_shift_checker = FoldShiftChecker()
     rule_sets = None
-    previous_row = None
+    previous_rows = []
     for row in ws.rows:
         if rule_sets is None:
             if row[0].value and row[0].value.startswith('WT'):
-                rule_sets = find_rule_sets(ws, header_rows)
+                rule_sets = find_rule_sets(ws, header_rows, check_phenotypes)
                 find_phenotype_scores(row, rule_sets)
             else:
                 header_rows.append(row)
-        elif row[0].value is not None and not row[0].font.strike:
-            find_phenotype_scores(row, rule_sets)
+        elif row[0].value is not None:
+            if not row[0].font.strike:
+                find_phenotype_scores(row, rule_sets)
         else:
             # In footer rows.
-            if previous_row is not None:
+            if previous_rows:
+                previous_row = previous_rows[-1]
                 for col, cell in enumerate(previous_row, 1):
                     label = str(cell.value).lower()
                     if label.startswith('positions monitored'):
@@ -273,7 +359,25 @@ def read_rule_sets(ws, references):
                                                       col,
                                                       row[col-1].value)
                         monitored_drugs.add(drug_name)
-            previous_row = row
+            if len(previous_rows) >= 3 and check_phenotypes:
+                label_row = previous_rows[-3]
+                for col, cell in enumerate(label_row, 1):
+                    label = str(cell.value).lower()
+                    if label in ('in vitro drug susceptibility:',
+                                 'in virto drug susecptibility:'):
+                        section_rows = (previous_rows[-2],
+                                        previous_rows[-1],
+                                        row)
+                        section_entries = [section_row[col-1].value
+                                           for section_row in section_rows]
+                        fold_shift_checker.check(ws,
+                                                 rule_sets,
+                                                 col,
+                                                 section_entries)
+            previous_rows.append(row)
+            if len(previous_rows) > 3:
+                previous_rows.pop(0)
+
     if rule_sets is None:
         raise ValueError('No mutation started with WT in {}.'.format(ws.title))
     all_drugs = {rule_set.drug_name for rule_set in rule_sets}
@@ -282,6 +386,8 @@ def read_rule_sets(ws, references):
         raise ValueError("No 'monitored positions' label for {} in {}.".format(
             ', '.join(sorted(missing_drugs)),
             ws.title))
+    if check_phenotypes:
+        fold_shift_checker.check_missing(ws, rule_sets)
     return rule_sets
 
 
@@ -341,6 +447,7 @@ def monitor_positions(worksheet, rule_sets, references, col, positions):
 def find_phenotype_scores(row, rule_sets):
     mutation = row[0].value
     for rule_set in rule_sets:
+        condition = None if mutation.startswith('WT') else mutation
         phenotype_cell = row[rule_set.phenotype_column-1]
         phenotype = phenotype_cell.value
         if phenotype is not None:
@@ -352,15 +459,20 @@ def find_phenotype_scores(row, rule_sets):
                     mutation,
                     phenotype))
             if score:
-                condition = None if mutation.startswith('WT') else mutation
                 rule_set.mutations[condition] = score
+        if rule_set.fold_shifts is not None:
+            fold_shift_cell = row[rule_set.phenotype_column-3]
+            fold_shift = fold_shift_cell.value
+            if fold_shift is not None and fold_shift not in ('1x', '1'):
+                rule_set.fold_shifts[condition] = fold_shift
 
 
 def create_rule_set(sheet_name,
                     drug_name,
                     first_column,
                     phenotype_column,
-                    last_column):
+                    last_column,
+                    check_phenotypes=False):
     sheet_region, genotype = sheet_name.split('_GT')
     lower_region = sheet_region.lower()
     for known_region in HCV_REGIONS:
@@ -370,13 +482,15 @@ def create_rule_set(sheet_name,
     else:
         region = sheet_region
     short_name = get_short_drug_name(drug_name)
+    fold_shifts = {} if check_phenotypes else None
     return RuleSet(region,
                    genotype,
                    short_name,
                    first_column,
                    phenotype_column,
                    last_column,
-                   {})
+                   {},
+                   fold_shifts)
 
 
 def load_drug_codes():
@@ -419,7 +533,7 @@ def get_short_drug_name(name):
     return name.split()[0]
 
 
-def find_rule_sets(ws, header_rows):
+def find_rule_sets(ws, header_rows, check_phenotypes):
     drug_row_num = len(header_rows) - 1
     drug_ranges = []
     for cell_range in ws.merged_cells.ranges:
@@ -439,7 +553,8 @@ def find_rule_sets(ws, header_rows):
                                                              cell.value,
                                                              drug_range.min_col,
                                                              col,
-                                                             drug_range.max_col))
+                                                             drug_range.max_col,
+                                                             check_phenotypes))
                             break
                     else:
                         template = 'No Phenotype column between columns ' \
@@ -570,5 +685,4 @@ def build_score_formula(positions):
 
 
 if __name__ == '__main__':
-
     main()
