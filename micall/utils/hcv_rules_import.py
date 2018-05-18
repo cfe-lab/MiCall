@@ -1,11 +1,11 @@
 import re
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
-from collections import namedtuple, defaultdict
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType, Namespace
+from collections import namedtuple, defaultdict, Counter
 from copy import copy
 from functools import partial
-
-import os
+from itertools import product
 from operator import itemgetter
+import os
 
 import yaml
 from pyvdrm.hcvr import HCVR
@@ -218,6 +218,155 @@ class SplitDumper(yaml.SafeDumper):
         super(SplitDumper, self).write_plain(buffer)
 
 
+class WorksheetReader:
+    def __init__(self, worksheets, *footer_readers):
+        self.worksheets = worksheets
+        self.missing_wild_types = []
+        self.missing_monitored_positions = []
+        self.footer_readers = footer_readers
+
+    def __iter__(self):
+        for ws in self.worksheets:
+            yield from self._iter_worksheet(ws)
+
+    def _iter_worksheet(self, ws):
+        wild_type_row, footer_row = self._find_row_limits(ws)
+        if wild_type_row is None:
+            self.missing_wild_types.append(ws.title)
+            return
+        header_row = wild_type_row - 1
+        drug_row = wild_type_row - 2
+        for cell_range in ws.merged_cells:
+            if cell_range.min_row != drug_row:
+                continue
+            cell = ws.cell(cell_range.min_row, cell_range.min_col)
+            if cell.value is None:
+                continue
+            drug_name, *_ = cell.value.split()
+            column_headings = {
+                col: self._format_heading(ws.cell(header_row, col).value)
+                for col in range(cell_range.min_col, cell_range.max_col + 1)
+                if ws.cell(header_row, col).value is not None}
+            column_headings[1] = 'mutation'
+            section = Namespace(drug_name=drug_name,
+                                sheet_name=ws.title)
+            for footer_reader in self.footer_readers:
+                footer_coordinates = product(
+                    range(footer_row, ws.max_row + 1),
+                    range(cell_range.min_col, cell_range.max_col + 1))
+                footer_reader.read(ws, footer_coordinates, section)
+            for row_num in range(wild_type_row, footer_row):
+                if ws.cell(row_num, 1).font.strike:
+                    continue
+                fields = {heading: ws.cell(row_num, col).value
+                          for col, heading in column_headings.items()}
+                entry = Namespace(section=section, **fields)
+                yield entry
+
+    @staticmethod
+    def _find_row_limits(ws):
+        wild_type_row = None
+        footer_row = ws.max_row + 1
+        for row_num in range(1, ws.max_row + 1):
+            mutation = ws.cell(row_num, 1).value
+            if wild_type_row is None:
+                if mutation and mutation.startswith('WT'):
+                    wild_type_row = row_num
+            else:
+                if mutation is None:
+                    footer_row = row_num
+                    break
+        return wild_type_row, footer_row
+
+    @staticmethod
+    def _format_heading(text):
+        heading = text.lower()
+        heading = re.sub(r'[^a-z0-9]', '_', heading)
+        return heading.strip('_')
+
+    def write_errors(self, report):
+        if self.missing_wild_types:
+            report.write('No wild type found in {}.\n'.format(
+                ', '.join(self.missing_wild_types)))
+        for footer_reader in self.footer_readers:
+            footer_reader.write_errors(report)
+
+
+class MonitoredPositionsReader:
+    def __init__(self):
+        self.missing = []
+
+    def read(self, ws, footer_coordinates, section):
+        monitored_positions = None
+        for row_num, col_num in footer_coordinates:
+            cell = ws.cell(row_num, col_num)
+            label = cell.value and str(cell.value).lower()
+            if label and label.startswith('positions monitored'):
+                monitored_positions = ws.cell(row_num + 1, col_num).value
+                break
+        if monitored_positions is None:
+            monitored_positions = []
+            self.missing.append(
+                '{} in {}'.format(section.drug_name, section.sheet_name))
+        elif monitored_positions.lower() == 'none':
+            monitored_positions = []
+        else:
+            monitored_positions = list(map(
+                int,
+                str(monitored_positions).split(', ')))
+        section.monitored_positions = monitored_positions
+
+    def write_errors(self, report):
+        if self.missing:
+            report.write('No monitored positions for {}.\n'.format(
+                ', '.join(self.missing)))
+
+
+class FoldRangesReader:
+    def __init__(self):
+        self.invalid = []
+        self.lower_pattern = r'<(\d+)x? FS, likely susceptible$'
+        self.lower_score = PHENOTYPE_SCORES['likely susceptible']
+        self.upper_pattern = r'>(\d+)x? FS, resistance likely$'
+        self.upper_score = PHENOTYPE_SCORES['resistance likely']
+        self.middle_score = PHENOTYPE_SCORES['resistance possible']
+        self.level_descriptions = {
+            score: description
+            for description, score in PHENOTYPE_SCORES.items()}
+
+    def read(self, ws, footer_coordinates, section):
+        for row_num, col_num in footer_coordinates:
+            label = ws.cell(row_num, col_num).value
+            if label and label.lower() in ('in vitro drug susceptibility:',
+                                           'in virto drug susecptibility:'):
+                lower_text = ws.cell(row_num + 1, col_num).value
+                upper_text = ws.cell(row_num + 3, col_num).value
+                lower_match = re.match(self.lower_pattern, lower_text)
+                upper_match = re.match(self.upper_pattern, upper_text)
+                if upper_match and lower_match:
+                    section.lower_fold = int(lower_match.group(1))
+                    section.upper_fold = int(upper_match.group(1))
+                else:
+                    section.lower_fold = section.upper_fold = None
+                    if lower_match is None:
+                        self.invalid.append(
+                            "Invalid lower fold shift of {!r} for {} in {}.".format(
+                                lower_text,
+                                section.drug_name,
+                                section.sheet_name))
+                    if upper_match is None:
+                        self.invalid.append(
+                            "Invalid upper fold shift of {!r} for {} in {}.".format(
+                                upper_text,
+                                section.drug_name,
+                                section.sheet_name))
+                break
+
+    def write_errors(self, report):
+        for message in self.invalid:
+            print(message, file=report)
+
+
 class FoldShiftChecker:
     def __init__(self):
         self.lower_pattern = r'<(\d+)x? FS, likely susceptible$'
@@ -297,6 +446,41 @@ class FoldShiftChecker:
                         rule_set.drug_name,
                         worksheet.title))
                 raise ValueError(message)
+
+
+def dump_comments(args):
+    worksheets = [ws
+                  for ws in args.spreadsheet
+                  if ws.title in READY_TABS]
+    reader = WorksheetReader(worksheets)
+
+    original_comments = defaultdict(set)  # {lower: {comment}}
+    comment_counts = Counter()
+    for entry in reader:
+        if not entry.comments:
+            continue
+        comment = re.sub(r'[, ]*[\d.]+%', ' #%', entry.comments.strip(', '))
+        comment = re.sub(r' *\([\d, ]+\)', ' (#)', comment)
+        comment = re.sub(r'mean of \d+', 'mean of #', comment)
+        comment = re.sub(r'[\d.]+x', '#x', comment)
+        comment = re.sub(r'(Cliincal|Clincail|Clincal|Clincial|Clincla|'
+                         r'clinial|Clinica|Clinicla|Clinucak|Clnical) ',
+                         'Clinical ',
+                         comment,
+                         flags=re.IGNORECASE)
+        lower_comment = comment.lower()
+        comment_counts[lower_comment] += 1
+        original_comments[lower_comment].add(comment)
+    for is_clinical_printing in (True, False):
+        print('=== Clinical Evidence ==='
+              if is_clinical_printing
+              else '=== No Clinical Evidence ===')
+        for comment, count in sorted(comment_counts.items()):
+            is_clinical = ('clinical' in comment and
+                           'p/r' not in comment and
+                           'no specific clinical' not in comment)
+            if is_clinical == is_clinical_printing:
+                print('{:-3d} {}'.format(count, min(original_comments[comment])))
 
 
 def main():

@@ -1,10 +1,14 @@
+from argparse import Namespace
+from copy import copy
 from unittest import TestCase, skip
 
 from io import StringIO
 
 from openpyxl import Workbook
 
-from micall.utils.hcv_rules_import import create_rule_set, RuleSet, write_rules, read_rule_sets, load_references
+from micall.utils.hcv_rules_import import create_rule_set, RuleSet, \
+    write_rules, read_rule_sets, load_references, WorksheetReader, \
+    MonitoredPositionsReader, FoldRangesReader
 
 REFERENCES = load_references()
 
@@ -61,6 +65,455 @@ def create_worksheet(title, row_data):
                                end_column=end_column)
                 start_column = None
     return ws
+
+
+class WorksheetReaderTest(TestCase):
+    def test_one_sheet(self):
+        row_data = [
+            ['',     'Ignored header row'],
+            ['',     'Example1 drug', '<',                  '<', 'Example2', '<', '<'],
+            ['',     'a',             'Phenotype',          'b', 'a',        'b', 'Phenotype'],
+            ['WT',   '',              'likely susceptible', '',  '',         '',  'likely susceptible'],
+            ['V36A', '',              'resistance likely',  '',  '',         '',  'likely susceptible'],
+            ['T40A', '',              'likely susceptible', '',  '',         '',  'resistance possible']]
+        worksheets = [create_worksheet('NS3_GT1a', row_data)]
+        expected_section1 = Namespace(drug_name='Example1',
+                                      sheet_name='NS3_GT1a')
+        expected_section2 = Namespace(drug_name='Example2',
+                                      sheet_name='NS3_GT1a')
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section1,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='V36A',
+                                      section=expected_section1,
+                                      phenotype='resistance likely',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='T40A',
+                                      section=expected_section1,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='WT',
+                                      section=expected_section2,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='V36A',
+                                      section=expected_section2,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='T40A',
+                                      section=expected_section2,
+                                      phenotype='resistance possible',
+                                      a=None,
+                                      b=None)]
+        reader = WorksheetReader(worksheets)
+
+        entries = list(reader)
+
+        self.assertEqual(expected_entries, entries)
+
+    def test_two_sheets(self):
+        report = StringIO()
+        row_data1 = [
+            ['',     'Ignored header row'],
+            ['',     'Example1 drug', '<',                  '<'],
+            ['',     'a',             'Phenotype',          'b'],
+            ['WT',   '',              'likely susceptible', ''],
+            ['V36A', '',              'resistance likely',  ''],
+            ['T40A', '',              'likely susceptible', '']]
+        row_data2 = [
+            ['',     'Example2', '<', '<'],
+            ['',     'a',        'b', 'Phenotype'],
+            ['WT',   '',         '',  'likely susceptible'],
+            ['V36A', '',         '',  'likely susceptible'],
+            ['T40A', '',         '',  'resistance possible']]
+        worksheets = [create_worksheet('NS3_GT1a', row_data1),
+                      create_worksheet('NS3_GT1b', row_data2)]
+        expected_report = ''
+        expected_section1 = Namespace(drug_name='Example1',
+                                      sheet_name='NS3_GT1a')
+        expected_section2 = Namespace(drug_name='Example2',
+                                      sheet_name='NS3_GT1b')
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section1,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='V36A',
+                                      section=expected_section1,
+                                      phenotype='resistance likely',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='T40A',
+                                      section=expected_section1,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='WT',
+                                      section=expected_section2,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='V36A',
+                                      section=expected_section2,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='T40A',
+                                      section=expected_section2,
+                                      phenotype='resistance possible',
+                                      a=None,
+                                      b=None)]
+        reader = WorksheetReader(worksheets)
+
+        entries = list(reader)
+        reader.write_errors(report)
+
+        self.assertEqual(expected_entries, entries)
+        self.assertEqual(expected_report, report.getvalue())
+
+    def test_missing_wild_type(self):
+        report = StringIO()
+        row_data1 = [
+            ['',     'Ignored header row'],
+            ['',     'Example1 drug', '<',                  '<'],
+            ['',     'a',             'Phenotype',          'b'],
+            ['V36A', '',              'resistance likely',  ''],
+            ['T40A', '',              'likely susceptible', '']]
+        row_data2 = [
+            ['',     'Example2', '<', '<'],
+            ['',     'a',        'b', 'Phenotype'],
+            ['WT',   '',         '',  'likely susceptible'],
+            ['V36A', '',         '',  'likely susceptible'],
+            ['T40A', '',         '',  'resistance possible']]
+        worksheets = [create_worksheet('NS3_GT1a', row_data1),
+                      create_worksheet('NS3_GT1b', row_data2)]
+        expected_section2 = Namespace(drug_name='Example2',
+                                      sheet_name='NS3_GT1b')
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section2,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='V36A',
+                                      section=expected_section2,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='T40A',
+                                      section=expected_section2,
+                                      phenotype='resistance possible',
+                                      a=None,
+                                      b=None)]
+        expected_report = """\
+No wild type found in NS3_GT1a.
+"""
+        reader = WorksheetReader(worksheets)
+
+        entries = list(reader)
+        reader.write_errors(report)
+
+        self.assertEqual(expected_entries, entries)
+        self.assertEqual(expected_report, report.getvalue())
+
+    def test_other_merged_section(self):
+        row_data = [
+            ['',     'Example', '<', '<'],
+            ['',     'a',        'b', 'Phenotype'],
+            ['WT',   '',         '',  'likely susceptible'],
+            ['V36A', '',         '',  'likely susceptible'],
+            ['T40A', '',         '',  'resistance possible'],
+            ['',     'Other merged section', '<']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b')
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible',
+                                      a=None,
+                                      b=None)]
+        reader = WorksheetReader(worksheets)
+
+        entries = list(reader)
+
+        self.assertEqual(expected_entries, entries)
+
+    def test_monitored_positions(self):
+        row_data = [
+            ['',     'Example', '<', '<'],
+            ['',     'a',        'b', 'Phenotype'],
+            ['WT',   '',         '',  'likely susceptible'],
+            ['V36A', '',         '',  'likely susceptible'],
+            ['T40A', '',         '',  'resistance possible'],
+            ['',     '',         'Positions monitored:'],
+            ['',     '',         '36, 99']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b',
+                                     monitored_positions=[36, 99])
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible',
+                                      a=None,
+                                      b=None)]
+        reader = WorksheetReader(worksheets, MonitoredPositionsReader())
+
+        entries = list(reader)
+
+        self.assertEqual(expected_entries, entries)
+
+    def test_no_monitored_positions(self):
+        report = StringIO()
+        row_data = [
+            ['',     'Example', '<', '<'],
+            ['',     'a',        'b', 'Phenotype'],
+            ['WT',   '',         '',  'likely susceptible'],
+            ['V36A', '',         '',  'likely susceptible'],
+            ['T40A', '',         '',  'resistance possible'],
+            ['',     '',         'Nothing monitored.']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_report = """\
+No monitored positions for Example in NS3_GT1b.
+"""
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b',
+                                     monitored_positions=[])
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible',
+                                      a=None,
+                                      b=None),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible',
+                                      a=None,
+                                      b=None)]
+        reader = WorksheetReader(worksheets, MonitoredPositionsReader())
+
+        entries = list(reader)
+        reader.write_errors(report)
+
+        self.assertEqual(expected_entries, entries)
+        self.assertEqual(expected_report, report.getvalue())
+
+    def test_fold_shift_ranges(self):
+        row_data = [
+            ['',     'Example', '<', '<'],
+            ['',     'Phenotype'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible'],
+            ['T40A', 'resistance possible'],
+            ['',     'In vitro drug susceptibility:'],
+            ['',     '<20x FS, likely susceptible'],
+            ['',     '20-100x FS, resistance possible'],
+            ['',     '>100x FS, resistance likely'],
+            ['',     '',         'Positions monitored:'],
+            ['',     '',         '36, 99']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b',
+                                     monitored_positions=[36, 99],
+                                     lower_fold=20,
+                                     upper_fold=100)
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible')]
+        reader = WorksheetReader(worksheets,
+                                 MonitoredPositionsReader(),
+                                 FoldRangesReader())
+
+        entries = list(reader)
+
+        self.assertEqual(expected_entries, entries)
+
+    def test_fold_shift_typos(self):
+        row_data = [
+            ['',     'Example', '<', '<'],
+            ['',     'Phenotype'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible'],
+            ['T40A', 'resistance possible'],
+            ['',     'In virto Drug Susecptibility:'],
+            ['',     '<20x FS, likely susceptible'],
+            ['',     '20-100x FS, resistance possible'],
+            ['',     '>100x FS, resistance likely']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b',
+                                     lower_fold=20,
+                                     upper_fold=100)
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible')]
+        reader = WorksheetReader(worksheets,
+                                 FoldRangesReader())
+
+        entries = list(reader)
+
+        self.assertEqual(expected_entries, entries)
+
+    def test_invalid_fold_shift(self):
+        report = StringIO()
+        row_data = [
+            ['',     'Example', '<', '<'],
+            ['',     'Phenotype'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible'],
+            ['T40A', 'resistance possible'],
+            ['',     'In vitro drug susceptibility:'],
+            ['',     'less than 20x FS, moist'],
+            ['',     '20-100x FS, resistance possible'],
+            ['',     '>100x FS, resistance likely']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_report = """\
+Invalid lower fold shift of 'less than 20x FS, moist' for Example in NS3_GT1b.
+"""
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b',
+                                     lower_fold=None,
+                                     upper_fold=None)
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible')]
+        reader = WorksheetReader(worksheets, FoldRangesReader())
+
+        entries = list(reader)
+        reader.write_errors(report)
+
+        self.assertEqual(expected_entries, entries)
+        self.assertEqual(expected_report, report.getvalue())
+
+    def test_heading_underscores(self):
+        row_data = [
+            ['',     'Example',    '<'],
+            ['',     'Fold-Shift', 'Phenotype'],
+            ['WT',   '1x',         'likely susceptible'],
+            ['V36A', '2x',         'likely susceptible'],
+            ['T40A', '50x',        'resistance possible']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b')
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible',
+                                      fold_shift='1x'),
+                            Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible',
+                                      fold_shift='2x'),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible',
+                                      fold_shift='50x')]
+        reader = WorksheetReader(worksheets)
+
+        entries = list(reader)
+
+        self.assertEqual(expected_entries, entries)
+
+    def test_heading_stripped(self):
+        row_data = [
+            ['',     'Example',             '<'],
+            ['',     'Phenotype',           'Comment*'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible'],
+            ['T40A', 'resistance possible', 'unreliable']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b')
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible',
+                                      comment=None),
+                            Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible',
+                                      comment=None),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible',
+                                      comment='unreliable')]
+        reader = WorksheetReader(worksheets)
+
+        entries = list(reader)
+
+        self.assertEqual(expected_entries, entries)
+
+    def test_strike_through(self):
+        row_data = [
+            ['',     'Example',             '<'],
+            ['',     'Phenotype',           'Comment'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible', 'strike through to ignore'],
+            ['T40A', 'resistance possible']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        cell = worksheets[0].cell(4, 1)
+        font = copy(cell.font)
+        font.strike = True
+        cell.font = font
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b')
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible',
+                                      comment=None),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible',
+                                      comment=None)]
+        reader = WorksheetReader(worksheets)
+
+        entries = list(reader)
+
+        self.assertEqual(expected_entries, entries)
 
 
 class ReadRuleSetTest(TestCase):
