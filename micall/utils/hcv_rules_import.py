@@ -1,11 +1,12 @@
-import re
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType, Namespace
 from collections import namedtuple, defaultdict, Counter
 from copy import copy
 from functools import partial
-from itertools import product
-from operator import itemgetter
+from itertools import product, groupby
+from operator import itemgetter, attrgetter
 import os
+import re
+import sys
 
 import yaml
 from pyvdrm.hcvr import HCVR
@@ -260,8 +261,13 @@ class WorksheetReader:
                     continue
                 fields = {heading: ws.cell(row_num, col).value
                           for col, heading in column_headings.items()}
+                for field in fields:
+                    value = fields[field]
+                    if value is not None:
+                        fields[field] = str(value).strip()
                 entry = Namespace(section=section, **fields)
-                yield entry
+                if entry.phenotype is not None:
+                    yield entry
 
     @staticmethod
     def _find_row_limits(ws):
@@ -365,6 +371,138 @@ class FoldRangesReader:
     def write_errors(self, report):
         for message in self.invalid:
             print(message, file=report)
+
+
+class RulesWriter:
+    def __init__(self, rules_file, errors_file, references):
+        self.rules_file = rules_file
+        self.errors_file = errors_file
+        self.references = references
+        self.unknown_drugs = []
+        self.invalid_mutations = []
+        self.combination_changes = []
+        self.invalid_phenotypes = []
+
+    def write(self, entries):
+        drug_codes = load_drug_codes()
+        drug_summaries = {}
+        for section, section_entries in groupby(entries, attrgetter('section')):
+            try:
+                drug_summary = self._find_drug_summary(drug_summaries,
+                                                       drug_codes,
+                                                       section)
+            except KeyError:
+                continue
+            positions = defaultdict(dict)  # {pos: {score: MutationSet}}
+            combinations = {}  # {mutation: score}
+            for entry in section_entries:
+                self._score_mutation(entry, section, positions, combinations)
+            self._check_combinations(combinations, positions, section)
+            sheet_region, genotype = section.sheet_name.split('_GT')
+            lower_region = sheet_region.lower()
+            for known_region in HCV_REGIONS:
+                if known_region.lower() == lower_region:
+                    region = known_region
+                    break
+            else:
+                region = sheet_region
+            genotype = genotype.upper()
+            reference = self.references[(genotype, region)]
+            reference_name = reference.name
+            score_formula = build_score_formula(positions)
+            drug_summary['genotypes'].append(dict(genotype=genotype,
+                                                  region=region,
+                                                  reference=reference_name,
+                                                  rules=score_formula))
+        drugs = sorted(drug_summaries.values(), key=itemgetter('code'))
+        yaml.dump(drugs, self.rules_file, default_flow_style=False, Dumper=SplitDumper)
+
+    def _score_mutation(self, entry, section, positions, combinations):
+        mutation = entry.mutation
+        phenotype = entry.phenotype.lower()
+        try:
+            score = PHENOTYPE_SCORES[phenotype]
+        except KeyError:
+            self.invalid_phenotypes.append(
+                '{}, {}, {}: {}'.format(section.sheet_name,
+                                        section.drug_name,
+                                        entry.mutation,
+                                        entry.phenotype))
+            return
+        if not score:
+            return
+        if mutation.startswith('WT'):
+            # noinspection PyTypeChecker
+            positions[None][score] = 'TRUE'
+            return
+        if '+' in mutation or ' ' in mutation:
+            combinations[mutation] = score
+            return
+        try:
+            new_mutation_set = MutationSet(mutation)
+        except ValueError:
+            self.invalid_mutations.append('{}: {}'.format(
+                section.sheet_name,
+                mutation))
+            return
+        pos_scores = positions[new_mutation_set.pos]
+        old_mutation_set = pos_scores.get(score)
+        if old_mutation_set is not None:
+            new_mutation_set = MutationSet(
+                wildtype=old_mutation_set.wildtype,
+                pos=old_mutation_set.pos,
+                mutations=(old_mutation_set.mutations |
+                           new_mutation_set.mutations))
+        pos_scores[score] = new_mutation_set
+
+    def _check_combinations(self, combinations, positions, section):
+        for combination, combination_score in combinations.items():
+            try:
+                component_score = calculate_component_score(combination, positions)
+            except ValueError:
+                self.invalid_mutations.append('{}: {}'.format(
+                    section.sheet_name,
+                    combination))
+                continue
+
+            component_score = min(component_score, 8)
+            if component_score != combination_score:
+                self.combination_changes.append('{}: {}: {} => {}'.format(
+                    section.sheet_name,
+                    combination,
+                    component_score,
+                    combination_score))
+
+    def _find_drug_summary(self, drug_summaries, drug_codes, section):
+        drug_name = section.drug_name
+        try:
+            drug_summary = drug_summaries[drug_name]
+        except KeyError:
+            drug_code = drug_codes.get(drug_name)
+            if drug_code is None:
+                self.unknown_drugs.append('{}: {}'.format(
+                    section.sheet_name,
+                    drug_name))
+                raise
+            drug_summary = drug_summaries[drug_name] = dict(name=drug_name,
+                                                            code=drug_code,
+                                                            genotypes=[])
+        return drug_summary
+
+    def _write_error_group(self, header, errors):
+        if not errors:
+            return
+        if len(errors) == 1:
+            self.errors_file.write('{}: {}.\n'.format(header, errors[0]))
+        else:
+            self.errors_file.write('{}s:\n  {}\n'.format(header,
+                                                         '\n  '.join(errors)))
+
+    def write_errors(self):
+        self._write_error_group('Unknown drug', self.unknown_drugs)
+        self._write_error_group('Invalid mutation', self.invalid_mutations)
+        self._write_error_group('Invalid phenotype', self.invalid_phenotypes)
+        self._write_error_group('Combination change', self.combination_changes)
 
 
 class FoldShiftChecker:
@@ -484,20 +622,19 @@ def dump_comments(args):
 
 
 def main():
+    # TODO: Migrate monitored positions to new reader and writer.
+    # TODO: Migrate fold-shift checks to new reader and writer.
     args = parse_args()
     references = load_references()
-    all_rule_sets = []
     make_data_changes(args.spreadsheet)
-    for ws in args.spreadsheet:
-        if ws.title not in READY_TABS:
-            continue
-        print(ws.title)
-        if not ws.title.startswith('NS'):
-            print('Skipped.')
-            continue
-        rule_sets = read_rule_sets(ws, references, check_phenotypes=True)
-        all_rule_sets.extend(rule_sets)
-    write_rules(all_rule_sets, references, args.rules_yaml)
+    worksheets = [ws
+                  for ws in args.spreadsheet
+                  if ws.title in READY_TABS]
+    reader = WorksheetReader(worksheets, )
+    reader.write_errors(sys.stderr)
+    writer = RulesWriter(args.rules_yaml, sys.stderr, references)
+    writer.write(reader)
+    writer.write_errors()
 
 
 def make_data_changes(wb):
