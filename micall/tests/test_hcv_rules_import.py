@@ -78,8 +78,8 @@ class WorksheetReaderTest(TestCase):
         entries = list(reader)
         reader.write_errors(errors)
 
-        self.assertEqual(expected_entries, entries)
         self.assertEqual(self.expected_errors, errors.getvalue())
+        self.assertEqual(expected_entries, entries)
 
     def test_one_sheet(self):
         row_data = [
@@ -237,7 +237,7 @@ No wild type found in NS3_GT1a.
 
         self.assertReads(expected_entries, worksheets)
 
-    def test(self):
+    def test_mutations_stripped(self):
         row_data = [
             ['',       'Example', '<'],
             ['',       'Phenotype'],
@@ -250,6 +250,23 @@ No wild type found in NS3_GT1a.
                                       section=expected_section,
                                       phenotype='likely susceptible'),
                             Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible')]
+        self.assertReads(expected_entries, worksheets)
+
+    def test_mutation_deletion(self):
+        row_data = [
+            ['',       'Example', '<'],
+            ['',       'Phenotype'],
+            ['WT',     'likely susceptible'],
+            ['V36del', 'likely susceptible']]
+        worksheets = [create_worksheet('NS3_GT1a', row_data)]
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1a')
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='V36d',
                                       section=expected_section,
                                       phenotype='likely susceptible')]
         self.assertReads(expected_entries, worksheets)
@@ -285,43 +302,62 @@ No wild type found in NS3_GT1a.
 
     def test_monitored_positions(self):
         row_data = [
-            ['',     'Example', '<', '<'],
-            ['',     'a',        'b', 'Phenotype'],
-            ['WT',   '',         '',  'likely susceptible'],
-            ['V36A', '',         '',  'likely susceptible'],
-            ['T40A', '',         '',  'resistance possible'],
-            ['',     '',         'Positions monitored:'],
-            ['',     '',         '36, 99']]
+            ['',     'Example', '<'],
+            ['',     'Phenotype'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible'],
+            ['T40A', 'resistance possible'],
+            ['',     'Positions monitored:'],
+            ['',     '36, 99']]
         worksheets = [create_worksheet('NS3_GT1b', row_data)]
         expected_section = Namespace(drug_name='Example',
                                      sheet_name='NS3_GT1b',
                                      monitored_positions=[36, 99])
         expected_entries = [Namespace(mutation='WT',
                                       section=expected_section,
-                                      phenotype='likely susceptible',
-                                      a=None,
-                                      b=None),
+                                      phenotype='likely susceptible'),
                             Namespace(mutation='V36A',
                                       section=expected_section,
-                                      phenotype='likely susceptible',
-                                      a=None,
-                                      b=None),
+                                      phenotype='likely susceptible'),
                             Namespace(mutation='T40A',
                                       section=expected_section,
-                                      phenotype='resistance possible',
-                                      a=None,
-                                      b=None)]
+                                      phenotype='resistance possible')]
+
+        self.assertReads(expected_entries, worksheets, MonitoredPositionsReader())
+
+    def test_monitored_position_int(self):
+        row_data = [
+            ['',     'Example', '<'],
+            ['',     'Phenotype'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible'],
+            ['T40A', 'resistance possible'],
+            ['',     'Positions monitored:'],
+            ['',     36]]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b',
+                                     monitored_positions=[36])
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible')]
 
         self.assertReads(expected_entries, worksheets, MonitoredPositionsReader())
 
     def test_no_monitored_positions(self):
         row_data = [
-            ['',     'Example', '<', '<'],
-            ['',     'a',        'b', 'Phenotype'],
-            ['WT',   '',         '',  'likely susceptible'],
-            ['V36A', '',         '',  'likely susceptible'],
-            ['T40A', '',         '',  'resistance possible'],
-            ['',     '',         'Nothing monitored.']]
+            ['',     'Example', '<'],
+            ['',     'Phenotype'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible'],
+            ['T40A', 'resistance possible'],
+            ['',     'Nothing monitored.']]
         worksheets = [create_worksheet('NS3_GT1b', row_data)]
         self.expected_errors = """\
 No monitored positions for Example in NS3_GT1b.
@@ -331,19 +367,27 @@ No monitored positions for Example in NS3_GT1b.
                                      monitored_positions=[])
         expected_entries = [Namespace(mutation='WT',
                                       section=expected_section,
-                                      phenotype='likely susceptible',
-                                      a=None,
-                                      b=None),
+                                      phenotype='likely susceptible'),
                             Namespace(mutation='V36A',
                                       section=expected_section,
-                                      phenotype='likely susceptible',
-                                      a=None,
-                                      b=None),
+                                      phenotype='likely susceptible'),
                             Namespace(mutation='T40A',
                                       section=expected_section,
-                                      phenotype='resistance possible',
-                                      a=None,
-                                      b=None)]
+                                      phenotype='resistance possible')]
+
+        self.assertReads(expected_entries, worksheets, MonitoredPositionsReader())
+
+    def test_not_indicated(self):
+        row_data = [
+            ['',     'Example', '<'],
+            ['',     'Phenotype'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible'],
+            ['T40A', 'resistance possible'],
+            ['',     'Nothing monitored.'],
+            ['',     'Not indicated in Canada']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_entries = []
 
         self.assertReads(expected_entries, worksheets, MonitoredPositionsReader())
 
@@ -389,6 +433,35 @@ No monitored positions for Example in NS3_GT1b.
             ['V36A', 'likely susceptible'],
             ['T40A', 'resistance possible'],
             ['',     'In virto Drug Susecptibility:'],
+            ['',     '<20x FS, likely susceptible'],
+            ['',     '20-100x FS, resistance possible'],
+            ['',     '>100x FS, resistance likely']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b',
+                                     lower_fold=20,
+                                     upper_fold=100)
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible')]
+
+        self.assertReads(expected_entries, worksheets, FoldRangesReader())
+
+    def test_fold_shift_absolute(self):
+        row_data = [
+            ['',     'Example', '<', '<'],
+            ['',     'Phenotype'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible'],
+            ['T40A', 'resistance possible'],
+            ['',     'In vitro Drug Susceptibility:'],
+            ['',     'Absolute FS values -'],
             ['',     '<20x FS, likely susceptible'],
             ['',     '20-100x FS, resistance possible'],
             ['',     '>100x FS, resistance likely']]
@@ -1005,8 +1078,8 @@ class RulesWriterTest(TestCase):
         writer.write(entries)
         writer.write_errors()
 
-        self.assertEqual(expected_rules, rules.getvalue())
         self.assertEqual(self.expected_errors, errors.getvalue())
+        self.assertEqual(expected_rules, rules.getvalue())
 
     def test_empty(self):
         """ Empty spreadsheet generates an empty list of rules. """
@@ -1105,7 +1178,7 @@ class RulesWriterTest(TestCase):
 
         self.assertWrites(expected_rules, entries)
 
-    def test(self):
+    def test_phenotype_invalid(self):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
@@ -1235,6 +1308,32 @@ Unknown drugs:
 
         self.assertWrites(expected_rules, entries)
 
+    def test_wild_type_mismatch(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT3')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='A156G',
+                             section=section,
+                             phenotype='resistance likely'),
+                   Namespace(mutation='Q186L',
+                             section=section,
+                             phenotype='resistance possible')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: '3'
+    reference: HCV3-S52-NS3
+    region: NS3
+    rules: SCORE FROM ( A156G => 8 )
+  name: Paritaprevir
+"""
+        self.expected_errors = """\
+Mismatched wild type: NS3_GT3: Q186L in Paritaprevir expected D.
+"""
+
+        self.assertWrites(expected_rules, entries)
+
     def test_invalid_mutation(self):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
@@ -1259,7 +1358,8 @@ Unknown drugs:
   name: Paritaprevir
 """
         self.expected_errors = """\
-Invalid mutation: NS3_GT1a: T30A?.
+Invalid mutation: NS3_GT1a: T30A? (MutationSet text expects wild type \
+(optional), position, and one or more variants.).
 """
 
         self.assertWrites(expected_rules, entries)
@@ -1293,8 +1393,10 @@ Invalid mutation: NS3_GT1a: T30A?.
 """
         self.expected_errors = """\
 Invalid mutations:
-  NS3_GT1a: T30A?
-  NS3_GT1a: T30W?
+  NS3_GT1a: T30A? (MutationSet text expects wild type \
+(optional), position, and one or more variants.)
+  NS3_GT1a: T30W? (MutationSet text expects wild type \
+(optional), position, and one or more variants.)
 """
 
         self.assertWrites(expected_rules, entries)
@@ -1305,15 +1407,15 @@ Invalid mutations:
                              section=section,
                              phenotype='likely susceptible',
                              comment=None),
-                   Namespace(mutation='T30A',
+                   Namespace(mutation='E30A',
                              section=section,
                              phenotype='resistance possible',
                              comment=None),
-                   Namespace(mutation='R40W',
+                   Namespace(mutation='T40W',
                              section=section,
                              phenotype='resistance possible',
                              comment=None),
-                   Namespace(mutation='T30A+R40W',
+                   Namespace(mutation='E30A+T40W',
                              section=section,
                              phenotype='resistance likely',
                              comment=None)]
@@ -1323,7 +1425,7 @@ Invalid mutations:
   - genotype: 1A
     reference: HCV1A-H77-NS3
     region: NS3
-    rules: SCORE FROM ( T30A => 4, R40W => 4 )
+    rules: SCORE FROM ( E30A => 4, T40W => 4 )
   name: Paritaprevir
 """
 
@@ -1334,27 +1436,24 @@ Invalid mutations:
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
-                             phenotype='likely susceptible',
-                             comment=None),
-                   Namespace(mutation='T30A',
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='E30A',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None),
-                   Namespace(mutation='T30A+R40W',
+                             phenotype='resistance possible'),
+                   Namespace(mutation='E30A+R40W',
                              section=section,
-                             phenotype='resistance likely',
-                             comment=None)]
+                             phenotype='resistance likely')]
         expected_rules = """\
 - code: PTV
   genotypes:
   - genotype: 1A
     reference: HCV1A-H77-NS3
     region: NS3
-    rules: SCORE FROM ( T30A => 4 )
+    rules: SCORE FROM ( E30A => 4 )
   name: Paritaprevir
 """
         self.expected_errors = """\
-Combination change: NS3_GT1a: T30A+R40W: 4 => 8.
+Combination change: NS3_GT1a: E30A+R40W: 4 => 8.
 """
 
         self.assertWrites(expected_rules, entries)
@@ -1365,11 +1464,11 @@ Combination change: NS3_GT1a: T30A+R40W: 4 => 8.
                              section=section,
                              phenotype='likely susceptible',
                              comment=None),
-                   Namespace(mutation='T30A',
+                   Namespace(mutation='E30A',
                              section=section,
                              phenotype='resistance possible',
                              comment=None),
-                   Namespace(mutation='T30A+R40W*',
+                   Namespace(mutation='E30A+R40W*',
                              section=section,
                              phenotype='resistance likely',
                              comment=None)]
@@ -1379,11 +1478,92 @@ Combination change: NS3_GT1a: T30A+R40W: 4 => 8.
   - genotype: 1A
     reference: HCV1A-H77-NS3
     region: NS3
-    rules: SCORE FROM ( T30A => 4 )
+    rules: SCORE FROM ( E30A => 4 )
   name: Paritaprevir
 """
         self.expected_errors = """\
-Invalid mutation: NS3_GT1a: T30A+R40W*.
+Invalid mutation: NS3_GT1a: E30A+R40W* (MutationSet text expects wild type \
+(optional), position, and one or more variants.).
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_monitored_positions(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            monitored_positions=[80])
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='Q80L',
+                             section=section,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4, Q80L => 8, Q80!KLQ => "Effect unknown" )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_monitored_position_invalid(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            monitored_positions=[800])
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='Q80L',
+                             section=section,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
+  name: Paritaprevir
+"""
+        self.expected_errors = """\
+Invalid monitored position: NS3_GT1a: Paritaprevir 800 (max 631).
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_mutation_invalid_position(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='Q800L',
+                             section=section,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4 )
+  name: Paritaprevir
+"""
+        self.expected_errors = """\
+Invalid mutation position: NS3_GT1a: Paritaprevir Q800L (max 631).
 """
 
         self.assertWrites(expected_rules, entries)
