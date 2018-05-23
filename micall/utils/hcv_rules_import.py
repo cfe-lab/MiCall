@@ -110,6 +110,8 @@ class WorksheetReader:
             column_headings[1] = 'mutation'
             section = Namespace(drug_name=drug_name, sheet_name=ws.title)
             if not self._read_footer(ws, cell_range, footer_row, section):
+                section.not_indicated = True
+                yield Namespace(section=section)
                 continue
             for row_num in range(wild_type_row, footer_row):
                 if ws.cell(row_num, 1).font.strike:
@@ -271,9 +273,14 @@ class RulesWriter:
         self.invalid_mutations = []
         self.invalid_mutation_positions = []
         self.combination_changes = []
+        self.invalid_fold_shifts = []
+        self.phenotype_changes = []
         self.invalid_phenotypes = []
         self.invalid_positions = []
         self.bad_wild_types = []
+        self.score_phenotypes = {
+            score: phenotype
+            for phenotype, score in PHENOTYPE_SCORES.items()}
 
     def write(self, entries):
         drug_codes = load_drug_codes()
@@ -298,12 +305,16 @@ class RulesWriter:
             reference_name = reference.name
             positions = defaultdict(dict)  # {pos: {score: MutationSet}}
             combinations = {}  # {mutation: score}
-            for entry in section_entries:
-                self._score_mutation(entry,
-                                     section,
-                                     positions,
-                                     combinations,
-                                     reference.sequence)
+            if getattr(section, 'not_indicated', False):
+                # noinspection PyTypeChecker
+                positions[None]['Not indicated'] = 'TRUE'
+            else:
+                for entry in section_entries:
+                    self._score_mutation(entry,
+                                         section,
+                                         positions,
+                                         combinations,
+                                         reference.sequence)
             self._check_combinations(combinations, positions, section)
             self._monitor_positions(section, positions, reference)
             score_formula = build_score_formula(positions)
@@ -311,8 +322,30 @@ class RulesWriter:
                                                   region=region,
                                                   reference=reference_name,
                                                   rules=score_formula))
+        self._check_not_indicated(drug_summaries)
         drugs = sorted(drug_summaries.values(), key=itemgetter('code'))
         yaml.dump(drugs, self.rules_file, default_flow_style=False, Dumper=SplitDumper)
+
+    def _check_not_indicated(self, drug_summaries):
+        all_genotypes = {genotype['genotype']
+                         for drug_summary in drug_summaries.values()
+                         for genotype in drug_summary['genotypes']}
+        positions = {None: {'Not indicated': 'TRUE'}}
+        score_formula = build_score_formula(positions)
+        for drug_summary in drug_summaries.values():
+            drug_genotypes = {genotype['genotype']
+                              for genotype in drug_summary['genotypes']}
+            missing_genotypes = all_genotypes - drug_genotypes
+
+            drug_region, = {genotype['region']
+                            for genotype in drug_summary['genotypes']}
+            for genotype_name in missing_genotypes:
+                reference = self.references[(genotype_name, drug_region)]
+                drug_summary['genotypes'].append(dict(genotype=genotype_name,
+                                                      region=drug_region,
+                                                      reference=reference.name,
+                                                      rules=score_formula))
+            drug_summary['genotypes'].sort(key=itemgetter('genotype'))
 
     def _score_mutation(self,
                         entry,
@@ -331,6 +364,8 @@ class RulesWriter:
                                         entry.mutation,
                                         entry.phenotype))
             return
+
+        self._check_fold_shift(entry, section, phenotype)
         if not score:
             return
         if mutation.startswith('WT'):
@@ -369,6 +404,40 @@ class RulesWriter:
                 mutations=(old_mutation_set.mutations |
                            new_mutation_set.mutations))
         pos_scores[score] = new_mutation_set
+
+    def _check_fold_shift(self, entry, section, phenotype):
+        if getattr(section, 'lower_fold', None) is None:
+            # Range wasn't found, so nothing to check.
+            return
+        fold_shift_text = str(entry.fold_shift)
+        match = re.match(r'([<>/=]*)([\d.,]+)x?$',
+                         fold_shift_text,
+                         flags=re.IGNORECASE)
+        if match is None:
+            self.invalid_fold_shifts.append(
+                f'{section.sheet_name}: {section.drug_name} {entry.mutation} '
+                f'{fold_shift_text!r}')
+            return
+        fold_shift = float(match.group(2).replace(',', ''))
+        comparison = match.group(1)
+        if comparison == '<':
+            fold_shift -= 0.1
+        elif comparison == '>':
+            fold_shift += 0.1
+        if fold_shift < section.lower_fold:
+            expected_score = 0
+        elif fold_shift > section.upper_fold:
+            expected_score = 8
+        else:
+            expected_score = 4
+        clinical_ras = entry.clinical_ras and str(entry.clinical_ras).lower()
+        if clinical_ras == 'yes':
+            expected_score = min(8, expected_score + 4)
+        expected_phenotype = self.score_phenotypes[expected_score]
+        if phenotype != expected_phenotype:
+            self.phenotype_changes.append(
+                f'{section.sheet_name}: {section.drug_name} {entry.mutation} '
+                f'{expected_phenotype} => {phenotype}')
 
     def _check_combinations(self, combinations, positions, section):
         for combination, combination_score in combinations.items():
@@ -446,6 +515,8 @@ class RulesWriter:
         self._write_error_group('Invalid monitored position',
                                 self.invalid_positions)
         self._write_error_group('Combination change', self.combination_changes)
+        self._write_error_group('Invalid fold shift', self.invalid_fold_shifts)
+        self._write_error_group('Phenotype change', self.phenotype_changes)
 
 
 class FoldShiftChecker:
@@ -925,7 +996,7 @@ def build_score_formula(positions):
                          for pos, pos_scores in positions.items()
                          for score, mutation_set in pos_scores.items())
     for score, condition in sorted(wild_type_score.items()):
-        score_terms.insert(0, (condition, score))
+        score_terms.insert(0, (condition, format_score(score)))
     if not score_terms:
         score_terms.append(('TRUE', '0'))
     score_formula = 'SCORE FROM ( {} )'.format(', '.join(

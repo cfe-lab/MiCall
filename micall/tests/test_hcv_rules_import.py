@@ -387,9 +387,12 @@ No monitored positions for Example in NS3_GT1b.
             ['',     'Nothing monitored.'],
             ['',     'Not indicated in Canada']]
         worksheets = [create_worksheet('NS3_GT1b', row_data)]
-        expected_entries = []
+        expected_section = Namespace(drug_name='Example',
+                                     sheet_name='NS3_GT1b',
+                                     not_indicated=True)
+        expected_entries = [Namespace(section=expected_section)]
 
-        self.assertReads(expected_entries, worksheets, MonitoredPositionsReader())
+        self.assertReads(expected_entries, worksheets)
 
     def test_fold_shift_ranges(self):
         row_data = [
@@ -1094,12 +1097,10 @@ class RulesWriterTest(TestCase):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='T40A',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None)]
+                             phenotype='resistance possible')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1116,8 +1117,7 @@ class RulesWriterTest(TestCase):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
-                             phenotype='likely susceptible',
-                             comment=None)]
+                             phenotype='likely susceptible')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1130,20 +1130,70 @@ class RulesWriterTest(TestCase):
 
         self.assertWrites(expected_rules, entries)
 
+    def test_not_indicated(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            not_indicated=True)
+        entries = [Namespace(section=section)]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => "Not indicated" )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_missing_genotypes(self):
+        section1 = Namespace(drug_name='Grazoprevir', sheet_name='NS3_GT1a')
+        section2 = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT2')
+        entries = [Namespace(mutation='WT',
+                             section=section1,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='WT',
+                             section=section2,
+                             phenotype='likely susceptible')]
+        expected_rules = """\
+- code: GZR
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => "Not indicated" )
+  name: Grazoprevir
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => "Not indicated" )
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
     def test_exclude_zeroes(self):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='R20A',
                              section=section,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='T40A',
                              section=section,
-                             phenotype='resistance likely',
-                             comment=None)]
+                             phenotype='resistance likely')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1160,12 +1210,10 @@ class RulesWriterTest(TestCase):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='T40A',
                              section=section,
-                             phenotype='resiSTANce possible',
-                             comment=None)]
+                             phenotype='resiSTANce possible')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1182,16 +1230,13 @@ class RulesWriterTest(TestCase):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='R20S',
                              section=section,
-                             phenotype='bogus resistance',
-                             comment=None),
+                             phenotype='bogus resistance'),
                    Namespace(mutation='T40A',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None)]
+                             phenotype='resistance possible')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1212,20 +1257,16 @@ Invalid phenotype: NS3_GT1a, Paritaprevir, R20S: bogus resistance.
         section2 = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section1,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='T41R',
                              section=section1,
-                             phenotype='resistance likely',
-                             comment=None),
+                             phenotype='resistance likely'),
                    Namespace(mutation='WT',
                              section=section2,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='T40A',
                              section=section2,
-                             phenotype='resistance possible',
-                             comment=None)]
+                             phenotype='resistance possible')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1247,28 +1288,22 @@ Unknown drug: NS3_GT1a: Paulrevir.
         section3 = Namespace(drug_name='Saynomorevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section1,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='T41R',
                              section=section1,
-                             phenotype='resistance likely',
-                             comment=None),
+                             phenotype='resistance likely'),
                    Namespace(mutation='WT',
                              section=section2,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='T40A',
                              section=section2,
-                             phenotype='resistance possible',
-                             comment=None),
+                             phenotype='resistance possible'),
                    Namespace(mutation='WT',
                              section=section3,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='T20A',
                              section=section3,
-                             phenotype='resistance possible',
-                             comment=None)]
+                             phenotype='resistance possible')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1290,12 +1325,10 @@ Unknown drugs:
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None),
+                             phenotype='resistance possible'),
                    Namespace(mutation='T40A',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None)]
+                             phenotype='resistance possible')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1338,16 +1371,13 @@ Mismatched wild type: NS3_GT3: Q186L in Paritaprevir expected D.
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='T30A?',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None),
+                             phenotype='resistance possible'),
                    Namespace(mutation='T40A',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None)]
+                             phenotype='resistance possible')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1368,20 +1398,16 @@ Invalid mutation: NS3_GT1a: T30A? (MutationSet text expects wild type \
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='T30A?',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None),
+                             phenotype='resistance possible'),
                    Namespace(mutation='T30W?',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None),
+                             phenotype='resistance possible'),
                    Namespace(mutation='T40A',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None)]
+                             phenotype='resistance possible')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1405,20 +1431,16 @@ Invalid mutations:
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='E30A',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None),
+                             phenotype='resistance possible'),
                    Namespace(mutation='T40W',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None),
+                             phenotype='resistance possible'),
                    Namespace(mutation='E30A+T40W',
                              section=section,
-                             phenotype='resistance likely',
-                             comment=None)]
+                             phenotype='resistance likely')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1462,16 +1484,13 @@ Combination change: NS3_GT1a: E30A+R40W: 4 => 8.
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
                              section=section,
-                             phenotype='likely susceptible',
-                             comment=None),
+                             phenotype='likely susceptible'),
                    Namespace(mutation='E30A',
                              section=section,
-                             phenotype='resistance possible',
-                             comment=None),
+                             phenotype='resistance possible'),
                    Namespace(mutation='E30A+R40W*',
                              section=section,
-                             phenotype='resistance likely',
-                             comment=None)]
+                             phenotype='resistance likely')]
         expected_rules = """\
 - code: PTV
   genotypes:
@@ -1564,6 +1583,281 @@ Invalid monitored position: NS3_GT1a: Paritaprevir 800 (max 631).
 """
         self.expected_errors = """\
 Invalid mutation position: NS3_GT1a: Paritaprevir Q800L (max 631).
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_fold_shifts_match(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            lower_fold=20.0,
+                            upper_fold=100.0)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible',
+                             fold_shift='1x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible',
+                             fold_shift='50x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80L',
+                             section=section,
+                             phenotype='resistance likely',
+                             fold_shift='200x',
+                             clinical_ras=None)]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_fold_shifts_differ(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            lower_fold=20.0,
+                            upper_fold=100.0)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible',
+                             fold_shift='1x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible',
+                             fold_shift='2x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80L',
+                             section=section,
+                             phenotype='resistance likely',
+                             fold_shift='100x',  # Should be > 100.0
+                             clinical_ras=None)]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
+  name: Paritaprevir
+"""
+        self.expected_errors = """\
+Phenotype changes:
+  NS3_GT1a: Paritaprevir Q80K likely susceptible => resistance possible
+  NS3_GT1a: Paritaprevir Q80L resistance possible => resistance likely
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_fold_shift_no_range(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            lower_fold=None,
+                            upper_fold=None)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible',
+                             fold_shift='1x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible',
+                             fold_shift='2x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80L',
+                             section=section,
+                             phenotype='resistance likely',
+                             fold_shift='100x',
+                             clinical_ras=None)]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_fold_shift_int(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            lower_fold=20.0,
+                            upper_fold=100.0)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible',
+                             fold_shift=1,
+                             clinical_ras=None),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible',
+                             fold_shift=2,
+                             clinical_ras=None),
+                   Namespace(mutation='Q80L',
+                             section=section,
+                             phenotype='resistance likely',
+                             fold_shift=100,  # Should be > 100.0
+                             clinical_ras=None)]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
+  name: Paritaprevir
+"""
+        self.expected_errors = """\
+Phenotype changes:
+  NS3_GT1a: Paritaprevir Q80K likely susceptible => resistance possible
+  NS3_GT1a: Paritaprevir Q80L resistance possible => resistance likely
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_fold_shift_extra_chars(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            lower_fold=20.0,
+                            upper_fold=100.0)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible',
+                             fold_shift='1x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible',
+                             fold_shift='<2.5x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80L',
+                             section=section,
+                             phenotype='resistance likely',
+                             fold_shift='>1,000x',
+                             clinical_ras=None)]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
+  name: Paritaprevir
+"""
+        self.expected_errors = """\
+Phenotype change: NS3_GT1a: Paritaprevir Q80K \
+likely susceptible => resistance possible.
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_fold_shift_and_clinical(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            lower_fold=20.0,
+                            upper_fold=100.0)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible',
+                             fold_shift='1x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible',
+                             fold_shift='2x',
+                             clinical_ras='Yes'),
+                   Namespace(mutation='Q80L',
+                             section=section,
+                             phenotype='resistance likely',
+                             fold_shift='200x',
+                             clinical_ras='yes')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_fold_shift_comparison(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            lower_fold=20.0,
+                            upper_fold=100.0)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible',
+                             fold_shift='1x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='likely susceptible',
+                             fold_shift='<20x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80L',
+                             section=section,
+                             phenotype='resistance likely',
+                             fold_shift='>100x',
+                             clinical_ras=None)]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80L => 8 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_fold_shift_invalid(self):
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            lower_fold=20.0,
+                            upper_fold=100.0)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible',
+                             fold_shift='1x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible',
+                             fold_shift='2 times',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80L',
+                             section=section,
+                             phenotype='resistance likely',
+                             fold_shift='100x',  # Should be > 100.0
+                             clinical_ras=None)]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
+  name: Paritaprevir
+"""
+        self.expected_errors = """\
+Invalid fold shift: NS3_GT1a: Paritaprevir Q80K '2 times'.
+Phenotype change: NS3_GT1a: Paritaprevir Q80L \
+resistance possible => resistance likely.
 """
 
         self.assertWrites(expected_rules, entries)
