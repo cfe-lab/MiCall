@@ -794,6 +794,8 @@ class SeedNucleotide(object):
     Records the frequencies of nucleotides at a given position of the
     aligned reads as determined by the consensus sequence.
     """
+    COUNTED_NUCS = 'ACTG-'
+
     def __init__(self, counts=None):
         self.v3_overlap = 0
         self.counts = counts or Counter()
@@ -820,6 +822,9 @@ class SeedNucleotide(object):
         """
         return ','.join(map(str, [self.counts[nuc] for nuc in 'ACGT']))
 
+    def get_coverage(self):
+        return sum(self.counts[nuc] for nuc in self.COUNTED_NUCS)
+
     def get_consensus(self, mixture_cutoff):
         """ Choose consensus nucleotide or mixture from the counts.
 
@@ -833,24 +838,24 @@ class SeedNucleotide(object):
         if not self.counts:
             return ''
 
-        intermed = self.counts.most_common()
-
-        # Remove gaps and low quality reads if there is anything else.
-        for i in reversed(range(len(intermed))):
-            nuc, _count = intermed[i]
-            if nuc in ('N', '-') and len(intermed) > 1:
-                intermed.pop(i)
-
-        total_count = sum(self.counts.values())
+        coverage = self.get_coverage()
+        if mixture_cutoff != MAX_CUTOFF:
+            min_count = coverage * mixture_cutoff
+        else:
+            min_count = 0
         mixture = []
-        min_count = (intermed[0][1]
-                     if mixture_cutoff == MAX_CUTOFF
-                     else total_count * mixture_cutoff)
-        # filter for nucleotides that pass frequency cutoff
-        for nuc, count in intermed:
-            if count >= min_count:
+        for nuc, count in self.counts.most_common():
+            if count < min_count:
+                break
+            if nuc in self.COUNTED_NUCS:
                 mixture.append(nuc)
+                if mixture_cutoff == MAX_CUTOFF:
+                    # Catch any ties before breaking out.
+                    min_count = count
 
+        has_deletion = '-' in mixture
+        if has_deletion:
+            mixture.remove('-')
         if len(mixture) > 1:
             mixture.sort()
             consensus = ambig_dict[''.join(mixture)]
@@ -858,8 +863,10 @@ class SeedNucleotide(object):
             # no ambiguity
             consensus = mixture[0]
         else:
-            # all reads were below the cutoff
-            consensus = 'N'
+            # Nothing left to go in the mixture.
+            consensus = '-' if has_deletion else 'N'
+        if has_deletion:
+            consensus = consensus.lower()
         return consensus
 
     def count_overlap(self, other):
