@@ -521,12 +521,10 @@ class SequenceReport(object):
                    'ins': insertion_count,
                    'clip': clip_count,
                    'v3_overlap': seed_nuc.v3_overlap,
-                   'coverage': seed_nuc.counts['-']}
+                   'coverage': seed_nuc.get_coverage()}
             for base in 'ACTGN':
                 nuc_count = seed_nuc.counts[base]
                 row[base] = nuc_count
-                if base != 'N':
-                    row['coverage'] += nuc_count
             nuc_writer.writerow(row)
         if report_amino is not None:
             report_amino.max_clip_count = max_clip_count
@@ -563,20 +561,20 @@ class SequenceReport(object):
             consensus = ''
             offset = None
             for seed_amino in self.seed_aminos[0]:
-                if offset is None:
-                    amino_coverage = sum(seed_amino.counts.values())
-                    if (not amino_coverage or
-                            amino_coverage < self.consensus_min_coverage):
-                        continue
-                    offset = seed_amino.consensus_nuc_index
                 for seed_nuc in seed_amino.nucleotides:
-                    nuc_coverage = sum(seed_nuc.counts.values())
+                    nuc_coverage = seed_nuc.get_coverage()
                     if nuc_coverage < self.consensus_min_coverage:
                         nuc_consensus = '-'
                     else:
                         nuc_consensus = seed_nuc.get_consensus(mixture_cutoff)
+                        if offset is None and nuc_consensus:
+                            offset = seed_amino.consensus_nuc_index
                     consensus += nuc_consensus
+                if offset is None:
+                    # Still haven't started, so reset the consensus.
+                    consensus = ''
             if offset is not None:
+                consensus = consensus.rstrip('-')
                 conseq_writer.writerow(
                     {'region': self.seed,
                      'q-cutoff': self.qcut,

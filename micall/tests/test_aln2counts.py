@@ -317,9 +317,10 @@ R1-seed,15,0,1,7,TTNGG
 """)
         expected_text = """\
 region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,6,TTTNGG
-R1-seed,15,0.100,6,TTTNGG
+R1-seed,15,MAX,6,TTT-GG
+R1-seed,15,0.100,6,TTT-GG
 """
+        self.report.consensus_min_coverage = 1
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -336,6 +337,7 @@ R1-seed,15,0,1,7,NNNNN
         expected_text = """\
 region,q-cutoff,consensus-percent-cutoff,offset,sequence
 """
+        self.report.consensus_min_coverage = 1
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -373,6 +375,25 @@ R1-seed,15,0,1,3,TTTGGG
 region,q-cutoff,consensus-percent-cutoff,offset,sequence
 R1-seed,15,MAX,3,TTTGGG
 R1-seed,15,0.100,3,TTTGGG
+"""
+        self.report.consensus_min_coverage = 10
+
+        self.report.write_consensus_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusLowCoverageAtEnd(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTTGGG
+R1-seed,15,0,1,0,AAAT
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAAT
+R1-seed,15,0.100,0,AAAT
 """
         self.report.consensus_min_coverage = 10
 
