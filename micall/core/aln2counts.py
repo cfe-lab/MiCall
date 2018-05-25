@@ -560,32 +560,39 @@ class SequenceReport(object):
         self.conseq_writer = self._create_consensus_writer(conseq_file)
         self.conseq_writer.writeheader()
 
-    def write_consensus(self, conseq_writer=None):
-        conseq_writer = conseq_writer or self.conseq_writer
+    def get_consensus_rows(self, seed_amino_entries):
         for mixture_cutoff in self.conseq_mixture_cutoffs:
             consensus = ''
             offset = None
-            for seed_amino in self.seed_aminos[0]:
-                for seed_nuc in seed_amino.nucleotides:
+            for pos, seed_amino in seed_amino_entries:
+                for nuc_index, seed_nuc in enumerate(seed_amino.nucleotides):
                     nuc_coverage = seed_nuc.get_coverage()
                     if nuc_coverage < self.consensus_min_coverage:
-                        nuc_consensus = '-'
+                        if offset is not None:
+                            consensus += '-'
                     else:
                         nuc_consensus = seed_nuc.get_consensus(mixture_cutoff)
                         if offset is None and nuc_consensus:
-                            offset = seed_amino.consensus_nuc_index
-                    consensus += nuc_consensus
+                            offset = pos + nuc_index
+                        consensus += nuc_consensus
                 if offset is None:
                     # Still haven't started, so reset the consensus.
                     consensus = ''
             if offset is not None:
                 consensus = consensus.rstrip('-')
-                conseq_writer.writerow(
-                    {'region': self.seed,
-                     'q-cutoff': self.qcut,
-                     'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
-                     'offset': offset,
-                     'sequence': consensus})
+                yield {'q-cutoff': self.qcut,
+                       'consensus-percent-cutoff':
+                           format_cutoff(mixture_cutoff),
+                       'offset': offset,
+                       'sequence': consensus}
+
+    def write_consensus(self, conseq_writer=None):
+        conseq_writer = conseq_writer or self.conseq_writer
+        seed_amino_entries = [(seed_amino.consensus_nuc_index, seed_amino)
+                              for seed_amino in self.seed_aminos[0]]
+        for row in self.get_consensus_rows(seed_amino_entries):
+            row['region'] = self.seed
+            conseq_writer.writerow(row)
 
     def write_consensus_regions_header(self, conseq_region_file):
         self.conseq_region_writer = csv.DictWriter(conseq_region_file,
@@ -602,32 +609,13 @@ class SequenceReport(object):
         conseq_region_writer = conseq_region_writer or self.conseq_region_writer
         regions = sorted(self.reports.keys())
         for region in regions:
-            for mixture_cutoff in self.conseq_mixture_cutoffs:
-                consensus = ''
-                offset = None
-                for report_amino in self.reports[region]:
-                    seed_amino = report_amino.seed_amino
-                    for seed_nuc in seed_amino.nucleotides:
-                        nuc_coverage = seed_nuc.get_coverage()
-                        if nuc_coverage < self.consensus_min_coverage:
-                            nuc_consensus = '-'
-                        else:
-                            nuc_consensus = seed_nuc.get_consensus(mixture_cutoff)
-                            if offset is None and nuc_consensus:
-                                offset = (report_amino.position-1) * 3
-                        consensus += nuc_consensus
-                    if offset is None:
-                        # Still haven't started, so reset the consensus.
-                        consensus = ''
-                if offset is not None:
-                    consensus = consensus.rstrip('-')
-                    conseq_region_writer.writerow(
-                        {'seed': self.seed,
-                         'region': region,
-                         'q-cutoff': self.qcut,
-                         'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
-                         'offset': offset,
-                         'sequence': consensus})
+            seed_amino_entries = [(3 * (report_amino.position-1),
+                                   report_amino.seed_amino)
+                                  for report_amino in self.reports[region]]
+            for row in self.get_consensus_rows(seed_amino_entries):
+                row['seed'] = self.seed
+                row['region'] = region
+                conseq_region_writer.writerow(row)
 
     @staticmethod
     def _create_failure_writer(fail_file):

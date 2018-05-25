@@ -369,12 +369,12 @@ R1-seed,15,0.100,0,AAAT--GGG
         # refname,qcut,rank,count,offset,seq
         aligned_reads = self.prepareReads("""\
 R1-seed,15,0,9,0,AAATTTGGG
-R1-seed,15,0,1,3,TTTGGG
+R1-seed,15,0,1,4,TTGGG
 """)
         expected_text = """\
 region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,3,TTTGGG
-R1-seed,15,0.100,3,TTTGGG
+R1-seed,15,MAX,4,TTGGG
+R1-seed,15,0.100,4,TTGGG
 """
         self.report.consensus_min_coverage = 10
 
