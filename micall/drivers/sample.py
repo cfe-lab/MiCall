@@ -187,6 +187,7 @@ class Sample:
                 open(self.amino_csv, 'w') as amino_csv, \
                 open(self.coord_ins_csv, 'w') as coord_ins_csv, \
                 open(self.conseq_csv, 'w') as conseq_csv, \
+                open(self.conseq_region_csv, 'w') as conseq_region_csv, \
                 open(self.failed_align_csv, 'w') as failed_align_csv, \
                 open(self.coverage_summary_csv, 'w') as coverage_summary_csv:
 
@@ -200,7 +201,8 @@ class Sample:
                        clipping_csv=clipping_csv,
                        conseq_ins_csv=conseq_ins_csv,
                        g2p_aligned_csv=g2p_aligned_csv,
-                       remap_conseq_csv=remap_conseq_csv)
+                       remap_conseq_csv=remap_conseq_csv,
+                       conseq_region_csv=conseq_region_csv)
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)

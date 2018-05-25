@@ -65,6 +65,9 @@ def parse_args():
     parser.add_argument('failed_align_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing any consensus that failed to align')
+    parser.add_argument('conseq_region_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing consensus sequences, split by region')
 
     return parser.parse_args()
 
@@ -111,7 +114,7 @@ class SequenceReport(object):
         self.conseq_insertion_counts = (conseq_insertion_counts or
                                         defaultdict(Counter))
         self.nuc_writer = self.amino_writer = self.conseq_writer = None
-        self.fail_writer = None
+        self.conseq_region_writer = self.fail_writer = None
 
     def enable_callback(self, callback, file_size):
         """ Enable callbacks to update progress while counting reads.
@@ -333,6 +336,8 @@ class SequenceReport(object):
                                             coverage_summary=coverage_summary)
                 if self.conseq_writer is not None:
                     self.write_consensus(self.conseq_writer)
+                if self.conseq_region_writer is not None:
+                    self.write_consensus_regions(self.conseq_region_writer)
                 if self.fail_writer is not None:
                     self.write_failure(self.fail_writer)
 
@@ -581,6 +586,48 @@ class SequenceReport(object):
                      'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
                      'offset': offset,
                      'sequence': consensus})
+
+    def write_consensus_regions_header(self, conseq_region_file):
+        self.conseq_region_writer = csv.DictWriter(conseq_region_file,
+                                                   ['seed',
+                                                    'region',
+                                                    'q-cutoff',
+                                                    'consensus-percent-cutoff',
+                                                    'offset',
+                                                    'sequence'],
+                                                   lineterminator=os.linesep)
+        self.conseq_region_writer.writeheader()
+
+    def write_consensus_regions(self, conseq_region_writer=None):
+        conseq_region_writer = conseq_region_writer or self.conseq_region_writer
+        regions = sorted(self.reports.keys())
+        for region in regions:
+            for mixture_cutoff in self.conseq_mixture_cutoffs:
+                consensus = ''
+                offset = None
+                for report_amino in self.reports[region]:
+                    seed_amino = report_amino.seed_amino
+                    for seed_nuc in seed_amino.nucleotides:
+                        nuc_coverage = seed_nuc.get_coverage()
+                        if nuc_coverage < self.consensus_min_coverage:
+                            nuc_consensus = '-'
+                        else:
+                            nuc_consensus = seed_nuc.get_consensus(mixture_cutoff)
+                            if offset is None and nuc_consensus:
+                                offset = (report_amino.position-1) * 3
+                        consensus += nuc_consensus
+                    if offset is None:
+                        # Still haven't started, so reset the consensus.
+                        consensus = ''
+                if offset is not None:
+                    consensus = consensus.rstrip('-')
+                    conseq_region_writer.writerow(
+                        {'seed': self.seed,
+                         'region': region,
+                         'q-cutoff': self.qcut,
+                         'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
+                         'offset': offset,
+                         'sequence': consensus})
 
     @staticmethod
     def _create_failure_writer(fail_file):
@@ -1029,7 +1076,8 @@ def aln2counts(aligned_csv,
                clipping_csv=None,
                conseq_ins_csv=None,
                g2p_aligned_csv=None,
-               remap_conseq_csv=None):
+               remap_conseq_csv=None,
+               conseq_region_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1048,6 +1096,8 @@ def aln2counts(aligned_csv,
     @param g2p_aligned_csv: Open file handle containing aligned reads (from fastq_g2p)
     @param remap_conseq_csv: Open file handle containing consensus sequences
         from the remap step.
+    @param conseq_region_csv: Open file handle to write consensus sequences
+        split into regions.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1060,6 +1110,7 @@ def aln2counts(aligned_csv,
     report.consensus_min_coverage = CONSENSUS_MIN_COVERAGE
     report.write_amino_header(amino_csv)
     report.write_consensus_header(conseq_csv)
+    report.write_consensus_regions_header(conseq_region_csv)
     report.write_failure_header(failed_align_csv)
     report.write_nuc_header(nuc_csv)
     if coverage_summary_csv is None:
@@ -1104,7 +1155,8 @@ def main():
                clipping_csv=args.clipping_csv,
                conseq_ins_csv=args.conseq_ins_csv,
                g2p_aligned_csv=args.g2p_aligned_csv,
-               remap_conseq_csv=args.remap_conseq_csv)
+               remap_conseq_csv=args.remap_conseq_csv,
+               conseq_region_csv=args.conseq_region_csv)
 
 
 if __name__ == '__main__':

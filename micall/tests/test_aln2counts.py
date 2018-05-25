@@ -1885,6 +1885,68 @@ R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testMultipleCoordinateConsensusRegionsReport(self):
+        """ Two coordinate regions map the same seed region, report both.
+        """
+        self.report.projects.load(StringIO("""\
+{
+  "projects": {
+    "R1": {
+      "max_variants": 10,
+      "regions": [
+        {
+          "coordinate_region": "R1a",
+          "seed_region_names": ["R1-seed"]
+        },
+        {
+          "coordinate_region": "R1b",
+          "seed_region_names": ["R1-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R1-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "TGGAAATTTAGG"
+      ]
+    },
+    "R1a": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFR"
+      ]
+    },
+    "R1b": {
+      "is_nucleotide": false,
+      "reference": [
+        "WKFR"
+      ]
+    }
+  }
+}
+"""))
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTT
+R1-seed,15,0,1,0,CCCGGG
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,R1a,15,MAX,0,AAATTT
+R1-seed,R1a,15,0.100,0,MMMKKK
+R1-seed,R1b,15,MAX,3,AAATTT
+R1-seed,R1b,15,0.100,3,MMMKKK
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_consensus_regions_header(self.report_file)
+        self.report.write_consensus_regions()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testReadRemapConseqs(self):
         remap_conseqs_csv = StringIO("""\
 region,sequence

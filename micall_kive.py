@@ -49,6 +49,8 @@ def parse_args():
                         help='CSV containing insertions relative to coordinate reference')
     parser.add_argument('conseq_csv',
                         help='CSV containing consensus sequences')
+    parser.add_argument('conseq_region_csv',
+                        help='CSV containing consensus sequences, split by region')
     parser.add_argument('failed_align_csv',
                         help='CSV containing any consensus that failed to align')
     parser.add_argument('coverage_scores_csv',
@@ -80,6 +82,7 @@ def load_sample(args):
                     amino_csv=args.amino_csv,
                     coord_ins_csv=args.coord_ins_csv,
                     conseq_csv=args.conseq_csv,
+                    conseq_region_csv=args.conseq_region_csv,
                     failed_align_csv=args.failed_align_csv,
                     coverage_scores_csv=args.coverage_scores_csv,
                     scratch_path=scratch_path)
