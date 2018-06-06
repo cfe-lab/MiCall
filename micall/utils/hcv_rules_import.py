@@ -1,3 +1,4 @@
+import operator
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType, Namespace
 from collections import namedtuple, defaultdict
 from functools import partial
@@ -27,7 +28,14 @@ READY_TABS = ('NS3_GT1a',
               'NS5A_GT3',
               'NS5A_GT4',
               'NS5A_GT5',
-              'NS5A_GT6')
+              'NS5A_GT6',
+              'NS5B_GT1a',
+              'NS5B_GT1b',
+              'NS5B_GT2',
+              'NS5B_GT3',
+              'NS5B_GT4',
+              'NS5B_GT5',
+              'NS5B_GT6')
 PHENOTYPE_SCORES = {'likely susceptible': 0,
                     'resistance possible': 4,
                     'resistance likely': 8,
@@ -56,6 +64,137 @@ def parse_args():
                         type=FileType('w'),
                         help='YAML file to write new rules to')
     return parser.parse_args()
+
+
+class Range:
+    lower_pattern = \
+        r'(([</=]*) *([\d.]+)(-([\d.]+))?)[x ]*FS( range)?, likely susceptibi?le$'
+    upper_pattern = \
+        r'(([>/=]*) *([\d.]+)(-([\d.]+))?)[x ]*FS( range)?, resistance likely$'
+    score_phenotypes = {
+        score: phenotype
+        for phenotype, score in PHENOTYPE_SCORES.items()}
+
+    def __init__(self,
+                 lower_text,
+                 upper_text,
+                 drug=None,
+                 changes=None,
+                 invalid_fold_shifts=None):
+        self.lower_original = lower_text
+        self.upper_original = upper_text
+        self.drug = drug
+        self.changes = changes if changes is not None else []
+        self.invalid_fold_shifts = (invalid_fold_shifts
+                                    if invalid_fold_shifts is not None
+                                    else [])
+        lower_match = re.match(self.lower_pattern,
+                               lower_text,
+                               flags=re.IGNORECASE)
+        if not lower_match:
+            self.lower = self.lower_operator = None
+        else:
+            self.lower_text = lower_match.group(1)
+            self.lower = float(lower_match.group(5)
+                               or lower_match.group(3))
+            lower_operator_text = lower_match.group(2)
+            if lower_operator_text == '<':
+                self.lower_operator = operator.lt
+            elif lower_operator_text in ('<=', '</='):
+                self.lower_operator = operator.le
+            elif lower_match.group(5) and lower_operator_text == '':
+                self.lower_operator = operator.le
+            else:
+                self.lower = None
+        upper_match = re.match(self.upper_pattern,
+                               upper_text,
+                               flags=re.IGNORECASE)
+        if not upper_match:
+            self.upper = self.upper_operator = None
+        else:
+            self.upper_text = upper_match.group(1)
+            self.upper = float(upper_match.group(3))
+            upper_operator_text = upper_match.group(2)
+            if upper_operator_text == '>':
+                self.upper_operator = operator.gt
+            elif upper_operator_text in ('>=', '>/='):
+                self.upper_operator = operator.ge
+            elif upper_match.group(5) and upper_operator_text == '':
+                self.upper_operator = operator.ge
+            else:
+                self.upper = None
+        self.is_valid = self.lower is not None and self.upper is not None
+        if self.lower is None:
+            self.invalid_fold_shifts.append(
+                f'{self.drug} lower fold shift: {lower_text}')
+        if self.upper is None:
+            self.invalid_fold_shifts.append(
+                f'{self.drug} upper fold shift: {upper_text}')
+
+    def __repr__(self):
+        return f'Range({self.lower_original!r}, {self.upper_original!r})'
+
+    def __str__(self):
+        return f'{self.lower_text}, {self.upper_text}'
+
+    def __eq__(self, other: 'Range'):
+        return (self.lower == other.lower and
+                self.upper == other.upper and
+                self.lower_operator == other.lower_operator and
+                self.upper_operator == other.upper_operator)
+
+    def validate_phenotype(self,
+                           mutation,
+                           phenotype,
+                           fold_shift_text,
+                           clinical_ras='no'):
+        match = re.match(
+            r'([<>/=]*) *(([\d.,]+)x?|([\d.,]+)x? *- *>? *([\d.,]+)x)$',
+            fold_shift_text,
+            flags=re.IGNORECASE)
+        if match is None:
+            self.invalid_fold_shifts.append(
+                f'{self.drug} {mutation} {fold_shift_text!r}')
+            return
+        if not self.is_valid:
+            return
+        if match.group(3):
+            fold_shift = float(match.group(3).replace(',', ''))
+            comparison = match.group(1)
+            if comparison == '>':
+                fold_shift += 0.1
+            elif comparison == '<':
+                fold_shift -= 0.1
+            if self.lower_operator(fold_shift, self.lower):
+                expected_score = 0
+            elif self.upper_operator(fold_shift, self.upper):
+                expected_score = 8
+            else:
+                expected_score = 4
+        else:
+            # A range of fold shifts always allows overlap at boundaries.
+            lower_fold_shift = float(match.group(4))
+            upper_fold_shift = float(match.group(5))
+            if upper_fold_shift <= self.lower:
+                expected_score = 0
+            elif lower_fold_shift >= self.upper:
+                expected_score = 8
+            elif not (lower_fold_shift < self.lower or
+                      upper_fold_shift > self.upper):
+                expected_score = 4
+            else:
+                expected_score = None
+        if expected_score is None:
+            expected_phenotype = 'ambiguous'
+        else:
+            if clinical_ras == 'yes':
+                expected_score = min(8, expected_score + 4)
+            expected_phenotype = self.score_phenotypes[expected_score]
+        if phenotype != expected_phenotype:
+            prefix = self.drug and (self.drug + ' ') or ''
+            self.changes.append(
+                f'{prefix}{mutation} ({fold_shift_text}/{clinical_ras} '
+                f'in {self} {expected_phenotype}) but is {phenotype}')
 
 
 class SplitDumper(yaml.SafeDumper):
@@ -205,18 +344,14 @@ class MonitoredPositionsReader:
 
 
 class FoldRangesReader:
-    def __init__(self):
+    def __init__(self, print_errors=True):
+        self.print_errors = print_errors
         self.invalid = []
+        self.changes = []
         self.lower_pattern = \
             r'([</=]*) *([\d.]+)(-([\d.]+))?[x ]*FS( range)?, likely susceptibi?le$'
-        self.lower_score = PHENOTYPE_SCORES['likely susceptible']
         self.upper_pattern = \
             r'([>/=]*) *([\d.]+)(-([\d.]+))?[x ]*FS( range)?, resistance likely$'
-        self.upper_score = PHENOTYPE_SCORES['resistance likely']
-        self.middle_score = PHENOTYPE_SCORES['resistance possible']
-        self.level_descriptions = {
-            score: description
-            for description, score in PHENOTYPE_SCORES.items()}
 
     def read(self, ws, footer_coordinates, section):
         label_positions = {}  # {label: (row, col)}
@@ -229,68 +364,49 @@ class FoldRangesReader:
             label = label.replace('susecptibility', 'susceptibility')
             label = label.strip(' -:*')
             label_positions[label] = (row_num, col_num)
-        lower_fold, upper_fold = self.find_fold_range(
+        section.fold_range = self.find_fold_range(
             'in vitro drug susceptibility',
             label_positions,
             section,
             ws)
-        section.lower_fold = lower_fold
-        section.upper_fold = upper_fold
-        lower_range_fold, upper_range_fold = self.find_fold_range(
+        section.range_range = self.find_fold_range(
                 'range fs values',
                 label_positions,
                 section,
                 ws)
-        if lower_range_fold is None:
-            section.lower_range_fold = section.lower_fold
-            section.upper_range_fold = section.upper_fold
-        else:
-            section.lower_range_fold = lower_range_fold
-            section.upper_range_fold = upper_range_fold
+        if section.range_range is None:
+            section.range_range = section.fold_range
 
     def find_fold_range(self, range_label, label_positions, section, ws):
         row_num, col_num = label_positions.get(range_label,
                                                (None, None))
         if row_num is None:
-            return None, None
+            return None
         lower_text = ws.cell(row_num + 1, col_num).value
         if str(lower_text).lower().strip(' -*') == 'absolute fs values':
             row_num += 1
             lower_text = ws.cell(row_num + 1, col_num).value
         upper_text = ws.cell(row_num + 3, col_num).value
-        lower_match = re.match(self.lower_pattern,
-                               lower_text,
-                               flags=re.IGNORECASE)
-        upper_match = re.match(self.upper_pattern,
-                               upper_text,
-                               flags=re.IGNORECASE)
-        if upper_match and lower_match:
-            lower_fold = float(lower_match.group(4)
-                               or lower_match.group(2))
-            upper_fold = float(upper_match.group(2))
-        else:
-            lower_fold = upper_fold = None
-            if lower_match is None:
-                self.invalid.append(
-                    "Invalid lower fold shift of {!r} for {} in {}.".format(
-                        lower_text,
-                        section.drug_name,
-                        section.sheet_name))
-            if upper_match is None:
-                self.invalid.append(
-                    "Invalid upper fold shift of {!r} for {} in {}.".format(
-                        upper_text,
-                        section.drug_name,
-                        section.sheet_name))
-        return lower_fold, upper_fold
+        fold_range = Range(lower_text,
+                           upper_text,
+                           f'{section.drug_name} in {section.sheet_name}',
+                           self.changes,
+                           self.invalid)
+        return fold_range
 
     def write_errors(self, report):
-        for message in self.invalid:
-            print(message, file=report)
+        if self.print_errors:
+            for message in self.invalid:
+                print(message, file=report)
 
 
 class RulesWriter:
-    def __init__(self, rules_file, errors_file, references):
+    def __init__(self,
+                 rules_file,
+                 errors_file,
+                 references,
+                 invalid_fold_shifts=None,
+                 phenotype_changes=None):
         self.rules_file = rules_file
         self.errors_file = errors_file
         self.references = references
@@ -298,8 +414,12 @@ class RulesWriter:
         self.invalid_mutations = []
         self.invalid_mutation_positions = []
         self.combination_changes = []
-        self.invalid_fold_shifts = []
-        self.phenotype_changes = []
+        self.invalid_fold_shifts = (invalid_fold_shifts
+                                    if invalid_fold_shifts is not None
+                                    else [])
+        self.phenotype_changes = (phenotype_changes
+                                  if phenotype_changes is not None
+                                  else [])
         self.invalid_phenotypes = []
         self.invalid_positions = []
         self.bad_wild_types = []
@@ -435,74 +555,28 @@ class RulesWriter:
         pos_scores[score] = new_mutation_set
 
     def _check_fold_shift(self, entry, section, phenotype):
-        if getattr(section, 'lower_fold', None) is None:
+        fold_range = getattr(section, 'fold_range', None)
+        if fold_range is None:
             # Range wasn't found, so nothing to check.
             return
-        if entry.fold_shift is None:
-            mutations = self.missing_fold_shifts[
-                (section.sheet_name, section.drug_name)]
-            mutations.append(entry.mutation)
-            return
-        fold_shift_text = str(entry.fold_shift)
-        match = re.match(
-            r'([<>/=]*) *(([\d.,]+)x?|([\d.,]+)x? *- *>? *([\d.,]+)x)$',
-            fold_shift_text,
-            flags=re.IGNORECASE)
-        if match is None:
-            self.invalid_fold_shifts.append(
-                f'{section.sheet_name}: {section.drug_name} {entry.mutation} '
-                f'{fold_shift_text!r}')
-            return
-        if match.group(3):
-            expected_score = self._calculate_fold_shift_score(
-                match.group(3),
-                match.group(1),
-                section.lower_fold,
-                section.upper_fold)
+        clinical_ras = getattr(entry, 'clinical_ras', None)
+        if entry.fold_shift is not None:
+            fold_shift_text = str(entry.fold_shift)
         else:
-            expected_score = self._calculate_fold_shift_range_score(
-                match.group(5),
-                section.lower_range_fold,
-                section.upper_range_fold)
-        clinical_ras = entry.clinical_ras and str(entry.clinical_ras).lower()
-        if clinical_ras == 'yes':
-            expected_score = min(8, expected_score + 4)
-        expected_phenotype = self.score_phenotypes[expected_score]
-        if phenotype != expected_phenotype:
-            self.phenotype_changes.append(
-                f'{section.sheet_name}: {section.drug_name} {entry.mutation} '
-                f'{expected_phenotype} => {phenotype}')
-
-    @staticmethod
-    def _calculate_fold_shift_score(fold_shift_text,
-                                    comparison,
-                                    lower_fold,
-                                    upper_fold):
-        fold_shift = float(fold_shift_text.replace(',', ''))
-        if comparison == '<':
-            fold_shift -= 0.1
-        elif comparison == '>':
-            fold_shift += 0.1
-        if fold_shift < lower_fold:
-            expected_score = 0
-        elif fold_shift > upper_fold:
-            expected_score = 8
-        else:
-            expected_score = 4
-        return expected_score
-
-    @staticmethod
-    def _calculate_fold_shift_range_score(upper_text,
-                                          lower_fold_limit,
-                                          upper_fold_limit):
-        upper_fold_shift = float(upper_text.replace(',', ''))
-        if upper_fold_shift <= lower_fold_limit:
-            expected_score = 0
-        elif upper_fold_shift > upper_fold_limit:
-            expected_score = 8
-        else:
-            expected_score = 4
-        return expected_score
+            if clinical_ras is not None:
+                fold_shift_text = '1x'
+            else:
+                mutations = self.missing_fold_shifts[
+                    (section.sheet_name, section.drug_name)]
+                mutations.append(entry.mutation)
+                return
+        clinical_ras = clinical_ras and clinical_ras.lower() or 'no'
+        if '-' in fold_shift_text:
+            fold_range = section.range_range
+        fold_range.validate_phenotype(entry.mutation,
+                                      phenotype,
+                                      fold_shift_text,
+                                      clinical_ras)
 
     def _check_combinations(self, combinations, positions, section):
         for combination, combination_score in combinations.items():
@@ -597,10 +671,15 @@ def main():
     worksheets = [ws
                   for ws in args.spreadsheet
                   if ws.title in READY_TABS]
+    fold_ranges_reader = FoldRangesReader(print_errors=False)
     reader = WorksheetReader(worksheets,
                              MonitoredPositionsReader(),
-                             FoldRangesReader())
-    writer = RulesWriter(args.rules_yaml, sys.stderr, references)
+                             fold_ranges_reader)
+    writer = RulesWriter(args.rules_yaml,
+                         sys.stderr,
+                         references,
+                         fold_ranges_reader.invalid,
+                         fold_ranges_reader.changes)
     writer.write(reader)
     reader.write_errors(sys.stderr)
     writer.write_errors()

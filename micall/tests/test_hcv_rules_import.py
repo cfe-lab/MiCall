@@ -7,7 +7,7 @@ from io import StringIO
 from openpyxl import Workbook
 
 from micall.utils.hcv_rules_import import load_references, WorksheetReader, \
-    MonitoredPositionsReader, FoldRangesReader, RulesWriter
+    MonitoredPositionsReader, FoldRangesReader, RulesWriter, Range
 
 REFERENCES = load_references()
 
@@ -39,6 +39,412 @@ def create_worksheet(title, row_data):
                                end_column=end_column)
                 start_column = None
     return ws
+
+
+class RangeTest(TestCase):
+    def test_lower_range_not_equal(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 2.5x FS, likely susceptible',
+                  '> 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = [
+            'GTX Drugisvir Y43M '
+            '(2.5x/no in < 2.5, > 100 resistance possible) '
+            'but is likely susceptible',
+            'GTX Drugisvir P44I '
+            '(2.6x/no in < 2.5, > 100 resistance possible) '
+            'but is likely susceptible']
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R', 'likely susceptible', '2.4x')
+        r.validate_phenotype('Y43M', 'likely susceptible', '2.5x')
+        r.validate_phenotype('P44I', 'likely susceptible', '2.6x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_lower_range_equal(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('<= 2.5x FS, likely susceptible',
+                  '> 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = [
+            'GTX Drugisvir P44I '
+            '(2.6x/no in <= 2.5, > 100 resistance possible) '
+            'but is likely susceptible']
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R', 'likely susceptible', '2.4x')
+        r.validate_phenotype('Y43M', 'likely susceptible', '2.5x')
+        r.validate_phenotype('P44I', 'likely susceptible', '2.6x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_upper_range_not_equal(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 2.5x FS, likely susceptible',
+                  '> 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = [
+            'GTX Drugisvir L42R '
+            '(99.9x/no in < 2.5, > 100 resistance possible) '
+            'but is resistance likely',
+            'GTX Drugisvir Y43M '
+            '(100.0x/no in < 2.5, > 100 resistance possible) '
+            'but is resistance likely']
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R', 'resistance likely', '99.9x')
+        r.validate_phenotype('Y43M', 'resistance likely', '100.0x')
+        r.validate_phenotype('P44I', 'resistance likely', '100.1x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_upper_range_equal(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 2.5x FS, likely susceptible',
+                  '>= 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = [
+            'GTX Drugisvir L42R '
+            '(99.9x/no in < 2.5, >= 100 resistance possible) '
+            'but is resistance likely']
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R', 'resistance likely', '99.9x')
+        r.validate_phenotype('Y43M', 'resistance likely', '100.0x')
+        r.validate_phenotype('P44I', 'resistance likely', '100.1x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_fold_shift_comparison(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 2.5x FS, likely susceptible',
+                  '> 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = []
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('Y43M', 'resistance likely', '>100.0x')
+        r.validate_phenotype('P44I', 'likely susceptible', '<2.5x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_ignore_commas(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 2.5x FS, likely susceptible',
+                  '> 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = []
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('Y43M', 'resistance likely', '1,000.0x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_lower_limit_invalid(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 2.5 times FS, likely susceptible',
+                  '>= 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = []
+        expected_invalid_fold_shifts = [
+            'GTX Drugisvir lower fold shift: '
+            '< 2.5 times FS, likely susceptible']
+
+        r.validate_phenotype('L42R', 'resistance likely', '99.9x')
+        r.validate_phenotype('Y43M', 'resistance likely', '100.0x')
+        r.validate_phenotype('P44I', 'resistance likely', '100.1x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_upper_limit_invalid(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 2.5 times FS, likely susceptible',
+                  '>= 100x FS, resistance spooky',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = []
+        expected_invalid_fold_shifts = [
+            'GTX Drugisvir lower fold shift: '
+            '< 2.5 times FS, likely susceptible',
+            'GTX Drugisvir upper fold shift: '
+            '>= 100x FS, resistance spooky']
+
+        r.validate_phenotype('L42R', 'resistance likely', '99.9x')
+        r.validate_phenotype('Y43M', 'resistance likely', '100.0x')
+        r.validate_phenotype('P44I', 'resistance likely', '100.1x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_upper_comparison_invalid(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 2.5x FS, likely susceptible',
+                  '= 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = []
+        expected_invalid_fold_shifts = [
+            'GTX Drugisvir upper fold shift: '
+            '= 100x FS, resistance likely']
+
+        r.validate_phenotype('L42R', 'resistance likely', '99.9x')
+        r.validate_phenotype('Y43M', 'resistance likely', '100.0x')
+        r.validate_phenotype('P44I', 'resistance likely', '100.1x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_lower_comparison_invalid(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('= 2.5x FS, likely susceptible',
+                  '>= 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = []
+        expected_invalid_fold_shifts = [
+            'GTX Drugisvir lower fold shift: '
+            '= 2.5x FS, likely susceptible']
+
+        r.validate_phenotype('L42R', 'resistance likely', '99.9x')
+        r.validate_phenotype('Y43M', 'resistance likely', '100.0x')
+        r.validate_phenotype('P44I', 'resistance likely', '100.1x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_invalid_fold_shift(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 2.5x FS, very strange',
+                  '>= 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = []
+        expected_invalid_fold_shifts = [
+            "GTX Drugisvir lower fold shift: < 2.5x FS, very strange",
+            "GTX Drugisvir L42R 'twenty'"]
+
+        r.validate_phenotype('L42R', 'resistance likely', 'twenty')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_susceptible_range(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 20x FS, likely susceptible',
+                  '>= 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = [
+            'GTX Drugisvir Y43M '
+            '(10-15x/no in < 20, >= 100 likely susceptible) '
+            'but is resistance possible']
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R', 'likely susceptible', '1-20x')
+        r.validate_phenotype('Y43M', 'resistance possible', '10-15x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_resistant_range(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 20x FS, likely susceptible',
+                  '>= 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = [
+            'GTX Drugisvir Y43M '
+            '(100-9000x/no in < 20, >= 100 resistance likely) '
+            'but is resistance possible']
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R', 'resistance likely', '100-2000x')
+        r.validate_phenotype('Y43M', 'resistance possible', '100-9000x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_possible_range(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 20x FS, likely susceptible',
+                  '>= 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = [
+            'GTX Drugisvir L42R '
+            '(20-99.9x/no in < 20, >= 100 resistance possible) '
+            'but is resistance likely']
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R', 'resistance likely', '20-99.9x')
+        r.validate_phenotype('Y43M', 'resistance possible', '50-90x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_possible_range_overlap(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('1-20x FS, likely susceptible',
+                  '100-1000x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = []
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R', 'likely susceptible', '10-20x')
+        r.validate_phenotype('Y43M', 'resistance possible', '20-100x')
+        r.validate_phenotype('M44Y', 'resistance likely', '100-200x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_ambiguous_range(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 20x FS, likely susceptible',
+                  '>= 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = [
+            'GTX Drugisvir L42R '
+            '(20-120x/no in < 20, >= 100 ambiguous) '
+            'but is resistance likely',
+            'GTX Drugisvir Y43M '
+            '(5-90x/no in < 20, >= 100 ambiguous) '
+            'but is resistance possible']
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R', 'resistance likely', '20-120x')
+        r.validate_phenotype('Y43M', 'resistance possible', '5-90x')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_clinical_increases_resistance(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 20x FS, likely susceptible',
+                  '>= 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = []
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R',
+                             'resistance possible',
+                             '10x',
+                             clinical_ras='yes')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_clinical_at_max(self):
+        changes = []
+        invalid_fold_shifts = []
+        r = Range('< 20x FS, likely susceptible',
+                  '>= 100x FS, resistance likely',
+                  'GTX Drugisvir',
+                  changes,
+                  invalid_fold_shifts)
+        expected_changes = []
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R',
+                             'resistance likely',
+                             '100x',
+                             clinical_ras='yes')
+
+        self.assertEqual(expected_changes, changes)
+        self.assertEqual(expected_invalid_fold_shifts, invalid_fold_shifts)
+
+    def test_minimal_constructor(self):
+        r = Range('<20 FS, likely susceptible', '>100 FS, resistance likely')
+        expected_changes = [
+            'L42R (200x/no in <20, >100 resistance likely) '
+            'but is resistance possible']
+        expected_invalid_fold_shifts = []
+
+        r.validate_phenotype('L42R', 'resistance possible', '200x')
+
+        self.assertEqual(expected_changes, r.changes)
+        self.assertEqual(expected_invalid_fold_shifts, r.invalid_fold_shifts)
+
+    def test_repr_and_str(self):
+        r = Range('<20 FS, likely susceptible',
+                  '>100 FS, resistance likely',
+                  'GTX Drugisvir')
+
+        self.assertEqual(
+            "Range('<20 FS, likely susceptible', '>100 FS, resistance likely')",
+            repr(r))
+        self.assertEqual('<20, >100', str(r))
+
+    def test_equality(self):
+        r1 = Range('<2 FS, likely susceptible', '>8 FS, resistance likely')
+        r2 = Range('< 2 FS, likely susceptible', '>8.0x FS, resistance likely')
+        r3 = Range('<1 FS, likely susceptible', '>8 FS, resistance likely')
+        r4 = Range('<2 FS, likely susceptible', '>9 FS, resistance likely')
+        r5 = Range('<=2 FS, likely susceptible', '>8 FS, resistance likely')
+        r6 = Range('<2 FS, likely susceptible', '>=8 FS, resistance likely')
+        r7 = Range('<2 FS, likely susceptible',
+                   '>8 FS, resistance likely',
+                   'GTX Drugisvir')
+        r8 = Range('bogus', 'range')
+
+        self.assertEqual(r1, r2)
+        self.assertNotEqual(r1, r3)
+        self.assertNotEqual(r1, r4)
+        self.assertNotEqual(r1, r5)
+        self.assertNotEqual(r1, r6)
+        self.assertEqual(r1, r7)
+        self.assertEqual(r8, r8)
 
 
 class WorksheetReaderTest(TestCase):
@@ -382,13 +788,13 @@ No monitored positions for Example in NS3_GT1b.
             ['',     '',         'Positions monitored:'],
             ['',     '',         '36, 99']]
         worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_range = Range('< 20x FS, likely susceptible',
+                               '> 100x FS, resistance likely')
         expected_section = Namespace(drug_name='Example',
                                      sheet_name='NS3_GT1b',
                                      monitored_positions=[36, 99],
-                                     lower_fold=20,
-                                     upper_fold=100,
-                                     lower_range_fold=20,
-                                     upper_range_fold=100)
+                                     fold_range=expected_range,
+                                     range_range=expected_range)
         expected_entries = [Namespace(mutation='WT',
                                       section=expected_section,
                                       phenotype='likely susceptible'),
@@ -416,12 +822,12 @@ No monitored positions for Example in NS3_GT1b.
             ['',     '20-100x FS, resistance possible'],
             ['',     '>100x FS, resistance likely']]
         worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_range = Range('< 20x FS, likely susceptible',
+                               '> 100x FS, resistance likely')
         expected_section = Namespace(drug_name='Example',
                                      sheet_name='NS3_GT1b',
-                                     lower_fold=20,
-                                     upper_fold=100,
-                                     lower_range_fold=20,
-                                     upper_range_fold=100)
+                                     fold_range=expected_range,
+                                     range_range=expected_range)
         expected_entries = [Namespace(mutation='WT',
                                       section=expected_section,
                                       phenotype='likely susceptible'),
@@ -447,12 +853,12 @@ No monitored positions for Example in NS3_GT1b.
             ['',     '20-100x FS, resistance possible'],
             ['',     '>100x FS, resistance likely']]
         worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_range = Range('< 20x FS, likely susceptible',
+                               '> 100x FS, resistance likely')
         expected_section = Namespace(drug_name='Example',
                                      sheet_name='NS3_GT1b',
-                                     lower_fold=20,
-                                     upper_fold=100,
-                                     lower_range_fold=20,
-                                     upper_range_fold=100)
+                                     fold_range=expected_range,
+                                     range_range=expected_range)
         expected_entries = [Namespace(mutation='WT',
                                       section=expected_section,
                                       phenotype='likely susceptible'),
@@ -482,12 +888,14 @@ No monitored positions for Example in NS3_GT1b.
             ['',     '10-100x FS range, resistance possible'],
             ['',     '100-1000x FS range, resistance likely']]
         worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_fold_range = Range('< 20x FS, likely susceptible',
+                                    '> 100x FS, resistance likely')
+        expected_range_range = Range('<= 10x FS, likely susceptible',
+                                     '>= 100x FS, resistance likely')
         expected_section = Namespace(drug_name='Example',
                                      sheet_name='NS3_GT1b',
-                                     lower_fold=20,
-                                     upper_fold=100,
-                                     lower_range_fold=10,
-                                     upper_range_fold=100)
+                                     fold_range=expected_fold_range,
+                                     range_range=expected_range_range)
         expected_entries = [Namespace(mutation='WT',
                                       section=expected_section,
                                       phenotype='likely susceptible'),
@@ -517,12 +925,14 @@ No monitored positions for Example in NS3_GT1b.
             ['',     '10-100x FS range, resistance possible'],
             ['',     '>100x FS range, resistance likely']]
         worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_fold_range = Range('< 20x FS, likely susceptible',
+                                    '> 100x FS, resistance likely')
+        expected_range_range = Range('< 10x FS, likely susceptible',
+                                     '> 100x FS, resistance likely')
         expected_section = Namespace(drug_name='Example',
                                      sheet_name='NS3_GT1b',
-                                     lower_fold=20,
-                                     upper_fold=100,
-                                     lower_range_fold=10,
-                                     upper_range_fold=100)
+                                     fold_range=expected_fold_range,
+                                     range_range=expected_range_range)
         expected_entries = [Namespace(mutation='WT',
                                       section=expected_section,
                                       phenotype='likely susceptible'),
@@ -548,14 +958,14 @@ No monitored positions for Example in NS3_GT1b.
             ['',     '>100x FS, resistance likely']]
         worksheets = [create_worksheet('NS3_GT1b', row_data)]
         self.expected_errors = """\
-Invalid lower fold shift of 'less than 20x FS, moist' for Example in NS3_GT1b.
+Example in NS3_GT1b lower fold shift: less than 20x FS, moist
 """
+        expected_range = Range('less than 20x FS, moist',
+                               '>100x FS, resistance likely')
         expected_section = Namespace(drug_name='Example',
                                      sheet_name='NS3_GT1b',
-                                     lower_fold=None,
-                                     upper_fold=None,
-                                     lower_range_fold=None,
-                                     upper_range_fold=None)
+                                     fold_range=expected_range,
+                                     range_range=expected_range)
         expected_entries = [Namespace(mutation='WT',
                                       section=expected_section,
                                       phenotype='likely susceptible'),
@@ -650,23 +1060,16 @@ Invalid lower fold shift of 'less than 20x FS, moist' for Example in NS3_GT1b.
 class RulesWriterTest(TestCase):
     def setUp(self):
         self.entries = []
+        self.phenotype_changes = []
         self.expected_rules = self.expected_errors = ''
-
-    def write(self):
-        rules = StringIO()
-        errors = StringIO()
-        writer = RulesWriter(rules, errors, REFERENCES)
-
-        writer.write(self.entries)
-        writer.write_errors()
-
-        self.assertEqual(self.expected_rules, rules.getvalue())
-        self.assertEqual(self.expected_errors, errors.getvalue())
 
     def assertWrites(self, expected_rules, entries):
         rules = StringIO()
         errors = StringIO()
-        writer = RulesWriter(rules, errors, REFERENCES)
+        writer = RulesWriter(rules,
+                             errors,
+                             REFERENCES,
+                             phenotype_changes=self.phenotype_changes)
 
         writer.write(entries)
         writer.write_errors()
@@ -1227,10 +1630,13 @@ Invalid mutation position: NS3_GT1a: Paritaprevir Q800L (max 631).
         self.assertWrites(expected_rules, entries)
 
     def test_fold_shifts_match(self):
+        fold_range = Range('<20 FS, likely susceptible',
+                           '>100 FS, resistance likely',
+                           changes=self.phenotype_changes)
         section = Namespace(drug_name='Paritaprevir',
                             sheet_name='NS3_GT1a',
-                            lower_fold=20.0,
-                            upper_fold=100.0)
+                            fold_range=fold_range,
+                            range_range=fold_range)
         entries = [Namespace(mutation='WT',
                              section=section,
                              phenotype='likely susceptible',
@@ -1258,11 +1664,47 @@ Invalid mutation position: NS3_GT1a: Paritaprevir Q800L (max 631).
 
         self.assertWrites(expected_rules, entries)
 
-    def test_fold_shifts_differ(self):
+    def test_fold_shifts_without_clinical(self):
+        fold_range = Range('<20 FS, likely susceptible',
+                           '>100 FS, resistance likely',
+                           changes=self.phenotype_changes)
         section = Namespace(drug_name='Paritaprevir',
                             sheet_name='NS3_GT1a',
-                            lower_fold=20.0,
-                            upper_fold=100.0)
+                            fold_range=fold_range,
+                            range_range=fold_range)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible',
+                             fold_shift='1x'),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible',
+                             fold_shift='50x'),
+                   Namespace(mutation='Q80L',
+                             section=section,
+                             phenotype='resistance likely',
+                             fold_shift='200x')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_fold_shifts_differ(self):
+        fold_range = Range('<20 FS, likely susceptible',
+                           '>100 FS, resistance likely',
+                           'NS3_GT1a: Paritaprevir',
+                           self.phenotype_changes)
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            fold_range=fold_range,
+                            range_range=fold_range)
         entries = [Namespace(mutation='WT',
                              section=section,
                              phenotype='likely susceptible',
@@ -1289,8 +1731,10 @@ Invalid mutation position: NS3_GT1a: Paritaprevir Q800L (max 631).
 """
         self.expected_errors = """\
 Phenotype changes:
-  NS3_GT1a: Paritaprevir Q80K likely susceptible => resistance possible
-  NS3_GT1a: Paritaprevir Q80L resistance possible => resistance likely
+  NS3_GT1a: Paritaprevir Q80K (2x/no in <20, >100 likely susceptible) \
+but is resistance possible
+  NS3_GT1a: Paritaprevir Q80L (100x/no in <20, >100 resistance possible) \
+but is resistance likely
 """
 
         self.assertWrites(expected_rules, entries)
@@ -1298,8 +1742,8 @@ Phenotype changes:
     def test_fold_shift_no_levels(self):
         section = Namespace(drug_name='Paritaprevir',
                             sheet_name='NS3_GT1a',
-                            lower_fold=None,
-                            upper_fold=None)
+                            fold_range=None,
+                            range_range=None)
         entries = [Namespace(mutation='WT',
                              section=section,
                              phenotype='likely susceptible',
@@ -1328,12 +1772,18 @@ Phenotype changes:
         self.assertWrites(expected_rules, entries)
 
     def test_fold_shift_ranges(self):
+        fold_range = Range('<10 FS, likely susceptible',
+                           '>100 FS, resistance likely',
+                           'NS3_GT1a: Paritaprevir',
+                           self.phenotype_changes)
+        range_range = Range('<=50 FS, likely susceptible',
+                            '>=100 FS, resistance likely',
+                            'NS3_GT1a: Paritaprevir',
+                            self.phenotype_changes)
         section = Namespace(drug_name='Paritaprevir',
                             sheet_name='NS3_GT1a',
-                            lower_fold=10,
-                            upper_fold=100,
-                            lower_range_fold=50,
-                            upper_range_fold=100)
+                            fold_range=fold_range,
+                            range_range=range_range)
         entries = [Namespace(mutation='WT',
                              section=section,
                              phenotype='likely susceptible',
@@ -1361,45 +1811,15 @@ Phenotype changes:
 
         self.assertWrites(expected_rules, entries)
 
-    def test_fold_shift_range_spans_levels(self):
-        section = Namespace(drug_name='Paritaprevir',
-                            sheet_name='NS3_GT1a',
-                            lower_fold=10,
-                            upper_fold=100,
-                            lower_range_fold=50,
-                            upper_range_fold=100)
-        entries = [Namespace(mutation='WT',
-                             section=section,
-                             phenotype='likely susceptible',
-                             fold_shift='1x',
-                             clinical_ras=None),
-                   Namespace(mutation='Q80K',
-                             section=section,
-                             phenotype='likely susceptible',
-                             fold_shift='2-50x',
-                             clinical_ras=None),
-                   Namespace(mutation='Q80L',
-                             section=section,
-                             phenotype='resistance likely',
-                             fold_shift='20-1000x',
-                             clinical_ras=None)]
-        expected_rules = """\
-- code: PTV
-  genotypes:
-  - genotype: 1A
-    reference: HCV1A-H77-NS3
-    region: NS3
-    rules: SCORE FROM ( Q80L => 8 )
-  name: Paritaprevir
-"""
-
-        self.assertWrites(expected_rules, entries)
-
     def test_fold_shift_int(self):
+        fold_range = Range('<20 FS, likely susceptible',
+                           '>100 FS, resistance likely',
+                           'NS3_GT1a: Paritaprevir',
+                           self.phenotype_changes)
         section = Namespace(drug_name='Paritaprevir',
                             sheet_name='NS3_GT1a',
-                            lower_fold=20.0,
-                            upper_fold=100.0)
+                            fold_range=fold_range,
+                            range_range=fold_range)
         entries = [Namespace(mutation='WT',
                              section=section,
                              phenotype='likely susceptible',
@@ -1426,154 +1846,23 @@ Phenotype changes:
 """
         self.expected_errors = """\
 Phenotype changes:
-  NS3_GT1a: Paritaprevir Q80K likely susceptible => resistance possible
-  NS3_GT1a: Paritaprevir Q80L resistance possible => resistance likely
-"""
-
-        self.assertWrites(expected_rules, entries)
-
-    def test_fold_shift_extra_chars(self):
-        section = Namespace(drug_name='Paritaprevir',
-                            sheet_name='NS3_GT1a',
-                            lower_fold=20.0,
-                            upper_fold=100.0)
-        entries = [Namespace(mutation='WT',
-                             section=section,
-                             phenotype='likely susceptible',
-                             fold_shift='1x',
-                             clinical_ras=None),
-                   Namespace(mutation='Q80K',
-                             section=section,
-                             phenotype='resistance possible',
-                             fold_shift='<2.5x',
-                             clinical_ras=None),
-                   Namespace(mutation='Q80L',
-                             section=section,
-                             phenotype='resistance likely',
-                             fold_shift='>1,000x',
-                             clinical_ras=None)]
-        expected_rules = """\
-- code: PTV
-  genotypes:
-  - genotype: 1A
-    reference: HCV1A-H77-NS3
-    region: NS3
-    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
-  name: Paritaprevir
-"""
-        self.expected_errors = """\
-Phenotype change: NS3_GT1a: Paritaprevir Q80K \
-likely susceptible => resistance possible.
-"""
-
-        self.assertWrites(expected_rules, entries)
-
-    def test_fold_shift_and_clinical(self):
-        section = Namespace(drug_name='Paritaprevir',
-                            sheet_name='NS3_GT1a',
-                            lower_fold=20.0,
-                            upper_fold=100.0)
-        entries = [Namespace(mutation='WT',
-                             section=section,
-                             phenotype='likely susceptible',
-                             fold_shift='1x',
-                             clinical_ras=None),
-                   Namespace(mutation='Q80K',
-                             section=section,
-                             phenotype='resistance possible',
-                             fold_shift='2x',
-                             clinical_ras='Yes'),
-                   Namespace(mutation='Q80L',
-                             section=section,
-                             phenotype='resistance likely',
-                             fold_shift='200x',
-                             clinical_ras='yes')]
-        expected_rules = """\
-- code: PTV
-  genotypes:
-  - genotype: 1A
-    reference: HCV1A-H77-NS3
-    region: NS3
-    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
-  name: Paritaprevir
-"""
-
-        self.assertWrites(expected_rules, entries)
-
-    def test_fold_shift_comparison(self):
-        section = Namespace(drug_name='Paritaprevir',
-                            sheet_name='NS3_GT1a',
-                            lower_fold=20.0,
-                            upper_fold=100.0)
-        entries = [Namespace(mutation='WT',
-                             section=section,
-                             phenotype='likely susceptible',
-                             fold_shift='1x',
-                             clinical_ras=None),
-                   Namespace(mutation='Q80K',
-                             section=section,
-                             phenotype='likely susceptible',
-                             fold_shift='<20x',
-                             clinical_ras=None),
-                   Namespace(mutation='Q80L',
-                             section=section,
-                             phenotype='resistance likely',
-                             fold_shift='>100x',
-                             clinical_ras=None)]
-        expected_rules = """\
-- code: PTV
-  genotypes:
-  - genotype: 1A
-    reference: HCV1A-H77-NS3
-    region: NS3
-    rules: SCORE FROM ( Q80L => 8 )
-  name: Paritaprevir
-"""
-
-        self.assertWrites(expected_rules, entries)
-
-    def test_fold_shift_invalid(self):
-        section = Namespace(drug_name='Paritaprevir',
-                            sheet_name='NS3_GT1a',
-                            lower_fold=20.0,
-                            upper_fold=100.0)
-        entries = [Namespace(mutation='WT',
-                             section=section,
-                             phenotype='likely susceptible',
-                             fold_shift='1x',
-                             clinical_ras=None),
-                   Namespace(mutation='Q80K',
-                             section=section,
-                             phenotype='resistance possible',
-                             fold_shift='2 times',
-                             clinical_ras=None),
-                   Namespace(mutation='Q80L',
-                             section=section,
-                             phenotype='resistance likely',
-                             fold_shift='100x',  # Should be > 100.0
-                             clinical_ras=None)]
-        expected_rules = """\
-- code: PTV
-  genotypes:
-  - genotype: 1A
-    reference: HCV1A-H77-NS3
-    region: NS3
-    rules: SCORE FROM ( Q80K => 4, Q80L => 8 )
-  name: Paritaprevir
-"""
-        self.expected_errors = """\
-Invalid fold shift: NS3_GT1a: Paritaprevir Q80K '2 times'.
-Phenotype change: NS3_GT1a: Paritaprevir Q80L \
-resistance possible => resistance likely.
+  NS3_GT1a: Paritaprevir Q80K (2/no in <20, >100 likely susceptible) \
+but is resistance possible
+  NS3_GT1a: Paritaprevir Q80L (100/no in <20, >100 resistance possible) \
+but is resistance likely
 """
 
         self.assertWrites(expected_rules, entries)
 
     def test_fold_shift_missing(self):
+        fold_range = Range('<20 FS, likely susceptible',
+                           '>100 FS, resistance likely',
+                           'NS3_GT1a: Paritaprevir',
+                           self.phenotype_changes)
         section = Namespace(drug_name='Paritaprevir',
                             sheet_name='NS3_GT1a',
-                            lower_fold=20.0,
-                            upper_fold=100.0)
+                            fold_range=fold_range,
+                            range_range=fold_range)
         entries = [Namespace(mutation='WT',
                              section=section,
                              phenotype='likely susceptible',
@@ -1600,6 +1889,45 @@ resistance possible => resistance likely.
 """
         self.expected_errors = """\
 Missing fold shift: NS3_GT1a: Paritaprevir Q80K, G90L.
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_clinical_without_fold_shift(self):
+        fold_range = Range('<20 FS, likely susceptible',
+                           '>100 FS, resistance likely',
+                           'NS3_GT1a: Paritaprevir',
+                           self.phenotype_changes)
+        section = Namespace(drug_name='Paritaprevir',
+                            sheet_name='NS3_GT1a',
+                            fold_range=fold_range,
+                            range_range=fold_range)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible',
+                             fold_shift='1x',
+                             clinical_ras=None),
+                   Namespace(mutation='Q80K',
+                             section=section,
+                             phenotype='resistance possible',
+                             fold_shift=None,
+                             clinical_ras='yes'),
+                   Namespace(mutation='G90L',
+                             section=section,
+                             phenotype='resistance likely',
+                             fold_shift=None,
+                             clinical_ras=None)]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( Q80K => 4, G90L => 8 )
+  name: Paritaprevir
+"""
+        self.expected_errors = """\
+Missing fold shift: NS3_GT1a: Paritaprevir G90L.
 """
 
         self.assertWrites(expected_rules, entries)
