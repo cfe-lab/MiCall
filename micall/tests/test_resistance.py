@@ -1089,9 +1089,8 @@ NRTI,M41L,0.3,
         mutations_csv = StringIO()
         expected_resistance = """\
 region,drug_class,drug,drug_name,level,level_name,score,genotype
-NS5b,NS5b,DSV,DSV,2,Not Indicated,0.0,6
-NS5b,NS5b,SOF-EPC,SOF-EPC,5,Resistance Likely,8.0,6
-NS5b,NS5b,SOF-HAR,SOF-HAR,2,Not Indicated,0.0,6
+NS5b,NS5b,DSV,Dasabuvir,2,Not Indicated,0.0,6
+NS5b,NS5b,SOF-HAR,Sofosbuvir,5,Resistance Likely,8.0,6
 """
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype
@@ -1117,9 +1116,8 @@ NS5b,V321T,1.0,6
         mutations_csv = StringIO()
         expected_resistance = """\
 region,drug_class,drug,drug_name,level,level_name,score,genotype
-NS5b,NS5b,DSV,DSV,5,Resistance Likely,8.0,1A
-NS5b,NS5b,SOF-EPC,SOF-EPC,0,Sequence does not meet quality-control standards,0.0,1A
-NS5b,NS5b,SOF-HAR,SOF-HAR,0,Sequence does not meet quality-control standards,0.0,1A
+NS5b,NS5b,DSV,Dasabuvir,5,Resistance Likely,8.0,1A
+NS5b,NS5b,SOF-HAR,Sofosbuvir,0,Sequence does not meet quality-control standards,0.0,1A
 """
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype

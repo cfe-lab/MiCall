@@ -92,7 +92,13 @@
        Q54H => 4, P58S => 4, Q62E => 4, A92E => 4, A92K => 8,
        A92!AEK => "Effect unknown", Y93H => 8, Y93N => 4,
        Y93!HNY => "Effect unknown" )
-  - genotype: '2'
+  - genotype: 2A
+    reference: HCV2-JFH-1-NS5a
+    region: NS5a
+    rules: SCORE FROM ( TRUE => 8, F28CS => 8, F28!CFS => "Effect unknown",
+       L31M => 8, L31!LM => "Effect unknown", C92R => 8,
+       C92!CR => "Effect unknown", Y93H => 8, Y93!HY => "Effect unknown" )
+  - genotype: 2B
     reference: HCV2-JFH-1-NS5a
     region: NS5a
     rules: SCORE FROM ( TRUE => 8, F28CS => 8, F28!CFS => "Effect unknown",
@@ -364,8 +370,8 @@
   - genotype: '4'
     reference: HCV4-ED43-NS5a
     region: NS5a
-    rules: SCORE FROM ( L28S => 4, L28!LS => "Effect unknown", M31I => 4,
-       P58S => 4 )
+    rules: SCORE FROM ( L28V => 8, L28S => 4, L28!LSV => "Effect unknown",
+       M31I => 4, P58S => 4 )
   - genotype: '5'
     reference: HCV5-SA13-NS5a
     region: NS5a
@@ -391,7 +397,11 @@
     region: NS5a
     rules: SCORE FROM ( L28M => 4, P29d => 4, R30Q => 4, L31K => 4, P32KNRT => 4,
        P32d => 8, P32!KNPRT => "Effect unknown" )
-  - genotype: '2'
+  - genotype: 2A
+    reference: HCV2-JFH-1-NS5a
+    region: NS5a
+    rules: SCORE FROM ( L31M => 4 )
+  - genotype: 2B
     reference: HCV2-JFH-1-NS5a
     region: NS5a
     rules: SCORE FROM ( TRUE => 0 )
@@ -465,8 +475,8 @@
        N142T => 4, L159F => 4, L159!FL => "Effect unknown", E202G => 4,
        E237G => 4, S282GRT => 8, S282!GRST => "Effect unknown", C316HR => 4,
        C316!CHR => "Effect unknown", L320IV => 4, L320!ILV => "Effect unknown",
-       V321AF => 4, V321!AFV => "Effect unknown", F415Y => 4, S473T => 4,
-       N590d => 4 )
+       V321AFI => 4, V321!AFIV => "Effect unknown", Q355H => 4, F415Y => 4,
+       S473T => 4, N590d => 4 )
   - genotype: 1B
     reference: HCV1B-Con1-NS5b
     region: NS5b
@@ -476,8 +486,8 @@
   - genotype: '2'
     reference: HCV2-JFH-1-NS5b
     region: NS5b
-    rules: SCORE FROM ( L159!L => "Effect unknown", S282GR => 8,
-       S282!GRS => "Effect unknown", C316!C => "Effect unknown",
+    rules: SCORE FROM ( L159!L => "Effect unknown", S282GRT => 8,
+       S282!GRST => "Effect unknown", C316!C => "Effect unknown",
        L320!L => "Effect unknown", V321!V => "Effect unknown" )
   - genotype: '3'
     reference: HCV3-S52-NS5b
@@ -486,13 +496,13 @@
        L159!FL => "Effect unknown", E237G => 4, S282GRT => 8,
        S282!GRST => "Effect unknown", L314FIP => 4, C316!C => "Effect unknown",
        L320FI => 4, L320!FIL => "Effect unknown", V321A => 4,
-       V321!AV => "Effect unknown", Q355R => 4 )
+       V321!AV => "Effect unknown", Q355HR => 4 )
   - genotype: '4'
     reference: HCV4-ED43-NS5b
     region: NS5b
     rules: SCORE FROM ( L159!L => "Effect unknown", E237G => 4, S282GRT => 8,
        S282!GRST => "Effect unknown", C316!C => "Effect unknown",
-       L320!L => "Effect unknown", V321!V => "Effect unknown" )
+       L320!L => "Effect unknown", V321I => 4, V321!IV => "Effect unknown" )
   - genotype: '5'
     reference: HCV5-SA13-NS5b
     region: NS5b
@@ -607,12 +617,19 @@
     rules: SCORE FROM ( Q24K => 4, L31IMV => 4, L31!ILMV => "Effect unknown",
        P58T => 4, A92K => 8, A92!AK => "Effect unknown", Y93CRST => 4, Y93HN => 8,
        Y93!CHNRSTY => "Effect unknown" )
-  - genotype: '2'
+  - genotype: 2A
     reference: HCV2-JFH-1-NS5a
     region: NS5a
     rules: SCORE FROM ( F28C => 4, F28S => 8, F28!CFS => "Effect unknown",
-       L31IV => 4, L31!ILV => "Effect unknown", C92R => 4,
+       L31IMV => 4, L31!ILMV => "Effect unknown", C92R => 4,
        C92!CR => "Effect unknown", Y93HN => 8, Y93!HNY => "Effect unknown" )
+  - genotype: 2B
+    reference: HCV2-JFH-1-NS5a
+    region: NS5a
+    rules: SCORE FROM ( F28C => 4, F28S => 8, F28!CFS => "Effect unknown",
+       L31IV => 4, L31!ILV => "Effect unknown", P58A => 4, C92RS => 4, C92T => 8,
+       C92!CRST => "Effect unknown", Y93F => 4, Y93HN => 8,
+       Y93!FHNY => "Effect unknown" )
   - genotype: '3'
     reference: HCV3-S52-NS5a
     region: NS5a

@@ -41,6 +41,7 @@ PHENOTYPE_SCORES = {'likely susceptible': 0,
                     'resistance likely': 8,
                     'effect unknown': 'effect unknown'}
 HCV_REGIONS = ('NS3', 'NS5a', 'NS5b')
+SPLIT_GENOTYPES = {'2': ('2a', '2b'), '4': ('4a', '4d')}
 RuleSet = namedtuple(
     'RuleSet',
     ['region',
@@ -452,44 +453,99 @@ class RulesWriter:
             genotype = genotype.upper()
             reference = self.references[(genotype, region)]
             reference_name = reference.name
-            positions = defaultdict(dict)  # {pos: {score: MutationSet}}
+            # {(pos, genotype_override): {score: MutationSet}}
+            score_map = defaultdict(dict)
             combinations = {}  # {mutation: score}
             if getattr(section, 'not_indicated', False):
                 # noinspection PyTypeChecker
-                positions[None]['Not indicated'] = 'TRUE'
+                score_map[None]['Not indicated'] = 'TRUE'
             else:
                 for entry in section_entries:
                     self._score_mutation(entry,
                                          section,
-                                         positions,
+                                         genotype,
+                                         score_map,
                                          combinations,
                                          reference.sequence)
-            self._check_combinations(combinations, positions, section)
-            self._monitor_positions(section, positions, reference)
-            score_formula = build_score_formula(positions)
-            drug_summary['genotypes'].append(dict(genotype=genotype,
-                                                  region=region,
-                                                  reference=reference_name,
-                                                  rules=score_formula))
+
+            for positions, subtype in self._expand_score_map(score_map,
+                                                             genotype):
+                self._check_combinations(combinations, positions, section)
+                self._monitor_positions(section, positions, reference)
+                score_formula = build_score_formula(positions)
+                drug_summary['genotypes'].append(dict(genotype=subtype,
+                                                      region=region,
+                                                      reference=reference_name,
+                                                      rules=score_formula))
         self._check_not_indicated(drug_summaries)
         drugs = sorted(drug_summaries.values(), key=itemgetter('code'))
         yaml.dump(drugs, self.rules_file, default_flow_style=False, Dumper=SplitDumper)
 
+    @staticmethod
+    def _expand_score_map(score_map, main_genotype):
+        # {genotype_override: {pos: {score: MutationSet}}}
+        override_map = defaultdict(lambda: defaultdict(dict))
+        base_positions = defaultdict(dict)  # {pos: {score: MutationSet}}
+        for key, scores in score_map.items():
+            if key is None:
+                pos = genotype_override = None
+            else:
+                pos, genotype_override = key
+            if genotype_override is None:
+                base_positions[pos] = scores
+            else:
+                override_map[genotype_override][pos] = scores
+        if not override_map:
+            return [(base_positions, main_genotype)]
+        subtypes = SPLIT_GENOTYPES[main_genotype]
+        for genotype_override in subtypes:
+            positions = override_map[genotype_override]
+            for pos, base_scores in base_positions.items():
+                for score, base_mutation_set in base_scores.items():
+                    subtype_mutation_set = positions[pos].get(score)
+                    if subtype_mutation_set is None:
+                        combined_mutation_set = base_mutation_set
+                    else:
+                        combined_mutation_set = MutationSet(
+                            mutations=base_mutation_set.mutations |
+                            subtype_mutation_set.mutations)
+                    positions[pos][score] = combined_mutation_set
+        first_positions = override_map[subtypes[0]]
+        if all(override_map[other_subtype] == first_positions
+               for other_subtype in subtypes[1:]):
+            return [(first_positions, main_genotype)]
+        return [(positions, subtype.upper())
+                for subtype, positions in override_map.items()]
+
     def _check_not_indicated(self, drug_summaries):
-        all_genotypes = {genotype['genotype']
+        all_genotypes = {get_unsplit_genotype(genotype['genotype'])
                          for drug_summary in drug_summaries.values()
                          for genotype in drug_summary['genotypes']}
         positions = {None: {'Not indicated': 'TRUE'}}
         score_formula = build_score_formula(positions)
         for drug_summary in drug_summaries.values():
-            drug_genotypes = {genotype['genotype']
+            drug_genotypes = {get_unsplit_genotype(genotype['genotype'])
                               for genotype in drug_summary['genotypes']}
             missing_genotypes = all_genotypes - drug_genotypes
+            main_genotypes = defaultdict(set)
+            for genotype in missing_genotypes:
+                genotype_group = main_genotypes[get_main_genotype(genotype)]
+                genotype_group.add(genotype)
 
             drug_region, = {genotype['region']
                             for genotype in drug_summary['genotypes']}
-            for genotype_name in missing_genotypes:
-                reference = self.references[(genotype_name, drug_region)]
+            for main_genotype, subtypes in main_genotypes.items():
+                if len(subtypes) > 1:
+                    genotype_name = main_genotype
+                else:
+                    genotype_name, = subtypes
+                try:
+                    reference = self.references[(genotype_name, drug_region)]
+                except KeyError:
+                    if main_genotype != genotype_name:
+                        reference = self.references[(genotype_name[:-1], drug_region)]
+                    else:
+                        raise
                 drug_summary['genotypes'].append(dict(genotype=genotype_name,
                                                       region=drug_region,
                                                       reference=reference.name,
@@ -499,7 +555,8 @@ class RulesWriter:
     def _score_mutation(self,
                         entry,
                         section,
-                        positions,
+                        genotype,
+                        score_map,
                         combinations,
                         reference):
         mutation = entry.mutation
@@ -519,17 +576,32 @@ class RulesWriter:
             return
         if mutation.startswith('WT'):
             # noinspection PyTypeChecker
-            positions[None][score] = 'TRUE'
+            score_map[None][score] = 'TRUE'
             return
-        if '+' in mutation or ' ' in mutation:
-            combinations[mutation] = score
+
+        match = re.match(r'([^(]*?) *\(GT(.+)\)$', mutation, flags=re.IGNORECASE)
+        if match is None:
+            core_mutation = mutation
+            genotype_override = None
+        else:
+            core_mutation = match.group(1)
+            genotype_override = match.group(2)
+            if genotype_override.upper() == genotype:
+                genotype_override = None
+            elif get_main_genotype(genotype_override) != genotype:
+                self.invalid_mutations.append(
+                    '{}: {} (Mismatched subtype.)'.format(section.sheet_name,
+                                                          mutation))
+                genotype_override = None
+        if '+' in core_mutation or ' ' in core_mutation:
+            combinations[core_mutation] = score
             return
         try:
-            new_mutation_set = MutationSet(mutation)
+            new_mutation_set = MutationSet(core_mutation)
         except ValueError as ex:
             self.invalid_mutations.append('{}: {} ({})'.format(
                 section.sheet_name,
-                mutation,
+                core_mutation,
                 ex))
             return
         max_pos = len(reference)
@@ -544,7 +616,7 @@ class RulesWriter:
                 f'{section.sheet_name}: {new_mutation_set} in '
                 f'{section.drug_name} expected {expected_wild_type}')
             return
-        pos_scores = positions[new_mutation_set.pos]
+        pos_scores = score_map[(new_mutation_set.pos, genotype_override)]
         old_mutation_set = pos_scores.get(score)
         if old_mutation_set is not None:
             new_mutation_set = MutationSet(
@@ -723,6 +795,19 @@ def load_references():
 
 def get_short_drug_name(name):
     return name.split()[0]
+
+
+def get_main_genotype(subtype):
+    if 'A' <= subtype[-1] <= 'Z' or 'a' <= subtype[-1] <= 'z':
+        return subtype[:-1]
+    return subtype
+
+
+def get_unsplit_genotype(subtype):
+    main_genotype = get_main_genotype(subtype)
+    if main_genotype in SPLIT_GENOTYPES:
+        return main_genotype
+    return subtype
 
 
 def format_score(score):

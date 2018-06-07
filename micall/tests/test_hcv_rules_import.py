@@ -1199,6 +1199,93 @@ class RulesWriterTest(TestCase):
 
         self.assertWrites(expected_rules, entries)
 
+    def test_missing_genotypes_with_subtypes(self):
+        section1 = Namespace(drug_name='Grazoprevir', sheet_name='NS3_GT1a')
+        section2 = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT2')
+        entries = [Namespace(mutation='WT',
+                             section=section1,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='E30A',
+                             section=section1,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='WT',
+                             section=section2,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S40W (GT2a)',
+                             section=section2,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='S40W (GT2b)',
+                             section=section2,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: GZR
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( E30A => 4 )
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => "Not indicated" )
+  name: Grazoprevir
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => "Not indicated" )
+  - genotype: 2A
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( S40W => 4 )
+  - genotype: 2B
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( S40W => 8 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_missing_genotypes_with_some_subtypes(self):
+        section1 = Namespace(drug_name='Grazoprevir', sheet_name='NS3_GT2')
+        section2 = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT2')
+        entries = [Namespace(mutation='WT',
+                             section=section1,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='A30E',
+                             section=section1,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='WT',
+                             section=section2,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S40W (GT2a)',
+                             section=section2,
+                             phenotype='resistance possible')]
+        expected_rules = """\
+- code: GZR
+  genotypes:
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( A30E => 4 )
+  name: Grazoprevir
+- code: PTV
+  genotypes:
+  - genotype: 2A
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( S40W => 4 )
+  - genotype: 2B
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
     def test_exclude_zeroes(self):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
@@ -1443,6 +1530,139 @@ Invalid mutations:
 
         self.assertWrites(expected_rules, entries)
 
+    def test_mutation_subtypes(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT2')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='A30E',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='S40W (GT2a)',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='S40W (GT2b)',
+                             section=section,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 2A
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( A30E => 4, S40W => 4 )
+  - genotype: 2B
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( A30E => 4, S40W => 8 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_subtypes_at_same_position(self):
+        """ Subtype mutations at the same position as shared mutations. """
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT2')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S40E',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='S40W (GT2a)',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='S40W (GT2b)',
+                             section=section,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 2A
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( S40EW => 4 )
+  - genotype: 2B
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( S40W => 8, S40E => 4 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_redundant_subtype(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='E30A',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='T40W (GT1a)',
+                             section=section,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( E30A => 4, T40W => 8 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_identical_subtypes(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT2')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S40W (GT2a)',
+                             section=section,
+                             phenotype='resistance likely'),
+                   Namespace(mutation='S40W (GT2b)',
+                             section=section,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( S40W => 8 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_mismatched_subtype(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT3')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S20A',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='T40W (GT2a)',
+                             section=section,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: '3'
+    reference: HCV3-S52-NS3
+    region: NS3
+    rules: SCORE FROM ( S20A => 4, T40W => 8 )
+  name: Paritaprevir
+"""
+        self.expected_errors = """\
+Invalid mutation: NS3_GT3: T40W (GT2a) (Mismatched subtype.).
+"""
+
+        self.assertWrites(expected_rules, entries)
+
     def test_combination_matches(self):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
@@ -1492,6 +1712,39 @@ Invalid mutations:
 """
         self.expected_errors = """\
 Combination change: NS3_GT1a: E30A+R40W: 4 => 8.
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_combination_with_subtypes(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT2')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S20L (GT2a)',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='S20L (GT2b)',
+                             section=section,
+                             phenotype='resistance likely'),
+                   Namespace(mutation='S40W',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='E30A+S40W',
+                             section=section,
+                             phenotype='resistance possible')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 2A
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( S20L => 4, S40W => 4 )
+  - genotype: 2B
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( S20L => 8, S40W => 4 )
+  name: Paritaprevir
 """
 
         self.assertWrites(expected_rules, entries)
