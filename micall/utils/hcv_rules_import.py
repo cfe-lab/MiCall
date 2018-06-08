@@ -612,10 +612,13 @@ class RulesWriter:
             return
         expected_wild_type = reference[new_mutation_set.pos-1]
         if expected_wild_type != new_mutation_set.wildtype:
-            self.bad_wild_types.append(
-                f'{section.sheet_name}: {new_mutation_set} in '
-                f'{section.drug_name} expected {expected_wild_type}')
-            return
+            if genotype_override is None:
+                self.bad_wild_types.append(
+                    f'{section.sheet_name}: {new_mutation_set} in '
+                    f'{section.drug_name} expected {expected_wild_type}')
+                return
+            new_mutation_set = MutationSet(
+                expected_wild_type + str(new_mutation_set)[1:])
         pos_scores = score_map[(new_mutation_set.pos, genotype_override)]
         old_mutation_set = pos_scores.get(score)
         if old_mutation_set is not None:

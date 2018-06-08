@@ -1470,6 +1470,30 @@ Mismatched wild type: NS3_GT3: Q186L in Paritaprevir expected D.
 
         self.assertWrites(expected_rules, entries)
 
+    def test_wild_type_not_checked_with_subtype(self):
+        section = Namespace(drug_name='Velpatasvir', sheet_name='NS5A_GT2')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='L28F (GT2b)',
+                             section=section,
+                             phenotype='resistance possible')]
+        expected_rules = """\
+- code: VEL
+  genotypes:
+  - genotype: 2A
+    reference: HCV2-JFH-1-NS5a
+    region: NS5a
+    rules: SCORE FROM ( TRUE => 0 )
+  - genotype: 2B
+    reference: HCV2-JFH-1-NS5a
+    region: NS5a
+    rules: SCORE FROM ( F28F => 4 )
+  name: Velpatasvir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
     def test_invalid_mutation(self):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
