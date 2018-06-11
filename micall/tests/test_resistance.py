@@ -1090,7 +1090,8 @@ NRTI,M41L,0.3,
         expected_resistance = """\
 region,drug_class,drug,drug_name,level,level_name,score,genotype
 NS5b,NS5b,DSV,Dasabuvir,2,Not Indicated,0.0,6
-NS5b,NS5b,SOF-HAR,Sofosbuvir,5,Resistance Likely,8.0,6
+NS5b,NS5b,SOF-EPC,Sofosbuvir in Epclusa,5,Resistance Likely,8.0,6
+NS5b,NS5b,SOF-HAR,Sofosbuvir in Harvoni,2,Not Indicated,0.0,6
 """
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype
@@ -1108,20 +1109,22 @@ NS5b,V321T,1.0,6
 
     def test_hcv_missing_midi(self):
         ns5b_aminos = [{c: 1.0}
-                       for c in self.algorithms[None].stds['HCV1A-H77-NS5b']]
+                       for c in self.algorithms[None].stds['HCV1B-Con1-NS5b']]
         ns5b_aminos[315] = {'Y': 1.0}  # C316Y mutation => Resistance Likely
         ns5b_aminos = ns5b_aminos[:336]  # Missing MIDI
-        aminos = [AminoList('HCV1A-H77-NS5b', ns5b_aminos, '1A')]
+        aminos = [AminoList('HCV1B-Con1-NS5b', ns5b_aminos, '1B')]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
 region,drug_class,drug,drug_name,level,level_name,score,genotype
-NS5b,NS5b,DSV,Dasabuvir,5,Resistance Likely,8.0,1A
-NS5b,NS5b,SOF-HAR,Sofosbuvir,0,Sequence does not meet quality-control standards,0.0,1A
+NS5b,NS5b,DSV,Dasabuvir,5,Resistance Likely,8.0,1B
+NS5b,NS5b,SOF-EPC,Sofosbuvir in Epclusa,0,Sequence does not meet quality-control standards,0.0,1B
+NS5b,NS5b,SOF-HAR,Sofosbuvir in Harvoni,0,Sequence does not meet quality-control standards,0.0,1B
 """
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype
-NS5b,C316Y,1.0,1A
+NS5b,C316Y,1.0,1B
+NS5b,V321V,1.0,1B
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
@@ -1133,6 +1136,10 @@ NS5b,C316Y,1.0,1A
         self.maxDiff = None
         ns3_aminos = [{c: 1.0}
                        for c in self.algorithms[None].stds['HCV1A-H77-NS3']]
+        # Avoid wild-type resistance to Simeprevir
+        ns3_aminos[247] = {'I': 1.0}
+        ns3_aminos[146] = {'S': 1.0}
+
         ns3_aminos[53] = {}  # Coverage gap at position 54
         aminos = [AminoList('HCV1A-H77-NS3', ns3_aminos, '1A')]
         resistance_csv = StringIO()
@@ -1154,8 +1161,8 @@ drug_class,mutation,prevalence,genotype
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
 
-        self.assertEqual(expected_resistance, resistance_csv.getvalue())
         self.assertEqual(expected_mutations, mutations_csv.getvalue())
+        self.assertEqual(expected_resistance, resistance_csv.getvalue())
 
     def test_hcv_low_coverage(self):
         aminos = []
@@ -1174,9 +1181,9 @@ drug_class,mutation,prevalence,genotype
         self.assertEqual(expected_mutations, mutations_csv.getvalue())
 
     def test_hcv_mostly_low_coverage(self):
-        aminos = [AminoList('HCV1A-H77-NS5b',
-                            [{'T': 1.0}] + [{}] * 590,
-                            '1A')]
+        aminos = [AminoList('HCV1B-Con1-NS5b',
+                            [{'T': 1.0}] + [{}] * 319 + [{'I': 1.0}] + [{}] * 200,
+                            '1B')]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
