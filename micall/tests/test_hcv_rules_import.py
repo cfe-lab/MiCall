@@ -1129,6 +1129,111 @@ class RulesWriterTest(TestCase):
 
         self.assertWrites(expected_rules, entries)
 
+    def test_sofosbuvir_genotype1(self):
+        self.maxDiff = None
+        section1a = Namespace(drug_name='Sofosbuvir', sheet_name='NS5b_GT1a')
+        section1b = Namespace(drug_name='Sofosbuvir', sheet_name='NS5b_GT1b')
+        entries = [Namespace(mutation='WT',
+                             section=section1a,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='L159F',
+                             section=section1a,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='S282R',
+                             section=section1a,
+                             phenotype='resistance likely'),
+                   Namespace(mutation='WT',
+                             section=section1b,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S282R',
+                             section=section1b,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: SOF-EPC
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS5b
+    region: NS5b
+    rules: SCORE FROM ( L159F => 4, S282R => 8 )
+  - genotype: 1B
+    reference: HCV1B-Con1-NS5b
+    region: NS5b
+    rules: SCORE FROM ( S282R => 8 )
+  name: Sofosbuvir in Epclusa
+- code: SOF-HAR
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS5b
+    region: NS5b
+    rules: SCORE FROM ( L159F => 4, S282R => 8 )
+  - genotype: 1B
+    reference: HCV1B-Con1-NS5b
+    region: NS5b
+    rules: SCORE FROM ( S282R => 8 )
+  name: Sofosbuvir in Harvoni
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_sofosbuvir_genotype2(self):
+        section = Namespace(drug_name='Sofosbuvir', sheet_name='NS5b_GT2')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S282R',
+                             section=section,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: SOF-EPC
+  genotypes:
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS5b
+    region: NS5b
+    rules: SCORE FROM ( S282R => 8 )
+  name: Sofosbuvir in Epclusa
+- code: SOF-HAR
+  genotypes:
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS5b
+    region: NS5b
+    rules: SCORE FROM ( TRUE => "Not indicated" )
+  name: Sofosbuvir in Harvoni
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_sofosbuvir_genotype6(self):
+        self.maxDiff = None
+        section = Namespace(drug_name='Sofosbuvir', sheet_name='NS5b_GT6')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S282R',
+                             section=section,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: SOF-EPC
+  genotypes:
+  - genotype: '6'
+    reference: HCV6-EUHK2-NS5b
+    region: NS5b
+    rules: SCORE FROM ( S282R => 8 )
+  - genotype: 6E
+    reference: HCV6-EUHK2-NS5b
+    region: NS5b
+    rules: SCORE FROM ( TRUE => "Not available" )
+  name: Sofosbuvir in Epclusa
+- code: SOF-HAR
+  genotypes:
+  - genotype: '6'
+    reference: HCV6-EUHK2-NS5b
+    region: NS5b
+    rules: SCORE FROM ( TRUE => "Not indicated" )
+  name: Sofosbuvir in Harvoni
+"""
+
+        self.assertWrites(expected_rules, entries)
+
     def test_no_resistance(self):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
@@ -1461,7 +1566,7 @@ Unknown drugs:
   - genotype: '3'
     reference: HCV3-S52-NS3
     region: NS3
-    rules: SCORE FROM ( A156G => 8 )
+    rules: SCORE FROM ( A156G => 8, D186L => 4 )
   name: Paritaprevir
 """
         self.expected_errors = """\
@@ -1579,6 +1684,36 @@ Invalid mutations:
     reference: HCV2-JFH-1-NS3
     region: NS3
     rules: SCORE FROM ( A30E => 4, S40W => 8 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_subtype_with_notes(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT2')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='A30E',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='S40W',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S40W (GT2b_Added_Notes)',
+                             section=section,
+                             phenotype='resistance possible')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 2A
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( A30E => 4 )
+  - genotype: 2B
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( A30E => 4, S40W => 4 )
   name: Paritaprevir
 """
 

@@ -26,7 +26,7 @@ def parse_args():
                                        'genreport.yaml')
     default_display_path = os.path.join(os.path.dirname(micall_path),
                                         'docs',
-                                        'hcv_rules1.6.md')
+                                        'hcv_rules1.7.md')
     parser.add_argument('-r',
                         '--rules',
                         type=FileType(),

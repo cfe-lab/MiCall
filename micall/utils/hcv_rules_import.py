@@ -1,6 +1,7 @@
 import operator
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType, Namespace
 from collections import namedtuple, defaultdict
+from copy import deepcopy
 from functools import partial
 from itertools import product, groupby
 from operator import itemgetter, attrgetter
@@ -478,8 +479,32 @@ class RulesWriter:
                                                       reference=reference_name,
                                                       rules=score_formula))
         self._check_not_indicated(drug_summaries)
+        self._override_sofosbuvir(drug_summaries)
         drugs = sorted(drug_summaries.values(), key=itemgetter('code'))
         yaml.dump(drugs, self.rules_file, default_flow_style=False, Dumper=SplitDumper)
+
+    @staticmethod
+    def _override_sofosbuvir(drug_summaries):
+        drug_summary_harvoni = drug_summaries.pop('Sofosbuvir', None)
+        if drug_summary_harvoni is None:
+            return
+        drug_summary_epclusa = deepcopy(drug_summary_harvoni)
+        drug_summary_epclusa['code'] = 'SOF-EPC'
+        drug_summary_epclusa['name'] = 'Sofosbuvir in Epclusa'
+        for drug_genotype in list(drug_summary_epclusa['genotypes']):
+            if drug_genotype['genotype'] == '6':
+                extra_genotype = deepcopy(drug_genotype)
+                extra_genotype['genotype'] = '6E'
+                extra_genotype['rules'] = 'SCORE FROM ( TRUE => "Not available" )'
+                drug_summary_epclusa['genotypes'].append(extra_genotype)
+        drug_summaries[drug_summary_epclusa['name']] = drug_summary_epclusa
+        drug_summary_harvoni['name'] = 'Sofosbuvir in Harvoni'
+        for drug_genotype in list(drug_summary_harvoni['genotypes']):
+            if get_main_genotype(drug_genotype['genotype']) == '1':
+                pass
+            else:
+                drug_genotype['rules'] = 'SCORE FROM ( TRUE => "Not indicated" )'
+        drug_summaries[drug_summary_harvoni['name']] = drug_summary_harvoni
 
     @staticmethod
     def _expand_score_map(score_map, main_genotype):
@@ -579,7 +604,7 @@ class RulesWriter:
             score_map[None][score] = 'TRUE'
             return
 
-        match = re.match(r'([^(]*?) *\(GT(.+)\)$', mutation, flags=re.IGNORECASE)
+        match = re.match(r'([^(]*?) *\(GT([^_]+).*\)$', mutation, flags=re.IGNORECASE)
         if match is None:
             core_mutation = mutation
             genotype_override = None
@@ -616,7 +641,6 @@ class RulesWriter:
                 self.bad_wild_types.append(
                     f'{section.sheet_name}: {new_mutation_set} in '
                     f'{section.drug_name} expected {expected_wild_type}')
-                return
             new_mutation_set = MutationSet(
                 expected_wild_type + str(new_mutation_set)[1:])
         pos_scores = score_map[(new_mutation_set.pos, genotype_override)]
@@ -743,6 +767,8 @@ class RulesWriter:
 def main():
     args = parse_args()
     references = load_references()
+    for ws in args.spreadsheet:
+        ws.title = ws.title.strip()
     worksheets = [ws
                   for ws in args.spreadsheet
                   if ws.title in READY_TABS]
