@@ -149,54 +149,59 @@ class Range:
                            mutation,
                            phenotype,
                            fold_shift_text,
-                           clinical_ras='no'):
-        match = re.match(
-            r'([<>/=]*) *(([\d.,]+)x?|([\d.,]+)x? *- *>? *([\d.,]+)x)$',
-            fold_shift_text,
-            flags=re.IGNORECASE)
-        if match is None:
-            self.invalid_fold_shifts.append(
-                f'{self.drug} {mutation} {fold_shift_text!r}')
-            return
-        if not self.is_valid:
-            return
-        if match.group(3):
-            fold_shift = float(match.group(3).replace(',', ''))
-            comparison = match.group(1)
-            if comparison == '>':
-                fold_shift += 0.1
-            elif comparison == '<':
-                fold_shift -= 0.1
-            if self.lower_operator(fold_shift, self.lower):
-                expected_score = 0
-            elif self.upper_operator(fold_shift, self.upper):
-                expected_score = 8
-            else:
-                expected_score = 4
+                           clinical_ras='no',
+                           expected_phenotype=None):
+        if expected_phenotype is not None:
+            expectation_display = 'special case ' + expected_phenotype
         else:
-            # A range of fold shifts always allows overlap at boundaries.
-            lower_fold_shift = float(match.group(4))
-            upper_fold_shift = float(match.group(5))
-            if upper_fold_shift <= self.lower:
-                expected_score = 0
-            elif lower_fold_shift >= self.upper:
-                expected_score = 8
-            elif not (lower_fold_shift < self.lower or
-                      upper_fold_shift > self.upper):
-                expected_score = 4
+            match = re.match(
+                r'([<>/=]*) *(([\d.,]+)x?|([\d.,]+)x? *- *>? *([\d.,]+)x)$',
+                fold_shift_text,
+                flags=re.IGNORECASE)
+            if match is None:
+                self.invalid_fold_shifts.append(
+                    f'{self.drug} {mutation} {fold_shift_text!r}')
+                return
+            if not self.is_valid:
+                return
+            if match.group(3):
+                fold_shift = float(match.group(3).replace(',', ''))
+                comparison = match.group(1)
+                if comparison == '>':
+                    fold_shift += 0.1
+                elif comparison == '<':
+                    fold_shift -= 0.1
+                if self.lower_operator(fold_shift, self.lower):
+                    expected_score = 0
+                elif self.upper_operator(fold_shift, self.upper):
+                    expected_score = 8
+                else:
+                    expected_score = 4
             else:
-                expected_score = None
-        if expected_score is None:
-            expected_phenotype = 'ambiguous'
-        else:
-            if clinical_ras == 'yes':
-                expected_score = min(8, expected_score + 4)
-            expected_phenotype = self.score_phenotypes[expected_score]
+                # A range of fold shifts always allows overlap at boundaries.
+                lower_fold_shift = float(match.group(4))
+                upper_fold_shift = float(match.group(5))
+                if upper_fold_shift <= self.lower:
+                    expected_score = 0
+                elif lower_fold_shift >= self.upper:
+                    expected_score = 8
+                elif not (lower_fold_shift < self.lower or
+                          upper_fold_shift > self.upper):
+                    expected_score = 4
+                else:
+                    expected_score = None
+            if expected_score is None:
+                expected_phenotype = 'ambiguous'
+            else:
+                if clinical_ras == 'yes':
+                    expected_score = min(8, expected_score + 4)
+                expected_phenotype = self.score_phenotypes[expected_score]
+            expectation_display = (f'{fold_shift_text}/{clinical_ras} '
+                                   f'in {self} {expected_phenotype}')
         if phenotype != expected_phenotype:
             prefix = self.drug and (self.drug + ' ') or ''
             self.changes.append(
-                f'{prefix}{mutation} ({fold_shift_text}/{clinical_ras} '
-                f'in {self} {expected_phenotype}) but is {phenotype}')
+                f'{prefix}{mutation} ({expectation_display}) but is {phenotype}')
 
 
 class SplitDumper(yaml.SafeDumper):
@@ -584,7 +589,7 @@ class RulesWriter:
                         score_map,
                         combinations,
                         reference):
-        mutation = entry.mutation
+        mutation = entry.mutation.replace('*', '')
         phenotype = entry.phenotype.lower()
         try:
             score = PHENOTYPE_SCORES[phenotype]
@@ -604,14 +609,20 @@ class RulesWriter:
             score_map[None][score] = 'TRUE'
             return
 
-        match = re.match(r'([^(]*?) *\(GT([^_]+).*\)$', mutation, flags=re.IGNORECASE)
+        match = re.match(r'([^(]*?) *(\(GT([^_]+).*\))? *(\[Conflicting WT\])?$',
+                         mutation,
+                         flags=re.IGNORECASE)
         if match is None:
             core_mutation = mutation
             genotype_override = None
+            is_wild_type_checked = True
         else:
             core_mutation = match.group(1)
-            genotype_override = match.group(2)
-            if genotype_override.upper() == genotype:
+            genotype_override = match.group(3)
+            is_wild_type_checked = match.group(4) is None
+            if genotype_override is None:
+                pass
+            elif genotype_override.upper() == genotype:
                 genotype_override = None
             elif get_main_genotype(genotype_override) != genotype:
                 self.invalid_mutations.append(
@@ -619,6 +630,8 @@ class RulesWriter:
                                                           mutation))
                 genotype_override = None
         if '+' in core_mutation or ' ' in core_mutation:
+            if not is_wild_type_checked:
+                core_mutation = replace_wild_types(core_mutation, reference)
             combinations[core_mutation] = score
             return
         try:
@@ -637,7 +650,7 @@ class RulesWriter:
             return
         expected_wild_type = reference[new_mutation_set.pos-1]
         if expected_wild_type != new_mutation_set.wildtype:
-            if genotype_override is None:
+            if is_wild_type_checked:
                 self.bad_wild_types.append(
                     f'{section.sheet_name}: {new_mutation_set} in '
                     f'{section.drug_name} expected {expected_wild_type}')
@@ -659,10 +672,15 @@ class RulesWriter:
             # Range wasn't found, so nothing to check.
             return
         clinical_ras = getattr(entry, 'clinical_ras', None)
+        expected_phenotype = None
         if entry.fold_shift is not None:
             fold_shift_text = str(entry.fold_shift)
         else:
-            if clinical_ras is not None:
+            if (section.drug_name == 'Sofosbuvir' and
+                    entry.mutation.startswith('S282')):
+                expected_phenotype = 'resistance likely'
+                fold_shift_text = ''
+            elif clinical_ras is not None:
                 fold_shift_text = '1x'
             else:
                 mutations = self.missing_fold_shifts[
@@ -675,7 +693,8 @@ class RulesWriter:
         fold_range.validate_phenotype(entry.mutation,
                                       phenotype,
                                       fold_shift_text,
-                                      clinical_ras)
+                                      clinical_ras,
+                                      expected_phenotype)
 
     def _check_combinations(self, combinations, positions, section):
         for combination, combination_score in combinations.items():
@@ -879,6 +898,22 @@ def build_score_formula(positions):
         '{} => {}'.format(mutation_set, score)
         for mutation_set, score in score_terms))
     return score_formula
+
+
+def replace_wild_types(combination, reference):
+    mutations = combination.split('+')
+    for i, mutation_text in enumerate(mutations):
+        mutation_set = MutationSet(mutation_text)
+        expected_wild_type = reference[mutation_set.pos - 1]
+        if mutation_set.wildtype != expected_wild_type:
+            mutation_set = MutationSet(wildtype=expected_wild_type,
+                                       pos=mutation_set.pos,
+                                       variants=''.join(
+                                           m.variant
+                                           for m in mutation_set.mutations))
+            mutations[i] = str(mutation_set)
+        pass
+    return '+'.join(mutations)
 
 
 if __name__ == '__main__':

@@ -1234,6 +1234,86 @@ class RulesWriterTest(TestCase):
 
         self.assertWrites(expected_rules, entries)
 
+    def test_sofosbuvir_282(self):
+        self.maxDiff = None
+        fold_range = Range('<20 FS, likely susceptible',
+                           '>100 FS, resistance likely',
+                           changes=self.phenotype_changes)
+        section = Namespace(drug_name='Sofosbuvir',
+                            sheet_name='NS5b_GT1a',
+                            fold_range=fold_range,
+                            range_range=fold_range)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             fold_shift='1x',
+                             clinical_ras=None,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S282R',
+                             section=section,
+                             fold_shift=None,
+                             clinical_ras='Yes',
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: SOF-EPC
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS5b
+    region: NS5b
+    rules: SCORE FROM ( S282R => 8 )
+  name: Sofosbuvir in Epclusa
+- code: SOF-HAR
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS5b
+    region: NS5b
+    rules: SCORE FROM ( S282R => 8 )
+  name: Sofosbuvir in Harvoni
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_sofosbuvir_282_not_resistant(self):
+        self.maxDiff = None
+        fold_range = Range('<20 FS, likely susceptible',
+                           '>100 FS, resistance likely',
+                           changes=self.phenotype_changes)
+        section = Namespace(drug_name='Sofosbuvir',
+                            sheet_name='NS5b_GT1a',
+                            fold_range=fold_range,
+                            range_range=fold_range)
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             fold_shift='1x',
+                             clinical_ras=None,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='S282R',
+                             section=section,
+                             fold_shift=None,
+                             clinical_ras='Yes',
+                             phenotype='likely susceptible')]
+        expected_rules = """\
+- code: SOF-EPC
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS5b
+    region: NS5b
+    rules: SCORE FROM ( TRUE => 0 )
+  name: Sofosbuvir in Epclusa
+- code: SOF-HAR
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS5b
+    region: NS5b
+    rules: SCORE FROM ( TRUE => 0 )
+  name: Sofosbuvir in Harvoni
+"""
+        self.expected_errors = """\
+Phenotype change: S282R (special case resistance likely) \
+but is likely susceptible.
+"""
+
+        self.assertWrites(expected_rules, entries)
+
     def test_no_resistance(self):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
         entries = [Namespace(mutation='WT',
@@ -1575,7 +1655,27 @@ Mismatched wild type: NS3_GT3: Q186L in Paritaprevir expected D.
 
         self.assertWrites(expected_rules, entries)
 
-    def test_wild_type_not_checked_with_subtype(self):
+    def test_wild_type_mismatch_override(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT3')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='Q186L [Conflicting WT]',
+                             section=section,
+                             phenotype='resistance possible')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: '3'
+    reference: HCV3-S52-NS3
+    region: NS3
+    rules: SCORE FROM ( D186L => 4 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_wild_type_checked_with_subtype(self):
         section = Namespace(drug_name='Velpatasvir', sheet_name='NS5A_GT2')
         entries = [Namespace(mutation='WT',
                              section=section,
@@ -1595,6 +1695,9 @@ Mismatched wild type: NS3_GT3: Q186L in Paritaprevir expected D.
     region: NS5a
     rules: SCORE FROM ( F28F => 4 )
   name: Velpatasvir
+"""
+        self.expected_errors = """\
+Mismatched wild type: NS5A_GT2: L28F in Velpatasvir expected F.
 """
 
         self.assertWrites(expected_rules, entries)
@@ -1916,7 +2019,7 @@ Combination change: NS3_GT1a: E30A+R40W: 4 => 8.
                    Namespace(mutation='E30A',
                              section=section,
                              phenotype='resistance possible'),
-                   Namespace(mutation='E30A+R40W*',
+                   Namespace(mutation='E30A+R40W@',
                              section=section,
                              phenotype='resistance likely')]
         expected_rules = """\
@@ -1929,8 +2032,34 @@ Combination change: NS3_GT1a: E30A+R40W: 4 => 8.
   name: Paritaprevir
 """
         self.expected_errors = """\
-Invalid mutation: NS3_GT1a: E30A+R40W* (MutationSet text expects wild type \
+Invalid mutation: NS3_GT1a: E30A+R40W@ (MutationSet text expects wild type \
 (optional), position, and one or more variants.).
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_combination_wildtype_override(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='E30A',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='T40W',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='L30A+T40W [Conflicting WT]',
+                             section=section,
+                             phenotype='resistance likely')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( E30A => 4, T40W => 4 )
+  name: Paritaprevir
 """
 
         self.assertWrites(expected_rules, entries)
