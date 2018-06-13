@@ -625,11 +625,12 @@ class RulesWriter:
         if match is None:
             core_mutation = mutation
             genotype_override = None
-            is_wild_type_checked = True
         else:
             core_mutation = match.group(1)
             genotype_override = match.group(3)
-            is_wild_type_checked = match.group(4) is None
+            if match.group(4) is not None:
+                # Conflicting wild type, skip this mutation.
+                return
             if genotype_override is None:
                 pass
             elif genotype_override.upper() == genotype:
@@ -642,8 +643,6 @@ class RulesWriter:
             if genotype_override:
                 genotype_override = None  # Ignoring overrides until issue #443.
         if '+' in core_mutation or ' ' in core_mutation:
-            if not is_wild_type_checked:
-                core_mutation = replace_wild_types(core_mutation, reference)
             combinations[core_mutation] = score
             return
         try:
@@ -662,10 +661,9 @@ class RulesWriter:
             return
         expected_wild_type = reference[new_mutation_set.pos-1]
         if expected_wild_type != new_mutation_set.wildtype:
-            if is_wild_type_checked:
-                self.bad_wild_types.append(
-                    f'{section.sheet_name}: {new_mutation_set} in '
-                    f'{section.drug_name} expected {expected_wild_type}')
+            self.bad_wild_types.append(
+                f'{section.sheet_name}: {new_mutation_set} in '
+                f'{section.drug_name} expected {expected_wild_type}')
             new_mutation_set = MutationSet(
                 expected_wild_type + str(new_mutation_set)[1:])
         pos_scores = score_map[(new_mutation_set.pos, genotype_override)]

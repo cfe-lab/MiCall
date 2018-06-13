@@ -439,24 +439,22 @@
   - genotype: 1A
     reference: HCV1A-H77-NS5b
     region: NS5b
-    rules: SCORE FROM ( L36L => 4, D61G => 4, S62N => 4, D66G => 4, F101L => 4,
-       A112T => 4, N142T => 4, L159F => 4, L159!FL => "Effect unknown",
-       E202G => 4, S231A => 4, E237G => 4, I253I => 4, S282GRT => 8,
-       S282!GRST => "Effect unknown", C316HR => 4, C316!CHR => "Effect unknown",
-       L320IV => 4, L320!ILV => "Effect unknown", V321AFI => 4,
-       V321!AFIV => "Effect unknown", Q355H => 4, F415Y => 4, N444N => 4,
+    rules: SCORE FROM ( D61G => 4, S62N => 4, D66G => 4, F101L => 4, A112T => 4,
+       N142T => 4, L159F => 4, L159!FL => "Effect unknown", E202G => 4,
+       E237G => 4, S282GRT => 8, S282!GRST => "Effect unknown", C316HR => 4,
+       C316!CHR => "Effect unknown", L320IV => 4, L320!ILV => "Effect unknown",
+       V321AFI => 4, V321!AFIV => "Effect unknown", Q355H => 4, F415Y => 4,
        S473T => 4, N590d => 4 )
   - genotype: 1B
     reference: HCV1B-Con1-NS5b
     region: NS5b
     rules: SCORE FROM ( N142S => 4, L159!L => "Effect unknown", S282GRT => 8,
        S282!GRST => "Effect unknown", C316!C => "Effect unknown",
-       L320!L => "Effect unknown", V321V => 4, V321!V => "Effect unknown",
-       K355T => 4 )
+       L320!L => "Effect unknown", V321!V => "Effect unknown", K355T => 4 )
   - genotype: '2'
     reference: HCV2-JFH-1-NS5b
     region: NS5b
-    rules: SCORE FROM ( A62A => 4, L159!L => "Effect unknown", S282GRT => 8,
+    rules: SCORE FROM ( L159!L => "Effect unknown", S282GRT => 8,
        S282!GRST => "Effect unknown", C316!C => "Effect unknown",
        L320!L => "Effect unknown", V321!V => "Effect unknown" )
   - genotype: '3'
@@ -495,20 +493,18 @@
   - genotype: 1A
     reference: HCV1A-H77-NS5b
     region: NS5b
-    rules: SCORE FROM ( L36L => 4, D61G => 4, S62N => 4, D66G => 4, F101L => 4,
-       A112T => 4, N142T => 4, L159F => 4, L159!FL => "Effect unknown",
-       E202G => 4, S231A => 4, E237G => 4, I253I => 4, S282GRT => 8,
-       S282!GRST => "Effect unknown", C316HR => 4, C316!CHR => "Effect unknown",
-       L320IV => 4, L320!ILV => "Effect unknown", V321AFI => 4,
-       V321!AFIV => "Effect unknown", Q355H => 4, F415Y => 4, N444N => 4,
+    rules: SCORE FROM ( D61G => 4, S62N => 4, D66G => 4, F101L => 4, A112T => 4,
+       N142T => 4, L159F => 4, L159!FL => "Effect unknown", E202G => 4,
+       E237G => 4, S282GRT => 8, S282!GRST => "Effect unknown", C316HR => 4,
+       C316!CHR => "Effect unknown", L320IV => 4, L320!ILV => "Effect unknown",
+       V321AFI => 4, V321!AFIV => "Effect unknown", Q355H => 4, F415Y => 4,
        S473T => 4, N590d => 4 )
   - genotype: 1B
     reference: HCV1B-Con1-NS5b
     region: NS5b
     rules: SCORE FROM ( N142S => 4, L159!L => "Effect unknown", S282GRT => 8,
        S282!GRST => "Effect unknown", C316!C => "Effect unknown",
-       L320!L => "Effect unknown", V321V => 4, V321!V => "Effect unknown",
-       K355T => 4 )
+       L320!L => "Effect unknown", V321!V => "Effect unknown", K355T => 4 )
   - genotype: '2'
     reference: HCV2-JFH-1-NS5b
     region: NS5b
@@ -538,20 +534,19 @@
     rules: SCORE FROM ( A5V => 4, V36L => 4, Q41R => 4, T54S => 4, V71A => 4,
        Q80KR => 8, Q80L => 4, Q80!KLQR => "Effect unknown", G120S => 4,
        S122ACGIT => 4, S122NR => 8, S122!ACGINRST => "Effect unknown", R123M => 4,
-       I132L => 4, A147A => 4, R155GQ => 4, R155KT => 8,
-       R155!GKQRT => "Effect unknown", A156GTV => 8,
-       A156!AGTV => "Effect unknown", D168AEHV => 8, D168FT => 4,
+       I132L => 4, R155GQ => 4, R155KT => 8, R155!GKQRT => "Effect unknown",
+       A156GTV => 8, A156!AGTV => "Effect unknown", D168AEHV => 8, D168FT => 4,
        D168!ADEFHTV => "Effect unknown", I170T => 8, I170V => 4,
-       I170!ITV => "Effect unknown", N174RS => 4, T178I => 4, V248V => 4,
-       T343N => 4, T344I => 4, L356F => 4, A477T => 4, V511I => 4, G534S => 4,
-       E555D => 4, V629I => 4 )
+       I170!ITV => "Effect unknown", N174RS => 4, T178I => 4, T343N => 4,
+       T344I => 4, L356F => 4, A477T => 4, V511I => 4, G534S => 4, E555D => 4,
+       V629I => 4 )
   - genotype: 1B
     reference: HCV1B-Con1-NS3
     region: NS3
     rules: SCORE FROM ( A39T => 4, F43ISV => 8, F43!FILSV => "Effect unknown",
        T46S => 4, V48I => 4, S61L => 4, Q80H => 4, Q80KR => 8,
        Q80!GHKLQR => "Effect unknown", Q86R => 4, R117C => 4, S122AGIT => 4,
-       S122R => 8, S122!AGIRST => "Effect unknown", A150A => 4, R155GKQTW => 8,
+       S122R => 8, S122!AGIRST => "Effect unknown", R155GKQTW => 8,
        R155!GIKMQRTW => "Effect unknown", A156GTV => 8, A156S => 4,
        A156!AGSTV => "Effect unknown", D168AEHINQTVY => 8, D168F => 4,
        D168CKLMPRSW => "Effect unknown", V170IT => 4,
@@ -604,10 +599,10 @@
   - genotype: '2'
     reference: HCV2-JFH-1-NS5a
     region: NS5a
-    rules: SCORE FROM ( F28CF => 4, F28S => 8, F28!CFLSV => "Effect unknown",
-       L31IM => 4, L31V => 8, L31!ILMV => "Effect unknown", K44K => 4, P58A => 4,
-       C92RS => 4, C92T => 8, C92!ACKNRST => "Effect unknown", Y93F => 4,
-       Y93HN => 8, Y93!CFHLNSTY => "Effect unknown" )
+    rules: SCORE FROM ( F28C => 4, F28S => 8, F28!CFLSV => "Effect unknown",
+       L31IM => 4, L31V => 8, L31!ILMV => "Effect unknown", P58A => 4, C92RS => 4,
+       C92T => 8, C92!ACKNRST => "Effect unknown", Y93F => 4, Y93HN => 8,
+       Y93!CFHLNSTY => "Effect unknown" )
   - genotype: '3'
     reference: HCV3-S52-NS5a
     region: NS5a

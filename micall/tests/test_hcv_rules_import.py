@@ -1691,7 +1691,7 @@ Mismatched wild type: NS3_GT3: Q186L in Paritaprevir expected D.
 
         self.assertWrites(expected_rules, entries)
 
-    def test_wild_type_mismatch_override(self):
+    def test_conflict_postponed(self):
         section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT3')
         entries = [Namespace(mutation='WT',
                              section=section,
@@ -1705,7 +1705,7 @@ Mismatched wild type: NS3_GT3: Q186L in Paritaprevir expected D.
   - genotype: '3'
     reference: HCV3-S52-NS3
     region: NS3
-    rules: SCORE FROM ( D186L => 4 )
+    rules: SCORE FROM ( TRUE => 0 )
   name: Paritaprevir
 """
 

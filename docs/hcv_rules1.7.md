@@ -90,10 +90,10 @@ how the scores are chosen.
 |      |                                                           | 5  | Not indicated | TRUE |
 |      |                                                           | 6  | Not indicated | TRUE |
 |      | Simeprevir (Galexos™)                                     | 1A | 8 | Q80KR, S122NR, R155KT, A156GTV, D168AEHV, I170T |
-|      |                                                           |    | 4 | A5V, V36L, Q41R, T54S, V71A, Q80L, G120S, S122ACGIT, R123M, I132L, A147A, R155GQ, D168FT, I170V, N174RS, T178I, V248V, T343N, T344I, L356F, A477T, V511I, G534S, E555D, V629I |
+|      |                                                           |    | 4 | A5V, V36L, Q41R, T54S, V71A, Q80L, G120S, S122ACGIT, R123M, I132L, R155GQ, D168FT, I170V, N174RS, T178I, T343N, T344I, L356F, A477T, V511I, G534S, E555D, V629I |
 |      |                                                           |    | Effect unknown | Q80!KLQR, S122!ACGINRST, R155!GKQRT, A156!AGTV, D168!ADEFHTV, I170!ITV |
 |      |                                                           | 1B | 8 | F43ISV, Q80KR, S122R, R155GKQTW, A156GTV, D168AEHINQTVY |
-|      |                                                           |    | 4 | A39T, T46S, V48I, S61L, Q80H, Q86R, R117C, S122AGIT, A150A, A156S, D168F, V170IT, S174F, S280P, T344A, T358F, G383S, I426V, T448A, I472V, V535A, P574AS, V629I |
+|      |                                                           |    | 4 | A39T, T46S, V48I, S61L, Q80H, Q86R, R117C, S122AGIT, A156S, D168F, V170IT, S174F, S280P, T344A, T358F, G383S, I426V, T448A, I472V, V535A, P574AS, V629I |
 |      |                                                           |    | Effect unknown | F43!FILSV, Q80!GHKLQR, S122!AGIRST, R155!GIKMQRTW, A156!AGSTV, D168CKLMPRSW, V170!AITV |
 |      |                                                           | 2  | Not indicated | TRUE |
 |      |                                                           | 3  | Not indicated | TRUE |
@@ -190,7 +190,7 @@ how the scores are chosen.
 |      |                                                           |    | 4 | Q24K, L31IMV, P58T, Y93CRST |
 |      |                                                           |    | Effect unknown | L31!FILMV, A92!AEKPTV, Y93!CFHLNRSTY |
 |      |                                                           | 2  | 8 | F28S, L31V, C92T, Y93HN |
-|      |                                                           |    | 4 | F28CF, L31IM, K44K, P58A, C92RS, Y93F |
+|      |                                                           |    | 4 | F28C, L31IM, P58A, C92RS, Y93F |
 |      |                                                           |    | Effect unknown | F28!CFLSV, L31!ILMV, C92!ACKNRST, Y93!CFHLNSTY |
 |      |                                                           | 3  | 8 | M28T, A30K, L31FM, Y93HS |
 |      |                                                           |    | 4 | S14E, M28V, A30HRV, L31PV, S38PY, V52M, P58GLT, H85Y, E92K, Y93NR, S103DP, A291P, S379P, S385Q, R404K, P407S |
@@ -214,13 +214,12 @@ how the scores are chosen.
 |      |                                                           | 5  | Not indicated | TRUE |
 |      |                                                           | 6  | Not indicated | TRUE |
 |      | Sofosbuvir (a component of Epclusa™ and Vosevi™)          | 1A | 8 | S282GRT |
-|      |                                                           |    | 4 | L36L, D61G, S62N, D66G, F101L, A112T, N142T, L159F, E202G, S231A, E237G, I253I, C316HR, L320IV, V321AFI, Q355H, F415Y, N444N, S473T, N590d |
+|      |                                                           |    | 4 | D61G, S62N, D66G, F101L, A112T, N142T, L159F, E202G, E237G, C316HR, L320IV, V321AFI, Q355H, F415Y, S473T, N590d |
 |      |                                                           |    | Effect unknown | L159!FL, S282!GRST, C316!CHR, L320!ILV, V321!AFIV |
 |      |                                                           | 1B | 8 | S282GRT |
-|      |                                                           |    | 4 | N142S, V321V, K355T |
+|      |                                                           |    | 4 | N142S, K355T |
 |      |                                                           |    | Effect unknown | L159!L, S282!GRST, C316!C, L320!L, V321!V |
 |      |                                                           | 2  | 8 | S282GRT |
-|      |                                                           |    | 4 | A62A |
 |      |                                                           |    | Effect unknown | L159!L, S282!GRST, C316!C, L320!L, V321!V |
 |      |                                                           | 3  | 8 | S282GRT |
 |      |                                                           |    | 4 | K100R, R120C, N142ST, L159F, E237G, L314FIP, L320FI, V321A, Q355HR |
@@ -235,10 +234,10 @@ how the scores are chosen.
 |      |                                                           |    | Effect unknown | L159!L, S282!GRST, C316!C, L320!L, V321!V |
 |      |                                                           | 6E | Not available | TRUE |
 |      | Sofosbuvir (a component of Harvoni™)                      | 1A | 8 | S282GRT |
-|      |                                                           |    | 4 | L36L, D61G, S62N, D66G, F101L, A112T, N142T, L159F, E202G, S231A, E237G, I253I, C316HR, L320IV, V321AFI, Q355H, F415Y, N444N, S473T, N590d |
+|      |                                                           |    | 4 | D61G, S62N, D66G, F101L, A112T, N142T, L159F, E202G, E237G, C316HR, L320IV, V321AFI, Q355H, F415Y, S473T, N590d |
 |      |                                                           |    | Effect unknown | L159!FL, S282!GRST, C316!CHR, L320!ILV, V321!AFIV |
 |      |                                                           | 1B | 8 | S282GRT |
-|      |                                                           |    | 4 | N142S, V321V, K355T |
+|      |                                                           |    | 4 | N142S, K355T |
 |      |                                                           |    | Effect unknown | L159!L, S282!GRST, C316!C, L320!L, V321!V |
 |      |                                                           | 2  | Not indicated | TRUE |
 |      |                                                           | 3  | Not indicated | TRUE |

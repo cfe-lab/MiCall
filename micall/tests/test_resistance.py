@@ -1124,7 +1124,6 @@ NS5b,NS5b,SOF-HAR,Sofosbuvir in Harvoni,0,Sequence does not meet quality-control
         expected_mutations = """\
 drug_class,mutation,prevalence,genotype
 NS5b,C316Y,1.0,1B
-NS5b,V321V,1.0,1B
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
