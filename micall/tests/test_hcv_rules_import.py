@@ -774,6 +774,46 @@ No monitored positions for Example in NS3_GT1b.
 
         self.assertReads(expected_entries, worksheets)
 
+    def test_obsolete_drug(self):
+        row_data = [
+            ['',     'Boceprevir', '<'],
+            ['',     'Phenotype'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible'],
+            ['T40A', 'resistance possible'],
+            ['',     'Nothing monitored.'],
+            ['',     'Not indicated in Canada']]
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_entries = []
+
+        self.assertReads(expected_entries, worksheets)
+
+    def test_obsolete_drug_still_indicated(self):
+        row_data = [
+            ['',     'Boceprevir', '<'],
+            ['',     'Phenotype'],
+            ['WT',   'likely susceptible'],
+            ['V36A', 'likely susceptible'],
+            ['T40A', 'resistance possible'],
+            ['',     'Nothing monitored.']]  # No entry saying "Not indicated".
+        worksheets = [create_worksheet('NS3_GT1b', row_data)]
+        expected_section = Namespace(drug_name='Boceprevir',
+                                     sheet_name='NS3_GT1b')
+        expected_entries = [Namespace(mutation='WT',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='V36A',
+                                      section=expected_section,
+                                      phenotype='likely susceptible'),
+                            Namespace(mutation='T40A',
+                                      section=expected_section,
+                                      phenotype='resistance possible')]
+        self.expected_errors = """\
+Obsolete drugs still indicated: Boceprevir in NS3_GT1b.
+"""
+
+        self.assertReads(expected_entries, worksheets)
+
     def test_fold_shift_levels(self):
         row_data = [
             ['',     'Example', '<', '<'],
@@ -1420,15 +1460,15 @@ but is likely susceptible.
     reference: HCV1A-H77-NS3
     region: NS3
     rules: SCORE FROM ( TRUE => "Not indicated" )
-  - genotype: 2A
+  - genotype: '2'
     reference: HCV2-JFH-1-NS3
     region: NS3
-    rules: SCORE FROM ( S40W => 4 )
-  - genotype: 2B
-    reference: HCV2-JFH-1-NS3
-    region: NS3
-    rules: SCORE FROM ( S40W => 8 )
+    rules: SCORE FROM ( S40W => 4, S40W => 8 )
   name: Paritaprevir
+"""
+        self.expected_errors = """\
+Conflicting phenotype: Paritaprevir in NS3_GT2:\
+ S40W resistance possible => S40W resistance likely.
 """
 
         self.assertWrites(expected_rules, entries)
@@ -1458,14 +1498,10 @@ but is likely susceptible.
   name: Grazoprevir
 - code: PTV
   genotypes:
-  - genotype: 2A
+  - genotype: '2'
     reference: HCV2-JFH-1-NS3
     region: NS3
     rules: SCORE FROM ( S40W => 4 )
-  - genotype: 2B
-    reference: HCV2-JFH-1-NS3
-    region: NS3
-    rules: SCORE FROM ( TRUE => 0 )
   name: Paritaprevir
 """
 
@@ -1476,7 +1512,7 @@ but is likely susceptible.
         entries = [Namespace(mutation='WT',
                              section=section,
                              phenotype='likely susceptible'),
-                   Namespace(mutation='R20A',
+                   Namespace(mutation='S20A',
                              section=section,
                              phenotype='likely susceptible'),
                    Namespace(mutation='T40A',
@@ -1686,11 +1722,7 @@ Mismatched wild type: NS3_GT3: Q186L in Paritaprevir expected D.
         expected_rules = """\
 - code: VEL
   genotypes:
-  - genotype: 2A
-    reference: HCV2-JFH-1-NS5a
-    region: NS5a
-    rules: SCORE FROM ( TRUE => 0 )
-  - genotype: 2B
+  - genotype: '2'
     reference: HCV2-JFH-1-NS5a
     region: NS5a
     rules: SCORE FROM ( F28F => 4 )
@@ -1779,15 +1811,45 @@ Invalid mutations:
         expected_rules = """\
 - code: PTV
   genotypes:
-  - genotype: 2A
+  - genotype: '2'
+    reference: HCV2-JFH-1-NS3
+    region: NS3
+    rules: SCORE FROM ( A30E => 4, S40W => 4, S40W => 8 )
+  name: Paritaprevir
+"""
+        self.expected_errors = """\
+Conflicting phenotype: Paritaprevir in NS3_GT2:\
+ S40W resistance possible => S40W resistance likely.
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_phenotype_conflict_susceptible(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT2')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='A30E',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='S40W (GT2a)',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='S40W (GT2b)',
+                             section=section,
+                             phenotype='likely susceptible')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: '2'
     reference: HCV2-JFH-1-NS3
     region: NS3
     rules: SCORE FROM ( A30E => 4, S40W => 4 )
-  - genotype: 2B
-    reference: HCV2-JFH-1-NS3
-    region: NS3
-    rules: SCORE FROM ( A30E => 4, S40W => 8 )
   name: Paritaprevir
+"""
+        self.expected_errors = """\
+Conflicting phenotype: Paritaprevir in NS3_GT2:\
+ S40W likely susceptible => S40W resistance possible.
 """
 
         self.assertWrites(expected_rules, entries)
@@ -1800,20 +1862,13 @@ Invalid mutations:
                    Namespace(mutation='A30E',
                              section=section,
                              phenotype='resistance possible'),
-                   Namespace(mutation='S40W',
-                             section=section,
-                             phenotype='likely susceptible'),
                    Namespace(mutation='S40W (GT2b_Added_Notes)',
                              section=section,
                              phenotype='resistance possible')]
         expected_rules = """\
 - code: PTV
   genotypes:
-  - genotype: 2A
-    reference: HCV2-JFH-1-NS3
-    region: NS3
-    rules: SCORE FROM ( A30E => 4 )
-  - genotype: 2B
+  - genotype: '2'
     reference: HCV2-JFH-1-NS3
     region: NS3
     rules: SCORE FROM ( A30E => 4, S40W => 4 )
@@ -1840,15 +1895,15 @@ Invalid mutations:
         expected_rules = """\
 - code: PTV
   genotypes:
-  - genotype: 2A
+  - genotype: '2'
     reference: HCV2-JFH-1-NS3
     region: NS3
-    rules: SCORE FROM ( S40EW => 4 )
-  - genotype: 2B
-    reference: HCV2-JFH-1-NS3
-    region: NS3
-    rules: SCORE FROM ( S40W => 8, S40E => 4 )
+    rules: SCORE FROM ( S40W => 8, S40EW => 4 )
   name: Paritaprevir
+"""
+        self.expected_errors = """\
+Conflicting phenotype: Paritaprevir in NS3_GT2:\
+ S40EW resistance possible => S40W resistance likely.
 """
 
         self.assertWrites(expected_rules, entries)
@@ -1998,15 +2053,15 @@ Combination change: NS3_GT1a: E30A+R40W: 4 => 8.
         expected_rules = """\
 - code: PTV
   genotypes:
-  - genotype: 2A
+  - genotype: '2'
     reference: HCV2-JFH-1-NS3
     region: NS3
-    rules: SCORE FROM ( S20L => 4, S40W => 4 )
-  - genotype: 2B
-    reference: HCV2-JFH-1-NS3
-    region: NS3
-    rules: SCORE FROM ( S20L => 8, S40W => 4 )
+    rules: SCORE FROM ( S20L => 4, S20L => 8, S40W => 4 )
   name: Paritaprevir
+"""
+        self.expected_errors = """\
+Conflicting phenotype: Paritaprevir in NS3_GT2:\
+ S20L resistance possible => S20L resistance likely.
 """
 
         self.assertWrites(expected_rules, entries)

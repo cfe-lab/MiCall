@@ -3,6 +3,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType, Na
 from collections import namedtuple, defaultdict
 from copy import deepcopy
 from functools import partial
+import itertools
 from itertools import product, groupby
 from operator import itemgetter, attrgetter
 import os
@@ -43,6 +44,7 @@ PHENOTYPE_SCORES = {'likely susceptible': 0,
                     'effect unknown': 'effect unknown'}
 HCV_REGIONS = ('NS3', 'NS5a', 'NS5b')
 SPLIT_GENOTYPES = {'2': ('2a', '2b'), '4': ('4a', '4d')}
+OBSOLETE_DRUGS = ('Boceprevir', 'Telaprevir')
 RuleSet = namedtuple(
     'RuleSet',
     ['region',
@@ -229,6 +231,7 @@ class WorksheetReader:
         self.worksheets = worksheets
         self.missing_wild_types = []
         self.missing_monitored_positions = []
+        self.indicated_obsolete_drugs = []
         self.footer_readers = footer_readers
 
     def __iter__(self):
@@ -257,8 +260,12 @@ class WorksheetReader:
             section = Namespace(drug_name=drug_name, sheet_name=ws.title)
             if not self._read_footer(ws, cell_range, footer_row, section):
                 section.not_indicated = True
-                yield Namespace(section=section)
+                if section.drug_name not in OBSOLETE_DRUGS:
+                    yield Namespace(section=section)
                 continue
+            if section.drug_name in OBSOLETE_DRUGS:
+                self.indicated_obsolete_drugs.append(
+                    '{} in {}'.format(section.drug_name, section.sheet_name))
             for row_num in range(wild_type_row, footer_row):
                 if ws.cell(row_num, 1).font.strike:
                     continue
@@ -314,6 +321,9 @@ class WorksheetReader:
         if self.missing_wild_types:
             report.write('No wild type found in {}.\n'.format(
                 ', '.join(self.missing_wild_types)))
+        if self.indicated_obsolete_drugs:
+            report.write('Obsolete drugs still indicated: {}.\n'.format(
+                ', '.join(self.indicated_obsolete_drugs)))
         for footer_reader in self.footer_readers:
             footer_reader.write_errors(report)
 
@@ -421,6 +431,7 @@ class RulesWriter:
         self.invalid_mutations = []
         self.invalid_mutation_positions = []
         self.combination_changes = []
+        self.phenotype_conflicts = []
         self.invalid_fold_shifts = (invalid_fold_shifts
                                     if invalid_fold_shifts is not None
                                     else [])
@@ -477,6 +488,7 @@ class RulesWriter:
             for positions, subtype in self._expand_score_map(score_map,
                                                              genotype):
                 self._check_combinations(combinations, positions, section)
+                self._check_conflicts(positions, section)
                 self._monitor_positions(section, positions, reference)
                 score_formula = build_score_formula(positions)
                 drug_summary['genotypes'].append(dict(genotype=subtype,
@@ -589,7 +601,7 @@ class RulesWriter:
                         score_map,
                         combinations,
                         reference):
-        mutation = entry.mutation.replace('*', '')
+        mutation = entry.mutation
         phenotype = entry.phenotype.lower()
         try:
             score = PHENOTYPE_SCORES[phenotype]
@@ -602,8 +614,6 @@ class RulesWriter:
             return
 
         self._check_fold_shift(entry, section, phenotype)
-        if not score:
-            return
         if mutation.startswith('WT'):
             # noinspection PyTypeChecker
             score_map[None][score] = 'TRUE'
@@ -629,6 +639,8 @@ class RulesWriter:
                     '{}: {} (Mismatched subtype.)'.format(section.sheet_name,
                                                           mutation))
                 genotype_override = None
+            if genotype_override:
+                genotype_override = None  # Ignoring overrides until issue #443.
         if '+' in core_mutation or ' ' in core_mutation:
             if not is_wild_type_checked:
                 core_mutation = replace_wild_types(core_mutation, reference)
@@ -715,6 +727,29 @@ class RulesWriter:
                     component_score,
                     combination_score))
 
+    def _check_conflicts(self, positions, section):
+        for pos, score_map in positions.items():
+            for item1, item2 in itertools.combinations(
+                    sorted(score_map.items()), 2):
+                score1, mutation_set1 = item1
+                score2, mutation_set2 = item2
+                mutations1 = getattr(mutation_set1, 'mutations', None)
+                mutations2 = getattr(mutation_set2, 'mutations', None)
+                has_conflict = (
+                        mutations1 is None or
+                        mutations2 is None or
+                        (mutation_set1.mutations & mutation_set2.mutations))
+                if has_conflict:
+                    phenotype1 = self.score_phenotypes[score1]
+                    phenotype2 = self.score_phenotypes[score2]
+                    self.phenotype_conflicts.append(
+                        '{} in {}: {} {} => {} {}'.format(section.drug_name,
+                                                          section.sheet_name,
+                                                          mutation_set1,
+                                                          phenotype1,
+                                                          mutation_set2,
+                                                          phenotype2))
+
     def _find_drug_summary(self, drug_summaries, drug_codes, section):
         drug_name = section.drug_name
         try:
@@ -780,6 +815,7 @@ class RulesWriter:
         self._write_error_group('Combination change', self.combination_changes)
         self._write_error_group('Missing fold shift', missing_fold_shift_reports)
         self._write_error_group('Invalid fold shift', self.invalid_fold_shifts)
+        self._write_error_group('Conflicting phenotype', self.phenotype_conflicts)
         self._write_error_group('Phenotype change', self.phenotype_changes)
 
 
@@ -889,9 +925,11 @@ def build_score_formula(positions):
     wild_type_score = positions.pop(None, {})
     score_terms = sorted((mutation_set, format_score(score))
                          for pos, pos_scores in positions.items()
-                         for score, mutation_set in pos_scores.items())
+                         for score, mutation_set in pos_scores.items()
+                         if score)
     for score, condition in sorted(wild_type_score.items()):
-        score_terms.insert(0, (condition, format_score(score)))
+        if score:
+            score_terms.insert(0, (condition, format_score(score)))
     if not score_terms:
         score_terms.append(('TRUE', '0'))
     score_formula = 'SCORE FROM ( {} )'.format(', '.join(
