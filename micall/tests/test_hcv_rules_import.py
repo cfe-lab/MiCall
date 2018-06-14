@@ -1711,6 +1711,46 @@ Mismatched wild type: NS3_GT3: Q186L in Paritaprevir expected D.
 
         self.assertWrites(expected_rules, entries)
 
+    def test_wildtype_conflict(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT3')
+        entries = [Namespace(mutation='WT 1',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='WT 2 [Conflicting WT]',
+                             section=section,
+                             phenotype='resistance possible')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: '3'
+    reference: HCV3-S52-NS3
+    region: NS3
+    rules: SCORE FROM ( TRUE => 0 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_use_in_algorithm(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT3')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='D186L [Use in algorithm]',
+                             section=section,
+                             phenotype='resistance possible')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: '3'
+    reference: HCV3-S52-NS3
+    region: NS3
+    rules: SCORE FROM ( D186L => 4 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
     def test_wild_type_checked_with_subtype(self):
         section = Namespace(drug_name='Velpatasvir', sheet_name='NS5A_GT2')
         entries = [Namespace(mutation='WT',
@@ -2001,6 +2041,32 @@ Invalid mutation: NS3_GT3: T40W (GT2a) (Mismatched subtype.).
     reference: HCV1A-H77-NS3
     region: NS3
     rules: SCORE FROM ( E30A => 4, T40W => 4 )
+  name: Paritaprevir
+"""
+
+        self.assertWrites(expected_rules, entries)
+
+    def test_combination_mixture(self):
+        section = Namespace(drug_name='Paritaprevir', sheet_name='NS3_GT1a')
+        entries = [Namespace(mutation='WT',
+                             section=section,
+                             phenotype='likely susceptible'),
+                   Namespace(mutation='E30A',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='E30W',
+                             section=section,
+                             phenotype='resistance possible'),
+                   Namespace(mutation='E30A +E30W',
+                             section=section,
+                             phenotype='resistance possible')]
+        expected_rules = """\
+- code: PTV
+  genotypes:
+  - genotype: 1A
+    reference: HCV1A-H77-NS3
+    region: NS3
+    rules: SCORE FROM ( E30AW => 4 )
   name: Paritaprevir
 """
 

@@ -127,7 +127,7 @@ how the scores are chosen.
 |      |                                                           | 1B | 8 | P29d, R30G, L31V, P32d, A92K, Y93H |
 |      |                                                           |    | 4 | L28AMT, P29S, R30HKQ, L31FIMW, Q54H, P58LS, Q62E, A92E, Y93N |
 |      |                                                           |    | Effect unknown | L28!AILMTV, R30!GHKLPQRST, L31!FILMVW, P32!LP, A92!AEKPTV, Y93!CFHLNY |
-|      |                                                           | 2  | 8 | TRUE, F28CS, L31M, C92R, Y93H |
+|      |                                                           | 2  | 8 | F28CS, L31M, C92R, Y93H |
 |      |                                                           |    | Effect unknown | F28!CFILS, L31!LM, C92!CR, Y93!HY |
 |      |                                                           | 3  | 8 | M28K, A30EK, L31FIMV, Y93H |
 |      |                                                           |    | 4 | M28T, A30SV, L31P, P58H, S62AILPRT, E92G |
@@ -183,8 +183,8 @@ how the scores are chosen.
 |      |                                                           | 2  | 4 | L31M |
 |      |                                                           | 3  | 4 | S24FG, M28GK, P29Q, A30GK, L31FIM, Y93H |
 |      |                                                           |    | Effect unknown | S24!FGS, M28!GKMT, A30!AGK, L31!FILM, E92!E, Y93!HY |
-|      | Velpatasvir (a component of Epclusa™ and Vosevi™)         | 1A | 8 | M28AGT, Q30EK, L31IMV, P32L, H58D, A92K, Y93CHNRSW |
-|      |                                                           |    | 4 | K24MT, M28AV, Q30GHLRT, L31F, S38Y, H58NPR, S85N, Y93LT, L153V, A213A, T377T |
+|      | Velpatasvir (a component of Epclusa™ and Vosevi™)         | 1A | 8 | M28GT, Q30EK, L31IMV, P32L, H58D, A92K, Y93CHNRSW |
+|      |                                                           |    | 4 | K24MT, M28AV, Q30GHLRT, L31F, S38Y, H58NPR, S85N, Y93LT, L153V |
 |      |                                                           |    | Effect unknown | K24CDFHILPVWY, M28!AGILMTV, Q30ADFMNPW, L31!FILMV, P32!LP, H58!CDHLNPQRY, A92!AKPTV, Y93ADEGIKMPQV |
 |      |                                                           | 1B | 8 | A92K, Y93HN |
 |      |                                                           |    | 4 | Q24K, L31IMV, P58T, Y93CRST |
@@ -199,7 +199,7 @@ how the scores are chosen.
 |      |                                                           |    | 4 | L30R, M31V, P32L, H54R, Y93CW |
 |      |                                                           |    | Effect unknown | L28!LMTV, Y93!CHNSWY |
 |      |                                                           | 5  | 4 | L31I |
-|      |                                                           | 6  | 8 | TRUE, L31V, P32ALQR |
+|      |                                                           | 6  | 8 | L31V, P32ALQR |
 |      |                                                           |    | 4 | F28MV, L31IM, T58GH, A92T, T93AHNS |
 |      |                                                           |    | Effect unknown | F28!AFMV, L31!ILMV, P32!ALPQR, T58!AGHPST, T93!ACFHLNSTY |
 | NS5b | Dasabuvir (a component of Holkira Pak™)                   | 1A | 8 | L314H, C316Y, A395G, M414ITV, N444K, E446KQ, Y448CH, A553TV, G554S, S556GR, Y561H |

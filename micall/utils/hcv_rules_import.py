@@ -615,11 +615,12 @@ class RulesWriter:
 
         self._check_fold_shift(entry, section, phenotype)
         if mutation.startswith('WT'):
-            # noinspection PyTypeChecker
-            score_map[None][score] = 'TRUE'
+            if '[Conflicting WT]' not in mutation:
+                score_map[None][score] = 'TRUE'
             return
 
-        match = re.match(r'([^(]*?) *(\(GT([^_]+).*\))? *(\[Conflicting WT\])?$',
+        match = re.match(r'([^(]*?) *(\(GT([^_]+).*\))? *'
+                         r'(\[Conflicting WT\])?(\[Use in algorithm\])?$',
                          mutation,
                          flags=re.IGNORECASE)
         if match is None:
@@ -902,7 +903,17 @@ def format_score(score):
 
 
 def calculate_component_score(combination, positions):
-    variant_calls = VariantCalls(combination.replace('+', ' '))
+    variants = {}  # {pos: mutation_text}
+    for mutation_text in combination.split('+'):
+        mutation_text = mutation_text.strip()
+        mutation_set = MutationSet(mutation_text)
+        old_mutation_text = variants.get(mutation_set.pos)
+        if old_mutation_text is not None:
+            mutation_text = old_mutation_text + ''.join(
+                m.variant
+                for m in mutation_set.mutations)
+        variants[mutation_set.pos] = mutation_text
+    variant_calls = VariantCalls(' '.join(variants.values()))
     combination_positions = {}
     for mutation_set in variant_calls:
         position_scores = positions[mutation_set.pos]

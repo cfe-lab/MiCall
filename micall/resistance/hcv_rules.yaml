@@ -64,9 +64,9 @@
   - genotype: '2'
     reference: HCV2-JFH-1-NS5a
     region: NS5a
-    rules: SCORE FROM ( TRUE => 8, F28CS => 8, F28!CFILS => "Effect unknown",
-       L31M => 8, L31!LM => "Effect unknown", C92R => 8,
-       C92!CR => "Effect unknown", Y93H => 8, Y93!HY => "Effect unknown" )
+    rules: SCORE FROM ( F28CS => 8, F28!CFILS => "Effect unknown", L31M => 8,
+       L31!LM => "Effect unknown", C92R => 8, C92!CR => "Effect unknown",
+       Y93H => 8, Y93!HY => "Effect unknown" )
   - genotype: '3'
     reference: HCV3-S52-NS5a
     region: NS5a
@@ -583,13 +583,12 @@
     reference: HCV1A-H77-NS5a
     region: NS5a
     rules: SCORE FROM ( K24MT => 4, K24CDFHILPVWY => "Effect unknown", M28AV => 4,
-       M28AGT => 8, M28!AGILMTV => "Effect unknown", Q30EK => 8, Q30GHLRT => 4,
+       M28GT => 8, M28!AGILMTV => "Effect unknown", Q30EK => 8, Q30GHLRT => 4,
        Q30ADFMNPW => "Effect unknown", L31F => 4, L31IMV => 8,
        L31!FILMV => "Effect unknown", P32L => 8, P32!LP => "Effect unknown",
        S38Y => 4, H58D => 8, H58NPR => 4, H58!CDHLNPQRY => "Effect unknown",
        S85N => 4, A92K => 8, A92!AKPTV => "Effect unknown", Y93CHNRSW => 8,
-       Y93LT => 4, Y93ADEGIKMPQV => "Effect unknown", L153V => 4, A213A => 4,
-       T377T => 4 )
+       Y93LT => 4, Y93ADEGIKMPQV => "Effect unknown", L153V => 4 )
   - genotype: 1B
     reference: HCV1B-Con1-NS5a
     region: NS5a
@@ -626,8 +625,8 @@
   - genotype: '6'
     reference: HCV6-EUHK2-NS5a
     region: NS5a
-    rules: SCORE FROM ( TRUE => 8, F28MV => 4, F28!AFMV => "Effect unknown",
-       L31IM => 4, L31V => 8, L31!ILMV => "Effect unknown", P32ALQR => 8,
+    rules: SCORE FROM ( F28MV => 4, F28!AFMV => "Effect unknown", L31IM => 4,
+       L31V => 8, L31!ILMV => "Effect unknown", P32ALQR => 8,
        P32!ALPQR => "Effect unknown", T58GH => 4, T58!AGHPST => "Effect unknown",
        A92T => 4, T93AHNS => 4, T93!ACFHLNSTY => "Effect unknown" )
   name: Velpatasvir
