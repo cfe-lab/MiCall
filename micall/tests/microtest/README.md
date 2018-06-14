@@ -16,7 +16,7 @@ The scenarios that each file tests are:
 * 2000A-V3LOOP - missing coverage of the first codon
 * 2010A-V3LOOP - five reads at the beginning of the reference and five reads at
   the end, with a one-codon gap between
-* 2020A-GP41 - starts at second codon and inserts extra codon after first five
+* 2020A-GP41 - starts at second codon and inserts extra codon after first ten
 * 2030A-V3LOOP - garbage reads, all different
 * 2040-HLA-B - exon2 of HLA-B, half have a changed base at position 7 to test
   mixtures in the consensus
