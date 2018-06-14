@@ -281,32 +281,35 @@ similar steps to setting up a development workstation. Follow these steps:
 
 1. Check that all the issues in the current milestone are closed, and make sure
     the code works in your development environment. Run all the unit
-    tests as described above, process the microtest data set in your local copy
-    of Kive, and process all the samples from test_samples.csv using the
-    `release_test_*.py` scripts to compare the results of the new release with
-    the previous version. Get the comparison signed off to begin the release
-    process.
+    tests as described above, process the microtest data set with your local copy
+    `micall_basespace.py`.
 2. Check if the kiveapi package needs a new release by looking for new commits.
     Make sure you tested with the latest version.
-3. Determine what version number should be used next. Update the version number
-    in `settings_default.py` if it hasn't been updated already, commit, and push.
+3. Determine what version number should be used next.
 4. Copy the previous pipeline on QAI/lab_miseq_pipelines to make a new version.
     Use the `projects_dump.py` script and compare `projects.json` to check that
     the projects match.
+5. Check the history of the HIV and HCV rules files in the `micall/resistance`
+    folder. If they have changed, create a new display file in the `docs` folder
+    and upgrade the version numbers in the `genreport.yaml` file.
 5. Check the history of the `micall.alignment` folder. If it has changed since
     the last release, then update the version number in `setup.py`.
 6. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y
-    matches the version you used in `settings_default.py`. If you have to redo
+    matches the version you used in QAI. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
     so on. Mark the release as pre-release until you finish deploying it.
-7. Upgrade the scripts and docker image in Kive, and record the id of the new
-    pipeline. You might
+7. Upgrade the scripts and docker image in your local Kive server. Process the
+    microtest data.
+7. Upgrade the scripts and docker image in the Kive test server, and record the
+    id of the new pipeline. You might
     find the Kive project's `dump_pipeline.py` and `upload_pipeline.py` scripts
-    helpful. They are in the `utils` folder. First upgrade them on the test
-    server, run them on a few samples, then upgrade them on the production
-    server and run them on a few samples.
-8. Stop the micall_watcher service after you check that it's not processing
-    any important runs.
+    helpful. They are in the `utils` folder.
+8. Process all the samples from test_samples.csv on the Kive test server using the
+    `release_test_*.py` scripts to compare the results of the new release with
+    the previous version. Get the comparison signed off to begin the release
+    process.
+8. Stop the micall_watcher service on the main Kive server after you check that
+    it's not processing any important runs.
 
         ssh user@server
         tail /var/log/micall/micall.log
