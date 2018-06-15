@@ -14,7 +14,7 @@ from pathlib import Path
 def parse_args():
     parser = ArgumentParser(description='Publish sample results for testing a new release.')
     parser.add_argument(
-        'test_folder',
+        '--test_folder',
         type=Path,
         default=os.environ.get('MICALL_RAW_DATA',
                                Path.home() / "data/RAW_DATA"),

@@ -5,7 +5,7 @@ from collections import namedtuple, defaultdict, Counter
 from difflib import Differ
 from enum import IntEnum
 from functools import partial
-from itertools import groupby, zip_longest
+from itertools import groupby, zip_longest, chain
 from glob import glob
 from multiprocessing.pool import Pool
 from operator import itemgetter
@@ -16,7 +16,7 @@ import pandas as pd
 import seaborn as sns
 import Levenshtein
 
-MICALL_VERSION = '7.8'
+MICALL_VERSION = '7.9'
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
@@ -347,6 +347,9 @@ def map_consensus_sequences(files):
             else:
                 subsequence = '-' * (offset-first+1) + sequence
             subsequence = subsequence[:last-first+1]
+            if MICALL_VERSION == '7.9':
+                # We changed mixtures with deletions to lower case.
+                subsequence = subsequence.upper()
             consensus_sequences[(seed, region, cutoff)] = subsequence
     return consensus_sequences
 
@@ -408,6 +411,10 @@ def compare_consensus(sample,
                                                 cutoff,
                                                 source_fields,
                                                 target_fields)
+        if False and consensus_distance.pct_diff > 5:
+            print(sample.run.source_path, sample.name, consensus_distance)
+            print(source_fields)
+            print(target_fields)
         if consensus_distance is not None:
             consensus_distances.append(consensus_distance)
         if source_fields == target_fields:
@@ -467,7 +474,8 @@ def plot_distances(distance_data, filename, title, plot_variable='distance'):
     distance_data = distance_data.sort_values(['region', 'cutoff'])
     sns.set()
     num_plots = len(seeds)
-    figure, axes_sets = plt.subplots(nrows=num_plots, ncols=1)
+    figure, axes_sets = plt.subplots(nrows=num_plots, ncols=1, squeeze=False)
+    axes_sets = list(chain(*axes_sets))  # 2-dim array -> 1-dim list
     for ax, seed in zip(axes_sets, seeds):
         seed_data = distance_data[distance_data['region'] == seed]
         seed_data = seed_data.assign(
@@ -488,8 +496,7 @@ def plot_distances(distance_data, filename, title, plot_variable='distance'):
                       data=seed_data,
                       color='k',
                       ax=ax)
-        ax.set_ylabel(seed + ' ' + plot_variable, rotation=85)
-        ax.get_yaxis().set_label_coords(-0.09, 0.5)
+        ax.set_ylabel(seed + '\n' + plot_variable)
     axes_sets[0].set_title(title)
     plt.savefig(filename)
 
@@ -537,10 +544,10 @@ def main():
         group_distances = distance_data[distance_data['region'].isin(region_group)]
         plot_distances(group_distances,
                        'consensus_distances_{}.svg'.format(page_num),
-                       'Consensus Distances Between v7.7 and v7.8')
+                       'Consensus Distances Between Previous and v' + MICALL_VERSION)
         plot_distances(group_distances,
                        'consensus_diffs_{}.svg'.format(page_num),
-                       'Consensus Differences Between v7.7 and v7.8',
+                       'Consensus Differences Between Previous and v' + MICALL_VERSION,
                        'pct_diff')
     print('Finished {} samples.'.format(i))
 
