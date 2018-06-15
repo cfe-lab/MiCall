@@ -39,9 +39,6 @@ class Scenarios(IntEnum):
     REMAP_COUNTS_CHANGED = 1
     MAIN_CONSENSUS_CHANGED = 2
     OTHER_CONSENSUS_CHANGED = 4
-    V78_KEY_POS_REMOVED_RT318 = 8
-    V78_KEY_POS_ADDED_INT263 = 16
-    V78_KEY_POS_ADDED_INT163 = 32
 
 
 differ = Differ()
@@ -287,18 +284,6 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
             if (source_counts != target_counts and
                     scenarios_reported & Scenarios.REMAP_COUNTS_CHANGED):
                 scenarios[Scenarios.REMAP_COUNTS_CHANGED].append(scenario)
-            elif (MICALL_VERSION == '7.8' and
-                  (region, source_key_pos) == ('RT', '318') and
-                  scenarios_reported & Scenarios.V78_KEY_POS_REMOVED_RT318):
-                scenarios[Scenarios.V78_KEY_POS_REMOVED_RT318].append(scenario)
-            elif (MICALL_VERSION == '7.8' and
-                  (region, target_key_pos) == ('INT', '263') and
-                  scenarios_reported & Scenarios.V78_KEY_POS_ADDED_INT263):
-                scenarios[Scenarios.V78_KEY_POS_ADDED_INT263].append(scenario)
-            elif (MICALL_VERSION == '7.8' and
-                  (region, target_key_pos) == ('INT', '163') and
-                  scenarios_reported & Scenarios.V78_KEY_POS_ADDED_INT163):
-                scenarios[Scenarios.V78_KEY_POS_ADDED_INT163].append(scenario)
             else:
                 diffs.append(message)
 
@@ -311,8 +296,6 @@ def adjust_region(region):
 
 
 def adjust_offset(offset, region):
-    if MICALL_VERSION == '7.8' and region.startswith('HIV1-'):
-        return '???'
     return offset
 
 
