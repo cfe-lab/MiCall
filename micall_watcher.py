@@ -120,7 +120,7 @@ def main_loop(args, sample_queue):
 
 def main():
     args = parse_args()
-    logger.info('Starting up.')
+    logger.info('Starting up with server %s', args.kive_server)
 
     sample_queue = Queue(maxsize=2)
     wait = True

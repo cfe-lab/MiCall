@@ -698,11 +698,14 @@ def test_poll_first_sample_already_running(raw_data_with_two_samples,
                     groups_allowed=ALLOWED_GROUPS,
                     dataset_id=quality_dataset_id)
     dataset1.name = '140101_M01234_quality.csv'
+    unfinished_dataset = Mock(name='unfinished_csv', dataset_id=None)
     mock_session.find_datasets.side_effect = [[dataset1], [], []]
     filter_run = MagicMock(
         name='filter_run',
         pipeline_id=default_config.micall_filter_quality_pipeline_id,
-        raw=dict(inputs=[dict(index=1, dataset=quality_dataset_id)]))
+        raw=dict(inputs=[dict(index=1, dataset=quality_dataset_id)]),
+        **{'get_results.return_value': dict(purged_csv=unfinished_dataset),
+           'is_complete.return_value': False})
     mock_session.find_runs.return_value = [filter_run]
     kive_watcher = KiveWatcher(default_config)
 
@@ -746,7 +749,7 @@ def test_poll_first_sample_with_other_running(raw_data_with_two_samples,
     mock_session.run_pipeline.assert_called_once()
 
 
-def test_poll_first_sample_with_other_purged(raw_data_with_two_samples,
+def test_poll_first_sample_completed_and_purged(raw_data_with_two_samples,
                                              mock_open_kive,
                                              default_config):
     """ A matching run finished recently, but it was purged. """
@@ -765,7 +768,8 @@ def test_poll_first_sample_with_other_purged(raw_data_with_two_samples,
         name='filter_run',
         pipeline_id=default_config.micall_filter_quality_pipeline_id,
         raw=dict(inputs=[dict(index=1, dataset=quality_dataset_id)]),
-        **{'get_results.return_value': dict(purged_csv=purged_dataset)})
+        **{'get_results.return_value': dict(purged_csv=purged_dataset),
+           'is_complete.return_value': True})
     mock_session.find_runs.return_value = [filter_run]
     kive_watcher = KiveWatcher(default_config)
 
