@@ -764,23 +764,6 @@ HCV-1a,HCV-Foo-NS5a,15,4,102,0,0,0,0,500,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
         self.assertEqual(expected_aminos, aminos)
 
-    def test_coverage_missing_at_end(self):
-        amino_csv = DictReader(StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
-HCV-1a,HCV-Foo-NS5a,15,1,99,0,0,0,0,0,0,0,0,505,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,505
-HCV-1a,HCV-Foo-NS5a,15,4,100,0,0,0,0,404,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,404
-"""))
-        min_fraction = 0.2
-        min_coverage = 9
-        expected_aminos = []
-
-        aminos = list(read_aminos(amino_csv,
-                                  min_fraction,
-                                  min_coverage=min_coverage))
-
-        self.assertEqual(expected_aminos, aminos)
-
     def test_resistant_even_with_missing_midi(self):
         amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\

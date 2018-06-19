@@ -192,9 +192,6 @@ def read_aminos(amino_rows, min_fraction, reported_regions=None, min_coverage=0)
             max_pos = 561
         else:
             max_pos = None
-        # TODO: Remove last_coverage check after validating against Ruby version.
-        last_coverage = 0
-        last_covered_pos = None
         for row in rows:
             counts = list(map(int, (row[f] for f in coverage_columns)))
             coverage = int(row['coverage'])
@@ -203,12 +200,9 @@ def read_aminos(amino_rows, min_fraction, reported_regions=None, min_coverage=0)
                 aminos.append({})
             if max_pos and pos <= max_pos:
                 total_coverage += coverage
-            if pos == max_pos:
-                last_coverage = coverage
             if coverage == 0 or coverage < min_coverage:
                 pos_aminos = {}
             else:
-                last_covered_pos = pos
                 min_count = max(1, coverage * min_fraction)  # needs at least 1
                 pos_aminos = {report_names[i]: count/coverage
                               for i, count in enumerate(counts)
@@ -217,13 +211,7 @@ def read_aminos(amino_rows, min_fraction, reported_regions=None, min_coverage=0)
                 if ins_count >= min_count:
                     pos_aminos['i'] = ins_count / coverage
             aminos.append(pos_aminos)
-        if (region.endswith('-NS5b') and
-                last_covered_pos is not None and
-                last_covered_pos < 400):
-            # Override last_coverage check when MIDI is missing.
-            last_coverage = min_coverage
-        if max_pos is None or min(last_coverage,
-                                  total_coverage // max_pos) >= min_coverage:
+        if max_pos is None or (total_coverage // max_pos) >= min_coverage:
             # Need original region to look up wild type.
             yield AminoList(region, aminos, genotype)
 

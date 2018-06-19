@@ -15,7 +15,6 @@ except ImportError:
     from micall_logging_config import LOGGING
 
 POLLING_DELAY = 10  # seconds between scans for new samples or finished runs
-logging.config.dictConfig(LOGGING)
 logger = logging.getLogger(__name__)
 
 
@@ -140,4 +139,5 @@ def main():
 
 
 if __name__ == '__main__':
+    logging.config.dictConfig(LOGGING)
     main()
