@@ -181,12 +181,7 @@ def read_mutations(drug_classes, csv_file):
 
     Returns a list of dictionaries.
     """
-    err_string = "Error in mutations file '{}'".format(csv_file.name)
-    exp_set = frozenset("drug_class,mutation,prevalence,genotype".split(","))
     data_lst = list(csv.DictReader(csv_file, restkey="dummy"))
-    # make sure that all lines have exactly the required fields
-    if sum([set(od.keys()) == exp_set for od in data_lst]) != len(data_lst):
-        raise RuntimeError("{}: unexpected data found.".format(err_string))
     tmp_dct = defaultdict(list)
     for od_num, od in enumerate(data_lst):
         d_class, mut_str = od['drug_class'], od["mutation"]
@@ -208,13 +203,7 @@ def read_resistance(regions, csv_file):
         resistance calls from its regions
     :param csv_file: the resistance calls to load
     """
-    err_string = "Error in resistance file '{}'".format(csv_file.name)
-    exp_set = frozenset(
-        "region,drug_class,drug,drug_name,level,level_name,score,genotype".split(","))
     data_lst = list(csv.DictReader(csv_file, restkey="dummy"))
-    # make sure that all lines have exactly the required fields
-    if sum([set(od.keys()) == exp_set for od in data_lst]) != len(data_lst):
-        raise RuntimeError("{}: unexpected data found.".format(err_string))
     for od in data_lst:
         template = regions[od['region']]
         level = int(od['level'])

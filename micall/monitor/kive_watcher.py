@@ -46,7 +46,8 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'mixed_amino_merged_csv',
                       'resistance_csv',
                       'mutations_csv',
-                      'resistance_fail_csv']
+                      'resistance_fail_csv',
+                      'resistance_consensus_csv']
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
