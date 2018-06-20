@@ -57,6 +57,10 @@ def parse_args():
                         help='CSV coverage scores.')
     parser.add_argument('coverage_maps_tar',
                         help='tar file of coverage maps.')
+    parser.add_argument('aligned_csv',
+                        help='CSV containing individual reads aligned to consensus')
+    parser.add_argument('g2p_aligned_csv',
+                        help='CSV containing individual reads aligned to V3LOOP')
 
     return parser.parse_args()
 
@@ -85,6 +89,8 @@ def load_sample(args):
                     conseq_region_csv=args.conseq_region_csv,
                     failed_align_csv=args.failed_align_csv,
                     coverage_scores_csv=args.coverage_scores_csv,
+                    aligned_csv=args.aligned_csv,
+                    g2p_aligned_csv=args.g2p_aligned_csv,
                     scratch_path=scratch_path)
     sample.name = None  # Since the file names are messy in Kive.
     return sample
