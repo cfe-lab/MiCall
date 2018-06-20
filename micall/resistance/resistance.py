@@ -257,14 +257,18 @@ def get_position_consensus(position_aminos):
     return consensus
 
 
-def write_consensus(resistance_consensus_writer, amino_list):
+def write_consensus(resistance_consensus_writer, amino_list, alg_version):
     if resistance_consensus_writer is None:
         return
     consensus = ''.join(get_position_consensus(position_aminos)
                         for position_aminos in amino_list.aminos).rstrip('-')
     stripped_consensus = consensus.lstrip('-')
     offset = len(consensus) - len(stripped_consensus)
-    resistance_consensus_writer.writerow(dict(region=amino_list.region,
+    reported_region = get_reported_region(amino_list.region)
+    resistance_consensus_writer.writerow(dict(seed=amino_list.seed,
+                                              region=reported_region,
+                                              coord_region=amino_list.region,
+                                              version=alg_version,
                                               offset=offset,
                                               sequence=stripped_consensus))
 
@@ -322,8 +326,10 @@ def write_resistance(aminos,
     for genotype, genotype_aminos in groupby(aminos, attrgetter('genotype')):
         region_results = []
         for amino_list in genotype_aminos:
-            write_consensus(resistance_consensus_writer, amino_list)
             asi = algorithms.get(genotype)
+            write_consensus(resistance_consensus_writer,
+                            amino_list,
+                            asi.alg_version)
             if asi is None:
                 continue
             region = amino_list.region
@@ -370,7 +376,12 @@ def write_resistance(aminos,
 
 def create_consensus_writer(resistance_consensus_csv):
     resistance_consensus_writer = DictWriter(resistance_consensus_csv,
-                                             ['region', 'offset', 'sequence'],
+                                             ['seed',
+                                              'region',
+                                              'coord_region',
+                                              'version',
+                                              'offset',
+                                              'sequence'],
                                              lineterminator=os.linesep)
     resistance_consensus_writer.writeheader()
     return resistance_consensus_writer

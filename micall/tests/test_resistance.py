@@ -1023,8 +1023,9 @@ drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
 NRTI,M41L,1.0,,RT,HIV1B-seed,RT,8.3
 """
         expected_resistance_consensus = """\
-region,offset,sequence
-RT,0,PISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTELEKEGKISKIGPENPYNTPVFAIKK\
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,8.3,0,\
+PISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTELEKEGKISKIGPENPYNTPVFAIKK\
 KDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSVPLDEDFRKYTAF\
 TIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPDIVIYQYMDDLYVGSDLEI\
 GQHRTKIEELRQHLLRWGLTTPDKKHQKEPPFLWMGYELHPDKWTVQPIVLPEKDSWTVNDIQKL\
@@ -1256,6 +1257,9 @@ class GenotypeTest(TestCase):
 
 
 class WriteConsensusTest(TestCase):
+    def setUp(self):
+        self.version = '1.0'
+
     def test_simple(self):
         resistance_consensus_csv = StringIO()
         writer = create_consensus_writer(resistance_consensus_csv)
@@ -1264,10 +1268,10 @@ class WriteConsensusTest(TestCase):
                                None,
                                'HIV1B-seed')
         expected_resistance_consensus_csv = """\
-region,offset,sequence
-RT,0,ARMS
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,1.0,0,ARMS
 """
-        write_consensus(writer, amino_list)
+        write_consensus(writer, amino_list, self.version)
 
         self.assertEqual(expected_resistance_consensus_csv,
                          resistance_consensus_csv.getvalue())
@@ -1280,10 +1284,10 @@ RT,0,ARMS
                                None,
                                'HIV1B-seed')
         expected_resistance_consensus_csv = """\
-region,offset,sequence
-RT,0,A-MS
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,1.0,0,A-MS
 """
-        write_consensus(writer, amino_list)
+        write_consensus(writer, amino_list, self.version)
 
         self.assertEqual(expected_resistance_consensus_csv,
                          resistance_consensus_csv.getvalue())
@@ -1296,10 +1300,10 @@ RT,0,A-MS
                                None,
                                'HIV1B-seed')
         expected_resistance_consensus_csv = """\
-region,offset,sequence
-RT,2,MS
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,1.0,2,MS
 """
-        write_consensus(writer, amino_list)
+        write_consensus(writer, amino_list, self.version)
 
         self.assertEqual(expected_resistance_consensus_csv,
                          resistance_consensus_csv.getvalue())
@@ -1312,10 +1316,10 @@ RT,2,MS
                                None,
                                'HIV1B-seed')
         expected_resistance_consensus_csv = """\
-region,offset,sequence
-RT,0,AR
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,1.0,0,AR
 """
-        write_consensus(writer, amino_list)
+        write_consensus(writer, amino_list, self.version)
 
         self.assertEqual(expected_resistance_consensus_csv,
                          resistance_consensus_csv.getvalue())
@@ -1328,10 +1332,10 @@ RT,0,AR
                                None,
                                'HIV1B-seed')
         expected_resistance_consensus_csv = """\
-region,offset,sequence
-RT,0,AR[MT]S
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,1.0,0,AR[MT]S
 """
-        write_consensus(writer, amino_list)
+        write_consensus(writer, amino_list, self.version)
 
         self.assertEqual(expected_resistance_consensus_csv,
                          resistance_consensus_csv.getvalue())
