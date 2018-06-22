@@ -1344,7 +1344,9 @@ def test_fetch_run_status_incomplete(mock_open_kive, pipelines_config):
 
 
 def test_fetch_run_status_filter_quality(raw_data_with_two_runs,
+                                         mock_open_kive,
                                          pipelines_config):
+    assert mock_open_kive
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     folder_watcher = FolderWatcher(base_calls)
@@ -1363,7 +1365,9 @@ def test_fetch_run_status_filter_quality(raw_data_with_two_runs,
 
 
 def test_fetch_run_status_main(raw_data_with_two_runs,
+                               mock_open_kive,
                                pipelines_config):
+    assert mock_open_kive
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     folder_watcher = FolderWatcher(base_calls)
@@ -1398,7 +1402,9 @@ row,name
 
 
 def test_fetch_run_status_main_and_resistance(raw_data_with_two_runs,
+                                              mock_open_kive,
                                               pipelines_config):
+    assert mock_open_kive
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     folder_watcher = FolderWatcher(base_calls)
@@ -1434,7 +1440,9 @@ def test_fetch_run_status_main_and_resistance(raw_data_with_two_runs,
 
 
 def test_fetch_run_status_main_and_midi(raw_data_with_hcv_pair,
+                                        mock_open_kive,
                                         pipelines_config):
+    assert mock_open_kive
     base_calls = (raw_data_with_hcv_pair /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     folder_watcher = FolderWatcher(base_calls)
