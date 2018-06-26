@@ -602,12 +602,11 @@ class KiveWatcher:
     def fetch_run_status(self, run, folder_watcher, pipeline_type, sample_watcher):
         self.check_session()
         try:
-            run_status = self.kive_retry(lambda: run.get_status())
+            is_complete = self.kive_retry(lambda: run.is_complete())
         except KiveRunFailedException as ex:
             if 'fail' in ex.args[0]:
                 raise
             return self.run_pipeline(folder_watcher, pipeline_type, sample_watcher)
-        is_complete = run_status == 'Complete.'
         if is_complete and pipeline_type != PipelineType.FILTER_QUALITY:
             sample_name = (sample_watcher.sample_group.names[1]
                            if pipeline_type in (PipelineType.MIDI,

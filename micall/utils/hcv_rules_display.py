@@ -66,12 +66,13 @@ description: version cfe-hcv {HCV_RULES_VERSION} - {HCV_RULES_DATE}
 
 Rules are applied for each drug and each genotype found in a sample. Each rule
 contains a score and a list of the mutation descriptions that receive that
-score. A mutation description is the position number of an amino acid within
-the gene region, plus a variant amino acid. An exclamation mark in the mutation
-means any variant except those listed. A "TRUE" mutation is always applied for
-that genotype. A score is either a number, or a name in quotes. The program
-adds up all the numerical scores and collects all the names, before deciding on
-a resistance report.
+score. A mutation is represented by a reference amino acid, the position of the
+amino acid within the gene region, and the variant amino acid detected. An
+exclamation mark in the mutation means any variant except those listed. "TRUE"
+in the mutations column means that the score is always applied for that
+genotype, regardless of any mutations. A score is either a number, or a name in
+quotes. The program adds up all the numerical scores and collects all the
+names, before deciding on a resistance report.
 
 * If the score is 4, then it reports "Resistance Possible".
 * If the score is 8 or more, then it reports "Resistance Likely".
