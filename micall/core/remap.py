@@ -36,6 +36,7 @@ MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
 MAX_REMAPS = 3                  # Number of remapping attempts if mapping efficiency unsatisfied
 
 # SAM file format
+# TODO: move this to a common location (shared with prelim_map.py)
 fieldnames = [
     'qname',
     'flag',
@@ -414,23 +415,10 @@ def write_remap_counts(remap_counts_writer, counts, title, distance_report=None)
         remap_counts_writer.writerow(row)
 
 
-def remap(fastq1,
-          fastq2,
-          prelim_csv,
-          remap_csv,
-          remap_counts_csv,
-          remap_conseq_csv,
-          unmapped1,
-          unmapped2,
-          work_path='',
-          nthreads=BOWTIE_THREADS,
-          callback=None,
-          count_threshold=10,
-          rdgopen=READ_GAP_OPEN,
-          rfgopen=REF_GAP_OPEN,
-          stderr=sys.stderr,
-          gzip=False,
-          debug_file_prefix=None):
+def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_csv,
+          unmapped1, unmapped2, work_path='', nthreads=BOWTIE_THREADS, callback=None,
+          count_threshold=10, rdgopen=READ_GAP_OPEN, rfgopen=REF_GAP_OPEN, stderr=sys.stderr,
+          gzip=False, debug_file_prefix=None):
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
@@ -471,7 +459,7 @@ def remap(fastq1,
         logger.error('No FASTQ found at %s', fastq1)
         sys.exit(1)
 
-    if not os.path.exists(fastq2):
+    if fastq2 is not None and not os.path.exists(fastq2):
         logger.error('No FASTQ found at %s', fastq2)
         sys.exit(1)
 
@@ -485,7 +473,7 @@ def remap(fastq1,
                 pass
             fastq1 += '.gz'
 
-        if not fastq2.endswith('.gz'):
+        if fastq2 is not None and not fastq2.endswith('.gz'):
             try:
                 os.symlink(fastq2, fastq2+'.gz')
             except OSError:
@@ -506,12 +494,13 @@ def remap(fastq1,
     # record the raw read count
     raw_count = line_counter.count(fastq1, gzip=gzip) / 2  # 4 lines per record in FASTQ, paired
 
-    remap_counts_writer = csv.DictWriter(
-        remap_counts_csv,
-        'type count filtered_count seed_dist other_dist other_seed'.split(),
-        lineterminator=os.linesep)
-    remap_counts_writer.writeheader()
-    remap_counts_writer.writerow(dict(type='raw', count=raw_count))
+    if remap_counts_csv:
+        remap_counts_writer = csv.DictWriter(
+          remap_counts_csv,
+            'type count filtered_count seed_dist other_dist other_seed'.split(),
+            lineterminator=os.linesep)
+        remap_counts_writer.writeheader()
+        remap_counts_writer.writerow(dict(type='raw', count=raw_count))
 
     # convert preliminary CSV to SAM, count reads
     if callback:
@@ -554,10 +543,11 @@ def remap(fastq1,
                 callback(progress=raw_count)
 
             # report preliminary counts to file
-            remap_counts_writer.writerow(
-                dict(type='prelim %s' % refname,
-                     count=count,
-                     filtered_count=filtered_count))
+            if remap_counts_csv:
+                remap_counts_writer.writerow(
+                    dict(type='prelim %s' % refname,
+                         count=count,
+                         filtered_count=filtered_count))
             if refname == '*':
                 continue
             refgroup = projects.getSeedGroup(refname)
@@ -591,10 +581,12 @@ def remap(fastq1,
             callback(message='... remap iteration %d' % n_remaps, progress=0)
 
         # reset unmapped files with each iteration
-        unmapped1.seek(0)
-        unmapped1.truncate()
-        unmapped2.seek(0)
-        unmapped2.truncate()
+        if unmapped1:
+            unmapped1.seek(0)
+            unmapped1.truncate()
+        if unmapped2:
+            unmapped2.seek(0)
+            unmapped2.truncate()
 
         if debug_file_prefix is None:
             next_debug_prefix = None
@@ -630,10 +622,11 @@ def remap(fastq1,
                                 distance_report=distance_report)
         new_seed_names = set(conseqs.iterkeys())
         n_remaps += 1
-        write_remap_counts(remap_counts_writer,
-                           new_counts,
-                           title='remap-{}'.format(n_remaps),
-                           distance_report=distance_report)
+        if remap_counts_csv:
+            write_remap_counts(remap_counts_writer,
+                               new_counts,
+                               title='remap-{}'.format(n_remaps),
+                               distance_report=distance_report)
 
         if new_seed_names == old_seed_names:
             # stopping criterion 1 - none of the regions gained reads
@@ -696,32 +689,19 @@ def remap(fastq1,
         # current consensus!
         conseq = conseqs.get(refname) or projects.getReference(refname)
         remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
-    write_remap_counts(remap_counts_writer,
-                       new_counts,
-                       title='remap-final')
-
-    # report number of unmapped reads
-    remap_counts_writer.writerow(dict(type='unmapped',
+    
+    if remap_counts_csv:
+        write_remap_counts(remap_counts_writer,
+                           new_counts,
+                           title='remap-final')
+        # report number of unmapped reads
+        remap_counts_writer.writerow(dict(type='unmapped',
                                       count=unmapped_count))
 
 
-def map_to_reference(fastq1,
-                     fastq2,
-                     refseqs,
-                     reffile,
-                     samfile,
-                     unmapped1,
-                     unmapped2,
-                     bowtie2,
-                     bowtie2_build,
-                     raw_count,
-                     rdgopen,
-                     rfgopen,
-                     nthreads,
-                     new_counts,
-                     stderr,
-                     callback,
-                     debug_file_prefix=None):
+def map_to_reference(fastq1, fastq2, refseqs, reffile, samfile, unmapped1, unmapped2,
+                     bowtie2, bowtie2_build, raw_count, rdgopen, rfgopen, nthreads,
+                     new_counts, stderr, callback, debug_file_prefix=None):
     """ Map a pair of FASTQ files to a set of reference sequences.
 
     @param fastq1: FASTQ file with the forward reads
@@ -759,19 +739,27 @@ def map_to_reference(fastq1,
     ref_gap_open_penalty = rfgopen
 
     # stream output from bowtie2
-    bowtie_args = ['--wrapper', 'micall-0',
-                   '--quiet',
-                   '-x', reffile,
-                   '--rdg', "{},{}".format(read_gap_open_penalty,
-                                           READ_GAP_EXTEND),
-                   '--rfg', "{},{}".format(ref_gap_open_penalty,
-                                           REF_GAP_EXTEND),
-                   '-1', fastq1,
-                   '-2', fastq2,
-                   '--no-hd',  # no header lines (start with @)
-                   '--local',
-                   '-X', '1200',
-                   '-p', str(nthreads)]
+    bowtie_args = [
+        '--wrapper', 'micall-0',
+        '--quiet',
+        '-x', reffile,
+        '--rdg', "{},{}".format(read_gap_open_penalty,
+                                READ_GAP_EXTEND),
+        '--rfg', "{},{}".format(ref_gap_open_penalty,
+                                REF_GAP_EXTEND)
+    ]
+    
+    if fastq2 is None:
+        bowtie_args.extend(['-U', fastq1])
+    else:
+        bowtie_args.extend(['-1', fastq1, '-2', fastq2])
+        
+    bowtie_args.extend([
+        '--no-hd',  # no header lines (start with @)
+        '--local',
+        '-X', '1200',
+        '-p', str(nthreads)
+    ])  
 
     new_counts.clear()
     unmapped_count = 0
@@ -795,8 +783,13 @@ def map_to_reference(fastq1,
 
             if is_unmapped_read(bitflag):
                 # did not map to any reference
-                unmapped_file = unmapped1 if is_first_read(bitflag) else unmapped2
-                unmapped_file.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+                if is_first_read(bitflag):
+                    if unmapped1:
+                        unmapped1.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+                else:
+                    if unmapped2:
+                        unmapped2.write('@%s\n%s\n+\n%s\n' % (qname, seq, qual))
+
                 unmapped_count += 1
                 continue
 
@@ -893,7 +886,7 @@ class MixedReferenceSplitter(object):
         fastq.write('@{}\n{}\n+\n{}\n'.format(qname, seq, quality))
 
 
-def matchmaker(samfile, include_singles=False):
+def matchmaker(samfile, include_singles):
     """
     An iterator that returns pairs of reads sharing a common qname from a SAM file.
     Note that unpaired reads will be left in the cached_rows dictionary and
@@ -944,36 +937,60 @@ def find_top_token(base_counts):
     return top_token
 
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser(
         description='Iterative remapping of bowtie2 by reference.')
 
-    parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
-    parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-    parser.add_argument('prelim_csv',
+    parser.add_argument('-fastq1', required=True,
+                        help='<input> FASTQ containing forward reads')
+    
+    parser.add_argument('-fastq2', required=False,
+                        default=None, 
+                        help='<input, optional> FASTQ containing reverse reads')
+    
+    parser.add_argument('-prelim_csv',
+                        required=True,
                         type=argparse.FileType('rU'),
                         help='<input> CSV containing preliminary map output (modified SAM)')
-    parser.add_argument('remap_csv',
+    
+    parser.add_argument('-remap_csv', required=True,
                         type=argparse.FileType('w'),
                         help='<output> CSV containing remap output (modified SAM)')
-    parser.add_argument('remap_counts_csv',
+    
+    parser.add_argument('-remap_counts_csv',
+                        required=False,
                         type=argparse.FileType('w'),
-                        help='<output> CSV containing numbers of mapped reads')
-    parser.add_argument('remap_conseq_csv',
+                        help='<output, optional> CSV containing numbers of mapped reads')
+    
+    parser.add_argument('-remap_conseq_csv',
+                        required=True,
                         type=argparse.FileType('w'),
                         help='<output> CSV containing mapping consensus sequences')
-    parser.add_argument('unmapped1',
+    
+    parser.add_argument('-unmapped1',
+                        required=False,
                         type=argparse.FileType('w'),
-                        help='<output> FASTQ R1 of reads that failed to map to any region')
-    parser.add_argument('unmapped2',
+                        help='<output, optional> FASTQ R1 of reads that failed to map to any region')
+    
+    parser.add_argument('-unmapped2',
+                        required=False,
                         type=argparse.FileType('w'),
-                        help='<output> FASTQ R2 of reads that failed to map to any region')
+                        help='<output, optional> FASTQ R2 of reads that failed to map to any region')
+    
     parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
+    
     parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
+    
     parser.add_argument("--gzip", help="<optional> FASTQ files are compressed",
                         action='store_true')
+    
+    return parser.parse_args()
 
-    args = parser.parse_args()
+def my_callback(message='', progress=None, max_progress=None):
+    print(message)
+
+def main():
+    args = parse_args()
     remap(fastq1=args.fastq1,
           fastq2=args.fastq2,
           prelim_csv=args.prelim_csv,
@@ -982,7 +999,9 @@ def main():
           remap_conseq_csv=args.remap_conseq_csv,
           unmapped1=args.unmapped1,
           unmapped2=args.unmapped2,
+          callback=my_callback,
           gzip=args.gzip)  # defaults to False
+
 
 if __name__ == '__main__':
     main()

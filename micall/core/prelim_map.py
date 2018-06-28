@@ -72,7 +72,7 @@ def prelim_map(fastq1,
         logger.error('No FASTQ found at %s', fastq1)
         sys.exit(1)
 
-    if not os.path.exists(fastq2):
+    if fastq2 is not None and not os.path.exists(fastq2):
         logger.error('No FASTQ found at %s', fastq2)
         sys.exit(1)
 
@@ -86,7 +86,7 @@ def prelim_map(fastq1,
                 pass
             fastq1 += '.gz'
 
-        if not fastq2.endswith('.gz'):
+        if fastq2 is not None and not fastq2.endswith('.gz'):
             try:
                 os.symlink(fastq2, fastq2+'.gz')
             except OSError:
@@ -115,18 +115,25 @@ def prelim_map(fastq1,
     ref_gap_open_penalty = rfgopen
 
     # stream output from bowtie2
-    bowtie_args = ['--wrapper', 'micall-0',
-                   '--quiet',
-                   '-x', reffile_template,
-                   '-1', fastq1,
-                   '-2', fastq2,
-                   '--rdg', "{},{}".format(read_gap_open_penalty,
-                                           READ_GAP_EXTEND),
-                   '--rfg', "{},{}".format(ref_gap_open_penalty,
-                                           REF_GAP_EXTEND),
-                   '--no-hd',  # no header lines (start with @)
-                   '-X', '1200',
-                   '-p', str(nthreads)]
+    bowtie_args = [
+        '--wrapper', 'micall-0',
+        '--quiet',
+        '-x', reffile_template
+    ]
+    
+    if fastq2 is None:
+        bowtie_args.extend(['-U', fastq1])
+    else:
+        bowtie_args.extend(['-1', fastq1, '-2', fastq2])
+    
+    bowtie_args.extend([
+        '--rdg', "{},{}".format(read_gap_open_penalty, READ_GAP_EXTEND),
+        '--rfg', "{},{}".format(ref_gap_open_penalty, REF_GAP_EXTEND),
+        '--no-hd',  # no header lines (start with @)
+        '-X', '1200',  # maximum fragment length
+        '-p', str(nthreads)
+    ])
+    
 
     for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
         if callback and i % 1000 == 0:
@@ -136,17 +143,9 @@ def prelim_map(fastq1,
             output.update({refname: []})
         output[refname].append(line.split('\t')[:11])  # discard optional items
 
-    fieldnames = ['qname',
-                  'flag',
-                  'rname',
-                  'pos',
-                  'mapq',
-                  'cigar',
-                  'rnext',
-                  'pnext',
-                  'tlen',
-                  'seq',
-                  'qual']
+    fieldnames = [
+        'qname', 'flag', 'rname', 'pos', 'mapq', 'cigar', 'rnext', 'pnext', 'tlen', 'seq', 'qual'
+    ]
     writer = csv.DictWriter(prelim_csv, fieldnames, lineterminator=os.linesep)
     writer.writeheader()
 
@@ -164,9 +163,10 @@ def main():
     parser = argparse.ArgumentParser(
         description='Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
 
-    parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
-    parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-    parser.add_argument('prelim_csv',
+    parser.add_argument('-fastq1', help='<input> FASTQ containing forward or unpaired reads')
+    parser.add_argument('-fastq2', default=None, 
+                        help='<input, optional> FASTQ containing reverse reads if paired')
+    parser.add_argument('-prelim_csv',
                         type=argparse.FileType('w'),
                         help='<output> CSV containing preliminary mapping from bowtie2 (modified SAM)')
     parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
