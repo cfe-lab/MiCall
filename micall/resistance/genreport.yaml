@@ -74,7 +74,7 @@
     # in the report tables.
     NS3:
       - [ASV, Asunaprevir (a component of Sunvepra™)]
-      - [GLE, Glecaprevir (a component of Mavyret™)]
+      - [GLE, Glecaprevir (a component of Maviret™)]
       - [GZR, Grazoprevir (a component of Zepatier™)]
       - [PTV, Paritaprevir (a component of Technivie™ and Holkira Pak™)]
       - [SPV, Simeprevir (Galexos™)]
@@ -84,7 +84,7 @@
       - [EBV, Elbasvir (a component of Zepatier™)]
       - [LDV, Ledipasvir (a component of Harvoni™)]
       - [OBV, Ombitasvir (a component of Technivie™ and Holkira Pak™)]
-      - [PIB, Pibrentasvir (a component of Mavyret™)]
+      - [PIB, Pibrentasvir (a component of Maviret™)]
       - [VEL, Velpatasvir (a component of Epclusa™ and Vosevi™)]
     NS5b:
       - [DSV, Dasabuvir (a component of Holkira Pak™)]
