@@ -148,13 +148,7 @@ def apply_cigar(cigar, seq, qual, pos=0, clip_from=0, clip_to=None):
     return newseq[clip_from:end], newqual[clip_from:end], insertions
 
 
-def merge_pairs(seq1,
-                seq2,
-                qual1,
-                qual2,
-                ins1=None,
-                ins2=None,
-                q_cutoff=10,
+def merge_pairs(seq1, seq2, qual1, qual2, ins1=None, ins2=None, q_cutoff=10,
                 minimum_q_delta=5):
     """
     Combine paired-end reads into a single sequence.
@@ -259,16 +253,15 @@ def merge_inserts(ins1, ins2, q_cutoff=10, minimum_q_delta=5):
     ins1 = {} if ins1 is None else ins1
     ins2 = {} if ins2 is None else ins2
     q_cutoff_char = chr(q_cutoff+33)
+
     merged = {pos: seq
               for pos, (seq, qual) in ins1.iteritems()
               if min(qual) > q_cutoff_char}
+
     for pos, (seq2, qual2) in ins2.iteritems():
         if min(qual2) > q_cutoff_char:
             seq1, qual1 = ins1.get(pos, ('', ''))
-            merged[pos] = merge_pairs(seq1,
-                                      seq2,
-                                      qual1,
-                                      qual2,
+            merged[pos] = merge_pairs(seq1, seq2, qual1, qual2,
                                       q_cutoff=q_cutoff,
                                       minimum_q_delta=minimum_q_delta)
 
@@ -314,7 +307,7 @@ def matchmaker(remap_csv):
         yield old_row, None
 
 
-def parse_sam(rows):
+def parse_sam(rows, unpaired=False):
     """ Merge two matched reads into a single aligned read.
 
     Also report insertions and failed merges.
@@ -345,14 +338,18 @@ def parse_sam(rows):
     rname = row1['rname']
     qname = row1['qname']
 
+    # first bit indicates whether template was sequenced in multiple segments
+    flag = row1['flag']
+    is_paired = int(flag) & 1
+
     cigar1 = row1['cigar']
     cigar2 = row2 and row2['cigar']
     failure_cause = None
-    if row2 is None:
+    if is_paired and row2 is None:
         failure_cause = 'unmatched'
     elif cigar1 == '*' or cigar2 == '*':
         failure_cause = 'badCigar'
-    elif row1['rname'] != row2['rname']:
+    elif is_paired and row1['rname'] != row2['rname']:
         failure_cause = '2refs'
 
     if not failure_cause:
@@ -372,21 +369,26 @@ def parse_sam(rows):
         qual1 = '!'*pos1 + qual1  # assign lowest quality to gap prefix so it does not override mate
 
         # now process the mate
-        pos2 = int(row2['pos'])-1  # convert 1-index to 0-index
-        seq2, qual2, inserts = apply_cigar(cigar2, row2['seq'], row2['qual'])
-        for left, (iseq, iqual) in inserts.iteritems():
-            insert_list.append({'qname': qname,
-                                'fwd_rev': 'F' if is_first_read(row2['flag']) else 'R',
-                                'refname': rname,
-                                'pos': pos2+left,
-                                'insert': iseq,
-                                'qual': iqual})
-        seq2 = '-'*pos2 + seq2
-        qual2 = '!'*pos2 + qual2
+        if is_paired:
+            pos2 = int(row2['pos'])-1  # convert 1-index to 0-index
+            seq2, qual2, inserts = apply_cigar(cigar2, row2['seq'], row2['qual'])
+            for left, (iseq, iqual) in inserts.iteritems():
+                insert_list.append({'qname': qname,
+                                    'fwd_rev': 'F' if is_first_read(row2['flag']) else 'R',
+                                    'refname': rname,
+                                    'pos': pos2+left,
+                                    'insert': iseq,
+                                    'qual': iqual})
+            seq2 = '-'*pos2 + seq2
+            qual2 = '!'*pos2 + qual2
 
         # merge reads
         for qcut in SAM2ALN_Q_CUTOFFS:
-            mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=qcut)
+            if is_paired:
+                mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=qcut)
+            else:
+                mseq = seq1
+
             prop_N = mseq.count('N') / float(len(mseq.strip('-')))
             if prop_N > MAX_PROP_N:
                 # fail read pair
@@ -450,20 +452,23 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
 
     # write out merged sequences to file
     aligned_fields = ['refname', 'qcut', 'rank', 'count', 'offset', 'seq']
-    aligned_writer = DictWriter(aligned_csv, aligned_fields, lineterminator=os.linesep)
+    aligned_writer = DictWriter(aligned_csv, aligned_fields,
+                                lineterminator=os.linesep)
     aligned_writer.writeheader()
+
     for rname, data in aligned.iteritems():
         for qcut, data2 in data.iteritems():
             # sort variants by count
-            intermed = [(count, len_gap_prefix(s), s) for s, count in data2.iteritems()]
+            intermed = [
+                (count, len_gap_prefix(s), s)
+                for s, count in data2.iteritems()
+            ]
             intermed.sort(reverse=True)
             for rank, (count, offset, seq) in enumerate(intermed):
-                aligned_writer.writerow(dict(refname=rname,
-                                             qcut=qcut,
-                                             rank=rank,
-                                             count=count,
-                                             offset=offset,
-                                             seq=seq.strip('-')))
+                aligned_writer.writerow(
+                    dict(refname=rname, qcut=qcut, rank=rank, count=count,
+                         offset=offset, seq=seq.strip('-'))
+                )
 
 
 def main():
