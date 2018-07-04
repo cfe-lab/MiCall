@@ -31,25 +31,16 @@ from micall.core.prelim_map import BOWTIE_THREADS, BOWTIE_BUILD_PATH, \
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 from micall.utils.translation import reverse_and_complement
 
+
 CONSENSUS_Q_CUTOFF = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
 MAX_REMAPS = 3                  # Number of remapping attempts if mapping efficiency unsatisfied
 
+
 # SAM file format
 # TODO: move this to a common location (shared with prelim_map.py)
-fieldnames = [
-    'qname',
-    'flag',
-    'rname',
-    'pos',
-    'mapq',
-    'cigar',
-    'rnext',
-    'pnext',
-    'tlen',
-    'seq',
-    'qual'
-]
+fieldnames = ['qname', 'flag', 'rname', 'pos', 'mapq', 'cigar', 'rnext', 'pnext',
+              'tlen', 'seq', 'qual']
 
 cigar_re = re.compile('[0-9]+[MIDNSHPX=]')  # CIGAR token
 
@@ -61,7 +52,7 @@ line_counter = LineCounter()
 def is_first_read(flag):
     """
     Interpret bitwise flag from SAM field.
-    Returns True or False indicating whether the read is the first read in a pair.
+    :return: True or False indicating whether the read is the first read in a pair.
     """
     IS_FIRST_SEGMENT = 0x40
     return (int(flag) & IS_FIRST_SEGMENT) != 0
@@ -70,7 +61,7 @@ def is_first_read(flag):
 def is_unmapped_read(flag):
     """
     Interpret bitwise flag from SAM field.
-    Returns True if the read is unmapped.
+    :return: True if the read is unmapped.
     """
     IS_UNMAPPED = 0x4
     return (int(flag) & IS_UNMAPPED) != 0
@@ -78,10 +69,13 @@ def is_unmapped_read(flag):
 
 def is_short_read(read_row, max_primer_length):
     """
-    Return length of matched intervals in read
-    :param read_row:
-    :param max_primer_length:
-    :return:
+    Filtering a short read by total length of matched intervals as extracted
+    from the CIGAR string.  We want to discard cases where only a small portion 
+    of the read is actually mapped to the reference.
+    
+    :param read_row:  iteration from DictReader
+    :param max_primer_length:  minimum tolerance for total match length
+    :return:  True if total matched length is below <max_primer_length>
     """
     cigar = read_row['cigar']
     sizes = re.findall(r'(\d+)M', cigar)
@@ -90,9 +84,9 @@ def is_short_read(read_row, max_primer_length):
 
 
 def merge_reads(quality_cutoff, read_pair):
-    """ Merge a pair of reads.
-
-    Also skip reads that don't meet certain criteria.
+    """
+    Merge a pair of reads. Also skip reads that don't meet certain criteria.
+    
     @param quality_cutoff: minimum quality score for a base to be counted
     @param read_pair: a sequence of two sequences, each with fields from a
     SAM file record
@@ -102,42 +96,31 @@ def merge_reads(quality_cutoff, read_pair):
     if read2 and read1[2] != read2[2]:
         # region mismatch, ignore the read pair.
         return None
+        
     filtered_reads = []
     for read in read_pair:
         if not read:
             continue
-        (_qname,
-         flag,
-         rname,
-         refpos_str,
-         _mapq,
-         cigar,
-         _rnext,
-         _pnext,
-         _tlen,
-         seq,
-         qual) = read[:11]  # ignore optional fields
+        _, flag, rname, refpos_str, _, cigar, _, _, _, seq, qual = read[:11]  # ignore optional fields
         if is_unmapped_read(flag):
             continue
-        filtered_reads.append(dict(rname=rname,
-                                   cigar=cigar,
-                                   seq=seq,
-                                   qual=qual,
-                                   pos=int(refpos_str)))
+        filtered_reads.append(
+            dict(rname=rname, cigar=cigar, seq=seq, qual=qual, pos=int(refpos_str))
+        )
+    
     if not filtered_reads:
-        return None
-    seq1, qual1, ins1 = apply_cigar(filtered_reads[0]['cigar'],
-                                    filtered_reads[0]['seq'],
-                                    filtered_reads[0]['qual'],
-                                    filtered_reads[0]['pos']-1)
+        return None  # neither of the reads were mapped
+    
+    read1 = filtered_reads[0]
+    seq1, qual1, ins1 = apply_cigar(read1['cigar'], read1['seq'], read1['qual'], read1['pos']-1)
     if len(filtered_reads) == 1:
+        # this is an unpaired read
         seq2 = qual2 = ''
         ins2 = None
     else:
-        seq2, qual2, ins2 = apply_cigar(filtered_reads[1]['cigar'],
-                                        filtered_reads[1]['seq'],
-                                        filtered_reads[1]['qual'],
-                                        filtered_reads[1]['pos']-1)
+        read2 = filtered_reads[1]
+        seq2, qual2, ins2 = apply_cigar(read2['cigar'], read2['seq'], read2['qual'], read2['pos']-1)
+                                        
     mseq = merge_pairs(seq1, seq2, qual1, qual2, q_cutoff=quality_cutoff)
     merged_inserts = merge_inserts(ins1, ins2, quality_cutoff)
     return rname, mseq, merged_inserts, qual1, qual2
@@ -155,13 +138,8 @@ def extract_relevant_seed(aligned_conseq, aligned_seed):
     return unicode(aligned_seed[match.start(1):match.end(1)]).replace('-', '')
 
 
-def sam_to_conseqs(samfile,
-                   quality_cutoff=0,
-                   debug_reports=None,
-                   seeds=None,
-                   is_filtered=False,
-                   worker_pool=None,
-                   filter_coverage=1,
+def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None, seeds=None,
+                   is_filtered=False, worker_pool=None, filter_coverage=1,
                    distance_report=None):
     """ Build consensus sequences for each reference from a SAM file.
 
@@ -296,12 +274,7 @@ def sam_to_conseqs(samfile,
     return filtered_conseqs
 
 
-def update_counts(rname,
-                  qual1,
-                  qual2,
-                  mseq,
-                  merged_inserts,
-                  pos_nucs,
+def update_counts(rname, qual1, qual2, mseq, merged_inserts, pos_nucs,
                   debug_reports=None):
     """ Update the counts for each position within a merged read.
 
@@ -366,12 +339,8 @@ def counts_to_conseqs(refmap):
     return conseqs
 
 
-def build_conseqs(samfilename,
-                  seeds=None,
-                  is_filtered=False,
-                  worker_pool=None,
-                  filter_coverage=1,
-                  distance_report=None):
+def build_conseqs(samfilename, seeds=None, is_filtered=False, worker_pool=None, 
+                  filter_coverage=1, distance_report=None):
     """ Build the new consensus sequences from the mapping results.
 
     @param samfilename: the mapping results in SAM format
@@ -399,11 +368,11 @@ def build_conseqs(samfilename,
                                  filter_coverage=filter_coverage,
                                  distance_report=distance_report)
 
-    if False:
-        # Some debugging code to save the SAM file for testing.
-        copy_name = tempfile.mktemp(suffix='.sam', prefix=samfilename, dir='.')
-        shutil.copy(samfilename, copy_name)
-
+    """
+    # Some debugging code to save the SAM file for testing.
+    copy_name = tempfile.mktemp(suffix='.sam', prefix=samfilename, dir='.')
+    shutil.copy(samfilename, copy_name)
+    """
     return conseqs
 
 
@@ -422,8 +391,9 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
+
     @param fastq1: input R1 FASTQ
-    @param fastq2: input R2 FASTQ
+    @param fastq2: input R2 FASTQ <optional>
     @param prelim_csv: input CSV output from prelim_csv()
     @param remap_csv:  output CSV, contents of bowtie2 SAM output
     @param remap_counts_csv:  output CSV, counts of reads mapped to regions
@@ -494,13 +464,13 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     # record the raw read count
     raw_count = line_counter.count(fastq1, gzip=gzip) / 2  # 4 lines per record in FASTQ, paired
 
-    if remap_counts_csv:
-        remap_counts_writer = csv.DictWriter(
-          remap_counts_csv,
-            'type count filtered_count seed_dist other_dist other_seed'.split(),
-            lineterminator=os.linesep)
-        remap_counts_writer.writeheader()
-        remap_counts_writer.writerow(dict(type='raw', count=raw_count))
+    remap_counts_writer = csv.DictWriter(
+        remap_counts_csv,
+        'type count filtered_count seed_dist other_dist other_seed'.split(),
+        lineterminator=os.linesep
+    )
+    remap_counts_writer.writeheader()
+    remap_counts_writer.writerow(dict(type='raw', count=raw_count))
 
     # convert preliminary CSV to SAM, count reads
     if callback:
@@ -520,11 +490,13 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         reader = csv.DictReader(prelim_csv)
         row_count = 0
         for refname, group in itertools.groupby(reader, itemgetter('rname')):
+            if callback:
+                callback(message=refname)
             count = 0
             filtered_count = 0
             for row in group:
                 if callback and row_count % 1000 == 0:
-                    callback(progress=row_count)
+                    callback(message=refname, progress=row_count)
 
                 count += 1
                 row_count += 1
@@ -543,13 +515,14 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                 callback(progress=raw_count)
 
             # report preliminary counts to file
-            if remap_counts_csv:
-                remap_counts_writer.writerow(
-                    dict(type='prelim %s' % refname,
-                         count=count,
-                         filtered_count=filtered_count))
+            remap_counts_writer.writerow(
+                dict(type='prelim %s' % refname, count=count,
+                     filtered_count=filtered_count)
+            )
+
             if refname == '*':
                 continue
+
             refgroup = projects.getSeedGroup(refname)
             seed_count_threshold = 1 if refname == 'HIV1B-env-seed' else count_threshold
             _best_ref, best_count = refgroups.get(refgroup,
@@ -559,6 +532,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
 
     seed_counts = {best_ref: best_count
                    for best_ref, best_count in refgroups.itervalues()}
+
     # regenerate consensus sequences based on preliminary map
     conseqs = build_conseqs(samfile, seeds=seeds, worker_pool=worker_pool)
 
@@ -571,6 +545,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
             map_counts[rname] = count  # transfer filtered counts to map counts for remap loop
             new_conseqs[rname] = conseq
     conseqs = new_conseqs
+
 
     # start remapping loop
     n_remaps = 0
@@ -593,22 +568,12 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         else:
             next_debug_prefix = '{}_remap{}'.format(debug_file_prefix,
                                                     n_remaps+1)
-        unmapped_count = map_to_reference(fastq1,
-                                          fastq2,
-                                          conseqs,
-                                          reffile,
-                                          samfile,
-                                          unmapped1,
-                                          unmapped2,
-                                          bowtie2,
-                                          bowtie2_build,
-                                          raw_count,
-                                          rdgopen,
-                                          rfgopen,
-                                          nthreads,
-                                          new_counts,
-                                          stderr,
-                                          callback,
+
+        # call bowtie2 to map raw reads to current reference
+        unmapped_count = map_to_reference(fastq1, fastq2, conseqs, reffile, samfile,
+                                          unmapped1, unmapped2, bowtie2, bowtie2_build,
+                                          raw_count, rdgopen, rfgopen, nthreads,
+                                          new_counts, stderr, callback,
                                           debug_file_prefix=next_debug_prefix)
 
         old_seed_names = set(conseqs.iterkeys())
@@ -622,11 +587,11 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                                 distance_report=distance_report)
         new_seed_names = set(conseqs.iterkeys())
         n_remaps += 1
-        if remap_counts_csv:
-            write_remap_counts(remap_counts_writer,
-                               new_counts,
-                               title='remap-{}'.format(n_remaps),
-                               distance_report=distance_report)
+
+        write_remap_counts(remap_counts_writer,
+                           new_counts,
+                           title='remap-{}'.format(n_remaps),
+                           distance_report=distance_report)
 
         if new_seed_names == old_seed_names:
             # stopping criterion 1 - none of the regions gained reads
@@ -655,28 +620,19 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     if new_counts:
         splitter = MixedReferenceSplitter()
         split_counts = Counter()
+
         # At least one read was mapped, so samfile has relevant data
         with open(samfile, 'rU') as f:
             for fields in splitter.split(f):
                 remap_writer.writerow(dict(zip(fieldnames, fields)))
+
         for rname, (split_file1, split_file2) in splitter.splits.iteritems():
             refseqs = {rname: conseqs[rname]}
-            unmapped_count += map_to_reference(split_file1.name,
-                                               split_file2.name,
-                                               refseqs,
-                                               reffile,
-                                               samfile,
-                                               unmapped1,
-                                               unmapped2,
-                                               bowtie2,
-                                               bowtie2_build,
-                                               raw_count,
-                                               rdgopen,
-                                               rfgopen,
-                                               nthreads,
-                                               split_counts,
-                                               stderr,
-                                               callback)
+            unmapped_count += map_to_reference(
+                split_file1.name, split_file2.name, refseqs, reffile, samfile,
+                unmapped1, unmapped2, bowtie2, bowtie2_build, raw_count,
+                rdgopen, rfgopen, nthreads, split_counts, stderr, callback
+            )
             new_counts.update(split_counts)
             with open(samfile, 'rU') as f:
                 for fields in splitter.walk(f):
@@ -803,6 +759,9 @@ def map_to_reference(fastq1, fastq2, refseqs, reffile, samfile, unmapped1, unmap
 
 
 class MixedReferenceSplitter(object):
+    """
+    Custom class to parse SAM output
+    """
     def __init__(self):
         self.splits = {}
 
@@ -822,7 +781,9 @@ class MixedReferenceSplitter(object):
         EITHER_UNMAPPED_MASK = READ_UNMAPPED_FLAG | MATE_UNMAPPED_FLAG
         unmatched = {}
         for fields in self.walk(sam_lines):
-            if fields[6] == '=':
+            if fields[6] == '=' or fields[6] == '*':
+                # mate pair mapped to same reference (RNAME == RNEXT)
+                #  OR information not available (unpaired reads)
                 yield fields[:11]
             else:
                 flags = int(fields[1])
@@ -919,6 +880,7 @@ def matchmaker(samfile, include_singles):
             else:
                 # current row should be the second read of the pair
                 yield old_row, row
+                
     if include_singles:
         for row in cached_rows.itervalues():
             yield row, None
@@ -958,9 +920,9 @@ def parse_args():
                         help='<output> CSV containing remap output (modified SAM)')
     
     parser.add_argument('-remap_counts_csv',
-                        required=False,
+                        required=True,
                         type=argparse.FileType('w'),
-                        help='<output, optional> CSV containing numbers of mapped reads')
+                        help='<output> CSV containing numbers of mapped reads')
     
     parser.add_argument('-remap_conseq_csv',
                         required=True,
@@ -987,7 +949,10 @@ def parse_args():
     return parser.parse_args()
 
 def my_callback(message='', progress=None, max_progress=None):
-    print(message)
+    if progress:
+        print('({}/{}) {}'.format(progress, max_progress, message))
+    else:
+        print(message)
 
 def main():
     args = parse_args()

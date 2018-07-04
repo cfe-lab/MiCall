@@ -32,16 +32,9 @@ logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 line_counter = LineCounter()
 
 
-def prelim_map(fastq1,
-               fastq2,
-               prelim_csv,
-               nthreads=BOWTIE_THREADS,
-               callback=None,
-               rdgopen=READ_GAP_OPEN,
-               rfgopen=REF_GAP_OPEN,
-               stderr=sys.stderr,
-               gzip=False,
-               work_path=''):
+def prelim_map(fastq1, fastq2, prelim_csv, nthreads=BOWTIE_THREADS, callback=None,
+               rdgopen=READ_GAP_OPEN, rfgopen=REF_GAP_OPEN, stderr=sys.stderr,
+               gzip=False, work_path=''):
     """ Run the preliminary mapping step.
 
     @param fastq1: the file name for the forward reads in FASTQ format
