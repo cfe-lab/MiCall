@@ -490,8 +490,8 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         reader = csv.DictReader(prelim_csv)
         row_count = 0
         for refname, group in itertools.groupby(reader, itemgetter('rname')):
-            if callback:
-                callback(message=refname)
+            #if callback:
+            #    callback(message=refname)
             count = 0
             filtered_count = 0
             for row in group:
@@ -939,14 +939,19 @@ def parse_args():
                         type=argparse.FileType('w'),
                         help='<output, optional> FASTQ R2 of reads that failed to map to any region')
     
-    parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
+    parser.add_argument("--rdgopen", default=None,
+                        help="<optional> read gap open penalty")
     
-    parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
+    parser.add_argument("--rfgopen", default=None,
+                        help="<optional> reference gap open penalty")
     
     parser.add_argument("--gzip", help="<optional> FASTQ files are compressed",
                         action='store_true')
+    parser.add_argument('--verbose', help="Write messages and progress to stdout",
+                        action='store_true')
     
     return parser.parse_args()
+
 
 def my_callback(message='', progress=None, max_progress=None):
     if progress:
@@ -964,7 +969,7 @@ def main():
           remap_conseq_csv=args.remap_conseq_csv,
           unmapped1=args.unmapped1,
           unmapped2=args.unmapped2,
-          callback=my_callback,
+          callback=my_callback if args.verbose else None,
           gzip=args.gzip)  # defaults to False
 
 
