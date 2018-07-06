@@ -23,6 +23,7 @@
 /micall/tests/microtest/Results
 !/micall/tests/working/*.launch
 /timing.*
+/micall/utils/hcv_reference_tree
 .DS_Store
 */.DS_Store
 *.log
