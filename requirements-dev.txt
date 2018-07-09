@@ -3,4 +3,3 @@
 -r requirements-watcher.txt
 # Used for plotting profiling results.
 gprof2dot==2016.10.13
-ete3

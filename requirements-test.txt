@@ -6,6 +6,7 @@ pytest==3.5.0
 coverage==4.3.4
 pandas==0.21.0
 seaborn==0.8.1
+ete3
 
 # For reading HCV rules from an Excel file.
 openpyxl==2.5.0

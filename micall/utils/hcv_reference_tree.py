@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
+import shutil
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
 import os
 import re
 from collections import Counter
+from csv import DictReader
 from subprocess import run
 
 import ete3
 import requests
+import sys
 
 """ Retrieve HCV reference sequences for building a tree.
 
@@ -36,6 +39,9 @@ def parse_args():
     parser.add_argument('--folder',
                         default='hcv_reference_tree',
                         help='folder to download references to')
+    parser.add_argument('consensus_files',
+                        nargs='*',
+                        help='files to read MAX consensus sequences from for testing')
 
     return parser.parse_args()
 
@@ -122,15 +128,15 @@ def filter_hcv_fasta(raw_hcv, filtered_hcv, excluded=tuple()):
     return invalid_headers
 
 
-def build_tree(filtered_hcv_path):
-    tree_path = os.path.join(os.path.dirname(filtered_hcv_path),
-                             'hcv_references.tree')
-    if os.path.exists(tree_path):
+def build_tree(fasta_path, check_cache=False):
+    root, ext = os.path.splitext(fasta_path)
+    tree_path = root + '.tree'
+    if check_cache and os.path.exists(tree_path):
         return tree_path
 
     logger.info('Building tree.')
     with open(tree_path, 'wb') as tree_file:
-        run(['FastTree', '-nt', filtered_hcv_path],
+        run(['FastTree', '-quiet', '-nt', fasta_path],
             check=True,
             stdout=tree_file)
     return tree_path
@@ -172,13 +178,91 @@ def check_tree(tree_source, report_file=None):
             should_print = True
 
     if should_print:
+        previous_ref = None
+        sample_nodes = []
+        for node in tree:
+            is_reference = node.name.startswith('Ref.')
+            if is_reference:
+                if sample_nodes:
+                    next_ref = node
+                    for sample_node in sample_nodes:
+                        next_dist = tree.get_distance(sample_node, next_ref)
+                        neighbouring_subtypes = set()
+                        if previous_ref is None:
+                            prev_dist = None
+                        else:
+                            prev_dist = tree.get_distance(previous_ref, sample_node)
+                            if prev_dist <= next_dist:
+                                if sample_node.subtype == previous_ref.subtype:
+                                    continue
+                                neighbouring_subtypes.add(previous_ref.subtype)
+                        if prev_dist is None or next_dist <= prev_dist:
+                            if sample_node.subtype == next_ref.subtype:
+                                continue
+                            neighbouring_subtypes.add(next_ref.subtype)
+                        neighbours = ', '.join(sorted(neighbouring_subtypes))
+                        print(f'{sample_node.name} treed with {neighbours}', file=report_file)
+                    sample_nodes.clear()
+                previous_ref = node
+            else:
+                sample_nodes.append(node)
         print(tree, file=report_file)
+
+
+def combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file):
+    """ Combine MAX consensus for each sample with HCV reference sequences. """
+    reader = DictReader(coverage_scores)
+    covered_seeds = {(row['sample'], row['seed'])
+                     for row in reader
+                     if row['on.score'] == '4'}
+    shutil.copyfileobj(filtered_hcv, combined_file)
+    reader = DictReader(consensus_file)
+    for row in reader:
+        cutoff = row['consensus-percent-cutoff']
+        if cutoff != 'MAX':
+            continue
+        sample_name = row['sample']
+        seed = row['region']
+        if (sample_name, seed) not in covered_seeds:
+            continue
+        seed_parts = seed.split('-')
+        if seed_parts[0] != 'HCV':
+            continue
+        subtype = seed_parts[-1]
+        combined_file.write(f'>Sample.{subtype}.{sample_name}-{subtype}\n')
+        combined_file.write(row['sequence'])
+        combined_file.write('\n')
+
+
+def align_samples(combined_hcv_path, aligned_hcv_path):
+    with open(aligned_hcv_path, 'wb') as aligned_hcv:
+        run(['mafft', '--quiet', combined_hcv_path], stdout=aligned_hcv)
+
+
+def check_sample_trees(filtered_hcv_path, consensus_files):
+    working_path = os.path.dirname(filtered_hcv_path)
+    combined_path = os.path.join(working_path, 'combined.fasta')
+    aligned_path = os.path.join(working_path, 'aligned.fasta')
+    with open(filtered_hcv_path) as filtered_hcv:
+        for consensus_file_name in consensus_files:
+            filtered_hcv.seek(0)
+            coverage_path = os.path.join(os.path.dirname(consensus_file_name),
+                                         'coverage_scores.csv')
+            with open(consensus_file_name) as consensus_file, \
+                    open(coverage_path) as coverage_file, \
+                    open(combined_path, 'w') as combined_file:
+                combine_samples(filtered_hcv, consensus_file, coverage_file, combined_file)
+            logger.info('Checking %s', consensus_file_name)
+            align_samples(combined_path, aligned_path)
+            tree_path = build_tree(aligned_path)
+            check_tree(tree_path)
 
 
 def main():
     args = parse_args()
     logging.basicConfig(
         level=logging.INFO,
+        stream=sys.stdout,
         format='%(asctime)s[%(levelname)s]%(module)s:%(lineno)d - %(message)s')
     logger.info('Starting.')
 
@@ -186,8 +270,9 @@ def main():
         os.makedirs(args.folder, exist_ok=True)
         raw_hcv_path = fetch_raw_hcv(args.folder)
         filtered_hcv_path = filter_hcv(raw_hcv_path, EXCLUDED_ACCESSIONS)
-        tree_path = build_tree(filtered_hcv_path)
+        tree_path = build_tree(filtered_hcv_path, check_cache=True)
         check_tree(tree_path)
+        check_sample_trees(filtered_hcv_path, args.consensus_files)
         logger.info('Done.')
     except Exception:
         logger.error('Failed.')

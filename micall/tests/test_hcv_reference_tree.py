@@ -1,6 +1,6 @@
 from io import StringIO
 
-from micall.utils.hcv_reference_tree import filter_hcv_fasta, check_tree
+from micall.utils.hcv_reference_tree import filter_hcv_fasta, check_tree, combine_samples
 
 
 def test_add_subtype():
@@ -148,7 +148,7 @@ GAGATTT
 
 
 def test_monophyletic():
-    tree_source = "(foo-1a, (bar-2b, baz-2b));"
+    tree_source = "(Ref.foo-1a, (Sample.bar-2b, Ref.baz-2b));"
     report = StringIO()
     expected_report = ''
 
@@ -158,20 +158,22 @@ def test_monophyletic():
 
 
 def test_polyphyletic():
-    tree_source = "((foo-1a, bar-2b), (floop-1a, baz-2c));"
+    tree_source = "((Ref.foo-1a, Sample.bar-2b), (Sample.floop-1a, Ref.baz-2c));"
     report = StringIO()
     expected_report = """\
-1a polyphyletic bar-2b, baz-2c
-1 polyphyletic bar-2b, baz-2c
-2 polyphyletic floop-1a, foo-1a
+1a polyphyletic Ref.baz-2c, Sample.bar-2b
+1 polyphyletic Ref.baz-2c, Sample.bar-2b
+2 polyphyletic Ref.foo-1a, Sample.floop-1a
+Sample.bar-2b treed with 1a
+Sample.floop-1a treed with 2c
 
-      /-foo-1a
+      /-Ref.foo-1a
    /-|
-  |   \-bar-2b
+  |   \-Sample.bar-2b
 --|
-  |   /-floop-1a
+  |   /-Sample.floop-1a
    \-|
-      \-baz-2c
+      \-Ref.baz-2c
 """
 
     check_tree(tree_source, report)
@@ -180,18 +182,42 @@ def test_polyphyletic():
 
 
 def test_paraphyletic():
-    tree_source = "(bar-2b, (baz-2c, (foo-1a, floop-1a)));"
+    tree_source = "((Sample.bar-2b, Ref.byre-2b), (Ref.baz-2c, (Ref.foo-1a, Sample.floop-1a)));"
     report = StringIO()
     expected_report = """\
-2 paraphyletic floop-1a, foo-1a
+2 paraphyletic Ref.foo-1a, Sample.floop-1a
 
-   /-bar-2b
+      /-Sample.bar-2b
+   /-|
+  |   \-Ref.byre-2b
 --|
-  |   /-baz-2c
+  |   /-Ref.baz-2c
    \-|
-     |   /-foo-1a
+     |   /-Ref.foo-1a
       \-|
-         \-floop-1a
+         \-Sample.floop-1a
+"""
+
+    check_tree(tree_source, report)
+
+    assert expected_report == report.getvalue()
+
+
+def test_paraphyletic2():
+    tree_source = "((Ref.byre-2b, Sample.bar-2b), (Ref.baz-2c, (Ref.foo-1a, Sample.floop-1a)));"
+    report = StringIO()
+    expected_report = """\
+2 paraphyletic Ref.foo-1a, Sample.floop-1a
+
+      /-Ref.byre-2b
+   /-|
+  |   \-Sample.bar-2b
+--|
+  |   /-Ref.baz-2c
+   \-|
+     |   /-Ref.foo-1a
+      \-|
+         \-Sample.floop-1a
 """
 
     check_tree(tree_source, report)
@@ -200,10 +226,100 @@ def test_paraphyletic():
 
 
 def test_paraphyletic_genotype6():
-    tree_source = "(bar-6b, (baz-6c, (foo-1a, floop-1a)));"
+    tree_source = "((Sample.bar-6b, Ref.byre-6b), (Ref.baz-6c, (Ref.foo-1a, Sample.floop-1a)));"
     report = StringIO()
     expected_report = ""
 
     check_tree(tree_source, report)
 
     assert expected_report == report.getvalue()
+
+
+def test_combine_samples():
+    filtered_hcv = StringIO("""\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+""")
+    consensus_file = StringIO("""\
+sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+2130A-HCV_S15,HCV-2a,15,MAX,7669,TCCATGTCATACTCCTGGACAGGGGCTCTG
+2130A-HCV_S15,HCV-2a,15,0.010,7669,TCHATGTCATACTCCTGGACAGGGGCTCTG
+""")
+    coverage_scores = StringIO("""\
+sample,seed,on.score
+2130A-HCV_S15,HCV-2a,4
+""")
+    combined_file = StringIO()
+    expected_combined_file = """\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+>Sample.2a.2130A-HCV_S15-2a
+TCCATGTCATACTCCTGGACAGGGGCTCTG
+"""
+
+    combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file)
+
+    assert expected_combined_file == combined_file.getvalue()
+
+
+def test_combine_samples_low_coverage():
+    filtered_hcv = StringIO("""\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+""")
+    consensus_file = StringIO("""\
+sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+2000A-HCV_S14,HCV-3c,15,MAX,7669,TCCATGTCATACTCCTGGACAGGGGCTCTG
+2130A-HCV_S15,HCV-2a,15,MAX,7669,TCCATGTCATACTCCTGGACAGGGGCTCTG
+2130A-HCV_S15,HCV-3c,15,MAX,7669,TCH-----ATACTCCTGGACAGGGGCTCTG
+""")
+    coverage_scores = StringIO("""\
+sample,seed,on.score
+2000A-HCV_S14,HCV-3c,4
+2130A-HCV_S15,HCV-2a,4
+2130A-HCV_S15,HCV-3c,1
+""")
+    combined_file = StringIO()
+    expected_combined_file = """\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+>Sample.3c.2000A-HCV_S14-3c
+TCCATGTCATACTCCTGGACAGGGGCTCTG
+>Sample.2a.2130A-HCV_S15-2a
+TCCATGTCATACTCCTGGACAGGGGCTCTG
+"""
+
+    combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file)
+
+    assert expected_combined_file == combined_file.getvalue()
+
+
+def test_combine_samples_hcv_only():
+    filtered_hcv = StringIO("""\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+""")
+    consensus_file = StringIO("""\
+sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+2130A-HIV_S15,HIV1-B-FR-KF716496-seed,15,MAX,7669,TCCATGTCATACTCCTGGACAGGGGCTCTG
+2130A-HIV_S15,HIV1-B-FR-KF716496-seed,15,0.010,7669,TCHATGTCATACTCCTGGACAGGGGCTCTG
+""")
+    coverage_scores = StringIO("""\
+sample,seed,on.score
+2130A-HCV_S15,HCV-2a,4
+""")
+    combined_file = StringIO()
+    expected_combined_file = """\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+"""
+
+    combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file)
+
+    assert expected_combined_file == combined_file.getvalue()
