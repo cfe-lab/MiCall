@@ -247,15 +247,45 @@ sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
 2130A-HCV_S15,HCV-2a,15,0.010,7669,TCHATGTCATACTCCTGGACAGGGGCTCTG
 """)
     coverage_scores = StringIO("""\
-sample,seed,on.score
-2130A-HCV_S15,HCV-2a,4
+sample,region,seed,on.score
+2130A-HCV_S15,HCV2-JFH-1-NS5a,HCV-2a,4
 """)
     combined_file = StringIO()
     expected_combined_file = """\
 >Ref.1a.Foo-1a
 ACTACCTGA
 TGACG
->Sample.2a.2130A-HCV_S15-2a
+>Sample.2a.2130A-HCV_S15~NS5a*-2a
+TCCATGTCATACTCCTGGACAGGGGCTCTG
+"""
+
+    combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file)
+
+    assert expected_combined_file == combined_file.getvalue()
+
+
+def test_combine_samples_multiple_projects():
+    filtered_hcv = StringIO("""\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+""")
+    consensus_file = StringIO("""\
+sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+2130A-HCV_S15,HCV-2a,15,MAX,7669,TCCATGTCATACTCCTGGACAGGGGCTCTG
+2130A-HCV_S15,HCV-2a,15,0.010,7669,TCHATGTCATACTCCTGGACAGGGGCTCTG
+""")
+    coverage_scores = StringIO("""\
+sample,region,seed,project,on.score
+2130A-HCV_S15,HCV2-JFH-1-NS5a,HCV-2a,HCV,4
+2130A-HCV_S15,HCV2-JFH-1-NS5a,HCV-2a,MidHCV,4
+""")
+    combined_file = StringIO()
+    expected_combined_file = """\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+>Sample.2a.2130A-HCV_S15~NS5a*-2a
 TCCATGTCATACTCCTGGACAGGGGCTCTG
 """
 
@@ -277,20 +307,56 @@ sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
 2130A-HCV_S15,HCV-3c,15,MAX,7669,TCH-----ATACTCCTGGACAGGGGCTCTG
 """)
     coverage_scores = StringIO("""\
-sample,seed,on.score
-2000A-HCV_S14,HCV-3c,4
-2130A-HCV_S15,HCV-2a,4
-2130A-HCV_S15,HCV-3c,1
+sample,region,seed,on.score
+2000A-HCV_S14,HCV3-S52-NS5a,HCV-3c,4
+2130A-HCV_S15,HCV2-JFH-1-NS5a,HCV-2a,4
+2130A-HCV_S15,HCV3-S52-NS5a,HCV-3c,1
 """)
     combined_file = StringIO()
     expected_combined_file = """\
 >Ref.1a.Foo-1a
 ACTACCTGA
 TGACG
->Sample.3c.2000A-HCV_S14-3c
+>Sample.3c.2000A-HCV_S14~NS5a*-3c
 TCCATGTCATACTCCTGGACAGGGGCTCTG
->Sample.2a.2130A-HCV_S15-2a
+>Sample.2a.2130A-HCV_S15~NS5a*-2a
 TCCATGTCATACTCCTGGACAGGGGCTCTG
+"""
+
+    combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file)
+
+    assert expected_combined_file == combined_file.getvalue()
+
+
+def test_combine_samples_unused_region():
+    filtered_hcv = StringIO("""\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+""")
+    consensus_file = StringIO("""\
+sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+2000A-HCV_S14,HCV-3c,15,MAX,7669,TCCATGTCATACTCCTGGACAGGGGCTCTG
+2130A-HCV_S15,HCV-2a,15,MAX,7669,TCCATGTCATACTCCTGGACAGGGGCTCTG
+2130A-HCV_S15,HCV-3c,15,MAX,7669,TCH-----ATACTCCTGGACAGGGGCTCTG
+""")
+    coverage_scores = StringIO("""\
+sample,region,seed,on.score
+2000A-HCV_S14,HCV3-S52-NS5a,HCV-3c,4
+2130A-HCV_S15,HCV2-JFH-1-NS5a,HCV-2a,4
+2130A-HCV_S15,HCV3-S52-NS4a,HCV-3c,4
+""")
+    combined_file = StringIO()
+    expected_combined_file = """\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+>Sample.3c.2000A-HCV_S14~NS5a*-3c
+TCCATGTCATACTCCTGGACAGGGGCTCTG
+>Sample.2a.2130A-HCV_S15~NS5a*-2a
+TCCATGTCATACTCCTGGACAGGGGCTCTG
+>Sample.3c.2130A-HCV_S15~NS4a-3c
+TCH-----ATACTCCTGGACAGGGGCTCTG
 """
 
     combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file)
@@ -310,8 +376,8 @@ sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
 2130A-HIV_S15,HIV1-B-FR-KF716496-seed,15,0.010,7669,TCHATGTCATACTCCTGGACAGGGGCTCTG
 """)
     coverage_scores = StringIO("""\
-sample,seed,on.score
-2130A-HCV_S15,HCV-2a,4
+sample,region,seed,on.score
+2130A-HIV_S15,PR,HIV1-B-FR-KF716496-seed,4
 """)
     combined_file = StringIO()
     expected_combined_file = """\

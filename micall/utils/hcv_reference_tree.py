@@ -4,7 +4,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
 import os
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from csv import DictReader
 from subprocess import run
 
@@ -212,9 +212,15 @@ def check_tree(tree_source, report_file=None):
 def combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file):
     """ Combine MAX consensus for each sample with HCV reference sequences. """
     reader = DictReader(coverage_scores)
-    covered_seeds = {(row['sample'], row['seed'])
-                     for row in reader
-                     if row['on.score'] == '4'}
+    resistance_regions = ('NS3', 'NS5a', 'NS5b')
+    covered_seeds = defaultdict(set)  # {(sample, seed): {region}}
+    for row in reader:
+        if row['on.score'] == '4':
+            region = row['region'].split('-')[-1]
+            if region in resistance_regions:
+                region += '*'
+            key = (row['sample'], row['seed'])
+            covered_seeds[key].add(region)
     shutil.copyfileobj(filtered_hcv, combined_file)
     reader = DictReader(consensus_file)
     for row in reader:
@@ -223,13 +229,15 @@ def combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file
             continue
         sample_name = row['sample']
         seed = row['region']
-        if (sample_name, seed) not in covered_seeds:
+        covered_regions = covered_seeds[(sample_name, seed)]
+        if not covered_regions:
             continue
+        region_text = '~'.join(sorted(covered_regions))
         seed_parts = seed.split('-')
         if seed_parts[0] != 'HCV':
             continue
         subtype = seed_parts[-1]
-        combined_file.write(f'>Sample.{subtype}.{sample_name}-{subtype}\n')
+        combined_file.write(f'>Sample.{subtype}.{sample_name}~{region_text}-{subtype}\n')
         combined_file.write(row['sequence'])
         combined_file.write('\n')
 
