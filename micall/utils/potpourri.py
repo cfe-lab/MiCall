@@ -124,7 +124,7 @@ def main():
     random.seed(args.seed)
 
     target_run = create_target_run()
-    print 'Creating run {} with seed {}'.format(target_run, args.seed)
+    print ('Creating run {} with seed {}'.format(target_run, args.seed))
 
     sample_names = choose_samples(args)
     create_links(target_run, sample_names)
@@ -154,5 +154,6 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Descr
 
     with open(os.path.join(target_run, settings.NEEDS_PROCESSING), 'w') as f:
         pass  # empty file
-    print "Done. Don't forget to import the run in QAI."
+    print ("Done. Don't forget to import the run in QAI.")
+
 main()
