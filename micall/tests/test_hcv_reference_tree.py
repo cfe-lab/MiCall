@@ -405,7 +405,7 @@ ACGCCCTGACG
     report = StringIO()
     expected_report = """\
 Reported 1a, but 2c is closer: Sample.1a.2000A-HCV_S14~NS5a*-1a(0/11), \
-Ref.1a.Foo-1a(5/14)), Ref.2c.Foo-2c(1/11).
+Ref.1a.Foo-1a(5/14), Ref.2c.Foo-2c(1/11).
 """
 
     check_distances(combined_hcv, report)
