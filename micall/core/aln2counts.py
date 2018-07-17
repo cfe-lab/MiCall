@@ -50,10 +50,10 @@ def parseArgs():
     parser.add_argument('conseq_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing consensus sequences')
-    parser.add_argument('failed_align_csv',
+    parser.add_argument('failed_align_csv', required=False,
                         type=argparse.FileType('w'),
                         help='CSV containing any consensus that failed to align')
-    parser.add_argument('nuc_variants_csv',
+    parser.add_argument('nuc_variants_csv', required=False,
                         type=argparse.FileType('w'),
                         help='CSV containing top nucleotide variants')
 
@@ -763,8 +763,8 @@ def aln2counts(aligned_csv,
                amino_csv,
                coord_ins_csv,
                conseq_csv,
-               failed_align_csv,
-               nuc_variants_csv,
+               failed_align_csv=None,
+               nuc_variants_csv=None,
                callback=None,
                coverage_summary_csv=None):
     """
@@ -791,11 +791,12 @@ def aln2counts(aligned_csv,
     report = SequenceReport(insert_writer,
                             projects,
                             CONSEQ_MIXTURE_CUTOFFS)
+    report.write_nuc_header(nuc_csv)
     report.write_amino_header(amino_csv)
     report.write_consensus_header(conseq_csv)
-    report.write_failure_header(failed_align_csv)
-    report.write_nuc_header(nuc_csv)
-    report.write_nuc_variants_header(nuc_variants_csv)
+
+    if failed_align_csv: report.write_failure_header(failed_align_csv)
+    if nuc_variants_csv: report.write_nuc_variants_header(nuc_variants_csv)
     if coverage_summary_csv is None:
         coverage_summary = None
     else:
@@ -821,10 +822,10 @@ def aln2counts(aligned_csv,
 
         report.write_amino_counts(amino_csv, coverage_summary=coverage_summary)
         report.write_consensus(conseq_csv)
-        report.write_failure(failed_align_csv)
+        if failed_align_csv: report.write_failure(failed_align_csv)
         report.write_insertions()
         report.write_nuc_counts(nuc_csv)
-        report.write_nuc_variants(nuc_variants_csv)
+        if nuc_variants_csv: report.write_nuc_variants(nuc_variants_csv)
 
     if coverage_summary_csv is not None:
         if coverage_summary:

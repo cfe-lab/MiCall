@@ -30,10 +30,10 @@ def parseArgs():
     parser.add_argument('aligned_csv',
                         type=argparse.FileType('w'),
                         help='<output> CSV containing cleaned and merged reads')
-    parser.add_argument('insert_csv',
+    parser.add_argument('insert_csv', required=False, default=None,
                         type=argparse.FileType('w'),
                         help='<output> CSV containing insertions relative to sample consensus')
-    parser.add_argument('failed_csv',
+    parser.add_argument('failed_csv', required=False, default=None,
                         type=argparse.FileType('w'),
                         help='<output> CSV containing reads that failed to merge')
     parser.add_argument('-p', type=int, default=None, help='(optional) number of threads')
@@ -419,15 +419,17 @@ def parse_sam_in_threads(remap_csv, nthreads):
         pool.join()
 
 
-def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
+def sam2aln(remap_csv, aligned_csv, insert_csv=None, failed_csv=None, nthreads=None):
     # prepare outputs
-    insert_fields = ['qname', 'fwd_rev', 'refname', 'pos', 'insert', 'qual']
-    insert_writer = DictWriter(insert_csv, insert_fields, lineterminator=os.linesep)
-    insert_writer.writeheader()
+    if insert_csv:
+        insert_fields = ['qname', 'fwd_rev', 'refname', 'pos', 'insert', 'qual']
+        insert_writer = DictWriter(insert_csv, insert_fields, lineterminator=os.linesep)
+        insert_writer.writeheader()
 
-    failed_fields = ['qname', 'cause']
-    failed_writer = DictWriter(failed_csv, failed_fields, lineterminator=os.linesep)
-    failed_writer.writeheader()
+    if failed_csv:
+        failed_fields = ['qname', 'cause']
+        failed_writer = DictWriter(failed_csv, failed_fields, lineterminator=os.linesep)
+        failed_writer.writeheader()
 
     empty_region = collections.defaultdict(collections.Counter)
     aligned = collections.defaultdict(empty_region.copy)
@@ -445,10 +447,10 @@ def sam2aln(remap_csv, aligned_csv, insert_csv, failed_csv, nthreads=None):
             mseq_counter[mseq] += 1
 
         # write out inserts to CSV
-        insert_writer.writerows(insert_list)
+        if insert_csv: insert_writer.writerows(insert_list)
 
         # write out failed read mergers to CSV
-        failed_writer.writerows(failed_list)
+        if failed_csv: failed_writer.writerows(failed_list)
 
     # write out merged sequences to file
     aligned_fields = ['refname', 'qcut', 'rank', 'count', 'offset', 'seq']

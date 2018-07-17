@@ -643,12 +643,13 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv=None,
                     remap_writer.writerow(dict(zip(fieldnames, fields)))
 
     # write consensus sequences and counts
-    remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
-    for refname in new_counts.iterkeys():
-        # NOTE this is the consensus sequence to which the reads were mapped, NOT the
-        # current consensus!
-        conseq = conseqs.get(refname) or projects.getReference(refname)
-        remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
+    if remap_conseq_csv:
+        remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
+        for refname in new_counts.iterkeys():
+            # NOTE this is the consensus sequence to which the reads were mapped, NOT the
+            # current consensus!
+            conseq = conseqs.get(refname) or projects.getReference(refname)
+            remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
     
     if remap_counts_csv:
         write_remap_counts(remap_counts_writer,
