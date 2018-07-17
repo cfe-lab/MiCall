@@ -302,13 +302,15 @@ similar steps to setting up a development workstation. Follow these steps:
 7. Upgrade the scripts and docker image in your local Kive server. Process the
     microtest data.
 7. Upgrade the scripts and docker image in the Kive test server, and record the
-    id of the new pipeline. You might
+    id of the new pipelines. You might
     find the Kive project's `dump_pipeline.py` and `upload_pipeline.py` scripts
     helpful. They are in the `utils` folder.
 8. Process all the samples from test_samples.csv on the Kive test server using the
     `release_test_*.py` scripts to compare the results of the new release with
     the previous version. Get the comparison signed off to begin the release
     process.
+8. Upgrade the scripts and docker image in the main Kive test server, and
+    record the id of the new pipelines.
 8. Stop the micall_watcher service on the main Kive server after you check that
     it's not processing any important runs.
 

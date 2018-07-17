@@ -234,20 +234,26 @@ def check_distances(combined_hcv, report_file=None):
                if header.startswith('Sample.'))
     for header, sequence in samples:
         reported_genotype = header.split('-')[-1]
-        best_ref = min_distance = reported_distance = None
+        reported_ref = best_ref = min_distance = reported_distance = None
+        reported_size = best_size = 0
         for ref_header, ref_seq in references:
             ref_genotype = ref_header.split('-')[-1]
             d = distance(sequence, ref_seq)
             if (ref_genotype == reported_genotype and
                     (reported_distance is None or d < reported_distance)):
                 reported_distance = d
+                reported_ref = ref_header
+                reported_size = len(ref_seq)
             if min_distance is None or d < min_distance:
                 min_distance = d
                 best_ref = ref_header
+                best_size = len(ref_seq)
         if min_distance != reported_distance:
             best_genotype = best_ref.split('-')[-1]
-            print(f'Reported {reported_genotype} ({reported_distance}), '
-                  f'but {best_genotype} ({min_distance}) is closer: {header}.',
+            print(f'Reported {reported_genotype}, but {best_genotype} is '
+                  f'closer: {header}(0/{len(sequence)}), '
+                  f'{reported_ref}({reported_distance}/{reported_size}), '
+                  f'{best_ref}({min_distance}/{best_size}).',
                   file=report_file)
 
 
