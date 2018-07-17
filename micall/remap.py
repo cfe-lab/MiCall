@@ -23,9 +23,9 @@ import tempfile
 from gotoh import align_it
 import Levenshtein
 
-from micall.core import miseq_logging, project_config
-from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
-from micall.core.prelim_map import BOWTIE_THREADS, BOWTIE_BUILD_PATH, \
+from micall import miseq_logging, project_config
+from micall.sam2aln import apply_cigar, merge_pairs, merge_inserts
+from micall.prelim_map import BOWTIE_THREADS, BOWTIE_BUILD_PATH, \
     BOWTIE_PATH, BOWTIE_VERSION, READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
     REF_GAP_EXTEND
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter

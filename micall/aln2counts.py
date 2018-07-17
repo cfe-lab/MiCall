@@ -21,8 +21,8 @@ import os
 
 import gotoh
 
-from micall.core import miseq_logging
-from micall.core import project_config
+from micall import miseq_logging
+from micall import project_config
 from micall.utils.translation import translate, ambig_dict
 
 AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'

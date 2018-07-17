@@ -11,7 +11,7 @@ from matplotlib.ticker import FuncFormatter
 from operator import itemgetter
 import tarfile
 
-from micall.core import project_config, aln2counts
+from micall import project_config, aln2counts
 
 
 def coverage_plot(amino_csv,

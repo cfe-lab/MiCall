@@ -8,7 +8,7 @@ import math
 from operator import itemgetter
 import os
 
-from micall.core import miseq_logging
+from micall import miseq_logging
 
 BAD_ERROR_RATE = 7.5
 
