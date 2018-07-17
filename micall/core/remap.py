@@ -384,9 +384,10 @@ def write_remap_counts(remap_counts_writer, counts, title, distance_report=None)
         remap_counts_writer.writerow(row)
 
 
-def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_csv,
-          unmapped1, unmapped2, work_path='', nthreads=BOWTIE_THREADS, callback=None,
-          count_threshold=10, rdgopen=READ_GAP_OPEN, rfgopen=REF_GAP_OPEN, stderr=sys.stderr,
+def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv=None,
+          remap_conseq_csv=None, unmapped1=None, unmapped2=None, work_path='',
+          nthreads=BOWTIE_THREADS, callback=None, count_threshold=10,
+          rdgopen=READ_GAP_OPEN, rfgopen=REF_GAP_OPEN, stderr=sys.stderr,
           gzip=False, debug_file_prefix=None):
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
@@ -464,13 +465,14 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
     # record the raw read count
     raw_count = line_counter.count(fastq1, gzip=gzip) / 2  # 4 lines per record in FASTQ, paired
 
-    remap_counts_writer = csv.DictWriter(
-        remap_counts_csv,
-        'type count filtered_count seed_dist other_dist other_seed'.split(),
-        lineterminator=os.linesep
-    )
-    remap_counts_writer.writeheader()
-    remap_counts_writer.writerow(dict(type='raw', count=raw_count))
+    if remap_counts_csv:
+        remap_counts_writer = csv.DictWriter(
+            remap_counts_csv,
+            'type count filtered_count seed_dist other_dist other_seed'.split(),
+            lineterminator=os.linesep
+        )
+        remap_counts_writer.writeheader()
+        remap_counts_writer.writerow(dict(type='raw', count=raw_count))
 
     # convert preliminary CSV to SAM, count reads
     if callback:
@@ -515,10 +517,11 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
                 callback(progress=raw_count)
 
             # report preliminary counts to file
-            remap_counts_writer.writerow(
-                dict(type='prelim %s' % refname, count=count,
-                     filtered_count=filtered_count)
-            )
+            if remap_counts_csv:
+                remap_counts_writer.writerow(
+                    dict(type='prelim %s' % refname, count=count,
+                         filtered_count=filtered_count)
+                )
 
             if refname == '*':
                 continue
@@ -588,10 +591,11 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv, remap_conseq_
         new_seed_names = set(conseqs.iterkeys())
         n_remaps += 1
 
-        write_remap_counts(remap_counts_writer,
-                           new_counts,
-                           title='remap-{}'.format(n_remaps),
-                           distance_report=distance_report)
+        if remap_counts_csv:
+            write_remap_counts(remap_counts_writer,
+                               new_counts,
+                               title='remap-{}'.format(n_remaps),
+                               distance_report=distance_report)
 
         if new_seed_names == old_seed_names:
             # stopping criterion 1 - none of the regions gained reads
@@ -920,12 +924,12 @@ def parse_args():
                         help='<output> CSV containing remap output (modified SAM)')
     
     parser.add_argument('-remap_counts_csv',
-                        required=True,
+                        required=False,
                         type=argparse.FileType('w'),
                         help='<output> CSV containing numbers of mapped reads')
     
     parser.add_argument('-remap_conseq_csv',
-                        required=True,
+                        required=False,
                         type=argparse.FileType('w'),
                         help='<output> CSV containing mapping consensus sequences')
     
