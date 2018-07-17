@@ -1,6 +1,6 @@
 from io import StringIO
 
-from micall.utils.hcv_reference_tree import filter_hcv_fasta, check_tree, combine_samples
+from micall.utils.hcv_reference_tree import filter_hcv_fasta, check_tree, combine_samples, check_distances
 
 
 def test_add_subtype():
@@ -389,3 +389,67 @@ TGACG
     combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file)
 
     assert expected_combined_file == combined_file.getvalue()
+
+
+def test_check_distances():
+    combined_hcv = StringIO("""\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+>Ref.2c.Foo-2c
+ACTCCC---
+TGACG
+>Sample.1a.2000A-HCV_S14~NS5a*-1a
+ACGCCCTGACG
+""")
+    report = StringIO()
+    expected_report = """\
+Reported 1a (5), but 2c (1) is closer: Sample.1a.2000A-HCV_S14~NS5a*-1a.
+"""
+
+    check_distances(combined_hcv, report)
+
+    assert expected_report == report.getvalue()
+
+
+def test_check_distances_strip_sample():
+    combined_hcv = StringIO("""\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+>Ref.2c.Foo-2c
+ACTCCC---
+TGACG
+>Sample.1a.2000A-HCV_S14~NS5a*-1a
+ACG---CCCTGACG
+""")
+    report = StringIO()
+    expected_report = """\
+Reported 1a (5), but 2c (1) is closer: Sample.1a.2000A-HCV_S14~NS5a*-1a.
+"""
+
+    check_distances(combined_hcv, report)
+
+    assert expected_report == report.getvalue()
+
+
+def test_check_distances_closest_report():
+    combined_hcv = StringIO("""\
+>Ref.1a.Foo-1a
+ACTACCTGA
+TGACG
+>Ref.1a.Bar-1a
+ACTACCTGC
+TGACG
+>Ref.2c.Baz-2c
+ACTCCC---
+TGACG
+>Sample.1a.2000A-HCV_S14~NS5a*-1a
+ACGACCTGATGACG
+""")
+    report = StringIO()
+    expected_report = ""
+
+    check_distances(combined_hcv, report)
+
+    assert expected_report == report.getvalue()

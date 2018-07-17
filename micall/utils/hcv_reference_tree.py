@@ -6,9 +6,11 @@ import os
 import re
 from collections import Counter, defaultdict
 from csv import DictReader
+from itertools import chain
 from subprocess import run
 
 import ete3
+from Levenshtein import distance
 import requests
 import sys
 
@@ -209,6 +211,46 @@ def check_tree(tree_source, report_file=None):
         print(tree, file=report_file)
 
 
+def iterate_fasta(fasta):
+    header = sequence = ''
+    for line in chain(fasta, ['>']):
+        if line.startswith('>'):
+            if header:
+                yield header, sequence
+            header = line[1:].strip()
+            sequence = ''
+        else:
+            sequence += line.strip()
+
+
+def check_distances(combined_hcv, report_file=None):
+    references = [(header, sequence.replace('-', ''))
+                  for header, sequence in iterate_fasta(combined_hcv)
+                  if header.startswith('Ref.')]
+
+    combined_hcv.seek(0)
+    samples = ((header, sequence.replace('-', ''))
+               for header, sequence in iterate_fasta(combined_hcv)
+               if header.startswith('Sample.'))
+    for header, sequence in samples:
+        reported_genotype = header.split('-')[-1]
+        best_ref = min_distance = reported_distance = None
+        for ref_header, ref_seq in references:
+            ref_genotype = ref_header.split('-')[-1]
+            d = distance(sequence, ref_seq)
+            if (ref_genotype == reported_genotype and
+                    (reported_distance is None or d < reported_distance)):
+                reported_distance = d
+            if min_distance is None or d < min_distance:
+                min_distance = d
+                best_ref = ref_header
+        if min_distance != reported_distance:
+            best_genotype = best_ref.split('-')[-1]
+            print(f'Reported {reported_genotype} ({reported_distance}), '
+                  f'but {best_genotype} ({min_distance}) is closer: {header}.',
+                  file=report_file)
+
+
 def combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file):
     """ Combine MAX consensus for each sample with HCV reference sequences. """
     reader = DictReader(coverage_scores)
@@ -261,6 +303,8 @@ def check_sample_trees(filtered_hcv_path, consensus_files):
                     open(combined_path, 'w') as combined_file:
                 combine_samples(filtered_hcv, consensus_file, coverage_file, combined_file)
             logger.info('Checking %s', consensus_file_name)
+            with open(combined_path) as combined_file:
+                check_distances(combined_file)
             align_samples(combined_path, aligned_path)
             tree_path = build_tree(aligned_path)
             check_tree(tree_path)
