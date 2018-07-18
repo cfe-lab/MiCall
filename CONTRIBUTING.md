@@ -305,7 +305,8 @@ similar steps to setting up a development workstation. Follow these steps:
     id of the new pipelines. You might
     find the Kive project's `dump_pipeline.py` and `upload_pipeline.py` scripts
     helpful. They are in the `utils` folder.
-8. Process all the samples from test_samples.csv on the Kive test server using the
+8. Process all the samples from test_samples.csv on the Kive test server, and
+    run the micall_watcher service on a VirtualBox. Use the
     `release_test_*.py` scripts to compare the results of the new release with
     the previous version. Get the comparison signed off to begin the release
     process.

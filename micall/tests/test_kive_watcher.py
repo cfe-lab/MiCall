@@ -350,6 +350,39 @@ def test_skip_failed_runs(raw_data_with_two_runs):
     sample_queue.verify()
 
 
+def test_bad_sample_sheet(raw_data_with_two_runs):
+    error_run_path = raw_data_with_two_runs / "MiSeq/runs/140201_M01234"
+    bad_sample_sheet_text = """\
+[Data]
+Broken Sample Sheet
+Garbage!
+"""
+    (error_run_path / "SampleSheet.csv").write_text(bad_sample_sheet_text)
+    error_path = error_run_path / "errorprocessing"
+    pipeline_version = '0-dev'
+    sample_queue = DummyQueueSink()
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2000A',
+                                ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
+                                 None))))
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.FINISH_FOLDER,
+                    None))
+
+    find_samples(raw_data_with_two_runs,
+                 pipeline_version,
+                 sample_queue,
+                 wait=False)
+
+    sample_queue.verify()
+    assert error_path.exists()
+
+
 def test_full_queue(raw_data_with_two_runs):
     sample_queue = DummyQueueSink()
     sample_queue.expect_put(
