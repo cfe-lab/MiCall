@@ -1,8 +1,8 @@
 import StringIO
 import unittest
 
-from micall import remap
-from micall.remap import is_first_read, is_short_read, \
+from micall.core import remap
+from micall.core.remap import is_first_read, is_short_read, \
     MixedReferenceSplitter
 
 

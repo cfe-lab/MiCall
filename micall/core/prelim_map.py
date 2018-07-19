@@ -14,8 +14,8 @@ import logging
 import os
 import sys
 
-import miseq_logging
-import project_config
+from micall.core import miseq_logging
+from micall.core import project_config
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 
 BOWTIE_THREADS = 4    # Bowtie performance roughly scales with number of threads
