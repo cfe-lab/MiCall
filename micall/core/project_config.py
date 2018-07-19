@@ -1,3 +1,8 @@
+"""
+Defines an object class to parse a JSON object containing project
+specifications -- e.g., seed and coordinate reference sequences.
+"""
+
 import json
 import os
 
@@ -25,13 +30,6 @@ class ProjectConfig(object):
         file_path = os.path.dirname(__file__)
         project_paths = [os.path.join(file_path, 'projects.json'),
                          os.path.join(os.path.dirname(file_path), 'projects.json')]
-        return cls.search(project_paths)
-
-    @classmethod
-    def loadScoring(cls):
-        file_path = os.path.dirname(__file__)
-        project_paths = [os.path.join(file_path, 'project_scoring.json'),
-                         os.path.join(os.path.dirname(file_path), 'project_scoring.json')]
         return cls.search(project_paths)
 
     def load(self, json_file):
