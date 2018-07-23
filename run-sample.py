@@ -54,12 +54,15 @@ def main():
         sys.exit()
 
     if args.interop:
+        lengths = [args.readlen, args.index, args.index, args.readlen]
         records = read_errors(args.interop)
         quality_csv = os.join(args.outdir, prefix+'.quality.csv')
         with open(quality_csv, 'w') as handle:
-            write_phix_csv(handle, records, [300, 8, 8, 300], {})
+            write_phix_csv(out_file=handle, records=records, read_lengths=lengths)
 
-        report_bad_cycles(quality_csv)
+        bad_cycles_csv = os.join(args.outdir, prefix+'.bad_cycles.csv')
+        with open(quality_csv, 'r') as f1, open(bad_cycles_csv, 'w') as f2:
+            report_bad_cycles(f1, f2)
 
 
 if __name__ == '__main__':
