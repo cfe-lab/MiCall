@@ -2,6 +2,7 @@
   "projects": {
     "ERCC": {
       "max_variants": 0,
+      "description": "External RNA Controls Consortium reference; https://doi.org/10.1186/1471-2164-6-150",
       "regions": [
         {
           "coordinate_region": "ERCC-00002",
@@ -55,6 +56,7 @@
     },
     "HCV": {
       "max_variants": 0,
+      "description": "Hepatitis C virus, coding regions",
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-Core",
@@ -1030,6 +1032,7 @@
     },
     "HCV-NS5a": {
       "max_variants": 0,
+      "description": "Hepatitis C virus, non-structural protein 5a",
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-NS5a",
@@ -1132,6 +1135,7 @@
     },
     "HIV": {
       "max_variants": 0,
+      "description": "Human immunodeficiency virus type 1, coding regions",
       "regions": [
         {
           "coordinate_region": "GP41",
@@ -1197,6 +1201,7 @@
     },
     "HLA-B": {
       "max_variants": 10,
+      "description": "Human leukocyte antigen B",
       "regions": [
         {
           "coordinate_region": "HLA-B-exon2",
@@ -1214,6 +1219,7 @@
     },
     "INT": {
       "max_variants": 0,
+      "description": "HIV-1 subtype B, integrase",
       "regions": [
         {
           "coordinate_region": "INT",
@@ -1225,6 +1231,7 @@
     },
     "MidHCV": {
       "max_variants": 0,
+      "description": "Hepatitis C virus, NS5b with mid-size amplicon",
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-NS5b",
@@ -1327,6 +1334,7 @@
     },
     "MiniHCV": {
       "max_variants": 0,
+      "description": "Hepatitis C virus, NS5b with smallest amplicon",
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-NS5b",
@@ -1429,6 +1437,7 @@
     },
     "MiniRT": {
       "max_variants": 0,
+      "description": "HIV-1 reverse transcriptase, backup amplicon",
       "regions": [
         {
           "coordinate_region": "RT",
@@ -1440,6 +1449,7 @@
     },
     "PR-RT": {
       "max_variants": 0,
+      "description": "HIV-1 protease and reverse transcriptase",
       "regions": [
         {
           "coordinate_region": "PR",
@@ -1457,6 +1467,7 @@
     },
     "RT": {
       "max_variants": 0,
+      "description": "HIV-1 reverse transcriptase",
       "regions": [
         {
           "coordinate_region": "RT",
@@ -1468,10 +1479,12 @@
     },
     "Unknown": {
       "max_variants": 0,
+      "description": "Blank entry",
       "regions": []
     },
     "gp120": {
       "max_variants": 0,
+      "description": "HIV-1 surface envelope glycoprotein",
       "regions": [
         {
           "coordinate_region": "gp120",
@@ -1483,6 +1496,7 @@
     },
     "wg1HCV": {
       "max_variants": 0,
+      "description": "Hepatitis C virus, whole genome primer set 1",
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-Core",

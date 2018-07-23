@@ -33,6 +33,7 @@ class ProjectConfig(object):
         return cls.search(project_paths)
 
     def load(self, json_file):
+        self.json_file = json_file.name
         self.config = json.load(json_file)
 
     def writeSeedFasta(self, fasta_file):
@@ -116,6 +117,13 @@ class ProjectConfig(object):
         return self.config['regions'][seed_region]['seed_group']
 
     def getProjectRegions(self, seed_name, coordinate_name):
+        """ Find all projects that use a specific combination of seed and
+        coordinate references.
+
+        @param seed_name: the name of a seed region
+        @param coordinate_name: the name of a coordinate region
+        @yield project names
+        """
         project_names = self.config['projects'].keys()
         project_names.sort()
         for project_name in project_names:
