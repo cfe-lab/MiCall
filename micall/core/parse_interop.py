@@ -1,7 +1,5 @@
 import sys
 
-assert sys.version_info < (3,0), "Python 3 not supported"
-
 import argparse
 from csv import DictWriter
 
@@ -75,7 +73,7 @@ def read_errors(data_file):
 
 
 def _yield_cycles(records, read_lengths):
-    sorted_records = map(itemgetter('tile', 'cycle', 'error_rate'), records)
+    sorted_records = list(map(itemgetter('tile', 'cycle', 'error_rate'), records))
     try:
         sorted_records.sort()
     except:
@@ -102,6 +100,7 @@ def write_phix_csv(out_file, records, read_lengths=None, summary=None):
 
     Missing cycles are written with blank error rates, index reads are not
     written, and reverse reads are written with negative cycles.
+
     :param out_file: an open file to write to
     :param records: a sequence of dictionaries like those yielded from
     read_phix().
@@ -115,6 +114,7 @@ def write_phix_csv(out_file, records, read_lengths=None, summary=None):
 
     error_sums = [0.0, 0.0]
     error_counts = [0, 0]
+    #TODO: determine read_lengths from file
     for (_tile, sign), group in groupby(_yield_cycles(records, read_lengths),
                                         _record_grouper):
         previous_cycle = 0
@@ -125,7 +125,7 @@ def write_phix_csv(out_file, records, read_lengths=None, summary=None):
                 writer.writerow((record[0], previous_cycle))
                 previous_cycle += sign
             writer.writerow(record)
-            summary_index = (sign+1)/2
+            summary_index = (sign+1)//2
             error_sums[summary_index] += record[2]
             error_counts[summary_index] += 1
         if read_lengths:

@@ -47,6 +47,7 @@ def prelim_map(fastq1, fastq2, prelim_csv, nthreads=BOWTIE_THREADS, callback=Non
     @param rdgopen: a penalty for opening a gap in the read sequence.
     @param rfgopen: a penalty for opening a gap in the reference sequence.
     @param stderr: where to write the standard error output from bowtie2 calls.
+    @param gzip: if True, FASTQ files are compressed
     @param work_path:  optional path to store working files
     """
     try:

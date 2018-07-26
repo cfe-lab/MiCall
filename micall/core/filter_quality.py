@@ -44,6 +44,7 @@ def report_bad_cycles(quality_csv, bad_cycles_csv, bad_tiles_csv=None):
                                      ['tile', 'bad_cycles'],
                                      lineterminator=os.linesep)
         tile_writer.writeheader()
+
     for tile, tile_cycles in itertools.groupby(reader, itemgetter('tile')):
         bad_cycle_count = 0
         for _direction, cycles in itertools.groupby(tile_cycles,
