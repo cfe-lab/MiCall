@@ -144,7 +144,7 @@ def prelim_map(fastq1, fastq2, prelim_csv, nthreads=BOWTIE_THREADS, callback=Non
     writer.writeheader()
 
     # lines grouped by refname
-    for refname, lines in output.iteritems():
+    for refname, lines in output.items():
         for line in lines:
             writer.writerow(dict(zip(fieldnames, line)))
 

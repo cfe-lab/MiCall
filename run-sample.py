@@ -8,6 +8,8 @@ from micall.core.parse_interop import read_errors, write_phix_csv
 from micall.core.filter_quality import report_bad_cycles
 from micall.core.censor_fastq import censor
 from micall.core.prelim_map import prelim_map
+from micall.core.remap import remap
+
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -111,4 +113,15 @@ if __name__ == '__main__':
 
     prelim_csv = os.path.join(args.outdir, prefix+'.prelim.csv')
     with open(prelim_csv, 'w') as handle:
-        prelim_map(args.fastq1, args.fastq2, handle, gzip=not args.unzipped)
+        prelim_map(fastq1=args.fastq1.name,
+                   fastq2=args.fastq2.name if args.fastq2 else None,
+                   prelim_csv=handle,
+                   gzip=not args.unzipped)
+
+    remap_csv = os.path.join(args.outdir, prefix+'.remap.csv')
+    with open(remap_csv, 'w') as handle:
+        remap(fastq1=args.fastq1.name,
+              fastq2=args.fastq2.name if args.fastq2 else None,
+              prelim_csv=open(prelim_csv, 'rU'),
+              remap_csv=handle,
+              gzip=not args.unzipped)

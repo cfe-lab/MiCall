@@ -11,7 +11,12 @@ import argparse
 import collections
 from csv import DictReader, DictWriter
 import itertools
-import multiprocessing.forking
+
+try:
+    import multiprocessing.forking  # Python 2.x
+except:
+    import multiprocessing.popen_fork as forking  # Python 3.x
+
 import multiprocessing.pool
 import os
 import re
@@ -46,7 +51,7 @@ gpfx = re.compile('^[-]+')  # length of gap prefix
 
 
 # From https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
-class _Popen(multiprocessing.forking.Popen):
+class _Popen(forking.Popen):
     def __init__(self, *args, **kw):
         if hasattr(sys, 'frozen'):
             # We have to set original _MEIPASS2 value from sys._MEIPASS
@@ -255,10 +260,10 @@ def merge_inserts(ins1, ins2, q_cutoff=10, minimum_q_delta=5):
     q_cutoff_char = chr(q_cutoff+33)
 
     merged = {pos: seq
-              for pos, (seq, qual) in ins1.iteritems()
+              for pos, (seq, qual) in ins1.items()
               if min(qual) > q_cutoff_char}
 
-    for pos, (seq2, qual2) in ins2.iteritems():
+    for pos, (seq2, qual2) in ins2.items():
         if min(qual2) > q_cutoff_char:
             seq1, qual1 = ins1.get(pos, ('', ''))
             merged[pos] = merge_pairs(seq1, seq2, qual1, qual2,

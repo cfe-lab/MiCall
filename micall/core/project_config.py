@@ -42,7 +42,7 @@ class ProjectConfig(object):
         @param fasta_file: an open file
         """
         seed_region_set = set()
-        for project in self.config['projects'].itervalues():
+        for project in self.config['projects'].values():
             for region in project['regions']:
                 seed_region_set.update(region['seed_region_names'])
 

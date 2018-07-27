@@ -25,7 +25,7 @@ mixture_dict = {'W': 'AT', 'R': 'AG', 'K': 'GT', 'Y': 'CT', 'S': 'CG',
                 'M': 'AC', 'V': 'AGC', 'H': 'ATC', 'D': 'ATG',
                 'B': 'TGC', 'N': 'ATGC', '-': 'ATGC'}
 ambig_dict = dict(("".join(sorted(v)), k)
-                  for k, v in mixture_dict.iteritems()
+                  for k, v in mixture_dict.items()
                   if k != '-')
 complement_dict = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A',
                    'W': 'S', 'R': 'Y', 'K': 'M', 'Y': 'R', 'S': 'W', 'M': 'K',
