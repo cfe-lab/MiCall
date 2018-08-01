@@ -9,6 +9,7 @@ from micall.core.filter_quality import report_bad_cycles
 from micall.core.censor_fastq import censor
 from micall.core.prelim_map import prelim_map
 from micall.core.remap import remap
+from micall.core.sam2aln import sam2aln
 
 
 def parseArgs():
@@ -125,3 +126,8 @@ if __name__ == '__main__':
               prelim_csv=open(prelim_csv, 'rU'),
               remap_csv=handle,
               gzip=not args.unzipped)
+
+    align_csv = os.path.join(args.outdir, prefix+'.align.csv')
+    with open(align_csv, 'w') as handle:
+        sam2aln(remap_csv=open(remap_csv, 'rU'),
+                aligned_csv=handle)

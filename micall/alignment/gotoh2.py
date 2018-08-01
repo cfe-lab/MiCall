@@ -1,5 +1,5 @@
-import _gotoh2
-import numpy as np
+from micall.alignment import _gotoh2
+#import numpy as np
 import os
 import re
 import pkg_resources as pkgres
@@ -20,11 +20,11 @@ class Aligner():
 
         # read models from files
         self.models = {}
-        files = pkgres.resource_listdir('gotoh2', 'models')
+        files = pkgres.resource_listdir('micall.alignment', 'models')
 
         for f in files:
             model_name = f.replace('.csv', '')
-            with pkgres.resource_stream('gotoh2', '/'.join(['models', f])) as handle:
+            with pkgres.resource_stream('micall.alignment', '/'.join(['models', f])) as handle:
                 try:
                     mx, alpha = self.read_matrix_from_csv(handle)
                 except:
@@ -57,9 +57,9 @@ class Aligner():
             if type(line) is bytes:
                 line = line.decode('ascii')
             values = map(int, line.strip('\n').split(','))
-            rows.append(list(values))
-
-        return np.array(rows, dtype=np.int32), alphabet
+            rows.extend(list(values))
+        return rows, alphabet
+        #return np.array(rows, dtype=np.int32), alphabet
 
     def set_model(self, model):
         if model in self.models:

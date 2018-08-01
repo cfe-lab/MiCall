@@ -1,5 +1,5 @@
 #include <Python.h>
-#include "numpy/arrayobject.h"
+//#include "numpy/arrayobject.h"
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
@@ -551,7 +551,7 @@ static PyObject * align_wrapper(PyObject * self, PyObject * args) {
     struct align_output my_output;
 
     PyObject * obj = NULL;  // variables for parsing array from Python NumPy object
-    PyObject * ndarray = NULL;
+    PyObject * iter = NULL;
 
     if (!PyArg_ParseTuple(args, "ssiiisO", &seq1, &seq2, &gop, &gep, &is_global, &alphabet, &obj)) {
         return NULL;
@@ -566,12 +566,35 @@ static PyObject * align_wrapper(PyObject * self, PyObject * args) {
 
     //fprintf (stdout, "my_settings.alphabet = %s\n", my_settings.alphabet);
 
+    // parse array
+    iter = PyObject_GetIter(obj);
+    if (!iter) {
+        fprintf(stdout, "PyObject_GetIter failed!\n");
+    }
+
+    int ndarray [my_settings.l * my_settings.l];
+    int count = 0;
+    while(1) {
+        PyObject * next = PyIter_Next(iter);
+        if (!next) {
+            break;  // end of iterator
+        }
+        if (!PyLong_Check(next)) {
+            fprintf(stdout, "Non-integer in iterator!\n");
+        }
+        ndarray[count] = (int) PyLong_AsLong(next);
+        //fprintf(stdout, "%d %d\n", count, ndarray[count]);
+        count++;
+    }
+    my_settings.d = ndarray;
+    /*
     // parse NumPy array
     ndarray = PyArray_FROM_OTF(obj, NPY_INT, NPY_IN_ARRAY);
     if (ndarray == NULL) {
         return NULL;
     }
     my_settings.d = (int *) PyArray_DATA(ndarray);
+    */
 
     // call align function
     my_output = align(seq1, seq2, my_settings);
@@ -631,7 +654,7 @@ init_gotoh2 (void)
     PyObject *module = Py_InitModule("_gotoh2", gotoh2_methods);
 #endif
 
-    import_array();  // required to avoid a segmentation fault
+    //import_array();  // required to avoid a segmentation fault
 
     if (module == NULL) INITERROR;
     struct module_state *st = GETSTATE(module);
