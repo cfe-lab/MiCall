@@ -20,7 +20,7 @@ import shutil
 import sys
 
 #from gotoh import align_it
-from gotoh2 import Aligner
+from micall.alignment.gotoh2 import Aligner
 import Levenshtein
 
 from micall.core import miseq_logging, project_config
