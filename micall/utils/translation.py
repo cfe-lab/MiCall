@@ -73,7 +73,7 @@ def translate(seq,
         stats['max_aminos'] = 1 if seq else 0
 
     # loop over codon sites in nucleotide sequence
-    for codon_site in xrange(0, len(seq), 3):
+    for codon_site in range(0, len(seq), 3):
         codon = seq[codon_site:codon_site+3]
 
         if len(codon) < 3:

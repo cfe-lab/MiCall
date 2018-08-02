@@ -10,7 +10,7 @@ clips).
 import argparse
 import collections
 from csv import DictReader, DictWriter
-import itertools
+#import itertools
 
 try:
     import multiprocessing.forking  # Python 2.x
@@ -308,7 +308,7 @@ def matchmaker(remap_csv):
             yield old_row, row
 
     # Unmatched reads
-    for old_row in cached_rows.itervalues():
+    for old_row in cached_rows.values():
         yield old_row, None
 
 
@@ -362,7 +362,7 @@ def parse_sam(rows, unpaired=False):
         seq1, qual1, inserts = apply_cigar(cigar1, row1['seq'], row1['qual'])
 
         # report insertions relative to sample consensus
-        for left, (iseq, iqual) in inserts.iteritems():
+        for left, (iseq, iqual) in inserts.items():
             insert_list.append({'qname': qname,
                                 'fwd_rev': 'F' if is_first_read(row1['flag']) else 'R',
                                 'refname': rname,
@@ -377,7 +377,7 @@ def parse_sam(rows, unpaired=False):
         if is_paired:
             pos2 = int(row2['pos'])-1  # convert 1-index to 0-index
             seq2, qual2, inserts = apply_cigar(cigar2, row2['seq'], row2['qual'])
-            for left, (iseq, iqual) in inserts.iteritems():
+            for left, (iseq, iqual) in inserts.items():
                 insert_list.append({'qname': qname,
                                     'fwd_rev': 'F' if is_first_read(row2['flag']) else 'R',
                                     'refname': rname,
@@ -441,12 +441,12 @@ def sam2aln(remap_csv, aligned_csv, insert_csv=None, failed_csv=None, nthreads=N
     if nthreads:
         iter = parse_sam_in_threads(remap_csv, nthreads)
     else:
-        iter = itertools.imap(parse_sam, matchmaker(remap_csv))
+        iter = map(parse_sam, matchmaker(remap_csv))
 
     for rname, mseqs, insert_list, failed_list in iter:
         region = aligned[rname]
 
-        for qcut, mseq in mseqs.iteritems():
+        for qcut, mseq in mseqs.items():
             # collect identical merged sequences
             mseq_counter = region[qcut]
             mseq_counter[mseq] += 1
@@ -463,12 +463,12 @@ def sam2aln(remap_csv, aligned_csv, insert_csv=None, failed_csv=None, nthreads=N
                                 lineterminator=os.linesep)
     aligned_writer.writeheader()
 
-    for rname, data in aligned.iteritems():
-        for qcut, data2 in data.iteritems():
+    for rname, data in aligned.items():
+        for qcut, data2 in data.items():
             # sort variants by count
             intermed = [
                 (count, len_gap_prefix(s), s)
-                for s, count in data2.iteritems()
+                for s, count in data2.items()
             ]
             intermed.sort(reverse=True)
             for rank, (count, offset, seq) in enumerate(intermed):

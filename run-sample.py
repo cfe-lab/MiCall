@@ -10,6 +10,7 @@ from micall.core.censor_fastq import censor
 from micall.core.prelim_map import prelim_map
 from micall.core.remap import remap
 from micall.core.sam2aln import sam2aln
+from micall.core.aln2counts import aln2counts
 
 
 def parseArgs():
@@ -101,25 +102,24 @@ def censor_fastqs(args, prefix):
     return args
 
 
-
-
-if __name__ == '__main__':
-    args = parseArgs()
-    if args.outdir is None:
-        args.outdir = os.path.dirname(args.fastq1.name)
+def run_sample(args):
     prefix = get_prefix(args)
+    print('MiCall-Lite running sample {}...'.format(prefix))
 
     if args.interop:
+        print('  Censoring bad tile-cycle combos in FASTQ')
         args = censor_fastqs(args, prefix)
 
-    prelim_csv = os.path.join(args.outdir, prefix+'.prelim.csv')
+    print('  Preliminary map')
+    prelim_csv = os.path.join(args.outdir, prefix + '.prelim.csv')
     with open(prelim_csv, 'w') as handle:
         prelim_map(fastq1=args.fastq1.name,
                    fastq2=args.fastq2.name if args.fastq2 else None,
                    prelim_csv=handle,
                    gzip=not args.unzipped)
 
-    remap_csv = os.path.join(args.outdir, prefix+'.remap.csv')
+    print('  Iterative remap')
+    remap_csv = os.path.join(args.outdir, prefix + '.remap.csv')
     with open(remap_csv, 'w') as handle:
         remap(fastq1=args.fastq1.name,
               fastq2=args.fastq2.name if args.fastq2 else None,
@@ -127,7 +127,27 @@ if __name__ == '__main__':
               remap_csv=handle,
               gzip=not args.unzipped)
 
-    align_csv = os.path.join(args.outdir, prefix+'.align.csv')
+    print('  Generating alignment file')
+    align_csv = os.path.join(args.outdir, prefix + '.align.csv')
     with open(align_csv, 'w') as handle:
         sam2aln(remap_csv=open(remap_csv, 'rU'),
                 aligned_csv=handle)
+
+    print('  Generating count files')
+    nuc_csv = os.path.join(args.outdir, prefix + '.nuc.csv')
+    amino_csv = os.path.join(args.outdir, prefix + '.amino.csv')
+    insert_csv = os.path.join(args.outdir, prefix + '.insert.csv')
+    conseq_csv = os.path.join(args.outdir, prefix + '.conseq.csv')
+    aln2counts(aligned_csv=open(align_csv, 'rU'),
+               nuc_csv=open(nuc_csv, 'w'),
+               amino_csv=open(amino_csv, 'w'),
+               coord_ins_csv=open(insert_csv, 'w'),
+               conseq_csv=open(conseq_csv, 'w'))
+
+
+
+if __name__ == '__main__':
+    args = parseArgs()
+    if args.outdir is None:
+        args.outdir = os.path.dirname(args.fastq1.name)
+    run_sample(args)

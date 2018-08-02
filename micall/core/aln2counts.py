@@ -19,17 +19,22 @@ from itertools import groupby
 import logging
 import os
 
-import gotoh
+#import gotoh
 
 from micall.core import miseq_logging
 from micall.core import project_config
 from micall.utils.translation import translate, ambig_dict
+from micall.alignment import gotoh2
 
 AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'
 CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
 
+aligner = gotoh2.Aligner(gop=GAP_OPEN_COORD,
+                         gep=GAP_EXTEND_COORD,
+                         is_global=True,
+                         model='EmpHIV25')
 
 def parseArgs():
     parser = argparse.ArgumentParser(
@@ -143,13 +148,13 @@ class SequenceReport(object):
             self.insert_writer.add_nuc_read('-'*offset + nuc_seq, count)
 
             # cycle through reading frames
-            for reading_frame, frame_seed_aminos in self.seed_aminos.iteritems():
+            for reading_frame, frame_seed_aminos in self.seed_aminos.items():
                 offset_nuc_seq = '-' * (reading_frame + offset) + nuc_seq
                 # pad to a codon boundary
                 offset_nuc_seq += '-' * ((3 - (len(offset_nuc_seq) % 3)) % 3)
                 start = offset - (offset % 3)
                 for nuc_pos in range(start, len(offset_nuc_seq), 3):
-                    codon_index = nuc_pos / 3
+                    codon_index = int(nuc_pos / 3)
                     # append SeedAmino objects to this list if necessary
                     while len(frame_seed_aminos) <= codon_index:
                         frame_seed_aminos.append(SeedAmino(len(frame_seed_aminos)))
@@ -160,17 +165,16 @@ class SequenceReport(object):
         if self.callback:
             self.callback(progress=self.callback_max)
 
-    def _pair_align(self, reference, query, gap_open=15, gap_extend=5, use_terminal_gap_penalty=1):
+    def _pair_align(self, reference, query):
         """ Align a query sequence to a reference sequence.
 
         @return: (aligned_ref, aligned_query, score)
         """
-        aligned_ref, aligned_query, score = gotoh.align_it_aa(
-            reference,
-            query,
-            gap_open,
-            gap_extend,
-            use_terminal_gap_penalty)
+        if type(reference) == bytes:
+            reference = reference.decode('utf-8')
+        if type(query) == bytes:
+            query = query.decode('utf-8')
+        aligned_ref, aligned_query, score = aligner.align(reference, query)
         return aligned_ref, aligned_query, score
 
     def _map_to_coordinate_ref(self, coordinate_name, coordinate_ref):
@@ -190,7 +194,7 @@ class SequenceReport(object):
         max_score = min(consensus_length, len(coordinate_ref))
 
         best_alignment = None
-        for reading_frame, frame_seed_aminos in self.seed_aminos.iteritems():
+        for reading_frame, frame_seed_aminos in self.seed_aminos.items():
             consensus = ''.join([seed_amino1.get_consensus()
                                 for seed_amino1 in frame_seed_aminos])
             if reading_frame == 0:
@@ -200,9 +204,7 @@ class SequenceReport(object):
             # map to reference coordinates by aligning consensus
             _aref, _aquery, score = self._pair_align(
                 coordinate_ref,
-                consensus,
-                gap_open=GAP_OPEN_COORD,
-                gap_extend=GAP_EXTEND_COORD)
+                consensus)
             if score < max_score:
                 continue
             max_score = score
@@ -224,9 +226,7 @@ class SequenceReport(object):
                 # Map seed to coordinate reference to find relevant section.
                 aseed, aref, score = self._pair_align(
                     seed_amino_seq,
-                    coordinate_ref,
-                    gap_open=GAP_OPEN_COORD,
-                    gap_extend=GAP_EXTEND_COORD)
+                    coordinate_ref)
                 if score < max_seed_score:
                     continue
                 max_seed_score = score
@@ -309,7 +309,7 @@ class SequenceReport(object):
                     self.seed_aminos[0].append(SeedAmino(len(self.seed_aminos[0])))
 
         # iterate over coordinate references defined for this region
-        for coordinate_name, coordinate_ref in self.coordinate_refs.iteritems():
+        for coordinate_name, coordinate_ref in self.coordinate_refs.items():
             self._map_to_coordinate_ref(coordinate_name, coordinate_ref)
             report_aminos = self.reports[coordinate_name]
             max_variants = self.projects.getMaxVariants(coordinate_name)
@@ -337,7 +337,7 @@ class SequenceReport(object):
                     if len(stripped_seq) > minimum_variant_length:
                         variant_counts[clipped_seq] += count
                 coordinate_variants = [(count, seq)
-                                       for seq, count in variant_counts.iteritems()]
+                                       for seq, count in variant_counts.items()]
                 coordinate_variants.sort(reverse=True)
                 self.variants[coordinate_name] = coordinate_variants[0:max_variants]
 
@@ -356,7 +356,7 @@ class SequenceReport(object):
         self._create_amino_writer(amino_file).writeheader()
 
     def write_amino_counts(self, amino_file, coverage_summary=None):
-        regions = self.reports.keys()
+        regions = list(self.reports.keys())
         regions.sort()
         amino_writer = self._create_amino_writer(amino_file)
         for region in regions:
@@ -425,7 +425,7 @@ class SequenceReport(object):
             for seed_amino in self.seed_aminos[0]:
                 write_counts(self.seed, seed_amino, None)
         else:
-            for region, report_aminos in self.reports.iteritems():
+            for region, report_aminos in self.reports.items():
                 for report_amino in report_aminos:
                     write_counts(region, report_amino.seed_amino, report_amino)
 
@@ -502,7 +502,7 @@ class SequenceReport(object):
 
     def write_failure(self, fail_file):
         fail_writer = self._create_failure_writer(fail_file)
-        for region, report_aminos in self.reports.iteritems():
+        for region, report_aminos in self.reports.items():
             if not report_aminos:
                 coordinate_ref = self.projects.getReference(region)
                 fail_writer.writerow(dict(seed=self.seed,
@@ -512,7 +512,7 @@ class SequenceReport(object):
                                           refseq=coordinate_ref))
 
     def write_insertions(self):
-        for coordinate_name, coordinate_inserts in self.inserts.iteritems():
+        for coordinate_name, coordinate_inserts in self.inserts.items():
             self.insert_writer.write(coordinate_inserts,
                                      coordinate_name,
                                      self.reading_frames[coordinate_name],
@@ -722,7 +722,7 @@ class InsertionWriter(object):
                     break
             current_counts = Counter()
             insert_counts[left] = current_counts
-            for nuc_seq, count in self.nuc_seqs.iteritems():
+            for nuc_seq, count in self.nuc_seqs.items():
                 framed_nuc_seq = reading_frame * '-' + nuc_seq
                 insert_nuc_seq = framed_nuc_seq[left*3:right*3]
                 is_valid = (insert_nuc_seq and
@@ -734,8 +734,8 @@ class InsertionWriter(object):
                         current_counts[insert_amino_seq] += count
 
         # record insertions to CSV
-        for left, counts in insert_counts.iteritems():
-            for insert_seq, count in counts.iteritems():
+        for left, counts in insert_counts.items():
+            for insert_seq, count in counts.items():
                 insert_before = insert_targets.get(left, None)
                 # Only care about insertions in the middle of the sequence,
                 # so ignore any that come before or after the reference

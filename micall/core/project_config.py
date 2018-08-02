@@ -73,7 +73,7 @@ class ProjectConfig(object):
             are no linked references.
         """
         coord_refs = {}
-        for project in self.config['projects'].itervalues():
+        for project in self.config['projects'].values():
             for region in project['regions']:
                 coord_region = region['coordinate_region']
                 if seed_region in region['seed_region_names'] and coord_region:
@@ -89,7 +89,7 @@ class ProjectConfig(object):
             that uses the coordinate region.
         """
         max_variants = 0
-        for project in self.config['projects'].itervalues():
+        for project in self.config['projects'].values():
             for region in project['regions']:
                 if region['coordinate_region'] == coordinate_region:
                     max_variants = max(project['max_variants'], max_variants)
