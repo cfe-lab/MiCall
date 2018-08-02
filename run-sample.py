@@ -18,11 +18,11 @@ def parseArgs():
         description='Use the MiCall pipeline to process gzip-comprssed FASTQ '
                     'file(s) for one sample.'
     )
-    parser.add_argument('--fastq1', '-1', type=argparse.FileType('rb'), required=True,
+    parser.add_argument('fastq1', type=argparse.FileType('rb'),
                         help='Path to *.R1.fastq.gz file of paired set, or to an '
                              'unpaired *.fastq.gz file.')
-    parser.add_argument('--fastq2', '-2', type=argparse.FileType('rb'),
-                        required=False,
+    parser.add_argument('fastq2', type=argparse.FileType('rb'),
+                        nargs='?',
                         help='Path to *.R2.fastq.gz file of paired set.  Unused if'
                              ' processing an unpaired sample.')
     parser.add_argument('--outdir', '-d', default=None, required=False,
@@ -148,6 +148,7 @@ def run_sample(args):
 
 if __name__ == '__main__':
     args = parseArgs()
+    print(args)
     if args.outdir is None:
         args.outdir = os.path.dirname(args.fastq1.name)
     run_sample(args)
