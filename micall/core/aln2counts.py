@@ -33,7 +33,7 @@ GAP_EXTEND_COORD = 10
 
 aligner = gotoh2.Aligner(gop=GAP_OPEN_COORD,
                          gep=GAP_EXTEND_COORD,
-                         is_global=True,
+                         is_global=False,
                          model='EmpHIV25')
 
 def parseArgs():
@@ -175,12 +175,13 @@ class SequenceReport(object):
         if type(query) == bytes:
             query = query.decode('utf-8')
         aligned_ref, aligned_query, score = aligner.align(reference, query)
+        print('{} {} {}'.format(aligned_ref, aligned_query, score))
         return aligned_ref, aligned_query, score
 
     def _map_to_coordinate_ref(self, coordinate_name, coordinate_ref):
         """
         Align consensus of aligned reads in each reading frame to the
-        coordinate reference to determine best frame.
+        coordinate ropen(nuc_csv, 'w')eference to determine best frame.
         Generate a map of consensus indices to the coordinate reference.
 
         :param coordinate_name: Name of coordinate reference.
@@ -245,9 +246,7 @@ class SequenceReport(object):
             # Map seed to consensus to handle insertions and deletions
             aseed, aconseq, _score = self._pair_align(
                 seed_amino_seq,
-                consensus,
-                gap_open=GAP_OPEN_COORD,
-                gap_extend=GAP_EXTEND_COORD)
+                consensus)
             seed2conseq = {}
             seed_index = conseq_index = 0
             for seed_aa, conseq_aa in zip(aseed, aconseq):

@@ -138,17 +138,18 @@ def run_sample(args):
     amino_csv = os.path.join(args.outdir, prefix + '.amino.csv')
     insert_csv = os.path.join(args.outdir, prefix + '.insert.csv')
     conseq_csv = os.path.join(args.outdir, prefix + '.conseq.csv')
-    aln2counts(aligned_csv=open(align_csv, 'rU'),
-               nuc_csv=open(nuc_csv, 'w'),
-               amino_csv=open(amino_csv, 'w'),
-               coord_ins_csv=open(insert_csv, 'w'),
-               conseq_csv=open(conseq_csv, 'w'))
+    with open(nuc_csv, 'w') as handle:
+        aln2counts(aligned_csv=open(align_csv, 'rU'),
+                   nuc_csv=handle,
+                   amino_csv=open(amino_csv, 'w'),
+                   coord_ins_csv=open(insert_csv, 'w'),
+                   conseq_csv=open(conseq_csv, 'w'))
 
 
 
 if __name__ == '__main__':
     args = parseArgs()
-    print(args)
+    #print(args)
     if args.outdir is None:
         args.outdir = os.path.dirname(args.fastq1.name)
     run_sample(args)

@@ -63,7 +63,8 @@ def translate(seq,
     the most ambiguous amino acids at any position
     :return: string (AA sequence) or list of lists if return_list=True
     """
-
+    if type(seq) == bytes:
+        seq = seq.decode('utf-8')
     seq = '-'*offset + seq.upper()
     aa_list = []
     aa_seq = ''  # use to align against reference, for resolving indels
