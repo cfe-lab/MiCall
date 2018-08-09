@@ -73,11 +73,9 @@
     # NOTE: The order of the drugs in each drug_class will determine the order
     # in the report tables.
     NS3:
-      - [BPV, Boceprevir (Victrelis™)]
       - [GZR, Grazoprevir (a component of Zepatier™)]
       - [PTV, Paritaprevir (a component of Technivie™ and Holkira Pak™)]
       - [SPV, Simeprevir (Galexos™)]
-      - [TPV, Telaprevir (Incivek™)]
       - [VOX, Voxilaprevir (a component of Vosevi™)]
       - [GLE, Glecaprevir (a component of Mavyret™)]
       - [ASV, Asunaprevir (a component of Sunvepra™)]
