@@ -21,6 +21,7 @@
 /micall/tests/working/*
 /micall/tests/microtest/Results
 !/micall/tests/working/*.launch
+/micall-*.simg
 /timing.*
 .DS_Store
 */.DS_Store
