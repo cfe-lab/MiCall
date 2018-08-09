@@ -523,6 +523,8 @@ def collate_samples(run_info):
                  'g2p_summary.csv',
                  'resistance.csv',
                  'mutations.csv',
+                 'resistance_fail.csv',
+                 'resistance_consensus.csv',
                  'cascade.csv']
     for filename in filenames:
         out_path = run_info.output_path

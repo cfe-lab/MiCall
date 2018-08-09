@@ -43,6 +43,8 @@ from pyvdrm.vcf import VariantCalls
 
 from micall.core.project_config import ProjectConfig
 
+HCV_RULES_VERSION = '1.7'
+HCV_RULES_DATE = '13 Jun 2018'
 LEVEL_NAME_CHANGES = {'Potential Low-Level Resistance': 'Susceptible'}
 ResistanceLevel = namedtuple('ResistanceLevel', 'level name')
 
@@ -198,6 +200,7 @@ class AsiAlgorithm:
                 self.mutation_comments.append([gene_name, rules])
 
     def load_yaml(self, rules_config, genotype):
+        self.alg_version = HCV_RULES_VERSION
         self.level_def = {'-1': 'Resistance Interpretation Not Available',
                           '0': 'Sequence does not meet quality-control standards',
                           '1': 'Likely Susceptible',

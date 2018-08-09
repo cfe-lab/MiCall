@@ -3,7 +3,7 @@ from io import StringIO
 from unittest import TestCase
 
 from micall.resistance.resistance import read_aminos, write_resistance, select_reported_regions, AminoList, \
-    filter_aminos, load_asi, get_genotype, combine_aminos, create_fail_writer
+    filter_aminos, load_asi, get_genotype, combine_aminos, create_fail_writer, write_consensus, create_consensus_writer
 
 
 class SelectReportedRegionsTest(TestCase):
@@ -554,7 +554,8 @@ R1-seed,R1,15,7,3,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         min_fraction = 0.2
         expected_aminos = [AminoList('R1',
                                      [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None)]
+                                     None,
+                                     'R1-seed')]
 
         aminos = list(read_aminos(amino_csv, min_fraction))
 
@@ -571,7 +572,8 @@ HCV-1a,HCV1A-H77-NS5b,15,7,3,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         min_fraction = 0.2
         expected_aminos = [AminoList('HCV1A-H77-NS5b',
                                      [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     '1A')]
+                                     '1A',
+                                     'HCV-1a')]
 
         aminos = list(read_aminos(amino_csv, min_fraction))
 
@@ -588,7 +590,8 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         min_fraction = 0.2
         expected_aminos = [AminoList('R1',
                                      [{'K': 0.9}, {'F': 0.8, 'A': 0.2}, {}],
-                                     None)]
+                                     None,
+                                     'R1-seed')]
 
         aminos = list(read_aminos(amino_csv, min_fraction))
 
@@ -605,7 +608,8 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         min_fraction = 0.2
         expected_aminos = [AminoList('R1',
                                      [{'K': 1.0}, {'F': 1.0}, {}],
-                                     None)]
+                                     None,
+                                     'R1-seed')]
 
         aminos = list(read_aminos(amino_csv, min_fraction))
 
@@ -622,7 +626,8 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         min_fraction = 0.2
         expected_aminos = [AminoList('R1',
                                      [{}, {'F': 1.0}, {'L': 1.0}],
-                                     None)]
+                                     None,
+                                     'R1-seed')]
 
         aminos = list(read_aminos(amino_csv, min_fraction))
 
@@ -642,10 +647,12 @@ R2-seed,R2,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         min_fraction = 0.2
         expected_aminos = [AminoList('R1',
                                      [{'K': 1.0}, {'F': 1.0}, {}],
-                                     None),
+                                     None,
+                                     'R1-seed'),
                            AminoList('R2',
                                      [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
-                                     None)]
+                                     None,
+                                     'R2-seed')]
 
         aminos = list(read_aminos(amino_csv, min_fraction))
 
@@ -669,10 +676,12 @@ R3-seed,R3,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         reported_regions = {'R1', 'R2'}
         expected_aminos = [AminoList('R1',
                                      [{'K': 1.0}, {'F': 1.0}, {}],
-                                     None),
+                                     None,
+                                     'R1-seed'),
                            AminoList('R2',
                                      [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
-                                     None)]
+                                     None,
+                                     'R2-seed')]
 
         aminos = list(read_aminos(amino_csv,
                                   min_fraction,
@@ -699,10 +708,12 @@ R3-seed,R3,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         reported_regions = {'R1', 'R2'}
         expected_aminos = [AminoList('R1',
                                      [{'K': 1.0}, {'F': 1.0}, {}],
-                                     None),
+                                     None,
+                                     'R1-seed'),
                            AminoList('R2',
                                      [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
-                                     None)]
+                                     None,
+                                     'R2-seed')]
 
         aminos = list(read_aminos(amino_csv,
                                   min_fraction,
@@ -722,7 +733,8 @@ HCV-1a,HCV-Foo-NS5a,15,4,101,0,0,0,0,404,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         min_coverage = 9
         expected_aminos = [AminoList('HCV-Foo-NS5a',
                                      [{}]*99 + [{'K': 1.0}, {'F': 1.0}],
-                                     '1A')]
+                                     '1A',
+                                     'HCV-1a')]
 
         aminos = list(read_aminos(amino_csv,
                                   min_fraction,
@@ -764,23 +776,6 @@ HCV-1a,HCV-Foo-NS5a,15,4,102,0,0,0,0,500,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
         self.assertEqual(expected_aminos, aminos)
 
-    def test_coverage_missing_at_end(self):
-        amino_csv = DictReader(StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
-HCV-1a,HCV-Foo-NS5a,15,1,99,0,0,0,0,0,0,0,0,505,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,505
-HCV-1a,HCV-Foo-NS5a,15,4,100,0,0,0,0,404,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,404
-"""))
-        min_fraction = 0.2
-        min_coverage = 9
-        expected_aminos = []
-
-        aminos = list(read_aminos(amino_csv,
-                                  min_fraction,
-                                  min_coverage=min_coverage))
-
-        self.assertEqual(expected_aminos, aminos)
-
     def test_resistant_even_with_missing_midi(self):
         amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
@@ -792,7 +787,8 @@ HCV-1a,HCV1A-H77-NS5b,15,4,396,0,0,0,0,5000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
         min_coverage = 9
         expected_aminos = [AminoList('HCV1A-H77-NS5b',
                                      [{}]*394 + [{'G': 1.0}, {'F': 1.0}],
-                                     '1A')]
+                                     '1A',
+                                     'HCV-1a')]
 
         aminos = list(read_aminos(amino_csv,
                                   min_fraction,
@@ -812,7 +808,8 @@ R2-seed,R2,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         reported_regions = {'R1', 'R2'}
         expected_aminos = [AminoList('R2',
                                      [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
-                                     None)]
+                                     None,
+                                     'R2-seed')]
 
         aminos = list(read_aminos(amino_csv,
                                   min_fraction,
@@ -831,7 +828,8 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         min_fraction = 0.2
         expected_aminos = [AminoList('R1',
                                      [{'K': 0.9}, {'F': 0.8, 'd': 0.2}, {}],
-                                     None)]
+                                     None,
+                                     'R1-seed')]
 
         aminos = list(read_aminos(amino_csv, min_fraction))
 
@@ -848,7 +846,8 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         min_fraction = 0.2
         expected_aminos = [AminoList('R1',
                                      [{'K': 1.0}, {'F': 1.0, 'i': 0.25}, {}],
-                                     None)]
+                                     None,
+                                     'R1-seed')]
 
         aminos = list(read_aminos(amino_csv, min_fraction))
 
@@ -865,7 +864,8 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         min_fraction = 0.2
         expected_aminos = [AminoList('R1',
                                      [{'K': 0.9}, {'F': 0.8}, {}],
-                                     None)]
+                                     None,
+                                     'R1-seed')]
 
         aminos = list(read_aminos(amino_csv, min_fraction))
 
@@ -881,7 +881,8 @@ R1-seed,R1,15,7,3,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         min_fraction = 0.2
         expected_aminos = [AminoList('R1',
                                      [{}, {'F': 1.0}, {'A': 1.0}],
-                                     None)]
+                                     None,
+                                     'R1-seed')]
 
         aminos = list(read_aminos(amino_csv, min_fraction))
 
@@ -897,13 +898,16 @@ class FilterAminosTest(TestCase):
     def test_all(self):
         all_aminos = [AminoList('PR',
                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                None),
+                                None,
+                                'HIV1B-seed'),
                       AminoList('RT',
                                 [{'C': 1.0}, {'A': 1.0}, {'N': 1.0}],
-                                None),
+                                None,
+                                'HIV1B-seed'),
                       AminoList('INT',
                                 [{'E': 1.0}, {'A': 1.0}, {'T': 1.0}],
-                                None)]
+                                None,
+                                'HIV1B-seed')]
         expected_aminos = all_aminos
 
         aminos = filter_aminos(all_aminos, self.algorithms)
@@ -913,12 +917,14 @@ class FilterAminosTest(TestCase):
     def test_missing(self):
         all_aminos = [AminoList('RT',
                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                None)]
+                                None,
+                                'HIV1B-seed')]
         expected_aminos = [AminoList('RT',
                                      [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None),
-                           AminoList('INT', [{}]*288, None),
-                           AminoList('PR', [{}]*99, None)]
+                                     None,
+                                     'HIV1B-seed'),
+                           AminoList('INT', [{}]*288, None, 'HIV1B-seed'),
+                           AminoList('PR', [{}]*99, None, 'HIV1B-seed')]
 
         aminos = filter_aminos(all_aminos, self.algorithms)
 
@@ -927,12 +933,14 @@ class FilterAminosTest(TestCase):
     def test_missing_with_genotypes(self):
         all_aminos = [AminoList('HCV1A-H77-NS5b',
                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                '1A')]
+                                '1A',
+                                'HCV-1a')]
         expected_aminos = [AminoList('HCV1A-H77-NS5b',
                                      [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     '1A'),
-                           AminoList('HCV1A-H77-NS3', [{}]*631, '1A'),
-                           AminoList('HCV1A-H77-NS5a', [{}]*448, '1A')]
+                                     '1A',
+                                     'HCV-1a'),
+                           AminoList('HCV1A-H77-NS3', [{}]*631, '1A', 'HCV-1a'),
+                           AminoList('HCV1A-H77-NS5a', [{}]*448, '1A', 'HCV-1a')]
 
         aminos = filter_aminos(all_aminos, self.algorithms)
 
@@ -941,34 +949,41 @@ class FilterAminosTest(TestCase):
     def test_exclude(self):
         all_aminos = [AminoList('PR',
                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                None),
+                                None,
+                                'HIV1B-seed'),
                       AminoList('RT',
                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                None),
+                                None,
+                                'HIV1B-seed'),
                       AminoList('INT',
                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                None),
+                                None,
+                                'HIV1B-seed'),
                       AminoList('NS3',
                                 [{}, {}, {}],
-                                '1A')]
+                                '1A',
+                                'HCV-1a')]
         expected_aminos = [AminoList('PR',
                                      [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None),
+                                     None,
+                                     'HIV1B-seed'),
                            AminoList('RT',
                                      [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None),
+                                     None,
+                                     'HIV1B-seed'),
                            AminoList('INT',
                                      [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None)]
+                                     None,
+                                     'HIV1B-seed')]
 
         aminos = filter_aminos(all_aminos, self.algorithms)
 
         self.assertEqual(expected_aminos, aminos)
 
     def test_no_good(self):
-        all_aminos = [AminoList('PR', [{}, {}, {}], None),
-                      AminoList('RT', [{}, {}, {}], None),
-                      AminoList('HCV1A-H77-NS3', [{}, {}, {}], '1A')]
+        all_aminos = [AminoList('PR', [{}, {}, {}], None, 'HIV1B-seed'),
+                      AminoList('RT', [{}, {}, {}], None, 'HIV1B-seed'),
+                      AminoList('HCV1A-H77-NS3', [{}, {}, {}], '1A', 'HCV-1a')]
         expected_aminos = []
 
         aminos = filter_aminos(all_aminos, self.algorithms)
@@ -985,65 +1000,83 @@ class WriteResistanceTest(TestCase):
     def test_simple(self):
         rt_aminos = [{c: 1.0} for c in self.algorithms[None].stds['RT']]
         rt_aminos[40] = {'L': 1.0}  # pos 41
-        aminos = [AminoList('RT', rt_aminos, None)]
+        aminos = [AminoList('RT', rt_aminos, None, 'HIV1B-seed')]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
+        resistance_consensus_csv = StringIO()
         expected_resistance = """\
-region,drug_class,drug,drug_name,level,level_name,score,genotype
-RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,
-RT,NRTI,ABC,abacavir,1,Susceptible,5.0,
-RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,
-RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,
-RT,NRTI,DDI,didanosine,2,Susceptible,10.0,
-RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,
-RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,
-RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,
-RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,
-RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,
-RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,
+region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
+RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NRTI,ABC,abacavir,1,Susceptible,5.0,,HIV1B-seed,RT,8.3
+RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,8.3
+RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,8.3
+RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,8.3
+RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
 """
         expected_mutations = """\
-drug_class,mutation,prevalence,genotype
-NRTI,M41L,1.0,
+drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
+NRTI,M41L,1.0,,RT,HIV1B-seed,RT,8.3
+"""
+        expected_resistance_consensus = """\
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,8.3,0,\
+PISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTELEKEGKISKIGPENPYNTPVFAIKK\
+KDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSVPLDEDFRKYTAF\
+TIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPDIVIYQYMDDLYVGSDLEI\
+GQHRTKIEELRQHLLRWGLTTPDKKHQKEPPFLWMGYELHPDKWTVQPIVLPEKDSWTVNDIQKL\
+VGKLNWASQIYPGIKVRQLCKLLRGTKALTEVIPLTEEAELELAENREILKEPVHGVYYDPSKDL\
+IAEIQKQGQGQWTYQIYQEPFKNLKTGKYARMRGAHTNDVKQLTEAVQKITTESIVIWGKTPKFK\
+LPIQKETWETWWTEYWQATWIPEWEFVNTPPLVKLWYQLEKEPIVGAETF
 """
 
-        write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
+        write_resistance(aminos,
+                         resistance_csv,
+                         mutations_csv,
+                         self.algorithms,
+                         resistance_consensus_csv)
 
         self.assertEqual(expected_resistance, resistance_csv.getvalue())
         self.assertEqual(expected_mutations, mutations_csv.getvalue())
+        self.assertEqual(expected_resistance_consensus,
+                         resistance_consensus_csv.getvalue())
 
     def test_low_coverage(self):
         rt_aminos = [{c: 1.0} for c in self.algorithms[None].stds['RT']]
         rt_aminos[40] = {'L': 1.0}  # pos 41
-        aminos = [AminoList('PR', [{}]*99, None),
-                  AminoList('RT', rt_aminos, None)]
+        aminos = [AminoList('PR', [{}]*99, None, 'HIV1B-seed'),
+                  AminoList('RT', rt_aminos, None, 'HIV1B-seed')]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
-region,drug_class,drug,drug_name,level,level_name,score,genotype
-PR,PI,ATV/r,atazanavir/r,0,Sequence does not meet quality-control standards,0.0,
-PR,PI,DRV/r,darunavir/r,0,Sequence does not meet quality-control standards,0.0,
-PR,PI,FPV/r,fosamprenavir/r,0,Sequence does not meet quality-control standards,0.0,
-PR,PI,IDV/r,indinavir/r,0,Sequence does not meet quality-control standards,0.0,
-PR,PI,LPV/r,lopinavir/r,0,Sequence does not meet quality-control standards,0.0,
-PR,PI,NFV,nelfinavir,0,Sequence does not meet quality-control standards,0.0,
-PR,PI,SQV/r,saquinavir/r,0,Sequence does not meet quality-control standards,0.0,
-PR,PI,TPV/r,tipranavir/r,0,Sequence does not meet quality-control standards,0.0,
-RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,
-RT,NRTI,ABC,abacavir,1,Susceptible,5.0,
-RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,
-RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,
-RT,NRTI,DDI,didanosine,2,Susceptible,10.0,
-RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,
-RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,
-RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,
-RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,
-RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,
-RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,
+region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
+PR,PI,ATV/r,atazanavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,8.3
+PR,PI,DRV/r,darunavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,8.3
+PR,PI,FPV/r,fosamprenavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,8.3
+PR,PI,IDV/r,indinavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,8.3
+PR,PI,LPV/r,lopinavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,8.3
+PR,PI,NFV,nelfinavir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,8.3
+PR,PI,SQV/r,saquinavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,8.3
+PR,PI,TPV/r,tipranavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,8.3
+RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NRTI,ABC,abacavir,1,Susceptible,5.0,,HIV1B-seed,RT,8.3
+RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,8.3
+RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,8.3
+RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,8.3
+RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
 """
         expected_mutations = """\
-drug_class,mutation,prevalence,genotype
-NRTI,M41L,1.0,
+drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
+NRTI,M41L,1.0,,RT,HIV1B-seed,RT,8.3
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
@@ -1054,26 +1087,26 @@ NRTI,M41L,1.0,
     def test_mixture(self):
         rt_aminos = [{c: 1.0} for c in self.algorithms[None].stds['RT']]
         rt_aminos[40] = {'L': 0.3, 'd': 0.7}  # pos 41
-        aminos = [AminoList('RT', rt_aminos, None)]
+        aminos = [AminoList('RT', rt_aminos, None, 'HIV1B-seed')]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
-region,drug_class,drug,drug_name,level,level_name,score,genotype
-RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,
-RT,NRTI,ABC,abacavir,1,Susceptible,5.0,
-RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,
-RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,
-RT,NRTI,DDI,didanosine,2,Susceptible,10.0,
-RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,
-RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,
-RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,
-RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,
-RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,
-RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,
+region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
+RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NRTI,ABC,abacavir,1,Susceptible,5.0,,HIV1B-seed,RT,8.3
+RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,8.3
+RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,8.3
+RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,8.3
+RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
+RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,,HIV1B-seed,RT,8.3
 """
         expected_mutations = """\
-drug_class,mutation,prevalence,genotype
-NRTI,M41L,0.3,
+drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
+NRTI,M41L,0.3,,RT,HIV1B-seed,RT,8.3
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
@@ -1084,22 +1117,23 @@ NRTI,M41L,0.3,
     def test_hcv(self):
         aminos = [AminoList('HCV6-EUHK2-NS5b',
                             [{'T': 1.0}] * 591,
-                            '6')]
+                            '6',
+                            'HCV-6a')]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
-region,drug_class,drug,drug_name,level,level_name,score,genotype
-NS5b,NS5b,DSV,Dasabuvir,2,Not Indicated,0.0,6
-NS5b,NS5b,SOF-EPC,Sofosbuvir in Epclusa,5,Resistance Likely,8.0,6
-NS5b,NS5b,SOF-HAR,Sofosbuvir in Harvoni,2,Not Indicated,0.0,6
+region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
+NS5b,NS5b,DSV,Dasabuvir,2,Not Indicated,0.0,6,HCV-6a,HCV6-EUHK2-NS5b,1.7
+NS5b,NS5b,SOF-EPC,Sofosbuvir in Epclusa,5,Resistance Likely,8.0,6,HCV-6a,HCV6-EUHK2-NS5b,1.7
+NS5b,NS5b,SOF-HAR,Sofosbuvir in Harvoni,2,Not Indicated,0.0,6,HCV-6a,HCV6-EUHK2-NS5b,1.7
 """
         expected_mutations = """\
-drug_class,mutation,prevalence,genotype
-NS5b,L159T,1.0,6
-NS5b,S282T,1.0,6
-NS5b,C316T,1.0,6
-NS5b,L320T,1.0,6
-NS5b,V321T,1.0,6
+drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
+NS5b,L159T,1.0,6,NS5b,HCV-6a,HCV6-EUHK2-NS5b,1.7
+NS5b,S282T,1.0,6,NS5b,HCV-6a,HCV6-EUHK2-NS5b,1.7
+NS5b,C316T,1.0,6,NS5b,HCV-6a,HCV6-EUHK2-NS5b,1.7
+NS5b,L320T,1.0,6,NS5b,HCV-6a,HCV6-EUHK2-NS5b,1.7
+NS5b,V321T,1.0,6,NS5b,HCV-6a,HCV6-EUHK2-NS5b,1.7
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
@@ -1112,18 +1146,20 @@ NS5b,V321T,1.0,6
                        for c in self.algorithms[None].stds['HCV1B-Con1-NS5b']]
         ns5b_aminos[315] = {'Y': 1.0}  # C316Y mutation => Resistance Likely
         ns5b_aminos = ns5b_aminos[:336]  # Missing MIDI
-        aminos = [AminoList('HCV1B-Con1-NS5b', ns5b_aminos, '1B')]
+        aminos = [AminoList('HCV1B-Con1-NS5b', ns5b_aminos, '1B', 'HCV-1b')]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
-region,drug_class,drug,drug_name,level,level_name,score,genotype
-NS5b,NS5b,DSV,Dasabuvir,5,Resistance Likely,8.0,1B
-NS5b,NS5b,SOF-EPC,Sofosbuvir in Epclusa,0,Sequence does not meet quality-control standards,0.0,1B
-NS5b,NS5b,SOF-HAR,Sofosbuvir in Harvoni,0,Sequence does not meet quality-control standards,0.0,1B
+region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
+NS5b,NS5b,DSV,Dasabuvir,5,Resistance Likely,8.0,1B,HCV-1b,HCV1B-Con1-NS5b,1.7
+NS5b,NS5b,SOF-EPC,Sofosbuvir in Epclusa,0,Sequence does not meet quality-control standards,\
+0.0,1B,HCV-1b,HCV1B-Con1-NS5b,1.7
+NS5b,NS5b,SOF-HAR,Sofosbuvir in Harvoni,0,Sequence does not meet quality-control standards,\
+0.0,1B,HCV-1b,HCV1B-Con1-NS5b,1.7
 """
         expected_mutations = """\
-drug_class,mutation,prevalence,genotype
-NS5b,C316Y,1.0,1B
+drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
+NS5b,C316Y,1.0,1B,NS5b,HCV-1b,HCV1B-Con1-NS5b,1.7
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
@@ -1134,26 +1170,26 @@ NS5b,C316Y,1.0,1B
     def test_hcv_ns3_coverage_gap(self):
         self.maxDiff = None
         ns3_aminos = [{c: 1.0}
-                       for c in self.algorithms[None].stds['HCV1A-H77-NS3']]
+                      for c in self.algorithms[None].stds['HCV1A-H77-NS3']]
         # Avoid wild-type resistance to Simeprevir
         ns3_aminos[247] = {'I': 1.0}
         ns3_aminos[146] = {'S': 1.0}
 
         ns3_aminos[53] = {}  # Coverage gap at position 54
-        aminos = [AminoList('HCV1A-H77-NS3', ns3_aminos, '1A')]
+        aminos = [AminoList('HCV1A-H77-NS3', ns3_aminos, '1A', 'HCV-1a')]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
-region,drug_class,drug,drug_name,level,level_name,score,genotype
-NS3,NS3,ASV,Asunaprevir,0,Sequence does not meet quality-control standards,0.0,1A
-NS3,NS3,GLE,Glecaprevir,1,Likely Susceptible,0.0,1A
-NS3,NS3,GZR,Grazoprevir,1,Likely Susceptible,0.0,1A
-NS3,NS3,PTV,Paritaprevir,1,Likely Susceptible,0.0,1A
-NS3,NS3,SPV,Simeprevir,0,Sequence does not meet quality-control standards,0.0,1A
-NS3,NS3,VOX,Voxilaprevir,1,Likely Susceptible,0.0,1A
+region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
+NS3,NS3,ASV,Asunaprevir,0,Sequence does not meet quality-control standards,0.0,1A,HCV-1a,HCV1A-H77-NS3,1.7
+NS3,NS3,GLE,Glecaprevir,1,Likely Susceptible,0.0,1A,HCV-1a,HCV1A-H77-NS3,1.7
+NS3,NS3,GZR,Grazoprevir,1,Likely Susceptible,0.0,1A,HCV-1a,HCV1A-H77-NS3,1.7
+NS3,NS3,PTV,Paritaprevir,1,Likely Susceptible,0.0,1A,HCV-1a,HCV1A-H77-NS3,1.7
+NS3,NS3,SPV,Simeprevir,0,Sequence does not meet quality-control standards,0.0,1A,HCV-1a,HCV1A-H77-NS3,1.7
+NS3,NS3,VOX,Voxilaprevir,1,Likely Susceptible,0.0,1A,HCV-1a,HCV1A-H77-NS3,1.7
 """
         expected_mutations = """\
-drug_class,mutation,prevalence,genotype
+drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
@@ -1166,10 +1202,10 @@ drug_class,mutation,prevalence,genotype
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
-region,drug_class,drug,drug_name,level,level_name,score,genotype
+region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
 """
         expected_mutations = """\
-drug_class,mutation,prevalence,genotype
+drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
@@ -1180,14 +1216,15 @@ drug_class,mutation,prevalence,genotype
     def test_hcv_mostly_low_coverage(self):
         aminos = [AminoList('HCV1B-Con1-NS5b',
                             [{'T': 1.0}] + [{}] * 319 + [{'I': 1.0}] + [{}] * 200,
-                            '1B')]
+                            '1B',
+                            'HCV-1b')]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
-region,drug_class,drug,drug_name,level,level_name,score,genotype
+region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
 """
         expected_mutations = """\
-drug_class,mutation,prevalence,genotype
+drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
@@ -1217,3 +1254,88 @@ class GenotypeTest(TestCase):
 
     def test_hcv1c(self):
         self.assertEqual('1A', get_genotype('HCV-1c'))
+
+
+class WriteConsensusTest(TestCase):
+    def setUp(self):
+        self.version = '1.0'
+
+    def test_simple(self):
+        resistance_consensus_csv = StringIO()
+        writer = create_consensus_writer(resistance_consensus_csv)
+        amino_list = AminoList('RT',
+                               [{'A': 1.0}, {'R': 1.0}, {'M': 1.0}, {'S': 1.0}],
+                               None,
+                               'HIV1B-seed')
+        expected_resistance_consensus_csv = """\
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,1.0,0,ARMS
+"""
+        write_consensus(writer, amino_list, self.version)
+
+        self.assertEqual(expected_resistance_consensus_csv,
+                         resistance_consensus_csv.getvalue())
+
+    def test_gap(self):
+        resistance_consensus_csv = StringIO()
+        writer = create_consensus_writer(resistance_consensus_csv)
+        amino_list = AminoList('RT',
+                               [{'A': 1.0}, {}, {'M': 1.0}, {'S': 1.0}],
+                               None,
+                               'HIV1B-seed')
+        expected_resistance_consensus_csv = """\
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,1.0,0,A-MS
+"""
+        write_consensus(writer, amino_list, self.version)
+
+        self.assertEqual(expected_resistance_consensus_csv,
+                         resistance_consensus_csv.getvalue())
+
+    def test_offset(self):
+        resistance_consensus_csv = StringIO()
+        writer = create_consensus_writer(resistance_consensus_csv)
+        amino_list = AminoList('RT',
+                               [{}, {}, {'M': 1.0}, {'S': 1.0}],
+                               None,
+                               'HIV1B-seed')
+        expected_resistance_consensus_csv = """\
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,1.0,2,MS
+"""
+        write_consensus(writer, amino_list, self.version)
+
+        self.assertEqual(expected_resistance_consensus_csv,
+                         resistance_consensus_csv.getvalue())
+
+    def test_tail(self):
+        resistance_consensus_csv = StringIO()
+        writer = create_consensus_writer(resistance_consensus_csv)
+        amino_list = AminoList('RT',
+                               [{'A': 1.0}, {'R': 1.0}, {}, {}],
+                               None,
+                               'HIV1B-seed')
+        expected_resistance_consensus_csv = """\
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,1.0,0,AR
+"""
+        write_consensus(writer, amino_list, self.version)
+
+        self.assertEqual(expected_resistance_consensus_csv,
+                         resistance_consensus_csv.getvalue())
+
+    def test_mixture(self):
+        resistance_consensus_csv = StringIO()
+        writer = create_consensus_writer(resistance_consensus_csv)
+        amino_list = AminoList('RT',
+                               [{'A': 1.0}, {'R': 1.0}, {'T': 0.1, 'M': 0.9}, {'S': 1.0}],
+                               None,
+                               'HIV1B-seed')
+        expected_resistance_consensus_csv = """\
+seed,region,coord_region,version,offset,sequence
+HIV1B-seed,RT,RT,1.0,0,AR[MT]S
+"""
+        write_consensus(writer, amino_list, self.version)
+
+        self.assertEqual(expected_resistance_consensus_csv,
+                         resistance_consensus_csv.getvalue())
