@@ -77,9 +77,10 @@ def _yield_cycles(records, read_lengths):
         cycle = record[1]
         if cycle >= min_reverse_cycle:
             cycle = min_reverse_cycle - cycle - 1
-            yield record[0], cycle, record[2]
-        elif cycle <= max_forward_cycle:
-            yield record
+        elif cycle > max_forward_cycle:
+            continue
+        rate = round(record[2], 4)
+        yield record[0], cycle, rate
 
 
 def _record_grouper(record):
@@ -108,11 +109,12 @@ def write_phix_csv(out_file, records, read_lengths=None, summary=None):
     for (_tile, sign), group in groupby(_yield_cycles(records, read_lengths),
                                         _record_grouper):
         previous_cycle = 0
+        record = None
         for record in group:
             cycle = record[1]
             previous_cycle += sign
             while previous_cycle*sign < cycle*sign:
-                writer.writerow((record[0], previous_cycle))
+                writer.writerow((record[0], previous_cycle, ''))
                 previous_cycle += sign
             writer.writerow(record)
             summary_index = (sign+1) // 2
@@ -122,7 +124,7 @@ def write_phix_csv(out_file, records, read_lengths=None, summary=None):
             read_length = read_lengths[0] if sign == 1 else -read_lengths[-1]
             while previous_cycle*sign < read_length*sign:
                 previous_cycle += sign
-                writer.writerow((record[0], previous_cycle))
+                writer.writerow((record[0], previous_cycle, ''))
     if error_counts[1] > 0 and summary is not None:
         summary['error_rate_fwd'] = error_sums[1]/error_counts[1]
     if error_counts[0] > 0 and summary is not None:

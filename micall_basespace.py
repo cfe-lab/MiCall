@@ -15,10 +15,9 @@ import socket
 from zipfile import ZipFile, ZIP_DEFLATED
 
 import requests
-from xml.etree import ElementTree
 
 from micall.core.filter_quality import report_bad_cycles
-from micall.drivers.run_info import RunInfo, ReadSizes
+from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
 from micall.drivers.sample import Sample
 from micall.drivers.sample_group import SampleGroup
 from micall.resistance.resistance import find_groups
@@ -323,17 +322,7 @@ def link_samples(run_path, data_path):
     if not os.path.exists(run_info_path):
         read_sizes = None
     else:
-        run_info = ElementTree.parse(run_info_path).getroot()
-        read1 = run_info.find('.//Read[@Number="1"][@IsIndexedRead="N"]')
-        read2 = run_info.find('.//Read[@IsIndexedRead="N"][last()]')
-        index1 = run_info.find('.//Read[@Number="2"][@IsIndexedRead="Y"]')
-        index2 = run_info.find('.//Read[@Number="3"][@IsIndexedRead="Y"]')
-        read_sizes = ReadSizes(read1=int(read1.attrib['NumCycles']),
-                               read2=int(read2.attrib['NumCycles']),
-                               index1=int(index1.attrib['NumCycles']),
-                               index2=(int(index2.attrib['NumCycles'])
-                                       if index2 is not None
-                                       else 0))
+        read_sizes = parse_read_sizes(run_info_path)
     interop_path = os.path.join(run_path, 'Interop')
     run_info = RunInfo(sample_groups,
                        reports=['PR_RT', 'IN', 'NS3', 'NS5a', 'NS5b'],
@@ -350,7 +339,7 @@ def link_samples(run_path, data_path):
                        glob(os.path.join(run_path,
                                          '*_R1_*')))
     source_folder = fastq_files and os.path.dirname(fastq_files[0])
-    file_names = (os.path.basename(fastq_file) for fastq_file in fastq_files)
+    file_names = [os.path.basename(fastq_file) for fastq_file in fastq_files]
     groups = find_groups(file_names,
                          os.path.join(run_path, 'SampleSheet.csv'))
     for group in groups:

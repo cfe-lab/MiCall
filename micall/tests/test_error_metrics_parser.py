@@ -126,6 +126,20 @@ tile,cycle,errorrate
 
         self.assertEqual(expected_csv, out_file.getvalue())
 
+    def test_write_rounded(self):
+        out_file = StringIO()
+        records = [dict(tile=2, cycle=1, error_rate=0.12345),
+                   dict(tile=2, cycle=2, error_rate=0.23001)]
+        expected_csv = """\
+tile,cycle,errorrate
+2,1,0.1235
+2,2,0.23
+"""
+
+        write_phix_csv(out_file, records)
+
+        self.assertEqual(expected_csv, out_file.getvalue())
+
     def test_write_sorted(self):
         out_file = StringIO()
         records = [dict(tile=2, cycle=2, error_rate=0.4),
@@ -187,8 +201,8 @@ tile,cycle,errorrate
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1
-2,2
-2,3
+2,2,
+2,3,
 2,4,0.4
 """
 
@@ -207,10 +221,10 @@ tile,cycle,errorrate
 tile,cycle,errorrate
 2,1,0.1
 2,2,0.2
-2,3
+2,3,
 2,-1,0.4
 2,-2,0.5
-2,-3
+2,-3,
 """
 
         write_phix_csv(out_file, records, read_lengths)

@@ -1,4 +1,5 @@
 from collections import namedtuple
+from xml.etree import ElementTree
 
 import os
 
@@ -41,3 +42,18 @@ class RunInfo:
     def get_all_samples(self):
         for sample_group in self.sample_groups:
             yield from sample_group
+
+
+def parse_read_sizes(run_info_path):
+    run_info = ElementTree.parse(run_info_path).getroot()
+    read1 = run_info.find('.//Read[@Number="1"][@IsIndexedRead="N"]')
+    read2 = run_info.find('.//Read[@IsIndexedRead="N"][last()]')
+    index1 = run_info.find('.//Read[@Number="2"][@IsIndexedRead="Y"]')
+    index2 = run_info.find('.//Read[@Number="3"][@IsIndexedRead="Y"]')
+    read_sizes = ReadSizes(read1=int(read1.attrib['NumCycles']),
+                           read2=int(read2.attrib['NumCycles']),
+                           index1=int(index1.attrib['NumCycles']),
+                           index2=(int(index2.attrib['NumCycles'])
+                                   if index2 is not None
+                                   else 0))
+    return read_sizes

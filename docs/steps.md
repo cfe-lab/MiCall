@@ -266,6 +266,9 @@ description: Where the data goes
   * level - resistance level as a number
   * level_name - resistance level's name, like "Susceptible"
   * score - numeric score calculated by the HIVdb rules
+  * genotype - string describing the HCV genotype
 * mutations.csv
   * drug_class - the drug class code from the HIVdb rules, like NRTI
   * mutation - the wild-type amino, position, and resistant amino, like Q80K
+  * prevalence - the fraction of coverage that contained this mutation
+  * genotype - the HCV genotype
