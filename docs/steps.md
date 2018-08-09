@@ -125,12 +125,29 @@ description: Where the data goes
   * pos - 1-based position in the consensus sequence that this insertion follows
   * insert - the nucleotide sequence that was inserted
   * qual - the Phred quality scores for the inserted sequence
+* coverage_scores.csv
+  * project - the project this score is defined by
+  * region - the region being displayed
+  * seed - the seed mapped to
+  * q.cut - quality score cutoff
+  * min.coverage - minimum coverage at all key positions
+  * which.key.pos - which key position had the minimum
+  * off.score - score to use when off target
+  * on.score - score to use when on target
+* failed.csv
+  * qname - query name from the read
+  * cause - reason the reads failed to merge
 * clipping.csv
   * refname - seed reference the reads mapped to
   * pos - one-based nucleotide position within the consensus sequence
   * count - number of read pairs that soft clipped instead of mapping to this
     position
+* remap_conseq.csv
+  * region - the region mapped to
+  * sequence - the consensus sequence used
 * conseq.csv
+  * region - seed region it mapped to
+  * q-cutoff - minimum quality score
   * consensus-percent-cutoff - to be included in a mixture, a variant must make
     up at least this fraction of the total valid counts
   * offset - using the seed reference's coordinate system, this is the 1-based
@@ -193,6 +210,12 @@ description: Where the data goes
   * count - the number of times the insertion occurred
   * before - the one-based position within the coordinate reference that it
     was inserted before
+* failed_align.csv -
+  * seed - seed the reads aligned to
+  * region - where the consensus was trying to align
+  * qcut - the quality score cutoff
+  * queryseq - the consensus sequence
+  * refseq - the reference sequence for the region
 * g2p.csv - calls individual sequences as either R5 or X4
   * rank - ranks each sequence within the sample, starting at 1 for the most
     common.
@@ -228,6 +251,13 @@ description: Where the data goes
   * X4pct - X4calls as a percentage of valid
   * final - the final decision: blank if valid is 0, X4 if X4pct >= 2, otherwise
     R5
+* cascade.csv - number of read pairs that flow through the pipeline steps
+  * demultiplexed - count from the raw FASTQ
+  * v3loop - aligned with V3LOOP
+  * g2p - valid reads to count in G2P
+  * prelim_map - mapped to other references on first pass
+  * remap - mapped to other references after remapping
+  * aligned - aligned with a reference and merged with mate
 * resistance.csv
   * region - the region code, like PR or RT
   * drug_class - the drug class code from the HIVdb rules, like NRTI
