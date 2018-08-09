@@ -20,7 +20,7 @@ from micall.core.filter_quality import report_bad_cycles
 from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
 from micall.drivers.sample import Sample
 from micall.drivers.sample_group import SampleGroup
-from micall.resistance.resistance import find_groups
+from micall.monitor.find_groups import find_groups
 from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
@@ -319,11 +319,11 @@ def link_samples(run_path, data_path):
 
     sample_groups = []
     run_info_path = os.path.join(run_path, 'RunInfo.xml')
-    if not os.path.exists(run_info_path):
+    interop_path = os.path.join(run_path, 'InterOp')
+    if not (os.path.exists(run_info_path) and os.path.exists(interop_path)):
         read_sizes = None
     else:
         read_sizes = parse_read_sizes(run_info_path)
-    interop_path = os.path.join(run_path, 'Interop')
     run_info = RunInfo(sample_groups,
                        reports=['PR_RT', 'IN', 'NS3', 'NS5a', 'NS5b'],
                        interop_path=interop_path,
@@ -516,6 +516,7 @@ def collate_samples(run_info):
                  'amino.csv',
                  'coord_ins.csv',
                  'conseq.csv',
+                 'conseq_region.csv',
                  'failed_align.csv',
                  'coverage_scores.csv',
                  'g2p.csv',

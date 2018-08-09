@@ -1,9 +1,13 @@
 from enum import Enum
 from pathlib import Path
 
+from kiveapi import KiveRunFailedException
+
 ALLOWED_GROUPS = ['Everyone']
 # noinspection PyArgumentList
-PipelineType = Enum('PipelineType', 'FILTER_QUALITY MAIN MIDI RESISTANCE')
+PipelineType = Enum(
+    'PipelineType',
+    'FILTER_QUALITY MAIN MIDI RESISTANCE MIXED_HCV_MAIN MIXED_HCV_MIDI')
 
 
 class FolderWatcher:
@@ -16,9 +20,16 @@ class FolderWatcher:
             run folder
         :param runner: an object for running Kive pipelines. Must have these
             methods:
-            run_pipeline(folder_watcher, sample_watcher, pipeline_type) => run
-            fetch_run_status(run) => True if successfully finished, raise if
-                run failed
+            run_pipeline(folder_watcher, pipeline_type, sample_watcher)
+                returns run, or None if that pipeline_type is not configured.
+            fetch_run_status(
+                old_run,
+                folder_watcher,
+                pipeline_type,
+                sample_watcher) => None if successfully finished, raise if
+                run failed, new_run if user cancelled the old one, or old_run
+                if it's still running. Also saves the outputs to temporary
+                files in the results folder when the run is finished
         """
         self.base_calls_folder = Path(base_calls_folder)
         self.runner = runner
@@ -29,19 +40,23 @@ class FolderWatcher:
         self.quality_dataset = None
         self.filter_quality_run = None
         self.bad_cycles_dataset = None
-        self.active_runs = set()
+        self.active_runs = {}  # {run: (sample_watcher, pipeline_type)}
         self.completed_samples = set()  # {fastq1_name}
 
     def __repr__(self):
         return f'FolderWatcher({str(self.base_calls_folder)!r})'
 
     @property
+    def all_samples(self):
+        for sample_watcher in self.sample_watchers:
+            for name in sample_watcher.sample_group.names:
+                if name is not None:
+                    yield name
+
+    @property
     def active_samples(self):
-        started_samples = {name
-                           for sample_watcher in self.sample_watchers
-                           for name in sample_watcher.sample_group.names
-                           if name is not None}
-        return started_samples - self.completed_samples
+        all_samples = set(self.all_samples)
+        return all_samples - self.completed_samples
 
     @property
     def is_complete(self):
@@ -49,18 +64,14 @@ class FolderWatcher:
 
     def poll_runs(self):
         if self.filter_quality_run is None:
-            self.filter_quality_run = self.runner.run_pipeline(
-                self,
-                None,
+            self.filter_quality_run = self.run_pipeline(
                 PipelineType.FILTER_QUALITY)
-            self.active_runs.add(self.filter_quality_run)
             # Launched filter run, nothing more to check.
             return
         if self.filter_quality_run in self.active_runs:
-            if not self.runner.fetch_run_status(self.filter_quality_run):
+            if not self.fetch_run_status(self.filter_quality_run):
                 # Still running, nothing more to check.
                 return
-            self.active_runs.remove(self.filter_quality_run)
         for sample_watcher in self.sample_watchers:
             is_finished = self.poll_sample_runs(sample_watcher)
             if is_finished:
@@ -70,36 +81,108 @@ class FolderWatcher:
                     if name is not None)
 
     def poll_sample_runs(self, sample_watcher):
-        if not sample_watcher.main_runs:
-            sample_watcher.main_runs.append(self.runner.run_pipeline(
-                self,
-                sample_watcher,
-                PipelineType.MAIN))
-            self.active_runs.update(sample_watcher.main_runs)
-            # Launched main run, nothing more to check on sample.
-            return False
-        for run in sample_watcher.main_runs:
-            if run in self.active_runs:
-                if not self.runner.fetch_run_status(run):
-                    # Still running, nothing more to check on sample
-                    return False
-                self.active_runs.remove(run)
-        if sample_watcher.resistance_run is None:
-            sample_watcher.resistance_run = self.runner.run_pipeline(
-                self,
-                sample_watcher,
-                PipelineType.RESISTANCE)
+        """ Poll all active runs for a sample.
+
+        :param sample_watcher: details about the sample to poll
+        :return: True if the sample is complete (success or failure), otherwise
+            False
+        """
+        if sample_watcher.is_failed:
+            return True
+        is_mixed_hcv_complete = False
+        mixed_hcv_run = sample_watcher.runs.get(PipelineType.MIXED_HCV_MAIN)
+        if mixed_hcv_run is None:
+            if 'HCV' not in sample_watcher.sample_group.names[0]:
+                is_mixed_hcv_complete = True
+            else:
+                mixed_hcv_run = self.run_pipeline(
+                    PipelineType.MIXED_HCV_MAIN,
+                    sample_watcher)
+                if mixed_hcv_run is None:
+                    is_mixed_hcv_complete = True
+                else:
+                    if sample_watcher.sample_group.names[1] is not None:
+                        self.run_pipeline(PipelineType.MIXED_HCV_MIDI,
+                                          sample_watcher)
+        else:
+            mixed_hcv_midi_run = sample_watcher.runs.get(PipelineType.MIXED_HCV_MIDI)
+            active_mixed_runs = [
+                run
+                for run in (mixed_hcv_run, mixed_hcv_midi_run)
+                if run in self.active_runs and not self.fetch_run_status(run)]
+            is_mixed_hcv_complete = not active_mixed_runs
+
+        main_run = sample_watcher.runs.get(PipelineType.MAIN)
+        if main_run is None:
+            self.run_pipeline(PipelineType.MAIN, sample_watcher)
+            if sample_watcher.sample_group.names[1] is not None:
+                self.run_pipeline(PipelineType.MIDI, sample_watcher)
+            # Launched main and midi runs, nothing more to check on sample.
+            return sample_watcher.is_failed
+        midi_run = sample_watcher.runs.get(PipelineType.MIDI)
+        active_main_runs = [
+            run
+            for run in (main_run, midi_run)
+            if run in self.active_runs and not self.fetch_run_status(run)]
+        if active_main_runs:
+            # Still running, nothing more to check on sample
+            return sample_watcher.is_failed
+        resistance_run = sample_watcher.runs.get(PipelineType.RESISTANCE)
+        if resistance_run is None:
+            self.run_pipeline(PipelineType.RESISTANCE, sample_watcher)
             # Launched resistance run, nothing more to check on sample.
-            return False
-        return self.runner.fetch_run_status(sample_watcher.resistance_run)
+            return sample_watcher.is_failed
+        if resistance_run in self.active_runs:
+            if not self.fetch_run_status(resistance_run):
+                # Still running, nothing more to check on sample.
+                return sample_watcher.is_failed
+        return is_mixed_hcv_complete or sample_watcher.is_failed
+
+    def run_pipeline(self, pipeline_type, sample_watcher=None):
+        if sample_watcher and sample_watcher.is_failed:
+            # Don't start runs when the sample has already failed.
+            return None
+        run = self.runner.run_pipeline(self, pipeline_type, sample_watcher)
+        if run is not None:
+            self.add_run(run, pipeline_type, sample_watcher)
+        return run
+
+    def add_run(self, run, pipeline_type, sample_watcher=None, is_complete=False):
+        if not is_complete:
+            self.active_runs[run] = (sample_watcher, pipeline_type)
+        if pipeline_type == PipelineType.FILTER_QUALITY:
+            self.filter_quality_run = run
+        else:
+            sample_watcher.runs[pipeline_type] = run
+
+    def fetch_run_status(self, run):
+        sample_watcher, pipeline_type = self.active_runs[run]
+        is_complete = False
+        try:
+            new_run = self.runner.fetch_run_status(run,
+                                                   self,
+                                                   pipeline_type,
+                                                   sample_watcher)
+            if new_run is None:
+                is_complete = True
+            elif new_run is not run:
+                del self.active_runs[run]
+                self.add_run(new_run, pipeline_type, sample_watcher)
+
+        except KiveRunFailedException:
+            sample_watcher.is_failed = True
+            is_complete = True
+        if is_complete:
+            del self.active_runs[run]
+        return is_complete
 
 
 class SampleWatcher:
     def __init__(self, sample_group):
         self.sample_group = sample_group
         self.fastq_datasets = []
-        self.main_runs = []
-        self.resistance_run = None
+        self.runs = {}  # {pipeline_type: run}
+        self.is_failed = False
 
     def __repr__(self):
         enum = self.sample_group.enum

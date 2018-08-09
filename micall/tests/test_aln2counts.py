@@ -317,9 +317,10 @@ R1-seed,15,0,1,7,TTNGG
 """)
         expected_text = """\
 region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,6,TTTNGG
-R1-seed,15,0.100,6,TTTNGG
+R1-seed,15,MAX,6,TTT-GG
+R1-seed,15,0.100,6,TTT-GG
 """
+        self.report.consensus_min_coverage = 1
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -336,6 +337,7 @@ R1-seed,15,0,1,7,NNNNN
         expected_text = """\
 region,q-cutoff,consensus-percent-cutoff,offset,sequence
 """
+        self.report.consensus_min_coverage = 1
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -355,7 +357,7 @@ region,q-cutoff,consensus-percent-cutoff,offset,sequence
 R1-seed,15,MAX,0,AAAT--GGG
 R1-seed,15,0.100,0,AAAT--GGG
 """
-        self.report.consensus_min_coverage=10
+        self.report.consensus_min_coverage = 10
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -367,14 +369,33 @@ R1-seed,15,0.100,0,AAAT--GGG
         # refname,qcut,rank,count,offset,seq
         aligned_reads = self.prepareReads("""\
 R1-seed,15,0,9,0,AAATTTGGG
-R1-seed,15,0,1,3,TTTGGG
+R1-seed,15,0,1,4,TTGGG
 """)
         expected_text = """\
 region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,3,TTTGGG
-R1-seed,15,0.100,3,TTTGGG
+R1-seed,15,MAX,4,TTGGG
+R1-seed,15,0.100,4,TTGGG
 """
-        self.report.consensus_min_coverage=10
+        self.report.consensus_min_coverage = 10
+
+        self.report.write_consensus_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusLowCoverageAtEnd(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTTGGG
+R1-seed,15,0,1,0,AAAT
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAAT
+R1-seed,15,0.100,0,AAAT
+"""
+        self.report.consensus_min_coverage = 10
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -1864,6 +1885,68 @@ R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testMultipleCoordinateConsensusRegionsReport(self):
+        """ Two coordinate regions map the same seed region, report both.
+        """
+        self.report.projects.load(StringIO("""\
+{
+  "projects": {
+    "R1": {
+      "max_variants": 10,
+      "regions": [
+        {
+          "coordinate_region": "R1a",
+          "seed_region_names": ["R1-seed"]
+        },
+        {
+          "coordinate_region": "R1b",
+          "seed_region_names": ["R1-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R1-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "TGGAAATTTAGG"
+      ]
+    },
+    "R1a": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFR"
+      ]
+    },
+    "R1b": {
+      "is_nucleotide": false,
+      "reference": [
+        "WKFR"
+      ]
+    }
+  }
+}
+"""))
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,AAATTT
+R1-seed,15,0,1,0,CCCGGG
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,R1a,15,MAX,0,AAATTT
+R1-seed,R1a,15,0.100,0,MMMKKK
+R1-seed,R1b,15,MAX,3,AAATTT
+R1-seed,R1b,15,0.100,3,MMMKKK
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_consensus_regions_header(self.report_file)
+        self.report.write_consensus_regions()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testReadRemapConseqs(self):
         remap_conseqs_csv = StringIO("""\
 region,sequence
@@ -2524,32 +2607,38 @@ class SeedNucleotideTest(unittest.TestCase):
     def testConsensusCutoffBelowBoundary(self):
         self.nuc.count_nucleotides('C', 9001)
         self.nuc.count_nucleotides('T', 999)
-        consensus_mix = self.nuc.get_consensus(0.5)
+        consensus_mix = self.nuc.get_consensus(0.1)
 
         expected_consensus = 'C'  # T was below the cutoff
         self.assertEqual(expected_consensus, consensus_mix)
 
     def testConsensusMixedWithPoorQuality(self):
-        self.nuc.count_nucleotides('N', 2)
+        self.nuc.count_nucleotides('N', 99)
         self.nuc.count_nucleotides('T', 1)
         consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.1)
+        consensus_mix_one_pct = self.nuc.get_consensus(0.01)
+        consensus_mix_ten_pct = self.nuc.get_consensus(0.10)
 
         expected_consensus_max = 'T'  # N always overruled
-        expected_consensus_mix = 'T'
+        expected_consensus_mix_one_pct = 'T'
+        expected_consensus_mix_ten_pct = 'T'
         self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix, consensus_mix)
+        self.assertEqual(expected_consensus_mix_one_pct, consensus_mix_one_pct)
+        self.assertEqual(expected_consensus_mix_ten_pct, consensus_mix_ten_pct)
 
     def testConsensusMixedWithGap(self):
-        self.nuc.count_nucleotides('-', 2)
+        self.nuc.count_nucleotides('-', 99)
         self.nuc.count_nucleotides('T', 1)
         consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.1)
+        consensus_mix_one_pct = self.nuc.get_consensus(0.01)
+        consensus_mix_ten_pct = self.nuc.get_consensus(0.10)
 
-        expected_consensus_max = 'T'  # dash always overruled
-        expected_consensus_mix = 'T'
+        expected_consensus_max = '-'  # most common
+        expected_consensus_mix_one_pct = 't'  # mix of both
+        expected_consensus_mix_ten_pct = '-'  # only deletions
         self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix, consensus_mix)
+        self.assertEqual(expected_consensus_mix_one_pct, consensus_mix_one_pct)
+        self.assertEqual(expected_consensus_mix_ten_pct, consensus_mix_ten_pct)
 
     def testConsensusMixedWithGapAndPoorQuality(self):
         self.nuc.count_nucleotides('N', 3)
@@ -2558,8 +2647,8 @@ class SeedNucleotideTest(unittest.TestCase):
         consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
-        expected_consensus_max = 'T'
-        expected_consensus_mix = 'T'
+        expected_consensus_max = '-'
+        expected_consensus_mix = 't'
         self.assertEqual(expected_consensus_max, consensus_max)
         self.assertEqual(expected_consensus_mix, consensus_mix)
 
@@ -2579,8 +2668,8 @@ class SeedNucleotideTest(unittest.TestCase):
         consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
         consensus_mix = self.nuc.get_consensus(0.1)
 
-        expected_consensus_max = 'N'
-        expected_consensus_mix = 'N'
+        expected_consensus_max = '-'
+        expected_consensus_mix = '-'
         self.assertEqual(expected_consensus_max, consensus_max)
         self.assertEqual(expected_consensus_mix, consensus_mix)
 

@@ -8,7 +8,7 @@ from micall.drivers.run_info import RunInfo
 from micall.drivers.sample import Sample
 from micall.drivers.sample_group import SampleGroup
 
-logger = logging.getLogger('foo')
+logger = logging.getLogger(__name__)
 
 
 def parse_args():

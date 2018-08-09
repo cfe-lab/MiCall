@@ -1,5 +1,3 @@
-#! /usr/bin/env python3.4
-
 """
 Takes preliminary SAM as CSV input.  Iterative re-mapping of reads from
 original FASTQ files.
@@ -11,7 +9,7 @@ import argparse
 from collections import Counter, defaultdict
 import csv
 from functools import partial
-import logging
+from logging import getLogger
 import os
 import re
 import shutil
@@ -19,9 +17,10 @@ import sys
 
 # noinspection PyUnresolvedReferences
 from gotoh import align_it
+
 import Levenshtein
 
-from micall.core import miseq_logging, project_config
+from micall.core import project_config
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall.core.prelim_map import BOWTIE_BUILD_PATH, \
     BOWTIE_PATH, BOWTIE_VERSION, READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
@@ -53,7 +52,7 @@ SAM_FIELDS = [
 
 cigar_re = re.compile('[0-9]+[MIDNSHPX=]')  # CIGAR token
 
-logger = miseq_logging.init_logging_console_only(logging.DEBUG)
+logger = getLogger(__name__)
 indel_re = re.compile('[+-][0-9]+')
 line_counter = LineCounter()
 
@@ -262,7 +261,7 @@ def sam_to_conseqs(samfile,
                 drifted_seeds.append((read_counts[name], name))
                 continue
 
-            other_seed = other_dist = None
+            other_seed = other_dist = seed_dist = None
             for seed_name in sorted(new_conseqs.keys()):
                 seed_ref = original_seeds[seed_name]
                 aligned_seed, aligned_conseq, _score = align_it(seed_ref,

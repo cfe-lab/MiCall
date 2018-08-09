@@ -3,14 +3,13 @@
 # To execute as a script, run python -m micall.monitor.update_qai
 
 import csv
+from argparse import SUPPRESS
 from collections import defaultdict
 from datetime import datetime
-from glob import glob
 import logging
 from operator import itemgetter
 import os
 
-from micall import settings  # Import first for logging configuration.
 from micall.monitor import qai_helper
 from micall.utils import sample_sheet_parser
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
@@ -22,16 +21,28 @@ def parse_args():
     import argparse
     parser = argparse.ArgumentParser(
         description="Update the Oracle database with conseq information")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--result_folder",
-                       "-r",
-                       help="Result folder that holds the conseq.csv file")
-    group.add_argument("--load_all",
-                       "-a",
-                       action="store_true",
-                       help="load all folders under RAW_DATA that have results.")
+    parser.add_argument("result_folder",
+                        help="Result folder that holds the conseq.csv file")
+    parser.add_argument(
+        '--pipeline_version',
+        default='0-dev',
+        help='version suffix for batch names and folder names')
+    parser.add_argument(
+        '--qai_server',
+        default=os.environ.get('MICALL_QAI_SERVER', 'http://localhost:3000'),
+        help='server to post reviews on')
+    parser.add_argument(
+        '--qai_user',
+        default=os.environ.get('MICALL_QAI_USER', 'bob'),
+        help='user name for QAI server')
+    parser.add_argument(
+        '--qai_password',
+        default=SUPPRESS,
+        help='password for QAI server (default not shown)')
     args = parser.parse_args()
-    return args, parser
+    if not hasattr(args, 'qai_password'):
+        args.qai_password = os.environ.get('MICALL_QAI_PASSWORD', 'testing')
+    return args
 
 
 def build_conseqs(conseqs_file,
@@ -236,7 +247,8 @@ def upload_review_to_qai(coverage_file,
                          run,
                          sample_sheet,
                          conseqs,
-                         session):
+                         session,
+                         pipeline_version):
     """ Create a review.
 
     @param coverage_file: the coverage scores to upload
@@ -249,15 +261,16 @@ def upload_review_to_qai(coverage_file,
     @param conseqs: an array of JSON hashes to pass to QAI for the conseq
         child records
     @param session: the QAI session
+    @param str pipeline_version: 'X.Y' describing the current version
     """
 
     runid = run['id']
     sequencings = run['sequencing_summary']
 
     project_regions = session.get_json(
-        "/lab_miseq_project_regions?pipeline=" + settings.pipeline_version)
+        "/lab_miseq_project_regions?pipeline=" + pipeline_version)
     if not project_regions:
-        raise RuntimeError('Unknown pipeline: ' + settings.pipeline_version)
+        raise RuntimeError('Unknown pipeline: ' + pipeline_version)
 
     regions = session.get_json("/lab_miseq_regions")
 
@@ -271,7 +284,8 @@ def upload_review_to_qai(coverage_file,
 
     session.post_json("/lab_miseq_reviews",
                       {'runid': runid,
-                       'pipeline_id': find_pipeline_id(session),
+                       'pipeline_id': find_pipeline_id(session,
+                                                       pipeline_version),
                        'lab_miseq_review_decisions': decisions,
                        'lab_miseq_conseqs': conseqs})
 
@@ -304,21 +318,23 @@ def find_run(session, runname):
     return runs[0]
 
 
-def find_pipeline_id(session):
+def find_pipeline_id(session, pipeline_version):
     """ Query QAI to find the pipeline id for the current version.
 
+    :param session: open session on QAI
+    :param str pipeline_version: 'X.Y' description of pipeline version to find
     @return: the pipeline id.
     """
     pipelines = session.get_json(
-        "/lab_miseq_pipelines?version=" + settings.pipeline_version)
+        "/lab_miseq_pipelines?version=" + pipeline_version)
     rowcount = len(pipelines)
     if rowcount == 0:
         raise RuntimeError("No pipeline found with version {!r}.".format(
-            settings.pipeline_version))
+            pipeline_version))
     if rowcount != 1:
         raise RuntimeError("Found {} pipelines with version {!r}.".format(
             rowcount,
-            settings.pipeline_version))
+            pipeline_version))
     return pipelines[0]['id']
 
 
@@ -334,7 +350,11 @@ def load_ok_sample_regions(result_folder):
     return ok_sample_regions
 
 
-def process_folder(result_folder):
+def process_folder(result_folder,
+                   qai_server,
+                   qai_user,
+                   qai_password,
+                   pipeline_version):
     logger.info('Uploading data to Oracle from {}'.format(result_folder))
     collated_conseqs = os.path.join(result_folder, 'conseq.csv')
     collated_counts = os.path.join(result_folder, 'remap_counts.csv')
@@ -349,9 +369,9 @@ def process_folder(result_folder):
     ok_sample_regions = load_ok_sample_regions(result_folder)
 
     with qai_helper.Session() as session:
-        session.login(settings.qai_path,
-                      settings.qai_user,
-                      settings.qai_password)
+        session.login(qai_server,
+                      qai_user,
+                      qai_password)
 
         run = find_run(session, sample_sheet["Experiment Name"])
 
@@ -369,41 +389,20 @@ def process_folder(result_folder):
                                  run,
                                  sample_sheet,
                                  conseqs,
-                                 session)
+                                 session,
+                                 pipeline_version)
 
 
 def main():
-    args, parser = parse_args()
+    args = parse_args()
 
-    if args.result_folder:
-        process_folder(args.result_folder)
-    elif not args.load_all:
-        parser.print_usage()
-        exit(0)
-    else:
-        runs = glob(settings.rawdata_mount + 'MiSeq/runs/*/{}'.format(
-            settings.NEEDS_PROCESSING))
-        runs.sort()
+    process_folder(args.result_folder,
+                   args.qai_server,
+                   args.qai_user,
+                   args.qai_password,
+                   args.pipeline_version)
 
-        for run in runs:
-            run_folder, _ = os.path.split(run)
-            disabled_marker = os.path.join(run_folder, settings.ERROR_PROCESSING)
-            if os.path.exists(disabled_marker):
-                continue
-
-            result_path = os.path.join(run_folder,
-                                       'Results/version_' + settings.pipeline_version)
-
-            if os.path.exists(result_path):
-                # noinspection PyBroadException
-                try:
-                    process_folder(result_path)
-                except Exception:
-                    logger.error('Failed to process %s',
-                                 result_path,
-                                 exc_info=True)
-
-    logger.info('Completed all uploads to Oracle.')
+    logger.info('Completed upload to Oracle.')
 
 
 if __name__ == "__main__":
