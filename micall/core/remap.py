@@ -912,19 +912,17 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='Iterative remapping of bowtie2 by reference.')
 
-    parser.add_argument('-fastq1', required=True,
+    parser.add_argument('fastq1',
                         help='<input> FASTQ containing forward reads')
     
-    parser.add_argument('-fastq2', required=False,
-                        default=None, 
+    parser.add_argument('fastq2', nargs='?',
                         help='<input, optional> FASTQ containing reverse reads')
     
-    parser.add_argument('-prelim_csv',
-                        required=True,
+    parser.add_argument('prelim_csv',
                         type=argparse.FileType('rU'),
                         help='<input> CSV containing preliminary map output (modified SAM)')
     
-    parser.add_argument('-remap_csv', required=True,
+    parser.add_argument('remap_csv',
                         type=argparse.FileType('w'),
                         help='<output> CSV containing remap output (modified SAM)')
     
