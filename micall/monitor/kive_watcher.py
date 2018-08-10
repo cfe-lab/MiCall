@@ -70,12 +70,16 @@ def now():
 
 def find_samples(raw_data_folder, pipeline_version, sample_queue, wait=True):
     while True:
-        is_complete = scan_samples(raw_data_folder,
-                                   pipeline_version,
-                                   sample_queue,
-                                   wait)
-        if is_complete and not wait:
-            break
+        try:
+            is_complete = scan_samples(raw_data_folder,
+                                       pipeline_version,
+                                       sample_queue,
+                                       wait)
+            if is_complete and not wait:
+                break
+        except Exception:
+            logger.error("Failed while finding samples.", exc_info=True)
+            raise
 
 
 def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
@@ -94,12 +98,7 @@ def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
         if done_path.exists():
             continue
         base_calls_path = run_path / "Data/Intensities/BaseCalls"
-        fastq_files = base_calls_path.glob("*_R1_*.fastq.gz")
-        sample_sheet_path = run_path / "SampleSheet.csv"
-        file_names = [f.name for f in fastq_files]
-        sample_groups = list(find_groups(file_names, sample_sheet_path))
-        sample_groups.sort(key=lambda group: get_sample_number(group.names[0]),
-                           reverse=True)
+        sample_groups = find_sample_groups(run_path, base_calls_path)
         for sample_group in sample_groups:
             is_found = True
             is_sent = send_event(sample_queue,
@@ -109,18 +108,36 @@ def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
                                  next_scan)
             if not is_sent:
                 return False
-        is_sent = send_event(sample_queue,
-                             FolderEvent(base_calls_path,
-                                         FolderEventType.FINISH_FOLDER,
-                                         None),
-                             next_scan)
-        if not is_sent:
-            return False
+        if sample_groups:
+            is_sent = send_event(sample_queue,
+                                 FolderEvent(base_calls_path,
+                                             FolderEventType.FINISH_FOLDER,
+                                             None),
+                                 next_scan)
+            if not is_sent:
+                return False
     if not is_found:
         logger.info('No folders need processing.')
     while wait and now() < next_scan:
         sleep(SLEEP_SECONDS)
     return True
+
+
+def find_sample_groups(run_path, base_calls_path):
+    # noinspection PyBroadException
+    try:
+        fastq_files = base_calls_path.glob("*_R1_*.fastq.gz")
+        sample_sheet_path = run_path / "SampleSheet.csv"
+        file_names = [f.name for f in fastq_files]
+        sample_groups = list(find_groups(file_names, sample_sheet_path))
+        sample_groups.sort(key=lambda group: get_sample_number(group.names[0]),
+                           reverse=True)
+    except Exception:
+        logger.error("Finding sample groups in %s", run_path, exc_info=True)
+        (run_path / "errorprocessing").write_text(
+            "Finding sample groups failed.\n")
+        sample_groups = []
+    return sample_groups
 
 
 def get_sample_number(fastq_name):
@@ -602,12 +619,11 @@ class KiveWatcher:
     def fetch_run_status(self, run, folder_watcher, pipeline_type, sample_watcher):
         self.check_session()
         try:
-            run_status = self.kive_retry(lambda: run.get_status())
+            is_complete = self.kive_retry(lambda: run.is_complete())
         except KiveRunFailedException as ex:
             if 'fail' in ex.args[0]:
                 raise
             return self.run_pipeline(folder_watcher, pipeline_type, sample_watcher)
-        is_complete = run_status == 'Complete.'
         if is_complete and pipeline_type != PipelineType.FILTER_QUALITY:
             sample_name = (sample_watcher.sample_group.names[1]
                            if pipeline_type in (PipelineType.MIDI,

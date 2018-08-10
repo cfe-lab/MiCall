@@ -24,6 +24,7 @@
 !/micall/tests/working/*.launch
 /micall-*.simg
 /timing.*
+/micall/utils/hcv_reference_tree
 .DS_Store
 */.DS_Store
 *.log
