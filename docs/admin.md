@@ -161,6 +161,15 @@ If the service fails to start, look for detailed messages in the log file, in
 
 [service unit]: https://www.freedesktop.org/software/systemd/man/systemd.service.html
 
+### Restarting the MiCall Watcher ###
+If you installed it as a service as described above, then it's easy:
+
+    sudo systemctl restart micall_watcher
+
+Don't launch the `micall_watcher.py` script on its own, or the service will run
+won't know that it's running. That can end up running two copies of the watcher
+process, and it gets confused.
+
 ### Ways to manipulate the order in which the MiCall Watcher processes data ###
 Sometimes, you want to do unusual things. Here are a few scenarios we've run into.
 
