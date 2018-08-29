@@ -53,6 +53,6 @@ Pyyaml and Cutadapt are distributed under the MIT license.
 
 [gnu]: http://www.gnu.org/licenses/
 [github]: https://github.com/cfe-lab/MiCall
-[contact]: http://www.google.com/recaptcha/mailhide/d?k=01yIEKHPqcNIG1ecF-Khum4g==&c=SnES_swjOvb0d22WN4Q30vx9gKyzHNDkTxbY6Y1os4w=
+[contact]: mailto:micalldev@cfenet.ubc.ca
 [python]: https://docs.python.org/3.4/license.html
 [matplotlib]: http://matplotlib.org/users/license.html

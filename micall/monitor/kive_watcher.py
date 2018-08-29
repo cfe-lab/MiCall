@@ -682,13 +682,17 @@ class KiveWatcher:
             directories = self.session.get('/api/externalfiledirectories',
                                            is_json=True).json()
             self.external_directory_name = self.external_directory_path = None
+            search_path = self.config.raw_data / 'MiSeq' / 'runs'
             for directory in directories:
                 directory_path = Path(directory['path'])
-                if (directory_path == self.config.raw_data or
-                        directory_path in self.config.raw_data.parents):
+                if (directory_path == search_path or
+                        directory_path in search_path.parents):
                     self.external_directory_name = directory['name']
                     self.external_directory_path = directory_path
                     break
+            else:
+                logger.warning('No external directory found to match %r.',
+                               str(search_path))
 
     def find_or_upload_dataset(self,
                                dataset_file,
