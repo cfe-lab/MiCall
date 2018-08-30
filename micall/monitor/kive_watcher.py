@@ -162,6 +162,23 @@ def trim_name(sample_name):
     return '_'.join(sample_name.split('_')[:2])
 
 
+def trim_run_name(run_name):
+    if len(run_name) > MAX_RUN_NAME_LENGTH:
+        split_index = run_name.rfind('_')
+        suffix_length = len(run_name) - split_index
+        if split_index == -1 or suffix_length > 10:
+            suffix_length = 0
+            suffix = ''
+        else:
+            suffix = run_name[split_index:]
+
+        run_name = (run_name[:MAX_RUN_NAME_LENGTH - suffix_length - 3] +
+                    '...' +
+                    suffix)
+
+    return run_name
+
+
 def get_output_filename(output_name):
     return '.'.join(output_name.rsplit('_', 1))
 
@@ -582,8 +599,7 @@ class KiveWatcher:
             folder_watcher.bad_cycles_dataset.cdt = bad_cycles_input.compounddatatype
 
         run_name = 'MiCall main on ' + trim_name(sample_name)
-        if len(run_name) > MAX_RUN_NAME_LENGTH:
-            run_name = run_name[:MAX_RUN_NAME_LENGTH-3] + '...'
+        run_name = trim_run_name(run_name)
         return self.find_or_launch_run(
             self.config.micall_main_pipeline_id,
             [fastq1, fastq2, folder_watcher.bad_cycles_dataset],

@@ -14,7 +14,8 @@ from struct import pack
 from kiveapi import KiveClientException, KiveRunFailedException
 from requests import ConnectionError
 
-from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, FolderEventType, calculate_retry_wait
+from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, FolderEventType, calculate_retry_wait, \
+    trim_run_name
 from micall.monitor.sample_watcher import PipelineType, ALLOWED_GROUPS, FolderWatcher, SampleWatcher
 from micall.monitor.find_groups import SampleGroup
 from micall_watcher import parse_args
@@ -1001,6 +1002,73 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
         'MiCall main on 2110A-V3LOOP_S13',
         runbatch=folder_watcher.batch,
         groups=['Everyone'])
+
+
+def test_launch_main_run_long_name(raw_data_with_two_samples, mock_open_kive, pipelines_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    old_file_prefix = '2110A-V3LOOP_S13_L001'
+    new_file_prefix = '2110A-V3LOOP-987654321REALLYVERYLONGNAME-HCV_S13_L001'
+    for suffix in ('_R1_001.fastq.gz', '_R2_001.fastq.gz'):
+        old_path = base_calls / (old_file_prefix + suffix)
+        new_path = base_calls / (new_file_prefix + suffix)
+        old_path.rename(new_path)
+    fastq1 = Mock(name='fastq1')
+    fastq2 = Mock(name='fastq2')
+    bad_cycles_csv = Mock(name='bad_cycles_csv')
+    mock_session = mock_open_kive.return_value
+    mock_main_pipeline = Mock(name='main_pipeline')
+    mock_session.get_pipeline.return_value = mock_main_pipeline
+    mock_main_pipeline.inputs = [Mock(dataset_name='fastq1'),
+                                 Mock(dataset_name='fastq1'),
+                                 Mock(dataset_name='bad_cycles_csv')]
+    mock_session.add_dataset.side_effect = [fastq1, fastq2]
+    kive_watcher = KiveWatcher(pipelines_config)
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = Mock('batch')
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup(
+            '2110A',
+            ('2110A-V3LOOP-987654321REALLYVERYLONGNAME-HCV_S13_L001_R1_001.fastq.gz',
+             None)))
+    folder_watcher.add_run(
+        Mock(name='quality_run',
+             **{'is_complete.return_value': True,
+                'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
+        PipelineType.FILTER_QUALITY)
+
+    kive_watcher.poll_runs()
+
+    assert [call(pipelines_config.micall_main_pipeline_id)
+            ] == mock_session.get_pipeline.call_args_list
+    mock_session.run_pipeline.assert_called_once_with(
+        mock_main_pipeline,
+        [fastq1,
+         fastq2,
+         bad_cycles_csv],
+        'MiCall main on 2110A-V3LOOP-987654321REALLYVERYLONGNA..._S13',
+        runbatch=folder_watcher.batch,
+        groups=['Everyone'])
+
+
+def test_trim_run_name_no_suffix():
+    run_name = 'MiCall main on 2110A-V3LOOP-987654321REALLYVERYLONGNAME-HCV-S13'
+    expected_name = 'MiCall main on 2110A-V3LOOP-987654321REALLYVERYLONGNAME-H...'
+
+    trimmed_name = trim_run_name(run_name)
+
+    assert expected_name == trimmed_name
+
+
+def test_trim_run_name_long_suffix():
+    run_name = 'MiCall main on 2110A-V3LOOP-987654321-HCV_S13REALLYVERYLONGNAME'
+    expected_name = 'MiCall main on 2110A-V3LOOP-987654321-HCV_S13REALLYVERYLO...'
+
+    trimmed_name = trim_run_name(run_name)
+
+    assert expected_name == trimmed_name
 
 
 def test_launch_main_run_after_connection_error(raw_data_with_two_samples,
