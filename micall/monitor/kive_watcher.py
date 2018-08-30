@@ -28,6 +28,7 @@ FOLDER_SCAN_INTERVAL = timedelta(hours=1)
 SLEEP_SECONDS = 60
 MINIMUM_RETRY_WAIT = timedelta(seconds=5)
 MAXIMUM_RETRY_WAIT = timedelta(days=1)
+MAX_RUN_NAME_LENGTH = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_csv',
                       'conseq_ins_csv',
@@ -581,6 +582,8 @@ class KiveWatcher:
             folder_watcher.bad_cycles_dataset.cdt = bad_cycles_input.compounddatatype
 
         run_name = 'MiCall main on ' + trim_name(sample_name)
+        if len(run_name) > MAX_RUN_NAME_LENGTH:
+            run_name = run_name[:MAX_RUN_NAME_LENGTH-3] + '...'
         return self.find_or_launch_run(
             self.config.micall_main_pipeline_id,
             [fastq1, fastq2, folder_watcher.bad_cycles_dataset],
@@ -598,11 +601,15 @@ class KiveWatcher:
             if run is not None:
                 return run
         pipeline = self.get_kive_pipeline(pipeline_id)
-        return self.session.run_pipeline(pipeline,
-                                         inputs,
-                                         run_name,
-                                         runbatch=run_batch,
-                                         groups=ALLOWED_GROUPS)
+        try:
+            return self.session.run_pipeline(pipeline,
+                                             inputs,
+                                             run_name,
+                                             runbatch=run_batch,
+                                             groups=ALLOWED_GROUPS)
+        except Exception as ex:
+            raise RuntimeError(
+                'Failed to launch run {}.'.format(run_name)) from ex
 
     def kive_retry(self, target):
         """ Add a single retry to a Kive API call.
