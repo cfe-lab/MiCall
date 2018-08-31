@@ -14,6 +14,7 @@ from queue import Full
 
 from io import StringIO, BytesIO
 from time import sleep
+from weakref import WeakValueDictionary
 
 from requests.adapters import HTTPAdapter
 from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
@@ -227,6 +228,7 @@ class KiveWatcher:
 
         # Active runs started by other users.
         self.other_runs = None  # {(pipeline_id, dataset_id, dataset_id, ...): run}
+        self.active_runs = WeakValueDictionary()
 
     def find_default_pipelines(self):
         default_family_names = ['filter quality',
@@ -599,7 +601,6 @@ class KiveWatcher:
             folder_watcher.bad_cycles_dataset.cdt = bad_cycles_input.compounddatatype
 
         run_name = 'MiCall main on ' + trim_name(sample_name)
-        run_name = trim_run_name(run_name)
         return self.find_or_launch_run(
             self.config.micall_main_pipeline_id,
             [fastq1, fastq2, folder_watcher.bad_cycles_dataset],
@@ -611,18 +612,25 @@ class KiveWatcher:
                            inputs,
                            run_name,
                            run_batch):
+        run_name = trim_run_name(run_name)
         run_key = (pipeline_id,) + tuple(inp.dataset_id for inp in inputs)
         if self.other_runs:
             run = self.other_runs.pop(run_key, None)
             if run is not None:
+                self.active_runs[run_key] = run
                 return run
+        run = self.active_runs.get(run_key)
+        if run is not None:
+            return run
         pipeline = self.get_kive_pipeline(pipeline_id)
         try:
-            return self.session.run_pipeline(pipeline,
-                                             inputs,
-                                             run_name,
-                                             runbatch=run_batch,
-                                             groups=ALLOWED_GROUPS)
+            run = self.session.run_pipeline(pipeline,
+                                            inputs,
+                                            run_name,
+                                            runbatch=run_batch,
+                                            groups=ALLOWED_GROUPS)
+            self.active_runs[run_key] = run
+            return run
         except Exception as ex:
             raise RuntimeError(
                 'Failed to launch run {}.'.format(run_name)) from ex
@@ -646,6 +654,12 @@ class KiveWatcher:
         except KiveRunFailedException as ex:
             if 'fail' in ex.args[0]:
                 raise
+            # Since the run is cancelled, remove it from the active list.
+            run_keys = {key
+                        for key, value in self.active_runs.items()
+                        if value == run}
+            for key in run_keys:
+                self.active_runs.pop(key, None)
             return self.run_pipeline(folder_watcher, pipeline_type, sample_watcher)
         if is_complete and pipeline_type != PipelineType.FILTER_QUALITY:
             sample_name = (sample_watcher.sample_group.names[1]
