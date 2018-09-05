@@ -649,11 +649,10 @@ class KiveWatcher:
 
     def fetch_run_status(self, run, folder_watcher, pipeline_type, sample_watcher):
         self.check_session()
-        try:
-            is_complete = self.kive_retry(lambda: run.is_complete())
-        except KiveRunFailedException as ex:
-            if 'fail' in ex.args[0]:
-                raise
+        new_status = self.kive_retry(lambda: self.session.get_run(run.run_id))
+        is_complete = new_status.raw['end_time'] is not None
+        is_stopped = new_status.raw['stopped_by'] is not None
+        if is_complete and is_stopped:
             # Since the run is cancelled, remove it from the active list.
             run_keys = {key
                         for key, value in self.active_runs.items()
@@ -661,6 +660,9 @@ class KiveWatcher:
             for key in run_keys:
                 self.active_runs.pop(key, None)
             return self.run_pipeline(folder_watcher, pipeline_type, sample_watcher)
+        if is_complete:
+            # Failed runs will raise an exception.
+            run.is_complete()
         if is_complete and pipeline_type != PipelineType.FILTER_QUALITY:
             sample_name = (sample_watcher.sample_group.names[1]
                            if pipeline_type in (PipelineType.MIDI,

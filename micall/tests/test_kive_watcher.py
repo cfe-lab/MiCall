@@ -705,8 +705,6 @@ def test_poll_first_sample_twice(raw_data_with_two_samples, mock_open_kive, defa
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
-    mock_run = mock_session.run_pipeline.return_value
-    mock_run.is_complete.return_value = False
     kive_watcher = KiveWatcher(default_config)
 
     kive_watcher.add_sample_group(
@@ -986,9 +984,12 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
                                   None)))
     folder_watcher.add_run(
         Mock(name='quality_run',
-             **{'is_complete.return_value': True,
-                'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
+             **{'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
         PipelineType.FILTER_QUALITY)
+
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
 
     kive_watcher.poll_runs()
 
@@ -1032,9 +1033,11 @@ def test_launch_main_run_long_name(raw_data_with_two_samples, mock_open_kive, pi
              None)))
     folder_watcher.add_run(
         Mock(name='quality_run',
-             **{'is_complete.return_value': True,
-                'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
+             **{'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
         PipelineType.FILTER_QUALITY)
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
 
     kive_watcher.poll_runs()
 
@@ -1102,11 +1105,13 @@ def test_launch_main_run_after_connection_error(raw_data_with_two_samples,
                                   None)))
     folder_watcher.add_run(
         Mock(name='quality_run',
-             **{'is_complete.side_effect': [ConnectionError('server down'),
-                                            ConnectionError('server down'),
-                                            True],
-                'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
+             **{'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
         PipelineType.FILTER_QUALITY)
+    mock_session.get_run.side_effect = [ConnectionError('server down'),
+                                        ConnectionError('server down'),
+                                        Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
 
     kive_watcher.poll_runs()
 
@@ -1150,9 +1155,11 @@ def test_launch_midi_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_confi
                                   '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
     folder_watcher.add_run(
         Mock(name='quality_run',
-             **{'is_complete.return_value': True,
-                'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
+             **{'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
         PipelineType.FILTER_QUALITY)
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
 
     kive_watcher.poll_runs()
 
@@ -1218,9 +1225,11 @@ def test_launch_midi_run_with_shared_tags(raw_data_with_hcv_pair, mock_open_kive
              None)))
     folder_watcher.add_run(
         Mock(name='quality_run',
-             **{'is_complete.return_value': True,
-                'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
+             **{'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
         PipelineType.FILTER_QUALITY)
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
 
     kive_watcher.poll_runs()
 
@@ -1263,10 +1272,12 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
                            is_complete=True)
     folder_watcher.add_run(
         Mock(name='main_run',
-             **{'is_complete.return_value': True,
-                'get_results.return_value': dict(amino_csv=amino_csv)}),
+             **{'get_results.return_value': dict(amino_csv=amino_csv)}),
         PipelineType.MAIN,
         sample_watcher)
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
 
     kive_watcher.poll_runs()
 
@@ -1306,10 +1317,12 @@ def test_resistance_run_missing_input(raw_data_with_two_samples,
                            is_complete=True)
     folder_watcher.add_run(
         Mock(name='main_run',
-             **{'is_complete.return_value': True,
-                'get_results.return_value': dict(fail_csv=fail_csv)}),
+             **{'get_results.return_value': dict(fail_csv=fail_csv)}),
         PipelineType.MAIN,
         sample_watcher)
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
 
     with pytest.raises(RuntimeError, match=r'Polling sample group 2110A failed.'):
         kive_watcher.poll_runs()
@@ -1330,9 +1343,10 @@ def test_poll_main_run_cancelled(raw_data_with_two_samples,
                                  Mock(dataset_name='fastq2'),
                                  Mock(dataset_name='bad_cycles_csv')]
     mock_session.get_pipeline.return_value = mock_main_pipeline
-    original_run = Mock(
-        name='original_run',
-        **{'is_complete.side_effect': KiveRunFailedException("Run 9 cancelled")})
+    original_run = Mock(name='original_run')
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by='joe'))]
     new_run = Mock(name='new_run')
     mock_session.run_pipeline.return_value = new_run
     kive_watcher = KiveWatcher(pipelines_config)
@@ -1387,16 +1401,20 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
                            is_complete=True)
     folder_watcher.add_run(
         Mock(name='main_run',
-             **{'is_complete.return_value': True,
-                'get_results.return_value': dict(amino_csv=main_amino_csv)}),
+             **{'get_results.return_value': dict(amino_csv=main_amino_csv)}),
         PipelineType.MAIN,
         sample_watcher)
     folder_watcher.add_run(
         Mock(name='midi_run',
-             **{'is_complete.return_value': True,
-                'get_results.return_value': dict(amino_csv=midi_amino_csv)}),
+             **{'get_results.return_value': dict(amino_csv=midi_amino_csv)}),
         PipelineType.MIDI,
         sample_watcher)
+    mock_session.get_run.side_effect = [Mock(name='main_run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None)),
+                                        Mock(name='midi_run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
 
     kive_watcher.poll_runs()
 
@@ -1444,9 +1462,11 @@ def test_launch_mixed_hcv_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_
                                   '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
     folder_watcher.add_run(
         Mock(name='quality_run',
-             **{'is_complete.return_value': True,
-                'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
+             **{'get_results.return_value': dict(bad_cycles_csv=bad_cycles_csv)}),
         PipelineType.FILTER_QUALITY)
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
 
     kive_watcher.poll_runs()
 
@@ -1540,8 +1560,7 @@ def test_full_with_two_runs(raw_data_with_two_runs, mock_open_kive, pipelines_co
 
 def test_fetch_run_status_incomplete(mock_open_kive, pipelines_config):
     assert mock_open_kive
-    mock_run = Mock(name='run',
-                    **{'is_complete.return_value': False})
+    mock_run = Mock(name='run')
 
     kive_watcher = KiveWatcher(pipelines_config)
 
@@ -1556,13 +1575,15 @@ def test_fetch_run_status_incomplete(mock_open_kive, pipelines_config):
 def test_fetch_run_status_filter_quality(raw_data_with_two_runs,
                                          mock_open_kive,
                                          pipelines_config):
-    assert mock_open_kive
+    mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     folder_watcher = FolderWatcher(base_calls)
     sample_watcher = None
-    mock_run = Mock(name='run',
-                    **{'is_complete.return_value': True})
+    mock_run = Mock(name='run')
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
 
     kive_watcher = KiveWatcher(pipelines_config)
 
@@ -1577,7 +1598,7 @@ def test_fetch_run_status_filter_quality(raw_data_with_two_runs,
 def test_fetch_run_status_main(raw_data_with_two_runs,
                                mock_open_kive,
                                pipelines_config):
-    assert mock_open_kive
+    mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     folder_watcher = FolderWatcher(base_calls)
@@ -1586,9 +1607,11 @@ def test_fetch_run_status_main(raw_data_with_two_runs,
                     ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
                      None)))
     mock_run = Mock(**{
-        'is_complete.return_value': True,
         'get_results.return_value': create_datasets(['coord_ins_csv',
                                                      'nuc_csv'])})
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_coord_ins_path = expected_scratch / "2000A-V3LOOP_S2/coord_ins.csv"
     expected_nuc_path = expected_scratch / "2000A-V3LOOP_S2/nuc.csv"
@@ -1614,7 +1637,7 @@ row,name
 def test_fetch_run_status_main_and_resistance(raw_data_with_two_runs,
                                               mock_open_kive,
                                               pipelines_config):
-    assert mock_open_kive
+    mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     folder_watcher = FolderWatcher(base_calls)
@@ -1623,9 +1646,14 @@ def test_fetch_run_status_main_and_resistance(raw_data_with_two_runs,
                     ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
                      None)))
     mock_run = Mock(**{
-        'is_complete.return_value': True,
         'get_results.side_effect': [create_datasets(['nuc_csv']),
                                     create_datasets(['resistance_csv'])]})
+    mock_session.get_run.side_effect = [Mock(name='main_run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None)),
+                                        Mock(name='resistance_run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_nuc_path = expected_scratch / "2000A-V3LOOP_S2/nuc.csv"
     expected_resistance_path = expected_scratch / "2000A-V3LOOP_S2/resistance.csv"
@@ -1652,15 +1680,20 @@ def test_fetch_run_status_main_and_resistance(raw_data_with_two_runs,
 def test_fetch_run_status_main_and_midi(raw_data_with_hcv_pair,
                                         mock_open_kive,
                                         pipelines_config):
-    assert mock_open_kive
+    mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_hcv_pair /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     folder_watcher = FolderWatcher(base_calls)
     sample_watcher = SampleWatcher(
         SampleGroup('2130A', ('2130A-HCV_S15_L001_R1_001.fastq.gz',
                               '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
-    mock_run = Mock(**{'is_complete.return_value': True,
-                       'get_results.return_value': create_datasets(['nuc_csv'])})
+    mock_run = Mock(**{'get_results.return_value': create_datasets(['nuc_csv'])})
+    mock_session.get_run.side_effect = [Mock(name='main_run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None)),
+                                        Mock(name='midi_run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_main_nuc_path = expected_scratch / "2130A-HCV_S15/nuc.csv"
     expected_midi_nuc_path = expected_scratch / "2130AMIDI-MidHCV_S16/nuc.csv"
@@ -1685,12 +1718,14 @@ def test_fetch_run_status_main_and_midi(raw_data_with_hcv_pair,
 def test_fetch_run_status_session_expired(raw_data_with_two_runs,
                                           mock_open_kive,
                                           pipelines_config):
-    assert mock_open_kive
+    mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
-    mock_run = Mock(**{'is_complete.side_effect': [KiveClientException('expired'),
-                                                   True],
-                       'get_results.return_value': {}})
+    mock_run = Mock(**{'get_results.return_value': {}})
+    mock_session.get_run.side_effect = [KiveClientException('expired'),
+                                        Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
 
     kive_watcher = KiveWatcher(pipelines_config)
 
@@ -1710,12 +1745,13 @@ def test_fetch_run_status_session_expired(raw_data_with_two_runs,
 def test_fetch_run_status_user_cancelled(raw_data_with_two_runs,
                                          mock_open_kive,
                                          pipelines_config):
-    assert mock_open_kive
+    mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
-    original_run = Mock(
-        name='original_run',
-        **{'is_complete.side_effect': KiveRunFailedException("Run 9 cancelled")})
+    original_run = Mock(name='original_run')
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by='joe'))]
 
     kive_watcher = KiveWatcher(pipelines_config)
 
@@ -1737,13 +1773,17 @@ def test_fetch_run_status_user_cancelled(raw_data_with_two_runs,
 def test_folder_completed(raw_data_with_two_samples, mock_open_kive, default_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
-    assert mock_open_kive
+    mock_session = mock_open_kive.return_value
     resistance_run1 = Mock(name='resistance_run1',
-                           **{'is_complete.return_value': True,
-                              'get_results.return_value': create_datasets(['resistance_csv'])})
+                           **{'get_results.return_value': create_datasets(['resistance_csv'])})
     resistance_run2 = Mock(name='resistance_run2',
-                           **{'is_complete.return_value': True,
-                              'get_results.return_value': create_datasets(['resistance_csv'])})
+                           **{'get_results.return_value': create_datasets(['resistance_csv'])})
+    mock_session.get_run.side_effect = [Mock(name='run1_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None)),
+                                        Mock(name='run2_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
     kive_watcher = KiveWatcher(default_config)
 
     folder_watcher = kive_watcher.add_folder(base_calls)
@@ -1811,15 +1851,19 @@ sample,row,name
 
 
 def test_folder_not_finished(raw_data_with_two_samples, mock_open_kive, default_config):
-    assert mock_open_kive
+    mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     resistance_run1 = Mock(name='resistance_run1',
-                           **{'is_complete.return_value': True,
-                              'get_results.return_value': create_datasets(['resistance_csv'])})
+                           **{'get_results.return_value': create_datasets(['resistance_csv'])})
     resistance_run2 = Mock(name='resistance_run2',
-                           **{'is_complete.return_value': True,
-                              'get_results.return_value': create_datasets(['resistance_csv'])})
+                           **{'get_results.return_value': create_datasets(['resistance_csv'])})
+    mock_session.get_run.side_effect = [Mock(name='run1_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None)),
+                                        Mock(name='run2_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
     kive_watcher = KiveWatcher(default_config)
 
     folder_watcher = kive_watcher.add_folder(base_calls)
@@ -1864,14 +1908,16 @@ def test_folder_not_finished(raw_data_with_two_samples, mock_open_kive, default_
 def test_folder_not_finished_before_new_start(raw_data_with_two_runs,
                                               mock_open_kive,
                                               default_config):
-    assert mock_open_kive
+    mock_session = mock_open_kive.return_value
     base_calls1 = (raw_data_with_two_runs /
                    "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     base_calls2 = (raw_data_with_two_runs /
                    "MiSeq/runs/140201_M01234/Data/Intensities/BaseCalls")
     resistance_run = Mock(name='resistance_run',
-                          **{'is_complete.return_value': True,
-                             'get_results.return_value': create_datasets(['resistance_csv'])})
+                          **{'get_results.return_value': create_datasets(['resistance_csv'])})
+    mock_session.get_run.side_effect = [Mock(name='run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
     kive_watcher = KiveWatcher(default_config)
 
     folder_watcher1 = kive_watcher.add_folder(base_calls1)
@@ -1908,8 +1954,9 @@ def test_folder_not_finished_before_new_start(raw_data_with_two_runs,
     assert scratch_path.exists()
 
 
-def test_folder_failed(raw_data_with_two_samples, mock_open_kive, default_config):
-    assert mock_open_kive
+def test(raw_data_with_two_samples, mock_open_kive, default_config):
+    """ _folder_failed """
+    mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     main_run1 = Mock(
@@ -1917,8 +1964,13 @@ def test_folder_failed(raw_data_with_two_samples, mock_open_kive, default_config
         **{'is_complete.side_effect': KiveRunFailedException('failed')})
     resistance_run2 = Mock(
         name='resistance_run2',
-        **{'is_complete.return_value': True,
-           'get_results.return_value': create_datasets(['resistance_csv'])})
+        **{'get_results.return_value': create_datasets(['resistance_csv'])})
+    mock_session.get_run.side_effect = [Mock(name='run1_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None)),
+                                        Mock(name='run2_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
     kive_watcher = KiveWatcher(default_config)
 
     folder_watcher = kive_watcher.add_folder(base_calls)
