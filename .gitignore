@@ -22,6 +22,7 @@
 /micall/tests/working/*
 /micall/tests/microtest/Results
 !/micall/tests/working/*.launch
+/venv_micall
 /micall-*.simg
 /timing.*
 /micall/utils/hcv_reference_tree
