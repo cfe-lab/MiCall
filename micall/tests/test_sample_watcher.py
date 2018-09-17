@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from kiveapi import KiveRunFailedException
+
 from micall.monitor.sample_watcher import FolderWatcher, SampleWatcher, PipelineType
 from micall.monitor.find_groups import SampleGroup
 
@@ -12,6 +14,7 @@ class DummySession:
         """
         self.skipped_types = skipped_types
         self.active_runs = []  # [(folder_watcher, sample_watcher, pipeline_type)]
+        self.failed_runs = []
 
     def run_pipeline(self, folder_watcher, pipeline_type, sample_watcher):
         if pipeline_type in self.skipped_types:
@@ -25,12 +28,18 @@ class DummySession:
                          _folder_watcher,
                          _pipeline_type,
                          _sample_watcher):
+        if run in self.failed_runs:
+            raise KiveRunFailedException()
         if run not in self.active_runs:
             return None
         return run
 
     def finish_run(self, run):
         self.active_runs.remove(run)
+
+    def fail_run(self, run):
+        self.active_runs.remove(run)
+        self.failed_runs.append(run)
 
     def finish_all_runs(self):
         self.active_runs.clear()
@@ -116,6 +125,23 @@ def test_filter_quality_finished():
     folder_watcher.poll_runs()   # start main
 
     assert [(folder_watcher, sample_watcher, PipelineType.MAIN)] == session.active_runs
+
+
+def test_filter_quality_failed():
+    base_calls_folder = '/path/Data/Intensities/BaseCalls'
+    session = DummySession()
+    folder_watcher = FolderWatcher(base_calls_folder, runner=session)
+    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    folder_watcher.sample_watchers.append(sample_watcher)
+
+    folder_watcher.poll_runs()   # Start filter_quality
+    filter_quality, = session.active_runs
+    session.fail_run(filter_quality)
+
+    folder_watcher.poll_runs()   # start main
+
+    assert [] == session.active_runs
+    assert folder_watcher.is_complete
 
 
 def test_main_running():

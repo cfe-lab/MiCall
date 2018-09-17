@@ -1954,8 +1954,45 @@ def test_folder_not_finished_before_new_start(raw_data_with_two_runs,
     assert scratch_path.exists()
 
 
-def test(raw_data_with_two_samples, mock_open_kive, default_config):
-    """ _folder_failed """
+def test_folder_failed_quality(raw_data_with_two_samples, mock_open_kive, default_config):
+    mock_session = mock_open_kive.return_value
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    quality_run = Mock(
+        name='quality_run',
+        **{'is_complete.side_effect': KiveRunFailedException('failed')})
+    mock_session.get_run.side_effect = [Mock(name='quality_run_refresh',
+                                             raw=dict(end_time='Tuesday',
+                                                      stopped_by=None))]
+    kive_watcher = KiveWatcher(default_config)
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    sample1_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    sample2_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2120A',
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.finish_folder(base_calls)
+    folder_watcher.add_run(quality_run,
+                           PipelineType.FILTER_QUALITY)
+    run_path = base_calls / "../../.."
+    results_path = run_path / "Results/version_0-dev"
+    expected_done_path = results_path / "doneprocessing"
+    expected_error_path = run_path / "errorprocessing"
+    expected_error_message = "Filter quality failed in Kive.\n"
+
+    kive_watcher.poll_runs()
+
+    assert not expected_done_path.exists()
+    assert expected_error_message == expected_error_path.read_text()
+
+
+def test_folder_failed_sample(raw_data_with_two_samples, mock_open_kive, default_config):
     mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")

@@ -483,14 +483,19 @@ class KiveWatcher:
         :param FolderWatcher folder_watcher: holds details about the run folder
         """
         results_path = self.get_results_path(folder_watcher)
-        failed_sample_names = [
-            sample_watcher.sample_group.enum
-            for sample_watcher in folder_watcher.sample_watchers
-            if sample_watcher.is_failed]
-        if failed_sample_names:
+        error_message = None
+        if folder_watcher.is_folder_failed:
+            error_message = 'Filter quality failed in Kive.'
+        else:
+            failed_sample_names = [
+                sample_watcher.sample_group.enum
+                for sample_watcher in folder_watcher.sample_watchers
+                if sample_watcher.is_failed]
+            if failed_sample_names:
+                error_message = 'Samples failed in Kive: {}.'.format(
+                    ', '.join(failed_sample_names))
+        if error_message is not None:
             run_path = (results_path / "../..").resolve()
-            error_message = 'Samples failed in Kive: {}.'.format(
-                ', '.join(failed_sample_names))
             (run_path / 'errorprocessing').write_text(error_message + '\n')
             logger.error('Error in folder %s: %s', run_path, error_message)
             return
