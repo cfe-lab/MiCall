@@ -56,6 +56,8 @@ class FolderWatcher:
 
     @property
     def active_samples(self):
+        if self.is_folder_failed:
+            return set()
         all_samples = set(self.all_samples)
         return all_samples - self.completed_samples
 
