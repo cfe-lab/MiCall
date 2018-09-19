@@ -1509,12 +1509,14 @@ def test_full_with_two_samples(raw_data_with_two_samples, mock_open_kive, pipeli
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
                                   None)))
+    kive_watcher.poll_runs()
     is_full1 = kive_watcher.is_full()
     kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2120A',
                                  ('2120A-PR_S14_L001_R1_001.fastq.gz',
                                   None)))
+    kive_watcher.poll_runs()
     is_full2 = kive_watcher.is_full()
 
     folder_watcher, = kive_watcher.folder_watchers.values()
@@ -1541,12 +1543,14 @@ def test_full_with_two_runs(raw_data_with_two_runs, mock_open_kive, pipelines_co
         sample_group=SampleGroup('2000A',
                                  ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
                                   None)))
+    kive_watcher.poll_runs()
     is_full1 = kive_watcher.is_full()
     kive_watcher.add_sample_group(
         base_calls=base_calls2,
         sample_group=SampleGroup('2010A',
                                  ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
                                   None)))
+    kive_watcher.poll_runs()
     is_full2 = kive_watcher.is_full()
 
     folder_watcher = kive_watcher.folder_watchers[base_calls1]
