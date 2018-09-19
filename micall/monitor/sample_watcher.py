@@ -58,8 +58,18 @@ class FolderWatcher:
     def active_samples(self):
         if self.is_folder_failed:
             return set()
-        all_samples = set(self.all_samples)
-        return all_samples - self.completed_samples
+        if self.filter_quality_run in self.active_runs:
+            # Individual runs are waiting for filter quality. Return all.
+            all_samples = set(self.all_samples)
+            return all_samples - self.completed_samples
+
+        active_samples = set()
+        for run, (sample_watcher, pipeline_type) in self.active_runs.items():
+            if pipeline_type in (PipelineType.MIDI, PipelineType.MIXED_HCV_MIDI):
+                active_samples.add(sample_watcher.sample_group.names[1])
+            else:
+                active_samples.add(sample_watcher.sample_group.names[0])
+        return active_samples
 
     @property
     def is_complete(self):

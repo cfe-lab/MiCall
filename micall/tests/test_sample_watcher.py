@@ -237,6 +237,9 @@ def test_hcv_filter_quality_finished():
             (folder_watcher, sample_watcher, PipelineType.MAIN),
             (folder_watcher, sample_watcher, PipelineType.MIDI)
             ] == session.active_runs
+    expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
+                               '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
+    assert expected_active_samples == folder_watcher.active_samples
     assert 4 == len(folder_watcher.active_runs)
 
 
@@ -261,6 +264,9 @@ def test_hcv_mixed_hcv_running():
             (folder_watcher, sample_watcher, PipelineType.MAIN),
             (folder_watcher, sample_watcher, PipelineType.MIDI)
             ] == session.active_runs
+    expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
+                               '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
+    assert expected_active_samples == folder_watcher.active_samples
     assert 4 == len(folder_watcher.active_runs)
 
 
@@ -288,6 +294,9 @@ def test_hcv_mixed_hcv_finished():
     assert [(folder_watcher, sample_watcher, PipelineType.MAIN),
             (folder_watcher, sample_watcher, PipelineType.MIDI)
             ] == session.active_runs
+    expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
+                               '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
+    assert expected_active_samples == folder_watcher.active_samples
     assert 2 == len(folder_watcher.active_runs)
 
 
@@ -317,6 +326,9 @@ def test_hcv_mixed_hcv_not_finished():
     assert [(folder_watcher, sample_watcher, PipelineType.MIXED_HCV_MAIN),
             (folder_watcher, sample_watcher, PipelineType.MIXED_HCV_MIDI)
             ] == session.active_runs
+    expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
+                               '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
+    assert expected_active_samples == folder_watcher.active_samples
     assert 2 == len(folder_watcher.active_runs)
     assert not folder_watcher.is_complete
 
@@ -340,7 +352,36 @@ def test_mixed_hcv_skipped():
     assert [(folder_watcher, sample_watcher, PipelineType.MAIN),
             (folder_watcher, sample_watcher, PipelineType.MIDI)
             ] == session.active_runs
+    expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
+                               '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
+    assert expected_active_samples == folder_watcher.active_samples
     assert 2 == len(folder_watcher.active_runs)
+
+
+def test_mid_hcv_complete():
+    base_calls_folder = '/path/Data/Intensities/BaseCalls'
+    session = DummySession(skipped_types={PipelineType.MIXED_HCV_MAIN,
+                                          PipelineType.MIXED_HCV_MIDI})
+    folder_watcher = FolderWatcher(base_calls_folder, runner=session)
+    sample_watcher = SampleWatcher(SampleGroup(
+        '2130A',
+        ('2130A-HCV_S15_L001_R1_001.fastq.gz',
+         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+    folder_watcher.sample_watchers.append(sample_watcher)
+
+    folder_watcher.poll_runs()   # Start filter_quality
+    session.finish_all_runs()  # Finish filter_quality
+
+    folder_watcher.poll_runs()   # start main and midi
+    session.finish_run(
+        (folder_watcher, sample_watcher, PipelineType.MIDI))  # Finish midi
+    folder_watcher.poll_runs()
+
+    assert [(folder_watcher, sample_watcher, PipelineType.MAIN)
+            ] == session.active_runs
+    assert 1 == len(folder_watcher.active_runs)
+    expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz'}
+    assert expected_active_samples == folder_watcher.active_samples
 
 
 def test_mixed_hcv_skipped_and_complete():
@@ -364,4 +405,5 @@ def test_mixed_hcv_skipped_and_complete():
 
     assert not session.active_runs
     assert not folder_watcher.active_runs
+    assert not folder_watcher.active_samples
     assert folder_watcher.is_complete
