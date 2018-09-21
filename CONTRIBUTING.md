@@ -310,7 +310,7 @@ similar steps to setting up a development workstation. Follow these steps:
     `release_test_*.py` scripts to compare the results of the new release with
     the previous version. Get the comparison signed off to begin the release
     process.
-8. Upgrade the scripts and docker image in the main Kive test server, and
+8. Upgrade the scripts and docker image in the main Kive server, and
     record the id of the new pipelines.
 8. Stop the micall_watcher service on the main Kive server after you check that
     it's not processing any important runs.
