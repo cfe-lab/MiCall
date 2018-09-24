@@ -90,23 +90,27 @@ class Sample:
     def process(self,
                 pssm,
                 excluded_seeds=(),
-                excluded_projects=()):
+                excluded_projects=(),
+                force_gzip=False):
         """ Process a single sample.
 
         :param pssm: the pssm library for running G2P analysis
         :param excluded_seeds: seeds to exclude from mapping
         :param excluded_projects: project codes to exclude from reporting
+        :param bool force_gzip: treat FASTQ files as gzipped, even when they
+            don't end in .gz
         """
         logger.info('Processing %s (%r).', self, self.fastq1)
         scratch_path = os.path.dirname(self.prelim_csv)
         os.mkdir(scratch_path)
+        use_gzip = force_gzip or self.fastq1.endswith('.gz')
 
         with open(self.read_summary_csv, 'w') as read_summary:
             trim((self.fastq1, self.fastq2),
                  self.bad_cycles_csv,
                  (self.trimmed1_fastq, self.trimmed2_fastq),
                  summary_file=read_summary,
-                 use_gzip=self.fastq1.endswith('.gz'))
+                 use_gzip=use_gzip)
 
         logger.info('Running fastq_g2p on %s.', self)
         with open(self.trimmed1_fastq) as fastq1, \
