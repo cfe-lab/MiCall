@@ -1,6 +1,6 @@
 # Generate the Singularity container to run MiCall on Kive.
 Bootstrap: docker
-From: python:3.4
+From: centos:7
 
 %help
     MiCall maps all the reads from a sample against a set of reference
@@ -40,9 +40,11 @@ From: python:3.4
 
 %post
     ## Prerequisites
-    apt-get update -qq --fix-missing
-    apt-get install -qq -y unzip wget
-    rm -rf /var/lib/apt/lists/*
+    yum update -q -y
+
+    yum install -q -y epel-release
+    yum install -q -y python34 python34-devel unzip wget git
+    yum groupinstall -q -y 'development tools'
 
     ## bowtie2
     wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip
@@ -51,10 +53,17 @@ From: python:3.4
     rm bowtie2.zip
 
     ## Python packages, plus trigger matplotlib to build its font cache
+    wget -q https://bootstrap.pypa.io/get-pip.py
+    python3 get-pip.py
+    rm get-pip.py
     cd /opt
     pip install -r /opt/micall/requirements-basespace.txt
     ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
-    /usr/local/bin/python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
+    python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
+
+    yum clean all
+
+    rm -rf /var/cache/yum
 
 %environment
     export PATH=$PATH:/opt/bowtie2
