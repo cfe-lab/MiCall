@@ -42,9 +42,9 @@ From: centos:7
     ## Prerequisites
     yum update -q -y
 
-    yum install -q -y epel-release
-    yum install -q -y python34 python34-devel unzip wget git
     yum groupinstall -q -y 'development tools'
+    yum install -q -y epel-release
+    yum install -q -y python34 python34-devel unzip wget
 
     ## bowtie2
     wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip
@@ -61,9 +61,19 @@ From: centos:7
     ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
+    yum groupremove -q -y 'development tools'
+    yum remove -q -y epel-release wget python34-devel unzip
+    yum autoremove -q -y
     yum clean all
 
     rm -rf /var/cache/yum
+
+    ## CAUTION! This changes the default python command to python3!
+    ## This breaks many things, including yum!
+    ## To switch back to python2, use this command:
+    # sudo alternatives --set python /usr/bin/python2
+    alternatives --install /usr/bin/python python /usr/bin/python2 50
+    alternatives --install /usr/bin/python python /usr/bin/python3 60
 
 %environment
     export PATH=$PATH:/opt/bowtie2
