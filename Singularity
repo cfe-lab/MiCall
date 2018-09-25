@@ -58,7 +58,7 @@ From: centos:7
     rm get-pip.py
     cd /opt
     pip install -r /opt/micall/requirements-basespace.txt
-    ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
+    ln -s /usr/bin/cutadapt /usr/bin/cutadapt-1.11
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
     yum groupremove -q -y 'development tools'
