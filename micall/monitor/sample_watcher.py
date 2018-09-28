@@ -36,6 +36,7 @@ class FolderWatcher:
         self.run_folder = (self.base_calls_folder / '../../..').resolve()
         self.run_name = '_'.join(self.run_folder.name.split('_')[:2])
         self.sample_watchers = []
+        self.is_folder_failed = False
         self.batch = None
         self.quality_dataset = None
         self.filter_quality_run = None
@@ -55,12 +56,24 @@ class FolderWatcher:
 
     @property
     def active_samples(self):
-        all_samples = set(self.all_samples)
-        return all_samples - self.completed_samples
+        if self.is_folder_failed:
+            return set()
+        if self.filter_quality_run in self.active_runs:
+            # Individual runs are waiting for filter quality. Return all.
+            all_samples = set(self.all_samples)
+            return all_samples - self.completed_samples
+
+        active_samples = set()
+        for run, (sample_watcher, pipeline_type) in self.active_runs.items():
+            if pipeline_type in (PipelineType.MIDI, PipelineType.MIXED_HCV_MIDI):
+                active_samples.add(sample_watcher.sample_group.names[1])
+            else:
+                active_samples.add(sample_watcher.sample_group.names[0])
+        return active_samples
 
     @property
     def is_complete(self):
-        return not self.active_samples
+        return self.is_folder_failed or not self.active_samples
 
     def poll_runs(self):
         if self.filter_quality_run is None:
@@ -72,8 +85,15 @@ class FolderWatcher:
             if not self.fetch_run_status(self.filter_quality_run):
                 # Still running, nothing more to check.
                 return
+        if self.is_folder_failed:
+            return
         for sample_watcher in self.sample_watchers:
-            is_finished = self.poll_sample_runs(sample_watcher)
+            try:
+                is_finished = self.poll_sample_runs(sample_watcher)
+            except Exception as ex:
+                raise RuntimeError(
+                    f'Polling sample group {sample_watcher.sample_group.enum} '
+                    f'failed.') from ex
             if is_finished:
                 self.completed_samples.update(
                     name
@@ -170,7 +190,10 @@ class FolderWatcher:
                 self.add_run(new_run, pipeline_type, sample_watcher)
 
         except KiveRunFailedException:
-            sample_watcher.is_failed = True
+            if sample_watcher is None:
+                self.is_folder_failed = True
+            else:
+                sample_watcher.is_failed = True
             is_complete = True
         if is_complete:
             del self.active_runs[run]
