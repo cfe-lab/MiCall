@@ -76,4 +76,4 @@ From: centos:7
     alternatives --install /usr/bin/python python /usr/bin/python3 60
 
 %environment
-    export PATH=$PATH:/opt/bowtie2
+    export PATH=/bin:/opt/bowtie2
