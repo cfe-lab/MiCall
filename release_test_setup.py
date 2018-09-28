@@ -167,6 +167,7 @@ class Sample(object):
         except OSError as ex:
             if ex.errno != errno.ENOENT:
                 raise
+            os.makedirs(os.path.dirname(results_path), exist_ok=True)
         try:
             os.remove(os.path.join(target_run_path,
                                    ERROR_PROCESSING))
