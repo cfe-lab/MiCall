@@ -291,7 +291,8 @@ similar steps to setting up a development workstation. Follow these steps:
     the projects match.
 5. Check the history of the HIV and HCV rules files in the `micall/resistance`
     folder. If they have changed, create a new display file in the `docs` folder
-    and upgrade the version numbers in the `genreport.yaml` file.
+    and upgrade the version numbers in the `genreport.yaml` file and
+    `asi_algorithm.py`.
 5. Check the history of the `micall.alignment` folder. If it has changed since
     the last release, then update the version number in `setup.py`.
 6. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y

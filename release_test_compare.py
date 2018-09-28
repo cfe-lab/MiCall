@@ -295,10 +295,6 @@ def adjust_region(region):
     return region
 
 
-def adjust_offset(offset, region):
-    return offset
-
-
 def is_consensus_interesting(region, cutoff):
     if region.startswith('HLA-'):
         return cutoff == '0.250'

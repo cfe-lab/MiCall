@@ -17,7 +17,7 @@ REPORTED_REGIONS = {'PR', 'RT', 'IN', 'NS3', 'NS5a', 'NS5b'}
 HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.3.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
 
-AminoList = namedtuple('AminoList', 'region aminos genotype')
+AminoList = namedtuple('AminoList', 'region aminos genotype seed')
 
 
 class LowCoverageError(Exception):
@@ -192,9 +192,6 @@ def read_aminos(amino_rows, min_fraction, reported_regions=None, min_coverage=0)
             max_pos = 561
         else:
             max_pos = None
-        # TODO: Remove last_coverage check after validating against Ruby version.
-        last_coverage = 0
-        last_covered_pos = None
         for row in rows:
             counts = list(map(int, (row[f] for f in coverage_columns)))
             coverage = int(row['coverage'])
@@ -203,12 +200,9 @@ def read_aminos(amino_rows, min_fraction, reported_regions=None, min_coverage=0)
                 aminos.append({})
             if max_pos and pos <= max_pos:
                 total_coverage += coverage
-            if pos == max_pos:
-                last_coverage = coverage
             if coverage == 0 or coverage < min_coverage:
                 pos_aminos = {}
             else:
-                last_covered_pos = pos
                 min_count = max(1, coverage * min_fraction)  # needs at least 1
                 pos_aminos = {report_names[i]: count/coverage
                               for i, count in enumerate(counts)
@@ -217,15 +211,9 @@ def read_aminos(amino_rows, min_fraction, reported_regions=None, min_coverage=0)
                 if ins_count >= min_count:
                     pos_aminos['i'] = ins_count / coverage
             aminos.append(pos_aminos)
-        if (region.endswith('-NS5b') and
-                last_covered_pos is not None and
-                last_covered_pos < 400):
-            # Override last_coverage check when MIDI is missing.
-            last_coverage = min_coverage
-        if max_pos is None or min(last_coverage,
-                                  total_coverage // max_pos) >= min_coverage:
+        if max_pos is None or (total_coverage // max_pos) >= min_coverage:
             # Need original region to look up wild type.
-            yield AminoList(region, aminos, genotype)
+            yield AminoList(region, aminos, genotype, seed)
 
 
 def get_algorithm_regions(algorithm):
@@ -233,13 +221,14 @@ def get_algorithm_regions(algorithm):
             for region in algorithm.gene_def)
 
 
-def create_empty_aminos(region, genotype, algorithms):
+def create_empty_aminos(region, genotype, seed, algorithms):
     algorithm = algorithms[genotype]
     std_name = 'IN' if region == 'INT' else region
     std_length = len(algorithm.stds[std_name])
     return AminoList(region,
                      [{}] * std_length,
-                     genotype)
+                     genotype,
+                     seed)
 
 
 def filter_aminos(all_aminos, algorithms):
@@ -247,19 +236,48 @@ def filter_aminos(all_aminos, algorithms):
     good_aminos = [amino_list
                    for amino_list in all_aminos
                    if any(amino_list.aminos)]
-    good_genotypes = {amino_list.genotype for amino_list in good_aminos}
-    good_regions = {(amino_list.genotype, amino_list.region)
+    good_genotypes = {(amino_list.genotype, amino_list.seed) for amino_list in good_aminos}
+    good_regions = {(amino_list.genotype, amino_list.seed, amino_list.region)
                     for amino_list in good_aminos}
-    expected_regions = {(genotype, region)
-                        for genotype in good_genotypes
+    expected_regions = {(genotype, seed, region)
+                        for genotype, seed in good_genotypes
                         for region in get_algorithm_regions(algorithms[genotype])}
     missing_regions = sorted(expected_regions - good_regions)
-    good_aminos += [create_empty_aminos(region, genotype, algorithms)
-                    for genotype, region in missing_regions]
+    good_aminos += [create_empty_aminos(region, genotype, seed, algorithms)
+                    for genotype, seed, region in missing_regions]
     return good_aminos
 
 
-def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
+def get_position_consensus(position_aminos):
+    if not position_aminos:
+        return '-'
+    consensus = ''.join(position_aminos)
+    if len(consensus) > 1:
+        return '[' + ''.join(sorted(consensus)) + ']'
+    return consensus
+
+
+def write_consensus(resistance_consensus_writer, amino_list, alg_version):
+    if resistance_consensus_writer is None:
+        return
+    consensus = ''.join(get_position_consensus(position_aminos)
+                        for position_aminos in amino_list.aminos).rstrip('-')
+    stripped_consensus = consensus.lstrip('-')
+    offset = len(consensus) - len(stripped_consensus)
+    reported_region = get_reported_region(amino_list.region)
+    resistance_consensus_writer.writerow(dict(seed=amino_list.seed,
+                                              region=reported_region,
+                                              coord_region=amino_list.region,
+                                              version=alg_version,
+                                              offset=offset,
+                                              sequence=stripped_consensus))
+
+
+def write_resistance(aminos,
+                     resistance_csv,
+                     mutations_csv,
+                     algorithms=None,
+                     resistance_consensus_csv=None):
     """ Calculate resistance scores and write them to files.
 
     :param list[AminoList] aminos: region is the coordinate
@@ -270,6 +288,7 @@ def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
     :param mutations_csv: open file to write mutations to, grouped by genotype,
         drug_class
     :param dict algorithms: {region: AsiAlgorithm}
+    :param resistance_consensus_csv: open file to write resistance consensus to
     """
     resistance_writer = DictWriter(
         resistance_csv,
@@ -280,33 +299,50 @@ def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
          'level',
          'level_name',
          'score',
-         'genotype'],
+         'genotype',
+         'seed',
+         'coord_region',
+         'version'],
         lineterminator=os.linesep)
     resistance_writer.writeheader()
     mutations_writer = DictWriter(mutations_csv,
                                   ['drug_class',
                                    'mutation',
                                    'prevalence',
-                                   'genotype'],
+                                   'genotype',
+                                   'region',
+                                   'seed',
+                                   'coord_region',
+                                   'version'],
                                   lineterminator=os.linesep)
     mutations_writer.writeheader()
+    if resistance_consensus_csv is None:
+        resistance_consensus_writer = None
+    else:
+        resistance_consensus_writer = create_consensus_writer(
+            resistance_consensus_csv)
     if algorithms is None:
         algorithms = load_asi()
     for genotype, genotype_aminos in groupby(aminos, attrgetter('genotype')):
         region_results = []
-        for region, amino_seq, _ in genotype_aminos:
+        for amino_list in genotype_aminos:
             asi = algorithms.get(genotype)
+            write_consensus(resistance_consensus_writer,
+                            amino_list,
+                            asi.alg_version)
             if asi is None:
                 continue
+            region = amino_list.region
             if region == 'INT':
                 region = 'IN'
-            result = interpret(asi, amino_seq, region)
-            region_results.append((region, amino_seq, result))
+            result = interpret(asi, amino_list.aminos, region)
+            region_results.append((region, amino_list, asi.alg_version, result))
         if all(drug_result.level == ResistanceLevels.FAIL.level
-               for region, amino_seq, result in region_results
+               for region, amino_seq, alg_version, result in region_results
                for drug_result in result.drugs):
             continue
-        for region, amino_seq, result in region_results:
+        for region, amino_list, alg_version, result in region_results:
+            amino_seq = amino_list.aminos
             reported_region = get_reported_region(region)
             for drug_result in result.drugs:
                 resistance_writer.writerow(dict(region=reported_region,
@@ -316,7 +352,10 @@ def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
                                                 level_name=drug_result.level_name,
                                                 level=drug_result.level,
                                                 score=drug_result.score,
-                                                genotype=genotype))
+                                                genotype=genotype,
+                                                seed=amino_list.seed,
+                                                coord_region=amino_list.region,
+                                                version=alg_version))
             for drug_class, class_mutations in result.mutations.items():
                 mutations = [Mutation(m) for m in class_mutations]
                 mutations.sort()
@@ -328,7 +367,24 @@ def write_resistance(aminos, resistance_csv, mutations_csv, algorithms=None):
                     mutations_writer.writerow(dict(drug_class=drug_class,
                                                    mutation=mutation,
                                                    prevalence=prevalence,
-                                                   genotype=genotype))
+                                                   genotype=genotype,
+                                                   region=reported_region,
+                                                   seed=amino_list.seed,
+                                                   coord_region=amino_list.region,
+                                                   version=alg_version))
+
+
+def create_consensus_writer(resistance_consensus_csv):
+    resistance_consensus_writer = DictWriter(resistance_consensus_csv,
+                                             ['seed',
+                                              'region',
+                                              'coord_region',
+                                              'version',
+                                              'offset',
+                                              'sequence'],
+                                             lineterminator=os.linesep)
+    resistance_consensus_writer.writeheader()
+    return resistance_consensus_writer
 
 
 def interpret(asi, amino_seq, region):
@@ -395,8 +451,8 @@ def load_asi():
                  for rule in hcv_rules
                  for genotype in rule['genotypes']}
     for genotype in genotypes:
-        algorithms[genotype] = AsiAlgorithm(rules_yaml=hcv_rules,
-                                            genotype=genotype)
+        asi = AsiAlgorithm(rules_yaml=hcv_rules, genotype=genotype)
+        algorithms[genotype] = asi
 
     return algorithms
 
@@ -406,7 +462,8 @@ def report_resistance(amino_csv,
                       resistance_csv,
                       mutations_csv,
                       fail_csv,
-                      region_choices=None):
+                      region_choices=None,
+                      resistance_consensus_csv=None):
     if region_choices is None:
         selected_regions = REPORTED_REGIONS
     else:
@@ -416,7 +473,11 @@ def report_resistance(amino_csv,
     aminos = read_aminos(amino_rows, MIN_FRACTION, selected_regions, MIN_COVERAGE)
     algorithms = load_asi()
     filtered_aminos = filter_aminos(aminos, algorithms)
-    write_resistance(filtered_aminos, resistance_csv, mutations_csv, algorithms)
+    write_resistance(filtered_aminos,
+                     resistance_csv,
+                     mutations_csv,
+                     algorithms,
+                     resistance_consensus_csv)
 
 
 def main():

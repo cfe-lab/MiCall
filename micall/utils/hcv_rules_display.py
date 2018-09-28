@@ -8,10 +8,11 @@ import os
 from itertools import groupby
 from operator import itemgetter
 
-import sys
 import yaml
 from collections import defaultdict
 from pyvdrm.hcvr import HCVR, AsiScoreCond, ScoreList, ScoreExpr, BoolTrue
+
+from micall.resistance.asi_algorithm import HCV_RULES_VERSION, HCV_RULES_DATE
 
 
 def parse_args():
@@ -26,7 +27,7 @@ def parse_args():
                                        'genreport.yaml')
     default_display_path = os.path.join(os.path.dirname(micall_path),
                                         'docs',
-                                        'hcv_rules1.7.md')
+                                        f'hcv_rules{HCV_RULES_VERSION}.md')
     parser.add_argument('-r',
                         '--rules',
                         type=FileType(),
@@ -57,10 +58,10 @@ def load_drug_names(config_file, report_prefix='Hepatitis C'):
 
 
 def write_report(report_file, rules):
-    header = """\
+    header = f"""\
 ---
 title: CFE HCV Algorithm
-description: version cfe-hcv 1.6 - 23-Apr-2018
+description: version cfe-hcv {HCV_RULES_VERSION} - {HCV_RULES_DATE}
 ---
 
 Rules are applied for each drug and each genotype found in a sample. Each rule

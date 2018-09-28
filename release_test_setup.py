@@ -229,9 +229,17 @@ def find_run_folders(source_folder, min_run_name):
 def main():
     args = parse_args()
     if args.min_run_name is not None:
+        print('Setting up',
+              args.pipeline_version,
+              'for runs after',
+              args.min_run_name)
         run_folders = find_run_folders(args.old_folder, args.min_run_name)
         samples = [Sample(folder, '*', args) for folder in run_folders]
     else:
+        print('Setting up',
+              args.pipeline_version,
+              'for runs in',
+              args.samples_csv)
         with open(args.samples_csv, 'rU') as samples_csv:
             samples = [Sample(row['run'], row['enum'], args)
                        for row in DictReader(samples_csv)]

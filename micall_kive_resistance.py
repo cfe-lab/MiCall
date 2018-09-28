@@ -29,6 +29,8 @@ def parse_args():
                         help='CSV containing failure reasons.')
     parser.add_argument('resistance_pdf',
                         help='resistance report')
+    parser.add_argument('resistance_consensus_csv',
+                        help='CSV with amino consensus used for resistance.')
 
     return parser.parse_args()
 
@@ -43,6 +45,7 @@ def load_sample(args):
                      mutations_csv=args.mutations_csv,
                      resistance_fail_csv=args.resistance_fail_csv,
                      resistance_pdf=args.resistance_pdf,
+                     resistance_consensus_csv=args.resistance_consensus_csv,
                      scratch_path=scratch_path)
     sample2 = Sample(amino_csv=args.midi_amino_csv)
     return SampleGroup(sample1, sample2)

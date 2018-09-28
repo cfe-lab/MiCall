@@ -3,12 +3,12 @@
 They should also be processed by the report scripts.
 """
 import os
-import shutil
 from argparse import ArgumentParser
 from glob import glob
 
-import errno
+from os import makedirs
 from pathlib import Path
+from subprocess import run
 
 
 def parse_args():
@@ -44,17 +44,12 @@ def main():
                                    'MiSeq',
                                    'runs',
                                    run_name,
-                                   'Results',
-                                   'version_' + args.pipeline_version)
-        try:
-            shutil.rmtree(target_path)
-        except OSError as ex:
-            if ex.errno != errno.ENOENT:
-                raise
+                                   'Results')
         if not os.path.exists(done_path):
             print('Not done: ' + run_name)
             continue
-        shutil.copytree(results_path, target_path)
+        makedirs(target_path, exist_ok=True)
+        run(['rsync', '--delete', '-a', results_path, target_path])
         print('Done: ' + run_name)
     print('Done.')
 

@@ -35,13 +35,16 @@ class SampleGroup:
                 open(midi_sample.amino_csv) as midi_amino_csv, \
                 open(self.main_sample.resistance_csv, 'w') as resistance_csv, \
                 open(self.main_sample.mutations_csv, 'w') as mutations_csv, \
-                open(self.main_sample.resistance_fail_csv, 'w') as fail_csv:
+                open(self.main_sample.resistance_fail_csv, 'w') as fail_csv, \
+                open(self.main_sample.resistance_consensus_csv, 'w') as \
+                resistance_consensus_csv:
             report_resistance(amino_csv,
                               midi_amino_csv,
                               resistance_csv,
                               mutations_csv,
                               fail_csv,
-                              run_info.reports)
+                              run_info.reports,
+                              resistance_consensus_csv=resistance_consensus_csv)
 
         logger.info('Running resistance report on %s.', self.main_sample)
         source_path = os.path.dirname(__file__)
