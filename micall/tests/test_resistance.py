@@ -44,11 +44,12 @@ def format_rows(column_names, rows):
 
 
 class CombineAminosTest(TestCase):
-    def check_combination(self,
-                          amino_csv,
-                          midi_amino_csv,
-                          expected_csv,
-                          expected_fail_csv='seed,region,reason\n'):
+    def check_combination(
+            self,
+            amino_csv,
+            midi_amino_csv,
+            expected_csv,
+            expected_fail_csv='seed,region,coord_region,genotype,reason\n'):
         """ Combine two amino count CSV files, and check result.
 
         :param amino_csv: open file with main amino counts
@@ -106,8 +107,8 @@ HCV-1a,HCV1A-H77-NS5a,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-1a,HCV1A-H77-NS5a,15,7,101,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
         expected_fail_csv = """\
-seed,region,reason
-HCV-1a,HCV1A-H77-NS5b,low average coverage
+seed,region,coord_region,genotype,reason
+HCV-1a,NS5b,HCV1A-H77-NS5b,1A,low average coverage
 """
 
         self.check_combination(amino_csv, amino_csv, expected_csv, expected_fail_csv)
@@ -134,8 +135,8 @@ HCV-1a,HCV1A-H77-NS5a,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-1a,HCV1A-H77-NS5a,15,7,101,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
         expected_fail_csv = """\
-seed,region,reason
-HCV-1a,HCV1A-H77-NS5b,low average coverage
+seed,region,coord_region,genotype,reason
+HCV-1a,NS5b,HCV1A-H77-NS5b,1A,low average coverage
 """
 
         self.check_combination(amino_csv, amino_csv, expected_csv, expected_fail_csv)
@@ -161,9 +162,9 @@ HCV-1a,HCV1A-H77-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-1a,HCV1A-H77-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
         expected_fail_csv = """\
-seed,region,reason
-HCV-1a,HCV1A-H77-NS3,low average coverage
-HCV-1a,HCV1A-H77-NS5a,low average coverage
+seed,region,coord_region,genotype,reason
+HCV-1a,NS3,HCV1A-H77-NS3,1A,low average coverage
+HCV-1a,NS5a,HCV1A-H77-NS5a,1A,low average coverage
 """
 
         self.check_combination(amino_csv, amino_csv, expected_csv, expected_fail_csv)
@@ -189,9 +190,9 @@ HCV-1a,HCV1A-H77-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-1a,HCV1A-H77-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
         expected_fail_csv = """\
-seed,region,reason
-HCV-1a,HCV1A-H77-NS3,not enough high-coverage amino acids
-HCV-1a,HCV1A-H77-NS5a,not enough high-coverage amino acids
+seed,region,coord_region,genotype,reason
+HCV-1a,NS3,HCV1A-H77-NS3,1A,not enough high-coverage amino acids
+HCV-1a,NS5a,HCV1A-H77-NS5a,1A,not enough high-coverage amino acids
 """
 
         self.check_combination(amino_csv, amino_csv, expected_csv, expected_fail_csv)
@@ -217,9 +218,9 @@ HCV-1a,HCV1A-H77-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-1a,HCV1A-H77-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
         expected_fail_csv = """\
-seed,region,reason
-HCV-1a,HCV1A-H77-NS3,not enough high-coverage amino acids
-HCV-1a,HCV1A-H77-NS5a,not enough high-coverage amino acids
+seed,region,coord_region,genotype,reason
+HCV-1a,NS3,HCV1A-H77-NS3,1A,not enough high-coverage amino acids
+HCV-1a,NS5a,HCV1A-H77-NS5a,1A,not enough high-coverage amino acids
 """
 
         self.check_combination(amino_csv, amino_csv, expected_csv, expected_fail_csv)
@@ -318,8 +319,8 @@ HCV-1a,HCV1A-H77-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-1a,HCV1A-H77-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
         expected_fail_csv = """\
-seed,region,reason
-HCV-1a,HCV1A-H77-NS5b,MIDI: low average coverage
+seed,region,coord_region,genotype,reason
+HCV-1a,NS5b,HCV1A-H77-NS5b,1A,MIDI: low average coverage
 """
 
         self.check_combination(amino_csv, midi_amino_csv, expected_csv, expected_fail_csv)
@@ -535,8 +536,8 @@ HCV-1a,HCV1A-H77-NS5b,15,4,560,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-1a,HCV1A-H77-NS5b,15,7,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
         expected_fail_csv = """\
-seed,region,reason
-HCV-1a,HCV1A-H77-NS5b,low average coverage
+seed,region,coord_region,genotype,reason
+HCV-1a,NS5b,HCV1A-H77-NS5b,1A,low average coverage
 """
 
         self.check_combination(amino_csv, midi_amino_csv, expected_csv, expected_fail_csv)

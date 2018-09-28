@@ -78,7 +78,7 @@ def get_genotype(seed):
 
 def create_fail_writer(fail_csv):
     writer = DictWriter(fail_csv,
-                        ['seed', 'region', 'reason'],
+                        ['seed', 'region', 'coord_region', 'genotype', 'reason'],
                         lineterminator=os.linesep)
     writer.writeheader()
     return writer
@@ -125,9 +125,7 @@ def combine_aminos(amino_csv, midi_amino_csv, fail_writer):
             try:
                 check_coverage(region, rows, start_pos=231, end_pos=561)
             except LowCoverageError as ex:
-                fail_writer.writerow(dict(seed=seed,
-                                          region=region,
-                                          reason='MIDI: ' + ex.args[0]))
+                write_failure(fail_writer, seed, region, 'MIDI: ' + ex.args[0])
                 continue
             midi_rows[seed] = [row
                                for row in rows
@@ -138,14 +136,22 @@ def combine_aminos(amino_csv, midi_amino_csv, fail_writer):
         try:
             check_coverage(region, rows)
         except LowCoverageError as ex:
-            fail_writer.writerow(dict(seed=seed,
-                                      region=region,
-                                      reason=ex.args[0]))
+            write_failure(fail_writer, seed, region, ex.args[0])
             rows = []
         if region.endswith('-NS5b'):
             region_midi_rows = midi_rows[seed]
             rows = combine_midi_rows(rows, region_midi_rows)
         yield from rows
+
+
+def write_failure(fail_writer, seed, region, reason):
+    reported_region = get_reported_region(region)
+    genotype = get_genotype(seed)
+    fail_writer.writerow(dict(seed=seed,
+                              region=reported_region,
+                              coord_region=region,
+                              genotype=genotype,
+                              reason=reason))
 
 
 def combine_midi_rows(main_rows, midi_rows):
