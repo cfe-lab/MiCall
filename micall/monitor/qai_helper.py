@@ -67,7 +67,7 @@ class Session(requests.Session):
         """ Get a JSON object from the web server.
 
         @param session an open HTTP session
-        @param path the relative path to add to settings.qai_path
+        @param path the relative path to add to QAI server path
         @param retries: the number of times to retry the request before failing.
         @return the response body, parsed as a JSON object
         """

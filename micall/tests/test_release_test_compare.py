@@ -364,28 +364,6 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_report, report)
         self.assertEqual(expected_scenario_counts, scenario_counts)
 
-    def test_removed_key_position(self):
-        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
-                        'sample42',
-                        SampleFiles(coverage_scores=[{'project': 'HIV',
-                                                      'region': 'RT',
-                                                      'which.key.pos': '318',
-                                                      'on.score': '1'}]),
-                        SampleFiles(coverage_scores=[{'project': 'HIV',
-                                                      'region': 'RT',
-                                                      'which.key.pos': '230',
-                                                      'on.score': '4'}]))
-        expected_report = ''
-        expected_scenario_counts = {Scenarios.V78_KEY_POS_REMOVED_RT318: [
-            '  run1:sample42 coverage: HIV RT 1 => 4\n']}
-
-        report, scenario_counts, _ = compare_sample(
-            sample,
-            Scenarios.V78_KEY_POS_REMOVED_RT318)
-
-        self.assertEqual(expected_report, report)
-        self.assertEqual(expected_scenario_counts, scenario_counts)
-
     def test_consensus_change(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',

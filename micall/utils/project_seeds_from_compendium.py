@@ -1,15 +1,42 @@
 import csv
 import os
 import re
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 
 import requests
 
-from micall import settings
 from micall.monitor import qai_helper
+
+
+def parse_args():
+    parser = ArgumentParser(description='Upload project definitions to QAI.',
+                            formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '--qai_server',
+        default=os.environ.get('MICALL_QAI_SERVER', 'http://localhost:3000'),
+        help='server to post reviews on')
+    parser.add_argument(
+        '--qai_user',
+        default=os.environ.get('MICALL_QAI_USER', 'bob'),
+        help='user name for QAI server')
+    parser.add_argument(
+        '--qai_password',
+        default=SUPPRESS,
+        help='password for QAI server (default not shown)')
+    parser.add_argument(
+        '--pipeline_version',
+        default='0-dev',
+        help='version number')
+
+    args = parser.parse_args()
+    if not hasattr(args, 'qai_password'):
+        args.qai_password = os.environ.get('MICALL_QAI_PASSWORD', 'testing')
+    return args
 
 
 def main():
     filename = 'HIV1_COM_2015_genome_DNA.csv'
+    args = parse_args()
 
     if not os.path.exists(filename):
         form = {'ORGANISM': 'HIV',
@@ -35,9 +62,9 @@ def main():
             f.write(match.group(1))
 
     with qai_helper.Session() as session:
-        session.login(settings.qai_path,
-                      settings.qai_user,
-                      settings.qai_password)
+        session.login(args.qai_server,
+                      args.qai_user,
+                      args.qai_password)
 
         seed_groups = session.get_json("/lab_miseq_seed_groups")
         seed_group_name = 'HIV1-seed'
@@ -106,9 +133,10 @@ def main():
                     print(seed_name)
                     seed_id = hiv_seeds[seed_name]['id']
                     session.delete('{}/lab_miseq_regions/{}'.format(
-                        settings.qai_path,
+                        args.qai_server,
                         seed_id))
 
         print('Done with {} clean and {} dirty.'.format(clean_count, dirty_count))
+
 
 main()
