@@ -243,13 +243,13 @@ def filter_aminos(all_aminos, algorithms):
                    for amino_list in all_aminos
                    if any(amino_list.aminos)]
     good_genotypes = {(amino_list.genotype, amino_list.seed) for amino_list in good_aminos}
-    good_regions = {(amino_list.genotype, amino_list.seed, amino_list.region)
+    good_regions = {(amino_list.genotype or '', amino_list.seed, amino_list.region)
                     for amino_list in good_aminos}
-    expected_regions = {(genotype, seed, region)
+    expected_regions = {(genotype or '', seed, region)
                         for genotype, seed in good_genotypes
                         for region in get_algorithm_regions(algorithms[genotype])}
     missing_regions = sorted(expected_regions - good_regions)
-    good_aminos += [create_empty_aminos(region, genotype, seed, algorithms)
+    good_aminos += [create_empty_aminos(region, genotype or None, seed, algorithms)
                     for genotype, seed, region in missing_regions]
     return good_aminos
 

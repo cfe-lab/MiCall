@@ -947,6 +947,32 @@ class FilterAminosTest(TestCase):
 
         self.assertEqual(expected_aminos, aminos)
 
+    def test_missing_with_some_genotypes(self):
+        all_aminos = [AminoList('RT',
+                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                None,
+                                'HIV1B-seed'),
+                      AminoList('HCV1A-H77-NS5b',
+                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                '1A',
+                                'HCV-1a')]
+        expected_aminos = [AminoList('RT',
+                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                     None,
+                                     'HIV1B-seed'),
+                           AminoList('HCV1A-H77-NS5b',
+                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                     '1A',
+                                     'HCV-1a'),
+                           AminoList('INT', [{}]*288, None, 'HIV1B-seed'),
+                           AminoList('PR', [{}]*99, None, 'HIV1B-seed'),
+                           AminoList('HCV1A-H77-NS3', [{}]*631, '1A', 'HCV-1a'),
+                           AminoList('HCV1A-H77-NS5a', [{}]*448, '1A', 'HCV-1a')]
+
+        aminos = filter_aminos(all_aminos, self.algorithms)
+
+        self.assertEqual(expected_aminos, aminos)
+
     def test_exclude(self):
         all_aminos = [AminoList('PR',
                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],

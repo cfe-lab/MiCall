@@ -389,6 +389,7 @@ def process_sample(sample, args, pssm):
     :param args: the command-line arguments
     :param pssm: the pssm library for running G2P analysis
     """
+    sample.debug_remap = args.debug_remap
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
