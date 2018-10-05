@@ -38,13 +38,25 @@ From: centos:7
     requirements.txt /opt/micall/
     requirements-basespace.txt /opt/micall/
 
+    ## HCV genotyping database
+    micall/utils/hcv_geno /opt/hcv_geno/
+
 %post
     ## Prerequisites
     yum update -q -y
 
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
-    yum install -q -y python34 python34-devel unzip wget fontconfig
+    yum install -q -y python34 python34-devel unzip wget fontconfig sudo
+
+    # Install blast and build the HCV genotype database
+    #yum install blast
+    #makeblastdb -in /opt/hcv.fasta -parse_seqids -dbtype nucl
+
+
+    ## Miniconda (Python 2) (Don't use this)
+    #wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
+    #bash miniconda.sh -b -p /opt/miniconda
 
     ## bowtie2
     wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip
@@ -61,6 +73,9 @@ From: centos:7
     ln -s /usr/bin/cutadapt /usr/bin/cutadapt-1.11
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
+    # IVA assembler
+    pip install iva
+
     yum groupremove -q -y 'development tools'
     yum remove -q -y epel-release wget python34-devel unzip
     yum autoremove -q -y
@@ -75,5 +90,15 @@ From: centos:7
     alternatives --install /usr/bin/python python /usr/bin/python2 50
     alternatives --install /usr/bin/python python /usr/bin/python3 60
 
+    ## Savage assembler
+    #export PATH="/opt/miniconda/bin:$PATH"
+    #source /opt/miniconda/bin/activate
+    #conda config --add channels r
+    #conda config --add channels defaults
+    #conda config --add channels conda-forge
+    #conda config --add channels bioconda
+    #conda install savage
+    #ls /opt/miniconda/bin/
+
 %environment
-    export PATH=/bin:/opt/bowtie2
+    export PATH=/bin:/opt/bowtie2:/opt/miniconda
