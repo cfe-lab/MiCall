@@ -47,7 +47,7 @@ From: centos:7
 
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
-    yum install -q -y python34 python34-devel unzip wget fontconfig sudo
+    yum install -q -y python34 python34-devel unzip wget fontconfig
 
     # Install blast and build the HCV genotype database
     #yum install blast
@@ -81,6 +81,8 @@ From: centos:7
     yum autoremove -q -y
     yum clean all
 
+    pip install biopython
+
     rm -rf /var/cache/yum
 
     ## CAUTION! This changes the default python command to python3!
@@ -101,4 +103,4 @@ From: centos:7
     #ls /opt/miniconda/bin/
 
 %environment
-    export PATH=/bin:/opt/bowtie2:/opt/miniconda
+    export PATH=/bin:/opt/bowtie2
