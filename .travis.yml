@@ -1,6 +1,19 @@
 language: python
 python:
     - "3.6"
+before_install:
+  - sudo apt-get install -y zlib1g-dev libncurses5-dev libncursesw5-dev mummer samtools
+  - mkdir ~/bin
+  - export PATH=$PATH:~/bin
+  - cd ~/bin
+  - wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
+  - wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
+  - chmod +x kmc kmc_dump
+  - cd ~
+  - wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
+  - tar -xzf smalt-0.7.6-bin.tar.gz
+  - ln -s ~/smalt-0.7.6-bin/smalt_x86_64 ~/bin/smalt
+
 install: "pip install -r requirements-test.txt"
 script: "coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest"
 
