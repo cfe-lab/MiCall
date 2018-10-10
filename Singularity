@@ -49,8 +49,11 @@ From: centos:7
     yum install -q -y epel-release
     yum install -q -y python34 python34-devel unzip wget fontconfig
 
-    # Install blast and build the HCV genotype database
-    #yum install blast
+    echo ===== Installing blast ===== >/dev/null
+    cd /root
+    wget -q ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
+    yum install -q -y ncbi-blast-2.6.0+-1.x86_64.rpm
+    rm ncbi-blast-2.6.0+-1.x86_64.rpm
     #makeblastdb -in /opt/hcv.fasta -parse_seqids -dbtype nucl
 
 
@@ -108,16 +111,14 @@ From: centos:7
     yum autoremove -q -y
     yum clean all
 
-    pip install biopython
-
     rm -rf /var/cache/yum
 
-    ## CAUTION! This changes the default python command to python3!
-    ## This breaks many things, including yum!
-    ## To switch back to python2, use this command:
-    # sudo alternatives --set python /usr/bin/python2
-    alternatives --install /usr/bin/python python /usr/bin/python2 50
-    alternatives --install /usr/bin/python python /usr/bin/python3 60
+    # ## CAUTION! This changes the default python command to python3!
+    # ## This breaks many things, including yum!
+    # ## To switch back to python2, use this command:
+    # # sudo alternatives --set python /usr/bin/python2
+    # alternatives --install /usr/bin/python python /usr/bin/python2 50
+    # alternatives --install /usr/bin/python python /usr/bin/python3 60
 
     ## Savage assembler
     #export PATH="/opt/miniconda/bin:$PATH"
