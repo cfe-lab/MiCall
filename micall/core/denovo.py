@@ -20,7 +20,7 @@ def geno(f, contigs):
             print("unknown,{}".format(record.seq), file=contigs)
         rec += 1
 
-def main(fq1, fq2, contigs):
+def denovo(fq1, fq2, contigs):
     prefix = "sample"
 
     with TemporaryDirectory() as tmp_dir:
@@ -68,4 +68,4 @@ if __name__ == '__main__':
     parser.add_argument('contigs', type=argparse.FileType('w'))
 
     args = parser.parse_args()
-    main(args.fastq1, args.fastq2, args.contigs)
+    denovo(args.fastq1, args.fastq2, args.contigs)

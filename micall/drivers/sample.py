@@ -10,7 +10,7 @@ from micall.core.remap import remap
 from micall.core.sam2aln import sam2aln
 from micall.core.trim_fastqs import trim
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
-from micall.utils.denovo import main as denovo_main
+from micall.core.denovo import denovo
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +115,7 @@ class Sample:
 
         logger.info('Running de novo assembly on %s.', self)
         with open(self.contigs_csv, 'w') as contigs_csv:
-            denovo_main(self.trimmed1_fastq, self.trimmed2_fastq, contigs_csv)
+            denovo(self.trimmed1_fastq, self.trimmed2_fastq, contigs_csv)
 
         logger.info('Running fastq_g2p on %s.', self)
         with open(self.trimmed1_fastq) as fastq1, \
