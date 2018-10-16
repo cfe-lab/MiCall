@@ -1,4 +1,6 @@
 # Requirements for running the bare pipeline under Kive or BaseSpace
+iva==1.0.9
+biopython==1.72
 micall/alignment
 git+https://github.com/cfe-lab/pyvdrm.git@v0.3.1
 numpy==1.12.0
