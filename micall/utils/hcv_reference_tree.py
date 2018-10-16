@@ -66,10 +66,12 @@ def fetch_raw_hcv(folder):
               'BASETYPE': 'DNA',
               'YEAR': '2014',
               'FORMAT': 'fasta',
-              'submit': 'Get Alignment'})
+              'submit': 'Get Alignment'},
+        verify=False)
     match = re.search(r'<a href="([^"]*)">Download', response.text)
     assert match
-    response = requests.get('https://www.hcv.lanl.gov' + match.group(1))
+    response = requests.get('https://www.hcv.lanl.gov' + match.group(1),
+                            verify=False)
     with open(raw_hcv_path, 'w') as raw_hcv:
         raw_hcv.write(response.text)
     return raw_hcv_path
@@ -138,7 +140,7 @@ def build_tree(fasta_path, check_cache=False):
 
     logger.info('Building tree.')
     with open(tree_path, 'wb') as tree_file:
-        run(['FastTree', '-quiet', '-nt', fasta_path],
+        run(['fasttree', '-quiet', '-nt', fasta_path],
             check=True,
             stdout=tree_file)
     return tree_path
