@@ -10,6 +10,8 @@ SAVAGE = "/opt/savage_wrapper.sh"
 IVA = "iva"
 IS_SAVAGE_ENABLED = False
 
+ASSEMBLY_TIMEOUT=1800 # 30 minutes
+
 def geno(f, contigs):
     rec = 0
     gts = genotype(f)
@@ -46,7 +48,7 @@ def denovo(fq1, fq2, contigs):
                         "100",\
                 ], cwd=tmp_dir, shell=True)
 
-            savage_proc.wait()
+            savage_proc.wait(timeout=ASSEMBLY_TIMEOUT)
             try:
                 if not savage_proc.wait():
                     geno("{}/contigs_stage_c.fasta".format(tmp_dir), contigs)
@@ -55,7 +57,7 @@ def denovo(fq1, fq2, contigs):
             except:
                 print("savage did not finish", file=sys.stderr)
 
-        if not iva_proc.wait():
+        if not iva_proc.wait(timeout=ASSEMBLY_TIMEOUT):
             geno("{}/iva/contigs.fasta".format(tmp_dir), contigs)
         else:
             print("iva exits with error", file=sys.stderr)
