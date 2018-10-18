@@ -237,3 +237,16 @@ def test_overlap():
 
     assert expected_counts == nuc.counts
     assert expected_v3_overlap == nuc.v3_overlap
+
+
+def test_add():
+    nuc = SeedNucleotide()
+    nuc.count_nucleotides('T', 4)
+    nuc.count_nucleotides('C', 1)
+    other = SeedNucleotide()
+    other.count_nucleotides('C', 5)
+    expected_counts = {'T': 4, 'C': 6}
+
+    nuc.add(other)
+
+    assert expected_counts == nuc.counts

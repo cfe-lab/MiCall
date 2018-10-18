@@ -152,3 +152,17 @@ def test_overlap_partial_codon():
     assert expected_counts == amino.counts
     assert expected_v3_overlap == amino.v3_overlap
     assert expected_v3_overlap == amino.nucleotides[0].v3_overlap
+
+
+def test_add():
+    amino = SeedAmino(None)
+    amino.count_aminos('GGG', 4)  # => G
+    other = SeedAmino(consensus_nuc_index=7)
+    other.count_aminos('AAA', 5)  # => K
+    expected_counts = {'G': 4, 'K': 5}
+    expected_nucleotide_counts = {'G': 4, 'A': 5}
+
+    amino.add(other)
+
+    assert expected_counts == amino.counts
+    assert expected_nucleotide_counts == amino.nucleotides[0].counts

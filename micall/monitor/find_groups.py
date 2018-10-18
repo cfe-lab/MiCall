@@ -31,6 +31,11 @@ def find_groups(file_names, sample_sheet_path, included_projects=None):
         if sample_name is None:
             # Project was not included.
             continue
-        midi_trimmed = midi_files.get(sample_name + 'MIDI')
+        midi_trimmed = midi_files.pop(sample_name + 'MIDI', None)
         midi_name = trimmed_names.get(midi_trimmed)
         yield SampleGroup(sample_name, (file_name, midi_name))
+
+    for sample_name, trimmed_name in midi_files.items():
+        file_name = trimmed_names.get(trimmed_name)
+        if file_name is not None:
+            yield SampleGroup(sample_name, (file_name, None))

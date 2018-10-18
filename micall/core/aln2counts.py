@@ -1,4 +1,4 @@
-#! /usr/bin/env python3.4
+#! /usr/bin/env python3.6
 
 """
 Shipyard-style MiSeq pipeline, post-processing 1
@@ -104,8 +104,11 @@ class SequenceReport(object):
         self.v3_overlap_aminos = None
         self.v3_overlap_region_name = None
         self.seed_aminos = self.reports = self.reading_frames = None
-        self.inserts = self.consensus = None
+        self.inserts = self.consensus = self.seed = None
         self.coordinate_refs = self.remap_conseqs = None
+
+        # {seed: {coord_region: [ReportAmino]}}
+        self.combined_reports = defaultdict(lambda: defaultdict(list))
 
         # {seed_name: {pos: count}}
         self.clipping_counts = clipping_counts or defaultdict(Counter)
@@ -113,7 +116,8 @@ class SequenceReport(object):
         # {seed_name: {pos: count}
         self.conseq_insertion_counts = (conseq_insertion_counts or
                                         defaultdict(Counter))
-        self.nuc_writer = self.amino_writer = self.conseq_writer = None
+        self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
+        self.amino_writer = self.amino_detail_writer = None
         self.conseq_region_writer = self.fail_writer = None
 
     def enable_callback(self, callback, file_size):
@@ -143,6 +147,9 @@ class SequenceReport(object):
             if i == 0:
                 # these will be the same for all rows, so just assign from the first
                 self.seed = row['refname']
+                if self.amino_detail_writer is not None:
+                    self.detail_seed = self.seed
+                    _, self.seed = self.seed.split('-', 1)
                 self.qcut = row['qcut']
             nuc_seq = row['seq']
             offset = int(row['offset'])
@@ -315,6 +322,8 @@ class SequenceReport(object):
                       g2p_region_name='V3LOOP'):
         # parse CSV file containing aligned reads, grouped by reference and quality cutoff
         for aligned_csv in (bowtie2_aligned_csv, g2p_aligned_csv):
+            if aligned_csv is None:
+                continue
             aligned_reader = csv.DictReader(aligned_csv)
             if aligned_csv == bowtie2_aligned_csv:
                 v3_overlap_region_name = g2p_region_name
@@ -331,15 +340,20 @@ class SequenceReport(object):
                     self.write_insertions(self.insert_writer)
                 if self.nuc_writer is not None:
                     self.write_nuc_counts(self.nuc_writer)
-                if self.amino_writer is not None:
-                    self.write_amino_counts(self.amino_writer,
-                                            coverage_summary=coverage_summary)
                 if self.conseq_writer is not None:
                     self.write_consensus(self.conseq_writer)
                 if self.conseq_region_writer is not None:
                     self.write_consensus_regions(self.conseq_region_writer)
+                if self.amino_detail_writer is not None:
+                    self.write_amino_detail_counts()
+                elif self.amino_writer is not None:
+                    self.write_amino_counts(self.amino_writer,
+                                            coverage_summary=coverage_summary)
                 if self.fail_writer is not None:
                     self.write_failure(self.fail_writer)
+            if self.amino_detail_writer is not None and self.amino_writer is not None:
+                self.write_amino_counts(self.amino_writer,
+                                        coverage_summary=coverage_summary)
 
     def read(self, aligned_reads, v3_overlap_region_name=None):
         """
@@ -428,16 +442,49 @@ class SequenceReport(object):
         for each ReportAmino.
         """
         amino_writer = amino_writer or self.amino_writer
-        regions = sorted(self.reports.keys())
+        if not self.combined_reports:
+            self.write_amino_report(amino_writer,
+                                    self.reports,
+                                    self.seed,
+                                    coverage_summary)
+        else:
+            for seed, reports in self.combined_reports.items():
+                self.write_amino_report(amino_writer,
+                                        reports,
+                                        seed,
+                                        coverage_summary)
+
+    def write_amino_detail_header(self, amino_detail_file):
+        self.amino_detail_writer = self._create_amino_writer(amino_detail_file)
+        self.amino_detail_writer.writeheader()
+
+    def write_amino_detail_counts(self, amino_detail_writer=None):
+        amino_detail_writer = amino_detail_writer or self.amino_detail_writer
+        self.write_amino_report(amino_detail_writer, self.reports, self.detail_seed)
+        old_reports = self.combined_reports[self.seed]
+        for region, report in self.reports.items():
+            old_report = old_reports[region]
+            for i, report_amino in enumerate(report):
+                if i < len(old_report):
+                    old_report[i].seed_amino.add(report_amino.seed_amino)
+                else:
+                    report_amino.seed_amino.consensus_nuc_index = None
+                    old_report.append(report_amino)
+        self.reports.clear()
+
+    def write_amino_report(self, amino_writer, reports, seed, coverage_summary=None):
+        if not reports:
+            return
+        regions = sorted(reports.keys())
         for region in regions:
             coverage_sum = 0.0
             pos_count = 0
-            for report_amino in self.reports[region]:
+            for report_amino in reports[region]:
                 seed_amino = report_amino.seed_amino
                 query_pos = (str(seed_amino.consensus_nuc_index + 1)
                              if seed_amino.consensus_nuc_index is not None
                              else '')
-                row = {'seed': self.seed,
+                row = {'seed': seed,
                        'region': region,
                        'q-cutoff': self.qcut,
                        'query.nuc.pos': query_pos,
@@ -797,6 +844,11 @@ class SeedAmino(object):
                 seed_nucleotide = self.nucleotides[i]
                 seed_nucleotide.count_nucleotides(nuc, count)
 
+    def add(self, other):
+        self.counts += other.counts
+        for nuc, other_nuc in zip(self.nucleotides, other.nucleotides):
+            nuc.add(other_nuc)
+
     def get_report(self):
         """ Build a report string with the counts of each amino acid.
 
@@ -846,6 +898,9 @@ class SeedNucleotide(object):
             "Represents gap between forward and reverse read, ignore."
         else:
             self.counts[nuc_seq] += count
+
+    def add(self, other):
+        self.counts += other.counts
 
     def get_report(self):
         """ Build a report string with the counts of each nucleotide.
@@ -1065,7 +1120,8 @@ def aln2counts(aligned_csv,
                conseq_ins_csv=None,
                g2p_aligned_csv=None,
                remap_conseq_csv=None,
-               conseq_region_csv=None):
+               conseq_region_csv=None,
+               amino_detail_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1086,6 +1142,8 @@ def aln2counts(aligned_csv,
         from the remap step.
     @param conseq_region_csv: Open file handle to write consensus sequences
         split into regions.
+    @param amino_detail_csv: Open file handle to write amino acid frequencies
+        for individual contigs.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1111,6 +1169,8 @@ def aln2counts(aligned_csv,
                                          lineterminator=os.linesep)
         coverage_writer.writeheader()
         coverage_summary = {}
+    if amino_detail_csv is not None:
+        report.write_amino_detail_header(amino_detail_csv)
 
     if callback:
         aligned_filename = getattr(aligned_csv, 'name', None)

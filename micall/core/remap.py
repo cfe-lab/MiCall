@@ -8,6 +8,7 @@ See docs/design/remap.md for a detailed description.
 import argparse
 from collections import Counter, defaultdict
 import csv
+from csv import DictReader
 from functools import partial
 from logging import getLogger
 import os
@@ -34,6 +35,7 @@ MAX_REMAPS = 3                  # Number of remapping attempts if mapping effici
 SAM_FLAG_IS_UNMAPPED = 0x4
 SAM_FLAG_IS_MATE_UNMAPPED = 0x8
 SAM_FLAG_IS_FIRST_SEGMENT = 0x40
+PARTIAL_CONTIG_SUFFIX = 'partial'
 
 # SAM file format
 SAM_FIELDS = [
@@ -420,7 +422,7 @@ def write_remap_counts(remap_counts_writer, counts, title, distance_report=None)
 
 def remap(fastq1,
           fastq2,
-          prelim_csv,
+          contigs_csv,
           remap_csv,
           remap_counts_csv,
           remap_conseq_csv,
@@ -439,7 +441,7 @@ def remap(fastq1,
     is being updated as the consensus of the reads that were mapped to the last set.
     @param fastq1: input R1 FASTQ
     @param fastq2: input R2 FASTQ
-    @param prelim_csv: input CSV output from prelim_csv()
+    @param contigs_csv: input CSV output from denovo()
     @param remap_csv:  output CSV, contents of bowtie2 SAM output
     @param remap_counts_csv:  output CSV, counts of reads mapped to regions
     @param remap_conseq_csv:  output CSV, sample- and region-specific consensus sequences
@@ -490,39 +492,14 @@ def remap(fastq1,
     remap_counts_writer.writeheader()
     remap_counts_writer.writerow(dict(type='raw', count=raw_count))
 
-    # convert preliminary CSV to SAM, count reads
-    with open(samfile, 'w') as f:
-        # transfer filtered counts to map counts for remap loop
-        map_counts = convert_prelim(prelim_csv,
-                                    f,
-                                    remap_counts_writer,
-                                    count_threshold,
-                                    projects)
-
-    # regenerate consensus sequences based on preliminary map
-    prelim_conseqs = build_conseqs(samfile, seeds=seeds)
-
-    # exclude references with low counts (post filtering)
-    conseqs = {rname: prelim_conseqs[rname]
-               for rname in map_counts
-               if rname in prelim_conseqs}
+    conseqs = read_contigs(contigs_csv)
 
     # start remapping loop
-    n_remaps = 0
     new_counts = Counter()
-    unmapped_count = raw_count
-    while conseqs:
-        # reset unmapped files with each iteration
-        unmapped1.seek(0)
-        unmapped1.truncate()
-        unmapped2.seek(0)
-        unmapped2.truncate()
 
-        if debug_file_prefix is None:
-            next_debug_prefix = None
-        else:
-            next_debug_prefix = '{}_remap{}'.format(debug_file_prefix,
-                                                    n_remaps+1)
+    if not conseqs:
+        unmapped_count = raw_count
+    else:
         unmapped_count = map_to_reference(fastq1,
                                           fastq2,
                                           conseqs,
@@ -538,42 +515,16 @@ def remap(fastq1,
                                           new_counts,
                                           stderr,
                                           callback,
-                                          debug_file_prefix=next_debug_prefix)
+                                          debug_file_prefix=debug_file_prefix)
 
-        old_seed_names = set(conseqs.keys())
         # regenerate consensus sequences
-        distance_report = {}
         conseqs = build_conseqs(samfile,
                                 seeds=conseqs,
-                                is_filtered=True,
+                                is_filtered=False,
                                 filter_coverage=count_threshold//2,  # pairs
-                                distance_report=distance_report,
                                 original_seeds=seeds)
-        new_seed_names = set(conseqs.keys())
-        n_remaps += 1
-        write_remap_counts(remap_counts_writer,
-                           new_counts,
-                           title='remap-{}'.format(n_remaps),
-                           distance_report=distance_report)
+        write_remap_counts(remap_counts_writer, new_counts, title='remap')
 
-        if new_seed_names == old_seed_names:
-            # stopping criterion 1 - none of the regions gained reads
-            if all((count <= map_counts[refname])
-                   for refname, count in new_counts.items()):
-                break
-
-            # stopping criterion 2 - a sufficient fraction of raw data has been mapped
-            mapping_efficiency = sum(new_counts.values()) / float(raw_count)
-            if mapping_efficiency > MIN_MAPPING_EFFICIENCY:
-                break
-
-            if n_remaps >= MAX_REMAPS:
-                break
-
-        # deep copy of mapping counts
-        map_counts = dict(new_counts)
-
-    # finished iterative phase
     # generate SAM CSV output
     remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)
     remap_writer.writeheader()
@@ -583,7 +534,7 @@ def remap(fastq1,
         # At least one read was mapped, so samfile has relevant data
         with open(samfile) as f:
             for fields in splitter.split(f):
-                remap_writer.writerow(dict(zip(SAM_FIELDS, fields)))
+                write_remap_row(remap_writer, fields)
         for rname, (split_file1, split_file2) in splitter.splits.items():
             refseqs = {rname: conseqs[rname]}
             unmapped_count += map_to_reference(split_file1.name,
@@ -604,7 +555,7 @@ def remap(fastq1,
             new_counts.update(split_counts)
             with open(samfile, 'rU') as f:
                 for fields in splitter.walk(f):
-                    remap_writer.writerow(dict(zip(SAM_FIELDS, fields)))
+                    write_remap_row(remap_writer, fields)
 
     # write consensus sequences and counts
     remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
@@ -620,6 +571,28 @@ def remap(fastq1,
     # report number of unmapped reads
     remap_counts_writer.writerow(dict(type='unmapped',
                                       count=unmapped_count))
+
+
+def write_remap_row(remap_writer, fields):
+    row = dict(zip(SAM_FIELDS, fields))
+    region = row['rname']
+    if not region.endswith(PARTIAL_CONTIG_SUFFIX):
+        remap_writer.writerow(row)
+
+
+def read_contigs(contigs_csv):
+    with contigs_csv:
+        contigs_reader = DictReader(contigs_csv)
+        conseqs = {get_contig_name(i, row): row['contig']
+                   for i, row in enumerate(contigs_reader, 1)}
+    return conseqs
+
+
+def get_contig_name(i, row):
+    name = '{}-{}'.format(i, row['genotype'])
+    if float(row['match']) < 0.5:
+        name += '-' + PARTIAL_CONTIG_SUFFIX
+    return name
 
 
 def convert_prelim(prelim_csv,
@@ -809,7 +782,7 @@ class MixedReferenceSplitter(object):
             else:
                 flags = int(fields[1])
                 if flags & (SAM_FLAG_IS_UNMAPPED | SAM_FLAG_IS_MATE_UNMAPPED):
-                    yield fields[:11]
+                    pass
                 else:
                     qname = fields[0]
                     match = unmatched.pop(qname, None)
@@ -929,9 +902,9 @@ def main():
 
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-    parser.add_argument('prelim_csv',
-                        type=argparse.FileType('rU'),
-                        help='<input> CSV containing preliminary map output (modified SAM)')
+    parser.add_argument('contigs_csv',
+                        type=argparse.FileType(),
+                        help='<input> CSV containing de novo assembled contigs')
     parser.add_argument('remap_csv',
                         type=argparse.FileType('w'),
                         help='<output> CSV containing remap output (modified SAM)')
@@ -954,7 +927,7 @@ def main():
     work_path = os.path.dirname(args.remap_csv.name)
     remap(fastq1=args.fastq1,
           fastq2=args.fastq2,
-          prelim_csv=args.prelim_csv,
+          contigs_csv=args.contigs_csv,
           remap_csv=args.remap_csv,
           remap_counts_csv=args.remap_counts_csv,
           remap_conseq_csv=args.remap_conseq_csv,

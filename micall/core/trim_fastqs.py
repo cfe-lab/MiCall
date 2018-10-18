@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.4
+#!/usr/bin/env python3.6
 
 """ Censor reads based on phiX quality data, and also trim adapter sequences. """
 
@@ -16,7 +16,7 @@ from micall.utils.externals import CutAdapt
 # version of bowtie2, used for version control
 CUT_ADAPT_VERSION = '1.11'
 # path to executable, so you can install more than one version
-CUT_ADAPT_PATH = 'cutadapt-' + CUT_ADAPT_VERSION
+CUT_ADAPT_PATH = 'cutadapt'
 
 
 def parse_args():

@@ -7,7 +7,7 @@ from unittest.mock import patch, Mock, DEFAULT
 from micall.core import remap
 from micall.core.project_config import ProjectConfig
 from micall.core.remap import is_first_read, is_short_read, \
-    MixedReferenceSplitter, write_remap_counts, convert_prelim
+    MixedReferenceSplitter, write_remap_counts, convert_prelim, read_contigs
 from micall.utils.externals import Bowtie2, Bowtie2Build
 
 
@@ -725,9 +725,7 @@ class MixedReferenceSplitterTest(unittest.TestCase):
             "@SQ\tSN:r\n"
             "r1\t107\tr\t1\t44\t3M\t*\t1\t3\tACG\tJJJ\n"
             "r1\t149\t*\t*\t*\t*\tr\t*\t*\tACG\tJJJ\n")
-        expected_rows = [
-            ["r1", "107", "r", "1", "44", "3M", "*", "1", "3", "ACG", "JJJ"],
-            ["r1", "149", "*", "*", "*", "*", "r", "*", "*", "ACG", "JJJ"]]
+        expected_rows = []
 
         splitter = MixedReferenceSplitter(self.work_path)
         rows = list(splitter.split(sam_file))
@@ -1148,41 +1146,43 @@ class RemapTest(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-    def test(self):
+    def test_good_contig(self):
         test_path = os.path.dirname(__file__)
-        prelim_csv = StringIO("""\
-qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
-read1,99,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
-read1,147,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
-read2,99,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
-read2,147,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
-read3,99,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
-read3,147,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
-read4,99,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
-read4,147,R1,1,0,5M,=,1,-78,GTGGG,AAAAA
-read5,99,R1,1,0,5M,=,1,-78,ATAAA,AAAAA
-read5,147,R1,1,0,5M,=,1,-78,ATAAA,AAAAA
+        contigs_csv = StringIO("""\
+genotype,match,contig
+R1,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 """)
         self.bowtie2_output.extend([
-            "read1\t99\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
-            "read1\t147\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
-            "read2\t99\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
-            "read2\t147\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
-            "read3\t99\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
-            "read3\t147\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
-            "read4\t99\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
-            "read4\t147\tR1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA",
-            "read5\t77\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA",
-            "read5\t141\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA"])
+            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read4\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read4\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read5\t77\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n",
+            "read5\t141\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n"])
         expected_remap_counts_csv = """\
 type,count,filtered_count,seed_dist,other_dist,other_seed
 raw,20,,,,
-prelim R1,10,10,,,
-remap-1 R1,8,,,,
-remap-final R1,8,,,,
+remap 1-R1,8,,,,
+remap-final 1-R1,8,,,,
 unmapped,2,,,,
 """
+        expected_remap_csv = """\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+read1,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read1,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read2,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read2,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read3,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read3,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read4,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read4,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+"""
         remap_counts_csv = StringIO()
+        remap_csv = StringIO()
 
         remap.remap(os.path.join(test_path,
                                  'microtest',
@@ -1190,8 +1190,8 @@ unmapped,2,,,,
                     os.path.join(test_path,
                                  'microtest',
                                  '1234A-V3LOOP_S1_L001_R2_001.fastq'),
-                    prelim_csv,
-                    StringIO(),
+                    contigs_csv,
+                    remap_csv,
                     remap_counts_csv,
                     StringIO(),
                     StringIO(),
@@ -1199,3 +1199,90 @@ unmapped,2,,,,
                     work_path=os.path.join(test_path, 'working'))
 
         self.assertEqual(expected_remap_counts_csv, remap_counts_csv.getvalue())
+        self.assertEqual(expected_remap_csv, remap_csv.getvalue())
+
+    def test_bad_contig(self):
+        test_path = os.path.dirname(__file__)
+        contigs_csv = StringIO("""\
+genotype,match,contig
+R1,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+R2,0.2,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+""")
+        self.bowtie2_output.extend([
+            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read4\t99\t2-R2-partial\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read4\t147\t2-R2-partial\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read5\t77\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n",
+            "read5\t141\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n"])
+        expected_remap_counts_csv = """\
+type,count,filtered_count,seed_dist,other_dist,other_seed
+raw,20,,,,
+remap 1-R1,6,,,,
+remap 2-R2-partial,2,,,,
+remap-final 1-R1,6,,,,
+remap-final 2-R2-partial,2,,,,
+unmapped,2,,,,
+"""
+        expected_remap_csv = """\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+read1,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read1,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read2,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read2,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read3,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read3,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+"""
+        remap_counts_csv = StringIO()
+        remap_csv = StringIO()
+
+        remap.remap(os.path.join(test_path,
+                                 'microtest',
+                                 '1234A-V3LOOP_S1_L001_R1_001.fastq'),
+                    os.path.join(test_path,
+                                 'microtest',
+                                 '1234A-V3LOOP_S1_L001_R2_001.fastq'),
+                    contigs_csv,
+                    remap_csv,
+                    remap_counts_csv,
+                    StringIO(),
+                    StringIO(),
+                    StringIO(),
+                    work_path=os.path.join(test_path, 'working'))
+
+        self.assertEqual(expected_remap_counts_csv, remap_counts_csv.getvalue())
+        self.assertEqual(expected_remap_csv, remap_csv.getvalue())
+
+
+def test_read_contigs():
+    contigs_csv = StringIO("""\
+genotype,match,contig
+HCV-1a,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-2b,1.0,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
+""")
+    expected_conseqs = {
+        '1-HCV-1a': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
+        '2-HCV-2b': 'GCCCGCCCCCTGATGGGGGCGACACTCCGCCA'}
+
+    conseqs = read_contigs(contigs_csv)
+
+    assert expected_conseqs == conseqs
+
+
+def test_read_contigs_filter():
+    contigs_csv = StringIO("""\
+genotype,match,contig
+HCV-1a,0.49,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-2b,0.5,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
+""")
+    expected_conseqs = {
+        '1-HCV-1a-partial': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
+        '2-HCV-2b': 'GCCCGCCCCCTGATGGGGGCGACACTCCGCCA'}
+
+    conseqs = read_contigs(contigs_csv)
+
+    assert expected_conseqs == conseqs

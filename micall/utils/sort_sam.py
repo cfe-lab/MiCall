@@ -21,7 +21,7 @@ def main():
         ['samtools', 'view', '-Sb', sam_name, '-o', sam_root + '.bam'])
     # samtools sort example.bam example.sorted
     subprocess.check_call(
-        ['samtools', 'sort', sam_root + '.bam', sam_root + '.sorted'])
+        ['samtools', 'sort', sam_root + '.bam', '-o', sam_root + '.sorted.bam'])
     # samtools view -h -o example.sorted.sam example.sorted.bam
     subprocess.check_call(['samtools',
                            'view',

@@ -47,7 +47,8 @@ From: centos:7
 
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
-    yum install -q -y python34 python34-devel unzip wget fontconfig
+    yum install -q -y https://centos7.iuscommunity.org/ius-release.rpm
+    yum install -q -y python36 python36-devel unzip wget fontconfig
 
     echo ===== Installing blast ===== >/dev/null
     cd /root
@@ -99,26 +100,18 @@ From: centos:7
     echo ===== Installing Python packages ===== >/dev/null
     # Also trigger matplotlib to build its font cache.
     wget -q https://bootstrap.pypa.io/get-pip.py
-    python3 get-pip.py
+    python3.6 get-pip.py
     rm get-pip.py
     cd /opt
     pip install -r /opt/micall/requirements.txt
-    ln -s /usr/bin/cutadapt /usr/bin/cutadapt-1.11
-    python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
+    python3.6 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
     yum groupremove -q -y 'development tools'
-    yum remove -q -y epel-release wget python34-devel unzip
+    yum remove -q -y epel-release wget python36-devel unzip
     yum autoremove -q -y
     yum clean all
 
     rm -rf /var/cache/yum
-
-    # ## CAUTION! This changes the default python command to python3!
-    # ## This breaks many things, including yum!
-    # ## To switch back to python2, use this command:
-    # # sudo alternatives --set python /usr/bin/python2
-    # alternatives --install /usr/bin/python python /usr/bin/python2 50
-    # alternatives --install /usr/bin/python python /usr/bin/python3 60
 
     ## Savage assembler
     #export PATH="/opt/miniconda/bin:$PATH"

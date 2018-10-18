@@ -1,4 +1,4 @@
-#! /usr/bin/env python3.4
+#! /usr/bin/env python3.6
 import os
 
 # typing is only supported from python3.5 onwards
