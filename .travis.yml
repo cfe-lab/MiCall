@@ -2,7 +2,7 @@ language: python
 python:
     - "3.6"
 before_install:
-  - sudo apt-get install -y zlib1g-dev libncurses5-dev libncursesw5-dev mummer samtools
+  - sudo apt-get install -y zlib1g-dev libncurses5-dev libncursesw5-dev mummer samtools ncbi-blast+
   - mkdir -p ~/bin
   - export PATH=$PATH:~/bin
   - pushd ~/bin
