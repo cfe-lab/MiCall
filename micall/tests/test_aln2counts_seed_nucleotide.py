@@ -243,10 +243,19 @@ def test_add():
     nuc = SeedNucleotide()
     nuc.count_nucleotides('T', 4)
     nuc.count_nucleotides('C', 1)
+    nuc.clip_count = 10
+    nuc.insertion_count = 7
+
     other = SeedNucleotide()
     other.count_nucleotides('C', 5)
+    other.clip_count = 9
+    other.insertion_count = 8
     expected_counts = {'T': 4, 'C': 6}
+    expected_clip_count = 19
+    expected_insertion_count = 15
 
     nuc.add(other)
 
     assert expected_counts == nuc.counts
+    assert expected_clip_count == nuc.clip_count
+    assert expected_insertion_count == nuc.insertion_count

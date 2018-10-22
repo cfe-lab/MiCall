@@ -38,9 +38,6 @@ def parse_args():
     parser.add_argument('aligned_csv',
                         type=argparse.FileType('r'),
                         help='input CSV with aligned reads')
-    parser.add_argument('g2p_aligned_csv',
-                        type=argparse.FileType('r'),
-                        help='input CSV with aligned reads from G2P step')
     parser.add_argument('clipping_csv',
                         type=argparse.FileType('r'),
                         help='input CSV with count of soft-clipped reads at each position')
@@ -56,6 +53,9 @@ def parse_args():
     parser.add_argument('amino_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing amino frequencies')
+    parser.add_argument('amino_detail_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing amino frequencies for each contig')
     parser.add_argument('coord_ins_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing insertions relative to coordinate reference')
@@ -225,6 +225,7 @@ class SequenceReport(object):
         for reading_frame, frame_seed_aminos in self.seed_aminos.items():
             consensus = ''.join([seed_amino1.get_consensus()
                                 for seed_amino1 in frame_seed_aminos])
+            consensus = consensus.replace('-', '?')
             if reading_frame == 0:
                 # best guess before aligning - if alignments fail, this will be non-empty
                 self.consensus[coordinate_name] = consensus
@@ -484,6 +485,11 @@ class SequenceReport(object):
                 query_pos = (str(seed_amino.consensus_nuc_index + 1)
                              if seed_amino.consensus_nuc_index is not None
                              else '')
+                max_clip_count = 0
+                total_insertion_count = 0
+                for seed_nuc in seed_amino.nucleotides:
+                    max_clip_count = max(seed_nuc.clip_count, max_clip_count)
+                    total_insertion_count += seed_nuc.insertion_count
                 row = {'seed': seed,
                        'region': region,
                        'q-cutoff': self.qcut,
@@ -492,8 +498,8 @@ class SequenceReport(object):
                        'X': seed_amino.low_quality,
                        'partial': seed_amino.partial,
                        'del': seed_amino.deletions,
-                       'ins': report_amino.insertion_count,
-                       'clip': report_amino.max_clip_count,
+                       'ins': total_insertion_count,
+                       'clip': max_clip_count,
                        'v3_overlap': seed_amino.v3_overlap,
                        'coverage': seed_amino.deletions}
                 for letter in AMINO_ALPHABET:
@@ -543,48 +549,73 @@ class SequenceReport(object):
         :param ReportAmino? report_amino: the ReportAmino object for this position
         :param nuc_writer: the CSV writer to write the row into
         """
-        max_clip_count = 0
-        total_insertion_count = 0
-        seed_insertion_counts = self.conseq_insertion_counts[self.seed]
         for i, seed_nuc in enumerate(seed_amino.nucleotides):
             if seed_amino.consensus_nuc_index is None:
                 query_pos_txt = ''
-                insertion_count = clip_count = 0
             else:
                 query_pos = i + seed_amino.consensus_nuc_index + 1
                 query_pos_txt = str(query_pos)
-                clip_count = self.clipping_counts[self.seed][query_pos]
-                max_clip_count = max(clip_count, max_clip_count)
-                insertion_count = seed_insertion_counts[query_pos]
             ref_pos = (str(i + 3*report_amino.position - 2)
                        if report_amino is not None
                        else '')
-            if i == 2 and report_amino is not None:
-                insertion_counts = self.insert_writer.insert_pos_counts[
-                    (self.seed, region)]
-                insertion_count += insertion_counts[report_amino.position]
-            total_insertion_count += insertion_count
             row = {'seed': self.seed,
                    'region': region,
                    'q-cutoff': self.qcut,
                    'query.nuc.pos': query_pos_txt,
                    'refseq.nuc.pos': ref_pos,
                    'del': seed_nuc.counts['-'],
-                   'ins': insertion_count,
-                   'clip': clip_count,
+                   'ins': seed_nuc.insertion_count,
+                   'clip': seed_nuc.clip_count,
                    'v3_overlap': seed_nuc.v3_overlap,
                    'coverage': seed_nuc.get_coverage()}
             for base in 'ACTGN':
                 nuc_count = seed_nuc.counts[base]
                 row[base] = nuc_count
             nuc_writer.writerow(row)
-        if report_amino is not None:
-            report_amino.max_clip_count = max_clip_count
-            report_amino.insertion_count = total_insertion_count
+
+    def merge_extra_counts(self):
+        for region, report_aminos in self.reports.items():
+            first_amino_index = None
+            last_amino_index = None
+            last_consensus_nuc_index = None
+            for i, report_amino in enumerate(report_aminos):
+                seed_amino = report_amino.seed_amino
+                if seed_amino.consensus_nuc_index is not None:
+                    if first_amino_index is None:
+                        first_amino_index = i
+                    last_amino_index = i
+                    last_consensus_nuc_index = seed_amino.consensus_nuc_index
+            if first_amino_index is not None:
+                if self.amino_detail_writer is None:
+                    seed_name = self.seed
+                else:
+                    seed_name = self.detail_seed
+                seed_clipping = self.clipping_counts[seed_name]
+                seed_insertion_counts = self.conseq_insertion_counts[seed_name]
+                for i, report_amino in enumerate(report_aminos):
+                    seed_amino = report_amino.seed_amino
+                    if i < first_amino_index:
+                        consensus_nuc_index = (i - first_amino_index) * 3
+                    elif i > last_amino_index:
+                        consensus_nuc_index = (i - last_amino_index) * 3 + \
+                                              last_consensus_nuc_index
+                    else:
+                        consensus_nuc_index = seed_amino.consensus_nuc_index
+                        if consensus_nuc_index is None:
+                            continue
+                    for j, seed_nuc in enumerate(seed_amino.nucleotides):
+                        query_pos = j + consensus_nuc_index + 1
+                        seed_nuc.clip_count = seed_clipping[query_pos]
+                        seed_nuc.insertion_count = seed_insertion_counts[query_pos]
+                        if j == 2:
+                            insertion_counts = self.insert_writer.insert_pos_counts[
+                                (self.seed, region)]
+                            seed_nuc.insertion_count += insertion_counts[report_amino.position]
 
     def write_nuc_counts(self, nuc_writer=None):
         nuc_writer = nuc_writer or self.nuc_writer
 
+        self.merge_extra_counts()
         if not self.coordinate_refs:
             for seed_amino in self.seed_aminos[0]:
                 self.write_counts(self.seed, seed_amino, None, nuc_writer)
@@ -882,7 +913,7 @@ class SeedNucleotide(object):
     COUNTED_NUCS = 'ACTG-'
 
     def __init__(self, counts=None):
-        self.v3_overlap = 0
+        self.v3_overlap = self.clip_count = self.insertion_count = 0
         self.counts = counts or Counter()
 
     def __repr__(self):
@@ -901,6 +932,8 @@ class SeedNucleotide(object):
 
     def add(self, other):
         self.counts += other.counts
+        self.clip_count += other.clip_count
+        self.insertion_count += other.insertion_count
 
     def get_report(self):
         """ Build a report string with the counts of each nucleotide.
@@ -1202,9 +1235,9 @@ def main():
                args.failed_align_csv,
                clipping_csv=args.clipping_csv,
                conseq_ins_csv=args.conseq_ins_csv,
-               g2p_aligned_csv=args.g2p_aligned_csv,
                remap_conseq_csv=args.remap_conseq_csv,
-               conseq_region_csv=args.conseq_region_csv)
+               conseq_region_csv=args.conseq_region_csv,
+               amino_detail_csv=args.amino_detail_csv)
 
 
 if __name__ == '__main__':

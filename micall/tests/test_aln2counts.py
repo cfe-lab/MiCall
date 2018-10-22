@@ -910,6 +910,56 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testMultiplePrefixSoftClippingAminoReport(self):
+        """ Combine the soft clipping data with the read counts.
+        """
+        """ Assemble counts from three contigs to two references.
+        Contig 1-R1 AAATTT -> KF
+        Contig 2-R2 GGCCCG -> GP
+        Contig 3-R1 TTTAGG -> FR
+        Contig 1 and 3 should combine into R1 with KFR.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
+        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
+        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
+
+        clipping = StringIO("""\
+refname,pos,count
+1-R1-seed,7,5
+3-R1-seed,-1,2
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
+R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,5
+R1-seed,R1,15,,2,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,5,0,2
+R2-seed,R2,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,,3,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
+R2-seed,R2,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
+R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.read_clipping(clipping)
+        self.report.write_amino_header(self.report_file)
+        self.report.write_amino_detail_header(self.detail_report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.read(aligned_reads1)
+        self.report.write_nuc_counts()
+        self.report.write_amino_detail_counts()
+        self.report.read(aligned_reads2)
+        self.report.write_nuc_counts()
+        self.report.write_amino_detail_counts()
+        self.report.read(aligned_reads3)
+        self.report.write_nuc_counts()
+        self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testInsertionBetweenReadAndConsensusNucleotideReport(self):
         """ Combine the soft clipping data with the read counts.
         """
@@ -1104,6 +1154,32 @@ R1-seed,R1,15,6,6,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1,15,,7,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1,15,,8,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_nuc_header(self.report_file)
+        self.report.write_nuc_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testPartialStartCodonNucleotideReport(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,TTAGG
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,\
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,2,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,0,4,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,1,5,0,0,0,9,0,0,0,0,0,9
+R1-seed,R1,15,2,6,0,0,0,9,0,0,0,0,0,9
+R1-seed,R1,15,3,7,9,0,0,0,0,0,0,0,0,9
+R1-seed,R1,15,4,8,0,0,9,0,0,0,0,0,0,9
+R1-seed,R1,15,5,9,0,0,9,0,0,0,0,0,0,9
 """
 
         self.report.read(aligned_reads)

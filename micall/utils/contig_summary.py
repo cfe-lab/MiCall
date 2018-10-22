@@ -119,7 +119,7 @@ def plot_contigs(sample_dir, contigs_csv):
     plt.tight_layout()
 
 
-def test_plot():
+def live_plot():
     # qaccver,saccver,pident,score,qcovhsp,qstart,qend,sstart,send
     contigs_csv = """\
 contig.00001,HCV-3a,9405,91.717,4747,75,2291,9389,1523,8621
@@ -160,4 +160,4 @@ contig.00003,HCV-6k,658,100.000,29,4,351,379,290,262
 if __name__ == '__main__':
     main()
 elif __name__ == '__live_coding__':
-    test_plot()
+    live_plot()

@@ -1,7 +1,9 @@
 import argparse
+import logging
 import os
 import sys
 from csv import DictWriter, DictReader
+from datetime import datetime
 from glob import glob
 from io import StringIO
 from shutil import rmtree
@@ -20,7 +22,8 @@ DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 'utils',
                                 'hcv_geno',
                                 'hcv.fasta')
-ASSEMBLY_TIMEOUT=1800 # 30 minutes
+ASSEMBLY_TIMEOUT = 1800  # 30 minutes
+logger = logging.getLogger(__name__)
 
 
 def write_genotypes(contigs_fasta_path, contigs_csv):
@@ -29,13 +32,14 @@ def write_genotypes(contigs_fasta_path, contigs_csv):
                         lineterminator=os.linesep)
     writer.writeheader()
     if contigs_fasta_path is None:
-        return
+        return 0
     genotypes = genotype(contigs_fasta_path)
     for i, record in enumerate(SeqIO.parse(contigs_fasta_path, "fasta")):
         genotype_name, match_fraction = genotypes.get(record.name, ('unknown', 0))
         writer.writerow(dict(genotype=genotype_name,
                              match=match_fraction,
                              contig=record.seq))
+    return len(genotypes)
 
 
 def genotype(fasta, db=DEFAULT_DATABASE):
@@ -81,10 +85,11 @@ def denovo(fastq1_path, fastq2_path, contigs, work_dir='.'):
         rmtree(old_tmp_dir, ignore_errors=True)
 
     tmp_dir = mkdtemp(dir=work_dir, prefix='iva_')
+    start_time = datetime.now()
     is_successful = (0 == call(
         [IVA, "-f", fastq1_path, "-r", fastq2_path, "-t", "1", "iva"],
-        cwd=tmp_dir,
-        timeout=ASSEMBLY_TIMEOUT))
+        cwd=tmp_dir))
+    duration = datetime.now() - start_time
 
     if IS_SAVAGE_ENABLED:
         pear_proc = Popen([PEAR, "-f", fastq1_path, "-r", fastq2_path, "-o", prefix],
@@ -114,7 +119,12 @@ def denovo(fastq1_path, fastq2_path, contigs, work_dir='.'):
         contigs_fasta_path = os.path.join(tmp_dir, 'iva', 'contigs.fasta')
     else:
         contigs_fasta_path = None
-    write_genotypes(contigs_fasta_path, contigs)
+    contig_count = write_genotypes(contigs_fasta_path, contigs)
+    logger.info('Assembled %d contigs in %s (%ds) on %s.',
+                contig_count,
+                duration,
+                duration.total_seconds(),
+                fastq1_path)
 
 
 if __name__ == '__main__':
