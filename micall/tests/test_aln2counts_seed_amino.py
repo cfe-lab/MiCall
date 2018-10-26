@@ -88,6 +88,19 @@ def test_consensus_mixture():
     assert consensus in allowed_consensus_values
 
 
+def test_consensus_partial():
+    nuc_seq1 = 'AAA'  # -> K
+    nuc_seq2 = '-GG'  # -> ?
+    expected_consensus = 'K'  # Complete reads always override partials.
+    amino = SeedAmino(None)
+
+    amino.count_aminos(nuc_seq1, 4)
+    amino.count_aminos(nuc_seq2, 10)
+    consensus = amino.get_consensus()
+
+    assert consensus == expected_consensus
+
+
 def test_consensus_with_no_reads():
     amino = SeedAmino(None)
 
@@ -96,11 +109,22 @@ def test_consensus_with_no_reads():
     assert consensus == '-'
 
 
+def test_consensus_with_only_partials():
+    nuc_seq = '-GG'  # -> ?
+    expected_consensus = '?'  # No complete reads, only partials.
+    amino = SeedAmino(None)
+
+    amino.count_aminos(nuc_seq, 4)
+    consensus = amino.get_consensus()
+
+    assert consensus == expected_consensus
+
+
 def test_missing_data():
     """ Lower-case n represents a gap between the forward and reverse reads. """
 
     nuc_seq = 'CTn'
-    expected_consensus = '-'
+    expected_consensus = '?'
     amino = SeedAmino(None)
 
     amino.count_aminos(nuc_seq, 1)

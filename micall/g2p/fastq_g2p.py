@@ -1,8 +1,9 @@
 #! /usr/bin/env python3.6
 
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict
 import csv
+from csv import DictWriter
 from itertools import takewhile
 import os
 import re
@@ -10,6 +11,7 @@ import re
 # noinspection PyUnresolvedReferences
 from gotoh import align_it, align_it_aa
 
+from micall.core.aln2counts import SeedNucleotide, MAX_CUTOFF
 from micall.core.sam2aln import merge_pairs, SAM2ALN_Q_CUTOFFS
 from micall.utils.big_counter import BigCounter
 from micall.utils.translation import translate, reverse_and_complement
@@ -63,7 +65,8 @@ def fastq_g2p(pssm,
               aligned_csv=None,
               min_count=1,
               min_valid=1,
-              min_valid_percent=0.0):
+              min_valid_percent=0.0,
+              merged_contigs_csv=None):
     g2p_filename = getattr(g2p_csv, 'name', None)
     if g2p_filename is None:
         count_prefix = None
@@ -76,7 +79,9 @@ def fastq_g2p(pssm,
     v3loop_ref = extract_target(hiv_seed, coordinate_ref)
     reader = FastqReader(fastq1, fastq2)
     merged_reads = merge_reads(reader)
-    trimmed_reads = trim_reads(merged_reads, v3loop_ref)
+    consensus_builder = ConsensusBuilder()
+    counted_reads = consensus_builder.build(merged_reads)
+    trimmed_reads = trim_reads(counted_reads, v3loop_ref)
     mapped_reads = write_unmapped_reads(trimmed_reads, unmapped1, unmapped2)
     read_counts = count_reads(mapped_reads, count_prefix)
     if aligned_csv is not None:
@@ -92,6 +97,16 @@ def fastq_g2p(pssm,
                min_count,
                min_valid=min_valid,
                min_valid_percent=min_valid_percent)
+    if merged_contigs_csv is not None:
+        contig_writer = DictWriter(merged_contigs_csv, ['contig'])
+        contig_writer.writeheader()
+        try:
+            consensus = consensus_builder.get_consensus()
+            unambiguous_consensus = consensus.replace('N', '').replace('-', '')
+            if unambiguous_consensus:
+                contig_writer.writerow(dict(contig=consensus))
+        except IndexError:
+            pass  # No reads, no consensus.
 
 
 def write_rows(pssm,
@@ -273,6 +288,34 @@ class FastqReader:
             yield pair_name, (read_name, bases.rstrip('\n'), quality.rstrip('\n'))
 
 
+class ConsensusBuilder:
+    def __init__(self):
+        self.length_counts = Counter()
+        self.length_nucleotides = defaultdict(
+            lambda: defaultdict(SeedNucleotide))
+        self.nucleotides = defaultdict(SeedNucleotide)
+
+    def build(self, merged_reads):
+        for read in merged_reads:
+            yield read
+            merged_seq = read[3]
+            if merged_seq is None:
+                # Did not merge.
+                continue
+            seq_length = len(merged_seq)
+            self.length_counts[seq_length] += 1
+            nucleotides = self.length_nucleotides[seq_length]
+            for i, nuc in enumerate(merged_seq):
+                seed_nucleotide = nucleotides[i]
+                seed_nucleotide.count_nucleotides(nuc)
+
+    def get_consensus(self):
+        seq_length = self.length_counts.most_common(1)[0][0]
+        nucleotides = self.length_nucleotides[seq_length]
+        return ''.join(nucleotides[i].get_consensus(MAX_CUTOFF)
+                       for i in range(seq_length))
+
+
 def extract_target(seed_ref, coordinate_ref):
     """ Extract a portion of the seed that aligns with the coordinate reference.
 
@@ -317,6 +360,7 @@ def merge_reads(reads):
     for pair_name, (r1_name, seq1, qual1), (r2_name, seq2, qual2) in reads:
         if not (seq1 and seq2):
             score = -1
+            aligned1 = aligned2 = None
         else:
             seq2_rev = reverse_and_complement(seq2)
             aligned1, aligned2, score = align_it(seq1,

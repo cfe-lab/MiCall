@@ -19,7 +19,7 @@ import os
 
 import gotoh
 
-from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
+from micall.core.project_config import ProjectConfig
 from micall.utils.big_counter import BigCounter
 from micall.utils.translation import translate, ambig_dict
 
@@ -225,7 +225,6 @@ class SequenceReport(object):
         for reading_frame, frame_seed_aminos in self.seed_aminos.items():
             consensus = ''.join([seed_amino1.get_consensus()
                                 for seed_amino1 in frame_seed_aminos])
-            consensus = consensus.replace('-', '?')
             if reading_frame == 0:
                 # best guess before aligning - if alignments fail, this will be non-empty
                 self.consensus[coordinate_name] = consensus
@@ -317,44 +316,32 @@ class SequenceReport(object):
         return seq_map
 
     def process_reads(self,
-                      g2p_aligned_csv,
-                      bowtie2_aligned_csv,
-                      coverage_summary=None,
-                      g2p_region_name='V3LOOP'):
+                      aligned_csv,
+                      coverage_summary=None):
         # parse CSV file containing aligned reads, grouped by reference and quality cutoff
-        for aligned_csv in (bowtie2_aligned_csv, g2p_aligned_csv):
-            if aligned_csv is None:
-                continue
-            aligned_reader = csv.DictReader(aligned_csv)
-            if aligned_csv == bowtie2_aligned_csv:
-                v3_overlap_region_name = g2p_region_name
-            else:
-                v3_overlap_region_name = None
-                if self.remap_conseqs is not None:
-                    self.remap_conseqs[G2P_SEED_NAME] = (
-                        self.projects.getReference(G2P_SEED_NAME))
-            for _, aligned_reads in groupby(aligned_reader,
-                                            lambda row: (row['refname'], row['qcut'])):
-                self.read(aligned_reads, v3_overlap_region_name)
+        aligned_reader = csv.DictReader(aligned_csv)
+        for _, aligned_reads in groupby(aligned_reader,
+                                        lambda row: (row['refname'], row['qcut'])):
+            self.read(aligned_reads)
 
-                if self.insert_writer is not None:
-                    self.write_insertions(self.insert_writer)
-                if self.nuc_writer is not None:
-                    self.write_nuc_counts(self.nuc_writer)
-                if self.conseq_writer is not None:
-                    self.write_consensus(self.conseq_writer)
-                if self.conseq_region_writer is not None:
-                    self.write_consensus_regions(self.conseq_region_writer)
-                if self.amino_detail_writer is not None:
-                    self.write_amino_detail_counts()
-                elif self.amino_writer is not None:
-                    self.write_amino_counts(self.amino_writer,
-                                            coverage_summary=coverage_summary)
-                if self.fail_writer is not None:
-                    self.write_failure(self.fail_writer)
-            if self.amino_detail_writer is not None and self.amino_writer is not None:
+            if self.insert_writer is not None:
+                self.write_insertions(self.insert_writer)
+            if self.nuc_writer is not None:
+                self.write_nuc_counts(self.nuc_writer)
+            if self.conseq_writer is not None:
+                self.write_consensus(self.conseq_writer)
+            if self.conseq_region_writer is not None:
+                self.write_consensus_regions(self.conseq_region_writer)
+            if self.amino_detail_writer is not None:
+                self.write_amino_detail_counts()
+            elif self.amino_writer is not None:
                 self.write_amino_counts(self.amino_writer,
                                         coverage_summary=coverage_summary)
+            if self.fail_writer is not None:
+                self.write_failure(self.fail_writer)
+        if self.amino_detail_writer is not None and self.amino_writer is not None:
+            self.write_amino_counts(self.amino_writer,
+                                    coverage_summary=coverage_summary)
 
     def read(self, aligned_reads, v3_overlap_region_name=None):
         """
@@ -847,6 +834,7 @@ class SeedAmino(object):
         self.low_quality = 0
         self.partial = 0
         self.deletions = 0
+        self.read_count = 0
 
     def __repr__(self):
         if self.counts:
@@ -861,12 +849,13 @@ class SeedAmino(object):
                           or end of a sequence, or dashes for deletions
         @param count: the number of times they were read
         """
+        self.read_count += count
         if 'N' in codon_seq:
             self.low_quality += count
         elif '---' == codon_seq:
             self.deletions += count
         elif '-' in codon_seq:
-            self.partial += count
+            self.partial += count  # Partial deletion
         elif ' ' not in codon_seq and 'n' not in codon_seq:
             amino = translate(codon_seq.upper())
             self.counts[amino] += count
@@ -897,7 +886,11 @@ class SeedAmino(object):
         @return: the letter of the most common amino acid
         """
         consensus = self.counts.most_common(1)
-        return '-' if not consensus else consensus[0][0]
+        if consensus:
+            return consensus[0][0]
+        if self.read_count:
+            return '?'
+        return '-'
 
     def count_overlap(self, other):
         for nuc1, nuc2 in zip(self.nucleotides, other.nucleotides):
@@ -919,7 +912,7 @@ class SeedNucleotide(object):
     def __repr__(self):
         return 'SeedNucleotide({!r})'.format(dict(self.counts))
 
-    def count_nucleotides(self, nuc_seq, count):
+    def count_nucleotides(self, nuc_seq, count=1):
         """ Record a set of reads at this position in the seed reference.
         @param nuc_seq: a single nucleotide letter that was read at this
         position
@@ -1151,7 +1144,6 @@ def aln2counts(aligned_csv,
                coverage_summary_csv=None,
                clipping_csv=None,
                conseq_ins_csv=None,
-               g2p_aligned_csv=None,
                remap_conseq_csv=None,
                conseq_region_csv=None,
                amino_detail_csv=None):
@@ -1170,7 +1162,6 @@ def aln2counts(aligned_csv,
     @param coverage_summary_csv: Open file handle to write coverage depth.
     @param clipping_csv: Open file handle containing soft clipping counts
     @param conseq_ins_csv: Open file handle containing insertions relative to consensus sequence
-    @param g2p_aligned_csv: Open file handle containing aligned reads (from fastq_g2p)
     @param remap_conseq_csv: Open file handle containing consensus sequences
         from the remap step.
     @param conseq_region_csv: Open file handle to write consensus sequences
@@ -1218,7 +1209,7 @@ def aln2counts(aligned_csv,
     if remap_conseq_csv is not None:
         report.read_remap_conseqs(remap_conseq_csv)
 
-    report.process_reads(g2p_aligned_csv, aligned_csv, coverage_summary)
+    report.process_reads(aligned_csv, coverage_summary)
 
     if coverage_summary_csv is not None:
         if coverage_summary:

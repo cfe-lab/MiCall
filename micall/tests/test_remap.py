@@ -1257,6 +1257,70 @@ read3,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
         self.assertEqual(expected_remap_counts_csv, remap_counts_csv.getvalue())
         self.assertEqual(expected_remap_csv, remap_csv.getvalue())
 
+    def test_excluded_contig(self):
+        test_path = os.path.dirname(__file__)
+        contigs_csv = StringIO("""\
+genotype,match,contig
+R1,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+R2,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+""")
+        self.bowtie2_output.extend([
+            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read4\t99\t2-R2-excluded\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read4\t147\t2-R2-excluded\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read5\t77\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n",
+            "read5\t141\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n"])
+        excluded_seeds = ['R2']
+        expected_remap_counts_csv = """\
+type,count,filtered_count,seed_dist,other_dist,other_seed
+raw,20,,,,
+remap 1-R1,6,,,,
+remap 2-R2-excluded,2,,,,
+remap-final 1-R1,6,,,,
+remap-final 2-R2-excluded,2,,,,
+unmapped,2,,,,
+"""
+        expected_remap_csv = """\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+read1,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read1,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read2,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read2,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read3,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read3,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+"""
+        expected_remap_conseq_csv = """\
+region,sequence
+1-R1,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+"""
+        remap_counts_csv = StringIO()
+        remap_csv = StringIO()
+        remap_conseq_csv = StringIO()
+
+        remap.remap(os.path.join(test_path,
+                                 'microtest',
+                                 '1234A-V3LOOP_S1_L001_R1_001.fastq'),
+                    os.path.join(test_path,
+                                 'microtest',
+                                 '1234A-V3LOOP_S1_L001_R2_001.fastq'),
+                    contigs_csv,
+                    remap_csv,
+                    remap_counts_csv,
+                    remap_conseq_csv,
+                    StringIO(),
+                    StringIO(),
+                    work_path=os.path.join(test_path, 'working'),
+                    excluded_seeds=excluded_seeds)
+
+        self.assertEqual(expected_remap_counts_csv, remap_counts_csv.getvalue())
+        self.assertEqual(expected_remap_csv, remap_csv.getvalue())
+        self.assertEqual(expected_remap_conseq_csv, remap_conseq_csv.getvalue())
+
 
 def test_read_contigs():
     contigs_csv = StringIO("""\
@@ -1276,13 +1340,29 @@ HCV-2b,1.0,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
 def test_read_contigs_filter():
     contigs_csv = StringIO("""\
 genotype,match,contig
-HCV-1a,0.49,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
-HCV-2b,0.5,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
+HCV-1a,0.24,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-2b,0.25,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
 """)
     expected_conseqs = {
         '1-HCV-1a-partial': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
         '2-HCV-2b': 'GCCCGCCCCCTGATGGGGGCGACACTCCGCCA'}
 
     conseqs = read_contigs(contigs_csv)
+
+    assert expected_conseqs == conseqs
+
+
+def test_read_contigs_excluded():
+    contigs_csv = StringIO("""\
+genotype,match,contig
+HCV-1a,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HLA-B-seed,0.02,ATGCGGGTCACGGCACCCCGAACCGT
+""")
+    excluded_seeds = ['HLA-B-seed']
+    expected_conseqs = {
+        '1-HCV-1a': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
+        '2-HLA-B-seed-excluded': 'ATGCGGGTCACGGCACCCCGAACCGT'}
+
+    conseqs = read_contigs(contigs_csv, excluded_seeds)
 
     assert expected_conseqs == conseqs

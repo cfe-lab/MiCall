@@ -9,6 +9,7 @@ from micall.core.remap import remap
 from micall.core.sam2aln import sam2aln
 from micall.core.trim_fastqs import trim
 from micall.core.denovo import denovo
+from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 
 logger = logging.getLogger(__name__)
 
@@ -111,12 +112,37 @@ class Sample:
                  summary_file=read_summary,
                  use_gzip=use_gzip)
 
+        logger.info('Running fastq_g2p on %s.', self)
+        with open(self.trimmed1_fastq) as fastq1, \
+                open(self.trimmed2_fastq) as fastq2, \
+                open(self.g2p_csv, 'w') as g2p_csv, \
+                open(self.g2p_summary_csv, 'w') as g2p_summary_csv, \
+                open(self.g2p_unmapped1_fastq, 'w') as g2p_unmapped1, \
+                open(self.g2p_unmapped2_fastq, 'w') as g2p_unmapped2, \
+                open(self.g2p_aligned_csv, 'w') as g2p_aligned_csv, \
+                open(self.merged_contigs_csv, 'w') as merged_contigs_csv:
+
+            fastq_g2p(pssm=pssm,
+                      fastq1=fastq1,
+                      fastq2=fastq2,
+                      g2p_csv=g2p_csv,
+                      g2p_summary_csv=g2p_summary_csv,
+                      unmapped1=g2p_unmapped1,
+                      unmapped2=g2p_unmapped2,
+                      aligned_csv=g2p_aligned_csv,
+                      min_count=DEFAULT_MIN_COUNT,
+                      min_valid=MIN_VALID,
+                      min_valid_percent=MIN_VALID_PERCENT,
+                      merged_contigs_csv=merged_contigs_csv)
+
         logger.info('Running de novo assembly on %s.', self)
-        with open(self.contigs_csv, 'w') as contigs_csv:
+        with open(self.merged_contigs_csv) as merged_contigs_csv, \
+                open(self.contigs_csv, 'w') as contigs_csv:
             denovo(self.trimmed1_fastq,
                    self.trimmed2_fastq,
                    contigs_csv,
-                   self.scratch_path)
+                   self.scratch_path,
+                   merged_contigs_csv)
 
         logger.info('Running remap on %s.', self)
         if self.debug_remap:
@@ -139,7 +165,8 @@ class Sample:
                   unmapped1,
                   unmapped2,
                   scratch_path,
-                  debug_file_prefix=debug_file_prefix)
+                  debug_file_prefix=debug_file_prefix,
+                  excluded_seeds=excluded_seeds)
 
         logger.info('Running sam2aln on %s.', self)
         with open(self.remap_csv) as remap_csv, \

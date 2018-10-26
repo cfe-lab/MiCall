@@ -13,33 +13,40 @@ from tempfile import mkdtemp
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 
+from micall.utils.iva_wrapper import assemble, SeedingError
+
 PEAR = "/opt/bin/pear"
 SAVAGE = "/opt/savage_wrapper.sh"
 IVA = "iva"
 IS_SAVAGE_ENABLED = False
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
-                                'utils',
-                                'hcv_geno',
-                                'hcv.fasta')
+                                'blast_db',
+                                'refs.fasta')
 ASSEMBLY_TIMEOUT = 1800  # 30 minutes
 logger = logging.getLogger(__name__)
 
 
-def write_genotypes(contigs_fasta_path, contigs_csv):
+def write_genotypes(contigs_fasta_path, contigs_csv, merged_contigs_csv=None):
     writer = DictWriter(contigs_csv,
                         ['genotype', 'match', 'contig'],
                         lineterminator=os.linesep)
     writer.writeheader()
-    if contigs_fasta_path is None:
-        return 0
+    with open(contigs_fasta_path, 'a') as contigs_fasta:
+        if merged_contigs_csv is not None:
+            contig_reader = DictReader(merged_contigs_csv)
+            for i, row in enumerate(contig_reader, 1):
+                contig_name = f'merged-contig-{i}'
+                contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
     genotypes = genotype(contigs_fasta_path)
+    genotype_count = 0
     for i, record in enumerate(SeqIO.parse(contigs_fasta_path, "fasta")):
         genotype_name, match_fraction = genotypes.get(record.name, ('unknown', 0))
         writer.writerow(dict(genotype=genotype_name,
                              match=match_fraction,
                              contig=record.seq))
-    return len(genotypes)
+        genotype_count += 1
+    return genotype_count
 
 
 def genotype(fasta, db=DEFAULT_DATABASE):
@@ -63,7 +70,7 @@ def genotype(fasta, db=DEFAULT_DATABASE):
                                   penalty=-3,
                                   reward=1,
                                   max_target_seqs=5000)
-    stdout, _ = cline(stderr=False)
+    stdout, _ = cline()
     samples = {}  # {query_name: (subject_name, matched_fraction)}
     matches = sorted(DictReader(StringIO(stdout), ['qaccver',
                                                    'saccver',
@@ -77,7 +84,7 @@ def genotype(fasta, db=DEFAULT_DATABASE):
     return samples
 
 
-def denovo(fastq1_path, fastq2_path, contigs, work_dir='.'):
+def denovo(fastq1_path, fastq2_path, contigs, work_dir='.', merged_contigs_csv=None):
     prefix = "sample"
 
     old_tmp_dirs = glob(os.path.join(work_dir, 'iva_*'))
@@ -86,9 +93,16 @@ def denovo(fastq1_path, fastq2_path, contigs, work_dir='.'):
 
     tmp_dir = mkdtemp(dir=work_dir, prefix='iva_')
     start_time = datetime.now()
-    is_successful = (0 == call(
-        [IVA, "-f", fastq1_path, "-r", fastq2_path, "-t", "1", "iva"],
-        cwd=tmp_dir))
+    start_dir = os.getcwd()
+    try:
+        assemble(os.path.join(tmp_dir, "iva"),
+                 str(fastq1_path),
+                 str(fastq2_path))
+        is_successful = True
+    except SeedingError:
+        logger.warning('De novo assembly failed.')
+        is_successful = False
+    os.chdir(start_dir)
     duration = datetime.now() - start_time
 
     if IS_SAVAGE_ENABLED:
@@ -118,8 +132,8 @@ def denovo(fastq1_path, fastq2_path, contigs, work_dir='.'):
     if is_successful:
         contigs_fasta_path = os.path.join(tmp_dir, 'iva', 'contigs.fasta')
     else:
-        contigs_fasta_path = None
-    contig_count = write_genotypes(contigs_fasta_path, contigs)
+        contigs_fasta_path = os.path.join(tmp_dir, 'contigs.fasta')
+    contig_count = write_genotypes(contigs_fasta_path, contigs, merged_contigs_csv)
     logger.info('Assembled %d contigs in %s (%ds) on %s.',
                 contig_count,
                 duration,

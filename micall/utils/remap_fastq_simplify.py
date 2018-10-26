@@ -59,8 +59,7 @@ class MicallDD(DD):
                   devnull,
                   devnull,
                   devnull,
-                  devnull,
-                  nthreads=BOWTIE_THREADS)
+                  devnull)
         with open(remap_filename, 'rU') as remap_csv:
             print('Filtering.')
             reader = DictReader(remap_csv)
@@ -234,6 +233,7 @@ def main():
         logger.info('Done.')
     except Exception as ex:
         logger.error('Failed.', exc_info=ex)
+
 
 if __name__ == '__main__':
     main()
