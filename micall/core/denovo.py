@@ -7,7 +7,7 @@ from datetime import datetime
 from glob import glob
 from io import StringIO
 from shutil import rmtree
-from subprocess import Popen, call
+from subprocess import Popen
 from tempfile import mkdtemp
 
 from Bio import SeqIO
@@ -142,6 +142,7 @@ def denovo(fastq1_path, fastq2_path, contigs, work_dir='.', merged_contigs_csv=N
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument('fastq1')
     parser.add_argument('fastq2')

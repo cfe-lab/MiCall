@@ -34,7 +34,7 @@ def parse_args():
 
 
 class MicallDD(DD):
-    test_names = ('one_contig', 'multiple_genotypes')
+    test_names = ('one_contig', 'multiple_genotypes', 'type_error')
 
     def __init__(self,
                  filename1,
@@ -65,7 +65,6 @@ class MicallDD(DD):
 
     def _test(self, read_indexes):
         read_count = len(read_indexes)
-        read_indexes = reversed(read_indexes)
         self.write_simple_fastq(self.simple1, self.simple2, read_indexes)
         workdir = os.path.dirname(self.simple1)
         os.chdir(workdir)
@@ -77,22 +76,25 @@ class MicallDD(DD):
                  self.bad_cycles_filename,
                  (trimmed_filename1, trimmed_filename2),
                  use_gzip=False)
+            exception = None
             # noinspection PyBroadException
             try:
                 denovo(trimmed_filename1, trimmed_filename2, contigs_csv, workdir)
-            except Exception:
+            except Exception as ex:
                 logger.warning('Assembly failed.', exc_info=True)
-                return DD.UNRESOLVED
+                exception = ex
             contigs_csv.seek(0)
 
-            result = self.get_result(contigs_csv, read_count)
+            result = self.get_result(contigs_csv, read_count, exception)
             if result == DD.FAIL:
                 os.rename(self.simple1, self.best1)
                 os.rename(self.simple2, self.best2)
             return result
 
     @staticmethod
-    def check_one_contig(contigs_csv, read_count):
+    def check_one_contig(contigs_csv, read_count, exception):
+        if exception is not None:
+            return DD.UNRESOLVED
         contig_count = len(contigs_csv.readlines())
         logger.debug('Result: %d contigs from %d reads.',
                      contig_count,
@@ -100,7 +102,9 @@ class MicallDD(DD):
         return DD.FAIL if contig_count == 1 else DD.PASS
 
     @staticmethod
-    def check_multiple_genotypes(contigs_csv, read_count):
+    def check_multiple_genotypes(contigs_csv, read_count, exception):
+        if exception is not None:
+            return DD.UNRESOLVED
         reader = DictReader(contigs_csv)
         genotypes = sorted({row['genotype'] for row in reader})
         genotype_count = len(genotypes)
@@ -109,6 +113,13 @@ class MicallDD(DD):
                      read_count,
                      genotypes)
         return DD.FAIL if genotype_count > 2 else DD.PASS
+
+    @staticmethod
+    def check_type_error(_contigs_csv, read_count, exception):
+        logger.debug('Result: %s exception from %d reads.',
+                     exception,
+                     read_count)
+        return DD.FAIL if isinstance(exception, TypeError) else DD.PASS
 
     def write_simple_fastq(self, filename1, filename2, read_indexes):
         selected_reads = (self.reads[i] for i in read_indexes)

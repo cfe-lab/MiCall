@@ -86,6 +86,7 @@ def trim(original_fastq_filenames,
                      '-o', trimmed_fastq_filenames[0],
                      '-p', trimmed_fastq_filenames[1],
                      '--quiet',
+                     '--minimum-length', '1',
                      censored_filenames[0],
                      censored_filenames[1]]
     cut_adapt.check_output(cutadapt_args)

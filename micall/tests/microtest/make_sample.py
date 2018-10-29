@@ -65,7 +65,7 @@ def main():
                 ref_nuc_section = ''.join(ref_nuc_section)
                 if fastq_file.is_reversed:
                     ref_nuc_section = reverse_and_complement(ref_nuc_section)
-                phred_scores = 'A' * (ref_end-ref_start)
+                phred_scores = 'A' * len(ref_nuc_section)
                 file_num = '2' if fastq_file.is_reversed else '1'
                 for cluster in range(section.count):
                     f.write('@M01234:01:000000000-AAAAA:1:1101:{}:{:04} {}:N:0:1\n'.format(
