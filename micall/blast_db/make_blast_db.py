@@ -3,8 +3,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from pathlib import Path
 from subprocess import run
 
-from micall.core.denovo import DEFAULT_DATABASE
-
+DEFAULT_DATABASE = str(Path(__file__).parent / 'refs.fasta')
 DEFAULT_PROJECTS = str(Path(__file__).parent.parent / 'projects.json')
 
 

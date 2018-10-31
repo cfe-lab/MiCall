@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 from csv import DictWriter, DictReader
-from datetime import datetime
+from datetime import datetime, timedelta
 from glob import glob
 from io import StringIO
 from shutil import rmtree
@@ -23,7 +23,7 @@ DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
                                 'blast_db',
                                 'refs.fasta')
-ASSEMBLY_TIMEOUT = 1800  # 30 minutes
+ASSEMBLY_TIMEOUT = timedelta(hours=4).total_seconds()
 logger = logging.getLogger(__name__)
 
 
@@ -97,7 +97,8 @@ def denovo(fastq1_path, fastq2_path, contigs, work_dir='.', merged_contigs_csv=N
     try:
         assemble(os.path.join(tmp_dir, "iva"),
                  str(fastq1_path),
-                 str(fastq2_path))
+                 str(fastq2_path),
+                 timeout_seconds=ASSEMBLY_TIMEOUT)
         is_successful = True
     except SeedingError:
         logger.warning('De novo assembly failed.')

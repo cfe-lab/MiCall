@@ -1,8 +1,11 @@
 import multiprocessing
 import os
+from datetime import datetime, timedelta
 
 import pyfastaq
 import iva
+
+DEFAULT_TIMEOUT_SECONDS = 60.0
 
 
 class IvaError(Exception):
@@ -18,6 +21,22 @@ class InputError(IvaError):
 class SeedingError(IvaError):
     """ Raised when assembly fails to make the first seed. """
     pass
+
+
+class TimedAssembly(iva.assembly.Assembly):
+    def __init__(self, *args, timeout_seconds=DEFAULT_TIMEOUT_SECONDS, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.timeout_delta = timedelta(seconds=timeout_seconds)
+        self.stop_time = None
+
+    def read_pair_extend(self, reads_prefix, out_prefix):
+        self.stop_time = datetime.now() + self.timeout_delta
+        super().read_pair_extend(reads_prefix, out_prefix)
+
+    def _worth_extending(self):
+        if self.stop_time is not None and datetime.now() > self.stop_time:
+            return False
+        return super()._worth_extending()
 
 
 def assemble(outdir,
@@ -43,7 +62,8 @@ def assemble(outdir,
              seed_overlap_length=None,
              seed_ext_min_cov=10,
              seed_ext_min_ratio=4.0,
-             strand_bias=0.0):
+             strand_bias=0.0,
+             timeout_seconds=DEFAULT_TIMEOUT_SECONDS):
     """ Run de novo assembly to build contigs from overlapping reads.
 
     :param str outdir: Name of output directory (must not already exist)
@@ -94,6 +114,8 @@ def assemble(outdir,
     :param int verbose: Be verbose by printing messages to stdout. Use up to
         3 for increasing verbosity.
     :param bool keep_files: Keep intermediate files (could be many!).
+    :param float timeout_seconds: number of seconds to continue trying to
+        assemble contigs. (Not a hard timeout.)
     """
     seed_stop_length = int(0.9 * max_insert)
 
@@ -145,7 +167,7 @@ def assemble(outdir,
     contigs = None
     make_new_seeds = True
 
-    assembly = iva.assembly.Assembly(
+    assembly = TimedAssembly(
         contigs,
         verbose=verbose,
         clean=not keep_files,
@@ -170,7 +192,8 @@ def assemble(outdir,
         seed_min_cov=seed_ext_min_cov,
         seed_min_ratio=seed_ext_min_ratio,
         max_insert=max_insert,
-        strand_bias=strand_bias)
+        strand_bias=strand_bias,
+        timeout_seconds=timeout_seconds)
 
     seed_name = assembly.add_new_seed_contig(reads_1, reads_2)
     if seed_name is None:

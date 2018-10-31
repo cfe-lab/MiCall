@@ -39,7 +39,7 @@ From: centos:7
     requirements-basespace.txt /opt/micall/
 
     ## HCV genotyping database
-    micall/utils/hcv_geno /opt/hcv_geno/
+    micall/blast_db /opt/micall/micall/blast_db
 
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
@@ -50,12 +50,21 @@ From: centos:7
     yum install -q -y https://centos7.iuscommunity.org/ius-release.rpm
     yum install -q -y python36 python36-devel unzip wget fontconfig
 
+    echo ===== Installing Rust and merge-mates ===== >/dev/null
+    yum install -q -y rust cargo
+    git clone https://github.com/jeff-k/merge-mates.git
+    cd merge-mates
+    cargo build
+    cp target/debug/merge-mates /bin
+    cd ..
+    rm -rf merge-mates
+
     echo ===== Installing blast ===== >/dev/null
     cd /root
     wget -q ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
     yum install -q -y ncbi-blast-2.6.0+-1.x86_64.rpm
     rm ncbi-blast-2.6.0+-1.x86_64.rpm
-    #makeblastdb -in /opt/hcv.fasta -parse_seqids -dbtype nucl
+    python3.6 /opt/micall/micall/blast_db/make_blast_db.py
 
 
     ## Miniconda (Python 2) (Don't use this)
