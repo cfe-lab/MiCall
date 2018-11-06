@@ -54,7 +54,9 @@ def main():
             empty_count += 1
         else:
             contigs_fasta_paths = list(
-                sample_dir.glob('iva_*/iva/contigs.fasta'))
+                sample_dir.glob('assembly_*/iva/contigs.fasta'))
+            contigs_fasta_paths += list(
+                sample_dir.glob('assembly_*/contigs_stage_c.fasta'))
             if len(contigs_fasta_paths) != 1:
                 print(sample_dir, contigs_fasta_paths)
                 continue

@@ -52,12 +52,36 @@ From: centos:7
 
     echo ===== Installing Rust and merge-mates ===== >/dev/null
     yum install -q -y rust cargo
-    git clone https://github.com/jeff-k/merge-mates.git
-    cd merge-mates
-    cargo build
-    cp target/debug/merge-mates /bin
+    cargo install --root / --git https://github.com/jeff-k/merge-mates.git
+
+    echo ===== Installing Savage ===== >/dev/null
+    yum install -q -y zlib-devel boost-timer boost-program-options boost-devel
+    cargo install --root / --git https://github.com/jbaaijens/rust-overlaps.git --tag v0.1.1
+
+    wget -q https://downloads.sourceforge.net/project/bio-bwa/bwa-0.7.17.tar.bz2
+    tar xjf bwa-0.7.17.tar.bz2 --no-same-owner
+    cd bwa-0.7.17
+    make
+    mv bwa /bin
     cd ..
-    rm -rf merge-mates
+    rm -rf bwa-0.7.17 bwa-0.7.17.tar.bz2
+
+    wget -q https://github.com/pachterlab/kallisto/releases/download/v0.44.0/kallisto_linux-v0.44.0.tar.gz
+    tar xzf kallisto_linux-v0.44.0.tar.gz --no-same-owner
+    mv kallisto_linux-v0.44.0/kallisto /bin
+    rm -rf kallisto_linux-v0.44.0 kallisto_linux-v0.44.0.tar.gz
+
+    cd /opt
+    git clone https://bitbucket.org/jbaaijens/savage.git
+    cd savage
+    git checkout tags/v0.4.0
+    make
+    echo \#\!/usr/bin/env sh > /bin/savage
+    echo /opt/savage/savage.py \$@ >> /bin/savage
+    chmod +x /bin/savage
+    cd /
+
+    yum remove -q -y zlib-devel boost-devel
 
     echo ===== Installing blast ===== >/dev/null
     cd /root
@@ -85,7 +109,7 @@ From: centos:7
     chmod +x kmc kmc_dump
     cd /opt
     wget -q https://sourceforge.net/projects/mummer/files/mummer/3.23/MUMmer3.23.tar.gz
-    tar --no-same-owner -xzf MUMmer3.23.tar.gz
+    tar -xzf MUMmer3.23.tar.gz --no-same-owner
     cd MUMmer3.23
     make --quiet install
     rm -r docs src ../MUMmer3.23.tar.gz
@@ -95,7 +119,7 @@ From: centos:7
         /bin
     cd /opt
     wget -q https://github.com/samtools/samtools/releases/download/1.3.1/samtools-1.3.1.tar.bz2
-    tar --no-same-owner --bzip2 -xf samtools-1.3.1.tar.bz2
+    tar -xf samtools-1.3.1.tar.bz2 --no-same-owner --bzip2
     cd samtools-1.3.1
     ./configure --quiet --prefix=/
     make --quiet
@@ -103,7 +127,7 @@ From: centos:7
     cd /opt
     rm -rf samtools-1.3.1*
     wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
-    tar --no-same-owner -xzf smalt-0.7.6-bin.tar.gz
+    tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
 
     echo ===== Installing Python packages ===== >/dev/null
@@ -121,16 +145,6 @@ From: centos:7
     yum clean all
 
     rm -rf /var/cache/yum
-
-    ## Savage assembler
-    #export PATH="/opt/miniconda/bin:$PATH"
-    #source /opt/miniconda/bin/activate
-    #conda config --add channels r
-    #conda config --add channels defaults
-    #conda config --add channels conda-forge
-    #conda config --add channels bioconda
-    #conda install savage
-    #ls /opt/miniconda/bin/
 
 %environment
     export PATH=/bin:/opt/bowtie2

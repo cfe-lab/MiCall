@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pytest import fixture
 
-from micall.core.denovo import write_genotypes, denovo, DEFAULT_DATABASE
+from micall.core.denovo import write_genotypes, denovo, DEFAULT_DATABASE, Assembler
 from micall.blast_db.make_blast_db import make_blast_db, DEFAULT_PROJECTS
 
 
@@ -114,7 +114,7 @@ HIV1-C-BR-JX140663-seed,1.0,TGCACAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA
     assert expected_contigs_csv == contigs_csv.getvalue()
 
 
-def test_denovo(tmpdir, hcv_db):
+def test_denovo_iva(tmpdir, hcv_db):
     microtest_path = Path(__file__).parent / 'microtest'
     contigs_csv = StringIO()
     expected_contigs_csv = """\
@@ -130,6 +130,28 @@ TTATCTGTGAAAGTGCGGGGGTCCAGGAGGACG
     denovo(microtest_path / '2140A-HCV_S17_L001_R1_001.fastq',
            microtest_path / '2140A-HCV_S17_L001_R2_001.fastq',
            contigs_csv,
-           tmpdir)
+           tmpdir,
+           assembler=Assembler.IVA)
+
+    assert expected_contigs_csv == contigs_csv.getvalue()
+
+
+def test_denovo_savage(tmpdir, hcv_db):
+    microtest_path = Path(__file__).parent / 'microtest'
+    contigs_csv = StringIO()
+    expected_contigs_csv = """\
+genotype,match,contig
+HCV-1a,1.0,GCAAGCTCCCCCTGGCCGTGATGGGAAGCTCCTACGGATTCCAATAC\
+TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAAGTCCAAGAAGACCCCGATGGGGTTCT\
+CGTATGATACCCGCTGTTTTGACTCCACAGTCACTGAGAGCGACATCCGTACGGAGGAGGCAATTTACCAATGTTGTG\
+ACCTGGACCCCCAAGCCCGCGTGGCCATCAAGTCCCTCACTGAGAGGCTTTATGTTGGGGGCCCTCTTACCAATTCAA\
+GGGGGGAAAACTGCGGCTACCGCAGGTGCCGCGCGAGCGGCGTA
+"""
+
+    denovo(microtest_path / '2140A-HCV_S17_L001_R1_001.fastq',
+           microtest_path / '2140A-HCV_S17_L001_R2_001.fastq',
+           contigs_csv,
+           tmpdir,
+           assembler=Assembler.SAVAGE)
 
     assert expected_contigs_csv == contigs_csv.getvalue()

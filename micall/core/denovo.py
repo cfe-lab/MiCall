@@ -1,30 +1,35 @@
 import argparse
 import logging
 import os
-import sys
 from csv import DictWriter, DictReader
 from datetime import datetime, timedelta
+from enum import Enum
 from glob import glob
 from io import StringIO
 from shutil import rmtree
-from subprocess import Popen
+from subprocess import run, PIPE, CalledProcessError
 from tempfile import mkdtemp
 
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 
+from micall.utils.externals import LineCounter
 from micall.utils.iva_wrapper import assemble, SeedingError
 
 PEAR = "/opt/bin/pear"
 SAVAGE = "/opt/savage_wrapper.sh"
 IVA = "iva"
-IS_SAVAGE_ENABLED = False
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
                                 'blast_db',
                                 'refs.fasta')
 ASSEMBLY_TIMEOUT = timedelta(hours=4).total_seconds()
+GENOME_WIDTH = 5000  # Wild guess at the genome width.
+TARGET_DEPTH = 1000  # Savage recommends 500 to 1000.
 logger = logging.getLogger(__name__)
+
+# noinspection PyArgumentList
+Assembler = Enum('Assembler', 'IVA SAVAGE')
 
 
 def write_genotypes(contigs_fasta_path, contigs_csv, merged_contigs_csv=None):
@@ -84,56 +89,57 @@ def genotype(fasta, db=DEFAULT_DATABASE):
     return samples
 
 
-def denovo(fastq1_path, fastq2_path, contigs, work_dir='.', merged_contigs_csv=None):
-    prefix = "sample"
-
-    old_tmp_dirs = glob(os.path.join(work_dir, 'iva_*'))
+def denovo(fastq1_path,
+           fastq2_path,
+           contigs,
+           work_dir='.',
+           merged_contigs_csv=None,
+           assembler=Assembler.SAVAGE):
+    old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
         rmtree(old_tmp_dir, ignore_errors=True)
 
-    tmp_dir = mkdtemp(dir=work_dir, prefix='iva_')
+    tmp_dir = mkdtemp(dir=work_dir, prefix='assembly_')
     start_time = datetime.now()
     start_dir = os.getcwd()
-    try:
-        assemble(os.path.join(tmp_dir, "iva"),
-                 str(fastq1_path),
-                 str(fastq2_path),
-                 timeout_seconds=ASSEMBLY_TIMEOUT)
-        is_successful = True
-    except SeedingError:
-        logger.warning('De novo assembly failed.')
-        is_successful = False
+    contigs_fasta_path = os.path.join(tmp_dir, 'contigs.fasta')
+    if assembler == Assembler.IVA:
+        try:
+            assemble(os.path.join(tmp_dir, "iva"),
+                     str(fastq1_path),
+                     str(fastq2_path),
+                     timeout_seconds=ASSEMBLY_TIMEOUT)
+            contigs_fasta_path = os.path.join(tmp_dir, 'iva', 'contigs.fasta')
+        except SeedingError:
+            logger.warning('De novo assembly failed.')
+    else:
+        counter = LineCounter()
+        read_count = counter.count(fastq1_path) / 4
+        expected_depth = read_count / GENOME_WIDTH
+        split = max(1, expected_depth // TARGET_DEPTH)
+        merged_reads_path = os.path.join(tmp_dir, 'merged.fastq')
+        run(['merge-mates',
+             '--out', merged_reads_path,
+             fastq1_path,
+             fastq2_path],
+            check=True)
+
+        try:
+            run(['savage',
+                 '--split', str(split),
+                 '-s', merged_reads_path,
+                 '-t', '1',
+                 '--merge_contigs', '0.01',
+                 '--overlap_len_stage_c', '100'],
+                cwd=tmp_dir,
+                check=True,
+                stdout=PIPE)
+            contigs_fasta_path = os.path.join(tmp_dir, 'contigs_stage_c.fasta')
+        except CalledProcessError:
+            logger.warning('De novo assembly failed.')
+
     os.chdir(start_dir)
     duration = datetime.now() - start_time
-
-    if IS_SAVAGE_ENABLED:
-        pear_proc = Popen([PEAR, "-f", fastq1_path, "-r", fastq2_path, "-o", prefix],
-                          cwd=work_dir)
-
-        if pear_proc.wait():
-            raise Exception
-
-        savage_proc = Popen([
-                    SAVAGE, "--split", "1", "-s",
-                    "{}/sample.assembled.fastq".format(work_dir), "-p1",
-                    "{}/sample.unassembled.forward.fastq".format(work_dir),
-                    "-p2",
-                    "{}/sample.unassembled.reverse.fastq".format(work_dir),
-                    "-t", "1",
-                    "--merge_contigs", "0.01", "--overlap_len_stage_c",
-                    "100",
-            ], cwd=work_dir, shell=True)
-
-        savage_proc.wait(timeout=ASSEMBLY_TIMEOUT)
-        if not savage_proc.wait():
-            write_genotypes("{}/contigs_stage_c.fasta".format(work_dir), contigs)
-        else:
-            print("savage exits with error", file=sys.stderr)
-
-    if is_successful:
-        contigs_fasta_path = os.path.join(tmp_dir, 'iva', 'contigs.fasta')
-    else:
-        contigs_fasta_path = os.path.join(tmp_dir, 'contigs.fasta')
     contig_count = write_genotypes(contigs_fasta_path, contigs, merged_contigs_csv)
     logger.info('Assembled %d contigs in %s (%ds) on %s.',
                 contig_count,
