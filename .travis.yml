@@ -32,7 +32,7 @@ before_install:
   - git checkout tags/v0.4.0
   - make
   - echo \#\!/usr/bin/env sh > ~/bin/savage
-  - echo ~/savage/savage.py \$@ >> ~/bin/savage
+  - echo python2 ~/savage/savage.py \$@ >> ~/bin/savage
   - chmod +x ~/bin/savage
   - popd
 
