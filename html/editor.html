@@ -1,12 +1,102 @@
 <html>
     <head>
-
     </head>
+
+
+<style>
+/* The popup form - hidden by default */
+.form-popup {
+  display: none;
+  position: fixed;
+  border: 1px solid #3F3F3F;
+  z-index: 9;
+}
+.form-container {
+  max-width: 3000px;
+  padding: 10px;
+  background-color: white;
+}
+</style >
+<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="editor.js"></script>
+<script type="text/javascript" src="scripts.js"></script>
     <body>
-    <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
-    <script type="text/javascript" src="editor.js"></script>
-        <h1>MiCall project editor</h1>
-        
+    	
+	
+	<h1>MiCall project editor</h1>
+
+
+<br>
+	<button onclick="fillPro();">Load Projects</button> 
+<br>
+	<select  id = "txtPro" size = "30" style="width: 200px">		
+	</select>
+
+
+	<select  id = "txtSG" size = "30" style="width: 200px">		
+	</select>
+
+	<select  id = "txtCR" size = "30" style="width: 200px" onclick = "fillSR()">		
+	</select>
+
+	<select  id = "txtSR" size = "30" style="width: 200px" onclick = "fillCR()">		
+	</select>
+
+
+<br><br>
+ 	<button onclick="fillCR(); fillSR();">Select Project</button> 
+
+
+	<button onclick="deta()">Show Details</button>
+
+<button class="open-button" onclick="openForm('addForm')">Add</button>
+<div class="form-popup" id="addForm">
+  <form action="/action_page.php" class="form-container">
+    <h2>Add</h2>
+
+<br>
+	Organism
+	<input type="text" id = "orReg"> <br>
+	Sequence <input type="text" id = "arr">
+<br>
+
+    <button type="button" class="btn" onclick="addPR()">Add</button>
+    <button type="button" class="btn cancel" onclick="closeForm('addForm')">Close</button>
+  </form>
+</div>
+
+
+
+
+
+
+
+
+
+	<button onclick="delPR()">Delete</button>
+
+	
+<br><br><hr>
+
+
+	Name:
+	<textarea id = "nameP" rows="1" cols = "50">
+	</textarea>
+<br>
+	Description:
+	<textarea id = "desc" rows="2" cols = "100">
+	</textarea>
+<br>
+	Sequence:
+	<textarea id = "seq" rows="20" cols = "100">
+	</textarea>
+
+
+
+
+<br><br><br>
+	<button onclick="download('projects.json' , JSON.stringify(projects.responseJSON,undefined,4))">Save Changes</button>
+
     </body>
 </html>
 

@@ -1,0 +1,32 @@
+{
+    "colours": {
+        "green": {
+            "thing": "goblin",
+            "value": "#0f0"
+        },
+        "blue": {
+            "thing": "berry",
+            "value": "#00f"
+        },
+        "cyan": {
+            "thing": "television",
+            "value": "#0ff"
+        },
+        "magenta": {
+            "thing": "nothing",
+            "value": "#f0f"
+        },
+        "yellow": {
+            "thing": "bee",
+            "value": "#ff0"
+        },
+        "black": {
+            "thing": "board",
+            "value": "#000"
+        },
+        "orange": {
+            "thing": "tangerine",
+            "value": "0000"
+        }
+    }
+}
