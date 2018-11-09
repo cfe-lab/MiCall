@@ -27,22 +27,19 @@ function fillSG() {
 	$('#txtSG')[0].innerHTML = ''
 	var i;
 	var grSelect = $('#txtSG')[0];
-	var sCheck = [];
-	var regArr = [];
+	var sCheck = []; //array to check if seed group is already added
+	var regArr = []; //store regions in array
 	var regions = projects.responseJSON.regions
 	for (regions in projects.responseJSON.regions){
-
 		regArr.push(regions)
-
 	}
 	for (i=0; i< regArr.length; i++){
-		console.log (projects.responseJSON.regions[regArr[i]]["seed_group"])
-	var option = document.createElement("option");	
-			option.text = projects.responseJSON.regions[regArr[i]]["seed_group"];
-			if (check.includes(projects.responseJSON.regions[regArr[i]]["seed_group"]) == false){	
-				check.push (projects.responseJSON.regions[regArr[i]]["seed_group"]);
-				grSelect.add(option);
-			} //need to fix, doesnt work yet
+		var option = document.createElement("option");	
+		option.text = projects.responseJSON.regions[regArr[i]]["seed_group"];
+		if (sCheck.includes(projects.responseJSON.regions[regArr[i]]["seed_group"]) == false){	
+			sCheck.push (projects.responseJSON.regions[regArr[i]]["seed_group"]);
+			grSelect.add(option);
+		} 
 	}
 }
 
@@ -85,21 +82,22 @@ function fillCR(){ //fills in list of coordinate regions of a project
 
 
 function deta(){ // fills in the details of project/region
-	var proj = projects.responseJSON.projects[$('#txtPro').val()]
+	var proj 
+	proj = projects.responseJSON.projects[$('#txtPro').val()]
 	
 	var checkfillD
 	if (checkfillD = 1){
 		$('#nameP')[0].innerHTML ='';
 		$('#desc')[0].innerHTML = '';
 	}
-	if ($("#txtSR").val() == null && $("#txtCR").val() == null){
+	if ($("#txtSR").val() == null && $("#txtCR").val() == null && $('#txtPro').val()== null){
 		alert("Region has not been selected.")
 	} else {
 
-		if ($("#txtSR").val() == null){
-			var reg =  projects.responseJSON.regions[$('#txtCR').val()]
+		if ($("#txtCR").val().length == 1){
+			var reg =  projects.responseJSON.regions[$('#txtCR').val() ]
 			$("#seq")[0].innerHTML = reg["reference"]
-		}else if ($("#txtCR").val() == null){
+		}else if ($("#txtSR").val().length == 1){
 			var reg =  projects.responseJSON.regions[$('#txtSR').val()]
 			$("#seq")[0].innerHTML = reg["reference"]
 		}
@@ -135,7 +133,41 @@ function delPR(){
 	}
 }*/
 
+function coselReg(){
+	var region = projects.responseJSON.projects[$('#txtPro').val()].regions;
+	var coordArr = [];
+	var i;
+	for (i = 0; i < region.length; i++){
+		coordArr.push (region[i]["coordinate_region"]);
+	}
+	var arrNum = coordArr.indexOf($("#txtCR").val()[0])
+	$("#txtSR").val(region[arrNum]["seed_region_names"])
+}
 
+function regselCo(){
+	var region = projects.responseJSON.projects[$('#txtPro').val()].regions;
+	var check = []
+	for (i = 0; i < region.length; i++){
+		if (region[i]["seed_region_names"].includes($("#txtSR").val()[0])){
+			check.push (region[i]["coordinate_region"])
+		}
+	}
+	$("#txtCR").val(check)
+}
+
+/*function groupsel(){
+	var i;
+	var regArr = [];
+	var reg = projects.responseJSON.regions; 
+	var regArr= [] 
+	for (reg in projects.responseJSON.regions){
+		regArr.push(reg)
+	} 
+	for(i=0; regArr.length ; i++){
+		projects.responseJSON.regions[regArr[i]]
+	
+	}
+}
 
 
 function openForm(x) {

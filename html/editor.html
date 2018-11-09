@@ -27,19 +27,19 @@
 
 
 <br>
-	<button onclick="fillPro();">Load Projects</button> 
+	<button onclick="fillPro(); fillSG()">Load Projects</button> 
 <br>
-	<select  id = "txtPro" size = "30" style="width: 200px">		
+	<select  id = "txtPro" size = "30" style="width: 200px" ondblclick = "fillSR(); fillCR()">		
 	</select>
 
 
-	<select  id = "txtSG" size = "30" style="width: 200px">		
+	<select multiple id = "txtSG" size = "30" style="width: 200px">		
 	</select>
 
-	<select  id = "txtCR" size = "30" style="width: 200px" onclick = "fillSR()">		
+	<select multiple id = "txtCR" size = "30" style="width: 200px" ondblclick = "coselReg()">		
 	</select>
 
-	<select  id = "txtSR" size = "30" style="width: 200px" onclick = "fillCR()">		
+	<select multiple id = "txtSR" size = "30" style="width: 200px" ondblclick = "regselCo()">		
 	</select>
 
 
