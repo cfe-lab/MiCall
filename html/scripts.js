@@ -11,7 +11,6 @@ function download(filename, text) {
 
 
 
-
 function fillPro() {  //fills in the list of projects
 	$('#txtPro')[0].innerHTML = ''
 	var proregSelect = $("#txtPro")[0]; 
@@ -23,26 +22,48 @@ function fillPro() {  //fills in the list of projects
 	} 
 }
 
+function highlightSG(){
+	var i
+	var j
+	var seedR = []
+	for (i=0; i< projects.responseJSON.projects[$("#txtPro").val()]["regions"].length; i++){
+		for (j=0; j< projects.responseJSON.projects[$("#txtPro").val()]["regions"][i]["seed_region_names"].length; j++)
+			if (seedR.includes(projects.responseJSON.projects[$("#txtPro").val()]["regions"][i]["seed_region_names"][j])==false){
+				seedR.push(projects.responseJSON.projects[$("#txtPro").val()]["regions"][i]["seed_region_names"][j])
+			}
+	}
+	var seedG = []
+	for (i=0; i< seedR.length; i++){
+		if (seedG.includes(projects.responseJSON.regions[seedR[i]]["seed_group"])==false){
+			seedG.push(projects.responseJSON.regions[seedR[i]]["seed_group"])
+		}
+
+
+	}
+	$("#txtSG").val(seedG)
+}
+
+
+
 function fillSG() {
 	$('#txtSG')[0].innerHTML = ''
 	var i;
 	var grSelect = $('#txtSG')[0];
 	var sCheck = []; //array to check if seed group is already added
 	var regArr = []; //store regions in array
-	var regions = projects.responseJSON.regions
-	for (regions in projects.responseJSON.regions){
-		regArr.push(regions)
+	var reg = projects.responseJSON.regions
+	for (reg in projects.responseJSON.regions){
+		regArr.push(reg)
 	}
 	for (i=0; i< regArr.length; i++){
 		var option = document.createElement("option");	
 		option.text = projects.responseJSON.regions[regArr[i]]["seed_group"];
-		if (sCheck.includes(projects.responseJSON.regions[regArr[i]]["seed_group"]) == false){	
+		if (sCheck.includes(projects.responseJSON.regions[regArr[i]]["seed_group"]) == false && projects.responseJSON.regions[regArr[i]]["seed_group"] !== null){	
 			sCheck.push (projects.responseJSON.regions[regArr[i]]["seed_group"]);
 			grSelect.add(option);
 		} 
 	}
 }
-
 
 function fillSR(){ //fills seed regions
 	$('#txtSR')[0].innerHTML = ''
@@ -81,28 +102,45 @@ function fillCR(){ //fills in list of coordinate regions of a project
 
 
 
-function deta(){ // fills in the details of project/region
+function deta(x){ // fills in the details of project/region
 	var proj 
 	proj = projects.responseJSON.projects[$('#txtPro').val()]
 	
 	var checkfillD
 	if (checkfillD = 1){
-		$('#nameP')[0].innerHTML ='';
-		$('#desc')[0].innerHTML = '';
+		$('#txtName')[0].innerHTML ='';
+		$('#txtDes')[0].innerHTML = '';
+		$('#txtVar')[0].innerHTML = '';
 	}
-	if ($("#txtSR").val() == null && $("#txtCR").val() == null && $('#txtPro').val()== null){
-		alert("Region has not been selected.")
-	} else {
+	if ($("#txtSR").val() == null || $("#txtCR").val() == null || $('#txtPro').val()== null){
+		alert("No selection made.")
+	}else if($("#txtPro").val().length>1){ 
+		alert("More than one project selected.")
 
-		if ($("#txtCR").val().length == 1){
-			var reg =  projects.responseJSON.regions[$('#txtCR').val() ]
-			$("#seq")[0].innerHTML = reg["reference"]
-		}else if ($("#txtSR").val().length == 1){
-			var reg =  projects.responseJSON.regions[$('#txtSR').val()]
-			$("#seq")[0].innerHTML = reg["reference"]
+	}else {
+
+		if (x == "CR"){
+			if ($("#txtCR").val().length==1){
+				var reg =  projects.responseJSON.regions[$('#txtCR').val() ]
+				$("#txtSeq")[0].innerHTML = reg["reference"]
+				$('#txtReg').val("coord")
+			} else{
+				alert("More than one coordinate selected or coordinate not selected.")
+			}
+		}else if (x == "SR"){
+			if ($("#txtSR").val().length==1){
+				var reg =  projects.responseJSON.regions[$('#txtSR').val()]
+				$("#txtSeq")[0].innerHTML = reg["reference"]
+				$('#txtReg').val("seed")
+			} else{
+				alert("More than one coordinate selected or coordinate not selected.")
+			}
 		}
-		$('#nameP')[0].innerHTML = $('#txtPro').val() ;
-		$('#desc')[0].innerHTML = proj["description"] + "\n" + "Max Variants: " + proj["max_variants"] + "\n"+ "Is Nucleotide: " + reg["is_nucleotide"]
+		$('#txtName')[0].innerHTML = $('#txtPro').val() ;
+		$('#txtDes')[0].innerHTML = proj["description"] 
+		$('#txtVar')[0].innerHTML = proj["max_variants"] 
+		$('#txtNuc').val(reg["is_nucleotide"].toString())
+		
 	}
 	checkfillD = 1
 }
@@ -134,6 +172,9 @@ function delPR(){
 }*/
 
 function coselReg(){
+	if($("#txtPro").val().length>1){ 
+		alert("More than one project selected.")
+	}
 	var region = projects.responseJSON.projects[$('#txtPro').val()].regions;
 	var coordArr = [];
 	var i;
@@ -155,21 +196,60 @@ function regselCo(){
 	$("#txtCR").val(check)
 }
 
-/*function groupsel(){
-	var i;
+function sgSel(){
+
+	var i
+	var j
+	var k
+	var m
+	var sCheck = []; 
 	var regArr = [];
-	var reg = projects.responseJSON.regions; 
-	var regArr= [] 
-	for (reg in projects.responseJSON.regions){
-		regArr.push(reg)
-	} 
-	for(i=0; regArr.length ; i++){
-		projects.responseJSON.regions[regArr[i]]
-	
+	var regions = projects.responseJSON.regions
+
+	if ($('#txtSR option').length == 0 && $('#txtCR option').length == 0){
+		alert ("Project not selected.")
+		
+	}else{
+		for (regions in projects.responseJSON.regions){
+			regArr.push(regions)
+		}
+		regArr
+		for (i=0; i< regArr.length; i++){ 
+			if (projects.responseJSON.regions[regArr[i]]["seed_group"] == $("#txtSG").val()){ 
+				sCheck.push ([regArr[i]]);
+			} 
+		}
+		$("#txtSR").val(sCheck)
+		regselCo()
+		sCheck
+		var por = projects.responseJSON.projects; 
+		var proj = []	
+		var seedR = []	
+		for (por in projects.responseJSON.projects){ 
+			proj.push(por)
+		} 
+
+		for (i=0; i< proj.length; i++){
+			for (j=0; j< projects.responseJSON.projects[proj[i]]["regions"].length; j++){
+				for (k=0; k< projects.responseJSON.projects[proj[i]]["regions"][j]["seed_region_names"].length; k++){
+					for (m=0; m<sCheck.length; m++){
+						if (projects.responseJSON.projects[proj[i]]["regions"][j]["seed_region_names"][k].includes(sCheck[m])){
+							if(seedR.includes(proj[i])==false){
+								seedR.push(proj[i])
+							}
+						}
+					}
+				}
+			}
+		}
+		$("#txtPro").val("")
+		$("#txtPro").val(seedR)
 	}
 }
 
 
+
+/*
 function openForm(x) {
     document.getElementById(x).style.display = "block";
 }

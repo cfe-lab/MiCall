@@ -29,11 +29,11 @@
 <br>
 	<button onclick="fillPro(); fillSG()">Load Projects</button> 
 <br>
-	<select  id = "txtPro" size = "30" style="width: 200px" ondblclick = "fillSR(); fillCR()">		
+	<select multiple id = "txtPro" size = "30" style="width: 200px" ondblclick = "fillSR(); fillCR(); highlightSG()">		
 	</select>
 
 
-	<select multiple id = "txtSG" size = "30" style="width: 200px">		
+	<select multiple id = "txtSG" size = "30" style="width: 200px" ondblclick ="sgSel()">		
 	</select>
 
 	<select multiple id = "txtCR" size = "30" style="width: 200px" ondblclick = "coselReg()">		
@@ -45,9 +45,12 @@
 
 <br><br>
  	<button onclick="fillCR(); fillSR();">Select Project</button> 
+	<button onclick="sgSel()">Select Seed Group</button>
 
 
-	<button onclick="deta()">Show Details</button>
+	<button onclick="deta('CR')">Show Coordinate Region Details</button>
+	<button onclick="deta('SR')">Show Seed Region Details</button>
+	
 
 <button class="open-button" onclick="openForm('addForm')">Add</button>
 <div class="form-popup" id="addForm">
@@ -79,17 +82,38 @@
 <br><br><hr>
 
 
-	Name:
-	<textarea id = "nameP" rows="1" cols = "50">
+	Project:
+	<textarea id = "txtName" rows="1" cols = "50">
 	</textarea>
+<br>
+	Max Variants:
+	<textarea id = "txtVar" rows="1" cols = "25">
+	</textarea>
+<br>
+	
 <br>
 	Description:
-	<textarea id = "desc" rows="2" cols = "100">
+	<textarea id = "txtDes" rows="2" cols = "100">
 	</textarea>
 <br>
+	Region Type:
+	<select id = "txtReg">
+		<option> </option>
+		<option value = "coord"> Coordinate</option>
+		<option value = "seed"> Seed</option>
+	</select>
+<br>
+	Is Nucleotide:
+	<select id = "txtNuc">
+		<option>  </option>
+		<option value = "false"> False</option>
+		<option value = "true"> True</option>
+	</select>
+<br>
 	Sequence:
-	<textarea id = "seq" rows="20" cols = "100">
+	<textarea id = "txtSeq" rows="20" cols = "100">
 	</textarea>
+
 
 
 
