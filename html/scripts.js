@@ -66,110 +66,40 @@ function fillSG() {
 }
 
 function fillSR(){ //fills seed regions
-	$('#txtSR')[0].innerHTML = ''
-	var i;
-	var j;
-	var check = [];
-	var region = projects.responseJSON.projects[$('#txtPro').val()].regions
-	var seregSelect = $("#txtSR")[0];
-	for (i=0; i< region.length; i++){
-		var pro = $('#txtPro').val();
-		var seedR = region[i]["seed_region_names"]
-		for (j=0; j<seedR.length; j++){	
-			var option = document.createElement("option");	
-			option.text = seedR[j];
-			if (check.includes(seedR[j]) == false){	
-				check.push (seedR[j]);
-				seregSelect.add(option);
+		$('#txtSR')[0].innerHTML = ''
+		var i;
+		var j;
+		var check = [];
+		var region = projects.responseJSON.projects[$('#txtPro').val()].regions
+		var seregSelect = $("#txtSR")[0];
+		for (i=0; i< region.length; i++){
+			var pro = $('#txtPro').val();
+			var seedR = region[i]["seed_region_names"]
+			for (j=0; j<seedR.length; j++){	
+				var option = document.createElement("option");	
+				option.text = seedR[j];
+				if (check.includes(seedR[j]) == false){	
+					check.push (seedR[j]);
+					seregSelect.add(option);
+				}
 			}
 		}
-	}
+	
 }
 
 function fillCR(){ //fills in list of coordinate regions of a project
-	$('#txtCR')[0].innerHTML = ''
-	var i;
-	var region = projects.responseJSON.projects[$('#txtPro').val()].regions
-	var coregSelect = $("#txtCR")[0];
-	for (i=0; i<region.length; i++){
-		var pro = $('#txtPro').val();
-		var option = document.createElement("option");
-		option.text = region[i]["coordinate_region"]
-		coregSelect.add(option);
-	}
-
-}
-
-
-
-function deta(x){ // fills in the details of project/region
-	var proj 
-	proj = projects.responseJSON.projects[$('#txtPro').val()]
-	
-	var checkfillD
-	if (checkfillD = 1){
-		$('#txtName')[0].innerHTML ='';
-		$('#txtDes')[0].innerHTML = '';
-		$('#txtVar')[0].innerHTML = '';
-	}
-	if ($("#txtSR").val() == null || $("#txtCR").val() == null || $('#txtPro').val()== null){
-		alert("No selection made.")
-	}else if($("#txtPro").val().length>1){ 
-		alert("More than one project selected.")
-
-	}else {
-
-		if (x == "CR"){
-			if ($("#txtCR").val().length==1){
-				var reg =  projects.responseJSON.regions[$('#txtCR').val() ]
-				$("#txtSeq")[0].innerHTML = reg["reference"]
-				$('#txtReg').val("coord")
-			} else{
-				alert("More than one coordinate selected or coordinate not selected.")
-			}
-		}else if (x == "SR"){
-			if ($("#txtSR").val().length==1){
-				var reg =  projects.responseJSON.regions[$('#txtSR').val()]
-				$("#txtSeq")[0].innerHTML = reg["reference"]
-				$('#txtReg').val("seed")
-			} else{
-				alert("More than one coordinate selected or coordinate not selected.")
-			}
+		$('#txtCR')[0].innerHTML = ''
+		var i;
+		var region = projects.responseJSON.projects[$('#txtPro').val()].regions
+		var coregSelect = $("#txtCR")[0];
+		for (i=0; i<region.length; i++){
+			var pro = $('#txtPro').val();
+			var option = document.createElement("option");
+			option.text = region[i]["coordinate_region"]
+			coregSelect.add(option);
 		}
-		$('#txtName')[0].innerHTML = $('#txtPro').val() ;
-		$('#txtDes')[0].innerHTML = proj["description"] 
-		$('#txtVar')[0].innerHTML = proj["max_variants"] 
-		$('#txtNuc').val(reg["is_nucleotide"].toString())
-		
-	}
-	checkfillD = 1
 }
 
-/*function addPR(){   // to be fixed, not relevant
-	var newPR = $('#orReg').val();
-	var newV = $('#arr').val();
-	var newValue = {"thing":$('#orReg').val(), "value":$('#arr').val()}
-	if ($('#proreg').val() == "projects"){
-		projects.responseJSON.projects[newPR] = newValue;
-		fill();
-	} else if ($('#proreg').val() == "regions"){
-		projects.responseJSON.regions[newPR] = newValue;
-		fill();
-	}
-	alert(newPR + " has been added to " + $('#proreg').val() + ".");
-}
-
-function delPR(){
-	if (confirm("Are you sure you want to delete?")) {
-		if ($('#proreg').val() == "projects"){
-			delete projects.responseJSON.projects[$('#txtPro').val()]
-			fill();
-		} else if ($('#proreg').val() == "regions"){
-			delete projects.responseJSON.regions[$('#txtPro').val()]
-			fill();
-		}
-	}
-}*/
 
 function coselReg(){
 	if($("#txtPro").val().length>1){ 
@@ -206,10 +136,6 @@ function sgSel(){
 	var regArr = [];
 	var regions = projects.responseJSON.regions
 
-	if ($('#txtSR option').length == 0 && $('#txtCR option').length == 0){
-		alert ("Project not selected.")
-		
-	}else{
 		for (regions in projects.responseJSON.regions){
 			regArr.push(regions)
 		}
@@ -219,9 +145,6 @@ function sgSel(){
 				sCheck.push ([regArr[i]]);
 			} 
 		}
-		$("#txtSR").val(sCheck)
-		regselCo()
-		sCheck
 		var por = projects.responseJSON.projects; 
 		var proj = []	
 		var seedR = []	
@@ -244,10 +167,102 @@ function sgSel(){
 		}
 		$("#txtPro").val("")
 		$("#txtPro").val(seedR)
+		if ($('#txtSR option').length !== 0 || $('#txtCR option').length !== 0){
+			$("#txtSR").val(sCheck)
+			regselCo()
+		}
+}
+
+function deta(x){ // fills in the details of project/region
+	var proj 
+	proj = projects.responseJSON.projects[$('#txtPro').val()]
+	$('#txtNuc').val("");
+	
+
+
+	var checkfillD
+	if (checkfillD = 1){
+		$('#txtName')[0].innerHTML ='';
+		$('#txtDes')[0].innerHTML = '';
+		$('#txtVar')[0].innerHTML = '';
 	}
+	if ($("#txtSR").val() == null || $("#txtCR").val() == null || $('#txtPro').val()== null){
+		alert("No selection made.")
+	}else if($("#txtPro").val().length>1){ 
+		alert("More than one project selected.")
+
+	}else {
+
+		if (x == "CR"){
+			if ($("#txtCR").val().length==1){
+				var reg =  projects.responseJSON.regions[$('#txtCR').val() ]
+				$("#txtSeq")[0].innerHTML = reg["reference"]
+				$('#txtReg').val("coord")
+				$('#txtRN').val($("#txtCR").val())
+			} else{
+				alert("More than one coordinate selected or coordinate not selected.")
+			}
+		}else if (x == "SR"){
+			if ($("#txtSR").val().length==1){
+				var reg =  projects.responseJSON.regions[$('#txtSR').val()]
+				$("#txtSeq")[0].innerHTML = reg["reference"]
+				$('#txtReg').val("seed")
+				$('#txtRN').val($("#txtSR").val())
+			} else{
+				alert("More than one coordinate selected or coordinate not selected.")
+			}
+		}
+		$('#txtName')[0].innerHTML = $('#txtPro').val() ;
+		$('#txtDes')[0].innerHTML = proj["description"] 
+		$('#txtVar')[0].innerHTML = proj["max_variants"] 
+		$('#txtNuc').val(reg["is_nucleotide"].toString())
+		if (reg["is_nucleotide"] == false){
+			$("#txtSeG").val("null")
+		}else{
+			$("#txtSeG").val(reg["seed_group"])
+		}
+		
+	}
+	checkfillD = 1
 }
 
 
+function editCheck(){
+
+
+
+
+
+
+}
+
+
+
+/*function addPR(){   // to be fixed, not relevant
+	var newPR = $('#orReg').val();
+	var newV = $('#arr').val();
+	var newValue = {"thing":$('#orReg').val(), "value":$('#arr').val()}
+	if ($('#proreg').val() == "projects"){
+		projects.responseJSON.projects[newPR] = newValue;
+		fill();
+	} else if ($('#proreg').val() == "regions"){
+		projects.responseJSON.regions[newPR] = newValue;
+		fill();
+	}
+	alert(newPR + " has been added to " + $('#proreg').val() + ".");
+}
+
+function delPR(){
+	if (confirm("Are you sure you want to delete?")) {
+		if ($('#proreg').val() == "projects"){
+			delete projects.responseJSON.projects[$('#txtPro').val()]
+			fill();
+		} else if ($('#proreg').val() == "regions"){
+			delete projects.responseJSON.regions[$('#txtPro').val()]
+			fill();
+		}
+	}
+}*/
 
 /*
 function openForm(x) {

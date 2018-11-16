@@ -82,8 +82,8 @@
 <br><br><hr>
 
 
-	Project:
-	<textarea id = "txtName" rows="1" cols = "50">
+	Project Name:
+	<textarea id = "txtName" rows="1" cols = "50" readonly>
 	</textarea>
 <br>
 	Max Variants:
@@ -97,29 +97,43 @@
 	</textarea>
 <br>
 	Region Type:
-	<select id = "txtReg">
+	<select id = "txtReg" disabled="true">
 		<option> </option>
 		<option value = "coord"> Coordinate</option>
 		<option value = "seed"> Seed</option>
 	</select>
 <br>
+
+	Region Name:
+	<textarea id = "txtRN" rows="1" cols = "50">
+	</textarea>
+<br>
 	Is Nucleotide:
-	<select id = "txtNuc">
-		<option>  </option>
+	<select id = "txtNuc" disabled="true">
+		<option selected>  </option>
 		<option value = "false"> False</option>
 		<option value = "true"> True</option>
 	</select>
 <br>
+	Seed Group:
+	<textarea id = "txtSeG" rows="1" cols = "50">
+	</textarea>
+<br>
 	Sequence:
 	<textarea id = "txtSeq" rows="20" cols = "100">
-	</textarea>
+	</textarea>]
+<br>
+
 
 
 
 
 
 <br><br><br>
-	<button onclick="download('projects.json' , JSON.stringify(projects.responseJSON,undefined,4))">Save Changes</button>
+	<button> Save Changes </button>
+
+<br><br>
+	<button onclick="download('projects.json' , JSON.stringify(projects.responseJSON,undefined,4))">Download File</button>
 
     </body>
 </html>
