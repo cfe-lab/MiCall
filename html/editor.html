@@ -20,48 +20,25 @@
 <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="editor.js"></script>
 <script type="text/javascript" src="scripts.js"></script>
-    <body>
+    <body onload = "fillPro();fillSG()">
     	
 	
 	<h1>MiCall project editor</h1>
 
-
 <br>
-	<button onclick="fillPro(); fillSG()">Load Projects</button> 
-<br>
-	<select multiple id = "txtPro" size = "30" style="width: 200px" ondblclick = "fillSR(); fillCR(); highlightSG()">		
-	</select>
 
 
-	<select multiple id = "txtSG" size = "30" style="width: 200px" ondblclick ="sgSel()">		
-	</select>
+	<button onclick="download('projects.json' , JSON.stringify(projects.responseJSON,undefined,4))">Download File</button>
+	<button class="open-button" onclick="openForm('addForm')">Add</button>
+	<div class="form-popup" id="addForm">
+	  <form action="/action_page.php" class="form-container">
+ 	   <h2>Add</h2>
 
-	<select multiple id = "txtCR" size = "30" style="width: 200px" ondblclick = "coselReg()">		
-	</select>
-
-	<select multiple id = "txtSR" size = "30" style="width: 200px" ondblclick = "regselCo()">		
-	</select>
-
-
-<br><br>
- 	<button onclick="fillCR(); fillSR();">Select Project</button> 
-	<button onclick="sgSel()">Select Seed Group</button>
-
-
-	<button onclick="deta('CR')">Show Coordinate Region Details</button>
-	<button onclick="deta('SR')">Show Seed Region Details</button>
-	
-
-<button class="open-button" onclick="openForm('addForm')">Add</button>
-<div class="form-popup" id="addForm">
-  <form action="/action_page.php" class="form-container">
-    <h2>Add</h2>
-
-<br>
-	Organism
-	<input type="text" id = "orReg"> <br>
-	Sequence <input type="text" id = "arr">
-<br>
+	<br>
+		Organism
+		<input type="text" id = "orReg"> <br>
+		Sequence <input type="text" id = "arr">
+	<br>
 
     <button type="button" class="btn" onclick="addPR()">Add</button>
     <button type="button" class="btn cancel" onclick="closeForm('addForm')">Close</button>
@@ -77,13 +54,44 @@
 
 
 	<button onclick="delPR()">Delete</button>
+<br><br><br>
+	<table style="width: 850">
+		<th>Projects</th>
+    		<th>Seed Groups</th>
+    		<th>Seed Regions</th>
+		<th>Coordinate</th>
+	</table>
+<br>
+	<select multiple id = "txtPro" size = "15" style="width: 200px" onclick = "fillSR(); fillCR(); highlightSG()">		
+	</select>
+
+
+	<select multiple id = "txtSG" size = "15" style="width: 200px" onclick ="sgSel()">		
+	</select>
+
+	<select multiple id = "txtSR" size = "15" style="width: 200px" onclick = "regselCo(); deta('SR')">		
+	</select>
+
+	<select multiple id = "txtCR" size = "15" style="width: 200px" onclick = "coselReg(); deta('CR')">		
+	</select>
+
+	
+
+
+<br><br>
+
+
+
+	
+
+
 
 	
 <br><br><hr>
 
 
 	Project Name:
-	<textarea id = "txtName" rows="1" cols = "50" readonly>
+	<textarea id = "txtName" rows="1" cols = "50" >
 	</textarea>
 <br>
 	Max Variants:
@@ -97,7 +105,7 @@
 	</textarea>
 <br>
 	Region Type:
-	<select id = "txtReg" disabled="true">
+	<select id = "txtReg">
 		<option> </option>
 		<option value = "coord"> Coordinate</option>
 		<option value = "seed"> Seed</option>
@@ -109,7 +117,7 @@
 	</textarea>
 <br>
 	Is Nucleotide:
-	<select id = "txtNuc" disabled="true">
+	<select id = "txtNuc">
 		<option selected>  </option>
 		<option value = "false"> False</option>
 		<option value = "true"> True</option>
@@ -121,19 +129,12 @@
 <br>
 	Sequence:
 	<textarea id = "txtSeq" rows="20" cols = "100">
-	</textarea>]
-<br>
-
-
-
-
-
-
-<br><br><br>
-	<button> Save Changes </button>
+	</textarea>
 
 <br><br>
-	<button onclick="download('projects.json' , JSON.stringify(projects.responseJSON,undefined,4))">Download File</button>
+	<button> Save Changes </button>
+
+	
 
     </body>
 </html>

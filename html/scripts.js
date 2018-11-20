@@ -12,6 +12,8 @@ function download(filename, text) {
 
 
 function fillPro() {  //fills in the list of projects
+	alert("projects.json loaded")
+
 	$('#txtPro')[0].innerHTML = ''
 	var proregSelect = $("#txtPro")[0]; 
 	var por = projects.responseJSON.projects; 
@@ -23,8 +25,6 @@ function fillPro() {  //fills in the list of projects
 }
 
 function highlightSG(){
-	var i
-	var j
 	var seedR = []
 	for (i=0; i< projects.responseJSON.projects[$("#txtPro").val()]["regions"].length; i++){
 		for (j=0; j< projects.responseJSON.projects[$("#txtPro").val()]["regions"][i]["seed_region_names"].length; j++)
@@ -47,7 +47,6 @@ function highlightSG(){
 
 function fillSG() {
 	$('#txtSG')[0].innerHTML = ''
-	var i;
 	var grSelect = $('#txtSG')[0];
 	var sCheck = []; //array to check if seed group is already added
 	var regArr = []; //store regions in array
@@ -66,12 +65,11 @@ function fillSG() {
 }
 
 function fillSR(){ //fills seed regions
-		$('#txtSR')[0].innerHTML = ''
-		var i;
-		var j;
-		var check = [];
+	$('#txtSR')[0].innerHTML = ''
+	var check = [];
+	var seregSelect = $("#txtSR")[0];
+	if ($("#txtPro").val().length ==1){
 		var region = projects.responseJSON.projects[$('#txtPro').val()].regions
-		var seregSelect = $("#txtSR")[0];
 		for (i=0; i< region.length; i++){
 			var pro = $('#txtPro').val();
 			var seedR = region[i]["seed_region_names"]
@@ -84,54 +82,110 @@ function fillSR(){ //fills seed regions
 				}
 			}
 		}
-	
+	}else if ($("#txtPro").val().length >1){
+		for (k=0; k<$("#txtPro").val().length ; k++){
+		var region = projects.responseJSON.projects[$('#txtPro').val()[k]].regions
+			for (i=0; i< region.length; i++){
+				var pro = $('#txtPro').val();
+				var seedR = region[i]["seed_region_names"]
+				for (j=0; j<seedR.length; j++){	
+					var option = document.createElement("option");	
+					option.text = seedR[j];
+					if (check.includes(seedR[j]) == false){	
+						check.push (seedR[j]);
+						seregSelect.add(option);
+					}
+				}
+			}
+
+		}
+	}
 }
 
 function fillCR(){ //fills in list of coordinate regions of a project
-		$('#txtCR')[0].innerHTML = ''
-		var i;
+	$('#txtCR')[0].innerHTML = ''
+	var coregSelect = $("#txtCR")[0];
+	var check = [];
+	if ($("#txtPro").val().length ==1){
 		var region = projects.responseJSON.projects[$('#txtPro').val()].regions
-		var coregSelect = $("#txtCR")[0];
 		for (i=0; i<region.length; i++){
 			var pro = $('#txtPro').val();
 			var option = document.createElement("option");
 			option.text = region[i]["coordinate_region"]
 			coregSelect.add(option);
 		}
+	}else if ($("#txtPro").val().length >1){
+		for (k=0; k<$("#txtPro").val().length ; k++){
+		var region = projects.responseJSON.projects[$('#txtPro').val()[k]].regions
+			for (i=0; i<region.length; i++){
+				var pro = $('#txtPro').val();
+				var option = document.createElement("option");
+				option.text = region[i]["coordinate_region"]
+				if (check.includes(region[i]["coordinate_region"]) == false){	
+						check.push (region[i]["coordinate_region"]);
+						coregSelect.add(option);
+				}
+			}
+		}
+	}
 }
 
 
 function coselReg(){
-	if($("#txtPro").val().length>1){ 
-		alert("More than one project selected.")
+	if ($("#txtPro").val().length ==1){
+		var region = projects.responseJSON.projects[$('#txtPro').val()].regions;
+		var coordArr = [];
+		for (i = 0; i < region.length; i++){
+			coordArr.push (region[i]["coordinate_region"]);
+		}
+		var arrNum = coordArr.indexOf($("#txtCR").val()[0])
+		$("#txtSR").val(region[arrNum]["seed_region_names"])
+	}else if ($("#txtPro").val().length >1){
+		var check = []
+		for (j=0; j<$("#txtPro").val().length ; j++){
+			var region = projects.responseJSON.projects[$('#txtPro').val()[j]].regions;
+			var coordArr = [];
+			for (i = 0; i < region.length; i++){
+				coordArr.push (region[i]["coordinate_region"]);
+			}
+			var arrNum = coordArr.indexOf($("#txtCR").val()[0])
+			if (arrNum !== -1){
+				for (k=0; k<region[arrNum]["seed_region_names"].length; k++){
+					if (check.includes(region[arrNum]["seed_region_names"][k].toString()) == false){
+						check.push(region[arrNum]["seed_region_names"][k].toString())
+					}	
+				}		
+			}	
+		}
+		$("#txtSR").val(check)
 	}
-	var region = projects.responseJSON.projects[$('#txtPro').val()].regions;
-	var coordArr = [];
-	var i;
-	for (i = 0; i < region.length; i++){
-		coordArr.push (region[i]["coordinate_region"]);
-	}
-	var arrNum = coordArr.indexOf($("#txtCR").val()[0])
-	$("#txtSR").val(region[arrNum]["seed_region_names"])
 }
 
 function regselCo(){
-	var region = projects.responseJSON.projects[$('#txtPro').val()].regions;
-	var check = []
-	for (i = 0; i < region.length; i++){
-		if (region[i]["seed_region_names"].includes($("#txtSR").val()[0])){
-			check.push (region[i]["coordinate_region"])
+	if ($("#txtPro").val().length ==1){
+		var region = projects.responseJSON.projects[$('#txtPro').val()].regions;
+		var check = []
+		for (i = 0; i < region.length; i++){
+			if (region[i]["seed_region_names"].includes($("#txtSR").val()[0])){
+				check.push (region[i]["coordinate_region"])
+			}
+		}
+		
+	}else if ($("#txtPro").val().length >1){
+		for (j=0; j<$("#txtPro").val().length ; j++){
+			var region = projects.responseJSON.projects[$("#txtPro").val()[j]].regions;
+			var check = []
+			for (i = 0; i < region.length; i++){
+				if (region[i]["seed_region_names"].includes($("#txtSR").val()[0])){
+					check.push (region[i]["coordinate_region"])
+				}
+			}
 		}
 	}
 	$("#txtCR").val(check)
 }
 
 function sgSel(){
-
-	var i
-	var j
-	var k
-	var m
 	var sCheck = []; 
 	var regArr = [];
 	var regions = projects.responseJSON.regions
@@ -139,7 +193,6 @@ function sgSel(){
 		for (regions in projects.responseJSON.regions){
 			regArr.push(regions)
 		}
-		regArr
 		for (i=0; i< regArr.length; i++){ 
 			if (projects.responseJSON.regions[regArr[i]]["seed_group"] == $("#txtSG").val()){ 
 				sCheck.push ([regArr[i]]);
@@ -167,10 +220,11 @@ function sgSel(){
 		}
 		$("#txtPro").val("")
 		$("#txtPro").val(seedR)
-		if ($('#txtSR option').length !== 0 || $('#txtCR option').length !== 0){
-			$("#txtSR").val(sCheck)
-			regselCo()
-		}
+		fillSR()
+		fillCR()
+		$("#txtSR").val(sCheck)
+		regselCo()
+		
 }
 
 function deta(x){ // fills in the details of project/region
@@ -179,24 +233,18 @@ function deta(x){ // fills in the details of project/region
 	$('#txtNuc').val("");
 	
 
-
 	var checkfillD
 	if (checkfillD = 1){
-		$('#txtName')[0].innerHTML ='';
-		$('#txtDes')[0].innerHTML = '';
-		$('#txtVar')[0].innerHTML = '';
+		$('#txtName')[0].innerHTML = $('#txtDes')[0].innerHTML = $('#txtVar')[0].innerHTML = '';
 	}
 	if ($("#txtSR").val() == null || $("#txtCR").val() == null || $('#txtPro').val()== null){
 		alert("No selection made.")
-	}else if($("#txtPro").val().length>1){ 
-		alert("More than one project selected.")
-
 	}else {
 
 		if (x == "CR"){
 			if ($("#txtCR").val().length==1){
 				var reg =  projects.responseJSON.regions[$('#txtCR').val() ]
-				$("#txtSeq")[0].innerHTML = reg["reference"]
+				$("#txtSeq")[0].innerHTML = reg["reference"].toString().replace(/\,/g, '')
 				$('#txtReg').val("coord")
 				$('#txtRN').val($("#txtCR").val())
 			} else{
@@ -205,16 +253,13 @@ function deta(x){ // fills in the details of project/region
 		}else if (x == "SR"){
 			if ($("#txtSR").val().length==1){
 				var reg =  projects.responseJSON.regions[$('#txtSR').val()]
-				$("#txtSeq")[0].innerHTML = reg["reference"]
+				$("#txtSeq")[0].innerHTML = reg["reference"].toString().replace(/\,/g, '')
 				$('#txtReg').val("seed")
 				$('#txtRN').val($("#txtSR").val())
 			} else{
 				alert("More than one coordinate selected or coordinate not selected.")
 			}
 		}
-		$('#txtName')[0].innerHTML = $('#txtPro').val() ;
-		$('#txtDes')[0].innerHTML = proj["description"] 
-		$('#txtVar')[0].innerHTML = proj["max_variants"] 
 		$('#txtNuc').val(reg["is_nucleotide"].toString())
 		if (reg["is_nucleotide"] == false){
 			$("#txtSeG").val("null")
@@ -222,6 +267,16 @@ function deta(x){ // fills in the details of project/region
 			$("#txtSeG").val(reg["seed_group"])
 		}
 		
+	}
+	if($("#txtPro").val().length == 1){
+		$('#txtName')[0].innerHTML = $('#txtPro').val() ;
+		$('#txtDes')[0].innerHTML = proj["description"] 
+		$('#txtVar')[0].innerHTML = proj["max_variants"] 
+
+	} else{
+		$('#txtName')[0].innerHTML = "Project not selected."
+		$('#txtDes')[0].innerHTML = $('#txtVar')[0].innerHTML = "N/A"
+
 	}
 	checkfillD = 1
 }
