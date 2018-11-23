@@ -1,5 +1,6 @@
 <html>
     <head>
+	<meta charset="utf-8"/>
     </head>
 
 
@@ -20,7 +21,7 @@
 <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="editor.js"></script>
 <script type="text/javascript" src="scripts.js"></script>
-    <body onload = "fillPro();fillSG()">
+    <body onload = "fillPro();fillSG();clears()">
     	
 	
 	<h1>MiCall project editor</h1>
@@ -29,19 +30,20 @@
 
 
 	<button onclick="download('projects.json' , JSON.stringify(projects.responseJSON,undefined,4))">Download File</button>
+	<button onclick = "clears();fillPro();fillSG();blankR();"> Reload </button>
 	<button class="open-button" onclick="openForm('addForm')">Add</button>
-	<div class="form-popup" id="addForm">
-	  <form action="/action_page.php" class="form-container">
- 	   <h2>Add</h2>
+		<div class="form-popup" id="addForm" style="width: 50%; height:500px; background:#FFFFFF">
+	 	<form action="/action_page.php" class="form-container">
+ 	 	  <h2>Add</h2>
 
-	<br>
-		Organism
-		<input type="text" id = "orReg"> <br>
-		Sequence <input type="text" id = "arr">
-	<br>
+		<br>
+			Organism
+			<input type="text" id = "orReg"> <br>
+			Sequence <input type="text" id = "arr">
+		<br>
 
-    <button type="button" class="btn" onclick="addPR()">Add</button>
-    <button type="button" class="btn cancel" onclick="closeForm('addForm')">Close</button>
+   		<button type="button" class="btn" onclick="addPR()">Add</button>
+    		<button type="button" class="btn cancel" onclick="closeForm('addForm')">Close</button>
   </form>
 </div>
 
@@ -107,14 +109,9 @@
 	Region Type:
 	<select id = "txtReg">
 		<option> </option>
-		<option value = "coord"> Coordinate</option>
+		<option value = "coordinate"> Coordinate</option>
 		<option value = "seed"> Seed</option>
 	</select>
-<br>
-
-	Region Name:
-	<textarea id = "txtRN" rows="1" cols = "50">
-	</textarea>
 <br>
 	Is Nucleotide:
 	<select id = "txtNuc">
@@ -123,6 +120,11 @@
 		<option value = "true"> True</option>
 	</select>
 <br>
+	Region Name:
+	<textarea id = "txtRN" rows="1" cols = "50">
+	</textarea>
+<br>
+	
 	Seed Group:
 	<textarea id = "txtSeG" rows="1" cols = "50">
 	</textarea>
@@ -132,7 +134,7 @@
 	</textarea>
 
 <br><br>
-	<button> Save Changes </button>
+	<button onclick ="editCheck()"> Save Changes </button>
 
 	
 

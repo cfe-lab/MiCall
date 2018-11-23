@@ -24,7 +24,7 @@ function fillPro() {  //fills in the list of projects
 	} 
 }
 
-function highlightSG(){
+function highlightSG(){ //highlights related seed groups when project is chosen
 	var seedR = []
 	for (i=0; i< projects.responseJSON.projects[$("#txtPro").val()]["regions"].length; i++){
 		for (j=0; j< projects.responseJSON.projects[$("#txtPro").val()]["regions"][i]["seed_region_names"].length; j++)
@@ -45,7 +45,7 @@ function highlightSG(){
 
 
 
-function fillSG() {
+function fillSG() { //fills list of seed groups
 	$('#txtSG')[0].innerHTML = ''
 	var grSelect = $('#txtSG')[0];
 	var sCheck = []; //array to check if seed group is already added
@@ -62,6 +62,11 @@ function fillSG() {
 			grSelect.add(option);
 		} 
 	}
+}
+
+function blankR(){ //clears both region select fields
+	$("#txtCR")[0].innerHTML =""
+	$("#txtSR")[0].innerHTML =""
 }
 
 function fillSR(){ //fills seed regions
@@ -131,7 +136,7 @@ function fillCR(){ //fills in list of coordinate regions of a project
 }
 
 
-function coselReg(){
+function coselReg(){ //highlights related seed region fields when coordinate region is selected
 	if ($("#txtPro").val().length ==1){
 		var region = projects.responseJSON.projects[$('#txtPro').val()].regions;
 		var coordArr = [];
@@ -161,7 +166,7 @@ function coselReg(){
 	}
 }
 
-function regselCo(){
+function regselCo(){ //highlights related seed region fields when coordinate region is selected
 	if ($("#txtPro").val().length ==1){
 		var region = projects.responseJSON.projects[$('#txtPro').val()].regions;
 		var check = []
@@ -185,7 +190,7 @@ function regselCo(){
 	$("#txtCR").val(check)
 }
 
-function sgSel(){
+function sgSel(){ //select seed group, finds and highlights projects and regions related
 	var sCheck = []; 
 	var regArr = [];
 	var regions = projects.responseJSON.regions
@@ -232,11 +237,6 @@ function deta(x){ // fills in the details of project/region
 	proj = projects.responseJSON.projects[$('#txtPro').val()]
 	$('#txtNuc').val("");
 	
-
-	var checkfillD
-	if (checkfillD = 1){
-		$('#txtName')[0].innerHTML = $('#txtDes')[0].innerHTML = $('#txtVar')[0].innerHTML = '';
-	}
 	if ($("#txtSR").val() == null || $("#txtCR").val() == null || $('#txtPro').val()== null){
 		alert("No selection made.")
 	}else {
@@ -244,22 +244,25 @@ function deta(x){ // fills in the details of project/region
 		if (x == "CR"){
 			if ($("#txtCR").val().length==1){
 				var reg =  projects.responseJSON.regions[$('#txtCR').val() ]
-				$("#txtSeq")[0].innerHTML = reg["reference"].toString().replace(/\,/g, '')
-				$('#txtReg').val("coord")
+				$("#txtSeq").val(reg["reference"].toString().replace(/\,/g, ''))
+				$('#txtReg').val("coordinate")
 				$('#txtRN').val($("#txtCR").val())
+				regType = "coordinate" //global variable to check region type
 			} else{
 				alert("More than one coordinate selected or coordinate not selected.")
 			}
 		}else if (x == "SR"){
 			if ($("#txtSR").val().length==1){
 				var reg =  projects.responseJSON.regions[$('#txtSR').val()]
-				$("#txtSeq")[0].innerHTML = reg["reference"].toString().replace(/\,/g, '')
+				$("#txtSeq").val(reg["reference"].toString().replace(/\,/g, ''))
 				$('#txtReg').val("seed")
 				$('#txtRN').val($("#txtSR").val())
+				regType = "seed" //global variable to check region type
 			} else{
 				alert("More than one coordinate selected or coordinate not selected.")
 			}
 		}
+		globReg = reg //global variable to store region chosen
 		$('#txtNuc').val(reg["is_nucleotide"].toString())
 		if (reg["is_nucleotide"] == false){
 			$("#txtSeG").val("null")
@@ -269,24 +272,209 @@ function deta(x){ // fills in the details of project/region
 		
 	}
 	if($("#txtPro").val().length == 1){
-		$('#txtName')[0].innerHTML = $('#txtPro').val() ;
-		$('#txtDes')[0].innerHTML = proj["description"] 
-		$('#txtVar')[0].innerHTML = proj["max_variants"] 
+		$("#txtName").val($('#txtPro').val()) ;
+		$('#txtDes').val(proj["description"]) 
+		$('#txtVar').val(proj["max_variants"]) 
 
 	} else{
-		$('#txtName')[0].innerHTML = "Project not selected."
-		$('#txtDes')[0].innerHTML = $('#txtVar')[0].innerHTML = "N/A"
+		$('#txtName').val( "Project not selected.")
+		$('#txtDes').val("N/A")
+		$('#txtVar').val("N/A")
 
 	}
-	checkfillD = 1
+}
+
+function clears(){
+	$("#txtName").val("")
+	$('#txtDes').val("")
+	$('#txtVar').val("")
+	$("#txtSeG").val("")
+	$('#txtNuc').val("")
+	$("#txtSeq").val("")
+	$('#txtReg').val("")
+	$('#txtRN').val("")
 }
 
 
 function editCheck(){
+	var proj = projects.responseJSON.projects[$('#txtPro').val()]
+	var reg =  projects.responseJSON.regions
+	var changes =""
+ 
+	if ($("#txtPro").val().length > 1 || $("#txtPro").val().length == 0){ //check for name change
+		alert ("Project needs to be selected.")
+	}else if($("#txtPro").val().toString() == $("#txtName").val()){
+		newProj = $("#txtPro").val().toString()
+	}else if($("#txtPro").val().toString() !== $("#txtName").val()){
+		newProj = $("#txtName").val()
+		changes += "\n" + "Project Name"
+	}
+
+	
+	if ($("#txtVar").val() == proj["max_variants"]){ //check for max variant change
+		newVar = proj["max_variants"]
+	}else if ($("#txtVar").val() !== proj["max_variants"]){	
+		newVar = $("#txtVar").val()
+		changes += "\n" + "Max Variants"
+	}
+	
+
+	if ($("#txtDes").val() == proj["description"]){ //check for description change
+		newDes = proj["description"]
+	}else if ($("#txtDes").val() !== proj["description"]){
+		newDes = $("#txtDes").val()
+		changes += "\n" + "Description"
+	}
+
+	
+	if ($("#txtReg").val() == regType){ //check for region type
+		newregType = regType
+	}else if ($("#txtReg").val() !== regType){
+		newregType = $("#txtReg").val()
+		changes += "\n" + "Region Type"
+	}
+
+
+	if (regType == "coordinate"){ //check for region name
+		regName = $("#txtCR").val().toString()
+	}else if (regType == "seed"){
+		regName = $("#txtSR").val().toString()
+	}
+	if ($("#txtRN").val() !== regName){
+		changes += "\n" + "Region Name"
+	} 
+ 	newregName = $("#txtRN").val()
+
+
+	//check for seed group
+	if ($("#txtReg").val() == "coordinate" && $("#txtSeG").val() !== "null"){
+		alert("seed group for coordinate regions is 'null'")
+		$("#txtSeG").val("null")
+		newSG = $("#txtSeG").val()
+	}else if ($("#txtReg").val() == "coordinate" && $("#txtSeG").val() == "null"){
+		newSG = "null"
+	}else if ($("#txtReg").val() == "seed" && $("#txtSeG").val() == globReg["seed_group"]){
+		newSG = $("#txtSeG").val()
+	}else if ($("#txtReg").val() == "seed" && $("#txtSeG").val() !== globReg["seed_group"]){
+		newSG = $("#txtSeG").val()
+		changes += "\n" + "Seed Group"
+	}
 
 
 
+	if (globReg["reference"].toString().replace(/\,/g, '') == $("#txtSeq").val().replace(/\,/g, '').toUpperCase()){ //check for sequence
+		newSeq = globReg["reference"]
+	}else if (globReg["reference"].toString().replace(/\,/g, '') !== $("#txtSeq").val().replace(/\,/g, '').toUpperCase()){ //converts sequence to array
+		newSeq = []
+		var arrLength = Math.ceil($("#txtSeq").val().replace(/\,/g, '')/65) 
+		for (i=0; i< arrLength; i++){
+			var seqBlock = ""
+			for (j=0; j<65; j++){
+				if ($("#txtSeq").val()[i*65 +j].toUpperCase().length!== undefined){
+					seqBlock += $("#txtSeq").val()[i*65 +j]
+				}
+			}
+			newSeq[i] = seqBlock
+		}	
+		changes += "\n" + "Reference Sequence"
+	}
+	isNuc = 0
+	for (i=0; i<newSeq.toString().length; i++){ //checks if sequence is nucleotide or not
+		if(newSeq.toString()[i] !== "A" && newSeq.toString()[i] !== "T" && newSeq.toString()[i] !== "G" && newSeq.toString()[i] !== "C" && newSeq.toString()[i] !== "," && newSeq.toString()[i] !== "*" ){
+			isNuc += 1
+		}
+	}
 
+	var matchOK
+	if ($("#txtReg").val() == "coordinate"){
+		if($("#txtNuc").val() == "false" && isNuc >0){
+			matchOK = true
+
+		}else{
+			alert("Region type, Is nucleotide, and Sequence are not in correspondance" +"\n" + "For a coordinate region, Is Nucleotide must be false and sequence must be an Amino Acid Sequence")
+			matchOK = false
+		}
+	}else if ($("#txtReg").val() == "seed"){
+		if($("#txtNuc").val() == "true" && isNuc == 0){
+			matchOK = true
+		}else{
+			alert("Region type, Is nucleotide, and Sequence are not in correspondance" +"\n" + "For a seed region, Is Nucleotide must be true and sequence must be a Nucleotide Sequence")
+			matchOK = false
+		}
+	}
+	if (isNaN($("#txtVar").val())){
+		alert("Max Variants must be a number")
+		matchOK = false
+	}else{		
+ 	}
+	if (matchOK == true){
+		if (changes == ""){
+			if (confirm ("There were no changes")){
+			}	
+		}else{ 
+			if (confirm ("The following will be changed:" + changes)){
+				console.log(newProj + newVar + newDes + newregType + newregName +newSG)
+				editChange()
+			}	
+		}
+	}
+}
+
+function editChange(){
+	var proje = projects.responseJSON.projects
+	var regi = projects.responseJSON.regions
+	
+	if (newProj !== $("#txtPro").val().toString()){
+		proje[newProj] = proje[$("#txtPro").val().toString()]
+		delete proje[$("#txtPro").val().toString()]
+	}
+	proje[newProj]["max_variants"] = newVar
+	proje[newProj]["description"] = newDes
+	if (newregType == "coordinate"){
+		regi[newregName] = {"is_nucleotide": false, "reference": newSeq, "seed_group": newSG}
+	}else if (newregType == "seed"){
+		regi[newregName] = {"is_nucleotide": true, "reference": newSeq, "seed_group": newSG}
+	}
+
+	//for when seed is changed only
+	var regionIndex = []
+	var seedIndex
+	var coorIndex
+	for (i=0; i<$("#txtCR").val().length; i++){
+		for (j=0; j<$("#txtCR option").length;j++){		
+			if ($("#txtCR option")[j].innerHTML == $("#txtCR").val()[i]){
+				regionIndex.push(j)
+			}
+		}
+		seedIndex = proje[newProj]["regions"][regionIndex[i]]["seed_region_names"].indexOf(regName)
+		proje[newProj]["regions"][regionIndex[i]]["seed_region_names"][seedIndex] = newregName
+
+	}
+
+
+	
+	//proje[newProj]["regions"]
+	/*if (regName !== newRegName && newregType == "coordinate"){
+			find position
+			newcoordregion = oldcoordregion
+			push newcoordregion
+			delete oldcoordregion
+
+			in regions new = old
+			delete old
+		}
+	}else if (regName !== newRegName && newregType == "seed"){
+		
+			for length(coordinate region selected in txtCR){
+				find position in array of regions of projects
+					make list of all coordinate regions
+					proje[$("#txtPro").val()[1]]["regions"].indexOf(list)
+				oldseedregion = new seed region
+				delete oldseed region
+			}
+		}	
+	}
+	*/
 
 
 }
@@ -319,12 +507,12 @@ function delPR(){
 	}
 }*/
 
-/*
+
 function openForm(x) {
     document.getElementById(x).style.display = "block";
 }
 function closeForm(x) {
     document.getElementById(x).style.display = "none";
 }
-*/
+
 
