@@ -21,7 +21,7 @@
 <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="editor.js"></script>
 <script type="text/javascript" src="scripts.js"></script>
-    <body onload = "fillPro();fillSG();clears()">
+    <body onload = "loadPro();clears();" onload = "fillPro(); fillSG();">
     	
 	
 	<h1>MiCall project editor</h1>
@@ -32,30 +32,56 @@
 	<button onclick="download('projects.json' , JSON.stringify(projects.responseJSON,undefined,4))">Download File</button>
 	<button onclick = "clears();fillPro();fillSG();blankR();"> Reload </button>
 	<button class="open-button" onclick="openForm('addForm')">Add</button>
-		<div class="form-popup" id="addForm" style="width: 50%; height:500px; background:#FFFFFF">
+		<div class="form-popup" id="addForm" style="width: 90%; height:90%; background:#FFFFFF" onclick = "fillAddPro()">
 	 	<form action="/action_page.php" class="form-container">
- 	 	  <h2>Add</h2>
+ 	 		<h2>Add</h2>
 
 		<br>
-			Organism
-			<input type="text" id = "orReg"> <br>
-			Sequence <input type="text" id = "arr">
+			Project <select id = "addProj"> 
+				<option value = "new"> New Project </option>
+			</select><br>
+			Project Name
+			<textarea id = "addProjName" rows="1" cols = "50" >
+			</textarea>
+			<br>
+			Max Variants
+			<textarea id = "addVar" rows="1" cols = "50" >
+			</textarea>
+			<br>
+			Description
+			<textarea id = "addDes" rows="1" cols = "50" >
+			</textarea>
+			<br>
+
 		<br>
 
    		<button type="button" class="btn" onclick="addPR()">Add</button>
     		<button type="button" class="btn cancel" onclick="closeForm('addForm')">Close</button>
-  </form>
+		</form>
 </div>
 
 
 
+	<button class="open-button" onclick="openForm('delForm')">Delete</button>
+		<div class="form-popup" id="delForm" style="width: 50%; height:25%; background:#FFFFFF; position:absolute; bottom: 0px;right: 0px">
+	 	<form action="/action_page.php" class="form-container">
+ 	 	  <h2>Delete</h2>
+
+		<br>
+			Type <select id ="delType">
+				<option> </option>
+				<option value = "project"> Project </option>
+				<option value = "region"> Region </option>
+			</select>
+
+		<br>
+
+   		<button type="button" class="btn" onclick="delPR()">Delete</button>
+    		<button type="button" class="btn cancel" onclick="closeForm('delForm')">Close</button>
+		</form>
+		</div>
 
 
-
-
-
-
-	<button onclick="delPR()">Delete</button>
 <br><br><br>
 	<table style="width: 850">
 		<th>Projects</th>
@@ -107,14 +133,14 @@
 	</textarea>
 <br>
 	Region Type:
-	<select id = "txtReg">
+	<select id = "txtReg" disabled="true">
 		<option> </option>
 		<option value = "coordinate"> Coordinate</option>
 		<option value = "seed"> Seed</option>
 	</select>
 <br>
 	Is Nucleotide:
-	<select id = "txtNuc">
+	<select id = "txtNuc" disabled="true">
 		<option selected>  </option>
 		<option value = "false"> False</option>
 		<option value = "true"> True</option>
