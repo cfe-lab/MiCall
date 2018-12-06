@@ -1,10 +1,12 @@
-function loadPro(){
-	projects = $.getJSON('projects.json')
+//loads the json file
+projects = $.getJSON('projects.json')
 
+
+function loadChange(){
+	$("#loadbut")[0].innerHTML = "Refresh"
 }
 
-function download(filename, text) {
-
+function download(filename, text) { //downloads the json file
   var element = document.createElement('a');
   element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
   element.setAttribute('download', filename);
@@ -13,7 +15,6 @@ function download(filename, text) {
 
   element.click();
 }
-
 
 
 function fillPro() {  //fills in the list of projects
@@ -27,15 +28,6 @@ function fillPro() {  //fills in the list of projects
 	} 
 }
 
-function fillAddPro() {  //fills in the list of projects
-	var proSelect = $('#addProj')[0]; 
-	var por = projects.responseJSON.projects; 
-	for (por in projects.responseJSON.projects){ 
-		var option = document.createElement("option"); 
-		option.text = por; 
-		proSelect.add(option); 
-	} 
-}
 
 function highlightSG(){ //highlights related seed groups when project is chosen
 	var seedR = []
@@ -158,7 +150,13 @@ function coselReg(){ //highlights related seed region fields when coordinate reg
 			coordArr.push (region[i]["coordinate_region"]);
 		}
 		var arrNum = coordArr.indexOf($("#txtCR").val()[0])
-		$("#txtSR").val(region[arrNum]["seed_region_names"])
+		var seedRG = region[arrNum]["seed_region_names"]
+		$("#txtSR").val(seedRG)
+		if (region[arrNum]["seed_region_names"].length !== 0){
+			$("#txtSG").val(projects.responseJSON.regions[seedRG[0]]["seed_group"])
+		}else{
+			$("#txtSG").val("")
+		}
 	}else if ($("#txtPro").val().length >1){
 		var check = []
 		for (j=0; j<$("#txtPro").val().length ; j++){
@@ -177,6 +175,7 @@ function coselReg(){ //highlights related seed region fields when coordinate reg
 			}	
 		}
 		$("#txtSR").val(check)
+		$("#txtSG").val(projects.responseJSON.regions[check[0]]["seed_group"])
 	}
 }
 
@@ -202,7 +201,7 @@ function regselCo(){ //highlights related coordinate region fields when seed reg
 				}
 			}
 		}
-	 $("#txtSG").val(projects.responseJSON.regions[$("#txtSR").val()]["seed_group"])
+	 $("#txtSG").val(projects.responseJSON.regions[$("#txtSR").val()[0]]["seed_group"])
 	}
 
 	$("#txtCR").val(check)
@@ -302,7 +301,7 @@ function deta(x){ // fills in the details of project/region
 	}
 }
 
-function clears(){
+function clears(){ //clears the details fields
 	$("#txtName").val("")
 	$('#txtDes').val("")
 	$('#txtVar').val("")
@@ -314,7 +313,7 @@ function clears(){
 }
 
 
-function editCheck(){
+function editCheck(){ //check to see which fields are edited and if changes are permitted
 	var proj = projects.responseJSON.projects[$('#txtPro').val()]
 	var reg =  projects.responseJSON.regions
 	var changes =""
@@ -415,19 +414,20 @@ function editCheck(){
 		}
 	}
 	
+	//check if sequence matches region type
 	if ($("#txtReg").val() == "coordinate"){
 		if($("#txtNuc").val() == "false" && isNuc >0){
 			matchOK = true
 
 		}else{
-			alert("For a coordinate region, Is Nucleotide must be false and sequence must be an Amino Acid Sequence")
+			alert("For a coordinate region, sequence must be an Amino Acid Sequence")
 			matchOK = false
 		}
 	}else if ($("#txtReg").val() == "seed"){
 		if($("#txtNuc").val() == "true" && isNuc == 0){
 			matchOK = true
 		}else{
-			alert("For a seed region, Is Nucleotide must be true and sequence must be a Nucleotide Sequence")
+			alert("For a seed region, sequence must be a Nucleotide Sequence")
 			matchOK = false
 		}
 	}
@@ -449,7 +449,7 @@ function editCheck(){
 	}
 }
 
-function editChange(){
+function editChange(){ //makes the edits
 	var proje = projects.responseJSON.projects
 	var regi = projects.responseJSON.regions
 	
@@ -490,77 +490,232 @@ function editChange(){
 
 }
 
-
-
-/*function addPR(){   // to be fixed, not relevant
-	var newPR = $('#orReg').val();
-	var newV = $('#arr').val();
-	var newValue = {"thing":$('#orReg').val(), "value":$('#arr').val()}
-	if ($('#proreg').val() == "projects"){
-		projects.responseJSON.projects[newPR] = newValue;
-		fill();
-	} else if ($('#proreg').val() == "regions"){
-		projects.responseJSON.regions[newPR] = newValue;
-		fill();
-	}
-	alert(newPR + " has been added to " + $('#proreg').val() + ".");
-}
-*/
-function delPR(){
-	if (confirm("Are you sure you want to delete?")) {
-		if ($('#delType').val() == "project"){
-			delete projects.responseJSON.projects[$('#txtPro').val()]
-			alert ("project has been deleted")
-		}else if ($('#delType').val() == "region"){ 
-			var coorIndex = []
-			var upPro = projects.responseJSON.projects[$('#txtPro').val()]["regions"]
-			if (regType == "coordinate"){ 
-				for (i=0; i<$("#txtCR option").length;i++){		
-					if ($("#txtCR option")[i].innerHTML == $("#txtCR").val()){
-						coorIndex.push(i)
-					}
-				}
-				delete projects.responseJSON.projects[$('#txtPro').val()]["regions"][coorIndex[0]]
-				
-				//shift array indexes down
-				for (i = coorIndex[0]; i<upPro.length; i++){
-					upPro[i] = upPro[i+1]
-				}
-				upPro.length = upPro.length - 1
-
-			}else if (regType == "seed"){ 
-				var regionIndex = [] //where in thr project regions it is
-				var seedIndex //index of where the seed region is in the specific region
-				for (i=0; i<$("#txtCR").val().length; i++){
-					for (j=0; j<$("#txtCR option").length;j++){		
-						if ($("#txtCR option")[j].innerHTML == $("#txtCR").val()[i]){
-							regionIndex.push(j)
+function delPR(){  //to delete a project or region
+	var por = projects.responseJSON.projects;
+	var check = []
+	if ($("#txtPro").val().length !== 1){
+		alert ("Project must be selected.")
+	}else{
+		if (confirm("Are you sure you want to delete?")) {
+			if ($('#delType').val() == "project"){
+				delete projects.responseJSON.projects[$('#txtPro').val()]
+				alert ("project has been deleted")
+			}else if ($('#delType').val() == "region"){ 
+				var coorIndex = []
+				var upPro = projects.responseJSON.projects[$('#txtPro').val()]["regions"]
+				if (regType == "coordinate"){ 
+					for (i=0; i<$("#txtCR option").length;i++){		
+						if ($("#txtCR option")[i].innerHTML == $("#txtCR").val()){
+							coorIndex.push(i)
 						}
 					}
-					seedIndex = upPro[regionIndex[i]]["seed_region_names"].indexOf($("#txtSR").val().toString())
-					delete upPro[regionIndex[i]]["seed_region_names"][seedIndex]
-					for (k = seedIndex; k < upPro[regionIndex[i]]["seed_region_names"].length; k++){
-						upPro[regionIndex[i]]["seed_region_names"][k] = upPro[regionIndex[i]]["seed_region_names"][k+1]
-					}
-				upPro[regionIndex[i]]["seed_region_names"].length = upPro[regionIndex[i]]["seed_region_names"].length -1
+					delete projects.responseJSON.projects[$('#txtPro').val()]["regions"][coorIndex[0]]
 					
-				}	
+					//shift array indexes down
+					for (i = coorIndex[0]; i<upPro.length; i++){
+						upPro[i] = upPro[i+1]
+					}
+					upPro.length = upPro.length - 1
+					for (por in projects.responseJSON.projects){
+						for(i=0; i<projects.responseJSON.projects[por]["regions"].length; i++){
+							if (projects.responseJSON.projects[por]["regions"][i]["coordinate_region"]==$("#txtCR").val()){
+								check.push($("#txtCR").val())
+							}
+						}
+					}
+					if (check.length == 0){
+						delete projects.responseJSON.regions[$("#txtCR").val()]
+					}
+				}else if (regType == "seed"){ 
+					var regionIndex = [] //where in the project regions it is
+					var seedIndex //index of where the seed region is in the specific region
+					for (i=0; i<$("#txtCR").val().length; i++){
+						for (j=0; j<$("#txtCR option").length;j++){		
+							if ($("#txtCR option")[j].innerHTML == $("#txtCR").val()[i]){
+								regionIndex.push(j)
+							}
+						}
+						seedIndex = upPro[regionIndex[i]]["seed_region_names"].indexOf($("#txtSR").val().toString())
+						delete upPro[regionIndex[i]]["seed_region_names"][seedIndex]
+						for (k = seedIndex; k < upPro[regionIndex[i]]["seed_region_names"].length; k++){
+							upPro[regionIndex[i]]["seed_region_names"][k] = upPro[regionIndex[i]]["seed_region_names"][k+1]
+						}
+					upPro[regionIndex[i]]["seed_region_names"].length = upPro[regionIndex[i]]["seed_region_names"].length -1
+					}
+					for (por in projects.responseJSON.projects){
+						for(i=0; i<projects.responseJSON.projects[por]["regions"].length; i++){
+							for(j=0; j<projects.responseJSON.projects[por]["regions"][i]["seed_region_names"].length; j++){
+								if (projects.responseJSON.projects[por]["regions"][i]["seed_region_names"][j]==$("#txtSR").val()){
+									check.push($("#txtSR").val())
+								}
+							}
+						}
+					}
+					if (check.length == 0){
+						delete projects.responseJSON.regions[$("#txtSR").val()]
+					}	
+				}
+				
+				
+
+				alert (regType + " region has been deleted.")
 			}
-			alert (regType + " region has been deleted.")
+			clears()
+			fillPro()
+			fillSG()
+			blankR()
 		}
-		clears()
-		fillPro()
-		fillSG()
-		blankR()
 	}
 }
 
+function fillAddPro() {  //fills in the list of projects
+	$('#addProj')[0].innerHTML = ""
+	var proSelect = $('#addProj')[0]; 
+	var por = projects.responseJSON.projects; 
+	var option = document.createElement("option"); 
+		option.text = "New Project";
+		proSelect.add(option)
+	for (por in projects.responseJSON.projects){ 
+		var option = document.createElement("option"); 
+		option.text = por; 
+		proSelect.add(option); 
+	} 
+}
+
+function fillAddCR(){ //fills coordinate regions in add form
+	$("#cooregion")[0].innerHTML = ""
+	var pro = projects.responseJSON.projects
+	if ($("#addProj").val() !== "New Project"){
+		var cooSelect = $("#cooregion")[0]
+		for (i=0; i< pro[$("#addProj").val()]["regions"].length; i++){
+			var option = document.createElement("option"); 
+			option.text = pro[$("#addProj").val()]["regions"][i]["coordinate_region"]; 
+			cooSelect.add(option); 
+		} 
+	}
+}
+
+function addPCheck(){ //checks for new or existing project
+	
+	var pro = projects.responseJSON.projects
+	var reg = projects.responseJSON.regions
+	if ($("#addProj").val() !== "New Project"){ //existing, fields cant be edited, fills the fields with existing data
+		$("#addProjName").val($("#addProj").val())
+		$("#addProjName").prop("readonly", true)
+		$("#addVar").val(pro[$("#addProj").val()]["max_variants"].toString())
+		$("#addVar").prop("readonly", true)
+		$("#addDes").val(pro[$("#addProj").val()]["description"].toString())
+		$("#addDes").prop("readonly", true)	
+
+	}else{ //new project, fields are editable
+		$("#addProjName").val("")
+		$("#addProjName").prop("readonly", false)
+		$("#addVar").val("")
+		$("#addVar").prop("readonly", false)
+		$("#addDes").val("")
+		$("#addDes").prop("readonly", false)
+	}
+}
+
+function addPO(){ //regarding the project fields
+	if ($("#addProj").val() == "New Project"){
+		var newProj = $("#addProjName").val()
+		var newValue = {"max_variants": $("#addVar").val(), "description": $("#addDes").val(), "regions": []}
+		var pro = projects.responseJSON.projects
+
+		//checks for empty fields, and if max variants is a number
+		if ($("#addProjName").val() !== "" && isNaN($("#addVar").val())== false && $("#addVar").val() !== "" && $("#addDes").val() !==""){ 
+			pro[newProj] = newValue
+			$("#addregion").show()
+			$("#addProjName").prop("readonly", true)
+			$("#addVar").prop("readonly", true)
+			$("#addDes").prop("readonly", true)
+		}else if(isNaN($("#addVar").val())== true){
+			alert("Max Variants must be a number")
+		}else if($("#addProjName").val() == "" || $("#addVar").val() == "" || $("#addDes").val() ==""){
+			alert("Fields are empty.")
+		}
+		
+	}else if ($("#addProj").val() !== "New Project"){
+		$("#addregion").show()
+	}
+	
+}
+
+
+function addRCheck(){ //checks for coordinate or seed that user wanted to add
+	if($("#addRegi").val() == "coordinate"){
+		$("#seedgrouptext").hide()
+	}else if ($("#addRegi").val() == "seed"){
+		$("#seedgrouptext").show()
+	}
+	$("#common").show()
+	$("#regionbut").show()
+	$("#addRegName").val("")
+	$("#addSequence").val("")
+	$("#addSeedGroup").val("")
+	
+}
+
+
+function seedShow(){ //displays the seed regions of the selected coordinate region in add form
+	$("#seeregion")[0].innerHTML = ""
+	var pro = projects.responseJSON.projects
+	if ($("#addProj").val() !== "New Project"){
+		var seeSelect = $("#seeregion")[0]
+		for (i=0; i< pro[$("#addProj").val()]["regions"].length; i++){
+			if (pro[$("#addProj").val()]["regions"][i]["coordinate_region"] == $("#cooregion").val()){		
+				for (j=0; j< pro[$("#addProj").val()]["regions"][i]["seed_region_names"].length; j++){
+					var option = document.createElement("option"); 
+					option.text = pro[$("#addProj").val()]["regions"][i]["seed_region_names"][j]; 
+					seeSelect.add(option); 
+				}
+			}
+		} 
+	}
+}
+
+function addRe(){
+	var pro = projects.responseJSON.projects
+	var reg = projects.responseJSON.regions
+	if($("#addRegi").val() == "coordinate"){
+		if ($("#addRegName").val() !== "" && $("#addSequence").val() !== ""){//add check for existing coord with same name in projects and regions
+			pro[$("#addProjName").val()]["regions"].push ({"coordinate_region": $("#addRegName").val() ,"seed_region_names":""})
+			reg[$("#addProjName").val()] = {"is_nucleotide": false, "reference": $("#addSequence").val(), "seed_group": null}
+			fillAddCR()
+		}else{
+			alert("Fields must be filled in.")
+		}
+	}else if ($("#addRegi").val() == "seed"){ //add check for existing seed with same name in projects and regions
+		var cooCheck = []
+		if ($("#addRegName").val() !== "" && $("#addSequence").val() !== "" && $("#addSeedGroup").val() !== ""){
+			for (i=0; i< $("#cooregion").val().length; i++){
+				for (j=0; j<pro[$("#addProjName").val()]["regions"].length ; j++){ 
+					if ($("#cooregion").val()[i] == pro[$("#addProjName").val()]["regions"][j]["coordinate_region"]){
+						cooCheck.push(j)
+					}	
+				}
+			}
+			for (i=0; i< cooCheck.length; i++){
+				pro[$("#addProjName").val()]["regions"][cooCheck[i]]["seed_region_names"].push($("#addRegName").val())
+				reg[$("#addProjName").val()] = {"is_nucleotide": true, "reference": $("#addSequence").val(), "seed_group": $("#addSeedGroup").val()}
+			}
+		}else{
+			alert("Fields must be filled in.")
+		}
+	}
+
+}
 
 function openForm(x) { //open add or delete form
-    document.getElementById(x).style.display = "block";
+	document.getElementById(x).style.display = "block";
+	$("#addProjName").val("")
+	$("#addVar").val("")
+	$("#addDes").val("")
+	$("#addRegi").val("")
 }
 function closeForm(x) { //close add or delete form
-    document.getElementById(x).style.display = "none";
+	document.getElementById(x).style.display = "none";
 }
 
 

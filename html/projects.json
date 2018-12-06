@@ -1,59 +1,5 @@
 {
     "projects": {
-        "ERCC": {
-            "max_variants": 0,
-            "description": "External RNA Controls Consortium reference; https://doi.org/10.1186/1471-2164-6-150",
-            "regions": [
-                {
-                    "coordinate_region": "ERCC-00002",
-                    "seed_region_names": [
-                        "ERCC-00002-seed"
-                    ]
-                },
-                {
-                    "coordinate_region": "ERCC-00003",
-                    "seed_region_names": [
-                        "ERCC-00003-seed"
-                    ]
-                },
-                {
-                    "coordinate_region": "ERCC-00007",
-                    "seed_region_names": [
-                        "ERCC-00007-seed"
-                    ]
-                },
-                {
-                    "coordinate_region": "ERCC-00014",
-                    "seed_region_names": [
-                        "ERCC-00014-seed"
-                    ]
-                },
-                {
-                    "coordinate_region": "ERCC-00017",
-                    "seed_region_names": [
-                        "ERCC-00017-seed"
-                    ]
-                },
-                {
-                    "coordinate_region": "ERCC-00025",
-                    "seed_region_names": [
-                        "ERCC-00025-seed"
-                    ]
-                },
-                {
-                    "coordinate_region": "ERCC-00033",
-                    "seed_region_names": [
-                        "ERCC-00033-seed"
-                    ]
-                },
-                {
-                    "coordinate_region": "ERCC-00099",
-                    "seed_region_names": [
-                        "ERCC-00099-seed"
-                    ]
-                }
-            ]
-        },
         "HCV": {
             "max_variants": 0,
             "description": "Hepatitis C virus, coding regions",
@@ -2466,6 +2412,60 @@
                     "coordinate_region": "HCV7-QC69-p7",
                     "seed_region_names": [
                         "HCV-7a"
+                    ]
+                }
+            ]
+        },
+        "ERCC": {
+            "max_variants": 0,
+            "description": "External RNA Controls Consortium reference; https://doi.org/10.1186/1471-2164-6-150",
+            "regions": [
+                {
+                    "coordinate_region": "ERCC-00002",
+                    "seed_region_names": [
+                        "ERCC-00002-seed"
+                    ]
+                },
+                {
+                    "coordinate_region": "ERCC-00003",
+                    "seed_region_names": [
+                        "ERCC-00003-seed"
+                    ]
+                },
+                {
+                    "coordinate_region": "ERCC-00007",
+                    "seed_region_names": [
+                        "ERCC-00007-seed"
+                    ]
+                },
+                {
+                    "coordinate_region": "ERCC-00014",
+                    "seed_region_names": [
+                        "ERCC-00014-seed"
+                    ]
+                },
+                {
+                    "coordinate_region": "ERCC-00017",
+                    "seed_region_names": [
+                        "ERCC-00017-seed"
+                    ]
+                },
+                {
+                    "coordinate_region": "ERCC-00025",
+                    "seed_region_names": [
+                        "ERCC-00025-seed"
+                    ]
+                },
+                {
+                    "coordinate_region": "ERCC-00033",
+                    "seed_region_names": [
+                        "ERCC-00033-seed"
+                    ]
+                },
+                {
+                    "coordinate_region": "ERCC-00099",
+                    "seed_region_names": [
+                        "ERCC-00099-seed"
                     ]
                 }
             ]
