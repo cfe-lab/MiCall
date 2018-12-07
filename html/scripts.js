@@ -442,7 +442,6 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 			}	
 		}else{ 
 			if (confirm ("The following will be changed:" + changes)){
-				console.log(newProj + newVar + newDes + newregType + newregName +newSG)
 				editChange()
 			}	
 		}
@@ -678,17 +677,51 @@ function seedShow(){ //displays the seed regions of the selected coordinate regi
 function addRe(){
 	var pro = projects.responseJSON.projects
 	var reg = projects.responseJSON.regions
+	var isNuc = 0	
+	var exist = 0
+	var addSeq = $("#addSequence").val().replace(/\,/g, '').toUpperCase()
+	for (i=0; i<addSeq.length; i++){ //checks if sequence is nucleotide or not
+		if(addSeq[i] !== "A" && addSeq[i] !== "T" && addSeq[i] !== "G" && addSeq[i] !== "C" && addSeq[i] !== "," && addSeq[i] !== "*" ){
+			isNuc += 1  
+		}
+	}
 	if($("#addRegi").val() == "coordinate"){
-		if ($("#addRegName").val() !== "" && $("#addSequence").val() !== ""){//add check for existing coord with same name in projects and regions
-			pro[$("#addProjName").val()]["regions"].push ({"coordinate_region": $("#addRegName").val() ,"seed_region_names":""})
-			reg[$("#addProjName").val()] = {"is_nucleotide": false, "reference": $("#addSequence").val(), "seed_group": null}
-			fillAddCR()
-		}else{
+		for(i=0; i< $("#cooregion option").length; i++){
+			if ($("#addRegName").val() == $("#cooregion option")[i].innerHTML){
+				exist += 1
+			}
+		}
+		if ($("#addRegName").val() !== "" && $("#addSequence").val() !== "" && exist == 0){//add check for existing coord with same name in projects and regions
+			if(isNuc !== 0){
+				pro[$("#addProjName").val()]["regions"].push ({"coordinate_region": $("#addRegName").val() ,"seed_region_names":""})
+				reg[$("#addProjName").val()] = {"is_nucleotide": false, "reference": $("#addSequence").val(), "seed_group": null}
+				fillAddCR()			
+			}else{
+				alert("Must be an amino acid sequence for coordinate region.")
+			}
+				
+		}else if ($("#addRegName").val() == "" && $("#addSequence").val() == ""){
 			alert("Fields must be filled in.")
+		}else if (exist > 0){
+			alert("Region already exists.")
 		}
 	}else if ($("#addRegi").val() == "seed"){ //add check for existing seed with same name in projects and regions
+		var proIndex = []
+		var seedStore = []
+		for(i=0; i<$("#cooregion option:selected").length; i++){ //gets index of the chosen coordinate regions in project
+			proIndex.push($("#cooregion option:selected")[i].index)
+			for(j=0; j<pro[$("#addProjName").val()]["regions"][proIndex[i]]["seed_region_names"].length; j++){
+				seedStore.push(pro[$("#addProjName").val()]["regions"][proIndex[i]]["seed_region_names"][j])
+			}
+		}
+		for(i=0; i<seedStore.length; i++){
+			if ($("#addRegName").val() == seedStore[i]){
+				exist += 1
+			}
+		}
+
 		var cooCheck = []
-		if ($("#addRegName").val() !== "" && $("#addSequence").val() !== "" && $("#addSeedGroup").val() !== ""){
+		if ($("#addRegName").val() !== "" && $("#addSequence").val() !== "" && $("#addSeedGroup").val() !== "" && exist == 0){
 			for (i=0; i< $("#cooregion").val().length; i++){
 				for (j=0; j<pro[$("#addProjName").val()]["regions"].length ; j++){ 
 					if ($("#cooregion").val()[i] == pro[$("#addProjName").val()]["regions"][j]["coordinate_region"]){
@@ -696,12 +729,19 @@ function addRe(){
 					}	
 				}
 			}
-			for (i=0; i< cooCheck.length; i++){
-				pro[$("#addProjName").val()]["regions"][cooCheck[i]]["seed_region_names"].push($("#addRegName").val())
-				reg[$("#addProjName").val()] = {"is_nucleotide": true, "reference": $("#addSequence").val(), "seed_group": $("#addSeedGroup").val()}
+			if(isNuc == 0){
+				for (i=0; i< cooCheck.length; i++){
+					pro[$("#addProjName").val()]["regions"][cooCheck[i]]["seed_region_names"].push($("#addRegName").val());
+					reg[$("#addRegName").val()] = {"is_nucleotide": true, "reference": $("#addSequence").val(), "seed_group": $("#addSeedGroup").val()};
+					console.log(projects.responseJSON.regions[$("#addProjName").val()])
+				}
+			}else{
+				alert("Must be a nucleic acid sequence for seed region.")
 			}
-		}else{
+		}else if ($("#addRegName").val() == "" && $("#addSequence").val() == "" && $("#addSeedGroup").val() == ""){
 			alert("Fields must be filled in.")
+		}else if (exist > 0){
+			alert("Region already exists.")
 		}
 	}
 
