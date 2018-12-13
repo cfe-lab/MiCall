@@ -161,7 +161,9 @@ description: Where the data goes
     Adding the number of dashes in offset will align the first base in the
     consensus sequence with its corresponding base in the seed reference. The
     whole consensus sequence may not be aligned with the seed reference because
-    of insertions and deletions
+    of insertions and deletions. Mixtures above the cutoff are displayed as
+    [IUPAC nucleotide codes]. If deletions are present above the cutoff, the
+    nucleotide code is lower case.
 * nuc.csv
   * seed - seed reference the reads mapped to
   * region - coordinate reference for reporting against, usually a gene
@@ -272,3 +274,5 @@ description: Where the data goes
   * mutation - the wild-type amino, position, and resistant amino, like Q80K
   * prevalence - the fraction of coverage that contained this mutation
   * genotype - the HCV genotype
+
+[IUPAC nucleotide codes]: https://www.bioinformatics.org/sms/iupac.html

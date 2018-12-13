@@ -41,7 +41,7 @@ class FolderWatcher:
         self.quality_dataset = None
         self.filter_quality_run = None
         self.bad_cycles_dataset = None
-        self.active_runs = {}  # {run: (sample_watcher, pipeline_type)}
+        self.active_runs = {}  # {run_id: (sample_watcher, pipeline_type)}
         self.completed_samples = set()  # {fastq1_name}
 
     def __repr__(self):
@@ -58,7 +58,7 @@ class FolderWatcher:
     def active_samples(self):
         if self.is_folder_failed:
             return set()
-        if self.filter_quality_run in self.active_runs:
+        if self.filter_quality_run['id'] in self.active_runs:
             # Individual runs are waiting for filter quality. Return all.
             all_samples = set(self.all_samples)
             return all_samples - self.completed_samples
@@ -81,7 +81,7 @@ class FolderWatcher:
                 PipelineType.FILTER_QUALITY)
             # Launched filter run, nothing more to check.
             return
-        if self.filter_quality_run in self.active_runs:
+        if self.filter_quality_run['id'] in self.active_runs:
             if not self.fetch_run_status(self.filter_quality_run):
                 # Still running, nothing more to check.
                 return
@@ -129,7 +129,7 @@ class FolderWatcher:
             active_mixed_runs = [
                 run
                 for run in (mixed_hcv_run, mixed_hcv_midi_run)
-                if run in self.active_runs and not self.fetch_run_status(run)]
+                if run['id'] in self.active_runs and not self.fetch_run_status(run)]
             is_mixed_hcv_complete = not active_mixed_runs
 
         main_run = sample_watcher.runs.get(PipelineType.MAIN)
@@ -143,7 +143,7 @@ class FolderWatcher:
         active_main_runs = [
             run
             for run in (main_run, midi_run)
-            if run in self.active_runs and not self.fetch_run_status(run)]
+            if run and run['id'] in self.active_runs and not self.fetch_run_status(run)]
         if active_main_runs:
             # Still running, nothing more to check on sample
             return sample_watcher.is_failed
@@ -152,7 +152,7 @@ class FolderWatcher:
             self.run_pipeline(PipelineType.RESISTANCE, sample_watcher)
             # Launched resistance run, nothing more to check on sample.
             return sample_watcher.is_failed
-        if resistance_run in self.active_runs:
+        if resistance_run['id'] in self.active_runs:
             if not self.fetch_run_status(resistance_run):
                 # Still running, nothing more to check on sample.
                 return sample_watcher.is_failed
@@ -169,14 +169,14 @@ class FolderWatcher:
 
     def add_run(self, run, pipeline_type, sample_watcher=None, is_complete=False):
         if not is_complete:
-            self.active_runs[run] = (sample_watcher, pipeline_type)
+            self.active_runs[run['id']] = (sample_watcher, pipeline_type)
         if pipeline_type == PipelineType.FILTER_QUALITY:
             self.filter_quality_run = run
         else:
             sample_watcher.runs[pipeline_type] = run
 
     def fetch_run_status(self, run):
-        sample_watcher, pipeline_type = self.active_runs[run]
+        sample_watcher, pipeline_type = self.active_runs[run['id']]
         is_complete = False
         try:
             new_run = self.runner.fetch_run_status(run,
@@ -186,7 +186,7 @@ class FolderWatcher:
             if new_run is None:
                 is_complete = True
             elif new_run is not run:
-                del self.active_runs[run]
+                del self.active_runs[run['id']]
                 self.add_run(new_run, pipeline_type, sample_watcher)
 
         except KiveRunFailedException:
@@ -196,7 +196,7 @@ class FolderWatcher:
                 sample_watcher.is_failed = True
             is_complete = True
         if is_complete:
-            del self.active_runs[run]
+            del self.active_runs[run['id']]
         return is_complete
 
 

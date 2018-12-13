@@ -8,13 +8,11 @@ from collections import namedtuple
 from datetime import datetime, timedelta
 from enum import Enum
 from itertools import count
-from operator import itemgetter
 from pathlib import Path
 from queue import Full
 
 from io import StringIO, BytesIO
 from time import sleep
-from weakref import WeakValueDictionary
 
 from requests.adapters import HTTPAdapter
 from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
@@ -217,46 +215,14 @@ class KiveWatcher:
         self.session = None
         self.loaded_folders = set()  # base_calls folders with all samples loaded
         self.folder_watchers = {}  # {base_calls_folder: FolderWatcher}
-        self.pipelines = {}  # {pipeline_id: pipeline}
+        self.app_urls = {}  # {app_id: app_url}
+        self.app_args = {}  # {app_id: {arg_name: arg_url}}
         self.external_directory_path = self.external_directory_name = None
-        self.find_default_pipelines()
         self.input_pipeline_ids = config and dict(
             quality_csv=config.micall_filter_quality_pipeline_id,
             bad_cycles_csv=config.micall_main_pipeline_id,
             main_amino_csv=config.micall_resistance_pipeline_id,
             midi_amino_csv=config.micall_resistance_pipeline_id) or {}
-
-        # Active runs started by other users.
-        self.other_runs = None  # {(pipeline_id, dataset_id, dataset_id, ...): run}
-        self.active_runs = WeakValueDictionary()
-
-    def find_default_pipelines(self):
-        default_family_names = ['filter quality',
-                                'main',
-                                'resistance']
-        family_data = None
-        for family_name in default_family_names:
-            attribute_name = (
-                    'micall_' + family_name.replace(' ', '_') + '_pipeline_id')
-            if getattr(self.config, attribute_name) is not None:
-                continue
-            if family_data is None:
-                self.check_session()
-                filter_text = 'filters[0][key]=smart&filters[0][val]=micall'
-                family_data = self.session.get(
-                    '@api_pipeline_families',
-                    context={'filters': filter_text}).json()
-
-            search_text = 'micall ' + family_name
-            for family in family_data:
-                if search_text in family['name'].lower():
-                    for member in family['members']:
-                        setattr(self.config, attribute_name, member['id'])
-                        break
-                    break
-            else:
-                raise RuntimeError(f'Argument {attribute_name} not set, and '
-                                   f'no pipeline found named {search_text!r}.')
 
     def is_full(self):
         active_count = sum(len(folder_watcher.active_samples)
@@ -266,43 +232,59 @@ class KiveWatcher:
     def is_idle(self):
         return not self.folder_watchers
 
-    def get_kive_pipeline(self, pipeline_id):
+    def get_kive_app(self, app_id):
+        self.get_kive_arguments(app_id)
+        return self.app_urls[app_id]
+
+    def get_kive_arguments(self, app_id):
+        """ Get a dictionary of argument URL's for a container app. """
         self.check_session()
-        kive_pipeline = self.pipelines.get(pipeline_id)
-        if kive_pipeline is None:
-            kive_pipeline = self.kive_retry(
-                lambda: self.session.get_pipeline(pipeline_id))
-            self.pipelines[pipeline_id] = kive_pipeline
-        return kive_pipeline
+        kive_app = self.app_args.get(app_id)
+        if kive_app is None:
+            arguments = self.kive_retry(
+                lambda: self.session.endpoints.containerapps.get(
+                    f'{app_id}/argument_list/'))
+            kive_app = {argument['name']: argument['url']
+                        for argument in arguments
+                        if argument['type'] == 'I'}
+            self.app_args[app_id] = kive_app
+            self.app_urls[app_id] = arguments[0]['app']
+        return kive_app
 
     def get_kive_input(self, input_name):
-        pipeline_id = self.input_pipeline_ids[input_name]
-        kive_pipeline = self.get_kive_pipeline(pipeline_id)
-        for kive_input in kive_pipeline.inputs:
-            if kive_input.dataset_name == input_name:
-                return kive_input
-        raise ValueError('Input {} not found on pipeline id {}.'.format(
+        app_id = self.input_pipeline_ids[input_name]
+        app_arguments = self.get_kive_arguments(app_id)
+        input_url = app_arguments.get(input_name)
+        if input_url:
+            return input_url
+        raise ValueError('Input {} not found on container app id {}.'.format(
             input_name,
-            pipeline_id))
+            app_id))
 
     def create_batch(self, folder_watcher):
         batch_name = folder_watcher.run_name + ' v' + self.config.pipeline_version
         description = 'MiCall batch for folder {}, pipeline version {}.'.format(
             folder_watcher.run_name,
             self.config.pipeline_version)
-        batch = self.kive_retry(
-            lambda: self.session.create_run_batch(batch_name,
-                                                  description=description,
-                                                  users=[],
-                                                  groups=ALLOWED_GROUPS))
+        old_batches = self.kive_retry(
+                lambda: self.session.endpoints.batches.filter(
+                    'name', batch_name))
+        batch = self.find_name_and_permissions_match(old_batches,
+                                                     batch_name,
+                                                     'batch')
+        if batch is None:
+            batch = self.kive_retry(
+                lambda: self.session.endpoints.batches.post(json=dict(
+                    name=batch_name,
+                    description=description,
+                    groups_allowed=ALLOWED_GROUPS)))
         folder_watcher.batch = batch
 
-    def find_kive_dataset(self, source_file, dataset_name, cdt):
+    def find_kive_dataset(self, source_file, dataset_name):
         """ Search for a dataset in Kive by name and checksum.
 
         :param source_file: open file object to read from
         :param str dataset_name: dataset name to search for
-        :param cdt: CompoundDatatype object returned by Kive API
         :return: the dataset object from the Kive API wrapper, or None
         """
         chunk_size = 4096
@@ -311,24 +293,28 @@ class KiveWatcher:
             digest.update(chunk)
         checksum = digest.hexdigest()
         datasets = self.kive_retry(
-            lambda: self.session.find_datasets(name=dataset_name,
-                                               md5=checksum,
-                                               cdt=cdt,
-                                               uploaded=True))
-        needed_groups = set(ALLOWED_GROUPS)
-        for dataset in datasets:
-            missing_groups = needed_groups - set(dataset.groups_allowed)
-            if dataset.name == dataset_name and not missing_groups:
-                logger.info('dataset already in Kive: %r', dataset_name)
-                return dataset
-        return None
+            lambda: self.session.endpoints.datasets.filter(
+                'name', dataset_name,
+                'md5', checksum,
+                'uploaded', True))
+        return self.find_name_and_permissions_match(datasets,
+                                                    dataset_name,
+                                                    'dataset')
 
-    def upload_kive_dataset(self, source_file, dataset_name, cdt, description):
+    @staticmethod
+    def find_name_and_permissions_match(items, name, type_name):
+        needed_groups = set(ALLOWED_GROUPS)
+        for item in items:
+            missing_groups = needed_groups - set(item['groups_allowed'])
+            if item['name'] == name and not missing_groups:
+                logger.info('%s already in Kive: %r', type_name, name)
+                return item
+
+    def upload_kive_dataset(self, source_file, dataset_name, description):
         """ Upload a dataset to Kive.
 
         :param source_file: open file object to read from
         :param str dataset_name:
-        :param cdt: CompoundDatatype object returned by Kive API
         :param str description:
         :return: the dataset object from the Kive API wrapper, or None
         """
@@ -336,23 +322,22 @@ class KiveWatcher:
         filepath = Path(getattr(source_file, 'name', ''))
         if (self.external_directory_name is None or
                 self.external_directory_path not in filepath.parents):
-            dataset = self.session.add_dataset(
-                name=dataset_name,
-                description=description,
-                handle=source_file,
-                cdt=cdt,
-                groups=ALLOWED_GROUPS)
+            dataset = self.session.endpoints.datasets.post(
+                files=dict(dataset_file=source_file),
+                data=dict(name=dataset_name,
+                          description=description,
+                          users_allowed=[],
+                          groups_allowed=ALLOWED_GROUPS))
         else:
             external_path = os.path.relpath(filepath,
                                             self.external_directory_path)
-            dataset = self.session.add_dataset(
-                name=dataset_name,
-                description=description,
-                handle=None,
-                externalfiledirectory=self.external_directory_name,
-                external_path=external_path,
-                cdt=cdt,
-                groups=ALLOWED_GROUPS)
+            dataset = self.session.endpoints.datasets.post(
+                json=dict(name=dataset_name,
+                          description=description,
+                          externalfiledirectory=self.external_directory_name,
+                          external_path=external_path,
+                          users_allowed=[],
+                          groups_allowed=ALLOWED_GROUPS))
         return dataset
 
     def add_sample_group(self, base_calls, sample_group):
@@ -399,8 +384,8 @@ class KiveWatcher:
                             fastq_dataset = self.find_or_upload_dataset(
                                 fastq_file,
                                 fastq_name,
-                                direction + ' read from MiSeq run ' + folder_watcher.run_name,
-                                compounddatatype=None)
+                                direction + ' read from MiSeq run ' +
+                                folder_watcher.run_name)
                             sample_watcher.fastq_datasets.append(fastq_dataset)
                 folder_watcher.sample_watchers.append(sample_watcher)
                 return sample_watcher
@@ -426,7 +411,6 @@ class KiveWatcher:
             # noinspection PyBroadException
             try:
                 self.check_session()
-                self.find_other_runs()
                 completed_folders = []
                 for folder, folder_watcher in self.folder_watchers.items():
                     folder_watcher.poll_runs()
@@ -446,36 +430,7 @@ class KiveWatcher:
             except Exception:
                 if not self.retry:
                     raise
-                self.other_runs = None  # Scan again.
                 wait_for_retry(attempt_count)
-
-    def find_other_runs(self):
-        """ Check for runs started by other users. """
-        if self.other_runs is not None:
-            # Already checked.
-            return
-        runs = self.kive_retry(lambda: self.session.find_runs(active=True))
-        run_map = {}
-        pipeline_ids = set(self.input_pipeline_ids.values())
-        for run in runs:
-            if run.pipeline_id not in pipeline_ids:
-                continue
-            try:
-                if self.kive_retry(run.is_complete):
-                    outputs = self.kive_retry(run.get_results)
-                    if any(output.dataset_id is None
-                           for output in outputs.values()):
-                        # Output has been purged, can't reuse the run.
-                        continue
-                input_list = run.raw['inputs']
-                inputs = sorted(input_list, key=itemgetter('index'))
-                input_ids = tuple(inp['dataset'] for inp in inputs)
-                key = (run.pipeline_id, ) + input_ids
-                run_map[key] = run
-            except KiveRunFailedException:
-                # Failed or cancelled, rerun.
-                pass
-        self.other_runs = run_map
 
     def collate_folder(self, folder_watcher):
         """ Collate scratch files for a run folder.
@@ -554,7 +509,7 @@ class KiveWatcher:
         if pipeline_type == PipelineType.FILTER_QUALITY:
             return self.find_or_launch_run(
                 self.config.micall_filter_quality_pipeline_id,
-                [folder_watcher.quality_dataset],
+                dict(quality_csv=folder_watcher.quality_dataset),
                 'MiCall filter quality on ' + folder_watcher.run_name,
                 folder_watcher.batch)
         if pipeline_type == PipelineType.RESISTANCE:
@@ -562,17 +517,19 @@ class KiveWatcher:
                                (sample_watcher.runs.get(pipeline_type)
                                 for pipeline_type in (PipelineType.MAIN,
                                                       PipelineType.MIDI)))
-            input_datasets = [run.get_results()['amino_csv']
-                              for run in main_runs]
-            main_aminos_input = self.get_kive_input('main_amino_csv')
-            for input_dataset in input_datasets:
-                # TODO: remove this when Kive API sets CDT properly (issue #729)
-                input_dataset.cdt = main_aminos_input.compounddatatype
+            input_dataset_urls = [run_dataset['dataset']
+                                  for run in main_runs
+                                  for run_dataset in run['datasets']
+                                  if run_dataset['argument_name'] == 'amino_csv']
+            input_datasets = [self.kive_retry(lambda: self.session.get(url).json())
+                              for url in input_dataset_urls]
             if len(input_datasets) == 1:
                 input_datasets *= 2
+            inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv'),
+                                   input_datasets))
             return self.find_or_launch_run(
                 self.config.micall_resistance_pipeline_id,
-                input_datasets,
+                inputs_dict,
                 'MiCall resistance on ' + sample_watcher.sample_group.enum,
                 folder_watcher.batch)
         if pipeline_type in (PipelineType.MIXED_HCV_MAIN,
@@ -580,10 +537,12 @@ class KiveWatcher:
             if self.config.mixed_hcv_pipeline_id is None:
                 return None
             if pipeline_type == PipelineType.MIXED_HCV_MAIN:
-                input_datasets = sample_watcher.fastq_datasets[:2]
+                input_datasets = dict(fastq1=sample_watcher.fastq_datasets[0],
+                                      fastq2=sample_watcher.fastq_datasets[1])
                 sample_name = sample_watcher.sample_group.names[0]
             else:
-                input_datasets = sample_watcher.fastq_datasets[2:]
+                input_datasets = dict(fastq1=sample_watcher.fastq_datasets[2],
+                                      fastq2=sample_watcher.fastq_datasets[3])
                 sample_name = sample_watcher.sample_group.names[1]
             sample_name = trim_name(sample_name)
             return self.find_or_launch_run(
@@ -599,16 +558,23 @@ class KiveWatcher:
             fastq1, fastq2 = sample_watcher.fastq_datasets[2:]
             sample_name = sample_watcher.sample_group.names[1]
         if folder_watcher.bad_cycles_dataset is None:
-            results = folder_watcher.filter_quality_run.get_results()
-            folder_watcher.bad_cycles_dataset = results['bad_cycles_csv']
-            bad_cycles_input = self.get_kive_input('bad_cycles_csv')
-            # TODO: remove this when Kive API sets CDT properly (issue #729)
-            folder_watcher.bad_cycles_dataset.cdt = bad_cycles_input.compounddatatype
+            filter_run_id = folder_watcher.filter_quality_run['id']
+            run_datasets = self.kive_retry(
+                lambda: self.session.endpoints.containerruns.get(
+                    f'{filter_run_id}/dataset_list/'))
+            bad_cycles_run_dataset, = [
+                run_dataset
+                for run_dataset in run_datasets
+                if run_dataset['argument_name'] == 'bad_cycles_csv']
+            folder_watcher.bad_cycles_dataset = self.kive_retry(
+                lambda: self.session.get(bad_cycles_run_dataset['dataset']).json())
 
         run_name = 'MiCall main on ' + trim_name(sample_name)
         return self.find_or_launch_run(
             self.config.micall_main_pipeline_id,
-            [fastq1, fastq2, folder_watcher.bad_cycles_dataset],
+            dict(fastq1=fastq1,
+                 fastq2=fastq2,
+                 bad_cycles_csv=folder_watcher.bad_cycles_dataset),
             run_name,
             folder_watcher.batch)
 
@@ -617,28 +583,47 @@ class KiveWatcher:
                            inputs,
                            run_name,
                            run_batch):
+        """ Look for a matching container run, or start a new one.
+
+        :return: the run dictionary
+        """
+        app_url = self.get_kive_app(pipeline_id)
+        app_args = self.get_kive_arguments(pipeline_id)
         run_name = trim_run_name(run_name)
-        run_key = (pipeline_id,) + tuple(inp.dataset_id for inp in inputs)
-        if self.other_runs:
-            run = self.other_runs.pop(run_key, None)
-            if run is not None:
-                self.active_runs[run_key] = run
-                return run
-        run = self.active_runs.get(run_key)
-        if run is not None:
-            return run
-        pipeline = self.get_kive_pipeline(pipeline_id)
-        try:
-            run = self.session.run_pipeline(pipeline,
-                                            inputs,
-                                            run_name,
-                                            runbatch=run_batch,
-                                            groups=ALLOWED_GROUPS)
-            self.active_runs[run_key] = run
-            return run
-        except Exception as ex:
-            raise RuntimeError(
-                'Failed to launch run {}.'.format(run_name)) from ex
+        filters = ['name', run_name, 'app_id', pipeline_id]
+        for arg in inputs.values():
+            filters.append('input_id')
+            filters.append(arg['id'])
+
+        old_runs = self.session.endpoints.containerruns.filter(*filters)
+        run = self.find_name_and_permissions_match(old_runs,
+                                                   run_name,
+                                                   'container run')
+        if run:
+            if run['state'] in 'FX':
+                run = None
+            elif run['state'] == 'C':
+                run_id = run['id']
+                run_datasets = self.session.endpoints.containerruns.get(
+                    f'{run_id}/dataset_list/')
+                if any(run_dataset['dataset_purged']
+                       for run_dataset in run_datasets):
+                    run = None
+        if run is None:
+            run_datasets = [dict(argument=app_arg,
+                                 dataset=inputs[name]['url'])
+                            for name, app_arg in app_args.items()]
+            run_params = dict(name=run_name,
+                              batch=run_batch['url'],
+                              groups_allowed=ALLOWED_GROUPS,
+                              app=app_url,
+                              datasets=run_datasets)
+            try:
+                run = self.session.endpoints.containerruns.post(json=run_params)
+            except Exception as ex:
+                raise RuntimeError(
+                    'Failed to launch run {}.'.format(run_name)) from ex
+        return run
 
     def kive_retry(self, target):
         """ Add a single retry to a Kive API call.
@@ -654,20 +639,12 @@ class KiveWatcher:
 
     def fetch_run_status(self, run, folder_watcher, pipeline_type, sample_watcher):
         self.check_session()
-        new_status = self.kive_retry(lambda: self.session.get_run(run.run_id))
-        is_complete = new_status.raw['end_time'] is not None
-        is_stopped = new_status.raw['stopped_by'] is not None
-        if is_complete and is_stopped:
-            # Since the run is cancelled, remove it from the active list.
-            run_keys = {key
-                        for key, value in self.active_runs.items()
-                        if value == run}
-            for key in run_keys:
-                self.active_runs.pop(key, None)
+        new_status = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
+        is_complete = new_status['state'] == 'C'
+        if new_status['state'] == 'X':
             return self.run_pipeline(folder_watcher, pipeline_type, sample_watcher)
-        if is_complete:
-            # Failed runs will raise an exception.
-            run.is_complete()
+        if new_status['state'] == 'F':
+            raise KiveRunFailedException(f'Run id {new_status["id"]} failed.')
         if is_complete and pipeline_type != PipelineType.FILTER_QUALITY:
             sample_name = (sample_watcher.sample_group.names[1]
                            if pipeline_type in (PipelineType.MIDI,
@@ -676,18 +653,29 @@ class KiveWatcher:
             results_path = self.get_results_path(folder_watcher)
             scratch_path = results_path / "scratch" / trim_name(sample_name)
             scratch_path.mkdir(parents=True, exist_ok=True)
-            results = self.kive_retry(run.get_results)
+            run_datasets = self.kive_retry(
+                lambda: self.session.endpoints.containerruns.get(
+                    f"{run['id']}/dataset_list/"))
+            run['datasets'] = run_datasets
             for output_name in DOWNLOADED_RESULTS:
-                dataset = results.get(output_name)
-                if dataset is None:
+                matches = [run_dataset
+                           for run_dataset in run_datasets
+                           if run_dataset['argument_name'] == output_name]
+                if not matches:
                     continue
                 filename = get_output_filename(output_name)
-                with (scratch_path / filename).open('wb') as f:
-                    self.kive_retry(lambda: dataset.download(f))
+                dataset_url, = [match['dataset'] for match in matches]
+                self.kive_retry(
+                    lambda: self.download_file(dataset_url + 'download/',
+                                               scratch_path / filename))
 
         if is_complete:
             return None
         return run
+
+    def download_file(self, dataset_url, target_path):
+        with target_path.open('wb') as f:
+            self.session.download_file(f, dataset_url)
 
     def get_results_path(self, folder_watcher):
         version_name = f'version_{self.config.pipeline_version}'
@@ -700,7 +688,6 @@ class KiveWatcher:
                         read_sizes.index1,
                         read_sizes.index2,
                         read_sizes.read2]
-        quality_input = self.get_kive_input('quality_csv')
         error_path = folder_watcher.run_folder / "InterOp/ErrorMetricsOut.bin"
         quality_csv = StringIO()
         with error_path.open('rb') as error_file:
@@ -714,8 +701,7 @@ class KiveWatcher:
         folder_watcher.quality_dataset = self.find_or_upload_dataset(
             quality_csv_bytes,
             folder_watcher.run_name + '_quality.csv',
-            'Error rates for {} run.'.format(folder_watcher.run_name),
-            quality_input.compounddatatype)
+            'Error rates for {} run.'.format(folder_watcher.run_name))
 
     def check_session(self):
         if self.session is None:
@@ -723,8 +709,7 @@ class KiveWatcher:
             self.session.login(self.config.kive_user, self.config.kive_password)
 
             # retrieve external file directory
-            directories = self.session.get('/api/externalfiledirectories',
-                                           is_json=True).json()
+            directories = self.session.endpoints.externalfiledirectories.get()
             self.external_directory_name = self.external_directory_path = None
             search_path = self.config.raw_data / 'MiSeq' / 'runs'
             for directory in directories:
@@ -741,16 +726,12 @@ class KiveWatcher:
     def find_or_upload_dataset(self,
                                dataset_file,
                                dataset_name,
-                               description,
-                               compounddatatype):
-        dataset = self.find_kive_dataset(dataset_file,
-                                         dataset_name,
-                                         compounddatatype)
+                               description):
+        dataset = self.find_kive_dataset(dataset_file, dataset_name)
         if dataset is None:
             dataset_file.seek(0)
             dataset = self.upload_kive_dataset(
                 dataset_file,
                 dataset_name,
-                compounddatatype,
                 description)
         return dataset
