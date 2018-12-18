@@ -590,7 +590,7 @@ class KiveWatcher:
         app_url = self.get_kive_app(pipeline_id)
         app_args = self.get_kive_arguments(pipeline_id)
         run_name = trim_run_name(run_name)
-        filters = ['name', run_name, 'app_id', pipeline_id]
+        filters = ['name', run_name, 'app_id', pipeline_id, 'states', 'NLRSC']
         for arg in inputs.values():
             filters.append('input_id')
             filters.append(arg['id'])
@@ -600,9 +600,7 @@ class KiveWatcher:
                                                    run_name,
                                                    'container run')
         if run:
-            if run['state'] in 'FX':
-                run = None
-            elif run['state'] == 'C':
+            if run['state'] == 'C':
                 run_id = run['id']
                 run_datasets = self.session.endpoints.containerruns.get(
                     f'{run_id}/dataset_list/')
