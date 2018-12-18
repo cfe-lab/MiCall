@@ -829,6 +829,7 @@ def test_poll_first_sample_already_started(raw_data_with_two_samples,
     mock_session.endpoints.containerruns.filter.assert_called_once_with(
         'name', 'MiCall filter quality on 140101_M01234',
         'app_id', default_config.micall_filter_quality_pipeline_id,
+        'states', 'NLRSC',
         'input_id', 104)
 
 
