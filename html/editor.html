@@ -21,14 +21,14 @@
 <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="editor.js"></script>
 <script type="text/javascript" src="scripts.js"></script>
-    <body onload = "clears();" onload = "fillPro(); fillSG();">
+    <body onload = "clears();">
     	
 	
 	<h1>MiCall project editor</h1>
 
 	<br>
 
-	<button onclick="download('projects.json' , JSON.stringify(projects.responseJSON,undefined,4))">Download File</button>
+	<button onclick="download()" >Download File</button>
 	<button onclick = "clears();fillPro();fillSG();blankR();loadChange()" id = "loadbut"> Load projects.json </button>
 
 	<button class="open-button" onclick="openForm('addForm'); fillAddPro()" >Add</button>
@@ -55,11 +55,14 @@
 				<br><br>
 
 				<div id= "addregion" hidden>
-					<br> Coordinate Regions
+					<br> Coordinate
 					<select size = "8" style="width: 200px" id = "cooregion" multiple onclick = "seedShow()">
 					</select>
-					Seed Regions
-					<select size = "8" style="width: 200px" id = "seeregion" multiple>
+					Seed
+					<select size = "8" style="width: 200px" id = "seeregion" multiple onclick = "groupShow()">
+					</select>
+					Seed Group
+					<select size = "8" style="width: 200px" id = "group" disabled"> 
 					</select>
 					<br><br><br>
 
@@ -91,7 +94,7 @@
 
 
 				<br><br>
-				<button type="button" class="btn cancel" onclick="closeForm('addForm')">Close</button>
+				<button type="button" class="btn cancel" onclick="closeForm('addForm');clearAdd()">Close</button>
 			</form>
 		</div>
 
@@ -136,9 +139,11 @@
 	<select multiple id = "txtCR" size = "15" style="width: 200px" onclick = "coselReg(); deta('CR')">		
 	</select>
 
-	<br><br><br><br>
+	<br><br><br>
 
 	<hr>
+	<h2>Editor</h2>
+	<br>
 	Project Name: <textarea id = "txtName" rows="1" cols = "50" >
 	</textarea>
 	<br>
@@ -150,17 +155,13 @@
 	Description: <textarea id = "txtDes" rows="2" cols = "100">
 	</textarea>
 	<br>
-	Region Type: <select id = "txtReg" disabled="true">
-		<option> </option>
-		<option value = "coordinate"> Coordinate</option>
-		<option value = "seed"> Seed</option>
-	</select>
+	Region Type: 
+	<b><div id = "txtReg">
+	</div></b>
 	<br>
-	Is Nucleotide: <select id = "txtNuc" disabled="true">
-		<option selected>  </option>
-		<option value = "false"> False</option>
-		<option value = "true"> True</option>
-	</select>
+	Is Nucleotide:
+	<b> <div id = "txtNuc">
+	</div></b>
 	<br>
 	Region Name: <textarea id = "txtRN" rows="1" cols = "50">
 	</textarea>
@@ -169,12 +170,15 @@
 	Seed Group: <textarea id = "txtSeG" rows="1" cols = "50">
 	</textarea>
 	<br>
-	Sequence: <textarea id = "txtSeq" rows="20" cols = "100">
+	Sequence: 
+	<br>	
+	<textarea id = "txtSeq" rows="20" cols = "100">
 	</textarea>
 
 	<br><br>
-	<button onclick ="editCheck()"> Save Changes </button>
-
+	<button onclick ="editCheck()"> Save Edit </button>
+	
     </body>
+	
 </html>
 
