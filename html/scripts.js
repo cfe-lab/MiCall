@@ -1,6 +1,11 @@
 //loads the json file
 projects = $.getJSON('projects.json')
+function load(){
+	var x = $("#fil").val(); 
 
+
+
+}
 
 function loadChange(){
 	$("#loadbut")[0].innerHTML = "Refresh"
@@ -319,6 +324,7 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 	var changes =""
 	var matchOK 
 	var isNuc = 0
+	var isAA = 0
 	var regNameOK = true
 	
 
@@ -396,7 +402,7 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 	}
 
 
-
+	
 	if (globReg["reference"].toString().replace(/\,/g, '') == $("#txtSeq").val().replace(/\,/g, '').toUpperCase()){ //check for sequence
 		newSeq = globReg["reference"]
 	}else if (globReg["reference"].toString().replace(/\,/g, '') !== $("#txtSeq").val().replace(/\,/g, '').toUpperCase()){ //converts sequence to array
@@ -420,27 +426,34 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 		changes += "\n" + "Reference Sequence"
 	}
 	
-	
+	var aminoCheck = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",".","-",","," ","*"]
+	var nucleicCheck = ["A","C","G","T","U","W","S","M","K","R","Y","B","D","H","V","N","Z",".","-",","," ","*"]
+
 	for (i=0; i<newSeq.toString().length; i++){ //checks if sequence is nucleotide or not
-		if(newSeq.toString()[i] !== "A" && newSeq.toString()[i] !== "T" && newSeq.toString()[i] !== "G" && newSeq.toString()[i] !== "C" && newSeq.toString()[i] !== "," && newSeq.toString()[i] !== "*" ){
+		if(nucleicCheck.includes(newSeq.toString()[i])==false){
 			isNuc += 1
+		}
+	}
+	for (i=0; i<newSeq.toString().length; i++){ //checks if sequence is amino acid or not
+		if(aminoCheck.includes(newSeq.toString()[i])==false){
+			isAA += 1
 		}
 	}
 
 	
 	//check if sequence matches region type
 	if ($("#txtReg")[0].innerHTML == "Coordinate"){
-		if($("#txtNuc")[0].innerHTML == "false" && isNuc >0){
+		if($("#txtNuc")[0].innerHTML == "false" && isAA == 0){
 			matchOK = true
 		}else{
-			alert("For a coordinate region, sequence must be an Amino Acid Sequence")
+			alert("For a coordinate region, sequence must be a valid Amino Acid Sequence")
 			matchOK = false
 		}
 	}else if ($("#txtReg")[0].innerHTML == "Seed"){
 		if($("#txtNuc")[0].innerHTML == "true" && isNuc == 0){
 			matchOK = true
 		}else{
-			alert("For a seed region, sequence must be a Nucleotide Sequence")
+			alert("For a seed region, sequence must be a valid Nucleotide Sequence")
 			matchOK = false
 		}
 	}

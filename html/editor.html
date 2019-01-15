@@ -27,7 +27,7 @@
 	<h1>MiCall project editor</h1>
 
 	<br>
-
+	<input type="file" id="fil" onchange = "load()"></input>
 	<button onclick="download()" >Download File</button>
 	<button onclick = "clears();fillPro();fillSG();blankR();loadChange()" id = "loadbut"> Load projects.json </button>
 
@@ -37,15 +37,15 @@
  	 			<h2>Add</h2>
 
 				<br>
-				Project <select id = "addProj" onchange = "addPCheck()"> 
+				<b>Project</b> <select id = "addProj" onchange = "addPCheck()"> 
 				</select><br>
-				Project Name <textarea id = "addProjName" rows="1" cols = "50">
+				<b>Project Name</b> <textarea id = "addProjName" rows="1" cols = "50">
 				</textarea>
 				<br>
-				Max Variants <textarea id = "addVar" rows="1" cols = "50" >
+				<b>Max Variants</b> <textarea id = "addVar" rows="1" cols = "50" >
 				</textarea>
 				<br>
-				Description <textarea id = "addDes" rows="1" cols = "50" >
+				<b>Description</b> <textarea id = "addDes" rows="1" cols = "50" >
 				</textarea>
 				<br><br>
 
@@ -55,33 +55,33 @@
 				<br><br>
 
 				<div id= "addregion" hidden>
-					<br> Coordinate
+					<br> <b>Coordinate</b>
 					<select size = "8" style="width: 200px" id = "cooregion" multiple onclick = "seedShow()">
 					</select>
-					Seed
+					<b>Seed</b>
 					<select size = "8" style="width: 200px" id = "seeregion" multiple onclick = "groupShow()">
 					</select>
-					Seed Group
+					<b>Seed Group</b>
 					<select size = "8" style="width: 200px" id = "group" disabled"> 
 					</select>
 					<br><br><br>
 
-					Region to Add <select id = "addRegi" onchange = "addRCheck()">
+					<b>Region to Add</b> <select id = "addRegi" onchange = "addRCheck()">
 						<option selected> </option>
-						<option value = "coordinate"> Coordinate</option>
-						<option value = "seed"> Seed</option>
+						<option value = "coordinate"> <b>Coordinate</b></option>
+						<option value = "seed"> <b>Seed</b></option>
 					</select><br>
 					
 					<div id= "common" hidden>
-						Region Name<textarea id = "addRegName" rows="1" cols = "50">
+						<b>Region Name</b><textarea id = "addRegName" rows="1" cols = "50">
 						</textarea><br>
-						Sequence<textarea id = "addSequence" rows="1" cols = "50">
+						<b>Sequence</b><textarea id = "addSequence" rows="1" cols = "50">
 						</textarea><br>
 					</div>
 					<div id="seedgrouptext" hidden>
-						Seed Group<textarea id = "addSeedGroup" rows="1" cols = "50">
+						<b>Seed Group</b><textarea id = "addSeedGroup" rows="1" cols = "50">
 						</textarea><br><br>
-						Highlight <b>Coordinate Region(s)</b> to add to.
+						Highlight <b>Coordinate Region(s)</b> to add Seed Region to.
 					</div>
 					<br><br><br>
 					<div hidden id = "regionbut">
@@ -104,7 +104,7 @@
  	 		<h2>Delete</h2>
 
 			<br>
-			Type <select id ="delType">
+			<b>Type </b><select id ="delType">
 				<option> </option>
 				<option value = "project"> Project </option>
 				<option value = "region"> Region </option>
@@ -144,33 +144,33 @@
 	<hr>
 	<h2>Editor</h2>
 	<br>
-	Project Name: <textarea id = "txtName" rows="1" cols = "50" >
+	<b>Project Name</b>: <textarea id = "txtName" rows="1" cols = "50" >
 	</textarea>
 	<br>
-	Max Variants: <textarea id = "txtVar" rows="1" cols = "25">
+	<b>Max Variants</b>: <textarea id = "txtVar" rows="1" cols = "25">
 	</textarea>
 	<br>
 	
 	<br>
-	Description: <textarea id = "txtDes" rows="2" cols = "100">
+	<b>Description</b>: <textarea id = "txtDes" rows="2" cols = "100">
 	</textarea>
 	<br>
-	Region Type: 
+	<b>Region Type</b>: 
 	<b><div id = "txtReg">
 	</div></b>
 	<br>
-	Is Nucleotide:
+	<b>Is Nucleotide</b>:
 	<b> <div id = "txtNuc">
 	</div></b>
 	<br>
-	Region Name: <textarea id = "txtRN" rows="1" cols = "50">
+	<b>Region Name</b>: <textarea id = "txtRN" rows="1" cols = "50">
 	</textarea>
 	<br>
 	
-	Seed Group: <textarea id = "txtSeG" rows="1" cols = "50">
+	<b>Seed Group</b>: <textarea id = "txtSeG" rows="1" cols = "50">
 	</textarea>
 	<br>
-	Sequence: 
+	<b>Sequence</b>: 
 	<br>	
 	<textarea id = "txtSeq" rows="20" cols = "100">
 	</textarea>
