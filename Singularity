@@ -9,8 +9,7 @@ From: centos:7
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-    Change Notes: Defined KIVE options in Singularity, as well as a separate
-    app for resistance.
+    Change Notes: set LANG environment variable.
 
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
@@ -88,6 +87,7 @@ From: centos:7
 
 %environment
     export PATH=/bin:/opt/bowtie2
+    export LANG=en_US.UTF-8
 
 %runscript
     python /opt/micall/micall_kive.py "$@"
