@@ -1,5 +1,38 @@
 //loads the json file
+
+window.onload = function() {
+    document.getElementById('fil').addEventListener('change', handleFileSelect, false);
+}
+
 projects = $.getJSON('projects.json')
+
+
+function handleFileSelect(evt) {
+    /*
+    Handle file selected by browser dialog.
+     */
+    console.log('HFS');
+    
+	var files = evt.target.files; // FileList object
+	var f = files[0];
+	
+	// Only process image files.
+	//if (!f.type.match('image/png') &&  !f.type.match('image/gif')) {
+    //    alert('Sorry, this script will only process PNG or GIF-type files.  ' +
+    //        'You attempted to process a file of type: ' + f.type);
+	//	return;
+	//}
+	
+	reader.onload = fileReadComplete;  // need some event handler here
+	reader.readAsDataURL(f);
+}
+
+
+function fileReadComplete(e) {
+    console.log('foobar!');
+}
+
+
 function load(){
 	var x = $("#fil").val(); 
 
