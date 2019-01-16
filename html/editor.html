@@ -19,23 +19,18 @@
 }
 </style >
 <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
-<script type="text/javascript" src="editor.js"></script>
 <script type="text/javascript" src="scripts.js"></script>
+
     <body onload = "clears();">
     	
 	
 	<h1>MiCall project editor</h1>
-
-	<br>
-	<input type="file" id="fil" onchange = "load()"></input>
+	<input type="file" id="inputfile"></input>
 	<button onclick="download()" >Download File</button>
-	<button onclick = "clears();fillPro();fillSG();blankR();loadChange()" id = "loadbut"> Load projects.json </button>
-
 	<button class="open-button" onclick="openForm('addForm'); fillAddPro()" >Add</button>
 		<div class="form-popup" id="addForm" style="width: 90%; height:90%; background:#FFFFFF" >
 	 		<form action="/action_page.php" class="form-container">
  	 			<h2>Add</h2>
-
 				<br>
 				<b>Project</b> <select id = "addProj" onchange = "addPCheck()"> 
 				</select><br>
@@ -48,12 +43,9 @@
 				<b>Description</b> <textarea id = "addDes" rows="1" cols = "50" >
 				</textarea>
 				<br><br>
-
    				<button type="button" class="btn" onclick="addPO();fillAddCR()" id = "addProject">
 				Select</button>
-
 				<br><br>
-
 				<div id= "addregion" hidden>
 					<br> <b>Coordinate</b>
 					<select size = "8" style="width: 200px" id = "cooregion" multiple onclick = "seedShow()">
@@ -65,7 +57,6 @@
 					<select size = "8" style="width: 200px" id = "group" disabled"> 
 					</select>
 					<br><br><br>
-
 					<b>Region to Add</b> <select id = "addRegi" onchange = "addRCheck()">
 						<option selected> </option>
 						<option value = "coordinate"> <b>Coordinate</b></option>
@@ -91,34 +82,28 @@
 				</div>
 					
 				
-
-
 				<br><br>
 				<button type="button" class="btn cancel" onclick="closeForm('addForm');clearAdd()">Close</button>
 			</form>
 		</div>
-
 	<button class="open-button" onclick="openForm('delForm')">Delete</button>
 		<div class="form-popup" id="delForm" style="width: 50%; height:25%; background:#FFFFFF; position:absolute; bottom: 0px;right: 0px">
 	 		<form action="/action_page.php" class="form-container">
  	 		<h2>Delete</h2>
-
 			<br>
 			<b>Type </b><select id ="delType">
 				<option> </option>
 				<option value = "project"> Project </option>
 				<option value = "region"> Region </option>
 			</select>
-
 			<br>
-
    			<button type="button" class="btn" onclick="delPR()">Delete</button>
     			<button type="button" class="btn cancel" onclick="closeForm('delForm')">Close</button>
 			</form>
 		</div>
-
-
-	<br><br><br>
+	<br>
+	<button onclick = "clears();fillPro();fillSG();blankR();" id = "loadbut" hidden> Refresh </button>
+	<br><br>
 	<table style="width: 850">
 		<th>Projects</th>
     		<th>Seed Groups</th>
@@ -128,19 +113,13 @@
 	<br>
 	<select multiple id = "txtPro" size = "15" style="width: 200px" onclick = "fillSR(); fillCR(); highlightSG()">		
 	</select>
-
-
 	<select multiple id = "txtSG" size = "15" style="width: 200px" onclick ="sgSel()">		
 	</select>
-
 	<select multiple id = "txtSR" size = "15" style="width: 200px" onclick = "regselCo(); deta('SR')">		
 	</select>
-
 	<select multiple id = "txtCR" size = "15" style="width: 200px" onclick = "coselReg(); deta('CR')">		
 	</select>
-
 	<br><br><br>
-
 	<hr>
 	<h2>Editor</h2>
 	<br>
@@ -174,7 +153,6 @@
 	<br>	
 	<textarea id = "txtSeq" rows="20" cols = "100">
 	</textarea>
-
 	<br><br>
 	<button onclick ="editCheck()"> Save Edit </button>
 	

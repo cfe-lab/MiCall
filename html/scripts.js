@@ -1,21 +1,43 @@
 //loads the json file
-projects = $.getJSON('projects.json')
-function load(){
-	var x = $("#fil").val(); 
+$(window).on('load',function(){
+	$("#inputfile").val("")
+	document.getElementById('inputfile').addEventListener('change', handleFileSelect, false);
+})
 
-
-
+function handleFileSelect(evt) {
+    /*
+    Handle file selected by browser dialog.
+     */	
+	reader = new FileReader()
+	files = evt.target.files; // FileList object
+	f = files[0];
+	
+	// Only process image files.
+	if (!f.type.match('application/json')) {
+        alert('Sorry, this script will only process JSON files.  ' +
+            'You attempted to process a file of type: ' + f.type);
+		return;
+	}
+	
+	
+	reader.readAsText(f);
+	reader.onload = fileReadComplete;  // need some event handler here
 }
 
-function loadChange(){
-	$("#loadbut")[0].innerHTML = "Refresh"
+function fileReadComplete(e) {
+	projects = JSON.parse(reader.result)	
+	$("#loadbut").show()
+	clears();
+	fillPro();
+	fillSG();
+	blankR();
 }
 
 function fillPro() {  //fills in the list of projects
 	$('#txtPro')[0].innerHTML = ''
 	var proSelect = $("#txtPro")[0]; 
-	var por = projects.responseJSON.projects; 
-	for (por in projects.responseJSON.projects){ 
+	var por = projects.projects; 
+	for (por in projects.projects){ 
 		var option = document.createElement("option"); 
 		option.text = por; 
 		proSelect.add(option); 
@@ -25,16 +47,16 @@ function fillPro() {  //fills in the list of projects
 
 function highlightSG(){ //highlights related seed groups when project is chosen
 	var seedR = []
-	for (i=0; i< projects.responseJSON.projects[$("#txtPro").val()]["regions"].length; i++){
-		for (j=0; j< projects.responseJSON.projects[$("#txtPro").val()]["regions"][i]["seed_region_names"].length; j++)
-			if (seedR.includes(projects.responseJSON.projects[$("#txtPro").val()]["regions"][i]["seed_region_names"][j])==false){
-				seedR.push(projects.responseJSON.projects[$("#txtPro").val()]["regions"][i]["seed_region_names"][j])
+	for (i=0; i< projects.projects[$("#txtPro").val()]["regions"].length; i++){
+		for (j=0; j< projects.projects[$("#txtPro").val()]["regions"][i]["seed_region_names"].length; j++)
+			if (seedR.includes(projects.projects[$("#txtPro").val()]["regions"][i]["seed_region_names"][j])==false){
+				seedR.push(projects.projects[$("#txtPro").val()]["regions"][i]["seed_region_names"][j])
 			}
 	}
 	var seedG = []
 	for (i=0; i< seedR.length; i++){
-		if (seedG.includes(projects.responseJSON.regions[seedR[i]]["seed_group"])==false){
-			seedG.push(projects.responseJSON.regions[seedR[i]]["seed_group"])
+		if (seedG.includes(projects.regions[seedR[i]]["seed_group"])==false){
+			seedG.push(projects.regions[seedR[i]]["seed_group"])
 		}
 
 
@@ -50,15 +72,15 @@ function fillSG() { //fills list of seed groups
 	var sCheck = []; //array to check if seed group is already added
 
 	var regArr = []; //store regions in array
-	var reg = projects.responseJSON.regions
-	for (reg in projects.responseJSON.regions){
+	var reg = projects.regions
+	for (reg in projects.regions){
 		regArr.push(reg)
 	}
 	for (i=0; i< regArr.length; i++){
 		var option = document.createElement("option");	
-		option.text = projects.responseJSON.regions[regArr[i]]["seed_group"];
-		if (sCheck.includes(projects.responseJSON.regions[regArr[i]]["seed_group"]) == false && projects.responseJSON.regions[regArr[i]]["seed_group"] !== null && projects.responseJSON.regions[regArr[i]]["seed_group"] !== "null"){	
-			sCheck.push (projects.responseJSON.regions[regArr[i]]["seed_group"]);
+		option.text = projects.regions[regArr[i]]["seed_group"];
+		if (sCheck.includes(projects.regions[regArr[i]]["seed_group"]) == false && projects.regions[regArr[i]]["seed_group"] !== null && projects.regions[regArr[i]]["seed_group"] !== "null"){	
+			sCheck.push (projects.regions[regArr[i]]["seed_group"]);
 			grSelect.add(option);
 		} 
 	}
@@ -75,7 +97,7 @@ function fillSR(){ //fills seed regions
 	var check = [];
 	var seregSelect = $("#txtSR")[0];
 	if ($("#txtPro").val().length ==1){
-		var region = projects.responseJSON.projects[$('#txtPro').val()].regions
+		var region = projects.projects[$('#txtPro').val()].regions
 		for (i=0; i< region.length; i++){
 			var pro = $('#txtPro').val();
 			var seedR = region[i]["seed_region_names"]
@@ -90,7 +112,7 @@ function fillSR(){ //fills seed regions
 		}
 	}else if ($("#txtPro").val().length >1){
 		for (k=0; k<$("#txtPro").val().length ; k++){
-		var region = projects.responseJSON.projects[$('#txtPro').val()[k]].regions
+		var region = projects.projects[$('#txtPro').val()[k]].regions
 			for (i=0; i< region.length; i++){
 				var pro = $('#txtPro').val();
 				var seedR = region[i]["seed_region_names"]
@@ -113,7 +135,7 @@ function fillCR(){ //fills in list of coordinate regions of a project
 	var coregSelect = $("#txtCR")[0];
 	var check = [];
 	if ($("#txtPro").val().length ==1){
-		var region = projects.responseJSON.projects[$('#txtPro').val()].regions
+		var region = projects.projects[$('#txtPro').val()].regions
 		for (i=0; i<region.length; i++){
 			var pro = $('#txtPro').val();
 			var option = document.createElement("option");
@@ -122,7 +144,7 @@ function fillCR(){ //fills in list of coordinate regions of a project
 		}
 	}else if ($("#txtPro").val().length >1){
 		for (k=0; k<$("#txtPro").val().length ; k++){
-		var region = projects.responseJSON.projects[$('#txtPro').val()[k]].regions
+		var region = projects.projects[$('#txtPro').val()[k]].regions
 			for (i=0; i<region.length; i++){
 				var pro = $('#txtPro').val();
 				var option = document.createElement("option");
@@ -141,7 +163,7 @@ function coselReg(){ //highlights related seed region fields when coordinate reg
 	if ($("#txtCR option").length ==0){
 		alert ("No coordinate region selectable.")
 	}else if ($("#txtPro").val().length ==1){
-		var region = projects.responseJSON.projects[$('#txtPro').val()].regions;
+		var region = projects.projects[$('#txtPro').val()].regions;
 		var coordArr = [];
 		for (i = 0; i < region.length; i++){
 			coordArr.push (region[i]["coordinate_region"]);
@@ -150,14 +172,14 @@ function coselReg(){ //highlights related seed region fields when coordinate reg
 		var seedRG = region[arrNum]["seed_region_names"]
 		$("#txtSR").val(seedRG)
 		if (region[arrNum]["seed_region_names"].length !== 0){
-			$("#txtSG").val(projects.responseJSON.regions[seedRG[0]]["seed_group"])
+			$("#txtSG").val(projects.regions[seedRG[0]]["seed_group"])
 		}else{
 			$("#txtSG").val("")
 		}
 	}else if ($("#txtPro").val().length >1){
 		var check = []
 		for (j=0; j<$("#txtPro").val().length ; j++){
-			var region = projects.responseJSON.projects[$('#txtPro').val()[j]].regions;
+			var region = projects.projects[$('#txtPro').val()[j]].regions;
 			var coordArr = [];
 			for (i = 0; i < region.length; i++){
 				coordArr.push (region[i]["coordinate_region"]);
@@ -172,14 +194,14 @@ function coselReg(){ //highlights related seed region fields when coordinate reg
 			}	
 		}
 		$("#txtSR").val(check)
-		$("#txtSG").val(projects.responseJSON.regions[check[0]]["seed_group"])
+		$("#txtSG").val(projects.regions[check[0]]["seed_group"])
 	}
 }
 
 function regselCo(){ //highlights related coordinate region fields when seed region is selected
 	if($("#txtSR").val().length == 1){
 		if ($("#txtPro").val().length ==1){
-			var region = projects.responseJSON.projects[$('#txtPro').val()].regions;
+			var region = projects.projects[$('#txtPro').val()].regions;
 			var check = []
 			for (i = 0; i < region.length; i++){
 				if (region[i]["seed_region_names"].includes($("#txtSR").val()[0])){
@@ -187,11 +209,11 @@ function regselCo(){ //highlights related coordinate region fields when seed reg
 				}
 			
 			}
-			$("#txtSG").val(projects.responseJSON.regions[$("#txtSR").val()]["seed_group"])		
+			$("#txtSG").val(projects.regions[$("#txtSR").val()]["seed_group"])		
 		}else if ($("#txtPro").val().length >1){
 			var check = []
 			for (j=0; j<$("#txtPro").val().length ; j++){
-				var region = projects.responseJSON.projects[$("#txtPro").val()[j]].regions;
+				var region = projects.projects[$("#txtPro").val()[j]].regions;
 				
 				for (i = 0; i < region.length; i++){
 					if (region[i]["seed_region_names"].includes($("#txtSR").val()[0])){
@@ -199,7 +221,7 @@ function regselCo(){ //highlights related coordinate region fields when seed reg
 					}
 				}
 			}
-			$("#txtSG").val(projects.responseJSON.regions[$("#txtSR").val()[0]]["seed_group"])
+			$("#txtSG").val(projects.regions[$("#txtSR").val()[0]]["seed_group"])
 		}
 
 		$("#txtCR").val(check)
@@ -211,31 +233,31 @@ function regselCo(){ //highlights related coordinate region fields when seed reg
 function sgSel(){ //select seed group, finds and highlights projects and regions related
 	var sCheck = []; 
 	var regArr = [];
-	var regions = projects.responseJSON.regions
+	var regions = projects.regions
 
-	for (regions in projects.responseJSON.regions){
+	for (regions in projects.regions){
 		regArr.push(regions)
 	}
 	for (i=0; i< regArr.length; i++){ //finds the associated seed regions
-		if (projects.responseJSON.regions[regArr[i]]["seed_group"] == $("#txtSG").val()){ 
+		if (projects.regions[regArr[i]]["seed_group"] == $("#txtSG").val()){ 
 			sCheck.push ([regArr[i]]);
 		} 
 	}
-	var por = projects.responseJSON.projects; 
+	var por = projects.projects; 
 	var proj = []	
 	var seedP = []	
 	var seedC = []
-	for (por in projects.responseJSON.projects){ 
+	for (por in projects.projects){ 
 		proj.push(por)
 	} 
 
 	for (i=0; i< proj.length; i++){
-		for (j=0; j< projects.responseJSON.projects[proj[i]]["regions"].length; j++){
-			for (k=0; k< projects.responseJSON.projects[proj[i]]["regions"][j]["seed_region_names"].length; k++){
+		for (j=0; j< projects.projects[proj[i]]["regions"].length; j++){
+			for (k=0; k< projects.projects[proj[i]]["regions"][j]["seed_region_names"].length; k++){
 				for (m=0; m<sCheck.length; m++){
-					if (projects.responseJSON.projects[proj[i]]["regions"][j]["seed_region_names"][k].includes(sCheck[m])){
+					if (projects.projects[proj[i]]["regions"][j]["seed_region_names"][k].includes(sCheck[m])){
 						seedP.push(proj[i])
-						seedC.push(projects.responseJSON.projects[proj[i]]["regions"][j]["coordinate_region"])
+						seedC.push(projects.projects[proj[i]]["regions"][j]["coordinate_region"])
 						
 					}
 				}
@@ -254,7 +276,7 @@ function sgSel(){ //select seed group, finds and highlights projects and regions
 function deta(x){ // fills in the details of project/region
 	clears()
 	var proj 
-	proj = projects.responseJSON.projects[$('#txtPro').val()]
+	proj = projects.projects[$('#txtPro').val()]
 		
 	if ($("#txtSR").val() == null || $("#txtCR").val() == null || $('#txtPro').val()== null){
 		alert("No selection made.")
@@ -262,7 +284,7 @@ function deta(x){ // fills in the details of project/region
 
 		if (x == "CR"){
 			if ($("#txtCR").val().length==1){
-				var reg =  projects.responseJSON.regions[$('#txtCR').val() ]
+				var reg =  projects.regions[$('#txtCR').val() ]
 				$("#txtSeq").val(reg["reference"].toString().replace(/\,/g, ''))
 				$('#txtReg')[0].innerHTML = ("Coordinate")
 				$('#txtRN').val($("#txtCR").val())
@@ -272,7 +294,7 @@ function deta(x){ // fills in the details of project/region
 			}
 		}else if (x == "SR"){
 			if ($("#txtSR").val().length==1){
-				var reg =  projects.responseJSON.regions[$('#txtSR').val()]
+				var reg =  projects.regions[$('#txtSR').val()]
 				$("#txtSeq").val(reg["reference"].toString().replace(/\,/g, ''))
 				$('#txtReg')[0].innerHTML = ("Seed")
 				$('#txtRN').val($("#txtSR").val())
@@ -319,8 +341,8 @@ function clears(){ //clears the details fields
 
 
 function editCheck(){ //check to see which fields are edited and if changes are permitted
-	var proj = projects.responseJSON.projects[$('#txtPro').val()]
-	var reg =  projects.responseJSON.regions
+	var proj = projects.projects[$('#txtPro').val()]
+	var reg =  projects.regions
 	var changes =""
 	var matchOK 
 	var isNuc = 0
@@ -370,13 +392,13 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 	}else if (regType == "Seed"){
 		regName = $("#txtSR").val().toString()
 	}
-	if (projects.responseJSON.regions[$("#txtRN").val()] == undefined){ 
+	if (projects.regions[$("#txtRN").val()] == undefined){ 
 		if ($("#txtRN").val() !== regName){
 			changes += "\n" + "Region Name"
 		} 
 		regNameOK = true
 	 	newregName = $("#txtRN").val()
-	}else if(projects.responseJSON.regions[$("#txtRN").val()] !== undefined){
+	}else if(projects.regions[$("#txtRN").val()] !== undefined){
 		if($("#txtRN").val() !== regName){
 			alert("Region name already exists.")
 			regNameOK = false
@@ -429,17 +451,14 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 	var aminoCheck = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",".","-",","," ","*"]
 	var nucleicCheck = ["A","C","G","T","U","W","S","M","K","R","Y","B","D","H","V","N","Z",".","-",","," ","*"]
 
-	for (i=0; i<newSeq.toString().length; i++){ //checks if sequence is nucleotide or not
+	for (i=0; i<newSeq.toString().length; i++){ //checks if sequence is nucleotide or amino acid
 		if(nucleicCheck.includes(newSeq.toString()[i])==false){
 			isNuc += 1
 		}
-	}
-	for (i=0; i<newSeq.toString().length; i++){ //checks if sequence is amino acid or not
 		if(aminoCheck.includes(newSeq.toString()[i])==false){
 			isAA += 1
 		}
 	}
-
 	
 	//check if sequence matches region type
 	if ($("#txtReg")[0].innerHTML == "Coordinate"){
@@ -476,8 +495,8 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 }
 
 function editChange(){ //makes the edits
-	var proje = projects.responseJSON.projects
-	var regi = projects.responseJSON.regions
+	var proje = projects.projects
+	var regi = projects.regions
 	
 	if (newProj !== $("#txtPro").val().toString()){
 		proje[newProj] = proje[$("#txtPro").val().toString()]
@@ -525,14 +544,14 @@ function editChange(){ //makes the edits
 }
 
 function delPR(){  //to delete a project or region
-	var por = projects.responseJSON.projects;
+	var por = projects.projects;
 	var check = []
 	if ($("#txtPro").val().length !== 1){
 		alert ("Project must be selected.")
 	}else{
 		if (confirm("Are you sure you want to delete?")) {
 			if ($('#delType').val() == "project"){
-				delete projects.responseJSON.projects[$('#txtPro').val()]
+				delete projects.projects[$('#txtPro').val()]
 				alert ("project has been deleted")
 				fillPro()
 			}else if ($('#delType').val() == "region"){ 
@@ -540,29 +559,29 @@ function delPR(){  //to delete a project or region
 					alert("Region must be selected.")
 				}else{
 					var coorIndex = []
-					var upPro = projects.responseJSON.projects[$('#txtPro').val()]["regions"]
+					var upPro = projects.projects[$('#txtPro').val()]["regions"]
 					if (regType == "Coordinate" && $("#txtCR").val().length == 1){ 
 						for (i=0; i<$("#txtCR option").length;i++){		
 							if ($("#txtCR option")[i].innerHTML == $("#txtCR").val()){
 								coorIndex.push(i)
 							}
 						}
-						delete projects.responseJSON.projects[$('#txtPro').val()]["regions"][coorIndex[0]]
+						delete projects.projects[$('#txtPro').val()]["regions"][coorIndex[0]]
 						
 						//shift array indexes down
 						for (i = coorIndex[0]; i<upPro.length; i++){
 							upPro[i] = upPro[i+1]
 						}
 						upPro.length = upPro.length - 1
-						for (por in projects.responseJSON.projects){
-							for(i=0; i<projects.responseJSON.projects[por]["regions"].length; i++){
-								if (projects.responseJSON.projects[por]["regions"][i]["coordinate_region"]==$("#txtCR").val()){
+						for (por in projects.projects){
+							for(i=0; i<projects.projects[por]["regions"].length; i++){
+								if (projects.projects[por]["regions"][i]["coordinate_region"]==$("#txtCR").val()){
 									check.push($("#txtCR").val())
 								}
 							}
 						}
 						if (check.length == 0){
-							delete projects.responseJSON.regions[$("#txtCR").val()]
+							delete projects.regions[$("#txtCR").val()]
 						}
 						fillCR()
 						alert (regType + " region has been deleted.")
@@ -584,17 +603,17 @@ function delPR(){  //to delete a project or region
 							}
 						upPro[regionIndex[i]]["seed_region_names"].length = upPro[regionIndex[i]]["seed_region_names"].length -1
 						}
-						for (por in projects.responseJSON.projects){
-							for(i=0; i<projects.responseJSON.projects[por]["regions"].length; i++){
-								for(j=0; j<projects.responseJSON.projects[por]["regions"][i]["seed_region_names"].length; j++){
-									if (projects.responseJSON.projects[por]["regions"][i]["seed_region_names"][j]==$("#txtSR").val()){
+						for (por in projects.projects){
+							for(i=0; i<projects.projects[por]["regions"].length; i++){
+								for(j=0; j<projects.projects[por]["regions"][i]["seed_region_names"].length; j++){
+									if (projects.projects[por]["regions"][i]["seed_region_names"][j]==$("#txtSR").val()){
 										check.push($("#txtSR").val())
 									}
 								}
 							}
 						}
 						if (check.length == 0){
-							delete projects.responseJSON.regions[$("#txtSR").val()]
+							delete projects.regions[$("#txtSR").val()]
 						}	
 						fillSR()
 						alert (regType + " region has been deleted.")
@@ -612,11 +631,11 @@ function delPR(){  //to delete a project or region
 function fillAddPro() {  //fills in the list of projects
 	$('#addProj')[0].innerHTML = ""
 	var proSelect = $('#addProj')[0]; 
-	var por = projects.responseJSON.projects; 
+	var por = projects.projects; 
 	var option = document.createElement("option"); 
 		option.text = "New Project";
 		proSelect.add(option)
-	for (por in projects.responseJSON.projects){ 
+	for (por in projects.projects){ 
 		var option = document.createElement("option"); 
 		option.text = por; 
 		proSelect.add(option); 
@@ -625,7 +644,7 @@ function fillAddPro() {  //fills in the list of projects
 
 function fillAddCR(){ //fills coordinate regions in add form
 	$("#cooregion")[0].innerHTML = ""
-	var pro = projects.responseJSON.projects
+	var pro = projects.projects
 
 		var cooSelect = $("#cooregion")[0]
 		for (i=0; i< pro[$("#addProjName").val()]["regions"].length; i++){
@@ -638,8 +657,8 @@ function fillAddCR(){ //fills coordinate regions in add form
 
 function addPCheck(){ //checks for new or existing project
 	
-	var pro = projects.responseJSON.projects
-	var reg = projects.responseJSON.regions
+	var pro = projects.projects
+	var reg = projects.regions
 	if ($("#addProj").val() !== "New Project"){ //existing, fields cant be edited, fills the fields with existing data
 		$("#addProjName").val($("#addProj").val())
 		$("#addProjName").prop("readonly", true)
@@ -662,7 +681,7 @@ function addPO(){ //regarding the project fields
 	if ($("#addProj").val() == "New Project"){
 		var newProj = $("#addProjName").val()
 		var newValue = {"max_variants": $("#addVar").val(), "description": $("#addDes").val(), "regions": []}
-		var pro = projects.responseJSON.projects
+		var pro = projects.projects
 		var existP = 0
 
 		for (i=1; i<$("#addProj option").length; i++){
@@ -711,7 +730,7 @@ function addRCheck(){ //checks for coordinate or seed that user wanted to add
 
 function seedShow(){ //displays the seed regions of the selected coordinate region in add form
 	$("#seeregion")[0].innerHTML = ""
-	var pro = projects.responseJSON.projects
+	var pro = projects.projects
 	var seeSelect = $("#seeregion")[0]
 	var seedcheck = []
 
@@ -734,7 +753,7 @@ function seedShow(){ //displays the seed regions of the selected coordinate regi
 
 function groupShow(){
 	$("#group")[0].innerHTML = ""
-	var reg = projects.responseJSON.regions
+	var reg = projects.regions
 	var groupcheck = []
 	var groupSelect = $("#group")[0]
 	for (i=0; i<$("#seeregion").val().length; i++){
@@ -748,15 +767,23 @@ function groupShow(){
 }
 
 function addRe(){
-	var pro = projects.responseJSON.projects
-	var reg = projects.responseJSON.regions
+	var pro = projects.projects
+	var reg = projects.regions
 	var isNuc = 0	
+	var isAA = 0
 	var exist = 0
 	var coordSeld = [] = $("#cooregion").val()
 	var addSeq = $("#addSequence").val().replace(/\,/g, '').toUpperCase()
+	var aminoCheck = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",".","-",","," ","*"]
+	var nucleicCheck = ["A","C","G","T","U","W","S","M","K","R","Y","B","D","H","V","N","Z",".","-",","," ","*"]
+
+
 	for (i=0; i<addSeq.length; i++){ //checks if sequence is nucleotide or not
-		if(addSeq[i] !== "A" && addSeq[i] !== "T" && addSeq[i] !== "G" && addSeq[i] !== "C" && addSeq[i] !== "," && addSeq[i] !== "*" ){
-			isNuc += 1  
+		if(aminoCheck.includes(addSeq[i])==false){
+			isAA += 1  
+		}
+		if(nucleicCheck.includes(addSeq[i])==false){
+			isNuc += 1
 		}
 	}
 	if($("#addRegi").val() == "coordinate"){
@@ -766,16 +793,16 @@ function addRe(){
 			}
 		}
 		if ($("#addRegName").val() !== "" && $("#addSequence").val() !== "" && exist == 0){//add check for existing coord with same name in projects and regions
-			if(isNuc !== 0){
+			if(isAA == 0){
 				pro[$("#addProjName").val()]["regions"].push ({"coordinate_region": $("#addRegName").val() ,"seed_region_names":[]})
-				reg[$("#addRegName").val()] = {"is_nucleotide": false, "reference": $("#addSequence").val(), "seed_group": null}
+				reg[$("#addRegName").val()] = {"is_nucleotide": false, "reference": addSeq, "seed_group": null}
 				fillAddCR()
 				$("#cooregion").val($("#addRegName").val())
 			}else{
 				alert("Must be an amino acid sequence for coordinate region.")
 			}
 				
-		}else if ($("#addRegName").val() == "" && $("#addSequence").val() == ""){
+		}else if ($("#addRegName").val() == "" || $("#addSequence").val() == ""){
 			alert("Fields must be filled in.")
 		}else if (exist > 0){
 			alert("Region already exists.")
@@ -810,7 +837,7 @@ function addRe(){
 			if(isNuc == 0){
 				for (i=0; i< cooCheck.length; i++){
 					pro[$("#addProjName").val()]["regions"][cooCheck[i]]["seed_region_names"].push($("#addRegName").val());
-					reg[$("#addRegName").val()] = {"is_nucleotide": true, "reference": $("#addSequence").val(), "seed_group": $("#addSeedGroup").val()};
+					reg[$("#addRegName").val()] = {"is_nucleotide": true, "reference": addSeq, "seed_group": $("#addSeedGroup").val()};
 				}
 				$("#cooregion").val(coordSeld)
 				seedShow()
@@ -818,7 +845,7 @@ function addRe(){
 			}else{
 				alert("Must be a nucleic acid sequence for seed region.")
 			}
-		}else if ($("#addRegName").val() == "" && $("#addSequence").val() == "" && $("#addSeedGroup").val() == ""){
+		}else if ($("#addRegName").val() == "" || $("#addSequence").val() == "" || $("#addSeedGroup").val() == ""){
 			alert("Fields must be filled in.")
 		}else if (exist > 0){
 			alert("Region already exists.")
@@ -856,10 +883,9 @@ function closeForm(x) { //close add or delete form
 //download file code adapted from https://ourcodeworld.com/articles/read/189/how-to-create-a-file-and-generate-a-download-with-javascript-in-the-browser-without-a-server
 function download() { 
   var element = document.createElement('a');
-  element.setAttribute("href", 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(projects.responseJSON,null,4)));
+  element.setAttribute("href", 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(projects,null,4)));
   element.setAttribute("target", "_blank")
   document.body.appendChild(element);
 
   element.click();
 }
-
