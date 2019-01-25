@@ -1,8 +1,19 @@
 //loads the json file
 $(window).on('load',function(){
 	$("#inputfile").val("")
+	sprojects = $.getJSON('projects.json')
 	document.getElementById('inputfile').addEventListener('change', handleFileSelect, false);
 })
+
+function load(){ //for when there has not been a json file chosen, uses default projects.json
+	projects = sprojects.responseJSON
+	clears();
+	fillPro();
+	fillSG();
+	blankR();
+	$("#loadbut").show()
+	$("#basejson").hide()
+}
 
 function handleFileSelect(evt) {
     /*
@@ -27,6 +38,7 @@ function handleFileSelect(evt) {
 function fileReadComplete(e) {
 	projects = JSON.parse(reader.result)	
 	$("#loadbut").show()
+	$("#basejson").hide()
 	clears();
 	fillPro();
 	fillSG();
@@ -425,31 +437,32 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 
 
 	
-	if (globReg["reference"].toString().replace(/\,/g, '') == $("#txtSeq").val().replace(/\,/g, '').toUpperCase()){ //check for sequence
+	if (globReg["reference"].toString().replace(/\,/g, '') == $("#txtSeq").val().replace(/\,/g, '').replace(/\d/g, "").replace(/ +/g, '').replace(/\n/g, "").toUpperCase()){ //check for sequence
 		newSeq = globReg["reference"]
-	}else if (globReg["reference"].toString().replace(/\,/g, '') !== $("#txtSeq").val().replace(/\,/g, '').toUpperCase()){ //converts sequence to array
+	}else if (globReg["reference"].toString().replace(/\,/g, '') !== $("#txtSeq").val().replace(/\,/g, '').replace(/\d/g, "").replace(/ +/g, '').replace(/\n/g, "").toUpperCase()){ //converts sequence to array
 		newSeq = []
-		var arrLength = Math.ceil($("#txtSeq").val().replace(/\,/g, '').length/65) 
+		tempSeq =$("#txtSeq").val().replace(/\,/g, '').replace(/\d/g, "").replace(/ +/g, '').replace(/\n/g, "").toUpperCase()
+		var arrLength = Math.ceil(tempSeq.length/65) 
 		for (i=0; i< arrLength-1; i++){
 			var seqBlock = ""
 			for (j=0; j<65; j++){
-				if ($("#txtSeq").val()[i*65 +j].toUpperCase().length!== undefined){
-					seqBlock += $("#txtSeq").val()[i*65 +j].toUpperCase()
+				if (tempSeq[i*65 +j].length!== undefined){
+					seqBlock += tempSeq[i*65 +j]
 				}
 			}
 			newSeq[i] = seqBlock
 		}	
 		var seqBlock = ""
-		for (i=(arrLength-1)*65; i<$("#txtSeq").val().replace(/\,/g, '').length; i++){
-			seqBlock += $("#txtSeq").val()[i].toUpperCase()
+		for (i=(arrLength-1)*65; i<tempSeq.length; i++){
+			seqBlock += tempSeq[i].toUpperCase()
 		}
 		newSeq[arrLength-1] = seqBlock
 			
 		changes += "\n" + "Reference Sequence"
 	}
 	
-	var aminoCheck = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",".","-",","," ","*"]
-	var nucleicCheck = ["A","C","G","T","U","W","S","M","K","R","Y","B","D","H","V","N","Z",".","-",","," ","*"]
+	var aminoCheck = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",".","-",","," ","*","#"]
+	var nucleicCheck = ["A","C","G","T","U","W","S","M","K","R","Y","B","D","H","V","N","Z",".","-",","," ","*","#"]
 
 	for (i=0; i<newSeq.toString().length; i++){ //checks if sequence is nucleotide or amino acid
 		if(nucleicCheck.includes(newSeq.toString()[i])==false){
@@ -515,7 +528,7 @@ function editChange(){ //makes the edits
 	
 	if (newregType == "Coordinate"){ //for when coordinate name is changed
 		regi[newregName] = {"is_nucleotide": false, "reference": newSeq, "seed_group": newSG}
-		for (i=0; i<$("#txtCR option").length -1;i++){		
+		for (i=0; i<$("#txtCR option").length;i++){		
 			if ($("#txtCR option")[i].innerHTML == $("#txtCR").val()){
 				coorIndex.push(i)
 			}
@@ -527,7 +540,7 @@ function editChange(){ //makes the edits
 	}else if (newregType == "Seed"){ //for when seed name is changed 
 		regi[newregName] = {"is_nucleotide": true, "reference": newSeq, "seed_group": newSG}
 		for (i=0; i<$("#txtCR").val().length; i++){
-			for (j=0; j<$("#txtCR option").length -1;j++){		
+			for (j=0; j<$("#txtCR option").length;j++){		
 				if ($("#txtCR option")[j].innerHTML == $("#txtCR").val()[i]){
 					regionIndex.push(j)
 				}
@@ -554,6 +567,7 @@ function delPR(){  //to delete a project or region
 				delete projects.projects[$('#txtPro').val()]
 				alert ("project has been deleted")
 				fillPro()
+				closeForm('delForm')
 			}else if ($('#delType').val() == "region"){ 
 				if ($("#txtSR").val().length == 0 && $("#txtCR").val().length == 0){
 					alert("Region must be selected.")
@@ -773,14 +787,14 @@ function addRe(){
 	var isAA = 0
 	var exist = 0
 	var coordSeld = [] = $("#cooregion").val()
-	var addSeq = $("#addSequence").val().replace(/\,/g, '').toUpperCase()
-	var aminoCheck = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",".","-",","," ","*"]
-	var nucleicCheck = ["A","C","G","T","U","W","S","M","K","R","Y","B","D","H","V","N","Z",".","-",","," ","*"]
+	var addSeq = $("#addSequence").val().replace(/\,/g, '').replace(/\d/g, "").replace(/ +/g, '').replace(/\n/g, "").toUpperCase()
+	var aminoCheck = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",".","-",","," ","*","#"]
+	var nucleicCheck = ["A","C","G","T","U","W","S","M","K","R","Y","B","D","H","V","N","Z",".","-",","," ","*","#"]
 
 
 	for (i=0; i<addSeq.length; i++){ //checks if sequence is nucleotide or not
 		if(aminoCheck.includes(addSeq[i])==false){
-			isAA += 1  
+			isAA += 1 
 		}
 		if(nucleicCheck.includes(addSeq[i])==false){
 			isNuc += 1
@@ -879,7 +893,7 @@ function closeForm(x) { //close add or delete form
 }
 
 
-
+/*
 //download file code adapted from https://ourcodeworld.com/articles/read/189/how-to-create-a-file-and-generate-a-download-with-javascript-in-the-browser-without-a-server
 function download() { 
   var element = document.createElement('a');
@@ -888,4 +902,27 @@ function download() {
   document.body.appendChild(element);
 
   element.click();
+}
+*/
+function download() {
+	if (projects !== undefined){
+		name = prompt("Enter file name for download.")
+		if(name !== "null"){
+			if(name == ""){
+				name = $("#inputfile")[0].files[0].name
+			}		
+			if(name.indexOf(".json") == -1){
+				name += ".json"
+			}
+			var element = document.createElement('a');
+			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(projects,null,"\t")));
+			element.setAttribute('download', name);
+		  	  element.setAttribute("target", "_blank")
+			document.body.appendChild(element);
+
+			element.click();
+		}
+	}else{
+		alert("No data to be downloaded.")
+	}
 }
