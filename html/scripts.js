@@ -788,6 +788,7 @@ function addRe(){
 	var exist = 0
 	var coordSeld = [] = $("#cooregion").val()
 	var addSeq = $("#addSequence").val().replace(/\,/g, '').replace(/\d/g, "").replace(/ +/g, '').replace(/\n/g, "").toUpperCase()
+	var arrSeq = []
 	var aminoCheck = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",".","-",","," ","*","#"]
 	var nucleicCheck = ["A","C","G","T","U","W","S","M","K","R","Y","B","D","H","V","N","Z",".","-",","," ","*","#"]
 
@@ -808,8 +809,24 @@ function addRe(){
 		}
 		if ($("#addRegName").val() !== "" && $("#addSequence").val() !== "" && exist == 0){//add check for existing coord with same name in projects and regions
 			if(isAA == 0){
+				var arrLength = Math.ceil(addSeq.length/65) //convert to array
+				for (i=0; i< arrLength-1; i++){
+					var seqBlock = ""
+					for (j=0; j<65; j++){
+						if (addSeq[i*65 +j].length!== undefined){
+							seqBlock += addSeq[i*65 +j]
+						}
+					}
+					arrSeq[i] = seqBlock
+				}	
+				var seqBlock = ""
+				for (i=(arrLength-1)*65; i<addSeq.length; i++){
+					seqBlock += addSeq[i].toUpperCase()
+				}
+				arrSeq[arrLength-1] = seqBlock
+
 				pro[$("#addProjName").val()]["regions"].push ({"coordinate_region": $("#addRegName").val() ,"seed_region_names":[]})
-				reg[$("#addRegName").val()] = {"is_nucleotide": false, "reference": addSeq, "seed_group": null}
+				reg[$("#addRegName").val()] = {"is_nucleotide": false, "reference": arrSeq, "seed_group": null}
 				fillAddCR()
 				$("#cooregion").val($("#addRegName").val())
 			}else{
@@ -850,8 +867,27 @@ function addRe(){
 			}
 			if(isNuc == 0){
 				for (i=0; i< cooCheck.length; i++){
+					
+					var arrLength = Math.ceil(addSeq.length/65) //convert to array
+					for (j=0; j< arrLength-1; j++){
+						var seqBlock = ""
+						for (k=0; k<65; k++){
+							if (addSeq[j*65 +k].length!== undefined){
+								seqBlock += addSeq[j*65 +k]
+							}
+						}
+						arrSeq[j] = seqBlock
+						console.log(arrSeq)
+					}	
+					var seqBlock = ""
+					for (j=(arrLength-1)*65; j<addSeq.length; j++){
+						seqBlock += addSeq[j].toUpperCase()
+					}
+					arrSeq[arrLength-1] = seqBlock	
+					console.log(arrSeq)
+
 					pro[$("#addProjName").val()]["regions"][cooCheck[i]]["seed_region_names"].push($("#addRegName").val());
-					reg[$("#addRegName").val()] = {"is_nucleotide": true, "reference": addSeq, "seed_group": $("#addSeedGroup").val()};
+					reg[$("#addRegName").val()] = {"is_nucleotide": true, "reference": arrSeq, "seed_group": $("#addSeedGroup").val()};
 				}
 				$("#cooregion").val(coordSeld)
 				seedShow()
@@ -881,48 +917,4 @@ function clearAdd(){
 
 }
 
-function openForm(x) { //open add or delete form
-	document.getElementById(x).style.display = "block";
-	$("#addProjName").val("")
-	$("#addVar").val("")
-	$("#addDes").val("")
-	$("#addRegi").val("")
-}
-function closeForm(x) { //close add or delete form
-	document.getElementById(x).style.display = "none";
-}
 
-
-/*
-//download file code adapted from https://ourcodeworld.com/articles/read/189/how-to-create-a-file-and-generate-a-download-with-javascript-in-the-browser-without-a-server
-function download() { 
-  var element = document.createElement('a');
-  element.setAttribute("href", 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(projects,null,4)));
-  element.setAttribute("target", "_blank")
-  document.body.appendChild(element);
-
-  element.click();
-}
-*/
-function download() {
-	if (projects !== undefined){
-		name = prompt("Enter file name for download.")
-		if(name !== "null"){
-			if(name == ""){
-				name = $("#inputfile")[0].files[0].name
-			}		
-			if(name.indexOf(".json") == -1){
-				name += ".json"
-			}
-			var element = document.createElement('a');
-			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(projects,null,"\t")));
-			element.setAttribute('download', name);
-		  	  element.setAttribute("target", "_blank")
-			document.body.appendChild(element);
-
-			element.click();
-		}
-	}else{
-		alert("No data to be downloaded.")
-	}
-}
