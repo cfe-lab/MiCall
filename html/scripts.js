@@ -1,50 +1,3 @@
-//loads the json file
-$(window).on('load',function(){
-	$("#inputfile").val("")
-	sprojects = $.getJSON('projects.json')
-	document.getElementById('inputfile').addEventListener('change', handleFileSelect, false);
-})
-
-function load(){ //for when there has not been a json file chosen, uses default projects.json
-	projects = sprojects.responseJSON
-	clears();
-	fillPro();
-	fillSG();
-	blankR();
-	$("#loadbut").show()
-	$("#basejson").hide()
-}
-
-function handleFileSelect(evt) {
-    /*
-    Handle file selected by browser dialog.
-     */	
-	reader = new FileReader()
-	files = evt.target.files; // FileList object
-	f = files[0];
-	
-	// Only process image files.
-	if (!f.type.match('application/json')) {
-        alert('Sorry, this script will only process JSON files.  ' +
-            'You attempted to process a file of type: ' + f.type);
-		return;
-	}
-	
-	
-	reader.readAsText(f);
-	reader.onload = fileReadComplete;  // need some event handler here
-}
-
-function fileReadComplete(e) {
-	projects = JSON.parse(reader.result)	
-	$("#loadbut").show()
-	$("#basejson").hide()
-	clears();
-	fillPro();
-	fillSG();
-	blankR();
-}
-
 function fillPro() {  //fills in the list of projects
 	$('#txtPro')[0].innerHTML = ''
 	var proSelect = $("#txtPro")[0]; 
@@ -55,7 +8,6 @@ function fillPro() {  //fills in the list of projects
 		proSelect.add(option); 
 	} 
 }
-
 
 function highlightSG(){ //highlights related seed groups when project is chosen
 	var seedR = []
@@ -76,8 +28,6 @@ function highlightSG(){ //highlights related seed groups when project is chosen
 	$("#txtSG").val(seedG)
 }
 
-
-
 function fillSG() { //fills list of seed groups
 	$('#txtSG')[0].innerHTML = ''
 	var grSelect = $('#txtSG')[0];
@@ -97,7 +47,6 @@ function fillSG() { //fills list of seed groups
 		} 
 	}
 }
-
 
 function blankR(){ //clears both region select fields
 	$("#txtCR")[0].innerHTML =""
@@ -169,7 +118,6 @@ function fillCR(){ //fills in list of coordinate regions of a project
 		}
 	}
 }
-
 
 function coselReg(){ //highlights related seed region fields when coordinate region is selected
 	if ($("#txtCR option").length ==0){
@@ -270,7 +218,6 @@ function sgSel(){ //select seed group, finds and highlights projects and regions
 					if (projects.projects[proj[i]]["regions"][j]["seed_region_names"][k].includes(sCheck[m])){
 						seedP.push(proj[i])
 						seedC.push(projects.projects[proj[i]]["regions"][j]["coordinate_region"])
-						
 					}
 				}
 			}
@@ -282,7 +229,6 @@ function sgSel(){ //select seed group, finds and highlights projects and regions
 	fillCR()
 	$("#txtSR").val(sCheck)
 	$("#txtCR").val(seedC)
-		
 }
 
 function deta(x){ // fills in the details of project/region
@@ -324,8 +270,6 @@ function deta(x){ // fills in the details of project/region
 				$("#txtSeG").val(reg["seed_group"])
 			}
 		}
-		
-		
 	}
 	if($("#txtPro").val().length == 1){
 		$("#txtName").val($('#txtPro').val()) ;
@@ -336,7 +280,6 @@ function deta(x){ // fills in the details of project/region
 		$('#txtName').val( "Project not selected.")
 		$('#txtDes').val("N/A")
 		$('#txtVar').val("N/A")
-
 	}
 }
 
@@ -351,7 +294,6 @@ function clears(){ //clears the details fields
 	$('#txtRN').val("")
 }
 
-
 function editCheck(){ //check to see which fields are edited and if changes are permitted
 	var proj = projects.projects[$('#txtPro').val()]
 	var reg =  projects.regions
@@ -361,7 +303,6 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 	var isAA = 0
 	var regNameOK = true
 	
-
 	if ($("#txtPro").val().length > 1 || $("#txtPro").val().length == 0){ //check for name change
 		alert ("Project needs to be selected.")
 		matchOK = false
@@ -374,15 +315,13 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 		changes += "\n" + "Project Name"
 	}
 
-	
-	if ($("#txtVar").val() == proj["max_variants"]){ //check for max variant change
+		if ($("#txtVar").val() == proj["max_variants"]){ //check for max variant change
 		newVar = proj["max_variants"]
 	}else if ($("#txtVar").val() !== proj["max_variants"]){	
 		newVar = $("#txtVar").val()
 		changes += "\n" + "Max Variants"
 	}
 	
-
 	if ($("#txtDes").val() == proj["description"]){ //check for description change
 		newDes = proj["description"]
 	}else if ($("#txtDes").val() !== proj["description"]){
@@ -390,14 +329,12 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 		changes += "\n" + "Description"
 	}
 
-	
 	if ($("#txtReg")[0].innerHTML == regType){ //check for region type
 		newregType = regType
 	}else if ($("#txtReg")[0].innerHTML !== regType){
 		newregType = $("#txtReg")[0].innerHTML
 		changes += "\n" + "Region Type"
 	}
-
 
 	if (regType == "Coordinate"){ //check for region name
 		regName = $("#txtCR").val().toString()
@@ -420,7 +357,6 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 		}
 	}
 
-
 	//check for seed group
 	if ($("#txtReg")[0].innerHTML == "Coordinate" && $("#txtSeG").val() !== "null"){
 		alert("seed group for coordinate regions is 'null'")
@@ -434,8 +370,6 @@ function editCheck(){ //check to see which fields are edited and if changes are 
 		newSG = $("#txtSeG").val()
 		changes += "\n" + "Seed Group"
 	}
-
-
 	
 	if (globReg["reference"].toString().replace(/\,/g, '') == $("#txtSeq").val().replace(/\,/g, '').replace(/\d/g, "").replace(/ +/g, '').replace(/\n/g, "").toUpperCase()){ //check for sequence
 		newSeq = globReg["reference"]
@@ -519,9 +453,7 @@ function editChange(){ //makes the edits
 	}
 	proje[newProj]["max_variants"] = newVar
 	proje[newProj]["description"] = newDes
-	
-
-	
+		
 	var regionIndex = []
 	var seedIndex
 	var coorIndex = []
@@ -533,6 +465,8 @@ function editChange(){ //makes the edits
 				coorIndex.push(i)
 			}
 		}
+		globReg = projects.regions[$('#txtCR').val()]
+		console.log(globReg)
 		proje[newProj]["regions"][coorIndex[0]]["coordinate_region"] = newregName
 		fillCR()
 		$("#txtCR").val(newregName)
@@ -548,12 +482,13 @@ function editChange(){ //makes the edits
 			seedIndex = proje[newProj]["regions"][regionIndex[i]]["seed_region_names"].indexOf(regName)
 			proje[newProj]["regions"][regionIndex[i]]["seed_region_names"][seedIndex] = newregName
 		}	
+		globReg = projects.regions[$('#txtSR').val()]
+		console.log(globReg)
 		fillSR()
 		fillSG()
 		$("#txtSR").val(newregName)
 		$("#txtSG").val(newSG)
 	}
-
 }
 
 function delPR(){  //to delete a project or region
@@ -635,9 +570,7 @@ function delPR(){  //to delete a project or region
 						closeForm('delForm')
 					}
 				}
-				
 			}
-
 		}
 	}
 }
@@ -722,7 +655,6 @@ function addPO(){ //regarding the project fields
 		
 	}else if ($("#addProj").val() !== "New Project"){
 		$("#addregion").show()
-
 	}
 }
 
@@ -738,9 +670,7 @@ function addRCheck(){ //checks for coordinate or seed that user wanted to add
 	$("#addRegName").val("")
 	$("#addSequence").val("")
 	$("#addSeedGroup").val("")
-	
 }
-
 
 function seedShow(){ //displays the seed regions of the selected coordinate region in add form
 	$("#seeregion")[0].innerHTML = ""
@@ -877,14 +807,12 @@ function addRe(){
 							}
 						}
 						arrSeq[j] = seqBlock
-						console.log(arrSeq)
 					}	
 					var seqBlock = ""
 					for (j=(arrLength-1)*65; j<addSeq.length; j++){
 						seqBlock += addSeq[j].toUpperCase()
 					}
 					arrSeq[arrLength-1] = seqBlock	
-					console.log(arrSeq)
 
 					pro[$("#addProjName").val()]["regions"][cooCheck[i]]["seed_region_names"].push($("#addRegName").val());
 					reg[$("#addRegName").val()] = {"is_nucleotide": true, "reference": arrSeq, "seed_group": $("#addSeedGroup").val()};
@@ -903,7 +831,7 @@ function addRe(){
 	}
 }
 
-function clearAdd(){
+function clearAdd(){ //clear field in add form
 	$("#addregion").hide()
 	$("#addProjName").val("")
 	$("#addProjName").prop("readonly", false)
@@ -916,5 +844,3 @@ function clearAdd(){
 	$("#addSeedGroup").val("")
 
 }
-
-
