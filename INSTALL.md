@@ -44,3 +44,11 @@ These instructions also assume that you have superuser access.  If you do not, t
    sudo python3 setup.py install
    ```
 
+## Instructions for Linux (Fedora)
+**In progress**  
+These instructions are based on Fedora 28 (Cloud Edition).
+1. Install Python 3.5 or higher:
+   ```console
+   $ sudo yum install python3
+   ```
+
