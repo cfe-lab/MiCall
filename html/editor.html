@@ -1,0 +1,164 @@
+<html>
+    <head>
+	<meta charset="utf-8"/>
+    </head>
+
+
+<style>
+/* The popup form - hidden by default */
+.form-popup {
+  display: none;
+  position: fixed;
+  border: 1px solid #3F3F3F;
+  z-index: 9;
+}
+.form-container {
+  max-width: 3000px;
+  padding: 10px;
+  background-color: white;
+}
+</style >
+<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="scripts.js"></script>
+<script type="text/javascript" src="scripts2.js"></script>
+
+    <body onload = "clears();">
+    	
+	
+	<h1>MiCall project editor</h1>
+	<input type="file" id="inputfile"></input>
+	<button onclick="download()" >Download File</button>
+	<button class="open-button" onclick="openForm('addForm'); fillAddPro()" >Add</button>
+		<div class="form-popup" id="addForm" style="width: 90%; height:90%; background:#FFFFFF" >
+	 		<form action="/action_page.php" class="form-container">
+ 	 			<h2>Add</h2>
+				<br>
+				<b>Project</b> <select id = "addProj" onchange = "addPCheck()"> 
+				</select><br>
+				<b>Project Name</b> <textarea id = "addProjName" rows="1" cols = "50">
+				</textarea>
+				<br>
+				<b>Max Variants</b> <textarea id = "addVar" rows="1" cols = "50" >
+				</textarea>
+				<br>
+				<b>Description</b> <textarea id = "addDes" rows="1" cols = "50" >
+				</textarea>
+				<br><br>
+   				<button type="button" class="btn" onclick="addPO();fillAddCR()" id = "addProject">
+				Select</button>
+				<br><br>
+				<div id= "addregion" hidden>
+					<br> <b>Coordinate</b>
+					<select size = "8" style="width: 200px" id = "cooregion" multiple onclick = "seedShow()">
+					</select>
+					<b>Seed</b>
+					<select size = "8" style="width: 200px" id = "seeregion" multiple onclick = "groupShow()">
+					</select>
+					<b>Seed Group</b>
+					<select size = "8" style="width: 200px" id = "group" disabled"> 
+					</select>
+					<br><br><br>
+					<b>Region to Add</b> <select id = "addRegi" onchange = "addRCheck()">
+						<option selected> </option>
+						<option value = "coordinate"> <b>Coordinate</b></option>
+						<option value = "seed"> <b>Seed</b></option>
+					</select><br>
+					
+					<div id= "common" hidden>
+						<b>Region Name</b><textarea id = "addRegName" rows="1" cols = "50">
+						</textarea><br>
+						<b>Sequence</b><textarea id = "addSequence" rows="1" cols = "50">
+						</textarea><br>
+					</div>
+					<div id="seedgrouptext" hidden>
+						<b>Seed Group</b><textarea id = "addSeedGroup" rows="1" cols = "50">
+						</textarea><br><br>
+						Highlight <b>Coordinate Region(s)</b> to add Seed Region to.
+					</div>
+					<br><br><br>
+					<div hidden id = "regionbut">
+						<button type="button" class="btn" onclick="addRe()" id = "addRegion">
+						Add Region</button>
+					</div>
+				</div>
+					
+				
+				<br><br>
+				<button type="button" class="btn cancel" onclick="closeForm('addForm');clearAdd()">Close</button>
+			</form>
+		</div>
+	<button class="open-button" onclick="openForm('delForm')">Delete</button>
+		<div class="form-popup" id="delForm" style="width: 50%; height:25%; background:#FFFFFF; position:absolute; bottom: 0px;right: 0px">
+	 		<form action="/action_page.php" class="form-container">
+ 	 		<h2>Delete</h2>
+			<br>
+			<b>Type </b><select id ="delType">
+				<option> </option>
+				<option value = "project"> Project </option>
+				<option value = "region"> Region </option>
+			</select>
+			<br>
+   			<button type="button" class="btn" onclick="delPR()">Delete</button>
+    			<button type="button" class="btn cancel" onclick="closeForm('delForm')">Close</button>
+			</form>
+		</div>
+	<br>
+	<button onclick = "load()" id = "basejson"> Load default projects.json </button>
+	<button onclick = "clears();fillPro();fillSG();blankR();" id = "loadbut" hidden> Refresh </button>
+	<br><br>
+	<table style="width: 850">
+		<th>Projects</th>
+    		<th>Seed Groups</th>
+    		<th>Seed Regions</th>
+		<th>Coordinate</th>
+	</table>
+	<br>
+	<select multiple id = "txtPro" size = "15" style="width: 200px" onclick = "fillSR(); fillCR(); highlightSG()">		
+	</select>
+	<select multiple id = "txtSG" size = "15" style="width: 200px" onclick ="sgSel()">		
+	</select>
+	<select multiple id = "txtSR" size = "15" style="width: 200px" onclick = "regselCo(); deta('SR')">		
+	</select>
+	<select multiple id = "txtCR" size = "15" style="width: 200px" onclick = "coselReg(); deta('CR')">		
+	</select>
+	<br><br><br>
+	<hr>
+	<h2>Editor</h2>
+	<br>
+	<b>Project Name</b>: <textarea id = "txtName" rows="1" cols = "50" >
+	</textarea>
+	<br>
+	<b>Max Variants</b>: <textarea id = "txtVar" rows="1" cols = "25">
+	</textarea>
+	<br>
+	
+	<br>
+	<b>Description</b>: <textarea id = "txtDes" rows="2" cols = "100">
+	</textarea>
+	<br>
+	<b>Region Type</b>: 
+	<b><div id = "txtReg">
+	</div></b>
+	<br>
+	<b>Is Nucleotide</b>:
+	<b> <div id = "txtNuc">
+	</div></b>
+	<br>
+	<b>Region Name</b>: <textarea id = "txtRN" rows="1" cols = "50">
+	</textarea>
+	<br>
+	
+	<b>Seed Group</b>: <textarea id = "txtSeG" rows="1" cols = "50">
+	</textarea>
+	<br>
+	<b>Sequence</b>: 
+	<br>	
+	<textarea id = "txtSeq" rows="20" cols = "100">
+	</textarea>
+	<br><br>
+	<button onclick ="editCheck()"> Save Edit </button>
+	
+    </body>
+	
+</html>
+
