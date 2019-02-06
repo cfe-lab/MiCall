@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -153,3 +154,4 @@ if __name__ == '__main__':
     if args.outdir is None:
         args.outdir = os.path.dirname(args.fastq1.name)
     run_sample(args)
+

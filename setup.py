@@ -7,8 +7,9 @@ if sys.version_info < (3,):
     sys.exit()
 
 setup(
-    name='MiCall', 
+    name='micall', 
     packages=['micall', 'micall.core', 'micall.utils', 'micall.alignment'],
+    scripts=['bin/micall'],
     ext_modules=[Extension('micall.alignment._gotoh2',
                            sources=['micall/alignment/src/_gotoh2.c'])],
     package_data={'micall':
