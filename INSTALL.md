@@ -26,7 +26,7 @@ These instructions also assume that you have superuser access.  If you do not, t
    ```
    wget https://github.com/BenLangmead/bowtie2/archive/v2.2.8.tar.gz
    gunzip v2.2.8.tar.gz
-   tar -xf bowtie2-2.2.8.tar
+   tar -xf bowtie2-2.2.8.tar  # this might also be v2.2.8.tar
    cd bowtie2-2.2.8
    make
    sudo cp bowtie2* /usr/local/bin/
