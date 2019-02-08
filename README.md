@@ -10,9 +10,9 @@ To run Micall-Lite, you need Python 3.x, [bowtie2](https://github.com/BenLangmea
 
 ## Usage
 
-The most convenient way to run the MiCall-Lite pipeline is through the `run-sample.py` script:
+The most convenient way to run the MiCall-Lite pipeline is through the `bin/micall` script, which should have been installed at `/usr/local/bin`:
 ```
-art@Kestrel:~/git/MiCall-Lite$ python3 run-sample.py Example_S1_L001_R1_001.fastq.gz Example_S1_L001_R2_001.fastq.gz 
+art@Kestrel:~/git/MiCall-Lite$ micall Example_S1_L001_R1_001.fastq.gz Example_S1_L001_R2_001.fastq.gz 
 MiCall-Lite running sample Example_S1_L001_R1_001...
   Preliminary map
   Iterative remap
@@ -24,13 +24,13 @@ These paired-end [FASTQ](https://en.wikipedia.org/wiki/FASTQ_format) files conta
 ### Compressed and uncompressed FASTQs
 Note that we ran the pipeline on [gzip](https://en.wikipedia.org/wiki/Gzip) compressed files, as indicated by the conventional `.gz` file extension.  The FASTQ files compress down to roughly one-eighth of their original size.  Being able to process these files without expanding the data on your storage media is useful for conserving space.  However, you might want to process the uncompressed files instead.  You can do this by running MiCall-Lite with the `-u` (uncompressed) flag:
 ```
-art@Kestrel:~/git/MiCall-Lite$ python3 run-sample.py -u Example_S1_L001_R1_001.fastq Example_S1_L001_R2_001.fastq 
+art@Kestrel:~/git/MiCall-Lite$ micall -u Example_S1_L001_R1_001.fastq Example_S1_L001_R2_001.fastq 
 ```
 
 ### Unpaired reads
 If your sample was processed using single-read (unpaired) sequencing, then you can run the pipeline with just the one positional argument instead of two:
 ```
-art@Kestrel:~/git/MiCall-Lite$ python3 run-sample.py Example_S1_L001_R1_001.fastq.gz
+art@Kestrel:~/git/MiCall-Lite$ micall Example_S1_L001_R1_001.fastq.gz
 MiCall-Lite running sample Example_S1_L001_R1_001...
 ```
 
@@ -39,7 +39,7 @@ The Illumina platforms produce a set of [InterOp](http://illumina.github.io/inte
 
 To use this censoring step, you need to have the `ErrorMetricsOut.bin` file from the PC linked to your Illumina instrument or from your sequencing provider, and then feed this file to the pipeline with the `-i` flag:
 ```
-art@Kestrel:~/git/MiCall-Lite$ python3 run-sample.py -i ErrorMetricsOut.bin Example_S1_L001_R1_001.fastq.gz Example_S1_L001_R2_001.fastq.gz
+art@Kestrel:~/git/MiCall-Lite$ micall -i ErrorMetricsOut.bin Example_S1_L001_R1_001.fastq.gz Example_S1_L001_R2_001.fastq.gz
 MiCall-Lite running sample Example_S1_L001_R1_001...
   Censoring bad tile-cycle combos in FASTQ
   Preliminary map
