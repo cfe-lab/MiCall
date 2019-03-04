@@ -69,24 +69,26 @@ def now():
 
 
 def find_samples(raw_data_folder, pipeline_version, sample_queue, wait=True):
+    attempt_count = 0
     while True:
+        # noinspection PyBroadException
         try:
             is_complete = scan_samples(raw_data_folder,
                                        pipeline_version,
                                        sample_queue,
                                        wait)
+            attempt_count = 0  # Reset after success
             if is_complete and not wait:
                 break
         except Exception:
             logger.error("Failed while finding samples.", exc_info=True)
-            raise
+            attempt_count += 1
+            wait_for_retry(attempt_count)
 
 
 def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
     next_scan = now() + FOLDER_SCAN_INTERVAL
-    flag_paths = sorted(
-        raw_data_folder.glob("MiSeq/runs/*/needsprocessing"),
-        reverse=True)
+    flag_paths = sorted(scan_flag_paths(raw_data_folder), reverse=True)
     is_found = False
     for flag_path in flag_paths:
         run_path = flag_path.parent
@@ -121,6 +123,10 @@ def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
     while wait and now() < next_scan:
         sleep(SLEEP_SECONDS)
     return True
+
+
+def scan_flag_paths(raw_data_folder):
+    return raw_data_folder.glob("MiSeq/runs/*/needsprocessing")
 
 
 def find_sample_groups(run_path, base_calls_path):

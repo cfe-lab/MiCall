@@ -14,6 +14,7 @@ from struct import pack
 from kiveapi import KiveClientException
 from requests import ConnectionError
 
+import micall
 from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, FolderEventType, calculate_retry_wait, \
     trim_run_name
 from micall.monitor.sample_watcher import PipelineType, ALLOWED_GROUPS, FolderWatcher, SampleWatcher
@@ -524,6 +525,44 @@ def test_scan_for_new_runs(raw_data_with_two_runs, mock_clock):
                  wait=False)
 
     sample_queue.verify()
+
+
+def test_scan_error(raw_data_with_two_samples, monkeypatch):
+    mock_scan = Mock()
+    mock_sleep = Mock()
+    monkeypatch.setattr(micall.monitor.kive_watcher,
+                        'scan_flag_paths',
+                        mock_scan)
+    monkeypatch.setattr(micall.monitor.kive_watcher, 'sleep', mock_sleep)
+    needs_processing = (Path(raw_data_with_two_samples) /
+                        "MiSeq/runs/140101_M01234/needsprocessing")
+    mock_scan.side_effect = [IOError('unavailable'), [needs_processing]]
+    sample_queue = DummyQueueSink()
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2120A',
+                                ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                 None))))
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2110A',
+                                ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                 None))))
+    sample_queue.expect_put(
+        FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
+                    "Data/Intensities/BaseCalls",
+                    FolderEventType.FINISH_FOLDER,
+                    None))
+    pipeline_version = 'XXX'
+
+    find_samples(raw_data_with_two_samples, pipeline_version, sample_queue, wait=False)
+
+    sample_queue.verify()
+    mock_sleep.assert_called_with(5)
 
 
 def test_starts_empty(default_config):
