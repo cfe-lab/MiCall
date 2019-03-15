@@ -153,13 +153,19 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
             failures[(seed, region, is_midi)] = ex.args[0]
             rows = []
         if region.endswith('-NS5b'):
-            region_midi_rows = midi_rows.get(seed)
+            region_midi_rows = midi_rows.pop(seed, None)
             if region_midi_rows is None:
                 if is_midi_separate:
                     failures.setdefault((seed, region, True),
                                         NOTHING_MAPPED_MESSAGE)
                 region_midi_rows = []
             rows = combine_midi_rows(rows, region_midi_rows)
+        yield from rows
+
+    # Check for MIDI regions that had no match.
+    for seed, rows in sorted(midi_rows.items()):
+        region = rows[0]['region']
+        failures.setdefault((seed, region, False), NOTHING_MAPPED_MESSAGE)
         yield from rows
 
 
