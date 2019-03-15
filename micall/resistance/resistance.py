@@ -1,6 +1,6 @@
 import os
 from argparse import ArgumentParser, FileType
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 from csv import DictReader, DictWriter
 from itertools import groupby, chain, zip_longest
 from operator import itemgetter, attrgetter
@@ -16,6 +16,7 @@ MIN_COVERAGE = 100
 REPORTED_REGIONS = {'PR', 'RT', 'IN', 'NS3', 'NS5a', 'NS5b'}
 HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.3.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
+NOTHING_MAPPED_MESSAGE = 'nothing mapped'
 
 AminoList = namedtuple('AminoList', 'region aminos genotype seed')
 
@@ -126,8 +127,9 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
         in the midi_amino_csv file.
     """
     is_midi = True
-    midi_rows = defaultdict(list)  # {seed: [row]}
-    if midi_amino_csv.name != amino_csv.name:
+    midi_rows = {}  # {seed: [row]}
+    is_midi_separate = midi_amino_csv.name != amino_csv.name
+    if is_midi_separate:
         for (seed, region), rows in groupby(DictReader(midi_amino_csv),
                                             itemgetter('seed', 'region')):
             if not region.endswith('-NS5b'):
@@ -151,7 +153,12 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
             failures[(seed, region, is_midi)] = ex.args[0]
             rows = []
         if region.endswith('-NS5b'):
-            region_midi_rows = midi_rows[seed]
+            region_midi_rows = midi_rows.get(seed)
+            if region_midi_rows is None:
+                if is_midi_separate:
+                    failures.setdefault((seed, region, True),
+                                        NOTHING_MAPPED_MESSAGE)
+                region_midi_rows = []
             rows = combine_midi_rows(rows, region_midi_rows)
         yield from rows
 
@@ -485,7 +492,7 @@ def write_failures(failures, filtered_aminos, fail_csv):
         reported_keys.add((amino_list.seed, amino_list.region))
         if not any(amino_list.aminos):
             failure_key = (amino_list.seed, amino_list.region, False)
-            failures.setdefault(failure_key, 'nothing mapped')
+            failures.setdefault(failure_key, NOTHING_MAPPED_MESSAGE)
     for (seed, region, is_midi), message in sorted(failures.items()):
         if not reported_keys or (seed, region) in reported_keys:
             if is_midi:

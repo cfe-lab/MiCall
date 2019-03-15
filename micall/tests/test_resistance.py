@@ -311,6 +311,31 @@ HCV-1a,HCV1A-H77-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
         self.check_combination(amino_csv, midi_amino_csv, expected_csv, expected_failures)
 
+    def test_no_coverage_in_midi(self):
+        amino_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+HCV-1a,HCV1A-H77-NS5b,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+""")
+        amino_csv.name = 'main_amino.csv'
+        midi_amino_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+""")
+        midi_amino_csv.name = 'midi_amino.csv'
+        expected_csv = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+HCV-1a,HCV1A-H77-NS5b,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+"""
+        expected_failures = {('HCV-1a', 'HCV1A-H77-NS5b', True): 'nothing mapped'}
+
+        self.check_combination(amino_csv, midi_amino_csv, expected_csv, expected_failures)
+
     def test_midi_other_regions(self):
         amino_csv = StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
@@ -336,8 +361,9 @@ HCV-1a,HCV1A-H77-NS5b,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-1a,HCV1A-H77-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 HCV-1a,HCV1A-H77-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
+        expected_failures = {('HCV-1a', 'HCV1A-H77-NS5b', True): 'nothing mapped'}
 
-        self.check_combination(amino_csv, midi_amino_csv, expected_csv)
+        self.check_combination(amino_csv, midi_amino_csv, expected_csv, expected_failures)
 
     def test_combine_ignores_early_midi(self):
         amino_csv = StringIO("""\
