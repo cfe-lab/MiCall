@@ -28,16 +28,17 @@ def load_bins_strict(path):
             tra[seq] += 1
 
         if "CCCACCCGAGGTCGCTG" in seq and "ACCAGCTGAGAGACTCT" in seq:
-            print("WOW BOTH CONSTANTS APPEAR IN", seq)
+            print("Error: both constant sequences occur in", seq)
+            exit(1)
     
     return tra, trb, runts
 
-def load_bins_whatever(path):
+def load_single_bin(path):
     fastq = []
     for line in open(path):
         fastq.append(line.strip()) 
 
-    bins, runts = {} 
+    bins, runts = {}, {}
     for _, seq, _, _ in zip(*(iter(fastq),) * 4):
         if len(seq) < 60:
             if seq not in runts:
@@ -56,15 +57,23 @@ def load_bins_whatever(path):
 
 def id_bins(bins):
     groups = {}
+    group_count = {}
+    group_max = {}
     for k in bins:
         if bins[k] < 500:
             continue
         calls = parse_fmt3(igblast_seq(k))[0][1]
         genes = []
         for gene in calls: 
-            gt = ';'.join(map(lambda x: x[0], calls[gene]))
+            gt = '|'.join(map(lambda x: x[0], calls[gene]))
             genes.append(gt)
         if tuple(genes) not in groups:
             groups[tuple(genes)] = 0
         groups[tuple(genes)] += bins[k]
-    return groups
+
+        if tuple(genes) not in group_count:
+            group_count[tuple(genes)] = bins[k]
+        if bins[k] >= group_count[tuple(genes)]:
+            group_max[tuple(genes)] = k
+
+    return groups, group_max

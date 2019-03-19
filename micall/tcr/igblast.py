@@ -31,7 +31,7 @@ def parse_fmt3(result):
     queries = []
     for query in result.decode().split('Query= ')[1:]:
         sample = query.split()[0]
-        scores = []
+        scores = {}
         for line in query.splitlines():
             line = line.split()
             if "Domain" in line:
@@ -39,7 +39,15 @@ def parse_fmt3(result):
             if len(line) == 3:
                 if line[0] == 'Lambda':
                     break
-                scores.append((line[0], float(line[1]), float(line[2])))
+                gene = line[0][:4]
+                if gene not in scores:
+                    scores[gene] = []
+                scores[gene].append((line[0], float(line[1]), float(line[2])))
+        # filter by top score(s)
+
+        for gene in scores:
+            top_score = max(map(lambda x: x[1], scores[gene]))
+            scores[gene] = list(filter(lambda x: x[1] == top_score, scores[gene]))
         queries.append((sample, scores))
     return queries
 
