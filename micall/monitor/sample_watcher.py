@@ -129,7 +129,9 @@ class FolderWatcher:
             active_mixed_runs = [
                 run
                 for run in (mixed_hcv_run, mixed_hcv_midi_run)
-                if run['id'] in self.active_runs and not self.fetch_run_status(run)]
+                if (run and
+                    run['id'] in self.active_runs and
+                    not self.fetch_run_status(run))]
             is_mixed_hcv_complete = not active_mixed_runs
 
         main_run = sample_watcher.runs.get(PipelineType.MAIN)
