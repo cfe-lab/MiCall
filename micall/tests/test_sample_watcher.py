@@ -287,6 +287,34 @@ def test_hcv_filter_quality_finished():
     assert 4 == len(folder_watcher.active_runs)
 
 
+def test_hcv_filter_quality_finished_on_singleton():
+    base_calls_folder = '/path/Data/Intensities/BaseCalls'
+    session = DummySession()
+    folder_watcher = FolderWatcher(base_calls_folder, runner=session)
+    sample_watcher = SampleWatcher(SampleGroup(
+        'NEG1',
+        ('NEG1-HCV_S15_L001_R1_001.fastq.gz', None)))
+    folder_watcher.sample_watchers.append(sample_watcher)
+
+    folder_watcher.poll_runs()   # Start filter_quality
+    session.finish_all_runs()  # Finish filter_quality
+
+    folder_watcher.poll_runs()   # start main, midi, and mixed HCV
+
+    assert {102: dict(id=102,
+                      folder_watcher=folder_watcher,
+                      sample_watcher=sample_watcher,
+                      pipeline_type=PipelineType.MIXED_HCV_MAIN),
+            103: dict(id=103,
+                      folder_watcher=folder_watcher,
+                      sample_watcher=sample_watcher,
+                      pipeline_type=PipelineType.MAIN)
+            } == session.active_runs
+    expected_active_samples = {'NEG1-HCV_S15_L001_R1_001.fastq.gz'}
+    assert expected_active_samples == folder_watcher.active_samples
+    assert 2 == len(folder_watcher.active_runs)
+
+
 def test_hcv_mixed_hcv_running():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
@@ -324,6 +352,35 @@ def test_hcv_mixed_hcv_running():
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
     assert expected_active_samples == folder_watcher.active_samples
     assert 4 == len(folder_watcher.active_runs)
+
+
+def test_hcv_mixed_hcv_running_on_singleton():
+    base_calls_folder = '/path/Data/Intensities/BaseCalls'
+    session = DummySession()
+    folder_watcher = FolderWatcher(base_calls_folder, runner=session)
+    sample_watcher = SampleWatcher(SampleGroup(
+        'NEG1',
+        ('NEG1-HCV_S15_L001_R1_001.fastq.gz', None)))
+    folder_watcher.sample_watchers.append(sample_watcher)
+
+    folder_watcher.poll_runs()   # Start filter_quality
+    session.finish_all_runs()  # Finish filter_quality
+
+    folder_watcher.poll_runs()   # start main, midi, and mixed HCV
+    folder_watcher.poll_runs()   # main, midi, and mixed HCV still running
+
+    assert {102: dict(id=102,
+                      folder_watcher=folder_watcher,
+                      sample_watcher=sample_watcher,
+                      pipeline_type=PipelineType.MIXED_HCV_MAIN),
+            103: dict(id=103,
+                      folder_watcher=folder_watcher,
+                      sample_watcher=sample_watcher,
+                      pipeline_type=PipelineType.MAIN)
+            } == session.active_runs
+    expected_active_samples = {'NEG1-HCV_S15_L001_R1_001.fastq.gz'}
+    assert expected_active_samples == folder_watcher.active_samples
+    assert 2 == len(folder_watcher.active_runs)
 
 
 def test_hcv_mixed_hcv_finished():

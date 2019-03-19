@@ -1,6 +1,6 @@
 import os
 from argparse import ArgumentParser, FileType
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 from csv import DictReader, DictWriter
 from itertools import groupby, chain, zip_longest
 from operator import itemgetter, attrgetter
@@ -16,6 +16,7 @@ MIN_COVERAGE = 100
 REPORTED_REGIONS = {'PR', 'RT', 'IN', 'NS3', 'NS5a', 'NS5b'}
 HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.3.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
+NOTHING_MAPPED_MESSAGE = 'nothing mapped'
 
 AminoList = namedtuple('AminoList', 'region aminos genotype seed')
 
@@ -114,9 +115,21 @@ def check_coverage(region, rows, start_pos=1, end_pos=None):
         raise LowCoverageError('not enough high-coverage amino acids')
 
 
-def combine_aminos(amino_csv, midi_amino_csv, fail_writer):
-    midi_rows = defaultdict(list)  # {seed: [row]}
-    if midi_amino_csv.name != amino_csv.name:
+def combine_aminos(amino_csv, midi_amino_csv, failures):
+    """ Combine amino rows from the two amplified regions.
+
+    :param amino_csv: an open file with the amino counts from the whole genome
+        region.
+    :param midi_amino_csv: an open file with the amino counts from the MIDI
+        region.
+    :param dict failures: {(seed, region, is_midi): message} messages for any regions
+        that did not have enough coverage. is_midi is True if the region was
+        in the midi_amino_csv file.
+    """
+    is_midi = True
+    midi_rows = {}  # {seed: [row]}
+    is_midi_separate = midi_amino_csv.name != amino_csv.name
+    if is_midi_separate:
         for (seed, region), rows in groupby(DictReader(midi_amino_csv),
                                             itemgetter('seed', 'region')):
             if not region.endswith('-NS5b'):
@@ -125,22 +138,34 @@ def combine_aminos(amino_csv, midi_amino_csv, fail_writer):
             try:
                 check_coverage(region, rows, start_pos=231, end_pos=561)
             except LowCoverageError as ex:
-                write_failure(fail_writer, seed, region, 'MIDI: ' + ex.args[0])
+                failures[(seed, region, is_midi)] = ex.args[0]
                 continue
             midi_rows[seed] = [row
                                for row in rows
                                if 226 < int(row['refseq.aa.pos'])]
+    is_midi = False
     for (seed, region), rows in groupby(DictReader(amino_csv),
                                         itemgetter('seed', 'region')):
         rows = list(rows)
         try:
             check_coverage(region, rows)
         except LowCoverageError as ex:
-            write_failure(fail_writer, seed, region, ex.args[0])
+            failures[(seed, region, is_midi)] = ex.args[0]
             rows = []
         if region.endswith('-NS5b'):
-            region_midi_rows = midi_rows[seed]
+            region_midi_rows = midi_rows.pop(seed, None)
+            if region_midi_rows is None:
+                if is_midi_separate:
+                    failures.setdefault((seed, region, True),
+                                        NOTHING_MAPPED_MESSAGE)
+                region_midi_rows = []
             rows = combine_midi_rows(rows, region_midi_rows)
+        yield from rows
+
+    # Check for MIDI regions that had no match.
+    for seed, rows in sorted(midi_rows.items()):
+        region = rows[0]['region']
+        failures.setdefault((seed, region, False), NOTHING_MAPPED_MESSAGE)
         yield from rows
 
 
@@ -251,6 +276,7 @@ def filter_aminos(all_aminos, algorithms):
     missing_regions = sorted(expected_regions - good_regions)
     good_aminos += [create_empty_aminos(region, genotype or None, seed, algorithms)
                     for genotype, seed, region in missing_regions]
+    good_aminos.sort()
     return good_aminos
 
 
@@ -268,6 +294,8 @@ def write_consensus(resistance_consensus_writer, amino_list, alg_version):
         return
     consensus = ''.join(get_position_consensus(position_aminos)
                         for position_aminos in amino_list.aminos).rstrip('-')
+    if not consensus:
+        return
     stripped_consensus = consensus.lstrip('-')
     offset = len(consensus) - len(stripped_consensus)
     reported_region = get_reported_region(amino_list.region)
@@ -463,6 +491,21 @@ def load_asi():
     return algorithms
 
 
+def write_failures(failures, filtered_aminos, fail_csv):
+    fail_writer = create_fail_writer(fail_csv)
+    reported_keys = set()  # {(seed, region)}
+    for amino_list in filtered_aminos:
+        reported_keys.add((amino_list.seed, amino_list.region))
+        if not any(amino_list.aminos):
+            failure_key = (amino_list.seed, amino_list.region, False)
+            failures.setdefault(failure_key, NOTHING_MAPPED_MESSAGE)
+    for (seed, region, is_midi), message in sorted(failures.items()):
+        if not reported_keys or (seed, region) in reported_keys:
+            if is_midi:
+                message = 'MIDI: ' + message
+            write_failure(fail_writer, seed, region, message)
+
+
 def report_resistance(amino_csv,
                       midi_amino_csv,
                       resistance_csv,
@@ -474,11 +517,12 @@ def report_resistance(amino_csv,
         selected_regions = REPORTED_REGIONS
     else:
         selected_regions = select_reported_regions(region_choices, REPORTED_REGIONS)
-    fail_writer = create_fail_writer(fail_csv)
-    amino_rows = combine_aminos(amino_csv, midi_amino_csv, fail_writer)
+    failures = {}
+    amino_rows = combine_aminos(amino_csv, midi_amino_csv, failures)
     aminos = read_aminos(amino_rows, MIN_FRACTION, selected_regions, MIN_COVERAGE)
     algorithms = load_asi()
     filtered_aminos = filter_aminos(aminos, algorithms)
+    write_failures(failures, filtered_aminos, fail_csv)
     write_resistance(filtered_aminos,
                      resistance_csv,
                      mutations_csv,
