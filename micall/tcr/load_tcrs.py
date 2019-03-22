@@ -59,10 +59,15 @@ def id_bins(bins):
     groups = {}
     group_count = {}
     group_max = {}
+    cdr3s = {}
+    scores = {}
     for k in bins:
         if bins[k] < 500:
             continue
-        calls = parse_fmt3(igblast_seq(k))[0][1]
+        c = parse_fmt3(igblast_seq(k))[0]
+        print(c)
+        calls = c[1]
+        cdr3 = c[2]
         genes = []
         for gene in calls: 
             gt = '|'.join(map(lambda x: x[0], calls[gene]))
@@ -70,10 +75,11 @@ def id_bins(bins):
         if tuple(genes) not in groups:
             groups[tuple(genes)] = 0
         groups[tuple(genes)] += bins[k]
+        cdr3s[tuple(genes)] = cdr3
 
         if tuple(genes) not in group_count:
             group_count[tuple(genes)] = bins[k]
         if bins[k] >= group_count[tuple(genes)]:
             group_max[tuple(genes)] = k
 
-    return groups, group_max
+    return groups, group_max, cdr3s, scores
