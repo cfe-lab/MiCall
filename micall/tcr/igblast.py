@@ -32,23 +32,37 @@ def parse_fmt3(result):
     for query in result.decode().split('Query= ')[1:]:
         sample = query.split()[0]
         scores = {}
+        cdr3aa = None
+        cdr3n = None
+        section = None
         for line in query.splitlines():
             line = line.split()
-            if "Domain" in line:
-                break
-            if len(line) == 3:
-                if line[0] == 'Lambda':
-                    break
+            if line == ['Sequences', 'producing', 'significant', 'alignments:',
+                    '(Bits)', 'Value']:
+                section = "SCORES"
+                continue
+
+            if line == ['Domain', 'classification', 'requested:', 'imgt']:
+                section = None
+                continue
+
+            if len(line) == 3 and section is "SCORES":
                 gene = line[0][:4]
                 if gene not in scores:
                     scores[gene] = []
                 scores[gene].append((line[0], float(line[1]), float(line[2])))
+
+            if len(line) == 5:
+                if line[0] == 'CDR3':
+                    cdr3aa = line[2]
+                    cdr3n = line[1]
+                    #scores[gene].append(cdr3)
         # filter by top score(s)
 
         for gene in scores:
             top_score = max(map(lambda x: x[1], scores[gene]))
             scores[gene] = list(filter(lambda x: x[1] == top_score, scores[gene]))
-        queries.append((sample, scores))
+        queries.append((sample, scores, (cdr3aa, cdr3n)))
     return queries
 
 if __name__ == "__main__":

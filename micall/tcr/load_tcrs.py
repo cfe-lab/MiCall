@@ -1,5 +1,6 @@
 import sys
 from tcr.igblast import igblast_seq, parse_fmt3
+from tcr.idprimers import idp
 
 def load_bins_strict(path):
     fastq = []
@@ -64,7 +65,13 @@ def id_bins(bins):
     for k in bins:
         if bins[k] < 500:
             continue
-        c = parse_fmt3(igblast_seq(k))[0]
+        primer = idp(k)
+        seq = k
+        if primer is None:
+            print("\tUNRECOGNIZED PRIMER", seq[:20])
+            continue
+        seq = k[len(primer):]
+        c = parse_fmt3(igblast_seq(seq))[0]
         print(c)
         calls = c[1]
         cdr3 = c[2]
@@ -76,6 +83,7 @@ def id_bins(bins):
             groups[tuple(genes)] = 0
         groups[tuple(genes)] += bins[k]
         cdr3s[tuple(genes)] = cdr3
+        scores[tuple(genes)] = calls[gene][0][1]
 
         if tuple(genes) not in group_count:
             group_count[tuple(genes)] = bins[k]
