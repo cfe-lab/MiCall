@@ -5,6 +5,7 @@ from pathlib import Path
 from queue import Full
 from tarfile import TarInfo
 from unittest.mock import patch, ANY, Mock, call
+from zipfile import ZipFile
 
 import pytest
 from datetime import datetime, timedelta
@@ -16,7 +17,7 @@ from requests import ConnectionError
 
 import micall
 from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, FolderEventType, calculate_retry_wait, \
-    trim_run_name
+    trim_run_name, compress_old_versions
 from micall.monitor.sample_watcher import PipelineType, ALLOWED_GROUPS, FolderWatcher, SampleWatcher
 from micall.monitor.find_groups import SampleGroup
 from micall_watcher import parse_args
@@ -559,7 +560,10 @@ def test_scan_error(raw_data_with_two_samples, monkeypatch):
                     None))
     pipeline_version = 'XXX'
 
-    find_samples(raw_data_with_two_samples, pipeline_version, sample_queue, wait=False)
+    find_samples(raw_data_with_two_samples,
+                 pipeline_version,
+                 sample_queue,
+                 wait=False)
 
     sample_queue.verify()
     mock_sleep.assert_called_with(5)
@@ -692,6 +696,134 @@ def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_con
     assert dataset1 is folder_watcher.quality_dataset
     assert [dataset2, dataset3] == folder_watcher.sample_watchers[0].fastq_datasets
     assert not old_stuff_csv.exists()
+
+
+def test_add_first_sample_with_compression(raw_data_with_two_samples, mock_open_kive, default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    results_path = base_calls / "../../../Results"
+    results_path.mkdir(parents=True)
+    version1_folder: Path = results_path / 'version_1.0'
+    version1_folder.mkdir()
+    (version1_folder / "foo.txt").write_text('Foo content')
+    (version1_folder / "bar.txt").write_text('Bar content')
+    version2_folder: Path = results_path / 'version_2.0'
+    version2_folder.mkdir()
+    (version2_folder / "baz.txt").write_text('Baz content')
+    version3_zip = results_path / 'version_3.0.zip'
+    version3_zip.write_text('ziiipped content')
+    default_config.pipeline_version = '3.0'
+    expected_version1_zip = results_path / 'version_1.0.zip'
+    expected_file_names = ['version_1.0/bar.txt', 'version_1.0/foo.txt']
+    dataset1 = dict(name='quality_csv')
+    dataset2 = dict(name='fastq1')
+    dataset3 = dict(name='fastq2')
+    mock_session.endpoints.datasets.post.side_effect = [dataset1, dataset2, dataset3]
+    kive_watcher = KiveWatcher(default_config)
+    kive_watcher.apps = {default_config.micall_filter_quality_pipeline_id: dict(
+        quality_csv="/args/101")}
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+
+    assert not version3_zip.exists()
+    assert version2_folder.exists()
+    assert expected_version1_zip.exists()
+    with expected_version1_zip.open('rb') as f:
+        assert expected_file_names == sorted(ZipFile(f).namelist())
+    assert not version1_folder.exists()
+
+
+def test_compress_old_versions_no_results(tmpdir):
+    run_path = Path(tmpdir)
+    results_path = run_path / 'Results'
+    version_path = results_path / 'version_3.0'
+
+    compress_old_versions(version_path)
+
+    assert not results_path.exists()
+
+
+def test_compress_old_versions_no_old_versions(tmpdir):
+    run_path = Path(tmpdir)
+    results_path = run_path / 'Results'
+    results_path.mkdir()
+    version_path = results_path / 'version_3.0'
+
+    compress_old_versions(version_path)
+
+
+def test_compress_old_versions_sorting(tmpdir):
+    run_path = Path(tmpdir)
+    results_path = run_path / 'Results'
+    results_path.mkdir()
+    version_path9 = results_path / 'version_0.9'
+    version_path10 = results_path / 'version_0.10'
+    version_path11 = results_path / 'version_0.11'
+    version_path9.mkdir()
+    version_path10.mkdir()
+
+    compress_old_versions(version_path11)
+
+    assert not version_path9.exists()
+    assert version_path10.exists()
+
+
+def test_compress_old_versions_skip_current_and_newer(tmpdir):
+    run_path = Path(tmpdir)
+    results_path = run_path / 'Results'
+    results_path.mkdir()
+    version_path1 = results_path / 'version_1'
+    version_path2 = results_path / 'version_2'
+    version_path3 = results_path / 'version_3'
+    version_path4 = results_path / 'version_4'
+    version_path1.mkdir()
+    version_path2.mkdir()
+    version_path3.mkdir()
+    version_path4.mkdir()
+
+    compress_old_versions(version_path3)
+
+    assert not version_path1.exists()
+    assert version_path2.exists()
+    assert version_path3.exists()
+    assert version_path4.exists()
+
+
+def test_compress_old_versions_other_files(tmpdir):
+    run_path = Path(tmpdir)
+    results_path = run_path / 'Results'
+    results_path.mkdir()
+    other_file = results_path / 'other_file.txt'
+    version_path1 = results_path / 'version_1'
+    version_path2 = results_path / 'version_2'
+    other_file.write_text('Other stuff')
+    version_path1.mkdir()
+
+    compress_old_versions(version_path2)
+
+    assert other_file.exists()
+    assert version_path1.exists()
+
+
+def test_compress_old_versions_other_dirs(tmpdir):
+    run_path = Path(tmpdir)
+    results_path = run_path / 'Results'
+    results_path.mkdir()
+    other_stuff = results_path / 'other_stuff'
+    version_path1 = results_path / 'version_1'
+    version_path2 = results_path / 'version_2'
+    other_stuff.mkdir()
+    version_path1.mkdir()
+
+    compress_old_versions(version_path2)
+
+    assert other_stuff.exists()
+    assert version_path1.exists()
 
 
 def test_create_batch_with_expired_session(raw_data_with_two_samples,

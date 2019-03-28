@@ -13,6 +13,7 @@ from queue import Full
 
 from io import StringIO, BytesIO
 from time import sleep
+from zipfile import ZipFile, ZIP_DEFLATED
 
 from requests.adapters import HTTPAdapter
 from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
@@ -68,7 +69,11 @@ def now():
     return datetime.now()
 
 
-def find_samples(raw_data_folder, pipeline_version, sample_queue, wait=True):
+def find_samples(raw_data_folder,
+                 pipeline_version,
+                 sample_queue,
+                 wait=True,
+                 retry=True):
     attempt_count = 0
     while True:
         # noinspection PyBroadException
@@ -81,9 +86,51 @@ def find_samples(raw_data_folder, pipeline_version, sample_queue, wait=True):
             if is_complete and not wait:
                 break
         except Exception:
+            if not retry:
+                raise
             logger.error("Failed while finding samples.", exc_info=True)
             attempt_count += 1
             wait_for_retry(attempt_count)
+
+
+def get_version_key(version_path: Path):
+    version_name = version_path.name
+    version_parts = tuple(int(part) for part in re.findall(r'\d+', version_name))
+    return version_parts
+
+
+def compress_old_versions(version_path: Path):
+    results_path: Path = version_path.parent
+    if not results_path.exists():
+        return
+
+    version_key = get_version_key(version_path)
+    version_folders = {}
+    for other_version_path in results_path.iterdir():
+        if not other_version_path.is_dir():
+            continue
+        if not other_version_path.name.startswith('version_'):
+            continue
+        other_version_key = get_version_key(other_version_path)
+        if other_version_key < version_key:
+            version_folders[other_version_key] = other_version_path
+    if not version_folders:
+        return
+    version_items = sorted(version_folders.items())
+    version_items.pop()
+    for version_key, version_folder in version_items:
+        # noinspection PyUnresolvedReferences
+        zip_name = version_folder.name + '.zip'
+        # noinspection PyTypeChecker
+        with open(results_path / zip_name, 'wb') as f:
+            with ZipFile(f, 'w', ZIP_DEFLATED) as z:
+                # noinspection PyTypeChecker
+                for folder_path, folders, files in os.walk(version_folder):
+                    folder_path = Path(folder_path)
+                    folder_rel = folder_path.relative_to(results_path)
+                    for file_name in files:
+                        z.write(folder_path/file_name, folder_rel/file_name)
+        shutil.rmtree(version_folder)
 
 
 def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
@@ -366,6 +413,8 @@ class KiveWatcher:
 
                     # Check if folder has finished since it was scanned.
                     results_path = self.get_results_path(folder_watcher)
+                    zip_name = results_path.name + '.zip'
+                    results_zip: Path = results_path.parent / zip_name
                     done_path = results_path / "doneprocessing"
                     if done_path.exists():
                         return None
@@ -373,9 +422,14 @@ class KiveWatcher:
                     if error_path.exists():
                         return None
 
+                    compress_old_versions(results_path)
                     self.create_batch(folder_watcher)
                     self.upload_filter_quality(folder_watcher)
                     shutil.rmtree(results_path, ignore_errors=True)
+                    try:
+                        results_zip.unlink()
+                    except FileNotFoundError:
+                        pass
                     self.folder_watchers[base_calls] = folder_watcher
 
                 for sample_watcher in folder_watcher.sample_watchers:
