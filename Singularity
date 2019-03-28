@@ -66,6 +66,11 @@ From: centos:7
     ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2
     rm bowtie2.zip
 
+    ## merge-mates
+    wget -q -O merge-mates.tar.xz https://github.com/jeff-k/merge-mates/releases/download/v0.2.1-alpha4/merge-mates-v0.2.1-alpha4-x86_64-unknown-linux-musl.tar.xz
+    tar -xvf merge-mates.tar.xz
+    mv merge-mates-v0.2.1-alpha4-x86_64-unknown-linux-musl /opt/merge-mates
+
     ## Build ncbi igblastn databases
     cd /opt
     wget -q -O igblastn.tar.gz https://ftp.ncbi.nih.gov/blast/executables/igblast/release/LATEST/ncbi-igblast-1.13.0-x64-linux.tar.gz
