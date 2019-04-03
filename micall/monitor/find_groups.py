@@ -33,6 +33,9 @@ def find_groups(file_names, sample_sheet_path, included_projects=None):
             # Project was not included.
             continue
         midi_trimmed = midi_files.get(sample_name + 'MIDI')
+        if midi_trimmed is None and sample_name.upper().endswith('WG'):
+            sample_name = sample_name[:-2]
+            midi_trimmed = midi_files.get(sample_name + 'MIDI')
         midi_name = trimmed_names.get(midi_trimmed)
         unused_names.discard(file_name)
         unused_names.discard(midi_name)

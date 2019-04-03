@@ -292,6 +292,40 @@ def test_hcv_pair(raw_data_with_hcv_pair):
     sample_queue.verify()
 
 
+def test_hcv_pair_with_wg_suffix(raw_data_with_hcv_pair):
+    sample_queue = DummyQueueSink()
+    run_folder = raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234"
+    sample_sheet = run_folder / "SampleSheet.csv"
+    sample_sheet_text = sample_sheet.read_text()
+    sample_sheet_text = sample_sheet_text.replace('2130A_HCV', '2130AWG_HCV')
+    sample_sheet.write_text(sample_sheet_text)
+    base_calls_folder = run_folder / "Data/Intensities/BaseCalls"
+    for sample_path in base_calls_folder.glob('2130A-HCV_S15_*.fastq.gz'):
+        new_name = sample_path.name.replace('2130A-HCV', '2130AWG-HCV')
+        new_path = sample_path.parent / new_name
+        sample_path.rename(new_path)
+
+    sample_queue.expect_put(
+        FolderEvent(base_calls_folder,
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2130A',
+                                ('2130AWG-HCV_S15_L001_R1_001.fastq.gz',
+                                 '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'))))
+    sample_queue.expect_put(
+        FolderEvent(base_calls_folder,
+                    FolderEventType.FINISH_FOLDER,
+                    None))
+    pipeline_version = 'XXX'
+
+    find_samples(raw_data_with_hcv_pair,
+                 pipeline_version,
+                 sample_queue,
+                 wait=False,
+                 retry=False)
+
+    sample_queue.verify()
+
+
 def test_hcv_midi_alone(raw_data_with_hcv_pair):
 
     sample_queue = DummyQueueSink()
