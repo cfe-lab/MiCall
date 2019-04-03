@@ -195,7 +195,7 @@ class DummyQueueSink:
             raise Full()
 
     def verify(self):
-        assert not self.expected_puts  # All expected puts arrived.
+        assert [] == self.expected_puts  # All expected puts arrived.
 
 
 def create_run_folder(tmpdir, run_name, sample_pattern):
@@ -288,6 +288,33 @@ def test_hcv_pair(raw_data_with_hcv_pair):
     pipeline_version = 'XXX'
 
     find_samples(raw_data_with_hcv_pair, pipeline_version, sample_queue, wait=False)
+
+    sample_queue.verify()
+
+
+def test_hcv_midi_alone(raw_data_with_hcv_pair):
+
+    sample_queue = DummyQueueSink()
+    base_calls_path = (raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234" /
+                       "Data/Intensities/BaseCalls")
+    (base_calls_path / '2130A-HCV_S15_L001_R1_001.fastq.gz').unlink()
+    sample_queue.expect_put(
+        FolderEvent(base_calls_path,
+                    FolderEventType.ADD_SAMPLE,
+                    SampleGroup('2130AMIDI',
+                                ('2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz',
+                                 None))))
+    sample_queue.expect_put(
+        FolderEvent(base_calls_path,
+                    FolderEventType.FINISH_FOLDER,
+                    None))
+    pipeline_version = 'XXX'
+
+    find_samples(raw_data_with_hcv_pair,
+                 pipeline_version,
+                 sample_queue,
+                 wait=False,
+                 retry=False)
 
     sample_queue.verify()
 
