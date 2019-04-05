@@ -8,13 +8,13 @@ from operator import itemgetter, attrgetter
 import yaml
 from pyvdrm.vcf import Mutation
 
-from micall.resistance.asi_algorithm import AsiAlgorithm, ResistanceLevels
+from micall.resistance.asi_algorithm import AsiAlgorithm, HcvResistanceLevels, HivResistanceLevels
 from micall.core.aln2counts import AMINO_ALPHABET
 
 MIN_FRACTION = 0.05  # prevalence of mutations to report
 MIN_COVERAGE = 100
 REPORTED_REGIONS = {'PR', 'RT', 'IN', 'NS3', 'NS5a', 'NS5b'}
-HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.3.xml')
+HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.8.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
 NOTHING_MAPPED_MESSAGE = 'nothing mapped'
 
@@ -371,7 +371,7 @@ def write_resistance(aminos,
                 region = 'IN'
             result = interpret(asi, amino_list.aminos, region)
             region_results.append((region, amino_list, asi.alg_version, result))
-        if all(drug_result.level == ResistanceLevels.FAIL.level
+        if all(drug_result.level == HcvResistanceLevels.FAIL.level
                for region, amino_seq, alg_version, result in region_results
                for drug_result in result.drugs):
             continue
@@ -432,7 +432,7 @@ def interpret(asi, amino_seq, region):
 
     if not is_missing_midi:
         for drug_result in result.drugs:
-            if drug_result.level == ResistanceLevels.FAIL.level:
+            if drug_result.level == HcvResistanceLevels.FAIL.level:
                 break
         else:
             # No missing coverage, we're done.
@@ -440,7 +440,10 @@ def interpret(asi, amino_seq, region):
 
     # At least some data found, assume wild type in gaps.
     new_amino_seq = []
-    for wild_type, old_aminos in zip_longest(ref_seq, amino_seq):
+    wild_type_seq = list(ref_seq)
+    if region == 'IN':
+        wild_type_seq[231] = 'D'  # Our reference is different from HIVdb's.
+    for wild_type, old_aminos in zip_longest(wild_type_seq, amino_seq):
         if old_aminos:
             new_amino_seq.append(old_aminos)
         else:
@@ -451,26 +454,31 @@ def interpret(asi, amino_seq, region):
     new_drug_results = {drug_result.code: drug_result
                         for drug_result in new_result.drugs}
     if is_missing_midi:
-        allowed_levels = (ResistanceLevels.FAIL.level,
-                          ResistanceLevels.RESISTANCE_LIKELY.level,
-                          ResistanceLevels.NOT_INDICATED.level)
+        allowed_levels = (HcvResistanceLevels.FAIL.level,
+                          HcvResistanceLevels.RESISTANCE_LIKELY.level,
+                          HcvResistanceLevels.NOT_INDICATED.level)
+    elif asi.alg_name == 'HCV_RULES':
+        allowed_levels = (HcvResistanceLevels.FAIL.level,
+                          HcvResistanceLevels.UNKNOWN_MUTATIONS.level,
+                          HcvResistanceLevels.RESISTANCE_POSSIBLE.level,
+                          HcvResistanceLevels.RESISTANCE_LIKELY.level,
+                          HcvResistanceLevels.NOT_INDICATED.level)
     else:
-        allowed_levels = (ResistanceLevels.FAIL.level,
-                          ResistanceLevels.UNKNOWN_MUTATIONS.level,
-                          ResistanceLevels.RESISTANCE_POSSIBLE.level,
-                          ResistanceLevels.RESISTANCE_LIKELY.level,
-                          ResistanceLevels.NOT_INDICATED.level)
+        allowed_levels = (HivResistanceLevels.FAIL.level,
+                          HivResistanceLevels.LOW.level,
+                          HivResistanceLevels.INTERMEDIATE.level,
+                          HivResistanceLevels.HIGH.level)
 
     for drug_result in result.drugs:
-        if drug_result.level == ResistanceLevels.FAIL.level or is_missing_midi:
+        if drug_result.level == HcvResistanceLevels.FAIL.level or is_missing_midi:
             new_drug_result = new_drug_results[drug_result.code]
             if new_drug_result.level in allowed_levels:
                 drug_result.level = new_drug_result.level
                 drug_result.level_name = new_drug_result.level_name
                 drug_result.score = new_drug_result.score
             else:
-                drug_result.level = ResistanceLevels.FAIL.level
-                drug_result.level_name = ResistanceLevels.FAIL.name
+                drug_result.level = HcvResistanceLevels.FAIL.level
+                drug_result.level_name = HcvResistanceLevels.FAIL.name
                 drug_result.score = 0.0
     result.mutations = new_result.mutations
     return result

@@ -43,3 +43,5 @@ The scenarios that each file tests are:
   of mutations. See the `make_sample.py` script for details.
 * 2130AMIDI-MidHCV - full coverage of the MIDI portion of NS5b, with a couple
   of mutations. See the `make_sample.py` script for details.
+* 2140A-HIV - full coverage of PR, with a mutation. See the `make_sample.py`
+  script for details.

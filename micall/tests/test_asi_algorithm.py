@@ -11,11 +11,11 @@ class AsiAlgorithmTest(TestCase):
         self.asi = AsiAlgorithm(os.path.join(os.path.dirname(__file__),
                                              "..",
                                              "resistance",
-                                             "HIVDB_8.3.xml"))
+                                             "HIVDB_8.8.xml"))
 
     def test_interpret(self):
         aa_seq = [[amino] for amino in self.asi.stds['RT']]
-        aa_seq[40] = ['L']
+        aa_seq[40] = ['L']  # Resistance mutation.
         compared_attrs = ('code', 'score', 'level', 'level_name')
         expected_drugs = [('3TC', 0.0, 1, 'Susceptible'),
                           ('ABC', 5.0, 1, 'Susceptible'),
@@ -24,11 +24,19 @@ class AsiAlgorithmTest(TestCase):
                           ('DDI', 10.0, 2, 'Susceptible'),
                           ('FTC', 0.0, 1, 'Susceptible'),
                           ('TDF', 5.0, 1, 'Susceptible'),
+                          ('DOR', 0.0, 1, 'Susceptible'),
                           ('EFV', 0.0, 1, 'Susceptible'),
                           ('ETR', 0.0, 1, 'Susceptible'),
                           ('NVP', 0.0, 1, 'Susceptible'),
                           ('RPV', 0.0, 1, 'Susceptible')]
+        # The L234I message looks like a bug in the HIVdb rules.
+        # We don't actually use the comments, so ignore the problem for now.
         expected_mutation_comments = [
+            'L234I is a nonpolymorphic mutation selected in persons receiving NVP and '
+            'EFV. It is also selected in vitro by ETR and DOR. In combination with V106A, '
+            'it is associated with high-level DOR resistance. Its effect on '
+            'susceptibility when it occurs alone has not been studied. V108V is a highly '
+            'unusual mutation at this position.',
             'M41L is a TAM that usually occurs with T215Y. In combination, '
             'M41L plus T215Y confer intermediate / high-level resistance to '
             'AZT and d4T and contribute to reduced ddI, ABC and TDF '
@@ -37,12 +45,12 @@ class AsiAlgorithmTest(TestCase):
         result = self.asi.interpret(aa_seq, 'RT')
 
         drugs = list(map(attrgetter(*compared_attrs), result.drugs))
-        self.assertEqual(expected_drugs, drugs)
-        self.assertEqual(expected_mutation_comments, result.mutation_comments)
+        assert expected_drugs == drugs
+        assert expected_mutation_comments == result.mutation_comments
 
     def test_protease(self):
         aa_seq = [[amino] for amino in self.asi.stds['PR']]
-        aa_seq[23] = ['I']
+        aa_seq[23] = ['I']  # Resistance mutation.
         compared_attrs = ('code', 'score', 'level', 'level_name')
         expected_drugs = [('ATV/r', 10.0, 2, 'Susceptible'),
                           ('DRV/r', 0.0, 1, 'Susceptible'),
@@ -61,6 +69,42 @@ class AsiAlgorithmTest(TestCase):
         drugs = list(map(attrgetter(*compared_attrs), result.drugs))
         self.assertEqual(expected_drugs, drugs)
         self.assertEqual(expected_mutation_comments, result.mutation_comments)
+
+    def test_integrase(self):
+        aa_seq = [[amino] for amino in self.asi.stds['IN']]
+        aa_seq[231] = ['D']  # Match HIVdb wild type.
+        aa_seq[50] = ['Y']  # Resistance mutation.
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('BIC', 10.0, 2, 'Susceptible'),
+                          ('DTG', 10.0, 2, 'Susceptible'),
+                          ('EVG', 15.0, 3, 'Low-Level Resistance'),
+                          ('RAL', 15.0, 3, 'Low-Level Resistance')]
+        expected_mutation_comments = [
+            'H51Y is a rare non-polymorphic accessory mutation selected in '
+            'patients receiving RAL and EVG and in vitro by DTG. H51Y '
+            'minimally reduces EVG susceptibility (~2 to 3-fold). It does not '
+            'reduce RAL or DTG susceptibility.']
+
+        result = self.asi.interpret(aa_seq, 'IN')
+
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        assert expected_drugs == drugs
+        assert expected_mutation_comments == result.mutation_comments
+
+    def test_integrase_no_coverage(self):
+        aa_seq = [[]] * len(self.asi.stds['IN'])
+        compared_attrs = ('code', 'score', 'level', 'level_name')
+        expected_drugs = [('BIC', 0.0, 0, 'Sequence does not meet quality-control standards'),
+                          ('DTG', 0.0, 0, 'Sequence does not meet quality-control standards'),
+                          ('EVG', 0.0, 0, 'Sequence does not meet quality-control standards'),
+                          ('RAL', 0.0, 0, 'Sequence does not meet quality-control standards')]
+        expected_mutation_comments = []
+
+        result = self.asi.interpret(aa_seq, 'IN')
+
+        drugs = list(map(attrgetter(*compared_attrs), result.drugs))
+        assert expected_drugs == drugs
+        assert expected_mutation_comments == result.mutation_comments
 
     def test_comment_filter(self):
         aa_seq = [[amino] for amino in self.asi.stds['PR']]
@@ -153,6 +197,7 @@ class AsiAlgorithmTest(TestCase):
                           ('DDI', 'didanosine', 'NRTI'),
                           ('FTC', 'emtricitabine', 'NRTI'),
                           ('TDF', 'tenofovir', 'NRTI'),
+                          ('DOR', 'doravirine', 'NNRTI'),
                           ('EFV', 'efavirenz', 'NNRTI'),
                           ('ETR', 'etravirine', 'NNRTI'),
                           ('NVP', 'nevirapine', 'NNRTI'),
