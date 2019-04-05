@@ -1,11 +1,22 @@
+""" Report where references come from, and validate that they match the source.
+
+Running this script reports a source for each group of references, downloads
+them again, and checks that they match the source.
+Finally, it reports any references that aren't documented yet.
+"""
+
 import re
 from difflib import Differ
 from io import StringIO
 from itertools import chain
+from textwrap import fill
 from time import sleep
 
 # noinspection PyUnresolvedReferences
 from gotoh import align_it_aa
+
+from micall.utils.translation import translate
+
 try:
     import requests
 except ImportError:
@@ -47,23 +58,79 @@ def find_best_sequence(sequences):
 
 
 def main():
+    project_config = ProjectConfig.loadDefault()
+    error_count = 0
+    unchecked_ref_names = set(project_config.getAllReferences().keys())
     # find_best_match_for_pssm()
+    error_count += check_hiv_seeds(project_config, unchecked_ref_names)
+    error_count += check_hiv_coordinates(project_config, unchecked_ref_names)
+
+    print(fill_report(f'Unchecked refs: {", ".join(sorted(unchecked_ref_names))}'))
+    error_count += len(unchecked_ref_names)
+    print(f'Total errors: {error_count}.')
+
+
+def check_hiv_seeds(project_config, unchecked_ref_names: set):
+    print("""\
+HIV seed references come from the HIV Sequence Database Compendium. They are
+downloaded from https://www.hiv.lanl.gov/content/sequence/NEWALIGN/align.html
+The HIV1-CON-XX-Consensus-seed is a special case: the consensus of consensuses,
+downloaded from the same page with the Consensus/Ancestral alignment type.
+""")
     sequences = fetch_alignment_sequences(2004,
                                           'CON',  # Consensus/Ancestral
                                           'ENV')
     consensus = sequences['CON_OF_CONS'].replace('-', '').upper()
 
-    project_config = ProjectConfig.loadDefault()
-    ref_names = set(project_config.getAllReferences().keys())
     new_sequences = fetch_alignment_sequences('2015', 'COM')
     consensus_accession = 'Consensus'
     assert consensus_accession not in new_sequences, sorted(new_sequences.keys())
     new_sequences[consensus_accession] = consensus
+    ref_names = project_config.getProjectSeeds('HIV')
+    unchecked_ref_names.difference_update(ref_names)
 
-    for line in compare_config('HIV', project_config, new_sequences, ref_names):
-        print(line, end='')
+    report, error_count = compare_config(ref_names,
+                                         project_config,
+                                         new_sequences,
+                                         name_part=3)
+    print(report)
+    return error_count
 
-    print('Unchecked refs: ' + ', '.join(sorted(ref_names)))
+
+def check_hiv_coordinates(project_config, unchecked_ref_names: set):
+    print("""\
+HIV coordinate references come from HXB2 (K03455). That sequence is trimmed
+to each of the gene regions, then translated to amino acids. The gene positions
+are documented at https://www.hiv.lanl.gov/content/sequence/HIV/REVIEWS/HXB2.html
+We replace HXB2's premature stop codon in Nef with a W.
+""")
+    hxb2 = fetch_by_accession('K03455')
+    region_boundaries = {'HIV1B-gag': (789, 2289),
+                         'PR': (2252, 2549),
+                         'RT': (2549, 4229),
+                         'INT': (4229, 5093),
+                         'HIV1B-vif': (5040, 5616),
+                         'HIV1B-vpr': (5558, 5847),
+                         'HIV1B-vpu': (6061, 6307),
+                         'GP41': (7757, 8792),
+                         'HIV1B-nef': (8796, 9414)}
+    source_sequences = {}
+    for region, (start, stop) in region_boundaries.items():
+        source_nuc_sequence = hxb2[start:stop]
+        source_sequences[region] = translate(source_nuc_sequence)
+    nef_seq = source_sequences['HIV1B-nef']
+    source_sequences['HIV1B-nef'] = nef_seq[:123] + 'W' + nef_seq[124:]
+
+    hiv_project = project_config.config['projects']['HIV']
+    ref_names = {project_region['coordinate_region']
+                 for project_region in hiv_project['regions']}
+    unchecked_ref_names.difference_update(ref_names)
+
+    report, error_count = compare_config(ref_names,
+                                         project_config,
+                                         source_sequences)
+    print(report)
+    return error_count
 
 
 def find_best_match_for_pssm():
@@ -142,30 +209,54 @@ def parse_compendium(fasta):
     return sequences
 
 
-def compare_config(project, project_config, sequences, ref_names=None):
+def fill_report(report):
+    return fill(report, break_long_words=False, break_on_hyphens=False) + '\n'
+
+
+def compare_config(ref_names, project_config, source_sequences, name_part=None):
     differ = Differ()
-    diff_count = 0
-    for ref_name in sorted(project_config.getProjectSeeds(project)):
-        yield ref_name + '\n'
-        if ref_names is not None:
-            ref_names.remove(ref_name)
-        old_sequence = project_config.getReference(ref_name)
-        name_parts = ref_name.split('-')
-        accession = name_parts[3]
-        new_sequence = sequences.get(accession)
-        new_sequence = new_sequence and new_sequence.replace('-', '')
-        if new_sequence is None:
-            diff_count += 1
-            yield 'missing\n'
-        elif new_sequence == old_sequence:
-            yield '==\n'
+    error_count = 0
+    matching_references = []
+    missing_references = []
+    diff_report = StringIO()
+    for ref_name in sorted(ref_names):
+        project_sequence = project_config.getReference(ref_name)
+        if name_part is None:
+            source_name = ref_name
         else:
-            diff_count += 1
-            diff = differ.compare([old_sequence+'\n'], [new_sequence+'\n'])
-            yield from diff
-            
-        yield '\n'
-    yield '{} differences\n'.format(diff_count)
+            name_parts = ref_name.split('-')
+            source_name = name_parts[name_part]
+        source_sequence = source_sequences.get(source_name)
+        source_sequence = source_sequence and source_sequence.replace('-', '')
+        if source_sequence is None:
+            error_count += 1
+            missing_references.append(ref_name)
+        elif source_sequence == project_sequence:
+            matching_references.append(ref_name)
+        else:
+            error_count += 1
+            diff_report.write(ref_name + '\n')
+            for line in differ.compare([source_sequence+'\n'],
+                                       [project_sequence+'\n']):
+                diff_report.write(line)
+            diff_report.write('\n')
+
+    report = StringIO()
+    if matching_references:
+        matching_references.sort()
+        match_report = f'Matching references: {", ".join(matching_references)}'
+        match_report = fill_report(match_report)
+        report.write(match_report)
+    if missing_references:
+        missing_references.sort()
+        missing_report = (f'ERROR: references missing from source: '
+                          f'{", ".join(missing_references)}')
+        missing_report = fill_report(missing_report)
+        report.write(missing_report)
+    if diff_report.tell():
+        report.write('ERROR: changed references:\n')
+        report.write(diff_report.getvalue())
+    return report.getvalue(), error_count
 
 
 if __name__ == '__main__':
