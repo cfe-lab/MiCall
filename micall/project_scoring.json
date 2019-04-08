@@ -2400,7 +2400,7 @@
         },
         {
           "coordinate_region": "HIV1B-vpr",
-          "coordinate_region_length": 78,
+          "coordinate_region_length": 96,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,

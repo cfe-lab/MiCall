@@ -13,7 +13,7 @@ from textwrap import fill
 from time import sleep
 
 # noinspection PyUnresolvedReferences
-from gotoh import align_it_aa
+from gotoh import align_it_aa, align_it
 
 from micall.utils.translation import translate
 
@@ -82,16 +82,16 @@ downloaded from the same page with the Consensus/Ancestral alignment type.
                                           'ENV')
     consensus = sequences['CON_OF_CONS'].replace('-', '').upper()
 
-    new_sequences = fetch_alignment_sequences('2015', 'COM')
+    source_sequences = fetch_alignment_sequences('2015', 'COM')
     consensus_accession = 'Consensus'
-    assert consensus_accession not in new_sequences, sorted(new_sequences.keys())
-    new_sequences[consensus_accession] = consensus
+    assert consensus_accession not in source_sequences, sorted(source_sequences.keys())
+    source_sequences[consensus_accession] = consensus
     ref_names = project_config.getProjectSeeds('HIV')
     unchecked_ref_names.difference_update(ref_names)
 
     report, error_count = compare_config(ref_names,
                                          project_config,
-                                         new_sequences,
+                                         source_sequences,
                                          name_part=3)
     print(report)
     return error_count
@@ -102,12 +102,28 @@ def check_hiv_coordinates(project_config, unchecked_ref_names: set):
 HIV coordinate references come from HXB2 (K03455). That sequence is trimmed
 to each of the gene regions, then translated to amino acids. The gene positions
 are documented at https://www.hiv.lanl.gov/content/sequence/HIV/REVIEWS/HXB2.html
-We replace HXB2's premature stop codon in Nef with a W.
+We replace HXB2's premature stop codon in Nef with the codon from Consensus B,
+and drop a nucleotide of Vpr to avoid the frame shift.
+V3LOOP is a subsection of Env from Consensus B with one nucleotide replaced by
+the nucleotide from the overall consensus.
 """)
     hxb2 = fetch_by_accession('K03455')
+
+    consensus_sequences = fetch_alignment_sequences(2004,
+                                                    'CON',  # Consensus/Ancestral
+                                                    'NEF')
+    consensus_b_nef = consensus_sequences['CONSENSUS_B'].replace('-', '').upper()
+
+    consensus_sequences = fetch_alignment_sequences('2004',
+                                                    'CON',  # Consensus/Ancestral
+                                                    'ENV')
+    consensus_b_env = consensus_sequences['CONSENSUS_B'].replace('-', '').upper()
+    overall_consensus_env = \
+        consensus_sequences['CON_OF_CONS'].replace('-', '').upper()
+
     region_boundaries = {'HIV1B-gag': (789, 2289),
                          'PR': (2252, 2549),
-                         'RT': (2549, 4229),
+                         'RT': (2549, 3869),  # p51 only
                          'INT': (4229, 5093),
                          'HIV1B-vif': (5040, 5616),
                          'HIV1B-vpr': (5558, 5847),
@@ -117,9 +133,29 @@ We replace HXB2's premature stop codon in Nef with a W.
     source_sequences = {}
     for region, (start, stop) in region_boundaries.items():
         source_nuc_sequence = hxb2[start:stop]
+        if region == 'HIV1B-nef':
+            # Replace premature stop codon with Consensus B.
+            source_nuc_sequence = (source_nuc_sequence[:369] +
+                                   consensus_b_nef[369:372] +
+                                   source_nuc_sequence[372:])
+        elif region == 'HIV1B-vpr':
+            # Drop nucleotide to avoid frame shift.
+            source_nuc_sequence = (source_nuc_sequence[:213] +
+                                   source_nuc_sequence[214:])
         source_sequences[region] = translate(source_nuc_sequence)
-    nef_seq = source_sequences['HIV1B-nef']
-    source_sequences['HIV1B-nef'] = nef_seq[:123] + 'W' + nef_seq[124:]
+
+    consensus_b_v3_nuc_seq = consensus_b_env[876:981]
+    overall_v3_nuc_seq = overall_consensus_env[855:960]
+    consensus_b_v3_amino_seq = translate(consensus_b_v3_nuc_seq)
+    overall_v3_amino_seq = translate(overall_v3_nuc_seq)
+    assert 'CTRPNNNTRKSIHIGPGRAFYTTGEIIGDIRQAHC' == consensus_b_v3_amino_seq, consensus_b_v3_amino_seq
+    assert 'CTRPNNNTRKSIRIGPGQAFYATGDIIGDIRQAHC' == overall_v3_amino_seq, overall_v3_amino_seq
+    # Difference is here:        ^
+
+    combined_v3_nuc_seq = (consensus_b_v3_nuc_seq[:63] +
+                           overall_v3_nuc_seq[63] +
+                           consensus_b_v3_nuc_seq[64:])
+    source_sequences['V3LOOP'] = translate(combined_v3_nuc_seq)
 
     hiv_project = project_config.config['projects']['HIV']
     ref_names = {project_region['coordinate_region']
@@ -131,6 +167,31 @@ We replace HXB2's premature stop codon in Nef with a W.
                                          source_sequences)
     print(report)
     return error_count
+
+
+def find_v3_match(env_seq, v3_loop_seq):
+    for frame in range(3):
+        env_aminos = translate('-' * frame + env_seq)
+        aligned_env, aligned_v3, score = align_it_aa(env_aminos,
+                                                     v3_loop_seq,
+                                                     GAP_OPEN_COST,
+                                                     GAP_EXTEND_COST,
+                                                     USE_TERMINAL_COST)
+        if score < 200:
+            continue
+        offset = (len(aligned_v3) - len(aligned_v3.lstrip('-'))) * 3 + frame
+        end = offset + len(v3_loop_seq)*3
+        print(translate(env_seq[offset:end]))
+        env_section = env_seq[offset + 60:offset + 69]
+        if env_section == 'TATGCAACA':
+            print('**G**')
+        elif env_section == 'TATACAACA':
+            print('**A**')
+        else:
+            print(f'??{env_section}??')
+        print(env_section)
+        print(translate(env_section))
+        print(score)
 
 
 def find_best_match_for_pssm():
