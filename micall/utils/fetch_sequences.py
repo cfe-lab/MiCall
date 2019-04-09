@@ -74,15 +74,20 @@ def check_hiv_seeds(project_config, unchecked_ref_names: set):
     print("""\
 HIV seed references come from the HIV Sequence Database Compendium. They are
 downloaded from https://www.hiv.lanl.gov/content/sequence/NEWALIGN/align.html
+Recombinant references are excluded (names start with a digit).
 The HIV1-CON-XX-Consensus-seed is a special case: the consensus of consensuses,
 downloaded from the same page with the Consensus/Ancestral alignment type.
+See the project_seeds_from_compendium.py script for full details.
 """)
     sequences = fetch_alignment_sequences(2004,
                                           'CON',  # Consensus/Ancestral
                                           'ENV')
     consensus = sequences['CON_OF_CONS'].replace('-', '').upper()
 
-    source_sequences = fetch_alignment_sequences('2015', 'COM')
+    compendium_sequences = fetch_alignment_sequences('2015', 'COM')
+    source_sequences = {ref_name.split('.')[-1]: ref_sequence
+                        for ref_name, ref_sequence in compendium_sequences.items()
+                        if not ref_name[0].isdigit()}  # Exclude recombinants.
     consensus_accession = 'Consensus'
     assert consensus_accession not in source_sequences, sorted(source_sequences.keys())
     source_sequences[consensus_accession] = consensus
@@ -265,7 +270,7 @@ def parse_compendium(fasta):
                 sequences[key] = ''.join(section)
             section = []
             if line is not None:
-                key = line[1:].strip().split('.')[-1]
+                key = line[1:].strip()
 
     return sequences
 
@@ -275,6 +280,8 @@ def fill_report(report):
 
 
 def compare_config(ref_names, project_config, source_sequences, name_part=None):
+    source_sequences = dict(source_sequences)  # Make a copy.
+    source_count = len(source_sequences)
     differ = Differ()
     error_count = 0
     matching_references = []
@@ -287,7 +294,10 @@ def compare_config(ref_names, project_config, source_sequences, name_part=None):
         else:
             name_parts = ref_name.split('-')
             source_name = name_parts[name_part]
-        source_sequence = source_sequences.get(source_name)
+        try:
+            source_sequence = source_sequences.pop(source_name)
+        except KeyError:
+            source_sequence = None
         source_sequence = source_sequence and source_sequence.replace('-', '')
         if source_sequence is None:
             error_count += 1
@@ -314,6 +324,14 @@ def compare_config(ref_names, project_config, source_sequences, name_part=None):
                           f'{", ".join(missing_references)}')
         missing_report = fill_report(missing_report)
         report.write(missing_report)
+    if source_sequences:
+        unused_count = len(source_sequences)
+        unused_report = f'ERROR: Left {unused_count} out of {source_count} sequences unused: '
+        unused_report += ', '.join(sorted(source_sequences))
+        unused_report = fill_report(unused_report)
+        report.write(unused_report)
+        error_count += len(source_sequences)
+
     if diff_report.tell():
         report.write('ERROR: changed references:\n')
         report.write(diff_report.getvalue())

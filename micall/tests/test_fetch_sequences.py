@@ -29,7 +29,7 @@ class ParseCompendiumTest(TestCase):
 >A.B.C.R1
 ACTGA
 """)
-        expected_sequences = {'R1': 'ACTGA'}
+        expected_sequences = {'A.B.C.R1': 'ACTGA'}
 
         sequences = parse_compendium(fasta)
 
@@ -53,7 +53,7 @@ ACTGA
 >X.Y.R2
 GATA
 """)
-        expected_sequences = {'R1': 'ACTGA', 'R2': 'GATA'}
+        expected_sequences = {'A.B.C.R1': 'ACTGA', 'X.Y.R2': 'GATA'}
 
         sequences = parse_compendium(fasta)
 
@@ -65,7 +65,7 @@ GATA
 ACTGA
 TTACA
 """)
-        expected_sequences = {'R1': 'ACTGATTACA'}
+        expected_sequences = {'A.B.C.R1': 'ACTGATTACA'}
 
         sequences = parse_compendium(fasta)
 
