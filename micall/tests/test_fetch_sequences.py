@@ -2,7 +2,7 @@ from io import StringIO
 from unittest import TestCase
 
 from micall.core.project_config import ProjectConfig
-from micall.utils.fetch_sequences import extract_sequence, parse_compendium, \
+from micall.utils.fetch_sequences import extract_sequence, parse_fasta, \
     compare_config
 
 
@@ -23,7 +23,7 @@ following text
         self.assertEqual(expected_sequence, sequence)
 
 
-class ParseCompendiumTest(TestCase):
+class ParseFastaTest(TestCase):
     def test_single(self):
         fasta = StringIO("""\
 >A.B.C.R1
@@ -31,7 +31,7 @@ ACTGA
 """)
         expected_sequences = {'A.B.C.R1': 'ACTGA'}
 
-        sequences = parse_compendium(fasta)
+        sequences = parse_fasta(fasta)
 
         self.assertEqual(expected_sequences, sequences)
 
@@ -42,7 +42,7 @@ ACTGA
 """)
         expected_sequences = {'R1': 'ACTGA'}
 
-        sequences = parse_compendium(fasta)
+        sequences = parse_fasta(fasta)
 
         self.assertEqual(expected_sequences, sequences)
 
@@ -55,7 +55,7 @@ GATA
 """)
         expected_sequences = {'A.B.C.R1': 'ACTGA', 'X.Y.R2': 'GATA'}
 
-        sequences = parse_compendium(fasta)
+        sequences = parse_fasta(fasta)
 
         self.assertEqual(expected_sequences, sequences)
 
@@ -67,7 +67,7 @@ TTACA
 """)
         expected_sequences = {'A.B.C.R1': 'ACTGATTACA'}
 
-        sequences = parse_compendium(fasta)
+        sequences = parse_fasta(fasta)
 
         self.assertEqual(expected_sequences, sequences)
 
@@ -116,6 +116,61 @@ P-A-KX-R1-seed
 ?       ^
 + ACTGATA
 ?       ^
+
+"""
+
+        report, error_count = compare_config(['P-A-KX-R1-seed'],
+                                             project_config,
+                                             source_sequences,
+                                             name_part=3)
+
+        assert expected_report == report
+        assert 1 == error_count
+
+    def test_big_diff(self):
+        source_sequences = {
+            'R1': 'LOREMIPSUMDOLORSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIE'
+                  'ODIOVELMAXIMUSELEMENTUMMASSAPURUSFRINGILLALIGULANONSUSCIPIT'
+                  'FELISDUIUTLACUS'}
+        new_sequence = source_sequences['R1']
+        new_sequence = new_sequence[:10] + 'CETUS' + new_sequence[15:]
+        project_config = self.build_config({'P-A-KX-R1-seed': new_sequence})
+        expected_report = """\
+ERROR: changed references:
+P-A-KX-R1-seed
+- LOREMIPSUMDOLORSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIEODIOVELMAXI
+?           ^^^^^
++ LOREMIPSUMCETUSSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIEODIOVELMAXI
+?           ^^^^^
+  MUSELEMENTUMMASSAPURUSFRINGILLALIGULANONSUSCIPITFELISDUIUTLACUS
+
+"""
+
+        report, error_count = compare_config(['P-A-KX-R1-seed'],
+                                             project_config,
+                                             source_sequences,
+                                             name_part=3)
+
+        assert expected_report == report
+        assert 1 == error_count
+
+    def test_very_big_diff(self):
+        source_sequences = {
+            'R1': 'LOREMIPSUMDOLORSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIE'
+                  'ODIOVELMAXIMUSELEMENTUMMASSAPURUSFRINGILLALIGULANONSUSCIPIT'
+                  'FELISDUIUTLACUS' * 3}
+        new_sequence = source_sequences['R1']
+        new_sequence = new_sequence[:10] + 'CETUS' + new_sequence[15:]
+        project_config = self.build_config({'P-A-KX-R1-seed': new_sequence})
+        expected_report = """\
+ERROR: changed references:
+P-A-KX-R1-seed
+- LOREMIPSUMDOLORSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIEODIOVELMAXI
+?           ^^^^^
++ LOREMIPSUMCETUSSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIEODIOVELMAXI
+?           ^^^^^
+  MUSELEMENTUMMAS[244 matching characters]VELMAXIMUSELEMENTUMMASSAPURUSF
+  RINGILLALIGULANONSUSCIPITFELISDUIUTLACUS
 
 """
 
