@@ -241,18 +241,21 @@ This script contains a complete list of the reference accession numbers.
 
     gene_names = [
         'Core', 'E1', 'E2', 'p7', 'NS2', 'NS3', 'NS4a', 'NS4b', 'NS5a', 'NS5b']
-    # Based on map at https://hcv.lanl.gov/content/sequence/HCV/MAP/landmark.html
-    # with the trailing stop codon dropped, then mapped to other sequences and
-    # tweaked.
+    # Boundary positions are from the European HCV database records.
+    # https://euhcvdb.ibcp.fr/euHCVdb/do/displayHCVEntry?primaryAC=AF009606
+    # That is the original H77 accession number for HCV1A. NC_004102 is the
+    # curated and annotated version that was derived from the AF009606 entry.
+    # All the other genotypes can be found by their regular accession numbers.
+
     genotype_boundaries = {
         #         Core E1   E2    p7    NS2   NS3   NS4a  NS4b  NS5a  NS5b
         'HCV1A': [342, 915, 1491, 2580, 2769, 3420, 5313, 5475, 6258, 7602, 9375],
         'HCV1B': [342, 915, 1491, 2580, 2769, 3420, 5313, 5475, 6258, 7599, 9372],
         'HCV2': [341, 914, 1490, 2591, 2780, 3431, 5324, 5486, 6269, 7667, 9440],
-        'HCV3': [340, 914+8, 1489, 2596, 2784+1, 3436, 5329, 5491, 6274, 7630, 9403],
-        'HCV4': [341, 916+4, 1490, 2579, 2768, 3419, 5312, 5474, 6257, 7592, 9365],
-        'HCV5': [247, 821+5, 1396, 2488, 2677, 3328, 5221, 5383, 6166, 7516, 9289],
-        'HCV6': [284, 859+4, 1433, 2534, 2723, 3374, 5267, 5429, 6212, 7565, 9338],
+        'HCV3': [340, 913, 1489, 2596, 2785, 3436, 5329, 5491, 6274, 7630, 9403],
+        'HCV4': [341, 914, 1490, 2579, 2768, 3419, 5312, 5474, 6257, 7592, 9365],
+        'HCV5': [247, 820, 1396, 2488, 2677, 3328, 5221, 5383, 6166, 7516, 9289],
+        'HCV6': [284, 857, 1433, 2534, 2723, 3374, 5267, 5429, 6212, 7565, 9338],
         'HCV7': [309, 882, 1458, 2559, 2748, 3399, 5292, 5454, 6237, 7575, 9348]}
 
     hcv_project = project_config.config['projects']['HCV']
