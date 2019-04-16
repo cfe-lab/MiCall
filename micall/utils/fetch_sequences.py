@@ -31,9 +31,15 @@ def main():
     error_count += check_hcv_coordinates(project_config, unchecked_ref_names)
     error_count += check_hiv_seeds(project_config, unchecked_ref_names)
     error_count += check_hiv_coordinates(project_config, unchecked_ref_names)
+    error_count += check_hla_seeds(project_config, unchecked_ref_names)
+    error_count += check_hla_coordinates(project_config, unchecked_ref_names)
 
-    print(fill_report(f'Unchecked refs: {", ".join(sorted(unchecked_ref_names))}'))
-    error_count += len(unchecked_ref_names)
+    if not unchecked_ref_names:
+        print('No unchecked refs.')
+    else:
+        print(fill_report(f'Unchecked refs: '
+                          f'{", ".join(sorted(unchecked_ref_names))}'))
+        error_count += len(unchecked_ref_names)
     print(f'Total errors: {error_count}.')
 
 
@@ -273,6 +279,58 @@ This script contains a complete list of the reference accession numbers.
         start, stop = boundaries[gene_index:gene_index+2]
         nuc_seq_ref_trimmed = source_nuc_sequences[genotype][start-1:stop-1]
         source_sequences[ref_name] = translate(nuc_seq_ref_trimmed)
+
+    report, error_count = compare_config(ref_names,
+                                         project_config,
+                                         source_sequences)
+    print(report)
+    return error_count
+
+
+def check_hla_seeds(project_config, unchecked_ref_names: set):
+    print("""\
+HLA seed reference is downloaded from
+https://www.ncbi.nlm.nih.gov/nuccore/AJ458991.3?report=fasta
+""")
+
+    response = requests.get('https://www.ncbi.nlm.nih.gov/nuccore/AJ458991.3?'
+                            'report=fasta&format=text')
+    response.raise_for_status()
+    match = re.search(r'<div id="viewercontent1".*val="(\d+)"', response.text)
+    response_id = match.group(1)
+
+    response = requests.get(f'https://www.ncbi.nlm.nih.gov/sviewer/viewer.fcgi?'
+                            f'id={response_id}&db=nuccore&report=fasta')
+    response.raise_for_status()
+    hla_fasta = StringIO(response.text)
+    source_sequence, = parse_fasta(hla_fasta).values()
+    source_sequences = {'HLA-B-seed': source_sequence[301:1869]}
+
+    ref_names = project_config.getProjectSeeds('HLA-B')
+    unchecked_ref_names.difference_update(ref_names)
+
+    report, error_count = compare_config(ref_names,
+                                         project_config,
+                                         source_sequences)
+    print(report)
+    return error_count
+
+
+def check_hla_coordinates(project_config, unchecked_ref_names: set):
+    print("""\
+HLA coordinate references are translated from the seed reference.
+""")
+    boundaries = {'HLA-B-exon2': (200, 470),
+                  'HLA-B-exon3': (716, 992)}
+
+    seed_sequence = project_config.getReference('HLA-B-seed')
+    ref_names = sorted(boundaries.keys())
+    unchecked_ref_names.difference_update(ref_names)
+
+    source_sequences = {}
+    for ref_name, (start, end) in boundaries.items():
+        source_nuc_sequence = seed_sequence[start:end]
+        source_sequences[ref_name] = translate(source_nuc_sequence)
 
     report, error_count = compare_config(ref_names,
                                          project_config,
