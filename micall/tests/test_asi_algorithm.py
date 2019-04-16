@@ -72,7 +72,6 @@ class AsiAlgorithmTest(TestCase):
 
     def test_integrase(self):
         aa_seq = [[amino] for amino in self.asi.stds['IN']]
-        aa_seq[231] = ['D']  # Match HIVdb wild type.
         aa_seq[50] = ['Y']  # Resistance mutation.
         compared_attrs = ('code', 'score', 'level', 'level_name')
         expected_drugs = [('BIC', 10.0, 2, 'Susceptible'),

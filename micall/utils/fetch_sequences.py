@@ -12,6 +12,9 @@ from io import StringIO
 from itertools import chain
 from textwrap import fill, wrap
 
+from yaml import safe_load
+
+from micall.resistance.asi_algorithm import WILD_TYPES_PATH
 from micall.utils.translation import translate
 
 try:
@@ -31,6 +34,7 @@ def main():
     error_count += check_hcv_coordinates(project_config, unchecked_ref_names)
     error_count += check_hiv_seeds(project_config, unchecked_ref_names)
     error_count += check_hiv_coordinates(project_config, unchecked_ref_names)
+    error_count += check_hiv_wild_types(project_config)
     error_count += check_hla_seeds(project_config, unchecked_ref_names)
     error_count += check_hla_coordinates(project_config, unchecked_ref_names)
 
@@ -71,6 +75,33 @@ See the project_seeds_from_compendium.py script for full details.
                                          project_config,
                                          source_sequences,
                                          name_part=3)
+    print(report)
+    return error_count
+
+
+def check_hiv_wild_types(project_config):
+    print("""\
+HIV wild types for resistance reports are extracted from Consensus B.
+""")
+    sequences = fetch_alignment_sequences(2004,
+                                          'CON',  # Consensus/Ancestral
+                                          'POL')
+    consensus_b = sequences['CONSENSUS_B'].upper()
+
+    with open(WILD_TYPES_PATH) as wild_types_file:
+        wild_types = safe_load(wild_types_file)
+    boundaries = {'PR': (171, 468),
+                  'RT': (468, 1788),
+                  'INT': (2148, 3014)}
+    ref_names = sorted(boundaries.keys())
+    source_wild_types = {}
+    for ref_name, (start, end) in boundaries.items():
+        source_nuc_sequence = consensus_b[start:end]
+        source_wild_types[ref_name] = translate(source_nuc_sequence)
+    report, error_count = compare_config(ref_names,
+                                         project_config,
+                                         source_wild_types,
+                                         reference_overrides=wild_types)
     print(report)
     return error_count
 
@@ -435,7 +466,11 @@ def fill_report(report):
     return fill(report, break_long_words=False, break_on_hyphens=False) + '\n'
 
 
-def compare_config(ref_names, project_config, source_sequences, name_part=None):
+def compare_config(ref_names,
+                   project_config,
+                   source_sequences,
+                   name_part=None,
+                   reference_overrides=None):
     source_sequences = dict(source_sequences)  # Make a copy.
     source_count = len(source_sequences)
     differ = Differ()
@@ -444,7 +479,12 @@ def compare_config(ref_names, project_config, source_sequences, name_part=None):
     missing_references = []
     diff_report = StringIO()
     for ref_name in sorted(ref_names):
-        project_sequence = project_config.getReference(ref_name)
+        if reference_overrides:
+            project_sequence = reference_overrides.get(ref_name)
+        else:
+            project_sequence = None
+        if project_sequence is None:
+            project_sequence = project_config.getReference(ref_name)
         if name_part is None:
             source_name = ref_name
         else:

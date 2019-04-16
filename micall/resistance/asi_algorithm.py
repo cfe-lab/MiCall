@@ -36,10 +36,12 @@ from collections import defaultdict, namedtuple
 import re
 import xml.dom.minidom as minidom
 from enum import Enum
+from pathlib import Path
 
 from pyvdrm.drm import MissingPositionError
 from pyvdrm.hcvr import HCVR
 from pyvdrm.vcf import VariantCalls
+from yaml import safe_load
 
 from micall.core.project_config import ProjectConfig
 
@@ -47,6 +49,7 @@ HCV_RULES_VERSION = '1.7'
 HCV_RULES_DATE = '13 Jun 2018'
 LEVEL_NAME_CHANGES = {'Potential Low-Level Resistance': 'Susceptible'}
 ResistanceLevel = namedtuple('ResistanceLevel', 'level name')
+WILD_TYPES_PATH = Path(__file__).parent / 'wild_types.yaml'
 
 
 class HcvResistanceLevels(ResistanceLevel, Enum):
@@ -81,6 +84,9 @@ class AsiAlgorithm:
         if references is None:
             projects = ProjectConfig.loadDefault()
             references = projects.getAllReferences()
+            with WILD_TYPES_PATH.open() as wild_types_file:
+                wild_types = safe_load(wild_types_file)
+            references.update(wild_types)
         self.stds = {
             name if name != 'INT' else 'IN': ref
             for name, ref in references.items()}
