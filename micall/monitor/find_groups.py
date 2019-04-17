@@ -47,5 +47,6 @@ def find_groups(file_names, sample_sheet_path, included_projects=None):
         for trimmed_name, file_name in sorted(trimmed_names.items()):
             if file_name in unused_names:
                 unused_names.discard(file_name)
-                sample_name = sample_names[trimmed_name]
-                yield SampleGroup(sample_name, (file_name, None))
+                sample_name = sample_names.get(trimmed_name)
+                if sample_name is not None:
+                    yield SampleGroup(sample_name, (file_name, None))
