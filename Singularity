@@ -68,7 +68,7 @@ From: centos:7
     rm get-pip.py
     cd /opt
     pip install -r /opt/micall/requirements-basespace.txt
-    ln -s /usr/bin/cutadapt /usr/bin/cutadapt-1.11
+    ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
     yum groupremove -q -y 'development tools'
@@ -86,7 +86,7 @@ From: centos:7
     alternatives --install /usr/bin/python python /usr/bin/python3 60
 
 %environment
-    export PATH=/bin:/opt/bowtie2
+    export PATH=/bin:/usr/local/bin:/opt/bowtie2
     export LANG=en_US.UTF-8
 
 %runscript
