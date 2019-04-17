@@ -1,6 +1,7 @@
 #! /usr/bin/env python3.4
 
 import argparse
+import contextlib
 from collections import Counter
 import csv
 from itertools import takewhile
@@ -317,6 +318,7 @@ def merge_reads(reads):
     for pair_name, (r1_name, seq1, qual1), (r2_name, seq2, qual2) in reads:
         if not (seq1 and seq2):
             score = -1
+            aligned1 = aligned2 = None
         else:
             seq2_rev = reverse_and_complement(seq2)
             aligned1, aligned2, score = align_it(seq1,
@@ -431,13 +433,15 @@ def count_reads(reads, file_prefix):
     """
     if file_prefix is None:
         all_counts = Counter()
+        counts_context = contextlib.suppress()  # Dummy value.
     else:
-        all_counts = BigCounter(file_prefix)
-    for aligned_ref, aligned_seq in reads:
-        key = aligned_ref + '\t' + aligned_seq
-        all_counts[key] += 1
-    for key, count in all_counts.items():
-        yield tuple(key.split('\t')), count
+        all_counts = counts_context = BigCounter(file_prefix)
+    with counts_context:
+        for aligned_ref, aligned_seq in reads:
+            key = aligned_ref + '\t' + aligned_seq
+            all_counts[key] += 1
+        for key, count in all_counts.items():
+            yield tuple(key.split('\t')), count
 
 
 def get_top_counts(read_counts, min_count=1):
