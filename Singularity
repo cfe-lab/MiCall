@@ -42,15 +42,11 @@ From: centos:7
     micall/resistance   /opt/micall/micall/resistance/
     micall/monitor /opt/micall/micall/monitor/
     micall/utils   /opt/micall/micall/utils/
-    micall/tcr  /opt/micall/micall/tcr/
 
     ## Gotoh
     micall/alignment /opt/micall/alignment
     requirements.txt /opt/micall/
     requirements-basespace.txt /opt/micall/
-
-    ## IMGT V-quest
-    micall/data /opt/micall/micall/data/
 
 %post
     ## Prerequisites
@@ -65,16 +61,6 @@ From: centos:7
     unzip bowtie2.zip -d /opt/
     ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2
     rm bowtie2.zip
-
-    ## Build ncbi igblastn databases
-    cd /opt
-    wget -q -O igblastn.tar.gz https://ftp.ncbi.nih.gov/blast/executables/igblast/release/LATEST/ncbi-igblast-1.13.0-x64-linux.tar.gz
-    tar -xvf igblastn.tar.gz
-    mv ncbi-igblast-1.13.0 igblast
-    /opt/igblast/bin/makeblastdb -parse_seqids -dbtype nucl -in /opt/micall/micall/data/tcr_v
-    /opt/igblast/bin/makeblastdb -parse_seqids -dbtype nucl -in /opt/micall/micall/data/tcr_j
-    /opt/igblast/bin/makeblastdb -parse_seqids -dbtype nucl -in /opt/micall/micall/data/tcr_d
-    rm igblastn.tar.gz
 
     ## Python packages, plus trigger matplotlib to build its font cache
     wget -q https://bootstrap.pypa.io/get-pip.py
@@ -99,11 +85,9 @@ From: centos:7
     alternatives --install /usr/bin/python python /usr/bin/python2 50
     alternatives --install /usr/bin/python python /usr/bin/python3 60
 
-
 %environment
     export PATH=/bin:/opt/bowtie2
     export LANG=en_US.UTF-8
-    export IGDATA=/opt/igblast/
 
 %runscript
     python /opt/micall/micall_kive.py "$@"
