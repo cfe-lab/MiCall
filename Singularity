@@ -54,7 +54,7 @@ From: centos:7
 
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
-    yum install -q -y python34 python34-devel unzip wget fontconfig
+    yum install -q -y python36 python36-devel unzip wget fontconfig
 
     ## bowtie2
     wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip

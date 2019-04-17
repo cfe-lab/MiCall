@@ -299,19 +299,17 @@ similar steps to setting up a development workstation. Follow these steps:
     matches the version you used in QAI. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
     so on. Mark the release as pre-release until you finish deploying it.
-7. Upgrade the scripts and docker image in your local Kive server. Process the
-    microtest data.
-7. Upgrade the scripts and docker image in the Kive test server, and record the
-    id of the new pipelines. You might
-    find the Kive project's `dump_pipeline.py` and `upload_pipeline.py` scripts
-    helpful. They are in the `utils` folder.
+7. Rebuild the Singularity image, and upload it to your local Kive server.
+    Process the microtest data.
+7. Upload the Singularity image to the Kive test server, and record the
+    ids of the new apps.
 8. Process all the samples from test_samples.csv on the Kive test server, and
     run the micall_watcher service on a VirtualBox. Use the
     `release_test_*.py` scripts to compare the results of the new release with
     the previous version. Get the comparison signed off to begin the release
     process.
-8. Upgrade the scripts and docker image in the main Kive server, and
-    record the id of the new pipelines.
+8. Upload the Singularity image to the main Kive server, and
+    record the id of the new apps.
 8. Stop the micall_watcher service on the main Kive server after you check that
     it's not processing any important runs.
 
