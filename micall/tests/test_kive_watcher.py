@@ -1,3 +1,4 @@
+import shutil
 import tarfile
 from gzip import GzipFile
 from io import BytesIO
@@ -1578,6 +1579,85 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
         groups_allowed=['Everyone']))
 
 
+def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_config):
+    run_folder = raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234"
+    sample_sheet = run_folder / "SampleSheet.csv"
+    sample_sheet_text = sample_sheet.read_text()
+    sample_sheet_text += ('CFE_MS1_23-Jan-2014_N506-N702_2130AWG_HCV_nopid,'
+                          '2130AWG_HCV,23-Jan-2014,N/A,TTTAAAAA,AAATTTTT,'
+                          '23-Jan-2014,Research:2130AWG_HCV:FALSE '
+                          'Comments:2130AWG_HCV: '
+                          'Disablecontamcheck:2130AWG_HCV:FALSE,\n')
+    sample_sheet.write_text(sample_sheet_text)
+    base_calls_folder = run_folder / "Data/Intensities/BaseCalls"
+    for sample_path in base_calls_folder.glob('2130A-HCV_S15_*.fastq.gz'):
+        new_name = sample_path.name.replace('2130A-HCV_S15_', '2130AWG-HCV_S18_')
+        new_path = sample_path.parent / new_name
+        # noinspection PyTypeChecker
+        shutil.copy(sample_path, new_path)
+    kive_watcher = create_kive_watcher_with_main_run(
+        pipelines_config,
+        base_calls_folder,
+        SampleGroup('2130A',
+                    ('2130A-HCV_S15_L001_R1_001.fastq.gz',
+                     '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+    mock_session = kive_watcher.session
+    folder_watcher, = kive_watcher.folder_watchers.values()
+    sample_watcher, = folder_watcher.sample_watchers
+    folder_watcher.add_run(
+        dict(id=108),
+        PipelineType.MIDI,
+        sample_watcher)
+    sample_watcher2 = kive_watcher.add_sample_group(
+        base_calls=base_calls_folder,
+        sample_group=SampleGroup('2130A',
+                                 ('2130AWG-HCV_S18_L001_R1_001.fastq.gz',
+                                  '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+    folder_watcher.add_run(
+        dict(id=109),
+        PipelineType.MAIN,
+        sample_watcher2)
+    folder_watcher.add_run(
+        dict(id=108),
+        PipelineType.MIDI,
+        sample_watcher2)
+
+    mock_session.endpoints.containerruns.get.side_effect = [
+        dict(id=107, state='C'),  # refresh run state for main run
+        [dict(dataset='/datasets/111/',
+              argument_name='amino_csv')],  # run datasets
+        dict(id=108, state='C'),  # refresh run state for midi run
+        [dict(dataset='/datasets/112/',
+              argument_name='amino_csv')],  # run datasets
+        dict(id=109, state='C'),  # refresh run state for midi run
+        [dict(dataset='/datasets/113/',
+              argument_name='amino_csv')]]  # run datasets
+    mock_session.get.reset_mock(side_effect=True)
+    mock_session.get.return_value.json.side_effect = [
+        dict(url='/datasets/111/', id=111),
+        dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/113/', id=113),
+        dict(url='/datasets/112/', id=112)]
+    mock_session.endpoints.containerruns.post.return_value = dict(id=None)
+
+    kive_watcher.poll_runs()
+
+    expected_calls = [
+        call(json=dict(app=ANY,
+                       datasets=[dict(argument=ANY, dataset='/datasets/111/'),
+                                 dict(argument=ANY, dataset='/datasets/112/')],
+                       name='MiCall resistance on 2130A',
+                       batch=ANY,
+                       groups_allowed=['Everyone'])),
+        call(json=dict(app=ANY,
+                       datasets=[dict(argument=ANY, dataset='/datasets/113/'),
+                                 dict(argument=ANY, dataset='/datasets/112/')],
+                       name='MiCall resistance on 2130A',
+                       batch=ANY,
+                       groups_allowed=['Everyone']))]
+    assert expected_calls == mock_session.endpoints.containerruns.post.mock_calls
+
+
 def test_launch_mixed_hcv_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_config):
     pipelines_config.mixed_hcv_pipeline_id = 47
     base_calls = (raw_data_with_hcv_pair /
@@ -1732,7 +1812,7 @@ def test_fetch_run_status_incomplete(mock_open_kive, pipelines_config):
     new_run = kive_watcher.fetch_run_status(mock_run,
                                             folder_watcher=None,
                                             pipeline_type=None,
-                                            sample_watcher=None)
+                                            sample_watchers=None)
 
     assert new_run is mock_run
 
@@ -1786,7 +1866,7 @@ def test_fetch_run_status_main(raw_data_with_two_runs,
     new_run = kive_watcher.fetch_run_status(mock_run,
                                             folder_watcher,
                                             PipelineType.MAIN,
-                                            sample_watcher)
+                                            [sample_watcher])
 
     assert new_run is None
     assert expected_coord_ins_path.exists()
@@ -1826,12 +1906,12 @@ def test_fetch_run_status_main_and_resistance(raw_data_with_two_runs,
         main_run,
         folder_watcher,
         PipelineType.MAIN,
-        sample_watcher)
+        [sample_watcher])
     new_resistance_run = kive_watcher.fetch_run_status(
         resistance_run,
         folder_watcher,
         PipelineType.RESISTANCE,
-        sample_watcher)
+        [sample_watcher])
 
     assert new_main_run is None
     assert new_resistance_run is None
@@ -1867,11 +1947,11 @@ def test_fetch_run_status_main_and_midi(raw_data_with_hcv_pair,
     new_main_run = kive_watcher.fetch_run_status(main_run,
                                                  folder_watcher,
                                                  PipelineType.MAIN,
-                                                 sample_watcher)
+                                                 [sample_watcher])
     new_midi_run = kive_watcher.fetch_run_status(midi_run,
                                                  folder_watcher,
                                                  PipelineType.MIDI,
-                                                 sample_watcher)
+                                                 [sample_watcher])
 
     assert new_main_run is None
     assert new_midi_run is None
@@ -1901,7 +1981,7 @@ def test_fetch_run_status_session_expired(raw_data_with_two_runs,
     new_run = kive_watcher.fetch_run_status(mock_run,
                                             folder_watcher,
                                             PipelineType.MAIN,
-                                            sample_watcher)
+                                            [sample_watcher])
 
     assert new_run is None
 
@@ -1925,7 +2005,7 @@ def test_fetch_run_status_user_cancelled(raw_data_with_two_runs,
     new_run = kive_watcher.fetch_run_status(original_run,
                                             folder_watcher,
                                             PipelineType.MAIN,
-                                            sample_watcher)
+                                            [sample_watcher])
 
     assert new_run is not None
     assert new_run is not original_run

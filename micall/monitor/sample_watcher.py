@@ -41,7 +41,7 @@ class FolderWatcher:
         self.quality_dataset = None
         self.filter_quality_run = None
         self.bad_cycles_dataset = None
-        self.active_runs = {}  # {run_id: (sample_watcher, pipeline_type)}
+        self.active_runs = {}  # {run_id: ([sample_watcher], pipeline_type)}
         self.completed_samples = set()  # {fastq1_name}
 
     def __repr__(self):
@@ -64,7 +64,8 @@ class FolderWatcher:
             return all_samples - self.completed_samples
 
         active_samples = set()
-        for run, (sample_watcher, pipeline_type) in self.active_runs.items():
+        for run, (sample_watchers, pipeline_type) in self.active_runs.items():
+            sample_watcher = sample_watchers[0]
             if pipeline_type in (PipelineType.MIDI, PipelineType.MIXED_HCV_MIDI):
                 active_samples.add(sample_watcher.sample_group.names[1])
             else:
@@ -171,31 +172,35 @@ class FolderWatcher:
 
     def add_run(self, run, pipeline_type, sample_watcher=None, is_complete=False):
         if not is_complete:
-            self.active_runs[run['id']] = (sample_watcher, pipeline_type)
+            sample_watchers, _ = self.active_runs.setdefault(run['id'],
+                                                             ([], pipeline_type))
+            sample_watchers.append(sample_watcher)
         if pipeline_type == PipelineType.FILTER_QUALITY:
             self.filter_quality_run = run
         else:
             sample_watcher.runs[pipeline_type] = run
 
     def fetch_run_status(self, run):
-        sample_watcher, pipeline_type = self.active_runs[run['id']]
+        sample_watchers, pipeline_type = self.active_runs[run['id']]
         is_complete = False
         try:
             new_run = self.runner.fetch_run_status(run,
                                                    self,
                                                    pipeline_type,
-                                                   sample_watcher)
+                                                   sample_watchers)
             if new_run is None:
                 is_complete = True
             elif new_run is not run:
                 del self.active_runs[run['id']]
-                self.add_run(new_run, pipeline_type, sample_watcher)
+                for sample_watcher in sample_watchers:
+                    self.add_run(new_run, pipeline_type, sample_watcher)
 
         except KiveRunFailedException:
-            if sample_watcher is None:
-                self.is_folder_failed = True
-            else:
-                sample_watcher.is_failed = True
+            for sample_watcher in sample_watchers:
+                if sample_watcher is None:
+                    self.is_folder_failed = True
+                else:
+                    sample_watcher.is_failed = True
             is_complete = True
         if is_complete:
             del self.active_runs[run['id']]

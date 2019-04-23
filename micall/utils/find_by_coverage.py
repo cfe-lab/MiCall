@@ -17,8 +17,8 @@ def parse_args():
 
 def main():
     args = parse_args()
-    target_seeds = ('HCV-1c', 'HCV-6n')
-    best_coverage = 2
+    target_seeds = ('HCV-6n',)
+    best_coverage = 1
     runs: Path = args.runs
     for i, flag_path in enumerate(sorted(runs.glob('*/needsprocessing'),
                                          reverse=True)):
@@ -53,7 +53,9 @@ def main():
                       row['sample'],
                       row['region'],
                       row['seed'],
-                      row['on.score'])
+                      row['on.score'],
+                      row['min.coverage'],
+                      row['which.key.pos'])
 
 
 main()

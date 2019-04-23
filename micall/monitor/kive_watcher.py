@@ -126,6 +126,7 @@ def compress_old_versions(version_path: Path):
             with ZipFile(f, 'w', ZIP_DEFLATED) as z:
                 # noinspection PyTypeChecker
                 for folder_path, folders, files in os.walk(version_folder):
+                    # noinspection PyTypeChecker
                     folder_path = Path(folder_path)
                     folder_rel = folder_path.relative_to(results_path)
                     for file_name in files:
@@ -695,37 +696,45 @@ class KiveWatcher:
             self.session.login(self.config.kive_user, self.config.kive_password)
             return target()
 
-    def fetch_run_status(self, run, folder_watcher, pipeline_type, sample_watcher):
+    def fetch_run_status(self, run, folder_watcher, pipeline_type, sample_watchers):
         self.check_session()
         new_status = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
         is_complete = new_status['state'] == 'C'
         if new_status['state'] == 'X':
-            return self.run_pipeline(folder_watcher, pipeline_type, sample_watcher)
+            new_run = None
+            for sample_watcher in sample_watchers:
+                new_run = self.run_pipeline(folder_watcher,
+                                            pipeline_type,
+                                            sample_watcher)
+            return new_run
         if new_status['state'] == 'F':
             raise KiveRunFailedException(f'Run id {new_status["id"]} failed.')
         if is_complete and pipeline_type != PipelineType.FILTER_QUALITY:
-            sample_name = (sample_watcher.sample_group.names[1]
-                           if pipeline_type in (PipelineType.MIDI,
-                                                PipelineType.MIXED_HCV_MIDI)
-                           else sample_watcher.sample_group.names[0])
-            results_path = self.get_results_path(folder_watcher)
-            scratch_path = results_path / "scratch" / trim_name(sample_name)
-            scratch_path.mkdir(parents=True, exist_ok=True)
             run_datasets = self.kive_retry(
                 lambda: self.session.endpoints.containerruns.get(
                     f"{run['id']}/dataset_list/"))
-            run['datasets'] = run_datasets
-            for output_name in DOWNLOADED_RESULTS:
-                matches = [run_dataset
-                           for run_dataset in run_datasets
-                           if run_dataset['argument_name'] == output_name]
-                if not matches:
-                    continue
-                filename = get_output_filename(output_name)
-                dataset_url, = [match['dataset'] for match in matches]
-                self.kive_retry(
-                    lambda: self.download_file(dataset_url + 'download/',
-                                               scratch_path / filename))
+            for sample_watcher in sample_watchers:
+                for other_run in sample_watcher.runs.values():
+                    if other_run['id'] == run['id']:
+                        other_run['datasets'] = run_datasets
+                sample_name = (sample_watcher.sample_group.names[1]
+                               if pipeline_type in (PipelineType.MIDI,
+                                                    PipelineType.MIXED_HCV_MIDI)
+                               else sample_watcher.sample_group.names[0])
+                results_path = self.get_results_path(folder_watcher)
+                scratch_path = results_path / "scratch" / trim_name(sample_name)
+                scratch_path.mkdir(parents=True, exist_ok=True)
+                for output_name in DOWNLOADED_RESULTS:
+                    matches = [run_dataset
+                               for run_dataset in run_datasets
+                               if run_dataset['argument_name'] == output_name]
+                    if not matches:
+                        continue
+                    filename = get_output_filename(output_name)
+                    dataset_url, = [match['dataset'] for match in matches]
+                    self.kive_retry(
+                        lambda: self.download_file(dataset_url + 'download/',
+                                                   scratch_path / filename))
 
         if is_complete:
             return None
