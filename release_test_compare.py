@@ -16,7 +16,7 @@ import pandas as pd
 import seaborn as sns
 import Levenshtein
 
-MICALL_VERSION = '7.9'
+MICALL_VERSION = '7.10'
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
@@ -489,7 +489,7 @@ def main():
     samples = read_samples(runs)
     # noinspection PyTypeChecker
     results = pool.imap(partial(compare_sample,
-                                scenarios_reported=sum(Scenarios)),
+                                scenarios_reported=Scenarios.OTHER_CONSENSUS_CHANGED),
                         samples,
                         chunksize=50)
     scenario_summaries = defaultdict(list)
