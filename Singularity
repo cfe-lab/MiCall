@@ -9,8 +9,6 @@ From: centos:7
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-    Change Notes: set LANG environment variable.
-
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
     KIVE_INPUTS fastq1 fastq2 bad_cycles_csv
@@ -86,7 +84,7 @@ From: centos:7
     alternatives --install /usr/bin/python python /usr/bin/python3 60
 
 %environment
-    export PATH=/bin:/usr/local/bin:/opt/bowtie2
+    export PATH=/opt/bowtie2:/bin:/usr/local/bin
     export LANG=en_US.UTF-8
 
 %runscript
@@ -99,7 +97,7 @@ From: centos:7
     KIVE_INPUTS quality_csv
     KIVE_OUTPUTS bad_cycles_csv
     KIVE_THREADS 1
-    KIVE_MEMORY 100
+    KIVE_MEMORY 200
 
 %apprun filter_quality
     PYTHONPATH=/opt/micall python -m micall.core.filter_quality "$@"
@@ -113,7 +111,7 @@ From: centos:7
     KIVE_OUTPUTS resistance_csv mutations_csv resistance_fail_csv \
         resistance_pdf resistance_consensus_csv
     KIVE_THREADS 1
-    KIVE_MEMORY 100
+    KIVE_MEMORY 200
 
 %apprun resistance
     python /opt/micall/micall_kive_resistance.py "$@"

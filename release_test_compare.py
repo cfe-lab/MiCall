@@ -200,6 +200,10 @@ def compare_g2p(sample, diffs):
     target_fields = sample.target_files.g2p_summary
     if source_fields == target_fields:
         return
+    if MICALL_VERSION == '7.10' and source_fields is None and 'MidHCV' in sample.name:
+        return
+    assert source_fields is not None, (sample.run, sample.name)
+    assert target_fields is not None, (sample.run, sample.name)
     assert len(source_fields) == 1, source_fields
     assert len(target_fields) == 1, target_fields
     run_name = get_run_name(sample)
@@ -271,7 +275,12 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
          target_key_pos) = target_scores.get(key, ('-', None, None))
         source_compare = '-' if source_score == '1' else source_score
         target_compare = '-' if target_score == '1' else target_score
-        if source_compare != target_compare:
+        if (source_compare == '-' and
+                'MidHCV' in sample.name and
+                MICALL_VERSION == '7.10'):
+            # Some MidHCV samples weren't processed in 7.9.
+            pass
+        elif source_compare != target_compare:
             project, region = key
             message = '{}:{} coverage: {} {} {} => {}'.format(
                 run_name,
@@ -326,9 +335,6 @@ def map_consensus_sequences(files):
             else:
                 subsequence = '-' * (offset-first+1) + sequence
             subsequence = subsequence[:last-first+1]
-            if MICALL_VERSION == '7.9':
-                # We changed mixtures with deletions to lower case.
-                subsequence = subsequence.upper()
             consensus_sequences[(seed, region, cutoff)] = subsequence
     return consensus_sequences
 
@@ -416,6 +422,22 @@ def compare_consensus(sample,
     return consensus_distances
 
 
+def trim_consensus_sequences(target_seqs):
+    old_sections = {('HCV-2', 'HCV-NS2'): slice(36, None),
+                    ('HCV-2', 'HCV-NS5a'): slice(None, -114),
+                    ('HCV-3', 'HCV-E1'): slice(9, None),
+                    ('HCV-4', 'HCV-E1'): slice(6, None),
+                    ('HCV-5', 'HCV-E1'): slice(6, None),
+                    ('HCV-6', 'HCV-E1'): slice(6, None)}
+    keys = list(target_seqs)
+    for key in keys:
+        seed_name, region_name, cutoff = key
+        genotype = seed_name[:5]
+        old_section_slice = old_sections.get((genotype, region_name))
+        if old_section_slice is not None:
+            target_seqs[key] = target_seqs[key][old_section_slice]
+
+
 def compare_sample(sample,
                    scenarios_reported=Scenarios.NONE):
     scenarios = defaultdict(list)
@@ -424,6 +446,8 @@ def compare_sample(sample,
     compare_coverage(sample, diffs, scenarios_reported, scenarios)
     source_seqs = map_consensus_sequences(sample.source_files)
     target_seqs = map_consensus_sequences(sample.target_files)
+    if MICALL_VERSION == '7.10':
+        trim_consensus_sequences(target_seqs)
     consensus_distances = compare_consensus(sample,
                                             source_seqs,
                                             target_seqs,
