@@ -9,6 +9,9 @@ From: centos:7
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
+    Change Notes: Update HIVdb to 8.8 and several bugs when combining MIDI and
+    whole genome samples.
+
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
     KIVE_INPUTS fastq1 fastq2 bad_cycles_csv

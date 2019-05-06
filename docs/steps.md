@@ -76,7 +76,8 @@ description: Where the data goes
 * `cascade_report`: summarize how many reads made it through each step of the
     pipeline.
 * `resistance`: Use the Stanford HIVdb algorithm rules to call a sample's resistance
-    levels to HIV drugs, or other rules for Hepatitis C drugs.
+    levels to HIV drugs, or other rules for Hepatitis C drugs. See
+    [resistance design]
   * in - amino.csv
   * in - amino_midi.csv - amino counts from the HCV-MIDI sample (ignored if
     it's the same file as amino.csv)
@@ -90,6 +91,7 @@ description: Where the data goes
 
 [fastq_g2p_design]: http://cfe-lab.github.io/MiCall/design/fastq_g2p
 [remap design]: http://cfe-lab.github.io/MiCall/design/remap
+[resistance design]: http://cfe-lab.github.io/MiCall/design/resistance
 
 ## File descriptions ##
 * quality.csv and bad_cycles.csv

@@ -18,7 +18,8 @@ HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.8.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
 NOTHING_MAPPED_MESSAGE = 'nothing mapped'
 
-AminoList = namedtuple('AminoList', 'region aminos genotype seed')
+AminoList = namedtuple('AminoList', 'region aminos genotype seed is_report_needed')
+AminoList.__new__.__defaults__ = (False,)  # default for is_report_needed
 
 
 class LowCoverageError(Exception):
@@ -202,7 +203,11 @@ def combine_midi_rows(main_rows, midi_rows):
             yield midi_row
             
 
-def read_aminos(amino_rows, min_fraction, reported_regions=None, min_coverage=0):
+def read_aminos(amino_rows,
+                min_fraction,
+                reported_regions=None,
+                min_coverage=0,
+                algorithms=None):
     coverage_columns = list(AMINO_ALPHABET) + ['del']
     report_names = coverage_columns[:]
     report_names[-1] = 'd'
@@ -214,23 +219,12 @@ def read_aminos(amino_rows, min_fraction, reported_regions=None, min_coverage=0)
             if translated_region not in reported_regions:
                 continue
         aminos = []
-        total_coverage = 0
-        if region.endswith('-NS3'):
-            max_pos = 181
-        elif region.endswith('-NS5a'):
-            max_pos = 101
-        elif region.endswith('-NS5b'):
-            max_pos = 561
-        else:
-            max_pos = None
         for row in rows:
             counts = list(map(int, (row[f] for f in coverage_columns)))
             coverage = int(row['coverage'])
             pos = int(row['refseq.aa.pos'])
             while pos > len(aminos) + 1:
                 aminos.append({})
-            if max_pos and pos <= max_pos:
-                total_coverage += coverage
             if coverage == 0 or coverage < min_coverage:
                 pos_aminos = {}
             else:
@@ -242,9 +236,21 @@ def read_aminos(amino_rows, min_fraction, reported_regions=None, min_coverage=0)
                 if ins_count >= min_count:
                     pos_aminos['i'] = ins_count / coverage
             aminos.append(pos_aminos)
-        if max_pos is None or (total_coverage // max_pos) >= min_coverage:
-            # Need original region to look up wild type.
-            yield AminoList(region, aminos, genotype, seed)
+        if algorithms is None:
+            is_report_required = False
+        else:
+            asi_algorithm = algorithms.get(genotype)
+            key_positions = asi_algorithm.get_gene_positions(region)
+            if not region.endswith('NS5b'):
+                is_report_required = all(aminos[pos-1] for pos in key_positions)
+            else:
+                whole_genome_positions = {pos for pos in key_positions if pos < 231}
+                midi_positions = key_positions - whole_genome_positions
+                is_report_required = (
+                    all(aminos[pos-1] for pos in whole_genome_positions) or
+                    all(aminos[pos-1] for pos in midi_positions))
+        # Need original region to look up wild type.
+        yield AminoList(region, aminos, genotype, seed, is_report_required)
 
 
 def get_algorithm_regions(algorithm):
@@ -259,25 +265,28 @@ def create_empty_aminos(region, genotype, seed, algorithms):
     return AminoList(region,
                      [{}] * std_length,
                      genotype,
-                     seed)
+                     seed,
+                     False)
 
 
 def filter_aminos(all_aminos, algorithms):
     all_aminos = list(all_aminos)
-    good_aminos = [amino_list
-                   for amino_list in all_aminos
-                   if any(amino_list.aminos)]
-    good_genotypes = {(amino_list.genotype, amino_list.seed) for amino_list in good_aminos}
-    good_regions = {(amino_list.genotype or '', amino_list.seed, amino_list.region)
-                    for amino_list in good_aminos}
+    genotypes_needed = {(amino_list.genotype, amino_list.seed)
+                        for amino_list in all_aminos
+                        if amino_list.is_report_needed}
+    selected_aminos = [amino_list
+                       for amino_list in all_aminos
+                       if (amino_list.genotype, amino_list.seed) in genotypes_needed]
+    selected_regions = {(amino_list.genotype or '', amino_list.seed, amino_list.region)
+                        for amino_list in selected_aminos}
     expected_regions = {(genotype or '', seed, region)
-                        for genotype, seed in good_genotypes
+                        for genotype, seed in genotypes_needed
                         for region in get_algorithm_regions(algorithms[genotype])}
-    missing_regions = sorted(expected_regions - good_regions)
-    good_aminos += [create_empty_aminos(region, genotype or None, seed, algorithms)
-                    for genotype, seed, region in missing_regions]
-    good_aminos.sort()
-    return good_aminos
+    missing_regions = sorted(expected_regions - selected_regions)
+    selected_aminos += [create_empty_aminos(region, genotype or None, seed, algorithms)
+                        for genotype, seed, region in missing_regions]
+    selected_aminos.sort()
+    return selected_aminos
 
 
 def get_position_consensus(position_aminos):
@@ -527,8 +536,12 @@ def report_resistance(amino_csv,
         selected_regions = select_reported_regions(region_choices, REPORTED_REGIONS)
     failures = {}
     amino_rows = combine_aminos(amino_csv, midi_amino_csv, failures)
-    aminos = read_aminos(amino_rows, MIN_FRACTION, selected_regions, MIN_COVERAGE)
     algorithms = load_asi()
+    aminos = read_aminos(amino_rows,
+                         MIN_FRACTION,
+                         selected_regions,
+                         MIN_COVERAGE,
+                         algorithms)
     filtered_aminos = filter_aminos(aminos, algorithms)
     write_failures(failures, filtered_aminos, fail_csv)
     write_resistance(filtered_aminos,

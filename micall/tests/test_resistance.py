@@ -1,10 +1,26 @@
+import typing
 from csv import DictReader, DictWriter
 from io import StringIO
 from unittest import TestCase
 
+import pytest
+
 from micall.resistance.resistance import read_aminos, write_resistance, \
     select_reported_regions, AminoList, filter_aminos, load_asi, get_genotype, \
     combine_aminos, write_consensus, create_consensus_writer, write_failures
+
+
+@pytest.fixture
+def asi_algorithms():
+    return load_asi()
+
+
+def assert_aminos_lists_match(expected_lists: typing.List[AminoList],
+                              actual_lists: typing.List[AminoList]):
+    if expected_lists and (len(expected_lists) == len(actual_lists)):
+        for i, (expected, actual) in enumerate(zip(expected_lists, actual_lists)):
+            assert expected.aminos == actual.aminos, i
+    assert expected_lists == actual_lists
 
 
 class SelectReportedRegionsTest(TestCase):
@@ -584,99 +600,103 @@ HCV-1a,HCV1A-H77-NS5b,15,7,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         self.check_combination(amino_csv, midi_amino_csv, expected_csv, expected_failures)
 
 
-class ReadAminosTest(TestCase):
-    def test_simple(self):
-        amino_csv = DictReader(StringIO("""\
+def test_read_aminos_simple():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,7,3,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """))
-        min_fraction = 0.2
-        expected_aminos = [AminoList('R1',
-                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None,
-                                     'R1-seed')]
+    min_fraction = 0.2
+    expected_aminos = [AminoList('R1',
+                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                 None,
+                                 'R1-seed')]
 
-        aminos = list(read_aminos(amino_csv, min_fraction))
+    aminos = list(read_aminos(amino_csv, min_fraction))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_hcv(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_hcv():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 HCV-1a,HCV1A-H77-NS5b,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 HCV-1a,HCV1A-H77-NS5b,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 HCV-1a,HCV1A-H77-NS5b,15,7,3,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """))
-        min_fraction = 0.2
-        expected_aminos = [AminoList('HCV1A-H77-NS5b',
-                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     '1A',
-                                     'HCV-1a')]
+    min_fraction = 0.2
+    expected_aminos = [AminoList('HCV1A-H77-NS5b',
+                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                 '1A',
+                                 'HCV-1a')]
 
-        aminos = list(read_aminos(amino_csv, min_fraction))
+    aminos = list(read_aminos(amino_csv, min_fraction))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_mixtures(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_mixtures():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R1-seed,R1,15,1,1,1,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10
 R1-seed,R1,15,4,2,2,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """))
-        min_fraction = 0.2
-        expected_aminos = [AminoList('R1',
-                                     [{'K': 0.9}, {'F': 0.8, 'A': 0.2}, {}],
-                                     None,
-                                     'R1-seed')]
+    min_fraction = 0.2
+    expected_aminos = [AminoList('R1',
+                                 [{'K': 0.9}, {'F': 0.8, 'A': 0.2}, {}],
+                                 None,
+                                 'R1-seed')]
 
-        aminos = list(read_aminos(amino_csv, min_fraction))
+    aminos = list(read_aminos(amino_csv, min_fraction))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_no_coverage(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_no_coverage():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """))
-        min_fraction = 0.2
-        expected_aminos = [AminoList('R1',
-                                     [{'K': 1.0}, {'F': 1.0}, {}],
-                                     None,
-                                     'R1-seed')]
+    min_fraction = 0.2
+    expected_aminos = [AminoList('R1',
+                                 [{'K': 1.0}, {'F': 1.0}, {}],
+                                 None,
+                                 'R1-seed')]
 
-        aminos = list(read_aminos(amino_csv, min_fraction))
+    aminos = list(read_aminos(amino_csv, min_fraction))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_insertion_before_coverage(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_insertion_before_coverage():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0
 R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """))
-        min_fraction = 0.2
-        expected_aminos = [AminoList('R1',
-                                     [{}, {'F': 1.0}, {'L': 1.0}],
-                                     None,
-                                     'R1-seed')]
+    min_fraction = 0.2
+    expected_aminos = [AminoList('R1',
+                                 [{}, {'F': 1.0}, {'L': 1.0}],
+                                 None,
+                                 'R1-seed')]
 
-        aminos = list(read_aminos(amino_csv, min_fraction))
+    aminos = list(read_aminos(amino_csv, min_fraction))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_multiple_regions(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_multiple_regions():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
@@ -686,22 +706,23 @@ R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R2-seed,R2,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R2-seed,R2,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """))
-        min_fraction = 0.2
-        expected_aminos = [AminoList('R1',
-                                     [{'K': 1.0}, {'F': 1.0}, {}],
-                                     None,
-                                     'R1-seed'),
-                           AminoList('R2',
-                                     [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
-                                     None,
-                                     'R2-seed')]
+    min_fraction = 0.2
+    expected_aminos = [AminoList('R1',
+                                 [{'K': 1.0}, {'F': 1.0}, {}],
+                                 None,
+                                 'R1-seed'),
+                       AminoList('R2',
+                                 [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
+                                 None,
+                                 'R2-seed')]
 
-        aminos = list(read_aminos(amino_csv, min_fraction))
+    aminos = list(read_aminos(amino_csv, min_fraction))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_reported_regions(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_reported_regions():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
@@ -714,25 +735,26 @@ R3-seed,R3,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """))
-        min_fraction = 0.2
-        reported_regions = {'R1', 'R2'}
-        expected_aminos = [AminoList('R1',
-                                     [{'K': 1.0}, {'F': 1.0}, {}],
-                                     None,
-                                     'R1-seed'),
-                           AminoList('R2',
-                                     [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
-                                     None,
-                                     'R2-seed')]
+    min_fraction = 0.2
+    reported_regions = {'R1', 'R2'}
+    expected_aminos = [AminoList('R1',
+                                 [{'K': 1.0}, {'F': 1.0}, {}],
+                                 None,
+                                 'R1-seed'),
+                       AminoList('R2',
+                                 [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
+                                 None,
+                                 'R2-seed')]
 
-        aminos = list(read_aminos(amino_csv,
-                                  min_fraction,
-                                  reported_regions=reported_regions))
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              reported_regions=reported_regions))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_low_coverage(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_low_coverage():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
@@ -745,329 +767,465 @@ R3-seed,R3,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """))
-        min_fraction = 0.2
-        min_coverage = 5
-        reported_regions = {'R1', 'R2'}
-        expected_aminos = [AminoList('R1',
-                                     [{'K': 1.0}, {'F': 1.0}, {}],
-                                     None,
-                                     'R1-seed'),
-                           AminoList('R2',
-                                     [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
-                                     None,
-                                     'R2-seed')]
+    min_fraction = 0.2
+    min_coverage = 5
+    reported_regions = {'R1', 'R2'}
+    expected_aminos = [AminoList('R1',
+                                 [{'K': 1.0}, {'F': 1.0}, {}],
+                                 None,
+                                 'R1-seed'),
+                       AminoList('R2',
+                                 [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
+                                 None,
+                                 'R2-seed')]
 
-        aminos = list(read_aminos(amino_csv,
-                                  min_fraction,
-                                  reported_regions=reported_regions,
-                                  min_coverage=min_coverage))
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              reported_regions=reported_regions,
+                              min_coverage=min_coverage))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_good_average_coverage(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_good_average_coverage():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 HCV-1a,HCV-Foo-NS5a,15,1,100,0,0,0,0,0,0,0,0,505,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,505
 HCV-1a,HCV-Foo-NS5a,15,4,101,0,0,0,0,404,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,404
 """))
-        min_fraction = 0.2
-        min_coverage = 9
-        expected_aminos = [AminoList('HCV-Foo-NS5a',
-                                     [{}]*99 + [{'K': 1.0}, {'F': 1.0}],
-                                     '1A',
-                                     'HCV-1a')]
+    min_fraction = 0.2
+    min_coverage = 9
+    expected_aminos = [AminoList('HCV-Foo-NS5a',
+                                 [{}]*99 + [{'K': 1.0}, {'F': 1.0}],
+                                 '1A',
+                                 'HCV-1a')]
 
-        aminos = list(read_aminos(amino_csv,
-                                  min_fraction,
-                                  min_coverage=min_coverage))
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              min_coverage=min_coverage))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_low_average_coverage(self):
-        amino_csv = DictReader(StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
-HCV-1a,HCV-Foo-NS5a,15,1,100,0,0,0,0,0,0,0,0,505,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,505
-HCV-1a,HCV-Foo-NS5a,15,4,101,0,0,0,0,403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,403
-"""))
-        min_fraction = 0.2
-        min_coverage = 9
-        expected_aminos = []
 
-        aminos = list(read_aminos(amino_csv,
-                                  min_fraction,
-                                  min_coverage=min_coverage))
-
-        self.assertEqual(expected_aminos, aminos)
-
-    def test_coverage_outside_window(self):
-        amino_csv = DictReader(StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
-HCV-1a,HCV-Foo-NS5a,15,1,101,0,0,0,0,0,0,0,0,500,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,500
-HCV-1a,HCV-Foo-NS5a,15,4,102,0,0,0,0,500,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,500
-"""))
-        min_fraction = 0.2
-        min_coverage = 9
-        expected_aminos = []
-
-        aminos = list(read_aminos(amino_csv,
-                                  min_fraction,
-                                  min_coverage=min_coverage))
-
-        self.assertEqual(expected_aminos, aminos)
-
-    def test_resistant_even_with_missing_midi(self):
-        amino_csv = DictReader(StringIO("""\
+def test_read_aminos_resistant_even_with_missing_midi():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 HCV-1a,HCV1A-H77-NS5b,15,1,395,0,0,0,0,0,5000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5000
 HCV-1a,HCV1A-H77-NS5b,15,4,396,0,0,0,0,5000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5000
 """))
-        min_fraction = 0.2
-        min_coverage = 9
-        expected_aminos = [AminoList('HCV1A-H77-NS5b',
-                                     [{}]*394 + [{'G': 1.0}, {'F': 1.0}],
-                                     '1A',
-                                     'HCV-1a')]
+    min_fraction = 0.2
+    min_coverage = 9
+    expected_aminos = [AminoList('HCV1A-H77-NS5b',
+                                 [{}]*394 + [{'G': 1.0}, {'F': 1.0}],
+                                 '1A',
+                                 'HCV-1a')]
 
-        aminos = list(read_aminos(amino_csv,
-                                  min_fraction,
-                                  min_coverage=min_coverage))
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              min_coverage=min_coverage))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_missing_region(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_missing_region():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R2-seed,R2,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R2-seed,R2,15,7,3,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """))
-        min_fraction = 0.2
-        reported_regions = {'R1', 'R2'}
-        expected_aminos = [AminoList('R2',
-                                     [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
-                                     None,
-                                     'R2-seed')]
+    min_fraction = 0.2
+    reported_regions = {'R1', 'R2'}
+    expected_aminos = [AminoList('R2',
+                                 [{'K': 1.0}, {'F': 1.0}, {'C': 1.0}],
+                                 None,
+                                 'R2-seed')]
 
-        aminos = list(read_aminos(amino_csv,
-                                  min_fraction,
-                                  reported_regions=reported_regions))
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              reported_regions=reported_regions))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_deletions(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_deletions():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,10
 R1-seed,R1,15,4,2,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,10
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """))
-        min_fraction = 0.2
-        expected_aminos = [AminoList('R1',
-                                     [{'K': 0.9}, {'F': 0.8, 'd': 0.2}, {}],
-                                     None,
-                                     'R1-seed')]
+    min_fraction = 0.2
+    expected_aminos = [AminoList('R1',
+                                 [{'K': 0.9}, {'F': 0.8, 'd': 0.2}, {}],
+                                 None,
+                                 'R1-seed')]
 
-        aminos = list(read_aminos(amino_csv, min_fraction))
+    aminos = list(read_aminos(amino_csv, min_fraction))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_insertions(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_insertions():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,9
 R1-seed,R1,15,4,2,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,8
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """))
-        min_fraction = 0.2
-        expected_aminos = [AminoList('R1',
-                                     [{'K': 1.0}, {'F': 1.0, 'i': 0.25}, {}],
-                                     None,
-                                     'R1-seed')]
+    min_fraction = 0.2
+    expected_aminos = [AminoList('R1',
+                                 [{'K': 1.0}, {'F': 1.0, 'i': 0.25}, {}],
+                                 None,
+                                 'R1-seed')]
 
-        aminos = list(read_aminos(amino_csv, min_fraction))
+    aminos = list(read_aminos(amino_csv, min_fraction))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_stop_codons(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_stop_codons():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,10
 R1-seed,R1,15,4,2,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,10
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 """))
-        min_fraction = 0.2
-        expected_aminos = [AminoList('R1',
-                                     [{'K': 0.9}, {'F': 0.8}, {}],
-                                     None,
-                                     'R1-seed')]
+    min_fraction = 0.2
+    expected_aminos = [AminoList('R1',
+                                 [{'K': 0.9}, {'F': 0.8}, {}],
+                                 None,
+                                 'R1-seed')]
 
-        aminos = list(read_aminos(amino_csv, min_fraction))
+    aminos = list(read_aminos(amino_csv, min_fraction))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_missing_position(self):
-        amino_csv = DictReader(StringIO("""\
+
+def test_read_aminos_missing_position():
+    amino_csv = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,7,3,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """))
-        min_fraction = 0.2
-        expected_aminos = [AminoList('R1',
-                                     [{}, {'F': 1.0}, {'A': 1.0}],
-                                     None,
-                                     'R1-seed')]
+    min_fraction = 0.2
+    expected_aminos = [AminoList('R1',
+                                 [{}, {'F': 1.0}, {'A': 1.0}],
+                                 None,
+                                 'R1-seed')]
 
-        aminos = list(read_aminos(amino_csv, min_fraction))
+    aminos = list(read_aminos(amino_csv, min_fraction))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
 
-class FilterAminosTest(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.algorithms = load_asi()
+def test_read_aminos_pos_55_not_needed(asi_algorithms):
+    amino_lines = [
+        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
+        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        f'HCV-1a,HCV1A-H77-NS3,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
+        for i in range(1, 632)]
+    amino_lines[55] = \
+        'HCV-1a,HCV1A-H77-NS3,15,55,55,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8'
+    amino_csv = DictReader(amino_lines)
+    min_fraction = 0.2
+    min_coverage = 9
+    expected_aminos = [AminoList('HCV1A-H77-NS3',
+                                 [{'A': 1.0}]*54 + [{}] + [{'A': 1.0}]*576,
+                                 '1A',
+                                 'HCV-1a',
+                                 False)]
 
-    def test_all(self):
-        all_aminos = [AminoList('PR',
-                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                None,
-                                'HIV1B-seed'),
-                      AminoList('RT',
-                                [{'C': 1.0}, {'A': 1.0}, {'N': 1.0}],
-                                None,
-                                'HIV1B-seed'),
-                      AminoList('INT',
-                                [{'E': 1.0}, {'A': 1.0}, {'T': 1.0}],
-                                None,
-                                'HIV1B-seed')]
-        expected_aminos = [AminoList('INT',
-                                     [{'E': 1.0}, {'A': 1.0}, {'T': 1.0}],
-                                     None,
-                                     'HIV1B-seed'),
-                           AminoList('PR',
-                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None,
-                                     'HIV1B-seed'),
-                           AminoList('RT',
-                                     [{'C': 1.0}, {'A': 1.0}, {'N': 1.0}],
-                                     None,
-                                     'HIV1B-seed')]
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              min_coverage=min_coverage,
+                              algorithms=asi_algorithms))
 
-        aminos = filter_aminos(all_aminos, self.algorithms)
+    assert expected_aminos == aminos
 
-        self.assertEqual(expected_aminos, aminos)
 
-    def test_missing(self):
-        all_aminos = [AminoList('RT',
-                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                None,
-                                'HIV1B-seed')]
-        expected_aminos = [AminoList('INT', [{}]*288, None, 'HIV1B-seed'),
-                           AminoList('PR', [{}]*99, None, 'HIV1B-seed'),
-                           AminoList('RT',
-                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None,
-                                     'HIV1B-seed')]
+def test_read_aminos_pos_55_needed():
+    amino_lines = [
+        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
+        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        f'HCV-1b,HCV1B-Con1-NS3,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
+        for i in range(1, 632)]
+    amino_lines[55] = \
+        'HCV-1b,HCV1B-Con1-NS3,15,55,55,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8'
+    amino_csv = DictReader(amino_lines)
+    min_fraction = 0.2
+    min_coverage = 9
+    algorithms = load_asi()
+    expected_aminos = [AminoList('HCV1B-Con1-NS3',
+                                 [{'A': 1.0}]*54 + [{}] + [{'A': 1.0}]*576,
+                                 '1B',
+                                 'HCV-1b',
+                                 True)]
 
-        aminos = filter_aminos(all_aminos, self.algorithms)
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              min_coverage=min_coverage,
+                              algorithms=algorithms))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert expected_aminos == aminos
 
-    def test_missing_with_genotypes(self):
-        all_aminos = [AminoList('HCV1A-H77-NS5b',
-                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                '1A',
-                                'HCV-1a')]
-        expected_aminos = [AminoList('HCV1A-H77-NS3', [{}]*631, '1A', 'HCV-1a'),
-                           AminoList('HCV1A-H77-NS5a', [{}]*448, '1A', 'HCV-1a'),
-                           AminoList('HCV1A-H77-NS5b',
-                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     '1A',
-                                     'HCV-1a')]
 
-        aminos = filter_aminos(all_aminos, self.algorithms)
+def test_read_aminos_ns5b_missing_142():
+    """ NS5b still reports if it has coverage on all the MIDI positions. """
+    amino_lines = [
+        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
+        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
+        for i in range(1, 593)]
+    amino_lines[142] = \
+        'HCV-1b,HCV1B-Con1-NS5b,15,142,142,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8'
+    amino_csv = DictReader(amino_lines)
+    min_fraction = 0.2
+    min_coverage = 9
+    algorithms = load_asi()
+    expected_aminos = [AminoList('HCV1B-Con1-NS5b',
+                                 [{'A': 1.0}]*141 + [{}] + [{'A': 1.0}]*450,
+                                 '1B',
+                                 'HCV-1b',
+                                 True)]
 
-        self.assertEqual(expected_aminos, aminos)
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              min_coverage=min_coverage,
+                              algorithms=algorithms))
 
-    def test_missing_with_some_genotypes(self):
-        all_aminos = [AminoList('RT',
-                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                None,
-                                'HIV1B-seed'),
-                      AminoList('HCV1A-H77-NS5b',
-                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                '1A',
-                                'HCV-1a')]
-        expected_aminos = [AminoList('HCV1A-H77-NS3', [{}] * 631, '1A', 'HCV-1a'),
-                           AminoList('HCV1A-H77-NS5a', [{}] * 448, '1A', 'HCV-1a'),
-                           AminoList('HCV1A-H77-NS5b',
-                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     '1A',
-                                     'HCV-1a'),
-                           AminoList('INT', [{}]*288, None, 'HIV1B-seed'),
-                           AminoList('PR', [{}]*99, None, 'HIV1B-seed'),
-                           AminoList('RT',
-                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None,
-                                     'HIV1B-seed')]
+    assert_aminos_lists_match(expected_aminos, aminos)
 
-        aminos = filter_aminos(all_aminos, self.algorithms)
 
-        self.assertEqual(expected_aminos, aminos)
+def test_read_aminos_ns5b_missing_355():
+    """ NS5b still reports if it has coverage on all the whole genome positions. """
+    amino_lines = [
+        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
+        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
+        for i in range(1, 593)]
+    amino_lines[355] = \
+        'HCV-1b,HCV1B-Con1-NS5b,15,355,355,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8'
+    amino_csv = DictReader(amino_lines)
+    min_fraction = 0.2
+    min_coverage = 9
+    algorithms = load_asi()
+    expected_aminos = [AminoList('HCV1B-Con1-NS5b',
+                                 [{'A': 1.0}]*354 + [{}] + [{'A': 1.0}]*237,
+                                 '1B',
+                                 'HCV-1b',
+                                 True)]
 
-    def test_exclude(self):
-        all_aminos = [AminoList('PR',
-                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                None,
-                                'HIV1B-seed'),
-                      AminoList('RT',
-                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                None,
-                                'HIV1B-seed'),
-                      AminoList('INT',
-                                [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                None,
-                                'HIV1B-seed'),
-                      AminoList('NS3',
-                                [{}, {}, {}],
-                                '1A',
-                                'HCV-1a')]
-        expected_aminos = [AminoList('INT',
-                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None,
-                                     'HIV1B-seed'),
-                           AminoList('PR',
-                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None,
-                                     'HIV1B-seed'),
-                           AminoList('RT',
-                                     [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
-                                     None,
-                                     'HIV1B-seed')]
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              min_coverage=min_coverage,
+                              algorithms=algorithms))
 
-        aminos = filter_aminos(all_aminos, self.algorithms)
+    assert_aminos_lists_match(expected_aminos, aminos)
 
-        self.assertEqual(expected_aminos, aminos)
 
-    def test_no_good(self):
-        all_aminos = [AminoList('PR', [{}, {}, {}], None, 'HIV1B-seed'),
-                      AminoList('RT', [{}, {}, {}], None, 'HIV1B-seed'),
-                      AminoList('HCV1A-H77-NS3', [{}, {}, {}], '1A', 'HCV-1a')]
-        expected_aminos = []
+def test_read_aminos_ns5b_missing_142_and_355():
+    """ NS5b does not report if it is missing MIDI and whole genome positions. """
+    amino_lines = [
+        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
+        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
+        for i in range(1, 593)]
+    amino_lines[142] = \
+        'HCV-1b,HCV1B-Con1-NS5b,15,142,142,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8'
+    amino_lines[355] = \
+        'HCV-1b,HCV1B-Con1-NS5b,15,355,355,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8'
+    amino_csv = DictReader(amino_lines)
+    min_fraction = 0.2
+    min_coverage = 9
+    algorithms = load_asi()
+    expected_mixtures = [{'A': 1.0}] * 592
+    expected_mixtures[141] = {}
+    expected_mixtures[354] = {}
+    expected_aminos = [AminoList('HCV1B-Con1-NS5b',
+                                 expected_mixtures,
+                                 '1B',
+                                 'HCV-1b',
+                                 False)]
 
-        aminos = filter_aminos(all_aminos, self.algorithms)
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              min_coverage=min_coverage,
+                              algorithms=algorithms))
 
-        self.assertEqual(expected_aminos, aminos)
+    assert_aminos_lists_match(expected_aminos, aminos)
+
+
+def test_filter_aminos_all(asi_algorithms):
+    all_aminos = [AminoList('PR',
+                            [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                            None,
+                            'HIV1B-seed',
+                            True),
+                  AminoList('RT',
+                            [{'C': 1.0}, {'A': 1.0}, {'N': 1.0}],
+                            None,
+                            'HIV1B-seed',
+                            True),
+                  AminoList('INT',
+                            [{'E': 1.0}, {'A': 1.0}, {'T': 1.0}],
+                            None,
+                            'HIV1B-seed',
+                            True)]
+    expected_aminos = [AminoList('INT',
+                                 [{'E': 1.0}, {'A': 1.0}, {'T': 1.0}],
+                                 None,
+                                 'HIV1B-seed',
+                                 True),
+                       AminoList('PR',
+                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                 None,
+                                 'HIV1B-seed',
+                                 True),
+                       AminoList('RT',
+                                 [{'C': 1.0}, {'A': 1.0}, {'N': 1.0}],
+                                 None,
+                                 'HIV1B-seed',
+                                 True)]
+
+    aminos = filter_aminos(all_aminos, asi_algorithms)
+
+    assert expected_aminos == aminos
+
+
+def test_filter_aminos_missing(asi_algorithms):
+    all_aminos = [AminoList('RT',
+                            [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                            None,
+                            'HIV1B-seed',
+                            True)]
+    expected_aminos = [AminoList('INT', [{}]*288, None, 'HIV1B-seed'),
+                       AminoList('PR', [{}]*99, None, 'HIV1B-seed'),
+                       AminoList('RT',
+                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                 None,
+                                 'HIV1B-seed',
+                                 True)]
+
+    aminos = filter_aminos(all_aminos, asi_algorithms)
+
+    assert expected_aminos == aminos
+
+
+def test_filter_aminos_missing_with_genotypes(asi_algorithms):
+    all_aminos = [AminoList('HCV1A-H77-NS5b',
+                            [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                            '1A',
+                            'HCV-1a',
+                            True)]
+    expected_aminos = [AminoList('HCV1A-H77-NS3', [{}]*631, '1A', 'HCV-1a'),
+                       AminoList('HCV1A-H77-NS5a', [{}]*448, '1A', 'HCV-1a'),
+                       AminoList('HCV1A-H77-NS5b',
+                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                 '1A',
+                                 'HCV-1a',
+                                 True)]
+
+    aminos = filter_aminos(all_aminos, asi_algorithms)
+
+    assert expected_aminos == aminos
+
+
+def test_filter_aminos_missing_with_some_genotypes(asi_algorithms):
+    all_aminos = [AminoList('RT',
+                            [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                            None,
+                            'HIV1B-seed',
+                            True),
+                  AminoList('HCV1A-H77-NS5b',
+                            [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                            '1A',
+                            'HCV-1a',
+                            True)]
+    expected_aminos = [AminoList('HCV1A-H77-NS3', [{}] * 631, '1A', 'HCV-1a'),
+                       AminoList('HCV1A-H77-NS5a', [{}] * 448, '1A', 'HCV-1a'),
+                       AminoList('HCV1A-H77-NS5b',
+                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                 '1A',
+                                 'HCV-1a',
+                                 True),
+                       AminoList('INT', [{}]*288, None, 'HIV1B-seed'),
+                       AminoList('PR', [{}]*99, None, 'HIV1B-seed'),
+                       AminoList('RT',
+                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                 None,
+                                 'HIV1B-seed',
+                                 True)]
+
+    aminos = filter_aminos(all_aminos, asi_algorithms)
+
+    assert expected_aminos == aminos
+
+
+def test_filter_aminos_exclude(asi_algorithms):
+    all_aminos = [AminoList('PR',
+                            [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                            None,
+                            'HIV1B-seed',
+                            True),
+                  AminoList('RT',
+                            [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                            None,
+                            'HIV1B-seed',
+                            True),
+                  AminoList('INT',
+                            [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                            None,
+                            'HIV1B-seed',
+                            True),
+                  AminoList('HCV1A-H77-NS3',
+                            [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                            '1A',
+                            'HCV-1a',
+                            False)]
+    expected_aminos = [AminoList('INT',
+                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                 None,
+                                 'HIV1B-seed',
+                                 True),
+                       AminoList('PR',
+                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                 None,
+                                 'HIV1B-seed',
+                                 True),
+                       AminoList('RT',
+                                 [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
+                                 None,
+                                 'HIV1B-seed',
+                                 True)]
+
+    aminos = filter_aminos(all_aminos, asi_algorithms)
+
+    # assert expected_aminos[0].aminos == aminos[0].aminos
+    assert expected_aminos == aminos
+
+
+def test_filter_aminos_no_good(asi_algorithms):
+    all_aminos = [AminoList('PR', [{}, {}, {}], None, 'HIV1B-seed'),
+                  AminoList('RT', [{}, {}, {}], None, 'HIV1B-seed'),
+                  AminoList('HCV1A-H77-NS3', [{}, {}, {}], '1A', 'HCV-1a')]
+    expected_aminos = []
+
+    aminos = filter_aminos(all_aminos, asi_algorithms)
+
+    assert expected_aminos == aminos
 
 
 def test_write_failures_empty():
