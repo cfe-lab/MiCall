@@ -260,8 +260,10 @@ def read_aminos(amino_rows,
                 whole_genome_positions = {pos for pos in key_positions if pos < 231}
                 midi_positions = key_positions - whole_genome_positions
                 is_report_required = (
-                    all(aminos[pos-1] for pos in whole_genome_positions) or
-                    all(aminos[pos-1] for pos in midi_positions))
+                    all(pos <= len(aminos) and aminos[pos-1]
+                        for pos in whole_genome_positions) or
+                    all(pos <= len(aminos) and aminos[pos-1]
+                        for pos in midi_positions))
         # Need original region to look up wild type.
         yield AminoList(region, aminos, genotype, seed, is_report_required)
 

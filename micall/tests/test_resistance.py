@@ -10,7 +10,7 @@ from micall.resistance.resistance import read_aminos, write_resistance, \
     combine_aminos, write_consensus, create_consensus_writer, write_failures
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def asi_algorithms():
     return load_asi()
 
@@ -965,7 +965,7 @@ R1-seed,R1,15,7,3,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
     assert expected_aminos == aminos
 
 
-def test_read_aminos_pos_55_not_needed(asi_algorithms):
+def test_read_aminos_pos_55_resistant(asi_algorithms):
     amino_lines = [
         'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
         'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
@@ -991,7 +991,7 @@ def test_read_aminos_pos_55_not_needed(asi_algorithms):
     assert expected_aminos == aminos
 
 
-def test_read_aminos_pos_55_needed():
+def test_read_aminos_pos_55_not_resistant(asi_algorithms):
     amino_lines = [
         'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
         'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
@@ -1003,7 +1003,6 @@ def test_read_aminos_pos_55_needed():
     amino_csv = DictReader(amino_lines)
     min_fraction = 0.2
     min_coverage = 9
-    algorithms = load_asi()
     expected_aminos = [AminoList('HCV1B-Con1-NS3',
                                  [{'A': 1.0}]*54 + [{}] + [{'A': 1.0}]*576,
                                  '1B',
@@ -1013,12 +1012,38 @@ def test_read_aminos_pos_55_needed():
     aminos = list(read_aminos(amino_csv,
                               min_fraction,
                               min_coverage=min_coverage,
-                              algorithms=algorithms))
+                              algorithms=asi_algorithms))
 
     assert expected_aminos == aminos
 
 
-def test_read_aminos_ns5b_missing_142():
+def test_read_aminos_no_midi(asi_algorithms):
+    amino_lines = [
+        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
+        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8'
+        for i in range(1, 201)] + [
+        f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
+        for i in range(201, 337)]
+    amino_csv = DictReader(amino_lines)
+    min_fraction = 0.2
+    min_coverage = 9
+    expected_aminos = [AminoList('HCV1B-Con1-NS5b',
+                                 [{}] * 200 + [{'A': 1.0}]*136,
+                                 '1B',
+                                 'HCV-1b',
+                                 False)]
+
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              min_coverage=min_coverage,
+                              algorithms=asi_algorithms))
+
+    assert expected_aminos == aminos
+
+
+def test_read_aminos_ns5b_missing_142(asi_algorithms):
     """ NS5b still reports if it has coverage on all the MIDI positions. """
     amino_lines = [
         'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
@@ -1031,7 +1056,6 @@ def test_read_aminos_ns5b_missing_142():
     amino_csv = DictReader(amino_lines)
     min_fraction = 0.2
     min_coverage = 9
-    algorithms = load_asi()
     expected_aminos = [AminoList('HCV1B-Con1-NS5b',
                                  [{'A': 1.0}]*141 + [{}] + [{'A': 1.0}]*450,
                                  '1B',
@@ -1041,12 +1065,12 @@ def test_read_aminos_ns5b_missing_142():
     aminos = list(read_aminos(amino_csv,
                               min_fraction,
                               min_coverage=min_coverage,
-                              algorithms=algorithms))
+                              algorithms=asi_algorithms))
 
     assert_aminos_lists_match(expected_aminos, aminos)
 
 
-def test_read_aminos_ns5b_missing_355():
+def test_read_aminos_ns5b_missing_355(asi_algorithms):
     """ NS5b still reports if it has coverage on all the whole genome positions. """
     amino_lines = [
         'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
@@ -1059,7 +1083,6 @@ def test_read_aminos_ns5b_missing_355():
     amino_csv = DictReader(amino_lines)
     min_fraction = 0.2
     min_coverage = 9
-    algorithms = load_asi()
     expected_aminos = [AminoList('HCV1B-Con1-NS5b',
                                  [{'A': 1.0}]*354 + [{}] + [{'A': 1.0}]*237,
                                  '1B',
@@ -1069,12 +1092,12 @@ def test_read_aminos_ns5b_missing_355():
     aminos = list(read_aminos(amino_csv,
                               min_fraction,
                               min_coverage=min_coverage,
-                              algorithms=algorithms))
+                              algorithms=asi_algorithms))
 
     assert_aminos_lists_match(expected_aminos, aminos)
 
 
-def test_read_aminos_ns5b_missing_142_and_355():
+def test_read_aminos_ns5b_missing_142_and_355(asi_algorithms):
     """ NS5b does not report if it is missing MIDI and whole genome positions. """
     amino_lines = [
         'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
@@ -1089,7 +1112,6 @@ def test_read_aminos_ns5b_missing_142_and_355():
     amino_csv = DictReader(amino_lines)
     min_fraction = 0.2
     min_coverage = 9
-    algorithms = load_asi()
     expected_mixtures = [{'A': 1.0}] * 592
     expected_mixtures[141] = {}
     expected_mixtures[354] = {}
@@ -1102,7 +1124,7 @@ def test_read_aminos_ns5b_missing_142_and_355():
     aminos = list(read_aminos(amino_csv,
                               min_fraction,
                               min_coverage=min_coverage,
-                              algorithms=algorithms))
+                              algorithms=asi_algorithms))
 
     assert_aminos_lists_match(expected_aminos, aminos)
 
