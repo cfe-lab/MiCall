@@ -129,6 +129,8 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
     """
     is_midi = True
     midi_rows = {}  # {seed: [row]}
+    midi_start = 231
+    midi_end = 561
     is_midi_separate = midi_amino_csv.name != amino_csv.name
     if is_midi_separate:
         for (seed, region), rows in groupby(DictReader(midi_amino_csv),
@@ -137,7 +139,7 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
                 continue
             rows = list(rows)
             try:
-                check_coverage(region, rows, start_pos=231, end_pos=561)
+                check_coverage(region, rows, start_pos=midi_start, end_pos=midi_end)
             except LowCoverageError as ex:
                 failures[(seed, region, is_midi)] = ex.args[0]
                 continue
@@ -147,21 +149,32 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
     is_midi = False
     for (seed, region), rows in groupby(DictReader(amino_csv),
                                         itemgetter('seed', 'region')):
-        rows = list(rows)
+        low_coverage_message = None
+        all_rows = main_rows = list(rows)
         try:
-            check_coverage(region, rows)
+            check_coverage(region, main_rows)
         except LowCoverageError as ex:
-            failures[(seed, region, is_midi)] = ex.args[0]
-            rows = []
+            main_rows = []
+            low_coverage_message = ex.args[0]
         if region.endswith('-NS5b'):
             region_midi_rows = midi_rows.pop(seed, None)
             if region_midi_rows is None:
+                region_midi_rows = all_rows
                 if is_midi_separate:
                     failures.setdefault((seed, region, True),
                                         NOTHING_MAPPED_MESSAGE)
-                region_midi_rows = []
-            rows = combine_midi_rows(rows, region_midi_rows)
-        yield from rows
+                try:
+                    check_coverage(region,
+                                   region_midi_rows,
+                                   start_pos=midi_start,
+                                   end_pos=midi_end)
+                    low_coverage_message = None
+                except LowCoverageError:
+                    region_midi_rows = []
+            main_rows = combine_midi_rows(main_rows, region_midi_rows)
+        if low_coverage_message:
+            failures[(seed, region, is_midi)] = low_coverage_message
+        yield from main_rows
 
     # Check for MIDI regions that had no match.
     for seed, rows in sorted(midi_rows.items()):
