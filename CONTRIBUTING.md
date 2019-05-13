@@ -366,6 +366,13 @@ similar steps to setting up a development workstation. Follow these steps:
 18. Send an e-mail to users describing the major changes in the release.
 19. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
+20. When the release is stable, check that it's included on the [Zenodo] page.
+    If you included more than one tag in the same release, the new tags have
+    not triggered Zenodo versions. Edit the release on GitHub, copy the
+    description text, update the release, then click the Delete button. Then
+    create a new release with the same description, and that will trigger a
+    Zenodo version.
 
 [release]: https://help.github.com/categories/85/articles
 [parse_args]: https://github.com/cfe-lab/MiCall/blame/master/micall_watcher.py
+[Zenodo]: https://doi.org/10.5281/zenodo.2644171

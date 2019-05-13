@@ -435,7 +435,7 @@ class AsiAlgorithmNewRulesTest(TestCase):
 
         self.assertEqual(expected_positions, positions)
 
-    def test(self):
+    def test_multiple_positions(self):
         drugs = """\
           <DRUG>
             <NAME>ABC</NAME>
@@ -454,6 +454,58 @@ class AsiAlgorithmNewRulesTest(TestCase):
         asi = self.create_asi(drugs=drugs)
 
         positions = asi.get_gene_positions('RT')
+
+        self.assertEqual(expected_positions, positions)
+
+    def test_integrase_position(self):
+        xml = """\
+            <ALGORITHM>
+              <ALGNAME>HIVDB</ALGNAME>
+              <ALGVERSION>fake</ALGVERSION>
+              <ALGDATE>2017-03-02</ALGDATE>
+              <DEFINITIONS>
+                <GENE_DEFINITION>
+                  <NAME>IN</NAME>
+                  <DRUGCLASSLIST>INSTI</DRUGCLASSLIST>
+                </GENE_DEFINITION>
+                <LEVEL_DEFINITION>
+                  <ORDER>1</ORDER>
+                  <ORIGINAL>Susceptible</ORIGINAL>
+                  <SIR>S</SIR>
+                </LEVEL_DEFINITION>
+                <LEVEL_DEFINITION>
+                  <ORDER>5</ORDER>
+                  <ORIGINAL>High-Level Resistance</ORIGINAL>
+                  <SIR>R</SIR>
+                </LEVEL_DEFINITION>
+                <DRUGCLASS>
+                  <NAME>INSTI</NAME>
+                  <DRUGLIST>BIC</DRUGLIST>
+                </DRUGCLASS>
+                <GLOBALRANGE><![CDATA[(-INF TO 9 => 1,  10 TO INF => 5)]]></GLOBALRANGE>
+                <COMMENT_DEFINITIONS>
+                </COMMENT_DEFINITIONS>
+              </DEFINITIONS>
+              <DRUG>
+                <NAME>BIC</NAME>
+                <FULLNAME>bictegravir</FULLNAME>
+                <RULE>
+                  <CONDITION><![CDATA[SCORE FROM(51Y => 10)]]></CONDITION>
+                  <ACTIONS>
+                    <SCORERANGE>
+                      <USE_GLOBALRANGE/>
+                    </SCORERANGE>
+                  </ACTIONS>
+                </RULE>
+              </DRUG>
+              <MUTATION_COMMENTS>
+              </MUTATION_COMMENTS>
+            </ALGORITHM>
+        """
+        asi = AsiAlgorithm(StringIO(xml))
+        expected_positions = {51}
+
+        positions = asi.get_gene_positions('INT')
 
         self.assertEqual(expected_positions, positions)
 

@@ -243,6 +243,8 @@ class AsiAlgorithm:
             self.drugs[drug_code] = (drug['name'], drug_rules)
 
     def get_gene_positions(self, gene):
+        if gene == 'INT':
+            gene = 'IN'
         positions = set([])
         for drug_class in self.gene_def[gene]:
             for drug_code in self.drug_class[drug_class]:
