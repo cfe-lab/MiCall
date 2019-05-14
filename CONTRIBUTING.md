@@ -306,8 +306,9 @@ similar steps to setting up a development workstation. Follow these steps:
 8. Process all the samples from test_samples.csv on the Kive test server, and
     run the micall_watcher service on a VirtualBox. Use the
     `release_test_*.py` scripts to compare the results of the new release with
-    the previous version. Get the comparison signed off to begin the release
-    process.
+    the previous version. Also run the internal scripts `miseq_gen_results.rb`
+    and `miseq_compare_results.rb` to look for differences. Get the comparison
+    signed off to begin the release process.
 8. Upload the Singularity image to the main Kive server, and
     record the id of the new apps.
 8. Stop the micall_watcher service on the main Kive server after you check that

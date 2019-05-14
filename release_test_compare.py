@@ -428,7 +428,8 @@ def trim_consensus_sequences(target_seqs):
                     ('HCV-3', 'HCV-E1'): slice(9, None),
                     ('HCV-4', 'HCV-E1'): slice(6, None),
                     ('HCV-5', 'HCV-E1'): slice(6, None),
-                    ('HCV-6', 'HCV-E1'): slice(6, None)}
+                    ('HCV-6', 'HCV-E1'): slice(6, None),
+                    ('HIV1-', 'HIV1B-vpr'): slice(None, 234)}
     keys = list(target_seqs)
     for key in keys:
         seed_name, region_name, cutoff = key
