@@ -15,9 +15,10 @@ you planning to submit your own fix in a pull request?
 This will document the installation steps to get MiCall running locally on your workstation.
 The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferred IDE or operating system.
 
-If you want to see what's currently being worked on, check out the [waffle board][waffle].
+If you want to see what's currently being worked on, check out the active tasks
+in our [milestones].
 
-[waffle]: https://waffle.io/cfe-lab/micall
+[milestones]: https://github.com/cfe-lab/MiCall/milestones
 
 ### Java and Python ###
 1. Check that you are running a 64-bit operating system, or bowtie2 won't work.
@@ -329,7 +330,9 @@ similar steps to setting up a development workstation. Follow these steps:
     Either look at the blame annotations at the link above, or review the
     changes in the new release. If there are new or changed settings, adjust
     the configuration in `/etc/systemd/system/micall_watcher.service` or
-    `/etc/micall/micall.conf`. If you change the configuration, reload it:
+    `/etc/micall/micall.conf`.
+11. Update the container app ids and pipeline version number in
+    `/etc/systemd/system/micall_watcher.service`. If you change the configuration, reload it:
     
         sudo systemctl daemon-reload
 
