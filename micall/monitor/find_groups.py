@@ -26,16 +26,27 @@ def find_groups(file_names, sample_sheet_path, included_projects=None):
                        row['project'] in included_projects))}
     trimmed_names = {'_'.join(file_name.split('_')[:2]): file_name
                      for file_name in file_names}
+    unused_names = set(trimmed_names.values())
     for trimmed_name, file_name in sorted(trimmed_names.items()):
         sample_name = wide_names.get(trimmed_name)
         if sample_name is None:
             # Project was not included.
             continue
-        midi_trimmed = midi_files.pop(sample_name + 'MIDI', None)
+        midi_trimmed = midi_files.get(sample_name + 'MIDI')
+        if midi_trimmed is None and sample_name.upper().endswith('WG'):
+            sample_name = sample_name[:-2]
+            midi_trimmed = midi_files.get(sample_name + 'MIDI')
         midi_name = trimmed_names.get(midi_trimmed)
+        unused_names.discard(file_name)
+        unused_names.discard(midi_name)
         yield SampleGroup(sample_name, (file_name, midi_name))
 
-    for sample_name, trimmed_name in midi_files.items():
-        file_name = trimmed_names.get(trimmed_name)
-        if file_name is not None:
-            yield SampleGroup(sample_name, (file_name, None))
+    if unused_names:
+        sample_names = {file_name: sample_name
+                        for sample_name, file_name in midi_files.items()}
+        for trimmed_name, file_name in sorted(trimmed_names.items()):
+            if file_name in unused_names:
+                unused_names.discard(file_name)
+                sample_name = sample_names.get(trimmed_name)
+                if sample_name is not None:
+                    yield SampleGroup(sample_name, (file_name, None))

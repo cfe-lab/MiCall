@@ -2,7 +2,7 @@ from io import StringIO
 from unittest import TestCase
 
 from micall.core.project_config import ProjectConfig
-from micall.utils.fetch_sequences import extract_sequence, parse_compendium, \
+from micall.utils.fetch_sequences import extract_sequence, parse_fasta, \
     compare_config
 
 
@@ -23,15 +23,15 @@ following text
         self.assertEqual(expected_sequence, sequence)
 
 
-class ParseCompendiumTest(TestCase):
+class ParseFastaTest(TestCase):
     def test_single(self):
         fasta = StringIO("""\
 >A.B.C.R1
 ACTGA
 """)
-        expected_sequences = {'R1': 'ACTGA'}
+        expected_sequences = {'A.B.C.R1': 'ACTGA'}
 
-        sequences = parse_compendium(fasta)
+        sequences = parse_fasta(fasta)
 
         self.assertEqual(expected_sequences, sequences)
 
@@ -42,7 +42,7 @@ ACTGA
 """)
         expected_sequences = {'R1': 'ACTGA'}
 
-        sequences = parse_compendium(fasta)
+        sequences = parse_fasta(fasta)
 
         self.assertEqual(expected_sequences, sequences)
 
@@ -53,9 +53,9 @@ ACTGA
 >X.Y.R2
 GATA
 """)
-        expected_sequences = {'R1': 'ACTGA', 'R2': 'GATA'}
+        expected_sequences = {'A.B.C.R1': 'ACTGA', 'X.Y.R2': 'GATA'}
 
-        sequences = parse_compendium(fasta)
+        sequences = parse_fasta(fasta)
 
         self.assertEqual(expected_sequences, sequences)
 
@@ -65,20 +65,20 @@ GATA
 ACTGA
 TTACA
 """)
-        expected_sequences = {'R1': 'ACTGATTACA'}
+        expected_sequences = {'A.B.C.R1': 'ACTGATTACA'}
 
-        sequences = parse_compendium(fasta)
+        sequences = parse_fasta(fasta)
 
         self.assertEqual(expected_sequences, sequences)
 
 
 class CompareConfigTest(TestCase):
     @staticmethod
-    def build_config(project, sequences):
+    def build_config(sequences):
         projects = ProjectConfig()
         projects.config = {
             'projects': {
-                project: {
+                'PROJ1': {
                     'regions': [
                         {
                             'seed_region_names': list(sequences.keys())
@@ -92,87 +92,185 @@ class CompareConfigTest(TestCase):
         return projects
 
     def test_match(self):
-        sequences = {'R1': 'ACTGATA'}
-        project_config = self.build_config('PROJ1',
-                                           {'P-A-KX-R1-seed': 'ACTGATA'})
+        sequences = {'KX1234': 'ACTGATA'}  # {accession_num: seq}
+        project_config = self.build_config({'P-A-KX-KX1234-seed': 'ACTGATA'})
         expected_report = """\
-P-A-KX-R1-seed
-==
-
-0 differences
+Matching references: P-A-KX-KX1234-seed
 """
 
-        report = ''.join(compare_config('PROJ1', project_config, sequences))
+        report, error_count = compare_config(['P-A-KX-KX1234-seed'],
+                                             project_config,
+                                             sequences,
+                                             name_part=3)
 
-        self.assertEqual(expected_report, report)
+        assert expected_report == report
+        assert 0 == error_count
 
     def test_diff(self):
-        sequences = {'R1': 'ACTGATT'}
-        project_config = self.build_config('PROJ1',
-                                           {'P-A-KX-R1-seed': 'ACTGATA'})
+        source_sequences = {'R1': 'ACTGATT'}
+        project_config = self.build_config({'P-A-KX-R1-seed': 'ACTGATA'})
         expected_report = """\
+ERROR: changed references:
 P-A-KX-R1-seed
-- ACTGATA
+- ACTGATT
 ?       ^
-+ ACTGATT
++ ACTGATA
 ?       ^
 
-1 differences
 """
 
-        report = ''.join(compare_config('PROJ1', project_config, sequences))
+        report, error_count = compare_config(['P-A-KX-R1-seed'],
+                                             project_config,
+                                             source_sequences,
+                                             name_part=3)
 
-        self.assertEqual(expected_report, report)
+        assert expected_report == report
+        assert 1 == error_count
+
+    def test_big_diff(self):
+        source_sequences = {
+            'R1': 'LOREMIPSUMDOLORSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIE'
+                  'ODIOVELMAXIMUSELEMENTUMMASSAPURUSFRINGILLALIGULANONSUSCIPIT'
+                  'FELISDUIUTLACUS'}
+        new_sequence = source_sequences['R1']
+        new_sequence = new_sequence[:10] + 'CETUS' + new_sequence[15:]
+        project_config = self.build_config({'P-A-KX-R1-seed': new_sequence})
+        expected_report = """\
+ERROR: changed references:
+P-A-KX-R1-seed
+- LOREMIPSUMDOLORSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIEODIOVELMAXI
+?           ^^^^^
++ LOREMIPSUMCETUSSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIEODIOVELMAXI
+?           ^^^^^
+  MUSELEMENTUMMASSAPURUSFRINGILLALIGULANONSUSCIPITFELISDUIUTLACUS
+
+"""
+
+        report, error_count = compare_config(['P-A-KX-R1-seed'],
+                                             project_config,
+                                             source_sequences,
+                                             name_part=3)
+
+        assert expected_report == report
+        assert 1 == error_count
+
+    def test_very_big_diff(self):
+        source_sequences = {
+            'R1': 'LOREMIPSUMDOLORSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIE'
+                  'ODIOVELMAXIMUSELEMENTUMMASSAPURUSFRINGILLALIGULANONSUSCIPIT'
+                  'FELISDUIUTLACUS' * 3}
+        new_sequence = source_sequences['R1']
+        new_sequence = new_sequence[:10] + 'CETUS' + new_sequence[15:]
+        project_config = self.build_config({'P-A-KX-R1-seed': new_sequence})
+        expected_report = """\
+ERROR: changed references:
+P-A-KX-R1-seed
+- LOREMIPSUMDOLORSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIEODIOVELMAXI
+?           ^^^^^
++ LOREMIPSUMCETUSSITAMETCONSECTETURADIPISCINGELITCRASMOLESTIEODIOVELMAXI
+?           ^^^^^
+  MUSELEMENTUMMAS[244 matching characters]VELMAXIMUSELEMENTUMMASSAPURUSF
+  RINGILLALIGULANONSUSCIPITFELISDUIUTLACUS
+
+"""
+
+        report, error_count = compare_config(['P-A-KX-R1-seed'],
+                                             project_config,
+                                             source_sequences,
+                                             name_part=3)
+
+        assert expected_report == report
+        assert 1 == error_count
 
     def test_multiple_seeds(self):
         sequences = {'R1': 'ACTGATT', 'R2': 'TTT'}
-        project_config = self.build_config('PROJ1',
-                                           {'P-A-KX-R1-seed': 'ACTGATT',
+        project_config = self.build_config({'P-A-KX-R1-seed': 'ACTGATT',
                                             'P-A-KY-R2-seed': 'TTT'})
         expected_report = """\
-P-A-KX-R1-seed
-==
-
-P-A-KY-R2-seed
-==
-
-0 differences
+Matching references: P-A-KX-R1-seed, P-A-KY-R2-seed
 """
 
-        report = ''.join(compare_config('PROJ1', project_config, sequences))
+        report, error_count = compare_config(['P-A-KX-R1-seed', 'P-A-KY-R2-seed'],
+                                             project_config,
+                                             sequences,
+                                             name_part=3)
 
-        self.assertEqual(expected_report, report)
+        assert expected_report == report
+        assert 0 == error_count
 
     def test_dashes(self):
         sequences = {'R1': 'ACT---GATT'}
-        project_config = self.build_config('PROJ1',
-                                           {'P-A-KX-R1-seed': 'ACTGATT'})
+        project_config = self.build_config({'P-A-KX-R1-seed': 'ACTGATT'})
         expected_report = """\
-P-A-KX-R1-seed
-==
-
-0 differences
+Matching references: P-A-KX-R1-seed
 """
 
-        report = ''.join(compare_config('PROJ1', project_config, sequences))
+        report, error_count = compare_config(['P-A-KX-R1-seed'],
+                                             project_config,
+                                             sequences,
+                                             name_part=3)
 
-        self.assertEqual(expected_report, report)
+        assert expected_report == report
+        assert 0 == error_count
 
-    def test(self):
+    def test_missing_from_source(self):
         sequences = {'R1': 'ACTGATT'}
-        project_config = self.build_config('PROJ1',
-                                           {'P-A-KX-R1-seed': 'ACTGATT',
+        project_config = self.build_config({'P-A-KX-R1-seed': 'ACTGATT',
                                             'P-A-KY-R2-seed': 'TTT'})
         expected_report = """\
-P-A-KX-R1-seed
-==
-
-P-A-KY-R2-seed
-missing
-
-1 differences
+Matching references: P-A-KX-R1-seed
+ERROR: references missing from source: P-A-KY-R2-seed
 """
 
-        report = ''.join(compare_config('PROJ1', project_config, sequences))
+        report, error_count = compare_config(['P-A-KX-R1-seed', 'P-A-KY-R2-seed'],
+                                             project_config,
+                                             sequences,
+                                             name_part=3)
 
-        self.assertEqual(expected_report, report)
+        assert expected_report == report
+        assert 1 == error_count
+
+    def test_many_matches(self):
+        sequences = {'R1': 'ACTGATT', 'R2': 'TTT', 'R3': 'A', 'R4': 'A'}
+        project_config = self.build_config({'P-A-KX-R1-seed': 'ACTGATT',
+                                            'P-A-KY-R2-seed': 'TTT',
+                                            'P-A-KY-R3-seed': 'A',
+                                            'P-A-KY-R4-seed': 'A'})
+        expected_report = """\
+Matching references: P-A-KX-R1-seed, P-A-KY-R2-seed, P-A-KY-R3-seed,
+P-A-KY-R4-seed
+"""
+
+        report, error_count = compare_config(['P-A-KX-R1-seed',
+                                              'P-A-KY-R2-seed',
+                                              'P-A-KY-R3-seed',
+                                              'P-A-KY-R4-seed'],
+                                             project_config,
+                                             sequences,
+                                             name_part=3)
+
+        assert expected_report == report
+        assert 0 == error_count
+
+    def test_many_missing(self):
+        sequences = {'R1': 'ACTGATT'}
+        project_config = self.build_config({'P-A-KX-R1-seed': 'ACTGATT',
+                                            'P-A-KY-R2-seed': 'TTT',
+                                            'P-A-KY-R3-seed': 'A',
+                                            'P-A-KY-R4-seed': 'A'})
+        expected_report = """\
+Matching references: P-A-KX-R1-seed
+ERROR: references missing from source: P-A-KY-R2-seed, P-A-KY-R3-seed,
+P-A-KY-R4-seed
+"""
+
+        report, error_count = compare_config(['P-A-KX-R1-seed',
+                                              'P-A-KY-R2-seed',
+                                              'P-A-KY-R3-seed',
+                                              'P-A-KY-R4-seed'],
+                                             project_config,
+                                             sequences,
+                                             name_part=3)
+
+        assert expected_report == report
+        assert 3 == error_count

@@ -36,13 +36,23 @@ def main():
                              (FastqSection('HCV2-JFH-1-NS5b', 313, 395, 100),
                               FastqSection('HCV2-JFH-1-NS5b', 479, 561, 100)),
                              (CodonMutation(316, 'AGC'),)),
-                   FastqFile('2140A-HCV_S17_L001_R1_001.fastq',
+                   FastqFile('2140A-HIV_S17_L001_R1_001.fastq',
                              '2140',
+                             False,
+                             (FastqSection('PR', 1, 80, 100),),
+                             (CodonMutation(24, 'ATA'),)),
+                   FastqFile('2140A-HIV_S17_L001_R2_001.fastq',
+                             '2140',
+                             True,
+                             (FastqSection('PR', 20, 99, 100),),
+                             (CodonMutation(24, 'ATA'),)),
+                   FastqFile('2150A-HCV_S18_L001_R1_001.fastq',
+                             '2150',
                              False,
                              sections_2140_1,
                              tuple()),
-                   FastqFile('2140A-HCV_S17_L001_R2_001.fastq',
-                             '2140',
+                   FastqFile('2150A-HCV_S18_L001_R2_001.fastq',
+                             '2150',
                              True,
                              sections_2140_2,
                              tuple())]
@@ -108,9 +118,13 @@ def find_coord_pos(projects, coord_name, start_pos, end_pos):
     use_terminal_gap_penalty = 1
     highest_score = 0
     best_match = None
-    for ref_name in sorted(projects.getProjectSeeds('HCV')):
-        if not ref_name.startswith('HCV-2'):
-            continue
+    ref_names = set()
+    for project in projects.config['projects'].values():
+        for region in project['regions']:
+            if coord_name == region['coordinate_region']:
+                ref_names.update(region['seed_region_names'])
+
+    for ref_name in sorted(ref_names):
         ref_nuc_seq = projects.getReference(ref_name)
         for nuc_offset in range(3):
             ref_amino_seq = translate(ref_nuc_seq, nuc_offset)
@@ -127,14 +141,16 @@ def find_coord_pos(projects, coord_name, start_pos, end_pos):
     coord_pos = ref_pos = 0
     ref_start = ref_end = None
     for coord_amino, ref_amino in zip(aligned_coord, aligned_ref):
-        if coord_amino != '-':
-            coord_pos += 1
         if ref_amino != '-':
             ref_pos += 1
-        if start_pos == coord_pos:
-            ref_start = ref_pos * 3 - nuc_offset - 3
-        if coord_pos == end_pos:
-            ref_end = ref_pos * 3 - nuc_offset
+        if coord_amino != '-':
+            coord_pos += 1
+            if start_pos == coord_pos:
+                ref_start = ref_pos * 3 - nuc_offset - 3
+            if coord_pos == end_pos:
+                ref_end = ref_pos * 3 - nuc_offset
+    assert ref_start is not None
+    assert ref_end is not None
     return ref_name, ref_start, ref_end
 
 

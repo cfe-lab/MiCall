@@ -36,10 +36,12 @@ from collections import defaultdict, namedtuple
 import re
 import xml.dom.minidom as minidom
 from enum import Enum
+from pathlib import Path
 
 from pyvdrm.drm import MissingPositionError
 from pyvdrm.hcvr import HCVR
 from pyvdrm.vcf import VariantCalls
+from yaml import safe_load
 
 from micall.core.project_config import ProjectConfig
 
@@ -47,9 +49,10 @@ HCV_RULES_VERSION = '1.7'
 HCV_RULES_DATE = '13 Jun 2018'
 LEVEL_NAME_CHANGES = {'Potential Low-Level Resistance': 'Susceptible'}
 ResistanceLevel = namedtuple('ResistanceLevel', 'level name')
+WILD_TYPES_PATH = Path(__file__).parent / 'wild_types.yaml'
 
 
-class ResistanceLevels(ResistanceLevel, Enum):
+class HcvResistanceLevels(ResistanceLevel, Enum):
     NA = ResistanceLevel(-1, 'Resistance Interpretation Not Available')
     FAIL = ResistanceLevel(0, 'Sequence does not meet quality-control standards')
     SUSCEPTIBLE = ResistanceLevel(1, 'Likely Susceptible')
@@ -57,6 +60,16 @@ class ResistanceLevels(ResistanceLevel, Enum):
     UNKNOWN_MUTATIONS = ResistanceLevel(3, 'Mutations Detected; Effect Unknown')
     RESISTANCE_POSSIBLE = ResistanceLevel(4, 'Resistance Possible')
     RESISTANCE_LIKELY = ResistanceLevel(5, 'Resistance Likely')
+
+
+class HivResistanceLevels(ResistanceLevel, Enum):
+    NA = ResistanceLevel(-1, 'Resistance Interpretation Not Available')
+    FAIL = ResistanceLevel(0, 'Sequence does not meet quality-control standards')
+    SUSCEPTIBLE = ResistanceLevel(1, 'Susceptible')
+    POTENTIAL = ResistanceLevel(2, 'Potential Low-Level Resistance')
+    LOW = ResistanceLevel(3, 'Low-Level Resistance')
+    INTERMEDIATE = ResistanceLevel(4, 'Intermediate Resistance')
+    HIGH = ResistanceLevel(5, 'High-Level Resistance')
 
 
 # Now the actual code:----------------------------------------------------------
@@ -71,6 +84,9 @@ class AsiAlgorithm:
         if references is None:
             projects = ProjectConfig.loadDefault()
             references = projects.getAllReferences()
+            with WILD_TYPES_PATH.open() as wild_types_file:
+                wild_types = safe_load(wild_types_file)
+            references.update(wild_types)
         self.stds = {
             name if name != 'INT' else 'IN': ref
             for name, ref in references.items()}
@@ -110,7 +126,7 @@ class AsiAlgorithm:
             b = node.getElementsByTagName('DRUGCLASSLIST')[0].childNodes[0].nodeValue.split(',')
             self.gene_def[a.strip()] = [e.strip() for e in b]
 
-        self.level_def[str(ResistanceLevels.FAIL.level)] = ResistanceLevels.FAIL.name
+        self.level_def[str(HivResistanceLevels.FAIL.level)] = HivResistanceLevels.FAIL.name
         for node in defs.getElementsByTagName('LEVEL_DEFINITION'):
             a = node.getElementsByTagName('ORDER')[0].childNodes[0].nodeValue
             b = node.getElementsByTagName('ORIGINAL')[0].childNodes[0].nodeValue
@@ -127,7 +143,7 @@ class AsiAlgorithm:
             global_range_text = defs.getElementsByTagName('GLOBALRANGE')[0].childNodes[0].nodeValue
             global_range_items = global_range_text.strip(")( \n").split(',')
             self.global_range = list(map(
-                lambda item: (list(re.match('\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*',
+                lambda item: (list(re.match(r'\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*',
                                             item.strip("\n \t")).groups())),
                 global_range_items))
         if defs.getElementsByTagName('COMMENT_DEFINITIONS'):
@@ -153,7 +169,7 @@ class AsiAlgorithm:
             rules = []
             for rule_node in drug_node.getElementsByTagName('RULE'):
                 condition = rule_node.getElementsByTagName('CONDITION')[0].childNodes[0].nodeValue
-                condition = re.sub('\s+', ' ', condition)
+                condition = re.sub(r'\s+', ' ', condition)
                 actions = []
 
                 for action_node in rule_node.getElementsByTagName('ACTIONS'):
@@ -171,7 +187,7 @@ class AsiAlgorithm:
                     elif action_node.getElementsByTagName('SCORERANGE'):
                         srange = action_node.getElementsByTagName('SCORERANGE')[0].childNodes[0].nodeValue
                         srange = srange.strip(")( \n").split(',')
-                        srange = [re.match('\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*',
+                        srange = [re.match(r'\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*',
                                            item.strip("\n \t")).groups()
                                   for item in srange]
                         actions.append(('scorerange', srange))
@@ -188,7 +204,7 @@ class AsiAlgorithm:
                 for rule_node in gene_node.getElementsByTagName('RULE'):
                     # Yeah, rules!
                     condition = rule_node.getElementsByTagName('CONDITION')[0].childNodes[0].nodeValue
-                    condition = re.sub('\s+', ' ', condition)
+                    condition = re.sub(r'\s+', ' ', condition)
                     actions = []
                     # Need to turn condition into science?
 
@@ -200,6 +216,7 @@ class AsiAlgorithm:
                 self.mutation_comments.append([gene_name, rules])
 
     def load_yaml(self, rules_config, genotype):
+        self.alg_name = 'HCV_RULES'
         self.alg_version = HCV_RULES_VERSION
         self.level_def = {'-1': 'Resistance Interpretation Not Available',
                           '0': 'Sequence does not meet quality-control standards',
@@ -226,6 +243,8 @@ class AsiAlgorithm:
             self.drugs[drug_code] = (drug['name'], drug_rules)
 
     def get_gene_positions(self, gene):
+        if gene == 'INT':
+            gene = 'IN'
         positions = set([])
         for drug_class in self.gene_def[gene]:
             for drug_code in self.drug_class[drug_class]:
@@ -242,13 +261,13 @@ class AsiAlgorithm:
         tmp = re.match(r'^.*\$listMutsIn{([^}]+)}.*$', comment)
         if tmp:
             tmporig = tmp.group(1)
-            tmporig = tmporig.replace('(', '\(').replace(')', '\)')
+            tmporig = tmporig.replace(r'(', r'\(').replace(r')', r'\)')
             muts = tmp.group(1).split(',')
             final = []
             for mut in muts:
                 # If it matches \d+\(NOT \w+\), then we got to do something fancy
-                tmpa = re.match('[a-z]?(\d+)\(NOT\s+([a-z]+)\)', mut, flags=re.I)
-                tmpb = re.match('[a-z]?(\d+)([a-z]+)', mut, flags=re.I)
+                tmpa = re.match(r'[a-z]?(\d+)\(NOT\s+([a-z]+)\)', mut, flags=re.I)
+                tmpb = re.match(r'[a-z]?(\d+)([a-z]+)', mut, flags=re.I)
                 match = ''
                 loc = ''
                 if tmpa:
@@ -286,7 +305,7 @@ class AsiAlgorithm:
             muts = tmp.group(1).split(',')
             cnt = 0
             for mut in muts:
-                tmp = re.match('^(\d+)([a-z]+)$', mut, flags=re.I)
+                tmp = re.match(r'^(\d+)([a-z]+)$', mut, flags=re.I)
                 aas = aaseq[int(tmp.group(1)) - 1]
                 for aa in aas:
                     if aa in tmp.group(2):
@@ -308,7 +327,7 @@ class AsiAlgorithm:
         result.alg_name = self.alg_name
         result.alg_version = self.alg_version
         drug_classes = self.gene_def.get(region, {})
-        default_level = ResistanceLevels.FAIL.level
+        default_level = HcvResistanceLevels.FAIL.level
         default_level_name = self.level_def[str(default_level)]
 
         mutations = VariantCalls(reference=self.stds[region], sample=aaseq)
@@ -345,8 +364,8 @@ class AsiAlgorithm:
                                     drug_result.level_name = self.level_def[comment]
                             elif action == 'comment':
                                 comment, _ = self.comment_def[comment]
-                                while (re.search('\$numberOfMutsIn{', comment) or
-                                       re.search('\$listMutsIn{', comment)):
+                                while (re.search(r'\$numberOfMutsIn{', comment) or
+                                       re.search(r'\$listMutsIn{', comment)):
                                     comment = self.comment_filter(comment, aaseq, region)
                                 drug_result.comments.append(comment)
                             elif action == 'scorerange':
@@ -356,11 +375,11 @@ class AsiAlgorithm:
                                     scorerange = self.global_range
                                 if score == 0 and flags:
                                     if 'Not available' in flags:
-                                        drug_result.level = ResistanceLevels.NA.level
+                                        drug_result.level = HcvResistanceLevels.NA.level
                                     elif 'Not indicated' in flags:
-                                        drug_result.level = ResistanceLevels.NOT_INDICATED.level
+                                        drug_result.level = HcvResistanceLevels.NOT_INDICATED.level
                                     elif 'Effect unknown' in flags:
-                                        drug_result.level = ResistanceLevels.UNKNOWN_MUTATIONS.level
+                                        drug_result.level = HcvResistanceLevels.UNKNOWN_MUTATIONS.level
                                 else:
                                     # use score range to determine level
                                     for low_score, high_score, level in scorerange:
@@ -379,7 +398,7 @@ class AsiAlgorithm:
                                                 drug_result.level = int(level)
                                             break
                     except MissingPositionError:
-                        drug_result.level = ResistanceLevels.FAIL.level
+                        drug_result.level = HcvResistanceLevels.FAIL.level
 
                     drug_result.level_name = self.level_def[
                         str(drug_result.level)]
