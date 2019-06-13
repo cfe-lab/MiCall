@@ -11,7 +11,7 @@ FastqFile = namedtuple('FastqFile', 'name extract_num is_reversed sections mutat
 
 
 def main():
-    sections_2140_1, sections_2140_2 = make_sections_2140()
+    sections_2150_1, sections_2150_2 = make_sections_2150()
     fastq_files = [FastqFile('2130A-HCV_S15_L001_R1_001.fastq',
                              '2130',
                              False,
@@ -49,12 +49,12 @@ def main():
                    FastqFile('2150A-HCV_S18_L001_R1_001.fastq',
                              '2150',
                              False,
-                             sections_2140_1,
+                             sections_2150_1,
                              tuple()),
                    FastqFile('2150A-HCV_S18_L001_R2_001.fastq',
                              '2150',
                              True,
-                             sections_2140_2,
+                             sections_2150_2,
                              tuple())]
     projects = ProjectConfig.loadDefault()
     for fastq_file in fastq_files:
@@ -88,7 +88,7 @@ def main():
                 next_cluster += section.count
 
 
-def make_sections_2140():
+def make_sections_2150():
     sections_2140_1 = []
     sections_2140_2 = []
     ref_name = 'HCV-1a'

@@ -158,6 +158,13 @@ From: centos:7
 
     rm -rf /var/cache/yum
 
+    ## CAUTION! This changes the default python command to python3!
+    ## This breaks many things, including yum!
+    ## To switch back to python2, use this command:
+    # sudo alternatives --set python /usr/bin/python2
+    alternatives --install /usr/bin/python python /usr/bin/python2 50
+    alternatives --install /usr/bin/python python /usr/bin/python3 60
+
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
     export LANG=en_US.UTF-8
