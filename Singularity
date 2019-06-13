@@ -47,7 +47,7 @@ From: centos:7
 
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
-    yum install -q -y python34 python34-devel unzip wget fontconfig
+    yum install -q -y python3 python3-devel unzip wget fontconfig
 
     echo ===== Installing blast ===== >/dev/null
     cd /root
@@ -107,7 +107,7 @@ From: centos:7
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
     yum groupremove -q -y 'development tools'
-    yum remove -q -y epel-release wget python34-devel unzip
+    yum remove -q -y epel-release wget python3-devel unzip
     yum autoremove -q -y
     yum clean all
 
