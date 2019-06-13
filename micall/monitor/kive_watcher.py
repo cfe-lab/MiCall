@@ -605,11 +605,33 @@ class KiveWatcher:
                 input_datasets = dict(fastq1=sample_watcher.fastq_datasets[2],
                                       fastq2=sample_watcher.fastq_datasets[3])
                 sample_name = sample_watcher.sample_group.names[1]
-            sample_name = trim_name(sample_name)
             return self.find_or_launch_run(
                 self.config.mixed_hcv_pipeline_id,
                 input_datasets,
                 'Mixed HCV on ' + trim_name(sample_name),
+                folder_watcher.batch)
+        if pipeline_type == PipelineType.DENOVO:
+            if self.config.denovo_pipeline_id is None:
+                return None
+            input_datasets = dict(fastq1=sample_watcher.fastq_datasets[0],
+                                  fastq2=sample_watcher.fastq_datasets[1])
+            sample_name = sample_watcher.sample_group.names[0]
+            return self.find_or_launch_run(
+                self.config.denovo_pipeline_id,
+                input_datasets,
+                'Denovo on ' + trim_name(sample_name),
+                folder_watcher.batch)
+        if pipeline_type == PipelineType.DENOVO_COMBINED:
+            if self.config.denovo_combined_pipeline_id is None:
+                return None
+            input_datasets = dict(fastq1=sample_watcher.fastq_datasets[0],
+                                  fastq2=sample_watcher.fastq_datasets[1],
+                                  fastq3=sample_watcher.fastq_datasets[2],
+                                  fastq4=sample_watcher.fastq_datasets[3])
+            return self.find_or_launch_run(
+                self.config.denovo_pipeline_id,
+                input_datasets,
+                'Denovo combined on ' + sample_watcher.sample_group.enum,
                 folder_watcher.batch)
         if pipeline_type == PipelineType.MAIN:
             fastq1, fastq2 = sample_watcher.fastq_datasets[:2]
