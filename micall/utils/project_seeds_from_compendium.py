@@ -121,7 +121,8 @@ def main():
                          'reference': seed_seq,
                          'seed_group_id': seed_group['id']})
         if recombinant_names:
-            print('Skipped recombinants: ' + ', '.join(sorted(recombinant_names)))
+            print(f'Skipped {len(recombinant_names)} recombinants:',
+                  ', '.join(sorted(recombinant_names)))
         if hiv_seeds:
             seed_names = sorted(hiv_seeds.keys())
             should_delete = True

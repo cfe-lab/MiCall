@@ -1,6 +1,7 @@
 #! /usr/bin/env python3.6
 
 import argparse
+import contextlib
 from collections import Counter, defaultdict
 import csv
 from csv import DictWriter
@@ -475,13 +476,15 @@ def count_reads(reads, file_prefix):
     """
     if file_prefix is None:
         all_counts = Counter()
+        counts_context = contextlib.suppress()  # Dummy value.
     else:
-        all_counts = BigCounter(file_prefix)
-    for aligned_ref, aligned_seq in reads:
-        key = aligned_ref + '\t' + aligned_seq
-        all_counts[key] += 1
-    for key, count in all_counts.items():
-        yield tuple(key.split('\t')), count
+        all_counts = counts_context = BigCounter(file_prefix)
+    with counts_context:
+        for aligned_ref, aligned_seq in reads:
+            key = aligned_ref + '\t' + aligned_seq
+            all_counts[key] += 1
+        for key, count in all_counts.items():
+            yield tuple(key.split('\t')), count
 
 
 def get_top_counts(read_counts, min_count=1):

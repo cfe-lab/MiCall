@@ -9,8 +9,19 @@ From: centos:7
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-%label
+    Change Notes: Update HIVdb to 8.8 and several bugs when combining MIDI and
+    whole genome samples.
+
+%labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
+    KIVE_INPUTS fastq1 fastq2 bad_cycles_csv
+    KIVE_OUTPUTS g2p_csv g2p_summary_csv remap_counts_csv \
+        remap_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \
+        failed_csv cascade_csv nuc_csv amino_csv coord_ins_csv conseq_csv \
+        conseq_region_csv failed_align_csv coverage_scores_csv \
+        coverage_maps_tar aligned_csv g2p_aligned_csv
+    KIVE_THREADS 1
+    KIVE_MEMORY 6000
 
 %setup
     # Unneeded once Singularity creates parent dirs:
@@ -136,8 +147,9 @@ From: centos:7
     python3.6 get-pip.py
     rm get-pip.py
     cd /opt
-    pip install -r /opt/micall/requirements.txt
-    python3.6 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
+    pip install -r /opt/micall/requirements-basespace.txt
+    ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
+    python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
     yum groupremove -q -y 'development tools'
     yum remove -q -y epel-release wget python36-devel unzip
@@ -146,5 +158,42 @@ From: centos:7
 
     rm -rf /var/cache/yum
 
+    ## CAUTION! This changes the default python command to python3!
+    ## This breaks many things, including yum!
+    ## To switch back to python2, use this command:
+    # sudo alternatives --set python /usr/bin/python2
+    alternatives --install /usr/bin/python python /usr/bin/python2 50
+    alternatives --install /usr/bin/python python /usr/bin/python3 60
+
 %environment
-    export PATH=/bin:/opt/bowtie2
+    export PATH=/opt/bowtie2:/bin:/usr/local/bin
+    export LANG=en_US.UTF-8
+
+%runscript
+    python /opt/micall/micall_kive.py "$@"
+
+%apphelp filter_quality
+    Post-processing of short-read alignments.
+
+%applabels filter_quality
+    KIVE_INPUTS quality_csv
+    KIVE_OUTPUTS bad_cycles_csv
+    KIVE_THREADS 1
+    KIVE_MEMORY 200
+
+%apprun filter_quality
+    PYTHONPATH=/opt/micall python -m micall.core.filter_quality "$@"
+
+%apphelp resistance
+    Combine HCV results with HCV-Midi results, and generate resistance
+    interpretation.
+
+%applabels resistance
+    KIVE_INPUTS main_amino_csv midi_amino_csv
+    KIVE_OUTPUTS resistance_csv mutations_csv resistance_fail_csv \
+        resistance_pdf resistance_consensus_csv
+    KIVE_THREADS 1
+    KIVE_MEMORY 200
+
+%apprun resistance
+    python /opt/micall/micall_kive_resistance.py "$@"

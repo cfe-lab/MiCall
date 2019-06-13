@@ -15,9 +15,10 @@ you planning to submit your own fix in a pull request?
 This will document the installation steps to get MiCall running locally on your workstation.
 The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferred IDE or operating system.
 
-If you want to see what's currently being worked on, check out the [waffle board][waffle].
+If you want to see what's currently being worked on, check out the active tasks
+in our [milestones].
 
-[waffle]: https://waffle.io/cfe-lab/micall
+[milestones]: https://github.com/cfe-lab/MiCall/milestones
 
 ### Java and Python ###
 1. Check that you are running a 64-bit operating system, or bowtie2 won't work.
@@ -299,19 +300,18 @@ similar steps to setting up a development workstation. Follow these steps:
     matches the version you used in QAI. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and
     so on. Mark the release as pre-release until you finish deploying it.
-7. Upgrade the scripts and docker image in your local Kive server. Process the
-    microtest data.
-7. Upgrade the scripts and docker image in the Kive test server, and record the
-    id of the new pipelines. You might
-    find the Kive project's `dump_pipeline.py` and `upload_pipeline.py` scripts
-    helpful. They are in the `utils` folder.
+7. Rebuild the Singularity image, and upload it to your local Kive server.
+    Process the microtest data.
+7. Upload the Singularity image to the Kive test server, and record the
+    ids of the new apps.
 8. Process all the samples from test_samples.csv on the Kive test server, and
     run the micall_watcher service on a VirtualBox. Use the
     `release_test_*.py` scripts to compare the results of the new release with
-    the previous version. Get the comparison signed off to begin the release
-    process.
-8. Upgrade the scripts and docker image in the main Kive server, and
-    record the id of the new pipelines.
+    the previous version. Also run the internal scripts `miseq_gen_results.rb`
+    and `miseq_compare_results.rb` to look for differences. Get the comparison
+    signed off to begin the release process.
+8. Upload the Singularity image to the main Kive server, and
+    record the id of the new apps.
 8. Stop the micall_watcher service on the main Kive server after you check that
     it's not processing any important runs.
 
@@ -330,7 +330,9 @@ similar steps to setting up a development workstation. Follow these steps:
     Either look at the blame annotations at the link above, or review the
     changes in the new release. If there are new or changed settings, adjust
     the configuration in `/etc/systemd/system/micall_watcher.service` or
-    `/etc/micall/micall.conf`. If you change the configuration, reload it:
+    `/etc/micall/micall.conf`.
+11. Update the container app ids and pipeline version number in
+    `/etc/systemd/system/micall_watcher.service`. If you change the configuration, reload it:
     
         sudo systemctl daemon-reload
 
@@ -368,6 +370,13 @@ similar steps to setting up a development workstation. Follow these steps:
 18. Send an e-mail to users describing the major changes in the release.
 19. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
+20. When the release is stable, check that it's included on the [Zenodo] page.
+    If you included more than one tag in the same release, the new tags have
+    not triggered Zenodo versions. Edit the release on GitHub, copy the
+    description text, update the release, then click the Delete button. Then
+    create a new release with the same description, and that will trigger a
+    Zenodo version.
 
 [release]: https://help.github.com/categories/85/articles
 [parse_args]: https://github.com/cfe-lab/MiCall/blame/master/micall_watcher.py
+[Zenodo]: https://doi.org/10.5281/zenodo.2644171

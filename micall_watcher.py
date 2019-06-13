@@ -25,22 +25,22 @@ def parse_args(argv=None):
         '--micall_filter_quality_pipeline_id',
         type=int,
         default=os.environ.get('MICALL_FILTER_QUALITY_PIPELINE_ID', None),
-        help="id of filter quality pipeline")
+        help="id of filter quality pipeline's container app")
     parser.add_argument(
         '--micall_main_pipeline_id',
         type=int,
         default=os.environ.get('MICALL_MAIN_PIPELINE_ID', None),
-        help="id of main pipeline")
+        help="id of main pipeline's container app")
     parser.add_argument(
         '--micall_resistance_pipeline_id',
         type=int,
         default=os.environ.get('MICALL_RESISTANCE_PIPELINE_ID', None),
-        help="id of resistance pipeline")
+        help="id of resistance pipeline's container app")
     parser.add_argument(
         '--mixed_hcv_pipeline_id',
         type=int,
         default=os.environ.get('MICALL_MIXED_HCV_PIPELINE_ID', None),
-        help='id of Mixed HCV pipeline')
+        help="id of Mixed HCV pipeline's container app")
     parser.add_argument(
         '--raw_data',
         type=Path,
@@ -90,6 +90,9 @@ def parse_args(argv=None):
         args.kive_password = os.environ.get('MICALL_KIVE_PASSWORD', 'kive')
     if not hasattr(args, 'qai_password'):
         args.qai_password = os.environ.get('MICALL_QAI_PASSWORD', 'testing')
+    if args.micall_main_pipeline_id is None:
+        parser.error("Argument --micall_main_pipeline_id not set and "
+                     "$MICALL_MAIN_PIPELINE_ID environment variable not set.")
     return args
 
 

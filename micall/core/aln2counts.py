@@ -1024,17 +1024,23 @@ class InsertionWriter(object):
         self.insert_pos_counts = defaultdict(Counter)
         self.seed = self.qcut = None
         self.insert_file_name = getattr(insert_file, 'name', None)
-        self.nuc_seqs = self.create_counter('nuc_read_counts')  # {nuc_seq: count}
-
-    def create_counter(self, base_name):
         if self.insert_file_name is None:
-            counter = Counter()
+            self.nuc_seqs = Counter()
+            self.nuc_seqs_context = None
         else:
             dirname = os.path.dirname(self.insert_file_name)
             file_prefix = os.path.join(os.path.abspath(dirname),
-                                       base_name)
-            counter = BigCounter(file_prefix=file_prefix)
-        return counter
+                                       'nuc_read_counts')
+            self.nuc_seqs = self.nuc_seqs_context = BigCounter(
+                file_prefix=file_prefix)
+
+    def __enter__(self):
+        """ Context manager makes sure that BigCounter gets cleaned up. """
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.nuc_seqs_context is not None:
+            self.nuc_seqs_context.__exit__(exc_type, exc_val, exc_tb)
 
     def start_group(self, seed, qcut):
         """ Start a new group of reads.
@@ -1173,47 +1179,47 @@ def aln2counts(aligned_csv,
     projects = ProjectConfig.loadDefault()
 
     # initialize reporter classes
-    insert_writer = InsertionWriter(coord_ins_csv)
-    report = SequenceReport(insert_writer,
-                            projects,
-                            CONSEQ_MIXTURE_CUTOFFS)
-    report.consensus_min_coverage = CONSENSUS_MIN_COVERAGE
-    report.write_amino_header(amino_csv)
-    report.write_consensus_header(conseq_csv)
-    report.write_consensus_regions_header(conseq_region_csv)
-    report.write_failure_header(failed_align_csv)
-    report.write_nuc_header(nuc_csv)
-    if coverage_summary_csv is None:
-        coverage_summary = coverage_writer = None
-    else:
-        coverage_writer = csv.DictWriter(coverage_summary_csv,
-                                         ['avg_coverage',
-                                          'coverage_region',
-                                          'region_width'],
-                                         lineterminator=os.linesep)
-        coverage_writer.writeheader()
-        coverage_summary = {}
-    if amino_detail_csv is not None:
-        report.write_amino_detail_header(amino_detail_csv)
+    with InsertionWriter(coord_ins_csv) as insert_writer:
+        report = SequenceReport(insert_writer,
+                                projects,
+                                CONSEQ_MIXTURE_CUTOFFS)
+        report.consensus_min_coverage = CONSENSUS_MIN_COVERAGE
+        report.write_amino_header(amino_csv)
+        report.write_consensus_header(conseq_csv)
+        report.write_consensus_regions_header(conseq_region_csv)
+        report.write_failure_header(failed_align_csv)
+        report.write_nuc_header(nuc_csv)
+        if coverage_summary_csv is None:
+            coverage_summary = coverage_writer = None
+        else:
+            coverage_writer = csv.DictWriter(coverage_summary_csv,
+                                             ['avg_coverage',
+                                              'coverage_region',
+                                              'region_width'],
+                                             lineterminator=os.linesep)
+            coverage_writer.writeheader()
+            coverage_summary = {}
+        if amino_detail_csv is not None:
+            report.write_amino_detail_header(amino_detail_csv)
 
-    if callback:
-        aligned_filename = getattr(aligned_csv, 'name', None)
-        if aligned_filename:
-            file_size = os.stat(aligned_filename).st_size
-            report.enable_callback(callback, file_size)
+        if callback:
+            aligned_filename = getattr(aligned_csv, 'name', None)
+            if aligned_filename:
+                file_size = os.stat(aligned_filename).st_size
+                report.enable_callback(callback, file_size)
 
-    if clipping_csv is not None:
-        report.read_clipping(clipping_csv)
-    if conseq_ins_csv is not None:
-        report.read_insertions(conseq_ins_csv)
-    if remap_conseq_csv is not None:
-        report.read_remap_conseqs(remap_conseq_csv)
+        if clipping_csv is not None:
+            report.read_clipping(clipping_csv)
+        if conseq_ins_csv is not None:
+            report.read_insertions(conseq_ins_csv)
+        if remap_conseq_csv is not None:
+            report.read_remap_conseqs(remap_conseq_csv)
 
-    report.process_reads(aligned_csv, coverage_summary)
+        report.process_reads(aligned_csv, coverage_summary)
 
-    if coverage_summary_csv is not None:
-        if coverage_summary:
-            coverage_writer.writerow(coverage_summary)
+        if coverage_summary_csv is not None:
+            if coverage_summary:
+                coverage_writer.writerow(coverage_summary)
 
 
 def main():

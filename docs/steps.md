@@ -76,7 +76,8 @@ description: Where the data goes
 * `cascade_report`: summarize how many reads made it through each step of the
     pipeline.
 * `resistance`: Use the Stanford HIVdb algorithm rules to call a sample's resistance
-    levels to HIV drugs, or other rules for Hepatitis C drugs.
+    levels to HIV drugs, or other rules for Hepatitis C drugs. See
+    [resistance design]
   * in - amino.csv
   * in - amino_midi.csv - amino counts from the HCV-MIDI sample (ignored if
     it's the same file as amino.csv)
@@ -90,6 +91,7 @@ description: Where the data goes
 
 [fastq_g2p_design]: http://cfe-lab.github.io/MiCall/design/fastq_g2p
 [remap design]: http://cfe-lab.github.io/MiCall/design/remap
+[resistance design]: http://cfe-lab.github.io/MiCall/design/resistance
 
 ## File descriptions ##
 * quality.csv and bad_cycles.csv
@@ -156,7 +158,9 @@ description: Where the data goes
     Adding the number of dashes in offset will align the first base in the
     consensus sequence with its corresponding base in the seed reference. The
     whole consensus sequence may not be aligned with the seed reference because
-    of insertions and deletions
+    of insertions and deletions. Mixtures above the cutoff are displayed as
+    [IUPAC nucleotide codes]. If deletions are present above the cutoff, the
+    nucleotide code is lower case.
 * nuc.csv
   * seed - seed reference the reads mapped to
   * region - coordinate reference for reporting against, usually a gene
@@ -267,3 +271,5 @@ description: Where the data goes
   * mutation - the wild-type amino, position, and resistant amino, like Q80K
   * prevalence - the fraction of coverage that contained this mutation
   * genotype - the HCV genotype
+
+[IUPAC nucleotide codes]: https://www.bioinformatics.org/sms/iupac.html

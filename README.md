@@ -1,5 +1,17 @@
 # MiCall #
 ## Processing FASTQ data from an Illumina MiSeq ##
+[![Build Status]][travis]
+[![Code Coverage]][codecov]
+[![DOI]][zenodo]
+
+
+[Build Status]: https://travis-ci.org/cfe-lab/MiCall.svg?branch=master
+[travis]: https://travis-ci.org/cfe-lab/MiCall
+[Code Coverage]: https://codecov.io/github/cfe-lab/MiCall/coverage.svg?branch=master
+[codecov]: https://codecov.io/github/cfe-lab/MiCall?branch=master
+[DOI]: https://zenodo.org/badge/DOI/10.5281/zenodo.2644171.svg
+[zenodo]: https://doi.org/10.5281/zenodo.2644171
+
 Maps all the reads from a sample against a set of reference sequences, then
 stitches all the reads into consensus sequences and coverage maps.
 

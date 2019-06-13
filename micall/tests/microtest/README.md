@@ -43,7 +43,9 @@ The scenarios that each file tests are:
   of mutations. See the `make_sample.py` script for details.
 * 2130AMIDI-MidHCV - full coverage of the MIDI portion of NS5b, with a couple
   of mutations. See the `make_sample.py` script for details.
-* 2140A-HCV - random sections of HCV-1a that work with de novo assembly.
+* 2140A-HIV - full coverage of PR, with a mutation. See the `make_sample.py`
+  script for details.
+* 2150A-HCV - random sections of HCV-1a that work with de novo assembly.
   `utils/make_sample.py` first generates 10000 random reads, then
   `utils/denovo_simplify.py` winnows that down to the smallest subset that
   still works with de novo assembly.
