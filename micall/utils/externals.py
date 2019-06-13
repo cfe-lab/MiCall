@@ -191,13 +191,21 @@ class Bowtie2Build(CommandWrapper):
         small_index_max_size = 4 * 1024**3 - 200  # From bowtie2-build wrapper
         assert os.stat(ref_path).st_size <= small_index_max_size
         self.check_logger()
-        for line in self.yield_output(['--wrapper',
-                                       'micall-0',
-                                       '--quiet',
-                                       '-f',
-                                       ref_path,
-                                       reffile_template],
-                                      stderr=subprocess.STDOUT):
+        lines = []
+        try:
+            for line in self.yield_output(['--wrapper',
+                                           'micall-0',
+                                           '--quiet',
+                                           '-f',
+                                           ref_path,
+                                           reffile_template],
+                                          stderr=subprocess.STDOUT):
+                lines.append(line.rstrip())
+        except Exception:
+            for line in lines:
+                self.logger.error(line)
+            raise
+        for line in lines:
             if line != 'Building a SMALL index\n':
                 self.logger.debug(line)
 

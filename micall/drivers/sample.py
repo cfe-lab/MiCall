@@ -5,12 +5,11 @@ import os
 from micall.core.aln2counts import aln2counts
 from micall.core.cascade_report import CascadeReport
 from micall.core.coverage_plots import coverage_plot
-from micall.core.prelim_map import prelim_map
 from micall.core.remap import remap
 from micall.core.sam2aln import sam2aln
 from micall.core.trim_fastqs import trim
-from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.core.denovo import denovo
+from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 
 logger = logging.getLogger(__name__)
 
@@ -113,10 +112,6 @@ class Sample:
                  summary_file=read_summary,
                  use_gzip=use_gzip)
 
-        logger.info('Running de novo assembly on %s.', self)
-        with open(self.contigs_csv, 'w') as contigs_csv:
-            denovo(self.trimmed1_fastq, self.trimmed2_fastq, contigs_csv)
-
         logger.info('Running fastq_g2p on %s.', self)
         with open(self.trimmed1_fastq) as fastq1, \
                 open(self.trimmed2_fastq) as fastq2, \
@@ -124,7 +119,8 @@ class Sample:
                 open(self.g2p_summary_csv, 'w') as g2p_summary_csv, \
                 open(self.g2p_unmapped1_fastq, 'w') as g2p_unmapped1, \
                 open(self.g2p_unmapped2_fastq, 'w') as g2p_unmapped2, \
-                open(self.g2p_aligned_csv, 'w') as g2p_aligned_csv:
+                open(self.g2p_aligned_csv, 'w') as g2p_aligned_csv, \
+                open(self.merged_contigs_csv, 'w') as merged_contigs_csv:
 
             fastq_g2p(pssm=pssm,
                       fastq1=fastq1,
@@ -136,38 +132,41 @@ class Sample:
                       aligned_csv=g2p_aligned_csv,
                       min_count=DEFAULT_MIN_COUNT,
                       min_valid=MIN_VALID,
-                      min_valid_percent=MIN_VALID_PERCENT)
+                      min_valid_percent=MIN_VALID_PERCENT,
+                      merged_contigs_csv=merged_contigs_csv)
 
-        logger.info('Running prelim_map on %s.', self)
-        with open(self.prelim_csv, 'w') as prelim_csv:
-            prelim_map(self.g2p_unmapped1_fastq,
-                       self.g2p_unmapped2_fastq,
-                       prelim_csv,
-                       work_path=scratch_path,
-                       excluded_seeds=excluded_seeds)
+        logger.info('Running de novo assembly on %s.', self)
+        with open(self.merged_contigs_csv) as merged_contigs_csv, \
+                open(self.contigs_csv, 'w') as contigs_csv:
+            denovo(self.trimmed1_fastq,
+                   self.trimmed2_fastq,
+                   contigs_csv,
+                   self.scratch_path,
+                   merged_contigs_csv)
 
         logger.info('Running remap on %s.', self)
         if self.debug_remap:
             debug_file_prefix = os.path.join(scratch_path, 'debug')
         else:
             debug_file_prefix = None
-        with open(self.prelim_csv) as prelim_csv, \
+        with open(self.contigs_csv) as contigs_csv, \
                 open(self.remap_csv, 'w') as remap_csv, \
                 open(self.remap_counts_csv, 'w') as counts_csv, \
                 open(self.remap_conseq_csv, 'w') as conseq_csv, \
                 open(self.unmapped1_fastq, 'w') as unmapped1, \
                 open(self.unmapped2_fastq, 'w') as unmapped2:
 
-            remap(self.g2p_unmapped1_fastq,
-                  self.g2p_unmapped2_fastq,
-                  prelim_csv,
+            remap(self.trimmed1_fastq,
+                  self.trimmed2_fastq,
+                  contigs_csv,
                   remap_csv,
                   counts_csv,
                   conseq_csv,
                   unmapped1,
                   unmapped2,
                   scratch_path,
-                  debug_file_prefix=debug_file_prefix)
+                  debug_file_prefix=debug_file_prefix,
+                  excluded_seeds=excluded_seeds)
 
         logger.info('Running sam2aln on %s.', self)
         with open(self.remap_csv) as remap_csv, \
@@ -184,12 +183,12 @@ class Sample:
 
         logger.info('Running aln2counts on %s.', self)
         with open(self.aligned_csv) as aligned_csv, \
-                open(self.g2p_aligned_csv) as g2p_aligned_csv, \
                 open(self.clipping_csv) as clipping_csv, \
                 open(self.conseq_ins_csv) as conseq_ins_csv, \
                 open(self.remap_conseq_csv) as remap_conseq_csv, \
                 open(self.nuc_csv, 'w') as nuc_csv, \
                 open(self.amino_csv, 'w') as amino_csv, \
+                open(self.amino_detail_csv, 'w') as amino_detail_csv, \
                 open(self.coord_ins_csv, 'w') as coord_ins_csv, \
                 open(self.conseq_csv, 'w') as conseq_csv, \
                 open(self.conseq_region_csv, 'w') as conseq_region_csv, \
@@ -205,9 +204,9 @@ class Sample:
                        coverage_summary_csv=coverage_summary_csv,
                        clipping_csv=clipping_csv,
                        conseq_ins_csv=conseq_ins_csv,
-                       g2p_aligned_csv=g2p_aligned_csv,
                        remap_conseq_csv=remap_conseq_csv,
-                       conseq_region_csv=conseq_region_csv)
+                       conseq_region_csv=conseq_region_csv,
+                       amino_detail_csv=amino_detail_csv)
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)
@@ -220,12 +219,10 @@ class Sample:
                           excluded_projects=excluded_projects)
 
         logger.info('Running cascade_report on %s.', self)
-        with open(self.g2p_summary_csv) as g2p_summary_csv, \
-                open(self.remap_counts_csv) as remap_counts_csv, \
+        with open(self.remap_counts_csv) as remap_counts_csv, \
                 open(self.aligned_csv) as aligned_csv, \
                 open(self.cascade_csv, 'w') as cascade_csv:
             cascade_report = CascadeReport(cascade_csv)
-            cascade_report.g2p_summary_csv = g2p_summary_csv
             cascade_report.remap_counts_csv = remap_counts_csv
             cascade_report.aligned_csv = aligned_csv
             cascade_report.generate()

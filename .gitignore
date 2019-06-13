@@ -26,6 +26,7 @@
 /micall-*.simg
 /sandbox
 /timing.*
+/micall/blast_db/refs.fasta*
 /micall/utils/hcv_reference_tree
 .DS_Store
 */.DS_Store

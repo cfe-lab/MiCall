@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.4
+#!/usr/bin/env python3.6
 
 from argparse import ArgumentParser, FileType
 from csv import DictWriter, DictReader

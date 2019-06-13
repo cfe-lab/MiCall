@@ -173,6 +173,11 @@ def parse_args():
                         '-d',
                         action='store_true',
                         help="Write debug files for remapping steps.")
+    parser.add_argument('--max_active',
+                        '-m',
+                        type=int,
+                        help="Maximum number of samples to process at once, "
+                             "if not the number of CPU's.")
     return parser.parse_args()
 
 
@@ -355,7 +360,7 @@ def link_samples(run_path, data_path):
 
     sample_count = sum(1 for _ in run_info.get_all_samples())
     for i, sample in enumerate(run_info.get_all_samples(), 1):
-        sample.rank = '({} of {})'.format(i, sample_count)
+        sample.rank = '{} of {}'.format(i, sample_count)
         sample.bad_cycles_csv = run_info.bad_cycles_csv
         sample.scratch_path = os.path.join(scratch_path, sample.name)
 
@@ -601,7 +606,7 @@ def main():
         logger.info('Summarizing run.')
         run_summary = summarize_run(run_info)
 
-    pool = Pool()
+    pool = Pool(processes=args.max_active)
     pool.map(functools.partial(process_sample,
                                args=args,
                                pssm=pssm),

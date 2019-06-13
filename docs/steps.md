@@ -151,13 +151,8 @@ description: Where the data goes
   * consensus-percent-cutoff - to be included in a mixture, a variant must make
     up at least this fraction of the total valid counts
   * offset - using the seed reference's coordinate system, this is the 1-based
-    index of the first character in sequence that is not a dash. For example, if
-    the seed was `ACTAGTCC` and the consensus sequence is `-AGTC`, then the
-    offset would be 4.
-    ** change to ** the number of dashes that are not shown at the start of the
-    sequence
+    index of the first character in the consensus sequence.
   * sequence - the consensus sequence, aligned to the codon reading frame.
-    ** once offset is changed, add the following **
     Adding the number of dashes in offset will align the first base in the
     consensus sequence with its corresponding base in the seed reference. The
     whole consensus sequence may not be aligned with the seed reference because

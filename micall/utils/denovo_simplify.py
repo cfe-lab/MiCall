@@ -2,10 +2,11 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from collections import defaultdict
 import logging
 import os
+from csv import DictReader
 
 from micall.core.trim_fastqs import trim
 from micall.utils.dd import DD
-from micall.utils.denovo import main as denovo_main
+from micall.core.denovo import denovo
 
 logger = logging.getLogger(__name__)
 
@@ -24,23 +25,35 @@ def parse_args():
                         help='FASTQ read 1 simplified file to write')
     parser.add_argument('simple2',
                         help='FASTQ read 2 simplified file to write')
+    parser.add_argument('--test',
+                        help='name of the test to run',
+                        choices=MicallDD.test_names,
+                        default=MicallDD.test_names[0])
 
     return parser.parse_args()
 
 
 class MicallDD(DD):
+    test_names = ('one_contig', 'multiple_genotypes', 'type_error')
+
     def __init__(self,
                  filename1,
                  filename2,
                  bad_cycles_filename,
                  simple1,
-                 simple2):
+                 simple2,
+                 test_name):
         super(MicallDD, self).__init__()
         self.filename1 = filename1
         self.filename2 = filename2
         self.bad_cycles_filename = bad_cycles_filename
         self.simple1 = simple1
         self.simple2 = simple2
+        base, ext = os.path.splitext(simple1)
+        self.best1 = base + '_best' + ext
+        base, ext = os.path.splitext(simple2)
+        self.best2 = base + '_best' + ext
+        self.get_result = getattr(self, 'check_' + test_name)
         reads = defaultdict(list)
         read_fastq(self.filename1, reads)
         read_count = len(reads)
@@ -51,7 +64,7 @@ class MicallDD(DD):
         self.reads = list(reads.values())
 
     def _test(self, read_indexes):
-        read_indexes = reversed(read_indexes)
+        read_count = len(read_indexes)
         self.write_simple_fastq(self.simple1, self.simple2, read_indexes)
         workdir = os.path.dirname(self.simple1)
         os.chdir(workdir)
@@ -63,24 +76,50 @@ class MicallDD(DD):
                  self.bad_cycles_filename,
                  (trimmed_filename1, trimmed_filename2),
                  use_gzip=False)
+            exception = None
             # noinspection PyBroadException
             try:
-                denovo_main(trimmed_filename1, trimmed_filename2, contigs_csv)
-            except Exception:
+                denovo(trimmed_filename1, trimmed_filename2, contigs_csv, workdir)
+            except Exception as ex:
                 logger.warning('Assembly failed.', exc_info=True)
-                return DD.UNRESOLVED
+                exception = ex
             contigs_csv.seek(0)
-            contig_count = len(contigs_csv.readlines())
 
-        return self.get_result(contig_count, expected_count=0)
+            result = self.get_result(contigs_csv, read_count, exception)
+            if result == DD.FAIL:
+                os.rename(self.simple1, self.best1)
+                os.rename(self.simple2, self.best2)
+            return result
 
     @staticmethod
-    def get_result(contig_count, expected_count):
-        diff = expected_count - contig_count
-        print('Result: {} contigs, expected {} ({}).'.format(contig_count,
-                                                             expected_count,
-                                                             diff))
-        return DD.FAIL if diff else DD.PASS
+    def check_one_contig(contigs_csv, read_count, exception):
+        if exception is not None:
+            return DD.UNRESOLVED
+        contig_count = len(contigs_csv.readlines())
+        logger.debug('Result: %d contigs from %d reads.',
+                     contig_count,
+                     read_count)
+        return DD.FAIL if contig_count == 1 else DD.PASS
+
+    @staticmethod
+    def check_multiple_genotypes(contigs_csv, read_count, exception):
+        if exception is not None:
+            return DD.UNRESOLVED
+        reader = DictReader(contigs_csv)
+        genotypes = sorted({row['genotype'] for row in reader})
+        genotype_count = len(genotypes)
+        logger.debug('Result: %d genotypes from %d reads: %s.',
+                     genotype_count,
+                     read_count,
+                     genotypes)
+        return DD.FAIL if genotype_count > 2 else DD.PASS
+
+    @staticmethod
+    def check_type_error(_contigs_csv, read_count, exception):
+        logger.debug('Result: %s exception from %d reads.',
+                     exception,
+                     read_count)
+        return DD.FAIL if isinstance(exception, TypeError) else DD.PASS
 
     def write_simple_fastq(self, filename1, filename2, read_indexes):
         selected_reads = (self.reads[i] for i in read_indexes)
@@ -122,6 +161,9 @@ def read_fastq(filename, reads):
 
 
 def main():
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s[%(levelname)s]%(module)s:%(lineno)d - %(message)s')
     args = parse_args()
     try:
         logger.info('Starting.')
@@ -129,7 +171,8 @@ def main():
                       args.fastq2,
                       args.bad_cycles_csv,
                       args.simple1,
-                      args.simple2)
+                      args.simple2,
+                      args.test)
         read_indexes = list(range(len(dd.reads)))
         min_indexes = dd.ddmin(read_indexes)
         dd._test(min_indexes)

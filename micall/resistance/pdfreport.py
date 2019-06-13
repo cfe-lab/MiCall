@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.4
+#!/usr/bin/env python3.6
 
 # The module that generates a report in PDF format
 import pytz

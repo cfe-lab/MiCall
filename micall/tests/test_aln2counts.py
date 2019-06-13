@@ -3,8 +3,8 @@ from io import StringIO
 import sys
 import unittest
 
-from micall.core.aln2counts import SequenceReport, SeedNucleotide,\
-    InsertionWriter, MAX_CUTOFF, SeedAmino, ReportAmino
+from micall.core.aln2counts import SequenceReport, InsertionWriter, SeedAmino, \
+    ReportAmino
 from micall.core import project_config
 
 
@@ -232,6 +232,7 @@ class SequenceReportTest(unittest.TestCase):
                                             projects,
                                             conseq_mixture_cutoffs)
         self.report_file = StringIO()
+        self.detail_report_file = StringIO()
 
     @staticmethod
     def prepareReads(aligned_reads_text):
@@ -429,6 +430,63 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testMultiplePrefixAminoReport(self):
+        """ Assemble counts from three contigs to two references.
+
+        Contig 1-R1 AAATTT -> KF
+        Contig 2-R2 GGCCCG -> GP
+        Contig 3-R1 TTTAGG -> FR
+
+        Contig 1 and 3 should combine into R1 with KFR.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
+        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
+        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
+R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
+R1-seed,R1,15,,2,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2
+R2-seed,R2,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,,3,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
+R2-seed,R2,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
+R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+"""
+
+        expected_detail_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
+1-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
+1-R1-seed,R1,15,4,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
+1-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2-R2-seed,R2,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2-R2-seed,R2,15,,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2-R2-seed,R2,15,1,3,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
+2-R2-seed,R2,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
+2-R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3-R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3-R1-seed,R1,15,1,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2
+3-R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2
+"""
+
+        self.report.write_amino_header(self.report_file)
+        self.report.write_amino_detail_header(self.detail_report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_amino_detail_counts()
+        self.report.read(aligned_reads2)
+        self.report.write_amino_detail_counts()
+        self.report.read(aligned_reads3)
+        self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_detail_text,
+                                  self.detail_report_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testSingleReadNucleotideReport(self):
         """ In this sample, there is a single read with two codons.
         AAA -> K
@@ -457,333 +515,6 @@ R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0,0
         self.report.write_nuc_header(self.report_file)
         self.report.read(aligned_reads)
         self.report.write_nuc_counts()
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testSecondSourceAminoReport(self):
-        """ In this sample, there are two sequences, each with two codons.
-        AAA -> K
-        TTT -> F
-        The coordinate references have three codons and five codons, so the
-        later positions are empty.
-        """
-        g2p_aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R1-seed,15,0,9,0,AAATTT
-""")
-        aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R2-seed,15,0,8,0,AAATTT
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
-R2-seed,R2,15,4,2,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8
-R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.write_amino_header(self.report_file)
-        self.report.process_reads(g2p_aligned_csv, aligned_csv)
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testAminoReportWithG2pOverlap(self):
-        """ If the same region appears in both sources, the second is overlap.
-        """
-        g2p_aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R6a-seed,15,0,9,0,AAATTT
-""")
-        aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R6b-seed,15,0,8,3,AAATTT
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-R6a-seed,R6,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-R6a-seed,R6,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-R6a-seed,R6,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.write_amino_header(self.report_file)
-        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R6')
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testAminoReportWithoutG2pOverlap(self):
-        """ Bowtie2 aligned reads don't overlap the coordinate reference at all.
-        """
-        g2p_aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R6a-seed,15,0,9,0,AAATTT
-""")
-        aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R6b-seed,15,0,8,15,GGGGGGGGG
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-R6a-seed,R6,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R6a-seed,R6,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R6a-seed,R6,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.write_amino_header(self.report_file)
-        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R6')
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testAminoReportWithIndirectG2pOverlap(self):
-        """ Bowtie2 aligned reads map to a different part of the coordinate ref.
-        """
-        g2p_aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R6a-seed,15,0,9,0,AAATTT
-""")
-        aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R6b-seed,15,0,8,9,AGG
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-R6a-seed,R6,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R6a-seed,R6,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R6a-seed,R6,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0
-"""
-
-        self.report.write_amino_header(self.report_file)
-        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R6')
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testInsertionReportWithG2pOverlap(self):
-        """ If the same region appears in both sources, the second is overlap.
-        """
-        g2p_aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R7-seed,15,0,9,0,AAATTTCAGACCCCACGAGAGCAT
-""")
-        aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R7-seed,15,0,8,6,AAATTTCAGACCCCACGAGAGCAT
-""")
-
-        expected_text = """\
-seed,region,qcut,left,insert,count,before
-"""
-
-        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R7a')
-
-        self.assertMultiLineEqual(expected_text, self.insertion_file.getvalue())
-
-    def testAminoReportWithDifferingConsensus(self):
-        """ Some reads that didn't map in G2P, mapped to same seed with bowtie2.
-        """
-        self.report.projects.load(StringIO("""\
-{
-  "projects": {
-    "HIV": {
-      "max_variants": 0,
-      "regions": [
-        {
-          "coordinate_region": "R1",
-          "seed_region_names": ["HIV1-CON-XX-Consensus-seed"]
-        }
-      ]
-    }
-  },
-  "regions": {
-    "HIV1-CON-XX-Consensus-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "GAAATTTGGCCCGAGA"
-      ]
-    },
-    "R1": {
-      "is_nucleotide": false,
-      "reference": [
-        "KFGPR"
-      ]
-    }
-  }
-}
-"""))
-        self.report.remap_conseqs = {'HIV1-CON-XX-Consensus-seed': "GAAATTTCAAGGCCCGAGA"}
-        # Insert a Q in the middle                                      Q^^
-        g2p_aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,9,1,AAATTTGGC
-""")
-        aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,6,1,AAATTTCAAGGCCCG
-HIV1-CON-XX-Consensus-seed,15,0,2,1,AA---TCAAGGCCCG
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-HIV1-CON-XX-Consensus-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-HIV1-CON-XX-Consensus-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,9
-HIV1-CON-XX-Consensus-seed,R1,15,8,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-HIV1-CON-XX-Consensus-seed,R1,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0
-HIV1-CON-XX-Consensus-seed,R1,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.write_amino_header(self.report_file)
-        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R1')
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testAminoReportOverlapWithDifferentSeed(self):
-        """ Some reads that didn't map in G2P, mapped to different seed with bowtie2.
-        """
-        self.report.projects.load(StringIO("""\
-{
-  "projects": {
-    "HIV": {
-      "max_variants": 0,
-      "regions": [
-        {
-          "coordinate_region": "R1",
-          "seed_region_names": ["HIV1-CON-XX-Consensus-seed", "R1-seed"]
-        }
-      ]
-    }
-  },
-  "regions": {
-    "HIV1-CON-XX-Consensus-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "GAAATTTGGCCCGAGA"
-      ]
-    },
-    "R1-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "AAATTTGGCCCGAGA"
-      ]
-    },
-    "R1": {
-      "is_nucleotide": false,
-      "reference": [
-        "KFGPR"
-      ]
-    }
-  }
-}
-"""))
-        self.report.remap_conseqs = {'R1-seed': "AAATTTGGCCCGAGA"}
-        g2p_aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,9,0,GAAATTTGGC
-""")
-        aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R1-seed,15,0,8,0,AAATTTGGCCCG
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-HIV1-CON-XX-Consensus-seed,R1,15,2,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-HIV1-CON-XX-Consensus-seed,R1,15,5,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-HIV1-CON-XX-Consensus-seed,R1,15,8,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,9
-HIV1-CON-XX-Consensus-seed,R1,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0
-HIV1-CON-XX-Consensus-seed,R1,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.write_amino_header(self.report_file)
-        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R1')
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testSecondSourceNucleotideReport(self):
-        """ In this sample, there are two sequences, each with two codons.
-
-        The coordinate references have three codons and five codons, so the
-        later positions are empty.
-        """
-        g2p_aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R1-seed,15,0,9,0,AAATTT
-""")
-        aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R2-seed,15,0,8,0,AAATTT
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R2-seed,R2,15,1,1,8,0,0,0,0,0,0,0,0,8
-R2-seed,R2,15,2,2,8,0,0,0,0,0,0,0,0,8
-R2-seed,R2,15,3,3,8,0,0,0,0,0,0,0,0,8
-R2-seed,R2,15,4,4,0,0,0,8,0,0,0,0,0,8
-R2-seed,R2,15,5,5,0,0,0,8,0,0,0,0,0,8
-R2-seed,R2,15,6,6,0,0,0,8,0,0,0,0,0,8
-R2-seed,R2,15,,7,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,8,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,9,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,10,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,11,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,12,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,13,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,14,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,15,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,4,4,0,0,0,9,0,0,0,0,0,9
-R1-seed,R1,15,5,5,0,0,0,9,0,0,0,0,0,9
-R1-seed,R1,15,6,6,0,0,0,9,0,0,0,0,0,9
-R1-seed,R1,15,,7,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,,8,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.write_nuc_header(self.report_file)
-        self.report.process_reads(g2p_aligned_csv, aligned_csv)
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testNucleotideReportWithG2pOverlap(self):
-        g2p_aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R1-seed,15,0,9,0,AAATTT
-""")
-        aligned_csv = StringIO("""\
-refname,qcut,rank,count,offset,seq
-R1-seed,15,0,8,0,AAATTT
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0,8,9
-R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0,8,9
-R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,8,9
-R1-seed,R1,15,4,4,0,0,0,9,0,0,0,0,8,9
-R1-seed,R1,15,5,5,0,0,0,9,0,0,0,0,8,9
-R1-seed,R1,15,6,6,0,0,0,9,0,0,0,0,8,9
-R1-seed,R1,15,,7,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,,8,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.write_nuc_header(self.report_file)
-        self.report.process_reads(g2p_aligned_csv, aligned_csv, g2p_region_name='R1')
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -848,6 +579,56 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
         self.report.read(aligned_reads)
         self.report.write_nuc_header(StringIO())
         self.report.write_nuc_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testMultiplePrefixSoftClippingAminoReport(self):
+        """ Combine the soft clipping data with the read counts.
+        """
+        """ Assemble counts from three contigs to two references.
+        Contig 1-R1 AAATTT -> KF
+        Contig 2-R2 GGCCCG -> GP
+        Contig 3-R1 TTTAGG -> FR
+        Contig 1 and 3 should combine into R1 with KFR.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
+        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
+        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
+
+        clipping = StringIO("""\
+refname,pos,count
+1-R1-seed,7,5
+3-R1-seed,-1,2
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
+R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,5
+R1-seed,R1,15,,2,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,5,0,2
+R2-seed,R2,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+R2-seed,R2,15,,3,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
+R2-seed,R2,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
+R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.read_clipping(clipping)
+        self.report.write_amino_header(self.report_file)
+        self.report.write_amino_detail_header(self.detail_report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.read(aligned_reads1)
+        self.report.write_nuc_counts()
+        self.report.write_amino_detail_counts()
+        self.report.read(aligned_reads2)
+        self.report.write_nuc_counts()
+        self.report.write_amino_detail_counts()
+        self.report.read(aligned_reads3)
+        self.report.write_nuc_counts()
+        self.report.write_amino_detail_counts()
         self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
@@ -1046,6 +827,32 @@ R1-seed,R1,15,6,6,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1,15,,7,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1,15,,8,0,0,0,0,0,0,0,0,0,0
 R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_nuc_header(self.report_file)
+        self.report.write_nuc_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testPartialStartCodonNucleotideReport(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+R1-seed,15,0,9,0,TTAGG
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,\
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,2,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,0,4,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1,15,1,5,0,0,0,9,0,0,0,0,0,9
+R1-seed,R1,15,2,6,0,0,0,9,0,0,0,0,0,9
+R1-seed,R1,15,3,7,9,0,0,0,0,0,0,0,0,9
+R1-seed,R1,15,4,8,0,0,9,0,0,0,0,0,0,9
+R1-seed,R1,15,5,9,0,0,9,0,0,0,0,0,0,9
 """
 
         self.report.read(aligned_reads)
@@ -2376,347 +2183,3 @@ R1-seed,R1,15,7,DE,1,
         self.writer.write(inserts=(9, 6), region='R1')
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
-
-
-class SeedAminoTest(unittest.TestCase):
-    def setUp(self):
-        self.amino = SeedAmino(None)
-
-    def testSingleRead(self):
-        """ Read a single codon, and report on counts.
-        Columns are:       A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
-        """
-        nuc_seq = 'AAA'  # -> K
-        expected_counts = '0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0'
-
-        self.amino.count_aminos(nuc_seq, 8)
-        counts = self.amino.get_report()
-
-        self.assertSequenceEqual(expected_counts, counts)
-
-    def testDifferentCodon(self):
-        """ Read two different codons, and report on counts.
-        Columns are:       A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
-        """
-        nuc_seq1 = 'AAA'  # -> K
-        nuc_seq2 = 'GGG'  # -> G
-        expected_counts = '0,0,0,0,0,5,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0'
-
-        self.amino.count_aminos(nuc_seq1, 8)
-        self.amino.count_aminos(nuc_seq2, 5)
-        counts = self.amino.get_report()
-
-        self.assertSequenceEqual(expected_counts, counts)
-
-    def testSameAminoAcid(self):
-        """ Read same codon twice, and report on counts.
-        Columns are:       A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
-        """
-        nuc_seq1 = 'AAA'  # -> K
-        nuc_seq2 = 'AAG'  # -> K
-        expected_counts = '0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0'
-
-        self.amino.count_aminos(nuc_seq1, 4)
-        self.amino.count_aminos(nuc_seq2, 5)
-        counts = self.amino.get_report()
-
-        self.assertSequenceEqual(expected_counts, counts)
-
-    def testNucleotides(self):
-        nuc_seq1 = 'AAA'  # -> K
-        nuc_seq2 = 'AAG'  # -> K
-        expected_nuc_counts = '4,0,5,0'
-
-        self.amino.count_aminos(nuc_seq1, 4)
-        self.amino.count_aminos(nuc_seq2, 5)
-        counts = self.amino.nucleotides[2].get_report()
-
-        self.assertSequenceEqual(expected_nuc_counts, counts)
-
-    def testConsensus(self):
-        nuc_seq1 = 'AAA'  # -> K
-        nuc_seq2 = 'GGG'  # -> G
-        expected_consensus = 'G'
-
-        self.amino.count_aminos(nuc_seq1, 4)
-        self.amino.count_aminos(nuc_seq2, 5)
-        consensus = self.amino.get_consensus()
-
-        self.assertSequenceEqual(expected_consensus, consensus)
-
-    def testConsensusMixture(self):
-        nuc_seq1 = 'AAA'  # -> K
-        nuc_seq2 = 'GGG'  # -> G
-        nuc_seq3 = 'TTT'  # -> F
-        allowed_consensus_values = ('G', 'K')
-
-        self.amino.count_aminos(nuc_seq1, 4)
-        self.amino.count_aminos(nuc_seq2, 4)
-        self.amino.count_aminos(nuc_seq3, 3)
-        consensus = self.amino.get_consensus()
-
-        self.assertIn(consensus, allowed_consensus_values)
-
-    def testConsensusWithNoReads(self):
-        consensus = self.amino.get_consensus()
-
-        self.assertEqual(consensus, '-')
-
-    def testMissingData(self):
-        """ Lower-case n represents a gap between the forward and reverse reads. """
-
-        nuc_seq = 'CTn'
-        expected_consensus = '-'
-
-        self.amino.count_aminos(nuc_seq, 1)
-        consensus = self.amino.get_consensus()
-
-        self.assertEqual(expected_consensus, consensus)
-
-    def testAmbiguousData(self):
-        """If a read is ambiguous, don't count it toward consensus."""
-
-        nuc_seq1 = 'Cnn'  # -> ?
-        nuc_seq2 = 'AAA'  # -> K
-        expected_consensus = 'K'
-
-        self.amino.count_aminos(nuc_seq1, 9)
-        self.amino.count_aminos(nuc_seq2, 1)
-        consensus = self.amino.get_consensus()
-
-        self.assertEqual(expected_consensus, consensus)
-
-    def testOverlap(self):
-        self.amino.count_aminos('GGG', 4)
-        other = SeedAmino(consensus_nuc_index=7)
-        other.count_aminos('TAG', 5)
-        expected_counts = {'G': 4}
-        expected_v3_overlap = 5
-
-        self.amino.count_overlap(other)
-
-        self.assertEqual(expected_counts, self.amino.counts)
-        self.assertEqual(expected_v3_overlap, self.amino.v3_overlap)
-        self.assertEqual(expected_v3_overlap,
-                         self.amino.nucleotides[0].v3_overlap)
-
-    def testOverlapPartialCodon(self):
-        self.amino.count_aminos('GGG', 4)
-        other = SeedAmino(consensus_nuc_index=7)
-        other.count_aminos('TA', 5)
-        expected_counts = {'G': 4}
-        expected_v3_overlap = 5
-
-        self.amino.count_overlap(other)
-
-        self.assertEqual(expected_counts, self.amino.counts)
-        self.assertEqual(expected_v3_overlap, self.amino.v3_overlap)
-        self.assertEqual(expected_v3_overlap,
-                         self.amino.nucleotides[0].v3_overlap)
-
-
-class SeedNucleotideTest(unittest.TestCase):
-    def setUp(self):
-        self.nuc = SeedNucleotide()
-
-    def testSingleRead(self):
-        """ Read a single nucleotide, and report on counts.
-        Columns are:       A,C,G,T
-        """
-        nuc_seq = 'C'
-        expected_counts = '0,8,0,0'
-
-        self.nuc.count_nucleotides(nuc_seq, 8)
-        counts = self.nuc.get_report()
-
-        self.assertSequenceEqual(expected_counts, counts)
-
-    def testConsensusNoMixes(self):
-        self.nuc.count_nucleotides('C', 1)
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus = 'C'
-        self.assertEqual(expected_consensus, consensus_max)
-        self.assertEqual(expected_consensus, consensus_mix)
-
-    def testConsensusMixed(self):
-        self.nuc.count_nucleotides('C', 2)
-        self.nuc.count_nucleotides('T', 1)
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus_max = 'C'
-        expected_consensus_mix = 'Y'
-        self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix, consensus_mix)
-
-    def testConsensusMixedThree(self):
-        self.nuc.count_nucleotides('C', 2)
-        self.nuc.count_nucleotides('T', 1)
-        self.nuc.count_nucleotides('G', 1)
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus_max = 'C'
-        expected_consensus_mix = 'B'  # B is a mix of T, G, and C
-        self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix, consensus_mix)
-
-    def testConsensusMixedAll(self):
-        self.nuc.count_nucleotides('C', 2)
-        self.nuc.count_nucleotides('T', 1)
-        self.nuc.count_nucleotides('G', 1)
-        self.nuc.count_nucleotides('A', 1)
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus_max = 'C'
-        expected_consensus_mix = 'N'  # All four are reported as N
-        self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix, consensus_mix)
-
-    def testConsensusMixedMax(self):
-        self.nuc.count_nucleotides('C', 2)
-        self.nuc.count_nucleotides('T', 2)
-        self.nuc.count_nucleotides('G', 1)
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus_max = 'Y'  # C and T tie for max, mix is Y
-        expected_consensus_mix = 'B'  # C, T, and G mix is B
-        self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix, consensus_mix)
-
-    def testConsensusCutoff(self):
-        self.nuc.count_nucleotides('C', 2)
-        self.nuc.count_nucleotides('T', 1)
-        consensus_mix = self.nuc.get_consensus(0.5)
-
-        expected_consensus = 'C'  # T was below the cutoff
-        self.assertEqual(expected_consensus, consensus_mix)
-
-    def testConsensusCutoffAtBoundary(self):
-        self.nuc.count_nucleotides('C', 9000)
-        self.nuc.count_nucleotides('T', 1000)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus = 'Y'  # T was at the cutoff
-        self.assertEqual(expected_consensus, consensus_mix)
-
-    def testConsensusCutoffBelowBoundary(self):
-        self.nuc.count_nucleotides('C', 9001)
-        self.nuc.count_nucleotides('T', 999)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus = 'C'  # T was below the cutoff
-        self.assertEqual(expected_consensus, consensus_mix)
-
-    def testConsensusMixedWithPoorQuality(self):
-        self.nuc.count_nucleotides('N', 99)
-        self.nuc.count_nucleotides('T', 1)
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix_one_pct = self.nuc.get_consensus(0.01)
-        consensus_mix_ten_pct = self.nuc.get_consensus(0.10)
-
-        expected_consensus_max = 'T'  # N always overruled
-        expected_consensus_mix_one_pct = 'T'
-        expected_consensus_mix_ten_pct = 'T'
-        self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix_one_pct, consensus_mix_one_pct)
-        self.assertEqual(expected_consensus_mix_ten_pct, consensus_mix_ten_pct)
-
-    def testConsensusMixedWithGap(self):
-        self.nuc.count_nucleotides('-', 99)
-        self.nuc.count_nucleotides('T', 1)
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix_one_pct = self.nuc.get_consensus(0.01)
-        consensus_mix_ten_pct = self.nuc.get_consensus(0.10)
-
-        expected_consensus_max = '-'  # most common
-        expected_consensus_mix_one_pct = 't'  # mix of both
-        expected_consensus_mix_ten_pct = '-'  # only deletions
-        self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix_one_pct, consensus_mix_one_pct)
-        self.assertEqual(expected_consensus_mix_ten_pct, consensus_mix_ten_pct)
-
-    def testConsensusMixedWithGapAndPoorQuality(self):
-        self.nuc.count_nucleotides('N', 3)
-        self.nuc.count_nucleotides('-', 2)
-        self.nuc.count_nucleotides('T', 1)
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus_max = '-'
-        expected_consensus_mix = 't'
-        self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix, consensus_mix)
-
-    def testConsensusPoorQualityOnly(self):
-        self.nuc.count_nucleotides('N', 1)
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus_max = 'N'
-        expected_consensus_mix = 'N'
-        self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix, consensus_mix)
-
-    def testConsensusMixedGapAndPoorQualityOnly(self):
-        self.nuc.count_nucleotides('N', 3)
-        self.nuc.count_nucleotides('-', 2)
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus_max = '-'
-        expected_consensus_mix = '-'
-        self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix, consensus_mix)
-
-    def testConsensusAllBelowCutoff(self):
-        self.nuc.count_nucleotides('C', 101)
-        self.nuc.count_nucleotides('T', 100)
-        self.nuc.count_nucleotides('G', 99)
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.5)
-
-        expected_consensus_max = 'C'
-        expected_consensus_mix = 'N'
-        self.assertEqual(expected_consensus_max, consensus_max)
-        self.assertEqual(expected_consensus_mix, consensus_mix)
-
-    def testConsensusBetweenReads(self):
-        """Lower-case n represents the gap between forward and reverse reads.
-
-        Should not be counted in consensus totals"""
-        self.nuc.count_nucleotides('C', 9)
-        self.nuc.count_nucleotides('T', 1)
-        self.nuc.count_nucleotides('n', 2)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus = 'Y'
-        self.assertEqual(expected_consensus, consensus_mix)
-
-    def testConsensusMissingPositions(self):
-        """ Positions that are never read are ignored in the consensus. """
-
-        # No counts added
-
-        consensus_max = self.nuc.get_consensus(MAX_CUTOFF)
-        consensus_mix = self.nuc.get_consensus(0.1)
-
-        expected_consensus = ''
-        self.assertEqual(expected_consensus, consensus_max)
-        self.assertEqual(expected_consensus, consensus_mix)
-
-    def testOverlap(self):
-        self.nuc.count_nucleotides('T', 4)
-        other = SeedNucleotide()
-        other.count_nucleotides('C', 5)
-        expected_counts = {'T': 4}
-        expected_v3_overlap = 5
-
-        self.nuc.count_overlap(other)
-
-        self.assertEqual(expected_counts, self.nuc.counts)
-        self.assertEqual(expected_v3_overlap, self.nuc.v3_overlap)
