@@ -309,6 +309,40 @@ HCV-1b,HCV1B-Con1-NS5b,15,7,561,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     check_combination(amino_csv, midi_amino_csv, expected_csv, expected_failures)
 
 
+def test_combine_aminos_ns5b_multiple_subtypes():
+    """ Main sample's subtype overrides MIDI subtype when they disagree. """
+    amino_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+HCV-4c,HCV4-ED43-NS5b,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-4c,HCV4-ED43-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-4c,HCV4-ED43-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+""")
+    amino_csv.name = 'main_amino.csv'
+    midi_amino_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+HCV-4m,HCV4-ED43-NS5b,15,1,558,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4m,HCV4-ED43-NS5b,15,1,559,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4m,HCV4-ED43-NS5b,15,4,560,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4m,HCV4-ED43-NS5b,15,7,561,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+""")
+    midi_amino_csv.name = 'midi_amino.csv'
+    expected_csv = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
+HCV-4c,HCV4-ED43-NS5b,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-4c,HCV4-ED43-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-4c,HCV4-ED43-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-4c,HCV4-ED43-NS5b,15,1,558,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4c,HCV4-ED43-NS5b,15,1,559,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4c,HCV4-ED43-NS5b,15,4,560,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4c,HCV4-ED43-NS5b,15,7,561,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+"""
+
+    check_combination(amino_csv, midi_amino_csv, expected_csv)
+
+
 def test_combine_aminos_low_coverage_in_midi():
     amino_csv = StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
