@@ -143,9 +143,9 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
             except LowCoverageError as ex:
                 failures[(seed, region, is_midi)] = ex.args[0]
                 continue
-            midi_rows[seed] = [row
-                               for row in rows
-                               if 226 < int(row['refseq.aa.pos'])]
+            midi_rows[get_genotype(seed)] = [row
+                                             for row in rows
+                                             if 226 < int(row['refseq.aa.pos'])]
     is_midi = False
     for (seed, region), rows in groupby(DictReader(amino_csv),
                                         itemgetter('seed', 'region')):
@@ -157,7 +157,8 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
             main_rows = []
             low_coverage_message = ex.args[0]
         if region.endswith('-NS5b'):
-            region_midi_rows = midi_rows.pop(seed, None)
+            genotype = get_genotype(seed)
+            region_midi_rows = midi_rows.pop(genotype, None)
             if region_midi_rows is None:
                 region_midi_rows = all_rows
                 if is_midi_separate:
@@ -171,14 +172,15 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
                     low_coverage_message = None
                 except LowCoverageError:
                     region_midi_rows = []
-            main_rows = combine_midi_rows(main_rows, region_midi_rows)
+            main_rows = combine_midi_rows(main_rows, region_midi_rows, seed)
         if low_coverage_message:
             failures[(seed, region, is_midi)] = low_coverage_message
         yield from main_rows
 
     # Check for MIDI regions that had no match.
-    for seed, rows in sorted(midi_rows.items()):
+    for genotype, rows in sorted(midi_rows.items()):
         region = rows[0]['region']
+        seed = rows[0]['seed']
         failures.setdefault((seed, region, False), NOTHING_MAPPED_MESSAGE)
         yield from rows
 
@@ -193,7 +195,7 @@ def write_failure(fail_writer, seed, region, reason):
                               reason=reason))
 
 
-def combine_midi_rows(main_rows, midi_rows):
+def combine_midi_rows(main_rows, midi_rows, seed):
     main_row_map = {int(row['refseq.aa.pos']): row
                     for row in main_rows}
     midi_row_map = {int(row['refseq.aa.pos']): row
@@ -208,6 +210,7 @@ def combine_midi_rows(main_rows, midi_rows):
             if pos <= 336:
                 yield main_row
         elif main_row is None:
+            midi_row['seed'] = seed  # Override MIDI seed with main seed.
             yield midi_row
         elif (pos <= 336 and
               int(main_row['coverage']) > int(midi_row['coverage'])):
