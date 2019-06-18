@@ -520,7 +520,13 @@ def load_asi():
                  for rule in hcv_rules
                  for genotype in rule['genotypes']}
     for genotype in genotypes:
-        asi = AsiAlgorithm(rules_yaml=hcv_rules, genotype=genotype)
+        if len(genotype) > 1 and genotype[0] in genotypes:
+            backup_genotype = genotype[0]
+        else:
+            backup_genotype = None
+        asi = AsiAlgorithm(rules_yaml=hcv_rules,
+                           genotype=genotype,
+                           backup_genotype=backup_genotype)
         algorithms[genotype] = asi
 
     return algorithms

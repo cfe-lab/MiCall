@@ -999,6 +999,14 @@ R1-seed,R1,15,7,3,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
     assert expected_aminos == aminos
 
 
+def test_genotype_6e_regions(asi_algorithms):
+    """ Should have rules for NS3, NS5a, and NS5b. """
+    asi_6e = asi_algorithms['6E']
+    expected_regions = {'HCV6-EUHK2-NS3', 'HCV6-EUHK2-NS5a', 'HCV6-EUHK2-NS5b'}
+
+    assert expected_regions == set(asi_6e.gene_def.keys())
+
+
 def test_read_aminos_pos_55_resistant(asi_algorithms):
     amino_lines = [
         'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'

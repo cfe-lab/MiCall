@@ -78,7 +78,8 @@ class AsiAlgorithm:
                  file=None,
                  rules_yaml=None,
                  genotype=None,
-                 references=None):
+                 references=None,
+                 backup_genotype=None):
         """ Load ASI rules from a file or file object. """
 
         if references is None:
@@ -108,7 +109,7 @@ class AsiAlgorithm:
         if file is not None:
             self.load_xml(file)
         elif rules_yaml is not None:
-            self.load_yaml(rules_yaml, genotype)
+            self.load_yaml(rules_yaml, genotype, backup_genotype)
 
     def load_xml(self, file):
         dom = minidom.parse(file)
@@ -215,7 +216,7 @@ class AsiAlgorithm:
                     rules.append([condition, actions])  # hrmm
                 self.mutation_comments.append([gene_name, rules])
 
-    def load_yaml(self, rules_config, genotype):
+    def load_yaml(self, rules_config, genotype, backup_genotype=None):
         self.alg_name = 'HCV_RULES'
         self.alg_version = HCV_RULES_VERSION
         self.level_def = {'-1': 'Resistance Interpretation Not Available',
@@ -232,9 +233,12 @@ class AsiAlgorithm:
             region = None
             for genotype_config in drug['genotypes']:
                 region = genotype_config['region']
+                rule_text = genotype_config['rules']
                 if genotype_config['genotype'] == genotype:
-                    rule_text = genotype_config['rules']
                     self.gene_def[genotype_config['reference']] = [region]
+                    break
+                elif genotype_config['genotype'] == backup_genotype:
+                    self.gene_def.setdefault(genotype_config['reference'], [region])
                     break
             else:
                 rule_text = 'SCORE FROM ( TRUE => "Not available" )'
