@@ -296,6 +296,7 @@ similar steps to setting up a development workstation. Follow these steps:
     `asi_algorithm.py`.
 5. Check the history of the `micall.alignment` folder. If it has changed since
     the last release, then update the version number in `setup.py`.
+5. Update the change notes in the Singularity file, and commit those changes.
 6. [Create a release][release] on Github. Use "vX.Y" as the tag, where X.Y
     matches the version you used in QAI. If you have to redo
     a release, you can create additional releases with tags vX.Y.1, vX.Y.2, and

@@ -128,7 +128,7 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
         in the midi_amino_csv file.
     """
     is_midi = True
-    midi_rows = {}  # {seed: [row]}
+    midi_rows = {}  # {genotype: [row]}
     midi_start = 231
     midi_end = 561
     is_midi_separate = midi_amino_csv.name != amino_csv.name
@@ -143,9 +143,9 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
             except LowCoverageError as ex:
                 failures[(seed, region, is_midi)] = ex.args[0]
                 continue
-            midi_rows[seed] = [row
-                               for row in rows
-                               if 226 < int(row['refseq.aa.pos'])]
+            midi_rows[get_genotype(seed)] = [row
+                                             for row in rows
+                                             if 226 < int(row['refseq.aa.pos'])]
     is_midi = False
     for (seed, region), rows in groupby(DictReader(amino_csv),
                                         itemgetter('seed', 'region')):
@@ -157,7 +157,8 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
             main_rows = []
             low_coverage_message = ex.args[0]
         if region.endswith('-NS5b'):
-            region_midi_rows = midi_rows.pop(seed, None)
+            genotype = get_genotype(seed)
+            region_midi_rows = midi_rows.pop(genotype, None)
             if region_midi_rows is None:
                 region_midi_rows = all_rows
                 if is_midi_separate:
@@ -171,14 +172,15 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
                     low_coverage_message = None
                 except LowCoverageError:
                     region_midi_rows = []
-            main_rows = combine_midi_rows(main_rows, region_midi_rows)
+            main_rows = combine_midi_rows(main_rows, region_midi_rows, seed)
         if low_coverage_message:
             failures[(seed, region, is_midi)] = low_coverage_message
         yield from main_rows
 
     # Check for MIDI regions that had no match.
-    for seed, rows in sorted(midi_rows.items()):
+    for genotype, rows in sorted(midi_rows.items()):
         region = rows[0]['region']
+        seed = rows[0]['seed']
         failures.setdefault((seed, region, False), NOTHING_MAPPED_MESSAGE)
         yield from rows
 
@@ -193,7 +195,7 @@ def write_failure(fail_writer, seed, region, reason):
                               reason=reason))
 
 
-def combine_midi_rows(main_rows, midi_rows):
+def combine_midi_rows(main_rows, midi_rows, seed):
     main_row_map = {int(row['refseq.aa.pos']): row
                     for row in main_rows}
     midi_row_map = {int(row['refseq.aa.pos']): row
@@ -201,6 +203,9 @@ def combine_midi_rows(main_rows, midi_rows):
     positions = sorted({pos
                         for pos in chain(main_row_map.keys(),
                                          midi_row_map.keys())})
+
+    for midi_row in midi_row_map.values():
+        midi_row['seed'] = seed  # Override MIDI seed with main seed.
     for pos in positions:
         main_row = main_row_map.get(pos)
         midi_row = midi_row_map.get(pos)
@@ -517,7 +522,13 @@ def load_asi():
                  for rule in hcv_rules
                  for genotype in rule['genotypes']}
     for genotype in genotypes:
-        asi = AsiAlgorithm(rules_yaml=hcv_rules, genotype=genotype)
+        if len(genotype) > 1 and genotype[0] in genotypes:
+            backup_genotype = genotype[0]
+        else:
+            backup_genotype = None
+        asi = AsiAlgorithm(rules_yaml=hcv_rules,
+                           genotype=genotype,
+                           backup_genotype=backup_genotype)
         algorithms[genotype] = asi
 
     return algorithms

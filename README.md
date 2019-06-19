@@ -9,8 +9,8 @@
 [travis]: https://travis-ci.org/cfe-lab/MiCall
 [Code Coverage]: https://codecov.io/github/cfe-lab/MiCall/coverage.svg?branch=master
 [codecov]: https://codecov.io/github/cfe-lab/MiCall?branch=master
-[DOI]: https://zenodo.org/badge/DOI/10.5281/zenodo.2644171.svg
-[zenodo]: https://doi.org/10.5281/zenodo.2644171
+[DOI]: https://zenodo.org/badge/DOI/10.5281/zenodo.1289989.svg
+[zenodo]: https://doi.org/10.5281/zenodo.1289989
 
 Maps all the reads from a sample against a set of reference sequences, then
 stitches all the reads into consensus sequences and coverage maps.
