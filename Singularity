@@ -197,3 +197,13 @@ From: centos:7
 
 %apprun resistance
     python /opt/micall/micall_kive_resistance.py "$@"
+
+%apprun denovo_hcv
+    sh /opt/micall/micall/utils/iva.sh "$@"
+
+%applabels denovo_hcv
+    KIVE_INPUTS wg1 wg2 mid1 mid2
+    KIVE_OUTPUTS wg.fasta mid.fasta
+
+%apphelp denovo_hcv
+    Two-part HCV denovo assembly
