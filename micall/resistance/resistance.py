@@ -128,7 +128,7 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
         in the midi_amino_csv file.
     """
     is_midi = True
-    midi_rows = {}  # {seed: [row]}
+    midi_rows = {}  # {genotype: [row]}
     midi_start = 231
     midi_end = 561
     is_midi_separate = midi_amino_csv.name != amino_csv.name
@@ -203,6 +203,9 @@ def combine_midi_rows(main_rows, midi_rows, seed):
     positions = sorted({pos
                         for pos in chain(main_row_map.keys(),
                                          midi_row_map.keys())})
+
+    for midi_row in midi_row_map.values():
+        midi_row['seed'] = seed  # Override MIDI seed with main seed.
     for pos in positions:
         main_row = main_row_map.get(pos)
         midi_row = midi_row_map.get(pos)
@@ -210,7 +213,6 @@ def combine_midi_rows(main_rows, midi_rows, seed):
             if pos <= 336:
                 yield main_row
         elif main_row is None:
-            midi_row['seed'] = seed  # Override MIDI seed with main seed.
             yield midi_row
         elif (pos <= 336 and
               int(main_row['coverage']) > int(midi_row['coverage'])):
