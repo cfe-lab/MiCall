@@ -213,6 +213,7 @@ def combine_midi_rows(main_rows, midi_rows, seed):
             if pos <= 336:
                 yield main_row
         elif main_row is None:
+            midi_row['seed'] = seed  # Override MIDI seed with main seed.
             yield midi_row
         elif (pos <= 336 and
               int(main_row['coverage']) > int(midi_row['coverage'])):

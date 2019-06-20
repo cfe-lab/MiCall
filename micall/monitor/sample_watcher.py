@@ -7,7 +7,8 @@ ALLOWED_GROUPS = ['Everyone']
 # noinspection PyArgumentList
 PipelineType = Enum(
     'PipelineType',
-    'FILTER_QUALITY MAIN MIDI RESISTANCE MIXED_HCV_MAIN MIXED_HCV_MIDI')
+    'FILTER_QUALITY MAIN MIDI RESISTANCE MIXED_HCV_MAIN MIXED_HCV_MIDI ' +
+    'DENOVO DENOVO_COMBINED')
 
 
 class FolderWatcher:
@@ -135,6 +136,24 @@ class FolderWatcher:
                     not self.fetch_run_status(run))]
             is_mixed_hcv_complete = not active_mixed_runs
 
+        is_denovo_complete = False
+        if sample_watcher.sample_group.names[1] is None:
+            denovo_type = PipelineType.DENOVO
+        else:
+            denovo_type = PipelineType.DENOVO_COMBINED
+        denovo_run = sample_watcher.runs.get(denovo_type)
+        if denovo_run is None:
+            if 'HCV' not in sample_watcher.sample_group.names[0]:
+                is_denovo_complete = True
+            else:
+                denovo_run = self.run_pipeline(denovo_type, sample_watcher)
+                if denovo_run is None:
+                    is_denovo_complete = True
+        else:
+            is_denovo_complete = not (
+                    denovo_run['id'] in self.active_runs and
+                    not self.fetch_run_status(denovo_run))
+
         main_run = sample_watcher.runs.get(PipelineType.MAIN)
         if main_run is None:
             self.run_pipeline(PipelineType.MAIN, sample_watcher)
@@ -159,7 +178,8 @@ class FolderWatcher:
             if not self.fetch_run_status(resistance_run):
                 # Still running, nothing more to check on sample.
                 return sample_watcher.is_failed
-        return is_mixed_hcv_complete or sample_watcher.is_failed
+        return ((is_denovo_complete and is_mixed_hcv_complete) or
+                sample_watcher.is_failed)
 
     def run_pipeline(self, pipeline_type, sample_watcher=None):
         if sample_watcher and sample_watcher.is_failed:

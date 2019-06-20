@@ -323,9 +323,9 @@ HCV-4c,HCV4-ED43-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 HCV-4m,HCV4-ED43-NS5b,15,1,558,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4m,HCV4-ED43-NS5b,15,4,559,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4m,HCV4-ED43-NS5b,15,7,560,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4m,HCV4-ED43-NS5b,15,10,561,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4m,HCV4-ED43-NS5b,15,1,559,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4m,HCV4-ED43-NS5b,15,4,560,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4m,HCV4-ED43-NS5b,15,7,561,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
 """)
     midi_amino_csv.name = 'midi_amino.csv'
     expected_csv = """\
@@ -335,42 +335,9 @@ HCV-4c,HCV4-ED43-NS5b,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-4c,HCV4-ED43-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 HCV-4c,HCV4-ED43-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 HCV-4c,HCV4-ED43-NS5b,15,1,558,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4c,HCV4-ED43-NS5b,15,4,559,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4c,HCV4-ED43-NS5b,15,7,560,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4c,HCV4-ED43-NS5b,15,10,561,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-"""
-
-    check_combination(amino_csv, midi_amino_csv, expected_csv)
-
-
-def test_combine_aminos_ns5b_multiple_subtypes_with_overlap():
-    """ Main sample's subtype overrides MIDI subtype when they disagree. """
-    amino_csv = StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
-HCV-4c,HCV4-ED43-NS5b,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
-HCV-4c,HCV4-ED43-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
-HCV-4c,HCV4-ED43-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
-""")
-    amino_csv.name = 'main_amino.csv'
-    midi_amino_csv = StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
-HCV-4m,HCV4-ED43-NS5b,15,1,228,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4m,HCV4-ED43-NS5b,15,4,559,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4m,HCV4-ED43-NS5b,15,7,560,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4m,HCV4-ED43-NS5b,15,10,561,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-""")
-    midi_amino_csv.name = 'midi_amino.csv'
-    expected_csv = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
-HCV-4c,HCV4-ED43-NS5b,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
-HCV-4c,HCV4-ED43-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
-HCV-4c,HCV4-ED43-NS5b,15,1,228,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4c,HCV4-ED43-NS5b,15,4,559,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4c,HCV4-ED43-NS5b,15,7,560,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
-HCV-4c,HCV4-ED43-NS5b,15,10,561,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4c,HCV4-ED43-NS5b,15,1,559,0,0,0,0,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4c,HCV4-ED43-NS5b,15,4,560,0,0,0,0,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
+HCV-4c,HCV4-ED43-NS5b,15,7,561,20000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20000
 """
 
     check_combination(amino_csv, midi_amino_csv, expected_csv)
@@ -1030,14 +997,6 @@ R1-seed,R1,15,7,3,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
     aminos = list(read_aminos(amino_csv, min_fraction))
 
     assert expected_aminos == aminos
-
-
-def test_genotype_6e_regions(asi_algorithms):
-    """ Should have rules for NS3, NS5a, and NS5b. """
-    asi_6e = asi_algorithms['6E']
-    expected_regions = {'HCV6-EUHK2-NS3', 'HCV6-EUHK2-NS5a', 'HCV6-EUHK2-NS5b'}
-
-    assert expected_regions == set(asi_6e.gene_def.keys())
 
 
 def test_read_aminos_pos_55_resistant(asi_algorithms):
