@@ -51,6 +51,9 @@ From: centos:7
     ## HCV genotyping database
     micall/blast_db /opt/micall/micall/blast_db
 
+    ## H77 reference
+    micall/utils/hcv_geno /opt/micall/micall/utils/hcv_geno
+
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
     yum update -q -y
@@ -150,6 +153,18 @@ From: centos:7
     ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
+    # build h77 reference
+    cd /opt/micall/micall/utils/hcv_geno
+    bwa index h77.fasta
+    bwa index hcv.fasta
+
+    # Install genetracks
+    pip install pysam
+    cd /opt
+    git clone https://github.com/jeff-k/genetracks.git
+    cd genetracks
+    pip install .
+
     yum groupremove -q -y 'development tools'
     yum remove -q -y epel-release wget python36-devel unzip
     yum autoremove -q -y
@@ -202,7 +217,7 @@ From: centos:7
 
 %applabels denovo_hcv
     KIVE_INPUTS wg1 wg2 mid1 mid2
-    KIVE_OUTPUTS wg.fasta mid.fasta
+    KIVE_OUTPUTS wg_fasta mid_fasta alignment
 
 %apphelp denovo_hcv
     Two-part HCV denovo assembly
