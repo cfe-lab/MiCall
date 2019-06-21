@@ -21,3 +21,4 @@ samtools index mid.bam
 
 python /opt/micall/micall/utils/plot.py wg.bam mid.bam
 mv /tmp/alignment.svg $7
+mv /tmp/subtyping.csv $8

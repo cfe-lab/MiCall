@@ -2,8 +2,6 @@ from genetracks import Figure, Track, Alignment, Multitrack, Label
 import sys
 import pysam
 
-subtyping = open("/tmp/subtyping.csv", 'w')
-
 def hcv_region_tracks(f):
     # H77 coords
     first = [
@@ -58,7 +56,7 @@ def get_alignments(fn, references, label=""):
         print(aln.reference_name)
         if not aln.reference_name:
             continue
-        if "HCV" not in aln.reference_name:
+        if aln.reference_name not in references:
             continue
         if aln.cigartuples is None:
             continue
@@ -75,26 +73,19 @@ def get_alignments(fn, references, label=""):
 
     tracks = []
     for contig in sorted(contigs):
-        contigs[contig].append(Track(4000,4000, label="{}-{}: {}".format(label,
-            contig, ref_names[contig])))
-        tracks.append(Multitrack(contigs[contig], join=False))
-        print("{},{}".format(contig, ref_names[contig]), file=subtyping)
+        tracks.append(Multitrack([Multitrack(contigs[contig], join=True),
+            Track(4000,4000, label="{}-{}: {}".format(label, contig,
+                ref_names[contig]))], join=False))
     return tracks
 
 if __name__ == "__main__":
-    ts = get_alignments(sys.argv[1], ["NC_004102.1"], label="WG")
+    ts = get_alignments(sys.argv[1], ["K03455.1"], label="WG")
 
     f = Figure()
-    hcv_region_tracks(f)
+    hiv_region_tracks(f)
 
     for t in ts:
         f.add(t)
 
-    tx = get_alignments(sys.argv[2], ["NC_004102.1"], label="MIDI")
-
-    for t in tx:
-        f.add(t)
-
     f.show(w=970).saveSvg("/tmp/alignment.svg")
     
-subtyping.close()

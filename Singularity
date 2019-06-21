@@ -155,6 +155,7 @@ From: centos:7
 
     # build h77 reference
     cd /opt/micall/micall/utils/hcv_geno
+    bwa index hxb2.fasta
     bwa index h77.fasta
     bwa index hcv.fasta
 
@@ -217,7 +218,17 @@ From: centos:7
 
 %applabels denovo_hcv
     KIVE_INPUTS wg1 wg2 mid1 mid2
-    KIVE_OUTPUTS wg_fasta mid_fasta alignment
+    KIVE_OUTPUTS wg_fasta mid_fasta alignment subtyping
 
 %apphelp denovo_hcv
     Two-part HCV denovo assembly
+
+%apprun proviral_hiv
+    sh /opt/micall/micall/utils/proviral.sh "$@"
+
+%applabels proviral_hiv
+    KIVE_INPUTS r1 r2
+    KIVE_OUTPUTS alignment
+
+%apphelp proviral_hiv
+    Bespoke pipeline for highly mutated HIV proviruses
