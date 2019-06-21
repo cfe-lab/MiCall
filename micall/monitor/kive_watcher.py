@@ -48,7 +48,10 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'resistance_csv',
                       'mutations_csv',
                       'resistance_fail_csv',
-                      'resistance_consensus_csv']
+                      'resistance_consensus_csv',
+                      'wg_fasta',
+                      'mid_fasta',
+                      'alignment']
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
@@ -521,6 +524,9 @@ class KiveWatcher:
             if output_name == 'coverage_maps_tar':
                 self.extract_coverage_maps(folder_watcher)
                 continue
+            if output_name == 'alignment':
+                self.extract_alignment(folder_watcher)
+                continue
             source_count = 0
             filename = get_output_filename(output_name)
             target_path = results_path / filename
@@ -530,14 +536,10 @@ class KiveWatcher:
                     source_path = scratch_path / sample_name / filename
                     try:
                         with source_path.open() as source:
-                            for i, line in enumerate(source):
-                                if i != 0:
-                                    prefix = sample_name
-                                elif source_count == 0:
-                                    prefix = 'sample'
-                                else:
-                                    continue
-                                target.write(prefix + ',' + line)
+                            if output_name.endswith('_fasta'):
+                                self.extract_fasta(source, target, sample_name)
+                            else:
+                                self.extract_csv(source, target, sample_name, source_count)
                             source_count += 1
                     except FileNotFoundError:
                         # Skip the file.
@@ -546,6 +548,25 @@ class KiveWatcher:
                 target_path.unlink()
         shutil.rmtree(scratch_path)
         return results_path
+
+    @staticmethod
+    def extract_csv(source, target, sample_name, source_count):
+        for i, line in enumerate(source):
+            if i != 0:
+                prefix = sample_name
+            elif source_count == 0:
+                prefix = 'sample'
+            else:
+                continue
+            target.write(prefix + ',' + line)
+
+    @staticmethod
+    def extract_fasta(source, target, sample_name):
+        for line in source:
+            if line.startswith('>'):
+                target.write(f'>{sample_name},{line[1:]}')
+            else:
+                target.write(line)
 
     def extract_coverage_maps(self, folder_watcher):
         results_path = self.get_results_path(folder_watcher)
@@ -563,6 +584,20 @@ class KiveWatcher:
                         with f.extractfile(source_info) as source, \
                                 open(target_path, 'wb') as target:
                             shutil.copyfileobj(source, target)
+            except FileNotFoundError:
+                pass
+
+    def extract_alignment(self, folder_watcher):
+        results_path = self.get_results_path(folder_watcher)
+        alignment_path = results_path / "alignment"
+        alignment_path.mkdir()
+        scratch_path = results_path / "scratch"
+        for sample_name in folder_watcher.all_samples:
+            sample_name = trim_name(sample_name)
+            source_path = scratch_path / sample_name / 'alignment'
+            target_path = alignment_path / f"{sample_name}_alignment.svg"
+            try:
+                os.rename(source_path, target_path)
             except FileNotFoundError:
                 pass
 
@@ -624,12 +659,12 @@ class KiveWatcher:
         if pipeline_type == PipelineType.DENOVO_COMBINED:
             if self.config.denovo_combined_pipeline_id is None:
                 return None
-            input_datasets = dict(fastq1=sample_watcher.fastq_datasets[0],
-                                  fastq2=sample_watcher.fastq_datasets[1],
-                                  fastq3=sample_watcher.fastq_datasets[2],
-                                  fastq4=sample_watcher.fastq_datasets[3])
+            input_datasets = dict(wg1=sample_watcher.fastq_datasets[0],
+                                  wg2=sample_watcher.fastq_datasets[1],
+                                  mid1=sample_watcher.fastq_datasets[2],
+                                  mid2=sample_watcher.fastq_datasets[3])
             return self.find_or_launch_run(
-                self.config.denovo_pipeline_id,
+                self.config.denovo_combined_pipeline_id,
                 input_datasets,
                 'Denovo combined on ' + sample_watcher.sample_group.enum,
                 folder_watcher.batch)

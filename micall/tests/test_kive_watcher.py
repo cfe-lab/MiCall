@@ -91,6 +91,14 @@ def mock_session_download_file(file, url):
         file.write(f'{url},{i}\n'.encode())
 
 
+def mock_session_download_fasta(file, url):
+    for i in range(2):
+        file.write(f'>{url},{i}\n'.encode('UTF8'))
+        for j in range(3):
+            file.write('ACTGTCA'[i+j:].encode())
+            file.write(b'\n')
+
+
 def mock_failures(failure_count, success_callable):
     """ Simulate a number of failures, followed by successes. """
     def mocked(*args, **kwargs):
@@ -2078,6 +2086,122 @@ sample,url,n
     assert not expected_mutations_path.exists()
     assert expected_resistance_content == expected_resistance_path.read_text()
     assert expected_coverage_map_content == expected_coverage_map_path.read_bytes()
+    assert expected_done_path.exists()
+
+
+def test_folder_completed_with_fasta(raw_data_with_two_samples, mock_open_kive, default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    kive_watcher = create_kive_watcher_with_main_run(
+        default_config,
+        base_calls,
+        SampleGroup('2110A',
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                     None)),
+        is_complete=True)
+    mock_session = mock_open_kive.return_value
+    mock_session.download_file.side_effect = mock_session_download_fasta
+    folder_watcher = kive_watcher.folder_watchers[base_calls]
+    sample1_watcher, = folder_watcher.sample_watchers
+    sample2_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2120A',
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.finish_folder(base_calls)
+    folder_watcher.add_run(dict(id=150),
+                           PipelineType.MAIN,
+                           sample2_watcher,
+                           is_complete=True)
+    folder_watcher.add_run(dict(id=151),
+                           PipelineType.RESISTANCE,
+                           sample1_watcher)
+    folder_watcher.add_run(dict(id=152),
+                           PipelineType.RESISTANCE,
+                           sample2_watcher)
+    kive_watcher.session.endpoints.containerruns.get.side_effect = [
+        dict(id=107, state='C'),  # refresh run state for 2110
+        [dict(dataset='/datasets/161/',
+              argument_name='wg_fasta')],  # run datasets
+        dict(id=108, state='C'),  # refresh run state for 2120
+        [dict(dataset='/datasets/162/',
+              argument_name='wg_fasta')]]  # run datasets
+    results_path = base_calls / "../../../Results/version_0-dev"
+    scratch_path = results_path / "scratch"
+    sample_scratch_path = scratch_path / "2110A-V3LOOP_S13"
+    sample_scratch_path.mkdir(parents=True)
+    expected_done_path = results_path / "doneprocessing"
+    expected_fasta_path = results_path / "wg.fasta"
+    expected_fasta_content = """\
+>2110A-V3LOOP_S13,/datasets/161/download/,0
+ACTGTCA
+CTGTCA
+TGTCA
+>2110A-V3LOOP_S13,/datasets/161/download/,1
+CTGTCA
+TGTCA
+GTCA
+>2120A-PR_S14,/datasets/162/download/,0
+ACTGTCA
+CTGTCA
+TGTCA
+>2120A-PR_S14,/datasets/162/download/,1
+CTGTCA
+TGTCA
+GTCA
+"""
+
+    kive_watcher.poll_runs()
+
+    assert not scratch_path.exists()
+    assert expected_fasta_content == expected_fasta_path.read_text()
+    assert expected_done_path.exists()
+
+
+def test_folder_completed_with_svg(raw_data_with_two_samples, mock_open_kive, default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    kive_watcher = create_kive_watcher_with_main_run(
+        default_config,
+        base_calls,
+        SampleGroup('2110A',
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                     None)),
+        is_complete=True)
+    folder_watcher = kive_watcher.folder_watchers[base_calls]
+    sample1_watcher, = folder_watcher.sample_watchers
+    sample2_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2120A',
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.finish_folder(base_calls)
+    folder_watcher.add_run(dict(id=150),
+                           PipelineType.MAIN,
+                           sample2_watcher,
+                           is_complete=True)
+    folder_watcher.add_run(dict(id=151),
+                           PipelineType.RESISTANCE,
+                           sample1_watcher)
+    folder_watcher.add_run(dict(id=152),
+                           PipelineType.RESISTANCE,
+                           sample2_watcher)
+    kive_watcher.session.endpoints.containerruns.get.side_effect = [
+        dict(id=107, state='C'),  # refresh run state for 2110
+        [dict(dataset='/datasets/161/',
+              argument_name='alignment')],  # run datasets
+        dict(id=108, state='C'),  # refresh run state for 2120
+        [dict(dataset='/datasets/162/',
+              argument_name='alignment')]]  # run datasets
+    results_path = base_calls / "../../../Results/version_0-dev"
+    expected_done_path = results_path / "doneprocessing"
+    expected_alignment1_path = results_path / "alignment" / "2110A-V3LOOP_S13_alignment.svg"
+    expected_alignment2_path = results_path / "alignment" / "2120A-PR_S14_alignment.svg"
+
+    kive_watcher.poll_runs()
+
+    assert expected_alignment1_path.exists()
+    assert expected_alignment2_path.exists()
     assert expected_done_path.exists()
 
 

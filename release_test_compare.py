@@ -16,7 +16,7 @@ import pandas as pd
 import seaborn as sns
 import Levenshtein
 
-MICALL_VERSION = '7.10'
+MICALL_VERSION = '7.11'
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
@@ -200,7 +200,7 @@ def compare_g2p(sample, diffs):
     target_fields = sample.target_files.g2p_summary
     if source_fields == target_fields:
         return
-    if MICALL_VERSION == '7.10' and source_fields is None and 'MidHCV' in sample.name:
+    if MICALL_VERSION == '7.11' and source_fields is None and sample.name.startswith('90308A'):
         return
     assert source_fields is not None, (sample.run, sample.name)
     assert target_fields is not None, (sample.run, sample.name)
@@ -276,9 +276,9 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
         source_compare = '-' if source_score == '1' else source_score
         target_compare = '-' if target_score == '1' else target_score
         if (source_compare == '-' and
-                'MidHCV' in sample.name and
-                MICALL_VERSION == '7.10'):
-            # Some MidHCV samples weren't processed in 7.9.
+                sample.name.startswith('90308A') and
+                MICALL_VERSION == '7.11'):
+            # One sample failed in 7.10.
             pass
         elif source_compare != target_compare:
             project, region = key
@@ -403,6 +403,9 @@ def compare_consensus(sample,
         if consensus_distance is not None:
             consensus_distances.append(consensus_distance)
         if source_fields == target_fields:
+            continue
+        if (MICALL_VERSION == '7.11' and source_fields is None and
+                sample.name.startswith('90308A')):
             continue
         is_main = is_consensus_interesting(region, cutoff)
         if is_main and scenarios_reported & Scenarios.MAIN_CONSENSUS_CHANGED:
