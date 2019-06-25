@@ -648,8 +648,8 @@ class KiveWatcher:
         if pipeline_type == PipelineType.DENOVO:
             if self.config.denovo_pipeline_id is None:
                 return None
-            input_datasets = dict(fastq1=sample_watcher.fastq_datasets[0],
-                                  fastq2=sample_watcher.fastq_datasets[1])
+            input_datasets = dict(r1=sample_watcher.fastq_datasets[0],
+                                  r2=sample_watcher.fastq_datasets[1])
             sample_name = sample_watcher.sample_group.names[0]
             return self.find_or_launch_run(
                 self.config.denovo_pipeline_id,

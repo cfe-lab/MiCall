@@ -398,7 +398,7 @@ def process_sample(sample, args, pssm):
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
-        sample.process(pssm, excluded_seeds, excluded_projects)
+        sample.process(pssm, excluded_seeds, excluded_projects, use_denovo=True)
     except Exception:
         message = 'Failed to process {}.'.format(sample)
         logger.error(message, exc_info=True)

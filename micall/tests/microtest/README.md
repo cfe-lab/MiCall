@@ -49,3 +49,8 @@ The scenarios that each file tests are:
   `utils/make_sample.py` first generates 10000 random reads, then
   `utils/denovo_simplify.py` winnows that down to the smallest subset that
   still works with de novo assembly.
+* 2160A-HCV - enough coverage of the whole genome portion of NS5b for IVA to
+  assemble a contig, with a couple of mutations. See the `make_sample.py`
+  script for details.
+* 2160AMIDI-MidHCV - MIDI region for 2160A. See the `make_sample.py` script for
+  details.
