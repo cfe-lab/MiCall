@@ -217,7 +217,7 @@ From: centos:7
     sh /opt/micall/micall/utils/iva.sh "$@"
 
 %applabels denovo_hcv
-    KIVE_INPUTS wg1 wg2 mid1 mid2
+    KIVE_INPUTS wg1 wg2 mid1 mid2 sample_name
     KIVE_OUTPUTS wg_fasta mid_fasta alignment subtyping
 
 %apphelp denovo_hcv
@@ -227,8 +227,8 @@ From: centos:7
     sh /opt/micall/micall/utils/proviral.sh "$@"
 
 %applabels proviral_hiv
-    KIVE_INPUTS r1 r2
-    KIVE_OUTPUTS alignment
+    KIVE_INPUTS r1 r2 sample_name
+    KIVE_OUTPUTS alignment_csv summary_csv assembly_fasta
 
 %apphelp proviral_hiv
     Bespoke pipeline for highly mutated HIV proviruses
