@@ -1184,19 +1184,20 @@ read4,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
         remap_counts_csv = StringIO()
         remap_csv = StringIO()
 
-        remap.remap(os.path.join(test_path,
-                                 'microtest',
-                                 '1234A-V3LOOP_S1_L001_R1_001.fastq'),
-                    os.path.join(test_path,
-                                 'microtest',
-                                 '1234A-V3LOOP_S1_L001_R2_001.fastq'),
-                    contigs_csv,
-                    remap_csv,
-                    remap_counts_csv,
-                    StringIO(),
-                    StringIO(),
-                    StringIO(),
-                    work_path=os.path.join(test_path, 'working'))
+        remap.map_to_contigs(
+            os.path.join(test_path,
+                         'microtest',
+                         '1234A-V3LOOP_S1_L001_R1_001.fastq'),
+            os.path.join(test_path,
+                         'microtest',
+                         '1234A-V3LOOP_S1_L001_R2_001.fastq'),
+            contigs_csv,
+            remap_csv,
+            remap_counts_csv,
+            StringIO(),
+            StringIO(),
+            StringIO(),
+            work_path=os.path.join(test_path, 'working'))
 
         self.assertEqual(expected_remap_counts_csv, remap_counts_csv.getvalue())
         self.assertEqual(expected_remap_csv, remap_csv.getvalue())
@@ -1240,19 +1241,20 @@ read3,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
         remap_counts_csv = StringIO()
         remap_csv = StringIO()
 
-        remap.remap(os.path.join(test_path,
-                                 'microtest',
-                                 '1234A-V3LOOP_S1_L001_R1_001.fastq'),
-                    os.path.join(test_path,
-                                 'microtest',
-                                 '1234A-V3LOOP_S1_L001_R2_001.fastq'),
-                    contigs_csv,
-                    remap_csv,
-                    remap_counts_csv,
-                    StringIO(),
-                    StringIO(),
-                    StringIO(),
-                    work_path=os.path.join(test_path, 'working'))
+        remap.map_to_contigs(
+            os.path.join(test_path,
+                         'microtest',
+                         '1234A-V3LOOP_S1_L001_R1_001.fastq'),
+            os.path.join(test_path,
+                         'microtest',
+                         '1234A-V3LOOP_S1_L001_R2_001.fastq'),
+            contigs_csv,
+            remap_csv,
+            remap_counts_csv,
+            StringIO(),
+            StringIO(),
+            StringIO(),
+            work_path=os.path.join(test_path, 'working'))
 
         self.assertEqual(expected_remap_counts_csv, remap_counts_csv.getvalue())
         self.assertEqual(expected_remap_csv, remap_csv.getvalue())
@@ -1302,20 +1304,21 @@ region,sequence
         remap_csv = StringIO()
         remap_conseq_csv = StringIO()
 
-        remap.remap(os.path.join(test_path,
-                                 'microtest',
-                                 '1234A-V3LOOP_S1_L001_R1_001.fastq'),
-                    os.path.join(test_path,
-                                 'microtest',
-                                 '1234A-V3LOOP_S1_L001_R2_001.fastq'),
-                    contigs_csv,
-                    remap_csv,
-                    remap_counts_csv,
-                    remap_conseq_csv,
-                    StringIO(),
-                    StringIO(),
-                    work_path=os.path.join(test_path, 'working'),
-                    excluded_seeds=excluded_seeds)
+        remap.map_to_contigs(
+            os.path.join(test_path,
+                         'microtest',
+                         '1234A-V3LOOP_S1_L001_R1_001.fastq'),
+            os.path.join(test_path,
+                         'microtest',
+                         '1234A-V3LOOP_S1_L001_R2_001.fastq'),
+            contigs_csv,
+            remap_csv,
+            remap_counts_csv,
+            remap_conseq_csv,
+            StringIO(),
+            StringIO(),
+            work_path=os.path.join(test_path, 'working'),
+            excluded_seeds=excluded_seeds)
 
         self.assertEqual(expected_remap_counts_csv, remap_counts_csv.getvalue())
         self.assertEqual(expected_remap_csv, remap_csv.getvalue())

@@ -143,7 +143,8 @@ class FolderWatcher:
             denovo_type = PipelineType.DENOVO_COMBINED
         denovo_run = sample_watcher.runs.get(denovo_type)
         if denovo_run is None:
-            if 'HCV' not in sample_watcher.sample_group.names[0]:
+            if ('HCV' not in sample_watcher.sample_group.names[0] and
+                    'HIV' not in sample_watcher.sample_group.names[0]):
                 is_denovo_complete = True
             else:
                 denovo_run = self.run_pipeline(denovo_type, sample_watcher)

@@ -14,7 +14,6 @@ from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 
 from micall.utils.externals import LineCounter
-from micall.utils.iva_wrapper import assemble, SeedingError
 
 PEAR = "/opt/bin/pear"
 SAVAGE = "/opt/savage_wrapper.sh"
@@ -94,7 +93,7 @@ def denovo(fastq1_path,
            contigs,
            work_dir='.',
            merged_contigs_csv=None,
-           assembler=Assembler.SAVAGE):
+           assembler=Assembler.IVA):
     old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
         rmtree(old_tmp_dir, ignore_errors=True)
@@ -104,14 +103,21 @@ def denovo(fastq1_path,
     start_dir = os.getcwd()
     contigs_fasta_path = os.path.join(tmp_dir, 'contigs.fasta')
     if assembler == Assembler.IVA:
+        joined_path = os.path.join(tmp_dir, 'joined.fastq')
+        run(['merge-mates',
+             fastq1_path,
+             fastq2_path,
+             '--interleave',
+             '-o', joined_path],
+            check=True)
+        iva_out_path = os.path.join(tmp_dir, 'iva_out')
+        contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
         try:
-            assemble(os.path.join(tmp_dir, "iva"),
-                     str(fastq1_path),
-                     str(fastq2_path),
-                     timeout_seconds=ASSEMBLY_TIMEOUT)
-            contigs_fasta_path = os.path.join(tmp_dir, 'iva', 'contigs.fasta')
-        except SeedingError:
-            logger.warning('De novo assembly failed.')
+            run([IVA, '--fr', joined_path, '-t', '8', iva_out_path], check=True)
+        except CalledProcessError:
+            logger.warning('iva failed to assemble.', exc_info=True)
+            with open(contigs_fasta_path, 'a'):
+                pass
     else:
         counter = LineCounter()
         read_count = counter.count(fastq1_path) / 4

@@ -232,3 +232,20 @@ From: centos:7
 
 %apphelp proviral_hiv
     Bespoke pipeline for highly mutated HIV proviruses
+
+%apprun denovo
+    python /opt/micall/micall_kive.py --denovo "$@"
+
+%applabels denovo
+    KIVE_INPUTS fastq1 fastq2 bad_cycles_csv
+    KIVE_OUTPUTS g2p_csv g2p_summary_csv remap_counts_csv \
+        remap_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \
+        failed_csv cascade_csv nuc_csv amino_csv coord_ins_csv conseq_csv \
+        conseq_region_csv failed_align_csv coverage_scores_csv \
+        coverage_maps_tar aligned_csv g2p_aligned_csv
+    KIVE_THREADS 2
+    KIVE_MEMORY 6000
+
+%apphelp denovo
+    Standard pipeline with de novo assembly instead of mapping to reference
+    sequences.

@@ -95,7 +95,7 @@ class MicallDD(DD):
     def check_one_contig(contigs_csv, read_count, exception):
         if exception is not None:
             return DD.UNRESOLVED
-        contig_count = len(contigs_csv.readlines())
+        contig_count = len(contigs_csv.readlines()) - 1
         logger.debug('Result: %d contigs from %d reads.',
                      contig_count,
                      read_count)
@@ -175,7 +175,7 @@ def main():
                       args.test)
         read_indexes = list(range(len(dd.reads)))
         min_indexes = dd.ddmin(read_indexes)
-        dd._test(min_indexes)
+        dd.test(min_indexes)
         logger.info('Done.')
     except Exception as ex:
         logger.error('Failed.', exc_info=ex)

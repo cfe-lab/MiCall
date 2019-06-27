@@ -5,7 +5,8 @@ import os
 from micall.core.aln2counts import aln2counts
 from micall.core.cascade_report import CascadeReport
 from micall.core.coverage_plots import coverage_plot
-from micall.core.remap import remap
+from micall.core.prelim_map import prelim_map
+from micall.core.remap import remap, map_to_contigs
 from micall.core.sam2aln import sam2aln
 from micall.core.trim_fastqs import trim
 from micall.core.denovo import denovo
@@ -87,11 +88,17 @@ class Sample:
             file_name = output_name
         return os.path.join(self.scratch_path, file_name)
 
+    def get_scratch_path(self):
+        if self.scratch_path is not None:
+            return self.scratch_path
+        return os.path.dirname(self.cascade_csv)
+
     def process(self,
                 pssm,
                 excluded_seeds=(),
                 excluded_projects=(),
-                force_gzip=False):
+                force_gzip=False,
+                use_denovo=False):
         """ Process a single sample.
 
         :param pssm: the pssm library for running G2P analysis
@@ -99,9 +106,11 @@ class Sample:
         :param excluded_projects: project codes to exclude from reporting
         :param bool force_gzip: treat FASTQ files as gzipped, even when they
             don't end in .gz
+        :param bool use_denovo: True if de novo assembly should be used,
+            instead of bowtie2 mapping against references.
         """
         logger.info('Processing %s (%r).', self, self.fastq1)
-        scratch_path = os.path.dirname(self.prelim_csv)
+        scratch_path = self.get_scratch_path()
         os.mkdir(scratch_path)
         use_gzip = force_gzip or self.fastq1.endswith('.gz')
 
@@ -135,38 +144,10 @@ class Sample:
                       min_valid_percent=MIN_VALID_PERCENT,
                       merged_contigs_csv=merged_contigs_csv)
 
-        logger.info('Running de novo assembly on %s.', self)
-        with open(self.merged_contigs_csv) as merged_contigs_csv, \
-                open(self.contigs_csv, 'w') as contigs_csv:
-            denovo(self.trimmed1_fastq,
-                   self.trimmed2_fastq,
-                   contigs_csv,
-                   self.scratch_path,
-                   merged_contigs_csv)
-
-        logger.info('Running remap on %s.', self)
-        if self.debug_remap:
-            debug_file_prefix = os.path.join(scratch_path, 'debug')
+        if use_denovo:
+            self.run_denovo(excluded_seeds)
         else:
-            debug_file_prefix = None
-        with open(self.contigs_csv) as contigs_csv, \
-                open(self.remap_csv, 'w') as remap_csv, \
-                open(self.remap_counts_csv, 'w') as counts_csv, \
-                open(self.remap_conseq_csv, 'w') as conseq_csv, \
-                open(self.unmapped1_fastq, 'w') as unmapped1, \
-                open(self.unmapped2_fastq, 'w') as unmapped2:
-
-            remap(self.trimmed1_fastq,
-                  self.trimmed2_fastq,
-                  contigs_csv,
-                  remap_csv,
-                  counts_csv,
-                  conseq_csv,
-                  unmapped1,
-                  unmapped2,
-                  scratch_path,
-                  debug_file_prefix=debug_file_prefix,
-                  excluded_seeds=excluded_seeds)
+            self.run_mapping(excluded_seeds)
 
         logger.info('Running sam2aln on %s.', self)
         with open(self.remap_csv) as remap_csv, \
@@ -227,3 +208,68 @@ class Sample:
             cascade_report.aligned_csv = aligned_csv
             cascade_report.generate()
         logger.info('Finished sample %s.', self)
+
+    def run_mapping(self, excluded_seeds):
+        logger.info('Running prelim_map on %s.', self)
+        scratch_path = self.get_scratch_path()
+        with open(self.prelim_csv, 'w') as prelim_csv:
+            prelim_map(self.g2p_unmapped1_fastq,
+                       self.g2p_unmapped2_fastq,
+                       prelim_csv,
+                       work_path=scratch_path,
+                       excluded_seeds=excluded_seeds)
+        logger.info('Running remap on %s.', self)
+        if self.debug_remap:
+            debug_file_prefix = os.path.join(scratch_path, 'debug')
+        else:
+            debug_file_prefix = None
+        with open(self.prelim_csv) as prelim_csv, \
+                open(self.remap_csv, 'w') as remap_csv, \
+                open(self.remap_counts_csv, 'w') as counts_csv, \
+                open(self.remap_conseq_csv, 'w') as conseq_csv, \
+                open(self.unmapped1_fastq, 'w') as unmapped1, \
+                open(self.unmapped2_fastq, 'w') as unmapped2:
+
+            remap(self.g2p_unmapped1_fastq,
+                  self.g2p_unmapped2_fastq,
+                  prelim_csv,
+                  remap_csv,
+                  counts_csv,
+                  conseq_csv,
+                  unmapped1,
+                  unmapped2,
+                  scratch_path,
+                  debug_file_prefix=debug_file_prefix)
+
+    def run_denovo(self, excluded_seeds):
+        logger.info('Running de novo assembly on %s.', self)
+        scratch_path = self.get_scratch_path()
+        with open(self.merged_contigs_csv) as merged_contigs_csv, \
+                open(self.contigs_csv, 'w') as contigs_csv:
+            denovo(self.trimmed1_fastq,
+                   self.trimmed2_fastq,
+                   contigs_csv,
+                   self.scratch_path,
+                   merged_contigs_csv)
+        logger.info('Running remap on %s.', self)
+        if self.debug_remap:
+            debug_file_prefix = os.path.join(scratch_path, 'debug')
+        else:
+            debug_file_prefix = None
+        with open(self.contigs_csv) as contigs_csv, \
+                open(self.remap_csv, 'w') as remap_csv, \
+                open(self.remap_counts_csv, 'w') as counts_csv, \
+                open(self.remap_conseq_csv, 'w') as conseq_csv, \
+                open(self.unmapped1_fastq, 'w') as unmapped1, \
+                open(self.unmapped2_fastq, 'w') as unmapped2:
+
+            map_to_contigs(self.trimmed1_fastq,
+                           self.trimmed2_fastq,
+                           contigs_csv,
+                           remap_csv,
+                           counts_csv,
+                           conseq_csv,
+                           unmapped1,
+                           unmapped2,
+                           scratch_path,
+                           debug_file_prefix=debug_file_prefix)

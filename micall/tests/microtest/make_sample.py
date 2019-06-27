@@ -11,7 +11,19 @@ FastqFile = namedtuple('FastqFile', 'name extract_num is_reversed sections mutat
 
 
 def main():
-    sections_2150_1, sections_2150_2 = make_sections_2150()
+    projects = ProjectConfig.loadDefault()
+    sections_2150_1, sections_2150_2 = make_random_sections('HCV-1a',
+                                                            8000,
+                                                            9000)
+    sections_2160_1, sections_2160_2 = make_random_sections('HCV2-JFH-1-NS5b',
+                                                            1,
+                                                            230,
+                                                            projects)
+    sections_2160midi_1, sections_2160midi_2 = make_random_sections(
+        'HCV2-JFH-1-NS5b',
+        231,
+        561,
+        projects)
     fastq_files = [FastqFile('2130A-HCV_S15_L001_R1_001.fastq',
                              '2130',
                              False,
@@ -55,8 +67,27 @@ def main():
                              '2150',
                              True,
                              sections_2150_2,
-                             tuple())]
-    projects = ProjectConfig.loadDefault()
+                             tuple()),
+                   FastqFile('2160A-HCV_S19_L001_R1_001.fastq',
+                             '2160',
+                             False,
+                             sections_2160_1,
+                             (CodonMutation(159, 'GTC'),)),
+                   FastqFile('2160A-HCV_S19_L001_R2_001.fastq',
+                             '2160',
+                             True,
+                             sections_2160_2,
+                             (CodonMutation(159, 'GTC'),)),
+                   FastqFile('2160AMIDI-MidHCV_S20_L001_R1_001.fastq',
+                             '2160',
+                             False,
+                             sections_2160midi_1,
+                             (CodonMutation(316, 'AGC'),)),
+                   FastqFile('2160AMIDI-MidHCV_S20_L001_R2_001.fastq',
+                             '2160',
+                             True,
+                             sections_2160midi_2,
+                             (CodonMutation(316, 'AGC'),))]
     for fastq_file in fastq_files:
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1
@@ -88,24 +119,33 @@ def main():
                 next_cluster += section.count
 
 
-def make_sections_2150():
-    sections_2140_1 = []
-    sections_2140_2 = []
-    ref_name = 'HCV-1a'
-    read_count = 10000
+def make_random_sections(coord_name,
+                         min_start,
+                         max_end,
+                         projects=None,
+                         read_count=10000):
+    if projects is None:
+        ref_name = coord_name
+        ref_start = min_start
+        ref_end = max_end
+    else:
+        ref_name, ref_start, ref_end = find_coord_pos(projects,
+                                                      coord_name,
+                                                      min_start,
+                                                      max_end)
+    sections_1 = []
+    sections_2 = []
     min_read_length = 20
     max_read_length = 250
     max_pair_length = 600
-    min_start = 8000
-    max_end = 9000
     for _ in range(read_count):
-        start = randrange(min_start, max_end - min_read_length)
+        start = randrange(ref_start, ref_end - min_read_length)
         end = randrange(start + min_read_length, start + max_pair_length)
         end1 = min(end, start + max_read_length)
         start2 = max(start, end - max_read_length)
-        sections_2140_1.append(FastqSection(ref_name, start, end1, 1))
-        sections_2140_2.append(FastqSection(ref_name, start2, end, 1))
-    return sections_2140_1, sections_2140_2
+        sections_1.append(FastqSection(ref_name, start, end1, 1))
+        sections_2.append(FastqSection(ref_name, start2, end, 1))
+    return sections_1, sections_2
 
 
 def find_coord_pos(projects, coord_name, start_pos, end_pos):
