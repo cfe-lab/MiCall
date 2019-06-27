@@ -5,6 +5,7 @@ import os
 from micall.core.aln2counts import aln2counts
 from micall.core.cascade_report import CascadeReport
 from micall.core.coverage_plots import coverage_plot
+from micall.core.plot_contigs import plot_contigs
 from micall.core.prelim_map import prelim_map
 from micall.core.remap import remap, map_to_contigs
 from micall.core.sam2aln import sam2aln
@@ -80,7 +81,7 @@ class Sample:
         if self.scratch_path is None:
             raise AttributeError(
                 'Unknown output {} and no scratch path.'.format(output_name))
-        for extension in ('csv', 'fastq', 'pdf'):
+        for extension in ('csv', 'fastq', 'pdf', 'svg'):
             if output_name.endswith('_'+extension):
                 file_name = output_name[:-(len(extension)+1)] + '.' + extension
                 break
@@ -272,4 +273,8 @@ class Sample:
                            unmapped1,
                            unmapped2,
                            scratch_path,
-                           debug_file_prefix=debug_file_prefix)
+                           debug_file_prefix=debug_file_prefix,
+                           excluded_seeds=excluded_seeds)
+
+        with open(self.contigs_csv) as contigs_csv:
+            plot_contigs(contigs_csv, self.contigs_svg)

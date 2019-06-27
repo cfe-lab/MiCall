@@ -29,9 +29,9 @@ CAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """)
     contigs_csv = StringIO()
     expected_contigs_csv = """\
-genotype,match,contig
-HCV-1a,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
-HCV-1a,1.0,CAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
+genotype,match,start,end,ref_start,ref_end,contig
+HCV-1a,1.0,1,41,8187,8227,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-1a,1.0,1,41,8518,8558,CAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """
 
     write_genotypes(str(contigs_fasta), contigs_csv)
@@ -47,8 +47,8 @@ CATCACATAGGAGA
 """)
     contigs_csv = StringIO()
     expected_contigs_csv = """\
-genotype,match,contig
-unknown,0,CATCACATAGGAGA
+genotype,match,start,end,ref_start,ref_end,contig
+unknown,0,,,,,CATCACATAGGAGA
 """
 
     write_genotypes(str(contigs_fasta), contigs_csv)
@@ -66,9 +66,9 @@ CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """)
     contigs_csv = StringIO()
     expected_contigs_csv = """\
-genotype,match,contig
-HCV-1a,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
-HCV-1a,0.75,CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
+genotype,match,start,end,ref_start,ref_end,contig
+HCV-1a,1.0,1,41,8187,8227,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-1a,0.75,15,55,8518,8558,CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """
 
     write_genotypes(str(contigs_fasta), contigs_csv)
@@ -82,7 +82,7 @@ def test_write_genotypes_none(tmpdir, hcv_db):
 
     contigs_csv = StringIO()
     expected_contigs_csv = """\
-genotype,match,contig
+genotype,match,start,end,ref_start,ref_end,contig
 """
 
     write_genotypes(str(contigs_fasta), contigs_csv)
@@ -102,8 +102,8 @@ TGCACAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA
 
     contigs_csv = StringIO()
     expected_contigs_csv = """\
-genotype,match,contig
-HIV1-C-BR-JX140663-seed,1.0,TGCACAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA
+genotype,match,start,end,ref_start,ref_end,contig
+HIV1-C-BR-JX140663-seed,1.0,1,51,6535,6585,TGCACAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA
 """
 
     with merged_contigs_path.open() as merged_contigs_csv:
@@ -118,8 +118,8 @@ def test_denovo_iva(tmpdir, hcv_db):
     microtest_path = Path(__file__).parent / 'microtest'
     contigs_csv = StringIO()
     expected_contigs_csv = """\
-genotype,match,contig
-HCV-2a,1.0,TCGACGCTCATTACGACTCAGTCTTAAAGGACATCAAGCTAGCGGCCTCCAAGGTCTCCGCGAGGCT\
+genotype,match,start,end,ref_start,ref_end,contig
+HCV-2a,1.0,1,319,7848,8166,TCGACGCTCATTACGACTCAGTCTTAAAGGACATCAAGCTAGCGGCCTCCAAGGTCTCCGCGAGGCT\
 CCTCACCCTGGAGGAGGCATGCCAGCTAACTCCACCCCATTCTGCAAGATCCAAATATGGGTTTGGGGCTAAGGAGGT\
 GCGCAGCTTGTCCGGGAGGGCCGTTAACCACATCAAGTCCGTGTGGAAGGACCTCCTGGAAGACTCACAAACACCAAT\
 TCCCACAACCATCATGGCCAAAAATGAAGTGTTCTGCGTGGACCCCACCAAGGGGGGTAAGAAAGCAGCTCGCCTCAT\
@@ -139,8 +139,8 @@ def test_denovo_savage(tmpdir, hcv_db):
     microtest_path = Path(__file__).parent / 'microtest'
     contigs_csv = StringIO()
     expected_contigs_csv = """\
-genotype,match,contig
-HCV-1a,1.0,CGACGTGGTTAGCAAGCTCCCCCTGGCCGTGATGGGAAGCTCCTACGGATTCCAATACTCACCAGGA\
+genotype,match,start,end,ref_start,ref_end,contig
+HCV-1a,1.0,1,263,8129,8391,CGACGTGGTTAGCAAGCTCCCCCTGGCCGTGATGGGAAGCTCCTACGGATTCCAATACTCACCAGGA\
 CAGCGGGTTGAATTCCTCGTGCAAGCGTGGAAGTCCAAGAAGACCCCGATGGGGTTCTCGTATGATACCCGCTGTTTT\
 GACTCCACAGTCACTGAGAGCGACATCCGTACGGAGGAGGCAATTTACCAATGTTGTGACCTGGACCCCCAAGCCCGC\
 GTGGCCATCAAGTCCCTCACTGAGAGGCTTTATGTTGGGG

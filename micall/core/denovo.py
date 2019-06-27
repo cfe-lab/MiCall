@@ -33,7 +33,13 @@ Assembler = Enum('Assembler', 'IVA SAVAGE')
 
 def write_genotypes(contigs_fasta_path, contigs_csv, merged_contigs_csv=None):
     writer = DictWriter(contigs_csv,
-                        ['genotype', 'match', 'contig'],
+                        ['genotype',
+                         'match',
+                         'start',
+                         'end',
+                         'ref_start',
+                         'ref_end',
+                         'contig'],
                         lineterminator=os.linesep)
     writer.writeheader()
     with open(contigs_fasta_path, 'a') as contigs_fasta:
@@ -45,10 +51,19 @@ def write_genotypes(contigs_fasta_path, contigs_csv, merged_contigs_csv=None):
     genotypes = genotype(contigs_fasta_path)
     genotype_count = 0
     for i, record in enumerate(SeqIO.parse(contigs_fasta_path, "fasta")):
-        genotype_name, match_fraction = genotypes.get(record.name, ('unknown', 0))
+        (genotype_name,
+         match_fraction,
+         start,
+         end,
+         ref_start,
+         ref_end) = genotypes.get(record.name, ('unknown', 0, '', '', '', ''))
         writer.writerow(dict(genotype=genotype_name,
                              match=match_fraction,
-                             contig=record.seq))
+                             contig=record.seq,
+                             start=start,
+                             end=end,
+                             ref_start=ref_start,
+                             ref_end=ref_end))
         genotype_count += 1
     return genotype_count
 
@@ -65,9 +80,18 @@ def genotype(fasta, db=DEFAULT_DATABASE):
         fraction of the query that aligned against the reference (matches and
         mismatches).
     """
+    blast_columns = ['qaccver',
+                     'saccver',
+                     'pident',
+                     'score',
+                     'qcovhsp',
+                     'qstart',
+                     'qend',
+                     'sstart',
+                     'send']
     cline = NcbiblastnCommandline(query=fasta,
                                   db=db,
-                                  outfmt='"10 qaccver saccver pident score qcovhsp"',
+                                  outfmt=f'"10 {" ".join(blast_columns)}"',
                                   evalue=0.0001,
                                   gapopen=5,
                                   gapextend=2,
@@ -75,16 +99,21 @@ def genotype(fasta, db=DEFAULT_DATABASE):
                                   reward=1,
                                   max_target_seqs=5000)
     stdout, _ = cline()
+    dump_path = os.path.join(os.path.dirname(fasta),
+                             'blast.csv')
+    with open(dump_path, 'w') as dump:
+        dump.write(stdout)
     samples = {}  # {query_name: (subject_name, matched_fraction)}
-    matches = sorted(DictReader(StringIO(stdout), ['qaccver',
-                                                   'saccver',
-                                                   'pident',
-                                                   'score',
-                                                   'qcovhsp']),
+    matches = sorted(DictReader(StringIO(stdout), blast_columns),
                      key=lambda row: float(row['score']))
     for match in matches:
         matched_fraction = float(match['qcovhsp']) / 100
-        samples[match['qaccver']] = (match['saccver'], matched_fraction)
+        samples[match['qaccver']] = (match['saccver'],
+                                     matched_fraction,
+                                     match['qstart'],
+                                     match['qend'],
+                                     match['sstart'],
+                                     match['send'])
     return samples
 
 

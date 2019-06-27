@@ -71,7 +71,7 @@ def parse_args():
 
 def load_sample(args):
     """ Load the data from Kive's command-line arguments. """
-    scratch_path = os.path.join(os.path.dirname(args.fastq1), 'scratch')
+    scratch_path = os.path.join(os.path.dirname(args.cascade_csv), 'scratch')
     shutil.rmtree(scratch_path, ignore_errors=True)
 
     sample = Sample(fastq1=args.fastq1,
@@ -115,6 +115,8 @@ def main():
             image_path = os.path.join(sample.coverage_maps, image_name)
             archive_path = os.path.join('coverage_maps', image_name)
             tar.add(image_path, archive_path)
+        archive_path = os.path.join('coverage_maps', 'contigs.svg')
+        tar.add(sample.contigs_csv, archive_path)
 
 
 main()

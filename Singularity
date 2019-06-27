@@ -159,13 +159,6 @@ From: centos:7
     bwa index h77.fasta
     bwa index hcv.fasta
 
-    # Install genetracks
-    pip install pysam
-    cd /opt
-    git clone https://github.com/jeff-k/genetracks.git
-    cd genetracks
-    pip install .
-
     yum groupremove -q -y 'development tools'
     yum remove -q -y epel-release wget python36-devel unzip
     yum autoremove -q -y

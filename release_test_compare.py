@@ -69,9 +69,14 @@ def find_runs(source_folder, target_folder):
                                            run_name,
                                            'Results')
         source_versions = os.listdir(source_results_path)
-        source_versions.sort()
+        source_versions.sort(key=parse_version)
         source_path = os.path.join(source_results_path, source_versions[-1])
         yield MiseqRun(source_path, target_path, is_done)
+
+
+def parse_version(version_name):
+    version_text = version_name.split('_')[-1]
+    return tuple(map(int, version_text.split('.')))
 
 
 def report_source_versions(runs):

@@ -794,6 +794,9 @@ class SequenceReport(object):
         result = Counter()
         conseq = self.remap_conseqs[seed_name]
         coord_refs = self.projects.getCoordinateReferences(seed_name)
+        if not coord_refs:
+            _, seed_name = seed_name.split('-', 1)
+            coord_refs = self.projects.getCoordinateReferences(seed_name)
         for coord_ref in coord_refs.values():
             best_alignment = (-1000000, '', '', 0)
             for frame_index in range(3):
