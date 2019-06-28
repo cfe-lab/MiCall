@@ -246,12 +246,14 @@ class Sample:
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
         with open(self.merged_contigs_csv) as merged_contigs_csv, \
-                open(self.contigs_csv, 'w') as contigs_csv:
+                open(self.contigs_csv, 'w') as contigs_csv, \
+                open(self.blast_csv, 'w') as blast_csv:
             denovo(self.trimmed1_fastq,
                    self.trimmed2_fastq,
                    contigs_csv,
                    self.scratch_path,
-                   merged_contigs_csv)
+                   merged_contigs_csv,
+                   blast_csv=blast_csv)
         logger.info('Running remap on %s.', self)
         if self.debug_remap:
             debug_file_prefix = os.path.join(scratch_path, 'debug')

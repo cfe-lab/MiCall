@@ -31,15 +31,12 @@ logger = logging.getLogger(__name__)
 Assembler = Enum('Assembler', 'IVA SAVAGE')
 
 
-def write_genotypes(contigs_fasta_path, contigs_csv, merged_contigs_csv=None):
+def write_genotypes(contigs_fasta_path,
+                    contigs_csv,
+                    merged_contigs_csv=None,
+                    blast_csv=None):
     writer = DictWriter(contigs_csv,
-                        ['genotype',
-                         'match',
-                         'start',
-                         'end',
-                         'ref_start',
-                         'ref_end',
-                         'contig'],
+                        ['genotype', 'match', 'contig'],
                         lineterminator=os.linesep)
     writer.writeheader()
     with open(contigs_fasta_path, 'a') as contigs_fasta:
@@ -48,32 +45,25 @@ def write_genotypes(contigs_fasta_path, contigs_csv, merged_contigs_csv=None):
             for i, row in enumerate(contig_reader, 1):
                 contig_name = f'merged-contig-{i}'
                 contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
-    genotypes = genotype(contigs_fasta_path)
+    genotypes = genotype(contigs_fasta_path, blast_csv=blast_csv)
     genotype_count = 0
     for i, record in enumerate(SeqIO.parse(contigs_fasta_path, "fasta")):
-        (genotype_name,
-         match_fraction,
-         start,
-         end,
-         ref_start,
-         ref_end) = genotypes.get(record.name, ('unknown', 0, '', '', '', ''))
+        (genotype_name, match_fraction) = genotypes.get(record.name,
+                                                        ('unknown', 0))
         writer.writerow(dict(genotype=genotype_name,
                              match=match_fraction,
-                             contig=record.seq,
-                             start=start,
-                             end=end,
-                             ref_start=ref_start,
-                             ref_end=ref_end))
+                             contig=record.seq))
         genotype_count += 1
     return genotype_count
 
 
-def genotype(fasta, db=DEFAULT_DATABASE):
+def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None):
     """ Use Blastn to search for the genotype of a set of reference sequences.
 
     :param str fasta: file path of the FASTA file containing the query
         sequences
     :param str db: file path of the database to search for matches
+    :param blast_csv: open file to write the blast matches to, or None
     :return: {query_name: (ref_name, matched_fraction)} where query_name is a
         sequence header from the query sequences FASTA file, ref_name is the
         name of the best match from the database, and matched_fraction is the
@@ -99,21 +89,35 @@ def genotype(fasta, db=DEFAULT_DATABASE):
                                   reward=1,
                                   max_target_seqs=5000)
     stdout, _ = cline()
-    dump_path = os.path.join(os.path.dirname(fasta),
-                             'blast.csv')
-    with open(dump_path, 'w') as dump:
-        dump.write(stdout)
     samples = {}  # {query_name: (subject_name, matched_fraction)}
     matches = sorted(DictReader(StringIO(stdout), blast_columns),
-                     key=lambda row: float(row['score']))
+                     key=lambda row: (row['qaccver'], float(row['score'])))
+    if not blast_csv:
+        blast_writer = None
+    else:
+        blast_writer = DictWriter(blast_csv,
+                                  ['contig_name',
+                                   'ref_name',
+                                   'score',
+                                   'match',
+                                   'start',
+                                   'end',
+                                   'ref_start',
+                                   'ref_end'],
+                                  lineterminator=os.linesep)
+        blast_writer.writeheader()
     for match in matches:
         matched_fraction = float(match['qcovhsp']) / 100
-        samples[match['qaccver']] = (match['saccver'],
-                                     matched_fraction,
-                                     match['qstart'],
-                                     match['qend'],
-                                     match['sstart'],
-                                     match['send'])
+        samples[match['qaccver']] = (match['saccver'], matched_fraction)
+        if blast_writer:
+            blast_writer.writerow(dict(contig_name=match['qaccver'],
+                                       ref_name=match['saccver'],
+                                       score=match['score'],
+                                       match=matched_fraction,
+                                       start=match['qstart'],
+                                       end=match['qend'],
+                                       ref_start=match['sstart'],
+                                       ref_end=match['send']))
     return samples
 
 
@@ -122,7 +126,8 @@ def denovo(fastq1_path,
            contigs,
            work_dir='.',
            merged_contigs_csv=None,
-           assembler=Assembler.IVA):
+           assembler=Assembler.IVA,
+           blast_csv=None):
     old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
         rmtree(old_tmp_dir, ignore_errors=True)
@@ -175,7 +180,10 @@ def denovo(fastq1_path,
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
-    contig_count = write_genotypes(contigs_fasta_path, contigs, merged_contigs_csv)
+    contig_count = write_genotypes(contigs_fasta_path,
+                                   contigs,
+                                   merged_contigs_csv,
+                                   blast_csv)
     logger.info('Assembled %d contigs in %s (%ds) on %s.',
                 contig_count,
                 duration,

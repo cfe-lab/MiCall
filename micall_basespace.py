@@ -565,6 +565,10 @@ def collate_samples(run_info):
         for map_file in os.listdir(sample_info.coverage_maps):
             os.rename(os.path.join(sample_info.coverage_maps, map_file),
                       os.path.join(coverage_maps_path, map_file))
+        if os.path.exists(sample_info.contigs_svg):
+            os.rename(sample_info.contigs_svg,
+                      os.path.join(coverage_maps_path,
+                                   sample_info.name + '_contigs.svg'))
         if os.path.exists(sample_info.resistance_pdf):
             os.rename(sample_info.resistance_pdf,
                       os.path.join(resistance_reports_path,

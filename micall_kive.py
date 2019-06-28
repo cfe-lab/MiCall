@@ -65,6 +65,15 @@ def parse_args():
                         action='store_true',
                         help='Use de novo assembly instead of mapping to '
                              'reference sequences.')
+    parser.add_argument('contigs_csv',
+                        nargs='?',
+                        help='CSV containing contigs built by de novo assembly')
+    parser.add_argument('blast_csv',
+                        nargs='?',
+                        help='CSV containing blast results for each contig')
+    parser.add_argument('blast_svg',
+                        nargs='?',
+                        help='SVG diagram of blast results for each contig')
 
     return parser.parse_args()
 
@@ -95,6 +104,9 @@ def load_sample(args):
                     coverage_scores_csv=args.coverage_scores_csv,
                     aligned_csv=args.aligned_csv,
                     g2p_aligned_csv=args.g2p_aligned_csv,
+                    contigs_csv=args.contigs_csv,
+                    blast_csv=args.blast_csv,
+                    blast_svg=args.blast_svg,
                     scratch_path=scratch_path)
     sample.name = None  # Since the file names are messy in Kive.
     return sample

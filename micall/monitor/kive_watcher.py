@@ -451,6 +451,14 @@ class KiveWatcher:
                                 direction + ' read from MiSeq run ' +
                                 folder_watcher.run_name)
                             sample_watcher.fastq_datasets.append(fastq_dataset)
+                    if (self.config.denovo_pipeline_id or
+                            self.config.denovo_combined_pipeline_id):
+                        sample_name = trim_name(fastq_name)
+                        name_dataset = self.find_or_upload_dataset(
+                            BytesIO(sample_name.encode('UTF8')),
+                            f'{sample_name}_name.txt')
+                        sample_watcher.name_datasets.append(name_dataset)
+
                 folder_watcher.sample_watchers.append(sample_watcher)
                 return sample_watcher
             except Exception:
@@ -850,7 +858,7 @@ class KiveWatcher:
     def find_or_upload_dataset(self,
                                dataset_file,
                                dataset_name,
-                               description):
+                               description=''):
         dataset = self.find_kive_dataset(dataset_file, dataset_name)
         if dataset is None:
             dataset_file.seek(0)
