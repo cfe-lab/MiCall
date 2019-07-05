@@ -2189,10 +2189,10 @@ def test_folder_completed_with_svg(raw_data_with_two_samples, mock_open_kive, de
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
-              argument_name='alignment')],  # run datasets
+              argument_name='alignment_svg')],  # run datasets
         dict(id=108, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
-              argument_name='alignment')]]  # run datasets
+              argument_name='alignment_svg')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     expected_done_path = results_path / "doneprocessing"
     expected_alignment1_path = results_path / "alignment" / "2110A-V3LOOP_S13_alignment.svg"

@@ -3,6 +3,7 @@ import logging
 import os
 
 from micall.core.aln2counts import aln2counts
+from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
 from micall.core.coverage_plots import coverage_plot
 from micall.core.plot_contigs import plot_contigs
@@ -81,7 +82,7 @@ class Sample:
         if self.scratch_path is None:
             raise AttributeError(
                 'Unknown output {} and no scratch path.'.format(output_name))
-        for extension in ('csv', 'fastq', 'pdf', 'svg'):
+        for extension in ('csv', 'fastq', 'pdf', 'svg', 'png'):
             if output_name.endswith('_'+extension):
                 file_name = output_name[:-(len(extension)+1)] + '.' + extension
                 break
@@ -121,6 +122,16 @@ class Sample:
                  (self.trimmed1_fastq, self.trimmed2_fastq),
                  summary_file=read_summary,
                  use_gzip=use_gzip)
+
+        logger.info('Running merge_for_entropy on %s.', self)
+        with open(self.read_entropy_csv, 'w') as read_entropy_csv:
+            merge_for_entropy(self.trimmed1_fastq,
+                              self.trimmed2_fastq,
+                              read_entropy_csv,
+                              scratch_path)
+
+        write_merge_lengths_plot(self.read_entropy_csv,
+                                 self.merge_lengths_svg)
 
         logger.info('Running fastq_g2p on %s.', self)
         with open(self.trimmed1_fastq) as fastq1, \
@@ -278,5 +289,5 @@ class Sample:
                            debug_file_prefix=debug_file_prefix,
                            excluded_seeds=excluded_seeds)
 
-        with open(self.contigs_csv) as contigs_csv:
-            plot_contigs(contigs_csv, self.contigs_svg)
+        with open(self.blast_csv) as blast_csv:
+            plot_contigs(blast_csv, self.contigs_svg)

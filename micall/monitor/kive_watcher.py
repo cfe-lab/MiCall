@@ -51,7 +51,8 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'resistance_consensus_csv',
                       'wg_fasta',
                       'mid_fasta',
-                      'alignment']
+                      'alignment_svg',
+                      'assembly_fasta']
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
@@ -532,7 +533,7 @@ class KiveWatcher:
             if output_name == 'coverage_maps_tar':
                 self.extract_coverage_maps(folder_watcher)
                 continue
-            if output_name == 'alignment':
+            if output_name == 'alignment_svg':
                 self.extract_alignment(folder_watcher)
                 continue
             source_count = 0
@@ -602,7 +603,7 @@ class KiveWatcher:
         scratch_path = results_path / "scratch"
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / 'alignment'
+            source_path = scratch_path / sample_name / 'alignment.svg'
             target_path = alignment_path / f"{sample_name}_alignment.svg"
             try:
                 os.rename(source_path, target_path)
@@ -657,7 +658,8 @@ class KiveWatcher:
             if self.config.denovo_pipeline_id is None:
                 return None
             input_datasets = dict(r1=sample_watcher.fastq_datasets[0],
-                                  r2=sample_watcher.fastq_datasets[1])
+                                  r2=sample_watcher.fastq_datasets[1],
+                                  sample_name=sample_watcher.name_datasets[0])
             sample_name = sample_watcher.sample_group.names[0]
             return self.find_or_launch_run(
                 self.config.denovo_pipeline_id,
