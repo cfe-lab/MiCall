@@ -1,4 +1,4 @@
-from genetracks import Figure, Track, Alignment, Multitrack, Label
+from genetracks import Figure, Track, Alignment, Multitrack, Label, Coverage
 import sys
 import pysam
 
@@ -49,16 +49,35 @@ def hiv_region_tracks(f):
                           for l, r, text, color in reading_frame]), gap=0)
 
 
-def get_alignments(fn, references, label=""):
+def get_alignments(fn, references, label="", coverage=None):
     bf = pysam.AlignmentFile(fn)
 
     contigs = {}
     ref_names = {}
+
+    empty_tracks = []
+    seen = set()
     for aln in bf:
+        if aln.query_name not in coverage:
+            coverage[aln.query_name] = [0 for _ in range(0, 10000)]
         print(aln.reference_name)
         if not aln.reference_name:
+            if aln.query_name in seen:
+                continue
+            seen.add(aln.query_name)
+
+            empty_tracks.append("Non-HCV: {} {}, length: {}, max depth: {}".format(label,
+                aln.query_name, aln.query_length,
+                max(coverage[aln.query_name])))
             continue
         if "HCV" not in aln.reference_name:
+            if aln.query_name in seen:
+                continue
+            seen.add(aln.query_name)
+            empty_tracks.append("Non-HCV: {} {} ({}), length: {}, max depth: {}".format(label,
+                aln.query_name, aln.reference_name, aln.query_length,
+                max(coverage[aln.query_name])))
+ 
             continue
         if aln.cigartuples is None:
             continue
@@ -74,27 +93,55 @@ def get_alignments(fn, references, label=""):
     bf.close()
 
     tracks = []
+    coverage_tracks = []
     for contig in sorted(contigs):
-        contigs[contig].append(Track(4000,4000, label="{}-{}: {}".format(label,
+        coverage_tracks.append(Coverage(contigs[contig][0].a,
+            contigs[contig][0].b, coverage[contig]))
+        contigs[contig].append(Track(4000,4000, label="{} {}: {}".format(label,
             contig, ref_names[contig])))
         tracks.append(Multitrack(contigs[contig], join=False))
         print("{},{}".format(contig, ref_names[contig]), file=subtyping)
-    return tracks
+    return tracks, coverage_tracks, empty_tracks
+
+def get_coverage(fn, length=10000):
+    cs = {}
+    bf = pysam.AlignmentFile(fn)
+
+    for pc in bf.pileup():
+        if pc.reference_name not in cs:
+            cs[pc.reference_name] = [0 for _ in range(0, length)]
+        if pc.pos < 1 or pc.pos >= length:
+            continue
+        cs[pc.reference_name][pc.pos] = pc.n
+    return cs
 
 if __name__ == "__main__":
-    ts = get_alignments(sys.argv[1], ["NC_004102.1"], label="WG")
+    wg_cov = get_coverage(sys.argv[3])
+    mid_cov = get_coverage(sys.argv[4])
+    label = sys.argv[5]
+    
+    ts, cts, es1 = get_alignments(sys.argv[1], ["NC_004102.1"],
+            label="{}-WG".format(label), coverage=wg_cov)
 
     f = Figure()
     hcv_region_tracks(f)
 
-    for t in ts:
+    for t, c in zip(ts, cts):
+        f.add(c, gap=-5)
         f.add(t)
 
-    tx = get_alignments(sys.argv[2], ["NC_004102.1"], label="MIDI")
+    tx, ctx, es2 = get_alignments(sys.argv[2], ["NC_004102.1"],
+            label="{}-MIDI".format(label), coverage=mid_cov)
 
-    for t in tx:
+    for t, c in zip(tx, ctx):
+        f.add(c, gap=-5)
         f.add(t)
 
-    f.show(w=970).saveSvg("/tmp/alignment.svg")
+    for e in es1 + es2:
+        f.add(Track(4000,4000, label=e))
+
+    d = f.show(w=970)
+    d.saveSvg("/tmp/alignment.svg")
+    d.savePng("/tmp/alignment.png")
     
 subtyping.close()

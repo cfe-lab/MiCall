@@ -21,6 +21,15 @@ samtools index wg.bam
 bwa bwasw /opt/micall/micall/utils/hcv_geno/hcv.fasta $7 | samtools view -bS - | samtools sort - > mid.bam
 samtools index mid.bam
 
-python /opt/micall/micall/utils/plot.py wg.bam mid.bam `cat $5`
+bwa index $6
+bwa mem $6 $1 $2 | samtools view -bS - | samtools sort - > wg_remap.bam
+samtools index wg_remap.bam
+
+bwa index $7
+bwa mem $7 $1 $2 | samtools view -bS - | samtools sort - > mid_remap.bam
+samtools index mid_remap.bam
+
+python /opt/micall/micall/utils/plot.py wg.bam mid.bam wg_remap.bam mid_remap.bam `cat $5`
 mv /tmp/alignment.svg $8
 mv /tmp/subtyping.csv $9
+mv /tmp/alignment.png $10

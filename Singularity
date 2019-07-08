@@ -160,6 +160,7 @@ From: centos:7
     bwa index hcv.fasta
 
     # Install genetracks
+    pip install cairosvg
     pip install pysam
     cd /opt
     git clone https://github.com/jeff-k/genetracks.git
@@ -218,7 +219,7 @@ From: centos:7
 
 %applabels denovo_hcv
     KIVE_INPUTS wg1 wg2 mid1 mid2 sample_name
-    KIVE_OUTPUTS wg_fasta mid_fasta alignment subtyping
+    KIVE_OUTPUTS wg_fasta mid_fasta alignment_svg subtyping_csv alignment_png
 
 %apphelp denovo_hcv
     Two-part HCV denovo assembly
@@ -228,7 +229,7 @@ From: centos:7
 
 %applabels proviral_hiv
     KIVE_INPUTS r1 r2 sample_name
-    KIVE_OUTPUTS alignment_csv summary_csv assembly_fasta
+    KIVE_OUTPUTS alignment_svg summary_csv assembly_fasta alignment_png
 
 %apphelp proviral_hiv
     Bespoke pipeline for highly mutated HIV proviruses
