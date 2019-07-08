@@ -3,8 +3,10 @@ import logging
 import os
 
 from micall.core.aln2counts import aln2counts
+from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
 from micall.core.coverage_plots import coverage_plot
+from micall.core.plot_contigs import plot_contigs
 from micall.core.prelim_map import prelim_map
 from micall.core.remap import remap, map_to_contigs
 from micall.core.sam2aln import sam2aln
@@ -80,7 +82,7 @@ class Sample:
         if self.scratch_path is None:
             raise AttributeError(
                 'Unknown output {} and no scratch path.'.format(output_name))
-        for extension in ('csv', 'fastq', 'pdf'):
+        for extension in ('csv', 'fastq', 'pdf', 'svg', 'png'):
             if output_name.endswith('_'+extension):
                 file_name = output_name[:-(len(extension)+1)] + '.' + extension
                 break
@@ -120,6 +122,16 @@ class Sample:
                  (self.trimmed1_fastq, self.trimmed2_fastq),
                  summary_file=read_summary,
                  use_gzip=use_gzip)
+
+        logger.info('Running merge_for_entropy on %s.', self)
+        with open(self.read_entropy_csv, 'w') as read_entropy_csv:
+            merge_for_entropy(self.trimmed1_fastq,
+                              self.trimmed2_fastq,
+                              read_entropy_csv,
+                              scratch_path)
+
+        write_merge_lengths_plot(self.read_entropy_csv,
+                                 self.merge_lengths_svg)
 
         logger.info('Running fastq_g2p on %s.', self)
         with open(self.trimmed1_fastq) as fastq1, \
@@ -245,12 +257,14 @@ class Sample:
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
         with open(self.merged_contigs_csv) as merged_contigs_csv, \
-                open(self.contigs_csv, 'w') as contigs_csv:
+                open(self.contigs_csv, 'w') as contigs_csv, \
+                open(self.blast_csv, 'w') as blast_csv:
             denovo(self.trimmed1_fastq,
                    self.trimmed2_fastq,
                    contigs_csv,
                    self.scratch_path,
-                   merged_contigs_csv)
+                   merged_contigs_csv,
+                   blast_csv=blast_csv)
         logger.info('Running remap on %s.', self)
         if self.debug_remap:
             debug_file_prefix = os.path.join(scratch_path, 'debug')
@@ -272,4 +286,8 @@ class Sample:
                            unmapped1,
                            unmapped2,
                            scratch_path,
-                           debug_file_prefix=debug_file_prefix)
+                           debug_file_prefix=debug_file_prefix,
+                           excluded_seeds=excluded_seeds)
+
+        with open(self.blast_csv) as blast_csv:
+            plot_contigs(blast_csv, self.contigs_svg)

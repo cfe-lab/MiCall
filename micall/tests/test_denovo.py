@@ -76,6 +76,34 @@ HCV-1a,0.75,CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
     assert expected_contigs_csv == contigs_csv.getvalue()
 
 
+def test_write_blast(tmpdir, hcv_db):
+    contigs_fasta = Path(tmpdir) / "contigs.fasta"
+    contigs_fasta.write_text("""\
+>foo
+TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+>bar
+CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
+""")
+    contigs_csv = StringIO()
+    expected_contigs_csv = """\
+genotype,match,contig
+HCV-1a,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-1a,0.75,CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
+"""
+    blast_csv = StringIO()
+    expected_blast_csv = """\
+contig_name,ref_name,score,match,start,end,ref_start,ref_end
+bar,HCV-1g,37,0.67,19,55,8506,8542
+bar,HCV-1a,41,0.75,15,55,8518,8558
+foo,HCV-1a,41,1.0,1,41,8187,8227
+"""
+
+    write_genotypes(str(contigs_fasta), contigs_csv, blast_csv=blast_csv)
+
+    assert expected_contigs_csv == contigs_csv.getvalue()
+    assert expected_blast_csv == blast_csv.getvalue()
+
+
 def test_write_genotypes_none(tmpdir, hcv_db):
     contigs_fasta = Path(tmpdir) / 'contigs.fasta'
     assert not contigs_fasta.exists()

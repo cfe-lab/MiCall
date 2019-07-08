@@ -65,13 +65,22 @@ def parse_args():
                         action='store_true',
                         help='Use de novo assembly instead of mapping to '
                              'reference sequences.')
+    parser.add_argument('contigs_csv',
+                        nargs='?',
+                        help='CSV containing contigs built by de novo assembly')
+    parser.add_argument('blast_csv',
+                        nargs='?',
+                        help='CSV containing blast results for each contig')
+    parser.add_argument('blast_svg',
+                        nargs='?',
+                        help='SVG diagram of blast results for each contig')
 
     return parser.parse_args()
 
 
 def load_sample(args):
     """ Load the data from Kive's command-line arguments. """
-    scratch_path = os.path.join(os.path.dirname(args.fastq1), 'scratch')
+    scratch_path = os.path.join(os.path.dirname(args.cascade_csv), 'scratch')
     shutil.rmtree(scratch_path, ignore_errors=True)
 
     sample = Sample(fastq1=args.fastq1,
@@ -95,6 +104,9 @@ def load_sample(args):
                     coverage_scores_csv=args.coverage_scores_csv,
                     aligned_csv=args.aligned_csv,
                     g2p_aligned_csv=args.g2p_aligned_csv,
+                    contigs_csv=args.contigs_csv,
+                    blast_csv=args.blast_csv,
+                    blast_svg=args.blast_svg,
                     scratch_path=scratch_path)
     sample.name = None  # Since the file names are messy in Kive.
     return sample
@@ -115,6 +127,8 @@ def main():
             image_path = os.path.join(sample.coverage_maps, image_name)
             archive_path = os.path.join('coverage_maps', image_name)
             tar.add(image_path, archive_path)
+        archive_path = os.path.join('coverage_maps', 'contigs.svg')
+        tar.add(sample.contigs_csv, archive_path)
 
 
 main()

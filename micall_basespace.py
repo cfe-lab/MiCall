@@ -531,7 +531,8 @@ def collate_samples(run_info):
                  'mutations.csv',
                  'resistance_fail.csv',
                  'resistance_consensus.csv',
-                 'cascade.csv']
+                 'cascade.csv',
+                 'merge_lengths.csv']
     for filename in filenames:
         out_path = run_info.output_path
         with open(os.path.join(out_path, filename), 'w') as fout:
@@ -561,10 +562,21 @@ def collate_samples(run_info):
     makedirs(resistance_reports_path)
     coverage_maps_path = os.path.join(run_info.output_path, 'coverage_maps')
     makedirs(coverage_maps_path)
+    merge_lengths_path = os.path.join(run_info.output_path, 'merge_lengths')
+    makedirs(merge_lengths_path)
     for sample_info in run_info.get_all_samples():
-        for map_file in os.listdir(sample_info.coverage_maps):
-            os.rename(os.path.join(sample_info.coverage_maps, map_file),
-                      os.path.join(coverage_maps_path, map_file))
+        if os.path.exists(sample_info.coverage_maps):
+            for map_file in os.listdir(sample_info.coverage_maps):
+                os.rename(os.path.join(sample_info.coverage_maps, map_file),
+                          os.path.join(coverage_maps_path, map_file))
+        if os.path.exists(sample_info.contigs_svg):
+            os.rename(sample_info.contigs_svg,
+                      os.path.join(coverage_maps_path,
+                                   sample_info.name + '_contigs.svg'))
+        if os.path.exists(sample_info.merge_lengths_svg):
+            os.rename(sample_info.merge_lengths_svg,
+                      os.path.join(merge_lengths_path,
+                                   sample_info.name + '_merge_lengths.svg'))
         if os.path.exists(sample_info.resistance_pdf):
             os.rename(sample_info.resistance_pdf,
                       os.path.join(resistance_reports_path,
