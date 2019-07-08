@@ -188,3 +188,16 @@ contig_1[8001-8050]
     figure = build_contigs_figure(blast_rows, limit=3)
 
     assert expected_figure == summarize_figure(figure)
+
+
+def test_no_contigs():
+    blast_rows = DictReader(StringIO("""\
+contig_name,ref_name,score,match,start,end,ref_start,ref_end
+"""))
+    expected_figure = f"""\
+No contigs assembled.
+"""
+
+    figure = build_contigs_figure(blast_rows, limit=3)
+
+    assert expected_figure == summarize_figure(figure)

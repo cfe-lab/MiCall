@@ -103,7 +103,7 @@ def build_contigs_figure(blast_rows, limit=10, centre_x=0):
                             row['ref_end'],
                             label=row['contig_name']))
     if not f.elements:
-        f.add(Track(0, 0, label='No contigs assembled.'))
+        f.add(Track(centre_x, centre_x, label='No contigs assembled.'))
     return f
 
 

@@ -37,7 +37,7 @@ def merge_reads(fastq1_path, fastq2_path, joined_fastq_path, merge_lengths_csv, 
             writer.writerow(dict(merge_length=merge_length, count=count))
 
 
-def plot_merge_lengths(read_entropy_path):
+def plot_merge_lengths(read_entropy_path: Path):
     plots = []
     fig, ax1 = plt.subplots()
     # noinspection PyTypeChecker
@@ -47,13 +47,25 @@ def plot_merge_lengths(read_entropy_path):
                                   dtype=float)
     merge_lengths = merge_entropy['merge_length'].astype(int)
     merge_counts = merge_entropy['count'].astype(int)
-    plots.append(plt.bar(merge_lengths,
-                         merge_counts,
-                         width=1.0,
-                         label='read count'))
     plt.title('Count of merged reads at each length')
     ax1.set_ylabel('merged read count')
     ax1.set_xlabel('length of merged reads')
+    if not merge_lengths.size:
+        ax1.text(0.5,
+                 0.5,
+                 'No merged reads.',
+                 transform=ax1.transAxes,
+                 fontsize=14,
+                 verticalalignment='center',
+                 horizontalalignment='center',
+                 bbox=dict(boxstyle='round',
+                           facecolor='wheat',
+                           alpha=0.5))
+        return fig
+    plots.append(ax1.bar(merge_lengths,
+                         merge_counts,
+                         width=1.0,
+                         label='merged read count'))
 
     ax2 = ax1.twinx()
     plots.append(ax2.plot(merge_entropy['merge_length'],
@@ -92,8 +104,8 @@ def plot_merge_lengths(read_entropy_path):
     return fig
 
 
-def write_merge_lengths_plot(read_entropy_path, plot_path):
-    fig = plot_merge_lengths(read_entropy_path)
+def write_merge_lengths_plot(read_entropy_path: str, plot_path: str):
+    fig = plot_merge_lengths(Path(read_entropy_path))
     fig.savefig(plot_path)
     plt.close(fig)
 
@@ -163,8 +175,7 @@ def main():
         hla2=Path('/home/don/git/MiCall/micall/tests/working') /
         'basespace_linked_data/scratch/71258A-HLA-B_S16',
         hcv=Path('/home/don/git/MiCall/micall/tests/working/') /
-        'basespace_linked_data_v3loop_hiv_hcv_190621_M04401/scratch' /
-        '90317A-HCV_S100',
+        'basespace_linked_microtest/scratch/2060A-V3LOOP_S8',
         hiv=Path('/home/don/git/MiCall/micall/tests/working/') /
         'basespace_linked_data_v3loop_hiv_hcv_190621_M04401/scratch' /
         '2569P1Y02945-1E8-HIV_S32',
@@ -173,9 +184,10 @@ def main():
         v3=Path('/home/don/git/MiCall/micall/tests/working/') /
         'basespace_linked_data/scratch' /
         '84681A-V3-WYD-T2-1-V3LOOP_S40')
-    scratch_path = scratch_paths['v3']
+    scratch_path = scratch_paths['hcv']
     read_entropy_path = scratch_path / 'read_entropy.csv'
-    plot_merge_lengths(read_entropy_path)
+    f = plot_merge_lengths(read_entropy_path)
+    f.savefig(scratch_path / 'read_entropy.svg')
     plt.show()
     print('Done.')
 
