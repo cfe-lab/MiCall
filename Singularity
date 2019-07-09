@@ -160,7 +160,9 @@ From: centos:7
     bwa index hcv.fasta
 
     # Install genetracks
+    yum install -q -y cairo-devel cairo cairo-tools zlib-devel
     pip install cairosvg
+    pip install cairocffi
     pip install pysam
     cd /opt
     git clone https://github.com/jeff-k/genetracks.git
