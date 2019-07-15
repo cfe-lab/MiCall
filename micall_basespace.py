@@ -573,6 +573,10 @@ def collate_samples(run_info):
             os.rename(sample_info.contigs_svg,
                       os.path.join(coverage_maps_path,
                                    sample_info.name + '_contigs.svg'))
+        if os.path.exists(sample_info.contig_coverage_svg):
+            os.rename(sample_info.contig_coverage_svg,
+                      os.path.join(coverage_maps_path,
+                                   sample_info.name + '_contig_coverage.svg'))
         if os.path.exists(sample_info.merge_lengths_svg):
             os.rename(sample_info.merge_lengths_svg,
                       os.path.join(merge_lengths_path,

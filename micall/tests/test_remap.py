@@ -1237,6 +1237,8 @@ read2,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
 read2,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
 read3,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
 read3,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
+read4,99,2-R2-partial,1,44,5M,=,1,-81,GTGGG,AAAAA
+read4,147,2-R2-partial,1,44,5M,=,1,-81,GTGGG,AAAAA
 """
         remap_counts_csv = StringIO()
         remap_csv = StringIO()

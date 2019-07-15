@@ -778,8 +778,7 @@ def write_remap_row(remap_writer, fields):
 
 
 def is_reported_region(region):
-    return not (region.endswith(PARTIAL_CONTIG_SUFFIX) or
-                region.endswith(EXCLUDED_CONTIG_SUFFIX))
+    return not region.endswith(EXCLUDED_CONTIG_SUFFIX)
 
 
 def read_contigs(contigs_csv, excluded_seeds=None):
@@ -1107,9 +1106,9 @@ def main():
 
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
-    parser.add_argument('prelim_csv',
+    parser.add_argument('contigs_csv',
                         type=argparse.FileType('rU'),
-                        help='<input> CSV containing preliminary map output (modified SAM)')
+                        help='<input> CSV containing assembled contigs')
     parser.add_argument('remap_csv',
                         type=argparse.FileType('w'),
                         help='<output> CSV containing remap output (modified SAM)')
@@ -1130,16 +1129,17 @@ def main():
 
     args = parser.parse_args()
     work_path = os.path.dirname(args.remap_csv.name)
-    remap(fastq1=args.fastq1,
-          fastq2=args.fastq2,
-          prelim_csv=args.prelim_csv,
-          remap_csv=args.remap_csv,
-          remap_counts_csv=args.remap_counts_csv,
-          remap_conseq_csv=args.remap_conseq_csv,
-          unmapped1=args.unmapped1,
-          unmapped2=args.unmapped2,
-          work_path=work_path,
-          gzip=args.gzip)  # defaults to False
+    map_to_contigs(
+        fastq1=args.fastq1,
+        fastq2=args.fastq2,
+        contigs_csv=args.contigs_csv,
+        remap_csv=args.remap_csv,
+        remap_counts_csv=args.remap_counts_csv,
+        remap_conseq_csv=args.remap_conseq_csv,
+        unmapped1=args.unmapped1,
+        unmapped2=args.unmapped2,
+        work_path=work_path,
+        gzip=args.gzip)  # defaults to False
 
 
 if __name__ == '__main__':

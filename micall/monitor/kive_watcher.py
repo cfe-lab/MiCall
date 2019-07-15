@@ -52,6 +52,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'wg_fasta',
                       'mid_fasta',
                       'alignment_svg',
+                      'alignment_png',
                       'assembly_fasta']
 
 # noinspection PyArgumentList
@@ -534,7 +535,10 @@ class KiveWatcher:
                 self.extract_coverage_maps(folder_watcher)
                 continue
             if output_name == 'alignment_svg':
-                self.extract_alignment(folder_watcher)
+                self.move_alignment_plot(folder_watcher, '.svg')
+                continue
+            if output_name == 'alignment_png':
+                self.move_alignment_plot(folder_watcher, '.png')
                 continue
             source_count = 0
             filename = get_output_filename(output_name)
@@ -596,17 +600,17 @@ class KiveWatcher:
             except FileNotFoundError:
                 pass
 
-    def extract_alignment(self, folder_watcher):
-        results_path = self.get_results_path(folder_watcher)
+    def move_alignment_plot(self, folder_watcher, extension):
+        results_path: Path = self.get_results_path(folder_watcher)
         alignment_path = results_path / "alignment"
-        alignment_path.mkdir()
+        alignment_path.mkdir(exist_ok=True)
         scratch_path = results_path / "scratch"
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / 'alignment.svg'
-            target_path = alignment_path / f"{sample_name}_alignment.svg"
+            source_path = scratch_path / sample_name / f'alignment{extension}'
+            target_path = alignment_path / f"{sample_name}_alignment{extension}"
             try:
-                os.rename(source_path, target_path)
+                os.rename(str(source_path), str(target_path))
             except FileNotFoundError:
                 pass
 
@@ -672,7 +676,8 @@ class KiveWatcher:
             input_datasets = dict(wg1=sample_watcher.fastq_datasets[0],
                                   wg2=sample_watcher.fastq_datasets[1],
                                   mid1=sample_watcher.fastq_datasets[2],
-                                  mid2=sample_watcher.fastq_datasets[3])
+                                  mid2=sample_watcher.fastq_datasets[3],
+                                  sample_name=sample_watcher.name_datasets[0])
             return self.find_or_launch_run(
                 self.config.denovo_combined_pipeline_id,
                 input_datasets,

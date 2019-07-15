@@ -16,10 +16,13 @@ import csv
 from itertools import groupby
 from operator import itemgetter
 import os
+from pathlib import Path
 
 import gotoh
+import yaml
 
 from micall.core.project_config import ProjectConfig
+from micall.core.remap import PARTIAL_CONTIG_SUFFIX
 from micall.utils.big_counter import BigCounter
 from micall.utils.translation import translate, ambig_dict
 
@@ -68,6 +71,9 @@ def parse_args():
     parser.add_argument('conseq_region_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing consensus sequences, split by region')
+    parser.add_argument('contig_coverage_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing coverage counts, split by contig')
 
     return parser.parse_args()
 
@@ -83,13 +89,14 @@ class SequenceReport(object):
                  projects,
                  conseq_mixture_cutoffs,
                  clipping_counts=None,
-                 conseq_insertion_counts=None):
+                 conseq_insertion_counts=None,
+                 landmarks_yaml=None):
         """ Create an object instance.
 
-        @param insert_writer: InsertionWriter object that will track reads and
+        :param insert_writer: InsertionWriter object that will track reads and
             write out any insertions relative to the coordinate reference.
-        @param projects: ProjectConfig object
-        @param conseq_mixture_cutoffs: a list of cutoff fractions used to
+        :param projects: ProjectConfig object
+        :param conseq_mixture_cutoffs: a list of cutoff fractions used to
             determine what portion a variant must exceed before it will be
             included as a mixture in the consensus.
         """
@@ -105,6 +112,8 @@ class SequenceReport(object):
         self.v3_overlap_region_name = None
         self.seed_aminos = self.reports = self.reading_frames = None
         self.inserts = self.consensus = self.seed = None
+        self.consensus_by_reading_frame = None  # {frame: seq}
+        self.landmarks = yaml.safe_load(landmarks_yaml)
         self.coordinate_refs = self.remap_conseqs = None
 
         # {seed: {coord_region: [ReportAmino]}}
@@ -118,6 +127,7 @@ class SequenceReport(object):
                                         defaultdict(Counter))
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
         self.amino_writer = self.amino_detail_writer = None
+        self.contig_coverage_writer = None
         self.conseq_region_writer = self.fail_writer = None
 
     def enable_callback(self, callback, file_size):
@@ -332,6 +342,8 @@ class SequenceReport(object):
                 self.write_consensus(self.conseq_writer)
             if self.conseq_region_writer is not None:
                 self.write_consensus_regions(self.conseq_region_writer)
+            if self.contig_coverage_writer is not None:
+                self.write_contig_coverage_counts()
             if self.amino_detail_writer is not None:
                 self.write_amino_detail_counts()
             elif self.amino_writer is not None:
@@ -364,6 +376,9 @@ class SequenceReport(object):
 
         # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
+
+        if self.seed is None or self.seed.endswith(PARTIAL_CONTIG_SUFFIX):
+            return
 
         if not self.seed_aminos:
             # no valid reads were aligned to this region and counted, skip next step
@@ -503,6 +518,61 @@ class SequenceReport(object):
                     coverage_summary['avg_coverage'] = region_coverage
                     coverage_summary['coverage_region'] = region
                     coverage_summary['region_width'] = pos_count
+
+    def write_contig_coverage_header(self, contig_coverage_file):
+        columns = ['contig',
+                   'coordinates',
+                   'query_nuc_pos',
+                   'refseq_nuc_pos',
+                   'ins',
+                   'dels',
+                   'coverage']
+        self.contig_coverage_writer = csv.DictWriter(contig_coverage_file,
+                                                     columns,
+                                                     lineterminator=os.linesep)
+        self.contig_coverage_writer.writeheader()
+
+    def write_contig_coverage_counts(self, contig_coverage_writer=None):
+        contig_coverage_writer = contig_coverage_writer or self.contig_coverage_writer
+        seed_nucs = [(seed_nuc.get_consensus(MAX_CUTOFF), seed_nuc)
+                     for seed_amino in self.seed_aminos[0]
+                     for seed_nuc in seed_amino.nucleotides]
+        consensus = ''.join(nuc for nuc, coverage in seed_nucs)
+        is_partial = self.seed.endswith(PARTIAL_CONTIG_SUFFIX)
+        if is_partial:
+            seed_landmarks = None
+        else:
+            for seed_landmarks in self.landmarks:
+                if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
+                    break
+            else:
+                seed_landmarks = None
+        if seed_landmarks is None:
+            aref = aseq = consensus
+            coordinate_name = None
+            ref_pos = None
+        else:
+            coordinate_name = seed_landmarks['coordinates']
+            coordinate_seq = self.projects.getReference(coordinate_name)
+            aref, aseq, score = self._pair_align(coordinate_seq, consensus)
+            ref_pos = 0
+        seq_pos = 0
+        for ref_nuc, seq_nuc in zip(aref, aseq):
+            if ref_pos is not None and ref_nuc != '-':
+                ref_pos += 1
+            next_seq_pos = seq_pos+1
+            next_seq_nuc = consensus[seq_pos] if seq_pos < len(consensus) else ''
+            if seq_nuc == next_seq_nuc:
+                seq_pos = next_seq_pos
+                seed_nuc: SeedNucleotide = seed_nucs[seq_pos-1][1]
+                row = dict(contig=self.detail_seed,
+                           coordinates=coordinate_name,
+                           query_nuc_pos=seq_pos,
+                           refseq_nuc_pos=ref_pos,
+                           ins=0,
+                           dels=seed_nuc.counts['-'],
+                           coverage=seed_nuc.get_coverage())
+                contig_coverage_writer.writerow(row)
 
     @staticmethod
     def _create_nuc_writer(nuc_file):
@@ -1155,7 +1225,8 @@ def aln2counts(aligned_csv,
                conseq_ins_csv=None,
                remap_conseq_csv=None,
                conseq_region_csv=None,
-               amino_detail_csv=None):
+               amino_detail_csv=None,
+               contig_coverage_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1177,15 +1248,22 @@ def aln2counts(aligned_csv,
         split into regions.
     @param amino_detail_csv: Open file handle to write amino acid frequencies
         for individual contigs.
+    @param contig_coverage_csv: Open file handle to write coverage for individual
+        contigs.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
+
+    landmarks_path = (Path(__file__).parent.parent / 'data' /
+                      'landmark_references.yaml')
+    landmarks_yaml = landmarks_path.read_text()
 
     # initialize reporter classes
     with InsertionWriter(coord_ins_csv) as insert_writer:
         report = SequenceReport(insert_writer,
                                 projects,
-                                CONSEQ_MIXTURE_CUTOFFS)
+                                CONSEQ_MIXTURE_CUTOFFS,
+                                landmarks_yaml=landmarks_yaml)
         report.consensus_min_coverage = CONSENSUS_MIN_COVERAGE
         report.write_amino_header(amino_csv)
         report.write_consensus_header(conseq_csv)
@@ -1217,6 +1295,8 @@ def aln2counts(aligned_csv,
             report.read_insertions(conseq_ins_csv)
         if remap_conseq_csv is not None:
             report.read_remap_conseqs(remap_conseq_csv)
+        if contig_coverage_csv is not None:
+            report.write_contig_coverage_header(contig_coverage_csv)
 
         report.process_reads(aligned_csv, coverage_summary)
 
@@ -1237,7 +1317,8 @@ def main():
                conseq_ins_csv=args.conseq_ins_csv,
                remap_conseq_csv=args.remap_conseq_csv,
                conseq_region_csv=args.conseq_region_csv,
-               amino_detail_csv=args.amino_detail_csv)
+               amino_detail_csv=args.amino_detail_csv,
+               contig_coverage_csv=args.contig_coverage_csv)
 
 
 if __name__ == '__main__':

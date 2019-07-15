@@ -6,7 +6,7 @@ from micall.core.aln2counts import aln2counts
 from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
 from micall.core.coverage_plots import coverage_plot
-from micall.core.plot_contigs import plot_contigs
+from micall.core.plot_contigs import plot_contigs, plot_contig_coverage
 from micall.core.prelim_map import prelim_map
 from micall.core.remap import remap, map_to_contigs
 from micall.core.sam2aln import sam2aln
@@ -186,7 +186,8 @@ class Sample:
                 open(self.conseq_csv, 'w') as conseq_csv, \
                 open(self.conseq_region_csv, 'w') as conseq_region_csv, \
                 open(self.failed_align_csv, 'w') as failed_align_csv, \
-                open(self.coverage_summary_csv, 'w') as coverage_summary_csv:
+                open(self.coverage_summary_csv, 'w') as coverage_summary_csv, \
+                open(self.contig_coverage_csv, 'w') as contig_coverage_csv:
 
             aln2counts(aligned_csv,
                        nuc_csv,
@@ -199,7 +200,8 @@ class Sample:
                        conseq_ins_csv=conseq_ins_csv,
                        remap_conseq_csv=remap_conseq_csv,
                        conseq_region_csv=conseq_region_csv,
-                       amino_detail_csv=amino_detail_csv)
+                       amino_detail_csv=amino_detail_csv,
+                       contig_coverage_csv=contig_coverage_csv)
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)
@@ -210,6 +212,9 @@ class Sample:
                           coverage_maps_path=self.coverage_maps,
                           coverage_maps_prefix=self.name,
                           excluded_projects=excluded_projects)
+
+        with open(self.contig_coverage_csv) as contig_coverage_csv:
+            plot_contig_coverage(contig_coverage_csv, self.contig_coverage_svg)
 
         logger.info('Running cascade_report on %s.', self)
         with open(self.remap_counts_csv) as remap_counts_csv, \

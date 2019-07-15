@@ -24,6 +24,12 @@ def main():
         231,
         561,
         projects)
+    sections_2170_1a_1, sections_2170_1a_2 = make_random_sections('HCV-1a',
+                                                                  6258,
+                                                                  9375)
+    sections_2170_2_1, sections_2170_2_2 = make_random_sections('HCV-2a',
+                                                                6269,
+                                                                9440)
     fastq_files = [FastqFile('2130A-HCV_S15_L001_R1_001.fastq',
                              '2130',
                              False,
@@ -87,7 +93,17 @@ def main():
                              '2160',
                              True,
                              sections_2160midi_2,
-                             (CodonMutation(316, 'AGC'),))]
+                             (CodonMutation(316, 'AGC'),)),
+                   FastqFile('2170A-HCV_S21_L001_R1_001.fastq',
+                             '2170',
+                             False,
+                             sections_2170_1a_1 + sections_2170_2_1,
+                             ()),
+                   FastqFile('2170A-HCV_S21_L001_R2_001.fastq',
+                             '2170',
+                             True,
+                             sections_2170_1a_2 + sections_2170_2_2,
+                             ())]
     for fastq_file in fastq_files:
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1

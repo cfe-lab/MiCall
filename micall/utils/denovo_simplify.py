@@ -34,7 +34,10 @@ def parse_args():
 
 
 class MicallDD(DD):
-    test_names = ('one_contig', 'multiple_genotypes', 'type_error')
+    test_names = ('one_contig',
+                  'multiple_genotypes',
+                  'type_error',
+                  'two_long_contigs')
 
     def __init__(self,
                  filename1,
@@ -120,6 +123,23 @@ class MicallDD(DD):
                      exception,
                      read_count)
         return DD.FAIL if isinstance(exception, TypeError) else DD.PASS
+
+    @staticmethod
+    def check_two_long_contigs(contigs_csv, read_count, exception):
+        if exception is not None:
+            return DD.UNRESOLVED
+        reader = DictReader(contigs_csv)
+        genotype_sizes = {f"{row['genotype']}[{i}]": len(row['contig'])
+                          for i, row in enumerate(reader)}
+        genotype_summary = ', '.join(
+            f'{genotype} ({size})'
+            for genotype, size in sorted(genotype_sizes.items()))
+        logger.debug('Result: contigs %s from %d reads.',
+                     genotype_summary or 'not found',
+                     read_count)
+        return (DD.FAIL
+                if len(genotype_sizes) == 2 and min(genotype_sizes.values()) >= 3000
+                else DD.PASS)
 
     def write_simple_fastq(self, filename1, filename2, read_indexes):
         selected_reads = (self.reads[i] for i in read_indexes)

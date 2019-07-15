@@ -3,8 +3,10 @@ from csv import DictReader
 from io import StringIO
 from itertools import groupby
 from operator import itemgetter
+from pathlib import Path
 
-from genetracks import Figure, Track, Multitrack, Label
+import yaml
+from genetracks import Figure, Track, Multitrack, Label, Coverage
 
 
 def hcv_region_tracks(f):
@@ -107,6 +109,63 @@ def build_contigs_figure(blast_rows, limit=10, centre_x=0):
     return f
 
 
+def plot_contig_coverage(contig_coverage_csv, contig_coverage_svg_path):
+    f = build_coverage_figure(contig_coverage_csv)
+    f.show(w=970).saveSvg(contig_coverage_svg_path)
+
+
+def build_coverage_figure(contig_coverage_csv):
+    landmarks_path = (Path(__file__).parent.parent / "data" /
+                      "landmark_references.yaml")
+    landmark_groups = yaml.safe_load(landmarks_path.read_text())
+    f = Figure()
+    for coordinates_name, rows in groupby(DictReader(contig_coverage_csv),
+                                          itemgetter('coordinates')):
+        for reference_set in landmark_groups:
+            if coordinates_name != reference_set['coordinates']:
+                continue
+            prev_landmark = None
+            for i, landmark in enumerate(sorted(reference_set['landmarks'],
+                                                key=itemgetter('start'))):
+                landmark.setdefault('frame', 0)
+                if prev_landmark and 'end' not in prev_landmark:
+                    prev_landmark['end'] = landmark['start'] - 1
+                prev_landmark = landmark
+            for frame, frame_landmarks in groupby(reference_set['landmarks'],
+                                                  itemgetter('frame')):
+                subtracks = []
+                for landmark in frame_landmarks:
+                    subtracks.append(Track(landmark['start'],
+                                           landmark['end'],
+                                           label=landmark['name'],
+                                           color=landmark['colour']))
+                f.add(Multitrack(subtracks))
+            break
+        else:
+            f.add(Track(1000, 1000, label='Partial Blast Results', color=''))
+        for contig_name, contig_rows in groupby(rows, itemgetter('contig')):
+            contig_rows = list(contig_rows)
+            if coordinates_name:
+                pos_field = 'refseq_nuc_pos'
+            else:
+                pos_field = 'query_nuc_pos'
+            for contig_row in contig_rows:
+                for field_name in (pos_field, 'coverage'):
+                    contig_row[field_name] = int(contig_row[field_name])
+            start = contig_rows[0][pos_field]
+            end = contig_rows[-1][pos_field]
+            coverage = [0] * (end-start+1)
+            for contig_row in contig_rows:
+                coverage[contig_row[pos_field] - start] = contig_row['coverage']
+            f.add(Coverage(start, end, coverage), gap=-4)
+            track_label = f"{contig_name} - depth {max(coverage)}"
+            f.add(Track(start, end, label=track_label))
+
+    if not f.elements:
+        f.add(Track(0, 1, label='No contigs found.', color=''))
+    return f
+
+
 def summarize_figure(figure: Figure):
     """ Summarize the contents of a figure to text.
 
@@ -117,10 +176,16 @@ def summarize_figure(figure: Figure):
         spans = getattr(track, 'tracks', [track])
         for i, span in enumerate(spans):
             if i:
-                summary.write(',')
+                summary.write(', ')
+            ys = getattr(span, 'ys', None)
+            if ys is not None:
+                summary.write('Coverage ')
+                summary.write(', '.join(map(str, ys)))
+                continue
             span_text = getattr(span.label, 'text', span.label)
             summary.write(span_text)
-            if span.a or span.b:
+            color = getattr(span, 'color')
+            if color and (span.a or span.b):
                 summary.write(f'[{span.a}-{span.b}]')
         summary.write('\n')
     return summary.getvalue()

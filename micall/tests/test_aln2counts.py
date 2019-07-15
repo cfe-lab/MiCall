@@ -9,14 +9,8 @@ from micall.core import project_config
 
 
 class StubbedSequenceReport(SequenceReport):
-    def __init__(self,
-                 insert_writer,
-                 projects,
-                 conseq_mixture_cutoffs):
-        SequenceReport.__init__(self,
-                                insert_writer,
-                                projects,
-                                conseq_mixture_cutoffs)
+    def __init__(self, *args, **kwargs):
+        SequenceReport.__init__(self, *args, **kwargs)
         self.overrides = {}
 
     def _pair_align(self, reference, query, *args, **kwargs):
@@ -227,10 +221,26 @@ class SequenceReportTest(unittest.TestCase):
   }
 }
 """))
+        landmarks_yaml = """\
+- seed_pattern: R1-.*
+  coordinates: R1-seed
+  landmarks:
+    - {name: ref, start: 1, end: 9, colour: steelblue}
+- seed_pattern: R2-.*
+  coordinates: R2-seed
+  landmarks:
+    - {name: ref, start: 1, end: 15, colour: steelblue}
+- seed_pattern: R3-.*
+  coordinates: R3-seed
+  landmarks:
+    - {name: a, start: 1, end: 12, colour: lightblue}
+    - {name: z, start: 13, end: 24, colour: steelblue}
+"""
         conseq_mixture_cutoffs = [0.1]
         self.report = StubbedSequenceReport(insert_writer,
                                             projects,
-                                            conseq_mixture_cutoffs)
+                                            conseq_mixture_cutoffs,
+                                            landmarks_yaml=landmarks_yaml)
         self.report_file = StringIO()
         self.detail_report_file = StringIO()
 
@@ -302,6 +312,24 @@ R1-seed,15,0,1,7,TTGGG
 region,q-cutoff,consensus-percent-cutoff,offset,sequence
 R1-seed,15,MAX,3,AAATTTGGG
 R1-seed,15,0.100,3,AAATTTGGG
+"""
+
+        self.report.write_consensus_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusFromPartialContig(self):
+        """ Contigs with the -partial suffix report consensus. """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+1-R2-seed-partial,15,0,9,0,AAATTT
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+1-R2-seed-partial,15,MAX,0,AAATTT
+1-R2-seed-partial,15,0.100,0,AAATTT
 """
 
         self.report.write_consensus_header(self.report_file)
@@ -485,6 +513,166 @@ A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,cove
 
         self.assertMultiLineEqual(expected_detail_text,
                                   self.detail_report_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testContigCoverageReport(self):
+        """ Assemble counts from three contigs to two references.
+
+        Contig 1-R1 AAATTT -> KF
+        Contig 2-R2 GGCCCG -> GP
+        Contig 3-R1 TTTAGG -> FR
+
+        Contig 1 and 3 should combine into R1 with KFR.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
+        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
+        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
+
+        expected_text = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-R1-seed,R1-seed,1,1,0,0,5
+1-R1-seed,R1-seed,2,2,0,0,5
+1-R1-seed,R1-seed,3,3,0,0,5
+1-R1-seed,R1-seed,4,4,0,0,5
+1-R1-seed,R1-seed,5,5,0,0,5
+1-R1-seed,R1-seed,6,6,0,0,5
+2-R2-seed,R2-seed,1,7,0,0,4
+2-R2-seed,R2-seed,2,8,0,0,4
+2-R2-seed,R2-seed,3,9,0,0,4
+2-R2-seed,R2-seed,4,10,0,0,4
+2-R2-seed,R2-seed,5,11,0,0,4
+2-R2-seed,R2-seed,6,12,0,0,4
+3-R1-seed,R1-seed,1,4,0,0,2
+3-R1-seed,R1-seed,2,5,0,0,2
+3-R1-seed,R1-seed,3,6,0,0,2
+3-R1-seed,R1-seed,4,7,0,0,2
+3-R1-seed,R1-seed,5,8,0,0,2
+3-R1-seed,R1-seed,6,9,0,0,2
+"""
+
+        self.report.write_amino_header(StringIO())
+        self.report.write_amino_detail_header(StringIO())
+        self.report.write_contig_coverage_header(self.report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_contig_coverage_counts()
+        self.report.write_amino_detail_counts()
+        self.report.read(aligned_reads2)
+        self.report.write_contig_coverage_counts()
+        self.report.write_amino_detail_counts()
+        self.report.read(aligned_reads3)
+        self.report.write_contig_coverage_counts()
+        self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testContigCoverageReportDeletions(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R2-seed,15,0,4,0,GGC-CG")
+
+        expected_text = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-R2-seed,R2-seed,1,7,0,0,4
+1-R2-seed,R2-seed,2,8,0,0,4
+1-R2-seed,R2-seed,3,9,0,0,4
+1-R2-seed,R2-seed,4,10,0,4,4
+1-R2-seed,R2-seed,5,11,0,0,4
+1-R2-seed,R2-seed,6,12,0,0,4
+"""
+
+        self.report.write_amino_header(StringIO())
+        self.report.write_amino_detail_header(StringIO())
+        self.report.write_contig_coverage_header(self.report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_contig_coverage_counts()
+        self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testContigCoverageReportGap(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R3-seed,15,0,4,0,AAATTTCAGCCACGAGAGCAT")
+        expected_text = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-R3-seed,R3-seed,1,1,0,0,4
+1-R3-seed,R3-seed,2,2,0,0,4
+1-R3-seed,R3-seed,3,3,0,0,4
+1-R3-seed,R3-seed,4,4,0,0,4
+1-R3-seed,R3-seed,5,5,0,0,4
+1-R3-seed,R3-seed,6,6,0,0,4
+1-R3-seed,R3-seed,7,7,0,0,4
+1-R3-seed,R3-seed,8,8,0,0,4
+1-R3-seed,R3-seed,9,9,0,0,4
+1-R3-seed,R3-seed,10,13,0,0,4
+1-R3-seed,R3-seed,11,14,0,0,4
+1-R3-seed,R3-seed,12,15,0,0,4
+1-R3-seed,R3-seed,13,16,0,0,4
+1-R3-seed,R3-seed,14,17,0,0,4
+1-R3-seed,R3-seed,15,18,0,0,4
+1-R3-seed,R3-seed,16,19,0,0,4
+1-R3-seed,R3-seed,17,20,0,0,4
+1-R3-seed,R3-seed,18,21,0,0,4
+1-R3-seed,R3-seed,19,22,0,0,4
+1-R3-seed,R3-seed,20,23,0,0,4
+1-R3-seed,R3-seed,21,24,0,0,4
+"""
+
+        self.report.write_amino_header(StringIO())
+        self.report.write_amino_detail_header(StringIO())
+        self.report.write_contig_coverage_header(self.report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_contig_coverage_counts()
+        self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testContigCoverageReportForPartialContig(self):
+        """ Contig coverage is reported for partial contigs.
+
+        Reference columns are left blank, though, because they're not aligned.
+        See blast.csv for best guess at alignment.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R1-seed-partial,15,0,5,0,CCCCCC")
+
+        expected_text = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-R1-seed-partial,,1,,0,0,5
+1-R1-seed-partial,,2,,0,0,5
+1-R1-seed-partial,,3,,0,0,5
+1-R1-seed-partial,,4,,0,0,5
+1-R1-seed-partial,,5,,0,0,5
+1-R1-seed-partial,,6,,0,0,5
+"""
+
+        self.report.write_amino_header(StringIO())
+        self.report.write_amino_detail_header(StringIO())
+        self.report.write_contig_coverage_header(self.report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_contig_coverage_counts()
+        self.report.write_amino_detail_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testAminoReportForPartialContig(self):
+        """ Contigs with the -partial suffix shouldn't be reported. """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = self.prepareReads("""\
+1-R1-seed-partial,15,0,9,0,AAATTT
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
+"""
+
+        self.report.write_amino_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_amino_counts()
+
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
     def testSingleReadNucleotideReport(self):
