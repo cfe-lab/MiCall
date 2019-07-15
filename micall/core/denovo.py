@@ -109,13 +109,14 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None):
         blast_writer.writeheader()
     for match in matches:
         matched_fraction = float(match['qcovhsp']) / 100
+        pident = round(float(match['pident']))
         samples[match['qaccver']] = (match['saccver'], matched_fraction)
         if blast_writer:
             blast_writer.writerow(dict(contig_name=match['qaccver'],
                                        ref_name=match['saccver'],
                                        score=match['score'],
                                        match=matched_fraction,
-                                       pident=match['pident'],
+                                       pident=pident,
                                        start=match['qstart'],
                                        end=match['qend'],
                                        ref_start=match['sstart'],
