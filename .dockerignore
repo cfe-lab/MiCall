@@ -1,8 +1,10 @@
 .git
+.idea
 bin
-micall/settings.py
 micall/tests/working
+venv_micall
 *.pyc
 */*.pyc
 */*/*.pyc
 */*/*/*.pyc
+*.simg

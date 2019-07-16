@@ -297,7 +297,7 @@ def load_sample(sample_json, data_path, scratch_path):
     if fastq1 is None:
         raise RuntimeError(
             'No R1 file found for sample id {}.'.format(sample_json['Id']))
-    sample = Sample(fastq1,
+    sample = Sample(fastq1=fastq1,
                     basespace_id=sample_json['Id'],
                     basespace_href=sample_json['Href'])
     sample.scratch_path = os.path.join(scratch_path, sample.name)
