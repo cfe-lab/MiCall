@@ -550,15 +550,18 @@ class SequenceReport(object):
         if seed_landmarks is None:
             aref = aseq = consensus
             coordinate_name = None
-            ref_pos = None
+            ref_pos = ref_length = None
         else:
             coordinate_name = seed_landmarks['coordinates']
             coordinate_seq = self.projects.getReference(coordinate_name)
             aref, aseq, score = self._pair_align(coordinate_seq, consensus)
-            ref_pos = 0
+            ref_length = len(coordinate_seq)
+            ref_pos = len(aref.lstrip('-')) - len(aref)
         seq_pos = 0
         for ref_nuc, seq_nuc in zip(aref, aseq):
-            if ref_pos is not None and ref_nuc != '-':
+            if ref_pos is not None and (ref_nuc != '-' or
+                                        ref_pos < 0 or
+                                        ref_pos >= ref_length):
                 ref_pos += 1
             next_seq_pos = seq_pos+1
             next_seq_nuc = consensus[seq_pos] if seq_pos < len(consensus) else ''

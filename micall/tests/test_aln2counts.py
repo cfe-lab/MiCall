@@ -629,6 +629,70 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testContigCoverageReportPastReferenceEnd(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,0,AAATTTAGGGAGCAT")
+        expected_text = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-R1-seed,R1-seed,1,1,0,0,4
+1-R1-seed,R1-seed,2,2,0,0,4
+1-R1-seed,R1-seed,3,3,0,0,4
+1-R1-seed,R1-seed,4,4,0,0,4
+1-R1-seed,R1-seed,5,5,0,0,4
+1-R1-seed,R1-seed,6,6,0,0,4
+1-R1-seed,R1-seed,7,7,0,0,4
+1-R1-seed,R1-seed,8,8,0,0,4
+1-R1-seed,R1-seed,9,9,0,0,4
+1-R1-seed,R1-seed,10,10,0,0,4
+1-R1-seed,R1-seed,11,11,0,0,4
+1-R1-seed,R1-seed,12,12,0,0,4
+1-R1-seed,R1-seed,13,13,0,0,4
+1-R1-seed,R1-seed,14,14,0,0,4
+1-R1-seed,R1-seed,15,15,0,0,4
+"""
+
+        self.report.write_amino_header(StringIO())
+        self.report.write_amino_detail_header(StringIO())
+        self.report.write_contig_coverage_header(self.report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_contig_coverage_counts()
+        self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testContigCoverageReportPastReferenceStart(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,0,GAGCATAAATTTAGG")
+        expected_text = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-R1-seed,R1-seed,1,-5,0,0,4
+1-R1-seed,R1-seed,2,-4,0,0,4
+1-R1-seed,R1-seed,3,-3,0,0,4
+1-R1-seed,R1-seed,4,-2,0,0,4
+1-R1-seed,R1-seed,5,-1,0,0,4
+1-R1-seed,R1-seed,6,0,0,0,4
+1-R1-seed,R1-seed,7,1,0,0,4
+1-R1-seed,R1-seed,8,2,0,0,4
+1-R1-seed,R1-seed,9,3,0,0,4
+1-R1-seed,R1-seed,10,4,0,0,4
+1-R1-seed,R1-seed,11,5,0,0,4
+1-R1-seed,R1-seed,12,6,0,0,4
+1-R1-seed,R1-seed,13,7,0,0,4
+1-R1-seed,R1-seed,14,8,0,0,4
+1-R1-seed,R1-seed,15,9,0,0,4
+"""
+
+        self.report.write_amino_header(StringIO())
+        self.report.write_amino_detail_header(StringIO())
+        self.report.write_contig_coverage_header(self.report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_contig_coverage_counts()
+        self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testContigCoverageReportForPartialContig(self):
         """ Contig coverage is reported for partial contigs.
 

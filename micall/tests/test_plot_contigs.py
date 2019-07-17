@@ -240,6 +240,30 @@ Coverage 5, 5, 7, 5, 5, 5
     assert expected_figure == summarize_figure(figure)
 
 
+def test_plot_contig_coverage_offset():
+    """ When a contig extends before the reference start, offset everything. """
+    contig_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1a,HCV-1a,1,-2,0,0,5
+1-HCV-1a,HCV-1a,2,-1,0,0,5
+1-HCV-1a,HCV-1a,3,0,0,0,7
+1-HCV-1a,HCV-1a,4,1,0,0,5
+1-HCV-1a,HCV-1a,5,2,0,0,5
+1-HCV-1a,HCV-1a,6,3,0,0,5
+""")
+    expected_figure = """\
+5'[4-344], C[345-917], E1[918-1493], E2[1494-2582], p7[2583-2771], \
+NS2[2772-3422], NS3[3423-5315], NS4b[5478-6260], NS4a[5316-5477], \
+NS5a[6261-7604], NS5b[7605-9377], 3'[9378-9649]
+Coverage 5, 5, 7, 5, 5, 5
+1-HCV-1a - depth 7[1-6]
+"""
+
+    figure = build_coverage_figure(contig_coverage_csv)
+
+    assert expected_figure == summarize_figure(figure)
+
+
 def test_plot_contig_coverage_partial():
     contig_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage

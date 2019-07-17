@@ -1,7 +1,8 @@
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from collections import Counter
 from csv import DictReader
 from io import StringIO
-from itertools import groupby
+from itertools import groupby, chain
 from operator import itemgetter
 from pathlib import Path
 
@@ -115,12 +116,20 @@ def plot_contig_coverage(contig_coverage_csv, contig_coverage_svg_path):
 
 
 def build_coverage_figure(contig_coverage_csv):
+    reader = DictReader(contig_coverage_csv)
+    min_position = min(chain((1,),
+                             (int(row['refseq_nuc_pos'])
+                              for row in reader
+                              if row['refseq_nuc_pos'])))
+    position_offset = -min_position + 1
+    contig_coverage_csv.seek(0)
+    reader = DictReader(contig_coverage_csv)
+
     landmarks_path = (Path(__file__).parent.parent / "data" /
                       "landmark_references.yaml")
     landmark_groups = yaml.safe_load(landmarks_path.read_text())
     f = Figure()
-    for coordinates_name, rows in groupby(DictReader(contig_coverage_csv),
-                                          itemgetter('coordinates')):
+    for coordinates_name, rows in groupby(reader, itemgetter('coordinates')):
         for reference_set in landmark_groups:
             if coordinates_name != reference_set['coordinates']:
                 continue
@@ -135,8 +144,8 @@ def build_coverage_figure(contig_coverage_csv):
                                                   itemgetter('frame')):
                 subtracks = []
                 for landmark in frame_landmarks:
-                    subtracks.append(Track(landmark['start'],
-                                           landmark['end'],
+                    subtracks.append(Track(landmark['start']+position_offset,
+                                           landmark['end']+position_offset,
                                            label=landmark['name'],
                                            color=landmark['colour']))
                 f.add(Multitrack(subtracks))
@@ -157,9 +166,12 @@ def build_coverage_figure(contig_coverage_csv):
             coverage = [0] * (end-start+1)
             for contig_row in contig_rows:
                 coverage[contig_row[pos_field] - start] = contig_row['coverage']
-            f.add(Coverage(start, end, coverage), gap=-4)
+            f.add(Coverage(start+position_offset,
+                           end+position_offset,
+                           coverage),
+                  gap=-4)
             track_label = f"{contig_name} - depth {max(coverage)}"
-            f.add(Track(start, end, label=track_label))
+            f.add(Track(start+position_offset, end+position_offset, label=track_label))
 
     if not f.elements:
         f.add(Track(0, 1, label='No contigs found.', color=''))
@@ -189,3 +201,22 @@ def summarize_figure(figure: Figure):
                 summary.write(f'[{span.a}-{span.b}]')
         summary.write('\n')
     return summary.getvalue()
+
+
+def main():
+    parser = ArgumentParser(
+        description='Plot assembled contigs against a reference.',
+        formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument('contig_coverage_csv',
+                        help='CSV file with coverage counts for each contig',
+                        type=FileType())
+    parser.add_argument('contig_coverage_svg',
+                        help='SVG file to plot coverage counts for each contig')
+    args = parser.parse_args()
+
+    plot_contig_coverage(args.contig_coverage_csv, args.contig_coverage_svg)
+    print('Wrote', args.contig_coverage_svg)
+
+
+if __name__ == '__main__':
+    main()
