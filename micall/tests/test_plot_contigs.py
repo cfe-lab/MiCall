@@ -16,11 +16,11 @@ pol[2085-5096], vpr[5559-5850], rev[5970-6045], env[6225-8795]'''
 
 def test_summarize_labels():
     figure = Figure()
-    figure.add(Track(0, 0, label="Foo:"))
-    figure.add(Track(0, 0, label="Bar:"))
+    figure.add(Track(1, 200, label="Foo"))
+    figure.add(Track(1, 200, label="Bar", color='none'))
     expected_summary = """\
-Foo:
-Bar:
+Foo[1-200]
+Bar(1-200)
 """
 
     summary = summarize_figure(figure)
@@ -42,20 +42,6 @@ Bar:
     assert expected_summary == summary
 
 
-def test_summarize_spans():
-    figure = Figure()
-    figure.add(Track(10, 20, label="Foo:", color=''))
-    figure.add(Track(10, 20, label="Bar"))
-    expected_summary = """\
-Foo:
-Bar[10-20]
-"""
-
-    summary = summarize_figure(figure)
-
-    assert expected_summary == summary
-
-
 def test_summarize_multitracks():
     figure = Figure()
     figure.add(Track(0, 0, label="Foo:"))
@@ -64,6 +50,22 @@ def test_summarize_multitracks():
     expected_summary = """\
 Foo:
 Bar[10-20], Baz[30-40]
+"""
+
+    summary = summarize_figure(figure)
+
+    assert expected_summary == summary
+
+
+def test_summarize_multitracks_with_separate_label():
+    figure = Figure()
+    figure.add(Track(0, 0, label="Foo:"))
+    figure.add(Multitrack([Track(10, 20),
+                           Track(30, 40),
+                           Track(10, 40, label="Bar", color='none')]))
+    expected_summary = """\
+Foo:
+[10-20], [30-40], Bar(10-40)
 """
 
     summary = summarize_figure(figure)
@@ -232,7 +234,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
 NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
 Coverage 5, 5, 7, 5, 5, 5
-1-HCV-1a - depth 7[1-6]
+[1-6], 1-HCV-1a - depth 7(1-9646)
 """
 
     figure = build_coverage_figure(contig_coverage_csv)
@@ -256,7 +258,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 NS2[2772-3422], NS3[3423-5315], NS4b[5478-6260], NS4a[5316-5477], \
 NS5a[6261-7604], NS5b[7605-9377], 3'[9378-9649]
 Coverage 5, 5, 7, 5, 5, 5
-1-HCV-1a - depth 7[1-6]
+[1-6], 1-HCV-1a - depth 7(1-9649)
 """
 
     figure = build_coverage_figure(contig_coverage_csv)
@@ -275,9 +277,9 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1a-partial,,6,,0,0,5
 """)
     expected_figure = """\
-Partial Blast Results
+Partial Blast Results(1-500)
 Coverage 5, 5, 7, 5, 5, 5
-1-HCV-1a-partial - depth 7[1-6]
+[1-6], 1-HCV-1a-partial - depth 7(1-500)
 """
 
     figure = build_coverage_figure(contig_coverage_csv)
@@ -290,7 +292,7 @@ def test_plot_contig_coverage_empty():
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 """)
     expected_figure = """\
-No contigs found.
+No contigs found.(1-500)
 """
 
     figure = build_coverage_figure(contig_coverage_csv)

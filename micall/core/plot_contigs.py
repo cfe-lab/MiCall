@@ -2,7 +2,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from collections import Counter
 from csv import DictReader
 from io import StringIO
-from itertools import groupby, chain
+from itertools import groupby
 from operator import itemgetter
 from pathlib import Path
 
@@ -116,11 +116,16 @@ def plot_contig_coverage(contig_coverage_csv, contig_coverage_svg_path):
 
 
 def build_coverage_figure(contig_coverage_csv):
+    min_position, max_position = 1, 500
     reader = DictReader(contig_coverage_csv)
-    min_position = min(chain((1,),
-                             (int(row['refseq_nuc_pos'])
-                              for row in reader
-                              if row['refseq_nuc_pos'])))
+    for row in reader:
+        query_nuc_pos = int(row['query_nuc_pos'])
+        if row['refseq_nuc_pos']:
+            refseq_nuc_pos = int(row['refseq_nuc_pos'])
+        else:
+            refseq_nuc_pos = min_position
+        min_position = min(min_position, refseq_nuc_pos, query_nuc_pos)
+        max_position = max(max_position, refseq_nuc_pos, query_nuc_pos)
     position_offset = -min_position + 1
     contig_coverage_csv.seek(0)
     reader = DictReader(contig_coverage_csv)
@@ -148,10 +153,15 @@ def build_coverage_figure(contig_coverage_csv):
                                            landmark['end']+position_offset,
                                            label=landmark['name'],
                                            color=landmark['colour']))
+                    max_position = max(max_position,
+                                       landmark['end'] + position_offset)
                 f.add(Multitrack(subtracks))
             break
         else:
-            f.add(Track(1000, 1000, label='Partial Blast Results', color=''))
+            f.add(Track(min_position,
+                        max_position,
+                        label='Partial Blast Results',
+                        color='none'))
         for contig_name, contig_rows in groupby(rows, itemgetter('contig')):
             contig_rows = list(contig_rows)
             if coordinates_name:
@@ -171,10 +181,14 @@ def build_coverage_figure(contig_coverage_csv):
                            coverage),
                   gap=-4)
             track_label = f"{contig_name} - depth {max(coverage)}"
-            f.add(Track(start+position_offset, end+position_offset, label=track_label))
+            f.add(Multitrack([Track(start+position_offset, end+position_offset),
+                              Track(1,
+                                    max_position,
+                                    label=track_label,
+                                    color='none')]))
 
     if not f.elements:
-        f.add(Track(0, 1, label='No contigs found.', color=''))
+        f.add(Track(1, max_position, label='No contigs found.', color='none'))
     return f
 
 
@@ -194,11 +208,14 @@ def summarize_figure(figure: Figure):
                 summary.write('Coverage ')
                 summary.write(', '.join(map(str, ys)))
                 continue
-            span_text = getattr(span.label, 'text', span.label)
+            span_text = getattr(span.label, 'text', span.label) or ''
             summary.write(span_text)
             color = getattr(span, 'color')
-            if color and (span.a or span.b):
-                summary.write(f'[{span.a}-{span.b}]')
+            if span.a or span.b:
+                if color != 'none':
+                    summary.write(f'[{span.a}-{span.b}]')
+                else:
+                    summary.write(f'({span.a}-{span.b})')
         summary.write('\n')
     return summary.getvalue()
 
