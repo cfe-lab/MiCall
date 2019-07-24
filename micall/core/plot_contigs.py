@@ -117,6 +117,7 @@ def plot_contig_coverage(contig_coverage_csv, contig_coverage_svg_path):
 
 def build_coverage_figure(contig_coverage_csv):
     min_position, max_position = 1, 500
+    contig_headers = set()
     reader = DictReader(contig_coverage_csv)
     for row in reader:
         query_nuc_pos = int(row['query_nuc_pos'])
@@ -126,15 +127,14 @@ def build_coverage_figure(contig_coverage_csv):
             refseq_nuc_pos = min_position
         min_position = min(min_position, refseq_nuc_pos, query_nuc_pos)
         max_position = max(max_position, refseq_nuc_pos, query_nuc_pos)
+        contig_headers.add((row['coordinates'] == '', row['coordinates']))
     position_offset = -min_position + 1
-    contig_coverage_csv.seek(0)
-    reader = DictReader(contig_coverage_csv)
 
     landmarks_path = (Path(__file__).parent.parent / "data" /
                       "landmark_references.yaml")
     landmark_groups = yaml.safe_load(landmarks_path.read_text())
     f = Figure()
-    for coordinates_name, rows in groupby(reader, itemgetter('coordinates')):
+    for _, coordinates_name in sorted(contig_headers):
         for reference_set in landmark_groups:
             if coordinates_name != reference_set['coordinates']:
                 continue
@@ -162,8 +162,12 @@ def build_coverage_figure(contig_coverage_csv):
                         max_position,
                         label='Partial Blast Results',
                         color='none'))
-        for contig_name, contig_rows in groupby(rows, itemgetter('contig')):
+        contig_coverage_csv.seek(0)
+        reader = DictReader(contig_coverage_csv)
+        for contig_name, contig_rows in groupby(reader, itemgetter('contig')):
             contig_rows = list(contig_rows)
+            if contig_rows[0]['coordinates'] != coordinates_name:
+                continue
             if coordinates_name:
                 pos_field = 'refseq_nuc_pos'
             else:
@@ -176,10 +180,11 @@ def build_coverage_figure(contig_coverage_csv):
             coverage = [0] * (end-start+1)
             for contig_row in contig_rows:
                 coverage[contig_row[pos_field] - start] = contig_row['coverage']
-            f.add(Coverage(start+position_offset,
-                           end+position_offset,
-                           coverage),
-                  gap=-4)
+            if max(coverage) > 0:
+                f.add(Coverage(start+position_offset,
+                               end+position_offset,
+                               coverage),
+                      gap=-4)
             track_label = f"{contig_name} - depth {max(coverage)}"
             f.add(Multitrack([Track(start+position_offset, end+position_offset),
                               Track(1,
@@ -197,6 +202,8 @@ def summarize_figure(figure: Figure):
 
     Useful for testing.
     """
+    figure.show()  # Test that all the display math works.
+
     summary = StringIO()
     for padding, track in figure.elements:
         spans = getattr(track, 'tracks', [track])

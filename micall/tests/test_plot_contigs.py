@@ -1,9 +1,11 @@
 from csv import DictReader
 from io import StringIO
 
+import pytest
 from genetracks import Figure, Track, Multitrack, Label, Coverage
 
-from micall.core.plot_contigs import build_contigs_figure, summarize_figure, build_coverage_figure
+from micall.core.plot_contigs import build_contigs_figure, summarize_figure, \
+    build_coverage_figure
 
 HCV_HEADER = ('C[342-915], E1[915-1491], E2[1491-2580], P7[2580-2769], '
               'NS2[2769-3420], NS3[3420-5313], NS4A[5313-5475], NS4B[5475-6258], '
@@ -85,6 +87,15 @@ Bar[10-20]
     summary = summarize_figure(figure)
 
     assert expected_summary == summary
+
+
+def test_summarize_zero_coverage():
+    figure = Figure()
+    figure.add(Coverage(10, 20, [0, 0, 0]), gap=-4)
+    figure.add(Track(10, 20, label="Bar"))
+
+    with pytest.raises(ZeroDivisionError):
+        summarize_figure(figure)
 
 
 def test_simple():
@@ -280,6 +291,66 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 Partial Blast Results(1-500)
 Coverage 5, 5, 7, 5, 5, 5
 [1-6], 1-HCV-1a-partial - depth 7(1-500)
+"""
+
+    figure = build_coverage_figure(contig_coverage_csv)
+
+    assert expected_figure == summarize_figure(figure)
+
+
+def test_plot_contig_coverage_sorted():
+    contig_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1a,HCV-1a,1,1,0,0,5
+1-HCV-1a,HCV-1a,2,2,0,0,5
+1-HCV-1a,HCV-1a,3,3,0,0,7
+1-HCV-1a,HCV-1a,4,4,0,0,5
+1-HCV-1a,HCV-1a,5,5,0,0,5
+1-HCV-1a,HCV-1a,6,6,0,0,5
+2-HCV-1b-partial,,1,,0,0,5
+2-HCV-1b-partial,,2,,0,0,5
+2-HCV-1b-partial,,3,,0,0,7
+2-HCV-1b-partial,,4,,0,0,5
+2-HCV-1b-partial,,5,,0,0,5
+2-HCV-1b-partial,,6,,0,0,5
+3-HCV-1a,HCV-1a,1,101,0,0,15
+3-HCV-1a,HCV-1a,2,102,0,0,15
+3-HCV-1a,HCV-1a,3,103,0,0,17
+3-HCV-1a,HCV-1a,4,104,0,0,15
+3-HCV-1a,HCV-1a,5,105,0,0,15
+3-HCV-1a,HCV-1a,6,106,0,0,15
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
+Coverage 5, 5, 7, 5, 5, 5
+[1-6], 1-HCV-1a - depth 7(1-9646)
+Coverage 15, 15, 17, 15, 15, 15
+[101-106], 3-HCV-1a - depth 17(1-9646)
+Partial Blast Results(1-9646)
+Coverage 5, 5, 7, 5, 5, 5
+[1-6], 2-HCV-1b-partial - depth 7(1-9646)
+"""
+
+    figure = build_coverage_figure(contig_coverage_csv)
+
+    assert expected_figure == summarize_figure(figure)
+
+
+def test_plot_contig_coverage_zero():
+    contig_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1b-partial,,1,,0,0,0
+1-HCV-1b-partial,,2,,0,0,0
+1-HCV-1b-partial,,3,,0,0,0
+1-HCV-1b-partial,,4,,0,0,0
+1-HCV-1b-partial,,5,,0,0,0
+1-HCV-1b-partial,,6,,0,0,0
+""")
+    expected_figure = """\
+Partial Blast Results(1-500)
+[1-6], 1-HCV-1b-partial - depth 0(1-500)
 """
 
     figure = build_coverage_figure(contig_coverage_csv)
