@@ -5,7 +5,7 @@ import pytest
 from genetracks import Figure, Track, Multitrack, Label, Coverage
 
 from micall.core.plot_contigs import build_contigs_figure, summarize_figure, \
-    build_coverage_figure
+    build_coverage_figure, SmoothCoverage
 
 HCV_HEADER = ('C[342-915], E1[915-1491], E2[1491-2580], P7[2580-2769], '
               'NS2[2769-3420], NS3[3420-5313], NS4A[5313-5475], NS4B[5475-6258], '
@@ -77,11 +77,11 @@ Foo:
 
 def test_summarize_coverage():
     figure = Figure()
-    figure.add(Coverage(10, 20, [10, 20, 1]), gap=-4)
-    figure.add(Track(10, 20, label="Bar"))
+    figure.add(Coverage(10, 20, [11, 11, 21, 1, 1, 1]), gap=-4)
+    figure.add(Track(12, 22, label="Bar"))
     expected_summary = """\
-Coverage 10, 20, 1
-Bar[10-20]
+Coverage 11, 11, 21, 1, 1, 1
+Bar[12-22]
 """
 
     summary = summarize_figure(figure)
@@ -96,6 +96,34 @@ def test_summarize_zero_coverage():
 
     with pytest.raises(ZeroDivisionError):
         summarize_figure(figure)
+
+
+def test_summarize_smooth_coverage():
+    figure = Figure()
+    figure.add(SmoothCoverage(10, 20, [11, 11, 21, 1, 1, 1]), gap=-4)
+    figure.add(Track(12, 22, label="Bar"))
+    expected_summary = """\
+Coverage 11x2, 21, 1x3
+Bar[12-22]
+"""
+
+    summary = summarize_figure(figure)
+
+    assert expected_summary == summary
+
+
+def test_summarize_smooth_coverage_ten_percent():
+    figure = Figure()
+    figure.add(SmoothCoverage(10, 20, [100, 110, 111, 50]), gap=-4)
+    figure.add(Track(12, 22, label="Bar"))
+    expected_summary = """\
+Coverage 100x2, 111, 50
+Bar[12-22]
+"""
+
+    summary = summarize_figure(figure)
+
+    assert expected_summary == summary
 
 
 def test_simple():
@@ -244,7 +272,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
 NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
 NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
-Coverage 5, 5, 7, 5, 5, 5
+Coverage 5x2, 7, 5x3
 [1-6], 1-HCV-1a - depth 7(1-9646)
 """
 
@@ -268,7 +296,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 5'[4-344], C[345-917], E1[918-1493], E2[1494-2582], p7[2583-2771], \
 NS2[2772-3422], NS3[3423-5315], NS4b[5478-6260], NS4a[5316-5477], \
 NS5a[6261-7604], NS5b[7605-9377], 3'[9378-9649]
-Coverage 5, 5, 7, 5, 5, 5
+Coverage 5x2, 7, 5x3
 [1-6], 1-HCV-1a - depth 7(1-9649)
 """
 
@@ -289,7 +317,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 """)
     expected_figure = """\
 [1-500], Partial Blast Results(1-500)
-Coverage 5, 5, 7, 5, 5, 5
+Coverage 5x2, 7, 5x3
 [1-6], 1-HCV-1a-partial - depth 7(1-500)
 """
 
@@ -324,14 +352,14 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
 NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
 NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
-Coverage 15, 15, 17, 15, 15, 15
+Coverage 15x2, 17, 15x3
 [101-106], 3-HCV-1a - depth 17(1-9646)
-Coverage 5, 5, 7, 5, 5, 5
+Coverage 5x2, 7, 5x3
 [1-6], 1-HCV-1a - depth 7(1-9646)
 [1-500], [1001-1500], [2001-2500], [3001-3500], [4001-4500], \
 [5001-5500], [6001-6500], [7001-7500], [8001-8500], [9001-9500], \
 Partial Blast Results(1-9646)
-Coverage 5, 5, 29, 5, 5, 5
+Coverage 5x2, 29, 5x3
 [1-6], 2-HCV-1b-partial - depth 29(1-9646)
 """
 
@@ -352,7 +380,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 """)
     expected_figure = """\
 [1-500], Partial Blast Results(1-500)
-[1-6], 1-HCV-1b-partial - depth 0(1-500)
+1-HCV-1b-partial - depth 0(1-500)
 """
 
     figure = build_coverage_figure(contig_coverage_csv)
@@ -366,6 +394,28 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 """)
     expected_figure = """\
 No contigs found.(1-500)
+"""
+
+    figure = build_coverage_figure(contig_coverage_csv)
+
+    assert expected_figure == summarize_figure(figure)
+
+
+def test_plot_contig_coverage_gap():
+    contig_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1a,HCV-1a,1,1,0,0,5
+1-HCV-1a,HCV-1a,2,2,0,0,5
+1-HCV-1a,HCV-1a,4,4,0,0,6
+1-HCV-1a,HCV-1a,5,5,0,0,6
+1-HCV-1a,HCV-1a,6,6,0,0,6
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
+Coverage 5x2, 0, 6x3
+[1-2], [4-6], 1-HCV-1a - depth 6(1-9646)
 """
 
     figure = build_coverage_figure(contig_coverage_csv)

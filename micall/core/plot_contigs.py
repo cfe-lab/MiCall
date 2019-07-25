@@ -3,11 +3,68 @@ from collections import Counter, defaultdict
 from csv import DictReader
 from io import StringIO
 from itertools import groupby
+from math import log10
 from operator import itemgetter
 from pathlib import Path
 
 import yaml
 from genetracks import Figure, Track, Multitrack, Label, Coverage
+# noinspection PyPep8Naming
+import drawSvg as draw
+from matplotlib import cm, colors
+from matplotlib.colors import Normalize
+
+
+class SmoothCoverage(Coverage):
+    def __init__(self, a, b, ys, height=10, color='blue', opacity='1.0'):
+        groups = []
+        group_y = None
+        group_size = 0
+        for y in ys + [0]:
+            if group_size != 0 and not group_y*0.9 <= y <= group_y*1.1:
+                groups.append((group_y, group_size))
+                group_size = 0
+            if group_size == 0:
+                group_y = y
+            group_size += 1
+        self.coverage_groups = groups
+        ys = None
+        super(SmoothCoverage, self).__init__(a, b, ys, height, color, opacity)
+
+    def draw(self, x=0, y=0, xscale=1.0):
+        a = self.a * xscale
+        x = x * xscale
+        d = draw.Group(transform="translate({} {})".format(x, y))
+        yscale = self.h / max(y for y, count in self.coverage_groups)
+        pos = 0
+        for y, count in self.coverage_groups:
+            if y != 0:
+                d.append(draw.Rectangle(a+(pos*xscale),
+                                        0,
+                                        count*xscale,
+                                        y*yscale,
+                                        fill=self.get_color(y),
+                                        fill_opacity=self.opacity,
+                                        shape_rendering='crispEdges'))
+            pos += count
+        return d
+
+    def get_color(self, coverage):
+        return self.color
+
+
+class ShadedCoverage(SmoothCoverage):
+    def __init__(self, a, b, ys, height=10, color='blue', opacity='1.0'):
+        super().__init__(a, b, ys, height, color, opacity)
+        # noinspection PyUnresolvedReferences
+        self.cm = cm.viridis_r
+        self.normalize = Normalize(0, 6)
+
+    def get_color(self, coverage):
+        log_coverage = log10(coverage)
+        rgba = self.cm(self.normalize(log_coverage))
+
+        return colors.to_hex(rgba)
 
 
 def hcv_region_tracks(f):
@@ -202,17 +259,27 @@ def build_contig(reader, f, contig_name, max_position, position_offset):
         coverage = [0] * (end - start + 1)
         for contig_row in contig_rows:
             coverage[contig_row[pos_field] - start] = contig_row['coverage']
+        subtracks = []
+        for has_coverage, group_positions in groupby(
+                enumerate(coverage, 0),
+                lambda item: item[1] != 0):
+            if has_coverage:
+                group_positions = list(group_positions)
+                group_start, _ = group_positions[0]
+                group_end, _ = group_positions[-1]
+                subtracks.append(Track(start + group_start + position_offset,
+                                       start + group_end + position_offset))
         if max(coverage) > 0:
-            f.add(Coverage(start + position_offset,
-                           end + position_offset,
-                           coverage),
+            f.add(ShadedCoverage(start + position_offset,
+                                 end + position_offset,
+                                 coverage),
                   gap=-4)
         track_label = f"{contig_name} - depth {max(coverage)}"
-        f.add(Multitrack([Track(start + position_offset, end + position_offset),
-                          Track(1,
-                                max_position,
-                                label=track_label,
-                                color='none')]))
+        subtracks.append(Track(1,
+                               max_position,
+                               label=track_label,
+                               color='none'))
+        f.add(Multitrack(subtracks))
         break
 
 
@@ -243,6 +310,16 @@ def summarize_figure(figure: Figure):
             if ys is not None:
                 summary.write('Coverage ')
                 summary.write(', '.join(map(str, ys)))
+                continue
+            coverage_groups = getattr(span, 'coverage_groups', None)
+            if coverage_groups is not None:
+                summary.write('Coverage ')
+                for j, (y, count) in enumerate(coverage_groups):
+                    if j:
+                        summary.write(', ')
+                    summary.write(str(y))
+                    if count > 1:
+                        summary.write(f'x{count}')
                 continue
             span_text = getattr(span.label, 'text', span.label) or ''
             summary.write(span_text)
