@@ -1,5 +1,5 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
-from collections import Counter
+from collections import Counter, defaultdict
 from csv import DictReader
 from io import StringIO
 from itertools import groupby
@@ -117,7 +117,9 @@ def plot_contig_coverage(contig_coverage_csv, contig_coverage_svg_path):
 
 def build_coverage_figure(contig_coverage_csv):
     min_position, max_position = 1, 500
-    contig_headers = set()
+    coordinate_depths = Counter()
+    contig_depths = Counter()
+    contig_groups = defaultdict(set)
     reader = DictReader(contig_coverage_csv)
     for row in reader:
         query_nuc_pos = int(row['query_nuc_pos'])
@@ -127,14 +129,26 @@ def build_coverage_figure(contig_coverage_csv):
             refseq_nuc_pos = min_position
         min_position = min(min_position, refseq_nuc_pos, query_nuc_pos)
         max_position = max(max_position, refseq_nuc_pos, query_nuc_pos)
-        contig_headers.add((row['coordinates'] == '', row['coordinates']))
+        coordinates_name = row['coordinates']
+        row_coverage = int(row['coverage'])
+        coordinate_depths[coordinates_name] = max(
+            coordinate_depths[coordinates_name],
+            row_coverage)
+        contig_name = row['contig']
+        contig_depths[contig_name] = max(contig_depths[contig_name],
+                                         row_coverage)
+        contig_groups[coordinates_name].add(contig_name)
+    if '' in coordinate_depths:
+        # Force partial contigs to come last.
+        coordinate_depths[''] = -1
     position_offset = -min_position + 1
 
     landmarks_path = (Path(__file__).parent.parent / "data" /
                       "landmark_references.yaml")
     landmark_groups = yaml.safe_load(landmarks_path.read_text())
     f = Figure()
-    for _, coordinates_name in sorted(contig_headers):
+    for _, coordinates_name in sorted((-depth, name)
+                                      for name, depth in coordinate_depths.items()):
         for reference_set in landmark_groups:
             if coordinates_name != reference_set['coordinates']:
                 continue
@@ -158,43 +172,58 @@ def build_coverage_figure(contig_coverage_csv):
                 f.add(Multitrack(subtracks))
             break
         else:
-            f.add(Track(min_position,
-                        max_position,
-                        label='Partial Blast Results',
-                        color='none'))
-        contig_coverage_csv.seek(0)
-        reader = DictReader(contig_coverage_csv)
-        for contig_name, contig_rows in groupby(reader, itemgetter('contig')):
-            contig_rows = list(contig_rows)
-            if contig_rows[0]['coordinates'] != coordinates_name:
-                continue
-            if coordinates_name:
-                pos_field = 'refseq_nuc_pos'
-            else:
-                pos_field = 'query_nuc_pos'
-            for contig_row in contig_rows:
-                for field_name in (pos_field, 'coverage'):
-                    contig_row[field_name] = int(contig_row[field_name])
-            start = contig_rows[0][pos_field]
-            end = contig_rows[-1][pos_field]
-            coverage = [0] * (end-start+1)
-            for contig_row in contig_rows:
-                coverage[contig_row[pos_field] - start] = contig_row['coverage']
-            if max(coverage) > 0:
-                f.add(Coverage(start+position_offset,
-                               end+position_offset,
-                               coverage),
-                      gap=-4)
-            track_label = f"{contig_name} - depth {max(coverage)}"
-            f.add(Multitrack([Track(start+position_offset, end+position_offset),
-                              Track(1,
-                                    max_position,
-                                    label=track_label,
-                                    color='none')]))
+            add_partial_banner(f, min_position, max_position)
+        for _, contig_name in sorted((-contig_depths[name], name)
+                                     for name in contig_groups[coordinates_name]):
+            contig_coverage_csv.seek(0)
+            reader = DictReader(contig_coverage_csv)
+            build_contig(reader, f, contig_name, max_position, position_offset)
 
     if not f.elements:
         f.add(Track(1, max_position, label='No contigs found.', color='none'))
     return f
+
+
+def build_contig(reader, f, contig_name, max_position, position_offset):
+    for contig_name2, contig_rows in groupby(reader, itemgetter('contig')):
+        if contig_name2 != contig_name:
+            continue
+        contig_rows = list(contig_rows)
+        coordinates_name = contig_rows[0]['coordinates']
+        if coordinates_name:
+            pos_field = 'refseq_nuc_pos'
+        else:
+            pos_field = 'query_nuc_pos'
+        for contig_row in contig_rows:
+            for field_name in (pos_field, 'coverage'):
+                contig_row[field_name] = int(contig_row[field_name])
+        start = contig_rows[0][pos_field]
+        end = contig_rows[-1][pos_field]
+        coverage = [0] * (end - start + 1)
+        for contig_row in contig_rows:
+            coverage[contig_row[pos_field] - start] = contig_row['coverage']
+        if max(coverage) > 0:
+            f.add(Coverage(start + position_offset,
+                           end + position_offset,
+                           coverage),
+                  gap=-4)
+        track_label = f"{contig_name} - depth {max(coverage)}"
+        f.add(Multitrack([Track(start + position_offset, end + position_offset),
+                          Track(1,
+                                max_position,
+                                label=track_label,
+                                color='none')]))
+        break
+
+
+def add_partial_banner(f, min_position, max_position):
+    subtracks = [Track(i*1000 + 1, i*1000 + 500)
+                 for i in range((max_position + 500) // 1000)]
+    subtracks.append(Track(min_position,
+                           max_position,
+                           label='Partial Blast Results',
+                           color='none'))
+    f.add(Multitrack(subtracks))
 
 
 def summarize_figure(figure: Figure):

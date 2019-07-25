@@ -288,7 +288,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1a-partial,,6,,0,0,5
 """)
     expected_figure = """\
-Partial Blast Results(1-500)
+[1-500], Partial Blast Results(1-500)
 Coverage 5, 5, 7, 5, 5, 5
 [1-6], 1-HCV-1a-partial - depth 7(1-500)
 """
@@ -309,7 +309,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1a,HCV-1a,6,6,0,0,5
 2-HCV-1b-partial,,1,,0,0,5
 2-HCV-1b-partial,,2,,0,0,5
-2-HCV-1b-partial,,3,,0,0,7
+2-HCV-1b-partial,,3,,0,0,29
 2-HCV-1b-partial,,4,,0,0,5
 2-HCV-1b-partial,,5,,0,0,5
 2-HCV-1b-partial,,6,,0,0,5
@@ -324,13 +324,15 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
 NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
 NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
-Coverage 5, 5, 7, 5, 5, 5
-[1-6], 1-HCV-1a - depth 7(1-9646)
 Coverage 15, 15, 17, 15, 15, 15
 [101-106], 3-HCV-1a - depth 17(1-9646)
-Partial Blast Results(1-9646)
 Coverage 5, 5, 7, 5, 5, 5
-[1-6], 2-HCV-1b-partial - depth 7(1-9646)
+[1-6], 1-HCV-1a - depth 7(1-9646)
+[1-500], [1001-1500], [2001-2500], [3001-3500], [4001-4500], \
+[5001-5500], [6001-6500], [7001-7500], [8001-8500], [9001-9500], \
+Partial Blast Results(1-9646)
+Coverage 5, 5, 29, 5, 5, 5
+[1-6], 2-HCV-1b-partial - depth 29(1-9646)
 """
 
     figure = build_coverage_figure(contig_coverage_csv)
@@ -349,7 +351,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1b-partial,,6,,0,0,0
 """)
     expected_figure = """\
-Partial Blast Results(1-500)
+[1-500], Partial Blast Results(1-500)
 [1-6], 1-HCV-1b-partial - depth 0(1-500)
 """
 
