@@ -242,6 +242,8 @@ def build_coverage_figure(contig_coverage_csv):
 
 
 def build_contig(reader, f, contig_name, max_position, position_offset):
+    insertion_size = 0
+    insertion_ranges = []  # [(start, end)]
     for contig_name2, contig_rows in groupby(reader, itemgetter('contig')):
         if contig_name2 != contig_name:
             continue
@@ -253,12 +255,21 @@ def build_contig(reader, f, contig_name, max_position, position_offset):
             pos_field = 'query_nuc_pos'
         for contig_row in contig_rows:
             for field_name in (pos_field, 'coverage'):
-                contig_row[field_name] = int(contig_row[field_name])
+                field_text = contig_row[field_name]
+                field_value = None if field_text == '' else int(field_text)
+                contig_row[field_name] = field_value
         start = contig_rows[0][pos_field]
         end = contig_rows[-1][pos_field]
         coverage = [0] * (end - start + 1)
         for contig_row in contig_rows:
-            coverage[contig_row[pos_field] - start] = contig_row['coverage']
+            pos = contig_row[pos_field]
+            if pos is None:
+                insertion_size += 1
+            else:
+                if insertion_size:
+                    insertion_ranges.append((pos, pos+insertion_size-1))
+                    insertion_size = 0
+                coverage[pos - start] = contig_row['coverage']
         subtracks = []
         for has_coverage, group_positions in groupby(
                 enumerate(coverage, 0),
@@ -278,14 +289,20 @@ def build_contig(reader, f, contig_name, max_position, position_offset):
         subtracks.append(Track(1,
                                max_position,
                                label=track_label,
-                               color='none'))
+                               color='none',
+                               regions=[(a, b, 'lightgreen')
+                                        for a, b in insertion_ranges]))
         f.add(Multitrack(subtracks))
         break
 
 
 def add_partial_banner(f, min_position, max_position):
-    subtracks = [Track(i*1000 + 1, i*1000 + 500)
-                 for i in range((max_position + 500) // 1000)]
+    """ Build a dashed line with dashes 500 wide. """
+    dash_width = 500
+    subtracks = [Track(i*dash_width + 1,
+                       min(i*dash_width + dash_width, max_position))
+                 for i in range((max_position + dash_width) // dash_width)
+                 if not i % 2]
     subtracks.append(Track(min_position,
                            max_position,
                            label='Partial Blast Results',
@@ -329,6 +346,9 @@ def summarize_figure(figure: Figure):
                     summary.write(f'[{span.a}-{span.b}]')
                 else:
                     summary.write(f'({span.a}-{span.b})')
+            regions = getattr(span, 'regions', [])
+            for start, end, colour in regions:
+                summary.write(f', {colour}{{{start}-{end}}}')
         summary.write('\n')
     return summary.getvalue()
 

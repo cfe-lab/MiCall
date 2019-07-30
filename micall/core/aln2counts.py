@@ -563,6 +563,9 @@ class SequenceReport(object):
                                         ref_pos < 0 or
                                         ref_pos >= ref_length):
                 ref_pos += 1
+                ref_pos_display = ref_pos
+            else:
+                ref_pos_display = None
             next_seq_pos = seq_pos+1
             next_seq_nuc = consensus[seq_pos] if seq_pos < len(consensus) else ''
             if seq_nuc == next_seq_nuc:
@@ -571,7 +574,7 @@ class SequenceReport(object):
                 row = dict(contig=self.detail_seed,
                            coordinates=coordinate_name,
                            query_nuc_pos=seq_pos,
-                           refseq_nuc_pos=ref_pos,
+                           refseq_nuc_pos=ref_pos_display,
                            ins=0,
                            dels=seed_nuc.counts['-'],
                            coverage=seed_nuc.get_coverage())

@@ -629,6 +629,53 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testContigCoverageReportInsertions(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads(
+            "1-R3-seed,15,0,4,0,AAATTTCAGACCACACCACGAGAGCAT")
+        # insertion:                        ^^^
+
+        expected_text = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-R3-seed,R3-seed,1,1,0,0,4
+1-R3-seed,R3-seed,2,2,0,0,4
+1-R3-seed,R3-seed,3,3,0,0,4
+1-R3-seed,R3-seed,4,4,0,0,4
+1-R3-seed,R3-seed,5,5,0,0,4
+1-R3-seed,R3-seed,6,6,0,0,4
+1-R3-seed,R3-seed,7,7,0,0,4
+1-R3-seed,R3-seed,8,8,0,0,4
+1-R3-seed,R3-seed,9,9,0,0,4
+1-R3-seed,R3-seed,10,10,0,0,4
+1-R3-seed,R3-seed,11,11,0,0,4
+1-R3-seed,R3-seed,12,12,0,0,4
+1-R3-seed,R3-seed,13,,0,0,4
+1-R3-seed,R3-seed,14,,0,0,4
+1-R3-seed,R3-seed,15,,0,0,4
+1-R3-seed,R3-seed,16,13,0,0,4
+1-R3-seed,R3-seed,17,14,0,0,4
+1-R3-seed,R3-seed,18,15,0,0,4
+1-R3-seed,R3-seed,19,16,0,0,4
+1-R3-seed,R3-seed,20,17,0,0,4
+1-R3-seed,R3-seed,21,18,0,0,4
+1-R3-seed,R3-seed,22,19,0,0,4
+1-R3-seed,R3-seed,23,20,0,0,4
+1-R3-seed,R3-seed,24,21,0,0,4
+1-R3-seed,R3-seed,25,22,0,0,4
+1-R3-seed,R3-seed,26,23,0,0,4
+1-R3-seed,R3-seed,27,24,0,0,4
+"""
+
+        self.report.write_amino_header(StringIO())
+        self.report.write_amino_detail_header(StringIO())
+        self.report.write_contig_coverage_header(self.report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_contig_coverage_counts()
+        self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testContigCoverageReportPastReferenceEnd(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,0,AAATTTAGGGAGCAT")
