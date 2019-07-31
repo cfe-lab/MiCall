@@ -1,6 +1,6 @@
 import pytest
 
-from micall.g2p.fastq_g2p import ConsensusBuilder
+from micall.core.consensus_builder import ConsensusBuilder
 
 
 def prepare_reads(*merged_sequences):
