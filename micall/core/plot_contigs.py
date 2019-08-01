@@ -199,6 +199,7 @@ def build_coverage_figure(contig_coverage_csv):
         # Force partial contigs to come last.
         coordinate_depths[''] = -1
     position_offset = -min_position + 1
+    max_position += position_offset
 
     landmarks_path = (Path(__file__).parent.parent / "data" /
                       "landmark_references.yaml")
@@ -229,7 +230,7 @@ def build_coverage_figure(contig_coverage_csv):
                 f.add(Multitrack(subtracks))
             break
         else:
-            add_partial_banner(f, min_position, max_position)
+            add_partial_banner(f, position_offset, max_position)
         for _, contig_name in sorted((-contig_depths[name], name)
                                      for name in contig_groups[coordinates_name]):
             contig_coverage_csv.seek(0)
@@ -290,20 +291,23 @@ def build_contig(reader, f, contig_name, max_position, position_offset):
                                max_position,
                                label=track_label,
                                color='none',
-                               regions=[(a, b, 'lightgreen')
+                               regions=[(a+position_offset,
+                                         b+position_offset,
+                                         'lightgreen')
                                         for a, b in insertion_ranges]))
         f.add(Multitrack(subtracks))
         break
 
 
-def add_partial_banner(f, min_position, max_position):
+def add_partial_banner(f, position_offset, max_position):
     """ Build a dashed line with dashes 500 wide. """
     dash_width = 500
-    subtracks = [Track(i*dash_width + 1,
-                       min(i*dash_width + dash_width, max_position))
-                 for i in range((max_position + dash_width) // dash_width)
+    banner_width = max_position - position_offset
+    subtracks = [Track(i*dash_width + position_offset + 1,
+                       min((i+1)*dash_width + position_offset, max_position))
+                 for i in range((banner_width + dash_width) // dash_width)
                  if not i % 2]
-    subtracks.append(Track(min_position,
+    subtracks.append(Track(position_offset+1,
                            max_position,
                            label='Partial Blast Results',
                            color='none'))

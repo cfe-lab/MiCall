@@ -8,8 +8,8 @@ from micall.core.plot_contigs import build_contigs_figure, summarize_figure, \
     build_coverage_figure, SmoothCoverage, add_partial_banner
 
 HCV_HEADER = ('C[342-915], E1[915-1491], E2[1491-2580], P7[2580-2769], '
-              'NS2[2769-3420], NS3[3420-5313], NS4A[5313-5475], NS4B[5475-6258], '
-              'NS5A[6258-7602], NS5B[7602-9378]')
+              'NS2[2769-3420], NS3[3420-5313], NS4A[5313-5475], '
+              'NS4B[5475-6258], NS5A[6258-7602], NS5B[7602-9378]')
 HIV_HEADER = '''\
 5' LTR[0-634], gag[790-2292], vif[5041-5619], tat[8379-8469], nef[8797-9417]
 tat[5831-6045], vpu[6062-6310], rev[8379-8653], 3' LTR[9086-9719]
@@ -304,13 +304,27 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1a,HCV-1a,4,1,0,0,5
 1-HCV-1a,HCV-1a,5,2,0,0,5
 1-HCV-1a,HCV-1a,6,3,0,0,5
+1-HCV-1a,HCV-1a,7,,0,0,5
+1-HCV-1a,HCV-1a,8,,0,0,5
+1-HCV-1a,HCV-1a,9,,0,0,5
+1-HCV-1a,HCV-1a,10,4,0,0,5
+1-HCV-1a,HCV-1a,11,5,0,0,5
+1-HCV-1a,HCV-1a,12,6,0,0,5
+2-unknown-partial,,1,,0,0,6
+2-unknown-partial,,2,,0,0,6
+2-unknown-partial,,3,,0,0,6
 """)
     expected_figure = """\
 5'[4-344], C[345-917], E1[918-1493], E2[1494-2582], p7[2583-2771], \
 NS2[2772-3422], NS3[3423-5315], NS4b[5478-6260], NS4a[5316-5477], \
 NS5a[6261-7604], NS5b[7605-9377], 3'[9378-9649]
-Coverage 5x2, 7, 5x3
-[1-6], 1-HCV-1a - depth 7(1-9649)
+Coverage 5x2, 7, 5x6
+[1-9], 1-HCV-1a - depth 7(1-9649), lightgreen{7-9}
+[4-503], [1004-1503], [2004-2503], [3004-3503], [4004-4503], \
+[5004-5503], [6004-6503], [7004-7503], [8004-8503], [9004-9503], \
+Partial Blast Results(4-9649)
+Coverage 6x3
+[4-6], 2-unknown-partial - depth 6(1-9649)
 """
 
     figure = build_coverage_figure(contig_coverage_csv)
@@ -362,9 +376,9 @@ Coverage 5x1010
 def test_add_partial_banner():
     """ Last dash in the header banner can be less than 500 wide. """
     figure = Figure()
-    add_partial_banner(figure, 1, 500)
-    add_partial_banner(figure, 1, 700)
-    add_partial_banner(figure, 1, 1200)
+    add_partial_banner(figure, 0, 500)
+    add_partial_banner(figure, 0, 700)
+    add_partial_banner(figure, 0, 1200)
 
     expected_figure = """\
 [1-500], Partial Blast Results(1-500)
