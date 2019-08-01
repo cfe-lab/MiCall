@@ -63,3 +63,65 @@ def test_no_reads():
 
     with pytest.raises(IndexError):
         builder.get_consensus()
+
+
+def test_build_by_lengths():
+    raw_reads = []
+    for n in range(100, 141):
+        if n == 120:
+            raw_reads += ['A'*n] * 100
+        else:
+            raw_reads += ['C'*n] * 5
+    for n in range(200, 241):
+        if n == 220:
+            raw_reads += ['G'*n] * 1000
+        else:
+            raw_reads += ['T'*n] * 50
+    merged_reads = prepare_reads(*raw_reads)
+    expected_consensuses = ['A'*120, 'G'*220]
+    builder = ConsensusBuilder()
+
+    list(builder.build(merged_reads))
+
+    consensuses = list(builder.get_consensus_by_lengths())
+    assert expected_consensuses == consensuses
+
+
+def test_build_by_lengths_when_spike_too_short():
+    raw_reads = []
+    for n in range(100, 141):
+        if n == 120:
+            raw_reads += ['A'*n] * 99
+        else:
+            raw_reads += ['C'*n] * 5
+    merged_reads = prepare_reads(*raw_reads)
+    expected_consensuses = []
+    builder = ConsensusBuilder()
+
+    list(builder.build(merged_reads))
+
+    consensuses = list(builder.get_consensus_by_lengths())
+    assert expected_consensuses == consensuses
+
+
+def test_build_by_lengths_with_no_neighbours():
+    raw_reads = ['A'*120] * 19 + ['G'*220] * 20
+    merged_reads = prepare_reads(*raw_reads)
+    expected_consensuses = ['G'*220]
+    builder = ConsensusBuilder()
+
+    list(builder.build(merged_reads))
+
+    consensuses = list(builder.get_consensus_by_lengths())
+    assert expected_consensuses == consensuses
+
+
+def test_build_by_lengths_no_reads():
+    merged_reads = prepare_reads()
+    expected_consensuses = []
+    builder = ConsensusBuilder()
+
+    list(builder.build(merged_reads))
+
+    consensuses = list(builder.get_consensus_by_lengths())
+    assert expected_consensuses == consensuses

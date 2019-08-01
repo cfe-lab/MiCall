@@ -101,13 +101,10 @@ def fastq_g2p(pssm,
     if merged_contigs_csv is not None:
         contig_writer = DictWriter(merged_contigs_csv, ['contig'])
         contig_writer.writeheader()
-        try:
-            consensus = consensus_builder.get_consensus()
+        for consensus in consensus_builder.get_consensus_by_lengths():
             unambiguous_consensus = consensus.replace('N', '').replace('-', '')
             if unambiguous_consensus:
                 contig_writer.writerow(dict(contig=consensus))
-        except IndexError:
-            pass  # No reads, no consensus.
 
 
 def write_rows(pssm,

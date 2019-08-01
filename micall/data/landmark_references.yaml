@@ -136,3 +136,8 @@
     - {name: NS5a, start: 6237, colour: '#bcbd22'}
     - {name: NS5b, start: 7575, colour: '#17becf'}
     - {name: "3'", start: 9349, end: 9646, colour: darkgrey}
+- seed_pattern: HLA-B-seed
+  coordinates: HLA-B-seed
+  landmarks:
+    - {name: exon2, start: 200, end: 470, colour: '#ff7f0e'}
+    - {name: exon3, start: 716, end: 992, colour: '#2ca02c'}
