@@ -6,7 +6,7 @@ from micall.core.aln2counts import aln2counts
 from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
 from micall.core.coverage_plots import coverage_plot
-from micall.core.plot_contigs import plot_contigs, plot_contig_coverage
+from micall.core.plot_contigs import plot_contig_coverage
 from micall.core.prelim_map import prelim_map
 from micall.core.remap import remap, map_to_contigs
 from micall.core.sam2aln import sam2aln
@@ -293,6 +293,3 @@ class Sample:
                            scratch_path,
                            debug_file_prefix=debug_file_prefix,
                            excluded_seeds=excluded_seeds)
-
-        with open(self.blast_csv) as blast_csv:
-            plot_contigs(blast_csv, self.contigs_svg)

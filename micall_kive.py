@@ -68,12 +68,12 @@ def parse_args():
     parser.add_argument('contigs_csv',
                         nargs='?',
                         help='CSV containing contigs built by de novo assembly')
-    parser.add_argument('blast_csv',
+    parser.add_argument('contig_coverage_csv',
                         nargs='?',
-                        help='CSV containing blast results for each contig')
-    parser.add_argument('blast_svg',
+                        help='CSV containing coverage levels for each contig')
+    parser.add_argument('contig_coverage_svg',
                         nargs='?',
-                        help='SVG diagram of blast results for each contig')
+                        help='SVG diagram of coverage for each contig')
 
     return parser.parse_args()
 
@@ -105,8 +105,8 @@ def load_sample(args):
                     aligned_csv=args.aligned_csv,
                     g2p_aligned_csv=args.g2p_aligned_csv,
                     contigs_csv=args.contigs_csv,
-                    blast_csv=args.blast_csv,
-                    blast_svg=args.blast_svg,
+                    contig_coverage_csv=args.contig_coverage_csv,
+                    contig_coverage_svg=args.contig_coverage_svg,
                     scratch_path=scratch_path)
     sample.name = None  # Since the file names are messy in Kive.
     return sample

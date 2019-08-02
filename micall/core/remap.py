@@ -465,16 +465,8 @@ def remap(fastq1,
     reffile = os.path.join(work_path, 'temp.fasta')
     samfile = os.path.join(work_path, 'temp.sam')
 
-    try:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH,
-                                     logger)
-    except RuntimeError:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH + '-' + BOWTIE_VERSION)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
-                                     logger)
+    bowtie2, bowtie2_build = find_bowtie2()
+
     # check that the inputs exist
     fastq1 = check_fastq(fastq1, gzip)
     fastq2 = check_fastq(fastq2, gzip)
@@ -667,16 +659,8 @@ def map_to_contigs(fastq1,
     reffile = os.path.join(work_path, 'temp.fasta')
     samfile = os.path.join(work_path, 'temp.sam')
 
-    try:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH,
-                                     logger)
-    except RuntimeError:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH + '-' + BOWTIE_VERSION)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
-                                     logger)
+    bowtie2, bowtie2_build = find_bowtie2()
+
     # check that the inputs exist
     fastq1 = check_fastq(fastq1, gzip)
     fastq2 = check_fastq(fastq2, gzip)
@@ -757,6 +741,20 @@ def map_to_contigs(fastq1,
     # report number of unmapped reads
     remap_counts_writer.writerow(dict(type='unmapped',
                                       count=unmapped_count))
+
+
+def find_bowtie2():
+    try:
+        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
+        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
+                                     BOWTIE_BUILD_PATH,
+                                     logger)
+    except RuntimeError:
+        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH + '-' + BOWTIE_VERSION)
+        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
+                                     BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
+                                     logger)
+    return bowtie2, bowtie2_build
 
 
 def write_contig_sequences(conseqs, remap_conseq_csv):

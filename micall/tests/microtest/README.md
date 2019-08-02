@@ -54,3 +54,5 @@ The scenarios that each file tests are:
   script for details.
 * 2160AMIDI-MidHCV - MIDI region for 2160A. See the `make_sample.py` script for
   details.
+* 2170A-HCV - a mixed infection of HCV-1a and HCV-2a, each about 3000 bases
+  long, with enough coverage to assemble two contigs.
