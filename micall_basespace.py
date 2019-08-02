@@ -106,7 +106,7 @@ class BSrequest:
         assert "access_token" not in pdct, " access_token may not be in paramdct"
         pdct["access_token"] = self._access_token
         reqstr = "/".join([self._burl, locstr])
-        logger.info("API: '%s'" % reqstr)
+        logger.info("API: %r" % reqstr)
         return requests.get(reqstr, params=pdct)
 
     def _runssamples(self, runid, limit, offset):
@@ -120,9 +120,9 @@ class BSrequest:
         """
         jobj = self._raw_get_file("/".join(["runs", runid, "samples"]),
                                   paramdct={"Limit": limit, "Offset": offset}).json()
-        err_code, _err_msg = self._responsestatus(jobj)
+        err_code, err_msg = self._responsestatus(jobj)
         if err_code:
-            raise RuntimeError("runsamples API error")
+            raise RuntimeError("runsamples API error {}: {}".format(err_code, err_msg))
         return jobj
 
     def _get_all_sample_ids_from_run_id(self, runid):
@@ -302,7 +302,7 @@ def load_sample(sample_json, data_path, scratch_path):
     if fastq1 is None:
         raise RuntimeError(
             'No R1 file found for sample id {}.'.format(sample_json['Id']))
-    sample = Sample(fastq1,
+    sample = Sample(fastq1=fastq1,
                     basespace_id=sample_json['Id'],
                     basespace_href=sample_json['Href'])
     sample.scratch_path = os.path.join(scratch_path, sample.name)
