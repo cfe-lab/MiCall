@@ -712,32 +712,6 @@ def test_get_app_cached(mock_open_kive, pipelines_config):
     mock_session.endpoints.containerapps.get.assert_called_once()
 
 
-def test_get_kive_input(mock_open_kive, pipelines_config):
-    kive_watcher = KiveWatcher(pipelines_config)
-    kive_watcher.app_args[pipelines_config.micall_main_pipeline_id] = dict(
-        fastq1="/args/101",
-        fastq2="/args/102",
-        bad_cycles_csv="/args/103")
-    expected_input = "/args/103"
-
-    kive_input = kive_watcher.get_kive_input('bad_cycles_csv')
-
-    assert expected_input == kive_input
-    mock_open_kive.assert_called_once()
-
-
-def test_get_kive_input_wrong_pipeline(mock_open_kive, pipelines_config):
-    pipelines_config.micall_resistance_pipeline_id = 44
-    kive_watcher = KiveWatcher(pipelines_config)
-
-    with pytest.raises(
-            ValueError,
-            match=r'Input main_amino_csv not found on container app id 44\.'):
-        kive_watcher.get_kive_input('main_amino_csv')
-
-    mock_open_kive.assert_called_once()
-
-
 def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
@@ -1296,14 +1270,20 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
         dict(url='/datasets/104', id=104),
         dict(url='/datasets/105', id=105)]
 
+    pipelines_config.denovo_main_pipeline_id = 495
     kive_watcher = KiveWatcher(pipelines_config)
     kive_watcher.app_urls = {
-        pipelines_config.micall_main_pipeline_id: '/containerapps/102'}
+        pipelines_config.micall_main_pipeline_id: '/containerapps/102',
+        pipelines_config.denovo_main_pipeline_id: '/containerapps/103'}
     kive_watcher.app_args = {
         pipelines_config.micall_main_pipeline_id: dict(
             bad_cycles_csv='/containerargs/110',
             fastq1='/containerargs/111',
-            fastq2='/containerargs/112')}
+            fastq2='/containerargs/112'),
+        pipelines_config.denovo_main_pipeline_id: dict(
+            bad_cycles_csv='/containerargs/113',
+            fastq1='/containerargs/114',
+            fastq2='/containerargs/115')}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
     folder_watcher.batch = dict(url='/batches/101')
@@ -1326,17 +1306,27 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
 
     kive_watcher.poll_runs()
 
-    mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
-        app='/containerapps/102',
-        datasets=[dict(argument='/containerargs/110',
-                       dataset='/datasets/106'),
-                  dict(argument='/containerargs/111',
-                       dataset='/datasets/104'),
-                  dict(argument='/containerargs/112',
-                       dataset='/datasets/105')],
-        name='MiCall main on 2110A-V3LOOP_S13',
-        batch='/batches/101',
-        groups_allowed=['Everyone']))
+    assert [call(json=dict(app='/containerapps/103',
+                           datasets=[dict(argument='/containerargs/113',
+                                          dataset='/datasets/106'),
+                                     dict(argument='/containerargs/114',
+                                          dataset='/datasets/104'),
+                                     dict(argument='/containerargs/115',
+                                          dataset='/datasets/105')],
+                           name='MiCall denovo main on 2110A-V3LOOP_S13',
+                           batch='/batches/101',
+                           groups_allowed=['Everyone'])),
+            call(json=dict(app='/containerapps/102',
+                           datasets=[dict(argument='/containerargs/110',
+                                          dataset='/datasets/106'),
+                                     dict(argument='/containerargs/111',
+                                          dataset='/datasets/104'),
+                                     dict(argument='/containerargs/112',
+                                          dataset='/datasets/105')],
+                           name='MiCall main on 2110A-V3LOOP_S13',
+                           batch='/batches/101',
+                           groups_allowed=['Everyone']))
+            ] == mock_session.endpoints.containerruns.post.call_args_list
 
 
 def test_launch_main_run_long_name(raw_data_with_two_samples, mock_open_kive, pipelines_config):

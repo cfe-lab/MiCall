@@ -176,6 +176,7 @@ class Sample:
 
         logger.info('Running aln2counts on %s.', self)
         with open(self.aligned_csv) as aligned_csv, \
+                open(self.g2p_aligned_csv) as g2p_aligned_csv, \
                 open(self.clipping_csv) as clipping_csv, \
                 open(self.conseq_ins_csv) as conseq_ins_csv, \
                 open(self.remap_conseq_csv) as remap_conseq_csv, \
@@ -189,6 +190,10 @@ class Sample:
                 open(self.coverage_summary_csv, 'w') as coverage_summary_csv, \
                 open(self.contig_coverage_csv, 'w') as contig_coverage_csv:
 
+            if use_denovo:
+                g2p_aligned_csv = None
+            else:
+                amino_detail_csv = None
             aln2counts(aligned_csv,
                        nuc_csv,
                        amino_csv,
@@ -198,6 +203,7 @@ class Sample:
                        coverage_summary_csv=coverage_summary_csv,
                        clipping_csv=clipping_csv,
                        conseq_ins_csv=conseq_ins_csv,
+                       g2p_aligned_csv=g2p_aligned_csv,
                        remap_conseq_csv=remap_conseq_csv,
                        conseq_region_csv=conseq_region_csv,
                        amino_detail_csv=amino_detail_csv,

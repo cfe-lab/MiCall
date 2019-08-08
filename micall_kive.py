@@ -127,8 +127,6 @@ def main():
             image_path = os.path.join(sample.coverage_maps, image_name)
             archive_path = os.path.join('coverage_maps', image_name)
             tar.add(image_path, archive_path)
-        archive_path = os.path.join('coverage_maps', 'contigs.svg')
-        tar.add(sample.contigs_csv, archive_path)
 
 
 main()

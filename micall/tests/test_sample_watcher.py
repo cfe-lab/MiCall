@@ -111,6 +111,7 @@ def test_launch_filter_quality():
     assert not folder_watcher.is_complete
 
 
+# noinspection DuplicatedCode
 def test_filter_quality_running():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
@@ -128,9 +129,12 @@ def test_filter_quality_running():
             } == session.active_runs
 
 
+# noinspection DuplicatedCode
 def test_filter_quality_finished():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
-    session = DummySession()
+    session = DummySession(skipped_types={PipelineType.DENOVO_MAIN,
+                                          PipelineType.DENOVO_MIDI,
+                                          PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
@@ -147,6 +151,7 @@ def test_filter_quality_finished():
             } == session.active_runs
 
 
+# noinspection DuplicatedCode
 def test_filter_quality_failed():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
@@ -164,9 +169,12 @@ def test_filter_quality_failed():
     assert folder_watcher.is_complete
 
 
+# noinspection DuplicatedCode
 def test_main_running():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
-    session = DummySession()
+    session = DummySession(skipped_types={PipelineType.DENOVO_MAIN,
+                                          PipelineType.DENOVO_MIDI,
+                                          PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
@@ -184,9 +192,12 @@ def test_main_running():
             } == session.active_runs
 
 
+# noinspection DuplicatedCode
 def test_main_finished():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
-    session = DummySession()
+    session = DummySession(skipped_types={PipelineType.DENOVO_MAIN,
+                                          PipelineType.DENOVO_MIDI,
+                                          PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
@@ -205,9 +216,67 @@ def test_main_finished():
     assert 1 == len(folder_watcher.active_runs)
 
 
-def test_resistance_running():
+# noinspection DuplicatedCode
+def test_main_failed():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
+    folder_watcher = FolderWatcher(base_calls_folder, runner=session)
+    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    folder_watcher.sample_watchers.append(sample_watcher)
+
+    folder_watcher.poll_runs()   # Start filter_quality
+    session.finish_all_runs()  # Finish filter_quality
+    folder_watcher.poll_runs()   # Start main
+
+    denovo_main, mapping_main = session.active_runs.values()
+    session.fail_run(mapping_main)
+
+    folder_watcher.poll_runs()   # Notice run failed
+
+    is_complete_after_failure = folder_watcher.is_complete
+
+    session.finish_all_runs()
+
+    folder_watcher.poll_runs()
+
+    is_complete_at_end = folder_watcher.is_complete
+
+    assert not is_complete_after_failure
+    assert is_complete_at_end
+
+
+# noinspection DuplicatedCode
+def test_denovo_main_finished():
+    base_calls_folder = '/path/Data/Intensities/BaseCalls'
+    session = DummySession()
+    folder_watcher = FolderWatcher(base_calls_folder, runner=session)
+    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    folder_watcher.sample_watchers.append(sample_watcher)
+
+    folder_watcher.poll_runs()   # Start filter_quality
+    session.finish_all_runs()  # Finish filter_quality
+    folder_watcher.poll_runs()   # Start main
+    session.finish_all_runs()  # Finish main
+    folder_watcher.poll_runs()   # Start resistance
+
+    assert {104: dict(id=104,
+                      folder_watcher=folder_watcher,
+                      sample_watcher=sample_watcher,
+                      pipeline_type=PipelineType.DENOVO_RESISTANCE),
+            105: dict(id=105,
+                      folder_watcher=folder_watcher,
+                      sample_watcher=sample_watcher,
+                      pipeline_type=PipelineType.RESISTANCE)
+            } == session.active_runs
+    assert 2 == len(folder_watcher.active_runs)
+
+
+# noinspection DuplicatedCode
+def test_resistance_running():
+    base_calls_folder = '/path/Data/Intensities/BaseCalls'
+    session = DummySession(skipped_types={PipelineType.DENOVO_MAIN,
+                                          PipelineType.DENOVO_MIDI,
+                                          PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
@@ -228,6 +297,30 @@ def test_resistance_running():
     assert not folder_watcher.is_complete
 
 
+# noinspection DuplicatedCode
+def test_denovo_resistance_complete():
+    base_calls_folder = '/path/Data/Intensities/BaseCalls'
+    session = DummySession()
+    folder_watcher = FolderWatcher(base_calls_folder, runner=session)
+    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    folder_watcher.sample_watchers.append(sample_watcher)
+
+    folder_watcher.poll_runs()   # Start filter_quality
+    session.finish_all_runs()  # Finish filter_quality
+    folder_watcher.poll_runs()   # Start main
+    session.finish_all_runs()  # Finish main
+    folder_watcher.poll_runs()   # Start resistance
+
+    denovo_resistance = sample_watcher.runs[PipelineType.DENOVO_RESISTANCE]
+    session.finish_run(denovo_resistance)
+
+    folder_watcher.poll_runs()   # denovo resistance finished
+    folder_watcher.poll_runs()   # main resistance still running
+
+    assert not folder_watcher.is_complete
+
+
+# noinspection DuplicatedCode
 def test_resistance_finished():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
@@ -249,6 +342,7 @@ def test_resistance_finished():
     assert folder_watcher.is_complete
 
 
+# noinspection DuplicatedCode
 def test_hcv_filter_quality_finished():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
@@ -279,8 +373,16 @@ def test_hcv_filter_quality_finished():
             105: dict(id=105,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MAIN),
+                      pipeline_type=PipelineType.DENOVO_MAIN),
             106: dict(id=106,
+                      folder_watcher=folder_watcher,
+                      sample_watcher=sample_watcher,
+                      pipeline_type=PipelineType.DENOVO_MIDI),
+            107: dict(id=107,
+                      folder_watcher=folder_watcher,
+                      sample_watcher=sample_watcher,
+                      pipeline_type=PipelineType.MAIN),
+            108: dict(id=108,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
                       pipeline_type=PipelineType.MIDI)
@@ -288,9 +390,10 @@ def test_hcv_filter_quality_finished():
     expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
     assert expected_active_samples == folder_watcher.active_samples
-    assert 5 == len(folder_watcher.active_runs)
+    assert 7 == len(folder_watcher.active_runs)
 
 
+# noinspection DuplicatedCode
 def test_hcv_filter_quality_finished_on_singleton():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
@@ -316,16 +419,23 @@ def test_hcv_filter_quality_finished_on_singleton():
             104: dict(id=104,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
+                      pipeline_type=PipelineType.DENOVO_MAIN),
+            105: dict(id=105,
+                      folder_watcher=folder_watcher,
+                      sample_watcher=sample_watcher,
                       pipeline_type=PipelineType.MAIN)
             } == session.active_runs
     expected_active_samples = {'NEG1-HCV_S15_L001_R1_001.fastq.gz'}
     assert expected_active_samples == folder_watcher.active_samples
-    assert 3 == len(folder_watcher.active_runs)
+    assert 4 == len(folder_watcher.active_runs)
 
 
+# noinspection DuplicatedCode
 def test_hcv_mixed_hcv_running():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
-    session = DummySession()
+    session = DummySession(skipped_types={PipelineType.DENOVO_MAIN,
+                                          PipelineType.DENOVO_MIDI,
+                                          PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
@@ -366,9 +476,12 @@ def test_hcv_mixed_hcv_running():
     assert 5 == len(folder_watcher.active_runs)
 
 
+# noinspection DuplicatedCode
 def test_hcv_mixed_hcv_running_on_singleton():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
-    session = DummySession()
+    session = DummySession(skipped_types={PipelineType.DENOVO_MAIN,
+                                          PipelineType.DENOVO_MIDI,
+                                          PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup(
         'NEG1',
@@ -399,9 +512,12 @@ def test_hcv_mixed_hcv_running_on_singleton():
     assert 3 == len(folder_watcher.active_runs)
 
 
+# noinspection DuplicatedCode
 def test_hcv_mixed_hcv_finished():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
-    session = DummySession()
+    session = DummySession(skipped_types={PipelineType.DENOVO_MAIN,
+                                          PipelineType.DENOVO_MIDI,
+                                          PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
@@ -437,9 +553,12 @@ def test_hcv_mixed_hcv_finished():
     assert 3 == len(folder_watcher.active_runs)
 
 
+# noinspection DuplicatedCode
 def test_hcv_mixed_hcv_not_finished():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
-    session = DummySession()
+    session = DummySession(skipped_types={PipelineType.DENOVO_MAIN,
+                                          PipelineType.DENOVO_MIDI,
+                                          PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
@@ -477,12 +596,16 @@ def test_hcv_mixed_hcv_not_finished():
     assert not folder_watcher.is_complete
 
 
+# noinspection DuplicatedCode
 def test_mixed_hcv_skipped():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession(skipped_types={PipelineType.MIXED_HCV_MAIN,
                                           PipelineType.MIXED_HCV_MIDI,
                                           PipelineType.DENOVO,
-                                          PipelineType.DENOVO_COMBINED})
+                                          PipelineType.DENOVO_COMBINED,
+                                          PipelineType.DENOVO_MAIN,
+                                          PipelineType.DENOVO_MIDI,
+                                          PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
@@ -510,12 +633,16 @@ def test_mixed_hcv_skipped():
     assert 2 == len(folder_watcher.active_runs)
 
 
+# noinspection DuplicatedCode
 def test_mid_hcv_complete():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession(skipped_types={PipelineType.MIXED_HCV_MAIN,
                                           PipelineType.MIXED_HCV_MIDI,
                                           PipelineType.DENOVO,
-                                          PipelineType.DENOVO_COMBINED})
+                                          PipelineType.DENOVO_COMBINED,
+                                          PipelineType.DENOVO_MAIN,
+                                          PipelineType.DENOVO_MIDI,
+                                          PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
@@ -543,7 +670,10 @@ def test_mid_hcv_complete():
 def test_mixed_hcv_skipped_and_complete():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession(skipped_types={PipelineType.MIXED_HCV_MAIN,
-                                          PipelineType.MIXED_HCV_MIDI})
+                                          PipelineType.MIXED_HCV_MIDI,
+                                          PipelineType.DENOVO_MAIN,
+                                          PipelineType.DENOVO_MIDI,
+                                          PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',

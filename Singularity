@@ -9,7 +9,7 @@ From: centos:7
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-    Change Notes: Minor release with fixes for two HCV subtype bugs.
+    Change Notes: Includes denovo assembly apps.
 
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
@@ -37,6 +37,7 @@ From: centos:7
     micall/project* /opt/micall/micall/
 
     micall/core    /opt/micall/micall/core/
+    micall/data    /opt/micall/micall/data/
     micall/drivers    /opt/micall/micall/drivers/
     micall/g2p     /opt/micall/micall/g2p/
     micall/resistance   /opt/micall/micall/resistance/

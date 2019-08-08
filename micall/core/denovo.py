@@ -150,7 +150,7 @@ def denovo(fastq1_path,
         iva_out_path = os.path.join(tmp_dir, 'iva_out')
         contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
         try:
-            run([IVA, '--fr', joined_path, '-t', '8', iva_out_path], check=True)
+            run([IVA, '--fr', joined_path, '-t', '2', iva_out_path], check=True)
         except CalledProcessError:
             logger.warning('iva failed to assemble.', exc_info=True)
             with open(contigs_fasta_path, 'a'):

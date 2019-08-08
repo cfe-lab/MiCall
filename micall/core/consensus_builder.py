@@ -51,7 +51,7 @@ class ConsensusBuilder:
                 centre_length = length - window_radius
                 centre_count = self.length_counts[centre_length]
                 average_count = max(
-                    1,
+                    0.5,  # Force amplicons to have at least 10 reads.
                     (running_total - centre_count) / (window_size-1))
                 if centre_count and (centre_count >= average_count * min_ratio):
                     yield self.get_consensus_for_length(centre_length)

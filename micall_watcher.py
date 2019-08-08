@@ -52,6 +52,12 @@ def parse_args(argv=None):
         default=os.environ.get('MICALL_DENOVO_COMBINED_PIPELINE_ID', None),
         help="id of Denovo pipeline's container app for combining two samples")
     parser.add_argument(
+        '--denovo_main_pipeline_id',
+        type=int,
+        default=os.environ.get('MICALL_DENOVO_MAIN_PIPELINE_ID', None),
+        help="id of general purpose denovo pipeline's container app")
+    # noinspection PyTypeChecker
+    parser.add_argument(
         '--raw_data',
         type=Path,
         default=os.environ.get('MICALL_RAW_DATA',

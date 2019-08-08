@@ -1,3 +1,4 @@
+import errno
 import hashlib
 import logging
 import os
@@ -53,7 +54,8 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'mid_fasta',
                       'alignment_svg',
                       'alignment_png',
-                      'assembly_fasta']
+                      'assembly_fasta',
+                      'contigs_coverage_svg']
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
@@ -277,11 +279,6 @@ class KiveWatcher:
         self.app_urls = {}  # {app_id: app_url}
         self.app_args = {}  # {app_id: {arg_name: arg_url}}
         self.external_directory_path = self.external_directory_name = None
-        self.input_pipeline_ids = config and dict(
-            quality_csv=config.micall_filter_quality_pipeline_id,
-            bad_cycles_csv=config.micall_main_pipeline_id,
-            main_amino_csv=config.micall_resistance_pipeline_id,
-            midi_amino_csv=config.micall_resistance_pipeline_id) or {}
 
     def is_full(self):
         active_count = sum(len(folder_watcher.active_samples)
@@ -309,16 +306,6 @@ class KiveWatcher:
             self.app_args[app_id] = kive_app
             self.app_urls[app_id] = arguments[0]['app']
         return kive_app
-
-    def get_kive_input(self, input_name):
-        app_id = self.input_pipeline_ids[input_name]
-        app_arguments = self.get_kive_arguments(app_id)
-        input_url = app_arguments.get(input_name)
-        if input_url:
-            return input_url
-        raise ValueError('Input {} not found on container app id {}.'.format(
-            input_name,
-            app_id))
 
     def create_batch(self, folder_watcher):
         batch_name = folder_watcher.run_name + ' v' + self.config.pipeline_version
@@ -530,16 +517,40 @@ class KiveWatcher:
             return
         logger.info('Collating results in %s', results_path)
         scratch_path = results_path / "scratch"
+        self.copy_outputs(folder_watcher, scratch_path, results_path)
+        self.copy_outputs(folder_watcher,
+                          scratch_path / "denovo",
+                          results_path / "denovo")
+        shutil.rmtree(scratch_path)
+        return results_path
+
+    def copy_outputs(self,
+                     folder_watcher,
+                     scratch_path,
+                     results_path):
+        results_path.mkdir(exist_ok=True)
         for output_name in DOWNLOADED_RESULTS:
             if output_name == 'coverage_maps_tar':
-                self.extract_coverage_maps(folder_watcher)
+                self.extract_coverage_maps(folder_watcher,
+                                           scratch_path,
+                                           results_path)
                 continue
             if output_name == 'alignment_svg':
-                self.move_alignment_plot(folder_watcher, '.svg')
+                self.move_alignment_plot(folder_watcher,
+                                         '.svg',
+                                         scratch_path,
+                                         results_path)
                 continue
             if output_name == 'alignment_png':
-                self.move_alignment_plot(folder_watcher, '.png')
+                self.move_alignment_plot(folder_watcher,
+                                         '.png',
+                                         scratch_path,
+                                         results_path)
                 continue
+            if output_name == 'contigs_coverage_svg':
+                self.move_contigs_coverage(folder_watcher,
+                                           scratch_path,
+                                           results_path)
             source_count = 0
             filename = get_output_filename(output_name)
             target_path = results_path / filename
@@ -559,8 +570,6 @@ class KiveWatcher:
                         pass
             if not source_count:
                 target_path.unlink()
-        shutil.rmtree(scratch_path)
-        return results_path
 
     @staticmethod
     def extract_csv(source, target, sample_name, source_count):
@@ -581,11 +590,10 @@ class KiveWatcher:
             else:
                 target.write(line)
 
-    def extract_coverage_maps(self, folder_watcher):
-        results_path = self.get_results_path(folder_watcher)
+    @staticmethod
+    def extract_coverage_maps(folder_watcher, scratch_path, results_path):
         coverage_path = results_path / "coverage_maps"
         coverage_path.mkdir()
-        scratch_path = results_path / "scratch"
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / 'coverage_maps.tar'
@@ -599,12 +607,15 @@ class KiveWatcher:
                             shutil.copyfileobj(source, target)
             except FileNotFoundError:
                 pass
+        remove_empty_directory(coverage_path)
 
-    def move_alignment_plot(self, folder_watcher, extension):
-        results_path: Path = self.get_results_path(folder_watcher)
-        alignment_path = results_path / "alignment"
+    @staticmethod
+    def move_alignment_plot(folder_watcher,
+                            extension,
+                            scratch_path,
+                            results_path):
+        alignment_path: Path = results_path / "alignment"
         alignment_path.mkdir(exist_ok=True)
-        scratch_path = results_path / "scratch"
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / f'alignment{extension}'
@@ -613,6 +624,21 @@ class KiveWatcher:
                 os.rename(str(source_path), str(target_path))
             except FileNotFoundError:
                 pass
+        remove_empty_directory(alignment_path)
+
+    @staticmethod
+    def move_contigs_coverage(folder_watcher, scratch_path, results_path):
+        plots_path = results_path / "contigs_coverage"
+        plots_path.mkdir(exist_ok=True)
+        for sample_name in folder_watcher.all_samples:
+            sample_name = trim_name(sample_name)
+            source_path = scratch_path / sample_name / 'contigs_coverage.svg'
+            target_path = plots_path / f"{sample_name}_contigs_coverage.svg"
+            try:
+                os.rename(str(source_path), str(target_path))
+            except FileNotFoundError:
+                pass
+        remove_empty_directory(plots_path)
 
     def run_pipeline(self, folder_watcher, pipeline_type, sample_watcher):
         if pipeline_type == PipelineType.FILTER_QUALITY:
@@ -622,25 +648,19 @@ class KiveWatcher:
                 'MiCall filter quality on ' + folder_watcher.run_name,
                 folder_watcher.batch)
         if pipeline_type == PipelineType.RESISTANCE:
-            main_runs = filter(None,
-                               (sample_watcher.runs.get(pipeline_type)
-                                for pipeline_type in (PipelineType.MAIN,
-                                                      PipelineType.MIDI)))
-            input_dataset_urls = [run_dataset['dataset']
-                                  for run in main_runs
-                                  for run_dataset in run['datasets']
-                                  if run_dataset['argument_name'] == 'amino_csv']
-            input_datasets = [self.kive_retry(lambda: self.session.get(url).json())
-                              for url in input_dataset_urls]
-            if len(input_datasets) == 1:
-                input_datasets *= 2
-            inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv'),
-                                   input_datasets))
-            return self.find_or_launch_run(
-                self.config.micall_resistance_pipeline_id,
-                inputs_dict,
-                'MiCall resistance on ' + sample_watcher.sample_group.enum,
-                folder_watcher.batch)
+            run = self.run_resistance_pipeline(
+                sample_watcher,
+                folder_watcher,
+                (PipelineType.MAIN, PipelineType.MIDI),
+                'MiCall resistance')
+            return run
+        if pipeline_type == PipelineType.DENOVO_RESISTANCE:
+            run = self.run_resistance_pipeline(
+                sample_watcher,
+                folder_watcher,
+                (PipelineType.DENOVO_MAIN, PipelineType.DENOVO_MIDI),
+                'MiCall denovo resistance')
+            return run
         if pipeline_type in (PipelineType.MIXED_HCV_MAIN,
                              PipelineType.MIXED_HCV_MIDI):
             if self.config.mixed_hcv_pipeline_id is None:
@@ -686,10 +706,26 @@ class KiveWatcher:
         if pipeline_type == PipelineType.MAIN:
             fastq1, fastq2 = sample_watcher.fastq_datasets[:2]
             sample_name = sample_watcher.sample_group.names[0]
-        else:
-            assert pipeline_type == PipelineType.MIDI
+            run_name = 'MiCall main on ' + trim_name(sample_name)
+            pipeline_id = self.config.micall_main_pipeline_id
+        elif pipeline_type == PipelineType.MIDI:
             fastq1, fastq2 = sample_watcher.fastq_datasets[2:]
             sample_name = sample_watcher.sample_group.names[1]
+            run_name = 'MiCall main on ' + trim_name(sample_name)
+            pipeline_id = self.config.micall_main_pipeline_id
+        elif pipeline_type == PipelineType.DENOVO_MAIN:
+            fastq1, fastq2 = sample_watcher.fastq_datasets[:2]
+            sample_name = sample_watcher.sample_group.names[0]
+            run_name = 'MiCall denovo main on ' + trim_name(sample_name)
+            pipeline_id = self.config.denovo_main_pipeline_id
+        else:
+            assert pipeline_type == PipelineType.DENOVO_MIDI
+            fastq1, fastq2 = sample_watcher.fastq_datasets[2:]
+            sample_name = sample_watcher.sample_group.names[1]
+            run_name = 'MiCall denovo main on ' + trim_name(sample_name)
+            pipeline_id = self.config.denovo_main_pipeline_id
+        if pipeline_id is None:
+            return None
         if folder_watcher.bad_cycles_dataset is None:
             filter_run_id = folder_watcher.filter_quality_run['id']
             run_datasets = self.kive_retry(
@@ -702,14 +738,34 @@ class KiveWatcher:
             folder_watcher.bad_cycles_dataset = self.kive_retry(
                 lambda: self.session.get(bad_cycles_run_dataset['dataset']).json())
 
-        run_name = 'MiCall main on ' + trim_name(sample_name)
         return self.find_or_launch_run(
-            self.config.micall_main_pipeline_id,
+            pipeline_id,
             dict(fastq1=fastq1,
                  fastq2=fastq2,
                  bad_cycles_csv=folder_watcher.bad_cycles_dataset),
             run_name,
             folder_watcher.batch)
+
+    def run_resistance_pipeline(self, sample_watcher, folder_watcher, input_pipeline_types, description):
+        main_runs = filter(None,
+                           (sample_watcher.runs.get(pipeline_type)
+                            for pipeline_type in input_pipeline_types))
+        input_dataset_urls = [run_dataset['dataset']
+                              for run in main_runs
+                              for run_dataset in run['datasets']
+                              if run_dataset['argument_name'] == 'amino_csv']
+        input_datasets = [self.kive_retry(lambda: self.session.get(url).json())
+                          for url in input_dataset_urls]
+        if len(input_datasets) == 1:
+            input_datasets *= 2
+        inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv'),
+                               input_datasets))
+        run = self.find_or_launch_run(
+            self.config.micall_resistance_pipeline_id,
+            inputs_dict,
+            description + ' on ' + sample_watcher.sample_group.enum,
+            folder_watcher.batch)
+        return run
 
     def find_or_launch_run(self,
                            pipeline_id,
@@ -791,10 +847,16 @@ class KiveWatcher:
                         other_run['datasets'] = run_datasets
                 sample_name = (sample_watcher.sample_group.names[1]
                                if pipeline_type in (PipelineType.MIDI,
-                                                    PipelineType.MIXED_HCV_MIDI)
+                                                    PipelineType.MIXED_HCV_MIDI,
+                                                    PipelineType.DENOVO_MIDI)
                                else sample_watcher.sample_group.names[0])
                 results_path = self.get_results_path(folder_watcher)
-                scratch_path = results_path / "scratch" / trim_name(sample_name)
+                scratch_path = results_path / "scratch"
+                if pipeline_type in (PipelineType.DENOVO_MAIN,
+                                     PipelineType.DENOVO_MIDI,
+                                     PipelineType.DENOVO_RESISTANCE):
+                    scratch_path /= 'denovo'
+                scratch_path /= trim_name(sample_name)
                 scratch_path.mkdir(parents=True, exist_ok=True)
                 for output_name in DOWNLOADED_RESULTS:
                     matches = [run_dataset
@@ -874,3 +936,12 @@ class KiveWatcher:
                 dataset_name,
                 description)
         return dataset
+
+
+def remove_empty_directory(path: Path):
+    """ Clean up a directory that didn't get any files copied in. """
+    try:
+        path.rmdir()
+    except OSError as ex:
+        if ex.errno != errno.ENOTEMPTY:
+            raise

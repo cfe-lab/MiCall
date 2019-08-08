@@ -567,6 +567,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    # noinspection DuplicatedCode
     def testContigCoverageReportDeletions(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("1-R2-seed,15,0,4,0,GGC-CG")
@@ -591,6 +592,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    # noinspection DuplicatedCode
     def testContigCoverageReportGap(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("1-R3-seed,15,0,4,0,AAATTTCAGCCACGAGAGCAT")
@@ -629,6 +631,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    # noinspection DuplicatedCode
     def testContigCoverageReportInsertions(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads(
@@ -676,6 +679,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    # noinspection DuplicatedCode
     def testContigCoverageReportPastReferenceEnd(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,0,AAATTTAGGGAGCAT")
@@ -708,6 +712,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    # noinspection DuplicatedCode
     def testContigCoverageReportPastReferenceStart(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,0,GAGCATAAATTTAGG")
@@ -736,6 +741,59 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
         self.report.read(aligned_reads1)
         self.report.write_contig_coverage_counts()
         self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    # noinspection DuplicatedCode
+    def testContigCoverageReportOffsetReads(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,10,AAATTTAGG")
+        expected_text = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-R1-seed,R1-seed,11,1,0,0,4
+1-R1-seed,R1-seed,12,2,0,0,4
+1-R1-seed,R1-seed,13,3,0,0,4
+1-R1-seed,R1-seed,14,4,0,0,4
+1-R1-seed,R1-seed,15,5,0,0,4
+1-R1-seed,R1-seed,16,6,0,0,4
+1-R1-seed,R1-seed,17,7,0,0,4
+1-R1-seed,R1-seed,18,8,0,0,4
+1-R1-seed,R1-seed,19,9,0,0,4
+"""
+
+        self.report.write_amino_header(StringIO())
+        self.report.write_amino_detail_header(StringIO())
+        self.report.write_contig_coverage_header(self.report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_contig_coverage_counts()
+        self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    # noinspection DuplicatedCode
+    def testContigCoverageReportLargeGap(self):
+        """ When mapping against known references, there can be large gaps. """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("""\
+R3-seed,15,0,4,3,TTT
+R3-seed,15,0,5,21,CAT
+""")
+        expected_text = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+R3-seed,R3-seed,4,4,0,0,4
+R3-seed,R3-seed,5,5,0,0,4
+R3-seed,R3-seed,6,6,0,0,4
+R3-seed,R3-seed,22,22,0,0,5
+R3-seed,R3-seed,23,23,0,0,5
+R3-seed,R3-seed,24,24,0,0,5
+"""
+
+        self.report.write_amino_header(StringIO())
+        self.report.write_contig_coverage_header(self.report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_contig_coverage_counts()
         self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
@@ -967,6 +1025,7 @@ R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0,0
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    # noinspection DuplicatedCode
     def testInsertionBetweenReadAndConsensusAminoReport(self):
         """ Combine the soft clipping data with the read counts.
         """

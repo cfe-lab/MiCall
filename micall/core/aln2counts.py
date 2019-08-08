@@ -21,7 +21,7 @@ from pathlib import Path
 import gotoh
 import yaml
 
-from micall.core.project_config import ProjectConfig
+from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 from micall.core.remap import PARTIAL_CONTIG_SUFFIX
 from micall.utils.big_counter import BigCounter
 from micall.utils.translation import translate, ambig_dict
@@ -156,10 +156,11 @@ class SequenceReport(object):
         for i, row in enumerate(aligned_reads):
             if i == 0:
                 # these will be the same for all rows, so just assign from the first
-                self.seed = row['refname']
-                if self.amino_detail_writer is not None:
-                    self.detail_seed = self.seed
-                    _, self.seed = self.seed.split('-', 1)
+                self.detail_seed = row['refname']
+                if self.amino_detail_writer is None:
+                    self.seed = self.detail_seed
+                else:
+                    _, self.seed = self.detail_seed.split('-', 1)
                 self.qcut = row['qcut']
             nuc_seq = row['seq']
             offset = int(row['offset'])
@@ -327,12 +328,13 @@ class SequenceReport(object):
 
     def process_reads(self,
                       aligned_csv,
-                      coverage_summary=None):
+                      coverage_summary=None,
+                      v3_overlap_region_name=None):
         # parse CSV file containing aligned reads, grouped by reference and quality cutoff
         aligned_reader = csv.DictReader(aligned_csv)
         for _, aligned_reads in groupby(aligned_reader,
                                         lambda row: (row['refname'], row['qcut'])):
-            self.read(aligned_reads)
+            self.read(aligned_reads, v3_overlap_region_name)
 
             if self.insert_writer is not None:
                 self.write_insertions(self.insert_writer)
@@ -534,10 +536,23 @@ class SequenceReport(object):
 
     def write_contig_coverage_counts(self, contig_coverage_writer=None):
         contig_coverage_writer = contig_coverage_writer or self.contig_coverage_writer
-        seed_nucs = [(seed_nuc.get_consensus(MAX_CUTOFF), seed_nuc)
+        seed_nucs = [(seed_nuc.get_consensus(MAX_CUTOFF) or '?', seed_nuc)
                      for seed_amino in self.seed_aminos[0]
                      for seed_nuc in seed_amino.nucleotides]
-        consensus = ''.join(nuc for nuc, coverage in seed_nucs)
+        aligned_consensus = ''.join(nuc for nuc, coverage in seed_nucs)
+        consensus = aligned_consensus.lstrip('?')
+        consensus_offset = len(aligned_consensus) - len(consensus)
+        consensus = consensus.rstrip('?')
+
+        # Fill in gaps from seed reference.
+        try:
+            seed_seq = self.projects.getReference(self.seed)
+            consensus = ''.join(nuc if nuc != '?' else seed_seq[i+consensus_offset]
+                                for i, nuc in enumerate(consensus))
+            aligned_consensus = '-' * consensus_offset + consensus
+        except KeyError:
+            # Wasn't a known reference, can't fill in gaps.
+            pass
         is_partial = self.seed.endswith(PARTIAL_CONTIG_SUFFIX)
         if is_partial:
             seed_landmarks = None
@@ -557,7 +572,7 @@ class SequenceReport(object):
             aref, aseq, score = self._pair_align(coordinate_seq, consensus)
             ref_length = len(coordinate_seq)
             ref_pos = len(aref.lstrip('-')) - len(aref)
-        seq_pos = 0
+        seq_pos = consensus_offset
         for ref_nuc, seq_nuc in zip(aref, aseq):
             if ref_pos is not None and (ref_nuc != '-' or
                                         ref_pos < 0 or
@@ -567,17 +582,22 @@ class SequenceReport(object):
             else:
                 ref_pos_display = None
             next_seq_pos = seq_pos+1
-            next_seq_nuc = consensus[seq_pos] if seq_pos < len(consensus) else ''
+            next_seq_nuc = (aligned_consensus[seq_pos]
+                            if seq_pos < len(aligned_consensus)
+                            else '')
             if seq_nuc == next_seq_nuc:
                 seq_pos = next_seq_pos
                 seed_nuc: SeedNucleotide = seed_nucs[seq_pos-1][1]
+                coverage = seed_nuc.get_coverage()
+                if coverage == 0:
+                    continue
                 row = dict(contig=self.detail_seed,
                            coordinates=coordinate_name,
                            query_nuc_pos=seq_pos,
                            refseq_nuc_pos=ref_pos_display,
                            ins=0,
                            dels=seed_nuc.counts['-'],
-                           coverage=seed_nuc.get_coverage())
+                           coverage=coverage)
                 contig_coverage_writer.writerow(row)
 
     @staticmethod
@@ -1229,6 +1249,7 @@ def aln2counts(aligned_csv,
                coverage_summary_csv=None,
                clipping_csv=None,
                conseq_ins_csv=None,
+               g2p_aligned_csv=None,
                remap_conseq_csv=None,
                conseq_region_csv=None,
                amino_detail_csv=None,
@@ -1247,7 +1268,10 @@ def aln2counts(aligned_csv,
         parameters - callback(message, progress, max_progress)
     @param coverage_summary_csv: Open file handle to write coverage depth.
     @param clipping_csv: Open file handle containing soft clipping counts
-    @param conseq_ins_csv: Open file handle containing insertions relative to consensus sequence
+    @param conseq_ins_csv: Open file handle containing insertions relative to
+        consensus sequence
+    @param g2p_aligned_csv: Open file handle containing aligned reads (from
+        fastq_g2p)
     @param remap_conseq_csv: Open file handle containing consensus sequences
         from the remap step.
     @param conseq_region_csv: Open file handle to write consensus sequences
@@ -1304,7 +1328,13 @@ def aln2counts(aligned_csv,
         if contig_coverage_csv is not None:
             report.write_contig_coverage_header(contig_coverage_csv)
 
-        report.process_reads(aligned_csv, coverage_summary)
+        v3_overlap_region_name = None if g2p_aligned_csv is None else 'V3LOOP'
+        report.process_reads(aligned_csv, coverage_summary, v3_overlap_region_name)
+        if g2p_aligned_csv is not None:
+            if report.remap_conseqs is not None:
+                report.remap_conseqs[G2P_SEED_NAME] = projects.getReference(
+                    G2P_SEED_NAME)
+            report.process_reads(g2p_aligned_csv, coverage_summary)
 
         if coverage_summary_csv is not None:
             if coverage_summary:
