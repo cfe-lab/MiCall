@@ -105,7 +105,7 @@ def test_build_by_lengths_when_spike_too_short():
 
 
 def test_build_by_lengths_with_no_neighbours():
-    raw_reads = ['A'*120] * 19 + ['G'*220] * 20
+    raw_reads = ['A'*120] * 9 + ['G'*220] * 10
     merged_reads = prepare_reads(*raw_reads)
     expected_consensuses = ['G'*220]
     builder = ConsensusBuilder()
