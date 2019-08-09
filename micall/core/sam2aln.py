@@ -408,9 +408,10 @@ class TempFileFactory:
         if self.aligned_file_name is None:
             return StringIO()
         dirname = os.path.dirname(self.aligned_file_name)
-        file_prefix = os.path.join(os.path.abspath(dirname),
-                                   'aligned_temp')
-        return TemporaryFile(mode='w+', prefix=file_prefix, suffix='.csv')
+        return TemporaryFile(mode='w+',
+                             dir=os.path.abspath(dirname),
+                             prefix='aligned_temp',
+                             suffix='.csv')
 
     def create_writer(self):
         f = self.open()

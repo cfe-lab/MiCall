@@ -48,7 +48,8 @@ class BigCounter:
             
     def _write_cache(self):
         with NamedTemporaryFile(mode='w+',
-                                prefix=self.file_prefix,
+                                dir=os.path.dirname(self.file_prefix),
+                                prefix=os.path.basename(self.file_prefix),
                                 suffix='.csv',
                                 delete=False) as cache:
             keys = sorted(self.active_counts)
