@@ -181,6 +181,7 @@ class Sample:
                 open(self.conseq_ins_csv) as conseq_ins_csv, \
                 open(self.remap_conseq_csv) as remap_conseq_csv, \
                 open(self.nuc_csv, 'w') as nuc_csv, \
+                open(self.nuc_detail_csv, 'w') as nuc_detail_csv, \
                 open(self.amino_csv, 'w') as amino_csv, \
                 open(self.amino_detail_csv, 'w') as amino_detail_csv, \
                 open(self.coord_ins_csv, 'w') as coord_ins_csv, \
@@ -207,6 +208,7 @@ class Sample:
                        remap_conseq_csv=remap_conseq_csv,
                        conseq_region_csv=conseq_region_csv,
                        amino_detail_csv=amino_detail_csv,
+                       nuc_detail_csv=nuc_detail_csv,
                        contig_coverage_csv=contig_coverage_csv)
 
         logger.info('Running coverage_plots on %s.', self)
@@ -223,10 +225,12 @@ class Sample:
             plot_contig_coverage(contig_coverage_csv, self.contig_coverage_svg)
 
         logger.info('Running cascade_report on %s.', self)
-        with open(self.remap_counts_csv) as remap_counts_csv, \
+        with open(self.g2p_summary_csv) as g2p_summary_csv, \
+                open(self.remap_counts_csv) as remap_counts_csv, \
                 open(self.aligned_csv) as aligned_csv, \
                 open(self.cascade_csv, 'w') as cascade_csv:
             cascade_report = CascadeReport(cascade_csv)
+            cascade_report.g2p_summary_csv = g2p_summary_csv
             cascade_report.remap_counts_csv = remap_counts_csv
             cascade_report.aligned_csv = aligned_csv
             cascade_report.generate()

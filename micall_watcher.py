@@ -108,7 +108,7 @@ def parse_args(argv=None):
         args.qai_password = os.environ.get('MICALL_QAI_PASSWORD', 'testing')
     if args.micall_filter_quality_pipeline_id is None:
         parser.error("Argument --micall_filter_quality_pipeline_id not set and "
-                     "MICALL_FILTER_QUALITY_PIPELINE_ID environment variable "
+                     "$MICALL_FILTER_QUALITY_PIPELINE_ID environment variable "
                      "not set.")
     return args
 

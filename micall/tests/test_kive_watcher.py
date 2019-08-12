@@ -256,9 +256,10 @@ def create_raw_data_with_two_runs(tmpdir):
 
 
 def test_pipeline_not_set(capsys, monkeypatch):
-    monkeypatch.delenv('MICALL_MAIN_PIPELINE_ID', raising=False)
-    expected_error = "Argument --micall_main_pipeline_id not set and " \
-                     "$MICALL_MAIN_PIPELINE_ID environment variable not set."
+    monkeypatch.delenv('MICALL_FILTER_QUALITY_PIPELINE_ID', raising=False)
+    expected_error = "Argument --micall_filter_quality_pipeline_id not set " \
+                     "and $MICALL_FILTER_QUALITY_PIPELINE_ID environment " \
+                     "variable not set."
 
     with pytest.raises(SystemExit):
         parse_args([])
@@ -268,16 +269,16 @@ def test_pipeline_not_set(capsys, monkeypatch):
 
 
 def test_pipeline_set():
-    args = parse_args(['--micall_main_pipeline_id', '402'])
+    args = parse_args(['--micall_filter_quality_pipeline_id', '402'])
 
-    assert args.micall_main_pipeline_id == 402
+    assert args.micall_filter_quality_pipeline_id == 402
 
 
 def test_pipeline_set_with_environment_variable(monkeypatch):
-    monkeypatch.setenv('MICALL_MAIN_PIPELINE_ID', '99')
+    monkeypatch.setenv('MICALL_FILTER_QUALITY_PIPELINE_ID', '99')
     args = parse_args([])
 
-    assert args.micall_main_pipeline_id == 99
+    assert args.micall_filter_quality_pipeline_id == 99
 
 
 def test_hcv_pair(raw_data_with_hcv_pair):

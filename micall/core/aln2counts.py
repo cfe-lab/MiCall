@@ -130,6 +130,11 @@ class SequenceReport(object):
         self.contig_coverage_writer = None
         self.conseq_region_writer = self.fail_writer = None
 
+    @property
+    def has_detail_counts(self):
+        return (self.amino_detail_writer is not None or
+                self.nuc_detail_writer is not None)
+
     def enable_callback(self, callback, file_size):
         """ Enable callbacks to update progress while counting reads.
 
@@ -157,7 +162,7 @@ class SequenceReport(object):
             if i == 0:
                 # these will be the same for all rows, so just assign from the first
                 self.detail_seed = row['refname']
-                if self.amino_detail_writer is None:
+                if not self.has_detail_counts:
                     self.seed = self.detail_seed
                 else:
                     _, self.seed = self.detail_seed.split('-', 1)
@@ -338,7 +343,9 @@ class SequenceReport(object):
 
             if self.insert_writer is not None:
                 self.write_insertions(self.insert_writer)
-            if self.nuc_writer is not None:
+            if self.nuc_detail_writer is not None:
+                self.write_nuc_detail_counts(self.nuc_detail_writer)
+            elif self.nuc_writer is not None:
                 self.write_nuc_counts(self.nuc_writer)
             if self.conseq_writer is not None:
                 self.write_consensus(self.conseq_writer)
@@ -353,6 +360,10 @@ class SequenceReport(object):
                                         coverage_summary=coverage_summary)
             if self.fail_writer is not None:
                 self.write_failure(self.fail_writer)
+            if self.has_detail_counts:
+                self.combine_reports()
+        if self.nuc_detail_writer is not None and self.nuc_writer is not None:
+            self.write_nuc_counts(self.nuc_writer)
         if self.amino_detail_writer is not None and self.amino_writer is not None:
             self.write_amino_counts(self.amino_writer,
                                     coverage_summary=coverage_summary)
@@ -466,6 +477,8 @@ class SequenceReport(object):
     def write_amino_detail_counts(self, amino_detail_writer=None):
         amino_detail_writer = amino_detail_writer or self.amino_detail_writer
         self.write_amino_report(amino_detail_writer, self.reports, self.detail_seed)
+
+    def combine_reports(self):
         old_reports = self.combined_reports[self.seed]
         for region, report in self.reports.items():
             old_report = old_reports[region]
@@ -624,9 +637,14 @@ class SequenceReport(object):
         self.nuc_writer = self._create_nuc_writer(nuc_file)
         self.nuc_writer.writeheader()
 
-    def write_counts(self, region, seed_amino, report_amino, nuc_writer):
+    def write_nuc_detail_header(self, nuc_detail_file):
+        self.nuc_detail_writer = self._create_nuc_writer(nuc_detail_file)
+        self.nuc_detail_writer.writeheader()
+
+    def write_counts(self, seed, region, seed_amino, report_amino, nuc_writer):
         """ Write a row of nucleotide counts for a single position.
 
+        :param seed: the seed reference name
         :param region: the coordinate reference name
         :param seed_amino: the SeedAmino object for this position
         :param ReportAmino? report_amino: the ReportAmino object for this position
@@ -641,7 +659,7 @@ class SequenceReport(object):
             ref_pos = (str(i + 3*report_amino.position - 2)
                        if report_amino is not None
                        else '')
-            row = {'seed': self.seed,
+            row = {'seed': seed,
                    'region': region,
                    'q-cutoff': self.qcut,
                    'query.nuc.pos': query_pos_txt,
@@ -669,7 +687,7 @@ class SequenceReport(object):
                     last_amino_index = i
                     last_consensus_nuc_index = seed_amino.consensus_nuc_index
             if first_amino_index is not None:
-                if self.amino_detail_writer is None:
+                if not self.has_detail_counts:
                     seed_name = self.seed
                 else:
                     seed_name = self.detail_seed
@@ -695,17 +713,28 @@ class SequenceReport(object):
                                 (self.seed, region)]
                             seed_nuc.insertion_count += insertion_counts[report_amino.position]
 
+    def write_nuc_detail_counts(self, nuc_detail_writer=None):
+        nuc_detail_writer = nuc_detail_writer or self.nuc_detail_writer
+        self.write_nuc_report(nuc_detail_writer, self.reports, self.detail_seed)
+
     def write_nuc_counts(self, nuc_writer=None):
         nuc_writer = nuc_writer or self.nuc_writer
 
+        if not self.combined_reports:
+            self.write_nuc_report(nuc_writer, self.reports, self.seed)
+        else:
+            for seed, reports in self.combined_reports.items():
+                self.write_nuc_report(nuc_writer, reports, seed)
+
+    def write_nuc_report(self, nuc_writer, reports, seed):
         self.merge_extra_counts()
         if not self.coordinate_refs:
             for seed_amino in self.seed_aminos[0]:
-                self.write_counts(self.seed, seed_amino, None, nuc_writer)
+                self.write_counts(seed, seed, seed_amino, None, nuc_writer)
         else:
-            for region, report_aminos in sorted(self.reports.items()):
+            for region, report_aminos in sorted(reports.items()):
                 for report_amino in report_aminos:
-                    self.write_counts(region, report_amino.seed_amino, report_amino, nuc_writer)
+                    self.write_counts(seed, region, report_amino.seed_amino, report_amino, nuc_writer)
 
     @staticmethod
     def _create_consensus_writer(conseq_file):
@@ -1253,7 +1282,8 @@ def aln2counts(aligned_csv,
                remap_conseq_csv=None,
                conseq_region_csv=None,
                amino_detail_csv=None,
-               contig_coverage_csv=None):
+               contig_coverage_csv=None,
+               nuc_detail_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1277,6 +1307,8 @@ def aln2counts(aligned_csv,
     @param conseq_region_csv: Open file handle to write consensus sequences
         split into regions.
     @param amino_detail_csv: Open file handle to write amino acid frequencies
+        for individual contigs.
+    @param nuc_detail_csv: Open file handle to write nucleotide frequencies
         for individual contigs.
     @param contig_coverage_csv: Open file handle to write coverage for individual
         contigs.
@@ -1310,6 +1342,8 @@ def aln2counts(aligned_csv,
                                              lineterminator=os.linesep)
             coverage_writer.writeheader()
             coverage_summary = {}
+        if nuc_detail_csv is not None:
+            report.write_nuc_detail_header(nuc_detail_csv)
         if amino_detail_csv is not None:
             report.write_amino_detail_header(amino_detail_csv)
 
