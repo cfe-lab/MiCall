@@ -85,7 +85,8 @@ def censor(src,
                 bad_count += 1
             else:
                 if bad_count:
-                    dest.write('#' * bad_count)
+                    # write cumulative output of bad cycles
+                    dest.write(b'#' * bad_count)
                     bad_count = 0
                 dest.write(bytes(score, 'utf-8'))
         dest.write(b'\n')

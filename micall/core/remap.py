@@ -136,7 +136,7 @@ def extract_relevant_seed(aligned_conseq, aligned_seed):
     consensus.
     """
     match = re.match('-*([^-](.*[^-])?)', aligned_conseq)
-    return unicode(aligned_seed[match.start(1):match.end(1)]).replace('-', '')
+    return aligned_seed[match.start(1):match.end(1)].replace('-', '')
 
 
 def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None, seeds=None,
@@ -229,9 +229,6 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None, seeds=None,
     if not (seeds and is_filtered) or len(new_conseqs) < 2:
         return new_conseqs
 
-    gap_open_penalty = 15
-    gap_extend_penalty = 3
-    use_terminal_gap_penalty = 1
     filtered_conseqs = {}
     for name in sorted(new_conseqs.keys()):
         conseq = new_conseqs[name]
@@ -248,14 +245,8 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None, seeds=None,
         other_seed = other_dist = None
         for seed_name in sorted(new_conseqs.keys()):
             seed_ref = seeds[seed_name]
-            """
-            aligned_seed, aligned_conseq, _score = align_it(seed_ref,
-                                                            relevant_conseq,
-                                                            gap_open_penalty,
-                                                            gap_extend_penalty,
-                                                            use_terminal_gap_penalty)
-            """
-            aligned_seed, aligned_conseq, _score = Aligner.align(seed_ref, relevant_conseq)
+
+            aligned_seed, aligned_conseq, _score = aligner.align(seed_ref, relevant_conseq)
             relevant_seed = extract_relevant_seed(aligned_conseq, aligned_seed)
             d = Levenshtein.distance(relevant_seed, relevant_conseq)
             if seed_name == name:
