@@ -124,14 +124,14 @@ def run_sample(args):
     with open(remap_csv, 'w') as handle:
         remap(fastq1=args.fastq1.name,
               fastq2=args.fastq2.name if args.fastq2 else None,
-              prelim_csv=open(prelim_csv, 'rU'),
+              prelim_csv=open(prelim_csv),
               remap_csv=handle,
               gzip=not args.unzipped)
 
     print('  Generating alignment file')
     align_csv = os.path.join(args.outdir, prefix + '.align.csv')
     with open(align_csv, 'w') as handle:
-        sam2aln(remap_csv=open(remap_csv, 'rU'),
+        sam2aln(remap_csv=open(remap_csv),
                 aligned_csv=handle)
 
     print('  Generating count files')
@@ -140,7 +140,7 @@ def run_sample(args):
     insert_csv = os.path.join(args.outdir, prefix + '.insert.csv')
     conseq_csv = os.path.join(args.outdir, prefix + '.conseq.csv')
     with open(nuc_csv, 'w') as handle:
-        aln2counts(aligned_csv=open(align_csv, 'rU'),
+        aln2counts(aligned_csv=open(align_csv),
                    nuc_csv=handle,
                    amino_csv=open(amino_csv, 'w'),
                    coord_ins_csv=open(insert_csv, 'w'),

@@ -69,7 +69,7 @@ def censor(src,
                 bad_count += 1
             else:
                 if bad_count:
-                    dest.write('N' * bad_count)
+                    dest.write(b'N' * bad_count)
                     bad_count = 0
                 dest.write(bytes(base, 'utf-8'))
         dest.write(b'\n')
