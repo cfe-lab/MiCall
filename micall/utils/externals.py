@@ -2,17 +2,31 @@ import subprocess
 import os
 import sys
 import re
+import shutil
 
 
 class AssetWrapper(object):
     """ Wraps a packaged asset, and finds its path. """
     def __init__(self, path):
-        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        local_path = os.path.join(app_dir, path)
-        if os.path.exists(local_path):
-            self.path = local_path
+        dir, fn = os.path.split(path)
+        if len(dir) == 0:
+            # <path> is probably execname
+            self.path = shutil.which(path)
+            if self.path is None:
+                print("Failed to find executable {}".format(path))
+                sys.exit()
+
+        elif len(fn) == 0:
+            # <path> is a directory, trailing separator
+            print("Incomplete path {}".format(path))
+            sys.exit()
         else:
-            self.path = os.path.join(getattr(sys, '_MEIPASS', ''), path)
+            # user provided a relative or absolute path
+            if not os.path.exists(path):
+                print("Path {} does not exist".format(path))
+                sys.exit()
+            self.path = path
+
 
 
 class CommandWrapper(AssetWrapper):
@@ -144,29 +158,17 @@ class CommandWrapper(AssetWrapper):
             raise RuntimeError(message)
 
 
-class Samtools(CommandWrapper):
-    def __init__(self, version, execname='samtools', logger=None, *args, **kwargs):
-        super(Samtools, self).__init__(version, execname, logger, *args, **kwargs)
-        p = self.create_process(stderr=subprocess.PIPE)
-        _stdout, stderr = p.communicate()
-        version_lines = filter(lambda x: x.startswith('Version:'), stderr.split('\n'))
-
-        version_fields = version_lines and version_lines[0].split() or []
-        version_found = version_fields and version_fields[1] or 'unreadable'
-        self.validate_version(version_found)
-
-
 class Bowtie2(CommandWrapper):
-    def __init__(self, version, execname='bowtie2', logger=None, *args, **kwargs):
+    def __init__(self, version=None, execname='bowtie2', logger=None, *args, **kwargs):
         super(Bowtie2, self).__init__(version, execname, logger, *args, **kwargs)
         stdout = self.check_output(['--version'], stderr=subprocess.STDOUT)
-        version_found = stdout.split('\n')[0].split()[-1]
-        self.validate_version(version_found)
+        self.version = stdout.split('\n')[0].split()[-1]
+        #self.validate_version(version_found)
 
 
 class Bowtie2Build(CommandWrapper):
     def __init__(self,
-                 version,
+                 version=None,
                  execname='bowtie2-build',
                  logger=None,
                  *args,
@@ -177,8 +179,8 @@ class Bowtie2Build(CommandWrapper):
                                            *args,
                                            **kwargs)
         stdout = self.check_output(['--version'], stderr=subprocess.STDOUT)
-        version_found = stdout.split('\n')[0].split()[-1]
-        self.validate_version(version_found)
+        self.version = stdout.split('\n')[0].split()[-1]
+        #self.validate_version(version_found)
 
     def build(self, ref_path, reffile_template):
         """ Build an index from a reference file.

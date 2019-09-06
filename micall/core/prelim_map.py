@@ -33,7 +33,9 @@ logger = miseq_logging.init_logging_console_only(logging.DEBUG)
 line_counter = LineCounter()
 
 
-def prelim_map(fastq1, fastq2, prelim_csv, nthreads=BOWTIE_THREADS, callback=None,
+def prelim_map(fastq1, fastq2, prelim_csv,
+               bt2_path='bowtie2', bt2build_path='bowtie2-build-s',
+               nthreads=BOWTIE_THREADS, callback=None,
                rdgopen=READ_GAP_OPEN, rfgopen=REF_GAP_OPEN, stderr=sys.stderr,
                gzip=False, work_path=''):
     """ Run the preliminary mapping step.
@@ -51,16 +53,9 @@ def prelim_map(fastq1, fastq2, prelim_csv, nthreads=BOWTIE_THREADS, callback=Non
     @param gzip: if True, FASTQ files are compressed
     @param work_path:  optional path to store working files
     """
-    try:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH,
-                                     logger)
-    except:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH + '-' + BOWTIE_VERSION)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
-                                     logger)
+
+    bowtie2 = Bowtie2(execname=bt2_path)
+    bowtie2_build = Bowtie2Build(execname=bt2build_path, logger=logger)
 
     # check that the inputs exist
     if not os.path.exists(fastq1):

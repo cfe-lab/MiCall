@@ -4,6 +4,8 @@ import argparse
 import os
 import sys
 import csv
+from glob import glob
+import time
 
 from micall.core.parse_interop import read_errors, write_phix_csv
 from micall.core.filter_quality import report_bad_cycles
@@ -12,24 +14,31 @@ from micall.core.prelim_map import prelim_map
 from micall.core.remap import remap
 from micall.core.sam2aln import sam2aln
 from micall.core.aln2counts import aln2counts
-
+from micall.utils.externals import Bowtie2
 
 def parseArgs():
     parser = argparse.ArgumentParser(
         description='Use the MiCall pipeline to process gzip-comprssed FASTQ '
                     'file(s) for one sample.'
     )
+
     parser.add_argument('fastq1', type=argparse.FileType('rb'),
+                        nargs='?',
                         help='Path to *.R1.fastq.gz file of paired set, or to an '
                              'unpaired *.fastq.gz file.')
     parser.add_argument('fastq2', type=argparse.FileType('rb'),
                         nargs='?',
                         help='Path to *.R2.fastq.gz file of paired set.  Unused if'
                              ' processing an unpaired sample.')
+
+    parser.add_argument('--batch', '-b', default=None, required=False,
+                        help='<optional> Path to directory with FASTQ files for'
+                             'batch processing.')
     parser.add_argument('--outdir', '-d', default=None, required=False,
                         help='<optional> Path to write output files.')
     parser.add_argument('--unzipped', '-u', action='store_true', required=False,
                         help='Set if the FASTQ file is not compressed.')
+
     parser.add_argument('--interop', '-i', type=argparse.FileType('rb'),
                         required=False,
                         help='<optional> Path to ErrorMetricsOut.bin interop file.')
@@ -37,6 +46,17 @@ def parseArgs():
                         help='<optional> Read length (default: 251nt).')
     parser.add_argument('--index', '-x', type=int, default=8,
                         help='<optional> Index length (default: 8nt).')
+
+    parser.add_argument('--bt2', default='bowtie2',
+                        help="<optional> Path to bowtie2 script.")
+    parser.add_argument('--bt2build', default='bowtie2-build-s',
+                        help="<optional> Path to bowtie2-build script.")
+    parser.add_argument('--threads', '-p', default=4,
+                        help="Number of threads for bowtie2 (default 4)")
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit()
 
     return parser.parse_args()
 
@@ -70,6 +90,7 @@ def censor_fastqs(args, prefix):
     ErrorMetricsOut.bin, contains information about the tile-cycle error rates
     as estimated from the phiX174 control sample.  We use this report to
     identify tile-cycle combinations with excessive error rates.
+
     :param args:  return value from argparse.ArgumentParser()
     :param prefix:  filename stem
     :return:  a new <args> object with .fastq1 and (optionally) .fastq2
@@ -104,6 +125,8 @@ def censor_fastqs(args, prefix):
 
 
 def run_sample(args):
+    # TODO: add cutadapt step
+
     prefix = get_prefix(args)
     print('MiCall-Lite running sample {}...'.format(prefix))
 
@@ -117,7 +140,11 @@ def run_sample(args):
         prelim_map(fastq1=args.fastq1.name,
                    fastq2=args.fastq2.name if args.fastq2 else None,
                    prelim_csv=handle,
-                   gzip=not args.unzipped)
+                   gzip=not args.unzipped,
+                   bt2_path=args.bt2,
+                   bt2build_path=args.bt2build,
+                   nthreads=args.threads
+                   )
 
     print('  Iterative remap')
     remap_csv = os.path.join(args.outdir, prefix + '.remap.csv')
@@ -126,7 +153,10 @@ def run_sample(args):
               fastq2=args.fastq2.name if args.fastq2 else None,
               prelim_csv=open(prelim_csv),
               remap_csv=handle,
-              gzip=not args.unzipped)
+              gzip=not args.unzipped,
+              bt2_path=args.bt2,
+              bt2build_path=args.bt2build,
+              nthreads=args.threads)
 
     print('  Generating alignment file')
     align_csv = os.path.join(args.outdir, prefix + '.align.csv')
@@ -149,9 +179,58 @@ def run_sample(args):
 
 
 if __name__ == '__main__':
+    t0 = time.time()
     args = parseArgs()
+
+    # check bowtie2
+    try:
+        bowtie2 = Bowtie2(execname=args.bt2)
+    except:
+        print("Failed to locate bowtie2 executable.")
+        raise
+
+    print("Using {} version {}".format(bowtie2.path, bowtie2.version))
+
     #print(args)
     if args.outdir is None:
-        args.outdir = os.path.dirname(args.fastq1.name)
-    run_sample(args)
+        # default write outputs to same location as inputs
+        if args.fastq1:
+            args.outdir = os.path.dirname(args.fastq1.name)
+        else:
+            args.outdir = os.getcwd()
+
+    if args.fastq1 is None:
+        if args.batch is None:
+            print("Must specify either [fastq1] or --batch [path]")
+            sys.exit()
+        else:
+            # run in batch mode
+            if not os.path.exists(args.batch):
+                print('ERROR: path {} does not exist.'.format(args.batch))
+                sys.exit()
+
+            path = os.path.join(args.batch, '*_R1_001.fastq' +
+                                ('' if args.unzipped else '.gz'))
+            files = glob(path)
+            print("Batch mode: detected {} files with extension \"{}\" at {}"
+                .format(len(files), '.fastq' if args.unzipped else '.fastq.gz',
+                        args.batch))
+
+            if len(files) == 0:
+                print("ERROR: did not find any files at {}".format(path))
+                sys.exit()
+
+            for fn1 in files:
+                args.fastq1 = open(fn1, 'rb')
+
+                fn2 = fn1.replace('_R1_001', '_R2_001')
+                args.fastq2 = None
+                if os.path.exists(fn2):
+                    args.fastq2 = open(fn2, 'rb')
+
+                run_sample(args)
+
+    else:
+        # serial mode
+        run_sample(args)
 

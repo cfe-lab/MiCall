@@ -25,8 +25,7 @@ import Levenshtein
 
 from micall.core import miseq_logging, project_config
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
-from micall.core.prelim_map import BOWTIE_THREADS, BOWTIE_BUILD_PATH, \
-    BOWTIE_PATH, BOWTIE_VERSION, READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
+from micall.core.prelim_map import BOWTIE_THREADS, READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
     REF_GAP_EXTEND
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 from micall.utils.translation import reverse_and_complement
@@ -381,6 +380,7 @@ def write_remap_counts(remap_counts_writer, counts, title, distance_report=None)
 
 def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv=None,
           remap_conseq_csv=None, unmapped1=None, unmapped2=None, work_path='',
+          bt2_path='bowtie2', bt2build_path='bowtie2-build-s',
           nthreads=BOWTIE_THREADS, callback=None, count_threshold=10,
           rdgopen=READ_GAP_OPEN, rfgopen=REF_GAP_OPEN, stderr=sys.stderr,
           gzip=False, debug_file_prefix=None):
@@ -408,17 +408,8 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv=None,
 
     reffile = os.path.join(work_path, 'temp.fasta')
     samfile = os.path.join(work_path, 'temp.sam')
-
-    try:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH,
-                                     logger)
-    except:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH + '-' + BOWTIE_VERSION)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
-                                     logger)
+    bowtie2 = Bowtie2(execname=bt2_path)
+    bowtie2_build = Bowtie2Build(execname=bt2build_path, logger=logger)
 
     # check that the inputs exist
     if not os.path.exists(fastq1):
