@@ -1,12 +1,30 @@
 # MiCall Lite
 
-MiCall Lite is a fork of [MiCall](http://github.com/cfe-lab/MiCall), which is a bioinformatic pipeline for mapping FASTQ data to a set of reference sequences to generate consensus sequences, variant calls and coverage maps.  The purpose of MiCall Lite is to provide the core functionality of MiCall in a portable, lightweight version that is easy to install and use.
+MiCall Lite is a fork of [MiCall](http://github.com/cfe-lab/MiCall), which is a 
+bioinformatic pipeline for mapping FASTQ data to a set of reference sequences to 
+generate consensus sequences, variant calls and coverage maps.  The purpose of 
+MiCall Lite is to provide the core functionality of MiCall in a portable, 
+lightweight version that is easy to install and use.
+
 
 ## Installation
 
-To run Micall-Lite, you need Python 3.x, [bowtie2](https://github.com/BenLangmead/bowtie2), and the Python module [Levenshtein](https://pypi.org/project/python-Levenshtein/).  With these prerequisites in place, you should be able to compile the sources (including some C code) and install MiCall-Lite into your default Python directory with `sudo python3 setup.py install`.  For more detailed instructions, please refer to the [INSTALL.md](INSTALL.md) Markdown document.  
+To run Micall-Lite, you need the following:
+* [gcc](https://gcc.gnu.org/) or another C compiler
+* Python 3.x
+* [bowtie2](https://github.com/BenLangmead/bowtie2)
+* the Python module [Levenshtein](https://pypi.org/project/python-Levenshtein/)
 
-> If you run into any issues trying to install MiCall-Lite, please [post an new issue](https://github.com/PoonLab/MiCall-Lite/issues) on our issue tracker so we can help!
+With these prerequisites in place, you should be able to compile the sources 
+(including some C code) and install MiCall-Lite into your default Python 
+directory with `sudo python3 setup.py install`. 
+For more detailed instructions, please refer to the [INSTALL.md](INSTALL.md) 
+Markdown document.  
+
+> If you run into any issues trying to install MiCall-Lite, please 
+[post an new issue](https://github.com/PoonLab/MiCall-Lite/issues) on our 
+issue tracker so we can help!
+
 
 ## Usage
 
