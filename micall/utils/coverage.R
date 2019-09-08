@@ -11,7 +11,7 @@ df <- read.csv(input.csv)
 # guess if this is a nuc or amino CSV
 nucs <- c('A', 'C', 'G', 'T')
 aminos <- c('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P',
-'Q', 'R', 'S', 'T', 'V', 'W', 'Y', '*')
+'Q', 'R', 'S', 'T', 'V', 'W', 'Y', 'X.')
 
 
 if (all(is.element(aminos, names(df)))) {
@@ -43,12 +43,19 @@ temp <- split(df, list(df$region, df$seed), drop=TRUE)
     
     if (is.nuc) {
       x <- obj$refseq.nuc.pos
+      xlab <- 'Reference coordinates (nt)'
     } else {
-      x <- obj$refseq.amino.pos
+      x <- obj$refseq.aa.pos
+      xlab <- 'Reference coordinates (aa)'
     }
+    
+    # if coverage exceeds default, rescale plot
+    max.y <- max(max(obj$count), 1e4)
   
-    plot(x, obj$count, type='s',
-    xlab='Reference coordinate (nt)', ylab='Coverage')
+    suppressWarnings(
+      plot(x, obj$count, type='s', log='y', ylim=c(1, max.y),
+         xlab=xlab, ylab='Coverage')
+      )
     title(main=paste(seed, region), cex=0.5, adj=0)
 
     dev.off()
