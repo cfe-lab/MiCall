@@ -30,6 +30,11 @@ def main():
     sections_2170_2_1, sections_2170_2_2 = make_random_sections('HCV-2a',
                                                                 6269,
                                                                 9440)
+    sections_2180_1, sections_2180_2 = make_random_sections(
+        'HIV1-B-FR-K03455-seed',
+        2085,
+        3585,
+        read_count=200)
     fastq_files = [FastqFile('2130A-HCV_S15_L001_R1_001.fastq',
                              '2130',
                              False,
@@ -103,6 +108,16 @@ def main():
                              '2170',
                              True,
                              sections_2170_1a_2 + sections_2170_2_2,
+                             ()),
+                   FastqFile('2180A-HIV_S22_L001_R1_001.fastq',
+                             '2180',
+                             False,
+                             sections_2180_1,
+                             ()),
+                   FastqFile('2180A-HIV_S22_L001_R2_001.fastq',
+                             '2180',
+                             True,
+                             sections_2180_2,
                              ())]
     for fastq_file in fastq_files:
         with open(fastq_file.name, 'w') as f:
@@ -156,7 +171,8 @@ def make_random_sections(coord_name,
     max_pair_length = 600
     for _ in range(read_count):
         start = randrange(ref_start, ref_end - min_read_length)
-        end = randrange(start + min_read_length, start + max_pair_length)
+        end_stop = min(ref_end+1, start+max_pair_length)
+        end = randrange(start + min_read_length, end_stop)
         end1 = min(end, start + max_read_length)
         start2 = max(start, end - max_read_length)
         sections_1.append(FastqSection(ref_name, start, end1, 1))
