@@ -10,10 +10,11 @@ lightweight version that is easy to install and use.
 ## Installation
 
 To run Micall-Lite, you need the following:
-* [gcc](https://gcc.gnu.org/) or another C compiler
+* a [gcc](https://gcc.gnu.org/) build environment for compiling C source code
 * Python 3.x
 * [bowtie2](https://github.com/BenLangmead/bowtie2)
 * the Python module [Levenshtein](https://pypi.org/project/python-Levenshtein/)
+* (optional) [sierra-local](https://github.com/PoonLab/sierra-local), for HIV-1 drug resistance prediction
 
 With these prerequisites in place, you should be able to compile the sources 
 (including some C code) and install MiCall-Lite into your default Python 
@@ -60,6 +61,50 @@ To use this censoring step, you need to have the `ErrorMetricsOut.bin` file from
 art@Kestrel:~/git/MiCall-Lite$ micall -i ErrorMetricsOut.bin Example_S1_L001_R1_001.fastq.gz Example_S1_L001_R2_001.fastq.gz
 MiCall-Lite running sample Example_S1_L001_R1_001...
   Censoring bad tile-cycle combos in FASTQ
+  Preliminary map
+  Iterative remap
+  Generating alignment file
+  Generating count files
+```
+
+
+### HIV drug resistance prediction (optional)
+
+The HIV-1 *pol* gene is a frequent target for genetic sequencing because it encodes 
+the primary targets of antiretroviral drug treatment.
+Drug resistance in HIV-1 is very well characterized and there are several algorithms
+for predicting this phenotype from a *pol* sequence. 
+We provide a local implementation of the 
+[Stanford HIVdb Drug Resistance Database](https://hivdb.stanford.edu/) 
+algorithm, which is another Python module that can be installed via `pip`:
+
+```console
+Elzar:micall artpoon$ pip3 search sierralocal
+sierralocal (0.2.1)  - Local execution of HIVdb algorithm
+Elzar:micall artpoon$ pip3 install sierralocal
+```
+
+To demonstrate the use of *sierra-local* to predict drug resistance levels
+from next-generation sequence data processed by *MiCall-Lite*, we'll use a published 
+NGS data set from a 
+[study of HIV-1 drug resistance in Uganda](https://www.liebertpub.com/doi/abs/10.1089/AID.2017.0205).
+(To obtain this data set, you'll need to install NCBI's 
+[sratools](https://ncbi.github.io/sra-tools/), which provides the *fasterq-dump* 
+file transfer program).
+
+
+```console
+Elzar:examples artpoon$ fasterq-dump SRS5100454
+spots read      : 21,633
+reads read      : 43,266
+reads written   : 43,266
+```
+
+Next, we process these data through the default *MiCall-Lite* pipeline:
+```console
+Elzar:examples artpoon$ micall SRS5100454_1.fastq SRS5100454_2.fastq -u
+Using /usr/local/bin/bowtie2 version 2.3.5.1
+MiCall-Lite running sample SRS5100454_1...
   Preliminary map
   Iterative remap
   Generating alignment file
