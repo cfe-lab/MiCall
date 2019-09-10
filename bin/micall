@@ -38,6 +38,8 @@ def parseArgs():
                         help='<optional> Path to write output files.')
     parser.add_argument('--unzipped', '-u', action='store_true', required=False,
                         help='Set if the FASTQ file is not compressed.')
+    parser.add_argument('--keep', '-k', action='store_true', required=False,
+                        help='<optional> if set, all temporary files are retained.')
 
     parser.add_argument('--interop', '-i', type=argparse.FileType('rb'),
                         required=False,
@@ -143,7 +145,8 @@ def run_sample(args):
                    gzip=not args.unzipped,
                    bt2_path=args.bt2,
                    bt2build_path=args.bt2build,
-                   nthreads=args.threads
+                   nthreads=args.threads,
+                   keep=args.keep
                    )
 
     print('  Iterative remap')
@@ -156,7 +159,9 @@ def run_sample(args):
               gzip=not args.unzipped,
               bt2_path=args.bt2,
               bt2build_path=args.bt2build,
-              nthreads=args.threads)
+              nthreads=args.threads,
+              keep=args.keep
+              )
 
     print('  Generating alignment file')
     align_csv = os.path.join(args.outdir, prefix + '.align.csv')
@@ -176,10 +181,14 @@ def run_sample(args):
                    coord_ins_csv=open(insert_csv, 'w'),
                    conseq_csv=open(conseq_csv, 'w'))
 
+    if not args.keep:
+        os.remove(prelim_csv)
+        os.remove(remap_csv)
 
 
 if __name__ == '__main__':
-    t0 = time.time()
+    t0 = time.time()  # start time
+
     args = parseArgs()
 
     # check bowtie2
@@ -195,9 +204,13 @@ if __name__ == '__main__':
     if args.outdir is None:
         # default write outputs to same location as inputs
         if args.fastq1:
-            args.outdir = os.path.dirname(args.fastq1.name)
+            # use normpath to deal with empty string '' when fastq1 is in cwd
+            args.outdir = os.path.normpath(os.path.dirname(args.fastq1.name))
         else:
             args.outdir = os.getcwd()
+
+    # record previous contents of output directory
+    oldfiles = os.listdir(args.outdir)
 
     if args.fastq1 is None:
         if args.batch is None:
@@ -233,4 +246,11 @@ if __name__ == '__main__':
     else:
         # serial mode
         run_sample(args)
+
+    # clean up
+    if not args.keep:
+        newfiles = [f for f in os.listdir(args.outdir) if f not in oldfiles]
+        for nf in newfiles:
+            if nf.startswith('temp.') or nf.endswith('.bt2'):
+                os.remove(nf)
 

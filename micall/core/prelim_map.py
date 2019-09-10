@@ -37,7 +37,7 @@ def prelim_map(fastq1, fastq2, prelim_csv,
                bt2_path='bowtie2', bt2build_path='bowtie2-build-s',
                nthreads=BOWTIE_THREADS, callback=None,
                rdgopen=READ_GAP_OPEN, rfgopen=REF_GAP_OPEN, stderr=sys.stderr,
-               gzip=False, work_path=''):
+               gzip=False, work_path='', keep=False):
     """ Run the preliminary mapping step.
 
     @param fastq1: the file name for the forward reads in FASTQ format
@@ -148,6 +148,12 @@ def prelim_map(fastq1, fastq2, prelim_csv,
         # Track progress for second half
         callback(progress=total_reads)
 
+    # clean up temporary files
+    if not keep:
+        os.remove(ref_path)
+        for suffix in ['1', '2', '3', '4', 'rev.1', 'rev.2']:
+            os.remove('{}.{}.bt2'.format(reffile_template, suffix))
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -162,6 +168,8 @@ def main():
     parser.add_argument("--rdgopen", default=None, help="<optional> read gap open penalty")
     parser.add_argument("--rfgopen", default=None, help="<optional> reference gap open penalty")
     parser.add_argument("--gzip", action='store_true', help="<optional> FASTQs are compressed")
+    parser.add_argument("--keep", action='store_true',
+                        help="<optional> retain temporary files for debugging.")
 
     args = parser.parse_args()
     prelim_map(fastq1=args.fastq1,
@@ -169,7 +177,8 @@ def main():
                prelim_csv=args.prelim_csv,
                rdgopen=args.rdgopen,
                rfgopen=args.rfgopen,
-               gzip=args.gzip)  # defaults to False
+               gzip=args.gzip,
+               keep=args.keep)
 
 
 if __name__ == '__main__':

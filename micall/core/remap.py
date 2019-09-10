@@ -383,7 +383,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv=None,
           bt2_path='bowtie2', bt2build_path='bowtie2-build-s',
           nthreads=BOWTIE_THREADS, callback=None, count_threshold=10,
           rdgopen=READ_GAP_OPEN, rfgopen=REF_GAP_OPEN, stderr=sys.stderr,
-          gzip=False, debug_file_prefix=None):
+          gzip=False, debug_file_prefix=None, keep=False):
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
@@ -644,6 +644,13 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv=None,
         # report number of unmapped reads
         remap_counts_writer.writerow(dict(type='unmapped',
                                       count=unmapped_count))
+
+    if not keep:
+        # delete temporary files created by this job
+        os.remove(reffile)
+        for suffix in ['1', '2', '3', '4', 'rev.1', 'rev.2']:
+            os.remove('{}.{}.bt2'.format(reffile, suffix))
+        os.remove(samfile)
 
 
 def map_to_reference(fastq1, fastq2, refseqs, reffile, samfile, unmapped1, unmapped2,
@@ -938,6 +945,8 @@ def parse_args():
                         action='store_true')
     parser.add_argument('--verbose', help="Write messages and progress to stdout",
                         action='store_true')
+    parser.add_argument("--keep", help="<optional> retain temporary files for debugging",
+                        action='store_true')
     
     return parser.parse_args()
 
@@ -959,7 +968,8 @@ def main():
           unmapped1=args.unmapped1,
           unmapped2=args.unmapped2,
           callback=my_callback if args.verbose else None,
-          gzip=args.gzip)  # defaults to False
+          gzip=args.gzip,
+          keep=args.keep)
 
 
 if __name__ == '__main__':
