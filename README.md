@@ -73,15 +73,23 @@ MiCall-Lite running sample Example_S1_L001_R1_001...
 The HIV-1 *pol* gene is a frequent target for genetic sequencing because it encodes 
 the primary targets of antiretroviral drug treatment.
 Drug resistance in HIV-1 is very well characterized and there are several algorithms
-for predicting this phenotype from a *pol* sequence. 
+for predicting this phenotype from a *pol* sequence.
+
 We provide a local implementation of the 
 [Stanford HIVdb Drug Resistance Database](https://hivdb.stanford.edu/) 
-algorithm, which is another Python module that can be installed via `pip`:
-
+algorithm, which is another Python module that can be installed via `pip`. 
+Here, I am using `pip` to update the `sierralocal` package in my Python3 user script directory:
 ```console
-Elzar:micall artpoon$ pip3 search sierralocal
+art@orolo:~/git/micall$ pip3 search sierralocal
 sierralocal (0.2.1)  - Local execution of HIVdb algorithm
-Elzar:micall artpoon$ pip3 install sierralocal
+  INSTALLED: 0.2.0
+  LATEST:    0.2.1
+art@orolo:~/git/micall$ pip3 install sierralocal
+Collecting sierralocal
+  Downloading https://files.pythonhosted.org/packages/97/67/7ba0673b545ca6d7340020056ff288a47875faee21b1e67749417d97ef11/sierralocal-0.2.1-py3-none-any.whl (8.0MB)
+    100% |████████████████████████████████| 8.0MB 241kB/s 
+Installing collected packages: sierralocal
+Successfully installed sierralocal-0.2.1
 ```
 
 To demonstrate the use of *sierra-local* to predict drug resistance levels
@@ -94,16 +102,18 @@ file transfer program).
 
 
 ```console
-Elzar:examples artpoon$ fasterq-dump SRS5100454
+art@orolo:~/git/micall/working$ fasterq-dump SRS5100454
 spots read      : 21,633
 reads read      : 43,266
 reads written   : 43,266
+art@orolo:~/git/micall/working$ ls
+SRS5100454_1.fastq  SRS5100454_2.fastq
 ```
 
 Next, we process these data through the default *MiCall-Lite* pipeline:
 ```console
-Elzar:examples artpoon$ micall SRS5100454_1.fastq SRS5100454_2.fastq -u
-Using /usr/local/bin/bowtie2 version 2.3.5.1
+art@orolo:~/git/micall/working$ micall SRS5100454_1.fastq SRS5100454_2.fastq -u
+Using /usr/local/bin/bowtie2 version 2.2.8
 MiCall-Lite running sample SRS5100454_1...
   Preliminary map
   Iterative remap
@@ -111,6 +121,20 @@ MiCall-Lite running sample SRS5100454_1...
   Generating count files
 ```
 
+Finally, we use the `scoreHIVdb.py` Python script in the *MiCall-Lite* `utils` directory to call 
+the *sierralocal* package for applying the Stanford HIVdb algorithm to these data:
+```console
+art@orolo:~/git/micall/working$ python3 ../micall/utils/scoreHIVdb.py SRS5100454_1.conseq.csv SRS5100454_1.hivdb.tsv
+searching path /usr/local/lib/python3.6/dist-packages/sierralocal/data/HIVDB*.xml
+searching path /usr/local/lib/python3.6/dist-packages/sierralocal/data/apobec*.tsv
+HIVdb version 8.8
+Found NucAmino binary /usr/local/lib/python3.6/dist-packages/sierralocal/bin/nucamino-linux-amd64
+Aligned /tmp/tmpxrd3q7ac
+art@orolo:~/git/micall/working$ head -n3 SRS5100454_1.hivdb.tsv 
+header	BIC	DTG	EVG	RAL	IN.mutations
+MAX	0	0	0	0	K14R,V31I,M50R,I60M,I72V,T112V,I113V,T124A,T125A,M154L,D167E,V201I,Y227F,G245A,A248D,V249G,V250F,Q252D,D253N,D256E,A265V
+0.010	10	20	20	20	K14R,V31I,M50RM,I60M,I72V,I73MI,T112V,I113V,N117NS,T124A,T125A,M154IML,D167E,G192GV,E198ED,R199RSG,I200ILF,V201IV,A205EA*S,T206TS,D207X,I208IVL,K211KR,L213IL,K215KQ,Q216KQ,T218TISL,I220IL,Q221KQ,N222KN,Y227YF,D229ED,S230RS,D232ED,P233QHP,L234ILV,G237EG,A239EAV,K240KR,L241RL,L242QHL,W243GW
+```
 
 
 ## How it works
