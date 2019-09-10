@@ -54,17 +54,20 @@ def get_map_reads_parser():
     parser.add_argument('-O', dest='reorder', action='store_true')
     parser.add_argument('index_path')
     parser.add_argument('read_path1')
-    parser.add_argument('read_path2')
+    parser.add_argument('read_path2', nargs='?')
     return parser
 
 
 def map_reads(parsed_args):
     assert parsed_args.min_identical in ('0.5', '0.9')
-    bowtie_args = ['bowtie2',
-                   '--maxins', parsed_args.insert_max,
-                   '-x', parsed_args.index_path,
-                   '-1', parsed_args.read_path1,
-                   '-2', parsed_args.read_path2]
+    bowtie_args = ['bowtie2', '-x', parsed_args.index_path]
+    if parsed_args.read_path2 is None:
+        bowtie_args += ['-U', parsed_args.read_path1]
+    else:
+        bowtie_args += ['-1', parsed_args.read_path1,
+                        '-2', parsed_args.read_path2]
+    if parsed_args.insert_max is not None:
+        bowtie_args += ['--maxins', parsed_args.insert_max]
     if parsed_args.min_identical == '0.5':
         bowtie_args.append('--local')
     if parsed_args.nthreads is not None:
