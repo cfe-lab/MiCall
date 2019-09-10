@@ -21,6 +21,7 @@ def score_conseq(handle):
     tf = tempfile.NamedTemporaryFile(mode='w', delete=False)
     for row in reader:
         tf.write('>{}\n{}\n'.format(row['consensus-percent-cutoff'], row['sequence']))
+    tf.close()
 
     sequence_headers, sequence_scores, ordered_mutation_list, file_genes, sequence_lengths, \
     file_trims, subtypes = scorefile(tf.name, algorithm)
