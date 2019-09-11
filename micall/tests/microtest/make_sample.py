@@ -33,7 +33,7 @@ def main():
     sections_2180_1, sections_2180_2 = make_random_sections(
         'HIV1-B-FR-K03455-seed',
         2085,
-        3585,
+        4085,
         read_count=200)
     fastq_files = [FastqFile('2130A-HCV_S15_L001_R1_001.fastq',
                              '2130',

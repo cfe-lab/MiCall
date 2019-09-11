@@ -30,7 +30,9 @@ pol_ref = ('TTTTTTAGGGAAGATCTGGCCTTCCTACAAGGGAAGGCCAGGGAATTTTCTTCAGAGCAGACCAG'
            'TAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCA'
            'CCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAG'
            'AAAGAACCCATAGTAGGAGCAGAAACCTTCTATGTAGATGGGGCAGCTAACAGGGAGACTAAATT'
-           'AGGAAAAGCAGGATATGTTACTAATAGAGGAAGACAAAAAGTTGTCACCCTAACTGACACAACAA')
+           'AGGAAAAGCAGGATATGTTACTAATAGAGGAAGACAAAAAGTTGTCACCCTAACTGACACAACAA'
+           'ATCAGAAGACTGAGTTACAAGCAATTTATCTAGCTTTGCAGGATTCGGGATTAGAAGTAAACATA'
+           'GTAACAGACTCACAATATGCATTAGGAATCATTCAAGCACAACCAGATCA')
 
 contigs_path = Path('iva_out/contigs.fasta')
 for _ in range(20):
@@ -39,7 +41,10 @@ for _ in range(20):
          '-f2180A-HIV_S22_L001_R1_001.fastq',
          '-r2180A-HIV_S22_L001_R2_001.fastq',
          'iva_out'])
-    contigs_text = contigs_path.read_text()
+    try:
+        contigs_text = contigs_path.read_text()
+    except FileNotFoundError:
+        contigs_text = ''
     contig_lines = contigs_text.splitlines()
     contig_lines.append('>')  # Sentinel value to print last contig.
     contig_seq = contig_name = None

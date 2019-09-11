@@ -56,5 +56,5 @@ The scenarios that each file tests are:
   details.
 * 2170A-HCV - a mixed infection of HCV-1a and HCV-2a, each about 3000 bases
   long, with enough coverage to assemble two contigs.
-* 2180A-HIV random sections of the first 1700 bases of pol, to expose the
+* 2180A-HIV random sections of the first 2000 bases of pol, to expose the
     instability of the IVA assembler.
