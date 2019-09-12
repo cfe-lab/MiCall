@@ -7,7 +7,7 @@ from enum import Enum
 from glob import glob
 from io import StringIO
 from shutil import rmtree
-from subprocess import run, PIPE, CalledProcessError
+from subprocess import run, PIPE, CalledProcessError, STDOUT
 from tempfile import mkdtemp
 
 from Bio import SeqIO
@@ -150,9 +150,15 @@ def denovo(fastq1_path,
         iva_out_path = os.path.join(tmp_dir, 'iva_out')
         contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
         try:
-            run([IVA, '--fr', joined_path, '-t', '2', iva_out_path], check=True)
-        except CalledProcessError:
-            logger.warning('iva failed to assemble.', exc_info=True)
+            run([IVA, '--fr', joined_path, '-t', '2', iva_out_path],
+                check=True,
+                stdout=PIPE,
+                stderr=STDOUT)
+        except CalledProcessError as ex:
+            output = ex.output.decode('UTF8')
+            if output != 'Failed to make first seed. Cannot continue\n':
+                logger.warning('iva failed to assemble.', exc_info=True)
+                logger.warning(output)
             with open(contigs_fasta_path, 'a'):
                 pass
     else:

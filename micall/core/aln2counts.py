@@ -720,11 +720,11 @@ class SequenceReport(object):
     def write_nuc_counts(self, nuc_writer=None):
         nuc_writer = nuc_writer or self.nuc_writer
 
-        if not self.combined_reports:
-            self.write_nuc_report(nuc_writer, self.reports, self.seed)
-        else:
+        if self.combined_reports:
             for seed, reports in self.combined_reports.items():
                 self.write_nuc_report(nuc_writer, reports, seed)
+        elif self.reports:
+            self.write_nuc_report(nuc_writer, self.reports, self.seed)
 
     def write_nuc_report(self, nuc_writer, reports, seed):
         self.merge_extra_counts()

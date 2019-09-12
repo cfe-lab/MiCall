@@ -252,10 +252,15 @@ class SequenceReportTest(unittest.TestCase):
 
     def testEmptyAminoReport(self):
         expected_text = ""
-        aligned_reads = []
 
-        self.report.read(aligned_reads)
         self.report.write_amino_counts(self.report_file)
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testEmptyNucReport(self):
+        expected_text = ""
+
+        self.report.write_nuc_counts(self.report_file)
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -2036,47 +2041,6 @@ seed,region,qcut,queryseq,refseq
         # refname,qcut,rank,count,offset,seq
         aligned_reads = self.prepareReads("""\
 R1-seed,15,0,9,0,AAATTT
-""")
-
-        expected_text = """\
-seed,region,qcut,queryseq,refseq
-"""
-
-        self.report.read(aligned_reads)
-        self.report.write_failure_header(self.report_file)
-        self.report.write_failure()
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testRegionWithoutCoordinateReferenceNucleotideReport(self):
-        # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
-R-NO-COORD,15,0,9,0,AAATTT
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R-NO-COORD,R-NO-COORD,15,1,,9,0,0,0,0,0,0,0,0,9
-R-NO-COORD,R-NO-COORD,15,2,,9,0,0,0,0,0,0,0,0,9
-R-NO-COORD,R-NO-COORD,15,3,,9,0,0,0,0,0,0,0,0,9
-R-NO-COORD,R-NO-COORD,15,4,,0,0,0,9,0,0,0,0,0,9
-R-NO-COORD,R-NO-COORD,15,5,,0,0,0,9,0,0,0,0,0,9
-R-NO-COORD,R-NO-COORD,15,6,,0,0,0,9,0,0,0,0,0,9
-R-NO-COORD,R-NO-COORD,15,7,,0,0,0,0,0,0,0,0,0,0
-R-NO-COORD,R-NO-COORD,15,8,,0,0,0,0,0,0,0,0,0,0
-R-NO-COORD,R-NO-COORD,15,9,,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.read(aligned_reads)
-        self.report.write_nuc_header(self.report_file)
-        self.report.write_nuc_counts()
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testRegionWithoutCoordinateReferenceFailureReport(self):
-        # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
-R-NO-COORD,15,0,9,0,AAATTT
 """)
 
         expected_text = """\

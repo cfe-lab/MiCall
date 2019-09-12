@@ -15,6 +15,11 @@
     - {name: vpr, start: 5558, end: 5847, frame: 2, colour: turquoise}
     - {name: rev, start: 5970, end: 6045, frame: 2, colour: yellowgreen}
     - {name: env, start: 6225, end: 8795, frame: 2, colour: salmon}
+    - {name: PR, start: 2252, end: 2549, frame: 3, colour: orange}
+    - {name: RT, start: 2549, end: 3869, frame: 3, colour: darkorange}
+    - {name: INT, start: 4229, end: 5093, frame: 3, colour: orange}
+    - {name: V3, start: 7109, end: 7217, frame: 3, colour: salmon}
+    - {name: GP41, start: 7757, end: 8792, frame: 3, colour: salmon}
 - seed_pattern: HCV-1b
   coordinates: HCV-1b
   landmarks:
