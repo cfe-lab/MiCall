@@ -636,38 +636,38 @@ A,C,G,T,N,del,ins,clip,v3_overlap,coverage
         aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
 
         expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-R1-seed,R1-seed,1,1,0,0,5
-1-R1-seed,R1-seed,2,2,0,0,5
-1-R1-seed,R1-seed,3,3,0,0,5
-1-R1-seed,R1-seed,4,4,0,0,5
-1-R1-seed,R1-seed,5,5,0,0,5
-1-R1-seed,R1-seed,6,6,0,0,5
-2-R2-seed,R2-seed,1,7,0,0,4
-2-R2-seed,R2-seed,2,8,0,0,4
-2-R2-seed,R2-seed,3,9,0,0,4
-2-R2-seed,R2-seed,4,10,0,0,4
-2-R2-seed,R2-seed,5,11,0,0,4
-2-R2-seed,R2-seed,6,12,0,0,4
-3-R1-seed,R1-seed,1,4,0,0,2
-3-R1-seed,R1-seed,2,5,0,0,2
-3-R1-seed,R1-seed,3,6,0,0,2
-3-R1-seed,R1-seed,4,7,0,0,2
-3-R1-seed,R1-seed,5,8,0,0,2
-3-R1-seed,R1-seed,6,9,0,0,2
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-R1-seed,R1-seed,1,1,0,5
+1-R1-seed,R1-seed,2,2,0,5
+1-R1-seed,R1-seed,3,3,0,5
+1-R1-seed,R1-seed,4,4,0,5
+1-R1-seed,R1-seed,5,5,0,5
+1-R1-seed,R1-seed,6,6,0,5
+2-R2-seed,R2-seed,1,7,0,4
+2-R2-seed,R2-seed,2,8,0,4
+2-R2-seed,R2-seed,3,9,0,4
+2-R2-seed,R2-seed,4,10,0,4
+2-R2-seed,R2-seed,5,11,0,4
+2-R2-seed,R2-seed,6,12,0,4
+3-R1-seed,R1-seed,1,4,0,2
+3-R1-seed,R1-seed,2,5,0,2
+3-R1-seed,R1-seed,3,6,0,2
+3-R1-seed,R1-seed,4,7,0,2
+3-R1-seed,R1-seed,5,8,0,2
+3-R1-seed,R1-seed,6,9,0,2
 """
 
         self.report.write_amino_header(StringIO())
         self.report.write_amino_detail_header(StringIO())
-        self.report.write_contig_coverage_header(self.report_file)
+        self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
-        self.report.write_contig_coverage_counts()
+        self.report.write_genome_coverage_counts()
         self.report.write_amino_detail_counts()
         self.report.read(aligned_reads2)
-        self.report.write_contig_coverage_counts()
+        self.report.write_genome_coverage_counts()
         self.report.write_amino_detail_counts()
         self.report.read(aligned_reads3)
-        self.report.write_contig_coverage_counts()
+        self.report.write_genome_coverage_counts()
         self.report.write_amino_detail_counts()
         self.report.write_amino_counts()
 
@@ -679,20 +679,20 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
         aligned_reads1 = self.prepareReads("1-R2-seed,15,0,4,0,GGC-CG")
 
         expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-R2-seed,R2-seed,1,7,0,0,4
-1-R2-seed,R2-seed,2,8,0,0,4
-1-R2-seed,R2-seed,3,9,0,0,4
-1-R2-seed,R2-seed,4,10,0,4,4
-1-R2-seed,R2-seed,5,11,0,0,4
-1-R2-seed,R2-seed,6,12,0,0,4
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-R2-seed,R2-seed,1,7,0,4
+1-R2-seed,R2-seed,2,8,0,4
+1-R2-seed,R2-seed,3,9,0,4
+1-R2-seed,R2-seed,4,10,4,4
+1-R2-seed,R2-seed,5,11,0,4
+1-R2-seed,R2-seed,6,12,0,4
 """
 
         self.report.write_amino_header(StringIO())
         self.report.write_amino_detail_header(StringIO())
-        self.report.write_contig_coverage_header(self.report_file)
+        self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
-        self.report.write_contig_coverage_counts()
+        self.report.write_genome_coverage_counts()
         self.report.write_amino_detail_counts()
         self.report.write_amino_counts()
 
@@ -703,35 +703,35 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("1-R3-seed,15,0,4,0,AAATTTCAGCCACGAGAGCAT")
         expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-R3-seed,R3-seed,1,1,0,0,4
-1-R3-seed,R3-seed,2,2,0,0,4
-1-R3-seed,R3-seed,3,3,0,0,4
-1-R3-seed,R3-seed,4,4,0,0,4
-1-R3-seed,R3-seed,5,5,0,0,4
-1-R3-seed,R3-seed,6,6,0,0,4
-1-R3-seed,R3-seed,7,7,0,0,4
-1-R3-seed,R3-seed,8,8,0,0,4
-1-R3-seed,R3-seed,9,9,0,0,4
-1-R3-seed,R3-seed,10,13,0,0,4
-1-R3-seed,R3-seed,11,14,0,0,4
-1-R3-seed,R3-seed,12,15,0,0,4
-1-R3-seed,R3-seed,13,16,0,0,4
-1-R3-seed,R3-seed,14,17,0,0,4
-1-R3-seed,R3-seed,15,18,0,0,4
-1-R3-seed,R3-seed,16,19,0,0,4
-1-R3-seed,R3-seed,17,20,0,0,4
-1-R3-seed,R3-seed,18,21,0,0,4
-1-R3-seed,R3-seed,19,22,0,0,4
-1-R3-seed,R3-seed,20,23,0,0,4
-1-R3-seed,R3-seed,21,24,0,0,4
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-R3-seed,R3-seed,1,1,0,4
+1-R3-seed,R3-seed,2,2,0,4
+1-R3-seed,R3-seed,3,3,0,4
+1-R3-seed,R3-seed,4,4,0,4
+1-R3-seed,R3-seed,5,5,0,4
+1-R3-seed,R3-seed,6,6,0,4
+1-R3-seed,R3-seed,7,7,0,4
+1-R3-seed,R3-seed,8,8,0,4
+1-R3-seed,R3-seed,9,9,0,4
+1-R3-seed,R3-seed,10,13,0,4
+1-R3-seed,R3-seed,11,14,0,4
+1-R3-seed,R3-seed,12,15,0,4
+1-R3-seed,R3-seed,13,16,0,4
+1-R3-seed,R3-seed,14,17,0,4
+1-R3-seed,R3-seed,15,18,0,4
+1-R3-seed,R3-seed,16,19,0,4
+1-R3-seed,R3-seed,17,20,0,4
+1-R3-seed,R3-seed,18,21,0,4
+1-R3-seed,R3-seed,19,22,0,4
+1-R3-seed,R3-seed,20,23,0,4
+1-R3-seed,R3-seed,21,24,0,4
 """
 
         self.report.write_amino_header(StringIO())
         self.report.write_amino_detail_header(StringIO())
-        self.report.write_contig_coverage_header(self.report_file)
+        self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
-        self.report.write_contig_coverage_counts()
+        self.report.write_genome_coverage_counts()
         self.report.write_amino_detail_counts()
         self.report.write_amino_counts()
 
@@ -745,41 +745,41 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
         # insertion:                        ^^^
 
         expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-R3-seed,R3-seed,1,1,0,0,4
-1-R3-seed,R3-seed,2,2,0,0,4
-1-R3-seed,R3-seed,3,3,0,0,4
-1-R3-seed,R3-seed,4,4,0,0,4
-1-R3-seed,R3-seed,5,5,0,0,4
-1-R3-seed,R3-seed,6,6,0,0,4
-1-R3-seed,R3-seed,7,7,0,0,4
-1-R3-seed,R3-seed,8,8,0,0,4
-1-R3-seed,R3-seed,9,9,0,0,4
-1-R3-seed,R3-seed,10,10,0,0,4
-1-R3-seed,R3-seed,11,11,0,0,4
-1-R3-seed,R3-seed,12,12,0,0,4
-1-R3-seed,R3-seed,13,,0,0,4
-1-R3-seed,R3-seed,14,,0,0,4
-1-R3-seed,R3-seed,15,,0,0,4
-1-R3-seed,R3-seed,16,13,0,0,4
-1-R3-seed,R3-seed,17,14,0,0,4
-1-R3-seed,R3-seed,18,15,0,0,4
-1-R3-seed,R3-seed,19,16,0,0,4
-1-R3-seed,R3-seed,20,17,0,0,4
-1-R3-seed,R3-seed,21,18,0,0,4
-1-R3-seed,R3-seed,22,19,0,0,4
-1-R3-seed,R3-seed,23,20,0,0,4
-1-R3-seed,R3-seed,24,21,0,0,4
-1-R3-seed,R3-seed,25,22,0,0,4
-1-R3-seed,R3-seed,26,23,0,0,4
-1-R3-seed,R3-seed,27,24,0,0,4
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-R3-seed,R3-seed,1,1,0,4
+1-R3-seed,R3-seed,2,2,0,4
+1-R3-seed,R3-seed,3,3,0,4
+1-R3-seed,R3-seed,4,4,0,4
+1-R3-seed,R3-seed,5,5,0,4
+1-R3-seed,R3-seed,6,6,0,4
+1-R3-seed,R3-seed,7,7,0,4
+1-R3-seed,R3-seed,8,8,0,4
+1-R3-seed,R3-seed,9,9,0,4
+1-R3-seed,R3-seed,10,10,0,4
+1-R3-seed,R3-seed,11,11,0,4
+1-R3-seed,R3-seed,12,12,0,4
+1-R3-seed,R3-seed,13,,0,4
+1-R3-seed,R3-seed,14,,0,4
+1-R3-seed,R3-seed,15,,0,4
+1-R3-seed,R3-seed,16,13,0,4
+1-R3-seed,R3-seed,17,14,0,4
+1-R3-seed,R3-seed,18,15,0,4
+1-R3-seed,R3-seed,19,16,0,4
+1-R3-seed,R3-seed,20,17,0,4
+1-R3-seed,R3-seed,21,18,0,4
+1-R3-seed,R3-seed,22,19,0,4
+1-R3-seed,R3-seed,23,20,0,4
+1-R3-seed,R3-seed,24,21,0,4
+1-R3-seed,R3-seed,25,22,0,4
+1-R3-seed,R3-seed,26,23,0,4
+1-R3-seed,R3-seed,27,24,0,4
 """
 
         self.report.write_amino_header(StringIO())
         self.report.write_amino_detail_header(StringIO())
-        self.report.write_contig_coverage_header(self.report_file)
+        self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
-        self.report.write_contig_coverage_counts()
+        self.report.write_genome_coverage_counts()
         self.report.write_amino_detail_counts()
         self.report.write_amino_counts()
 
@@ -790,29 +790,29 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,0,AAATTTAGGGAGCAT")
         expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-R1-seed,R1-seed,1,1,0,0,4
-1-R1-seed,R1-seed,2,2,0,0,4
-1-R1-seed,R1-seed,3,3,0,0,4
-1-R1-seed,R1-seed,4,4,0,0,4
-1-R1-seed,R1-seed,5,5,0,0,4
-1-R1-seed,R1-seed,6,6,0,0,4
-1-R1-seed,R1-seed,7,7,0,0,4
-1-R1-seed,R1-seed,8,8,0,0,4
-1-R1-seed,R1-seed,9,9,0,0,4
-1-R1-seed,R1-seed,10,10,0,0,4
-1-R1-seed,R1-seed,11,11,0,0,4
-1-R1-seed,R1-seed,12,12,0,0,4
-1-R1-seed,R1-seed,13,13,0,0,4
-1-R1-seed,R1-seed,14,14,0,0,4
-1-R1-seed,R1-seed,15,15,0,0,4
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-R1-seed,R1-seed,1,1,0,4
+1-R1-seed,R1-seed,2,2,0,4
+1-R1-seed,R1-seed,3,3,0,4
+1-R1-seed,R1-seed,4,4,0,4
+1-R1-seed,R1-seed,5,5,0,4
+1-R1-seed,R1-seed,6,6,0,4
+1-R1-seed,R1-seed,7,7,0,4
+1-R1-seed,R1-seed,8,8,0,4
+1-R1-seed,R1-seed,9,9,0,4
+1-R1-seed,R1-seed,10,10,0,4
+1-R1-seed,R1-seed,11,11,0,4
+1-R1-seed,R1-seed,12,12,0,4
+1-R1-seed,R1-seed,13,13,0,4
+1-R1-seed,R1-seed,14,14,0,4
+1-R1-seed,R1-seed,15,15,0,4
 """
 
         self.report.write_amino_header(StringIO())
         self.report.write_amino_detail_header(StringIO())
-        self.report.write_contig_coverage_header(self.report_file)
+        self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
-        self.report.write_contig_coverage_counts()
+        self.report.write_genome_coverage_counts()
         self.report.write_amino_detail_counts()
         self.report.write_amino_counts()
 
@@ -823,29 +823,29 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,0,GAGCATAAATTTAGG")
         expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-R1-seed,R1-seed,1,-5,0,0,4
-1-R1-seed,R1-seed,2,-4,0,0,4
-1-R1-seed,R1-seed,3,-3,0,0,4
-1-R1-seed,R1-seed,4,-2,0,0,4
-1-R1-seed,R1-seed,5,-1,0,0,4
-1-R1-seed,R1-seed,6,0,0,0,4
-1-R1-seed,R1-seed,7,1,0,0,4
-1-R1-seed,R1-seed,8,2,0,0,4
-1-R1-seed,R1-seed,9,3,0,0,4
-1-R1-seed,R1-seed,10,4,0,0,4
-1-R1-seed,R1-seed,11,5,0,0,4
-1-R1-seed,R1-seed,12,6,0,0,4
-1-R1-seed,R1-seed,13,7,0,0,4
-1-R1-seed,R1-seed,14,8,0,0,4
-1-R1-seed,R1-seed,15,9,0,0,4
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-R1-seed,R1-seed,1,-5,0,4
+1-R1-seed,R1-seed,2,-4,0,4
+1-R1-seed,R1-seed,3,-3,0,4
+1-R1-seed,R1-seed,4,-2,0,4
+1-R1-seed,R1-seed,5,-1,0,4
+1-R1-seed,R1-seed,6,0,0,4
+1-R1-seed,R1-seed,7,1,0,4
+1-R1-seed,R1-seed,8,2,0,4
+1-R1-seed,R1-seed,9,3,0,4
+1-R1-seed,R1-seed,10,4,0,4
+1-R1-seed,R1-seed,11,5,0,4
+1-R1-seed,R1-seed,12,6,0,4
+1-R1-seed,R1-seed,13,7,0,4
+1-R1-seed,R1-seed,14,8,0,4
+1-R1-seed,R1-seed,15,9,0,4
 """
 
         self.report.write_amino_header(StringIO())
         self.report.write_amino_detail_header(StringIO())
-        self.report.write_contig_coverage_header(self.report_file)
+        self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
-        self.report.write_contig_coverage_counts()
+        self.report.write_genome_coverage_counts()
         self.report.write_amino_detail_counts()
         self.report.write_amino_counts()
 
@@ -856,23 +856,23 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,10,AAATTTAGG")
         expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-R1-seed,R1-seed,11,1,0,0,4
-1-R1-seed,R1-seed,12,2,0,0,4
-1-R1-seed,R1-seed,13,3,0,0,4
-1-R1-seed,R1-seed,14,4,0,0,4
-1-R1-seed,R1-seed,15,5,0,0,4
-1-R1-seed,R1-seed,16,6,0,0,4
-1-R1-seed,R1-seed,17,7,0,0,4
-1-R1-seed,R1-seed,18,8,0,0,4
-1-R1-seed,R1-seed,19,9,0,0,4
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-R1-seed,R1-seed,11,1,0,4
+1-R1-seed,R1-seed,12,2,0,4
+1-R1-seed,R1-seed,13,3,0,4
+1-R1-seed,R1-seed,14,4,0,4
+1-R1-seed,R1-seed,15,5,0,4
+1-R1-seed,R1-seed,16,6,0,4
+1-R1-seed,R1-seed,17,7,0,4
+1-R1-seed,R1-seed,18,8,0,4
+1-R1-seed,R1-seed,19,9,0,4
 """
 
         self.report.write_amino_header(StringIO())
         self.report.write_amino_detail_header(StringIO())
-        self.report.write_contig_coverage_header(self.report_file)
+        self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
-        self.report.write_contig_coverage_counts()
+        self.report.write_genome_coverage_counts()
         self.report.write_amino_detail_counts()
         self.report.write_amino_counts()
 
@@ -887,19 +887,19 @@ R3-seed,15,0,4,3,TTT
 R3-seed,15,0,5,21,CAT
 """)
         expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-R3-seed,R3-seed,4,4,0,0,4
-R3-seed,R3-seed,5,5,0,0,4
-R3-seed,R3-seed,6,6,0,0,4
-R3-seed,R3-seed,22,22,0,0,5
-R3-seed,R3-seed,23,23,0,0,5
-R3-seed,R3-seed,24,24,0,0,5
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+R3-seed,R3-seed,4,4,0,4
+R3-seed,R3-seed,5,5,0,4
+R3-seed,R3-seed,6,6,0,4
+R3-seed,R3-seed,22,22,0,5
+R3-seed,R3-seed,23,23,0,5
+R3-seed,R3-seed,24,24,0,5
 """
 
         self.report.write_amino_header(StringIO())
-        self.report.write_contig_coverage_header(self.report_file)
+        self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
-        self.report.write_contig_coverage_counts()
+        self.report.write_genome_coverage_counts()
         self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
@@ -914,20 +914,20 @@ R3-seed,R3-seed,24,24,0,0,5
         aligned_reads1 = self.prepareReads("1-R1-seed-partial,15,0,5,0,CCCCCC")
 
         expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-R1-seed-partial,,1,,0,0,5
-1-R1-seed-partial,,2,,0,0,5
-1-R1-seed-partial,,3,,0,0,5
-1-R1-seed-partial,,4,,0,0,5
-1-R1-seed-partial,,5,,0,0,5
-1-R1-seed-partial,,6,,0,0,5
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-R1-seed-partial,,1,,0,5
+1-R1-seed-partial,,2,,0,5
+1-R1-seed-partial,,3,,0,5
+1-R1-seed-partial,,4,,0,5
+1-R1-seed-partial,,5,,0,5
+1-R1-seed-partial,,6,,0,5
 """
 
         self.report.write_amino_header(StringIO())
         self.report.write_amino_detail_header(StringIO())
-        self.report.write_contig_coverage_header(self.report_file)
+        self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
-        self.report.write_contig_coverage_counts()
+        self.report.write_genome_coverage_counts()
         self.report.write_amino_detail_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())

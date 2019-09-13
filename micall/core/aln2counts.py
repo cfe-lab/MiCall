@@ -71,9 +71,9 @@ def parse_args():
     parser.add_argument('conseq_region_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing consensus sequences, split by region')
-    parser.add_argument('contig_coverage_csv',
+    parser.add_argument('genome_coverage_csv',
                         type=argparse.FileType('w'),
-                        help='CSV containing coverage counts, split by contig')
+                        help='CSV of coverage levels in full-genome coordinates')
 
     return parser.parse_args()
 
@@ -127,7 +127,7 @@ class SequenceReport(object):
                                         defaultdict(Counter))
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
         self.amino_writer = self.amino_detail_writer = None
-        self.contig_coverage_writer = None
+        self.genome_coverage_writer = None
         self.conseq_region_writer = self.fail_writer = None
 
     @property
@@ -351,8 +351,8 @@ class SequenceReport(object):
                 self.write_consensus(self.conseq_writer)
             if self.conseq_region_writer is not None:
                 self.write_consensus_regions(self.conseq_region_writer)
-            if self.contig_coverage_writer is not None:
-                self.write_contig_coverage_counts()
+            if self.genome_coverage_writer is not None:
+                self.write_genome_coverage_counts()
             if self.amino_detail_writer is not None:
                 self.write_amino_detail_counts()
             elif self.amino_writer is not None:
@@ -534,21 +534,20 @@ class SequenceReport(object):
                     coverage_summary['coverage_region'] = region
                     coverage_summary['region_width'] = pos_count
 
-    def write_contig_coverage_header(self, contig_coverage_file):
+    def write_genome_coverage_header(self, genome_coverage_file):
         columns = ['contig',
                    'coordinates',
                    'query_nuc_pos',
                    'refseq_nuc_pos',
-                   'ins',
                    'dels',
                    'coverage']
-        self.contig_coverage_writer = csv.DictWriter(contig_coverage_file,
+        self.genome_coverage_writer = csv.DictWriter(genome_coverage_file,
                                                      columns,
                                                      lineterminator=os.linesep)
-        self.contig_coverage_writer.writeheader()
+        self.genome_coverage_writer.writeheader()
 
-    def write_contig_coverage_counts(self, contig_coverage_writer=None):
-        contig_coverage_writer = contig_coverage_writer or self.contig_coverage_writer
+    def write_genome_coverage_counts(self, genome_coverage_writer=None):
+        genome_coverage_writer = genome_coverage_writer or self.genome_coverage_writer
         seed_nucs = [(seed_nuc.get_consensus(MAX_CUTOFF) or '?', seed_nuc)
                      for seed_amino in self.seed_aminos[0]
                      for seed_nuc in seed_amino.nucleotides]
@@ -608,10 +607,9 @@ class SequenceReport(object):
                            coordinates=coordinate_name,
                            query_nuc_pos=seq_pos,
                            refseq_nuc_pos=ref_pos_display,
-                           ins=0,
                            dels=seed_nuc.counts['-'],
                            coverage=coverage)
-                contig_coverage_writer.writerow(row)
+                genome_coverage_writer.writerow(row)
 
     @staticmethod
     def _create_nuc_writer(nuc_file):
@@ -1282,7 +1280,7 @@ def aln2counts(aligned_csv,
                remap_conseq_csv=None,
                conseq_region_csv=None,
                amino_detail_csv=None,
-               contig_coverage_csv=None,
+               genome_coverage_csv=None,
                nuc_detail_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
@@ -1310,7 +1308,7 @@ def aln2counts(aligned_csv,
         for individual contigs.
     @param nuc_detail_csv: Open file handle to write nucleotide frequencies
         for individual contigs.
-    @param contig_coverage_csv: Open file handle to write coverage for individual
+    @param genome_coverage_csv: Open file handle to write coverage for individual
         contigs.
     """
     # load project information
@@ -1359,8 +1357,8 @@ def aln2counts(aligned_csv,
             report.read_insertions(conseq_ins_csv)
         if remap_conseq_csv is not None:
             report.read_remap_conseqs(remap_conseq_csv)
-        if contig_coverage_csv is not None:
-            report.write_contig_coverage_header(contig_coverage_csv)
+        if genome_coverage_csv is not None:
+            report.write_genome_coverage_header(genome_coverage_csv)
 
         v3_overlap_region_name = None if g2p_aligned_csv is None else 'V3LOOP'
         report.process_reads(aligned_csv, coverage_summary, v3_overlap_region_name)
@@ -1388,7 +1386,7 @@ def main():
                remap_conseq_csv=args.remap_conseq_csv,
                conseq_region_csv=args.conseq_region_csv,
                amino_detail_csv=args.amino_detail_csv,
-               contig_coverage_csv=args.contig_coverage_csv)
+               genome_coverage_csv=args.genome_coverage_csv)
 
 
 if __name__ == '__main__':

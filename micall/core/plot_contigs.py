@@ -67,17 +67,17 @@ class ShadedCoverage(SmoothCoverage):
         return colors.to_hex(rgba)
 
 
-def plot_contig_coverage(contig_coverage_csv, contig_coverage_svg_path):
-    f = build_coverage_figure(contig_coverage_csv)
-    f.show(w=970).saveSvg(contig_coverage_svg_path)
+def plot_genome_coverage(genome_coverage_csv, genome_coverage_svg_path):
+    f = build_coverage_figure(genome_coverage_csv)
+    f.show(w=970).saveSvg(genome_coverage_svg_path)
 
 
-def build_coverage_figure(contig_coverage_csv):
+def build_coverage_figure(genome_coverage_csv):
     min_position, max_position = 1, 500
     coordinate_depths = Counter()
     contig_depths = Counter()
     contig_groups = defaultdict(set)
-    reader = DictReader(contig_coverage_csv)
+    reader = DictReader(genome_coverage_csv)
     for row in reader:
         query_nuc_pos = int(row['query_nuc_pos'])
         if row['refseq_nuc_pos']:
@@ -87,7 +87,7 @@ def build_coverage_figure(contig_coverage_csv):
         min_position = min(min_position, refseq_nuc_pos, query_nuc_pos)
         max_position = max(max_position, refseq_nuc_pos, query_nuc_pos)
         coordinates_name = row['coordinates']
-        row_coverage = int(row['coverage'])
+        row_coverage = int(row['coverage']) - int(row['dels'])
         coordinate_depths[coordinates_name] = max(
             coordinate_depths[coordinates_name],
             row_coverage)
@@ -133,8 +133,8 @@ def build_coverage_figure(contig_coverage_csv):
             add_partial_banner(f, position_offset, max_position)
         for _, contig_name in sorted((-contig_depths[name], name)
                                      for name in contig_groups[coordinates_name]):
-            contig_coverage_csv.seek(0)
-            reader = DictReader(contig_coverage_csv)
+            genome_coverage_csv.seek(0)
+            reader = DictReader(genome_coverage_csv)
             build_contig(reader, f, contig_name, max_position, position_offset)
 
     if not f.elements:
@@ -155,7 +155,7 @@ def build_contig(reader, f, contig_name, max_position, position_offset):
         else:
             pos_field = 'query_nuc_pos'
         for contig_row in contig_rows:
-            for field_name in (pos_field, 'coverage'):
+            for field_name in (pos_field, 'coverage', 'dels'):
                 field_text = contig_row[field_name]
                 field_value = None if field_text == '' else int(field_text)
                 contig_row[field_name] = field_value
@@ -170,10 +170,11 @@ def build_contig(reader, f, contig_name, max_position, position_offset):
                 if insertion_size:
                     insertion_ranges.append((pos, pos+insertion_size-1))
                     insertion_size = 0
-                coverage[pos - start] = contig_row['coverage']
+                coverage[pos - start] = (contig_row['coverage'] -
+                                         contig_row['dels'])
         subtracks = []
         for has_coverage, group_positions in groupby(
-                enumerate(coverage, 0),
+                enumerate(coverage),
                 lambda item: item[1] != 0):
             if has_coverage:
                 group_positions = list(group_positions)
@@ -261,15 +262,15 @@ def main():
     parser = ArgumentParser(
         description='Plot assembled contigs against a reference.',
         formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument('contig_coverage_csv',
+    parser.add_argument('genome_coverage_csv',
                         help='CSV file with coverage counts for each contig',
                         type=FileType())
-    parser.add_argument('contig_coverage_svg',
+    parser.add_argument('genome_coverage_svg',
                         help='SVG file to plot coverage counts for each contig')
     args = parser.parse_args()
 
-    plot_contig_coverage(args.contig_coverage_csv, args.contig_coverage_svg)
-    print('Wrote', args.contig_coverage_svg)
+    plot_genome_coverage(args.genome_coverage_csv, args.genome_coverage_svg)
+    print('Wrote', args.genome_coverage_svg)
 
 
 if __name__ == '__main__':

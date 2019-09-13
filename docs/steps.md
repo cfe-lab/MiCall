@@ -2,6 +2,7 @@
 title: Steps and their input / output files
 description: Where the data goes
 ---
+Individual files are described after the list of steps.
 
 * `micall_basespace.summarize_run`: extract phiX error rates from MiSeq data.
   * in - InterOp folder
@@ -32,12 +33,23 @@ description: Where the data goes
   * g2p_aligned.csv - reads that mapped to V3LOOP, aligned to the HIV seed
   * not_v3_r1.fastq - reads that did not map to V3LOOP (read 1)
   * not_v3_r2.fastq - reads that did not map to V3LOOP (read 2)
+  * merged_contigs.csv - contig sequences generated from amplicon reads that
+    show up as very common insert lengths after merging read pairs
 * `prelim_map`: map reads to all references. (Takes reads that did not map to V3LOOP.)
   * in - fastq1
   * in - fastq2
   * prelim.csv - SAM file format
+* `denovo`: assemble contigs from individual reads. (Replaces `prelim_map` in
+    the denovo version of MiCall.)
+  * in - fastq1
+  * in - fastq2
+  * in - merged_contigs.csv
+  * contigs.csv - the assembled contigs, plus any merged contigs, including
+    the best blast results
+  * blast.csv - multiple blast results for each contig
 * `remap`: iteratively use consensus from previous mapping as reference to try
-    and map more reads. See [remap design] for more details.
+    and map more reads. See [remap design] for more details. (The denovo version
+    of MiCall just maps once onto the assembled contigs.)
   * in - fastq1
   * in - fastq2
   * in - prelim.csv
@@ -67,12 +79,18 @@ description: Where the data goes
   * conseq.csv - downloaded - consensus sequence
   * failed_align.csv - downloaded - any consensus that failed to align to its ref
   * nuc_variants.csv - downloaded - top nucleotide variants for HLA
+  * nuc_detail.csv - nucleotide counts split up by contig
+  * amino_detail.csv - amino counts split up by contig
+  * genome_coverage.csv - coverage counts in full-genome coordinates
 * `coverage_plots`: convert amino counts to a coverage graph for each gene
     region.
   * in - amino.csv
   * coverage_maps.tar - binary file &rarr; untar in results/coverage_maps
   * coverage_scores.csv - downloaded - a score for each region based on the
     coverage at key positions.
+* `plot_genome_coverage`: convert genome coverage to a graph
+  * in - genome_coverage.csv
+  * genome_coverage.svg
 * `cascade_report`: summarize how many reads made it through each step of the
     pipeline.
 * `resistance`: Use the Stanford HIVdb algorithm rules to call a sample's resistance
@@ -94,23 +112,6 @@ description: Where the data goes
 [resistance design]: http://cfe-lab.github.io/MiCall/design/resistance
 
 ## File descriptions ##
-* quality.csv and bad_cycles.csv
-  * tile
-  * cycle
-  * errorrate - as a percentage
-* run_quality.csv
-  * q30_fwd - portion of tiles and cycles with quality score of at least 30
-  for forward reads
-  * q30_rev - portion of tiles and cycles with quality score of at least 30
-  for reverse reads
-  * cluster_density - average cluster density for all tiles and cycles K/mm2
-  * pass_rate - portion of clusters passing filters over all tiles and cycles
-  * error_rate_fwd - average error rate over tiles and cycles in forward reads
-  (phiX error count/tile/cycle)
-  * error_rate_rev - average error rate over tiles and cycles in reverse reads
-  (phiX error count/tile/cycle)
-  * avg_quality - average Phred score over all clusters and cycles
-  * avg_coverage - average coverage across the best region for each sample
 * aligned.csv and g2p_aligned.csv
   * refname - seed reference the reads mapped to
   * qcut - minimum Phred quality score to include a nucleotide
@@ -120,63 +121,6 @@ description: Where the data goes
   * offset - offset of the read within the consensus, or number of dashes to
     add at the start
   * seq - the mapped sequence of the read, aligned to the consensus
-* conseq_ins.csv
-  * qname - query name from the read
-  * fwd_rev - F for forward reads, R for reverse
-  * refname - seed reference the read mapped to
-  * pos - 1-based position in the consensus sequence that this insertion follows
-  * insert - the nucleotide sequence that was inserted
-  * qual - the Phred quality scores for the inserted sequence
-* coverage_scores.csv
-  * project - the project this score is defined by
-  * region - the region being displayed
-  * seed - the seed mapped to
-  * q.cut - quality score cutoff
-  * min.coverage - minimum coverage at all key positions
-  * which.key.pos - which key position had the minimum
-  * off.score - score to use when off target
-  * on.score - score to use when on target
-* failed.csv
-  * qname - query name from the read
-  * cause - reason the reads failed to merge
-* clipping.csv
-  * refname - seed reference the reads mapped to
-  * pos - one-based nucleotide position within the consensus sequence
-  * count - number of read pairs that soft clipped instead of mapping to this
-    position
-* remap_conseq.csv
-  * region - the region mapped to
-  * sequence - the consensus sequence used
-* conseq.csv
-  * region - seed region it mapped to
-  * q-cutoff - minimum quality score
-  * consensus-percent-cutoff - to be included in a mixture, a variant must make
-    up at least this fraction of the total valid counts
-  * offset - using the seed reference's coordinate system, this is the 1-based
-    index of the first character in the consensus sequence.
-  * sequence - the consensus sequence, aligned to the codon reading frame.
-    Adding the number of dashes in offset will align the first base in the
-    consensus sequence with its corresponding base in the seed reference. The
-    whole consensus sequence may not be aligned with the seed reference because
-    of insertions and deletions. Mixtures above the cutoff are displayed as
-    [IUPAC nucleotide codes]. If deletions are present above the cutoff, the
-    nucleotide code is lower case.
-* nuc.csv
-  * seed - seed reference the reads mapped to
-  * region - coordinate reference for reporting against, usually a gene
-  * q-cutoff - minimum Phred quality score to include a nucleotide
-  * query.nuc.pos - the 1-based index of the base in the consensus sequence that
-    came from this set of counts
-  * refseq.nuc.pos - the 1-based index of the base in the coordinate reference
-  * A,C,G,T - counts for the nucleotides at this position
-  * N - count of reads with Phred quality score below the cutoff
-  * del - count of reads with a deletion at this position
-  * ins - count of reads with an insertion after this position, relative to the
-    coordinate reference
-  * clip - count of reads with soft clipping that would have mapped at this
-    position
-  * g2p_overlap - count of reads at this position that overlapped with the
-    V3LOOP G2P mapping and were ignored.
 * amino.csv
   * seed - seed reference the reads mapped to
   * region - coordinate reference for reporting against, usually a gene
@@ -198,6 +142,49 @@ description: Where the data goes
     codon
   * g2p_overlap - count of reads at this position that overlapped with the
     V3LOOP G2P mapping and were ignored.
+* amino_detail.csv - same fields as amino.csv
+* blast.csv
+  * contig_name - name that appears in amino_detail.csv and nuc_detail.csv
+  * ref_name - reference name that BLAST found matches in
+  * score - calculated by BLAST
+  * match - fraction of the sequence that matched the reference
+  * pident - percentage of the matching part that was identical to the reference
+  * start - start position of the matching part in the contig sequence
+  * end - end position of the matching part in the contig sequence
+  * ref_start - start position of the matching part in the reference sequence
+  * ref_end - end position of the matching part in the reference sequence  
+* cascade.csv - number of read pairs that flow through the pipeline steps
+  * demultiplexed - count from the raw FASTQ
+  * v3loop - aligned with V3LOOP
+  * g2p - valid reads to count in G2P
+  * prelim_map - mapped to other references on first pass
+  * remap - mapped to other references after remapping
+  * aligned - aligned with a reference and merged with mate
+* conseq.csv
+  * region - seed region it mapped to
+  * q-cutoff - minimum quality score
+  * consensus-percent-cutoff - to be included in a mixture, a variant must make
+    up at least this fraction of the total valid counts
+  * offset - using the seed reference's coordinate system, this is the 1-based
+    index of the first character in the consensus sequence.
+  * sequence - the consensus sequence, aligned to the codon reading frame.
+    Adding the number of dashes in offset will align the first base in the
+    consensus sequence with its corresponding base in the seed reference. The
+    whole consensus sequence may not be aligned with the seed reference because
+    of insertions and deletions. Mixtures above the cutoff are displayed as
+    [IUPAC nucleotide codes]. If deletions are present above the cutoff, the
+    nucleotide code is lower case.
+* conseq_ins.csv
+  * qname - query name from the read
+  * fwd_rev - F for forward reads, R for reverse
+  * refname - seed reference the read mapped to
+  * pos - 1-based position in the consensus sequence that this insertion follows
+  * insert - the nucleotide sequence that was inserted
+  * qual - the Phred quality scores for the inserted sequence
+* contigs.csv
+  * genotype - the reference name with the best BLAST result
+  * match - the fraction of the contig that matched in BLAST
+  * contig - the nucleotide sequence of the assembled contig
 * coord_ins.csv - insertions in consensus sequence, relative to coordinate
     reference.
   * seed - seed reference the reads mapped to
@@ -209,6 +196,23 @@ description: Where the data goes
   * count - the number of times the insertion occurred
   * before - the one-based position within the coordinate reference that it
     was inserted before
+* coverage_scores.csv
+  * project - the project this score is defined by
+  * region - the region being displayed
+  * seed - the seed mapped to
+  * q.cut - quality score cutoff
+  * min.coverage - minimum coverage at all key positions
+  * which.key.pos - which key position had the minimum
+  * off.score - score to use when off target
+  * on.score - score to use when on target
+* clipping.csv
+  * refname - seed reference the reads mapped to
+  * pos - one-based nucleotide position within the consensus sequence
+  * count - number of read pairs that soft clipped instead of mapping to this
+    position
+* failed.csv
+  * qname - query name from the read
+  * cause - reason the reads failed to merge
 * failed_align.csv -
   * seed - seed the reads aligned to
   * region - where the consensus was trying to align
@@ -250,13 +254,47 @@ description: Where the data goes
   * X4pct - X4calls as a percentage of valid
   * final - the final decision: blank if valid is 0, X4 if X4pct >= 2, otherwise
     R5
-* cascade.csv - number of read pairs that flow through the pipeline steps
-  * demultiplexed - count from the raw FASTQ
-  * v3loop - aligned with V3LOOP
-  * g2p - valid reads to count in G2P
-  * prelim_map - mapped to other references on first pass
-  * remap - mapped to other references after remapping
-  * aligned - aligned with a reference and merged with mate
+* genome_coverage.csv
+  * query_name - the name of the contig that appears in amino_detail.csv and
+    nuc_detail.csv, or the name of the seed reference used for mapping
+  * ref_name - the name of the coordinate reference the query was aligned to
+  * query_nuc_pos - the nucleotide position within the contig or the remap
+    consensus
+  * ref_nuc_position - the nucleotide position within the reference
+  * dels - number of deletions reported at this position
+  * coverage - number of reads that aligned to this position, including
+    deletions
+* merged_contigs.csv
+  * contig - the consensus sequence from all merged reads of that insert length
+* mutations.csv
+  * drug_class - the drug class code from the HIVdb rules, like NRTI
+  * mutation - the wild-type amino, position, and resistant amino, like Q80K
+  * prevalence - the fraction of coverage that contained this mutation
+  * genotype - the HCV genotype
+* nuc.csv
+  * seed - seed reference the reads mapped to
+  * region - coordinate reference for reporting against, usually a gene
+  * q-cutoff - minimum Phred quality score to include a nucleotide
+  * query.nuc.pos - the 1-based index of the base in the consensus sequence that
+    came from this set of counts
+  * refseq.nuc.pos - the 1-based index of the base in the coordinate reference
+  * A,C,G,T - counts for the nucleotides at this position
+  * N - count of reads with Phred quality score below the cutoff
+  * del - count of reads with a deletion at this position
+  * ins - count of reads with an insertion after this position, relative to the
+    coordinate reference
+  * clip - count of reads with soft clipping that would have mapped at this
+    position
+  * g2p_overlap - count of reads at this position that overlapped with the
+    V3LOOP G2P mapping and were ignored.
+* nuc_detail.csv - same fields as nuc.csv
+* quality.csv and bad_cycles.csv
+  * tile
+  * cycle
+  * errorrate - as a percentage
+* remap_conseq.csv
+  * region - the region mapped to
+  * sequence - the consensus sequence used
 * resistance.csv
   * region - the region code, like PR or RT
   * drug_class - the drug class code from the HIVdb rules, like NRTI
@@ -266,10 +304,18 @@ description: Where the data goes
   * level_name - resistance level's name, like "Susceptible"
   * score - numeric score calculated by the HIVdb rules
   * genotype - string describing the HCV genotype
-* mutations.csv
-  * drug_class - the drug class code from the HIVdb rules, like NRTI
-  * mutation - the wild-type amino, position, and resistant amino, like Q80K
-  * prevalence - the fraction of coverage that contained this mutation
-  * genotype - the HCV genotype
+* run_quality.csv
+  * q30_fwd - portion of tiles and cycles with quality score of at least 30
+  for forward reads
+  * q30_rev - portion of tiles and cycles with quality score of at least 30
+  for reverse reads
+  * cluster_density - average cluster density for all tiles and cycles K/mm2
+  * pass_rate - portion of clusters passing filters over all tiles and cycles
+  * error_rate_fwd - average error rate over tiles and cycles in forward reads
+  (phiX error count/tile/cycle)
+  * error_rate_rev - average error rate over tiles and cycles in reverse reads
+  (phiX error count/tile/cycle)
+  * avg_quality - average Phred score over all clusters and cycles
+  * avg_coverage - average coverage across the best region for each sample
 
 [IUPAC nucleotide codes]: https://www.bioinformatics.org/sms/iupac.html

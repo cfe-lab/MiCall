@@ -246,8 +246,8 @@ From: centos:7
         remap_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \
         failed_csv cascade_csv nuc_csv amino_csv coord_ins_csv conseq_csv \
         conseq_region_csv failed_align_csv coverage_scores_csv \
-        coverage_maps_tar aligned_csv g2p_aligned_csv contigs_csv \
-        contigs_coverage_csv contigs_coverage_svg
+        coverage_maps_tar aligned_csv g2p_aligned_csv genome_coverage_csv \
+        genome_coverage_svg contigs_csv
     KIVE_THREADS 2
     KIVE_MEMORY 6000
 

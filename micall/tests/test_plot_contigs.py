@@ -138,8 +138,8 @@ Bar[12-22]
     assert expected_summary == summary
 
 
-def test_plot_contig_coverage():
-    contig_coverage_csv = StringIO("""\
+def test_plot_genome_coverage():
+    genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1a,HCV-1a,1,1,0,0,5
 1-HCV-1a,HCV-1a,2,2,0,0,5
@@ -156,14 +156,14 @@ Coverage 5x2, 7, 5x3
 [1-6], 1-HCV-1a - depth 7(1-9646)
 """
 
-    figure = build_coverage_figure(contig_coverage_csv)
+    figure = build_coverage_figure(genome_coverage_csv)
 
     assert expected_figure == summarize_figure(figure)
 
 
-def test_plot_contig_coverage_offset():
+def test_plot_genome_coverage_offset():
     """ When a contig extends before the reference start, offset everything. """
-    contig_coverage_csv = StringIO("""\
+    genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1a,HCV-1a,1,-2,0,0,5
 1-HCV-1a,HCV-1a,2,-1,0,0,5
@@ -194,13 +194,13 @@ Coverage 6x3
 [4-6], 2-unknown-partial - depth 6(1-9649)
 """
 
-    figure = build_coverage_figure(contig_coverage_csv)
+    figure = build_coverage_figure(genome_coverage_csv)
 
     assert expected_figure == summarize_figure(figure)
 
 
-def test_plot_contig_coverage_partial():
-    contig_coverage_csv = StringIO("""\
+def test_plot_genome_coverage_partial():
+    genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1a-partial,,1,,0,0,5
 1-HCV-1a-partial,,2,,0,0,5
@@ -215,27 +215,27 @@ Coverage 5x2, 7, 5x3
 [1-6], 1-HCV-1a-partial - depth 7(1-500)
 """
 
-    figure = build_coverage_figure(contig_coverage_csv)
+    figure = build_coverage_figure(genome_coverage_csv)
 
     assert expected_figure == summarize_figure(figure)
 
 
-def test_plot_contig_coverage_partial_header():
+def test_plot_genome_coverage_partial_header():
     """ Last dash in the header banner can be less than 500 wide. """
-    contig_coverage_csv = StringIO("""\
+    genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 """)
-    contig_coverage_csv.seek(0, 2)  # EOF
+    genome_coverage_csv.seek(0, 2)  # EOF
     for i in range(1010):
-        contig_coverage_csv.write(f'1-HCV-1a-partial,,{i+1},,0,0,5\n')
-    contig_coverage_csv.seek(0)
+        genome_coverage_csv.write(f'1-HCV-1a-partial,,{i+1},,0,0,5\n')
+    genome_coverage_csv.seek(0)
     expected_figure = """\
 [1-500], [1001-1010], Partial Blast Results(1-1010)
 Coverage 5x1010
 [1-1010], 1-HCV-1a-partial - depth 5(1-1010)
 """
 
-    figure = build_coverage_figure(contig_coverage_csv)
+    figure = build_coverage_figure(genome_coverage_csv)
 
     assert expected_figure == summarize_figure(figure)
 
@@ -256,8 +256,8 @@ def test_add_partial_banner():
     assert expected_figure == summarize_figure(figure)
 
 
-def test_plot_contig_coverage_sorted():
-    contig_coverage_csv = StringIO("""\
+def test_plot_genome_coverage_sorted():
+    genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1a,HCV-1a,1,1,0,0,5
 1-HCV-1a,HCV-1a,2,2,0,0,5
@@ -293,13 +293,13 @@ Coverage 5x2, 29, 5x3
 [1-6], 2-HCV-1b-partial - depth 29(1-9646)
 """
 
-    figure = build_coverage_figure(contig_coverage_csv)
+    figure = build_coverage_figure(genome_coverage_csv)
 
     assert expected_figure == summarize_figure(figure)
 
 
-def test_plot_contig_coverage_zero():
-    contig_coverage_csv = StringIO("""\
+def test_plot_genome_coverage_zero():
+    genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1b-partial,,1,,0,0,0
 1-HCV-1b-partial,,2,,0,0,0
@@ -313,26 +313,26 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1b-partial - depth 0(1-500)
 """
 
-    figure = build_coverage_figure(contig_coverage_csv)
+    figure = build_coverage_figure(genome_coverage_csv)
 
     assert expected_figure == summarize_figure(figure)
 
 
-def test_plot_contig_coverage_empty():
-    contig_coverage_csv = StringIO("""\
+def test_plot_genome_coverage_empty():
+    genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 """)
     expected_figure = """\
 No contigs found.(1-500)
 """
 
-    figure = build_coverage_figure(contig_coverage_csv)
+    figure = build_coverage_figure(genome_coverage_csv)
 
     assert expected_figure == summarize_figure(figure)
 
 
-def test_plot_contig_coverage_gap():
-    contig_coverage_csv = StringIO("""\
+def test_plot_genome_coverage_gap():
+    genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1a,HCV-1a,1,1,0,0,5
 1-HCV-1a,HCV-1a,2,2,0,0,5
@@ -348,13 +348,13 @@ Coverage 5x2, 0, 6x3
 [1-2], [4-6], 1-HCV-1a - depth 6(1-9646)
 """
 
-    figure = build_coverage_figure(contig_coverage_csv)
+    figure = build_coverage_figure(genome_coverage_csv)
 
     assert expected_figure == summarize_figure(figure)
 
 
-def test_plot_contig_coverage_insertion():
-    contig_coverage_csv = StringIO("""\
+def test_plot_genome_coverage_insertion():
+    genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1a,HCV-1a,1,1,0,0,5
 1-HCV-1a,HCV-1a,2,2,0,0,5
@@ -377,6 +377,6 @@ Coverage 5x3, 7x3, 8x3
 [1-9], 1-HCV-1a - depth 8(1-9646), lightgreen{4-6}
 """
 
-    figure = build_coverage_figure(contig_coverage_csv)
+    figure = build_coverage_figure(genome_coverage_csv)
 
     assert expected_figure == summarize_figure(figure)

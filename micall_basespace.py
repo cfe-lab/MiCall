@@ -178,6 +178,10 @@ def parse_args():
                         type=int,
                         help="Maximum number of samples to process at once, "
                              "if not the number of CPU's.")
+    parser.add_argument('--denovo',
+                        action='store_true',
+                        help='Use de novo assembly instead of mapping to '
+                             'reference sequences.')
     return parser.parse_args()
 
 
@@ -387,18 +391,22 @@ def create_app_result(run_info,
         json.dump(metadata, json_file, indent=4)
 
 
-def process_sample(sample, args, pssm):
+def process_sample(sample, args, pssm, use_denovo=False):
     """ Process a single sample.
 
     :param Sample sample: the sample to process
     :param args: the command-line arguments
     :param pssm: the pssm library for running G2P analysis
+    :param use_denovo: use denovo assembly instead of mapping to references
     """
     sample.debug_remap = args.debug_remap
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
-        sample.process(pssm, excluded_seeds, excluded_projects, use_denovo=True)
+        sample.process(pssm,
+                       excluded_seeds,
+                       excluded_projects,
+                       use_denovo=use_denovo)
     except Exception:
         message = 'Failed to process {}.'.format(sample)
         logger.error(message, exc_info=True)
@@ -561,7 +569,8 @@ def collate_samples(run_info):
                                            'resistance_reports')
     makedirs(resistance_reports_path)
     coverage_maps_path = os.path.join(run_info.output_path, 'coverage_maps')
-    makedirs(coverage_maps_path)
+    genome_coverage_path = os.path.join(coverage_maps_path, 'genome')
+    makedirs(genome_coverage_path)
     merge_lengths_path = os.path.join(run_info.output_path, 'merge_lengths')
     makedirs(merge_lengths_path)
     for sample_info in run_info.get_all_samples():
@@ -573,10 +582,10 @@ def collate_samples(run_info):
             os.rename(sample_info.contigs_svg,
                       os.path.join(coverage_maps_path,
                                    sample_info.name + '_contigs.svg'))
-        if os.path.exists(sample_info.contig_coverage_svg):
-            os.rename(sample_info.contig_coverage_svg,
-                      os.path.join(coverage_maps_path,
-                                   sample_info.name + '_contig_coverage.svg'))
+        if os.path.exists(sample_info.genome_coverage_svg):
+            os.rename(sample_info.genome_coverage_svg,
+                      os.path.join(genome_coverage_path,
+                                   sample_info.name + '_genome_coverage.svg'))
         if os.path.exists(sample_info.merge_lengths_svg):
             os.rename(sample_info.merge_lengths_svg,
                       os.path.join(merge_lengths_path,
@@ -585,6 +594,12 @@ def collate_samples(run_info):
             os.rename(sample_info.resistance_pdf,
                       os.path.join(resistance_reports_path,
                                    sample_info.name + '_resistance.pdf'))
+    try:
+        # Remove directory, if it's empty.
+        os.rmdir(genome_coverage_path)
+    except OSError:
+        # Guess it wasn't empty.
+        pass
     zip_folder(run_info.output_path, 'resistance_reports')
     zip_folder(run_info.output_path, 'coverage_maps')
 
@@ -625,7 +640,8 @@ def main():
     pool = Pool(processes=args.max_active)
     pool.map(functools.partial(process_sample,
                                args=args,
-                               pssm=pssm),
+                               pssm=pssm,
+                               use_denovo=args.denovo),
              run_info.get_all_samples())
 
     pool.close()

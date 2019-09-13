@@ -61,6 +61,12 @@ def parse_args():
                         help='CSV containing individual reads aligned to consensus')
     parser.add_argument('g2p_aligned_csv',
                         help='CSV containing individual reads aligned to V3LOOP')
+    parser.add_argument('genome_coverage_csv',
+                        nargs='?',
+                        help='CSV of coverage levels in full-genome coordinates')
+    parser.add_argument('genome_coverage_svg',
+                        nargs='?',
+                        help='SVG diagram of coverage in full-genome coordinates')
     parser.add_argument('--denovo',
                         action='store_true',
                         help='Use de novo assembly instead of mapping to '
@@ -68,12 +74,6 @@ def parse_args():
     parser.add_argument('contigs_csv',
                         nargs='?',
                         help='CSV containing contigs built by de novo assembly')
-    parser.add_argument('contig_coverage_csv',
-                        nargs='?',
-                        help='CSV containing coverage levels for each contig')
-    parser.add_argument('contig_coverage_svg',
-                        nargs='?',
-                        help='SVG diagram of coverage for each contig')
 
     return parser.parse_args()
 
@@ -105,8 +105,8 @@ def load_sample(args):
                     aligned_csv=args.aligned_csv,
                     g2p_aligned_csv=args.g2p_aligned_csv,
                     contigs_csv=args.contigs_csv,
-                    contig_coverage_csv=args.contig_coverage_csv,
-                    contig_coverage_svg=args.contig_coverage_svg,
+                    genome_coverage_csv=args.genome_coverage_csv,
+                    genome_coverage_svg=args.genome_coverage_svg,
                     scratch_path=scratch_path)
     sample.name = None  # Since the file names are messy in Kive.
     return sample

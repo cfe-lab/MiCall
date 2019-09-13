@@ -56,7 +56,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'alignment_svg',
                       'alignment_png',
                       'assembly_fasta',
-                      'contigs_coverage_svg']
+                      'genome_coverage_svg']
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
@@ -548,10 +548,10 @@ class KiveWatcher:
                                          scratch_path,
                                          results_path)
                 continue
-            if output_name == 'contigs_coverage_svg':
-                self.move_contigs_coverage(folder_watcher,
-                                           scratch_path,
-                                           results_path)
+            if output_name == 'genome_coverage_svg':
+                self.move_genome_coverage(folder_watcher,
+                                          scratch_path,
+                                          results_path)
             source_count = 0
             filename = get_output_filename(output_name)
             target_path = results_path / filename
@@ -628,13 +628,13 @@ class KiveWatcher:
         remove_empty_directory(alignment_path)
 
     @staticmethod
-    def move_contigs_coverage(folder_watcher, scratch_path, results_path):
-        plots_path = results_path / "contigs_coverage"
+    def move_genome_coverage(folder_watcher, scratch_path, results_path):
+        plots_path = results_path / "genome_coverage"
         plots_path.mkdir(exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / 'contigs_coverage.svg'
-            target_path = plots_path / f"{sample_name}_contigs_coverage.svg"
+            source_path = scratch_path / sample_name / 'genome_coverage.svg'
+            target_path = plots_path / f"{sample_name}_genome_coverage.svg"
             try:
                 os.rename(str(source_path), str(target_path))
             except FileNotFoundError:
