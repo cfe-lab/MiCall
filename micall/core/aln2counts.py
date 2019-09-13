@@ -992,6 +992,10 @@ class SeedAmino(object):
 
     def add(self, other):
         self.counts += other.counts
+        self.partial += other.partial
+        self.deletions += other.deletions
+        self.read_count += other.read_count
+        self.low_quality += other.low_quality
         for nuc, other_nuc in zip(self.nucleotides, other.nucleotides):
             nuc.add(other_nuc)
 

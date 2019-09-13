@@ -523,6 +523,60 @@ A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,cove
                                   self.detail_report_file.getvalue())
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    # noinspection DuplicatedCode
+    def testMultiplePrefixPartialDeletionAminoReport(self):
+        """ Assemble counts from multiple contigs.
+
+        Contig 1-R1 AAATTT -> KF
+        Contig 2-R1 TT-AGG -> fR (partial deletion)
+        Contig 3-R1 AAA---AGG -> K-R (full deletion)
+
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
+        aligned_reads2 = self.prepareReads("2-R1-seed,15,0,2,0,TT-AGG")
+        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,3,0,AAATTTAGG\n"
+                                           "3-R1-seed,15,0,1,0,AAA---AGG")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
+R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R1-seed,R1,15,,2,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,9
+R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,6
+"""
+
+        expected_detail_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
+1-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
+1-R1-seed,R1,15,4,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
+1-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2-R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2-R1-seed,R1,15,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0
+2-R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2
+3-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
+3-R1-seed,R1,15,4,2,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,4
+3-R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,4
+"""
+
+        self.report.write_amino_header(self.report_file)
+        self.report.write_amino_detail_header(self.detail_report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_amino_detail_counts()
+        self.report.combine_reports()
+        self.report.read(aligned_reads2)
+        self.report.write_amino_detail_counts()
+        self.report.combine_reports()
+        self.report.read(aligned_reads3)
+        self.report.write_amino_detail_counts()
+        self.report.combine_reports()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_detail_text,
+                                  self.detail_report_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testMultiplePrefixNucleotideReport(self):
         """ Assemble counts from three contigs to two references.
 
