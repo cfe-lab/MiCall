@@ -24,7 +24,8 @@ setup(
     packages=['micall', 'micall.core', 'micall.utils', 'micall.alignment'],
     scripts=['bin/micall'],
     ext_modules=[Extension('micall.alignment._gotoh2',
-                           sources=['micall/alignment/src/_gotoh2.c'])],
+                           sources=['micall/alignment/src/_gotoh2.c'],
+                           extra_compile_args=["-std=c99"])],
     package_data={'micall':
                       ['projects.json',
                        'alignment/models/*.csv'],

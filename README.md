@@ -101,7 +101,7 @@ Successfully installed sierralocal-0.2.1
 To demonstrate the use of *sierra-local* to predict drug resistance levels
 from next-generation sequence data processed by *MiCall-Lite*, we'll use a published 
 NGS data set from a 
-[study of HIV-1 drug resistance in Uganda](https://www.liebertpub.com/doi/abs/10.1089/AID.2017.0205).
+[study of integrase-inhibitor treatment failure in Uganda](https://www.liebertpub.com/doi/abs/10.1089/AID.2017.0205).
 (To obtain this data set, you'll need to install NCBI's 
 [sratools](https://ncbi.github.io/sra-tools/), which provides the *fasterq-dump* 
 file transfer program).
@@ -146,6 +146,9 @@ In this output, the `header` column indicates how nucleotide polymorphisms in th
 `MAX` corresponds to the plurality-rule consensus sequence where every nucleotide is fixed at its most frequent state.
 `0.010` indicates that any nucleotide polymorphism at a frequency above 1% should be incorporated into the consensus sequences, resulting in a mixture or ambiguous base call.
 Lowering this frequency threshold increases the number of mutations that are available for resistance scoring, as demonstrated by the longer list of mutations in the second row in this example.
+
+Note that the Sierra pipeline automatically detects which *pol* gene products are covered in the NGS data.
+In this example, the reads only span HIV-1 integrase and so only resistance scores associated with integrase inhibitors are reported.
 
 
 ## How it works
