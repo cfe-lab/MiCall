@@ -53,7 +53,7 @@ def parseArgs():
                         help="<optional> Path to bowtie2 script.")
     parser.add_argument('--bt2build', default='bowtie2-build-s',
                         help="<optional> Path to bowtie2-build script.")
-    parser.add_argument('--threads', '-p', default=4,
+    parser.add_argument('--threads', '-p', type=int, default=4,
                         help="Number of threads for bowtie2 (default 4)")
 
     if len(sys.argv) == 1:
