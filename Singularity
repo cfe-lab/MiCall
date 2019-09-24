@@ -57,7 +57,6 @@ From: centos:7
     micall/utils/hcv_geno /opt/micall/micall/utils/hcv_geno
 
 %post
-    export PATH=/opt/bowtie2:/bin:/usr/local/bin:/usr/sbin
     echo ===== Installing Prerequisites ===== >/dev/null
     yum update -q -y
 
@@ -142,6 +141,9 @@ From: centos:7
     make --quiet install
     cd /opt
     rm -rf samtools-1.3.1*
+    wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
+    tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner
+    ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
 
     echo ===== Installing Python packages ===== >/dev/null
     # Also trigger matplotlib to build its font cache.
