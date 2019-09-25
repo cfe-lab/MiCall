@@ -1,0 +1,80 @@
+import re
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
+from csv import DictReader, DictWriter
+from itertools import groupby
+from operator import itemgetter
+
+import Levenshtein
+from gotoh import align_it
+
+TARGET_SEQUENCES = dict(
+    gag_probe='TTTTGGCGTACTCACCAGT',
+    env_probe='CCTTGGGTTGTTGGGA',
+    round2_fwd_primer='GCGCCCGAACAGGGACYTGAAARCGAAAG',
+    round2_rev_primer='TAAGCCTCAATAAAGCTTGCCTTGAGTGC')
+
+
+def parse_args():
+    parser = ArgumentParser(
+        description='Search contigs.csv for known probe and primer sequences.',
+        formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument('contigs_csv',
+                        help='CSV file with contig sequences',
+                        nargs='?',
+                        default='contigs.csv',
+                        type=FileType())
+    parser.add_argument('probes_csv',
+                        help='CSV file to write probe sequences in',
+                        nargs='?',
+                        default='probes.csv',
+                        type=FileType('w'))
+    return parser.parse_args()
+
+
+def find_probes(contigs_csv, probes_csv):
+    reader = DictReader(contigs_csv)
+    writer = DictWriter(probes_csv, ['sample',
+                                     'contig',
+                                     'probe',
+                                     'start',
+                                     'size',
+                                     'dist',
+                                     'seq'])
+    writer.writeheader()
+    gap_open_penalty = 15
+    gap_extend_penalty = 3
+    use_terminal_gap_penalty = 1
+    for sample_name, sample_rows in groupby(reader, itemgetter('sample')):
+        contig_num = 0
+        for row in sample_rows:
+            seed_name = row['genotype']
+            contig_num += 1
+            contig_name = f'{contig_num}-{seed_name}'
+            contig_seq: str = row['contig']
+            for target_name, target_seq in TARGET_SEQUENCES.items():
+                aligned_contig, aligned_target, _score = align_it(contig_seq,
+                                                                  target_seq,
+                                                                  gap_open_penalty,
+                                                                  gap_extend_penalty,
+                                                                  use_terminal_gap_penalty)
+                match = re.match('-*([^-](.*[^-])?)', aligned_target)
+                start = match.start(1)
+                end = match.end(1)
+                contig_match = aligned_contig[start:end].replace('-', '')
+                size = len(contig_match)
+                dist = Levenshtein.distance(target_seq, contig_match)
+                writer.writerow(dict(sample=sample_name,
+                                     contig=contig_name,
+                                     probe=target_name,
+                                     start=start,
+                                     size=size,
+                                     dist=dist,
+                                     seq=contig_match))
+
+
+def main():
+    args = parse_args()
+    find_probes(args.contigs_csv, args.probes_csv)
+
+
+main()
