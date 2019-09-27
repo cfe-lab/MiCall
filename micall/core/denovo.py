@@ -1,11 +1,14 @@
 import argparse
 import logging
 import os
+from collections import Counter
 from csv import DictWriter, DictReader
 from datetime import datetime, timedelta
 from enum import Enum
 from glob import glob
 from io import StringIO
+from itertools import groupby
+from operator import itemgetter
 from shutil import rmtree
 from subprocess import run, PIPE, CalledProcessError, STDOUT
 from tempfile import mkdtemp
@@ -13,6 +16,7 @@ from tempfile import mkdtemp
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 
+from micall.core.project_config import ProjectConfig
 from micall.utils.externals import LineCounter
 
 PEAR = "/opt/bin/pear"
@@ -31,12 +35,21 @@ logger = logging.getLogger(__name__)
 Assembler = Enum('Assembler', 'IVA SAVAGE')
 
 
-def write_genotypes(contigs_fasta_path,
-                    contigs_csv,
-                    merged_contigs_csv=None,
-                    blast_csv=None):
+def write_contig_refs(contigs_fasta_path,
+                      contigs_csv,
+                      merged_contigs_csv=None,
+                      blast_csv=None):
+    """ Run BLAST search to identify contig sequences.
+
+    :param str contigs_fasta_path: path to file to read contig sequences from
+        and append merged contigs to
+    :param contigs_csv: open file to write assembled contigs to
+    :param merged_contigs_csv: open file to read contigs that were merged from
+        amplicon reads
+    :param blast_csv: open file to write BLAST search results for each contig
+    """
     writer = DictWriter(contigs_csv,
-                        ['genotype', 'match', 'contig'],
+                        ['ref', 'match', 'group_ref', 'contig'],
                         lineterminator=os.linesep)
     writer.writeheader()
     with open(contigs_fasta_path, 'a') as contigs_fasta:
@@ -45,25 +58,31 @@ def write_genotypes(contigs_fasta_path,
             for i, row in enumerate(contig_reader, 1):
                 contig_name = f'merged-contig-{i}'
                 contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
-    genotypes = genotype(contigs_fasta_path, blast_csv=blast_csv)
+    group_refs = {}
+    genotypes = genotype(contigs_fasta_path,
+                         blast_csv=blast_csv,
+                         group_refs=group_refs)
     genotype_count = 0
     for i, record in enumerate(SeqIO.parse(contigs_fasta_path, "fasta")):
-        (genotype_name, match_fraction) = genotypes.get(record.name,
-                                                        ('unknown', 0))
-        writer.writerow(dict(genotype=genotype_name,
+        (ref_name, match_fraction) = genotypes.get(record.name, ('unknown', 0))
+        writer.writerow(dict(ref=ref_name,
                              match=match_fraction,
+                             group_ref=group_refs.get(ref_name),
                              contig=record.seq))
         genotype_count += 1
     return genotype_count
 
 
-def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None):
+def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
     """ Use Blastn to search for the genotype of a set of reference sequences.
 
     :param str fasta: file path of the FASTA file containing the query
         sequences
     :param str db: file path of the database to search for matches
     :param blast_csv: open file to write the blast matches to, or None
+    :param dict group_refs: {contig_ref: group_ref} or None. The dictionary
+        will get filled in with the mapping from each contig's reference name
+        to the best matched reference for the whole seed group.
     :return: {query_name: (ref_name, matched_fraction)} where query_name is a
         sequence header from the query sequences FASTA file, ref_name is the
         name of the best match from the database, and matched_fraction is the
@@ -107,6 +126,27 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None):
                                    'ref_end'],
                                   lineterminator=os.linesep)
         blast_writer.writeheader()
+    contig_top_matches = {match['qaccver']: match['saccver']
+                          for match in matches}
+    top_refs = set(contig_top_matches.values())
+    projects = ProjectConfig.loadDefault()
+    match_scores = Counter()
+    for contig_name, contig_matches in groupby(matches, itemgetter('qaccver')):
+        contig_top_ref = contig_top_matches[contig_name]
+        contig_seed_group = projects.getSeedGroup(contig_top_ref)
+        for match in contig_matches:
+            ref_name = match['saccver']
+            if ref_name not in top_refs:
+                continue
+            match_seed_group = projects.getSeedGroup(ref_name)
+            if match_seed_group == contig_seed_group:
+                match_scores[ref_name] += float(match['score'])
+
+    group_top_refs = {projects.getSeedGroup(ref_name): ref_name
+                      for ref_name, count in reversed(match_scores.most_common())}
+    for ref_name in contig_top_matches.values():
+        group_refs[ref_name] = group_top_refs[projects.getSeedGroup(ref_name)]
+
     for match in matches:
         matched_fraction = float(match['qcovhsp']) / 100
         pident = round(float(match['pident']))
@@ -126,11 +166,22 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None):
 
 def denovo(fastq1_path,
            fastq2_path,
-           contigs,
+           contigs_csv,
            work_dir='.',
            merged_contigs_csv=None,
            assembler=Assembler.IVA,
            blast_csv=None):
+    """ Use de novo assembly to build contigs from reads.
+
+    :param str fastq1_path: FASTQ file name for read 1 reads
+    :param str fastq2_path: FASTQ file name for read 2 reads
+    :param contigs_csv: open file to write assembled contigs to
+    :param str work_dir: path for writing temporary files
+    :param merged_contigs_csv: open file to read contigs that were merged from
+        amplicon reads
+    :param Assembler assembler: which de novo assembler to use
+    :param blast_csv: open file to write BLAST search results for each contig
+    """
     old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
         rmtree(old_tmp_dir, ignore_errors=True)
@@ -189,10 +240,10 @@ def denovo(fastq1_path,
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
-    contig_count = write_genotypes(contigs_fasta_path,
-                                   contigs,
-                                   merged_contigs_csv,
-                                   blast_csv)
+    contig_count = write_contig_refs(contigs_fasta_path,
+                                     contigs_csv,
+                                     merged_contigs_csv,
+                                     blast_csv)
     logger.info('Assembled %d contigs in %s (%ds) on %s.',
                 contig_count,
                 duration,

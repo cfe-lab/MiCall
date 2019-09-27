@@ -22,6 +22,7 @@ from gotoh import align_it
 import Levenshtein
 
 from micall.core import project_config
+from micall.core.project_config import ProjectConfig
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall.core.prelim_map import BOWTIE_BUILD_PATH, \
     BOWTIE_PATH, BOWTIE_VERSION, READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
@@ -780,19 +781,60 @@ def is_reported_region(region):
 
 
 def read_contigs(contigs_csv, excluded_seeds=None):
+    gap_open_penalty = 15
+    gap_extend_penalty = 3
+    use_terminal_gap_penalty = 1
+    contig_groups = defaultdict(list)  # {group_ref_name: [seq, index, index...]}
+    conseqs = {}
+    projects = ProjectConfig.loadDefault()
     with contigs_csv:
         contigs_reader = DictReader(contigs_csv)
-        conseqs = {get_contig_name(i, row, excluded_seeds): row['contig']
-                   for i, row in enumerate(contigs_reader, 1)}
+        for i, row in reversed(list(enumerate(contigs_reader, 1))):
+            contig_seq = row['contig']
+            is_match = 0.25 <= float(row['match'])
+            if not is_match:
+                contig_name = get_contig_name(i,
+                                              row['ref'],
+                                              is_match,
+                                              excluded_seeds)
+                conseqs[contig_name] = contig_seq
+                continue
+            group_ref_name = row['group_ref']
+            contig_group = contig_groups[group_ref_name]
+            if not contig_group:
+                contig_group.append(projects.getReference(group_ref_name))
+            contig_group.append(str(i))
+            group_seq = contig_group[0]
+            agroup, acontig, score = align_it(group_seq,
+                                              contig_seq,
+                                              gap_open_penalty,
+                                              gap_extend_penalty,
+                                              use_terminal_gap_penalty)
+            match = re.match('-*([^-](.*[^-])?)', acontig)
+            start = match.start(1)
+            end = match.end(1)
+            merged_seq = agroup[:start] + contig_seq + agroup[end:]
+            left_trim = len(agroup) - len(agroup.lstrip('-'))
+            right_trim = len(agroup) - len(agroup.rstrip('-'))
+            contig_group[0] = merged_seq[left_trim:-right_trim or None]
+
+    is_match = True
+    for group_ref_name, contig_group in contig_groups.items():
+        (group_seq, *contig_nums) = contig_group
+        prefix = '_'.join(reversed(contig_nums))
+        contig_name = get_contig_name(prefix,
+                                      group_ref_name,
+                                      is_match,
+                                      excluded_seeds)
+        conseqs[contig_name] = group_seq
     return conseqs
 
 
-def get_contig_name(i, row, excluded_seeds=None):
-    genotype_name = row['genotype']
-    name = '{}-{}'.format(i, genotype_name)
-    if excluded_seeds and genotype_name in excluded_seeds:
+def get_contig_name(prefix, ref_name, is_match, excluded_seeds=None):
+    name = '{}-{}'.format(prefix, ref_name)
+    if excluded_seeds and ref_name in excluded_seeds:
         name += '-' + EXCLUDED_CONTIG_SUFFIX
-    elif float(row['match']) < 0.25:
+    elif not is_match:
         name += '-' + PARTIAL_CONTIG_SUFFIX
     return name
 

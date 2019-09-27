@@ -4,11 +4,18 @@ import os
 import unittest
 from unittest.mock import patch, Mock, DEFAULT
 
+from pytest import fixture
+
 from micall.core import remap
 from micall.core.project_config import ProjectConfig
 from micall.core.remap import is_first_read, is_short_read, \
     MixedReferenceSplitter, write_remap_counts, convert_prelim, read_contigs
 from micall.utils.externals import Bowtie2, Bowtie2Build
+
+
+@fixture(name='projects', scope="session")
+def load_projects():
+    yield ProjectConfig.loadDefault()
 
 
 class IsShortReadTest(unittest.TestCase):
@@ -686,6 +693,7 @@ class MixedReferenceMemorySplitter(MixedReferenceSplitter):
         self.is_closed = True
 
 
+# noinspection DuplicatedCode
 class MixedReferenceSplitterTest(unittest.TestCase):
     def setUp(self):
         super(MixedReferenceSplitterTest, self).setUp()
@@ -850,6 +858,7 @@ remap r2,200,2,20,r1
         self.assertEqual(expected_report, report.getvalue())
 
 
+# noinspection DuplicatedCode
 class ConvertPrelimTest(unittest.TestCase):
     def setUp(self):
         self.projects = ProjectConfig()
@@ -1138,19 +1147,22 @@ class RemapTest(unittest.TestCase):
                                  build=DEFAULT)
         patcher.start()
         self.addCleanup(patcher.stop)
+
+        mock_refs = {'R1': 'GTGGG',
+                     'R2': 'ACAAA'}
         patcher = patch.object(ProjectConfig, 'loadDefault')
         mock_projects = patcher.start()
         self.addCleanup(patcher.stop)
-        mock_projects.return_value.getAllReferences.return_value = {'R1': 'GTGGG'}
+        mock_projects.return_value.getAllReferences.return_value = mock_refs
+        mock_projects.return_value.getReference.side_effect = mock_refs.__getitem__
         patcher = patch('micall.core.remap.is_short_read', Mock(return_value=False))
         patcher.start()
         self.addCleanup(patcher.stop)
 
     def test_good_contig(self):
-        test_path = os.path.dirname(__file__)
         contigs_csv = StringIO("""\
-genotype,match,contig
-R1,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+ref,match,group_ref,contig
+R1,1.0,R1,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 """)
         self.bowtie2_output.extend([
             "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
@@ -1181,9 +1193,12 @@ read3,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
 read4,99,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
 read4,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
 """
+        self.assertMapsToContigs(contigs_csv, expected_remap_csv, expected_remap_counts_csv)
+
+    def assertMapsToContigs(self, contigs_csv, expected_remap_csv, expected_remap_counts_csv):
+        test_path = os.path.dirname(__file__)
         remap_counts_csv = StringIO()
         remap_csv = StringIO()
-
         remap.map_to_contigs(
             os.path.join(test_path,
                          'microtest',
@@ -1203,11 +1218,10 @@ read4,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
         self.assertEqual(expected_remap_csv, remap_csv.getvalue())
 
     def test_bad_contig(self):
-        test_path = os.path.dirname(__file__)
         contigs_csv = StringIO("""\
-genotype,match,contig
-R1,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
-R2,0.2,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+ref,match,group_ref,contig
+R1,1.0,R1,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+R2,0.2,R2,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 """)
         self.bowtie2_output.extend([
             "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
@@ -1240,33 +1254,14 @@ read3,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
 read4,99,2-R2-partial,1,44,5M,=,1,-81,GTGGG,AAAAA
 read4,147,2-R2-partial,1,44,5M,=,1,-81,GTGGG,AAAAA
 """
-        remap_counts_csv = StringIO()
-        remap_csv = StringIO()
-
-        remap.map_to_contigs(
-            os.path.join(test_path,
-                         'microtest',
-                         '1234A-V3LOOP_S1_L001_R1_001.fastq'),
-            os.path.join(test_path,
-                         'microtest',
-                         '1234A-V3LOOP_S1_L001_R2_001.fastq'),
-            contigs_csv,
-            remap_csv,
-            remap_counts_csv,
-            StringIO(),
-            StringIO(),
-            StringIO(),
-            work_path=os.path.join(test_path, 'working'))
-
-        self.assertEqual(expected_remap_counts_csv, remap_counts_csv.getvalue())
-        self.assertEqual(expected_remap_csv, remap_csv.getvalue())
+        self.assertMapsToContigs(contigs_csv, expected_remap_csv, expected_remap_counts_csv)
 
     def test_excluded_contig(self):
         test_path = os.path.dirname(__file__)
         contigs_csv = StringIO("""\
-genotype,match,contig
-R1,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
-R2,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+ref,match,group_ref,contig
+R1,1.0,R1,GTGGG
+R2,1.0,R2,ACAAA
 """)
         self.bowtie2_output.extend([
             "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
@@ -1300,7 +1295,7 @@ read3,147,1-R1,1,44,5M,=,1,-81,GTGGG,AAAAA
 """
         expected_remap_conseq_csv = """\
 region,sequence
-1-R1,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+1-R1,GTGGG
 """
         remap_counts_csv = StringIO()
         remap_csv = StringIO()
@@ -1327,47 +1322,129 @@ region,sequence
         self.assertEqual(expected_remap_conseq_csv, remap_conseq_csv.getvalue())
 
 
-def test_read_contigs():
+def test_read_contigs(projects):
     contigs_csv = StringIO("""\
-genotype,match,contig
-HCV-1a,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
-HCV-2b,1.0,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
+ref,match,group_ref,contig
+HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-2b,1.0,HCV-2b,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
 """)
+    hcv1a_seq = projects.getReference('HCV-1a')
+    hcv2b_seq = projects.getReference('HCV-2b')
     expected_conseqs = {
-        '1-HCV-1a': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
-        '2-HCV-2b': 'GCCCGCCCCCTGATGGGGGCGACACTCCGCCA'}
+        '1-HCV-1a': hcv1a_seq,
+        '2-HCV-2b': hcv2b_seq}
 
     conseqs = read_contigs(contigs_csv)
 
     assert expected_conseqs == conseqs
 
 
-def test_read_contigs_filter():
+def test_read_contigs_filter(projects):
     contigs_csv = StringIO("""\
-genotype,match,contig
-HCV-1a,0.24,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
-HCV-2b,0.25,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
+ref,match,group_ref,contig
+HCV-1a,0.24,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-2b,0.25,HCV-2b,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
 """)
+    hcv2b_seq = projects.getReference('HCV-2b')
     expected_conseqs = {
         '1-HCV-1a-partial': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
-        '2-HCV-2b': 'GCCCGCCCCCTGATGGGGGCGACACTCCGCCA'}
+        '2-HCV-2b': hcv2b_seq}
 
     conseqs = read_contigs(contigs_csv)
 
     assert expected_conseqs == conseqs
 
 
-def test_read_contigs_excluded():
+def test_read_contigs_excluded(projects):
     contigs_csv = StringIO("""\
-genotype,match,contig
-HCV-1a,1.0,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
-HLA-B-seed,0.02,ATGCGGGTCACGGCACCCCGAACCGT
+ref,match,group_ref,contig
+HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HLA-B-seed,0.02,HLA-B-seed,ATGCGGGTCACGGCACCCCGAACCGT
 """)
+    hcv1a_seq = projects.getReference('HCV-1a')
     excluded_seeds = ['HLA-B-seed']
     expected_conseqs = {
-        '1-HCV-1a': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
+        '1-HCV-1a': hcv1a_seq,
         '2-HLA-B-seed-excluded': 'ATGCGGGTCACGGCACCCCGAACCGT'}
 
     conseqs = read_contigs(contigs_csv, excluded_seeds)
+
+    assert expected_conseqs == conseqs
+
+
+def test_read_contigs_mutations(projects):
+    contigs_csv = StringIO("""\
+ref,match,group_ref,contig
+HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-2b,1.0,HCV-2b,GCCCGACCCATGATGGGGGCGACACTCCGCCA
+""")
+    hcv1a_seq = projects.getReference('HCV-1a')
+    hcv2b_seq = projects.getReference('HCV-2b').replace(
+        'GCCCGCCCCCTGATGGGGGCGACACTCCGCCA',
+        'GCCCGACCCATGATGGGGGCGACACTCCGCCA')
+    # Changes:^   ^
+    expected_conseqs = {
+        '1-HCV-1a': hcv1a_seq,
+        '2-HCV-2b': hcv2b_seq}
+
+    conseqs = read_contigs(contigs_csv)
+
+    assert expected_conseqs == conseqs
+
+
+def test_read_contigs_merged(projects):
+    contigs_csv = StringIO("""\
+ref,match,group_ref,contig
+HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-2b,1.0,HCV-2b,GCCCGCCCCCTGATGGGGGCGACACTCCTCCA
+HCV-2a,1.0,HCV-2b,CTCCACCATGAATCACTCCCCTG
+""")
+    # Changes:        ^G->A                   ^G->T
+    hcv1a_seq = projects.getReference('HCV-1a')
+    hcv2b_seq = projects.getReference('HCV-2b').replace(
+        'GCCCGCCCCCTGATGGGGGCGACACTCCGCCATGAATCACTCCCCTG',
+        'GCCCGCCCCCTGATGGGGGCGACACTCCTCCATGAATCACTCCCCTG')
+    # Change:                        ^
+    expected_conseqs = {
+        '1-HCV-1a': hcv1a_seq,
+        '2_3-HCV-2b': hcv2b_seq}
+
+    conseqs = read_contigs(contigs_csv)
+
+    assert expected_conseqs == conseqs
+
+
+def test_read_contigs_trim_left(projects):
+    """ Trim contigs that extend past reference start. """
+    contigs_csv = StringIO("""\
+ref,match,group_ref,contig
+HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-2b,1.0,HCV-2b,TAGACATATTACCGCCCGCCCCCTGATGGGGGCGACACTCCGCCATGAATCACTCCCCTGT
+""")
+    hcv1a_seq = projects.getReference('HCV-1a')
+    hcv2b_seq = projects.getReference('HCV-2b')
+    expected_conseqs = {
+        '1-HCV-1a': hcv1a_seq,
+        '2-HCV-2b': hcv2b_seq}
+
+    conseqs = read_contigs(contigs_csv)
+
+    assert expected_conseqs == conseqs
+
+
+def test_read_contigs_trim_right(projects):
+    """ Trim contigs that extend past reference end. """
+    contigs_csv = StringIO("""\
+ref,match,group_ref,contig
+HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-2b,1.0,HCV-2b,TAGTTTCCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAGACATATTACC
+""")
+    hcv1a_seq = projects.getReference('HCV-1a')
+    hcv2b_seq = projects.getReference('HCV-2b')
+    expected_conseqs = {
+        '1-HCV-1a': hcv1a_seq,
+        '2-HCV-2b': hcv2b_seq}
+
+    conseqs = read_contigs(contigs_csv)
 
     assert expected_conseqs == conseqs
