@@ -15,7 +15,9 @@ before_install:
   - tar -xzf smalt-0.7.6-bin.tar.gz
   - ln -s ~/smalt-0.7.6-bin/smalt_x86_64 ~/bin/smalt
   # Savage assembler:
-  - sudo apt-get install -y cargo zlib1g-dev libboost-timer-dev libboost-program-options-dev libboost-system-dev
+  - sudo apt-get install -y zlib1g-dev libboost-timer-dev libboost-program-options-dev libboost-system-dev
+  - sudo curl https://sh.rustup.rs -sSf | sh -s -- -y
+  - source ~/.cargo/env
   - cargo install --root ~/ --git https://github.com/jeff-k/merge-mates.git
   - cargo install --root ~/ --git https://github.com/jbaaijens/rust-overlaps.git --tag v0.1.1
   - wget -q https://downloads.sourceforge.net/project/bio-bwa/bwa-0.7.17.tar.bz2
