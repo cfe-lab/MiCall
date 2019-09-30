@@ -30,6 +30,7 @@ class StubbedSequenceReport(SequenceReport):
                                               score)
 
 
+# noinspection DuplicatedCode
 class SequenceReportTest(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
@@ -463,218 +464,6 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
-    def testMultiplePrefixAminoReport(self):
-        """ Assemble counts from three contigs to two references.
-
-        Contig 1-R1 AAATTT -> KF
-        Contig 2-R2 GGCCCG -> GP
-        Contig 3-R1 TTTAGG -> FR
-
-        Contig 1 and 3 should combine into R1 with KFR.
-        """
-        # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
-        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
-        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,,2,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7
-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2
-R2-seed,R2,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,3,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
-R2-seed,R2,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
-R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-"""
-
-        expected_detail_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-1-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
-1-R1-seed,R1,15,4,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
-1-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,1,3,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
-2-R2-seed,R2,15,4,4,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
-2-R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-3-R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-3-R1-seed,R1,15,1,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2
-3-R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2
-"""
-
-        self.report.write_amino_header(self.report_file)
-        self.report.write_amino_detail_header(self.detail_report_file)
-        self.report.read(aligned_reads1)
-        self.report.write_amino_detail_counts()
-        self.report.combine_reports()
-        self.report.read(aligned_reads2)
-        self.report.write_amino_detail_counts()
-        self.report.combine_reports()
-        self.report.read(aligned_reads3)
-        self.report.write_amino_detail_counts()
-        self.report.combine_reports()
-        self.report.write_amino_counts()
-
-        self.assertMultiLineEqual(expected_detail_text,
-                                  self.detail_report_file.getvalue())
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    # noinspection DuplicatedCode
-    def testMultiplePrefixPartialDeletionAminoReport(self):
-        """ Assemble counts from multiple contigs.
-
-        Contig 1-R1 AAATTT -> KF
-        Contig 2-R1 TT-AGG -> fR (partial deletion)
-        Contig 3-R1 AAA---AGG -> K-R (full deletion)
-
-        """
-        # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
-        aligned_reads2 = self.prepareReads("2-R1-seed,15,0,2,0,TT-AGG")
-        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,3,0,AAATTTAGG\n"
-                                           "3-R1-seed,15,0,1,0,AAA---AGG")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,,2,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,9
-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,6
-"""
-
-        expected_detail_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-1-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
-1-R1-seed,R1,15,4,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
-1-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-2-R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-2-R1-seed,R1,15,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0
-2-R1-seed,R1,15,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2
-3-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
-3-R1-seed,R1,15,4,2,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,4
-3-R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,4
-"""
-
-        self.report.write_amino_header(self.report_file)
-        self.report.write_amino_detail_header(self.detail_report_file)
-        self.report.read(aligned_reads1)
-        self.report.write_amino_detail_counts()
-        self.report.combine_reports()
-        self.report.read(aligned_reads2)
-        self.report.write_amino_detail_counts()
-        self.report.combine_reports()
-        self.report.read(aligned_reads3)
-        self.report.write_amino_detail_counts()
-        self.report.combine_reports()
-        self.report.write_amino_counts()
-
-        self.assertMultiLineEqual(expected_detail_text,
-                                  self.detail_report_file.getvalue())
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testMultiplePrefixNucleotideReport(self):
-        """ Assemble counts from three contigs to two references.
-
-        Contig 1-R1 AAATTT -> KF
-        Contig 2-R2 GGCCCG -> GP
-        Contig 3-R1 TTTAGG -> FR
-
-        Contig 1 and 3 should combine into R1 with KFR.
-        """
-        # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
-        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
-        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,\
-A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,,1,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,,2,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,,3,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,,4,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1,15,,5,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1,15,,6,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1,15,,7,2,0,0,0,0,0,0,0,0,2
-R1-seed,R1,15,,8,0,0,2,0,0,0,0,0,0,2
-R1-seed,R1,15,,9,0,0,2,0,0,0,0,0,0,2
-R2-seed,R2,15,,1,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,2,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,4,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,6,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,7,0,0,4,0,0,0,0,0,0,4
-R2-seed,R2,15,,8,0,0,4,0,0,0,0,0,0,4
-R2-seed,R2,15,,9,0,4,0,0,0,0,0,0,0,4
-R2-seed,R2,15,,10,0,4,0,0,0,0,0,0,0,4
-R2-seed,R2,15,,11,0,4,0,0,0,0,0,0,0,4
-R2-seed,R2,15,,12,0,0,4,0,0,0,0,0,0,4
-R2-seed,R2,15,,13,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,14,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,15,0,0,0,0,0,0,0,0,0,0
-"""
-
-        expected_detail_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,\
-A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-1-R1-seed,R1,15,1,1,5,0,0,0,0,0,0,0,0,5
-1-R1-seed,R1,15,2,2,5,0,0,0,0,0,0,0,0,5
-1-R1-seed,R1,15,3,3,5,0,0,0,0,0,0,0,0,5
-1-R1-seed,R1,15,4,4,0,0,0,5,0,0,0,0,0,5
-1-R1-seed,R1,15,5,5,0,0,0,5,0,0,0,0,0,5
-1-R1-seed,R1,15,6,6,0,0,0,5,0,0,0,0,0,5
-1-R1-seed,R1,15,,7,0,0,0,0,0,0,0,0,0,0
-1-R1-seed,R1,15,,8,0,0,0,0,0,0,0,0,0,0
-1-R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,,1,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,,2,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,,4,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,,6,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,1,7,0,0,4,0,0,0,0,0,0,4
-2-R2-seed,R2,15,2,8,0,0,4,0,0,0,0,0,0,4
-2-R2-seed,R2,15,3,9,0,4,0,0,0,0,0,0,0,4
-2-R2-seed,R2,15,4,10,0,4,0,0,0,0,0,0,0,4
-2-R2-seed,R2,15,5,11,0,4,0,0,0,0,0,0,0,4
-2-R2-seed,R2,15,6,12,0,0,4,0,0,0,0,0,0,4
-2-R2-seed,R2,15,,13,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,,14,0,0,0,0,0,0,0,0,0,0
-2-R2-seed,R2,15,,15,0,0,0,0,0,0,0,0,0,0
-3-R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,0,0
-3-R1-seed,R1,15,,2,0,0,0,0,0,0,0,0,0,0
-3-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0
-3-R1-seed,R1,15,1,4,0,0,0,2,0,0,0,0,0,2
-3-R1-seed,R1,15,2,5,0,0,0,2,0,0,0,0,0,2
-3-R1-seed,R1,15,3,6,0,0,0,2,0,0,0,0,0,2
-3-R1-seed,R1,15,4,7,2,0,0,0,0,0,0,0,0,2
-3-R1-seed,R1,15,5,8,0,0,2,0,0,0,0,0,0,2
-3-R1-seed,R1,15,6,9,0,0,2,0,0,0,0,0,0,2
-"""
-
-        self.report.write_nuc_header(self.report_file)
-        self.report.write_nuc_detail_header(self.detail_report_file)
-        self.report.read(aligned_reads1)
-        self.report.write_nuc_detail_counts()
-        self.report.combine_reports()
-        self.report.read(aligned_reads2)
-        self.report.write_nuc_detail_counts()
-        self.report.combine_reports()
-        self.report.read(aligned_reads3)
-        self.report.write_nuc_detail_counts()
-        self.report.combine_reports()
-        self.report.write_nuc_counts()
-
-        self.assertMultiLineEqual(expected_detail_text,
-                                  self.detail_report_file.getvalue())
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
     def testContigCoverageReport(self):
         """ Assemble counts from three contigs to two references.
 
@@ -712,17 +501,15 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 """
 
         self.report.write_amino_header(StringIO())
-        self.report.write_amino_detail_header(StringIO())
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()
-        self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
         self.report.read(aligned_reads2)
         self.report.write_genome_coverage_counts()
-        self.report.write_amino_detail_counts()
+        self.report.write_amino_counts()
         self.report.read(aligned_reads3)
         self.report.write_genome_coverage_counts()
-        self.report.write_amino_detail_counts()
         self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
@@ -742,13 +529,9 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R2-seed,R2-seed,6,12,0,4
 """
 
-        self.report.write_amino_header(StringIO())
-        self.report.write_amino_detail_header(StringIO())
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()
-        self.report.write_amino_detail_counts()
-        self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -781,13 +564,9 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R3-seed,R3-seed,21,24,0,4
 """
 
-        self.report.write_amino_header(StringIO())
-        self.report.write_amino_detail_header(StringIO())
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()
-        self.report.write_amino_detail_counts()
-        self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -829,13 +608,9 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R3-seed,R3-seed,27,24,0,4
 """
 
-        self.report.write_amino_header(StringIO())
-        self.report.write_amino_detail_header(StringIO())
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()
-        self.report.write_amino_detail_counts()
-        self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -862,13 +637,9 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R1-seed,R1-seed,15,15,0,4
 """
 
-        self.report.write_amino_header(StringIO())
-        self.report.write_amino_detail_header(StringIO())
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()
-        self.report.write_amino_detail_counts()
-        self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -895,13 +666,9 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R1-seed,R1-seed,15,9,0,4
 """
 
-        self.report.write_amino_header(StringIO())
-        self.report.write_amino_detail_header(StringIO())
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()
-        self.report.write_amino_detail_counts()
-        self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -922,13 +689,9 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R1-seed,R1-seed,19,9,0,4
 """
 
-        self.report.write_amino_header(StringIO())
-        self.report.write_amino_detail_header(StringIO())
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()
-        self.report.write_amino_detail_counts()
-        self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -950,11 +713,9 @@ R3-seed,R3-seed,23,23,0,5
 R3-seed,R3-seed,24,24,0,5
 """
 
-        self.report.write_amino_header(StringIO())
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()
-        self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -977,12 +738,9 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R1-seed-partial,,6,,0,5
 """
 
-        self.report.write_amino_header(StringIO())
-        self.report.write_amino_detail_header(StringIO())
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()
-        self.report.write_amino_detail_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
@@ -1096,59 +854,6 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
         self.report.read(aligned_reads)
         self.report.write_nuc_header(StringIO())
         self.report.write_nuc_counts()
-        self.report.write_amino_counts()
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testMultiplePrefixSoftClippingAminoReport(self):
-        """ Combine the soft clipping data with the read counts.
-        """
-        """ Assemble counts from three contigs to two references.
-        Contig 1-R1 AAATTT -> KF
-        Contig 2-R2 GGCCCG -> GP
-        Contig 3-R1 TTTAGG -> FR
-        Contig 1 and 3 should combine into R1 with KFR.
-        """
-        # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
-        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
-        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
-
-        clipping = StringIO("""\
-refname,pos,count
-1-R1-seed,7,5
-3-R1-seed,-1,2
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,5
-R1-seed,R1,15,,2,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7
-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,5,0,2
-R2-seed,R2,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-R2-seed,R2,15,,3,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
-R2-seed,R2,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
-R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.read_clipping(clipping)
-        self.report.write_amino_header(self.report_file)
-        self.report.write_amino_detail_header(self.detail_report_file)
-        self.report.write_nuc_header(StringIO())
-        self.report.read(aligned_reads1)
-        self.report.write_nuc_counts()
-        self.report.write_amino_detail_counts()
-        self.report.combine_reports()
-        self.report.read(aligned_reads2)
-        self.report.write_nuc_counts()
-        self.report.write_amino_detail_counts()
-        self.report.combine_reports()
-        self.report.read(aligned_reads3)
-        self.report.write_nuc_counts()
-        self.report.write_amino_detail_counts()
-        self.report.combine_reports()
         self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
