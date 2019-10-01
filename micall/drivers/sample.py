@@ -175,11 +175,16 @@ class Sample:
                     clipping_csv=clipping_csv)
 
         logger.info('Running aln2counts on %s.', self)
+        if use_denovo:
+            contigs_path = self.contigs_csv
+        else:
+            contigs_path = os.devnull
         with open(self.aligned_csv) as aligned_csv, \
                 open(self.g2p_aligned_csv) as g2p_aligned_csv, \
                 open(self.clipping_csv) as clipping_csv, \
                 open(self.conseq_ins_csv) as conseq_ins_csv, \
                 open(self.remap_conseq_csv) as remap_conseq_csv, \
+                open(contigs_path) as contigs_csv, \
                 open(self.nuc_csv, 'w') as nuc_csv, \
                 open(self.amino_csv, 'w') as amino_csv, \
                 open(self.coord_ins_csv, 'w') as coord_ins_csv, \
@@ -203,7 +208,8 @@ class Sample:
                        g2p_aligned_csv=g2p_aligned_csv,
                        remap_conseq_csv=remap_conseq_csv,
                        conseq_region_csv=conseq_region_csv,
-                       genome_coverage_csv=genome_coverage_csv)
+                       genome_coverage_csv=genome_coverage_csv,
+                       contigs_csv=contigs_csv)
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)

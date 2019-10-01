@@ -109,6 +109,7 @@ class SequenceReport(object):
         self.v3_overlap_region_name = None
         self.seed_aminos = self.reports = self.reading_frames = None
         self.inserts = self.consensus = self.seed = None
+        self.contigs = None  # [(ref, seq)]
         self.consensus_by_reading_frame = None  # {frame: seq}
         self.landmarks = yaml.safe_load(landmarks_yaml)
         self.coordinate_refs = self.remap_conseqs = None
@@ -522,7 +523,6 @@ class SequenceReport(object):
             seed_seq = self.projects.getReference(self.seed)
             consensus = ''.join(nuc if nuc != '?' else seed_seq[i+consensus_offset]
                                 for i, nuc in enumerate(consensus))
-            aligned_consensus = '-' * consensus_offset + consensus
         except KeyError:
             # Wasn't a known reference, can't fill in gaps.
             pass
@@ -535,6 +535,37 @@ class SequenceReport(object):
                     break
             else:
                 seed_landmarks = None
+
+        self.write_sequence_coverage_counts(genome_coverage_writer,
+                                            self.detail_seed,
+                                            seed_landmarks,
+                                            consensus,
+                                            consensus_offset,
+                                            seed_nucs)
+        if not self.contigs:
+            return
+        seed_prefix = self.detail_seed.split('-')[0]
+        try:
+            contig_nums = [int(item) for item in seed_prefix.split('_')]
+        except ValueError:
+            return
+        if len(contig_nums) > 1:
+            for contig_num in contig_nums:
+                contig_ref, contig_seq = self.contigs[contig_num-1]
+                contig_name = f'{contig_num}-{contig_ref}'
+                self.write_sequence_coverage_counts(genome_coverage_writer,
+                                                    contig_name,
+                                                    seed_landmarks,
+                                                    contig_seq)
+
+    def write_sequence_coverage_counts(self,
+                                       genome_coverage_writer,
+                                       contig_name,
+                                       seed_landmarks,
+                                       consensus,
+                                       consensus_offset=0,
+                                       seed_nucs=None):
+        aligned_consensus = '-' * consensus_offset + consensus
         if seed_landmarks is None:
             aref = aseq = consensus
             coordinate_name = None
@@ -554,21 +585,25 @@ class SequenceReport(object):
                 ref_pos_display = ref_pos
             else:
                 ref_pos_display = None
-            next_seq_pos = seq_pos+1
+            next_seq_pos = seq_pos + 1
             next_seq_nuc = (aligned_consensus[seq_pos]
                             if seq_pos < len(aligned_consensus)
                             else '')
             if seq_nuc == next_seq_nuc:
                 seq_pos = next_seq_pos
-                seed_nuc: SeedNucleotide = seed_nucs[seq_pos-1][1]
-                coverage = seed_nuc.get_coverage()
-                if coverage == 0:
-                    continue
-                row = dict(contig=self.detail_seed,
+                if not seed_nucs:
+                    coverage = dels = None
+                else:
+                    seed_nuc: SeedNucleotide = seed_nucs[seq_pos - 1][1]
+                    coverage = seed_nuc.get_coverage()
+                    if coverage == 0:
+                        continue
+                    dels = seed_nuc.counts['-']
+                row = dict(contig=contig_name,
                            coordinates=coordinate_name,
                            query_nuc_pos=seq_pos,
                            refseq_nuc_pos=ref_pos_display,
-                           dels=seed_nuc.counts['-'],
+                           dels=dels,
                            coverage=coverage)
                 genome_coverage_writer.writerow(row)
 
@@ -791,6 +826,10 @@ class SequenceReport(object):
     def read_remap_conseqs(self, remap_conseq_csv):
         self.remap_conseqs = dict(map(itemgetter('region', 'sequence'),
                                       csv.DictReader(remap_conseq_csv)))
+
+    def read_contigs(self, contigs_csv):
+        self.contigs = list(map(itemgetter('ref', 'contig'),
+                                csv.DictReader(contigs_csv)))
 
     @staticmethod
     def group_deletions(positions):
@@ -1233,7 +1272,8 @@ def aln2counts(aligned_csv,
                g2p_aligned_csv=None,
                remap_conseq_csv=None,
                conseq_region_csv=None,
-               genome_coverage_csv=None):
+               genome_coverage_csv=None,
+               contigs_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1258,6 +1298,7 @@ def aln2counts(aligned_csv,
         split into regions.
     @param genome_coverage_csv: Open file handle to write coverage for individual
         contigs.
+    @param contigs_csv: Open file handle to read contig sequences.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1301,6 +1342,8 @@ def aln2counts(aligned_csv,
             report.read_insertions(conseq_ins_csv)
         if remap_conseq_csv is not None:
             report.read_remap_conseqs(remap_conseq_csv)
+        if contigs_csv is not None:
+            report.read_contigs(contigs_csv)
         if genome_coverage_csv is not None:
             report.write_genome_coverage_header(genome_coverage_csv)
 

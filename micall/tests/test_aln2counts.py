@@ -744,6 +744,74 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testContigCoverageReportMergedContigs(self):
+        """ Assemble counts from three contigs to two references.
+
+        Reads:
+        Contig 1_3-R1 AAATTTAGG -> KFR
+        Contig 2-R2 GGCCCG -> GP
+
+        Contigs:
+        Contig 1-R1 AAATTT -> KF
+        Contig 2-R2 GGCCCG -> GP
+        Contig 3-R1 TTTAGG -> FR
+
+        Contig 1 and 3 have been combined into R1 with KFR.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1_3-R1-seed,15,0,5,0,AAATTT\n"
+                                           "1_3-R1-seed,15,0,2,3,TTTAGG")
+        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
+        contigs_csv = StringIO("""\
+ref,match,group_ref,contig
+R1-seed,1,R1-seed,AAATTT
+R2-seed,1,R2-seed,GGCCCG
+R1-seed,1,R1-seed,TTTAGG
+""")
+
+        expected_text = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1_3-R1-seed,R1-seed,1,1,0,5
+1_3-R1-seed,R1-seed,2,2,0,5
+1_3-R1-seed,R1-seed,3,3,0,5
+1_3-R1-seed,R1-seed,4,4,0,7
+1_3-R1-seed,R1-seed,5,5,0,7
+1_3-R1-seed,R1-seed,6,6,0,7
+1_3-R1-seed,R1-seed,7,7,0,2
+1_3-R1-seed,R1-seed,8,8,0,2
+1_3-R1-seed,R1-seed,9,9,0,2
+1-R1-seed,R1-seed,1,1,,
+1-R1-seed,R1-seed,2,2,,
+1-R1-seed,R1-seed,3,3,,
+1-R1-seed,R1-seed,4,4,,
+1-R1-seed,R1-seed,5,5,,
+1-R1-seed,R1-seed,6,6,,
+3-R1-seed,R1-seed,1,4,,
+3-R1-seed,R1-seed,2,5,,
+3-R1-seed,R1-seed,3,6,,
+3-R1-seed,R1-seed,4,7,,
+3-R1-seed,R1-seed,5,8,,
+3-R1-seed,R1-seed,6,9,,
+2-R2-seed,R2-seed,1,7,0,4
+2-R2-seed,R2-seed,2,8,0,4
+2-R2-seed,R2-seed,3,9,0,4
+2-R2-seed,R2-seed,4,10,0,4
+2-R2-seed,R2-seed,5,11,0,4
+2-R2-seed,R2-seed,6,12,0,4
+"""
+
+        self.report.read_contigs(contigs_csv)
+        self.report.write_amino_header(StringIO())
+        self.report.write_genome_coverage_header(self.report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_genome_coverage_counts()
+        self.report.write_amino_counts()
+        self.report.read(aligned_reads2)
+        self.report.write_genome_coverage_counts()
+        self.report.write_amino_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testAminoReportForPartialContig(self):
         """ Contigs with the -partial suffix shouldn't be reported. """
         # refname,qcut,rank,count,offset,seq

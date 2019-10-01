@@ -87,13 +87,14 @@ def build_coverage_figure(genome_coverage_csv):
         min_position = min(min_position, refseq_nuc_pos, query_nuc_pos)
         max_position = max(max_position, refseq_nuc_pos, query_nuc_pos)
         coordinates_name = row['coordinates']
-        row_coverage = int(row['coverage']) - int(row['dels'])
-        coordinate_depths[coordinates_name] = max(
-            coordinate_depths[coordinates_name],
-            row_coverage)
         contig_name = row['contig']
-        contig_depths[contig_name] = max(contig_depths[contig_name],
-                                         row_coverage)
+        if row['coverage'] != '':
+            row_coverage = int(row['coverage']) - int(row['dels'])
+            coordinate_depths[coordinates_name] = max(
+                coordinate_depths[coordinates_name],
+                row_coverage)
+            contig_depths[contig_name] = max(contig_depths[contig_name],
+                                             row_coverage)
         contig_groups[coordinates_name].add(contig_name)
     if '' in coordinate_depths:
         # Force partial contigs to come last.
@@ -170,8 +171,9 @@ def build_contig(reader, f, contig_name, max_position, position_offset):
                 if insertion_size:
                     insertion_ranges.append((pos, pos+insertion_size-1))
                     insertion_size = 0
-                coverage[pos - start] = (contig_row['coverage'] -
-                                         contig_row['dels'])
+                if contig_row['coverage'] is not None:
+                    coverage[pos - start] = (contig_row['coverage'] -
+                                             contig_row['dels'])
         subtracks = []
         for has_coverage, group_positions in groupby(
                 enumerate(coverage),
@@ -182,12 +184,17 @@ def build_contig(reader, f, contig_name, max_position, position_offset):
                 group_end, _ = group_positions[-1]
                 subtracks.append(Track(start + group_start + position_offset,
                                        start + group_end + position_offset))
-        if max(coverage) > 0:
+        if not subtracks:
+            subtracks.append(Track(start + position_offset,
+                                   end + position_offset))
+        if max(coverage) <= 0:
+            track_label = contig_name
+        else:
             f.add(ShadedCoverage(start + position_offset,
                                  end + position_offset,
                                  coverage),
                   gap=-4)
-        track_label = f"{contig_name} - depth {max(coverage)}"
+            track_label = f"{contig_name} - depth {max(coverage)}"
         subtracks.append(Track(1,
                                max_position,
                                label=track_label,
