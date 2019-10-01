@@ -22,7 +22,7 @@ import gotoh
 import yaml
 
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
-from micall.core.remap import PARTIAL_CONTIG_SUFFIX
+from micall.core.remap import PARTIAL_CONTIG_SUFFIX, REVERSED_CONTIG_SUFFIX
 from micall.utils.big_counter import BigCounter
 from micall.utils.translation import translate, ambig_dict
 
@@ -372,7 +372,9 @@ class SequenceReport(object):
         # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
 
-        if self.seed is None or self.seed.endswith(PARTIAL_CONTIG_SUFFIX):
+        if (self.seed is None or
+                self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
+                self.seed.endswith(REVERSED_CONTIG_SUFFIX)):
             return
 
         if not self.seed_aminos:
@@ -526,7 +528,8 @@ class SequenceReport(object):
         except KeyError:
             # Wasn't a known reference, can't fill in gaps.
             pass
-        is_partial = self.seed.endswith(PARTIAL_CONTIG_SUFFIX)
+        is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
+                      self.seed.endswith(REVERSED_CONTIG_SUFFIX))
         if is_partial:
             seed_landmarks = None
         else:
@@ -573,7 +576,14 @@ class SequenceReport(object):
         else:
             coordinate_name = seed_landmarks['coordinates']
             coordinate_seq = self.projects.getReference(coordinate_name)
-            aref, aseq, score = self._pair_align(coordinate_seq, consensus)
+            gap_open_penalty = 15
+            gap_extend_penalty = 5
+            use_terminal_gap_penalty = 1
+            aref, aseq, score = gotoh.align_it(coordinate_seq,
+                                               consensus,
+                                               gap_open_penalty,
+                                               gap_extend_penalty,
+                                               use_terminal_gap_penalty)
             ref_length = len(coordinate_seq)
             ref_pos = len(aref.lstrip('-')) - len(aref)
         seq_pos = consensus_offset

@@ -744,6 +744,31 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testContigCoverageReportForReversedContig(self):
+        """ Contig coverage is reported for reversed contigs.
+
+        Reference columns are left blank, though, because they're not aligned.
+        See blast.csv for best guess at alignment.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R1-seed-reversed,15,0,5,0,CCCCCC")
+
+        expected_text = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-R1-seed-reversed,,1,,0,5
+1-R1-seed-reversed,,2,,0,5
+1-R1-seed-reversed,,3,,0,5
+1-R1-seed-reversed,,4,,0,5
+1-R1-seed-reversed,,5,,0,5
+1-R1-seed-reversed,,6,,0,5
+"""
+
+        self.report.write_genome_coverage_header(self.report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_genome_coverage_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testContigCoverageReportMergedContigs(self):
         """ Assemble counts from three contigs to two references.
 

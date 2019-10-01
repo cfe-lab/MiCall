@@ -149,6 +149,8 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
 
     for match in matches:
         matched_fraction = float(match['qcovhsp']) / 100
+        if int(match['send']) < int(match['sstart']):
+            matched_fraction *= -1
         pident = round(float(match['pident']))
         samples[match['qaccver']] = (match['saccver'], matched_fraction)
         if blast_writer:

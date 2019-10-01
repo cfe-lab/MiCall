@@ -37,6 +37,7 @@ SAM_FLAG_IS_UNMAPPED = 0x4
 SAM_FLAG_IS_MATE_UNMAPPED = 0x8
 SAM_FLAG_IS_FIRST_SEGMENT = 0x40
 PARTIAL_CONTIG_SUFFIX = 'partial'
+REVERSED_CONTIG_SUFFIX = 'reversed'
 EXCLUDED_CONTIG_SUFFIX = 'excluded'
 
 # SAM file format
@@ -791,11 +792,14 @@ def read_contigs(contigs_csv, excluded_seeds=None):
         contigs_reader = DictReader(contigs_csv)
         for i, row in reversed(list(enumerate(contigs_reader, 1))):
             contig_seq = row['contig']
-            is_match = 0.25 <= float(row['match'])
+            match_fraction = float(row['match'])
+            is_match = 0.25 <= match_fraction
+            is_reversed = match_fraction < 0
             if not is_match:
                 contig_name = get_contig_name(i,
                                               row['ref'],
                                               is_match,
+                                              is_reversed,
                                               excluded_seeds)
                 conseqs[contig_name] = contig_seq
                 continue
@@ -819,21 +823,25 @@ def read_contigs(contigs_csv, excluded_seeds=None):
             contig_group[0] = merged_seq[left_trim:-right_trim or None]
 
     is_match = True
+    is_reversed = False
     for group_ref_name, contig_group in contig_groups.items():
         (group_seq, *contig_nums) = contig_group
         prefix = '_'.join(reversed(contig_nums))
         contig_name = get_contig_name(prefix,
                                       group_ref_name,
                                       is_match,
+                                      is_reversed,
                                       excluded_seeds)
         conseqs[contig_name] = group_seq
     return conseqs
 
 
-def get_contig_name(prefix, ref_name, is_match, excluded_seeds=None):
+def get_contig_name(prefix, ref_name, is_match, is_reversed, excluded_seeds=None):
     name = '{}-{}'.format(prefix, ref_name)
     if excluded_seeds and ref_name in excluded_seeds:
         name += '-' + EXCLUDED_CONTIG_SUFFIX
+    elif is_reversed:
+        name += '-' + REVERSED_CONTIG_SUFFIX
     elif not is_match:
         name += '-' + PARTIAL_CONTIG_SUFFIX
     return name

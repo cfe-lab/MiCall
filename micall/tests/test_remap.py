@@ -1355,6 +1355,21 @@ HCV-2b,0.25,HCV-2b,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
     assert expected_conseqs == conseqs
 
 
+def test_read_contigs_reversed(projects):
+    contigs_csv = StringIO("""\
+ref,match,group_ref,contig
+HCV-1a,-1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+HCV-2b,-0.1,HCV-2b,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
+""")
+    expected_conseqs = {
+        '1-HCV-1a-reversed': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
+        '2-HCV-2b-reversed': 'GCCCGCCCCCTGATGGGGGCGACACTCCGCCA'}
+
+    conseqs = read_contigs(contigs_csv)
+
+    assert expected_conseqs == conseqs
+
+
 def test_read_contigs_excluded(projects):
     contigs_csv = StringIO("""\
 ref,match,group_ref,contig

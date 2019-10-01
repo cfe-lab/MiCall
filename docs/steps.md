@@ -147,7 +147,8 @@ Individual files are described after the list of steps.
   * contig_name - name that appears in amino_detail.csv and nuc_detail.csv
   * ref_name - reference name that BLAST found matches in
   * score - calculated by BLAST
-  * match - fraction of the sequence that matched the reference
+  * match - fraction of the sequence that matched the reference, negative for
+    reverse-complemented matches
   * pident - percentage of the matching part that was identical to the reference
   * start - start position of the matching part in the contig sequence
   * end - end position of the matching part in the contig sequence
@@ -183,7 +184,8 @@ Individual files are described after the list of steps.
   * qual - the Phred quality scores for the inserted sequence
 * contigs.csv
   * genotype - the reference name with the best BLAST result
-  * match - the fraction of the contig that matched in BLAST
+  * match - the fraction of the contig that matched in BLAST, negative for
+    reverse-complemented matches
   * contig - the nucleotide sequence of the assembled contig
 * coord_ins.csv - insertions in consensus sequence, relative to coordinate
     reference.
