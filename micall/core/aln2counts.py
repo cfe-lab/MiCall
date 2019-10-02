@@ -552,14 +552,13 @@ class SequenceReport(object):
             contig_nums = [int(item) for item in seed_prefix.split('_')]
         except ValueError:
             return
-        if len(contig_nums) > 1:
-            for contig_num in contig_nums:
-                contig_ref, contig_seq = self.contigs[contig_num-1]
-                contig_name = f'{contig_num}-{contig_ref}'
-                self.write_sequence_coverage_counts(genome_coverage_writer,
-                                                    contig_name,
-                                                    seed_landmarks,
-                                                    contig_seq)
+        for contig_num in contig_nums:
+            contig_ref, contig_seq = self.contigs[contig_num-1]
+            contig_name = f'contig-{contig_num}-{contig_ref}'
+            self.write_sequence_coverage_counts(genome_coverage_writer,
+                                                contig_name,
+                                                seed_landmarks,
+                                                contig_seq)
 
     def write_sequence_coverage_counts(self,
                                        genome_coverage_writer,

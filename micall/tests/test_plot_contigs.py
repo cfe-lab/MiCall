@@ -271,18 +271,18 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1_3-HCV-1a,HCV-1a,104,104,0,15
 1_3-HCV-1a,HCV-1a,105,105,0,15
 1_3-HCV-1a,HCV-1a,106,106,0,15
-1-HCV-1a,HCV-1a,1,1,,
-1-HCV-1a,HCV-1a,2,2,,
-1-HCV-1a,HCV-1a,3,3,,
-1-HCV-1a,HCV-1a,4,4,,
-1-HCV-1a,HCV-1a,5,5,,
-1-HCV-1a,HCV-1a,6,6,,
-3-HCV-1a,HCV-1a,1,101,,
-3-HCV-1a,HCV-1a,2,102,,
-3-HCV-1a,HCV-1a,3,103,,
-3-HCV-1a,HCV-1a,4,104,,
-3-HCV-1a,HCV-1a,5,105,,
-3-HCV-1a,HCV-1a,6,106,,
+contig-1-HCV-1a,HCV-1a,1,1,,
+contig-1-HCV-1a,HCV-1a,2,2,,
+contig-1-HCV-1a,HCV-1a,3,3,,
+contig-1-HCV-1a,HCV-1a,4,4,,
+contig-1-HCV-1a,HCV-1a,5,5,,
+contig-1-HCV-1a,HCV-1a,6,6,,
+contig-3-HCV-1a,HCV-1a,1,101,,
+contig-3-HCV-1a,HCV-1a,2,102,,
+contig-3-HCV-1a,HCV-1a,3,103,,
+contig-3-HCV-1a,HCV-1a,4,104,,
+contig-3-HCV-1a,HCV-1a,5,105,,
+contig-3-HCV-1a,HCV-1a,6,106,,
 2-HCV-1b-partial,,1,,0,5
 2-HCV-1b-partial,,2,,0,5
 2-HCV-1b-partial,,3,,0,29
@@ -296,8 +296,8 @@ NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
 NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
 Coverage 5x2, 7, 5x3, 0x94, 15x2, 17, 15x3
 [1-6], [101-106], 1_3-HCV-1a - depth 17(1-9646)
-[1-6], 1-HCV-1a(1-9646)
-[101-106], 3-HCV-1a(1-9646)
+[1-6], contig-1-HCV-1a(1-9646)
+[101-106], contig-3-HCV-1a(1-9646)
 [1-500], [1001-1500], [2001-2500], [3001-3500], [4001-4500], \
 [5001-5500], [6001-6500], [7001-7500], [8001-8500], [9001-9500], \
 Partial Blast Results(1-9646)
