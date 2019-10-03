@@ -12,9 +12,21 @@ FastqFile = namedtuple('FastqFile', 'name extract_num is_reversed sections mutat
 
 def main():
     projects = ProjectConfig.loadDefault()
-    sections_2150_1, sections_2150_2 = make_random_sections('HCV-1a',
-                                                            8000,
-                                                            9000)
+    sections_2100hcv_1, sections_2100hcv_2 = make_random_sections(
+        'HCV1A-H77-NS5a',
+        1,
+        300,
+        projects,
+        200)
+    sections_2100v3_1, sections_2100v3_2 = (
+        [FastqSection('HIV1-B-FR-K03455-seed', 7062, 7312, 100)],
+        [FastqSection('HIV1-B-FR-K03455-seed', 7123, 7373, 100)])
+    sections_2100hiv_1, sections_2100hiv_2 = make_random_sections(
+        'RT',
+        1,
+        300,
+        projects,
+        200)
     sections_2160_1, sections_2160_2 = make_random_sections('HCV2-JFH-1-NS5b',
                                                             1,
                                                             230,
@@ -30,12 +42,21 @@ def main():
     sections_2170_2_1, sections_2170_2_2 = make_random_sections('HCV-2a',
                                                                 6269,
                                                                 9440)
-    sections_2180_1, sections_2180_2 = make_random_sections(
-        'HIV1-B-FR-K03455-seed',
-        2085,
-        4085,
-        read_count=200)
-    fastq_files = [FastqFile('2130A-HCV_S15_L001_R1_001.fastq',
+    fastq_files = [FastqFile('2100A-HCV-1337B-V3LOOP-PWND-HIV_S12_L001_R1_001.fastq',
+                             '2100',
+                             False,
+                             sections_2100hcv_1 +
+                             sections_2100v3_1 +
+                             sections_2100hiv_1,
+                             ()),
+                   FastqFile('2100A-HCV-1337B-V3LOOP-PWND-HIV_S12_L001_R2_001.fastq',
+                             '2100',
+                             True,
+                             sections_2100hcv_2 +
+                             sections_2100v3_2 +
+                             sections_2100hiv_2,
+                             ()),
+                   FastqFile('2130A-HCV_S15_L001_R1_001.fastq',
                              '2130',
                              False,
                              (FastqSection('HCV2-JFH-1-NS5b', 1, 60, 100),
@@ -50,14 +71,14 @@ def main():
                    FastqFile('2130AMIDI-MidHCV_S16_L001_R1_001.fastq',
                              '2130',
                              False,
-                             (FastqSection('HCV2-JFH-1-NS5b', 231, 313, 100),
-                              FastqSection('HCV2-JFH-1-NS5b', 396, 478, 100)),
+                             (FastqSection('HCV2-JFH-1-NS5b', 231, 315, 100),
+                              FastqSection('HCV2-JFH-1-NS5b', 396, 480, 100)),
                              (CodonMutation(316, 'AGC'),)),
                    FastqFile('2130AMIDI-MidHCV_S16_L001_R2_001.fastq',
                              '2130',
                              True,
-                             (FastqSection('HCV2-JFH-1-NS5b', 313, 395, 100),
-                              FastqSection('HCV2-JFH-1-NS5b', 479, 561, 100)),
+                             (FastqSection('HCV2-JFH-1-NS5b', 310, 395, 100),
+                              FastqSection('HCV2-JFH-1-NS5b', 475, 561, 100)),
                              (CodonMutation(316, 'AGC'),)),
                    FastqFile('2140A-HIV_S17_L001_R1_001.fastq',
                              '2140',
@@ -69,16 +90,6 @@ def main():
                              True,
                              (FastqSection('PR', 20, 99, 100),),
                              (CodonMutation(24, 'ATA'),)),
-                   FastqFile('2150A-HCV_S18_L001_R1_001.fastq',
-                             '2150',
-                             False,
-                             sections_2150_1,
-                             tuple()),
-                   FastqFile('2150A-HCV_S18_L001_R2_001.fastq',
-                             '2150',
-                             True,
-                             sections_2150_2,
-                             tuple()),
                    FastqFile('2160A-HCV_S19_L001_R1_001.fastq',
                              '2160',
                              False,
@@ -108,16 +119,6 @@ def main():
                              '2170',
                              True,
                              sections_2170_1a_2 + sections_2170_2_2,
-                             ()),
-                   FastqFile('2180A-HIV_S22_L001_R1_001.fastq',
-                             '2180',
-                             False,
-                             sections_2180_1,
-                             ()),
-                   FastqFile('2180A-HIV_S22_L001_R2_001.fastq',
-                             '2180',
-                             True,
-                             sections_2180_2,
                              ())]
     for fastq_file in fastq_files:
         with open(fastq_file.name, 'w') as f:
