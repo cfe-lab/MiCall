@@ -698,6 +698,10 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
     # noinspection DuplicatedCode
     def testContigCoverageReportLargeGap(self):
         """ When mapping against known references, there can be large gaps. """
+        remap_conseq_csv = StringIO("""\
+region,sequence
+R3-seed,AAATTTCAGACCCCACGAGAGCAT
+""")
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("""\
 R3-seed,15,0,4,3,TTT
@@ -713,6 +717,7 @@ R3-seed,R3-seed,23,23,0,5
 R3-seed,R3-seed,24,24,0,5
 """
 
+        self.report.read_remap_conseqs(remap_conseq_csv)
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()

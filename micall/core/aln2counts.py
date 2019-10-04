@@ -520,14 +520,11 @@ class SequenceReport(object):
         consensus_offset = len(aligned_consensus) - len(consensus)
         consensus = consensus.rstrip('?')
 
-        # Fill in gaps from seed reference.
-        try:
-            seed_seq = self.projects.getReference(self.seed)
+        # Fill in gaps from remap conseq.
+        seed_seq = self.remap_conseqs and self.remap_conseqs.get(self.detail_seed)
+        if seed_seq:
             consensus = ''.join(nuc if nuc != '?' else seed_seq[i+consensus_offset]
                                 for i, nuc in enumerate(consensus))
-        except KeyError:
-            # Wasn't a known reference, can't fill in gaps.
-            pass
         is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
                       self.seed.endswith(REVERSED_CONTIG_SUFFIX))
         if is_partial:
