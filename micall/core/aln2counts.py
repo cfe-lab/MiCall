@@ -542,7 +542,7 @@ class SequenceReport(object):
                                             consensus,
                                             consensus_offset,
                                             seed_nucs)
-        if not self.contigs:
+        if is_partial or not self.contigs:
             return
         seed_prefix = self.detail_seed.split('-')[0]
         try:

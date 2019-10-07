@@ -85,7 +85,7 @@ def find_probes(contigs_csv, probes_csv):
                 hxb2_start = hxb2_size = None
                 for hxb2_nuc, contig_nuc in zip(aligned_hxb2,
                                                 aligned_contig_to_hxb2):
-                    if hxb2 != '-':
+                    if hxb2_nuc != '-':
                         hxb2_pos += 1
                     if contig_nuc != '-':
                         contig_pos += 1

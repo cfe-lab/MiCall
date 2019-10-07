@@ -732,6 +732,10 @@ R3-seed,R3-seed,24,24,0,5
         """
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("1-R1-seed-partial,15,0,5,0,CCCCCC")
+        contigs_csv = StringIO("""\
+ref,match,group_ref,contig
+R1-seed,1,R1-seed,CCCCCC
+""")
 
         expected_text = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
@@ -743,6 +747,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R1-seed-partial,,6,,0,5
 """
 
+        self.report.read_contigs(contigs_csv)
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()
@@ -757,6 +762,10 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
         """
         # refname,qcut,rank,count,offset,seq
         aligned_reads1 = self.prepareReads("1-R1-seed-reversed,15,0,5,0,CCCCCC")
+        contigs_csv = StringIO("""\
+ref,match,group_ref,contig
+R1-seed,1,R1-seed,CCCCCC
+""")
 
         expected_text = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
@@ -768,6 +777,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R1-seed-reversed,,6,,0,5
 """
 
+        self.report.read_contigs(contigs_csv)
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()
