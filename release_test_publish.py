@@ -25,6 +25,10 @@ def parse_args():
         '--pipeline_version',
         default='0-dev',
         help='version suffix for folder names')
+    parser.add_argument(
+        '--delete',
+        action='store_true',
+        help='delete old files from publish_folder')
     return parser.parse_args()
 
 
@@ -49,7 +53,10 @@ def main():
             print('Not done: ' + run_name)
             continue
         makedirs(target_path, exist_ok=True)
-        run(['rsync', '--delete', '-a', results_path, target_path])
+        rsync_args = ['rsync', '-a', results_path, target_path]
+        if args.delete:
+            rsync_args.append('--delete')
+        run(rsync_args)
         print('Done: ' + run_name)
     print('Done.')
 

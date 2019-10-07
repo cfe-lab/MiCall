@@ -33,13 +33,11 @@ def parse_args():
 
 def find_probes(contigs_csv, probes_csv):
     reader = DictReader(contigs_csv)
-    writer = DictWriter(probes_csv, ['sample',
-                                     'contig',
-                                     'probe',
-                                     'start',
-                                     'size',
-                                     'dist',
-                                     'seq'])
+    columns = ['sample', 'contig']
+    for target_name in TARGET_SEQUENCES:
+        for column_type in ['start', 'size', 'dist', 'seq']:
+            columns.append(target_name + '_' + column_type)
+    writer = DictWriter(probes_csv, columns)
     writer.writeheader()
     gap_open_penalty = 15
     gap_extend_penalty = 3
@@ -51,6 +49,7 @@ def find_probes(contigs_csv, probes_csv):
             contig_num += 1
             contig_name = f'{contig_num}-{seed_name}'
             contig_seq: str = row['contig']
+            new_row = dict(sample=sample_name, contig=contig_name)
             for target_name, target_seq in TARGET_SEQUENCES.items():
                 aligned_contig, aligned_target, _score = align_it(contig_seq,
                                                                   target_seq,
@@ -63,13 +62,12 @@ def find_probes(contigs_csv, probes_csv):
                 contig_match = aligned_contig[start:end].replace('-', '')
                 size = len(contig_match)
                 dist = Levenshtein.distance(target_seq, contig_match)
-                writer.writerow(dict(sample=sample_name,
-                                     contig=contig_name,
-                                     probe=target_name,
-                                     start=start,
-                                     size=size,
-                                     dist=dist,
-                                     seq=contig_match))
+                prefix = target_name + '_'
+                new_row[prefix + 'start'] = start
+                new_row[prefix + 'size'] = size
+                new_row[prefix + 'dist'] = dist
+                new_row[prefix + 'seq'] = contig_match
+            writer.writerow(new_row)
 
 
 def main():
