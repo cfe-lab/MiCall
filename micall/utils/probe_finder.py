@@ -8,9 +8,10 @@ import Levenshtein
 from gotoh import align_it
 
 from micall.core.project_config import ProjectConfig
+from micall.utils.translation import mixture_dict
 
 TARGET_SEQUENCES = dict(
-    gag_probe='TTTTGGCGTACTCACCAGT',
+    gag_probe='ACTGGTGAGTACGCCAAAA',
     env_probe='CCTTGGGTTGTTGGGA',
     round2_fwd_primer='GCGCCCGAACAGGGACYTGAAARCGAAAG',
     round2_rev_primer='TAAGCCTCAATAAAGCTTGCCTTGAGTGC')
@@ -67,17 +68,29 @@ def find_probes(contigs_csv, probes_csv):
                 use_terminal_gap_penalty)
             new_row = dict(sample=sample_name, contig=contig_name)
             for target_name, target_seq in TARGET_SEQUENCES.items():
-                aligned_contig, aligned_target, score = align_it(contig_seq,
-                                                                 target_seq,
-                                                                 gap_open_penalty,
-                                                                 gap_extend_penalty,
-                                                                 use_terminal_gap_penalty)
+                best_acontig = best_atarget = best_target = best_score = None
+                for target_nucs in unpack_mixtures(target_seq):
+                    aligned_contig, aligned_target, score = align_it(
+                        contig_seq,
+                        target_nucs,
+                        gap_open_penalty,
+                        gap_extend_penalty,
+                        use_terminal_gap_penalty)
+                    if best_score is None or score > best_score:
+                        best_acontig = aligned_contig
+                        best_atarget = aligned_target
+                        best_target = target_nucs
+                        best_score = score
+                aligned_contig = best_acontig
+                aligned_target = best_atarget
+                target_nucs = best_target
+                score = best_score
                 match = re.match('-*([^-](.*[^-])?)', aligned_target)
                 start = match.start(1)
                 end = match.end(1)
                 contig_match = aligned_contig[start:end].replace('-', '')
                 size = len(contig_match)
-                dist = Levenshtein.distance(target_seq, contig_match)
+                dist = Levenshtein.distance(target_nucs, contig_match)
 
                 start_pos = start + 1
                 end_pos = start + size
@@ -106,9 +119,21 @@ def find_probes(contigs_csv, probes_csv):
             writer.writerow(new_row)
 
 
+def unpack_mixtures(seq):
+    old_mixtures = {''}
+    for mixture in seq:
+        new_mixtures = set()
+        for nuc in mixture_dict.get(mixture, mixture):
+            for old_mixture in old_mixtures:
+                new_mixtures.add(old_mixture + nuc)
+        old_mixtures = new_mixtures
+    return old_mixtures
+
+
 def main():
     args = parse_args()
     find_probes(args.contigs_csv, args.probes_csv)
 
 
-main()
+if __name__ == '__main__':
+    main()
