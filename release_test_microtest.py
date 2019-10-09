@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from csv import DictReader
 from operator import itemgetter
 from pathlib import Path
@@ -137,16 +138,17 @@ def check_2080():
     check_v3loop('2080A-V3LOOP_S10', '')
 
 
-def check_2100():
+def check_2100(is_denovo):
     conseq_rows = list(read_file('2100A-HCV-1337B-V3LOOP-PWND-HIV_S12',
                                  'conseq.csv'))
     regions = set(map(itemgetter('region'), conseq_rows))
-    expected_regions_denovo = {'2_3-HIV1-B-FR-K03455-seed', '1-HCV-1a'}
-    expected_regions_mapping = {'HIV1-CON-XX-Consensus-seed',
-                                'HCV-1a',
-                                'HIV1-B-FR-K03455-seed'}
-    assert (regions == expected_regions_denovo or
-            regions == expected_regions_mapping), regions
+    if is_denovo:
+        expected_regions = {'2_3-HIV1-B-FR-K03455-seed', '1-HCV-1a'}
+    else:
+        expected_regions = {'HIV1-CON-XX-Consensus-seed',
+                            'HCV-1a',
+                            'HIV1-B-FR-K03455-seed'}
+    assert regions == expected_regions, regions
 
 
 def check_amino_row(row,
@@ -169,7 +171,7 @@ def check_amino_row(row,
     assert row['v3_overlap'] == str(v3_overlap), f'{row["v3_overlap"]} at {pos}'
 
 
-def check_2110():
+def check_2110(is_denovo):
     amino_rows = list(read_file('2110A-V3LOOP_S13', 'amino.csv'))
     assert amino_rows
     for row in amino_rows:
@@ -182,7 +184,9 @@ def check_2110():
         elif pos == 8:
             check_amino_row(row, coverage=10, partial=3)
         elif pos == 9:
-            check_amino_row(row, coverage=13, ins=4)
+            # G2P doesn't currently handle inserts.
+            expected_inserts = 4 if is_denovo else 0
+            check_amino_row(row, coverage=13, ins=expected_inserts)
         elif pos == 10:
             check_amino_row(row, coverage=13, dels=4)
         elif pos < 18:
@@ -190,7 +194,10 @@ def check_2110():
         elif pos < 33:
             check_amino_row(row)
         else:
-            check_amino_row(row, coverage=10)
+            if is_denovo:
+                check_amino_row(row, coverage=10)
+            else:
+                check_amino_row(row, v3_overlap=10)
 
 
 def check_2120():
@@ -231,16 +238,18 @@ def check_2120():
                 check_amino_row(row)
 
 
-def check_2130():
+def check_2130(is_denovo):
     conseq_rows = list(read_file('2130A-HCV_S15', 'conseq.csv'))
     regions = set(map(itemgetter('region'), conseq_rows))
-    assert regions == {'1_2-HCV-2a'}, regions
+    expected_regions = {'1_2-HCV-2a'} if is_denovo else {'HCV-2a'}
+    assert regions == expected_regions, regions
 
 
-def check_2130midi():
+def check_2130midi(is_denovo):
     conseq_rows = list(read_file('2130AMIDI-MidHCV_S16', 'conseq.csv'))
     regions = set(map(itemgetter('region'), conseq_rows))
-    assert regions == {'1_2-HCV-2a'}, regions
+    expected_regions = {'1_2-HCV-2a'} if is_denovo else {'HCV-2a'}
+    assert regions == expected_regions, regions
 
 
 def check_2140():
@@ -310,6 +319,13 @@ def check_2170():
 
 
 def main():
+    parser = ArgumentParser(description='Check results for microtest samples.')
+    parser.add_argument('--denovo',
+                        action='store_true',
+                        help='Samples were processed with de novo assembly.')
+    args = parser.parse_args()
+    is_denovo = args.denovo
+
     check_1234()
     check_2000()
     check_2010()
@@ -320,11 +336,11 @@ def main():
     check_2060()
     check_2070()
     check_2080()
-    check_2100()
-    check_2110()
+    check_2100(is_denovo)
+    check_2110(is_denovo)
     check_2120()
-    check_2130()
-    check_2130midi()
+    check_2130(is_denovo)
+    check_2130midi(is_denovo)
     check_2140()
     check_2160()
     check_2160midi()
