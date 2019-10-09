@@ -5,11 +5,13 @@ from random import randrange
 from micall.core.project_config import ProjectConfig
 from micall.utils.translation import translate, reverse_and_complement
 
-FastqSection = namedtuple('FastqSection', 'coord_name start_pos end_pos count')
+FastqSection = namedtuple('FastqSection', 'coord_name start_pos end_pos count mutations')
+FastqSection.__new__.__defaults__ = (None, None, None, 1, ())
 CodonMutation = namedtuple('CodonMutation', 'pos codon')
-FastqFile = namedtuple('FastqFile', 'name extract_num is_reversed sections mutations')
+FastqFile = namedtuple('FastqFile', 'name extract_num is_reversed sections')
 
 
+# noinspection PyArgumentList
 def main():
     projects = ProjectConfig.loadDefault()
     sections_2100hcv_1, sections_2100hcv_2 = make_random_sections(
@@ -17,7 +19,7 @@ def main():
         1,
         300,
         projects,
-        200)
+        400)
     sections_2100v3_1, sections_2100v3_2 = (
         [FastqSection('HIV1-B-FR-K03455-seed', 7062, 7312, 100)],
         [FastqSection('HIV1-B-FR-K03455-seed', 7123, 7373, 100)])
@@ -26,100 +28,133 @@ def main():
         1,
         300,
         projects,
-        200)
-    sections_2160_1, sections_2160_2 = make_random_sections('HCV2-JFH-1-NS5b',
-                                                            1,
-                                                            230,
-                                                            projects)
+        400)
+    sections_2160_1, sections_2160_2 = make_random_sections(
+        'HCV2-JFH-1-NS5b',
+        1,
+        230,
+        projects,
+        mutations=(CodonMutation(159, 'GTC'),))
     sections_2160midi_1, sections_2160midi_2 = make_random_sections(
         'HCV2-JFH-1-NS5b',
         231,
         561,
-        projects)
+        projects,
+        mutations=(CodonMutation(316, 'AGC'),))
     sections_2170_1a_1, sections_2170_1a_2 = make_random_sections('HCV-1a',
                                                                   6258,
                                                                   9375)
     sections_2170_2_1, sections_2170_2_2 = make_random_sections('HCV-2a',
                                                                 6269,
                                                                 9440)
-    fastq_files = [FastqFile('2100A-HCV-1337B-V3LOOP-PWND-HIV_S12_L001_R1_001.fastq',
+    fastq_files = [FastqFile('2010A-V3LOOP_S3_L001_R1_001.fastq',
+                             '2010',
+                             False,
+                             (FastqSection('HIV1-CON-XX-Consensus-seed', 855, 906, 10),
+                              FastqSection('HIV1-CON-XX-Consensus-seed', 912, 960, 10))),
+                   FastqFile('2010A-V3LOOP_S3_L001_R2_001.fastq',
+                             '2010',
+                             True,
+                             (FastqSection('HIV1-CON-XX-Consensus-seed', 855, 906, 10),
+                              FastqSection('HIV1-CON-XX-Consensus-seed', 912, 960, 10))),
+                   FastqFile('2040A-HLA-B_S6_L001_R1_001.fastq',
+                             '2040',
+                             False,
+                             (FastqSection('HLA-B-seed', 201, 315, 50),
+                              FastqSection('HLA-B-seed',
+                                           201,
+                                           315,
+                                           50,
+                                           (CodonMutation(207, 'TCT'),)))),
+                   FastqFile('2040A-HLA-B_S6_L001_R2_001.fastq',
+                             '2040',
+                             True,
+                             (FastqSection('HLA-B-seed', 201, 315, 50),
+                              FastqSection('HLA-B-seed',
+                                           201,
+                                           315,
+                                           50,
+                                           (CodonMutation(207, 'TCT'),)))),
+                   FastqFile('2100A-HCV-1337B-V3LOOP-PWND-HIV_S12_L001_R1_001.fastq',
                              '2100',
                              False,
                              sections_2100hcv_1 +
                              sections_2100v3_1 +
-                             sections_2100hiv_1,
-                             ()),
+                             sections_2100hiv_1),
                    FastqFile('2100A-HCV-1337B-V3LOOP-PWND-HIV_S12_L001_R2_001.fastq',
                              '2100',
                              True,
                              sections_2100hcv_2 +
                              sections_2100v3_2 +
-                             sections_2100hiv_2,
-                             ()),
+                             sections_2100hiv_2),
                    FastqFile('2130A-HCV_S15_L001_R1_001.fastq',
                              '2130',
                              False,
                              (FastqSection('HCV2-JFH-1-NS5b', 1, 60, 100),
-                              FastqSection('HCV2-JFH-1-NS5b', 117, 176, 100)),
-                             (CodonMutation(159, 'GTC'),)),
+                              FastqSection('HCV2-JFH-1-NS5b',
+                                           117,
+                                           176,
+                                           100,
+                                           (CodonMutation(159, 'GTC'),)))),
                    FastqFile('2130A-HCV_S15_L001_R2_001.fastq',
                              '2130',
                              True,
                              (FastqSection('HCV2-JFH-1-NS5b', 57, 116, 100),
-                              FastqSection('HCV2-JFH-1-NS5b', 171, 230, 100)),
-                             (CodonMutation(159, 'GTC'),)),
+                              FastqSection('HCV2-JFH-1-NS5b', 171, 230, 100))),
                    FastqFile('2130AMIDI-MidHCV_S16_L001_R1_001.fastq',
                              '2130',
                              False,
                              (FastqSection('HCV2-JFH-1-NS5b', 231, 315, 100),
-                              FastqSection('HCV2-JFH-1-NS5b', 396, 480, 100)),
-                             (CodonMutation(316, 'AGC'),)),
+                              FastqSection('HCV2-JFH-1-NS5b', 396, 480, 100))),
                    FastqFile('2130AMIDI-MidHCV_S16_L001_R2_001.fastq',
                              '2130',
                              True,
-                             (FastqSection('HCV2-JFH-1-NS5b', 310, 395, 100),
-                              FastqSection('HCV2-JFH-1-NS5b', 475, 561, 100)),
-                             (CodonMutation(316, 'AGC'),)),
+                             (FastqSection('HCV2-JFH-1-NS5b',
+                                           310,
+                                           395,
+                                           100,
+                                           (CodonMutation(316, 'AGC'),)),
+                              FastqSection('HCV2-JFH-1-NS5b', 475, 561, 100))),
                    FastqFile('2140A-HIV_S17_L001_R1_001.fastq',
                              '2140',
                              False,
-                             (FastqSection('PR', 1, 80, 100),),
-                             (CodonMutation(24, 'ATA'),)),
+                             (FastqSection('PR',
+                                           1,
+                                           80,
+                                           100,
+                                           (CodonMutation(24, 'ATA'),)),)),
                    FastqFile('2140A-HIV_S17_L001_R2_001.fastq',
                              '2140',
                              True,
-                             (FastqSection('PR', 20, 99, 100),),
-                             (CodonMutation(24, 'ATA'),)),
+                             (FastqSection('PR',
+                                           20,
+                                           99,
+                                           100,
+                                           (CodonMutation(24, 'ATA'),)),)),
                    FastqFile('2160A-HCV_S19_L001_R1_001.fastq',
                              '2160',
                              False,
-                             sections_2160_1,
-                             (CodonMutation(159, 'GTC'),)),
+                             sections_2160_1),
                    FastqFile('2160A-HCV_S19_L001_R2_001.fastq',
                              '2160',
                              True,
-                             sections_2160_2,
-                             (CodonMutation(159, 'GTC'),)),
+                             sections_2160_2),
                    FastqFile('2160AMIDI-MidHCV_S20_L001_R1_001.fastq',
                              '2160',
                              False,
-                             sections_2160midi_1,
-                             (CodonMutation(316, 'AGC'),)),
+                             sections_2160midi_1),
                    FastqFile('2160AMIDI-MidHCV_S20_L001_R2_001.fastq',
                              '2160',
                              True,
-                             sections_2160midi_2,
-                             (CodonMutation(316, 'AGC'),)),
+                             sections_2160midi_2),
                    FastqFile('2170A-HCV_S21_L001_R1_001.fastq',
                              '2170',
                              False,
-                             sections_2170_1a_1 + sections_2170_2_1,
-                             ()),
+                             sections_2170_1a_1 + sections_2170_2_1),
                    FastqFile('2170A-HCV_S21_L001_R2_001.fastq',
                              '2170',
                              True,
-                             sections_2170_1a_2 + sections_2170_2_2,
-                             ())]
+                             sections_2170_1a_2 + sections_2170_2_2)]
     for fastq_file in fastq_files:
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1
@@ -131,15 +166,20 @@ def main():
 
                 ref_nuc_seq = projects.getReference(ref_name)
                 ref_nuc_section = list(ref_nuc_seq[ref_start:ref_end])
-                for mutation in fastq_file.mutations:
+                is_nucleotide = ((ref_start, ref_end) ==
+                                 (section.start_pos, section.end_pos))
+                for mutation in section.mutations:
                     if section.start_pos <= mutation.pos <= section.end_pos:
-                        section_pos = (mutation.pos - section.start_pos) * 3
+                        section_pos = mutation.pos - section.start_pos
+                        if not is_nucleotide:
+                            section_pos *= 3
                         ref_nuc_section[section_pos:section_pos+3] = list(mutation.codon)
                 ref_nuc_section = ''.join(ref_nuc_section)
                 if fastq_file.is_reversed:
                     ref_nuc_section = reverse_and_complement(ref_nuc_section)
                 phred_scores = 'A' * len(ref_nuc_section)
                 file_num = '2' if fastq_file.is_reversed else '1'
+                # noinspection PyTypeChecker
                 for cluster in range(section.count):
                     f.write('@M01234:01:000000000-AAAAA:1:1101:{}:{:04} {}:N:0:1\n'.format(
                         fastq_file.extract_num,
@@ -155,7 +195,8 @@ def make_random_sections(coord_name,
                          min_start,
                          max_end,
                          projects=None,
-                         read_count=10000):
+                         read_count=10000,
+                         mutations=()):
     if projects is None:
         ref_name = coord_name
         ref_start = min_start
@@ -176,8 +217,8 @@ def make_random_sections(coord_name,
         end = randrange(start + min_read_length, end_stop)
         end1 = min(end, start + max_read_length)
         start2 = max(start, end - max_read_length)
-        sections_1.append(FastqSection(ref_name, start, end1, 1))
-        sections_2.append(FastqSection(ref_name, start2, end, 1))
+        sections_1.append(FastqSection(ref_name, start, end1, 1, mutations))
+        sections_2.append(FastqSection(ref_name, start2, end, 1, mutations))
     return sections_1, sections_2
 
 

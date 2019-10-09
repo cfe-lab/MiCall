@@ -351,6 +351,11 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 1-HCV-1a,HCV-1a,4,4,0,0,6
 1-HCV-1a,HCV-1a,5,5,0,0,6
 1-HCV-1a,HCV-1a,6,6,0,0,6
+contig-1-HCV-1a,HCV-1a,1,1,0,,
+contig-1-HCV-1a,HCV-1a,2,2,0,,
+contig-1-HCV-1a,HCV-1a,4,4,0,,
+contig-1-HCV-1a,HCV-1a,5,5,0,,
+contig-1-HCV-1a,HCV-1a,6,6,0,,
 """)
     expected_figure = """\
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
@@ -358,6 +363,7 @@ NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
 NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
 Coverage 5x2, 0, 6x3
 [1-2], [4-6], 1-HCV-1a - depth 6(1-9646)
+[1-2], [4-6], contig-1-HCV-1a(1-9646)
 """
 
     figure = build_coverage_figure(genome_coverage_csv)

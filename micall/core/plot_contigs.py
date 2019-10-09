@@ -185,8 +185,18 @@ def build_contig(reader, f, contig_name, max_position, position_offset):
                 subtracks.append(Track(start + group_start + position_offset,
                                        start + group_end + position_offset))
         if not subtracks:
-            subtracks.append(Track(start + position_offset,
-                                   end + position_offset))
+            group_start = prev_pos = None
+            included_positions = [row[pos_field] for row in contig_rows]
+            included_positions.append(None)  # Trigger final section.
+            for pos in included_positions:
+                if group_start is None:
+                    group_start = pos
+                else:
+                    if pos != prev_pos + 1:
+                        subtracks.append(Track(group_start + position_offset,
+                                               prev_pos + position_offset))
+                        group_start = pos
+                prev_pos = pos
         if max(coverage) <= 0:
             track_label = contig_name
         else:

@@ -18,7 +18,7 @@ The scenarios that each file tests are:
   the end, with a two-codon gap between
 * 2020A-GP41 - starts at second codon and inserts extra codon after first ten
 * 2030A-V3LOOP - garbage reads, all different
-* 2040-HLA-B - exon2 of HLA-B, half have a changed base at nucleotide 7 to test
+* 2040A-HLA-B - exon2 of HLA-B, half have a changed base at nucleotide 7 to test
   mixtures in the consensus
 * 2050-V3LOOP - low quality
 * 2060A-V3LOOP - clean read tests g2p with four codon overlap between forward
