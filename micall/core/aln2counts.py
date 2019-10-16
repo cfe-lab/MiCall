@@ -30,7 +30,7 @@ AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'
 CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
-CONSENSUS_MIN_COVERAGE = 100
+CONSENSUS_MIN_COVERAGES = (100, 1)
 MAX_CUTOFF = 'MAX'
 
 
@@ -75,6 +75,15 @@ def parse_args():
     return parser.parse_args()
 
 
+def trim_contig_name(contig_name):
+    prefix = contig_name.split('-')[0]
+    if not re.fullmatch(r'[\d_]+', prefix):
+        seed_name = contig_name
+    else:
+        _, seed_name = contig_name.split('-', 1)
+    return seed_name
+
+
 class SequenceReport(object):
     """ Hold the data for several reports related to a sample's genetic sequence.
 
@@ -98,6 +107,7 @@ class SequenceReport(object):
             included as a mixture in the consensus.
         """
         self.consensus_min_coverage = 0
+        self.consensus_min_coverages = None
         self.callback_progress = 0
         self.callback_next = self.callback_chunk_size = self.callback_max = None
         self.insert_writer = insert_writer
@@ -154,11 +164,7 @@ class SequenceReport(object):
             if i == 0:
                 # these will be the same for all rows, so just assign from the first
                 self.detail_seed = row['refname']
-                prefix = self.detail_seed.split('-')[0]
-                if not re.fullmatch(r'[\d_]+', prefix):
-                    self.seed = self.detail_seed
-                else:
-                    _, self.seed = self.detail_seed.split('-', 1)
+                self.seed = trim_contig_name(self.detail_seed)
                 self.qcut = row['qcut']
             nuc_seq = row['seq']
             offset = int(row['offset'])
@@ -730,6 +736,7 @@ class SequenceReport(object):
         return csv.DictWriter(conseq_file,
                               ['region',
                                'q-cutoff',
+                               'min_coverage',
                                'consensus-percent-cutoff',
                                'offset',
                                'sequence'],
@@ -760,6 +767,7 @@ class SequenceReport(object):
             if offset is not None:
                 consensus = consensus.rstrip('-')
                 yield {'q-cutoff': self.qcut,
+                       'min_coverage': self.consensus_min_coverage,
                        'consensus-percent-cutoff':
                            format_cutoff(mixture_cutoff),
                        'offset': offset,
@@ -769,15 +777,19 @@ class SequenceReport(object):
         conseq_writer = conseq_writer or self.conseq_writer
         seed_amino_entries = [(seed_amino.consensus_nuc_index, seed_amino)
                               for seed_amino in self.seed_aminos[0]]
-        for row in self.get_consensus_rows(seed_amino_entries):
-            row['region'] = self.detail_seed
-            conseq_writer.writerow(row)
+        min_coverages = (self.consensus_min_coverages or
+                         (self.consensus_min_coverage,))
+        for self.consensus_min_coverage in min_coverages:
+            for row in self.get_consensus_rows(seed_amino_entries):
+                row['region'] = self.detail_seed
+                conseq_writer.writerow(row)
 
     def write_consensus_regions_header(self, conseq_region_file):
         self.conseq_region_writer = csv.DictWriter(conseq_region_file,
                                                    ['seed',
                                                     'region',
                                                     'q-cutoff',
+                                                    'min_coverage',
                                                     'consensus-percent-cutoff',
                                                     'offset',
                                                     'sequence'],
@@ -1319,7 +1331,7 @@ def aln2counts(aligned_csv,
                                 projects,
                                 CONSEQ_MIXTURE_CUTOFFS,
                                 landmarks_yaml=landmarks_yaml)
-        report.consensus_min_coverage = CONSENSUS_MIN_COVERAGE
+        report.consensus_min_coverages = CONSENSUS_MIN_COVERAGES
         report.write_amino_header(amino_csv)
         report.write_consensus_header(conseq_csv)
         report.write_consensus_regions_header(conseq_region_csv)

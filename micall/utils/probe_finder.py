@@ -38,10 +38,12 @@ def find_probes(contigs_csv, probes_csv):
     reader = DictReader(contigs_csv)
     columns = ['sample', 'contig']
     for target_name in TARGET_SEQUENCES:
-        for column_type in ['start',
-                            'size',
-                            'hxb2_start',
-                            'hxb2_size',
+        for column_type in ['in_contig_start',
+                            'in_contig_size',
+                            'in_hxb2_start',
+                            'in_hxb2_size',
+                            'merged_hxb2_start',
+                            'merged_hxb2_size',
                             'dist',
                             'score',
                             'seq']:
@@ -56,10 +58,13 @@ def find_probes(contigs_csv, probes_csv):
     for sample_name, sample_rows in groupby(reader, itemgetter('sample')):
         contig_num = 0
         for row in sample_rows:
-            seed_name = row['genotype']
+            seed_name = row.get('genotype') or row.get('ref') or row['region']
+            conseq_cutoff = row.get('consensus-percent-cutoff')
+            if conseq_cutoff and conseq_cutoff != 'MAX':
+                continue
             contig_num += 1
             contig_name = f'{contig_num}-{seed_name}'
-            contig_seq: str = row['contig']
+            contig_seq: str = row.get('contig') or row['sequence']
             aligned_hxb2, aligned_contig_to_hxb2, _ = align_it(
                 hxb2,
                 contig_seq,
@@ -95,7 +100,7 @@ def find_probes(contigs_csv, probes_csv):
                 start_pos = start + 1
                 end_pos = start + size
                 hxb2_pos = contig_pos = 0
-                hxb2_start = hxb2_size = None
+                merged_hxb2_start = merged_hxb2_size = None
                 for hxb2_nuc, contig_nuc in zip(aligned_hxb2,
                                                 aligned_contig_to_hxb2):
                     if hxb2_nuc != '-':
@@ -103,16 +108,30 @@ def find_probes(contigs_csv, probes_csv):
                     if contig_nuc != '-':
                         contig_pos += 1
                         if contig_pos == start_pos:
-                            hxb2_start = hxb2_pos
+                            merged_hxb2_start = hxb2_pos
                         if contig_pos == end_pos:
-                            hxb2_size = hxb2_pos - hxb2_start + 1
+                            merged_hxb2_size = hxb2_pos - merged_hxb2_start + 1
                             break
 
+                aligned_ref, aligned_match, _ = align_it(
+                    hxb2,
+                    contig_match,
+                    gap_open_penalty,
+                    gap_extend_penalty,
+                    use_terminal_gap_penalty)
+                lstripped_match = aligned_match.lstrip('-')
+                in_hxb2_start = len(aligned_match) - len(lstripped_match)
+                tail_len = len(lstripped_match) - len(lstripped_match.rstrip('-'))
+                ref_match = aligned_ref[in_hxb2_start:-tail_len or None]
+                in_hxb2_size = len(ref_match.replace('-', ''))
+
                 prefix = target_name + '_'
-                new_row[prefix + 'start'] = start_pos
-                new_row[prefix + 'size'] = size
-                new_row[prefix + 'hxb2_start'] = hxb2_start
-                new_row[prefix + 'hxb2_size'] = hxb2_size
+                new_row[prefix + 'in_contig_start'] = start_pos
+                new_row[prefix + 'in_contig_size'] = size
+                new_row[prefix + 'in_hxb2_start'] = in_hxb2_start
+                new_row[prefix + 'in_hxb2_size'] = in_hxb2_size
+                new_row[prefix + 'merged_hxb2_start'] = merged_hxb2_start
+                new_row[prefix + 'merged_hxb2_size'] = merged_hxb2_size
                 new_row[prefix + 'dist'] = dist
                 new_row[prefix + 'score'] = score
                 new_row[prefix + 'seq'] = contig_match
@@ -135,5 +154,5 @@ def main():
     find_probes(args.contigs_csv, args.probes_csv)
 
 
-if __name__ == '__main__':
+if __name__ in ('__main__', '__live_coding__'):
     main()

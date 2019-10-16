@@ -16,7 +16,10 @@ import pandas as pd
 import seaborn as sns
 import Levenshtein
 
-MICALL_VERSION = '7.11'
+from micall.core.aln2counts import trim_contig_name
+
+MICALL_VERSION = '7.12'
+USE_DENOVO = True
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
@@ -63,6 +66,8 @@ def find_runs(source_folder, target_folder):
                                    'version_' + MICALL_VERSION)
         done_path = os.path.join(target_path, 'doneprocessing')
         is_done = os.path.exists(done_path)
+        if USE_DENOVO:
+            target_path = os.path.join(target_path, 'denovo')
         source_results_path = os.path.join(source_folder,
                                            'MiSeq',
                                            'runs',
@@ -76,6 +81,8 @@ def find_runs(source_folder, target_folder):
 
 def parse_version(version_name):
     version_text = version_name.split('_')[-1]
+    if version_text.endswith('.zip'):
+        version_text = version_text[:-4]
     return tuple(map(int, version_text.split('.')))
 
 
@@ -196,8 +203,11 @@ def group_nucs_file(output_file):
 
 
 def get_run_name(sample):
-    return os.path.basename(
-        os.path.dirname(os.path.dirname(sample.run.target_path)))
+    dirname = os.path.dirname(os.path.dirname(sample.run.target_path))
+    run_name = os.path.basename(dirname)
+    if run_name == 'Results':
+        run_name = os.path.basename(os.path.dirname(dirname))
+    return run_name
 
 
 def compare_g2p(sample, diffs):
@@ -330,17 +340,21 @@ def map_consensus_sequences(files):
                                  for seed, regions in files.nuc_limits.items()})
 
     for row in files.consensus:
-        seed = row['region']
+        seed = trim_contig_name(row['region'])
         cutoff = row['consensus-percent-cutoff']
         sequence = row['sequence'].rstrip('-')
         offset = int(row['offset'])
         for region, first, last in region_limits[seed]:
+            if USE_DENOVO and region == 'V3LOOP':
+                adjusted_seed = 'Some-HIV'
+            else:
+                adjusted_seed = seed
             if first > offset:
                 subsequence = sequence[first-offset-1:]
             else:
                 subsequence = '-' * (offset-first+1) + sequence
             subsequence = subsequence[:last-first+1]
-            consensus_sequences[(seed, region, cutoff)] = subsequence
+            consensus_sequences[(adjusted_seed, region, cutoff)] = subsequence
     return consensus_sequences
 
 
@@ -529,7 +543,7 @@ def main():
     i = None
     all_consensus_distances = []
     report_count = 0
-    for i, (report, scenarios, consensus_distances) in enumerate(results):
+    for i, (report, scenarios, consensus_distances) in enumerate(results, 1):
         if report:
             report_count += 1
             if report_count > 100:

@@ -18,6 +18,8 @@ import os
 from pathlib import Path
 from shutil import copy, rmtree
 
+from micall.utils.sample_sheet_parser import sample_sheet_parser
+
 NEEDS_PROCESSING = 'needsprocessing'
 ERROR_PROCESSING = 'errorprocessing'
 
@@ -98,9 +100,10 @@ class Sample(object):
         matches.sort()
         self.fastq_paths = matches
         if qai_run_names is not None:
-            run_parts = os.path.basename(self.run_name).split('_')
-            run_date = datetime.strptime(run_parts[0], '%y%m%d')
-            qai_run_name = run_date.strftime('%d-%b-%Y') + '.' + str(run_parts[1])
+            sample_sheet_path = os.path.join(self.run_name, 'SampleSheet.csv')
+            with open(sample_sheet_path) as f:
+                sample_sheet = sample_sheet_parser(f)
+            qai_run_name = sample_sheet['Project Name']
             qai_run_names.add(qai_run_name)
 
     def setup_samples(self):
