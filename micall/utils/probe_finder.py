@@ -22,7 +22,7 @@ def parse_args():
         description='Search contigs.csv for known probe and primer sequences.',
         formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('contigs_csv',
-                        help='CSV file with contig sequences',
+                        help='CSV file with contig sequences or consensus sequences',
                         nargs='?',
                         default='contigs.csv',
                         type=FileType())
@@ -61,6 +61,9 @@ def find_probes(contigs_csv, probes_csv):
             seed_name = row.get('genotype') or row.get('ref') or row['region']
             conseq_cutoff = row.get('consensus-percent-cutoff')
             if conseq_cutoff and conseq_cutoff != 'MAX':
+                continue
+            min_coverage = row.get('min_coverage')
+            if min_coverage and min_coverage != '100':
                 continue
             contig_num += 1
             contig_name = f'{contig_num}-{seed_name}'

@@ -42,6 +42,8 @@ class Scenarios(IntEnum):
     REMAP_COUNTS_CHANGED = 1
     MAIN_CONSENSUS_CHANGED = 2
     OTHER_CONSENSUS_CHANGED = 4
+    CONSENSUS_DELETIONS_CHANGED = 8
+    VPR_FRAME_SHIFT_FIXED = 16
 
 
 differ = Differ()
@@ -340,6 +342,10 @@ def map_consensus_sequences(files):
                                  for seed, regions in files.nuc_limits.items()})
 
     for row in files.consensus:
+        if MICALL_VERSION == '7.12':
+            min_coverage = int(row.get('min_coverage', '100'))
+            if min_coverage != 100:
+                continue
         seed = trim_contig_name(row['region'])
         cutoff = row['consensus-percent-cutoff']
         sequence = row['sequence'].rstrip('-')
@@ -347,6 +353,9 @@ def map_consensus_sequences(files):
         for region, first, last in region_limits[seed]:
             if USE_DENOVO and region == 'V3LOOP':
                 adjusted_seed = 'Some-HIV'
+            elif USE_DENOVO and region.startswith('HIV'):
+                seed_parts = seed.split('-')
+                adjusted_seed = '-'.join(seed_parts[:2])
             else:
                 adjusted_seed = seed
             if first > offset:
@@ -368,6 +377,10 @@ def find_duplicates(sample):
     rows = sample.target_files.consensus
     if rows is None:
         return
+    if MICALL_VERSION == '7.12':
+        rows = [row
+                for row in rows
+                if row.get('min_coverage', '100') == '100']
     counts = Counter((row['region'], row['consensus-percent-cutoff'])
                      for row in rows)
     duplicate_keys = sorted(key
@@ -409,24 +422,39 @@ def compare_consensus(sample,
     keys = sorted(set(source_seqs.keys()) | target_seqs.keys())
     for key in keys:
         seed, region, cutoff = key
-        source_fields = source_seqs.get(key)
-        target_fields = target_seqs.get(key)
+        source_seq = source_seqs.get(key)
+        target_seq = target_seqs.get(key)
         consensus_distance = calculate_distance(region,
                                                 cutoff,
-                                                source_fields,
-                                                target_fields)
+                                                source_seq,
+                                                target_seq)
         if False and consensus_distance.pct_diff > 5:
             print(sample.run.source_path, sample.name, consensus_distance)
-            print(source_fields)
-            print(target_fields)
+            print(source_seq)
+            print(target_seq)
         if consensus_distance is not None:
             consensus_distances.append(consensus_distance)
-        if source_fields == target_fields:
-            continue
-        if (MICALL_VERSION == '7.11' and source_fields is None and
-                sample.name.startswith('90308A')):
+        if source_seq == target_seq:
             continue
         is_main = is_consensus_interesting(region, cutoff)
+
+        trimmed_source_seq = source_seq and source_seq.replace('-', '')
+        trimmed_target_seq = target_seq and target_seq.replace('-', '')
+        if (trimmed_source_seq == trimmed_target_seq and
+                (scenarios_reported & Scenarios.CONSENSUS_DELETIONS_CHANGED)):
+            scenarios[Scenarios.CONSENSUS_DELETIONS_CHANGED].append('.')
+            continue
+        if (USE_DENOVO and
+                is_main and
+                seed == 'HIV1-B' and
+                region == 'HIV1B-vpr' and
+                (scenarios_reported & Scenarios.VPR_FRAME_SHIFT_FIXED)):
+            if source_seq and source_seq[212] == '-':
+                source_seq = source_seq[:212] + source_seq[213:273]
+                target_seq = target_seq and target_seq[:272]
+                if source_seq == target_seq:
+                    scenarios[Scenarios.VPR_FRAME_SHIFT_FIXED].append('.')
+                    continue
         if is_main and scenarios_reported & Scenarios.MAIN_CONSENSUS_CHANGED:
             scenarios[Scenarios.MAIN_CONSENSUS_CHANGED].append('.')
         elif (not is_main and
@@ -438,27 +466,10 @@ def compare_consensus(sample,
                                                             seed,
                                                             region,
                                                             cutoff))
-            diff = list(differ.compare(display_consensus(source_fields),
-                                       display_consensus(target_fields)))
+            diff = list(differ.compare(display_consensus(source_seq),
+                                       display_consensus(target_seq)))
             diffs.extend(line.rstrip() for line in diff)
     return consensus_distances
-
-
-def trim_consensus_sequences(target_seqs):
-    old_sections = {('HCV-2', 'HCV-NS2'): slice(36, None),
-                    ('HCV-2', 'HCV-NS5a'): slice(None, -114),
-                    ('HCV-3', 'HCV-E1'): slice(9, None),
-                    ('HCV-4', 'HCV-E1'): slice(6, None),
-                    ('HCV-5', 'HCV-E1'): slice(6, None),
-                    ('HCV-6', 'HCV-E1'): slice(6, None),
-                    ('HIV1-', 'HIV1B-vpr'): slice(None, 234)}
-    keys = list(target_seqs)
-    for key in keys:
-        seed_name, region_name, cutoff = key
-        genotype = seed_name[:5]
-        old_section_slice = old_sections.get((genotype, region_name))
-        if old_section_slice is not None:
-            target_seqs[key] = target_seqs[key][old_section_slice]
 
 
 def compare_sample(sample,
@@ -469,8 +480,6 @@ def compare_sample(sample,
     compare_coverage(sample, diffs, scenarios_reported, scenarios)
     source_seqs = map_consensus_sequences(sample.source_files)
     target_seqs = map_consensus_sequences(sample.target_files)
-    if MICALL_VERSION == '7.10':
-        trim_consensus_sequences(target_seqs)
     consensus_distances = compare_consensus(sample,
                                             source_seqs,
                                             target_seqs,
@@ -535,8 +544,11 @@ def main():
     runs = report_source_versions(runs)
     samples = read_samples(runs)
     # noinspection PyTypeChecker
+    scenarios_reported = (Scenarios.OTHER_CONSENSUS_CHANGED |
+                          Scenarios.CONSENSUS_DELETIONS_CHANGED |
+                          Scenarios.VPR_FRAME_SHIFT_FIXED)
     results = pool.imap(partial(compare_sample,
-                                scenarios_reported=Scenarios.OTHER_CONSENSUS_CHANGED),
+                                scenarios_reported=scenarios_reported),
                         samples,
                         chunksize=50)
     scenario_summaries = defaultdict(list)
@@ -580,3 +592,94 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+"""
+=== Detailed comparison of the 190621 run ===
+Comparison scenarios:
+1. In general, vpr looks better with de novo assembly. Samples that mapped to
+HXB2 would often get the frame shift around base 212, and that is usually fixed.
+2. Large deletions can cause duplicated sections in the merged reference.
+Example: 190621_M04401_0143_000000000-CCNNJ:1693P1Y04608-1D4-HIV_S16
+3. Large deletions can cause some genes to not be reported at all.
+Example: 190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2A4-HIV_S13
+
+Comparison samples:
+190621:1693P1Y04608-1C6-HIV_S21
+* A deletion near the start of gag made coverage drop in the mapped version. De
+novo assembly included the deletion.
+* A deletion near the end of vpu caused several partial deletions in the mapped
+version, and coverage dropped. De novo assembly included the deletion.
+
+190621_M04401_0143_000000000-CCNNJ:1693P1Y04608-1D4-HIV_S16
+There's a huge deletion between RT and GP41. The mapped version soft clips both
+sides. The assembled version had very low coverage in GP41 and nef, probably
+because the merged ref had a mostly duplicated region after the deletion pulled
+GP41 and nef to the left.
+
+190621_M04401_0143_000000000-CCNNJ:1693P1Y04608-1E10-HIV_S22
+The assembly seems to loop around from 3' to 5', and the section from 5' to gag
+makes the gag no longer align, and gag is not reported. The mapped reads in gag
+look like they're obviously in the wrong place because of soft clipping, but it
+has good coverage.
+
+190621_M04401_0143_000000000-CCNNJ:1693P1Y04608-1F9-HIV_S17
+A similar problem to S22, but in this one, the remapping version seems to have
+replaced a bunch of stop codons at the end of gag. There might be a large
+deletion between gag and the start of RT. I suspect there are different reads
+mapping to the end of gag in the two versions. But then what's mapping to PR in
+the remapped version? Is there a mixture? A large insertion?
+In vpu, the remapped version has a 4 codon deletion and reports some insertions
+nearby. The assembled version includes 3 codons from those insertions, and just
+has a single codon deletion.
+In GP41, maybe there's a large insertion near the end? Could that explain why
+the contig hangs off the 3' end?
+
+190621_M04401_0143_000000000-CCNNJ:2569P1Y02945-1B10-HIV_S10
+The assembled version has a four codon insertion near the start of nef, that's
+an exact duplicate of the four neighbouring codons. It seems real, because the
+remapped version has a bunch of soft clipping on either side.
+
+190621_M04401_0143_000000000-CCNNJ:2569P1Y02945-1C11-HIV_S20
+A giant deletion from gag to nef? Or maybe the 5' primer mapped to some part
+near the boundary of env/nef.
+
+190621_M04401_0143_000000000-CCNNJ:2569P1Y02945-1D9-HIV_S5
+The assembled version has a 3 codon insertion around codon 450 of gag. The
+remapped version has a lot of soft clipping in that area.
+
+190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2A4-HIV_S13
+The remapped version has a deletion through most of PR, and stops at the end of
+RT. The assembled version looks like most of RT got pulled to the left, but
+for some reason, neither PR nor RT successfully aligned. Maybe the pieces that
+remapping left as the original reference were enough to do the coordinate
+alignment.
+
+190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2D7-HIV_S35
+Looks like a large deletion from the end of RT to 3'LTR. The remapped version
+just drops coverage at the end of RT, and the 3'LTR section incorrectly maps to
+the 5'LTR. The assembled version sticks the 3'LTR to the end of RT. To add to
+the confusion, there are three stop codons in the first half of RT, and they
+appear in both versions. Then there's an insertion in the remapped version just
+before position 300, and it has some soft clipping around it. The assembled
+version includes that insertion, and it throws the reading frame off, so there
+are a bunch of stop codons and deletions after it.
+
+190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2E1-HIV_S34
+Looks similar to S13.
+
+190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2E5-HIV_S27
+Looks similar to S13.
+
+190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2F3-HIV_S3
+The assembled version correctly found an insertion near the end of vpu.
+
+190621_M04401:61693P1Y04608-1E6-HIV_S29
+Vpr got worse, because no contig assembled around vpr, and the one mapping run
+on HXB2 was worse than the remapped version.
+
+Questions:
+1. Are there any effects of the stop codon in nef? It didn't change alignment,
+so maybe it didn't cause problems.
+2. What the heck happened in 190621:1693P1Y04608-1F9-HIV_S17? Large deletion?
+Duplication? Mixture?
+"""
