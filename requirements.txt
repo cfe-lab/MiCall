@@ -12,4 +12,4 @@ python-Levenshtein==0.12.0
 PyYAML==5.1
 reportlab==3.4.0
 pysam==0.15.2
-git+https://github.com/jeff-k/genetracks.git
+git+https://github.com/cfe-lab/genetracks.git@v0.2.dev0

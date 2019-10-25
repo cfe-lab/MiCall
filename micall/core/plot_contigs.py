@@ -11,6 +11,7 @@ import yaml
 from genetracks import Figure, Track, Multitrack, Coverage
 # noinspection PyPep8Naming
 import drawSvg as draw
+from genetracks.elements import Element
 from matplotlib import cm, colors
 from matplotlib.colors import Normalize
 
@@ -65,6 +66,40 @@ class ShadedCoverage(SmoothCoverage):
         rgba = self.cm(self.normalize(log_coverage))
 
         return colors.to_hex(rgba)
+
+
+class Arrow(Element):
+    def __init__(self, start, end, h=30, label=None):
+        super().__init__(x=start, y=0, w=end-start, h=h)
+        self.label = label
+
+    def draw(self, x=0, y=0, xscale=1.0):
+        h = self.h
+        a = self.x * xscale
+        b = (self.x + self.w) * xscale
+        x = x * xscale
+        direction = 1
+        r = 10 * xscale
+        arrow_size = 7 * xscale
+        arrow_end = b
+        arrow_start = arrow_end - arrow_size*direction
+        centre = (a + b - direction*arrow_size)/2
+        centre_start = centre - direction*r
+        centre_end = centre + direction*r
+        group = draw.Group(transform="translate({} {})".format(x, y))
+        group.append(draw.Circle(centre, h/2, r, fill='ivory', stroke='black'))
+        group.append(draw.Line(a, h/2, centre_start, h/2, stroke='black'))
+        group.append(draw.Line(centre_end, h/2, arrow_start, h/2, stroke='black'))
+        group.append(draw.Lines(arrow_end, h/2,
+                                arrow_start, (h + arrow_size)/2,
+                                arrow_start, (h - arrow_size)/2,
+                                fill='black'))
+        group.append(draw.Text(self.label,
+                               15,
+                               centre, h/2,
+                               text_anchor='middle',
+                               dy="0.3em"))
+        return group
 
 
 def plot_genome_coverage(genome_coverage_csv, genome_coverage_svg_path):

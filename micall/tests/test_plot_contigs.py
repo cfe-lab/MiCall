@@ -1,10 +1,15 @@
-from io import StringIO
+from base64 import standard_b64encode
+from io import StringIO, BytesIO
+from pathlib import Path
+from turtle import Turtle
 
 import pytest
+from PIL import Image, ImageChops
+from drawSvg import Drawing, Line, Lines, Circle, Text
 from genetracks import Figure, Track, Multitrack, Label, Coverage
 
 from micall.core.plot_contigs import summarize_figure, \
-    build_coverage_figure, SmoothCoverage, add_partial_banner
+    build_coverage_figure, SmoothCoverage, add_partial_banner, Arrow
 
 HCV_HEADER = ('C[342-915], E1[915-1491], E2[1491-2580], P7[2580-2769], '
               'NS2[2769-3420], NS3[3420-5313], NS4A[5313-5475], '
@@ -13,6 +18,54 @@ HIV_HEADER = '''\
 5' LTR[0-634], gag[790-2292], vif[5041-5619], tat[8379-8469], nef[8797-9417]
 tat[5831-6045], vpu[6062-6310], rev[8379-8653], 3' LTR[9086-9719]
 pol[2085-5096], vpr[5559-5850], rev[5970-6045], env[6225-8795]'''
+
+
+class SvgDiffer:
+    def __init__(self):
+        self.work_dir: Path = Path(__file__).parent / 'svg_diffs'
+        self.work_dir.mkdir(exist_ok=True)
+        for work_file in self.work_dir.iterdir():
+            if work_file.name == '.gitignore':
+                continue
+            assert work_file.suffix in ('.svg', '.png')
+            work_file.unlink()
+
+    def assert_equal(self,
+                     svg_actual: Drawing,
+                     svg_expected: Drawing,
+                     name: str):
+        # Display image when in live turtle mode.
+        display_image = getattr(Turtle, 'display_image', None)
+        if display_image is not None:
+            encoded = standard_b64encode(svg_actual.rasterize().pngData)
+            display_image(0, 0, image=encoded.decode('UTF-8'))
+
+        png_actual = drawing_to_image(svg_actual)
+        png_expected = drawing_to_image(svg_expected)
+        png_diff = ImageChops.difference(png_actual, png_expected)
+
+        extrema = png_diff.getextrema()
+        if extrema == ((0, 0), (0, 0), (0, 0), (0, 0)):
+            return
+        text_actual = svg_actual.asSvg()
+        (self.work_dir / (name+'_actual.svg')).write_text(text_actual)
+        text_expected = svg_expected.asSvg()
+        (self.work_dir / (name+'_expected.svg')).write_text(text_expected)
+        with (self.work_dir / (name+'_diff.png')) as f:
+            png_diff.save(f)
+        assert text_actual == text_expected
+
+
+def drawing_to_image(drawing: Drawing) -> Image:
+    png = drawing.rasterize()
+    png_bytes = BytesIO(png.pngData)
+    image = Image.open(png_bytes)
+    return image
+
+
+@pytest.fixture(scope='session')
+def svg_differ():
+    return SvgDiffer()
 
 
 def test_summarize_labels():
@@ -398,3 +451,25 @@ Coverage 5x3, 7x3, 8x3
     figure = build_coverage_figure(genome_coverage_csv)
 
     assert expected_figure == summarize_figure(figure)
+
+
+def test_arrow(svg_differ):
+    expected_svg = Drawing(200.0, 60.0, origin=(0, 0))
+    expected_svg.append(Circle(168/2, 40, 10, stroke='black', fill='ivory'))
+    expected_svg.append(Text('X',
+                             15,
+                             168/2, 40,
+                             text_anchor='middle',
+                             dy="0.3em"))
+    expected_svg.append(Line(0, 40, 74, 40, stroke='black'))
+    expected_svg.append(Line(94, 40, 168, 40, stroke='black'))
+    expected_svg.append(Lines(175, 40,
+                              168, 43.5,
+                              168, 36.5,
+                              175, 40,
+                              fill='black'))
+    f = Figure()
+    f.add(Arrow(0, 175, label='X'))
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
