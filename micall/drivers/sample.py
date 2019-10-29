@@ -221,8 +221,11 @@ class Sample:
                           coverage_maps_prefix=self.name,
                           excluded_projects=excluded_projects)
 
-        with open(self.genome_coverage_csv) as genome_coverage_csv:
-            plot_genome_coverage(genome_coverage_csv, self.genome_coverage_svg)
+        with open(self.genome_coverage_csv) as genome_coverage_csv, \
+                open(self.blast_csv) as blast_csv:
+            plot_genome_coverage(genome_coverage_csv,
+                                 blast_csv,
+                                 self.genome_coverage_svg)
 
         logger.info('Running cascade_report on %s.', self)
         with open(self.g2p_summary_csv) as g2p_summary_csv, \

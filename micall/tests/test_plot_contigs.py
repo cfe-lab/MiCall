@@ -4,8 +4,8 @@ from pathlib import Path
 from turtle import Turtle
 
 import pytest
-from PIL import Image, ImageChops
-from drawSvg import Drawing, Line, Lines, Circle, Text
+from PIL import Image
+from drawSvg import Drawing, Line, Lines, Circle, Text, Rectangle
 from genetracks import Figure, Track, Multitrack, Label, Coverage
 
 from micall.core.plot_contigs import summarize_figure, \
@@ -142,7 +142,7 @@ Bar(1-200)
 
     summary = summarize_figure(figure)
 
-    assert expected_summary == summary
+    assert summary == expected_summary
 
 
 def test_summarize_label_objects():
@@ -156,7 +156,7 @@ Bar:
 
     summary = summarize_figure(figure)
 
-    assert expected_summary == summary
+    assert summary == expected_summary
 
 
 def test_summarize_multitracks():
@@ -171,7 +171,7 @@ Bar[10-20], Baz[30-40]
 
     summary = summarize_figure(figure)
 
-    assert expected_summary == summary
+    assert summary == expected_summary
 
 
 def test_summarize_multitracks_with_separate_label():
@@ -187,7 +187,7 @@ Foo:
 
     summary = summarize_figure(figure)
 
-    assert expected_summary == summary
+    assert summary == expected_summary
 
 
 def test_summarize_regions():
@@ -200,7 +200,7 @@ Foo[1-200], lightgreen{50-100}, red{110-120}
 
     summary = summarize_figure(figure)
 
-    assert expected_summary == summary
+    assert summary == expected_summary
 
 
 def test_summarize_coverage():
@@ -214,7 +214,7 @@ Bar[12-22]
 
     summary = summarize_figure(figure)
 
-    assert expected_summary == summary
+    assert summary == expected_summary
 
 
 def test_summarize_zero_coverage():
@@ -237,7 +237,7 @@ Bar[12-22]
 
     summary = summarize_figure(figure)
 
-    assert expected_summary == summary
+    assert summary == expected_summary
 
 
 def test_summarize_smooth_coverage_ten_percent():
@@ -251,7 +251,37 @@ Bar[12-22]
 
     summary = summarize_figure(figure)
 
-    assert expected_summary == summary
+    assert summary == expected_summary
+
+
+def test_summarize_arrow():
+    figure = Figure()
+    figure.add(Arrow(10, 50, label='Foo'))
+    figure.add(Arrow(60, 30, label='Bar'))
+    expected_summary = """\
+10--Foo->50
+30<-Bar--60
+"""
+
+    summary = summarize_figure(figure)
+
+    assert summary == expected_summary
+
+
+def test_summarize_arrow_group():
+    figure = Figure()
+    figure.add(ArrowGroup([Arrow(10, 50, label='Foo'),
+                           Arrow(60, 30, label='Bar')]))
+    figure.add(ArrowGroup([Arrow(1, 50, label='Baz'),
+                           Arrow(90, 100, label='Boom')]))
+    expected_summary = """\
+10--Foo->50, 30<-Bar--60
+1--Baz->50, 90--Boom->100
+"""
+
+    summary = summarize_figure(figure)
+
+    assert summary == expected_summary
 
 
 def test_plot_genome_coverage():
@@ -516,24 +546,53 @@ Coverage 5x3, 7x3, 8x3
     assert expected_figure == summarize_figure(figure)
 
 
+def test_plot_genome_coverage_blast():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1a,HCV-1a,1,8001,0,0,5
+1-HCV-1a,HCV-1a,2,8002,0,0,5
+1-HCV-1a,HCV-1a,3,8003,0,0,7
+1-HCV-1a,HCV-1a,4,8004,0,0,5
+1-HCV-1a,HCV-1a,5,8005,0,0,5
+1-HCV-1a,HCV-1a,6,8006,0,0,5
+""")
+    blast_csv = StringIO("""\
+contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
+1,HCV-1g,30,0.33,90,1,2,5001,5002
+1,HCV-1a,40,0.33,100,5,6,7006,7005
+1,HCV-1a,50,0.5,100,1,3,8001,8003
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
+7005<-1.2--7006, 8001--1.1->8003
+8001--1.1->8003, 8005--1.2->8006
+Coverage 5x2, 7, 5x3
+[8001-8006], 1-HCV-1a - depth 7(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, blast_csv)
+
+    assert summarize_figure(figure) == expected_figure
+
+
 # noinspection DuplicatedCode
 def test_arrow(svg_differ):
-    expected_svg = Drawing(175.0, 35.0, origin=(0, 0))
-    expected_svg.append(Circle(168/2, 20, 10, stroke='black', fill='ivory'))
-    expected_svg.append(Text('X',
-                             15,
-                             168/2, 20,
+    f, expected_svg = start_drawing(200, 55)
+    expected_svg.append(Line(0, 20, 168, 20, stroke='black'))
+    expected_svg.append(Circle(175/2, 20, 10, stroke='black', fill='ivory'))
+    expected_svg.append(Text('1.2',
+                             11,
+                             175/2, 20,
                              text_anchor='middle',
-                             dy="0.3em"))
-    expected_svg.append(Line(0, 20, 74, 20, stroke='black'))
-    expected_svg.append(Line(94, 20, 168, 20, stroke='black'))
+                             dy="0.35em"))
     expected_svg.append(Lines(175, 20,
                               168, 23.5,
                               168, 16.5,
                               175, 20,
                               fill='black'))
-    f = Figure()
-    f.add(Arrow(0, 175, h=20, label='X'))
+    f.add(Arrow(0, 175, h=20, label='1.2'))
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
@@ -541,25 +600,111 @@ def test_arrow(svg_differ):
 
 # noinspection DuplicatedCode
 def test_reverse_arrow(svg_differ):
-    expected_svg = Drawing(175.0, 35.0, origin=(0, 0))
-    expected_svg.append(Circle(7+168/2, 20, 10, stroke='black', fill='ivory'))
+    f, expected_svg = start_drawing(200, 55)
+    expected_svg.append(Line(7, 20, 175, 20, stroke='black'))
+    expected_svg.append(Circle(175/2, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('X',
-                             15,
-                             7+168/2, 20,
+                             11,
+                             175/2, 20,
                              text_anchor='middle',
-                             dy="0.3em"))
-    expected_svg.append(Line(7, 20, 81, 20, stroke='black'))
-    expected_svg.append(Line(101, 20, 175, 20, stroke='black'))
+                             dy="0.35em"))
     expected_svg.append(Lines(0, 20,
                               7, 23.5,
                               7, 16.5,
                               0, 20,
                               fill='black'))
-    f = Figure()
     f.add(Arrow(175, 0, h=20, label='X'))
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+
+
+# noinspection DuplicatedCode
+def test_scaled_arrow(svg_differ):
+    expected_svg = Drawing(100, 35, origin=(0, 0))
+    expected_svg.append(Line(0, 20, 93, 20, stroke='black'))
+    expected_svg.append(Circle(50, 20, 10, stroke='black', fill='ivory'))
+    expected_svg.append(Text('2.3',
+                             11,
+                             50, 20,
+                             text_anchor='middle',
+                             dy="0.35em"))
+    expected_svg.append(Lines(100, 20,
+                              93, 23.5,
+                              93, 16.5,
+                              100, 20,
+                              fill='black'))
+
+    f = Figure()
+    f.add(Arrow(0, 200, h=20, label='2.3'))
+    svg = f.show(w=100)
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+
+
+# noinspection DuplicatedCode
+def test_small_arrow(svg_differ):
+    f, expected_svg = start_drawing(200, 55)
+    expected_svg.append(Line(100, 10, 125, 10, stroke='black'))
+    expected_svg.append(Circle(116, 20, 10, stroke='black', fill='ivory'))
+    expected_svg.append(Text('2.3',
+                             11,
+                             116, 20,
+                             text_anchor='middle',
+                             dy="0.35em"))
+    expected_svg.append(Lines(132, 10,
+                              125, 13.5,
+                              125, 6.5,
+                              132, 10,
+                              fill='black'))
+
+    f.add(Arrow(100, 132, h=20, label='2.3'))
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+
+
+# noinspection DuplicatedCode
+def test_tiny_arrow(svg_differ):
+    f, expected_svg = start_drawing(200.0, 55.0)
+    expected_svg.append(Circle(102, 20, 10, stroke='black', fill='ivory'))
+    expected_svg.append(Text('2.3',
+                             11,
+                             102, 20,
+                             text_anchor='middle',
+                             dy="0.35em"))
+    expected_svg.append(Lines(104, 10,
+                              100, 13.5,
+                              100, 6.5,
+                              104, 10,
+                              fill='black'))
+
+    f.add(Arrow(100, 104, h=20, label='2.3'))
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+
+
+def start_drawing(width, height):
+    expected_svg = Drawing(width, height, origin=(0, 0))
+    expected_svg.append(Rectangle(0, height-15,
+                                  200, 10,
+                                  stroke='lightgrey',
+                                  fill='lightgrey'))
+    expected_svg.append(Text('Header',
+                             10,
+                             width/2, height-15,
+                             font_family='monospace',
+                             text_anchor='middle'))
+    f = Figure()
+    f.add(Track(0, width, label='Header'))
+    return f, expected_svg
+
+
+def test_arrow_repr(svg_differ):
+    arrow = Arrow(175, 0, label='X')
+
+    assert repr(arrow) == "Arrow(175, 0, label='X')"
 
 
 # noinspection DuplicatedCode

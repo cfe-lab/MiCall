@@ -89,6 +89,12 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
         fraction of the query that aligned against the reference (matches and
         mismatches).
     """
+    contig_nums = {}  # {contig_name: contig_num}
+    with open(fasta) as f:
+        for line in f:
+            if line.startswith('>'):
+                contig_name = line[1:-1]
+                contig_nums[contig_name] = len(contig_nums) + 1
     blast_columns = ['qaccver',
                      'saccver',
                      'pident',
@@ -115,7 +121,7 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
         blast_writer = None
     else:
         blast_writer = DictWriter(blast_csv,
-                                  ['contig_name',
+                                  ['contig_num',
                                    'ref_name',
                                    'score',
                                    'match',
@@ -152,9 +158,10 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
         if int(match['send']) < int(match['sstart']):
             matched_fraction *= -1
         pident = round(float(match['pident']))
-        samples[match['qaccver']] = (match['saccver'], matched_fraction)
+        contig_name = match['qaccver']
+        samples[contig_name] = (match['saccver'], matched_fraction)
         if blast_writer:
-            blast_writer.writerow(dict(contig_name=match['qaccver'],
+            blast_writer.writerow(dict(contig_num=contig_nums[contig_name],
                                        ref_name=match['saccver'],
                                        score=match['score'],
                                        match=matched_fraction,

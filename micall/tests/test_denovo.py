@@ -136,10 +136,10 @@ HCV-1a,0.75,HCV-1a,CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """
     blast_csv = StringIO()
     expected_blast_csv = """\
-contig_name,ref_name,score,match,pident,start,end,ref_start,ref_end
-bar,HCV-1g,37,0.67,100,19,55,8506,8542
-bar,HCV-1a,41,0.75,100,15,55,8518,8558
-foo,HCV-1a,41,1.0,100,1,41,8187,8227
+contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
+2,HCV-1g,37,0.67,100,19,55,8506,8542
+2,HCV-1a,41,0.75,100,15,55,8518,8558
+1,HCV-1a,41,1.0,100,1,41,8187,8227
 """
 
     write_contig_refs(str(contigs_fasta), contigs_csv, blast_csv=blast_csv)
