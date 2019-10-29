@@ -39,6 +39,7 @@ SAM_FLAG_IS_FIRST_SEGMENT = 0x40
 PARTIAL_CONTIG_SUFFIX = 'partial'
 REVERSED_CONTIG_SUFFIX = 'reversed'
 EXCLUDED_CONTIG_SUFFIX = 'excluded'
+ARE_CONTIGS_MERGED = False
 
 # SAM file format
 SAM_FIELDS = [
@@ -795,7 +796,7 @@ def read_contigs(contigs_csv, excluded_seeds=None):
             match_fraction = float(row['match'])
             is_match = 0.25 <= match_fraction
             is_reversed = match_fraction < 0
-            if not is_match:
+            if not (ARE_CONTIGS_MERGED and is_match):
                 contig_name = get_contig_name(i,
                                               row['ref'],
                                               is_match,

@@ -1,9 +1,10 @@
+import typing
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from collections import Counter, defaultdict
 from csv import DictReader
 from io import StringIO
 from itertools import groupby
-from math import log10
+from math import log10, copysign
 from operator import itemgetter
 from pathlib import Path
 
@@ -69,8 +70,14 @@ class ShadedCoverage(SmoothCoverage):
 
 
 class Arrow(Element):
-    def __init__(self, start, end, h=30, label=None):
-        super().__init__(x=start, y=0, w=end-start, h=h)
+    def __init__(self, start, end, h=20, label=None):
+        x = start
+        w = end-start
+        self.direction = copysign(1, w)
+        if w < 0:
+            x = end
+            w = -w
+        super().__init__(x=x, y=0, w=w, h=h)
         self.label = label
 
     def draw(self, x=0, y=0, xscale=1.0):
@@ -78,27 +85,74 @@ class Arrow(Element):
         a = self.x * xscale
         b = (self.x + self.w) * xscale
         x = x * xscale
-        direction = 1
-        r = 10 * xscale
+        r = h/2
+        font_size = h * 0.75
         arrow_size = 7 * xscale
-        arrow_end = b
-        arrow_start = arrow_end - arrow_size*direction
-        centre = (a + b - direction*arrow_size)/2
-        centre_start = centre - direction*r
-        centre_end = centre + direction*r
+        if self.direction >= 0:
+            line_start = a
+            arrow_end = b
+        else:
+            line_start = b
+            arrow_end = a
+        arrow_start = arrow_end - arrow_size*self.direction
+        centre = (a + b - self.direction*arrow_size)/2
+        centre_start = centre - self.direction*r
+        centre_end = centre + self.direction*r
         group = draw.Group(transform="translate({} {})".format(x, y))
         group.append(draw.Circle(centre, h/2, r, fill='ivory', stroke='black'))
-        group.append(draw.Line(a, h/2, centre_start, h/2, stroke='black'))
+        group.append(draw.Line(line_start, h/2, centre_start, h/2, stroke='black'))
         group.append(draw.Line(centre_end, h/2, arrow_start, h/2, stroke='black'))
         group.append(draw.Lines(arrow_end, h/2,
                                 arrow_start, (h + arrow_size)/2,
                                 arrow_start, (h - arrow_size)/2,
                                 fill='black'))
         group.append(draw.Text(self.label,
-                               15,
-                               centre, h/2,
+                               font_size,
+                               centre, h / 2,
                                text_anchor='middle',
-                               dy="0.3em"))
+                               dy="0.35em"))
+        return group
+
+
+class ArrowGroup(Element):
+    def __init__(self, arrows: typing.Sequence[Arrow], gap=3):
+        self.arrows = []
+        coordinates = []  # [(start, end, index)]
+        x1 = x2 = None
+        for i, arrow in enumerate(arrows):
+            self.arrows.append([0, arrow])
+            arrow_x2 = arrow.x + arrow.w
+            coordinates.append((arrow.x, arrow_x2, i))
+            if x1 is None:
+                x1, x2 = arrow.x, arrow_x2
+            else:
+                x1 = min(x1, arrow.x)
+                x2 = max(x2, arrow_x2)
+        h = 0
+        while coordinates:
+            if h > 0:
+                h += gap
+            row_end = coordinates[0][0]-1
+            row_height = 0
+            for key in coordinates[:]:
+                x1, x2, i = key
+                if x1 < row_end:
+                    continue
+                coordinates.remove(key)
+                row = self.arrows[i]
+                arrow_h = row[1].h
+                row[0] = h + arrow_h
+                row_height = max(row_height, arrow_h)
+                row_end = x2
+            h += row_height
+        for row in self.arrows:
+            row[0] -= h
+        super().__init__(x1, 0, w=x2-x1, h=h)
+
+    def draw(self, x=0, y=0, xscale=1.0):
+        group = draw.Group(transform="translate({} {})".format(x, y))
+        for i, (child_y, arrow) in enumerate(self.arrows):
+            group.append(arrow.draw(y=child_y, xscale=xscale))
         return group
 
 

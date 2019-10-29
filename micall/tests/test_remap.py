@@ -1328,27 +1328,24 @@ ref,match,group_ref,contig
 HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HCV-2b,1.0,HCV-2b,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
 """)
-    hcv1a_seq = projects.getReference('HCV-1a')
-    hcv2b_seq = projects.getReference('HCV-2b')
     expected_conseqs = {
-        '1-HCV-1a': hcv1a_seq,
-        '2-HCV-2b': hcv2b_seq}
+        '1-HCV-1a': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
+        '2-HCV-2b': 'GCCCGCCCCCTGATGGGGGCGACACTCCGCCA'}
 
     conseqs = read_contigs(contigs_csv)
 
     assert expected_conseqs == conseqs
 
 
-def test_read_contigs_filter(projects):
+def test_read_contigs_filter():
     contigs_csv = StringIO("""\
 ref,match,group_ref,contig
 HCV-1a,0.24,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HCV-2b,0.25,HCV-2b,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
 """)
-    hcv2b_seq = projects.getReference('HCV-2b')
     expected_conseqs = {
         '1-HCV-1a-partial': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
-        '2-HCV-2b': hcv2b_seq}
+        '2-HCV-2b': 'GCCCGCCCCCTGATGGGGGCGACACTCCGCCA'}
 
     conseqs = read_contigs(contigs_csv)
 
@@ -1370,16 +1367,15 @@ HCV-2b,-0.1,HCV-2b,GCCCGCCCCCTGATGGGGGCGACACTCCGCCA
     assert expected_conseqs == conseqs
 
 
-def test_read_contigs_excluded(projects):
+def test_read_contigs_excluded():
     contigs_csv = StringIO("""\
 ref,match,group_ref,contig
 HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HLA-B-seed,0.02,HLA-B-seed,ATGCGGGTCACGGCACCCCGAACCGT
 """)
-    hcv1a_seq = projects.getReference('HCV-1a')
     excluded_seeds = ['HLA-B-seed']
     expected_conseqs = {
-        '1-HCV-1a': hcv1a_seq,
+        '1-HCV-1a': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
         '2-HLA-B-seed-excluded': 'ATGCGGGTCACGGCACCCCGAACCGT'}
 
     conseqs = read_contigs(contigs_csv, excluded_seeds)
@@ -1387,27 +1383,22 @@ HLA-B-seed,0.02,HLA-B-seed,ATGCGGGTCACGGCACCCCGAACCGT
     assert expected_conseqs == conseqs
 
 
-def test_read_contigs_mutations(projects):
+def test_read_contigs_mutations():
     contigs_csv = StringIO("""\
 ref,match,group_ref,contig
 HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HCV-2b,1.0,HCV-2b,GCCCGACCCATGATGGGGGCGACACTCCGCCA
 """)
-    hcv1a_seq = projects.getReference('HCV-1a')
-    hcv2b_seq = projects.getReference('HCV-2b').replace(
-        'GCCCGCCCCCTGATGGGGGCGACACTCCGCCA',
-        'GCCCGACCCATGATGGGGGCGACACTCCGCCA')
-    # Changes:^   ^
     expected_conseqs = {
-        '1-HCV-1a': hcv1a_seq,
-        '2-HCV-2b': hcv2b_seq}
+        '1-HCV-1a': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
+        '2-HCV-2b': 'GCCCGACCCATGATGGGGGCGACACTCCGCCA'}
 
     conseqs = read_contigs(contigs_csv)
 
     assert expected_conseqs == conseqs
 
 
-def test_read_contigs_merged(projects):
+def test_read_contigs_merged():
     contigs_csv = StringIO("""\
 ref,match,group_ref,contig
 HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
@@ -1415,50 +1406,45 @@ HCV-2b,1.0,HCV-2b,GCCCGCCCCCTGATGGGGGCGACACTCCTCCA
 HCV-2a,1.0,HCV-2b,CTCCACCATGAATCACTCCCCTG
 """)
     # Changes:        ^G->A                   ^G->T
-    hcv1a_seq = projects.getReference('HCV-1a')
-    hcv2b_seq = projects.getReference('HCV-2b').replace(
-        'GCCCGCCCCCTGATGGGGGCGACACTCCGCCATGAATCACTCCCCTG',
-        'GCCCGCCCCCTGATGGGGGCGACACTCCTCCATGAATCACTCCCCTG')
+    # TODO: Merge contigs 2 and 3, because they overlap.
+    #   'GCCCGCCCCCTGATGGGGGCGACACTCCTCCATGAATCACTCCCCTG'
     # Change:                        ^
     expected_conseqs = {
-        '1-HCV-1a': hcv1a_seq,
-        '2_3-HCV-2b': hcv2b_seq}
+        '1-HCV-1a': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
+        '2-HCV-2b': 'GCCCGCCCCCTGATGGGGGCGACACTCCTCCA',
+        '3-HCV-2a': 'CTCCACCATGAATCACTCCCCTG'}
 
     conseqs = read_contigs(contigs_csv)
 
     assert expected_conseqs == conseqs
 
 
-def test_read_contigs_trim_left(projects):
-    """ Trim contigs that extend past reference start. """
+def test_read_contigs_untrimmed_left():
+    """ Don't trim contigs that extend past reference start. """
     contigs_csv = StringIO("""\
 ref,match,group_ref,contig
 HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HCV-2b,1.0,HCV-2b,TAGACATATTACCGCCCGCCCCCTGATGGGGGCGACACTCCGCCATGAATCACTCCCCTGT
 """)
-    hcv1a_seq = projects.getReference('HCV-1a')
-    hcv2b_seq = projects.getReference('HCV-2b')
     expected_conseqs = {
-        '1-HCV-1a': hcv1a_seq,
-        '2-HCV-2b': hcv2b_seq}
+        '1-HCV-1a': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
+        '2-HCV-2b': 'TAGACATATTACCGCCCGCCCCCTGATGGGGGCGACACTCCGCCATGAATCACTCCCCTGT'}
 
     conseqs = read_contigs(contigs_csv)
 
     assert expected_conseqs == conseqs
 
 
-def test_read_contigs_trim_right(projects):
-    """ Trim contigs that extend past reference end. """
+def test_read_contigs_untrimmed_right():
+    """ Don't trim contigs that extend past reference end. """
     contigs_csv = StringIO("""\
 ref,match,group_ref,contig
 HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HCV-2b,1.0,HCV-2b,TAGTTTCCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAGACATATTACC
 """)
-    hcv1a_seq = projects.getReference('HCV-1a')
-    hcv2b_seq = projects.getReference('HCV-2b')
     expected_conseqs = {
-        '1-HCV-1a': hcv1a_seq,
-        '2-HCV-2b': hcv2b_seq}
+        '1-HCV-1a': 'TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA',
+        '2-HCV-2b': 'TAGTTTCCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAGACATATTACC'}
 
     conseqs = read_contigs(contigs_csv)
 

@@ -9,7 +9,7 @@ from drawSvg import Drawing, Line, Lines, Circle, Text
 from genetracks import Figure, Track, Multitrack, Label, Coverage
 
 from micall.core.plot_contigs import summarize_figure, \
-    build_coverage_figure, SmoothCoverage, add_partial_banner, Arrow
+    build_coverage_figure, SmoothCoverage, add_partial_banner, Arrow, ArrowGroup
 
 HCV_HEADER = ('C[342-915], E1[915-1491], E2[1491-2580], P7[2580-2769], '
               'NS2[2769-3420], NS3[3420-5313], NS4A[5313-5475], '
@@ -24,28 +24,84 @@ class SvgDiffer:
     def __init__(self):
         self.work_dir: Path = Path(__file__).parent / 'svg_diffs'
         self.work_dir.mkdir(exist_ok=True)
+        self.mismatch_found = False
         for work_file in self.work_dir.iterdir():
             if work_file.name == '.gitignore':
                 continue
             assert work_file.suffix in ('.svg', '.png')
             work_file.unlink()
 
+    def diff_pixel(self, actual_pixel, expected_pixel):
+        ar, ag, ab, aa = actual_pixel
+        er, eg, eb, ea = expected_pixel
+        if actual_pixel != expected_pixel:
+            self.mismatch_found = True
+            # Colour
+            dr = 0xff
+            dg = (ag + eg) // 5
+            db = (ab + eb) // 5
+
+            # Opacity
+            da = 0xff
+        else:
+            # Colour
+            dr, dg, db = ar, ag, ab
+
+            # Opacity
+            da = aa // 3
+        return dr, dg, db, da
+
     def assert_equal(self,
                      svg_actual: Drawing,
                      svg_expected: Drawing,
                      name: str):
+        png_actual = drawing_to_image(svg_actual)
+        png_expected = drawing_to_image(svg_expected)
+        w = max(png_actual.width, png_expected.width)
+        h = max(png_actual.height, png_expected.height)
+
+        png_actual_padded = Image.new(png_actual.mode, (w, h))
+        png_expected_padded = Image.new(png_expected.mode, (w, h))
+        png_actual_padded.paste(png_actual)
+        png_expected_padded.paste(png_expected)
+        png_diff = Image.new(png_actual.mode, (w, h))
+        self.mismatch_found = False
+        png_diff.putdata([self.diff_pixel(actual_pixel, expected_pixel)
+                          for actual_pixel, expected_pixel in zip(
+                            png_actual_padded.getdata(),
+                            png_expected_padded.getdata())])
+
         # Display image when in live turtle mode.
         display_image = getattr(Turtle, 'display_image', None)
         if display_image is not None:
-            encoded = standard_b64encode(svg_actual.rasterize().pngData)
-            display_image(0, 0, image=encoded.decode('UTF-8'))
+            t = Turtle()
+            try:
+                w = t.screen.cv.cget('width')
+                h = t.screen.cv.cget('height')
+                ox, oy = w/2, h/2
+                text_height = 20
+                t.penup()
+                t.goto(-ox, oy)
+                t.right(90)
+                t.forward(text_height)
+                t.write(f'Actual')
+                display_image(ox+t.xcor(), oy-t.ycor(),
+                              image=encode_image(png_actual))
+                t.forward(png_actual.height)
+                t.forward(text_height)
+                t.write(f'Diff')
+                display_image(ox+t.xcor(), oy-t.ycor(),
+                              image=encode_image(png_diff))
+                t.forward(png_diff.height)
+                t.forward(text_height)
+                t.write('Expected')
+                display_image(ox+t.xcor(), oy-t.ycor(),
+                              image=encode_image(png_expected))
+                t.forward(png_expected.height)
+            except Exception as ex:
+                t.write(str(ex))
 
-        png_actual = drawing_to_image(svg_actual)
-        png_expected = drawing_to_image(svg_expected)
-        png_diff = ImageChops.difference(png_actual, png_expected)
-
-        extrema = png_diff.getextrema()
-        if extrema == ((0, 0), (0, 0), (0, 0), (0, 0)):
+        if not self.mismatch_found:
             return
         text_actual = svg_actual.asSvg()
         (self.work_dir / (name+'_actual.svg')).write_text(text_actual)
@@ -61,6 +117,13 @@ def drawing_to_image(drawing: Drawing) -> Image:
     png_bytes = BytesIO(png.pngData)
     image = Image.open(png_bytes)
     return image
+
+
+def encode_image(image: Image) -> bytes:
+    writer = BytesIO()
+    image.save(writer, format='PNG')
+    encoded = standard_b64encode(writer.getvalue())
+    return encoded.decode('UTF-8')
 
 
 @pytest.fixture(scope='session')
@@ -453,23 +516,101 @@ Coverage 5x3, 7x3, 8x3
     assert expected_figure == summarize_figure(figure)
 
 
+# noinspection DuplicatedCode
 def test_arrow(svg_differ):
-    expected_svg = Drawing(200.0, 60.0, origin=(0, 0))
-    expected_svg.append(Circle(168/2, 40, 10, stroke='black', fill='ivory'))
+    expected_svg = Drawing(175.0, 35.0, origin=(0, 0))
+    expected_svg.append(Circle(168/2, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('X',
                              15,
-                             168/2, 40,
+                             168/2, 20,
                              text_anchor='middle',
                              dy="0.3em"))
-    expected_svg.append(Line(0, 40, 74, 40, stroke='black'))
-    expected_svg.append(Line(94, 40, 168, 40, stroke='black'))
-    expected_svg.append(Lines(175, 40,
-                              168, 43.5,
-                              168, 36.5,
-                              175, 40,
+    expected_svg.append(Line(0, 20, 74, 20, stroke='black'))
+    expected_svg.append(Line(94, 20, 168, 20, stroke='black'))
+    expected_svg.append(Lines(175, 20,
+                              168, 23.5,
+                              168, 16.5,
+                              175, 20,
                               fill='black'))
     f = Figure()
-    f.add(Arrow(0, 175, label='X'))
+    f.add(Arrow(0, 175, h=20, label='X'))
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+
+
+# noinspection DuplicatedCode
+def test_reverse_arrow(svg_differ):
+    expected_svg = Drawing(175.0, 35.0, origin=(0, 0))
+    expected_svg.append(Circle(7+168/2, 20, 10, stroke='black', fill='ivory'))
+    expected_svg.append(Text('X',
+                             15,
+                             7+168/2, 20,
+                             text_anchor='middle',
+                             dy="0.3em"))
+    expected_svg.append(Line(7, 20, 81, 20, stroke='black'))
+    expected_svg.append(Line(101, 20, 175, 20, stroke='black'))
+    expected_svg.append(Lines(0, 20,
+                              7, 23.5,
+                              7, 16.5,
+                              0, 20,
+                              fill='black'))
+    f = Figure()
+    f.add(Arrow(175, 0, h=20, label='X'))
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+
+
+# noinspection DuplicatedCode
+def test_arrow_group(svg_differ):
+    expected_figure = Figure()
+    expected_figure.add(Track(1, 500, label='Header'))
+    h = 30
+    expected_figure.add(Arrow(1, 200, label='X', h=h), gap=-h)
+    expected_figure.add(Arrow(300, 500, label='Y', h=h))
+    expected_svg = expected_figure.show()
+
+    f = Figure()
+    f.add(Track(1, 500, label='Header'))
+    f.add(ArrowGroup([Arrow(1, 200, label='X', h=h),
+                      Arrow(300, 500, label='Y', h=h)]))
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+
+
+# noinspection DuplicatedCode
+def test_arrow_group_overlap(svg_differ):
+    expected_figure = Figure()
+    expected_figure.add(Track(1, 500, label='Header'))
+    h = 20
+    expected_figure.add(Arrow(1, 300, label='X', h=h), gap=3)
+    expected_figure.add(Arrow(1, 300, label='Y', h=h))
+    expected_svg = expected_figure.show()
+
+    f = Figure()
+    f.add(Track(1, 500, label='Header'))
+    f.add(ArrowGroup([Arrow(1, 300, label='X', h=h),
+                      Arrow(1, 300, label='Y', h=h)]))
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+
+
+# noinspection DuplicatedCode
+def test_arrow_group_reverse_overlap(svg_differ):
+    expected_figure = Figure()
+    expected_figure.add(Track(1, 500, label='Header'))
+    h = 20
+    expected_figure.add(Arrow(1, 300, label='X', h=h), gap=3)
+    expected_figure.add(Arrow(400, 250, label='Y', h=h))
+    expected_svg = expected_figure.show()
+
+    f = Figure()
+    f.add(Track(1, 500, label='Header'))
+    f.add(ArrowGroup([Arrow(1, 300, label='X', h=h),
+                      Arrow(400, 250, label='Y', h=h)]))
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
