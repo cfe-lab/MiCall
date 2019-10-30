@@ -106,9 +106,7 @@ class Arrow(Element):
             arrow_end = a
             arrow_start = min(arrow_end+arrow_size, line_start)
         centre = (a + b)/2
-        arrow_y = h/2
-        if abs(centre - arrow_start) < r:
-            arrow_y -= r
+        arrow_y = h/2 - r
         group = draw.Group(transform="translate({} {})".format(x, y))
         group.append(draw.Line(line_start, arrow_y,
                                arrow_start, arrow_y,
@@ -132,17 +130,19 @@ class ArrowGroup(Element):
         self.arrows = []
         self.y_coordinates = []
         x_coordinates = []  # [(start, end, index)]
-        x1 = x2 = None
+        max_x = None
         for i, arrow in enumerate(arrows):
             self.arrows.append(arrow)
             self.y_coordinates.append(0)
-            arrow_x2 = arrow.x + arrow.w
-            x_coordinates.append((arrow.x, arrow_x2, i))
-            if x1 is None:
-                x1, x2 = arrow.x, arrow_x2
+            x2 = arrow.x + arrow.w
+            x_coordinates.append((arrow.x, x2, i))
+            if arrow.w < 100:
+                # Extra padding for label.
+                x2 += 100
+            if max_x is None:
+                max_x = x2
             else:
-                x1 = min(x1, arrow.x)
-                x2 = max(x2, arrow_x2)
+                max_x = max(max_x, x2)
         h = 0
         while x_coordinates:
             if h > 0:
@@ -161,7 +161,7 @@ class ArrowGroup(Element):
                 row_end = x2
             h += row_height
         self.y_coordinates = [y-h for y in self.y_coordinates]
-        super().__init__(x1, 0, w=x2-x1, h=h)
+        super().__init__(0, 0, w=max_x, h=h)
 
     def draw(self, x=0, y=0, xscale=1.0):
         group = draw.Group(transform="translate({} {})".format(x, y))
@@ -246,11 +246,8 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
             break
         else:
             add_partial_banner(f, position_offset, max_position)
-        sorted_contig_names = [
-            contig_name
-            for _, contig_name in sorted(
-                (-contig_depths[name], name)
-                for name in contig_groups[coordinates_name])]
+        contig_names = contig_groups[coordinates_name]
+        sorted_contig_names = sort_contig_names(contig_names, contig_depths)
         ref_arrows = []
         for contig_name in sorted_contig_names:
             contig_num, contig_ref = contig_name.split('-', 1)
@@ -283,6 +280,29 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
     return f
 
 
+def sort_contig_names(contig_names, contig_depths):
+    unused_names = set(contig_names)
+    sorted_contig_names = [
+        contig_name
+        for _, contig_name in sorted(
+            (-contig_depths[name], name)
+            for name in contig_names)]
+    final_contig_names = []
+    for main_name in sorted_contig_names:
+        if main_name not in unused_names:
+            continue
+        final_contig_names.append(main_name)
+        contig_nums, ref_name = main_name.split('-', 1)
+        for contig_num in contig_nums.split('_'):
+            contig_name = f'contig-{contig_num}-{ref_name}'
+            try:
+                unused_names.remove(contig_name)
+                final_contig_names.append(contig_name)
+            except KeyError:
+                pass
+    return final_contig_names
+
+
 def build_contig(reader,
                  f,
                  contig_name,
@@ -291,8 +311,8 @@ def build_contig(reader,
                  blast_rows):
     contig_num, contig_ref = contig_name.split('-', 1)
     blast_ranges = []  # [[start, end, blast_num]]
-    blast_starts = {}  # {start: blast_num}
-    blast_ends = {}  # {end: blast_num}
+    blast_starts = defaultdict(set)  # {start: {blast_num}}
+    blast_ends = defaultdict(set)  # {end: {blast_num}}
     for blast_row in blast_rows:
         if blast_row['contig_num'] != contig_num:
             continue
@@ -300,8 +320,8 @@ def build_contig(reader,
             continue
         blast_num = len(blast_ranges) + 1
         blast_ranges.append([None, None, blast_num])
-        blast_starts[blast_row['start']] = blast_num
-        blast_ends[blast_row['end']] = blast_num
+        blast_starts[blast_row['start']].add(blast_num)
+        blast_ends[blast_row['end']].add(blast_num)
     event_positions = set(blast_starts)
     event_positions.update(blast_ends)
     event_positions = sorted(event_positions, reverse=True)
@@ -339,11 +359,9 @@ def build_contig(reader,
                 contig_pos = int(contig_row['query_nuc_pos'])
                 while event_positions and event_positions[-1] <= contig_pos:
                     event_pos = event_positions.pop()
-                    blast_num = blast_starts.get(event_pos)
-                    if blast_num is not None:
+                    for blast_num in blast_starts[event_pos]:
                         blast_ranges[blast_num-1][0] = pos
-                    blast_num = blast_ends.get(event_pos)
-                    if blast_num is not None:
+                    for blast_num in blast_ends[event_pos]:
                         blast_ranges[blast_num-1][1] = pos
 
         arrows = []

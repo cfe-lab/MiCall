@@ -546,6 +546,62 @@ Coverage 5x3, 7x3, 8x3
     assert expected_figure == summarize_figure(figure)
 
 
+def test_plot_genome_coverage_two_contigs():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-HCV-1a,HCV-1a,1,1,0,5
+1-HCV-1a,HCV-1a,2,2,0,5
+1-HCV-1a,HCV-1a,3,3,0,7
+1-HCV-1a,HCV-1a,4,4,0,5
+1-HCV-1a,HCV-1a,5,5,0,5
+1-HCV-1a,HCV-1a,6,6,0,5
+contig-1-HCV-1a,HCV-1a,1,1,,
+contig-1-HCV-1a,HCV-1a,2,2,,
+contig-1-HCV-1a,HCV-1a,3,3,,
+contig-1-HCV-1a,HCV-1a,4,4,,
+contig-1-HCV-1a,HCV-1a,5,5,,
+contig-1-HCV-1a,HCV-1a,6,6,,
+2-HCV-1b-partial,,1,,0,5
+2-HCV-1b-partial,,2,,0,5
+2-HCV-1b-partial,,3,,0,29
+2-HCV-1b-partial,,4,,0,5
+2-HCV-1b-partial,,5,,0,5
+2-HCV-1b-partial,,6,,0,5
+3-HCV-1a,HCV-1a,101,101,0,15
+3-HCV-1a,HCV-1a,102,102,0,15
+3-HCV-1a,HCV-1a,103,103,0,17
+3-HCV-1a,HCV-1a,104,104,0,15
+3-HCV-1a,HCV-1a,105,105,0,15
+3-HCV-1a,HCV-1a,106,106,0,15
+contig-3-HCV-1a,HCV-1a,1,101,,
+contig-3-HCV-1a,HCV-1a,2,102,,
+contig-3-HCV-1a,HCV-1a,3,103,,
+contig-3-HCV-1a,HCV-1a,4,104,,
+contig-3-HCV-1a,HCV-1a,5,105,,
+contig-3-HCV-1a,HCV-1a,6,106,,
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
+Coverage 15x2, 17, 15x3
+[101-106], 3-HCV-1a - depth 17(1-9646)
+[101-106], contig-3-HCV-1a(1-9646)
+Coverage 5x2, 7, 5x3
+[1-6], 1-HCV-1a - depth 7(1-9646)
+[1-6], contig-1-HCV-1a(1-9646)
+[1-500], [1001-1500], [2001-2500], [3001-3500], [4001-4500], \
+[5001-5500], [6001-6500], [7001-7500], [8001-8500], [9001-9500], \
+Partial Blast Results(1-9646)
+Coverage 5x2, 29, 5x3
+[1-6], 2-HCV-1b-partial - depth 29(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv)
+
+    assert summarize_figure(figure) == expected_figure
+
+
 def test_plot_genome_coverage_blast():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
@@ -577,20 +633,52 @@ Coverage 5x2, 7, 5x3
     assert summarize_figure(figure) == expected_figure
 
 
+def test_plot_genome_coverage_blast_collision():
+    """ Two blast results end at the same position. """
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1a,HCV-1a,1,8001,0,0,5
+1-HCV-1a,HCV-1a,2,8002,0,0,5
+1-HCV-1a,HCV-1a,3,8003,0,0,7
+1-HCV-1a,HCV-1a,4,8004,0,0,5
+1-HCV-1a,HCV-1a,5,8005,0,0,5
+1-HCV-1a,HCV-1a,6,8006,0,0,5
+""")
+    blast_csv = StringIO("""\
+contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
+1,HCV-1g,30,0.33,90,1,2,5001,5002
+1,HCV-1a,40,0.33,100,3,6,7003,7006
+1,HCV-1a,50,0.5,100,1,6,8001,8006
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
+7003--1.2->7006, 8001--1.1->8006
+8001--1.1->8006, 8003--1.2->8006
+Coverage 5x2, 7, 5x3
+[8001-8006], 1-HCV-1a - depth 7(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, blast_csv)
+
+    assert summarize_figure(figure) == expected_figure
+
+
 # noinspection DuplicatedCode
 def test_arrow(svg_differ):
     f, expected_svg = start_drawing(200, 55)
-    expected_svg.append(Line(0, 20, 168, 20, stroke='black'))
+    expected_svg.append(Line(0, 10, 168, 10, stroke='black'))
     expected_svg.append(Circle(175/2, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('1.2',
                              11,
                              175/2, 20,
                              text_anchor='middle',
                              dy="0.35em"))
-    expected_svg.append(Lines(175, 20,
-                              168, 23.5,
-                              168, 16.5,
-                              175, 20,
+    expected_svg.append(Lines(175, 10,
+                              168, 13.5,
+                              168, 6.5,
+                              175, 10,
                               fill='black'))
     f.add(Arrow(0, 175, h=20, label='1.2'))
     svg = f.show()
@@ -601,17 +689,17 @@ def test_arrow(svg_differ):
 # noinspection DuplicatedCode
 def test_reverse_arrow(svg_differ):
     f, expected_svg = start_drawing(200, 55)
-    expected_svg.append(Line(7, 20, 175, 20, stroke='black'))
+    expected_svg.append(Line(7, 10, 175, 10, stroke='black'))
     expected_svg.append(Circle(175/2, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('X',
                              11,
                              175/2, 20,
                              text_anchor='middle',
                              dy="0.35em"))
-    expected_svg.append(Lines(0, 20,
-                              7, 23.5,
-                              7, 16.5,
-                              0, 20,
+    expected_svg.append(Lines(0, 10,
+                              7, 13.5,
+                              7, 6.5,
+                              0, 10,
                               fill='black'))
     f.add(Arrow(175, 0, h=20, label='X'))
     svg = f.show()
@@ -622,17 +710,17 @@ def test_reverse_arrow(svg_differ):
 # noinspection DuplicatedCode
 def test_scaled_arrow(svg_differ):
     expected_svg = Drawing(100, 35, origin=(0, 0))
-    expected_svg.append(Line(0, 20, 93, 20, stroke='black'))
+    expected_svg.append(Line(0, 10, 93, 10, stroke='black'))
     expected_svg.append(Circle(50, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('2.3',
                              11,
                              50, 20,
                              text_anchor='middle',
                              dy="0.35em"))
-    expected_svg.append(Lines(100, 20,
-                              93, 23.5,
-                              93, 16.5,
-                              100, 20,
+    expected_svg.append(Lines(100, 10,
+                              93, 13.5,
+                              93, 6.5,
+                              100, 10,
                               fill='black'))
 
     f = Figure()
@@ -680,6 +768,28 @@ def test_tiny_arrow(svg_differ):
                               fill='black'))
 
     f.add(Arrow(100, 104, h=20, label='2.3'))
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+
+
+# noinspection DuplicatedCode
+def test_tiny_arrow_at_edge(svg_differ):
+    expected_svg = Drawing(210, 35, origin=(0, 0))
+    expected_svg.append(Circle(197.5, 20, 10, stroke='black', fill='ivory'))
+    expected_svg.append(Text('2.3',
+                             11,
+                             197.5, 20,
+                             text_anchor='middle',
+                             dy="0.35em"))
+    expected_svg.append(Lines(200, 10,
+                              195, 13.5,
+                              195, 6.5,
+                              200, 10,
+                              fill='black'))
+
+    f = Figure()
+    f.add(ArrowGroup([Arrow(195, 200, h=20, label='2.3')]))
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
@@ -756,6 +866,24 @@ def test_arrow_group_reverse_overlap(svg_differ):
     f.add(Track(1, 500, label='Header'))
     f.add(ArrowGroup([Arrow(1, 300, label='X', h=h),
                       Arrow(400, 250, label='Y', h=h)]))
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+
+
+# noinspection DuplicatedCode
+def test_arrow_group_small_neighbour(svg_differ):
+    expected_figure = Figure()
+    expected_figure.add(Track(1, 500, label='Header'))
+    h = 20
+    expected_figure.add(Arrow(301, 315, label='1.2', h=h), gap=-20)
+    expected_figure.add(Arrow(1, 300, label='1.1', h=h))
+    expected_svg = expected_figure.show()
+
+    f = Figure()
+    f.add(Track(1, 500, label='Header'))
+    f.add(ArrowGroup([Arrow(1, 300, label='1.1', h=h),
+                      Arrow(301, 315, label='1.2', h=h)]))
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
