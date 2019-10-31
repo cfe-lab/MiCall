@@ -345,6 +345,50 @@ Coverage 6x3
     assert expected_figure == summarize_figure(figure)
 
 
+def test_plot_genome_coverage_offset_blast():
+    """ When a contig extends before the reference start, offset everything. """
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1a,HCV-1a,1,-2,0,0,5
+1-HCV-1a,HCV-1a,2,-1,0,0,5
+1-HCV-1a,HCV-1a,3,0,0,0,7
+1-HCV-1a,HCV-1a,4,1,0,0,5
+1-HCV-1a,HCV-1a,5,2,0,0,5
+1-HCV-1a,HCV-1a,6,3,0,0,5
+1-HCV-1a,HCV-1a,7,,0,0,5
+1-HCV-1a,HCV-1a,8,,0,0,5
+1-HCV-1a,HCV-1a,9,,0,0,5
+1-HCV-1a,HCV-1a,10,4,0,0,5
+1-HCV-1a,HCV-1a,11,5,0,0,5
+1-HCV-1a,HCV-1a,12,6,0,0,5
+2-unknown-partial,,1,,0,0,6
+2-unknown-partial,,2,,0,0,6
+2-unknown-partial,,3,,0,0,6
+""")
+    blast_csv = StringIO("""\
+contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
+1,HCV-1a,30,0.33,90,10,12,4,6
+""")
+    expected_figure = """\
+5'[4-344], C[345-917], E1[918-1493], E2[1494-2582], p7[2583-2771], \
+NS2[2772-3422], NS3[3423-5315], NS4b[5478-6260], NS4a[5316-5477], \
+NS5a[6261-7604], NS5b[7605-9377], 3'[9378-9649]
+7--1.1->9
+7--1.1->9
+Coverage 5x2, 7, 5x6
+[1-9], 1-HCV-1a - depth 7(1-9649), lightgreen{7-9}
+[4-503], [1004-1503], [2004-2503], [3004-3503], [4004-4503], \
+[5004-5503], [6004-6503], [7004-7503], [8004-8503], [9004-9503], \
+Partial Blast Results(4-9649)
+Coverage 6x3
+[4-6], 2-unknown-partial - depth 6(1-9649)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, blast_csv)
+
+    assert summarize_figure(figure) == expected_figure
+
+
 def test_plot_genome_coverage_partial():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
@@ -668,6 +712,27 @@ Coverage 5x2, 7, 5x3
 # noinspection DuplicatedCode
 def test_arrow(svg_differ):
     f, expected_svg = start_drawing(200, 55)
+    expected_svg.append(Line(0, 20, 168, 20, stroke='black'))
+    expected_svg.append(Circle(175/2, 20, 10, stroke='black', fill='ivory'))
+    expected_svg.append(Text('1.2',
+                             11,
+                             175/2, 20,
+                             text_anchor='middle',
+                             dy="0.35em"))
+    expected_svg.append(Lines(175, 20,
+                              168, 23.5,
+                              168, 16.5,
+                              175, 20,
+                              fill='black'))
+    f.add(Arrow(0, 175, h=20, label='1.2'))
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+
+
+# noinspection DuplicatedCode
+def test_arrow_bottom(svg_differ):
+    f, expected_svg = start_drawing(200, 55)
     expected_svg.append(Line(0, 10, 168, 10, stroke='black'))
     expected_svg.append(Circle(175/2, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('1.2',
@@ -680,7 +745,7 @@ def test_arrow(svg_differ):
                               168, 6.5,
                               175, 10,
                               fill='black'))
-    f.add(Arrow(0, 175, h=20, label='1.2'))
+    f.add(Arrow(0, 175, h=20, elevation=-1, label='1.2'))
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
@@ -701,7 +766,7 @@ def test_reverse_arrow(svg_differ):
                               7, 6.5,
                               0, 10,
                               fill='black'))
-    f.add(Arrow(175, 0, h=20, label='X'))
+    f.add(Arrow(175, 0, h=20, elevation=-1, label='X'))
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
@@ -724,7 +789,7 @@ def test_scaled_arrow(svg_differ):
                               fill='black'))
 
     f = Figure()
-    f.add(Arrow(0, 200, h=20, label='2.3'))
+    f.add(Arrow(0, 200, h=20, elevation=-1, label='2.3'))
     svg = f.show(w=100)
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
@@ -746,7 +811,7 @@ def test_small_arrow(svg_differ):
                               132, 10,
                               fill='black'))
 
-    f.add(Arrow(100, 132, h=20, label='2.3'))
+    f.add(Arrow(100, 132, h=20, elevation=-1, label='2.3'))
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
@@ -767,7 +832,7 @@ def test_tiny_arrow(svg_differ):
                               104, 10,
                               fill='black'))
 
-    f.add(Arrow(100, 104, h=20, label='2.3'))
+    f.add(Arrow(100, 104, h=20, elevation=-1, label='2.3'))
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
@@ -789,7 +854,7 @@ def test_tiny_arrow_at_edge(svg_differ):
                               fill='black'))
 
     f = Figure()
-    f.add(ArrowGroup([Arrow(195, 200, h=20, label='2.3')]))
+    f.add(ArrowGroup([Arrow(195, 200, h=20, elevation=-1, label='2.3')]))
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
@@ -876,14 +941,14 @@ def test_arrow_group_small_neighbour(svg_differ):
     expected_figure = Figure()
     expected_figure.add(Track(1, 500, label='Header'))
     h = 20
-    expected_figure.add(Arrow(301, 315, label='1.2', h=h), gap=-20)
-    expected_figure.add(Arrow(1, 300, label='1.1', h=h))
+    expected_figure.add(Arrow(301, 315, elevation=-1, label='1.2', h=h), gap=-h)
+    expected_figure.add(Arrow(1, 300, elevation=-1, label='1.1', h=h))
     expected_svg = expected_figure.show()
 
     f = Figure()
     f.add(Track(1, 500, label='Header'))
-    f.add(ArrowGroup([Arrow(1, 300, label='1.1', h=h),
-                      Arrow(301, 315, label='1.2', h=h)]))
+    f.add(ArrowGroup([Arrow(1, 300, elevation=-1, label='1.1', h=h),
+                      Arrow(301, 315, elevation=-1, label='1.2', h=h)]))
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')

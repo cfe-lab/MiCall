@@ -70,7 +70,7 @@ class ShadedCoverage(SmoothCoverage):
 
 
 class Arrow(Element):
-    def __init__(self, start, end, h=20, label=None):
+    def __init__(self, start, end, h=20, elevation=0, label=None):
         x = start
         w = end-start
         self.direction = copysign(1, w)
@@ -78,6 +78,7 @@ class Arrow(Element):
             x = end
             w = -w
         super().__init__(x=x, y=0, w=w, h=h)
+        self.elevation = elevation
         self.label = label
 
     def __repr__(self):
@@ -106,7 +107,7 @@ class Arrow(Element):
             arrow_end = a
             arrow_start = min(arrow_end+arrow_size, line_start)
         centre = (a + b)/2
-        arrow_y = h/2 - r
+        arrow_y = h/2 + self.elevation*r
         group = draw.Group(transform="translate({} {})".format(x, y))
         group.append(draw.Line(line_start, arrow_y,
                                arrow_start, arrow_y,
@@ -260,8 +261,9 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
                 arrow_count += 1
                 ref_start = int(blast_row['ref_start'])
                 ref_end = int(blast_row['ref_end'])
-                ref_arrows.append(Arrow(ref_start,
-                                        ref_end,
+                ref_arrows.append(Arrow(ref_start+position_offset,
+                                        ref_end+position_offset,
+                                        elevation=1,
                                         label=f'{contig_num}.{arrow_count}'))
         if ref_arrows:
             f.add(ArrowGroup(ref_arrows))
@@ -366,8 +368,9 @@ def build_contig(reader,
 
         arrows = []
         for arrow_start, arrow_end, blast_num in blast_ranges:
-            arrows.append(Arrow(arrow_start,
-                                arrow_end,
+            arrows.append(Arrow(arrow_start+position_offset,
+                                arrow_end+position_offset,
+                                elevation=-1,
                                 label=f'{contig_num}.{blast_num}'))
         if arrows:
             f.add(ArrowGroup(arrows))
