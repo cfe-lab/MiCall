@@ -9,7 +9,7 @@ From: centos:7
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-    Change Notes: Includes denovo assembly apps with merged contigs.
+    Change Notes: Includes denovo assembly apps with BLAST results displayed.
 
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall

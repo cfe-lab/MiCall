@@ -230,8 +230,14 @@ class Sample:
                           coverage_maps_prefix=self.name,
                           excluded_projects=excluded_projects)
 
+        if use_denovo:
+            blast_path = self.blast_csv
+        else:
+            blast_path = os.devnull
         with open(self.genome_coverage_csv) as genome_coverage_csv, \
-                open(self.blast_csv) as blast_csv:
+                open(blast_path) as blast_csv:
+            if not use_denovo:
+                blast_csv = None
             plot_genome_coverage(genome_coverage_csv,
                                  blast_csv,
                                  self.genome_coverage_svg)
