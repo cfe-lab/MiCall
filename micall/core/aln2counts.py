@@ -50,9 +50,16 @@ def parse_args():
     parser.add_argument('conseq_ins_csv',
                         type=argparse.FileType('r'),
                         help='input CSV with insertions relative to consensus sequence')
+    parser.add_argument('contigs_csv',
+                        type=argparse.FileType('r'),
+                        help='input CSV with assembled contigs')
     parser.add_argument('nuc_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing nucleotide frequencies')
+    parser.add_argument('nuc_detail_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing nucleotide frequencies for each '
+                             'contig')
     parser.add_argument('amino_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing amino frequencies')
@@ -122,7 +129,7 @@ class SequenceReport(object):
         self.v3_overlap_region_name = None
         self.seed_aminos = self.reports = self.reading_frames = None
         self.inserts = self.consensus = self.seed = None
-        self.contigs = None  # [(ref, seq)]
+        self.contigs = None  # [(ref, group_ref, seq)]
         self.consensus_by_reading_frame = None  # {frame: seq}
         self.landmarks = yaml.safe_load(landmarks_yaml)
         self.coordinate_refs = self.remap_conseqs = None
@@ -492,7 +499,12 @@ class SequenceReport(object):
         self.write_amino_report(amino_detail_writer, self.reports, self.detail_seed)
 
     def combine_reports(self):
-        old_reports = self.combined_reports[self.seed]
+        if self.contigs is None:
+            group_ref = self.seed
+        else:
+            contig_num, _ = self.detail_seed.split('-', 1)
+            group_ref = self.contigs[int(contig_num)-1][1]
+        old_reports = self.combined_reports[group_ref]
         for region, report in self.reports.items():
             old_report = old_reports[region]
             for i, report_amino in enumerate(report):
@@ -599,7 +611,7 @@ class SequenceReport(object):
         except ValueError:
             return
         for contig_num in contig_nums:
-            contig_ref, contig_seq = self.contigs[contig_num-1]
+            contig_ref, group_ref, contig_seq = self.contigs[contig_num-1]
             contig_name = f'contig-{contig_num}-{contig_ref}'
             self.write_sequence_coverage_counts(genome_coverage_writer,
                                                 contig_name,
@@ -900,7 +912,7 @@ class SequenceReport(object):
                                       csv.DictReader(remap_conseq_csv)))
 
     def read_contigs(self, contigs_csv):
-        self.contigs = list(map(itemgetter('ref', 'contig'),
+        self.contigs = list(map(itemgetter('ref', 'group_ref', 'contig'),
                                 csv.DictReader(contigs_csv)))
 
     @staticmethod
@@ -1455,7 +1467,9 @@ def main():
                remap_conseq_csv=args.remap_conseq_csv,
                conseq_region_csv=args.conseq_region_csv,
                amino_detail_csv=args.amino_detail_csv,
-               genome_coverage_csv=args.genome_coverage_csv)
+               nuc_detail_csv=args.nuc_detail_csv,
+               genome_coverage_csv=args.genome_coverage_csv,
+               contigs_csv=args.contigs_csv)
 
 
 if __name__ == '__main__':

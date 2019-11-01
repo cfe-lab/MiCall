@@ -1111,6 +1111,7 @@ contig-2-R2-seed,R2-seed,6,12,,
 
         self.report.read_contigs(contigs_csv)
         self.report.write_amino_header(StringIO())
+        self.report.write_amino_detail_header(StringIO())
         self.report.write_genome_coverage_header(self.report_file)
         self.report.read(aligned_reads1)
         self.report.write_genome_coverage_counts()

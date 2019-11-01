@@ -23,7 +23,7 @@
 /micall/tests/microtest/Results
 !/micall/tests/working/*.launch
 /venv_micall
-/micall-*.simg
+/simgs/*.simg
 /sandbox
 /timing.*
 /micall/blast_db/refs.fasta*
