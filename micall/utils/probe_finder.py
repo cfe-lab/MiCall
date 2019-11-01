@@ -1,4 +1,5 @@
 import re
+import typing
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from csv import DictReader, DictWriter
 from itertools import groupby
@@ -8,7 +9,7 @@ import Levenshtein
 from gotoh import align_it
 
 from micall.core.project_config import ProjectConfig
-from micall.utils.translation import mixture_dict
+from micall.utils.translation import mixture_dict, reverse_and_complement
 
 TARGET_SEQUENCES = dict(
     gag_probe='ACTGGTGAGTACGCCAAAA',
@@ -45,7 +46,9 @@ def find_probes(contigs_csv, probes_csv):
                             'merged_hxb2_start',
                             'merged_hxb2_size',
                             'dist',
+                            'end_dist',
                             'score',
+                            'is_reversed',
                             'seq']:
             columns.append(target_name + '_' + column_type)
     writer = DictWriter(probes_csv, columns)
@@ -76,32 +79,11 @@ def find_probes(contigs_csv, probes_csv):
                 use_terminal_gap_penalty)
             new_row = dict(sample=sample_name, contig=contig_name)
             for target_name, target_seq in TARGET_SEQUENCES.items():
-                best_acontig = best_atarget = best_target = best_score = None
-                for target_nucs in unpack_mixtures(target_seq):
-                    aligned_contig, aligned_target, score = align_it(
-                        contig_seq,
-                        target_nucs,
-                        gap_open_penalty,
-                        gap_extend_penalty,
-                        use_terminal_gap_penalty)
-                    if best_score is None or score > best_score:
-                        best_acontig = aligned_contig
-                        best_atarget = aligned_target
-                        best_target = target_nucs
-                        best_score = score
-                aligned_contig = best_acontig
-                aligned_target = best_atarget
-                target_nucs = best_target
-                score = best_score
-                match = re.match('-*([^-](.*[^-])?)', aligned_target)
-                start = match.start(1)
-                end = match.end(1)
-                contig_match = aligned_contig[start:end].replace('-', '')
-                size = len(contig_match)
-                dist = Levenshtein.distance(target_nucs, contig_match)
+                finder = ProbeFinder(contig_seq, target_seq)
 
-                start_pos = start + 1
-                end_pos = start + size
+                size = len(finder.contig_match)
+                start_pos = finder.start + 1
+                end_pos = finder.start + size
                 hxb2_pos = contig_pos = 0
                 merged_hxb2_start = merged_hxb2_size = None
                 for hxb2_nuc, contig_nuc in zip(aligned_hxb2,
@@ -118,7 +100,7 @@ def find_probes(contigs_csv, probes_csv):
 
                 aligned_ref, aligned_match, _ = align_it(
                     hxb2,
-                    contig_match,
+                    finder.contig_match,
                     gap_open_penalty,
                     gap_extend_penalty,
                     use_terminal_gap_penalty)
@@ -135,13 +117,22 @@ def find_probes(contigs_csv, probes_csv):
                 new_row[prefix + 'in_hxb2_size'] = in_hxb2_size
                 new_row[prefix + 'merged_hxb2_start'] = merged_hxb2_start
                 new_row[prefix + 'merged_hxb2_size'] = merged_hxb2_size
-                new_row[prefix + 'dist'] = dist
-                new_row[prefix + 'score'] = score
-                new_row[prefix + 'seq'] = contig_match
+                new_row[prefix + 'dist'] = finder.dist
+                new_row[prefix + 'end_dist'] = finder.end_dist
+                new_row[prefix + 'score'] = finder.score
+                new_row[prefix + 'is_reversed'] = ('Y'
+                                                   if finder.is_reversed
+                                                   else 'N')
+                new_row[prefix + 'seq'] = finder.contig_match
             writer.writerow(new_row)
 
 
-def unpack_mixtures(seq):
+def unpack_mixtures_and_reverse(seq: str) -> typing.Set[typing.Tuple[str, bool]]:
+    """ Unpack mixture nucleotide codes, and add reverse complements.
+
+    :param seq: nucleotide sequence, possibly including mixture codes
+    :return: unpacked and reversed sequences, along with is_reversed flag
+    """
     old_mixtures = {''}
     for mixture in seq:
         new_mixtures = set()
@@ -149,7 +140,62 @@ def unpack_mixtures(seq):
             for old_mixture in old_mixtures:
                 new_mixtures.add(old_mixture + nuc)
         old_mixtures = new_mixtures
-    return old_mixtures
+    forward_results = {(mixture, False)
+                       for mixture in old_mixtures}
+    reversed_results = {(reverse_and_complement(mixture), True)
+                        for mixture in old_mixtures}
+    return forward_results | reversed_results
+
+
+class ProbeFinder:
+    def __init__(self, contig_seq: str, target_seq: str):
+        gap_open_penalty = 15
+        gap_extend_penalty = 3
+        use_terminal_gap_penalty = 1
+        best_acontig = best_atarget = best_target = best_score = None
+        best_reversed = None
+        for target_nucs, is_reversed in unpack_mixtures_and_reverse(
+                target_seq):
+            aligned_contig, aligned_target, score = align_it(
+                contig_seq,
+                target_nucs,
+                gap_open_penalty,
+                gap_extend_penalty,
+                use_terminal_gap_penalty)
+            if best_score is None or score > best_score:
+                best_acontig = aligned_contig
+                best_atarget = aligned_target
+                best_target = target_nucs
+                best_score = score
+                best_reversed = is_reversed
+        aligned_contig = best_acontig
+        aligned_target = best_atarget
+        target_nucs = best_target
+        self.score = best_score
+        self.is_reversed = best_reversed
+        if self.is_reversed:
+            aligned_contig = reverse_and_complement(aligned_contig)
+            aligned_target = reverse_and_complement(aligned_target)
+        match = re.match('-*([^-](.*[^-])?)', aligned_target)
+        self.start = match.start(1)
+        end = match.end(1)
+        self.contig_match = aligned_contig[self.start:end].replace('-', '')
+        self.dist = Levenshtein.distance(target_nucs, self.contig_match)
+        stripped_contig = aligned_contig.lstrip('-')
+        overhang = len(aligned_contig) - len(stripped_contig)
+        if overhang > 0:
+            stripped_target = target_nucs[overhang:]
+            self.end_dist = Levenshtein.distance(stripped_target,
+                                                 self.contig_match)
+        else:
+            stripped_contig = aligned_contig.rstrip('-')
+            overhang = len(aligned_contig) - len(stripped_contig)
+            if overhang == 0:
+                self.end_dist = self.dist
+            else:
+                stripped_target = target_nucs[:-overhang]
+                self.end_dist = Levenshtein.distance(stripped_target,
+                                                     self.contig_match)
 
 
 def main():
