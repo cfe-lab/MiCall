@@ -186,7 +186,9 @@ class Sample:
                 open(self.remap_conseq_csv) as remap_conseq_csv, \
                 open(contigs_path) as contigs_csv, \
                 open(self.nuc_csv, 'w') as nuc_csv, \
+                open(self.nuc_detail_csv, 'w') as nuc_detail_csv, \
                 open(self.amino_csv, 'w') as amino_csv, \
+                open(self.amino_detail_csv, 'w') as amino_detail_csv, \
                 open(self.coord_ins_csv, 'w') as coord_ins_csv, \
                 open(self.conseq_csv, 'w') as conseq_csv, \
                 open(self.conseq_region_csv, 'w') as conseq_region_csv, \
@@ -196,6 +198,11 @@ class Sample:
 
             if use_denovo:
                 g2p_aligned_csv = None
+            else:
+                for f in (amino_detail_csv, nuc_detail_csv):
+                    f.close()
+                    os.remove(f.name)
+                amino_detail_csv = nuc_detail_csv = None
             aln2counts(aligned_csv,
                        nuc_csv,
                        amino_csv,
@@ -208,6 +215,8 @@ class Sample:
                        g2p_aligned_csv=g2p_aligned_csv,
                        remap_conseq_csv=remap_conseq_csv,
                        conseq_region_csv=conseq_region_csv,
+                       amino_detail_csv=amino_detail_csv,
+                       nuc_detail_csv=nuc_detail_csv,
                        genome_coverage_csv=genome_coverage_csv,
                        contigs_csv=contigs_csv)
 
