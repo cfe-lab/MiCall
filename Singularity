@@ -151,7 +151,7 @@ From: centos:7
     python3.6 get-pip.py
     rm get-pip.py
     cd /opt
-    pip install -r /opt/micall/requirements-basespace.txt
+    pip install -r /opt/micall/requirements.txt
     ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
@@ -161,15 +161,8 @@ From: centos:7
     bwa index h77.fasta
     bwa index hcv.fasta
 
-    # Install genetracks
+    # Install dependencies for genetracks/drawSvg
     yum install -q -y cairo-devel cairo cairo-tools zlib-devel
-    pip install cairosvg
-    pip install cairocffi
-    pip install pysam
-    cd /opt
-    git clone https://github.com/jeff-k/genetracks.git
-    cd genetracks
-    pip install .
 
     yum groupremove -q -y 'development tools'
     yum remove -q -y epel-release wget python36-devel unzip

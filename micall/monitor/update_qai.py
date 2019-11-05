@@ -20,7 +20,8 @@ logger = logging.getLogger('update_qai')
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser(
-        description="Update the Oracle database with conseq information")
+        description="Update the Oracle database with conseq information",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("result_folder",
                         help="Result folder that holds the conseq.csv file")
     parser.add_argument(
@@ -189,7 +190,8 @@ def build_review_decisions(coverage_file,
         tags = sample_tags[coverage['sample']]
         project_map = sequencing_map.get(tags)
         if project_map is None:
-            raise KeyError("No sequencing found with tags '%s'." % tags)
+            raise KeyError("No sequencing found with tags '%s'. Are tagged "
+                           "layouts missing?" % tags)
         sequencing = project_map.get(coverage['project'])
         if sequencing is not None:
             score = int(coverage['on.score'])
