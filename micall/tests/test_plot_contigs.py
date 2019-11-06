@@ -11,14 +11,6 @@ from genetracks import Figure, Track, Multitrack, Label, Coverage
 from micall.core.plot_contigs import summarize_figure, \
     build_coverage_figure, SmoothCoverage, add_partial_banner, Arrow, ArrowGroup
 
-HCV_HEADER = ('C[342-915], E1[915-1491], E2[1491-2580], P7[2580-2769], '
-              'NS2[2769-3420], NS3[3420-5313], NS4A[5313-5475], '
-              'NS4B[5475-6258], NS5A[6258-7602], NS5B[7602-9378]')
-HIV_HEADER = '''\
-5' LTR[0-634], gag[790-2292], vif[5041-5619], tat[8379-8469], nef[8797-9417]
-tat[5831-6045], vpu[6062-6310], rev[8379-8653], 3' LTR[9086-9719]
-pol[2085-5096], vpr[5559-5850], rev[5970-6045], env[6225-8795]'''
-
 
 class SvgDiffer:
     def __init__(self):
@@ -670,6 +662,40 @@ NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
 8001--1.1->8003, 8005--1.2->8006
 Coverage 5x2, 7, 5x3
 [8001-8006], 1-HCV-1a - depth 7(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, blast_csv)
+
+    assert summarize_figure(figure) == expected_figure
+
+
+def test_plot_genome_coverage_blast_aligns_refs():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,1,2261,0,0,5
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,2,2262,0,0,5
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,3,2263,0,0,5
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,4,2264,0,0,5
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,5,2265,0,0,5
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,6,2266,0,0,5
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,7,2267,0,0,5
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,8,2268,0,0,5
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,9,2269,0,0,5
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,10,2270,0,0,5
+""")
+    blast_csv = StringIO("""\
+contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
+1,HIV1-G-CM-KP718923-seed,300,1,90,1,10,1653,1662
+""")
+    expected_figure = """\
+5' LTR[1-634], gag[789-2289], vif[5040-5616], tat[8379-8469], nef[8797-9417]
+tat[5831-6045], vpu[6061-6307], rev[8379-8653], 3' LTR[9086-9719]
+pol[2085-5096], vpr[5558-5847], rev[5970-6045], env[6225-8795]
+PR[2252-2549], RT[2549-3869], INT[4229-5093], V3[7109-7217], GP41[7757-8792]
+2261--1.1->2270
+2261--1.1->2270
+Coverage 5x10
+[2261-2270], 1-HIV1-G-CM-KP718923-seed - depth 5(1-9719)
 """
 
     figure = build_coverage_figure(genome_coverage_csv, blast_csv)

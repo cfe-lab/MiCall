@@ -16,6 +16,9 @@ from genetracks.elements import Element
 from matplotlib import cm, colors
 from matplotlib.colors import Normalize
 
+from micall.core.project_config import ProjectConfig
+from micall.utils.alignment_wrapper import align_nucs
+
 
 class SmoothCoverage(Coverage):
     def __init__(self, a, b, ys, height=10, color='blue', opacity='1.0'):
@@ -220,6 +223,7 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
     landmarks_path = (Path(__file__).parent.parent / "data" /
                       "landmark_references.yaml")
     landmark_groups = yaml.safe_load(landmarks_path.read_text())
+    projects = ProjectConfig.loadDefault()
     f = Figure()
     for _, coordinates_name in sorted((-depth, name)
                                       for name, depth in coordinate_depths.items()):
@@ -252,17 +256,28 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
         ref_arrows = []
         for contig_name in sorted_contig_names:
             contig_num, contig_ref = contig_name.split('-', 1)
+            ref_positions = None
             arrow_count = 0
             for blast_row in blast_rows:
                 if blast_row['contig_num'] != contig_num:
                     continue
                 if blast_row['ref_name'] != contig_ref:
                     continue
+                if ref_positions is None and contig_ref != coordinates_name:
+                    ref_positions = map_references(contig_ref,
+                                                   coordinates_name,
+                                                   projects)
                 arrow_count += 1
                 ref_start = int(blast_row['ref_start'])
                 ref_end = int(blast_row['ref_end'])
-                ref_arrows.append(Arrow(ref_start+position_offset,
-                                        ref_end+position_offset,
+                if ref_positions is None:
+                    coordinate_start = ref_start
+                    coordinate_end = ref_end
+                else:
+                    coordinate_start = ref_positions[ref_start]
+                    coordinate_end = ref_positions[ref_end]
+                ref_arrows.append(Arrow(coordinate_start+position_offset,
+                                        coordinate_end+position_offset,
                                         elevation=1,
                                         label=f'{contig_num}.{arrow_count}'))
         if ref_arrows:
@@ -280,6 +295,23 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
     if not f.elements:
         f.add(Track(1, max_position, label='No contigs found.', color='none'))
     return f
+
+
+def map_references(contig_ref_name: str,
+                   coordinates_name: str,
+                   projects: ProjectConfig) -> typing.Mapping[int, int]:
+    ref_seq = projects.getReference(contig_ref_name)
+    coordinates_seq = projects.getReference(coordinates_name)
+    aligned_coordinates, aligned_ref, _ = align_nucs(coordinates_seq, ref_seq)
+    mapped_positions = {}
+    coordinate_pos = ref_pos = 0
+    for coordinate_nuc, ref_nuc in zip(aligned_coordinates, aligned_ref):
+        if coordinate_nuc != '-':
+            coordinate_pos += 1
+        if ref_nuc != '-':
+            ref_pos += 1
+            mapped_positions[ref_pos] = coordinate_pos
+    return mapped_positions
 
 
 def sort_contig_names(contig_names, contig_depths):
