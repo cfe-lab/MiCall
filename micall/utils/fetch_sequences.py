@@ -139,6 +139,7 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
                          'HIV1B-vif': (5040, 5616),
                          'HIV1B-vpr': (5558, 5847),
                          'HIV1B-vpu': (6061, 6307),
+                         'GP120': (6224, 7757),
                          'GP41': (7757, 8792),
                          'HIV1B-nef': (8796, 9414)}
     source_sequences = {}

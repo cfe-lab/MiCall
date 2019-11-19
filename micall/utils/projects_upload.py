@@ -26,6 +26,10 @@ def parse_args():
         '--pipeline_version',
         default='0-dev',
         help='version number')
+    parser.add_argument(
+        '--update_sequences',
+        action='store_true',
+        help="Update region sequences if they don't match.")
 
     args = parser.parse_args()
     if not hasattr(args, 'qai_password'):
@@ -55,6 +59,7 @@ def main():
         old_regions = session.get_json("/lab_miseq_regions", retries=0)
         regions = dict(((region['name'], region) for region in old_regions))
         for region_name, region_data in project_config.config['regions'].items():
+            ref_seq = ''.join(region_data['reference'])
             region = regions.get(region_name)
             if region is None:
                 seed_group_name = region_data['seed_group']
@@ -68,9 +73,15 @@ def main():
                     "/lab_miseq_regions",
                     {'name': region_name,
                      'is_nucleotide': region_data['is_nucleotide'],
-                     'reference': ''.join(region_data['reference']),
+                     'reference': ref_seq,
                      'seed_group_id': seed_group_id})
                 regions[region_name] = region
+            elif region['reference'] != ref_seq:
+                print("Reference doesn't match:", region_name)
+                if args.update_sequences:
+                    region['reference'] = ref_seq
+                    session.post_json(f"/lab_miseq_regions/{region['id']}",
+                                      region)
 
         pipeline = session.post_json("/lab_miseq_pipelines",
                                      {'version': args.pipeline_version})

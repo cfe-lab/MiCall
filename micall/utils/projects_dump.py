@@ -103,11 +103,16 @@ def main():
             "/lab_miseq_projects?mode=dump&pipeline=" +
             args.pipeline_version,
             retries=0)
-        for project in dump['projects'].values():
+        empty_projects = []
+        for name, project in dump['projects'].items():
             project['regions'].sort(key=itemgetter('coordinate_region'))
             for region in project['regions']:
                 used_regions.add(region['coordinate_region'])
                 used_regions.update(region['seed_region_names'])
+            if not project['regions']:
+                empty_projects.append(name)
+        for name in empty_projects:
+            del dump['projects'][name]
         errors = dump['projects'].get('errors')
         if errors:
             raise RuntimeError('\n'.join(errors))
