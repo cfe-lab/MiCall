@@ -9,6 +9,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.units import cm, mm
 from reportlab.lib.styles import ParagraphStyle
+from reportlab import rl_config
 
 import reportlab.platypus as plat
 
@@ -16,6 +17,9 @@ import reportlab.platypus as plat
 from reportlab.platypus import PageBreak
 
 page_w, page_h = letter
+
+# Make PDF's repeatable - don't generate id and force timestamp to 01 Jan 2000.
+rl_config.invariant = 1
 
 # Times are reported in this time zone
 TIME_ZONE_NAME = "America/Vancouver"
