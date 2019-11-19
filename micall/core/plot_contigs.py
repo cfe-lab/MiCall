@@ -263,7 +263,9 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
                     continue
                 if blast_row['ref_name'] != contig_ref:
                     continue
-                if ref_positions is None and contig_ref != coordinates_name:
+                if (ref_positions is None and
+                        coordinates_name != '' and
+                        contig_ref != coordinates_name):
                     ref_positions = map_references(contig_ref,
                                                    coordinates_name,
                                                    projects)

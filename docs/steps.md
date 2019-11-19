@@ -174,7 +174,8 @@ Individual files are described after the list of steps.
     whole consensus sequence may not be aligned with the seed reference because
     of insertions and deletions. Mixtures above the cutoff are displayed as
     [IUPAC nucleotide codes]. If deletions are present above the cutoff, the
-    nucleotide code is lower case.
+    nucleotide code is lower case. If coverage is below 100 or if the only thing
+    present above the cutoff is deletions, the nucleotide code is "x".
 * conseq_ins.csv
   * qname - query name from the read
   * fwd_rev - F for forward reads, R for reverse

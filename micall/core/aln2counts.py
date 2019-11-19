@@ -821,7 +821,7 @@ class SequenceReport(object):
                     nuc_coverage = seed_nuc.get_coverage()
                     if nuc_coverage < self.consensus_min_coverage:
                         if offset is not None:
-                            consensus += '-'
+                            consensus += 'x'
                     else:
                         nuc_consensus = seed_nuc.get_consensus(mixture_cutoff)
                         if offset is None and nuc_consensus:
@@ -831,7 +831,7 @@ class SequenceReport(object):
                     # Still haven't started, so reset the consensus.
                     consensus = ''
             if offset is not None:
-                consensus = consensus.rstrip('-')
+                consensus = consensus.rstrip('x')
                 yield {'q-cutoff': self.qcut,
                        'min_coverage': self.consensus_min_coverage,
                        'consensus-percent-cutoff':

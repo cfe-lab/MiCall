@@ -30,6 +30,7 @@ class StubbedSequenceReport(SequenceReport):
                                               score)
 
 
+# noinspection DuplicatedCode
 class SequenceReportTest(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
@@ -351,8 +352,8 @@ R1-seed,15,0,1,7,TTNGG
 """)
         expected_text = """\
 region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-R1-seed,15,1,MAX,6,TTT-GG
-R1-seed,15,1,0.100,6,TTT-GG
+R1-seed,15,1,MAX,6,TTTxGG
+R1-seed,15,1,0.100,6,TTTxGG
 """
         self.report.consensus_min_coverage = 1
 
@@ -388,8 +389,8 @@ R1-seed,15,0,1,6,GGG
 """)
         expected_text = """\
 region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-R1-seed,15,10,MAX,0,AAAT--GGG
-R1-seed,15,10,0.100,0,AAAT--GGG
+R1-seed,15,10,MAX,0,AAATxxGGG
+R1-seed,15,10,0.100,0,AAATxxGGG
 """
         self.report.consensus_min_coverage = 10
 
