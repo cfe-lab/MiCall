@@ -65,9 +65,6 @@ def find_probes(contigs_csv, probes_csv):
             conseq_cutoff = row.get('consensus-percent-cutoff')
             if conseq_cutoff and conseq_cutoff != 'MAX':
                 continue
-            min_coverage = row.get('min_coverage')
-            if min_coverage and min_coverage != '100':
-                continue
             contig_num += 1
             contig_name = f'{contig_num}-{seed_name}'
             contig_seq: str = row.get('contig') or row['sequence']

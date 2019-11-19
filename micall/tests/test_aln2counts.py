@@ -275,9 +275,9 @@ class SequenceReportTest(unittest.TestCase):
 R1-seed,15,0,9,0,AAATTT
 """)
         expected_text = """\
-region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-R1-seed,15,0,MAX,0,AAATTT
-R1-seed,15,0,0.100,0,AAATTT
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAATTT
+R1-seed,15,0.100,0,AAATTT
 """
 
         self.report.write_consensus_header(self.report_file)
@@ -297,9 +297,9 @@ R1-seed,15,0,9,0,AAATTT
 R1-seed,15,0,1,0,CCCGGG
 """)
         expected_text = """\
-region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-R1-seed,15,0,MAX,0,AAATTT
-R1-seed,15,0,0.100,0,MMMKKK
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAATTT
+R1-seed,15,0.100,0,MMMKKK
 """
 
         self.report.write_consensus_header(self.report_file)
@@ -315,9 +315,9 @@ R1-seed,15,0,9,3,AAATTT
 R1-seed,15,0,1,7,TTGGG
 """)
         expected_text = """\
-region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-R1-seed,15,0,MAX,3,AAATTTGGG
-R1-seed,15,0,0.100,3,AAATTTGGG
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,3,AAATTTGGG
+R1-seed,15,0.100,3,AAATTTGGG
 """
 
         self.report.write_consensus_header(self.report_file)
@@ -333,9 +333,9 @@ R1-seed,15,0,0.100,3,AAATTTGGG
 1-R2-seed-partial,15,0,9,0,AAATTT
 """)
         expected_text = """\
-region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-1-R2-seed-partial,15,0,MAX,0,AAATTT
-1-R2-seed-partial,15,0,0.100,0,AAATTT
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+1-R2-seed-partial,15,MAX,0,AAATTT
+1-R2-seed-partial,15,0.100,0,AAATTT
 """
 
         self.report.write_consensus_header(self.report_file)
@@ -351,9 +351,9 @@ R1-seed,15,0,9,3,NNNTTT
 R1-seed,15,0,1,7,TTNGG
 """)
         expected_text = """\
-region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-R1-seed,15,1,MAX,6,TTTxGG
-R1-seed,15,1,0.100,6,TTTxGG
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,6,TTTxGG
+R1-seed,15,0.100,6,TTTxGG
 """
         self.report.consensus_min_coverage = 1
 
@@ -370,7 +370,7 @@ R1-seed,15,0,9,3,NNNNNN
 R1-seed,15,0,1,7,NNNNN
 """)
         expected_text = """\
-region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
 """
         self.report.consensus_min_coverage = 1
 
@@ -388,9 +388,9 @@ R1-seed,15,0,1,0,AAAT
 R1-seed,15,0,1,6,GGG
 """)
         expected_text = """\
-region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-R1-seed,15,10,MAX,0,AAATxxGGG
-R1-seed,15,10,0.100,0,AAATxxGGG
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAATxxGGG
+R1-seed,15,0.100,0,AAATxxGGG
 """
         self.report.consensus_min_coverage = 10
 
@@ -407,9 +407,9 @@ R1-seed,15,0,9,0,AAATTTGGG
 R1-seed,15,0,1,4,TTGGG
 """)
         expected_text = """\
-region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-R1-seed,15,10,MAX,4,TTGGG
-R1-seed,15,10,0.100,4,TTGGG
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,4,TTGGG
+R1-seed,15,0.100,4,TTGGG
 """
         self.report.consensus_min_coverage = 10
 
@@ -426,32 +426,11 @@ R1-seed,15,0,9,0,AAATTTGGG
 R1-seed,15,0,1,0,AAAT
 """)
         expected_text = """\
-region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-R1-seed,15,10,MAX,0,AAAT
-R1-seed,15,10,0.100,0,AAAT
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAAT
+R1-seed,15,0.100,0,AAAT
 """
         self.report.consensus_min_coverage = 10
-
-        self.report.write_consensus_header(self.report_file)
-        self.report.read(aligned_reads)
-        self.report.write_consensus()
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
-    def testConsensusMultipleCoverageLevels(self):
-        # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
-R1-seed,15,0,9,0,AAATTTGGG
-R1-seed,15,0,1,0,AAAT
-""")
-        expected_text = """\
-region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-R1-seed,15,10,MAX,0,AAAT
-R1-seed,15,10,0.100,0,AAAT
-R1-seed,15,1,MAX,0,AAATTTGGG
-R1-seed,15,1,0.100,0,AAATTTGGG
-"""
-        self.report.consensus_min_coverages = (10, 1)
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -2358,11 +2337,11 @@ R1-seed,15,0,1,0,CCCGGG
 """)
 
         expected_text = """\
-seed,region,q-cutoff,min_coverage,consensus-percent-cutoff,offset,sequence
-R1-seed,R1a,15,0,MAX,0,AAATTT
-R1-seed,R1a,15,0,0.100,0,MMMKKK
-R1-seed,R1b,15,0,MAX,3,AAATTT
-R1-seed,R1b,15,0,0.100,3,MMMKKK
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,R1a,15,MAX,0,AAATTT
+R1-seed,R1a,15,0.100,0,MMMKKK
+R1-seed,R1b,15,MAX,3,AAATTT
+R1-seed,R1b,15,0.100,3,MMMKKK
 """
 
         self.report.read(aligned_reads)
