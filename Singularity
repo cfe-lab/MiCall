@@ -128,12 +128,6 @@ From: centos:7
     ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
-    # build h77 reference
-    cd /opt/micall/micall/utils/hcv_geno
-    bwa index hxb2.fasta
-    bwa index h77.fasta
-    bwa index hcv.fasta
-
     # Install dependencies for genetracks/drawSvg
     yum install -q -y cairo-devel cairo cairo-tools zlib-devel
 
