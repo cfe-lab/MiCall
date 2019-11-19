@@ -69,33 +69,6 @@ From: centos:7
     yum install -q -y rust cargo
     cargo install --root / --git https://github.com/jeff-k/merge-mates.git
 
-    echo ===== Installing Savage ===== >/dev/null
-    yum install -q -y zlib-devel boost-timer boost-program-options boost-devel
-    cargo install --root / --git https://github.com/jbaaijens/rust-overlaps.git --tag v0.1.1
-
-    wget -q https://downloads.sourceforge.net/project/bio-bwa/bwa-0.7.17.tar.bz2
-    tar xjf bwa-0.7.17.tar.bz2 --no-same-owner
-    cd bwa-0.7.17
-    make
-    mv bwa /bin
-    cd ..
-    rm -rf bwa-0.7.17 bwa-0.7.17.tar.bz2
-
-    wget -q https://github.com/pachterlab/kallisto/releases/download/v0.44.0/kallisto_linux-v0.44.0.tar.gz
-    tar xzf kallisto_linux-v0.44.0.tar.gz --no-same-owner
-    mv kallisto_linux-v0.44.0/kallisto /bin
-    rm -rf kallisto_linux-v0.44.0 kallisto_linux-v0.44.0.tar.gz
-
-    cd /opt
-    git clone https://bitbucket.org/jbaaijens/savage.git
-    cd savage
-    git checkout tags/v0.4.0
-    make
-    echo \#\!/usr/bin/env sh > /bin/savage
-    echo /opt/savage/savage.py \$@ >> /bin/savage
-    chmod +x /bin/savage
-    cd /
-
     yum remove -q -y zlib-devel boost-devel
 
     echo ===== Installing blast ===== >/dev/null

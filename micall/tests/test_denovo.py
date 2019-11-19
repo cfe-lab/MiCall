@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pytest import fixture
 
-from micall.core.denovo import write_contig_refs, denovo, DEFAULT_DATABASE, Assembler
+from micall.core.denovo import write_contig_refs, denovo, DEFAULT_DATABASE
 from micall.blast_db.make_blast_db import make_blast_db, DEFAULT_PROJECTS
 
 
@@ -201,30 +201,6 @@ GCCTCATCGTTTACCCTGACCTCGG
     denovo(microtest_path / '2160A-HCV_S19_L001_R1_001.fastq',
            microtest_path / '2160A-HCV_S19_L001_R2_001.fastq',
            contigs_csv,
-           tmpdir,
-           assembler=Assembler.IVA)
-
-    assert expected_contigs_csv == contigs_csv.getvalue()
-
-
-def test_denovo_savage(tmpdir, hcv_db):
-    microtest_path = Path(__file__).parent / 'microtest'
-    contigs_csv = StringIO()
-    expected_contigs_csv = """\
-ref,match,group_ref,contig
-HCV-2a,1.0,HCV-2a,TGTGTCCGTGGCGATGAACCCTCAAGGCCGCCGCAAATATTACCTGACCAGAGACCCTAC\
-CACTCCAATCGCCCGGGCTGCCTGGGAAACAGTTAGACACTCCCCTGTCAATTCATGGCTGGGAAATATCATCCAGTA\
-CGCTCCAACCATATGGGCTCGCATGGTCCTGATGACACACTTCTTCTCCATCCTCATGGCCCAAGACACTCTGGACCA\
-GAACCTCAATTTTGAGATGTACGGAGCGGTGTACTCCGTGAGTCCCTTGGACCTCCCAGCCATAATTGAAAGGCTACA\
-CGGGCTTGACGCTTTCTCTCTGCACACATACTCTCCCCACGAACTGACGCGGGTGGCAGCAGCCCTCAGAAAACTTGG\
-GGCGCCACCCCTCAGAGCGTGGAAGAGTCGGGCGCGTGCAGTTAGGGCGTCCCTCATCTCCCGTGGAGGGAGAGCGGC\
-CATTTGCGGTCGATATCTCTTCA
-"""
-
-    denovo(microtest_path / '2160AMIDI-MidHCV_S20_L001_R1_001.fastq',
-           microtest_path / '2160AMIDI-MidHCV_S20_L001_R2_001.fastq',
-           contigs_csv,
-           tmpdir,
-           assembler=Assembler.SAVAGE)
+           tmpdir)
 
     assert expected_contigs_csv == contigs_csv.getvalue()

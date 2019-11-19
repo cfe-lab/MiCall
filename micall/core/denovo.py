@@ -3,8 +3,7 @@ import logging
 import os
 from collections import Counter
 from csv import DictWriter, DictReader
-from datetime import datetime, timedelta
-from enum import Enum
+from datetime import datetime
 from glob import glob
 from io import StringIO
 from itertools import groupby
@@ -17,22 +16,13 @@ from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 
 from micall.core.project_config import ProjectConfig
-from micall.utils.externals import LineCounter
 
-PEAR = "/opt/bin/pear"
-SAVAGE = "/opt/savage_wrapper.sh"
 IVA = "iva"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
                                 'blast_db',
                                 'refs.fasta')
-ASSEMBLY_TIMEOUT = timedelta(hours=4).total_seconds()
-GENOME_WIDTH = 5000  # Wild guess at the genome width.
-TARGET_DEPTH = 1000  # Savage recommends 500 to 1000.
 logger = logging.getLogger(__name__)
-
-# noinspection PyArgumentList
-Assembler = Enum('Assembler', 'IVA SAVAGE')
 
 
 def write_contig_refs(contigs_fasta_path,
@@ -178,7 +168,6 @@ def denovo(fastq1_path,
            contigs_csv,
            work_dir='.',
            merged_contigs_csv=None,
-           assembler=Assembler.IVA,
            blast_csv=None):
     """ Use de novo assembly to build contigs from reads.
 
@@ -188,7 +177,6 @@ def denovo(fastq1_path,
     :param str work_dir: path for writing temporary files
     :param merged_contigs_csv: open file to read contigs that were merged from
         amplicon reads
-    :param Assembler assembler: which de novo assembler to use
     :param blast_csv: open file to write BLAST search results for each contig
     """
     old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
@@ -198,54 +186,27 @@ def denovo(fastq1_path,
     tmp_dir = mkdtemp(dir=work_dir, prefix='assembly_')
     start_time = datetime.now()
     start_dir = os.getcwd()
-    contigs_fasta_path = os.path.join(tmp_dir, 'contigs.fasta')
-    if assembler == Assembler.IVA:
-        joined_path = os.path.join(tmp_dir, 'joined.fastq')
-        run(['merge-mates',
-             fastq1_path,
-             fastq2_path,
-             '--interleave',
-             '-o', joined_path],
-            check=True)
-        iva_out_path = os.path.join(tmp_dir, 'iva_out')
-        contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-        try:
-            run([IVA, '--fr', joined_path, '-t', '2', iva_out_path],
-                check=True,
-                stdout=PIPE,
-                stderr=STDOUT)
-        except CalledProcessError as ex:
-            output = ex.output.decode('UTF8')
-            if output != 'Failed to make first seed. Cannot continue\n':
-                logger.warning('iva failed to assemble.', exc_info=True)
-                logger.warning(output)
-            with open(contigs_fasta_path, 'a'):
-                pass
-    else:
-        counter = LineCounter()
-        read_count = counter.count(fastq1_path) / 4
-        expected_depth = read_count / GENOME_WIDTH
-        split = max(1, expected_depth // TARGET_DEPTH)
-        merged_reads_path = os.path.join(tmp_dir, 'merged.fastq')
-        run(['merge-mates',
-             '--out', merged_reads_path,
-             fastq1_path,
-             fastq2_path],
-            check=True)
-
-        try:
-            run(['savage',
-                 '--split', str(split),
-                 '-s', merged_reads_path,
-                 '-t', '1',
-                 '--merge_contigs', '0.01',
-                 '--overlap_len_stage_c', '100'],
-                cwd=tmp_dir,
-                check=True,
-                stdout=PIPE)
-            contigs_fasta_path = os.path.join(tmp_dir, 'contigs_stage_c.fasta')
-        except CalledProcessError:
-            logger.warning('De novo assembly failed.')
+    joined_path = os.path.join(tmp_dir, 'joined.fastq')
+    run(['merge-mates',
+         fastq1_path,
+         fastq2_path,
+         '--interleave',
+         '-o', joined_path],
+        check=True)
+    iva_out_path = os.path.join(tmp_dir, 'iva_out')
+    contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
+    try:
+        run([IVA, '--fr', joined_path, '-t', '2', iva_out_path],
+            check=True,
+            stdout=PIPE,
+            stderr=STDOUT)
+    except CalledProcessError as ex:
+        output = ex.output.decode('UTF8')
+        if output != 'Failed to make first seed. Cannot continue\n':
+            logger.warning('iva failed to assemble.', exc_info=True)
+            logger.warning(output)
+        with open(contigs_fasta_path, 'a'):
+            pass
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
