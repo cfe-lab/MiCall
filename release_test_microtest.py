@@ -16,17 +16,21 @@ def read_file(sample_name, file_name):
 def check_v3loop(sample_name, expected_counts):
     nuc_rows = list(read_file(sample_name, 'nuc.csv'))
     assert nuc_rows
+    v3_loop_rows = []
     for row in nuc_rows:
-        pos = int(row['refseq.nuc.pos'])
-        assert row['region'] == 'V3LOOP', pos
+        if row['region'] == 'V3LOOP':
+            v3_loop_rows.append(row)
+        else:
+            pos = int(row['refseq.nuc.pos'])
+            assert row['region'] == 'GP120', (pos, row['region'])
     count_rows = list(map(itemgetter('refseq.nuc.pos', 'A', 'C', 'G', 'T'),
-                          nuc_rows))
+                          v3_loop_rows))
     expected_count_rows = [tuple(line.split())
                            for line in expected_counts.splitlines()]
     assert len(count_rows) >= len(expected_count_rows), len(count_rows)
     for line, expected_line in zip(count_rows, expected_count_rows):
         assert line == expected_line, (line, expected_line)
-    return nuc_rows
+    return v3_loop_rows
 
 
 def check_1234():
@@ -143,7 +147,9 @@ def check_2100(is_denovo):
                                  'conseq.csv'))
     regions = set(map(itemgetter('region'), conseq_rows))
     if is_denovo:
-        expected_regions = {'2_3-HIV1-B-FR-K03455-seed', '1-HCV-1a'}
+        expected_regions = {'2-HIV1-B-FR-K03455-seed',
+                            '3-HIV1-B-FR-K03455-seed',
+                            '1-HCV-1a'}
     else:
         expected_regions = {'HIV1-CON-XX-Consensus-seed',
                             'HCV-1a',
@@ -175,80 +181,72 @@ def check_2110(is_denovo):
     amino_rows = list(read_file('2110A-V3LOOP_S13', 'amino.csv'))
     assert amino_rows
     for row in amino_rows:
+        if row['region'] == 'GP120':
+            continue
         assert row['region'] == 'V3LOOP', row['region']
         pos = int(row['refseq.aa.pos'])
         if pos == 6:
-            check_amino_row(row, coverage=13, stop_codons=1)
+            check_amino_row(row, coverage=23, stop_codons=1)
         elif pos == 7:
-            check_amino_row(row, coverage=11, low_quality=2)
+            check_amino_row(row, coverage=21, low_quality=2)
         elif pos == 8:
-            check_amino_row(row, coverage=10, partial=3)
+            check_amino_row(row, coverage=20, partial=3)
         elif pos == 9:
             # G2P doesn't currently handle inserts.
             expected_inserts = 4 if is_denovo else 0
-            check_amino_row(row, coverage=13, ins=expected_inserts)
+            check_amino_row(row, coverage=23, ins=expected_inserts)
         elif pos == 10:
-            check_amino_row(row, coverage=13, dels=4)
+            check_amino_row(row, coverage=23, dels=4)
         elif pos < 18:
-            check_amino_row(row, coverage=13)
-        elif pos < 33:
-            check_amino_row(row)
+            check_amino_row(row, coverage=23)
         else:
-            if is_denovo:
-                check_amino_row(row, coverage=10)
-            else:
-                check_amino_row(row, v3_overlap=10)
+            check_amino_row(row)
 
 
 def check_2120():
     amino_rows = list(read_file('2120A-PR_S14', 'amino.csv'))
     assert amino_rows
+    found_regions = set(map(itemgetter('region'), amino_rows))
+    assert found_regions == {'PR'}, found_regions
     for row in amino_rows:
         pos = int(row['refseq.aa.pos'])
-        if row['region'] == 'PR':
-            if pos <= 29:
-                check_amino_row(row)
-            elif pos <= 46:
-                check_amino_row(row, coverage=13)
-            elif pos <= 49:
-                check_amino_row(row, coverage=13, stop_codons=1)
-            elif pos <= 52:
-                check_amino_row(row, coverage=11, low_quality=2)
-            elif pos <= 54:
-                check_amino_row(row, coverage=10, partial=3)
-            elif pos <= 55:
-                check_amino_row(row, coverage=13)
-            elif pos <= 56:
-                check_amino_row(row, coverage=13, ins=4)
-            elif pos <= 58:
-                check_amino_row(row, coverage=13)
-            elif pos <= 64:
-                check_amino_row(row, coverage=10, clip=3)
-            elif pos <= 67:
-                check_amino_row(row, coverage=10, dels=1)
-            elif pos <= 90:
-                check_amino_row(row, coverage=10)
-            else:
-                check_amino_row(row)
+        if pos <= 29:
+            check_amino_row(row)
+        elif pos <= 46:
+            check_amino_row(row, coverage=23)
+        elif pos <= 49:
+            check_amino_row(row, coverage=23, stop_codons=1)
+        elif pos <= 52:
+            check_amino_row(row, coverage=21, low_quality=2)
+        elif pos <= 54:
+            check_amino_row(row, coverage=20, partial=3)
+        elif pos <= 55:
+            check_amino_row(row, coverage=23)
+        elif pos <= 56:
+            check_amino_row(row, coverage=23, ins=4)
+        elif pos <= 58:
+            check_amino_row(row, coverage=23)
+        elif pos <= 64:
+            check_amino_row(row, coverage=20, clip=3)
+        elif pos <= 67:
+            check_amino_row(row, coverage=20, dels=1)
+        elif pos <= 90:
+            check_amino_row(row, coverage=20)
         else:
-            assert row['region'] == 'RT', row['region']
-            if pos <= 33:
-                check_amino_row(row, coverage=10)
-            else:
-                check_amino_row(row)
+            check_amino_row(row)
 
 
 def check_2130(is_denovo):
     conseq_rows = list(read_file('2130A-HCV_S15', 'conseq.csv'))
     regions = set(map(itemgetter('region'), conseq_rows))
-    expected_regions = {'1_2-HCV-2a'} if is_denovo else {'HCV-2a'}
+    expected_regions = {'1-HCV-2a', '2-HCV-2a'} if is_denovo else {'HCV-2a'}
     assert regions == expected_regions, regions
 
 
 def check_2130midi(is_denovo):
     conseq_rows = list(read_file('2130AMIDI-MidHCV_S16', 'conseq.csv'))
     regions = set(map(itemgetter('region'), conseq_rows))
-    expected_regions = {'1_2-HCV-2a'} if is_denovo else {'HCV-2a'}
+    expected_regions = {'1-HCV-2a', '2-HCV-2a'} if is_denovo else {'HCV-2a'}
     assert regions == expected_regions, regions
 
 
@@ -272,9 +270,9 @@ def check_2160():
         coverage_message = f'{coverage} coverage at {pos}'
         if pos < 40:
             assert coverage < 10, coverage_message
-        elif 80 <= pos < 160:
+        elif 80 <= pos < 150:
             assert 10 < coverage, coverage_message
-        elif 250 <= pos:
+        elif 170 <= pos:
             assert coverage < 10, coverage_message
 
 
@@ -307,11 +305,12 @@ def check_2170():
             elif 50 <= pos:
                 assert 10 < coverage, coverage_message
         elif row['region'] == 'HCV1A-H77-NS5b':
-            assert 10 < coverage, coverage_message
+            if pos <= 580:
+                assert 10 < coverage, coverage_message
         elif row['region'] == 'HCV2-JFH-1-NS5a':
             if pos < 15:
                 assert coverage < 10, coverage_message
-            elif 80 <= pos:
+            elif 100 <= pos:
                 assert 10 < coverage, coverage_message
         else:
             assert row['region'] == 'HCV2-JFH-1-NS5b', row['region']
