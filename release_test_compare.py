@@ -368,10 +368,6 @@ def compare_consensus(sample,
     source_seqs = filter_consensus_sequences(sample.source_files)
     target_seqs = filter_consensus_sequences(sample.target_files)
     run_name = get_run_name(sample)
-    # target_seeds = {seed for seed, region in target_seqs.keys()}
-    # if target_seeds == {None}:
-    #     source_seqs = {(None, region): consensus
-    #                    for (seed, region), consensus in source_seqs.items()}
     keys = sorted(set(source_seqs.keys()) | target_seqs.keys())
     cutoff = MAX_CUTOFF
     for key in keys:

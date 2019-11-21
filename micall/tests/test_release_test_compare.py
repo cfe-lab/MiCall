@@ -1,12 +1,13 @@
 from collections import defaultdict
 from io import StringIO
-from unittest import TestCase, skip
+from unittest import TestCase
 
 from release_test_compare import compare_sample, SampleFiles, Sample, \
     MiseqRun, Scenarios, ConsensusDistance, group_samples_file, \
-    group_nucs_file, compare_consensus, map_consensus_sequences
+    group_nucs_file, compare_consensus
 
 
+# noinspection DuplicatedCode
 class CompareSampleTest(TestCase):
     def test_empty(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
@@ -365,24 +366,15 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_scenario_counts, scenario_counts)
 
     def test_consensus_change(self):
+        source_seqs = {('R1-seed', 'R1'): 'ACACACGT'}
+        target_seqs = {('R1-seed', 'R1'): 'ACACACGG'}
+        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(coverage_scores=[{'region': 'R1',
-                                                      'seed': 'R1-seed',
-                                                      'on.score': '4'}],
-                                    nuc_limits={'R1-seed': [('R1', 101, 108)]},
-                                    consensus=[{'region': 'R1-seed',
-                                                'consensus-percent-cutoff': 'MAX',
-                                                'offset': '100',
-                                                'sequence': 'ACACACGT'}]),
-                        SampleFiles(coverage_scores=[{'region': 'R1',
-                                                      'seed': 'R1-seed',
-                                                      'on.score': '4'}],
-                                    nuc_limits={'R1-seed': [('R1', 101, 108)]},
-                                    consensus=[{'region': 'R1-seed',
-                                                'consensus-percent-cutoff': 'MAX',
-                                                'offset': '100',
-                                                'sequence': 'ACACACGG'}]))
+                        SampleFiles(region_consensus=source_seqs,
+                                    coverage_scores=coverage_scores),
+                        SampleFiles(region_consensus=target_seqs,
+                                    coverage_scores=coverage_scores))
         expected_report = ('run1:sample42 consensus: R1-seed R1 MAX\n'
                            '- ACACACGT\n'
                            '?        ^\n'
@@ -399,12 +391,15 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_consensus_distances, consensus_distances)
 
     def test_consensus_change_diff(self):
-        source_seqs = {('R1-seed', 'R1', 'MAX'): 'ACACAC'}
-        target_seqs = {('R1-seed', 'R1', 'MAX'): 'ACACAT'}
+        source_seqs = {('R1-seed', 'R1'): 'ACACAC'}
+        target_seqs = {('R1-seed', 'R1'): 'ACACAT'}
+        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(),
-                        SampleFiles())
+                        SampleFiles(region_consensus=source_seqs,
+                                    coverage_scores=coverage_scores),
+                        SampleFiles(region_consensus=target_seqs,
+                                    coverage_scores=coverage_scores))
         expected_diffs = ['run1:sample42 consensus: R1-seed R1 MAX',
                           '- ACACAC',
                           '?      ^',
@@ -416,8 +411,6 @@ class CompareSampleTest(TestCase):
 
         compare_consensus(
             sample,
-            source_seqs,
-            target_seqs,
             diffs,
             Scenarios.NONE,
             scenarios)
@@ -426,12 +419,15 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_scenarios, scenarios)
 
     def test_consensus_change_scenario(self):
-        source_seqs = {('R1-seed', 'R1', 'MAX'): 'ACACAC'}
-        target_seqs = {('R1-seed', 'R1', 'MAX'): 'ACACAT'}
+        source_seqs = {('R1-seed', 'R1'): 'ACACAC'}
+        target_seqs = {('R1-seed', 'R1'): 'ACACAT'}
+        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(),
-                        SampleFiles())
+                        SampleFiles(region_consensus=source_seqs,
+                                    coverage_scores=coverage_scores),
+                        SampleFiles(region_consensus=target_seqs,
+                                    coverage_scores=coverage_scores))
         expected_diffs = []
         expected_scenarios = {Scenarios.MAIN_CONSENSUS_CHANGED: ['.']}
         diffs = []
@@ -439,81 +435,6 @@ class CompareSampleTest(TestCase):
 
         compare_consensus(
             sample,
-            source_seqs,
-            target_seqs,
-            diffs,
-            Scenarios.MAIN_CONSENSUS_CHANGED | Scenarios.OTHER_CONSENSUS_CHANGED,
-            scenarios)
-
-        self.assertEqual(expected_diffs, diffs)
-        self.assertEqual(expected_scenarios, scenarios)
-
-    def test_other_consensus_change(self):
-        source_seqs = {('R1-seed', 'R1', '0.250'): 'ACACAC'}
-        target_seqs = {('R1-seed', 'R1', '0.250'): 'ACACAT'}
-        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
-                        'sample42',
-                        SampleFiles(),
-                        SampleFiles())
-        expected_diffs = ['run1:sample42 consensus: R1-seed R1 0.250',
-                          '- ACACAC',
-                          '?      ^',
-                          '+ ACACAT',
-                          '?      ^']
-        expected_scenarios = {}
-        diffs = []
-        scenarios = defaultdict(list)
-
-        compare_consensus(
-            sample,
-            source_seqs,
-            target_seqs,
-            diffs,
-            Scenarios.NONE,
-            scenarios)
-
-        self.assertEqual(expected_diffs, diffs)
-        self.assertEqual(expected_scenarios, scenarios)
-
-    def test_other_consensus_change_scenario(self):
-        source_seqs = {('R1-seed', 'R1', '0.250'): 'ACACAC'}
-        target_seqs = {('R1-seed', 'R1', '0.250'): 'ACACAT'}
-        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
-                        'sample42',
-                        SampleFiles(),
-                        SampleFiles())
-        expected_diffs = []
-        expected_scenarios = {Scenarios.OTHER_CONSENSUS_CHANGED: ['.']}
-        diffs = []
-        scenarios = defaultdict(list)
-
-        compare_consensus(
-            sample,
-            source_seqs,
-            target_seqs,
-            diffs,
-            Scenarios.MAIN_CONSENSUS_CHANGED | Scenarios.OTHER_CONSENSUS_CHANGED,
-            scenarios)
-
-        self.assertEqual(expected_diffs, diffs)
-        self.assertEqual(expected_scenarios, scenarios)
-
-    def test_hla_consensus_change_scenario(self):
-        source_seqs = {('HLA1-seed', 'HLA-1', '0.250'): 'ACACAC'}
-        target_seqs = {('HLA1-seed', 'HLA-1', '0.250'): 'ACACAT'}
-        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
-                        'sample42',
-                        SampleFiles(),
-                        SampleFiles())
-        expected_diffs = []
-        expected_scenarios = {Scenarios.MAIN_CONSENSUS_CHANGED: ['.']}
-        diffs = []
-        scenarios = defaultdict(list)
-
-        compare_consensus(
-            sample,
-            source_seqs,
-            target_seqs,
             diffs,
             Scenarios.MAIN_CONSENSUS_CHANGED | Scenarios.OTHER_CONSENSUS_CHANGED,
             scenarios)
@@ -522,12 +443,15 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_scenarios, scenarios)
 
     def test_same_consensus(self):
-        source_seqs = {('R1-seed', 'R1', 'MAX'): 'ACACAC'}
-        target_seqs = {('R1-seed', 'R1', 'MAX'): 'ACACAC'}
+        source_seqs = {('R1-seed', 'R1'): 'ACACAC'}
+        target_seqs = {('R1-seed', 'R1'): 'ACACAC'}
+        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(),
-                        SampleFiles())
+                        SampleFiles(region_consensus=source_seqs,
+                                    coverage_scores=coverage_scores),
+                        SampleFiles(region_consensus=target_seqs,
+                                    coverage_scores=coverage_scores))
         expected_diffs = []
         expected_scenarios = {}
         diffs = []
@@ -535,8 +459,6 @@ class CompareSampleTest(TestCase):
 
         compare_consensus(
             sample,
-            source_seqs,
-            target_seqs,
             diffs,
             Scenarios.MAIN_CONSENSUS_CHANGED | Scenarios.OTHER_CONSENSUS_CHANGED,
             scenarios)
@@ -544,45 +466,19 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_diffs, diffs)
         self.assertEqual(expected_scenarios, scenarios)
 
-    def test_map_consensus_sequences(self):
-        files = SampleFiles(coverage_scores=[{'region': 'R1',
-                                              'seed': 'R1-seed',
-                                              'on.score': '4'}],
-                            nuc_limits={'R1-seed': [('R1', 101, 108)]},
-                            consensus=[{'region': 'R1-seed',
-                                        'consensus-percent-cutoff': 'MAX',
-                                        'offset': '100',
-                                        'sequence': 'ACACACGG'}])
-        expected_sequences = {('R1-seed', 'R1', 'MAX'): 'ACACACGG'}
-
-        sequences = map_consensus_sequences(files)
-
-        self.assertEqual(expected_sequences, sequences)
-
-    def test_consensus_ignores_trailing_dashes(self):
-        files = SampleFiles(coverage_scores=[{'region': 'R1',
-                                              'seed': 'R1-seed',
-                                              'on.score': '4'}],
-                            nuc_limits={'R1-seed': [('R1', 101, 110)]},
-                            consensus=[{'region': 'R1-seed',
-                                        'consensus-percent-cutoff': 'MAX',
-                                        'offset': '100',
-                                        'sequence': 'ACACACGG--'}])
-        expected_sequences = {('R1-seed', 'R1', 'MAX'): 'ACACACGG'}
-
-        sequences = map_consensus_sequences(files)
-
-        self.assertEqual(expected_sequences, sequences)
-
     def test_one_consensus_changes(self):
-        source_seqs = {('R1-seed', 'R1', 'MAX'): 'ACACACGT',
-                       ('R2-seed', 'R2', 'MAX'): 'ACACACGT'}
-        target_seqs = {('R1-seed', 'R1', 'MAX'): 'ACACACGT',
-                       ('R2-seed', 'R2', 'MAX'): 'ACACAMGT'}
+        source_seqs = {('R1-seed', 'R1'): 'ACACACGT',
+                       ('R2-seed', 'R2'): 'ACACACGT'}
+        target_seqs = {('R1-seed', 'R1'): 'ACACACGT',
+                       ('R2-seed', 'R2'): 'ACACAMGT'}
+        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'},
+                           {'seed': 'R2-seed', 'region': 'R2', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(),
-                        SampleFiles())
+                        SampleFiles(region_consensus=source_seqs,
+                                    coverage_scores=coverage_scores),
+                        SampleFiles(region_consensus=target_seqs,
+                                    coverage_scores=coverage_scores))
         expected_diffs = ['run1:sample42 consensus: R2-seed R2 MAX',
                           '- ACACACGT',
                           '?      ^',
@@ -601,8 +497,6 @@ class CompareSampleTest(TestCase):
 
         consensus_distances = compare_consensus(
             sample,
-            source_seqs,
-            target_seqs,
             diffs,
             Scenarios.NONE,
             scenarios)
@@ -611,12 +505,15 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_consensus_distances, consensus_distances)
 
     def test_consensus_trailing_change(self):
-        source_seqs = {('R1-seed', 'R1', 'MAX'): 'ACTTAC------GTAC'}
-        target_seqs = {('R1-seed', 'R1', 'MAX'): 'ACTTAC'}
+        source_seqs = {('R1-seed', 'R1'): 'ACTTAC------GTAC'}
+        target_seqs = {('R1-seed', 'R1'): 'ACTTAC'}
+        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(),
-                        SampleFiles())
+                        SampleFiles(region_consensus=source_seqs,
+                                    coverage_scores=coverage_scores),
+                        SampleFiles(region_consensus=target_seqs,
+                                    coverage_scores=coverage_scores))
         expected_diffs = ['run1:sample42 consensus: R1-seed R1 MAX',
                           '- ACTTAC------GTAC',
                           '+ ACTTAC']
@@ -629,8 +526,6 @@ class CompareSampleTest(TestCase):
 
         consensus_distances = compare_consensus(
             sample,
-            source_seqs,
-            target_seqs,
             diffs,
             Scenarios.NONE,
             scenarios)
@@ -639,12 +534,15 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_consensus_distances, consensus_distances)
 
     def test_consensus_missing(self):
-        source_seqs = {('R1-seed', 'R1', 'MAX'): 'ACTTAC'}
+        source_seqs = {('R1-seed', 'R1'): 'ACTTAC'}
         target_seqs = {}
+        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(),
-                        SampleFiles())
+                        SampleFiles(region_consensus=source_seqs,
+                                    coverage_scores=coverage_scores),
+                        SampleFiles(region_consensus=target_seqs,
+                                    coverage_scores=coverage_scores))
         expected_diffs = ['run1:sample42 consensus: R1-seed R1 MAX',
                           '- ACTTAC']
         expected_consensus_distances = []
@@ -653,8 +551,6 @@ class CompareSampleTest(TestCase):
 
         consensus_distances = compare_consensus(
             sample,
-            source_seqs,
-            target_seqs,
             diffs,
             Scenarios.NONE,
             scenarios)
@@ -664,11 +560,14 @@ class CompareSampleTest(TestCase):
 
     def test_consensus_added(self):
         source_seqs = {}
-        target_seqs = {('R1-seed', 'R1', 'MAX'): 'ACTTAC'}
+        target_seqs = {('R1-seed', 'R1'): 'ACTTAC'}
+        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(),
-                        SampleFiles())
+                        SampleFiles(region_consensus=source_seqs,
+                                    coverage_scores=coverage_scores),
+                        SampleFiles(region_consensus=target_seqs,
+                                    coverage_scores=coverage_scores))
         expected_diffs = ['run1:sample42 consensus: R1-seed R1 MAX',
                           '+ ACTTAC']
         expected_consensus_distances = []
@@ -677,116 +576,12 @@ class CompareSampleTest(TestCase):
 
         consensus_distances = compare_consensus(
             sample,
-            source_seqs,
-            target_seqs,
             diffs,
             Scenarios.NONE,
             scenarios)
 
         self.assertEqual(expected_diffs, diffs)
         self.assertEqual(expected_consensus_distances, consensus_distances)
-
-    def test_hiv_seed_changed(self):
-        sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
-                        'sample42',
-                        SampleFiles(consensus=[{'region': 'HIV1-X',
-                                                'consensus-percent-cutoff': 'MAX',
-                                                'offset': '100',
-                                                'sequence': 'ACACAC'}]),
-                        SampleFiles(consensus=[{'region': 'HIV1-Y',
-                                                'consensus-percent-cutoff': 'MAX',
-                                                'offset': '200',
-                                                'sequence': 'ACACAC'}]))
-        expected_report = ''
-
-        report, _, _ = compare_sample(sample)
-
-        self.assertEqual(expected_report, report)
-
-    def test_consensus_needs_coverage(self):
-        files = SampleFiles(coverage_scores=[{'region': 'R1',
-                                              'seed': 'R1-seed',
-                                              'on.score': '1'},
-                                             {'region': 'R2',
-                                              'seed': 'R2-seed',
-                                              'on.score': '4'}],
-                            nuc_limits={'R1-seed': [('R1', 101, 108)],
-                                        'R2-seed': [('R2', 101, 108)]},
-                            consensus=[{'region': 'R1-seed',
-                                        'consensus-percent-cutoff': 'MAX',
-                                        'offset': '100',
-                                        'sequence': 'ACACACGG'},
-                                       {'region': 'R2-seed',
-                                        'consensus-percent-cutoff': 'MAX',
-                                        'offset': '100',
-                                        'sequence': 'ACACACGG'}])
-        expected_sequences = {('R2-seed', 'R2', 'MAX'): 'ACACACGG'}
-
-        sequences = map_consensus_sequences(files)
-
-        self.assertEqual(expected_sequences, sequences)
-
-    def test_map_consensus_multiple_regions(self):
-        files = SampleFiles(coverage_scores=[{'region': 'R1a',
-                                              'seed': 'R1-seed',
-                                              'on.score': '4'},
-                                             {'region': 'R1b',
-                                              'seed': 'R1-seed',
-                                              'on.score': '4'}],
-                            nuc_limits={'R1-seed': [('R1a', 99, 103),
-                                                    ('R1b', 109, 113)]},
-                            consensus=[{'region': 'R1-seed',
-                                        'consensus-percent-cutoff': 'MAX',
-                                        'offset': '98',
-                                        'sequence': 'ACACATGTGTAGAGATT'}])
-        expected_sequences = {('R1-seed', 'R1a', 'MAX'): 'ACACA',
-                              ('R1-seed', 'R1b', 'MAX'): 'AGAGA'}
-
-        sequences = map_consensus_sequences(files)
-
-        self.assertEqual(expected_sequences, sequences)
-
-    def test_map_consensus_offset_past_start(self):
-        files = SampleFiles(coverage_scores=[{'region': 'R1',
-                                              'seed': 'R1-seed',
-                                              'on.score': '4'}],
-                            nuc_limits={'R1-seed': [('R1', 96, 105)]},
-                            consensus=[{'region': 'R1-seed',
-                                        'consensus-percent-cutoff': 'MAX',
-                                        'offset': '100',
-                                        'sequence': 'ACACATGTGT'}])
-        expected_sequences = {('R1-seed', 'R1', 'MAX'): '-----ACACA'}
-
-        sequences = map_consensus_sequences(files)
-
-        self.assertEqual(expected_sequences, sequences)
-
-    def test_map_consensus_no_consensus(self):
-        files = SampleFiles(coverage_scores=[{'region': 'R1',
-                                              'seed': 'R1-seed',
-                                              'on.score': '4'}],
-                            nuc_limits={'R1-seed': [('R1', 96, 105)]},
-                            consensus=None)
-        expected_sequences = {}
-
-        sequences = map_consensus_sequences(files)
-
-        self.assertEqual(expected_sequences, sequences)
-
-    def test_consensus_groups_hcv(self):
-        files = SampleFiles(coverage_scores=[{'region': 'HCV1A-H77-NS4b',
-                                              'seed': 'HCV1a-seed',
-                                              'on.score': '4'}],
-                            nuc_limits={'HCV1a-seed': [('HCV1A-H77-NS4b', 101, 108)]},
-                            consensus=[{'region': 'HCV1a-seed',
-                                        'consensus-percent-cutoff': 'MAX',
-                                        'offset': '100',
-                                        'sequence': 'ACACACGG'}])
-        expected_sequences = {('HCV1a-seed', 'HCV-NS4b', 'MAX'): 'ACACACGG'}
-
-        sequences = map_consensus_sequences(files)
-
-        self.assertEqual(expected_sequences, sequences)
 
 
 class GroupSamplesTest(TestCase):
@@ -807,11 +602,25 @@ s2,a2,b2
 
     def test_group_nucs_single(self):
         output_file = StringIO("""\
-sample,seed,region,query.nuc.pos
-s1,R1-seed,R1,100
-s1,R1-seed,R1,110
+sample,seed,region,query.nuc.pos,coverage
+s1,R1-seed,R1,100,10
+s1,R1-seed,R1,110,10
 """)
-        expected_groups = dict(s1={'R1-seed': [('R1', 100, 110)]})
+        expected_groups = dict(s1={('R1-seed', 'R1'): 'xx'})
+
+        groups = group_nucs_file(output_file)
+
+        self.assertEqual(expected_groups, groups)
+
+    def test_group_nucs_with_coverage(self):
+        output_file = StringIO("""\
+sample,seed,region,query.nuc.pos,A,C,G,T,del,ins,coverage
+s1,R1-seed,R1,100,100,0,0,0,0,0,100
+s1,R1-seed,R1,101,99,1,0,0,0,0,100
+s1,R1-seed,R1,102,1,99,0,0,0,0,100
+s1,R1-seed,R1,103,0,99,0,0,0,0,99
+""")
+        expected_groups = dict(s1={('R1-seed', 'R1'): 'AACx'})
 
         groups = group_nucs_file(output_file)
 
@@ -819,14 +628,14 @@ s1,R1-seed,R1,110
 
     def test_group_nucs_two_samples(self):
         output_file = StringIO("""\
-sample,seed,region,query.nuc.pos
-s1,R1-seed,R1,100
-s1,R1-seed,R1,110
-s2,R1-seed,R1,101
-s2,R1-seed,R1,111
+sample,seed,region,query.nuc.pos,coverage
+s1,R1-seed,R1,100,10
+s1,R1-seed,R1,110,10
+s2,R1-seed,R1,101,10
+s2,R1-seed,R1,111,10
 """)
-        expected_groups = dict(s1={'R1-seed': [('R1', 100, 110)]},
-                               s2={'R1-seed': [('R1', 101, 111)]})
+        expected_groups = dict(s1={('R1-seed', 'R1'): 'xx'},
+                               s2={('R1-seed', 'R1'): 'xx'})
 
         groups = group_nucs_file(output_file)
 
@@ -834,14 +643,14 @@ s2,R1-seed,R1,111
 
     def test_group_nucs_two_regions(self):
         output_file = StringIO("""\
-sample,seed,region,query.nuc.pos
-s1,R1-seed,R1a,100
-s1,R1-seed,R1a,110
-s1,R1-seed,R1b,201
-s1,R1-seed,R1b,211
+sample,seed,region,query.nuc.pos,coverage
+s1,R1-seed,R1a,100,10
+s1,R1-seed,R1a,110,10
+s1,R1-seed,R1b,201,10
+s1,R1-seed,R1b,211,10
 """)
-        expected_groups = dict(s1={'R1-seed': [('R1a', 100, 110),
-                                               ('R1b', 201, 211)]})
+        expected_groups = dict(s1={('R1-seed', 'R1a'): 'xx',
+                                   ('R1-seed', 'R1b'): 'xx'})
 
         groups = group_nucs_file(output_file)
 
@@ -849,12 +658,12 @@ s1,R1-seed,R1b,211
 
     def test_group_nucs_blank(self):
         output_file = StringIO("""\
-sample,seed,region,query.nuc.pos
-s1,R1-seed,R1,100
-s1,R1-seed,R1,110
-s1,R1-seed,R1,
+sample,seed,region,query.nuc.pos,coverage
+s1,R1-seed,R1,100,10
+s1,R1-seed,R1,110,10
+s1,R1-seed,R1,,0
 """)
-        expected_groups = dict(s1={'R1-seed': [('R1', 100, 110)]})
+        expected_groups = dict(s1={('R1-seed', 'R1'): 'xxx'})
 
         groups = group_nucs_file(output_file)
 
