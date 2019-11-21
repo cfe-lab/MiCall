@@ -1,7 +1,7 @@
 """ Compare result files in shared folder with previous release. """
 from argparse import ArgumentParser
 import csv
-from collections import namedtuple, defaultdict, Counter
+from collections import namedtuple, defaultdict
 from difflib import Differ
 from enum import IntEnum
 from functools import partial
@@ -16,16 +16,16 @@ import pandas as pd
 import seaborn as sns
 import Levenshtein
 
-from micall.core.aln2counts import trim_contig_name
+from micall.core.aln2counts import SeedNucleotide, MAX_CUTOFF
 
 MICALL_VERSION = '7.12'
-USE_DENOVO = True
+USE_DENOVO = False
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
 SampleFiles = namedtuple(
     'SampleFiles',
-    'cascade coverage_scores g2p_summary consensus nuc_limits remap_counts')
+    'cascade coverage_scores g2p_summary region_consensus remap_counts')
 SampleFiles.__new__.__defaults__ = (None,) * 6
 Sample = namedtuple('Sample', 'run name source_files target_files')
 ConsensusDistance = namedtuple('ConsensusDistance',
@@ -127,14 +127,10 @@ def read_samples(runs):
                                                           'coverage_scores.csv'))
             target_coverages = group_samples(os.path.join(run.target_path,
                                                           'coverage_scores.csv'))
-            source_consensus = group_samples(os.path.join(run.source_path,
-                                                          'conseq.csv'))
-            target_consensus = group_samples(os.path.join(run.target_path,
-                                                          'conseq.csv'))
-            source_nuc_limits = group_nucs(os.path.join(run.source_path,
-                                                        'nuc.csv'))
-            target_nuc_limits = group_nucs(os.path.join(run.target_path,
-                                                        'nuc.csv'))
+            source_region_consensus = group_nucs(os.path.join(run.source_path,
+                                                              'nuc.csv'))
+            target_region_consensus = group_nucs(os.path.join(run.target_path,
+                                                              'nuc.csv'))
             source_counts = group_samples(os.path.join(run.source_path,
                                                        'remap_counts.csv'))
             target_counts = group_samples(os.path.join(run.target_path,
@@ -153,14 +149,12 @@ def read_samples(runs):
                          SampleFiles(source_cascades.get(sample_name),
                                      source_coverages.get(sample_name),
                                      source_g2ps.get(sample_name),
-                                     source_consensus.get(sample_name),
-                                     source_nuc_limits.get(sample_name),
+                                     source_region_consensus.get(sample_name),
                                      source_counts.get(sample_name)),
                          SampleFiles(target_cascades.get(sample_name),
                                      target_coverages.get(sample_name),
                                      target_g2ps.get(sample_name),
-                                     target_consensus.get(sample_name),
-                                     target_nuc_limits.get(sample_name),
+                                     target_region_consensus.get(sample_name),
                                      target_counts.get(sample_name)))
     if missing_targets:
         print('Missing targets: ', missing_targets)
@@ -191,17 +185,28 @@ def group_nucs_file(output_file):
     reader = csv.DictReader(output_file)
     groups = {}
     for sample, sample_rows in groupby(reader, itemgetter('sample')):
-        sample_limits = {}
+        sample_conseqs = {}
         for seed, seed_rows in groupby(sample_rows, itemgetter('seed')):
-            seed_limits = []
             for region, region_rows in groupby(seed_rows, itemgetter('region')):
-                positions = [int(row['query.nuc.pos'])
-                             for row in region_rows
-                             if row['query.nuc.pos'] != '']
-                seed_limits.append((region, min(positions), max(positions)))
-            sample_limits[seed] = seed_limits
-        groups[sample] = sample_limits
+                consensus = ''.join(choose_consensus(row)
+                                    for row in region_rows)
+                sample_conseqs[(seed, region)] = consensus
+        groups[sample] = sample_conseqs
     return groups
+
+
+def choose_consensus(nuc_row: dict) -> str:
+    coverage = int(nuc_row['coverage'])
+    if coverage < 100:
+        return 'x'
+    nuc = SeedNucleotide()
+    for nuc_seq in nuc.COUNTED_NUCS:
+        source_nuc = 'del' if nuc_seq == '-' else nuc_seq
+        nuc.count_nucleotides(nuc_seq, int(nuc_row[source_nuc]))
+    consensus = nuc.get_consensus(MAX_CUTOFF)
+    if int(nuc_row['ins']) > coverage / 2:
+        consensus += 'i'
+    return consensus
 
 
 def get_run_name(sample):
@@ -253,10 +258,18 @@ def compare_g2p(sample, diffs):
 def map_coverage(coverage_scores):
     if coverage_scores is None:
         return {}
-    return {(score['project'], score['region']): (score['on.score'],
-                                                  score.get('seed'),
-                                                  score.get('which.key.pos'))
-            for score in coverage_scores}
+    filtered_scores = {(score['project'],
+                        score['region']): (score['on.score'],
+                                           score.get('seed'),
+                                           score.get('which.key.pos'))
+                       for score in coverage_scores}
+    if MICALL_VERSION == '7.12':
+        filtered_scores = {
+            (project, region): scores
+            for (project, region), scores in filtered_scores.items()
+            if region != 'GP120'}
+
+    return filtered_scores
 
 
 def map_remap_counts(counts):
@@ -327,70 +340,10 @@ def is_consensus_interesting(region, cutoff):
     return cutoff == 'MAX'
 
 
-def map_consensus_sequences(files):
-    consensus_sequences = {}
-    if None in (files.coverage_scores, files.nuc_limits, files.consensus):
-        return consensus_sequences
-    covered_regions = {(row.get('seed'), row.get('region'))
-                       for row in files.coverage_scores
-                       if row['on.score'] == '4'}
-    # noinspection PyArgumentList
-    region_limits = defaultdict(list,
-                                {seed: [(adjust_region(region), first, last)
-                                        for (region, first, last) in regions
-                                        if (seed, region) in covered_regions]
-                                 for seed, regions in files.nuc_limits.items()})
-
-    for row in files.consensus:
-        if MICALL_VERSION == '7.12':
-            min_coverage = int(row.get('min_coverage', '100'))
-            if min_coverage != 100:
-                continue
-        seed = trim_contig_name(row['region'])
-        cutoff = row['consensus-percent-cutoff']
-        sequence = row['sequence'].rstrip('-')
-        offset = int(row['offset'])
-        for region, first, last in region_limits[seed]:
-            if USE_DENOVO and region == 'V3LOOP':
-                adjusted_seed = 'Some-HIV'
-            elif USE_DENOVO and region.startswith('HIV'):
-                seed_parts = seed.split('-')
-                adjusted_seed = '-'.join(seed_parts[:2])
-            else:
-                adjusted_seed = seed
-            if first > offset:
-                subsequence = sequence[first-offset-1:]
-            else:
-                subsequence = '-' * (offset-first+1) + sequence
-            subsequence = subsequence[:last-first+1]
-            consensus_sequences[(adjusted_seed, region, cutoff)] = subsequence
-    return consensus_sequences
-
-
 def display_consensus(sequence):
     if sequence is None:
         return []
     return [sequence + '\n']
-
-
-def find_duplicates(sample):
-    rows = sample.target_files.consensus
-    if rows is None:
-        return
-    if MICALL_VERSION == '7.12':
-        rows = [row
-                for row in rows
-                if row.get('min_coverage', '100') == '100']
-    counts = Counter((row['region'], row['consensus-percent-cutoff'])
-                     for row in rows)
-    duplicate_keys = sorted(key
-                            for key, count in counts.items()
-                            if count > 1)
-    return ['{}:{} duplicate consensus: {} {}'.format(get_run_name(sample),
-                                                      sample.name,
-                                                      region,
-                                                      cutoff)
-            for region, cutoff in duplicate_keys]
 
 
 def calculate_distance(region, cutoff, sequence1, sequence2):
@@ -408,20 +361,21 @@ def calculate_distance(region, cutoff, sequence1, sequence2):
 
 
 def compare_consensus(sample,
-                      source_seqs,
-                      target_seqs,
                       diffs,
                       scenarios_reported,
                       scenarios):
     consensus_distances = []
-    duplicates = find_duplicates(sample)
-    if duplicates:
-        diffs.extend(duplicates)
-        return consensus_distances
+    source_seqs = filter_consensus_sequences(sample.source_files)
+    target_seqs = filter_consensus_sequences(sample.target_files)
     run_name = get_run_name(sample)
+    # target_seeds = {seed for seed, region in target_seqs.keys()}
+    # if target_seeds == {None}:
+    #     source_seqs = {(None, region): consensus
+    #                    for (seed, region), consensus in source_seqs.items()}
     keys = sorted(set(source_seqs.keys()) | target_seqs.keys())
+    cutoff = MAX_CUTOFF
     for key in keys:
-        seed, region, cutoff = key
+        seed, region = key
         source_seq = source_seqs.get(key)
         target_seq = target_seqs.get(key)
         consensus_distance = calculate_distance(region,
@@ -438,8 +392,10 @@ def compare_consensus(sample,
             continue
         is_main = is_consensus_interesting(region, cutoff)
 
-        trimmed_source_seq = source_seq and source_seq.replace('-', '')
-        trimmed_target_seq = target_seq and target_seq.replace('-', '')
+        trimmed_source_seq = (source_seq and
+                              source_seq.replace('-', '').replace('x', ''))
+        trimmed_target_seq = (target_seq and
+                              target_seq.replace('-', '').replace('x', ''))
         if (trimmed_source_seq == trimmed_target_seq and
                 (scenarios_reported & Scenarios.CONSENSUS_DELETIONS_CHANGED)):
             scenarios[Scenarios.CONSENSUS_DELETIONS_CHANGED].append('.')
@@ -472,17 +428,40 @@ def compare_consensus(sample,
     return consensus_distances
 
 
+def filter_consensus_sequences(files):
+    region_consensus = files.region_consensus
+    coverage_scores = files.coverage_scores
+    if not (region_consensus and coverage_scores):
+        return {}
+
+    covered_regions = {(row.get('seed'), row.get('region'))
+                       for row in coverage_scores
+                       if row['on.score'] == '4'}
+    if MICALL_VERSION == '7.12':
+        covered_regions = {(seed, region)
+                           for seed, region in covered_regions
+                           if region != 'GP120'}
+    return {adjust_seed(seed, region): consensus
+            for (seed, region), consensus in region_consensus.items()
+            if (seed, region) in covered_regions}
+
+
+def adjust_seed(seed: str, region: str):
+    if USE_DENOVO:
+        if region == 'V3LOOP':
+            seed = 'some-HIV-seed'
+        elif seed.startswith('HIV'):
+            seed = '-'.join(seed.split('-')[:2]) + '-?-seed'
+    return seed, region
+
+
 def compare_sample(sample,
                    scenarios_reported=Scenarios.NONE):
     scenarios = defaultdict(list)
     diffs = []
     compare_g2p(sample, diffs)
     compare_coverage(sample, diffs, scenarios_reported, scenarios)
-    source_seqs = map_consensus_sequences(sample.source_files)
-    target_seqs = map_consensus_sequences(sample.target_files)
     consensus_distances = compare_consensus(sample,
-                                            source_seqs,
-                                            target_seqs,
                                             diffs,
                                             scenarios_reported,
                                             scenarios)
