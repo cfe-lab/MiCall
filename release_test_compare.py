@@ -374,6 +374,13 @@ def compare_consensus(sample,
         seed, region = key
         source_seq = source_seqs.get(key)
         target_seq = target_seqs.get(key)
+        if (MICALL_VERSION == '7.12' and
+                region == 'GP41' and
+                target_seq.startswith('---')):
+            # Adding the GP120 region made full-codon deletions at the start
+            # of GP41 start aligning to codon boundaries.
+            source_seq = source_seq[3:]
+            target_seq = target_seq[3:]
         consensus_distance = calculate_distance(region,
                                                 cutoff,
                                                 source_seq,
