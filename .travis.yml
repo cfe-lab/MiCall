@@ -14,6 +14,10 @@ before_install:
   - wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
   - tar -xzf smalt-0.7.6-bin.tar.gz
   - ln -s ~/smalt-0.7.6-bin/smalt_x86_64 ~/bin/smalt
+  # Rust and merge-mates
+  - sudo curl https://sh.rustup.rs -sSf | sh -s -- -y
+  - source ~/.cargo/env
+  - cargo install --root ~/ --git https://github.com/jeff-k/merge-mates.git
   - popd
 
 install: "pip install -r requirements-test.txt"

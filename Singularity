@@ -69,8 +69,6 @@ From: centos:7
     yum install -q -y rust cargo
     cargo install --root / --git https://github.com/jeff-k/merge-mates.git
 
-    yum remove -q -y zlib-devel boost-devel
-
     echo ===== Installing blast ===== >/dev/null
     cd /root
     wget -q ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
