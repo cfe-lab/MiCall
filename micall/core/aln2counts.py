@@ -246,29 +246,13 @@ class SequenceReport(object):
         :return: Dict object containing coordinate map.
         """
 
-        # Start max_score with the minimum score we can consider a valid
-        # alignment. Anything worse, we won't bother
-        consensus_length = len([amino for amino in self.seed_aminos[0] if amino.counts])
-        max_score = min(consensus_length, len(coordinate_ref))
-
-        best_alignment = None
-        for reading_frame, frame_seed_aminos in self.seed_aminos.items():
-            consensus = ''.join([seed_amino1.get_consensus()
-                                for seed_amino1 in frame_seed_aminos])
-            if reading_frame == 0:
-                # best guess before aligning - if alignments fail, this will be non-empty
-                self.consensus[coordinate_name] = consensus
-
-            # map to reference coordinates by aligning consensus
-            a_coord, a_consensus, score = self._pair_align(
+        best_alignment = self.find_coordinate_alignment(coordinate_name,
+                                                        coordinate_ref)
+        if best_alignment is None:
+            best_alignment = self.find_coordinate_alignment(
+                coordinate_name,
                 coordinate_ref,
-                consensus,
-                gap_open=GAP_OPEN_COORD,
-                gap_extend=GAP_EXTEND_COORD)
-            if score < max_score:
-                continue
-            max_score = score
-            best_alignment = (reading_frame, consensus, a_coord, a_consensus)
+                mark_bad_codons=False)
 
         report_aminos = []
         if best_alignment is not None:
@@ -325,6 +309,42 @@ class SequenceReport(object):
             self.inserts[coordinate_name] = coordinate_inserts
 
         self.reports[coordinate_name] = report_aminos
+
+    def find_coordinate_alignment(self,
+                                  coordinate_name,
+                                  coordinate_ref,
+                                  mark_bad_codons=True):
+        """ Align the amino counts in self.seed_aminos to a reference.
+
+        :param str coordinate_name: the name of the coordinate reference to
+            align to
+        :param str coordinate_ref: the amino acid sequence to align to
+        :param bool mark_bad_codons: True if codons with no valid reads but some
+            invalid reads should be marked with question marks.
+        """
+        # Start max_score with the minimum score we can consider a valid
+        # alignment. Anything worse, we won't bother
+        consensus_length = len([amino for amino in self.seed_aminos[0] if amino.counts])
+        max_score = min(consensus_length, len(coordinate_ref))
+        best_alignment = None
+        for reading_frame, frame_seed_aminos in self.seed_aminos.items():
+            consensus = ''.join([seed_amino1.get_consensus(mark_bad_codons)
+                                 for seed_amino1 in frame_seed_aminos])
+            if reading_frame == 0:
+                # best guess before aligning - if alignments fail, this will be non-empty
+                self.consensus[coordinate_name] = consensus
+
+            # map to reference coordinates by aligning consensus
+            a_coord, a_consensus, score = self._pair_align(
+                coordinate_ref,
+                consensus,
+                gap_open=GAP_OPEN_COORD,
+                gap_extend=GAP_EXTEND_COORD)
+            if score < max_score:
+                continue
+            max_score = score
+            best_alignment = (reading_frame, consensus, a_coord, a_consensus)
+        return best_alignment
 
     def map_sequences(self, from_seq, to_seq, from_aligned=None, to_aligned=None):
         if from_aligned is None or to_aligned is None:
@@ -1072,7 +1092,7 @@ class SeedAmino(object):
         return ','.join([str(self.counts[amino])
                          for amino in AMINO_ALPHABET])
 
-    def get_consensus(self):
+    def get_consensus(self, mark_bad_codons=True):
         """ Find the amino acid that was seen most often in count_aminos().
 
         If there is a tie, just pick one of the tied amino acids.
@@ -1081,7 +1101,7 @@ class SeedAmino(object):
         consensus = self.counts.most_common(1)
         if consensus:
             return consensus[0][0]
-        if self.read_count:
+        if self.read_count and mark_bad_codons:
             return '?'
         return '-'
 
