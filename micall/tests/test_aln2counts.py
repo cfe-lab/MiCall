@@ -676,6 +676,104 @@ A,C,G,T,N,del,ins,clip,v3_overlap,coverage
                                   self.detail_report_file.getvalue())
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testMultiplePrefixNucleotideReportOverlappingRegions(self):
+        """ Assemble counts from two contigs when coordinate regions overlap.
+
+        Contig 1-R1 AAATTT -> KF
+        Contig 2-R1 TTTAGG -> FR
+
+        Contig 1 and 2 should combine into R1 with KFR, but
+        """
+        self.report.projects.load(StringIO("""\
+{
+  "projects": {
+    "R1": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "R1",
+          "seed_region_names": ["R1-seed"]
+        },
+        {
+          "coordinate_region": "R1-expanded",
+          "seed_region_names": ["R1-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R1-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTAGG"
+      ]
+    },
+    "R1": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFR"
+      ]
+    },
+    "R1-expanded": {
+      "is_nucleotide": false,
+      "reference": [
+        "GPKFREH"
+      ]
+    }
+  }
+}
+"""))
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
+        aligned_reads2 = self.prepareReads("2-R1-seed,15,0,2,0,TTTAGG")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,\
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+R1-seed,R1,15,,1,5,0,0,0,0,0,0,0,0,5
+R1-seed,R1,15,,2,5,0,0,0,0,0,0,0,0,5
+R1-seed,R1,15,,3,5,0,0,0,0,0,0,0,0,5
+R1-seed,R1,15,,4,0,0,0,7,0,0,0,0,0,7
+R1-seed,R1,15,,5,0,0,0,7,0,0,0,0,0,7
+R1-seed,R1,15,,6,0,0,0,7,0,0,0,0,0,7
+R1-seed,R1,15,,7,2,0,0,0,0,0,0,0,0,2
+R1-seed,R1,15,,8,0,0,2,0,0,0,0,0,0,2
+R1-seed,R1,15,,9,0,0,2,0,0,0,0,0,0,2
+R1-seed,R1-expanded,15,,1,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1-expanded,15,,2,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1-expanded,15,,3,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1-expanded,15,,4,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1-expanded,15,,5,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1-expanded,15,,6,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1-expanded,15,,7,5,0,0,0,0,0,0,0,0,5
+R1-seed,R1-expanded,15,,8,5,0,0,0,0,0,0,0,0,5
+R1-seed,R1-expanded,15,,9,5,0,0,0,0,0,0,0,0,5
+R1-seed,R1-expanded,15,,10,0,0,0,7,0,0,0,0,0,7
+R1-seed,R1-expanded,15,,11,0,0,0,7,0,0,0,0,0,7
+R1-seed,R1-expanded,15,,12,0,0,0,7,0,0,0,0,0,7
+R1-seed,R1-expanded,15,,13,2,0,0,0,0,0,0,0,0,2
+R1-seed,R1-expanded,15,,14,0,0,2,0,0,0,0,0,0,2
+R1-seed,R1-expanded,15,,15,0,0,2,0,0,0,0,0,0,2
+R1-seed,R1-expanded,15,,16,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1-expanded,15,,17,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1-expanded,15,,18,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1-expanded,15,,19,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1-expanded,15,,20,0,0,0,0,0,0,0,0,0,0
+R1-seed,R1-expanded,15,,21,0,0,0,0,0,0,0,0,0,0
+"""
+
+        self.report.write_nuc_header(self.report_file)
+        self.report.write_nuc_detail_header(self.detail_report_file)
+        self.report.read(aligned_reads1)
+        self.report.write_nuc_detail_counts()
+        self.report.combine_reports()
+        self.report.read(aligned_reads2)
+        self.report.write_nuc_detail_counts()
+        self.report.combine_reports()
+        self.report.write_nuc_counts()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testContigCoverageReport(self):
         """ Assemble counts from three contigs to two references.
 

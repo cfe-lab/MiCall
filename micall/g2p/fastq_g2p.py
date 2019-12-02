@@ -53,6 +53,9 @@ def parse_args():
     parser.add_argument('aligned_csv',
                         type=argparse.FileType('w'),
                         help='<output> CSV containing mapped reads aligned to HIV seed')
+    parser.add_argument('merged_contigs_csv',
+                        type=argparse.FileType('w'),
+                        help='<output> CSV containing amplicon contigs based on length')
     return parser.parse_args()
 
 
@@ -546,7 +549,8 @@ def main():
               aligned_csv=args.aligned_csv,
               min_count=DEFAULT_MIN_COUNT,
               min_valid=MIN_VALID,
-              min_valid_percent=MIN_VALID_PERCENT)
+              min_valid_percent=MIN_VALID_PERCENT,
+              merged_contigs_csv=args.merged_contigs_csv)
 
 
 if __name__ == '__main__':

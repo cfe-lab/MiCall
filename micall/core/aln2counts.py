@@ -504,11 +504,10 @@ class SequenceReport(object):
         for region, report in self.reports.items():
             old_report = old_reports[region]
             for i, report_amino in enumerate(report):
-                if i < len(old_report):
-                    old_report[i].seed_amino.add(report_amino.seed_amino)
-                else:
-                    report_amino.seed_amino.consensus_nuc_index = None
-                    old_report.append(report_amino)
+                while len(old_report) <= i:
+                    old_report.append(ReportAmino(SeedAmino(None),
+                                                  len(old_report)+1))
+                old_report[i].seed_amino.add(report_amino.seed_amino)
         self.reports.clear()
 
     def write_amino_report(self, amino_writer, reports, seed, coverage_summary=None):

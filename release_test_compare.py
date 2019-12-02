@@ -94,7 +94,10 @@ def report_source_versions(runs):
         version = os.path.basename(run.source_path)
         version_runs[version].append(run.source_path)
         yield run
-    max_count = max(len(paths) for paths in version_runs.values())
+    if version_runs:
+        max_count = max(len(paths) for paths in version_runs.values())
+    else:
+        max_count = 0
     for version, paths in sorted(version_runs.items()):
         if len(paths) == max_count:
             print(version, max_count)
@@ -534,7 +537,7 @@ def main():
                         samples,
                         chunksize=50)
     scenario_summaries = defaultdict(list)
-    i = None
+    i = 0
     all_consensus_distances = []
     report_count = 0
     for i, (report, scenarios, consensus_distances) in enumerate(results, 1):
@@ -556,6 +559,13 @@ def main():
             print(*summary, end='.\n')
             print(body, end='')
 
+    report_distances(all_consensus_distances)
+    print('Finished {} samples.'.format(i))
+
+
+def report_distances(all_consensus_distances):
+    if not all_consensus_distances:
+        return
     distance_data = pd.DataFrame(all_consensus_distances)
     non_zero_distances = distance_data[distance_data['distance'] != 0]
     region_names = sorted(non_zero_distances['region'].unique())
@@ -569,7 +579,6 @@ def main():
                        'consensus_diffs_{}.svg'.format(page_num),
                        'Consensus Differences Between Previous and v' + MICALL_VERSION,
                        'pct_diff')
-    print('Finished {} samples.'.format(i))
 
 
 if __name__ == '__main__':
