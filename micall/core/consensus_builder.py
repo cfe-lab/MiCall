@@ -38,21 +38,23 @@ class ConsensusBuilder:
             return
 
         window_radius = 20  # number of neighbours on either side to compare
-        min_ratio = 20  # spike must be this many times higher than average
+        min_ratio = 50  # spike must be this many times higher than 3rd quartile
         window_size = window_radius * 2 + 1
         window_totals = []
-        running_total = 0
         max_length = max(self.length_counts)
         for length in range(0, max_length+window_radius+1):
             length_count = self.length_counts[length]
-            running_total += length_count
             window_totals.append(length_count)
             if len(window_totals) == window_size:
                 centre_length = length - window_radius
                 centre_count = self.length_counts[centre_length]
-                average_count = max(
-                    0.5,  # Force amplicons to have at least 10 reads.
-                    (running_total - centre_count) / (window_size-1))
-                if centre_count and (centre_count >= average_count * min_ratio):
-                    yield self.get_consensus_for_length(centre_length)
-                running_total -= window_totals.pop(0)
+                neighbour1_count = self.length_counts[centre_length - 1]
+                neighbour2_count = self.length_counts[centre_length + 1]
+                is_local_max = neighbour1_count <= centre_count > neighbour2_count
+                if is_local_max:
+                    sorted_window = sorted(window_totals)
+                    quartile = sorted_window[-len(sorted_window)//4]
+                    threshold = min_ratio * max(quartile, 1)
+                    if centre_count >= threshold:
+                        yield self.get_consensus_for_length(centre_length)
+                window_totals.pop(0)

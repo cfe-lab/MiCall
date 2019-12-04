@@ -71,12 +71,12 @@ def test_build_by_lengths():
         if n == 120:
             raw_reads += ['A'*n] * 100
         else:
-            raw_reads += ['C'*n] * 5
+            raw_reads += ['C'*n] * 2
     for n in range(200, 241):
         if n == 220:
             raw_reads += ['G'*n] * 1000
         else:
-            raw_reads += ['T'*n] * 50
+            raw_reads += ['T'*n] * 20
     merged_reads = prepare_reads(*raw_reads)
     expected_consensuses = ['A'*120, 'G'*220]
     builder = ConsensusBuilder()
@@ -105,7 +105,7 @@ def test_build_by_lengths_when_spike_too_short():
 
 
 def test_build_by_lengths_with_no_neighbours():
-    raw_reads = ['A'*120] * 9 + ['G'*220] * 10
+    raw_reads = ['A'*120] * 49 + ['G'*220] * 50
     merged_reads = prepare_reads(*raw_reads)
     expected_consensuses = ['G'*220]
     builder = ConsensusBuilder()
