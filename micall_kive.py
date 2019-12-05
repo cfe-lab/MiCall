@@ -74,6 +74,9 @@ def parse_args():
     parser.add_argument('contigs_csv',
                         nargs='?',
                         help='CSV containing contigs built by de novo assembly')
+    parser.add_argument('read_entropy_csv',
+                        nargs='?',
+                        help='CSV containing read pair length counts')
 
     return parser.parse_args()
 
@@ -107,6 +110,7 @@ def load_sample(args):
                     contigs_csv=args.contigs_csv,
                     genome_coverage_csv=args.genome_coverage_csv,
                     genome_coverage_svg=args.genome_coverage_svg,
+                    read_entropy_csv=args.read_entropy_csv,
                     scratch_path=scratch_path)
     sample.name = None  # Since the file names are messy in Kive.
     return sample

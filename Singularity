@@ -186,7 +186,7 @@ From: centos:7
         failed_csv cascade_csv nuc_csv amino_csv coord_ins_csv conseq_csv \
         conseq_region_csv failed_align_csv coverage_scores_csv \
         coverage_maps_tar aligned_csv g2p_aligned_csv genome_coverage_csv \
-        genome_coverage_svg contigs_csv
+        genome_coverage_svg contigs_csv read_entropy_csv
     KIVE_THREADS 2
     KIVE_MEMORY 6000
 

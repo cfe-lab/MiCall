@@ -56,7 +56,8 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'alignment_svg',
                       'alignment_png',
                       'assembly_fasta',
-                      'genome_coverage_svg']
+                      'genome_coverage_svg',
+                      'read_entropy_csv']
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
