@@ -123,15 +123,16 @@ class Sample:
                  summary_file=read_summary,
                  use_gzip=use_gzip)
 
-        logger.info('Running merge_for_entropy on %s.', self)
-        with open(self.read_entropy_csv, 'w') as read_entropy_csv:
-            merge_for_entropy(self.trimmed1_fastq,
-                              self.trimmed2_fastq,
-                              read_entropy_csv,
-                              scratch_path)
+        if use_denovo:
+            logger.info('Running merge_for_entropy on %s.', self)
+            with open(self.read_entropy_csv, 'w') as read_entropy_csv:
+                merge_for_entropy(self.trimmed1_fastq,
+                                  self.trimmed2_fastq,
+                                  read_entropy_csv,
+                                  scratch_path)
 
-        write_merge_lengths_plot(self.read_entropy_csv,
-                                 self.merge_lengths_svg)
+            write_merge_lengths_plot(self.read_entropy_csv,
+                                     self.merge_lengths_svg)
 
         logger.info('Running fastq_g2p on %s.', self)
         with open(self.trimmed1_fastq) as fastq1, \
@@ -247,7 +248,8 @@ class Sample:
                 open(self.remap_counts_csv) as remap_counts_csv, \
                 open(self.aligned_csv) as aligned_csv, \
                 open(self.cascade_csv, 'w') as cascade_csv:
-            cascade_report = CascadeReport(cascade_csv)
+            cascade_report = CascadeReport(cascade_csv,
+                                           is_g2p_remapped=use_denovo)
             cascade_report.g2p_summary_csv = g2p_summary_csv
             cascade_report.remap_counts_csv = remap_counts_csv
             cascade_report.aligned_csv = aligned_csv

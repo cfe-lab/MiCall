@@ -26,10 +26,17 @@ def parse_args():
 
 
 class CascadeReport:
-    def __init__(self, cascade_csv):
+    def __init__(self, cascade_csv, is_g2p_remapped=False):
+        """ Initialize a report object.
+
+        :param cascade_csv: an open CSV file to write to
+        :param is_g2p_remapped: True if the G2P reads get mapped again in the
+            remap step, so they shouldn't be included in the demultiplexed count
+        """
         self.g2p_summary_csv = self.remap_counts_csv = self.aligned_csv = None
         self.counts = None
         self.cascade_csv = cascade_csv
+        self.is_g2p_remapped = is_g2p_remapped
 
     def generate(self):
         field_names = ['demultiplexed',
@@ -57,7 +64,8 @@ class CascadeReport:
         reader = DictReader(self.g2p_summary_csv)
         row = next(reader)
         mapped = int(row['mapped'])
-        self.counts['demultiplexed'] += mapped
+        if not self.is_g2p_remapped:
+            self.counts['demultiplexed'] += mapped
         self.counts['v3loop'] = mapped
         self.counts['g2p'] += int(row['valid'])
 
