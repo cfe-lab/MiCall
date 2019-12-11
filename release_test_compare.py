@@ -369,7 +369,7 @@ def compare_consensus(sample,
                       diffs,
                       scenarios_reported,
                       scenarios,
-                      use_denovo):
+                      use_denovo=False):
     consensus_distances = []
     source_seqs = filter_consensus_sequences(sample.source_files, use_denovo)
     target_seqs = filter_consensus_sequences(sample.target_files, use_denovo)
