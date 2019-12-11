@@ -19,7 +19,6 @@ import Levenshtein
 from micall.core.aln2counts import SeedNucleotide, MAX_CUTOFF
 
 MICALL_VERSION = '7.12'
-USE_DENOVO = False
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
@@ -51,6 +50,9 @@ differ = Differ()
 
 def parse_args():
     parser = ArgumentParser(description='Compare sample results for testing a new release.')
+    parser.add_argument('--denovo',
+                        action='store_true',
+                        help='Compare old remapped results to new assembled results.')
     parser.add_argument('source_folder',
                         help='Main RAWDATA folder with results from previous version.')
     parser.add_argument('target_folder',
@@ -58,7 +60,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def find_runs(source_folder, target_folder):
+def find_runs(source_folder, target_folder, use_denovo):
     run_paths = glob(os.path.join(target_folder, 'MiSeq', 'runs', '*'))
     run_paths.sort()
     for run_path in run_paths:
@@ -68,7 +70,7 @@ def find_runs(source_folder, target_folder):
                                    'version_' + MICALL_VERSION)
         done_path = os.path.join(target_path, 'doneprocessing')
         is_done = os.path.exists(done_path)
-        if USE_DENOVO:
+        if use_denovo:
             target_path = os.path.join(target_path, 'denovo')
         source_results_path = os.path.join(source_folder,
                                            'MiSeq',
@@ -366,10 +368,11 @@ def calculate_distance(region, cutoff, sequence1, sequence2):
 def compare_consensus(sample,
                       diffs,
                       scenarios_reported,
-                      scenarios):
+                      scenarios,
+                      use_denovo):
     consensus_distances = []
-    source_seqs = filter_consensus_sequences(sample.source_files)
-    target_seqs = filter_consensus_sequences(sample.target_files)
+    source_seqs = filter_consensus_sequences(sample.source_files, use_denovo)
+    target_seqs = filter_consensus_sequences(sample.target_files, use_denovo)
     run_name = get_run_name(sample)
     keys = sorted(set(source_seqs.keys()) | target_seqs.keys())
     cutoff = MAX_CUTOFF
@@ -406,7 +409,7 @@ def compare_consensus(sample,
                 (scenarios_reported & Scenarios.CONSENSUS_DELETIONS_CHANGED)):
             scenarios[Scenarios.CONSENSUS_DELETIONS_CHANGED].append('.')
             continue
-        if (USE_DENOVO and
+        if (use_denovo and
                 is_main and
                 seed == 'HIV1-B' and
                 region == 'HIV1B-vpr' and
@@ -434,7 +437,7 @@ def compare_consensus(sample,
     return consensus_distances
 
 
-def filter_consensus_sequences(files):
+def filter_consensus_sequences(files, use_denovo):
     region_consensus = files.region_consensus
     coverage_scores = files.coverage_scores
     if not (region_consensus and coverage_scores):
@@ -447,13 +450,13 @@ def filter_consensus_sequences(files):
         covered_regions = {(seed, region)
                            for seed, region in covered_regions
                            if region != 'GP120'}
-    return {adjust_seed(seed, region): consensus
+    return {adjust_seed(seed, region, use_denovo): consensus
             for (seed, region), consensus in region_consensus.items()
             if (seed, region) in covered_regions}
 
 
-def adjust_seed(seed: str, region: str):
-    if USE_DENOVO:
+def adjust_seed(seed: str, region: str, use_denovo: bool):
+    if use_denovo:
         if region == 'V3LOOP':
             seed = 'some-HIV-seed'
         elif seed.startswith('HIV'):
@@ -462,7 +465,8 @@ def adjust_seed(seed: str, region: str):
 
 
 def compare_sample(sample,
-                   scenarios_reported=Scenarios.NONE):
+                   scenarios_reported=Scenarios.NONE,
+                   use_denovo=False):
     scenarios = defaultdict(list)
     diffs = []
     compare_g2p(sample, diffs)
@@ -470,7 +474,8 @@ def compare_sample(sample,
     consensus_distances = compare_consensus(sample,
                                             diffs,
                                             scenarios_reported,
-                                            scenarios)
+                                            scenarios,
+                                            use_denovo)
     diffs.append('')
     return SampleComparison(diffs='\n'.join(diffs),
                             scenarios=scenarios,
@@ -525,7 +530,7 @@ def main():
     print('Starting.')
     args = parse_args()
     pool = Pool()
-    runs = find_runs(args.source_folder, args.target_folder)
+    runs = find_runs(args.source_folder, args.target_folder, args.denovo)
     runs = report_source_versions(runs)
     samples = read_samples(runs)
     # noinspection PyTypeChecker
@@ -533,7 +538,8 @@ def main():
                           Scenarios.CONSENSUS_DELETIONS_CHANGED |
                           Scenarios.VPR_FRAME_SHIFT_FIXED)
     results = pool.imap(partial(compare_sample,
-                                scenarios_reported=scenarios_reported),
+                                scenarios_reported=scenarios_reported,
+                                use_denovo=args.denovo),
                         samples,
                         chunksize=50)
     scenario_summaries = defaultdict(list)

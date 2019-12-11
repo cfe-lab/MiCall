@@ -47,6 +47,10 @@ def main():
     sections_2170_2_1, sections_2170_2_2 = make_random_sections('HCV-2a',
                                                                 6269,
                                                                 9440)
+    sections_2180_1, sections_2180_2 = make_random_sections(
+        'HIV1-B-FR-K03455-seed',
+        6225,
+        7757)
     fastq_files = [FastqFile('2010A-V3LOOP_S3_L001_R1_001.fastq',
                              '2010',
                              False,
@@ -154,7 +158,15 @@ def main():
                    FastqFile('2170A-HCV_S21_L001_R2_001.fastq',
                              '2170',
                              True,
-                             sections_2170_1a_2 + sections_2170_2_2)]
+                             sections_2170_1a_2 + sections_2170_2_2),
+                   FastqFile('2180A-HIV_S22_L001_R1_001.fastq',
+                             '2180',
+                             False,
+                             sections_2180_1),
+                   FastqFile('2180A-HIV_S22_L001_R2_001.fastq',
+                             '2180',
+                             True,
+                             sections_2180_2)]
     for fastq_file in fastq_files:
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1
