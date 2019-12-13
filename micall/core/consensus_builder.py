@@ -38,7 +38,7 @@ class ConsensusBuilder:
             return
 
         window_radius = 20  # number of neighbours on either side to compare
-        min_ratio = 50  # spike must be this many times higher than 3rd quartile
+        min_ratio = 20  # spike must be this many times higher than 3rd quartile
         window_size = window_radius * 2 + 1
         window_totals = []
         max_length = max(self.length_counts)
@@ -54,7 +54,7 @@ class ConsensusBuilder:
                 if is_local_max:
                     sorted_window = sorted(window_totals)
                     quartile = sorted_window[-len(sorted_window)//4]
-                    threshold = min_ratio * max(quartile, 1)
+                    threshold = min_ratio * max(quartile, 0.5)
                     if centre_count >= threshold:
                         yield self.get_consensus_for_length(centre_length)
                 window_totals.pop(0)

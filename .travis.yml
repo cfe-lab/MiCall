@@ -21,7 +21,12 @@ before_install:
   - popd
 
 install: "pip install -r requirements-test.txt"
-script: "coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest"
+script:
+  - coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
+  - python micall_basespace.py --all_projects -l micall/tests/microtest micall/tests/working/microtest_remapped
+  - python release_test_microtest.py
+  - python micall_basespace.py --all_projects --denovo -l micall/tests/microtest micall/tests/working/microtest_assembled
+  - python release_test_microtest.py
 
 after_success:
     - pip install codecov

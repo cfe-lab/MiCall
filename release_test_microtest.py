@@ -1,4 +1,3 @@
-from argparse import ArgumentParser
 from csv import DictReader
 from operator import itemgetter
 from pathlib import Path
@@ -270,9 +269,9 @@ def check_2160():
         coverage_message = f'{coverage} coverage at {pos}'
         if pos < 40:
             assert coverage < 10, coverage_message
-        elif 80 <= pos < 150:
+        elif 70 < pos < 150:
             assert 10 < coverage, coverage_message
-        elif 170 <= pos:
+        elif 230 < pos:
             assert coverage < 10, coverage_message
 
 
@@ -317,13 +316,36 @@ def check_2170():
             assert 10 < coverage, coverage_message
 
 
+def check_2180(is_denovo: bool):
+    amino_rows = list(read_file('2180A-HIV_S22', 'amino.csv'))
+    assert amino_rows
+    for row in amino_rows:
+        pos = int(row['refseq.aa.pos'])
+        coverage = int(row['coverage'])
+        coverage_message = f'{coverage} coverage at {pos}'
+        if row['region'] == 'GP120':
+            # TODO: assert seed, after fixing #486.
+            if row['seed'] == 'HIV1-CON-XX-Consensus-seed':
+                pass
+            elif pos < 50:
+                assert coverage < 10, coverage_message
+            elif 80 < pos < 180:
+                assert 10 < coverage, coverage_message
+            elif 380 < pos:
+                assert coverage < 10, coverage_message
+        else:
+            assert row['region'] == 'V3LOOP', row['region']
+            assert 10 < coverage, coverage_message
+
+
 def main():
-    parser = ArgumentParser(description='Check results for microtest samples.')
-    parser.add_argument('--denovo',
-                        action='store_true',
-                        help='Samples were processed with de novo assembly.')
-    args = parser.parse_args()
-    is_denovo = args.denovo
+    is_denovo = not any(row['type'].startswith('prelim')
+                        for row in read_file('2040A-HLA-B_S6',
+                                             'remap_counts.csv'))
+    if is_denovo:
+        print('Checking assembled results.')
+    else:
+        print('Checking remapped results.')
 
     check_1234()
     check_2000()
@@ -344,6 +366,7 @@ def main():
     check_2160()
     check_2160midi()
     check_2170()
+    check_2180(is_denovo)
     print('Passed.')
 
 
