@@ -5,14 +5,14 @@ before_install:
   - mkdir -p ~/bin
   - export PATH=$PATH:~/bin
   # Singularity
-  - apt-get install -qq python dh-autoreconf build-essential libarchive-dev squashfs-tools
+  - sudo apt-get install -qq python dh-autoreconf build-essential libarchive-dev squashfs-tools
   - git clone https://github.com/singularityware/singularity.git
   - cd singularity
   - git checkout -q tags/2.5.2
   - ./autogen.sh
   - ./configure --prefix=/usr/local
   - make
-  - make install
+  - sudo make install
   - cd ..
   - rm -rf singularity
   # IVA assembler:
