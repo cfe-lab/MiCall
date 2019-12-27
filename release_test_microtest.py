@@ -1,159 +1,17 @@
+import gzip
+import inspect
+import os
+import shutil
+import typing
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from csv import DictReader
+from multiprocessing.pool import Pool
 from operator import itemgetter
 from pathlib import Path
+from subprocess import run, PIPE, CalledProcessError
+from tempfile import mkdtemp
 
-
-def read_file(sample_name, file_name):
-    file_path = (Path(__file__).parent /
-                 'micall/tests/microtest/Results/basespace' / file_name)
-    with file_path.open() as f:
-        yield from (row
-                    for row in DictReader(f)
-                    if row['sample'] == sample_name)
-
-
-def check_v3loop(sample_name, expected_counts):
-    nuc_rows = list(read_file(sample_name, 'nuc.csv'))
-    assert nuc_rows
-    v3_loop_rows = []
-    for row in nuc_rows:
-        if row['region'] == 'V3LOOP':
-            v3_loop_rows.append(row)
-        else:
-            pos = int(row['refseq.nuc.pos'])
-            assert row['region'] == 'GP120', (pos, row['region'])
-    count_rows = list(map(itemgetter('refseq.nuc.pos', 'A', 'C', 'G', 'T'),
-                          v3_loop_rows))
-    expected_count_rows = [tuple(line.split())
-                           for line in expected_counts.splitlines()]
-    assert len(count_rows) >= len(expected_count_rows), len(count_rows)
-    for line, expected_line in zip(count_rows, expected_count_rows):
-        assert line == expected_line, (line, expected_line)
-    return v3_loop_rows
-
-
-def check_1234():
-    expected_counts = """\
-1 0 0 0 10
-2 0 0 10 0
-3 0 10 0 0
-4 10 0 0 0
-5 0  9 0 1
-6 10 0 0 0
-7 10 0 0 0
-8 0 0 10 0
-9 10 0 0 0
-10 0 10 0 0
-"""
-    check_v3loop('1234A-V3LOOP_S1', expected_counts)
-
-
-def check_2000():
-    expected_counts = """\
-1 0 0 0 0
-2 0 0 0 0
-3 0 0 0 0
-4 10 0 0 0
-5 0 10 0 0
-6 10 0 0 0
-7 10 0 0 0
-8 0 0 10 0
-9 10 0 0 0
-10 0 10 0 0
-"""
-    check_v3loop('2000A-V3LOOP_S2', expected_counts)
-
-
-def check_2010():
-    nuc_rows = check_v3loop('2010A-V3LOOP_S3', '')
-    assert nuc_rows
-    for row in nuc_rows:
-        pos = int(row['refseq.nuc.pos'])
-        in_gap = 51 < pos <= 57
-        assert row['coverage'] == '10' or in_gap, pos
-
-
-def check_2020():
-    nuc_rows = list(read_file('2020A-GP41_S4', 'nuc.csv'))
-    assert nuc_rows
-    expected_seeds = ('HIV1-B-KR-KJ140263-seed', 'HIV1-B-FR-KF716496-seed')
-    for row in nuc_rows:
-        pos = int(row['refseq.nuc.pos'])
-        assert row['seed'] in expected_seeds, pos
-        assert row['region'] == 'GP41', pos
-        if 3 < pos <= 81:
-            assert row['coverage'] == '10', pos
-        else:
-            assert row['coverage'] == '0', pos
-        if pos == 30:
-            assert row['ins'] == '10', pos
-
-
-def check_2030():
-    nuc_rows = list(read_file('2030A-V3LOOP_S5', 'nuc.csv'))
-    assert not nuc_rows
-
-
-def check_2040():
-    conseq_rows = list(read_file('2040A-HLA-B_S6', 'conseq.csv'))
-    num_rows = len(conseq_rows)
-    assert num_rows == 7, num_rows
-    max_row = conseq_rows[0]
-    cutoff = max_row['consensus-percent-cutoff']
-    assert cutoff == 'MAX', cutoff
-    conseq = max_row['sequence']
-
-    # Check for mixture
-    assert conseq.startswith('GCTCCCWC'), conseq
-
-
-def check_2050():
-    nuc_rows = list(read_file('2050A-V3LOOP_S7', 'nuc.csv'))
-    assert not nuc_rows
-
-
-def check_2060():
-    summary_rows = list(read_file('2060A-V3LOOP_S8', 'g2p_summary.csv'))
-    assert len(summary_rows) == 1, summary_rows
-    row = summary_rows[0]
-    assert row['valid'] == '10', row['valid']
-    assert row['X4calls'] == '0', row['X4calls']
-
-
-def check_2070():
-    nuc_rows = list(read_file('2070A-PR_S9', 'nuc.csv'))
-    assert nuc_rows
-    for row in nuc_rows:
-        assert row['seed'] == 'HIV1-B-FR-K03455-seed', row['seed']
-        assert row['region'] == 'PR', row['region']
-        pos = int(row['refseq.nuc.pos'])
-        if 118 <= pos <= 207:
-            assert row['coverage'] == '13', pos
-            if 133 <= pos <= 135:
-                assert row['del'] == '13', pos
-            elif 193 <= pos <= 195:
-                assert row['del'] == '3', pos
-        else:
-            assert row['coverage'] == '0', pos
-
-
-def check_2080():
-    check_v3loop('2080A-V3LOOP_S10', '')
-
-
-def check_2100(is_denovo):
-    conseq_rows = list(read_file('2100A-HCV-1337B-V3LOOP-PWND-HIV_S12',
-                                 'conseq.csv'))
-    regions = set(map(itemgetter('region'), conseq_rows))
-    if is_denovo:
-        expected_regions = {'2-HIV1-B-FR-K03455-seed',
-                            '3-HIV1-B-FR-K03455-seed',
-                            '1-HCV-1a'}
-    else:
-        expected_regions = {'HIV1-CON-XX-Consensus-seed',
-                            'HCV-1a',
-                            'HIV1-B-FR-K03455-seed'}
-    assert regions == expected_regions, regions
+from micall.monitor.find_groups import find_groups, SampleGroup
 
 
 def check_amino_row(row,
@@ -176,198 +34,510 @@ def check_amino_row(row,
     assert row['v3_overlap'] == str(v3_overlap), f'{row["v3_overlap"]} at {pos}'
 
 
-def check_2110(is_denovo):
-    amino_rows = list(read_file('2110A-V3LOOP_S13', 'amino.csv'))
-    assert amino_rows
-    for row in amino_rows:
-        if row['region'] == 'GP120':
-            continue
-        assert row['region'] == 'V3LOOP', row['region']
-        pos = int(row['refseq.aa.pos'])
-        if pos == 6:
-            check_amino_row(row, coverage=23, stop_codons=1)
-        elif pos == 7:
-            check_amino_row(row, coverage=21, low_quality=2)
-        elif pos == 8:
-            check_amino_row(row, coverage=20, partial=3)
-        elif pos == 9:
-            # G2P doesn't currently handle inserts.
-            expected_inserts = 4 if is_denovo else 0
-            check_amino_row(row, coverage=23, ins=expected_inserts)
-        elif pos == 10:
-            check_amino_row(row, coverage=23, dels=4)
-        elif pos < 18:
-            check_amino_row(row, coverage=23)
+class ResultsFolder:
+    def __init__(self, path: Path, is_denovo: bool):
+        self.path = path
+        self.is_denovo = is_denovo
+
+    def read_file(self, sample_name, file_name) -> typing.Iterator[dict]:
+        scratch_path = self.path / 'scratch' / sample_name
+        file_path = scratch_path / 'output' / file_name
+        if not file_path.exists():
+            file_path = scratch_path / 'output_resistance' / file_name
+        with file_path.open() as f:
+            yield from DictReader(f)
+
+    def check_v3loop(self, sample_name: str, expected_counts: str):
+        nuc_rows = list(self.read_file(sample_name, 'nuc.csv'))
+        assert nuc_rows
+        v3_loop_rows = []
+        for row in nuc_rows:
+            if row['region'] == 'V3LOOP':
+                v3_loop_rows.append(row)
+            else:
+                pos = int(row['refseq.nuc.pos'])
+                assert row['region'] == 'GP120', (pos, row['region'])
+        count_rows = list(map(itemgetter('refseq.nuc.pos', 'A', 'C', 'G', 'T'),
+                              v3_loop_rows))
+        expected_count_rows = [tuple(line.split())
+                               for line in expected_counts.splitlines()]
+        assert len(count_rows) >= len(expected_count_rows), len(count_rows)
+        for line, expected_line in zip(count_rows, expected_count_rows):
+            assert line == expected_line, (line, expected_line)
+        return v3_loop_rows
+
+    def check_1234(self):
+        expected_counts = """\
+1 0 0 0 10
+2 0 0 10 0
+3 0 10 0 0
+4 10 0 0 0
+5 0  9 0 1
+6 10 0 0 0
+7 10 0 0 0
+8 0 0 10 0
+9 10 0 0 0
+10 0 10 0 0
+"""
+        self.check_v3loop('1234A-V3LOOP_S1', expected_counts)
+
+    def check_2000(self):
+        expected_counts = """\
+1 0 0 0 0
+2 0 0 0 0
+3 0 0 0 0
+4 10 0 0 0
+5 0 10 0 0
+6 10 0 0 0
+7 10 0 0 0
+8 0 0 10 0
+9 10 0 0 0
+10 0 10 0 0
+"""
+        self.check_v3loop('2000A-V3LOOP_S2', expected_counts)
+
+    def check_2010(self):
+        nuc_rows = self.check_v3loop('2010A-V3LOOP_S3', '')
+        assert nuc_rows
+        for row in nuc_rows:
+            pos = int(row['refseq.nuc.pos'])
+            in_gap = 51 < pos <= 57
+            assert row['coverage'] == '10' or in_gap, pos
+
+    def check_2020(self):
+        nuc_rows = list(self.read_file('2020A-GP41_S4', 'nuc.csv'))
+        assert nuc_rows
+        expected_seeds = ('HIV1-B-KR-KJ140263-seed', 'HIV1-B-FR-KF716496-seed')
+        for row in nuc_rows:
+            pos = int(row['refseq.nuc.pos'])
+            assert row['seed'] in expected_seeds, pos
+            assert row['region'] == 'GP41', pos
+            if 3 < pos <= 81:
+                assert row['coverage'] == '10', pos
+            else:
+                assert row['coverage'] == '0', pos
+            if pos == 30:
+                assert row['ins'] == '10', pos
+
+    def check_2030(self):
+        nuc_rows = list(self.read_file('2030A-V3LOOP_S5', 'nuc.csv'))
+        assert not nuc_rows
+
+    def check_2040(self):
+        conseq_rows = list(self.read_file('2040A-HLA-B_S6', 'conseq.csv'))
+        num_rows = len(conseq_rows)
+        assert num_rows == 7, num_rows
+        max_row = conseq_rows[0]
+        cutoff = max_row['consensus-percent-cutoff']
+        assert cutoff == 'MAX', cutoff
+        conseq = max_row['sequence']
+
+        # Check for mixture
+        assert conseq.startswith('GCTCCCWC'), conseq
+
+    def check_2050(self):
+        nuc_rows = list(self.read_file('2050A-V3LOOP_S7', 'nuc.csv'))
+        assert not nuc_rows
+
+    def check_2060(self):
+        summary_rows = list(self.read_file('2060A-V3LOOP_S8', 'g2p_summary.csv'))
+        assert len(summary_rows) == 1, summary_rows
+        row = summary_rows[0]
+        assert row['valid'] == '10', row['valid']
+        assert row['X4calls'] == '0', row['X4calls']
+
+    def check_2070(self):
+        nuc_rows = list(self.read_file('2070A-PR_S9', 'nuc.csv'))
+        assert nuc_rows
+        for row in nuc_rows:
+            assert row['seed'] == 'HIV1-B-FR-K03455-seed', row['seed']
+            assert row['region'] == 'PR', row['region']
+            pos = int(row['refseq.nuc.pos'])
+            if 118 <= pos <= 207:
+                assert row['coverage'] == '13', pos
+                if 133 <= pos <= 135:
+                    assert row['del'] == '13', pos
+                elif 193 <= pos <= 195:
+                    assert row['del'] == '3', pos
+            else:
+                assert row['coverage'] == '0', pos
+
+    def check_2080(self):
+        self.check_v3loop('2080A-V3LOOP_S10', '')
+
+    def check_2100(self):
+        conseq_rows = list(self.read_file('2100A-HCV-1337B-V3LOOP-PWND-HIV_S12',
+                                          'conseq.csv'))
+        regions = set(map(itemgetter('region'), conseq_rows))
+        if self.is_denovo:
+            expected_regions = {'2-HIV1-B-FR-K03455-seed',
+                                '3-HIV1-B-FR-K03455-seed',
+                                '1-HCV-1a'}
         else:
-            check_amino_row(row)
+            expected_regions = {'HIV1-CON-XX-Consensus-seed',
+                                'HCV-1a',
+                                'HIV1-B-FR-K03455-seed'}
+        assert regions == expected_regions, regions
 
-
-def check_2120():
-    amino_rows = list(read_file('2120A-PR_S14', 'amino.csv'))
-    assert amino_rows
-    found_regions = set(map(itemgetter('region'), amino_rows))
-    assert found_regions == {'PR'}, found_regions
-    for row in amino_rows:
-        pos = int(row['refseq.aa.pos'])
-        if pos <= 29:
-            check_amino_row(row)
-        elif pos <= 46:
-            check_amino_row(row, coverage=23)
-        elif pos <= 49:
-            check_amino_row(row, coverage=23, stop_codons=1)
-        elif pos <= 52:
-            check_amino_row(row, coverage=21, low_quality=2)
-        elif pos <= 54:
-            check_amino_row(row, coverage=20, partial=3)
-        elif pos <= 55:
-            check_amino_row(row, coverage=23)
-        elif pos <= 56:
-            check_amino_row(row, coverage=23, ins=4)
-        elif pos <= 58:
-            check_amino_row(row, coverage=23)
-        elif pos <= 64:
-            check_amino_row(row, coverage=20, clip=3)
-        elif pos <= 67:
-            check_amino_row(row, coverage=20, dels=1)
-        elif pos <= 90:
-            check_amino_row(row, coverage=20)
-        else:
-            check_amino_row(row)
-
-
-def check_2130(is_denovo):
-    conseq_rows = list(read_file('2130A-HCV_S15', 'conseq.csv'))
-    regions = set(map(itemgetter('region'), conseq_rows))
-    expected_regions = {'1-HCV-2a', '2-HCV-2a'} if is_denovo else {'HCV-2a'}
-    assert regions == expected_regions, regions
-
-
-def check_2130midi(is_denovo):
-    conseq_rows = list(read_file('2130AMIDI-MidHCV_S16', 'conseq.csv'))
-    regions = set(map(itemgetter('region'), conseq_rows))
-    expected_regions = {'1-HCV-2a', '2-HCV-2a'} if is_denovo else {'HCV-2a'}
-    assert regions == expected_regions, regions
-
-
-def check_2140():
-    resistance_rows = list(read_file('2140A-HIV_S17', 'resistance.csv'))
-    pr_rows = [row for row in resistance_rows if row['region'] == 'PR']
-    assert pr_rows
-    for row in pr_rows:
-        assert row['level'] != '0', (row['drug_name'], row['level_name'])
-        if row['drug'] == 'IDV/r':
-            assert row['level'] == '3', row['level']
-
-
-def check_2160():
-    amino_rows = list(read_file('2160A-HCV_S19', 'amino.csv'))
-    assert amino_rows
-    for row in amino_rows:
-        assert row['region'] == 'HCV2-JFH-1-NS5b', row['region']
-        pos = int(row['refseq.aa.pos'])
-        coverage = int(row['coverage'])
-        coverage_message = f'{coverage} coverage at {pos}'
-        if pos < 40:
-            assert coverage < 10, coverage_message
-        elif 70 < pos < 150:
-            assert 10 < coverage, coverage_message
-        elif 230 < pos:
-            assert coverage < 10, coverage_message
-
-
-def check_2160midi():
-    amino_rows = list(read_file('2160AMIDI-MidHCV_S20', 'amino.csv'))
-    assert amino_rows
-    for row in amino_rows:
-        assert row['region'] == 'HCV2-JFH-1-NS5b', row['region']
-        pos = int(row['refseq.aa.pos'])
-        coverage = int(row['coverage'])
-        coverage_message = f'{coverage} coverage at {pos}'
-        if pos < 350:
-            assert coverage < 10, coverage_message
-        elif 420 <= pos < 520:
-            assert 10 < coverage, coverage_message
-        elif 580 <= pos:
-            assert coverage < 10, coverage_message
-
-
-def check_2170():
-    amino_rows = list(read_file('2170A-HCV_S21', 'amino.csv'))
-    assert amino_rows
-    for row in amino_rows:
-        pos = int(row['refseq.aa.pos'])
-        coverage = int(row['coverage'])
-        coverage_message = f'{coverage} coverage at {pos}'
-        if row['region'] == 'HCV1A-H77-NS5a':
-            if pos < 20:
-                assert coverage < 10, coverage_message
-            elif 50 <= pos:
-                assert 10 < coverage, coverage_message
-        elif row['region'] == 'HCV1A-H77-NS5b':
-            if pos <= 580:
-                assert 10 < coverage, coverage_message
-        elif row['region'] == 'HCV2-JFH-1-NS5a':
-            if pos < 15:
-                assert coverage < 10, coverage_message
-            elif 100 <= pos:
-                assert 10 < coverage, coverage_message
-        else:
-            assert row['region'] == 'HCV2-JFH-1-NS5b', row['region']
-            assert 10 < coverage, coverage_message
-
-
-def check_2180(is_denovo: bool):
-    amino_rows = list(read_file('2180A-HIV_S22', 'amino.csv'))
-    assert amino_rows
-    for row in amino_rows:
-        pos = int(row['refseq.aa.pos'])
-        coverage = int(row['coverage'])
-        coverage_message = f'{coverage} coverage at {pos}'
-        if row['region'] == 'GP120':
-            # TODO: assert seed, after fixing #486.
-            if row['seed'] == 'HIV1-CON-XX-Consensus-seed':
-                pass
-            elif pos < 50:
-                assert coverage < 10, coverage_message
-            elif 80 < pos < 180:
-                assert 10 < coverage, coverage_message
-            elif 380 < pos:
-                assert coverage < 10, coverage_message
-        else:
+    def check_2110(self):
+        amino_rows = list(self.read_file('2110A-V3LOOP_S13', 'amino.csv'))
+        assert amino_rows
+        for row in amino_rows:
+            if row['region'] == 'GP120':
+                continue
             assert row['region'] == 'V3LOOP', row['region']
-            assert 10 < coverage, coverage_message
+            pos = int(row['refseq.aa.pos'])
+            if pos == 6:
+                check_amino_row(row, coverage=23, stop_codons=1)
+            elif pos == 7:
+                check_amino_row(row, coverage=21, low_quality=2)
+            elif pos == 8:
+                check_amino_row(row, coverage=20, partial=3)
+            elif pos == 9:
+                # G2P doesn't currently handle inserts.
+                expected_inserts = 4 if self.is_denovo else 0
+                check_amino_row(row, coverage=23, ins=expected_inserts)
+            elif pos == 10:
+                check_amino_row(row, coverage=23, dels=4)
+            elif pos < 18:
+                check_amino_row(row, coverage=23)
+            else:
+                check_amino_row(row)
+
+    def check_2120(self):
+        amino_rows = list(self.read_file('2120A-PR_S14', 'amino.csv'))
+        assert amino_rows
+        found_regions = set(map(itemgetter('region'), amino_rows))
+        assert found_regions == {'PR'}, found_regions
+        for row in amino_rows:
+            pos = int(row['refseq.aa.pos'])
+            if pos <= 29:
+                check_amino_row(row)
+            elif pos <= 46:
+                check_amino_row(row, coverage=23)
+            elif pos <= 49:
+                check_amino_row(row, coverage=23, stop_codons=1)
+            elif pos <= 52:
+                check_amino_row(row, coverage=21, low_quality=2)
+            elif pos <= 54:
+                check_amino_row(row, coverage=20, partial=3)
+            elif pos <= 55:
+                check_amino_row(row, coverage=23)
+            elif pos <= 56:
+                check_amino_row(row, coverage=23, ins=4)
+            elif pos <= 58:
+                check_amino_row(row, coverage=23)
+            elif pos <= 64:
+                check_amino_row(row, coverage=20, clip=3)
+            elif pos <= 67:
+                check_amino_row(row, coverage=20, dels=1)
+            elif pos <= 90:
+                check_amino_row(row, coverage=20)
+            else:
+                check_amino_row(row)
+
+    def check_2130(self):
+        conseq_rows = list(self.read_file('2130A-HCV_S15', 'conseq.csv'))
+        regions = set(map(itemgetter('region'), conseq_rows))
+        expected_regions = ({'1-HCV-2a', '2-HCV-2a'}
+                            if self.is_denovo
+                            else {'HCV-2a'})
+        assert regions == expected_regions, regions
+
+    def check_2130midi(self):
+        conseq_rows = list(self.read_file('2130AMIDI-MidHCV_S16', 'conseq.csv'))
+        regions = set(map(itemgetter('region'), conseq_rows))
+        expected_regions = ({'1-HCV-2a', '2-HCV-2a'}
+                            if self.is_denovo
+                            else {'HCV-2a'})
+        assert regions == expected_regions, regions
+
+    def check_2140(self):
+        resistance_rows = list(self.read_file('2140A-HIV_S17', 'resistance.csv'))
+        pr_rows = [row for row in resistance_rows if row['region'] == 'PR']
+        assert pr_rows
+        for row in pr_rows:
+            assert row['level'] != '0', (row['drug_name'], row['level_name'])
+            if row['drug'] == 'IDV/r':
+                assert row['level'] == '3', row['level']
+
+    def check_2160(self):
+        amino_rows = list(self.read_file('2160A-HCV_S19', 'amino.csv'))
+        assert amino_rows
+        for row in amino_rows:
+            assert row['region'] == 'HCV2-JFH-1-NS5b', row['region']
+            pos = int(row['refseq.aa.pos'])
+            coverage = int(row['coverage'])
+            coverage_message = f'{coverage} coverage at {pos}'
+            if pos < 40:
+                assert coverage < 10, coverage_message
+            elif 70 < pos < 150:
+                assert 10 < coverage, coverage_message
+            elif 230 < pos:
+                assert coverage < 10, coverage_message
+
+    def check_2160midi(self):
+        amino_rows = list(self.read_file('2160AMIDI-MidHCV_S20', 'amino.csv'))
+        assert amino_rows
+        for row in amino_rows:
+            assert row['region'] == 'HCV2-JFH-1-NS5b', row['region']
+            pos = int(row['refseq.aa.pos'])
+            coverage = int(row['coverage'])
+            coverage_message = f'{coverage} coverage at {pos}'
+            if pos < 350:
+                assert coverage < 10, coverage_message
+            elif 420 <= pos < 520:
+                assert 10 < coverage, coverage_message
+            elif 580 <= pos:
+                assert coverage < 10, coverage_message
+
+    def check_2170(self):
+        amino_rows = list(self.read_file('2170A-HCV_S21', 'amino.csv'))
+        assert amino_rows
+        for row in amino_rows:
+            pos = int(row['refseq.aa.pos'])
+            coverage = int(row['coverage'])
+            coverage_message = f'{coverage} coverage at {pos}'
+            if row['region'] == 'HCV1A-H77-NS5a':
+                if pos < 20:
+                    assert coverage < 10, coverage_message
+                elif 50 <= pos:
+                    assert 10 < coverage, coverage_message
+            elif row['region'] == 'HCV1A-H77-NS5b':
+                if pos <= 580:
+                    assert 10 < coverage, coverage_message
+            elif row['region'] == 'HCV2-JFH-1-NS5a':
+                if pos < 15:
+                    assert coverage < 10, coverage_message
+                elif 100 <= pos:
+                    assert 10 < coverage, coverage_message
+            else:
+                assert row['region'] == 'HCV2-JFH-1-NS5b', row['region']
+                assert 10 < coverage, coverage_message
+
+    def check_2180(self):
+        amino_rows = list(self.read_file('2180A-HIV_S22', 'amino.csv'))
+        assert amino_rows
+        for row in amino_rows:
+            pos = int(row['refseq.aa.pos'])
+            coverage = int(row['coverage'])
+            coverage_message = f'{coverage} coverage at {pos}'
+            if row['region'] == 'GP120':
+                # TODO: assert seed, after fixing #486.
+                if row['seed'] == 'HIV1-CON-XX-Consensus-seed':
+                    pass
+                elif pos < 50:
+                    assert coverage < 10, coverage_message
+                elif 80 < pos < 180:
+                    assert 10 < coverage, coverage_message
+                elif 380 < pos:
+                    assert coverage < 10, coverage_message
+            else:
+                assert row['region'] == 'V3LOOP', row['region']
+                assert 10 < coverage, coverage_message
+
+
+def gzip_compress(source_path: Path, target_path: Path):
+    with source_path.open('rb') as source:
+        with gzip.open(target_path, 'wb') as target:
+            shutil.copyfileobj(source, target)
+
+
+def create_sample_scratch(fastq_file):
+    sample_name = '_'.join(str(fastq_file.name).split('_')[:2])
+    scratch_path: Path = fastq_file.parent / 'scratch' / sample_name
+    scratch_path.mkdir(parents=True, exist_ok=True)
+    return scratch_path
+
+
+class SampleRunner:
+    def __init__(self, image_path: Path):
+        self.image_path = image_path
+        self.bad_cycles_path = None
+
+    def process_quality(self, quality_file: Path):
+        scratch_path: Path = quality_file.parent / 'scratch' / 'quality'
+        scratch_path.mkdir(parents=True)
+        input_path = scratch_path / 'input'
+        output_path = scratch_path / 'output'
+        input_path.mkdir()
+        output_path.mkdir()
+        quality_input = input_path / quality_file.name
+        self.bad_cycles_path = output_path / 'bad_cycles.csv'
+        shutil.copy(str(quality_file), str(quality_input))
+        run(self.build_command([quality_input],
+                               [self.bad_cycles_path],
+                               app_name='filter_quality'),
+            stdout=PIPE,
+            stderr=PIPE,
+            check=True)
+
+    def process_sample(self, fastq_file: Path):
+        fastq_file2 = fastq_file.parent / (fastq_file.name.replace('_R1_',
+                                                                   '_R2_'))
+        scratch_path = create_sample_scratch(fastq_file)
+        sample_name = scratch_path.name
+        input_path = scratch_path / 'input'
+        output_path = scratch_path / 'output'
+        input_path.mkdir()
+        output_path.mkdir()
+        fastq_input1 = input_path / fastq_file.name
+        fastq_input2 = input_path / fastq_file2.name
+        gzip_compress(fastq_file, fastq_input1)
+        gzip_compress(fastq_file2, fastq_input2)
+        output_names = ['g2p.csv',
+                        'g2p_summary.csv',
+                        'remap_counts.csv',
+                        'remap_conseq.csv',
+                        'unmapped1.fastq',
+                        'unmapped2.fastq',
+                        'conseq_ins.csv',
+                        'failed.csv',
+                        'cascade.csv',
+                        'nuc.csv',
+                        'amino.csv',
+                        'coord_ins.csv',
+                        'conseq.csv',
+                        'conseq_region.csv',
+                        'failed_align.csv',
+                        'coverage_scores.csv',
+                        'coverage_maps.tar',
+                        'aligned.csv',
+                        'g2p_aligned.csv',
+                        'genome_coverage.csv',
+                        'genome_coverage.svg']
+        output_paths = [output_path/name for name in output_names]
+        run(self.build_command([fastq_input1,
+                                fastq_input2,
+                                self.bad_cycles_path],
+                               output_paths),
+            stdout=PIPE,
+            stderr=PIPE,
+            check=True)
+        return sample_name, True
+
+    def process_resistance(self, sample_group: SampleGroup):
+        main_fastq_path = sample_group.names[0]
+        midi_fastq_path = sample_group.names[1]
+        main_scratch = create_sample_scratch(main_fastq_path)
+        output_path: Path = main_scratch / 'output'
+        main_amino_path = output_path / 'amino.csv'
+        input_path: Path = main_scratch / 'input_resistance'
+        input_path.mkdir()
+        main_amino_input = input_path / 'main_amino.csv'
+        shutil.copy(str(main_amino_path), str(main_amino_input))
+        if midi_fastq_path is None:
+            midi_amino_input = main_amino_input
+        else:
+            midi_scratch = create_sample_scratch(midi_fastq_path)
+            midi_amino_path = midi_scratch / 'output' / 'amino.csv'
+            midi_amino_input = input_path / 'midi_amino.csv'
+            shutil.copy(str(midi_amino_path), str(midi_amino_input))
+        output_path2 = output_path.parent / 'output_resistance'
+        output_path2.mkdir()
+        output_names = ['resistance.csv',
+                        'mutations.csv',
+                        'resistance_fail.csv',
+                        'resistance.pdf',
+                        'resistance_consensus.csv']
+        output_paths = [output_path2/name for name in output_names]
+        run(self.build_command([main_amino_input, midi_amino_input],
+                               output_paths,
+                               app_name='resistance'),
+            stdout=PIPE,
+            stderr=PIPE,
+            check=True)
+        return sample_group.enum, True
+
+    def build_command(self, inputs, outputs, app_name=None):
+        input_path = inputs[0].parent
+        output_path = outputs[0].parent
+        command = ['singularity',
+                   'run',
+                   '--contain',
+                   '--cleanenv',
+                   '-B',
+                   '{}:/mnt/input,{}:/mnt/output'.format(input_path,
+                                                         output_path)]
+        if app_name:
+            command.append('--app')
+            command.append(app_name)
+        command.append(self.image_path)
+        for arguments, guest_path in zip((inputs, outputs),
+                                         ('/mnt/input', '/mnt/output')):
+            for argument in arguments:
+                command.append(os.path.join(guest_path, argument.name))
+        return command
+
+
+def find_full_groups(fastq_files, sandbox_path):
+    groups = list(find_groups([p.name for p in fastq_files],
+                              sandbox_path / 'SampleSheet.csv'))
+    full_groups = []
+    for group in groups:
+        full_names = tuple(name and (sandbox_path / name)
+                           for name in group.names)
+        full_groups.append(SampleGroup(group.enum, full_names))
+    return full_groups
 
 
 def main():
-    is_denovo = not any(row['type'].startswith('prelim')
-                        for row in read_file('2040A-HLA-B_S6',
-                                             'remap_counts.csv'))
-    if is_denovo:
-        print('Checking assembled results.')
+    parser = ArgumentParser(description='Validate with small test samples.',
+                            formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--sandbox',
+                        help='Folder to copy microtest samples into.')
+    # noinspection PyTypeChecker
+    parser.add_argument('image',
+                        type=Path,
+                        help='Singularity image to run tests in.')
+    args = parser.parse_args()
+    source_path: Path = Path(__file__).parent / 'micall' / 'tests' / 'microtest'
+    if args.sandbox is None:
+        sandbox_path = source_path
+        all_sandboxes = []
     else:
-        print('Checking remapped results.')
+        sandbox_path = Path(mkdtemp(prefix='microtest_', dir=args.sandbox))
+        all_sandboxes = Path(args.sandbox).glob('microtest_*')
+        print(f'Copying to {sandbox_path}.')
+        source_files = list(source_path.glob('*.fastq'))
+        source_files.append(source_path / 'quality.csv')
+        source_files.append(source_path / 'SampleSheet.csv')
+        for source_file in source_files:
+            target_file: Path = sandbox_path / source_file.name
+            shutil.copy(str(source_file), str(target_file))
+    runner = SampleRunner(args.image)
+    pool = Pool()
+    fastq_files = list(sandbox_path.glob('*_R1_*.fastq'))
+    sample_groups = find_full_groups(fastq_files, sandbox_path)
+    try:
+        runner.process_quality(sandbox_path / 'quality.csv')
+        for sample, result in pool.imap(runner.process_sample, fastq_files):
+            print(f'Processed {sample}: {result}.')
+        for sample_enum, result in pool.imap(runner.process_resistance,
+                                             sample_groups):
+            print(f'Processed resistance for {sample_enum}: {result}')
+    except CalledProcessError as ex:
+        print(ex.stderr.decode('utf8'))
+        raise
 
-    check_1234()
-    check_2000()
-    check_2010()
-    check_2020()
-    check_2030()
-    check_2040()
-    check_2050()
-    check_2060()
-    check_2070()
-    check_2080()
-    check_2100(is_denovo)
-    check_2110(is_denovo)
-    check_2120()
-    check_2130(is_denovo)
-    check_2130midi(is_denovo)
-    check_2140()
-    check_2160()
-    check_2160midi()
-    check_2170()
-    check_2180(is_denovo)
-    print('Passed.')
+    results_folder = ResultsFolder(sandbox_path, is_denovo=False)
+    folder_methods = inspect.getmembers(results_folder, inspect.ismethod)
+    check_methods = [(name, method)
+                     for name, method in folder_methods
+                     if name.startswith('check_')]
+    for name, method in check_methods:
+        if not inspect.signature(method).parameters:
+            # Doesn't require any parameters, so it's a top level check method.
+            print(name)
+            method()
+
+    # If they all passed, clean up.
+    if all_sandboxes:
+        print('Cleaning up sandboxes:')
+        for sandbox in all_sandboxes:
+            print(' ', sandbox)
+            shutil.rmtree(sandbox)
+    print('Done.')
 
 
 main()
