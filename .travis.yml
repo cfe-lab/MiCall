@@ -34,7 +34,7 @@ before_install:
 install: "pip install -r requirements-test.txt"
 script:
   - coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
-  - singularity build micall.simg Singularity
+  - sudo singularity build micall.simg Singularity
   - python release_test_microtest.py micall.simg
 
 after_success:
