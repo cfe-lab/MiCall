@@ -53,9 +53,6 @@ From: centos:7
     ## HCV genotyping database
     micall/blast_db /opt/micall/micall/blast_db
 
-    ## H77 reference
-    micall/utils/hcv_geno /opt/micall/micall/utils/hcv_geno
-
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
     yum update -q -y
@@ -122,7 +119,7 @@ From: centos:7
     python3.6 get-pip.py
     rm get-pip.py
     cd /opt
-    pip install -r /opt/micall/requirements.txt
+    pip install --quiet -r /opt/micall/requirements.txt
     ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 

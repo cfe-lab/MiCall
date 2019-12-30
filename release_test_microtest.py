@@ -41,11 +41,18 @@ class ResultsFolder:
 
     def read_file(self, sample_name, file_name) -> typing.Iterator[dict]:
         scratch_path = self.path / 'scratch' / sample_name
-        file_path = scratch_path / 'output' / file_name
-        if not file_path.exists():
-            file_path = scratch_path / 'output_resistance' / file_name
-        with file_path.open() as f:
-            yield from DictReader(f)
+        if self.is_denovo:
+            folder_names = ('output_denovo', 'output_resistance_denovo')
+        else:
+            folder_names = ('output', 'output_resistance')
+        for folder_name in folder_names:
+            file_path = scratch_path / folder_name / file_name
+            if file_path.exists():
+                with file_path.open() as f:
+                    yield from DictReader(f)
+                break
+        else:
+            raise FileNotFoundError(f'{sample_name}/{file_name}')
 
     def check_v3loop(self, sample_name: str, expected_counts: str):
         nuc_rows = list(self.read_file(sample_name, 'nuc.csv'))
@@ -353,6 +360,7 @@ def create_sample_scratch(fastq_file):
 class SampleRunner:
     def __init__(self, image_path: Path):
         self.image_path = image_path
+        self.is_denovo = False
         self.bad_cycles_path = None
 
     def process_quality(self, quality_file: Path):
@@ -377,8 +385,12 @@ class SampleRunner:
                                                                    '_R2_'))
         scratch_path = create_sample_scratch(fastq_file)
         sample_name = scratch_path.name
-        input_path = scratch_path / 'input'
-        output_path = scratch_path / 'output'
+        if self.is_denovo:
+            input_path = scratch_path / 'input_denovo'
+            output_path = scratch_path / 'output_denovo'
+        else:
+            input_path = scratch_path / 'input'
+            output_path = scratch_path / 'output'
         input_path.mkdir()
         output_path.mkdir()
         fastq_input1 = input_path / fastq_file.name
@@ -407,22 +419,28 @@ class SampleRunner:
                         'genome_coverage.csv',
                         'genome_coverage.svg']
         output_paths = [output_path/name for name in output_names]
+        app_name = 'denovo' if self.is_denovo else None
         run(self.build_command([fastq_input1,
                                 fastq_input2,
                                 self.bad_cycles_path],
-                               output_paths),
+                               output_paths,
+                               app_name),
             stdout=PIPE,
             stderr=PIPE,
             check=True)
-        return sample_name, True
+        return sample_name
 
     def process_resistance(self, sample_group: SampleGroup):
         main_fastq_path = sample_group.names[0]
         midi_fastq_path = sample_group.names[1]
         main_scratch = create_sample_scratch(main_fastq_path)
-        output_path: Path = main_scratch / 'output'
+        if self.is_denovo:
+            output_path: Path = main_scratch / 'output_denovo'
+            input_path: Path = main_scratch / 'input_resistance_denovo'
+        else:
+            output_path: Path = main_scratch / 'output'
+            input_path: Path = main_scratch / 'input_resistance'
         main_amino_path = output_path / 'amino.csv'
-        input_path: Path = main_scratch / 'input_resistance'
         input_path.mkdir()
         main_amino_input = input_path / 'main_amino.csv'
         shutil.copy(str(main_amino_path), str(main_amino_input))
@@ -430,10 +448,16 @@ class SampleRunner:
             midi_amino_input = main_amino_input
         else:
             midi_scratch = create_sample_scratch(midi_fastq_path)
-            midi_amino_path = midi_scratch / 'output' / 'amino.csv'
+            if self.is_denovo:
+                midi_amino_path = midi_scratch / 'output_denovo' / 'amino.csv'
+            else:
+                midi_amino_path = midi_scratch / 'output' / 'amino.csv'
             midi_amino_input = input_path / 'midi_amino.csv'
             shutil.copy(str(midi_amino_path), str(midi_amino_input))
-        output_path2 = output_path.parent / 'output_resistance'
+        if self.is_denovo:
+            output_path2 = output_path.parent / 'output_resistance_denovo'
+        else:
+            output_path2 = output_path.parent / 'output_resistance'
         output_path2.mkdir()
         output_names = ['resistance.csv',
                         'mutations.csv',
@@ -447,7 +471,7 @@ class SampleRunner:
             stdout=PIPE,
             stderr=PIPE,
             check=True)
-        return sample_group.enum, True
+        return sample_group.enum
 
     def build_command(self, inputs, outputs, app_name=None):
         input_path = inputs[0].parent
@@ -494,6 +518,7 @@ def main():
     source_path: Path = Path(__file__).parent / 'micall' / 'tests' / 'microtest'
     if args.sandbox is None:
         sandbox_path = source_path
+        shutil.rmtree(source_path / 'scratch', ignore_errors=True)
         all_sandboxes = []
     else:
         sandbox_path = Path(mkdtemp(prefix='microtest_', dir=args.sandbox))
@@ -507,15 +532,19 @@ def main():
             shutil.copy(str(source_file), str(target_file))
     runner = SampleRunner(args.image)
     pool = Pool()
-    fastq_files = list(sandbox_path.glob('*_R1_*.fastq'))
+    fastq_files = sorted(sandbox_path.glob('*_R1_*.fastq'))
     sample_groups = find_full_groups(fastq_files, sandbox_path)
     try:
         runner.process_quality(sandbox_path / 'quality.csv')
-        for sample, result in pool.imap(runner.process_sample, fastq_files):
-            print(f'Processed {sample}: {result}.')
-        for sample_enum, result in pool.imap(runner.process_resistance,
-                                             sample_groups):
-            print(f'Processed resistance for {sample_enum}: {result}')
+        for sample in pool.map(runner.process_sample, fastq_files):
+            print(f'Processed {sample}.')
+        for sample_enum in pool.map(runner.process_resistance, sample_groups):
+            print(f'Processed resistance for {sample_enum}.')
+        runner.is_denovo = True
+        for sample in pool.map(runner.process_sample, fastq_files):
+            print(f'Processed denovo {sample}.')
+        for sample_enum in pool.map(runner.process_resistance, sample_groups):
+            print(f'Processed resistance for denovo {sample_enum}.')
     except CalledProcessError as ex:
         print(ex.stderr.decode('utf8'))
         raise
@@ -529,6 +558,11 @@ def main():
         if not inspect.signature(method).parameters:
             # Doesn't require any parameters, so it's a top level check method.
             print(name)
+            results_folder.is_denovo = False
+            method()
+
+            print(name, '(denovo)')
+            results_folder.is_denovo = True
             method()
 
     # If they all passed, clean up.
