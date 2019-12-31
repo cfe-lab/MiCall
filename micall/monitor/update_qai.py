@@ -351,6 +351,25 @@ def load_ok_sample_regions(result_folder):
 
     return ok_sample_regions
 
+def check_qai_available(
+    qai_server,
+    qai_user,
+    qai_password,
+    pipeline_version
+):
+    with qai_helper.Session() as session:
+        try:
+            session.login(
+                qai_server,
+                qai_user,
+                qai_password
+            )
+            return True
+        except Exception as e:
+            logger.warning('Could not connect to QAI!')
+            return False
+
+
 
 def process_folder(result_folder,
                    qai_server,

@@ -114,11 +114,20 @@ def parse_args(argv=None):
 
 
 def main_loop(args, sample_queue):
-    result_handler = partial(update_qai.process_folder,
-                             qai_server=args.qai_server,
-                             qai_user=args.qai_user,
-                             qai_password=args.qai_password,
-                             pipeline_version=args.pipeline_version)
+    qai_available = update_qai.check_qai_available(
+        qai_server=args.qai_server,
+        qai_user=args.qai_user,
+        qai_password=args.qai_password,
+        pipeline_version=args.pipeline_version
+    )
+    if qai_available:
+        result_handler = partial(update_qai.process_folder,
+                                qai_server=args.qai_server,
+                                qai_user=args.qai_user,
+                                qai_password=args.qai_password,
+                                pipeline_version=args.pipeline_version)
+    else:
+        logger.warning('QAI is currently not available! Skipping folder processing!')
     kive_watcher = KiveWatcher(args, result_handler, retry=True)
     while True:
         kive_watcher.poll_runs()
