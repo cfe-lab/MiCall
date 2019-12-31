@@ -68,7 +68,7 @@ From: centos:7
 
     echo ===== Installing blast ===== >/dev/null
     cd /root
-    wget -q ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
+    wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
     yum install -q -y ncbi-blast-2.6.0+-1.x86_64.rpm
     rm ncbi-blast-2.6.0+-1.x86_64.rpm
     python3.6 /opt/micall/micall/blast_db/make_blast_db.py
