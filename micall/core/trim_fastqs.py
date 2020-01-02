@@ -13,8 +13,8 @@ from io import TextIOWrapper
 
 from micall.utils.externals import CutAdapt
 
-# version of bowtie2, used for version control
-CUT_ADAPT_VERSION = '1.11'
+# version of cutadapt, used for version control
+CUT_ADAPT_VERSION = '2.7'
 # path to executable, so you can install more than one version
 CUT_ADAPT_PATH = 'cutadapt'
 
