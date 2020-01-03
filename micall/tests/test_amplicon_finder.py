@@ -136,8 +136,7 @@ AAAAAAAAAAAA
     assert expected_entropy == entropy
 
 
-def test(tmpdir):
-    """ _merge_for_entropy """
+def test_merge_for_entropy(tmpdir):
     read_entropy_csv = StringIO()
     expected_read_entropy = """\
 merge_length,count,entropy

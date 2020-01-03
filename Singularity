@@ -53,6 +53,9 @@ From: centos:7
     ## HCV genotyping database
     micall/blast_db /opt/micall/micall/blast_db
 
+    ## Blast
+    vendor/ncbi-blast-2.6.0+-1.x86_64.rpm /
+
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
     yum update -q -y
@@ -68,8 +71,8 @@ From: centos:7
 
     echo ===== Installing blast ===== >/dev/null
     cd /root
-    export BLAST_RPM=ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
-    wget --no-passive-ftp $BLAST_RPM || wget $BLAST_RPM
+    # Saved our own copy, because download was slow from ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
+    wget https://github.com/cfe-lab/MiCall/releases/download/v7.12.dev28/ncbi-blast-2.6.0+-1.x86_64.rpm
     yum install -q -y ncbi-blast-2.6.0+-1.x86_64.rpm
     rm ncbi-blast-2.6.0+-1.x86_64.rpm
     python3.6 /opt/micall/micall/blast_db/make_blast_db.py
