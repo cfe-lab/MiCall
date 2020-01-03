@@ -60,7 +60,7 @@ From: centos:7
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
     yum install -q -y https://centos7.iuscommunity.org/ius-release.rpm
-    yum install -q -y python36 python36-devel unzip wget fontconfig
+    yum install -q -y python36 python36-devel unzip wget fontconfig bzip2-devel xz-devel
 
     echo ===== Installing Rust and merge-mates ===== >/dev/null
     yum install -q -y rust cargo
