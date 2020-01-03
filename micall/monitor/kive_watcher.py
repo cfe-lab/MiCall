@@ -273,7 +273,6 @@ class KiveWatcher:
         :param bool retry: should the main methods retry forever?
         """
         self.config = config
-        self.result_handler = result_handler
         self.retry = retry
         self.session = None
         self.loaded_folders = set()  # base_calls folders with all samples loaded
@@ -469,7 +468,7 @@ class KiveWatcher:
         """
         self.loaded_folders.add(base_calls)
 
-    def poll_runs(self):
+    def poll_runs(self, qai_upload_queue):
         for attempt_count in count(1):
             # noinspection PyBroadException
             try:
@@ -485,7 +484,8 @@ class KiveWatcher:
                     if results_path is None:
                         continue
                     if (results_path / "coverage_scores.csv").exists():
-                        self.result_handler(results_path)
+                        # self.result_handler(results_path)
+                        qai_upload_queue.put(results_path)
                     (results_path / "doneprocessing").touch()
                     if not self.folder_watchers:
                         logger.info('No more folders to process.')

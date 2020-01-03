@@ -13,6 +13,7 @@ import os
 from micall.monitor import qai_helper
 from micall.utils import sample_sheet_parser
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
+from .kive_watcher import wait_for_retry
 
 logger = logging.getLogger('update_qai')
 
@@ -354,8 +355,7 @@ def load_ok_sample_regions(result_folder):
 def check_qai_available(
     qai_server,
     qai_user,
-    qai_password,
-    pipeline_version
+    qai_password
 ):
     with qai_helper.Session() as session:
         try:
@@ -413,6 +413,36 @@ def process_folder(result_folder,
                                  session,
                                  pipeline_version)
 
+def upload(
+    qai_server,
+    qai_user,
+    qai_password,
+    pipeline_version,
+    upload_queue,
+    wait=True,
+    retry=True
+):
+    attempt_count = 0
+    while True:
+        qai_available = check_qai_available(
+            qai_server,
+            qai_user,
+            qai_password
+        )
+        if not qai_available:
+            attempt_count += 1
+            wait_for_retry(attempt_count)
+            continue
+        item = upload_queue.get()
+        process_folder(
+            item,
+            qai_server,
+            qai_user,
+            qai_password,
+            pipeline_version
+        )
+        # Reset attempt count if successful
+        attempt_count = 0
 
 def main():
     args = parse_args()
