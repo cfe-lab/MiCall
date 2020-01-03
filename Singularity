@@ -53,9 +53,6 @@ From: centos:7
     ## HCV genotyping database
     micall/blast_db /opt/micall/micall/blast_db
 
-    ## Blast
-    vendor/ncbi-blast-2.6.0+-1.x86_64.rpm /
-
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
     yum update -q -y
