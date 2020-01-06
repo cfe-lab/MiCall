@@ -138,7 +138,7 @@ def main():
     logger.info('Starting up with server %s', args.kive_server)
 
     sample_queue = Queue(maxsize=2)
-    qai_upload_queue = Queue(maxsize=3)
+    qai_upload_queue = Queue()
     wait = True
     finder_thread = Thread(target=find_samples,
                            args=(args.raw_data,
@@ -148,13 +148,13 @@ def main():
                            daemon=True)
     finder_thread.start()
 
-    qai_upload_thread = Thread(target=update_qai.upload,
+    qai_upload_thread = Thread(target=update_qai.upload_loop,
                                args=(args.qai_server,
                                      args.qai_user,
                                      args.qai_password,
                                      args.pipeline_version,
-                                     qai_upload_queue,
-                                     wait),
+                                     qai_upload_queue
+                                ),
                                daemon=True)
     qai_upload_thread.start()
 

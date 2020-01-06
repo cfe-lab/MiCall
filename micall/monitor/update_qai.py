@@ -9,6 +9,9 @@ from datetime import datetime
 import logging
 from operator import itemgetter
 import os
+import traceback
+import requests
+from time import sleep
 
 from micall.monitor import qai_helper
 from micall.utils import sample_sheet_parser
@@ -365,11 +368,8 @@ def check_qai_available(
                 qai_password
             )
             return True
-        except Exception as e:
-            logger.warning('Could not connect to QAI!')
+        except BaseException as e:
             return False
-
-
 
 def process_folder(result_folder,
                    qai_server,
@@ -390,10 +390,13 @@ def process_folder(result_folder,
     ok_sample_regions = load_ok_sample_regions(result_folder)
 
     with qai_helper.Session() as session:
-        session.login(qai_server,
-                      qai_user,
-                      qai_password)
-
+        try:
+            session.login(qai_server,
+                        qai_user,
+                        qai_password)
+        except BaseException as e:
+            logger.error('Could not log in to QAI')
+            return
         run = find_run(session, sample_sheet["Experiment Name"])
 
         with open(collated_conseqs, "rU") as f:
@@ -413,36 +416,40 @@ def process_folder(result_folder,
                                  session,
                                  pipeline_version)
 
-def upload(
+def upload_loop(
     qai_server,
     qai_user,
     qai_password,
     pipeline_version,
     upload_queue,
-    wait=True,
     retry=True
 ):
     attempt_count = 0
+    qai_available_to_start = check_qai_available(
+        qai_server,
+        qai_user,
+        qai_password
+    )
+    if not qai_available_to_start:
+        logger.error('QAI not available!')
     while True:
-        qai_available = check_qai_available(
-            qai_server,
-            qai_user,
-            qai_password
-        )
-        if not qai_available:
+        logger.info('Attempting upload to QAI {} ...'.format(attempt_count))
+        try:
+            item = upload_queue.get()
+            logger.info('upload queue item: "{}"'.format(item))
+            process_folder(
+                item,
+                qai_server,
+                qai_user,
+                qai_password,
+                pipeline_version
+            )
+            # Reset attempt count if successful
+            attempt_count = 0
+        except BaseException as e:
+            logger.warning('Could not upload to QAI: {}'.format(e))
             attempt_count += 1
             wait_for_retry(attempt_count)
-            continue
-        item = upload_queue.get()
-        process_folder(
-            item,
-            qai_server,
-            qai_user,
-            qai_password,
-            pipeline_version
-        )
-        # Reset attempt count if successful
-        attempt_count = 0
 
 def main():
     args = parse_args()
