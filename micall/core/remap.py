@@ -175,7 +175,7 @@ def sam_to_conseqs(samfile, quality_cutoff=0, debug_reports=None, seeds=None,
 
     pairs = matchmaker(samfile, include_singles=True)
     if worker_pool is None:
-        merged_reads = itertools.imap(
+        merged_reads = map(
             partial(merge_reads, quality_cutoff),
             pairs)
     else:
