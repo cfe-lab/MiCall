@@ -19,7 +19,7 @@ class Session(requests.Session):
             response = self.post(qai_path + "/account/login",
                                 data={'user_login': qai_user,
                                     'user_password': password})
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             # from None is added to reduce logging overhead
             # original traceback is quite long and stems from the login issue
             raise ConnectionError('Could not log in to QAI') from None
