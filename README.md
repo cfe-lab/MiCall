@@ -52,7 +52,7 @@ their licenses.
 
 Requests is distributed under the Apache 2.0 license.
 
-Python 3.4 is distributed under the [Python 3.4 license][python].
+Python 3.6 is distributed under the [Python 3.6 license][python].
 
 Bowtie2 and Python-Levenshtein are distributed under the GNU General Public License (GPL).
 
@@ -66,5 +66,5 @@ Pyyaml and Cutadapt are distributed under the MIT license.
 [gnu]: http://www.gnu.org/licenses/
 [github]: https://github.com/cfe-lab/MiCall
 [contact]: mailto:micalldev@cfenet.ubc.ca
-[python]: https://docs.python.org/3.4/license.html
+[python]: https://docs.python.org/3.6/license.html
 [matplotlib]: http://matplotlib.org/users/license.html

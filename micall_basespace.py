@@ -14,7 +14,6 @@ import shutil
 import socket
 from zipfile import ZipFile, ZIP_DEFLATED
 
-import requests
 
 from micall.core.filter_quality import report_bad_cycles
 from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
@@ -88,6 +87,8 @@ class BSrequest:
         return err_code, err_msg
 
     def _raw_get_file(self, locstr, paramdct=None):
+        import requests
+
         """ Perform a RESTful basespace API request using
         locstr: the API request without the base URL, and
         optional parameters in the paramdct.

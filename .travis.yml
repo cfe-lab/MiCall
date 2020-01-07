@@ -4,6 +4,17 @@ python:
 before_install:
   - mkdir -p ~/bin
   - export PATH=$PATH:~/bin
+  # Singularity
+  - sudo apt-get install -qq python dh-autoreconf build-essential libarchive-dev squashfs-tools
+  - git clone https://github.com/singularityware/singularity.git
+  - cd singularity
+  - git checkout -q tags/2.5.2
+  - ./autogen.sh
+  - ./configure --prefix=/usr/local
+  - make
+  - sudo make install
+  - cd ..
+  - rm -rf singularity
   # IVA assembler:
   - sudo apt-get install -y zlib1g-dev libncurses5-dev libncursesw5-dev mummer samtools ncbi-blast+
   - pushd ~/bin
@@ -23,10 +34,8 @@ before_install:
 install: "pip install -r requirements-test.txt"
 script:
   - coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
-  - python micall_basespace.py --all_projects -l micall/tests/microtest micall/tests/working/microtest_remapped
-  - python release_test_microtest.py
-  - python micall_basespace.py --all_projects --denovo -l micall/tests/microtest micall/tests/working/microtest_assembled
-  - python release_test_microtest.py
+  - sudo singularity build micall.simg Singularity
+  - python release_test_microtest.py micall.simg
 
 after_success:
     - pip install codecov

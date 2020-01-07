@@ -53,9 +53,6 @@ From: centos:7
     ## HCV genotyping database
     micall/blast_db /opt/micall/micall/blast_db
 
-    ## H77 reference
-    micall/utils/hcv_geno /opt/micall/micall/utils/hcv_geno
-
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
     yum update -q -y
@@ -63,7 +60,7 @@ From: centos:7
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
     yum install -q -y https://centos7.iuscommunity.org/ius-release.rpm
-    yum install -q -y python36 python36-devel unzip wget fontconfig
+    yum install -q -y python36 python36-devel unzip wget fontconfig bzip2-devel xz-devel
 
     echo ===== Installing Rust and merge-mates ===== >/dev/null
     yum install -q -y rust cargo
@@ -71,7 +68,8 @@ From: centos:7
 
     echo ===== Installing blast ===== >/dev/null
     cd /root
-    wget -q ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
+    # Saved our own copy, because download was slow from ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
+    wget https://github.com/cfe-lab/MiCall/releases/download/v7.12.dev28/ncbi-blast-2.6.0+-1.x86_64.rpm
     yum install -q -y ncbi-blast-2.6.0+-1.x86_64.rpm
     rm ncbi-blast-2.6.0+-1.x86_64.rpm
     python3.6 /opt/micall/micall/blast_db/make_blast_db.py
@@ -122,7 +120,7 @@ From: centos:7
     python3.6 get-pip.py
     rm get-pip.py
     cd /opt
-    pip install -r /opt/micall/requirements.txt
+    pip install --quiet -r /opt/micall/requirements.txt
     ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 

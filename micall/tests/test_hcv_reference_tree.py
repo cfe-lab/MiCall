@@ -160,8 +160,8 @@ def test_monophyletic():
 def test_polyphyletic():
     tree_source = "((Ref.foo-1a, Sample.bar-2b), (Sample.floop-1a, Ref.baz-2c));"
     report = StringIO()
-    expected_report = """\
-1a polyphyletic Ref.baz-2c, Sample.bar-2b
+    expected_report = \
+        r"""1a polyphyletic Ref.baz-2c, Sample.bar-2b
 1 polyphyletic Ref.baz-2c, Sample.bar-2b
 2 polyphyletic Ref.foo-1a, Sample.floop-1a
 Sample.bar-2b treed with 1a
@@ -184,8 +184,7 @@ Sample.floop-1a treed with 2c
 def test_paraphyletic():
     tree_source = "((Sample.bar-2b, Ref.byre-2b), (Ref.baz-2c, (Ref.foo-1a, Sample.floop-1a)));"
     report = StringIO()
-    expected_report = """\
-2 paraphyletic Ref.foo-1a, Sample.floop-1a
+    expected_report = r"""2 paraphyletic Ref.foo-1a, Sample.floop-1a
 
       /-Sample.bar-2b
    /-|
@@ -206,8 +205,8 @@ def test_paraphyletic():
 def test_paraphyletic2():
     tree_source = "((Ref.byre-2b, Sample.bar-2b), (Ref.baz-2c, (Ref.foo-1a, Sample.floop-1a)));"
     report = StringIO()
-    expected_report = """\
-2 paraphyletic Ref.foo-1a, Sample.floop-1a
+    expected_report = \
+        r"""2 paraphyletic Ref.foo-1a, Sample.floop-1a
 
       /-Ref.byre-2b
    /-|
