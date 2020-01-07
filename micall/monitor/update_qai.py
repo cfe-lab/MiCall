@@ -355,21 +355,6 @@ def load_ok_sample_regions(result_folder):
 
     return ok_sample_regions
 
-def check_qai_available(
-    qai_server,
-    qai_user,
-    qai_password
-):
-    with qai_helper.Session() as session:
-        try:
-            session.login(
-                qai_server,
-                qai_user,
-                qai_password
-            )
-            return True
-        except BaseException as e:
-            return False
 
 def process_folder(result_folder,
                    qai_server,
@@ -389,32 +374,40 @@ def process_folder(result_folder,
 
     ok_sample_regions = load_ok_sample_regions(result_folder)
 
-    with qai_helper.Session() as session:
-        try:
-            session.login(qai_server,
-                        qai_user,
-                        qai_password)
-        except BaseException as e:
-            logger.error('Could not log in to QAI')
-            return
-        run = find_run(session, sample_sheet["Experiment Name"])
+    attempt_count = 0
+    while True:
+        with qai_helper.Session() as session:
+            try:
+                logger.info('Attempting upload to QAI ... attempt # {}'.format(attempt_count))
+                session.login(qai_server,
+                            qai_user,
+                            qai_password)
+                run = find_run(session, sample_sheet["Experiment Name"])
 
-        with open(collated_conseqs, "rU") as f:
-            conseqs = build_conseqs(f,
-                                    run,
-                                    sample_sheet,
-                                    ok_sample_regions)
-        with open(coverage_scores, "rU") as f, \
-                open(collated_counts, "rU") as f2, \
-                open(cascade, "rU") as f3:
-            upload_review_to_qai(f,
-                                 f2,
-                                 f3,
-                                 run,
-                                 sample_sheet,
-                                 conseqs,
-                                 session,
-                                 pipeline_version)
+                with open(collated_conseqs, "rU") as f:
+                    conseqs = build_conseqs(f,
+                                            run,
+                                            sample_sheet,
+                                            ok_sample_regions)
+
+                with open(coverage_scores, "rU") as f, \
+                    open(collated_counts, "rU") as f2, \
+                    open(cascade, "rU") as f3:
+                    upload_review_to_qai(f,
+                                        f2,
+                                        f3,
+                                        run,
+                                        sample_sheet,
+                                        conseqs,
+                                        session,
+                                        pipeline_version)
+                    logger.info('Upload success!')
+                    break
+            except Exception as e:
+                logger.error('Upload to QAI FAILED')
+                attempt_count += 1
+                wait_for_retry(attempt_count)
+
 
 def upload_loop(
     qai_server,
@@ -424,32 +417,18 @@ def upload_loop(
     upload_queue,
     retry=True
 ):
-    attempt_count = 0
-    qai_available_to_start = check_qai_available(
-        qai_server,
-        qai_user,
-        qai_password
-    )
-    if not qai_available_to_start:
-        logger.error('QAI not available!')
     while True:
-        logger.info('Attempting upload to QAI {} ...'.format(attempt_count))
-        try:
-            item = upload_queue.get()
-            logger.info('upload queue item: "{}"'.format(item))
-            process_folder(
-                item,
-                qai_server,
-                qai_user,
-                qai_password,
-                pipeline_version
+        logger.info('Getting item off qai_upload_queue ...')
+        item = upload_queue.get()
+        logger.info('upload queue item: "{}"'.format(item))
+        process_folder(
+            item,
+            qai_server,
+            qai_user,
+            qai_password,
+            pipeline_version
             )
-            # Reset attempt count if successful
-            attempt_count = 0
-        except BaseException as e:
-            logger.warning('Could not upload to QAI: {}'.format(e))
-            attempt_count += 1
-            wait_for_retry(attempt_count)
+
 
 def main():
     args = parse_args()

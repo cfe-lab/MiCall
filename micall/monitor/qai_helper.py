@@ -19,8 +19,8 @@ class Session(requests.Session):
             response = self.post(qai_path + "/account/login",
                                 data={'user_login': qai_user,
                                     'user_password': password})
-        except BaseException as e:
-            raise BaseException('Could not log in to QAI')
+        except Exception as e:
+            raise RuntimeError('Could not log in to QAI') from None
         if response.status_code == requests.codes.forbidden:  # @UndefinedVariable
             raise RuntimeError("Login failed for QAI user '{}'.".format(qai_user))
 

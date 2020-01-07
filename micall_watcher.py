@@ -114,9 +114,9 @@ def parse_args(argv=None):
 
 
 def main_loop(args, sample_queue, qai_upload_queue):
-    kive_watcher = KiveWatcher(args, retry=True)
+    kive_watcher = KiveWatcher(args, qai_upload_queue=qai_upload_queue, retry=True)
     while True:
-        kive_watcher.poll_runs(qai_upload_queue)
+        kive_watcher.poll_runs()
         if kive_watcher.is_full():
             sleep(POLLING_DELAY)
         else:

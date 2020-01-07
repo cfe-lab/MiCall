@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from itertools import count
 from pathlib import Path
-from queue import Full
+from queue import Full, Queue
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -263,7 +263,7 @@ def calculate_retry_wait(min_wait, max_wait, attempt_count):
 class KiveWatcher:
     def __init__(self,
                  config=None,
-                 result_handler=lambda result_folder: None,
+                 qai_upload_queue=Queue(),
                  retry=False):
         """ Initialize.
 
@@ -280,6 +280,7 @@ class KiveWatcher:
         self.app_urls = {}  # {app_id: app_url}
         self.app_args = {}  # {app_id: {arg_name: arg_url}}
         self.external_directory_path = self.external_directory_name = None
+        self.qai_upload_queue = qai_upload_queue
 
     def is_full(self):
         active_count = sum(len(folder_watcher.active_samples)
@@ -468,7 +469,7 @@ class KiveWatcher:
         """
         self.loaded_folders.add(base_calls)
 
-    def poll_runs(self, qai_upload_queue):
+    def poll_runs(self):
         for attempt_count in count(1):
             # noinspection PyBroadException
             try:
@@ -485,7 +486,7 @@ class KiveWatcher:
                         continue
                     if (results_path / "coverage_scores.csv").exists():
                         # self.result_handler(results_path)
-                        qai_upload_queue.put(results_path)
+                        self.qai_upload_queue.put(results_path)
                     (results_path / "doneprocessing").touch()
                     if not self.folder_watchers:
                         logger.info('No more folders to process.')
