@@ -263,7 +263,7 @@ def calculate_retry_wait(min_wait, max_wait, attempt_count):
 class KiveWatcher:
     def __init__(self,
                  config=None,
-                 qai_upload_queue=Queue(),
+                 qai_upload_queue=None,
                  retry=False):
         """ Initialize.
 
@@ -280,7 +280,10 @@ class KiveWatcher:
         self.app_urls = {}  # {app_id: app_url}
         self.app_args = {}  # {app_id: {arg_name: arg_url}}
         self.external_directory_path = self.external_directory_name = None
-        self.qai_upload_queue = qai_upload_queue
+        if not qai_upload_queue:
+            self.qai_upload_queue = Queue()
+        else:
+            self.qai_upload_queue = qai_upload_queue
 
     def is_full(self):
         active_count = sum(len(folder_watcher.active_samples)
@@ -485,7 +488,6 @@ class KiveWatcher:
                     if results_path is None:
                         continue
                     if (results_path / "coverage_scores.csv").exists():
-                        # self.result_handler(results_path)
                         self.qai_upload_queue.put(results_path)
                     (results_path / "doneprocessing").touch()
                     if not self.folder_watchers:

@@ -404,7 +404,7 @@ def process_folder(result_folder,
                     logger.info('Upload success!')
                     break
             except Exception as e:
-                logger.error('Upload to QAI FAILED')
+                logger.error('Upload to QAI FAILED', exc_info=True)
                 attempt_count += 1
                 wait_for_retry(attempt_count)
 
