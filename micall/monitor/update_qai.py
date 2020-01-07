@@ -9,10 +9,14 @@ from datetime import datetime
 import logging
 from operator import itemgetter
 import os
+import traceback
+import requests
+from time import sleep
 
 from micall.monitor import qai_helper
 from micall.utils import sample_sheet_parser
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
+from .kive_watcher import wait_for_retry
 
 logger = logging.getLogger('update_qai')
 
@@ -370,29 +374,60 @@ def process_folder(result_folder,
 
     ok_sample_regions = load_ok_sample_regions(result_folder)
 
-    with qai_helper.Session() as session:
-        session.login(qai_server,
-                      qai_user,
-                      qai_password)
+    attempt_count = 0
+    while True:
+        with qai_helper.Session() as session:
+            try:
+                logger.info('Attempting upload to QAI ... attempt # {}'.format(attempt_count))
+                session.login(qai_server,
+                            qai_user,
+                            qai_password)
+                run = find_run(session, sample_sheet["Experiment Name"])
 
-        run = find_run(session, sample_sheet["Experiment Name"])
+                with open(collated_conseqs, "rU") as f:
+                    conseqs = build_conseqs(f,
+                                            run,
+                                            sample_sheet,
+                                            ok_sample_regions)
 
-        with open(collated_conseqs, "rU") as f:
-            conseqs = build_conseqs(f,
-                                    run,
-                                    sample_sheet,
-                                    ok_sample_regions)
-        with open(coverage_scores, "rU") as f, \
-                open(collated_counts, "rU") as f2, \
-                open(cascade, "rU") as f3:
-            upload_review_to_qai(f,
-                                 f2,
-                                 f3,
-                                 run,
-                                 sample_sheet,
-                                 conseqs,
-                                 session,
-                                 pipeline_version)
+                with open(coverage_scores, "rU") as f, \
+                    open(collated_counts, "rU") as f2, \
+                    open(cascade, "rU") as f3:
+                    upload_review_to_qai(f,
+                                        f2,
+                                        f3,
+                                        run,
+                                        sample_sheet,
+                                        conseqs,
+                                        session,
+                                        pipeline_version)
+                    logger.info('Upload success!')
+                    break
+            except Exception as e:
+                logger.error('Upload to QAI FAILED', exc_info=True)
+                attempt_count += 1
+                wait_for_retry(attempt_count)
+
+
+def upload_loop(
+    qai_server,
+    qai_user,
+    qai_password,
+    pipeline_version,
+    upload_queue,
+    retry=True
+):
+    while True:
+        logger.info('Getting item off qai_upload_queue ...')
+        item = upload_queue.get()
+        logger.info('upload queue item: "{}"'.format(item))
+        process_folder(
+            item,
+            qai_server,
+            qai_user,
+            qai_password,
+            pipeline_version
+            )
 
 
 def main():

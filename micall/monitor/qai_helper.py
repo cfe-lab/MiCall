@@ -15,9 +15,14 @@ class Session(requests.Session):
         """
         self.qai_path = qai_path
 
-        response = self.post(qai_path + "/account/login",
-                             data={'user_login': qai_user,
-                                   'user_password': password})
+        try:
+            response = self.post(qai_path + "/account/login",
+                                data={'user_login': qai_user,
+                                    'user_password': password})
+        except requests.exceptions.RequestException as e:
+            # from None is added to reduce logging overhead
+            # original traceback is quite long and stems from the login issue
+            raise ConnectionError('Could not log in to QAI') from None
         if response.status_code == requests.codes.forbidden:  # @UndefinedVariable
             raise RuntimeError("Login failed for QAI user '{}'.".format(qai_user))
 

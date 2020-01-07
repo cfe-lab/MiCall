@@ -8,7 +8,7 @@ import hyphyAlign
 
 from project_config import ProjectConfig
 
-def convert_fasta (lines):    
+def convert_fasta (lines):
     blocks = []
     h = None
     sequence = ''
@@ -34,9 +34,9 @@ hyphy = HyPhy._THyPhy(os.getcwd(), 1)  # @UndefinedVariable
 
 dump = hyphy.ExecuteBF('MESSAGE_LOGGING = 0;', False)
 
-hyphyAlign.change_settings(hyphy, 
-                            alphabet = hyphyAlign.nucAlphabet, 
-                            scoreMatrix = hyphyAlign.nucScoreMatrix, 
+hyphyAlign.change_settings(hyphy,
+                            alphabet = hyphyAlign.nucAlphabet,
+                            scoreMatrix = hyphyAlign.nucScoreMatrix,
                             gapOpen = 20,
                             gapOpen2 = 20,
                             gapExtend = 10,
@@ -51,7 +51,7 @@ projects = ProjectConfig.loadDefault()
 genes = ['E1', 'E2', 'NS2', 'NS3', 'NS4a', 'NS4b', 'NS5a', 'NS5b', 'core', 'p7']
 h77 = dict([(gene, projects.getReference("HCV1A-H77-{}-seed".format(gene)))
             for gene in genes])
-    
+
 with open('hcv_genes.fasta', 'w') as outfile:
     processed_subtypes = set()
     for subtype, genome in genomes:

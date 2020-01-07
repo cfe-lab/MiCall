@@ -27,7 +27,7 @@ in our [milestones].
    install Java. Check the version of Java you have installed:
 
         java -version
- 
+
 3. If the java version is lower than 1.7, then install JDK7:
 
         sudo apt-get install openjdk-7-source
@@ -35,7 +35,7 @@ in our [milestones].
 4. Check that you are now using the new version. If not, configure it.
 
         java -version
-        sudo update-alternatives --config java 
+        sudo update-alternatives --config java
         java -version
 
 5. Check the version of Python you have installed:
@@ -43,9 +43,9 @@ in our [milestones].
         python --version
 
 6. If the Python version is lower than 2.7, then install it:
-        
+
         sudo apt-get install python2.7
-        
+
 7. Install [pip the Python package manager][pip] and some packages for Python:
 
         sudo apt-get install python-pip
@@ -62,7 +62,7 @@ in our [milestones].
 
 2. Launch Eclipse. From the Help menu, choose either Eclipse Marketplace... or Install New Software....
 3. In the marketplace, just type PyDev and search. In the install wizard, use the [PyDev update site][pydev].
-4. After installing PyDev, open Window: Preferences. Navigate down to PyDev: Interpreters: Python Interpreter. 
+4. After installing PyDev, open Window: Preferences. Navigate down to PyDev: Interpreters: Python Interpreter.
 5. Click the Quick Auto-Config button. Click OK.
 6. From the File menu, choose Import.... Navigate down to Git: Projects from Git.
 7. Choose Clone URI, and paste this URI: https://github.com/cfe-lab/MiCall.git
@@ -105,17 +105,17 @@ On Windows, you can install [Anaconda Python][anaconda].
     libraries:
 
         sudo apt-get install build-essential python-dev libcurl4-openssl-dev libcrypto++-dev libssl-dev
-        
+
     On CentOS 6, the newest versions of HyPhy fail to compile.  The newest version that works is
-    v2.2.5.  In order to compile this version, assuming you're using the Software Collections `python27` package, 
+    v2.2.5.  In order to compile this version, assuming you're using the Software Collections `python27` package,
     you only need to add two packages, which you can do using `yum`:
-    
+
         sudo yum install libcurl-devel openssl-devel
 
 4. There is a newer package for HyPhy in the
     [hyphy-python project][hyphy-python]. Consider testing that before the next
     installation, but so far we've just downloaded the latest source (or v2.2.5 on CentOS 6).
-    
+
 5. Download the latest [source for HyPhy][hyphy]. Right click the zip file and choose Expand Here. Then run the setup script:
 
         cd ~/Downloads/hyphy-master/src/lib
@@ -227,7 +227,7 @@ The application is created as `dist\micall.exe`.
 
         cd ~/git/MiCall
         python -m unittest discover -p '*_test.py'
-    
+
 ### Test data ###
 If you want to run MISEQ_MONITOR.py, you have to set up data folders for raw
 data and for the working folders. You'll also need to set up the QAI project
@@ -235,7 +235,7 @@ and the MiseqQCReport so you can download QC data and upload results.
 
 1. Create a data folder somewhere on your workstation, like ~/data. Create
    subdirectories called miseq and RAW_DATA. Add folders RAW_DATA/MiSeq/runs.
-2. Connect to the shared drive [using CIFS][cifs] and mount 
+2. Connect to the shared drive [using CIFS][cifs] and mount
    smb://192.168.68.144/RAW_DATA as /media/RAW_DATA.
 3. Navigate down to /media/RAW_DATA/MiSeq/runs, pick a recent folder, and make
    sure it has a file named needsprocessing.
@@ -248,12 +248,11 @@ and the MiseqQCReport so you can download QC data and upload results.
 7. Point `home` at your local data/miseq folder.
 8. Point `rawdata_mount` at your local RAW_DATA folder.
 9. Set the Oracle connection information to a test database where you can upload
-   sequence data.
+   sequence data. (https://git-int.cfenet.ubc.ca/wscott/oracleserver)
 10. Run the Ruby console for QAI and `LabMiseqRun.import('01-Jan-2000')` for the
     date of your sample run.
-11. Run the MiSeqQCReport script to upload the QC data from the sample run
-    folder.
-12. Run MISEQ_MONITOR.py, it doesn't take any arguments.
+11. Upload the projects to a micall pipelines in QAI, use `micall.utils.projects_upload` to create a new pipeline in QAI
+11. Run micall_watcher.py, it does need arguments. Look up the container app ids from Kive, check the Kive server URL and ports as well as QAI server and port
 
 [cifs]: https://wiki.ubuntu.com/MountWindowsSharesPermanently
 
@@ -265,7 +264,7 @@ script on a run with a single sample, like this:
     python micall_basespace.py --debug_remap --all_projects --link_run /path/to/run /working/path
 
 The options tell it to write the debug files, use all projects, link to the run
-with the sample you're interested in, and put all the working files in the 
+with the sample you're interested in, and put all the working files in the
 given folder. Look through the scratch folders under the working path to find
 the one for the sample you're interested in. The remap step writes the mapping
 results as `debug_remapX_debug.sam` and `debug_remapX_debug_ref.fasta`, where
@@ -334,7 +333,7 @@ similar steps to setting up a development workstation. Follow these steps:
     `/etc/micall/micall.conf`.
 11. Update the container app ids and pipeline version number in
     `/etc/systemd/system/micall_watcher.service`. If you change the configuration, reload it:
-    
+
         sudo systemctl daemon-reload
 
 12. Check that the kiveapi package is the same version you tested with. If not,
@@ -350,7 +349,7 @@ similar steps to setting up a development workstation. Follow these steps:
         sudo systemctl start micall_watcher
         sudo systemctl status micall_watcher
         tail -f /var/log/micall/micall.log
-    
+
     If the log doesn't help, look in `/var/log/messages` on CentOS or
     `/var/log/syslog` on Ubuntu.
 
@@ -362,7 +361,7 @@ similar steps to setting up a development workstation. Follow these steps:
 
 15. Push the new image to the repository. You might have to log in to docker
     before running this.
-    
+
         sudo docker push docker.illumina.com/cfe_lab/micall:vX.Y
 
 16. Edit the `callbacks.js` in the form builder, and add the `:vX.Y` tag to the

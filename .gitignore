@@ -33,3 +33,4 @@
 *.log
 /test_samples.csv
 /venv_micall
+.vscode

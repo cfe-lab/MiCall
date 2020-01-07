@@ -96,8 +96,8 @@ class FolderWatcher:
                 is_finished = self.poll_sample_runs(sample_watcher)
             except Exception as ex:
                 raise RuntimeError(
-                    f'Polling sample group {sample_watcher.sample_group.enum} '
-                    f'failed.') from ex
+                    f'Polling sample group {sample_watcher.sample_group.enum}'
+                    f' failed.') from ex
             if is_finished:
                 self.completed_samples.update(
                     name

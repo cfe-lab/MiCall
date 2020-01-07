@@ -113,13 +113,8 @@ def parse_args(argv=None):
     return args
 
 
-def main_loop(args, sample_queue):
-    result_handler = partial(update_qai.process_folder,
-                             qai_server=args.qai_server,
-                             qai_user=args.qai_user,
-                             qai_password=args.qai_password,
-                             pipeline_version=args.pipeline_version)
-    kive_watcher = KiveWatcher(args, result_handler, retry=True)
+def main_loop(args, sample_queue, qai_upload_queue):
+    kive_watcher = KiveWatcher(args, qai_upload_queue=qai_upload_queue, retry=True)
     while True:
         kive_watcher.poll_runs()
         if kive_watcher.is_full():
@@ -143,6 +138,7 @@ def main():
     logger.info('Starting up with server %s', args.kive_server)
 
     sample_queue = Queue(maxsize=2)
+    qai_upload_queue = Queue()
     wait = True
     finder_thread = Thread(target=find_samples,
                            args=(args.raw_data,
@@ -152,8 +148,18 @@ def main():
                            daemon=True)
     finder_thread.start()
 
+    qai_upload_thread = Thread(target=update_qai.upload_loop,
+                               args=(args.qai_server,
+                                     args.qai_user,
+                                     args.qai_password,
+                                     args.pipeline_version,
+                                     qai_upload_queue
+                                ),
+                               daemon=True)
+    qai_upload_thread.start()
+
     try:
-        main_loop(args, sample_queue)
+        main_loop(args, sample_queue, qai_upload_queue)
     except KeyboardInterrupt:
         logger.info('Shutting down.')
 
