@@ -29,6 +29,9 @@ def make_blast_db(projects_json, refs_fasta):
         for name, region in projects['regions'].items():
             if region['seed_group'] is None:
                 continue
+            if name == 'HIV1-CON-XX-Consensus-seed':
+                # Only used by G2P alignment.
+                continue
             refs_fasta.write('>' + name + '\n')
             for line in region['reference']:
                 refs_fasta.write(line)

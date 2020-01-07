@@ -1,255 +1,18 @@
-import csv
 from io import StringIO
-import sys
 import unittest
 
-from micall.core.aln2counts import SequenceReport, InsertionWriter, SeedAmino, \
+from micall.core.aln2counts import InsertionWriter, SeedAmino, \
     ReportAmino
-from micall.core import project_config
-
-
-class StubbedSequenceReport(SequenceReport):
-    def __init__(self, *args, **kwargs):
-        SequenceReport.__init__(self, *args, **kwargs)
-        self.overrides = {}
-
-    def _pair_align(self, reference, query, *args, **kwargs):
-        override = self.overrides.get((reference, query))
-        return (override
-                if override is not None
-                else SequenceReport._pair_align(self, reference, query))
-
-    def add_override(self,
-                     reference,
-                     query,
-                     aligned_query,
-                     aligned_reference,
-                     score=sys.maxsize):
-        self.overrides[(reference, query)] = (aligned_reference,
-                                              aligned_query,
-                                              score)
+from micall.tests.test_aln2counts_report import create_sequence_report, prepare_reads
 
 
 # noinspection DuplicatedCode
 class SequenceReportTest(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
-        self.insertion_file = StringIO()
-        insert_writer = InsertionWriter(
-            insert_file=self.insertion_file)
-        projects = project_config.ProjectConfig()
-
-        # Content of seed regions is irrelevant. For R-NO-COORD, there is
-        # no coordinate reference, so we use the seed reference for display, but
-        # only the length matters.
-        projects.load(StringIO("""\
-{
-  "projects": {
-    "R1": {
-      "max_variants": 10,
-      "regions": [
-        {
-          "coordinate_region": "R1",
-          "seed_region_names": ["R1-seed"]
-        }
-      ]
-    },
-    "R2": {
-      "max_variants": 10,
-      "regions": [
-        {
-          "coordinate_region": "R2",
-          "seed_region_names": ["R2-seed"]
-        }
-      ]
-    },
-    "R3": {
-      "max_variants": 10,
-      "regions": [
-        {
-          "coordinate_region": "R3",
-          "seed_region_names": ["R3-seed"]
-        }
-      ]
-    },
-    "R4": {
-      "max_variants": 10,
-      "regions": [
-        {
-          "coordinate_region": "R4",
-          "seed_region_names": ["R4-seed"]
-        }
-      ]
-    },
-    "R5": {
-      "max_variants": 10,
-      "regions": [
-        {
-          "coordinate_region": "R5",
-          "seed_region_names": ["R5-seed"]
-        }
-      ]
-    },
-    "R6": {
-      "max_variants": 10,
-      "regions": [
-        {
-          "coordinate_region": "R6",
-          "seed_region_names": ["R6a-seed", "R6b-seed"]
-        }
-      ]
-    },
-    "R7": {
-      "max_variants": 10,
-      "regions": [
-        {
-          "coordinate_region": "R7a",
-          "seed_region_names": ["R7-seed"]
-        },
-        {
-          "coordinate_region": "R7b",
-          "seed_region_names": ["R7-seed"]
-        }
-      ]
-    }
-  },
-  "regions": {
-    "R1-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "AAATTTAGG"
-      ]
-    },
-    "R1": {
-      "is_nucleotide": false,
-      "reference": [
-        "KFR"
-      ]
-    },
-    "R2-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "AAATTTGGCCCGAGA"
-      ]
-    },
-    "R2": {
-      "is_nucleotide": false,
-      "reference": [
-        "KFGPR"
-      ]
-    },
-    "R3-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "AAATTTCAGACCCCACGAGAGCAT"
-      ]
-    },
-    "R3": {
-      "is_nucleotide": false,
-      "reference": [
-        "KFQTPREH"
-      ]
-    },
-    "R4-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "ATGGCAAACTCAATCAAT"
-      ]
-    },
-    "R4": {
-      "is_nucleotide": false,
-      "reference": [
-        "SIN"
-      ]
-    },
-    "R5-seed": {
-      "comment": "Coord has G that's not in seed.",
-      "is_nucleotide": true,
-      "reference": [
-        "AAATTTCCGAGA"
-      ]
-    },
-    "R5": {
-      "is_nucleotide": false,
-      "reference": [
-        "KFGPR"
-      ]
-    },
-    "R6a-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "AAATTTAGG"
-      ],
-      "seed_group": "R6-seeds"
-    },
-    "R6b-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "GGGAAATTCAGGACAGGGGGGGGG"
-      ],
-      "seed_group": "R6-seeds"
-    },
-    "R6": {
-      "is_nucleotide": false,
-      "reference": [
-        "KFR"
-      ]
-    },
-    "R7-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "AAATTTCAGACCCCACGAGAGCAT"
-      ]
-    },
-    "R7a": {
-      "is_nucleotide": false,
-      "reference": [
-        "KFQ"
-      ]
-    },
-    "R7b": {
-      "is_nucleotide": false,
-      "reference": [
-        "REH"
-      ]
-    },
-    "R-NO-COORD": {
-      "is_nucleotide": true,
-      "reference": [
-        "ACTACTACT"
-      ]
-    }
-  }
-}
-"""))
-        landmarks_yaml = """\
-- seed_pattern: R1-.*
-  coordinates: R1-seed
-  landmarks:
-    - {name: ref, start: 1, end: 9, colour: steelblue}
-- seed_pattern: R2-.*
-  coordinates: R2-seed
-  landmarks:
-    - {name: ref, start: 1, end: 15, colour: steelblue}
-- seed_pattern: R3-.*
-  coordinates: R3-seed
-  landmarks:
-    - {name: a, start: 1, end: 12, colour: lightblue}
-    - {name: z, start: 13, end: 24, colour: steelblue}
-"""
-        conseq_mixture_cutoffs = [0.1]
-        self.report = StubbedSequenceReport(insert_writer,
-                                            projects,
-                                            conseq_mixture_cutoffs,
-                                            landmarks_yaml=landmarks_yaml)
+        self.report = create_sequence_report()
         self.report_file = StringIO()
         self.detail_report_file = StringIO()
-
-    @staticmethod
-    def prepareReads(aligned_reads_text):
-        full_text = "refname,qcut,rank,count,offset,seq\n" + aligned_reads_text
-        dummy_file = StringIO(full_text)
-        return csv.DictReader(dummy_file)
 
     def testEmptyAminoReport(self):
         expected_text = ""
@@ -265,34 +28,13 @@ class SequenceReportTest(unittest.TestCase):
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
-    def testConsensusFromSingleRead(self):
-        """ In this sample, there is a single read with two codons.
-        AAA -> K
-        TTT -> F
-        """
-        # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
-R1-seed,15,0,9,0,AAATTT
-""")
-        expected_text = """\
-region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,0,AAATTT
-R1-seed,15,0.100,0,AAATTT
-"""
-
-        self.report.write_consensus_header(self.report_file)
-        self.report.read(aligned_reads)
-        self.report.write_consensus()
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
     def testConsensusFromTwoReads(self):
         """ The second read is out voted by the first one.
         CCC -> P
         GGG -> G
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTT
 R1-seed,15,0,1,0,CCCGGG
 """)
@@ -310,7 +52,7 @@ R1-seed,15,0.100,0,MMMKKK
 
     def testConsensusWithOffset(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,3,AAATTT
 R1-seed,15,0,1,7,TTGGG
 """)
@@ -329,7 +71,7 @@ R1-seed,15,0.100,3,AAATTTGGG
     def testConsensusFromPartialContig(self):
         """ Contigs with the -partial suffix report consensus. """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 1-R2-seed-partial,15,0,9,0,AAATTT
 """)
         expected_text = """\
@@ -346,7 +88,7 @@ region,q-cutoff,consensus-percent-cutoff,offset,sequence
 
     def testConsensusLowQualitySections(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,3,NNNTTT
 R1-seed,15,0,1,7,TTNGG
 """)
@@ -365,7 +107,7 @@ R1-seed,15,0.100,6,TTTxGG
 
     def testConsensusLowQuality(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,3,NNNNNN
 R1-seed,15,0,1,7,NNNNN
 """)
@@ -382,7 +124,7 @@ region,q-cutoff,consensus-percent-cutoff,offset,sequence
 
     def testConsensusLowCoverageInMiddle(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTTGGG
 R1-seed,15,0,1,0,AAAT
 R1-seed,15,0,1,6,GGG
@@ -402,7 +144,7 @@ R1-seed,15,0.100,0,AAATxxGGG
 
     def testConsensusLowCoverageAtStart(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTTGGG
 R1-seed,15,0,1,4,TTGGG
 """)
@@ -421,7 +163,7 @@ R1-seed,15,0.100,4,TTGGG
 
     def testConsensusLowCoverageAtEnd(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTTGGG
 R1-seed,15,0,1,0,AAAT
 """)
@@ -438,32 +180,6 @@ R1-seed,15,0.100,0,AAAT
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
-    def testSingleReadAminoReport(self):
-        """ In this sample, there is a single read with two codons.
-        AAA -> K
-        TTT -> F
-        The coordinate reference has three codons, so the third position is
-        empty.
-        """
-        # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
-R1-seed,15,0,9,0,AAATTT
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
-A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.write_amino_header(self.report_file)
-        self.report.read(aligned_reads)
-        self.report.write_amino_counts()
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
     def testMultiplePrefixAminoReport(self):
         """ Assemble counts from three contigs to two references.
 
@@ -474,9 +190,9 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         Contig 1 and 3 should combine into R1 with KFR.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
-        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
-        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
+        aligned_reads1 = prepare_reads("1-R1-seed,15,0,5,0,AAATTT")
+        aligned_reads2 = prepare_reads("2-R2-seed,15,0,4,0,GGCCCG")
+        aligned_reads3 = prepare_reads("3-R1-seed,15,0,2,0,TTTAGG")
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
@@ -534,10 +250,10 @@ A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,cove
 
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
-        aligned_reads2 = self.prepareReads("2-R1-seed,15,0,2,0,TT-AGG")
-        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,3,0,AAATTTAGG\n"
-                                           "3-R1-seed,15,0,1,0,AAA---AGG")
+        aligned_reads1 = prepare_reads("1-R1-seed,15,0,5,0,AAATTT")
+        aligned_reads2 = prepare_reads("2-R1-seed,15,0,2,0,TT-AGG")
+        aligned_reads3 = prepare_reads("3-R1-seed,15,0,3,0,AAATTTAGG\n"
+                                       "3-R1-seed,15,0,1,0,AAA---AGG")
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
@@ -588,9 +304,9 @@ A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,cove
         Contig 1 and 3 should combine into R1 with KFR.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
-        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
-        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
+        aligned_reads1 = prepare_reads("1-R1-seed,15,0,5,0,AAATTT")
+        aligned_reads2 = prepare_reads("2-R2-seed,15,0,4,0,GGCCCG")
+        aligned_reads3 = prepare_reads("3-R1-seed,15,0,2,0,TTTAGG")
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,\
@@ -676,104 +392,6 @@ A,C,G,T,N,del,ins,clip,v3_overlap,coverage
                                   self.detail_report_file.getvalue())
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
-    def testMultiplePrefixNucleotideReportOverlappingRegions(self):
-        """ Assemble counts from two contigs when coordinate regions overlap.
-
-        Contig 1-R1 AAATTT -> KF
-        Contig 2-R1 TTTAGG -> FR
-
-        Contig 1 and 2 should combine into R1 with KFR, but
-        """
-        self.report.projects.load(StringIO("""\
-{
-  "projects": {
-    "R1": {
-      "max_variants": 0,
-      "regions": [
-        {
-          "coordinate_region": "R1",
-          "seed_region_names": ["R1-seed"]
-        },
-        {
-          "coordinate_region": "R1-expanded",
-          "seed_region_names": ["R1-seed"]
-        }
-      ]
-    }
-  },
-  "regions": {
-    "R1-seed": {
-      "is_nucleotide": true,
-      "reference": [
-        "AAATTTAGG"
-      ]
-    },
-    "R1": {
-      "is_nucleotide": false,
-      "reference": [
-        "KFR"
-      ]
-    },
-    "R1-expanded": {
-      "is_nucleotide": false,
-      "reference": [
-        "GPKFREH"
-      ]
-    }
-  }
-}
-"""))
-        # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
-        aligned_reads2 = self.prepareReads("2-R1-seed,15,0,2,0,TTTAGG")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,\
-A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,,1,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,,2,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,,3,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,,4,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1,15,,5,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1,15,,6,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1,15,,7,2,0,0,0,0,0,0,0,0,2
-R1-seed,R1,15,,8,0,0,2,0,0,0,0,0,0,2
-R1-seed,R1,15,,9,0,0,2,0,0,0,0,0,0,2
-R1-seed,R1-expanded,15,,1,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1-expanded,15,,2,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1-expanded,15,,3,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1-expanded,15,,4,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1-expanded,15,,5,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1-expanded,15,,6,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1-expanded,15,,7,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1-expanded,15,,8,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1-expanded,15,,9,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1-expanded,15,,10,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1-expanded,15,,11,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1-expanded,15,,12,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1-expanded,15,,13,2,0,0,0,0,0,0,0,0,2
-R1-seed,R1-expanded,15,,14,0,0,2,0,0,0,0,0,0,2
-R1-seed,R1-expanded,15,,15,0,0,2,0,0,0,0,0,0,2
-R1-seed,R1-expanded,15,,16,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1-expanded,15,,17,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1-expanded,15,,18,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1-expanded,15,,19,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1-expanded,15,,20,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1-expanded,15,,21,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.write_nuc_header(self.report_file)
-        self.report.write_nuc_detail_header(self.detail_report_file)
-        self.report.read(aligned_reads1)
-        self.report.write_nuc_detail_counts()
-        self.report.combine_reports()
-        self.report.read(aligned_reads2)
-        self.report.write_nuc_detail_counts()
-        self.report.combine_reports()
-        self.report.write_nuc_counts()
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
     def testContigCoverageReport(self):
         """ Assemble counts from three contigs to two references.
 
@@ -784,9 +402,9 @@ R1-seed,R1-expanded,15,,21,0,0,0,0,0,0,0,0,0,0
         Contig 1 and 3 should combine into R1 with KFR.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
-        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
-        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
+        aligned_reads1 = prepare_reads("1-R1-seed,15,0,5,0,AAATTT")
+        aligned_reads2 = prepare_reads("2-R2-seed,15,0,4,0,GGCCCG")
+        aligned_reads3 = prepare_reads("3-R1-seed,15,0,2,0,TTTAGG")
 
         expected_text = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
@@ -829,7 +447,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
     # noinspection DuplicatedCode
     def testContigCoverageReportDeletions(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R2-seed,15,0,4,0,GGC-CG")
+        aligned_reads1 = prepare_reads("1-R2-seed,15,0,4,0,GGC-CG")
 
         expected_text = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
@@ -854,7 +472,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
     # noinspection DuplicatedCode
     def testContigCoverageReportGap(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R3-seed,15,0,4,0,AAATTTCAGCCACGAGAGCAT")
+        aligned_reads1 = prepare_reads("1-R3-seed,15,0,4,0,AAATTTCAGCCACGAGAGCAT")
         expected_text = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R3-seed,R3-seed,1,1,0,4
@@ -893,7 +511,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
     # noinspection DuplicatedCode
     def testContigCoverageReportInsertions(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads(
+        aligned_reads1 = prepare_reads(
             "1-R3-seed,15,0,4,0,AAATTTCAGACCACACCACGAGAGCAT")
         # insertion:                        ^^^
 
@@ -941,7 +559,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
     # noinspection DuplicatedCode
     def testContigCoverageReportPastReferenceEnd(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,0,AAATTTAGGGAGCAT")
+        aligned_reads1 = prepare_reads("1-R1-seed,15,0,4,0,AAATTTAGGGAGCAT")
         expected_text = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R1-seed,R1-seed,1,1,0,4
@@ -974,7 +592,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
     # noinspection DuplicatedCode
     def testContigCoverageReportPastReferenceStart(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,0,GAGCATAAATTTAGG")
+        aligned_reads1 = prepare_reads("1-R1-seed,15,0,4,0,GAGCATAAATTTAGG")
         expected_text = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R1-seed,R1-seed,1,-5,0,4
@@ -1007,7 +625,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
     # noinspection DuplicatedCode
     def testContigCoverageReportOffsetReads(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,4,10,AAATTTAGG")
+        aligned_reads1 = prepare_reads("1-R1-seed,15,0,4,10,AAATTTAGG")
         expected_text = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
 1-R1-seed,R1-seed,11,1,0,4
@@ -1039,7 +657,7 @@ region,sequence
 R3-seed,AAATTTCAGACCCCACGAGAGCAT
 """)
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("""\
+        aligned_reads1 = prepare_reads("""\
 R3-seed,15,0,4,3,TTT
 R3-seed,15,0,5,21,CAT
 """)
@@ -1069,7 +687,7 @@ R3-seed,R3-seed,24,24,0,5
         See blast.csv for best guess at alignment.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed-partial,15,0,5,0,CCCCCC")
+        aligned_reads1 = prepare_reads("1-R1-seed-partial,15,0,5,0,CCCCCC")
         contigs_csv = StringIO("""\
 ref,match,group_ref,contig
 R1-seed,1,R1-seed,CCCCCC
@@ -1101,7 +719,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
         See blast.csv for best guess at alignment.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed-reversed,15,0,5,0,CCCCCC")
+        aligned_reads1 = prepare_reads("1-R1-seed-reversed,15,0,5,0,CCCCCC")
         contigs_csv = StringIO("""\
 ref,match,group_ref,contig
 R1-seed,1,R1-seed,CCCCCC
@@ -1140,9 +758,9 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
         Contig 1 and 3 have been combined into R1 with KFR.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1_3-R1-seed,15,0,5,0,AAATTT\n"
-                                           "1_3-R1-seed,15,0,2,3,TTTAGG")
-        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
+        aligned_reads1 = prepare_reads("1_3-R1-seed,15,0,5,0,AAATTT\n"
+                                       "1_3-R1-seed,15,0,2,3,TTTAGG")
+        aligned_reads2 = prepare_reads("2-R2-seed,15,0,4,0,GGCCCG")
         contigs_csv = StringIO("""\
 ref,match,group_ref,contig
 R1-seed,1,R1-seed,AAATTT
@@ -1203,7 +821,7 @@ contig-2-R2-seed,R2-seed,6,12,,
     def testAminoReportForPartialContig(self):
         """ Contigs with the -partial suffix shouldn't be reported. """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 1-R1-seed-partial,15,0,9,0,AAATTT
 """)
 
@@ -1218,42 +836,11 @@ A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,cove
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
-    def testSingleReadNucleotideReport(self):
-        """ In this sample, there is a single read with two codons.
-        AAA -> K
-        TTT -> F
-        The coordinate reference has three codons, so the third position is
-        empty.
-        """
-        # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
-R1-seed,15,0,9,0,AAATTT
-""")
-
-        expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,1,1,9,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,2,2,9,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,4,4,0,0,0,9,0,0,0,0,0,9
-R1-seed,R1,15,5,5,0,0,0,9,0,0,0,0,0,9
-R1-seed,R1,15,6,6,0,0,0,9,0,0,0,0,0,9
-R1-seed,R1,15,,7,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,,8,0,0,0,0,0,0,0,0,0,0
-R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0,0
-"""
-
-        self.report.write_nuc_header(self.report_file)
-        self.report.read(aligned_reads)
-        self.report.write_nuc_counts()
-
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-
     def testSoftClippingNucleotideReport(self):
         """ Combine the soft clipping data with the read counts.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,2,ATTTA
 """)
         clipping = StringIO("""\
@@ -1287,7 +874,7 @@ R1-seed,R1,15,9,9,0,0,0,0,0,0,0,0,0,0
         """ Combine the soft clipping data with the read counts.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,2,ATTTA
 """)
         clipping = StringIO("""\
@@ -1324,9 +911,9 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
         Contig 1 and 3 should combine into R1 with KFR.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads1 = self.prepareReads("1-R1-seed,15,0,5,0,AAATTT")
-        aligned_reads2 = self.prepareReads("2-R2-seed,15,0,4,0,GGCCCG")
-        aligned_reads3 = self.prepareReads("3-R1-seed,15,0,2,0,TTTAGG")
+        aligned_reads1 = prepare_reads("1-R1-seed,15,0,5,0,AAATTT")
+        aligned_reads2 = prepare_reads("2-R2-seed,15,0,4,0,GGCCCG")
+        aligned_reads3 = prepare_reads("3-R1-seed,15,0,2,0,TTTAGG")
 
         clipping = StringIO("""\
 refname,pos,count
@@ -1371,7 +958,7 @@ R2-seed,R2,15,,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         """ Combine the soft clipping data with the read counts.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTT
 """)
         conseq_ins_csv = StringIO("""\
@@ -1407,7 +994,7 @@ R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0,0
         """ Combine the soft clipping data with the read counts.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTT
 """)
         conseq_ins_csv = StringIO("""\
@@ -1446,7 +1033,7 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         position should get treated as a substitution.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R4-seed,15,0,9,0,ATGGCAAACTGGATCAAT
 """)
 
@@ -1468,7 +1055,7 @@ R4-seed,R4,15,16,3,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         """ R1 has coverage 9.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTTCGA
 """)
         expected_summary = dict(avg_coverage=9.0,
@@ -1486,7 +1073,7 @@ R1-seed,15,0,9,0,AAATTTCGA
         """ R2 has coverage 9, and R1 had coverage 50. Report R1.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R2-seed,15,0,9,0,AAATTTCGA
 """)
         expected_summary = dict(avg_coverage=50.0,
@@ -1504,7 +1091,7 @@ R2-seed,15,0,9,0,AAATTTCGA
         """ Stuff mapped to the seed, but didn't align with the coordinate region.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,10,TGGTGGTGG
 """)
         expected_summary = {}
@@ -1521,7 +1108,7 @@ R1-seed,15,0,9,10,TGGTGGTGG
         of the second row will map to the reference.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,1,3,TTT
 R1-seed,15,0,8,5,TCGA
 """)
@@ -1547,7 +1134,7 @@ R1-seed,R1,15,9,9,8,0,0,0,0,0,0,0,0,8
 
     def testPartialCodonNucleotideReport(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATT
 """)
 
@@ -1572,7 +1159,7 @@ R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0,0
 
     def testPartialStartCodonNucleotideReport(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,TTAGG
 """)
 
@@ -1598,7 +1185,7 @@ R1-seed,R1,15,5,9,0,0,9,0,0,0,0,0,0,9
 
     def testReadPairGapInMiddleOfAminoReport(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,AAATTTnnnnnnnnnnnnnnnnnnTACTAC
 """)
 
@@ -1623,7 +1210,7 @@ R3-seed,R3,15,22,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
     def testLowQualityNucleotideReport(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATNT
 """)
 
@@ -1648,7 +1235,7 @@ R1-seed,R1,15,,9,0,0,0,0,0,0,0,0,0,0
 
     def testLowQualityAminoReport(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATNT
 """)
 
@@ -1668,7 +1255,7 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
     def testPartialDeletionAminoReport(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAAT-T
 """)
 
@@ -1694,7 +1281,7 @@ R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         reading frames gives the highest alignment score.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,GAAATTTCGA
 """)
 
@@ -1720,7 +1307,7 @@ R1-seed,R1,15,8,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
         reading frames gives the highest alignment score.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,GAAATTTCGA
 """)
 
@@ -1750,7 +1337,7 @@ R1-seed,R1,15,10,9,9,0,0,0,0,0,0,0,0,9
         reference.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAA---AGG
 """)
 
@@ -1780,7 +1367,7 @@ R1-seed,R1,15,9,9,0,0,9,0,0,0,0,0,0,9
         reference.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R2-seed,15,0,9,0,AAATTTCCCCGA
 """)
 
@@ -1816,7 +1403,7 @@ R2-seed,R2,15,12,15,9,0,0,0,0,0,0,0,0,9
         reference.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R2-seed,15,0,9,0,AAATTTCCCCGA
 """)
 
@@ -1840,7 +1427,7 @@ R2-seed,R2,15,10,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
         """ Coordinate and consensus are KFGPR, but seed is KFPR.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R5-seed,15,0,9,0,AAATTTGGCCCCCGA
 """)
 
@@ -1869,7 +1456,7 @@ R5-seed,R5,15,13,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
         but some variants in the sample do not have that deletion.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,5,0,AAA---CGA
 R1-seed,15,0,2,0,AAATTTCGA
 """)
@@ -1890,7 +1477,7 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,7
 
     def testDeletionNotAlignedToCodons(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,5,0,AAAC---GA
 """)
 
@@ -1916,7 +1503,7 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,5
         coordinate reference.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
 """)
 
@@ -1945,8 +1532,8 @@ R3-seed,R3,15,22,G,9,5
         self.report.write_amino_counts()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
-        self.assertMultiLineEqual(expected_insertions,
-                                  self.insertion_file.getvalue())
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
 
     def testInsertionBetweenSeedAndCoordinateNucleotideReport(self):
         """ Coordinate sequence is KFQTPREH, and this aligned read is HERKFQTGPREHQFK.
@@ -1955,7 +1542,7 @@ R3-seed,R3,15,22,G,9,5
         coordinate reference.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
 """)
         expected_text = """\
@@ -1995,7 +1582,7 @@ R3-seed,R3,15,36,24,0,0,0,9,0,0,0,0,0,9
 
     def testInsertionsSortedByCount(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
 R3-seed,15,0,8,0,CATGAGCGAAAATTTCAGACTAAACCCCGAGAGCATCAGTTTAAA
 """)
@@ -2008,12 +1595,12 @@ R3-seed,R3,15,22,K,8,5
         self.report.read(aligned_reads)
         self.report.write_insertions()
 
-        self.assertMultiLineEqual(expected_insertions,
-                                  self.insertion_file.getvalue())
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
 
     def testInsertionsSortedByLeft(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAAAAGAGCATCAGTTTAAA
 """)
         expected_insertions = """\
@@ -2025,14 +1612,14 @@ R3-seed,R3,15,31,K,9,7
         self.report.read(aligned_reads)
         self.report.write_insertions()
 
-        self.assertMultiLineEqual(expected_insertions,
-                                  self.insertion_file.getvalue())
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
 
     def testInsertionInDifferentReadingFrame(self):
         """ Delete part of the first codon to throw off the reading frame.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,AATTTCAGACTGGGCCCCGAGAGCAT
 """)
 
@@ -2046,14 +1633,14 @@ R3-seed,R3,15,12,G,9,5
         self.report.write_amino_counts()
         self.report.write_insertions()
 
-        self.assertMultiLineEqual(expected_insertions,
-                                  self.insertion_file.getvalue())
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
 
     def testInsertionInSomeReads(self):
         """ Not all reads have the insertion, some end before it.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
 R3-seed,15,1,5,0,AAATTTCAG
 R3-seed,15,2,4,0,AAATTTCAGACTG
@@ -2069,8 +1656,8 @@ R3-seed,R3,15,13,G,9,5
         self.report.write_amino_counts()
         self.report.write_insertions()
 
-        self.assertMultiLineEqual(expected_insertions,
-                                  self.insertion_file.getvalue())
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
 
     def testMultipleCoordinateInsertionReport(self):
         """ Two coordinate regions map the same seed region, the consensus
@@ -2116,7 +1703,7 @@ R3-seed,R3,15,13,G,9,5
 }
 """))
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
 """)
 
@@ -2128,8 +1715,8 @@ R3-seed,R3a,15,13,G,9,5
         self.report.read(aligned_reads)
         self.report.write_insertions()
 
-        self.assertMultiLineEqual(expected_insertions,
-                                  self.insertion_file.getvalue())
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
 
     def testGapBetweenForwardAndReverse(self):
         """ Lower-case n represents a gap between forward and reverse reads.
@@ -2139,7 +1726,7 @@ R3-seed,R3a,15,13,G,9,5
         gap are ignored, even though G is still unambiguous.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R2-seed,15,0,5,0,AAATTTGGnnCCCGA
 """)
 
@@ -2161,7 +1748,7 @@ R2-seed,R2,15,13,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,5
 
     def testFailedAlignmentAminoReport(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,2,0,TTATCCTAC
 """)
 
@@ -2174,7 +1761,7 @@ R1-seed,15,0,2,0,TTATCCTAC
 
     def testFailedAlignmentFailureReport(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,2,0,TTATCCTAC
 """)
 
@@ -2191,7 +1778,7 @@ R1-seed,R1,15,LSY,KFR
 
     def testFailedAlignmentWithHeadToTailMatch(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R3-seed,15,0,2,0,TTATCCTACTTATCCTACTTATCCAAA
 """)
 
@@ -2208,7 +1795,7 @@ R3-seed,R3,15,LSYLSYLSK,KFQTPREH
 
     def testGoodAlignmentWithTinyCoordinateReference(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,2,0,AAATTTCGATTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTAC
 """)
 
@@ -2259,7 +1846,7 @@ seed,region,qcut,queryseq,refseq
 }
 """))
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,123,AAATTTCGA
 """)
 
@@ -2279,7 +1866,7 @@ seed,region,qcut,queryseq,refseq
         the dashes in the failed alignment.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,2,3,TTATCCTAC
 """)
 
@@ -2296,7 +1883,7 @@ R1-seed,R1,15,-LSY,KFR
 
     def testMultipleCoordinateRefsNoAlignment(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R7-seed,15,0,2,0,TTATCCTAC
 """)
 
@@ -2316,7 +1903,7 @@ R7-seed,R7b,15,LSY,REH
         """ If one coordinate aligns, don't complain about the others.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R7-seed,15,0,2,0,AAATTT
 """)
 
@@ -2332,7 +1919,7 @@ seed,region,qcut,queryseq,refseq
 
     def testNoFailureReport(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTT
 """)
 
@@ -2389,7 +1976,7 @@ seed,region,qcut,queryseq,refseq
 }
 """))
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTT
 """)
 
@@ -2454,7 +2041,7 @@ R1-seed,R1b,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 }
 """))
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("""\
+        aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTT
 R1-seed,15,0,1,0,CCCGGG
 """)
@@ -2487,7 +2074,7 @@ R2,GCCATTAAA
 
     def testAlignDeletionsWithoutDeletion(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R1-seed,15,0,10,0,AAATTTAGG")
+        aligned_reads = prepare_reads("R1-seed,15,0,10,0,AAATTTAGG")
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
         expected_reads = [dict(refname='R1-seed',
                                qcut='15',
@@ -2502,7 +2089,7 @@ R2,GCCATTAAA
 
     def testAlignDeletionsNoChange(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R1-seed,15,0,10,0,AAA---AGG")
+        aligned_reads = prepare_reads("R1-seed,15,0,10,0,AAA---AGG")
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
         expected_reads = [dict(refname='R1-seed',
                                qcut='15',
@@ -2517,7 +2104,7 @@ R2,GCCATTAAA
 
     def testAlignDeletionsShiftedRight(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R1-seed,15,0,10,0,AAAA---GG")
+        aligned_reads = prepare_reads("R1-seed,15,0,10,0,AAAA---GG")
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
         expected_reads = [dict(refname='R1-seed',
                                qcut='15',
@@ -2532,7 +2119,7 @@ R2,GCCATTAAA
 
     def testAlignDeletionsShiftedLeft(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R1-seed,15,0,10,0,AA---AAGG")
+        aligned_reads = prepare_reads("R1-seed,15,0,10,0,AA---AAGG")
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
         expected_reads = [dict(refname='R1-seed',
                                qcut='15',
@@ -2547,7 +2134,7 @@ R2,GCCATTAAA
 
     def testAlignDeletionsTwoCodons(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R2-seed,15,0,10,0,AA------ACCGAGA")
+        aligned_reads = prepare_reads("R2-seed,15,0,10,0,AA------ACCGAGA")
         self.report.remap_conseqs = {'R2-seed': 'AAATTTGGCCCGAGA'}
         expected_reads = [dict(refname='R2-seed',
                                qcut='15',
@@ -2562,7 +2149,7 @@ R2,GCCATTAAA
 
     def testAlignDeletionsUsingOffset(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R1-seed,15,0,10,1,AA---AGG")
+        aligned_reads = prepare_reads("R1-seed,15,0,10,1,AA---AGG")
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
         expected_reads = [dict(refname='R1-seed',
                                qcut='15',
@@ -2602,7 +2189,7 @@ R2,GCCATTAAA
         }
         """))
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R1-seed,15,0,10,2,AAA---AGG")
+        aligned_reads = prepare_reads("R1-seed,15,0,10,2,AAA---AGG")
         self.report.remap_conseqs = {'R1-seed': 'CCAAATTTAGG'}
         expected_reads = [dict(refname='R1-seed',
                                qcut='15',
@@ -2651,7 +2238,7 @@ R2,GCCATTAAA
 }
 """))
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R-seed,15,0,10,1,AAA---CAGTTTTTTTTC---AGCAT")
+        aligned_reads = prepare_reads("R-seed,15,0,10,1,AAA---CAGTTTTTTTTC---AGCAT")
         self.report.remap_conseqs = {'R-seed': 'GAAATTTCAGTTTTTTTTCGAGAGCAT'}
         expected_reads = [dict(refname='R-seed',
                                qcut='15',
@@ -2666,7 +2253,7 @@ R2,GCCATTAAA
 
     def testCombineDeletions(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R2-seed,15,0,10,0,AA-TCG--CCCGAGA")
+        aligned_reads = prepare_reads("R2-seed,15,0,10,0,AA-TCG--CCCGAGA")
         self.report.remap_conseqs = {'R2-seed': 'AAATTTGGCCCGAGA'}
         expected_reads = [dict(refname='R2-seed',
                                qcut='15',
@@ -2681,7 +2268,7 @@ R2,GCCATTAAA
 
     def testCombineDeletionsTwoCodons(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R2-seed,15,0,10,0,AA--TC----CGAGA")
+        aligned_reads = prepare_reads("R2-seed,15,0,10,0,AA--TC----CGAGA")
         self.report.remap_conseqs = {'R2-seed': 'AAATTTGGCCCGAGA'}
         expected_reads = [dict(refname='R2-seed',
                                qcut='15',
@@ -2696,7 +2283,7 @@ R2,GCCATTAAA
 
     def testCombineDeletionsMaxSpread(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R3-seed,15,0,10,0,AA--TTCAGACCCC-CGAGAGCAT")
+        aligned_reads = prepare_reads("R3-seed,15,0,10,0,AA--TTCAGACCCC-CGAGAGCAT")
         self.report.remap_conseqs = {'R3-seed': 'AAATTTCAGACCCCACGAGAGCAT'}
         expected_reads = [dict(refname='R3-seed',
                                qcut='15',
@@ -2711,7 +2298,7 @@ R2,GCCATTAAA
 
     def testCombineDeletionsBeyondMaxSpread(self):
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R3-seed,15,0,10,0,AA--TTCAGACCCCA-GAGAGCAT")
+        aligned_reads = prepare_reads("R3-seed,15,0,10,0,AA--TTCAGACCCCA-GAGAGCAT")
         self.report.remap_conseqs = {'R3-seed': 'AAATTTCAGACCCCACGAGAGCAT'}
         expected_reads = [dict(refname='R3-seed',
                                qcut='15',
@@ -2730,7 +2317,7 @@ R2,GCCATTAAA
         Otherwise, sweeping is not allowed.
         """
         # refname,qcut,rank,count,offset,seq
-        aligned_reads = self.prepareReads("R3-seed,15,0,10,0,AA--TTCAGACCCC-CGA---CAT")
+        aligned_reads = prepare_reads("R3-seed,15,0,10,0,AA--TTCAGACCCC-CGA---CAT")
         self.report.remap_conseqs = {'R3-seed': 'AAATTTCAGACCCCACGAGAGCAT'}
         expected_reads = [dict(refname='R3-seed',
                                qcut='15',

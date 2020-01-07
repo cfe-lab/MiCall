@@ -197,9 +197,7 @@ class Sample:
                 open(self.coverage_summary_csv, 'w') as coverage_summary_csv, \
                 open(self.genome_coverage_csv, 'w') as genome_coverage_csv:
 
-            if use_denovo:
-                g2p_aligned_csv = None
-            else:
+            if not use_denovo:
                 for f in (amino_detail_csv, nuc_detail_csv):
                     f.close()
                     os.remove(f.name)
@@ -260,8 +258,8 @@ class Sample:
         logger.info('Running prelim_map on %s.', self)
         scratch_path = self.get_scratch_path()
         with open(self.prelim_csv, 'w') as prelim_csv:
-            prelim_map(self.g2p_unmapped1_fastq,
-                       self.g2p_unmapped2_fastq,
+            prelim_map(self.trimmed1_fastq,
+                       self.trimmed2_fastq,
                        prelim_csv,
                        work_path=scratch_path,
                        excluded_seeds=excluded_seeds)
@@ -277,8 +275,8 @@ class Sample:
                 open(self.unmapped1_fastq, 'w') as unmapped1, \
                 open(self.unmapped2_fastq, 'w') as unmapped2:
 
-            remap(self.g2p_unmapped1_fastq,
-                  self.g2p_unmapped2_fastq,
+            remap(self.trimmed1_fastq,
+                  self.trimmed2_fastq,
                   prelim_csv,
                   remap_csv,
                   counts_csv,
