@@ -1453,6 +1453,7 @@ def aln2counts(aligned_csv,
                              excluded_regions={'V3LOOP'})
         if g2p_aligned_csv is not None:
             report.nuc_detail_writer = report.amino_detail_writer = None
+            report.combined_reports.clear()
             if report.remap_conseqs is not None:
                 report.remap_conseqs[G2P_SEED_NAME] = projects.getReference(
                     G2P_SEED_NAME)

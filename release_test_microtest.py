@@ -177,7 +177,8 @@ class ResultsFolder:
                                           'conseq.csv'))
         regions = set(map(itemgetter('region'), conseq_rows))
         if self.is_denovo:
-            expected_regions = {'2-HIV1-B-FR-K03455-seed',
+            expected_regions = {'HIV1-CON-XX-Consensus-seed',
+                                '2-HIV1-B-FR-K03455-seed',
                                 '3-HIV1-B-FR-K03455-seed',
                                 '1-HCV-1a'}
         else:
@@ -190,10 +191,12 @@ class ResultsFolder:
         amino_rows = list(self.read_file('2110A-V3LOOP_S13', 'amino.csv'))
         assert amino_rows
         for row in amino_rows:
+            pos = int(row['refseq.aa.pos'])
             if row['region'] == 'GP120':
+                if pos == 304:
+                    check_amino_row(row, coverage=23, ins=4)
                 continue
             assert row['region'] == 'V3LOOP', row['region']
-            pos = int(row['refseq.aa.pos'])
             if pos == 6:
                 check_amino_row(row, coverage=23, stop_codons=1)
             elif pos == 7:
@@ -201,9 +204,7 @@ class ResultsFolder:
             elif pos == 8:
                 check_amino_row(row, coverage=20, partial=3)
             elif pos == 9:
-                # G2P doesn't currently handle inserts.
-                expected_inserts = 4 if self.is_denovo else 0
-                check_amino_row(row, coverage=23, ins=expected_inserts)
+                check_amino_row(row, coverage=23)
             elif pos == 10:
                 check_amino_row(row, coverage=23, dels=4)
             elif pos < 18:
@@ -330,10 +331,8 @@ class ResultsFolder:
             coverage = int(row['coverage'])
             coverage_message = f'{coverage} coverage at {pos}'
             if row['region'] == 'GP120':
-                # TODO: assert seed, after fixing #486.
-                if row['seed'] == 'HIV1-CON-XX-Consensus-seed':
-                    pass
-                elif pos < 50:
+                assert row['seed'] == 'HIV1-B-FR-K03455-seed', row['seed']
+                if pos < 50:
                     assert coverage < 10, coverage_message
                 elif 80 < pos < 180:
                     assert 10 < coverage, coverage_message
@@ -341,6 +340,7 @@ class ResultsFolder:
                     assert coverage < 10, coverage_message
             else:
                 assert row['region'] == 'V3LOOP', row['region']
+                assert row['seed'] == 'HIV1-CON-XX-Consensus-seed', row['seed']
                 assert 10 < coverage, coverage_message
 
 
