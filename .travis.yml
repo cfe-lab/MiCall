@@ -38,6 +38,7 @@ script:
   - python release_test_microtest.py micall.simg
 
 after_success:
-    - rm -rf micall/tests/microtest/scratch
-    - pip install codecov
-    - codecov
+  - pip list
+  - rm -rf micall/tests/microtest/scratch
+  - pip install codecov
+  - codecov

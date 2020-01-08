@@ -8,6 +8,10 @@ logger = logging.getLogger('qai_helper')
 
 
 class Session(requests.Session):
+    def __init__(self):
+        super().__init__()
+        self.qai_path = None
+
     def login(self, qai_path, qai_user, password):
         """ Login to QAI before calling post_json or get_json.
 
@@ -15,16 +19,10 @@ class Session(requests.Session):
         """
         self.qai_path = qai_path
 
-        try:
-            response = self.post(qai_path + "/account/login",
-                                data={'user_login': qai_user,
-                                    'user_password': password})
-        except requests.exceptions.RequestException as e:
-            # from None is added to reduce logging overhead
-            # original traceback is quite long and stems from the login issue
-            raise ConnectionError('Could not log in to QAI') from None
-        if response.status_code == requests.codes.forbidden:  # @UndefinedVariable
-            raise RuntimeError("Login failed for QAI user '{}'.".format(qai_user))
+        response = self.post(qai_path + "/account/login",
+                             data={'user_login': qai_user,
+                                   'user_password': password})
+        response.raise_for_status()
 
     def _retry_json(self, method, path, data=None, retries=3):
         json_data = data and json.dumps(data)
@@ -34,6 +32,7 @@ class Session(requests.Session):
         retries_remaining = retries
         average_delay = 20
         while True:
+            # noinspection PyBroadException
             try:
                 response = method(
                     self.qai_path + path,
@@ -50,7 +49,7 @@ class Session(requests.Session):
 
                 # ten minutes with some noise
                 sleep_seconds = average_delay + Random().uniform(-10, 10)
-                logger.warn(
+                logger.warning(
                     'JSON request failed. Sleeping for %ss before retry.',
                     sleep_seconds,
                     exc_info=True)
@@ -71,7 +70,6 @@ class Session(requests.Session):
     def get_json(self, path, retries=3):
         """ Get a JSON object from the web server.
 
-        @param session an open HTTP session
         @param path the relative path to add to QAI server path
         @param retries: the number of times to retry the request before failing.
         @return the response body, parsed as a JSON object

@@ -9,9 +9,6 @@ from datetime import datetime
 import logging
 from operator import itemgetter
 import os
-import traceback
-import requests
-from time import sleep
 
 from micall.monitor import qai_helper
 from micall.utils import sample_sheet_parser
@@ -377,11 +374,11 @@ def process_folder(result_folder,
     attempt_count = 0
     while True:
         with qai_helper.Session() as session:
+            # noinspection PyBroadException
             try:
-                logger.info('Attempting upload to QAI ... attempt # {}'.format(attempt_count))
                 session.login(qai_server,
-                            qai_user,
-                            qai_password)
+                              qai_user,
+                              qai_password)
                 run = find_run(session, sample_sheet["Experiment Name"])
 
                 with open(collated_conseqs, "rU") as f:
@@ -391,43 +388,48 @@ def process_folder(result_folder,
                                             ok_sample_regions)
 
                 with open(coverage_scores, "rU") as f, \
-                    open(collated_counts, "rU") as f2, \
-                    open(cascade, "rU") as f3:
+                        open(collated_counts, "rU") as f2, \
+                        open(cascade, "rU") as f3:
                     upload_review_to_qai(f,
-                                        f2,
-                                        f3,
-                                        run,
-                                        sample_sheet,
-                                        conseqs,
-                                        session,
-                                        pipeline_version)
+                                         f2,
+                                         f3,
+                                         run,
+                                         sample_sheet,
+                                         conseqs,
+                                         session,
+                                         pipeline_version)
                     logger.info('Upload success!')
                     break
-            except Exception as e:
-                logger.error('Upload to QAI FAILED', exc_info=True)
+            except Exception:
                 attempt_count += 1
                 wait_for_retry(attempt_count)
 
 
-def upload_loop(
-    qai_server,
-    qai_user,
-    qai_password,
-    pipeline_version,
-    upload_queue,
-    retry=True
-):
+def upload_loop(qai_server,
+                qai_user,
+                qai_password,
+                pipeline_version,
+                upload_queue):
+    # noinspection PyBroadException
+    try:
+        with qai_helper.Session() as session:
+            # Try logging in to QAI, just so we learn about problems at launch.
+            session.login(qai_server,
+                          qai_user,
+                          qai_password)
+    except Exception:
+        logger.error('Unable to log in to QAI.', exc_info=True)
+
     while True:
-        logger.info('Getting item off qai_upload_queue ...')
         item = upload_queue.get()
-        logger.info('upload queue item: "{}"'.format(item))
+        if item is None:
+            break
         process_folder(
             item,
             qai_server,
             qai_user,
             qai_password,
-            pipeline_version
-            )
+            pipeline_version)
 
 
 def main():

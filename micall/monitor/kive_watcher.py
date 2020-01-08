@@ -94,12 +94,15 @@ def find_samples(raw_data_folder,
             attempt_count = 0  # Reset after success
             if is_complete and not wait:
                 break
-        except Exception:
+        except Exception as ex:
             if not retry:
                 raise
-            logger.error("Failed while finding samples.", exc_info=True)
             attempt_count += 1
-            wait_for_retry(attempt_count)
+
+            # There's an intermittent problem accessing the network drive, so
+            # don't log those unless it's happened more than once.
+            is_logged = not isinstance(ex, BlockingIOError) or attempt_count > 1
+            wait_for_retry(attempt_count, is_logged)
 
 
 def get_version_key(version_path: Path):
@@ -245,11 +248,12 @@ def get_output_filename(output_name):
     return '.'.join(output_name.rsplit('_', 1))
 
 
-def wait_for_retry(attempt_count):
+def wait_for_retry(attempt_count, is_logged=True):
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT,
                                  MAXIMUM_RETRY_WAIT,
                                  attempt_count)
-    logger.error('Waiting %s before retrying.', delay, exc_info=True)
+    if is_logged:
+        logger.error('Waiting %s before retrying.', delay, exc_info=True)
     sleep(delay.total_seconds())
 
 
@@ -268,7 +272,7 @@ class KiveWatcher:
         """ Initialize.
 
         :param config: command line arguments
-        :param result_handler: called when a run folder has collated all the
+        :param qai_upload_queue: notified when a run folder has collated all the
             results into a result folder
         :param bool retry: should the main methods retry forever?
         """

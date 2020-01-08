@@ -1,5 +1,4 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
-from functools import partial
 import logging.config
 import os
 from pathlib import Path
@@ -137,8 +136,8 @@ def main():
     args = parse_args()
     logger.info('Starting up with server %s', args.kive_server)
 
-    sample_queue = Queue(maxsize=2)
-    qai_upload_queue = Queue()
+    sample_queue = Queue(maxsize=2)  # [FolderEvent]
+    qai_upload_queue = Queue()  # [Path] for results folders or [None] to quit.
     wait = True
     finder_thread = Thread(target=find_samples,
                            args=(args.raw_data,
@@ -153,15 +152,17 @@ def main():
                                      args.qai_user,
                                      args.qai_password,
                                      args.pipeline_version,
-                                     qai_upload_queue
-                                ),
+                                     qai_upload_queue),
                                daemon=True)
     qai_upload_thread.start()
 
     try:
         main_loop(args, sample_queue, qai_upload_queue)
+
+        qai_upload_queue.put(None)
+        qai_upload_thread.join()
     except KeyboardInterrupt:
-        logger.info('Shutting down.')
+        logger.info('Shut down requested.')
 
 
 if __name__ == '__main__':
