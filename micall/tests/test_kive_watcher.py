@@ -1013,6 +1013,85 @@ def test_poll_first_sample(raw_data_with_two_samples, mock_open_kive, default_co
                        dataset='/datasets/104')]))
 
 
+def test_poll_second_folder(raw_data_with_two_runs, mock_open_kive, default_config):
+    # raw_data = create_run_folder(tmpdir, '140101_M01234', '2000A*.fastq')
+    # create_run_folder(tmpdir, '140201_M01234', '2010A*.fastq')
+    base_calls = (raw_data_with_two_runs /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    base_calls2 = (raw_data_with_two_runs /
+                   "MiSeq/runs/140201_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    mock_session.endpoints.batches.post.return_value = dict(url='/batches/101')
+    mock_session.endpoints.datasets.post.return_value = dict(url='/datasets/104',
+                                                             id=104)
+
+    kive_watcher = KiveWatcher(default_config)
+    kive_watcher.app_urls = {
+        default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
+    kive_watcher.app_args = {
+        default_config.micall_filter_quality_pipeline_id: dict(
+            quality_csv='/containerargs/103')}
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls2,
+        sample_group=SampleGroup('2010A',
+                                 ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.poll_runs()  # Start filter run for folder 1.
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2000A',
+                                 ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.poll_runs()  # Check filter run 1 and start filter run 2.
+
+    fetch_count_before = mock_session.endpoints.containerruns.get.call_count
+    kive_watcher.poll_runs()  # Only check filter run 2.
+    fetch_count_after = mock_session.endpoints.containerruns.get.call_count
+
+    assert fetch_count_after - fetch_count_before == 1
+
+
+def test_poll_all_folders(raw_data_with_two_runs, mock_open_kive, default_config):
+    # raw_data = create_run_folder(tmpdir, '140101_M01234', '2000A*.fastq')
+    # create_run_folder(tmpdir, '140201_M01234', '2010A*.fastq')
+    base_calls = (raw_data_with_two_runs /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    base_calls2 = (raw_data_with_two_runs /
+                   "MiSeq/runs/140201_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    mock_session.endpoints.batches.post.return_value = dict(url='/batches/101')
+    mock_session.endpoints.datasets.post.return_value = dict(url='/datasets/104',
+                                                             id=104)
+
+    kive_watcher = KiveWatcher(default_config)
+    kive_watcher.app_urls = {
+        default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
+    kive_watcher.app_args = {
+        default_config.micall_filter_quality_pipeline_id: dict(
+            quality_csv='/containerargs/103')}
+
+    kive_watcher.add_sample_group(
+        base_calls=base_calls2,
+        sample_group=SampleGroup('2010A',
+                                 ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.poll_runs()  # Start filter run for folder 1.
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2000A',
+                                 ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.poll_runs()  # Check filter run 1 and start filter run 2.
+    kive_watcher.poll_runs()  # Only check filter run 2.
+
+    fetch_count_before = mock_session.endpoints.containerruns.get.call_count
+    kive_watcher.poll_runs()  # No new samples, check all.
+    fetch_count_after = mock_session.endpoints.containerruns.get.call_count
+
+    assert fetch_count_after - fetch_count_before == 2
+
+
 def test_poll_first_sample_twice(raw_data_with_two_samples, mock_open_kive, default_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")

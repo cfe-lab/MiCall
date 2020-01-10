@@ -481,8 +481,12 @@ class KiveWatcher:
             # noinspection PyBroadException
             try:
                 self.check_session()
+                poll_only_new_runs = any(
+                    folder_watcher.has_new_runs
+                    for folder_watcher in self.folder_watchers.values())
                 completed_folders = []
                 for folder, folder_watcher in self.folder_watchers.items():
+                    folder_watcher.poll_only_new_runs = poll_only_new_runs
                     folder_watcher.poll_runs()
                     if folder in self.loaded_folders and folder_watcher.is_complete:
                         completed_folders.append(folder)

@@ -43,7 +43,9 @@ class FolderWatcher:
         self.filter_quality_run = None
         self.bad_cycles_dataset = None
         self.active_runs = {}  # {run_id: ([sample_watcher], pipeline_type)}
+        self.new_runs = set()  # {run_id}
         self.completed_samples = set()  # {fastq1_name}
+        self.poll_only_new_runs = False
 
     def __repr__(self):
         return f'FolderWatcher({str(self.base_calls_folder)!r})'
@@ -215,6 +217,10 @@ class FolderWatcher:
                  is_mixed_hcv_complete) or
                 sample_watcher.is_failed)
 
+    @property
+    def has_new_runs(self):
+        return bool(self.new_runs)
+
     def run_pipeline(self, pipeline_type, sample_watcher=None):
         if sample_watcher and sample_watcher.is_failed:
             # Don't start runs when the sample has already failed.
@@ -229,6 +235,7 @@ class FolderWatcher:
             sample_watchers, _ = self.active_runs.setdefault(run['id'],
                                                              ([], pipeline_type))
             sample_watchers.append(sample_watcher)
+            self.new_runs.add(run['id'])
         if pipeline_type == PipelineType.FILTER_QUALITY:
             self.filter_quality_run = run
         else:
@@ -236,7 +243,14 @@ class FolderWatcher:
 
     def fetch_run_status(self, run):
         sample_watchers, pipeline_type = self.active_runs[run['id']]
+        try:
+            self.new_runs.remove(run['id'])
+            is_new = True
+        except KeyError:
+            is_new = False
         is_complete = False
+        if self.poll_only_new_runs and not is_new:
+            return is_complete
         try:
             new_run = self.runner.fetch_run_status(run,
                                                    self,
