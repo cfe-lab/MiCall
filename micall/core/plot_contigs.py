@@ -381,6 +381,7 @@ def build_contig(reader,
         start = contig_rows[0][pos_field]
         end = contig_rows[-1][pos_field]
         coverage = [0] * (end - start + 1)
+        pos = 0
         for contig_row in contig_rows:
             pos = contig_row[pos_field]
             if pos is None:
@@ -399,6 +400,13 @@ def build_contig(reader,
                         blast_ranges[blast_num-1][0] = pos
                     for blast_num in blast_ends[event_pos]:
                         blast_ranges[blast_num-1][1] = pos
+        while event_positions:
+            # Use up any events that went past the end of the contig.
+            event_pos = event_positions.pop()
+            for blast_num in blast_starts[event_pos]:
+                blast_ranges[blast_num - 1][0] = pos
+            for blast_num in blast_ends[event_pos]:
+                blast_ranges[blast_num - 1][1] = pos
 
         arrows = []
         for arrow_start, arrow_end, blast_num in blast_ranges:

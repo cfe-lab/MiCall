@@ -669,6 +669,66 @@ Coverage 5x2, 7, 5x3
     assert summarize_figure(figure) == expected_figure
 
 
+def test_plot_genome_coverage_blast_past_end():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1a,HCV-1a,1,8001,0,0,5
+1-HCV-1a,HCV-1a,2,8002,0,0,5
+1-HCV-1a,HCV-1a,3,8003,0,0,7
+1-HCV-1a,HCV-1a,4,8004,0,0,5
+1-HCV-1a,HCV-1a,5,8005,0,0,5
+1-HCV-1a,HCV-1a,6,8006,0,0,5
+""")
+    blast_csv = StringIO("""\
+contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
+1,HCV-1g,30,0.33,90,1,2,5001,5002
+1,HCV-1a,40,0.33,100,5,10,7010,7005
+1,HCV-1a,50,0.5,100,1,3,8001,8003
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
+7005<-1.2--7010, 8001--1.1->8003
+8001--1.1->8003, 8005--1.2->8006
+Coverage 5x2, 7, 5x3
+[8001-8006], 1-HCV-1a - depth 7(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, blast_csv)
+
+    assert summarize_figure(figure) == expected_figure
+
+
+def test_plot_genome_coverage_blast_past_start():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1a,HCV-1a,3,8003,0,0,7
+1-HCV-1a,HCV-1a,4,8004,0,0,5
+1-HCV-1a,HCV-1a,5,8005,0,0,5
+1-HCV-1a,HCV-1a,6,8006,0,0,5
+""")
+    blast_csv = StringIO("""\
+contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
+1,HCV-1g,30,0.33,90,1,2,5001,5002
+1,HCV-1a,40,0.33,100,5,6,7006,7005
+1,HCV-1a,50,0.5,100,1,3,8001,8003
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
+7005<-1.2--7006, 8001--1.1->8003
+8003--1.1->8003, 8005--1.2->8006
+Coverage 7, 5x3
+[8003-8006], 1-HCV-1a - depth 7(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, blast_csv)
+
+    assert summarize_figure(figure) == expected_figure
+
+
 def test_plot_genome_coverage_blast_aligns_refs():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
