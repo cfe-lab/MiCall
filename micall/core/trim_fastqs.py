@@ -13,11 +13,6 @@ from io import TextIOWrapper
 
 from micall.utils.externals import CutAdapt
 
-# version of cutadapt, used for version control
-CUT_ADAPT_VERSION = '2.7'
-# path to executable, so you can install more than one version
-CUT_ADAPT_PATH = 'cutadapt'
-
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -65,7 +60,7 @@ def trim(original_fastq_filenames,
                                         ['avg_quality', 'base_count'],
                                         lineterminator=os.linesep)
         summary_writer.writeheader()
-    cut_adapt = CutAdapt(CUT_ADAPT_VERSION, CUT_ADAPT_PATH)
+    cut_adapt = CutAdapt()
 
     censored_filenames = [filename + '.censored.fastq'
                           for filename in trimmed_fastq_filenames]

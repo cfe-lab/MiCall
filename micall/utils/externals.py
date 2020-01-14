@@ -47,12 +47,12 @@ class CommandWrapper(AssetWrapper):
         except AttributeError:
             pass
         kwargs.setdefault('universal_newlines', True)
-        kwargs.setdefault('stdin', sys.stdin)
         final_args = self.build_args(args or [])
         try:
             return subprocess.check_output(final_args, *popenargs, **kwargs)
         except OSError as ex:
-            ex.strerror += ' for command {}'.format(final_args)
+            original_error = ex.strerror or 'Failed'
+            ex.strerror = f'{original_error} for command {final_args}.'
             raise
 
     def create_process(self, args=None, *popenargs, **kwargs):
@@ -143,7 +143,9 @@ class CommandWrapper(AssetWrapper):
                                                     self.build_args(args))
 
     def validate_version(self, version_found):
-        if self.version != version_found:
+        if self.version is None:
+            self.version = version_found
+        elif self.version != version_found:
             message = '{} version incompatibility: expected {}, found {}'.format(
                 self.path,
                 self.version,
@@ -152,7 +154,7 @@ class CommandWrapper(AssetWrapper):
 
 
 class CutAdapt(CommandWrapper):
-    def __init__(self, version, execname='cutadapt', logger=None, **kwargs):
+    def __init__(self, version=None, execname='cutadapt', logger=None, **kwargs):
         super(CutAdapt, self).__init__(version, execname, logger, **kwargs)
         stdout = self.check_output(['--version'], stderr=subprocess.STDOUT)
         version_found = stdout.split('\n')[0].split()[-1]
