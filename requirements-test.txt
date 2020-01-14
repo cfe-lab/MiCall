@@ -9,4 +9,4 @@ seaborn==0.9.0
 ete3
 
 # For reading HCV rules from an Excel file.
-openpyxl==3.0.2
+openpyxl==3.0.3
