@@ -120,12 +120,17 @@ def main_loop(args, sample_queue, qai_upload_queue):
             sleep(POLLING_DELAY)
         else:
             try:
-                folder_event = sample_queue.get(timeout=POLLING_DELAY)
-                if folder_event.type == FolderEventType.ADD_SAMPLE:
-                    kive_watcher.add_sample_group(folder_event.base_calls,
-                                                  folder_event.sample_group)
-                else:
-                    kive_watcher.finish_folder(folder_event.base_calls)
+                while True:
+                    folder_event = sample_queue.get(timeout=POLLING_DELAY)
+                    if folder_event.type == FolderEventType.ADD_SAMPLE:
+                        sample_watcher = kive_watcher.add_sample_group(
+                            folder_event.base_calls,
+                            folder_event.sample_group)
+                        if sample_watcher is None or not sample_watcher.runs:
+                            # It's a new sample, so go through the polling loop.
+                            break
+                    else:
+                        kive_watcher.finish_folder(folder_event.base_calls)
             except Empty:
                 if args.quit and kive_watcher.is_idle():
                     logger.info('Shutting down.')

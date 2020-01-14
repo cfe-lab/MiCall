@@ -78,6 +78,17 @@ class FolderWatcher:
         return active_samples
 
     @property
+    def active_run_count(self):
+        if self.is_folder_failed:
+            return 0
+        if self.filter_quality_run['id'] in self.active_runs:
+            # Individual runs are waiting for filter quality. Return all.
+            all_samples = set(self.all_samples)
+            return len(all_samples - self.completed_samples)
+
+        return len(self.active_runs)
+
+    @property
     def is_complete(self):
         return self.is_folder_failed or not self.active_samples
 

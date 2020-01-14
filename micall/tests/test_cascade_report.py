@@ -24,7 +24,7 @@ mapped,valid,X4calls,X4pct,final,validpct
 """)
         expected_report = """\
 demultiplexed,v3loop,g2p,prelim_map,remap,aligned
-100,100,90,0,0,0
+0,100,90,0,0,0
 """
 
         report.generate()
@@ -52,7 +52,7 @@ demultiplexed,v3loop,g2p,prelim_map,remap,aligned
         self.assertEqual(expected_report, report.cascade_csv.getvalue())
 
     def test_g2p_inputs_remapped(self):
-        report = CascadeReport(StringIO(), is_g2p_remapped=True)
+        report = CascadeReport(StringIO())
         report.g2p_summary_csv = StringIO("""\
 mapped,valid,X4calls,X4pct,final,validpct
 100,90,0,0.00,,90.00
@@ -136,7 +136,7 @@ x,50
 """)
         expected_report = """\
 demultiplexed,v3loop,g2p,prelim_map,remap,aligned
-240,90,80,100,120,90
+150,90,80,100,120,90
 """
 
         report.generate()

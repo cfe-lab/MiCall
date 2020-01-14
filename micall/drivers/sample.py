@@ -246,8 +246,7 @@ class Sample:
                 open(self.remap_counts_csv) as remap_counts_csv, \
                 open(self.aligned_csv) as aligned_csv, \
                 open(self.cascade_csv, 'w') as cascade_csv:
-            cascade_report = CascadeReport(cascade_csv,
-                                           is_g2p_remapped=use_denovo)
+            cascade_report = CascadeReport(cascade_csv)
             cascade_report.g2p_summary_csv = g2p_summary_csv
             cascade_report.remap_counts_csv = remap_counts_csv
             cascade_report.aligned_csv = aligned_csv

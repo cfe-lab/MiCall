@@ -43,6 +43,7 @@ class Scenarios(IntEnum):
     OTHER_CONSENSUS_CHANGED = 4
     CONSENSUS_DELETIONS_CHANGED = 8
     VPR_FRAME_SHIFT_FIXED = 16
+    CONSENSUS_EXTENDED = 32
 
 
 differ = Differ()
@@ -409,6 +410,12 @@ def compare_consensus(sample,
                 (scenarios_reported & Scenarios.CONSENSUS_DELETIONS_CHANGED)):
             scenarios[Scenarios.CONSENSUS_DELETIONS_CHANGED].append('.')
             continue
+        if source_seq and target_seq:
+            stripped_source_seq = source_seq.strip('x')
+            stripped_target_seq = target_seq.strip('x')
+            if stripped_source_seq in stripped_target_seq:
+                scenarios[Scenarios.CONSENSUS_EXTENDED].append('.')
+                continue
         if (use_denovo and
                 is_main and
                 seed == 'HIV1-B' and
@@ -536,7 +543,8 @@ def main():
     # noinspection PyTypeChecker
     scenarios_reported = (Scenarios.OTHER_CONSENSUS_CHANGED |
                           Scenarios.CONSENSUS_DELETIONS_CHANGED |
-                          Scenarios.VPR_FRAME_SHIFT_FIXED)
+                          Scenarios.VPR_FRAME_SHIFT_FIXED |
+                          Scenarios.CONSENSUS_EXTENDED)
     results = pool.imap(partial(compare_sample,
                                 scenarios_reported=scenarios_reported,
                                 use_denovo=args.denovo),

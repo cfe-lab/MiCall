@@ -290,7 +290,7 @@ class KiveWatcher:
             self.qai_upload_queue = qai_upload_queue
 
     def is_full(self):
-        active_count = sum(len(folder_watcher.active_samples)
+        active_count = sum(folder_watcher.active_run_count
                            for folder_watcher in self.folder_watchers.values())
         return active_count >= self.config.max_active
 
