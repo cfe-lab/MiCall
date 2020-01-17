@@ -964,9 +964,9 @@ R1-seed,15,0,9,0,AAATTT
         conseq_ins_csv = StringIO("""\
 qname,fwd_rev,refname,pos,insert,qual
 Example_read_1,F,R1-seed,3,AAC,AAA
+Example_read_3,F,R2-seed,6,GTA,AAA
 Example_read_2,F,R1-seed,3,AAC,AAA
 Example_read_2,R,R1-seed,3,AAC,AAA
-Example_read_3,F,R2-seed,6,GTA,AAA
 """)
 
         expected_text = """\

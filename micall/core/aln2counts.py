@@ -452,14 +452,18 @@ class SequenceReport(object):
 
     def read_insertions(self, conseq_ins_csv):
         reader = csv.DictReader(conseq_ins_csv)
-        for refname, rows in groupby(reader, itemgetter('refname')):
-            insertion_names = defaultdict(set)  # {pos: set([qname])}
-            for row in rows:
-                pos = int(row['pos'])
-                pos_names = insertion_names[pos]
-                pos_names.add(row['qname'])
-            self.conseq_insertion_counts[refname] = Counter(
-                {pos: len(names) for pos, names in insertion_names.items()})
+
+        # {ref: {pos: set([qname])}}
+        insertion_names = defaultdict(lambda: defaultdict(set))
+
+        for row in reader:
+            ref_name = row['refname']
+            pos = int(row['pos'])
+            pos_names = insertion_names[ref_name][pos]
+            pos_names.add(row['qname'])
+        for ref_name, ref_positions in insertion_names.items():
+            self.conseq_insertion_counts[ref_name] = Counter(
+                {pos: len(names) for pos, names in ref_positions.items()})
 
     @staticmethod
     def _create_amino_writer(amino_file):
