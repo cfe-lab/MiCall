@@ -2,9 +2,12 @@
 .idea
 bin
 micall/tests/working
+micall/tests/microtest/scratch
+micall/tests/microtest/Results
+micall/utils/hcv_reference_tree
 venv_micall
 *.pyc
 */*.pyc
 */*/*.pyc
 */*/*/*.pyc
-*.simg
+simgs

@@ -1,6 +1,6 @@
 language: python
 python:
-    - "3.6"
+    - "3.8"
 before_install:
   - mkdir -p ~/bin
   - export PATH=$PATH:~/bin

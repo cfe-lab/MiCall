@@ -60,7 +60,7 @@ From: centos:7
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
     yum install -q -y https://centos7.iuscommunity.org/ius-release.rpm
-    yum install -q -y python36 python36-devel unzip wget fontconfig bzip2-devel xz-devel
+    yum install -q -y python38 python38-devel unzip wget fontconfig bzip2-devel xz-devel
 
     echo ===== Installing Rust and merge-mates ===== >/dev/null
     yum install -q -y rust cargo
@@ -72,7 +72,7 @@ From: centos:7
     wget https://github.com/cfe-lab/MiCall/releases/download/v7.12.dev28/ncbi-blast-2.6.0+-1.x86_64.rpm
     yum install -q -y ncbi-blast-2.6.0+-1.x86_64.rpm
     rm ncbi-blast-2.6.0+-1.x86_64.rpm
-    python3.6 /opt/micall/micall/blast_db/make_blast_db.py
+    python3 /opt/micall/micall/blast_db/make_blast_db.py
 
 
     ## Miniconda (Python 2) (Don't use this)
@@ -117,7 +117,7 @@ From: centos:7
     echo ===== Installing Python packages ===== >/dev/null
     # Also trigger matplotlib to build its font cache.
     wget -q https://bootstrap.pypa.io/get-pip.py
-    python3.6 get-pip.py
+    python3 get-pip.py
     rm get-pip.py
     cd /opt
     pip install --quiet -r /opt/micall/requirements.txt
@@ -128,7 +128,7 @@ From: centos:7
     yum install -q -y cairo-devel cairo cairo-tools zlib-devel
 
     yum groupremove -q -y 'development tools'
-    yum remove -q -y epel-release wget python36-devel unzip
+    yum remove -q -y epel-release wget python38-devel unzip
     yum autoremove -q -y
     yum clean all
 
