@@ -60,7 +60,7 @@ From: centos:7
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
     yum install -q -y https://centos7.iuscommunity.org/ius-release.rpm
-    yum install -q -y python38 python38-devel unzip wget fontconfig bzip2-devel xz-devel
+    yum install -q -y python37 python37-devel unzip wget fontconfig bzip2-devel xz-devel
 
     echo ===== Installing Rust and merge-mates ===== >/dev/null
     yum install -q -y rust cargo
@@ -128,7 +128,7 @@ From: centos:7
     yum install -q -y cairo-devel cairo cairo-tools zlib-devel
 
     yum groupremove -q -y 'development tools'
-    yum remove -q -y epel-release wget python38-devel unzip
+    yum remove -q -y epel-release wget python37-devel unzip
     yum autoremove -q -y
     yum clean all
 
