@@ -45,7 +45,7 @@ def main():
     except CalledProcessError as ex:
         if ex.returncode == errno.EPERM:
             raise PermissionError(
-                'Root permission required for Docker.') from ex
+                'Docker build failed. Do you have root permission?') from ex
         raise
     check_call(['docker', 'push', repository_name])
     if args.agent_id is None:

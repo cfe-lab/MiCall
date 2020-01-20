@@ -60,7 +60,18 @@ From: centos:7
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
     yum install -q -y https://centos7.iuscommunity.org/ius-release.rpm
-    yum install -q -y python37 python37-devel unzip wget fontconfig bzip2-devel xz-devel
+    yum install -q -y unzip wget fontconfig bzip2-devel xz-devel openssl-devel libffi-devel
+
+    echo ===== Installing Python ===== >/dev/null
+    wget -q https://www.python.org/ftp/python/3.7.6/Python-3.7.6.tgz
+    tar xzf Python*
+    rm Python*.tgz
+    cd Python*
+    ./configure --enable-optimizations
+    make altinstall
+    cd ..
+    rm -rf Python*
+    ln -s /usr/local/bin/python3.7 /usr/local/bin/python3
 
     echo ===== Installing Rust and merge-mates ===== >/dev/null
     yum install -q -y rust cargo
@@ -128,7 +139,7 @@ From: centos:7
     yum install -q -y cairo-devel cairo cairo-tools zlib-devel
 
     yum groupremove -q -y 'development tools'
-    yum remove -q -y epel-release wget python37-devel unzip
+    yum remove -q -y epel-release wget unzip
     yum autoremove -q -y
     yum clean all
 
@@ -139,7 +150,7 @@ From: centos:7
     ## To switch back to python2, use this command:
     # sudo alternatives --set python /usr/bin/python2
     alternatives --install /usr/bin/python python /usr/bin/python2 50
-    alternatives --install /usr/bin/python python /usr/bin/python3 60
+    alternatives --install /usr/bin/python python /usr/local/bin/python3 60
 
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin

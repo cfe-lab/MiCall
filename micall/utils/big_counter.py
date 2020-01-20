@@ -61,9 +61,11 @@ class BigCounter:
 
     def items(self):
         item_count = 0
+        readers = []
         active_keys = sorted(self.active_counts)
-        readers = [(dict(key=key, count=self.active_counts[key])
-                    for key in active_keys)]
+        if active_keys:
+            readers.append((dict(key=key, count=self.active_counts[key])
+                            for key in active_keys))
         for cache_file_name in self.cache_files:
             readers.append(DictReader(read_cache_lines(cache_file_name),
                                       ['key', 'count']))

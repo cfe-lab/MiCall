@@ -38,3 +38,9 @@ class BigCounterTest(TestCase):
         with BigCounter(FILE_PREFIX) as counter:
             with self.assertRaisesRegex(TypeError, 'Key was not a string: 23'):
                 counter[23] = 5
+
+    def test_empty(self):
+        with BigCounter(FILE_PREFIX) as counter:
+            items = list(counter.items())
+
+        self.assertEqual(items, [])
