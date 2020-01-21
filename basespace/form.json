@@ -13,14 +13,6 @@
             "id": "app-session-name"
         },
         {
-            "$type": "RunChooser",
-            "size": 250,
-            "label": "Run",
-            "required": false,
-            "id": "run-id",
-            "helpText": "A run does not have to be provided, however run quality information can only be produced if the selected samples were from the provided run"
-        },
-        {
             "$type": "ResourceMatcher",
         	"required": true,
         	"id": "sample-ids",
@@ -49,7 +41,7 @@
             "$type": "CheckBox",
             "id": "reports",
             "label": "Resistance Reports",
-            "helpText": "Select which resistance reports to generate: Protease / Reverse Transcriptase or Integrase.",
+            "helpText": "Resistance reports to generate: Protease / Reverse Transcriptase, Integrase, or Hepatitis C.",
             "choices": [
                 {
                     "value": "PR_RT",
@@ -65,6 +57,23 @@
                     "value": "NS3_NS5a_NS5b",
                     "label": "HCV: NS3/NS5a/NS5b",
                     "checked": true
+                }
+            ]
+        },
+        {
+            "$type": "RadioButton",
+            "id": "builder",
+            "label": "Consensus Builder",
+            "helpText": "How to build all the reads into a consensus sequence.",
+            "value": "remapped",
+            "choices": [
+                {
+                    "value": "remapped",
+                    "label": "Remapped"
+                },
+                {
+                    "value": "denovo",
+                    "label": "De Novo Assembled"
                 }
             ]
         },

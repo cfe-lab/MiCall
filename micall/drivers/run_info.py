@@ -14,7 +14,8 @@ class RunInfo:
                  scratch_path=None,
                  output_path=None,
                  read_sizes=None,
-                 href_app_session=None):
+                 href_app_session=None,
+                 is_denovo=False):
         """ Initialize the run details.
 
         :param list[Sample] sample_groups: list of sample details
@@ -24,6 +25,8 @@ class RunInfo:
         :param str output_path: folder to write all the output files in
         :param ReadSizes read_sizes: details from run parameters
         :param str href_app_session: identifier for BaseSpace
+        :param bool is_denovo: should the reads be assembled, instead of
+            remapped?
         """
         self.sample_groups = sample_groups
         self.reports = reports
@@ -38,6 +41,7 @@ class RunInfo:
                                                           'bad_tiles.csv')
         self.read_sizes = read_sizes
         self.href_app_session=href_app_session
+        self.is_denovo = is_denovo
 
     def get_all_samples(self):
         for sample_group in self.sample_groups:

@@ -15,7 +15,7 @@ RUN wget -qO rustup.sh https://sh.rustup.rs && \
     /rustup.sh -y -q && \
     . /root/.cargo/env && \
     rm rustup.sh && \
-    cargo install --git https://github.com/jeff-k/merge-mates.git
+    cargo install --root / --git https://github.com/jeff-k/merge-mates.git
 
 ## Installing blast
 RUN apt-get update -qq --fix-missing && \

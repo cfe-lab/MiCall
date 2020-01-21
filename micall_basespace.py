@@ -230,6 +230,11 @@ def load_samples(data_path):
                                    'results')
         makedirs(output_path)
         reports = arg_map['Input.reports']['Items']
+        builder_node = arg_map.get('Input.builder')
+        if builder_node is None:
+            is_denovo = False
+        else:
+            is_denovo = builder_node['Content'] == 'denovo'
 
         scratch_path = os.path.join(data_path, 'scratch')
         sample_groups = []
@@ -239,7 +244,8 @@ def load_samples(data_path):
                            scratch_path,
                            output_path,
                            read_sizes,
-                           href_app_session)
+                           href_app_session,
+                           is_denovo)
         main_samples = arg_map['Input.sample-ids.main']['Items']
         midi_samples = arg_map['Input.sample-ids.midi']['Items']
         for main_sample_json, midi_sample_json in zip(main_samples, midi_samples):
@@ -314,7 +320,7 @@ def load_sample(sample_json, data_path, scratch_path):
     return sample
 
 
-def link_samples(run_path, data_path):
+def link_samples(run_path: str, data_path: str, is_denovo: bool):
     """ Load the data from a run folder into the BaseSpace layout. """
 
     shutil.rmtree(data_path, ignore_errors=True)
@@ -339,7 +345,8 @@ def link_samples(run_path, data_path):
                        interop_path=interop_path,
                        scratch_path=scratch_path,
                        output_path=output_path,
-                       read_sizes=read_sizes)
+                       read_sizes=read_sizes,
+                       is_denovo=is_denovo)
 
     fastq_files = list(glob(os.path.join(run_path,
                                          'Data',
@@ -620,7 +627,7 @@ def main():
                 multiprocessing.cpu_count())
     args = parse_args()
     if args.link_run is not None:
-        run_info = link_samples(args.link_run, args.data_path)
+        run_info = link_samples(args.link_run, args.data_path, args.denovo)
     else:
         run_info = load_samples(args.data_path)
     pssm = Pssm()
@@ -642,7 +649,7 @@ def main():
     pool.map(functools.partial(process_sample,
                                args=args,
                                pssm=pssm,
-                               use_denovo=args.denovo),
+                               use_denovo=run_info.is_denovo),
              run_info.get_all_samples())
 
     pool.close()
