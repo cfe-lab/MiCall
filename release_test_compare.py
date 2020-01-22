@@ -44,6 +44,7 @@ class Scenarios(IntEnum):
     CONSENSUS_DELETIONS_CHANGED = 8
     VPR_FRAME_SHIFT_FIXED = 16
     CONSENSUS_EXTENDED = 32
+    INSERTIONS_ADDED = 64
 
 
 differ = Differ()
@@ -410,6 +411,13 @@ def compare_consensus(sample,
                 (scenarios_reported & Scenarios.CONSENSUS_DELETIONS_CHANGED)):
             scenarios[Scenarios.CONSENSUS_DELETIONS_CHANGED].append('.')
             continue
+        if MICALL_VERSION == '7.12' and source_seq and target_seq:
+            stripped_source_seq = source_seq.replace('i', '')
+            stripped_target_seq = target_seq.replace('i', '')
+            if (stripped_source_seq == stripped_target_seq and
+                    len(source_seq) < len(target_seq)):
+                scenarios[Scenarios.INSERTIONS_ADDED].append('.')
+                continue
         if source_seq and target_seq:
             stripped_source_seq = source_seq.strip('x')
             stripped_target_seq = target_seq.strip('x')
