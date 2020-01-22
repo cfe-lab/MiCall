@@ -82,9 +82,10 @@ class FolderWatcher:
         if self.is_folder_failed:
             return 0
         if self.filter_quality_run['id'] in self.active_runs:
-            # Individual runs are waiting for filter quality. Return all.
+            # Individual runs are waiting for filter quality.
+            # Return 2 * number of samples, because each can launch 2 runs.
             all_samples = set(self.all_samples)
-            return len(all_samples - self.completed_samples)
+            return 2 * len(all_samples - self.completed_samples)
 
         return len(self.active_runs)
 

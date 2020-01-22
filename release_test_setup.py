@@ -248,7 +248,7 @@ def main():
               args.pipeline_version,
               'for runs in',
               args.samples_csv)
-        with open(args.samples_csv, 'rU') as samples_csv:
+        with open(args.samples_csv, 'r') as samples_csv:
             samples = [Sample(row['run'], row['enum'], args)
                        for row in DictReader(samples_csv)]
     qai_run_names = set()

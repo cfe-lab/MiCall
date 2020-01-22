@@ -520,9 +520,11 @@ def zip_folder(parent_path, folder_name):
     source_path = os.path.join(parent_path, folder_name)
     zip_filename = os.path.join(parent_path, folder_name + '.zip')
     with ZipFile(zip_filename, mode='w', compression=ZIP_DEFLATED) as zip_file:
-        for filename in os.listdir(source_path):
-            zip_file.write(os.path.join(source_path, filename),
-                           os.path.join(folder_name, filename))
+        for dirpath, dirnames, filenames in os.walk(source_path):
+            relpath = os.path.relpath(dirpath, source_path)
+            for filename in filenames:
+                zip_file.write(os.path.join(dirpath, filename),
+                               os.path.join(folder_name, relpath, filename))
 
 
 def collate_samples(run_info):
