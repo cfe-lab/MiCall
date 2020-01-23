@@ -83,9 +83,17 @@ class FolderWatcher:
             return 0
         if self.filter_quality_run['id'] in self.active_runs:
             # Individual runs are waiting for filter quality.
-            # Return 2 * number of samples, because each can launch 2 runs.
+            # Return n * number of samples, because each can launch n runs.
+            n = sum(pipeline_id is not None
+                    for pipeline_id in (
+                        self.runner.config.micall_main_pipeline_id,
+                        self.runner.config.denovo_main_pipeline_id,
+                        self.runner.config.mixed_hcv_pipeline_id,
+                        self.runner.config.denovo_pipeline_id,
+                        self.runner.config.denovo_combined_pipeline_id))
+
             all_samples = set(self.all_samples)
-            return 2 * len(all_samples - self.completed_samples)
+            return n * len(all_samples - self.completed_samples)
 
         return len(self.active_runs)
 
