@@ -6,6 +6,7 @@ if (length(args) != 2) {
 input.csv <- args[1]
 out.prefix <- args[2]
 
+
 df <- read.csv(input.csv)
 
 # guess if this is a nuc or amino CSV

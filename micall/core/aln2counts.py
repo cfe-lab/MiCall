@@ -487,8 +487,17 @@ class SequenceReport(object):
     def write_consensus_header(self, conseq_file):
         self._create_consensus_writer(conseq_file).writeheader()
 
-    def write_consensus(self, conseq_file):
+    def write_consensus(self, conseq_file, min_coverage=100):
+        """
+        Generate nucleotide consensus sequences at varying mixture
+        cutoffs, and write to user-specified file.
+        :param conseq_file: csv.DictWriter object
+        :param min_coverage: depth of coverage below which the nucleotide
+        will be reported in lower-case.
+        :return:
+        """
         conseq_writer = self._create_consensus_writer(conseq_file)
+
         for mixture_cutoff in self.conseq_mixture_cutoffs:
             consensus = ''
             offset = None
@@ -496,16 +505,21 @@ class SequenceReport(object):
                 if offset is None:
                     if not seed_amino.counts:
                         continue
-                    offset = seed_amino.consensus_index*3
+                    offset = seed_amino.consensus_index * 3
+
                 for seed_nuc in seed_amino.nucleotides:
-                    consensus += seed_nuc.get_consensus(mixture_cutoff)
+                    cnuc = seed_nuc.get_consensus(mixture_cutoff)
+                    coverage = sum(seed_nuc.counts.values())
+                    consensus += cnuc.upper() if (coverage >= min_coverage) else cnuc.lower()
+
             if offset is not None:
-                conseq_writer.writerow(
-                    {'region': self.seed,
-                     'q-cutoff': self.qcut,
-                     'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
-                     'offset': offset,
-                     'sequence': consensus})
+                conseq_writer.writerow({
+                    'region': self.seed,
+                    'q-cutoff': self.qcut,
+                    'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
+                    'offset': offset,
+                    'sequence': consensus
+                })
 
     def _create_nuc_variants_writer(self, nuc_variants_file):
         return csv.DictWriter(nuc_variants_file,
@@ -813,7 +827,8 @@ def aln2counts(aligned_csv,
                failed_align_csv=None,
                nuc_variants_csv=None,
                callback=None,
-               coverage_summary_csv=None):
+               coverage_summary_csv=None,
+               json=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -827,11 +842,15 @@ def aln2counts(aligned_csv,
     @param nuc_variants_csv:    Open file handle to write the most frequent nucleotide sequence
                                 variants.
     @param callback: a function to report progress with three optional
-        parameters - callback(message, progress, max_progress)
-    @param coverage_summary_csv Open file handle to write coverage depth.
+                     parameters - callback(message, progress, max_progress)
+    @param coverage_summary_csv:  Open file handle to write coverage depth.
+    @param json:  specify a custom JSON project file; None loads the default file.
     """
     # load project information
-    projects = project_config.ProjectConfig.loadDefault()
+    if json is None:
+        projects = project_config.ProjectConfig.loadDefault()
+    else:
+        projects = project_config.ProjectConfig.load(json)
 
     # initialize reporter classes
     insert_writer = InsertionWriter(coord_ins_csv)

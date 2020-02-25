@@ -1,4 +1,4 @@
-import StringIO
+from io import StringIO
 import unittest
 
 from micall.core.censor_fastq import censor

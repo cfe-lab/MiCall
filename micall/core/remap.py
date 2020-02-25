@@ -383,7 +383,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv=None,
           bt2_path='bowtie2', bt2build_path='bowtie2-build-s',
           nthreads=BOWTIE_THREADS, callback=None, count_threshold=10,
           rdgopen=READ_GAP_OPEN, rfgopen=REF_GAP_OPEN, stderr=sys.stderr,
-          gzip=False, debug_file_prefix=None, keep=False):
+          gzip=False, debug_file_prefix=None, keep=False, json=None):
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
@@ -404,6 +404,7 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv=None,
     @param count_threshold:  minimum number of reads that map to a region for it to be remapped
     @param rdgopen: read gap open penalty
     @param rfgopen: reference gap open penalty
+    @param json:  specify a custom JSON project file; None loads the default file.
     """
 
     reffile = os.path.join(work_path, 'temp.fasta')
@@ -441,7 +442,11 @@ def remap(fastq1, fastq2, prelim_csv, remap_csv, remap_counts_csv=None,
     worker_pool = multiprocessing.Pool(processes=nthreads) if nthreads > 1 else None
 
     # retrieve reference sequences used for preliminary mapping
-    projects = project_config.ProjectConfig.loadDefault()
+    if json is None:
+        projects = project_config.ProjectConfig.loadDefault()
+    else:
+        projects = project_config.ProjectConfig.load(json)
+
     seeds = {}
     for seed, vals in projects.config['regions'].items():
         seqs = vals['reference']

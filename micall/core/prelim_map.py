@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Shipyard-style bowtie2
@@ -37,7 +37,7 @@ def prelim_map(fastq1, fastq2, prelim_csv,
                bt2_path='bowtie2', bt2build_path='bowtie2-build-s',
                nthreads=BOWTIE_THREADS, callback=None,
                rdgopen=READ_GAP_OPEN, rfgopen=REF_GAP_OPEN, stderr=sys.stderr,
-               gzip=False, work_path='', keep=False):
+               gzip=False, work_path='', keep=False, json=None):
     """ Run the preliminary mapping step.
 
     @param fastq1: the file name for the forward reads in FASTQ format
@@ -52,6 +52,8 @@ def prelim_map(fastq1, fastq2, prelim_csv,
     @param stderr: where to write the standard error output from bowtie2 calls.
     @param gzip: if True, FASTQ files are compressed
     @param work_path:  optional path to store working files
+    @param keep: if False, delete temporary files
+    @param json: specify a custom JSON project file; None loads the default file.
     """
 
     bowtie2 = Bowtie2(execname=bt2_path)
@@ -92,7 +94,11 @@ def prelim_map(fastq1, fastq2, prelim_csv,
                  max_progress=total_reads)
 
     # generate initial reference files
-    projects = project_config.ProjectConfig.loadDefault()
+    if json is None:
+        projects = project_config.ProjectConfig.loadDefault()
+    else:
+        projects = project_config.ProjectConfig.load(json)
+
     ref_path = os.path.join(work_path, 'micall.fasta')
     with open(ref_path, 'w') as ref:
         projects.writeSeedFasta(ref)

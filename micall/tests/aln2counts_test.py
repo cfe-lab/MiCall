@@ -1,5 +1,5 @@
 import csv
-import StringIO
+from io import StringIO
 import sys
 import unittest
 
@@ -30,7 +30,7 @@ class StubbedSequenceReport(SequenceReport):
                      query,
                      aligned_query,
                      aligned_reference,
-                     score=sys.maxint):
+                     score=sys.maxsize):
         self.overrides[(reference, query)] = (aligned_reference,
                                               aligned_query,
                                               score)
@@ -38,7 +38,7 @@ class StubbedSequenceReport(SequenceReport):
 
 class SequenceReportTest(unittest.TestCase):
     def setUp(self):
-        self.insertion_file = StringIO.StringIO()
+        self.insertion_file = StringIO()
         insert_writer = InsertionWriter(
             insert_file=self.insertion_file)
         projects = project_config.ProjectConfig()
@@ -46,7 +46,7 @@ class SequenceReportTest(unittest.TestCase):
         # Content of seed regions is irrelevant. For R-NO-COORD, there is
         # no coordinate reference, so we use the seed reference for display, but
         # only the length matters.
-        projects.load(StringIO.StringIO("""\
+        projects.load(StringIO("""\
 {
   "projects": {
     "R1": {
@@ -148,11 +148,11 @@ class SequenceReportTest(unittest.TestCase):
         self.report = StubbedSequenceReport(insert_writer,
                                             projects,
                                             conseq_mixture_cutoffs)
-        self.report_file = StringIO.StringIO()
+        self.report_file = StringIO()
 
     def prepareReads(self, aligned_reads_text):
         full_text = "refname,qcut,rank,count,offset,seq\n" + aligned_reads_text
-        dummy_file = StringIO.StringIO(full_text)
+        dummy_file = StringIO(full_text)
         return csv.DictReader(dummy_file)
 
     def testEmptyAminoReport(self):
@@ -643,7 +643,7 @@ R3-seed,R3,15,5,G,9,5
         """ Two coordinate regions map the same seed region, the consensus
         has an insertion relative to only one of them.
         """
-        self.report.projects.load(StringIO.StringIO("""\
+        self.report.projects.load(StringIO("""\
 {
   "projects": {
     "R3": {
@@ -788,7 +788,7 @@ R1-seed,15,0,2,0,AAATTTCGATTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTACTTATCCTAC
         Even when the consensus maps to the end of the seed, it should still
         only require a low alignment score.
         """
-        self.report.projects.load(StringIO.StringIO("""\
+        self.report.projects.load(StringIO("""\
 {
   "projects": {
     "R3": {
