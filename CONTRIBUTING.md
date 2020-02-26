@@ -312,6 +312,8 @@ similar steps to setting up a development workstation. Follow these steps:
     signed off to begin the release process.
 8. Upload the Singularity image to the main Kive server, and
     record the id of the new apps.
+8. Upload the pipeline definitions to QAI, using the `projects_upload.py`
+    script.
 8. Stop the micall_watcher service on the main Kive server after you check that
     it's not processing any important runs.
 
@@ -357,7 +359,7 @@ similar steps to setting up a development workstation. Follow these steps:
     from GitHub. Tag it with the release number. See the bash scripts above for
     an easy way to do this.
 
-    sudo docker build -t docker.illumina.com/cfe_lab/micall:vX.Y https://github.com/cfe-lab/MiCall.git
+        sudo docker build -t docker.illumina.com/cfe_lab/micall:vX.Y https://github.com/cfe-lab/MiCall.git
 
 15. Push the new image to the repository. You might have to log in to docker
     before running this.

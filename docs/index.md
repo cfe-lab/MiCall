@@ -1,6 +1,6 @@
 ---
 title: MiCall
-description: Processing FASTQ data from an Illumina MiSeq ##
+description: Processing FASTQ data from an Illumina MiSeq
 ---
 
 Maps all the reads from a sample against a set of reference sequences, then
@@ -37,7 +37,25 @@ example, if you want to run a changed version of the program on a network server
 without publishing the changed source code, [contact us][contact] about
 purchasing a license.
 
+## Third Party Components ##
+MiCall makes use of several open-source tools. Here is a list of tools with
+their licenses.
+
+Requests is distributed under the Apache 2.0 license.
+
+Python 3 is distributed under the [Python 3 license][python].
+
+Bowtie2 and Python-Levenshtein are distributed under the GNU General Public License (GPL).
+
+Matplotlib is distributed under the [Matplotlib license][matplotlib].
+
+Reportlab is distributed under the BSD license.
+
+Pyyaml and Cutadapt are distributed under the MIT license.
+
+
 [gnu]: http://www.gnu.org/licenses/
 [github]: https://github.com/cfe-lab/MiCall
-[contact]: http://www.google.com/recaptcha/mailhide/d?k=01yIEKHPqcNIG1ecF-Khum4g==&c=SnES_swjOvb0d22WN4Q30vx9gKyzHNDkTxbY6Y1os4w=
-
+[contact]: mailto:micalldev@cfenet.ubc.ca
+[python]: https://docs.python.org/3/license.html
+[matplotlib]: http://matplotlib.org/users/license.html
