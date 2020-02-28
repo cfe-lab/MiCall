@@ -64,7 +64,6 @@ def find_primers(contigs_csv, probes_csv):
     for target_name in primer_targets:
         for column_type in [
             'probe_hxb2_start',
-            # 'probe_seq',
             'full_real_primer_seq',
             'in_probe_start',
             'in_probe_size',
@@ -93,7 +92,6 @@ def find_primers(contigs_csv, probes_csv):
         contig_num = 0
         unique_samples += 1
         for row in sample_rows:
-            # import pdb; pdb.set_trace()
             total += 1
             seed_name = row.get('genotype') or row.get('ref') or row['region']
             conseq_cutoff = row.get('consensus-percent-cutoff')
@@ -128,8 +126,6 @@ def find_primers(contigs_csv, probes_csv):
             for key in columns:
                 if key not in ['sample', 'contig', 'seqlen', 'error', 'sequence']:
                     new_row[key] = None
-            # print(sample_name, contig_name)
-            # interesting_sample = '1693-1HIN2HE20-HIV_S70'
             for end, seq in [(5, prime5_seq), (3, prime3_seq)]:
                 if end == 5:
                     name = 'fwd_primer2'
@@ -142,19 +138,14 @@ def find_primers(contigs_csv, probes_csv):
                     hxb2_target_end = primer_targets[name]['hxb2_end']
                     hxb2_target_seq = hxb2[hxb2_target_start:hxb2_target_end]
                 primer = None
-                # if 'X' in seq.upper():
-                #     skipped[uname] = 'x in sequence'
-                #     new_row[prefix + 'error'] = skipped[uname]
-                #     break
-                # Handle Xs
 
                 # DEBUG INTERESTING SAMPLE
-                interesting_sample = 'JLAT4CP-6-HIV_S105'
-                if (
-                    (sample_name == interesting_sample)
-                    & (seed_name == '1-1-HIV1-B-FR-K03455-seed')
-                ):
-                    import pdb; pdb.set_trace()
+                # interesting_sample = 'JLAT4CP-6-HIV_S105'
+                # if (
+                #     (sample_name == interesting_sample)
+                #     & (seed_name == '1-1-HIV1-B-FR-K03455-seed')
+                # ):
+                #     import pdb; pdb.set_trace()
 
                 if 'X' in seq:
                     seqlen = len(seq)
@@ -167,7 +158,6 @@ def find_primers(contigs_csv, probes_csv):
                 finder.start += hxb2_target_start
                 prefix = name + '_'
                 new_row[prefix + 'probe_hxb2_start'] = finder.start
-                # new_row[prefix + 'probe_seq'] = seq
                 new_row[prefix + 'full_real_primer_seq'] = primer_targets[name]['sequence']
 
                 # If the segment overlaps the primer
@@ -176,14 +166,12 @@ def find_primers(contigs_csv, probes_csv):
                     if primer['error']:
                         skipped[uname] = primer['error']
                         new_row[prefix + 'error'] = skipped[uname]
-                        # break
                 else:
                     if primer_targets[name]['hxb2_start'] - probelen > finder.start:
                         skipped[uname] = f'{end} contig probe ends before hxb2 primer start'
                     elif finder.start > primer_targets[name]['hxb2_end']:
                         skipped[uname] = f'{end} contig probe starts after hxb2 primer end'
                     new_row[prefix + 'error'] = skipped[uname]
-                    # break
                     primer = validate_primer(finder, seq, primer_targets[name], hxb2_target_seq)
                     if primer['error']:
                         skipped[uname] = primer['error']
@@ -205,7 +193,6 @@ def find_primers(contigs_csv, probes_csv):
                 new_row[prefix + 'overhang'] = primer['overhang']
                 new_row[prefix + 'dist'] = primer['dist']
                 new_row[prefix + 'actual_primer_seq'] = primer['real_primer']
-            # if uname not in skipped:
             writer.writerow(new_row)
             viable += 1
     with open(f'{probes_csv.name}.counts.csv', 'w') as o:
@@ -282,22 +269,6 @@ def validate_primer(finder, finder_seq, target, hxb2_target, tolerance=1):
     # Get the primer sequence of the finder sequence
     primer_in_finder = finder_seq[primer_in_finder_start_coord:primer_in_finder_end_coord]
 
-    # Check primer
-    # if target['hxb2_start'] == 9603:
-    #     if primer_in_finder[:6] != target['sequence'][:6]:
-    #         try:
-    #             index = primer_in_finder.index(target['sequence'][:6])
-    #             import pdb; pdb.set_trace()
-    #         except ValueError:
-    #             pass
-    # else:
-    #     if primer_in_finder[:6] != target['sequence'][-6:]:
-    #         try:
-    #             index = primer_in_finder.index(target['sequence'][-6:])
-    #             import pdb; pdb.set_trace()
-    #         except ValueError:
-    #             pass
-
     # Get the sequence of the true primer that overlaps the finder sequence
     primer_start_coord = max(
         0,
@@ -322,18 +293,12 @@ def validate_primer(finder, finder_seq, target, hxb2_target, tolerance=1):
     }
 
     if len(real_primer) != len(primer_in_finder):
-        logger.warning('Real primer did not match length of primer in finder!')
-        # logger.warning(f'Contig seq: {finder.contig_match}')
-        # logger.warning(f'Contig start in hxb2: {finder.start}')
-        # logger.warning(f'primer_in_finder: {primer_in_finder}')
-        # logger.warning(f'real_primer: {real_primer}')
+        result['error'] = 'Real primer did not match length of primer in finder'
+        return result
     if not real_primer:
-        # return {'error': 'real primer not found at expected coordinates'}
         result['error'] = 'real primer not found at expected coordinates'
-        # import pdb; pdb.set_trace()
         return result
     elif not primer_in_finder:
-        # return {'error': 'primer in contig sequence not found at expected coordinates'}
         result['error'] = 'primer in contig sequence not found at expected coordinates'
         return result
     for i in range(len(real_primer)):
@@ -348,10 +313,7 @@ def validate_primer(finder, finder_seq, target, hxb2_target, tolerance=1):
             else:
                 result['dist'] += 1
         if result['dist'] > tolerance:
-            # return {'error': 'mismatches in primer > tolerance'}
             result['error'] = 'mismatches in primer > tolerance'
-            # import pdb; pdb.set_trace()
-            # return result
     return result
 
 
