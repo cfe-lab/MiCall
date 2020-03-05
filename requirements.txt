@@ -11,5 +11,5 @@ cutadapt==2.8
 python-Levenshtein==0.12.0
 PyYAML==5.3
 reportlab==3.5.34
-pysam==0.15.3
+pysam==0.15.4
 git+https://github.com/cfe-lab/genetracks.git@v0.2.dev0
