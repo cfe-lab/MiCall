@@ -7,6 +7,11 @@ from operator import itemgetter
 import logging
 import os
 import pandas as pd
+import subprocess
+import requests
+import io
+import zipfile
+import shutil
 
 import Levenshtein
 from gotoh import align_it
@@ -17,16 +22,93 @@ from micall.utils.probe_finder import ProbeFinder
 
 logger = logging.getLogger('micall')
 
+class Hivseqinr:
+
+
+    def __init__(self, outpath, fasta):
+        self.url = 'https://github.com/guineverelee/HIVSeqinR/raw/master/HIVSeqinR_ver2.7.1.zip'
+        self.outpath = outpath
+        self.fasta = fasta
+        self.download()
+        self.make_blast_dir()
+        self.fix_wds()
+        self.copy_fasta()
+        self.run()
+
+
+    def copy_fasta(self):
+        raw_fastas_path = os.path.join(self.outpath, 'RAW_FASTA')
+        os.mkdir(raw_fastas_path)
+        shutil.copyfile(self.fasta, raw_fastas_path)
+        return True
+
+
+    def make_blast_dir(self):
+        dbdir = '/'.join((self.outpath, 'hxb2_blast_db'))
+        os.mkdir(dbdir)
+        hxb2_path = '/'.join((dbdir, 'HXB2.fasta'))
+        shutil.copyfile(
+            '/'.join((self.outpath, 'R_HXB2.fasta')),
+            hxb2_path
+        )
+        cmd = [
+            'makeblastdb',
+            '-in',
+            hxb2_path,
+            '-parse_seqids',
+            '-dbtype',
+            'nucl'
+        ]
+        self.dbdir = dbdir
+        job = subprocess.run(cmd)
+        return job
+
+
+    def download(self):
+        response = requests.get(self.url)
+        file_like_object = io.BytesIO(response.content)
+        zipfile_obj = zipfile.ZipFile(file_like_object)
+        if not os.path.isdir(self.outpath):
+            os.mkdir(self.outpath)
+        zipfile_obj.extractall(self.outpath)
+        return True
+
+
+    def fix_wds(self):
+        rscript_path = '/'.join((self.outpath, 'R_HIVSeqinR_Combined_ver09_ScrambleFix.R'))
+        new_rscript_path = '/'.join((self.outpath, 'modified.R'))
+        self.new_rscript_path = new_rscript_path
+        with open(new_rscript_path, 'w') as outfile:
+            with open(rscript_path, 'r') as infile:
+                for line in infile:
+                    if line.startswith('MyWD <- getwd()'):
+                        line = f'MyWD = "{self.outpath}"\n'
+                    elif line.startswith('MyBlastnDir <-'):
+                        line = f'MyBlastnDir = "{self.dbdir}/"\n'
+                    outfile.write(line)
+
+
+    def run(self):
+        cmd = [
+            'Rscript',
+            self.new_rscript_path
+        ]
+        job = subprocess.run(cmd)
+        return job
+
+
 # Note these are 1-based indicies
 primers = {
     'fwd': {
         'seq': 'GCGCCCGAACAGGGACYTGAAARCGAAAG',
+        'nomix': 'GCGCCCGAACAGGGACCTGAAAGCGAAAG',
         # convert to 0-base index
         'hxb2_start': 638 - 1,
         'hxb2_end': 666
     },
     'rev': {
         'seq': 'TAAGCCTCAATAAAGCTTGCCTTGAGTGC',
+        'nomix': 'TAAGCCTCAATAAAGCTTGCCTTGAGTGC',
         # convert to 0-base index
         'hxb2_start': 9604 - 1,
         'hxb2_end': 9632
@@ -379,7 +461,7 @@ def output_filtered_data(contigs_csv, conseqs_csv, name, outpath):
             os.path.join(outpath, f'{name}.fasta'), 'w'
         ) as o:
             for row in joined.itertuples():
-                o.write(f'>{row.name}_{row.sample}_{row.seqtype}\n{primers["fwd"]["seq"] + row.sequence + primers["rev"]["seq"]}\n')
+                o.write(f'>{row.name}_{row.sample}_{row.seqtype}\n{primers["fwd"]["nomix"] + row.sequence.replace("-", "") + primers["rev"]["nomix"]}\n')
 
 
 def main():
