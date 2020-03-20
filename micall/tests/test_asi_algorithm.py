@@ -4,6 +4,7 @@ from operator import attrgetter
 from unittest import TestCase
 
 from micall.resistance.asi_algorithm import AsiAlgorithm
+from micall.resistance.resistance import HIV_RULES_PATH
 
 
 class AsiAlgorithmTest(TestCase):
@@ -11,7 +12,7 @@ class AsiAlgorithmTest(TestCase):
         self.asi = AsiAlgorithm(os.path.join(os.path.dirname(__file__),
                                              "..",
                                              "resistance",
-                                             "HIVDB_8.8.xml"))
+                                             HIV_RULES_PATH))
 
     def test_interpret(self):
         aa_seq = [[amino] for amino in self.asi.stds['RT']]

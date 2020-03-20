@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE ALGORITHM SYSTEM "http://sierra2.stanford.edu/sierra/ASI2.1.dtd">
+<!DOCTYPE ALGORITHM SYSTEM "https://cms.hivdb.org/prod/downloads/asi/ASI2.2.dtd">
 <ALGORITHM>
   <ALGNAME>HIVDB</ALGNAME>
-  <ALGVERSION>8.8</ALGVERSION>
-  <ALGDATE>2019-02-13</ALGDATE>
+  <ALGVERSION>8.9-1</ALGVERSION>
+  <ALGDATE>2019-10-25</ALGDATE>
   <DEFINITIONS>
     <GENE_DEFINITION>
       <NAME>PR</NAME>
@@ -60,6 +60,46 @@
     </DRUGCLASS>
     <GLOBALRANGE><![CDATA[(-INF TO 9 => 1,  10 TO 14 => 2,  15 TO 29 => 3,  30 TO 59 => 4,  60 TO INF => 5)]]></GLOBALRANGE>
     <COMMENT_DEFINITIONS>
+      <COMMENT_STRING id="DRVHigh">
+        <TEXT><![CDATA[There is evidence for high-level DRV resistance. If DRV is administered it should be used twice daily.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="DRVHighAndTPVIntermediate">
+        <TEXT><![CDATA[There is high-level DRV resistance and intermediate TPV resistance. Phenotypic testing and/or expert consultation may be useful. To see the precise TPV report re-run the program after adding TPV to the results being displayed.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="DRVHighAndTPVLow">
+        <TEXT><![CDATA[There is high-level DRV resistance and low-level TPV resistance. Phenotypic testing and/or expert consultation may be useful. To see the precise TPV report re-run the program after adding TPV to the results being displayed.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="DRVHighAndTPVPotentialLow">
+        <TEXT><![CDATA[There is high-level DRV resistance and potential low-level TPV resistance. Phenotypic testing and/or expert consultation may be useful. To see the precise TPV report re-run the program after adding TPV to the results being displayed.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="DRVHighAndTPVSusceptible">
+        <TEXT><![CDATA[There is high-level DRV resistance and TPV susceptibility. Phenotypic testing and/or expert consultation may be useful. To see the precise TPV report re-run the program after adding TPV to the results being displayed.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="DRVIntermediate">
+        <TEXT><![CDATA[There is evidence for intermediate DRV resistance. If DRV is administered it should be used twice daily.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="DRVLow">
+        <TEXT><![CDATA[There is evidence for low-level DRV resistance. If DRV is administered it should be used twice daily.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="DTGHigh">
+        <TEXT><![CDATA[There is evidence for high-level DTG resistance. If DTG is used, it should be administered twice daily.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="DTGIntermediate">
+        <TEXT><![CDATA[There is evidence for intermediate DTG resistance. If DTG is used, it should be administered twice daily.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="DTGLow">
+        <TEXT><![CDATA[There is evidence for low-level DTG resistance. If DTG is used, it should be administered twice daily.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
       <COMMENT_STRING id="IN118ACDEFHIKLMNPQSTVWY_-">
         <TEXT><![CDATA[G118R is an extremely rare non-polymorphic mutation selected in patients receiving RAL and DTG and in vitro by DTG. It causes intermediate reductions in RAL and EVG susceptibility and low-level reductions in DTG and BIC susceptibility. $listMutsIn{118(NOT R)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
@@ -96,8 +136,12 @@
         <TEXT><![CDATA[E138K/A are non-polymorphic mutations selected in patients receiving RAL, EVG, and DTG. They usually occur in combination with Q148 mutations. Alone they do not reduce INSTI susceptibility. However, when they occur in combination with Q148 mutations, they are associated with high-level resistance to RAL and EVG and intermediate reductions in DTG and BIC susceptibility. E138T is an uncommon nonpolymorphic INSTI-selected mutation that appears to have an effect similar to E138K/A.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
-      <COMMENT_STRING id="IN140DEFHIKLMNPQRTVWY_-">
-        <TEXT><![CDATA[G140S/A/C are non-polymorphic mutations that usually occur with Q148 mutations. Alone, they have minimal effects on INSTI susceptibility. However, in combination with Q148 mutations they are associated with high-level resistance to RAL and EVG and intermediate reductions in DTG and BIC susceptibility. $listMutsIn{140(NOT SAC)} is an unusual mutation at this position.]]></TEXT>
+      <COMMENT_STRING id="IN140DEFHIKLMNPQTVWY_-">
+        <TEXT><![CDATA[G140S/A/C are non-polymorphic mutations that usually occur with Q148 mutations. Alone, they have minimal effects on INSTI susceptibility. However, in combination with Q148 mutations they are associated with high-level resistance to RAL and EVG and intermediate reductions in DTG and BIC susceptibility. $listMutsIn{140(NOT SACR)} is an unusual mutation at this position.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="IN140R">
+        <TEXT><![CDATA[G140R is a nonpolymorphic mutation reported in one patient receiving the investigational INSTI cabotegravir. It appears to reduce cabotegravir susceptibility by 5-10-fold.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN140SAC">
@@ -109,7 +153,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN143CR">
-        <TEXT><![CDATA[Y143C/R are non-polymorphic mutations associated with high-level RAL resistance. Alone, they have minimal effects on EVG susceptibility. However, they are associated with intermediate to high-level reductions in EVG susceptibility when they occur in combination with one or more accessory INSTI-resistance mutations. Y143 mutations do not reduce DTG or BIC susceptibility.]]></TEXT>
+        <TEXT><![CDATA[Y143C/R are non-polymorphic mutations associated with high-level RAL resistance. Alone, they have minimal effects on EVG susceptibility. However, they are associated with intermediate reductions in EVG susceptibility when they occur in combination with one or more accessory INSTI-resistance mutations. Y143 mutations do not reduce DTG or BIC susceptibility.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN143DEFILMNPQTVW_-">
@@ -117,7 +161,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN143H">
-        <TEXT><![CDATA[Y143C/R are non-polymorphic mutations associated with high-level RAL resistance. Alone, they have minimal effects on EVG susceptibility. However, they are associated with intermediate to high-level reductions in EVG susceptibility when they occur in combination with one or more accessory INSTI-resistance mutations. Y143 mutations do not reduce DTG or BIC susceptibility. Y143H is a less-common mutation at this position that is likely a transitional mutation between the wildtype Y amino acid and the mutant R (which differs from the wildtype Y by two nucleotides).]]></TEXT>
+        <TEXT><![CDATA[Y143C/R are non-polymorphic mutations associated with high-level RAL resistance. Alone, they have minimal effects on EVG susceptibility. However, they are associated with intermediate reductions in EVG susceptibility when they occur in combination with one or more accessory INSTI-resistance mutations. Y143 mutations do not reduce DTG or BIC susceptibility. Y143H is a less-common mutation at this position that is likely a transitional mutation between the wildtype Y amino acid and the mutant R (which differs from the wildtype Y by two nucleotides).]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN143KGSA">
@@ -145,7 +189,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN147G">
-        <TEXT><![CDATA[S147G is a non-polymorphic mutation selected primarily in patients receiving EVG. It moderately reduces EVG susceptibility. It does not reduce RAL, DTG, or BIC susceptibility.]]></TEXT>
+        <TEXT><![CDATA[S147G is a non-polymorphic mutation selected primarily in patients receiving EVG and less commonly in patients receiving RAL and DTG. It moderately reduces EVG susceptibility. It does not reduce RAL, DTG, or BIC susceptibility.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN148ACDEFGILMPSTVWY_-">
@@ -226,6 +270,10 @@
       </COMMENT_STRING>
       <COMMENT_STRING id="IN263K">
         <TEXT><![CDATA[R263K is selected in vitro by EVG, DTG, and BIC, and in patients receiving DTG. It reduces DTG and BIC susceptibility about 2-fold and EVG susceptibility somewhat more. ]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="IN49G">
+        <TEXT><![CDATA[A49G is a rare nonpolymorphic IN mutation that has been reported in combination with one or more INSTI-resistance mutations in two persons receiving DTG.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN50I">
@@ -599,7 +647,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT100V">
-        <TEXT><![CDATA[L100I is a non-polymorphic mutation that usually occurs with K103N. In this setting it causes high-level resistance to NVP, EFV, and RPV and intermediate resistance to ETR. L100V is a rare non-polymorphic mutation with low / intermediate resistance to EFV, NVP, and RPV.]]></TEXT>
+        <TEXT><![CDATA[L100I is a non-polymorphic mutation that usually occurs with K103N. In this setting it causes high-level resistance to NVP, EFV, and RPV and intermediate resistance to ETR and possibly DOR. L100V is a rare non-polymorphic mutation with low / intermediate resistance to EFV, NVP, and RPV.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT101CDFGILMSVWY_-">
@@ -619,7 +667,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT101P">
-        <TEXT><![CDATA[K101P is a non-polymorphic mutation that causes high-level resistance to each of the NNRTIs. It has a weight of 2.5 in the Tibotec ETR genotypic susceptibility score. Its does not appear to reduce DOR susceptibility.]]></TEXT>
+        <TEXT><![CDATA[K101P is a non-polymorphic mutation that causes high-level resistance to NVP, EFV, RPV, and ETR. It has a weight of 2.5 in the Tibotec ETR genotypic susceptibility score. Its does not appear to reduce DOR susceptibility.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT101Q">
@@ -655,7 +703,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT106A">
-        <TEXT><![CDATA[V106A is a non-polymorphic mutation that causes high-level resistance to NVP and intermediate resistance to EFV. It is selected in vitro and in vivo by DOR and alone it causes intermediate reductions in DOR susceptibility. In combination with other DOR-associated DRMs it is associated with high-level DOR resistance.]]></TEXT>
+        <TEXT><![CDATA[V106A is a non-polymorphic mutation that causes high-level resistance to NVP and DOR, and intermediate resistance to EFV. It is commonly selected in vitro and in vivo by DOR.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT106CDEFGHKLNPQRSTWY_-">
@@ -663,7 +711,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT106I">
-        <TEXT><![CDATA[V106I is occurs in 1% to 2% of viruses from untreated persons. It contributes to reduced NNRTI susceptibility in combination with other mutations. It has a weight of 1.5 in the Tibotec ETR genotypic susceptibility score despite not contributing much to reduced ETR susceptibility. It likely plays a greater role in reducing DOR susceptibility, particularly in combination with other NNRTI-associated DRMs. ]]></TEXT>
+        <TEXT><![CDATA[V106I occurs in 1% to 2% of viruses from untreated persons. It contributes to reduced NNRTI susceptibility in combination with other mutations. It has a weight of 1.5 in the Tibotec ETR genotypic susceptibility score despite not contributing much to reduced ETR susceptibility. It is commonly selected during DOR treatment in combination with mutations at position 227.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT106M">
@@ -711,15 +759,15 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT138K">
-        <TEXT><![CDATA[E138K is a non-polymorphic mutation selected in a high proportion of patients receiving RPV. It reduces RPV susceptibility by 2 to 3-fold and in combination with K101E or the NRTI-resistance mutation M184I, it is sufficient to cause virological failure on a first-line RPV-containing regimen. E138K causes low-level cross-resistance to ETR but no cross-resistance to NVP, EFV, or DOR.]]></TEXT>
+        <TEXT><![CDATA[E138K is a non-polymorphic mutation selected in a high proportion of patients receiving RPV. It reduces RPV susceptibility by 2 to 3-fold and in combination with K101E or the NRTI-resistance mutation M184I, it is sufficient to cause virological failure on a first-line RPV-containing regimen. E138K causes low-level cross-resistance to ETR and possibly to DOR.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT138QG">
-        <TEXT><![CDATA[E138Q/G are non-polymorphic accessory mutations frequently selected in patients receiving ETR and RPV and occasionally in patients receiving NVP and EFV. In most studies, they cause low-level reductions in susceptibility to NVP, RPV, and ETR.]]></TEXT>
+        <TEXT><![CDATA[E138Q/G are non-polymorphic accessory mutations frequently selected in patients receiving ETR and RPV and occasionally in patients receiving NVP and EFV. In most studies, they cause low-level reductions in susceptibility to NVP, RPV, and ETR. Their effects on DOR are not known.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT138R">
-        <TEXT><![CDATA[E138R is a rare non-polymorphic accessory mutation selected in vitro by RPV. It is associated with 2 to 3-fold reduced susceptibility to ETR and RPV.]]></TEXT>
+        <TEXT><![CDATA[E138R is a rare non-polymorphic accessory mutation selected in vitro by RPV. It is associated with 2 to 3-fold reduced susceptibility to ETR and RPV and possibly to NVP and EFV. Its effect on DOR is not known.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT151ACDEFGHIKNPRSTVWY_-">
@@ -787,7 +835,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT188C">
-        <TEXT><![CDATA[Y188C is a non-polymorphic mutation selected in patients receiving NVP and EFV. It confers high-level resistance to NVP and EFV.]]></TEXT>
+        <TEXT><![CDATA[Y188C is a non-polymorphic mutation selected in patients receiving NVP and EFV. It confers high-level resistance to NVP and EFV. It appears to cause little if any reduction in susceptibility to RPV, ETR, or DOR.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT188F">
@@ -795,7 +843,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT188H">
-        <TEXT><![CDATA[Y188H is a non-polymorphic mutation selected in patients receiving NVP and EFV. It causes about 5 to 10-fold reduced susceptibility to NVP and EFV.]]></TEXT>
+        <TEXT><![CDATA[Y188H is a non-polymorphic mutation selected in patients receiving NVP and EFV. It causes about 5 to 10-fold reduced susceptibility to NVP and EFV. It appears to cause little if any reduction in susceptibility to RPV, ETR, or DOR.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT188L">
@@ -815,7 +863,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT190EQ">
-        <TEXT><![CDATA[G190E is a non-polymorphic mutation that causes high-level resistance to each of the NNRTIs including DOR. G190Q is a less common non-polymorphic NNRTI-selected mutation that is associated with high-level NVP and EFV resistance. Its effects on RPV, ETR, and DOR susceptibility is not known.]]></TEXT>
+        <TEXT><![CDATA[G190E is a non-polymorphic mutation that causes intermediate to high-level resistance to each of the NNRTIs. G190Q is a less common non-polymorphic NNRTI-selected mutation that is associated with high-level NVP and EFV resistance. Its effects on RPV, ETR, and DOR susceptibility is not known.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT190R">
@@ -863,7 +911,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT221Y">
-        <TEXT><![CDATA[H221Y is a non-polymorphic accessory mutation selected primarily by NVP and RPV. It frequently occurs in combination with Y181C.]]></TEXT>
+        <TEXT><![CDATA[H221Y is a non-polymorphic accessory mutation selected primarily by NVP, RPV, and DOR. It frequently occurs in combination with Y181C.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT225ACDEFGIKLMNQRSTVWY_-">
@@ -879,7 +927,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT227C">
-        <TEXT><![CDATA[F227C is a nonpolymorphic mutation selected in persons receiving DOR and rarely in persons receiving ETR and RPV. It usually occurs in combination with other DRMs and in this setting has consistently been associated with the highest possible levels of DOR resistance. It is also usually associated with intermediate or higher reductions in susceptibility to NVP, EFV, ETR, and RPV. ]]></TEXT>
+        <TEXT><![CDATA[F227C is a nonpolymorphic mutation selected in persons receiving DOR and rarely in persons receiving ETR and RPV. It usually occurs in combination with other DRMs and in this setting has consistently been associated with the highest possible levels of DOR resistance. It is also usually associated with intermediate or high-level reductions in susceptibility to NVP, EFV, ETR, and RPV.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT227ILV">
@@ -898,12 +946,12 @@
         <TEXT><![CDATA[M230L is an uncommon non-polymorphic mutation selected in persons receiving EFV, NVP, and RPV. It causes intermediate to high-level resistance to each of the NNRTIs.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
-      <COMMENT_STRING id="RT234ACDEFGHKLMNPQRSTWY_-">
-        <TEXT><![CDATA[L234I is a nonpolymorphic mutation selected in persons receiving NVP and EFV. It is also selected in vitro by ETR and DOR. In combination with V106A, it is associated with high-level DOR resistance. Its effect on susceptibility when it occurs alone has not been studied. $listMutsIn{108(NOT I)} is a highly unusual mutation at this position.]]></TEXT>
+      <COMMENT_STRING id="RT234ACDEFGHKMNPQRSTWY_-">
+        <TEXT><![CDATA[L234I is a nonpolymorphic mutation selected in persons receiving NVP and EFV. It is also selected in vitro by ETR and DOR. In combination with V106A, it is associated with high-level DOR resistance. Its effect on susceptibility when it occurs alone has not been studied. $listMutsIn{234(NOT I)} is a highly unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT234I">
-        <TEXT><![CDATA[L234I is a nonpolymorphic mutation selected in persons receiving NVP and EFV. It is also selected in vitro by ETR and DOR. In combination with V106A, it is associated with high-level DOR resistance. Its effect on susceptibility when it occurs alone has not been studied.]]></TEXT>
+        <TEXT><![CDATA[L234I is a nonpolymorphic mutation selected in persons receiving NVP and EFV. It is also selected in vitro by ETR and DOR. In combination with V106A, it is associated with high-level DOR resistance. Its effect on susceptibility when it occurs alone has not been well characterized.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT236ACDEFGHIKMNQRSTVWY_-">
@@ -911,7 +959,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT236L">
-        <TEXT><![CDATA[P236L is a non-polymorphic mutation that causes high-level DLV resistance but does not reduce susceptibility to any other NNRTIs.]]></TEXT>
+        <TEXT><![CDATA[P236L is a non-polymorphic mutation that has been selected in vitro by DOR and been associated with possible low-level reductions in susceptibility in vitro.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT238ACDEFGHILMPQSVWY_-">
@@ -931,7 +979,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT318F">
-        <TEXT><![CDATA[Y318F is an uncommon mutation that causes intermediate NVP resistance and potentially low-level EFV resistance. It has been selected in vivo by DOR but its effect on DOR susceptibility has not been studied.]]></TEXT>
+        <TEXT><![CDATA[Y318F is an uncommon mutation that causes intermediate NVP resistance and potentially low-level EFV resistance. It has been selected in vivo by DOR and in combination with other mutations it has been associated with high-level reductions in DOR susceptibility. Its effect on DOR susceptibility when it occurs alone has not been studied.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT348ACDEFGHKLMPQRSTVWY_-">
@@ -1354,26 +1402,32 @@
       <CONDITION><![CDATA[SCORE FROM(98G => 15,
                          MAX ( 100I => 15, 100V => 10 ),
                          MAX ( 101E => 15, 101P => 10 ),
-                         MAX ( 106A => 60, 106I => 15, 106M => 30 ),
-                         108I => 10,
+                         MAX ( 106A => 60, 106I => 10, 106M => 50 ),
+                         108I => 15,
+                         138K => 10,
+                         179F => 10,
                          MAX ( 181C => 10, 181I => 20, 181V => 20 ),
                          MAX ( 188C => 10, 188F => 30, 188H => 10, 188L => 60 ),
-                         MAX ( 190C => 10, 190E => 60, 190Q => 60, 190S => 30, 190T => 10, 190V => 10 ),
-                         221Y => 10,
+                         MAX ( 190C => 10, 190E => 60, 190Q => 30, 190S => 30, 190T => 10, 190V => 10 ),
+                         221Y => 15,
                          225H => 30,
-                         MAX ( 227C => 60, 227I => 30, 227L => 30, 227V => 30 ),
+                         MAX ( 227C => 60, 227I => 50, 227L => 50, 227V => 50 ),
                          MAX ( 230I => 15, 230L => 60 ),
                          234I => 30,
+                         236L => 15,
                          318F => 30,
                          (100I AND 103N) => 15,
                          (103N AND 181C) => 10,
                          (106A AND 227L) => 15,
+                         (106I AND 181C) => 10,
+                         (106I AND 190S) => 10,
                          (108I AND 181C) => 10,
                          (108I AND 234I) => 15,
+                         (181C AND 190ACSTV) => 20,
+                         (181CIV AND 221Y) => 10,
                          (98G AND 181C) => 5,
                          (98G AND 227C) => 15,
-                         MAX ((101E AND 190A) => 5, (101E AND 190S) => 5),
-                         MAX ((181C AND 190A) => 20, (181C AND 190CSTV) => 10))]]></CONDITION>
+                         MAX ((101E AND 190A) => 5, (101E AND 190S) => 5))]]></CONDITION>
       <ACTIONS>
         <SCORERANGE>
           <USE_GLOBALRANGE/>
@@ -1495,8 +1549,10 @@
                          MAX ( 230I => 30, 230L => 60 ),
                          (101E AND 184I) => 15,
                          (103R AND 179D) => 15,
+                         (106I AND 181C) => 10,
                          (138K AND 184I) => 15,
                          (181C AND 190ACSTV) => 10,
+                         (181CIV AND 221Y) => 10,
                          (98G AND 181C) => 5,
                          (98G AND 227C) => 15,
                          MAX ((179F AND 181C) => 15, (179T AND 181C) => 10))]]></CONDITION>
@@ -1853,22 +1909,25 @@
                          MAX ( 153F => 15, 153Y => 15 ),
                          155H => 10,
                          230R => 10,
-                         263K => 25,
-                         (138AKT AND 118R) => 10,
+                         263K => 30,
+                         (118R AND 138AKT) => 10,
                          (138AKT AND 140ACS) => 10,
                          (138AKT AND 148HKR) => 10,
                          (140ACS AND 148HKR) => 10,
                          (140ACS AND 148HKR AND 149A) => 10,
                          (143ACGHRS AND 163R) => 5,
                          (143ACGHRS AND 230R) => 5,
-                         (148HKR AND 155H) => 10,
+                         (147G AND 148HKR) => 15,
+                         (148HKR AND 155H) => 20,
                          (148HKR AND 163KR) => 5,
+                         (155H AND 147G) => 10,
+                         (155H AND 263K) => 20,
                          (157Q AND 263K) => 10,
                          (51Y AND 263K) => 10,
                          (74FIM AND 118R) => 10,
                          (74FIM AND 143ACGHRS) => 5,
-                         (74FIM AND 148HKR) => 10,
-                         (92Q AND 155H) => 5,
+                         (74FIM AND 148HKR) => 15,
+                         (92Q AND 155H) => 10,
                          (97A AND 118R) => 10,
                          (97A AND 148HKR) => 15)]]></CONDITION>
       <ACTIONS>
@@ -1896,21 +1955,24 @@
                          155H => 10,
                          230R => 20,
                          263K => 30,
-                         (138AKT AND 118R) => 10,
+                         (118R AND 138AKT) => 10,
                          (138AKT AND 140ACS) => 10,
                          (138AKT AND 148HKR) => 10,
                          (140ACS AND 148HKR) => 10,
                          (140ACS AND 148HKR AND 149A) => 10,
                          (143ACGHRS AND 163R) => 5,
                          (143ACGHRS AND 230R) => 5,
-                         (148HKR AND 155H) => 10,
+                         (147G AND 148HKR) => 15,
+                         (148HKR AND 155H) => 20,
                          (148HKR AND 163KR) => 5,
+                         (155H AND 147G) => 10,
+                         (155H AND 263K) => 20,
                          (157Q AND 263K) => 10,
                          (51Y AND 263K) => 10,
                          (74FIM AND 118R) => 10,
                          (74FIM AND 143ACGHRS) => 5,
                          (74FIM AND 148HKR) => 15,
-                         (92Q AND 155H) => 5,
+                         (92Q AND 155H) => 10,
                          (97A AND 118R) => 10,
                          (97A AND 148HKR) => 15)]]></CONDITION>
       <ACTIONS>
@@ -1946,15 +2008,17 @@
                          230R => 20,
                          232N => 10,
                          263K => 30,
-                         (138AKT AND 118R) => 10,
+                         (118R AND 138AKT) => 10,
                          (138AKT AND 140ACS) => 15,
                          (140ACS AND 148HKR AND 149A) => 10,
                          (143ACGHRS AND 163R) => 5,
                          (143ACGHRS AND 230R) => 5,
+                         (155H AND 147G) => 10,
                          (51Y AND 263K) => 15,
                          (74FIM AND 118R) => 10,
                          (74FIM AND 143ACGHRS) => 5,
                          (74FIM AND 148HKR) => 15,
+                         (92Q AND 155H) => 10,
                          (97A AND 118R) => 10,
                          (97A AND 143ACGHRS) => 5)]]></CONDITION>
       <ACTIONS>
@@ -1986,11 +2050,12 @@
                          230R => 20,
                          232N => 10,
                          263K => 25,
-                         (138AKT AND 118R) => 10,
+                         (118R AND 138AKT) => 10,
                          (138AKT AND 140ACS) => 15,
                          (140ACS AND 148HKR AND 149A) => 10,
                          (74FIM AND 118R) => 10,
                          (74FIM AND 148HKR) => 15,
+                         (92Q AND 155H) => 10,
                          (97A AND 118R) => 10)]]></CONDITION>
       <ACTIONS>
         <SCORERANGE>
@@ -2000,6 +2065,357 @@
     </RULE>
   </DRUG>
   <MUTATION_COMMENTS>
+    <GENE>
+      <NAME>IN</NAME>
+      <RULE>
+        <CONDITION>118ACDEFHIKLMNPQSTVWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN118ACDEFHIKLMNPQSTVWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>118R</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN118R"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>119R</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN119R"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>121ACDEGHIKLMNPQRSTVWid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN121ACDEGHIKLMNPQRSTVW_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>121Y</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN121Y"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>128T</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN128T"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>138CFGHILMNPQRSVWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN138CFGHILMNPQRSVWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>138D</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN138D"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>138KAT</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN138KAT"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>140DEFHIKLMNPQTVWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN140DEFHIKLMNPQTVWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>140R</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN140R"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>140SAC</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN140SAC"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>142T</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN142T"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>143CR</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN143CR"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>143DEFILMNPQTVWid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN143DEFILMNPQTVW_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>143H</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN143H"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>143KGSA</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN143KGSA"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>145ACDEFGHIKLMNQRTVWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN145ACDEFGHIKLMNQRTVWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>145S</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN145S"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>146ACDEFGHIKLMNRSTVWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN146ACDEFGHIKLMNRSTVWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>146P</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN146P"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>147ACDEFHIKLMNPQRTVWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN147ACDEFHIKLMNPQRTVWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>147G</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN147G"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>148ACDEFGILMPSTVWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN148ACDEFGILMPSTVWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>148HKR</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN148HKR"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>148N</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN148N"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>149A</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN149A"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>151A</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN151A"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>151CDEFGHKMNPQRSTWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN151CDEFGHKMNPQRSTWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>151I</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN151I"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>151L</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN151L"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>153ACDEGHIKLMNPQRTVWid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN153ACDEGHIKLMNPQRTVW_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>153YF</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN153YF"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>155ACDEFGIKLMPQRVWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN155ACDEFGIKLMPQRVWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>155H</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN155H"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>155ST</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN155ST"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>157Q</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN157Q"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>163RK</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN163RK"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>230N</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN230N"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>230R</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN230R"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>232N</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN232N"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>263ACDEFGHILMNPQSTVWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN263ACDEFGHILMNPQSTVWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>263K</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN263K"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>49G</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN49G"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>50I</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN50I"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>51ACDEFGIKLMNPQRSTVWid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN51ACDEFGIKLMNPQRSTVW_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>51Y</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN51Y"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>66A</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN66A"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>66CDEFGHLMNPQRSVWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN66CDEFGHLMNPQRSVWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>66I</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN66I"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>66K</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN66K"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>74MIF</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN74MIF"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>92ACDFHIKLMNPRSTWYid</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN92ACDFHIKLMNPRSTWY_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>92G</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN92G"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>92Q</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN92Q"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>92V</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN92V"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>95K</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN95K"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>97A</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN97A"/>
+        </ACTIONS>
+      </RULE>
+    </GENE>
     <GENE>
       <NAME>PR</NAME>
       <RULE>
@@ -2456,345 +2872,6 @@
         <CONDITION>90M</CONDITION>
         <ACTIONS>
           <COMMENT ref="PR90M"/>
-        </ACTIONS>
-      </RULE>
-    </GENE>
-    <GENE>
-      <NAME>IN</NAME>
-      <RULE>
-        <CONDITION>118ACDEFHIKLMNPQSTVWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN118ACDEFHIKLMNPQSTVWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>118R</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN118R"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>119R</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN119R"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>121ACDEGHIKLMNPQRSTVWid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN121ACDEGHIKLMNPQRSTVW_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>121Y</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN121Y"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>128T</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN128T"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>138CFGHILMNPQRSVWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN138CFGHILMNPQRSVWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>138D</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN138D"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>138KAT</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN138KAT"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>140DEFHIKLMNPQRTVWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN140DEFHIKLMNPQRTVWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>140SAC</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN140SAC"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>142T</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN142T"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>143CR</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN143CR"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>143DEFILMNPQTVWid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN143DEFILMNPQTVW_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>143H</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN143H"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>143KGSA</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN143KGSA"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>145ACDEFGHIKLMNQRTVWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN145ACDEFGHIKLMNQRTVWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>145S</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN145S"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>146ACDEFGHIKLMNRSTVWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN146ACDEFGHIKLMNRSTVWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>146P</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN146P"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>147ACDEFHIKLMNPQRTVWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN147ACDEFHIKLMNPQRTVWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>147G</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN147G"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>148ACDEFGILMPSTVWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN148ACDEFGILMPSTVWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>148HKR</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN148HKR"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>148N</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN148N"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>149A</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN149A"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>151A</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN151A"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>151CDEFGHKMNPQRSTWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN151CDEFGHKMNPQRSTWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>151I</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN151I"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>151L</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN151L"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>153ACDEGHIKLMNPQRTVWid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN153ACDEGHIKLMNPQRTVW_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>153YF</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN153YF"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>155ACDEFGIKLMPQRVWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN155ACDEFGIKLMPQRVWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>155H</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN155H"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>155ST</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN155ST"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>157Q</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN157Q"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>163RK</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN163RK"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>230N</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN230N"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>230R</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN230R"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>232N</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN232N"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>263ACDEFGHILMNPQSTVWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN263ACDEFGHILMNPQSTVWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>263K</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN263K"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>50I</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN50I"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>51ACDEFGIKLMNPQRSTVWid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN51ACDEFGIKLMNPQRSTVW_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>51Y</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN51Y"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>66A</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN66A"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>66CDEFGHLMNPQRSVWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN66CDEFGHLMNPQRSVWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>66I</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN66I"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>66K</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN66K"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>74MIF</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN74MIF"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>92ACDFHIKLMNPRSTWYid</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN92ACDFHIKLMNPRSTWY_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>92G</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN92G"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>92Q</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN92Q"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>92V</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN92V"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>95K</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN95K"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>97A</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN97A"/>
         </ACTIONS>
       </RULE>
     </GENE>
@@ -3263,9 +3340,9 @@
         </ACTIONS>
       </RULE>
       <RULE>
-        <CONDITION>234ACDEFGHKLMNPQRSTWYid</CONDITION>
+        <CONDITION>234ACDEFGHKMNPQRSTWYid</CONDITION>
         <ACTIONS>
-          <COMMENT ref="RT234ACDEFGHKLMNPQRSTWY_-"/>
+          <COMMENT ref="RT234ACDEFGHKMNPQRSTWY_-"/>
         </ACTIONS>
       </RULE>
       <RULE>
@@ -3558,4 +3635,132 @@
       </RULE>
     </GENE>
   </MUTATION_COMMENTS>
+  <RESULT_COMMENTS>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>DRV/r</DRUG_NAME>
+          <EQ>5</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="DRVHigh"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>DRV/r</DRUG_NAME>
+          <EQ>5</EQ>
+        </DRUG_LEVEL_CONDITION>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>TPV/r</DRUG_NAME>
+          <EQ>4</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="DRVHighAndTPVIntermediate"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>DRV/r</DRUG_NAME>
+          <EQ>5</EQ>
+        </DRUG_LEVEL_CONDITION>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>TPV/r</DRUG_NAME>
+          <EQ>3</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="DRVHighAndTPVLow"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>DRV/r</DRUG_NAME>
+          <EQ>5</EQ>
+        </DRUG_LEVEL_CONDITION>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>TPV/r</DRUG_NAME>
+          <EQ>2</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="DRVHighAndTPVPotentialLow"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>DRV/r</DRUG_NAME>
+          <EQ>5</EQ>
+        </DRUG_LEVEL_CONDITION>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>TPV/r</DRUG_NAME>
+          <EQ>1</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="DRVHighAndTPVSusceptible"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>DRV/r</DRUG_NAME>
+          <EQ>4</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="DRVIntermediate"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>DRV/r</DRUG_NAME>
+          <EQ>3</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="DRVLow"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>DTG</DRUG_NAME>
+          <EQ>5</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="DTGHigh"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>DTG</DRUG_NAME>
+          <EQ>4</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="DTGIntermediate"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>DTG</DRUG_NAME>
+          <EQ>3</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="DTGLow"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+  </RESULT_COMMENTS>
 </ALGORITHM>
