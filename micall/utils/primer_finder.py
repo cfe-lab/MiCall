@@ -39,7 +39,7 @@ class Hivseqinr:
     def copy_fasta(self):
         raw_fastas_path = os.path.join(self.outpath, 'RAW_FASTA')
         os.mkdir(raw_fastas_path)
-        shutil.copyfile(self.fasta, raw_fastas_path)
+        shutil.copy(self.fasta, raw_fastas_path)
         return True
 
 
@@ -78,22 +78,25 @@ class Hivseqinr:
         rscript_path = '/'.join((self.outpath, 'R_HIVSeqinR_Combined_ver09_ScrambleFix.R'))
         new_rscript_path = '/'.join((self.outpath, 'modified.R'))
         self.new_rscript_path = new_rscript_path
-        with open(new_rscript_path, 'w') as outfile:
+        with open(self.new_rscript_path, 'w') as outfile:
             with open(rscript_path, 'r') as infile:
                 for line in infile:
-                    if line.startswith('MyWD <- getwd()'):
-                        line = f'MyWD = "{self.outpath}"\n'
+                    if 'MyWD <- getwd()' in line:
+                        line = line.replace('MyWD <- getwd()', f'MyWD = "{self.outpath}"\n')
                     elif line.startswith('MyBlastnDir <-'):
                         line = f'MyBlastnDir = "{self.dbdir}/"\n'
                     outfile.write(line)
 
 
     def run(self):
+        cwd = os.getcwd()
+        os.chdir(self.outpath)
         cmd = [
             'Rscript',
-            self.new_rscript_path
+            './modified.R'
         ]
         job = subprocess.run(cmd)
+        os.chdir(cwd)
         return job
 
 
@@ -132,6 +135,9 @@ def parse_args():
                         '--outpath',
                         help='The path to save the output',
                         default=os.getcwd())
+    parser.add_argument('--disable_hivseqinr',
+                        action='store_true',
+                        help='Disable running hivseqinr')
     return parser.parse_args()
 
 
@@ -158,7 +164,7 @@ def find_primers(csv_filepath, outpath, name):
     non_tcga = re.compile(r'[^TCGA-]+')
     outfilepath = os.path.join(outpath, f'{name}_primer_analysis.csv')
     outfile = open(outfilepath, 'w')
-    writer = DictWriter(outfile, columns)
+    writer = DictWriter(outfile, columns, lineterminator='\n')
     writer.writeheader()
     reader = DictReader(csv_filepath)
     projects = ProjectConfig.loadDefault()
@@ -177,6 +183,11 @@ def find_primers(csv_filepath, outpath, name):
             contig_num += 1
             contig_name = f'{contig_num}-{seed_name}'
             uname = f'{sample_name}_{contig_name}_{contig_num}'
+
+            interesting_sample = 'HIV3428G2-P19-HIV_S56'
+            if sample_name == interesting_sample:
+                import pdb; pdb.set_trace()
+
             new_row = dict(sample=sample_name, contig=contig_name)
             contig_seq: str = row.get('contig') or row['sequence']
             contig_seq = contig_seq.upper()
@@ -424,7 +435,7 @@ def filter_df(df):
     return filtered
 
 
-def output_filtered_data(contigs_csv, conseqs_csv, name, outpath):
+def output_filtered_data(contigs_csv, conseqs_csv, name, outpath, disable_hivseqinr):
     contigs_out = find_primers(contigs_csv, outpath, f'{name}_contigs')
     conseqs_out = find_primers(conseqs_csv, outpath, f'{name}_conseqs')
     dfs = load_csv(contigs_out, name, 'contigs')
@@ -457,16 +468,19 @@ def output_filtered_data(contigs_csv, conseqs_csv, name, outpath):
             os.path.join(outpath, f'{name}_filtered.csv'),
             index=False
         )
+        fasta_outpath = os.path.join(outpath, f'{name}.fasta')
         with open(
-            os.path.join(outpath, f'{name}.fasta'), 'w'
+            fasta_outpath, 'w'
         ) as o:
             for row in joined.itertuples():
                 o.write(f'>{row.name}_{row.sample}_{row.seqtype}\n{primers["fwd"]["nomix"] + row.sequence.replace("-", "") + primers["rev"]["nomix"]}\n')
+            if not disable_hivseqinr:
+                hivseqinr = Hivseqinr('/'.join((outpath, 'hivseqinr')), fasta_outpath)
 
 
 def main():
     args = parse_args()
-    output_filtered_data(args.contigs_csv, args.conseqs_csv, args.name, args.outpath)
+    output_filtered_data(args.contigs_csv, args.conseqs_csv, args.name, args.outpath, args.disable_hivseqinr)
 
 
 if __name__ in ('__main__', '__live_coding__'):
