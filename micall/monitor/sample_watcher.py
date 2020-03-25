@@ -101,9 +101,7 @@ class FolderWatcher:
                     for pipeline_id in (
                         self.runner.config.micall_main_pipeline_id,
                         self.runner.config.denovo_main_pipeline_id,
-                        self.runner.config.mixed_hcv_pipeline_id,
-                        self.runner.config.denovo_pipeline_id,
-                        self.runner.config.denovo_combined_pipeline_id))
+                        self.runner.config.mixed_hcv_pipeline_id))
 
             all_samples = set(self.all_samples)
             return n * len(all_samples - self.completed_samples)
