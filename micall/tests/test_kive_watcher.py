@@ -8,12 +8,14 @@ from tarfile import TarInfo
 from unittest.mock import patch, ANY, Mock, call
 from zipfile import ZipFile
 
+# noinspection PyPackageRequirements
 import pytest
 from datetime import datetime, timedelta
 
 from struct import pack
 
 from kiveapi import KiveClientException
+# noinspection PyPackageRequirements
 from requests import ConnectionError
 
 import micall
@@ -74,7 +76,7 @@ def mock_containerruns_get(path):
                      argument_name='bad_cycles_csv'),
                 dict(dataset='/datasets/112/',
                      argument_name='amino_csv')]
-    return dict(id=110, state='C')
+    return dict(state='C')
 
 
 def mock_session_get(url):
@@ -2118,10 +2120,10 @@ def test_folder_completed(raw_data_with_two_samples, mock_open_kive, default_con
                            PipelineType.RESISTANCE,
                            sample2_watcher)
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='C'),  # refresh run state for 2110
+        dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
               argument_name='resistance_csv')],  # run datasets
-        dict(id=108, state='C'),  # refresh run state for 2120
+        dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
               argument_name='resistance_csv')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
@@ -2137,7 +2139,6 @@ def test_folder_completed(raw_data_with_two_samples, mock_open_kive, default_con
         coverage_maps_tar.addfile(tar_info, content)
     expected_coverage_map_path = (
             results_path / "coverage_maps/2110A-V3LOOP_S13.R1_coverage.txt")
-    expected_done_path = results_path / "doneprocessing"
     expected_mutations_path = results_path / "mutations.csv"
     expected_resistance_path = results_path / "resistance.csv"
     expected_resistance_content = """\
@@ -2156,7 +2157,72 @@ sample,url,n
     assert not expected_mutations_path.exists()
     assert expected_resistance_content == expected_resistance_path.read_text()
     assert expected_coverage_map_content == expected_coverage_map_path.read_bytes()
-    assert expected_done_path.exists()
+
+
+def test_folder_completed_except_denovo(raw_data_with_two_samples, mock_open_kive, default_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    default_config.denovo_main_pipeline_id = 495
+    kive_watcher = create_kive_watcher_with_main_run(
+        default_config,
+        base_calls,
+        SampleGroup('2110A',
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                     None)),
+        is_complete=True)
+    kive_watcher.app_urls[default_config.denovo_main_pipeline_id] = '/containerapps/105'
+    kive_watcher.app_args[default_config.denovo_main_pipeline_id] = dict(
+            bad_cycles_csv='/containerargs/113',
+            fastq1='/containerargs/114',
+            fastq2='/containerargs/115')
+    folder_watcher = kive_watcher.folder_watchers[base_calls]
+    sample1_watcher, = folder_watcher.sample_watchers
+    sample2_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2120A',
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                  None)))
+    kive_watcher.finish_folder(base_calls)
+    folder_watcher.add_run(dict(id=150),
+                           PipelineType.MAIN,
+                           sample2_watcher,
+                           is_complete=True)
+    folder_watcher.add_run(dict(id=151),
+                           PipelineType.DENOVO_MAIN,
+                           sample1_watcher)
+    folder_watcher.add_run(dict(id=152),
+                           PipelineType.RESISTANCE,
+                           sample1_watcher)
+    folder_watcher.add_run(dict(id=153),
+                           PipelineType.RESISTANCE,
+                           sample2_watcher)
+    kive_watcher.session.endpoints.containerruns.get.side_effect = [
+        dict(id=151, state='C'),  # refresh run state for denovo main
+        [dict(dataset='/datasets/161/',
+              argument_name='amino_csv')],  # run datasets
+        dict(id=152, state='C'),  # refresh run state for 2110
+        [dict(dataset='/datasets/162/',
+              argument_name='resistance_csv')],  # run datasets
+        dict(id=153, state='C'),  # refresh run state for 2120
+        [dict(dataset='/datasets/163/',
+              argument_name='resistance_csv')]]  # run datasets
+    results_path = base_calls / "../../../Results/version_0-dev"
+    scratch_path = results_path / "scratch"
+    sample_scratch_path = scratch_path / "2110A-V3LOOP_S13"
+    sample_scratch_path.mkdir(parents=True)
+    denovo_scratch_path = results_path / "scratch_denovo" / "2110A-V3LOOP_S13"
+    expected_done_path = results_path / "doneprocessing"
+    expected_mutations_path = results_path / "mutations.csv"
+    expected_resistance_path = results_path / "resistance.csv"
+    expected_amino_path = denovo_scratch_path / "amino.csv"
+
+    kive_watcher.poll_runs()
+
+    assert not scratch_path.exists()
+    assert not expected_mutations_path.exists()
+    assert expected_resistance_path.exists()
+    assert not expected_done_path.exists()
+    assert expected_amino_path.exists()
 
 
 def test_folder_completed_with_fasta(raw_data_with_two_samples, mock_open_kive, default_config):
@@ -2190,17 +2256,16 @@ def test_folder_completed_with_fasta(raw_data_with_two_samples, mock_open_kive, 
                            PipelineType.RESISTANCE,
                            sample2_watcher)
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='C'),  # refresh run state for 2110
+        dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
               argument_name='wg_fasta')],  # run datasets
-        dict(id=108, state='C'),  # refresh run state for 2120
+        dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
               argument_name='wg_fasta')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
     sample_scratch_path = scratch_path / "2110A-V3LOOP_S13"
     sample_scratch_path.mkdir(parents=True)
-    expected_done_path = results_path / "doneprocessing"
     expected_fasta_path = results_path / "wg.fasta"
     expected_fasta_content = """\
 >2110A-V3LOOP_S13,/datasets/161/download/,0
@@ -2225,7 +2290,6 @@ GTCA
 
     assert not scratch_path.exists()
     assert expected_fasta_content == expected_fasta_path.read_text()
-    assert expected_done_path.exists()
 
 
 def test_folder_completed_with_svg(raw_data_with_two_samples, mock_open_kive, default_config):
@@ -2257,14 +2321,13 @@ def test_folder_completed_with_svg(raw_data_with_two_samples, mock_open_kive, de
                            PipelineType.RESISTANCE,
                            sample2_watcher)
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='C'),  # refresh run state for 2110
+        dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
               argument_name='alignment_svg')],  # run datasets
-        dict(id=108, state='C'),  # refresh run state for 2120
+        dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
               argument_name='alignment_svg')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
-    expected_done_path = results_path / "doneprocessing"
     expected_alignment1_path = results_path / "alignment" / "2110A-V3LOOP_S13_alignment.svg"
     expected_alignment2_path = results_path / "alignment" / "2120A-PR_S14_alignment.svg"
 
@@ -2272,7 +2335,6 @@ def test_folder_completed_with_svg(raw_data_with_two_samples, mock_open_kive, de
 
     assert expected_alignment1_path.exists()
     assert expected_alignment2_path.exists()
-    assert expected_done_path.exists()
 
 
 def test_folder_not_finished(raw_data_with_two_samples, mock_open_kive, default_config):
@@ -2304,10 +2366,10 @@ def test_folder_not_finished(raw_data_with_two_samples, mock_open_kive, default_
                            PipelineType.RESISTANCE,
                            sample2_watcher)
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='C'),  # refresh run state for 2110
+        dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
               argument_name='resistance_csv')],  # run datasets
-        dict(id=108, state='C'),  # refresh run state for 2120
+        dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
               argument_name='resistance_csv')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
@@ -2436,8 +2498,8 @@ def test_folder_failed_sample(raw_data_with_two_samples, mock_open_kive, default
                            PipelineType.RESISTANCE,
                            sample2_watcher)
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(state='F', id=99),  # main run for 2110 fails
-        dict(state='C'),  # resistance run for 2120 complete
+        dict(state='F', id=107),  # main run for 2110 fails
+        dict(state='C', id=152),  # resistance run for 2120 complete
         [dict(argument_name='resistance_csv',
               dataset='/datasets/167/')]]  # outputs for resistance run
     run_path = base_calls / "../../.."

@@ -8,7 +8,19 @@ ALLOWED_GROUPS = ['Everyone']
 PipelineType = Enum(
     'PipelineType',
     'FILTER_QUALITY MAIN MIDI RESISTANCE MIXED_HCV_MAIN MIXED_HCV_MIDI ' +
-    'DENOVO DENOVO_COMBINED DENOVO_MAIN DENOVO_MIDI DENOVO_RESISTANCE')
+    'DENOVO_MAIN DENOVO_MIDI DENOVO_RESISTANCE')
+
+PIPELINE_GROUPS = {
+    PipelineType.FILTER_QUALITY: PipelineType.FILTER_QUALITY,
+    PipelineType.MAIN: PipelineType.MAIN,
+    PipelineType.MIDI: PipelineType.MAIN,
+    PipelineType.RESISTANCE: PipelineType.MAIN,
+    PipelineType.MIXED_HCV_MAIN: PipelineType.MIXED_HCV_MAIN,
+    PipelineType.MIXED_HCV_MIDI: PipelineType.MIXED_HCV_MAIN,
+    PipelineType.DENOVO_MAIN: PipelineType.DENOVO_MAIN,
+    PipelineType.DENOVO_MIDI: PipelineType.DENOVO_MAIN,
+    PipelineType.DENOVO_RESISTANCE: PipelineType.DENOVO_MAIN
+}
 
 
 class FolderWatcher:
@@ -42,6 +54,7 @@ class FolderWatcher:
         self.quality_dataset = None
         self.filter_quality_run = None
         self.bad_cycles_dataset = None
+        self.active_pipeline_groups = set()  # {pipeline_group}
         self.active_runs = {}  # {run_id: ([sample_watcher], pipeline_type)}
         self.new_runs = set()  # {run_id}
         self.completed_samples = set()  # {fastq1_name}
@@ -100,6 +113,11 @@ class FolderWatcher:
     @property
     def is_complete(self):
         return self.is_folder_failed or not self.active_samples
+
+    def is_pipeline_group_finished(self, pipeline_group):
+        return not any(
+            PIPELINE_GROUPS[pipeline_type] == pipeline_group
+            for sample_watchers, pipeline_type in self.active_runs.values())
 
     def poll_runs(self):
         if self.filter_quality_run is None:
@@ -164,25 +182,6 @@ class FolderWatcher:
                     not self.fetch_run_status(run))]
             is_mixed_hcv_complete = not active_mixed_runs
 
-        is_denovo_complete = False
-        if sample_watcher.sample_group.names[1] is None:
-            denovo_type = PipelineType.DENOVO
-        else:
-            denovo_type = PipelineType.DENOVO_COMBINED
-        denovo_run = sample_watcher.runs.get(denovo_type)
-        if denovo_run is None:
-            if ('HCV' not in sample_watcher.sample_group.names[0] and
-                    'HIV' not in sample_watcher.sample_group.names[0]):
-                is_denovo_complete = True
-            else:
-                denovo_run = self.run_pipeline(denovo_type, sample_watcher)
-                if denovo_run is None:
-                    is_denovo_complete = True
-        else:
-            is_denovo_complete = not (
-                    denovo_run['id'] in self.active_runs and
-                    not self.fetch_run_status(denovo_run))
-
         is_denovo_main_complete = False
         denovo_main_run = sample_watcher.runs.get(PipelineType.DENOVO_MAIN)
         if denovo_main_run is None:
@@ -233,7 +232,6 @@ class FolderWatcher:
                 # Still running, nothing more to check on sample.
                 return sample_watcher.is_failed
         return ((is_denovo_main_complete and
-                 is_denovo_complete and
                  is_mixed_hcv_complete) or
                 sample_watcher.is_failed)
 
@@ -251,6 +249,8 @@ class FolderWatcher:
         return run
 
     def add_run(self, run, pipeline_type, sample_watcher=None, is_complete=False):
+        pipeline_group = PIPELINE_GROUPS[pipeline_type]
+        self.active_pipeline_groups.add(pipeline_group)
         if not is_complete:
             sample_watchers, _ = self.active_runs.setdefault(run['id'],
                                                              ([], pipeline_type))
