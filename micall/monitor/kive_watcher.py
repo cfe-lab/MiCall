@@ -157,7 +157,7 @@ def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
         if error_path.exists():
             continue
         done_path = (run_path /
-                     f"Results/version_{pipeline_version}/doneprocessing")
+                     f"Results/version_{pipeline_version}/done_all_processing")
         if done_path.exists():
             continue
         base_calls_path = run_path / "Data/Intensities/BaseCalls"
@@ -275,6 +275,17 @@ def get_scratch_path(results_path, pipeline_group):
         scratch_name = "scratch_mixed_hcv"
     scratch_path = results_path / scratch_name
     return scratch_path
+
+
+def get_collated_path(results_path, pipeline_group):
+    if pipeline_group == PipelineType.MAIN:
+        target_path = results_path
+    elif pipeline_group == PipelineType.DENOVO_MAIN:
+        target_path = results_path / "denovo"
+    else:
+        assert pipeline_group == PipelineType.MIXED_HCV_MAIN
+        target_path = results_path / "mixed_hcv"
+    return target_path
 
 
 class KiveWatcher:
@@ -516,7 +527,7 @@ class KiveWatcher:
                     if (results_path / "coverage_scores.csv").exists():
                         self.qai_upload_queue.put(results_path)
                     if not folder_watcher.active_pipeline_groups:
-                        (results_path / "done_all").touch()
+                        (results_path / "done_all_processing").touch()
                         self.folder_watchers.pop(folder)
                 if not self.folder_watchers:
                     logger.info('No more folders to process.')
@@ -548,16 +559,11 @@ class KiveWatcher:
         if pipeline_group == PipelineType.FILTER_QUALITY:
             return results_path
         scratch_path = get_scratch_path(results_path, pipeline_group)
-        if pipeline_group == PipelineType.MAIN:
-            target_path = results_path
-        elif pipeline_group == PipelineType.DENOVO_MAIN:
-            target_path = results_path / "denovo"
-        else:
-            assert pipeline_group == PipelineType.MIXED_HCV_MAIN
-            target_path = results_path / "mixed_hcv"
+        target_path = get_collated_path(results_path, pipeline_group)
         logger.info('Collating results in %s', target_path)
         self.copy_outputs(folder_watcher, scratch_path, target_path)
         shutil.rmtree(scratch_path)
+        (target_path / 'doneprocessing').touch()
         return results_path
 
     def copy_outputs(self,

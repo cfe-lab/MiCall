@@ -366,7 +366,6 @@ def process_folder(result_folder,
     all_results_path, _ = os.path.split(os.path.normpath(result_folder))
     run_path, _ = os.path.split(all_results_path)
     sample_sheet_file = os.path.join(run_path, "SampleSheet.csv")
-    done_path = os.path.join(result_folder, 'doneprocessing')
     with open(sample_sheet_file, "rU") as f:
         sample_sheet = sample_sheet_parser.sample_sheet_parser(f)
 
@@ -399,8 +398,6 @@ def process_folder(result_folder,
                                          conseqs,
                                          session,
                                          pipeline_version)
-                with open(done_path, "w"):
-                    pass
                 logger.info('Upload success!')
                 break
             except Exception:
