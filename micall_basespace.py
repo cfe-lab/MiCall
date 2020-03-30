@@ -326,8 +326,10 @@ def link_samples(run_path: str, data_path: str, is_denovo: bool):
     shutil.rmtree(data_path, ignore_errors=True)
     makedirs(data_path)
 
+    results_path = os.path.join(run_path, 'Results', 'basespace')
+    makedirs(results_path)
     output_path = os.path.join(data_path, 'output')
-    makedirs(output_path)
+    os.symlink(results_path, output_path)
     scratch_path = os.path.join(data_path, 'scratch')
     makedirs(scratch_path)
 
@@ -624,10 +626,17 @@ def safe_file_move(src, dst):
     """
     try:
         os.rename(src, dst)
-    except OSError:
-        shutil.copy(src, dst)
-        os.remove(src)
-
+    except OSError as e:
+        if e.errno == 18:
+            logger.debug(
+                "Failed to rename %s to %s; copying and deleting the original.",
+                src,
+                dst,
+            )
+            shutil.copy(src, dst)
+            os.remove(src)
+        else:
+            raise
 
 def makedirs(path):
     try:

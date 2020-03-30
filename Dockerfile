@@ -1,4 +1,22 @@
 # Generate the Docker container to run MiCall on BaseSpace.
+
+# The Docker container may also be used to process a run folder from the command
+# line without the use of BaseSpace.  When launched with `docker run`, the container
+# will by default look for your run directory (i.e. the "input" directory which
+# contains your FASTQ files and your SampleSheet.csv etc) in the `/input` directory
+# of the container, and it will write its results to the `/data` directory of the
+# container.  Thus you specify your input directory and output directory via bind
+# mounts.
+
+# Example: if you built your container as `micall:v0.1.2-3`, your run directory is
+# at `/path/on/host/run`, and you want your output to be written to
+# `/path/on/host/output`, you would invoke it as follows:
+#
+# docker run \
+#    --mount type=bind,source=/path/on/host/run/,destination=/input \
+#    --mount type=bind,source=/path/on/host/output/,destination=/data \
+#    micall:v0.1.2-3
+
 FROM python:3.7
 
 MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
