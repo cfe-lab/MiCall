@@ -326,10 +326,29 @@ def link_samples(run_path: str, data_path: str, is_denovo: bool):
     shutil.rmtree(data_path, ignore_errors=True)
     makedirs(data_path)
 
-    results_path = os.path.join(run_path, 'Results', 'basespace')
-    makedirs(results_path)
+    results_dir = os.path.join(run_path, "Results")
+    basespace_dir = os.path.join(results_dir, "basespace")
     output_path = os.path.join(data_path, 'output')
-    os.symlink(results_path, output_path)
+
+    results_dir_exists = os.path.exists(results_dir)
+    basespace_dir_exists = os.path.exists(basespace_dir)
+    makedirs(basespace_dir)
+    try:
+        os.link(basespace_dir, output_path)
+    except OSError as e:
+        if e.errno == errno.EXDEV:
+            logger.info(
+                "Unable to link %s to %s; writing results directly to the latter.",
+                basespace_dir,
+                output_path,
+            )
+            if not results_dir_exists:
+                shutil.rmtree(results_dir)
+            elif not basespace_dir_exists:
+                shutil.rmtree(basespace_dir)
+            makedirs(output_path)
+        else:
+            raise
     scratch_path = os.path.join(data_path, 'scratch')
     makedirs(scratch_path)
 
@@ -627,7 +646,7 @@ def safe_file_move(src, dst):
     try:
         os.rename(src, dst)
     except OSError as e:
-        if e.errno == 18:
+        if e.errno == errno.EXDEV:
             logger.debug(
                 "Failed to rename %s to %s; copying and deleting the original.",
                 src,
