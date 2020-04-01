@@ -696,8 +696,12 @@ def full_run(args):
     resolved_args = MiCallArgs(args)
     if args.link_run is not None:
         run_info = link_samples(resolved_args.link_run, resolved_args.data_path, args.denovo)
-    else:
+    elif os.path.exists(resolved_args.data_path, "input", "AppSession.json"):
         run_info = load_samples(resolved_args.data_path)
+    elif os.path.exists(os.path.join(args.input_dir, "SampleSheet.csv")):
+        run_info = link_samples(args.input_dir, resolved_args.data_path, args.denovo)
+    else:
+        raise ValueError("Could not find the required inputs to process.")
     pssm = Pssm()
 
     for filename in os.listdir(run_info.scratch_path):
