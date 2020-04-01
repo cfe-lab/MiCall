@@ -326,10 +326,29 @@ def link_samples(run_path: str, data_path: str, is_denovo: bool):
     shutil.rmtree(data_path, ignore_errors=True)
     makedirs(data_path)
 
-    results_path = os.path.join(run_path, 'Results', 'basespace')
-    makedirs(results_path)
+    results_dir = os.path.join(run_path, "Results")
+    basespace_dir = os.path.join(results_dir, "basespace")
     output_path = os.path.join(data_path, 'output')
-    os.symlink(results_path, output_path)
+
+    results_dir_exists = os.path.exists(results_dir)
+    basespace_dir_exists = os.path.exists(basespace_dir)
+    makedirs(basespace_dir)
+    try:
+        os.link(basespace_dir, output_path)
+    except OSError as e:
+        if e.errno == errno.EXDEV:
+            logger.info(
+                "Unable to link %s to %s; writing results directly to the latter.",
+                basespace_dir,
+                output_path,
+            )
+            if not results_dir_exists:
+                shutil.rmtree(results_dir)
+            elif not basespace_dir_exists:
+                shutil.rmtree(basespace_dir)
+            makedirs(output_path)
+        else:
+            raise
     scratch_path = os.path.join(data_path, 'scratch')
     makedirs(scratch_path)
 
@@ -586,24 +605,24 @@ def collate_samples(run_info):
     for sample_info in run_info.get_all_samples():
         if os.path.exists(sample_info.coverage_maps):
             for map_file in os.listdir(sample_info.coverage_maps):
-                os.rename(os.path.join(sample_info.coverage_maps, map_file),
-                          os.path.join(coverage_maps_path, map_file))
+                safe_file_move(os.path.join(sample_info.coverage_maps, map_file),
+                               os.path.join(coverage_maps_path, map_file))
         if os.path.exists(sample_info.contigs_svg):
-            os.rename(sample_info.contigs_svg,
-                      os.path.join(coverage_maps_path,
-                                   sample_info.name + '_contigs.svg'))
+            safe_file_move(sample_info.contigs_svg,
+                           os.path.join(coverage_maps_path,
+                                        sample_info.name + '_contigs.svg'))
         if os.path.exists(sample_info.genome_coverage_svg):
-            os.rename(sample_info.genome_coverage_svg,
-                      os.path.join(genome_coverage_path,
-                                   sample_info.name + '_genome_coverage.svg'))
+            safe_file_move(sample_info.genome_coverage_svg,
+                           os.path.join(genome_coverage_path,
+                                        sample_info.name + '_genome_coverage.svg'))
         if os.path.exists(sample_info.merge_lengths_svg):
-            os.rename(sample_info.merge_lengths_svg,
-                      os.path.join(merge_lengths_path,
-                                   sample_info.name + '_merge_lengths.svg'))
+            safe_file_move(sample_info.merge_lengths_svg,
+                           os.path.join(merge_lengths_path,
+                                        sample_info.name + '_merge_lengths.svg'))
         if os.path.exists(sample_info.resistance_pdf):
-            os.rename(sample_info.resistance_pdf,
-                      os.path.join(resistance_reports_path,
-                                   sample_info.name + '_resistance.pdf'))
+            safe_file_move(sample_info.resistance_pdf,
+                           os.path.join(resistance_reports_path,
+                                        sample_info.name + '_resistance.pdf'))
     try:
         # Remove directory, if it's empty.
         os.rmdir(genome_coverage_path)
@@ -613,6 +632,30 @@ def collate_samples(run_info):
     zip_folder(run_info.output_path, 'resistance_reports')
     zip_folder(run_info.output_path, 'coverage_maps')
 
+
+def safe_file_move(src, dst):
+    """
+    Helper that attempts to move a file from src to dst.
+
+    Because os.rename may fail on certain platforms, we fall back to
+    the boneheaded way of copying-and-deleting.
+    :param src:
+    :param dst:
+    :return:
+    """
+    try:
+        os.rename(src, dst)
+    except OSError as e:
+        if e.errno == errno.EXDEV:
+            logger.debug(
+                "Failed to rename %s to %s; copying and deleting the original.",
+                src,
+                dst,
+            )
+            shutil.copy(src, dst)
+            os.remove(src)
+        else:
+            raise
 
 def makedirs(path):
     try:
