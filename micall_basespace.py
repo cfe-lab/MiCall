@@ -13,7 +13,7 @@ import os
 import shutil
 import socket
 from zipfile import ZipFile, ZIP_DEFLATED
-
+import tarfile
 
 from micall.core.filter_quality import report_bad_cycles
 from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
@@ -159,31 +159,699 @@ class BSrequest:
 def parse_args():
     parser = ArgumentParser(description='Map FASTQ files to references.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument('data_path',
-                        default='/data',
-                        nargs='?',
-                        help='data folder filled in by BaseSpace')
-    parser.add_argument('--link_run',
-                        '-l',
-                        help='Run folder to link into the data folder')
-    parser.add_argument('--all_projects',
-                        '-a',
-                        action='store_true',
-                        help="Don't exclude any projects or seeds.")
-    parser.add_argument('--debug_remap',
-                        '-d',
-                        action='store_true',
-                        help="Write debug files for remapping steps.")
-    parser.add_argument('--max_active',
-                        '-m',
-                        type=int,
-                        help="Maximum number of samples to process at once, "
-                             "if not the number of CPU's.")
-    parser.add_argument('--denovo',
-                        action='store_true',
-                        help='Use de novo assembly instead of mapping to '
-                             'reference sequences.')
+    parser.add_argument(
+        "--denovo",
+        action="store_true",
+        help="Use de novo assembly instead of mapping to reference sequences.",
+    )
+    parser.add_argument(
+        "--input_dir",
+        help="Directory to look for input files in (if Dockerized, this is the "
+             "path *inside* the container; point a bind mount here).  If input "
+             "file paths are not specified as absolute paths, they will be taken "
+             "as being relative to this path.",
+        default="/input",
+    )
+    parser.add_argument(
+        "--data_path",
+        help="Directory to write outputs to (if Dockerized, this is the "
+             "path *inside* the container; point a bind mount here).  If output "
+             "file paths are not specified as absolute paths, they will be taken "
+             "as being relative to this path.",
+        default="/data",
+    )
+
+    subparsers = parser.add_subparsers()
+
+    # ####
+    # The "process a full BaseSpace-esque directory" subcommand.
+    # ####
+    full_run_parser = subparsers.add_parser(
+        "fullrun",
+        help="Process an entire run directory (e.g. for BaseSpace)",
+    )
+    full_run_parser.add_argument(
+        '--link_run',
+        '-l',
+        help='Run folder to link into the data folder'
+    )
+    full_run_parser.add_argument(
+        '--all_projects',
+        '-a',
+        action='store_true',
+        help="Don't exclude any projects or seeds."
+    )
+    full_run_parser.add_argument(
+        '--debug_remap',
+        '-d',
+        action='store_true',
+        help="Write debug files for remapping steps."
+    )
+    full_run_parser.add_argument(
+        '--max_active',
+        '-m',
+        type=int,
+        help="Maximum number of samples to process at once, "
+             "if not the number of CPU's."
+    )
+    full_run_parser.set_defaults(func=full_run)
+
+    # ####
+    # The "process a single sample" subcommand.
+    # ####
+    # First, the inputs.
+    single_sample_parser = subparsers.add_parser(
+        "single",
+        help="Process a single sample"
+    )
+    single_sample_parser.add_argument(
+        "fastq1",
+        help="FASTQ file containing forward reads (either an absolute path or relative"
+             " to the bind-mounted input directory)"
+    )
+    single_sample_parser.add_argument(
+        "fastq2",
+        help="FASTQ file containing reverse reads (either an absolute path or relative"
+             " to the bind-mounted input directory)"
+    )
+    single_sample_parser.add_argument(
+        "bad_cycles_csv",
+        help="list of tiles and cycles rejected for poor quality (either an absolute "
+             "path or relative to the bind-mounted input directory)"
+    )
+
+    # Next, the outputs.
+    single_sample_parser.add_argument(
+        "--g2p_csv",
+        help="CSV containing g2p predictions.",
+        default="g2p.csv",
+    )
+    single_sample_parser.add_argument(
+        "--g2p_summary_csv",
+        help="CSV containing overall call for the sample.",
+        default="g2p_summary.csv",
+
+    )
+    single_sample_parser.add_argument(
+        "--remap_counts_csv",
+        help="CSV containing numbers of mapped reads",
+        default="remap_counts.csv",
+    )
+    single_sample_parser.add_argument(
+        "--remap_conseq_csv",
+        help="CSV containing mapping consensus sequences",
+        default="remap_conseq.csv",
+    )
+    single_sample_parser.add_argument(
+        "--unmapped1_fastq",
+        help="FASTQ R1 of reads that failed to map to any region",
+        default="unmapped1.fastq",
+    )
+    single_sample_parser.add_argument(
+        "--unmapped2_fastq",
+        help="FASTQ R2 of reads that failed to map to any region",
+        default="unmapped2.fastq",
+    )
+    single_sample_parser.add_argument(
+        "--conseq_ins_csv",
+        help="CSV containing insertions relative to sample consensus",
+        default="conseq_ins.csv",
+    )
+    single_sample_parser.add_argument(
+        "--failed_csv",
+        help="CSV containing reads that failed to merge",
+        default="failed.csv",
+    )
+    single_sample_parser.add_argument(
+        "--cascade_csv",
+        help="count of reads at each step",
+        default="cascade.csv",
+    )
+    single_sample_parser.add_argument(
+        "--nuc_csv",
+        help="CSV containing nucleotide frequencies",
+        default="nuc.csv",
+    )
+    single_sample_parser.add_argument(
+        "--amino_csv",
+        help="CSV containing amino frequencies",
+        default="amino.csv",
+    )
+    single_sample_parser.add_argument(
+        "--coord_ins_csv",
+        help="CSV containing insertions relative to coordinate reference",
+        default="coord_ins.csv",
+    )
+    single_sample_parser.add_argument(
+        "--conseq_csv",
+        help="CSV containing consensus sequences",
+        default="conseq.csv",
+    )
+    single_sample_parser.add_argument(
+        "--conseq_region_csv",
+        help="CSV containing consensus sequences, split by region",
+        default="conseq_region.csv",
+    )
+    single_sample_parser.add_argument(
+        "--failed_align_csv",
+        help="CSV containing any consensus that failed to align",
+        default="failed_align.csv",
+    )
+    single_sample_parser.add_argument(
+        "--coverage_scores_csv",
+        help="CSV coverage scores.",
+        default="coverage_scores.csv",
+    )
+    single_sample_parser.add_argument(
+        "--coverage_maps_tar",
+        help="tar file of coverage maps.",
+        default="coverage_maps.tar",
+    )
+    single_sample_parser.add_argument(
+        "--aligned_csv",
+        help="CSV containing individual reads aligned to consensus",
+        default="aligned.csv",
+    )
+    single_sample_parser.add_argument(
+        "--g2p_aligned_csv",
+        help="CSV containing individual reads aligned to V3LOOP",
+        default="g2p_aligned.csv",
+    )
+    single_sample_parser.add_argument(
+        "--genome_coverage_csv",
+        help="CSV of coverage levels in full-genome coordinates",
+        default="genome_coverage.csv",
+    )
+    single_sample_parser.add_argument(
+        "--genome_coverage_svg",
+        help="SVG diagram of coverage in full-genome coordinates",
+        default="genome_coverage.svg",
+    )
+    single_sample_parser.add_argument(
+        "--contigs_csv",
+        help="CSV containing contigs built by de novo assembly",
+        default="contigs.csv",
+    )
+    single_sample_parser.add_argument(
+        "--read_entropy_csv",
+        help="CSV containing read pair length counts",
+        default="read_entropy.csv",
+    )
+    single_sample_parser.set_defaults(func=single_sample)
+
+    # ####
+    # The "process a single HCV sample" subcommand.
+    # ####
+    # First, the inputs.
+    hcv_sample_parser = subparsers.add_parser(
+        "singlehcv",
+        help="Process a single HCV sample"
+    )
+    hcv_sample_parser.add_argument(
+        "fastq1",
+        help="FASTQ file containing forward reads (either an absolute path or relative"
+             " to the bind-mounted input directory)"
+    )
+    hcv_sample_parser.add_argument(
+        "fastq2",
+        help="FASTQ file containing reverse reads (either an absolute path or relative"
+             " to the bind-mounted input directory)"
+    )
+    hcv_sample_parser.add_argument(
+        "bad_cycles_csv",
+        help="list of tiles and cycles rejected for poor quality (either an absolute "
+             "path or relative to the bind-mounted input directory)"
+    )
+    hcv_sample_parser.add_argument(
+        "midi1",
+        help="FASTQ file containing HCV MIDI forward reads (either an absolute path "
+             "or relative to the bind-mounted input directory)"
+    )
+    hcv_sample_parser.add_argument(
+        "midi2",
+        help="FASTQ file containing HCV MIDI reverse reads (either an absolute path "
+             "or relative to the bind-mounted input directory)"
+    )
+    hcv_sample_parser.add_argument(
+        "midi_bad_cycles_csv",
+        help="list of tiles and cycles rejected for poor quality (either an absolute "
+             "path or relative to the bind-mounted input directory)"
+    )
+
+    # Next, the outputs pertaining to the main samples.
+    hcv_sample_parser.add_argument(
+        "--g2p_csv",
+        help="CSV containing g2p predictions.",
+        default="g2p.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--g2p_summary_csv",
+        help="CSV containing overall call for the sample.",
+        default="g2p_summary.csv",
+
+    )
+    hcv_sample_parser.add_argument(
+        "--remap_counts_csv",
+        help="CSV containing numbers of mapped reads",
+        default="remap_counts.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--remap_conseq_csv",
+        help="CSV containing mapping consensus sequences",
+        default="remap_conseq.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--unmapped1_fastq",
+        help="FASTQ R1 of reads that failed to map to any region",
+        default="unmapped1.fastq",
+    )
+    hcv_sample_parser.add_argument(
+        "--unmapped2_fastq",
+        help="FASTQ R2 of reads that failed to map to any region",
+        default="unmapped2.fastq",
+    )
+    hcv_sample_parser.add_argument(
+        "--conseq_ins_csv",
+        help="CSV containing insertions relative to sample consensus",
+        default="conseq_ins.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--failed_csv",
+        help="CSV containing reads that failed to merge",
+        default="failed.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--cascade_csv",
+        help="count of reads at each step",
+        default="cascade.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--nuc_csv",
+        help="CSV containing nucleotide frequencies",
+        default="nuc.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--amino_csv",
+        help="CSV containing amino frequencies",
+        default="amino.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--coord_ins_csv",
+        help="CSV containing insertions relative to coordinate reference",
+        default="coord_ins.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--conseq_csv",
+        help="CSV containing consensus sequences",
+        default="conseq.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--conseq_region_csv",
+        help="CSV containing consensus sequences, split by region",
+        default="conseq_region.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--failed_align_csv",
+        help="CSV containing any consensus that failed to align",
+        default="failed_align.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--coverage_scores_csv",
+        help="CSV coverage scores.",
+        default="coverage_scores.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--coverage_maps_tar",
+        help="tar file of coverage maps.",
+        default="coverage_maps.tar",
+    )
+    hcv_sample_parser.add_argument(
+        "--aligned_csv",
+        help="CSV containing individual reads aligned to consensus",
+        default="aligned.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--g2p_aligned_csv",
+        help="CSV containing individual reads aligned to V3LOOP",
+        default="g2p_aligned.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--genome_coverage_csv",
+        help="CSV of coverage levels in full-genome coordinates",
+        default="genome_coverage.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--genome_coverage_svg",
+        help="SVG diagram of coverage in full-genome coordinates",
+        default="genome_coverage.svg",
+    )
+    hcv_sample_parser.add_argument(
+        "--contigs_csv",
+        help="CSV containing contigs built by de novo assembly",
+        default="contigs.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--read_entropy_csv",
+        help="CSV containing read pair length counts",
+        default="read_entropy.csv",
+    )
+
+    # Next, outputs pertaining to the MIDI samples.
+    hcv_sample_parser.add_argument(
+        "--midi_g2p_csv",
+        help="CSV containing g2p predictions (MIDI).",
+        default="midi_g2p.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_g2p_summary_csv",
+        help="CSV containing overall call for the sample (MIDI).",
+        default="midi_g2p_summary.csv",
+
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_remap_counts_csv",
+        help="CSV containing numbers of mapped reads (MIDI)",
+        default="midi_remap_counts.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_remap_conseq_csv",
+        help="CSV containing mapping consensus sequences (MIDI)",
+        default="midi_remap_conseq.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_unmapped1_fastq",
+        help="FASTQ R1 of reads that failed to map to any region (MIDI)",
+        default="midi_unmapped1.fastq",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_unmapped2_fastq",
+        help="FASTQ R2 of reads that failed to map to any region (MIDI)",
+        default="midi_unmapped2.fastq",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_conseq_ins_csv",
+        help="CSV containing insertions relative to sample consensus (MIDI)",
+        default="midi_conseq_ins.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_failed_csv",
+        help="CSV containing reads that failed to merge (MIDI)",
+        default="midi_failed.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_cascade_csv",
+        help="count of reads at each step (MIDI)",
+        default="midi_cascade.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_nuc_csv",
+        help="CSV containing nucleotide frequencies (MIDI)",
+        default="midi_nuc.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_amino_csv",
+        help="CSV containing amino frequencies (MIDI)",
+        default="midi_amino.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_coord_ins_csv",
+        help="CSV containing insertions relative to coordinate reference (MIDI)",
+        default="midi_coord_ins.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_conseq_csv",
+        help="CSV containing consensus sequences (MIDI)",
+        default="midi_conseq.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_conseq_region_csv",
+        help="CSV containing consensus sequences, split by region (MIDI)",
+        default="midi_conseq_region.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_failed_align_csv",
+        help="CSV containing any consensus that failed to align (MIDI)",
+        default="midi_failed_align.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_coverage_scores_csv",
+        help="CSV coverage scores (MIDI).",
+        default="midi_coverage_scores.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_coverage_maps_tar",
+        help="tar file of coverage maps (MIDI).",
+        default="midi_coverage_maps.tar",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_aligned_csv",
+        help="CSV containing individual reads aligned to consensus (MIDI)",
+        default="midi_aligned.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_g2p_aligned_csv",
+        help="CSV containing individual reads aligned to V3LOOP (MIDI)",
+        default="midi_g2p_aligned.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_genome_coverage_csv",
+        help="CSV of coverage levels in full-genome coordinates (MIDI)",
+        default="midi_genome_coverage.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_genome_coverage_svg",
+        help="SVG diagram of coverage in full-genome coordinates (MIDI)",
+        default="midi_genome_coverage.svg",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_contigs_csv",
+        help="CSV containing contigs built by de novo assembly (MIDI)",
+        default="midi_contigs.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_read_entropy_csv",
+        help="CSV containing read pair length counts (MIDI)",
+        default="midi_read_entropy.csv",
+    )
+
+    hcv_sample_parser.add_argument(
+        "--resistance_csv",
+        help="CSV containing resistance calls.",
+        default="resistance.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--mutations_csv",
+        help="CSV containing resistance mutations.",
+        default="mutations.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--resistance_fail_csv",
+        help="CSV containing failure reasons.",
+        default="resistance_fail.csv",
+    )
+    hcv_sample_parser.add_argument(
+        "--resistance_pdf",
+        help="resistance report",
+        default="resistance.pdf",
+    )
+    hcv_sample_parser.add_argument(
+        "--resistance_consensus_csv",
+        help="CSV with amino consensus used for resistance.",
+        default="resistance_consensus.csv",
+    )
+
+    hcv_sample_parser.set_defaults(func=hcv_sample)
+
     return parser.parse_args()
+
+
+class MiCallArgs:
+    """
+    Wrapper that performs some path translation on our inputs and outputs.
+    """
+    INPUTS = [
+        "fastq1",
+        "fastq2",
+        "bad_cycles_csv",
+        "midi1",
+        "midi2",
+        "midi_bad_cycles_csv"
+    ]
+
+    def __init__(self, args):
+        self.original_args = args
+
+    def __getattr__(self, arg_name):
+        if arg_name.startswith('__'):
+            raise AttributeError(arg_name)
+        resolved_path = self.original_args.get(arg_name)
+        if not os.path.isabs(resolved_path):
+            io_prefix = (self.original_args.input_dir if arg_name in self.INPUTS
+                         else self.original_args.data_path)
+            resolved_path = os.path.join(io_prefix, resolved_path)
+        return resolved_path
+
+
+def full_run(args):
+    resolved_args = MiCallArgs(args)
+    if args.link_run is not None:
+        run_info = link_samples(resolved_args.link_run, resolved_args.data_path, args.denovo)
+    else:
+        run_info = load_samples(resolved_args.data_path)
+    pssm = Pssm()
+
+    for filename in os.listdir(run_info.scratch_path):
+        filepath = os.path.join(run_info.scratch_path, filename)
+        if os.path.isdir(filepath):
+            shutil.rmtree(filepath)
+        else:
+            os.remove(filepath)
+
+    if run_info.interop_path is None:
+        run_summary = None
+    else:
+        logger.info('Summarizing run.')
+        run_summary = summarize_run(run_info)
+
+    pool = Pool(processes=args.max_active)
+    pool.map(functools.partial(process_sample,
+                               args=args,
+                               pssm=pssm,
+                               use_denovo=run_info.is_denovo),
+             run_info.get_all_samples())
+
+    pool.close()
+    pool.join()
+    pool = Pool()
+    pool.map(functools.partial(process_resistance,
+                               run_info=run_info),
+             run_info.sample_groups)
+
+    pool.close()
+    pool.join()
+    collate_samples(run_info)
+    if run_summary is not None:
+        summarize_samples(run_info, run_summary)
+    logger.info('Done.')
+
+
+def single_sample(args):
+    resolved_args = MiCallArgs(args)
+    scratch_path = os.path.join(os.path.dirname(resolved_args.cascade_csv), "scratch")
+    shutil.rmtree(scratch_path, ignore_errors=True)
+
+    sample = Sample(
+        fastq1=resolved_args.fastq1,
+        fastq2=resolved_args.fastq2,
+        bad_cycles_csv=resolved_args.bad_cycles_csv,
+        g2p_csv=resolved_args.g2p_csv,
+        g2p_summary_csv=resolved_args.g2p_summary_csv,
+        remap_counts_csv=resolved_args.remap_counts_csv,
+        remap_conseq_csv=resolved_args.remap_conseq_csv,
+        unmapped1_fastq=resolved_args.unmapped1_fastq,
+        unmapped2_fastq=resolved_args.unmapped2_fastq,
+        conseq_ins_csv=resolved_args.conseq_ins_csv,
+        failed_csv=resolved_args.failed_csv,
+        cascade_csv=resolved_args.cascade_csv,
+        nuc_csv=resolved_args.nuc_csv,
+        amino_csv=resolved_args.amino_csv,
+        coord_ins_csv=resolved_args.coord_ins_csv,
+        conseq_csv=resolved_args.conseq_csv,
+        conseq_region_csv=resolved_args.conseq_region_csv,
+        failed_align_csv=resolved_args.failed_align_csv,
+        coverage_scores_csv=resolved_args.coverage_scores_csv,
+        aligned_csv=resolved_args.aligned_csv,
+        g2p_aligned_csv=resolved_args.g2p_aligned_csv,
+        contigs_csv=resolved_args.contigs_csv,
+        genome_coverage_csv=resolved_args.genome_coverage_csv,
+        genome_coverage_svg=resolved_args.genome_coverage_svg,
+        read_entropy_csv=resolved_args.read_entropy_csv,
+        scratch_path=scratch_path
+    )
+
+    pssm = Pssm()
+    sample.process(pssm,
+                   force_gzip=True,  # dataset files change .gz to .raw
+                   use_denovo=args.denovo)
+
+    with tarfile.open(resolved_args.coverage_maps_tar, mode='w') as tar:
+        for image_name in os.listdir(sample.coverage_maps):
+            image_path = os.path.join(sample.coverage_maps, image_name)
+            archive_path = os.path.join('coverage_maps', image_name)
+            tar.add(image_path, archive_path)
+
+    return sample
+
+
+def hcv_sample(args):
+    # First, process the main samples.
+    single_sample(args)
+
+    # Do the same for the MIDI samples.
+    resolved_args = MiCallArgs(args)
+    scratch_path = os.path.join(os.path.dirname(resolved_args.midi_cascade_csv), "scratch")
+    shutil.rmtree(scratch_path, ignore_errors=True)
+
+    # First process the main samples.
+    midi_sample = Sample(
+        fastq1=resolved_args.midi_fastq1,
+        fastq2=resolved_args.midi_fastq2,
+        bad_cycles_csv=resolved_args.midi_bad_cycles_csv,
+        g2p_csv=resolved_args.midi_g2p_csv,
+        g2p_summary_csv=resolved_args.midi_g2p_summary_csv,
+        remap_counts_csv=resolved_args.midi_remap_counts_csv,
+        remap_conseq_csv=resolved_args.midi_remap_conseq_csv,
+        unmapped1_fastq=resolved_args.midi_unmapped1_fastq,
+        unmapped2_fastq=resolved_args.midi_unmapped2_fastq,
+        conseq_ins_csv=resolved_args.midi_conseq_ins_csv,
+        failed_csv=resolved_args.midi_failed_csv,
+        cascade_csv=resolved_args.midi_cascade_csv,
+        nuc_csv=resolved_args.midi_nuc_csv,
+        amino_csv=resolved_args.midi_amino_csv,
+        coord_ins_csv=resolved_args.midi_coord_ins_csv,
+        conseq_csv=resolved_args.midi_conseq_csv,
+        conseq_region_csv=resolved_args.midi_conseq_region_csv,
+        failed_align_csv=resolved_args.midi_failed_align_csv,
+        coverage_scores_csv=resolved_args.midi_coverage_scores_csv,
+        aligned_csv=resolved_args.midi_aligned_csv,
+        g2p_aligned_csv=resolved_args.midi_g2p_aligned_csv,
+        contigs_csv=resolved_args.midi_contigs_csv,
+        genome_coverage_csv=resolved_args.midi_genome_coverage_csv,
+        genome_coverage_svg=resolved_args.midi_genome_coverage_svg,
+        read_entropy_csv=resolved_args.midi_read_entropy_csv,
+        scratch_path=scratch_path
+    )
+
+    pssm = Pssm()
+    midi_sample.process(
+        pssm,
+        force_gzip=True,  # dataset files change .gz to .raw
+        use_denovo=args.denovo,
+    )
+
+    with tarfile.open(resolved_args.midi_coverage_maps_tar, mode='w') as tar:
+        for image_name in os.listdir(midi_sample.coverage_maps):
+            image_path = os.path.join(midi_sample.coverage_maps, image_name)
+            archive_path = os.path.join('coverage_maps', image_name)
+            tar.add(image_path, archive_path)
+
+    # Now, analyze the two samples together for resistance.
+    # scratch_path = os.path.join(os.path.dirname(resolved_args.main_amino_csv), 'scratch')
+    # shutil.rmtree(scratch_path, ignore_errors=True)
+    sample1 = Sample(
+        amino_csv=resolved_args.amino_csv,
+        resistance_csv=resolved_args.resistance_csv,
+        mutations_csv=resolved_args.mutations_csv,
+        resistance_fail_csv=resolved_args.resistance_fail_csv,
+        resistance_pdf=resolved_args.resistance_pdf,
+        resistance_consensus_csv=resolved_args.resistance_consensus_csv,
+        scratch_path=scratch_path
+    )
+    sample2 = Sample(amino_csv=resolved_args.midi_amino_csv)
+    main_and_midi = SampleGroup(sample1, sample2)
+
+    main_and_midi.process_resistance(RunInfo([main_and_midi]))
+    return main_and_midi
 
 
 class Args(object):
@@ -657,6 +1325,7 @@ def safe_file_move(src, dst):
         else:
             raise
 
+
 def makedirs(path):
     try:
         os.makedirs(path)
@@ -671,45 +1340,7 @@ def main():
                 socket.gethostname(),
                 multiprocessing.cpu_count())
     args = parse_args()
-    if args.link_run is not None:
-        run_info = link_samples(args.link_run, args.data_path, args.denovo)
-    else:
-        run_info = load_samples(args.data_path)
-    pssm = Pssm()
-
-    for filename in os.listdir(run_info.scratch_path):
-        filepath = os.path.join(run_info.scratch_path, filename)
-        if os.path.isdir(filepath):
-            shutil.rmtree(filepath)
-        else:
-            os.remove(filepath)
-
-    if run_info.interop_path is None:
-        run_summary = None
-    else:
-        logger.info('Summarizing run.')
-        run_summary = summarize_run(run_info)
-
-    pool = Pool(processes=args.max_active)
-    pool.map(functools.partial(process_sample,
-                               args=args,
-                               pssm=pssm,
-                               use_denovo=run_info.is_denovo),
-             run_info.get_all_samples())
-
-    pool.close()
-    pool.join()
-    pool = Pool()
-    pool.map(functools.partial(process_resistance,
-                               run_info=run_info),
-             run_info.sample_groups)
-
-    pool.close()
-    pool.join()
-    collate_samples(run_info)
-    if run_summary is not None:
-        summarize_samples(run_info, run_summary)
-    logger.info('Done.')
+    args.func(args)
 
 
 if __name__ == '__main__':
