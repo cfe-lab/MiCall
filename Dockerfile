@@ -1,18 +1,18 @@
 # Generate the Docker container to run MiCall on BaseSpace.
 
 # The Docker container may also be used to process a run folder from the command
-# line without the use of BaseSpace.  When launched with `docker run`, the container
-# will by default look for your run directory (i.e. the "input" directory which
-# contains your FASTQ files and your SampleSheet.csv etc) in the `/input` directory
-# of the container, and it will write its results to the `/data` directory of the
-# container.  Thus you specify your input directory and output directory via bind
-# mounts.
+# line without the use of BaseSpace.  When launched with `docker run fullrun`, the
+# container will by default look for your run directory (i.e. the "input" directory
+# which contains your FASTQ files and your SampleSheet.csv etc) in the `/input`
+# directory of the container, and it will write its results to the `/data` directory
+# of the container.  Thus you specify your input directory and output directory via
+# bind mounts.
 
 # Example: if you built your container as `micall:v0.1.2-3`, your run directory is
 # at `/path/on/host/run`, and you want your output to be written to
 # `/path/on/host/output`, you would invoke it as follows:
 #
-# docker run \
+# docker run fullrun \
 #    --mount type=bind,source=/path/on/host/run/,destination=/input \
 #    --mount type=bind,source=/path/on/host/output/,destination=/data \
 #    micall:v0.1.2-3
@@ -105,4 +105,4 @@ COPY micall/utils   /opt/micall/micall/utils/
 
 RUN python /opt/micall/micall/blast_db/make_blast_db.py
 
-CMD ["python", "/opt/micall/micall_basespace.py", "--link_run", "/input"]
+ENTRYPOINT ["python", "/opt/micall/micall_basespace.py"]
