@@ -187,7 +187,7 @@ def parse_args():
     # The "process a full BaseSpace-esque directory" subcommand.
     # ####
     full_run_parser = subparsers.add_parser(
-        "fullrun",
+        "folder",
         help="Process an entire run directory (e.g. for BaseSpace)",
     )
     full_run_parser.add_argument(
@@ -221,7 +221,7 @@ def parse_args():
     # ####
     # First, the inputs.
     single_sample_parser = subparsers.add_parser(
-        "single",
+        "sample",
         help="Process a single sample"
     )
     single_sample_parser.add_argument(
@@ -235,7 +235,7 @@ def parse_args():
              " to the bind-mounted input directory)"
     )
     single_sample_parser.add_argument(
-        "bad_cycles_csv",
+        "--bad_cycles_csv",
         help="list of tiles and cycles rejected for poor quality (either an absolute "
              "path or relative to the bind-mounted input directory)"
     )
@@ -364,7 +364,7 @@ def parse_args():
     # ####
     # First, the inputs.
     hcv_sample_parser = subparsers.add_parser(
-        "singlehcv",
+        "hcv_sample",
         help="Process a single HCV sample"
     )
     hcv_sample_parser.add_argument(
@@ -378,11 +378,6 @@ def parse_args():
              " to the bind-mounted input directory)"
     )
     hcv_sample_parser.add_argument(
-        "bad_cycles_csv",
-        help="list of tiles and cycles rejected for poor quality (either an absolute "
-             "path or relative to the bind-mounted input directory)"
-    )
-    hcv_sample_parser.add_argument(
         "midi1",
         help="FASTQ file containing HCV MIDI forward reads (either an absolute path "
              "or relative to the bind-mounted input directory)"
@@ -393,7 +388,12 @@ def parse_args():
              "or relative to the bind-mounted input directory)"
     )
     hcv_sample_parser.add_argument(
-        "midi_bad_cycles_csv",
+        "--bad_cycles_csv",
+        help="list of tiles and cycles rejected for poor quality (either an absolute "
+             "path or relative to the bind-mounted input directory)"
+    )
+    hcv_sample_parser.add_argument(
+        "--midi_bad_cycles_csv",
         help="list of tiles and cycles rejected for poor quality (either an absolute "
              "path or relative to the bind-mounted input directory)"
     )
