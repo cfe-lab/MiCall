@@ -799,13 +799,13 @@ def hcv_sample(args):
 
     # Do the same for the MIDI samples.
     resolved_args = MiCallArgs(args)
-    scratch_path = os.path.join(os.path.dirname(resolved_args.midi_cascade_csv), "scratch")
+    scratch_path = os.path.join(os.path.dirname(resolved_args.midi_cascade_csv), "midi_scratch")
     shutil.rmtree(scratch_path, ignore_errors=True)
 
     # First process the main samples.
     midi_sample = Sample(
-        fastq1=resolved_args.midi_fastq1,
-        fastq2=resolved_args.midi_fastq2,
+        fastq1=resolved_args.midi1,
+        fastq2=resolved_args.midi2,
         bad_cycles_csv=resolved_args.midi_bad_cycles_csv,
         g2p_csv=resolved_args.midi_g2p_csv,
         g2p_summary_csv=resolved_args.midi_g2p_summary_csv,

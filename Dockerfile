@@ -22,7 +22,7 @@
 # `/input` directory, and will write the outputs to the `/data` directory, so set up
 # your bind mounts accordingly.  You will specify file paths as parameters; if these
 # are absolute paths, they will be interpreted as such inside the container, and if
-# not, then they will be interpreted as relative to `/input` and `/data`.ADD
+# not, then they will be interpreted as relative to `/input` and `/data`.
 
 # Example: assuming the same setup as the previous, if you wish to process files
 # `1234A_forward.fastq` and `1234A_reverse.fastq` in the `/path/on/host/run`
@@ -33,9 +33,23 @@
 #    --mount type=bind,source=/path/on/host/output/,destination=/data \
 #    micall:v0.1.2-3 sample 1234A_forward.fastq 1234A_reverse.fastq
 
+# Likewise you can process a single HCV sample by launching the container with the
+# `hcv_sample` subcommand.  The previous details about bind mounts apply.
+
+# Example: assuming the same setup as the previous, if you wish to process files
+# `1234A_forward.fastq`, `1234A_reverse.fastq`, `1234A_forward_MIDI.fastq`, and
+# `1234A_reverse_MIDI.fastq`, all in the `/path/on/host/run`
+# directory, you would invoke it as follows:
+#
+# docker run \
+#    --mount type=bind,source=/path/on/host/run/,destination=/input \
+#    --mount type=bind,source=/path/on/host/output/,destination=/data \
+#    micall:v0.1.2-3 hcv_sample 1234A_forward.fastq 1234A_reverse.fastq \
+#    1234A_forward_MIDI.fastq 1234A_reverse_MIDI.fastq
+
 # You can see all of the command-line options by calling
 #
-# docker run [image] {folder,sample} --help
+# docker run [image] {folder,sample,hcv_sample} --help
 
 FROM python:3.7
 
