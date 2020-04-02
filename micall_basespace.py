@@ -170,7 +170,7 @@ def parse_args():
              "path *inside* the container; point a bind mount here).  If input "
              "file paths are not specified as absolute paths, they will be taken "
              "as being relative to this path.",
-        default="/input",
+        default=".",
     )
     parser.add_argument(
         "--data_path",
@@ -178,7 +178,7 @@ def parse_args():
              "path *inside* the container; point a bind mount here).  If output "
              "file paths are not specified as absolute paths, they will be taken "
              "as being relative to this path.",
-        default="/data",
+        default=".",
     )
 
     subparsers = parser.add_subparsers()
