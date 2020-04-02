@@ -679,7 +679,7 @@ class MiCallArgs:
     ]
 
     def __init__(self, args):
-        self.original_args = args
+        self.original_args = vars(args)
 
     def __getattr__(self, arg_name):
         if arg_name.startswith('__'):
@@ -695,8 +695,14 @@ class MiCallArgs:
 def full_run(args):
     resolved_args = MiCallArgs(args)
     if args.link_run is not None:
-        run_info = link_samples(resolved_args.link_run, resolved_args.data_path, args.denovo)
-    elif os.path.exists(resolved_args.data_path, "input", "AppSession.json"):
+        run_info = link_samples(
+            resolved_args.link_run,
+            resolved_args.data_path,
+            args.denovo,
+        )
+    elif os.path.exists(
+            os.path.join(resolved_args.data_path, "input", "AppSession.json")
+    ):
         run_info = load_samples(resolved_args.data_path)
     elif os.path.exists(os.path.join(args.input_dir, "SampleSheet.csv")):
         run_info = link_samples(args.input_dir, resolved_args.data_path, args.denovo)
