@@ -685,9 +685,11 @@ class MiCallArgs:
         if arg_name.startswith('__'):
             raise AttributeError(arg_name)
         resolved_path = self.original_args.get(arg_name)
+        if resolved_path is None:
+            return None
         if not os.path.isabs(resolved_path):
-            io_prefix = (self.original_args.input_dir if arg_name in self.INPUTS
-                         else self.original_args.data_path)
+            io_prefix = (self.original_args["input_dir"] if arg_name in self.INPUTS
+                         else self.original_args["data_path"])
             resolved_path = os.path.join(io_prefix, resolved_path)
         return resolved_path
 
@@ -780,9 +782,7 @@ def single_sample(args):
     )
 
     pssm = Pssm()
-    sample.process(pssm,
-                   force_gzip=True,  # dataset files change .gz to .raw
-                   use_denovo=args.denovo)
+    sample.process(pssm, use_denovo=args.denovo)
 
     with tarfile.open(resolved_args.coverage_maps_tar, mode='w') as tar:
         for image_name in os.listdir(sample.coverage_maps):
@@ -833,11 +833,7 @@ def hcv_sample(args):
     )
 
     pssm = Pssm()
-    midi_sample.process(
-        pssm,
-        force_gzip=True,  # dataset files change .gz to .raw
-        use_denovo=args.denovo,
-    )
+    midi_sample.process(pssm, use_denovo=args.denovo)
 
     with tarfile.open(resolved_args.midi_coverage_maps_tar, mode='w') as tar:
         for image_name in os.listdir(midi_sample.coverage_maps):

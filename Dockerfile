@@ -1,8 +1,8 @@
 # Generate the Docker container to run MiCall on BaseSpace.
 
 # The Docker container may also be used to process a run folder from the command
-# line without the use of BaseSpace.  When launched with `docker run fullrun`, the
-# container will by default look for your run directory (i.e. the "input" directory
+# line without the use of BaseSpace.  When launched with `docker run [image] folder`,
+# the container will by default look for your run directory (i.e. the "input" directory
 # which contains your FASTQ files and your SampleSheet.csv etc) in the `/input`
 # directory of the container, and it will write its results to the `/data` directory
 # of the container.  Thus you specify your input directory and output directory via
@@ -12,10 +12,30 @@
 # at `/path/on/host/run`, and you want your output to be written to
 # `/path/on/host/output`, you would invoke it as follows:
 #
-# docker run fullrun \
+# docker run \
 #    --mount type=bind,source=/path/on/host/run/,destination=/input \
 #    --mount type=bind,source=/path/on/host/output/,destination=/data \
-#    micall:v0.1.2-3
+#    micall:v0.1.2-3 folder
+
+# You may also process a single sample by launching the container with the `sample`
+# subcommand.  Again, the container will expect inputs to be made available in the
+# `/input` directory, and will write the outputs to the `/data` directory, so set up
+# your bind mounts accordingly.  You will specify file paths as parameters; if these
+# are absolute paths, they will be interpreted as such inside the container, and if
+# not, then they will be interpreted as relative to `/input` and `/data`.ADD
+
+# Example: assuming the same setup as the previous, if you wish to process files
+# `1234A_forward.fastq` and `1234A_reverse.fastq` in the `/path/on/host/run`
+# directory, you would invoke it as follows:
+#
+# docker run \
+#    --mount type=bind,source=/path/on/host/run/,destination=/input \
+#    --mount type=bind,source=/path/on/host/output/,destination=/data \
+#    micall:v0.1.2-3 sample 1234A_forward.fastq 1234A_reverse.fastq
+
+# You can see all of the command-line options by calling
+#
+# docker run [image] {folder,sample} --help
 
 FROM python:3.7
 
