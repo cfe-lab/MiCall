@@ -159,62 +159,106 @@ class BSrequest:
 def parse_args():
     parser = ArgumentParser(description='Map FASTQ files to references.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
+    # parser.add_argument(
+    #     "--denovo",
+    #     action="store_true",
+    #     help="Use de novo assembly instead of mapping to reference sequences.",
+    # )
+    # parser.add_argument(
+    #     "--input_dir",
+    #     help="Directory to look for input files in (if Dockerized, this is the "
+    #          "path *inside* the container; point a bind mount here).  If input "
+    #          "file paths are not specified as absolute paths, they will be taken "
+    #          "as being relative to this path.",
+    #     default=".",
+    # )
+    # parser.add_argument(
+    #     "--data_path",
+    #     help="Directory to write outputs to (if Dockerized, this is the "
+    #          "path *inside* the container; point a bind mount here).  If output "
+    #          "file paths are not specified as absolute paths, they will be taken "
+    #          "as being relative to this path.",
+    #     default=".",
+    # )
+    subparsers = parser.add_subparsers(
+        title="Sub-commands (i.e. modes of operation)",
+    )
+
+    basespace_parser = subparsers.add_parser(
+        "basespace",
+        description="Process a BaseSpace run.",
+        help="Used by BaseSpace; if invoking manually you will typically not use this.",
+    )
+    basespace_parser.add_argument(
+        "--all_projects",
+        "-a",
+        action="store_true",
+        help="Don't exclude any projects or seeds.",
+    )
+    basespace_parser.add_argument(
+        "--debug_remap",
+        "-d",
+        action="store_true",
+        help="Write debug files for remapping steps.",
+    )
+    basespace_parser.add_argument(
+        "--max_active",
+        "-m",
+        type=int,
+        help="Maximum number of samples to process at once, "
+             "if not the number of CPUs.",
+    )
+    basespace_parser.add_argument(
         "--denovo",
         action="store_true",
         help="Use de novo assembly instead of mapping to reference sequences.",
     )
-    parser.add_argument(
-        "--input_dir",
-        help="Directory to look for input files in (if Dockerized, this is the "
-             "path *inside* the container; point a bind mount here).  If input "
-             "file paths are not specified as absolute paths, they will be taken "
-             "as being relative to this path.",
-        default=".",
-    )
-    parser.add_argument(
-        "--data_path",
-        help="Directory to write outputs to (if Dockerized, this is the "
-             "path *inside* the container; point a bind mount here).  If output "
-             "file paths are not specified as absolute paths, they will be taken "
-             "as being relative to this path.",
-        default=".",
-    )
-
-    subparsers = parser.add_subparsers()
+    basespace_parser.set_defaults(func=basespace_run)
 
     # ####
-    # The "process a full BaseSpace-esque directory" subcommand.
+    # The "process a full directory" subcommand.
     # ####
-    full_run_parser = subparsers.add_parser(
+    folder_parser = subparsers.add_parser(
         "folder",
-        help="Process an entire run directory (e.g. for BaseSpace)",
+        help="Process an entire run",
     )
-    full_run_parser.add_argument(
-        '--link_run',
-        '-l',
-        help='Run folder to link into the data folder'
+    folder_parser.add_argument(
+        "run_folder",
+        nargs="?",
+        help="Path to the folder containing the MiSeq data",
+        default="/input",
     )
-    full_run_parser.add_argument(
-        '--all_projects',
-        '-a',
-        action='store_true',
-        help="Don't exclude any projects or seeds."
+    folder_parser.add_argument(
+        "results_folder",
+        nargs="?",
+        help="Folder to write results to",
+        default="/data",
     )
-    full_run_parser.add_argument(
-        '--debug_remap',
-        '-d',
-        action='store_true',
-        help="Write debug files for remapping steps."
+    folder_parser.add_argument(
+        "--all_projects",
+        "-a",
+        action="store_true",
+        help="Don't exclude any projects or seeds.",
     )
-    full_run_parser.add_argument(
-        '--max_active',
-        '-m',
+    folder_parser.add_argument(
+        "--debug_remap",
+        "-d",
+        action="store_true",
+        help="Write debug files for remapping steps.",
+    )
+    folder_parser.add_argument(
+        "--max_active",
+        "-m",
         type=int,
         help="Maximum number of samples to process at once, "
-             "if not the number of CPU's."
+             "if not the number of CPU's.",
     )
-    full_run_parser.set_defaults(func=full_run)
+    folder_parser.add_argument(
+        "--denovo",
+        action="store_true",
+        help="Use de novo assembly instead of mapping to reference sequences.",
+    )
+    folder_parser.set_defaults(func=process_folder)
 
     # ####
     # The "process a single sample" subcommand.
@@ -222,25 +266,44 @@ def parse_args():
     # First, the inputs.
     single_sample_parser = subparsers.add_parser(
         "sample",
-        help="Process a single sample"
+        help="Process a single sample",
     )
     single_sample_parser.add_argument(
         "fastq1",
         help="FASTQ file containing forward reads (either an absolute path or relative"
-             " to the bind-mounted input directory)"
+             " to the bind-mounted input directory)",
     )
     single_sample_parser.add_argument(
         "fastq2",
         help="FASTQ file containing reverse reads (either an absolute path or relative"
-             " to the bind-mounted input directory)"
+             " to the bind-mounted input directory)",
     )
     single_sample_parser.add_argument(
         "--bad_cycles_csv",
         help="list of tiles and cycles rejected for poor quality (either an absolute "
-             "path or relative to the bind-mounted input directory)"
+             "path or relative to the bind-mounted input directory)",
+    )
+
+    single_sample_parser.add_argument(
+        "--run_folder",
+        help="Directory to look for input files in (if Dockerized, this is the "
+             "path *inside* the container; point a bind mount here).  If input "
+             "file paths are not specified as absolute paths, they will be taken "
+             "as being relative to this path.",
+        default="/input"
     )
 
     # Next, the outputs.
+    single_sample_parser.add_argument(
+        "results_folder",
+        nargs="?",
+        help="Directory to write outputs to (if Dockerized, this is the "
+             "path *inside* the container; point a bind mount here).  If output "
+             "file paths are not specified as absolute paths, they will be taken "
+             "as being relative to this path.",
+        default="/data",
+    )
+
     single_sample_parser.add_argument(
         "--g2p_csv",
         help="CSV containing g2p predictions.",
@@ -348,14 +411,19 @@ def parse_args():
         default="genome_coverage.svg",
     )
     single_sample_parser.add_argument(
+        "--denovo",
+        action="store_true",
+        help="Use de novo assembly instead of mapping to reference sequences.",
+    )
+    single_sample_parser.add_argument(
         "--contigs_csv",
         help="CSV containing contigs built by de novo assembly",
-        default="contigs.csv",
+        default="contigs.csv (ignored if --denovo is not specified)",
     )
     single_sample_parser.add_argument(
         "--read_entropy_csv",
         help="CSV containing read pair length counts",
-        default="read_entropy.csv",
+        default="read_entropy.csv (ignored if --denovo is not specified)",
     )
     single_sample_parser.set_defaults(func=single_sample)
 
@@ -396,6 +464,31 @@ def parse_args():
         "--midi_bad_cycles_csv",
         help="list of tiles and cycles rejected for poor quality (either an absolute "
              "path or relative to the bind-mounted input directory)"
+    )
+
+    # Optionally customize your input and output directories.
+    hcv_sample_parser.add_argument(
+        "--run_folder",
+        help="Directory to look for input files in (if Dockerized, this is the "
+             "path *inside* the container; point a bind mount here).  If input "
+             "file paths are not specified as absolute paths, they will be taken "
+             "as being relative to this path.",
+        default="/input"
+    )
+    hcv_sample_parser.add_argument(
+        "results_folder",
+        nargs="?",
+        help="Directory to write outputs to (if Dockerized, this is the "
+             "path *inside* the container; point a bind mount here).  If output "
+             "file paths are not specified as absolute paths, they will be taken "
+             "as being relative to this path.",
+        default="/data",
+    )
+
+    hcv_sample_parser.add_argument(
+        "--denovo",
+        action="store_true",
+        help="Use de novo assembly instead of mapping to reference sequences.",
     )
 
     # Next, the outputs pertaining to the main samples.
@@ -507,12 +600,14 @@ def parse_args():
     )
     hcv_sample_parser.add_argument(
         "--contigs_csv",
-        help="CSV containing contigs built by de novo assembly",
+        help="CSV containing contigs built by de novo assembly "
+             "(ignored if --denovo is not specified)",
         default="contigs.csv",
     )
     hcv_sample_parser.add_argument(
         "--read_entropy_csv",
-        help="CSV containing read pair length counts",
+        help="CSV containing read pair length counts "
+             "(ignored if --denovo is not specified)",
         default="read_entropy.csv",
     )
 
@@ -625,12 +720,14 @@ def parse_args():
     )
     hcv_sample_parser.add_argument(
         "--midi_contigs_csv",
-        help="CSV containing contigs built by de novo assembly (MIDI)",
+        help="CSV containing contigs built by de novo assembly (MIDI) "
+             "(ignored if --denovo is not specified)",
         default="midi_contigs.csv",
     )
     hcv_sample_parser.add_argument(
         "--midi_read_entropy_csv",
-        help="CSV containing read pair length counts (MIDI)",
+        help="CSV containing read pair length counts (MIDI) "
+             "(ignored if --denovo is not specified)",
         default="midi_read_entropy.csv",
     )
 
@@ -694,22 +791,23 @@ class MiCallArgs:
         return resolved_path
 
 
-def full_run(args):
+def basespace_run(args):
     resolved_args = MiCallArgs(args)
-    if args.link_run is not None:
-        run_info = link_samples(
-            resolved_args.link_run,
-            resolved_args.data_path,
-            args.denovo,
-        )
-    elif os.path.exists(
-            os.path.join(resolved_args.data_path, "input", "AppSession.json")
-    ):
-        run_info = load_samples(resolved_args.data_path)
-    elif os.path.exists(os.path.join(args.input_dir, "SampleSheet.csv")):
-        run_info = link_samples(args.input_dir, resolved_args.data_path, args.denovo)
-    else:
-        raise ValueError("Could not find the required inputs to process.")
+    run_info = load_samples(resolved_args.results_folder)
+    process_run(run_info, args)
+
+
+def process_folder(args):
+    resolved_args = MiCallArgs(args)
+    run_info = link_samples(
+        resolved_args.run_folder,
+        resolved_args.results_folder,
+        args.denovo,
+    )
+    process_run(run_info, args)
+
+
+def process_run(run_info, args):
     pssm = Pssm()
 
     for filename in os.listdir(run_info.scratch_path):
