@@ -84,7 +84,7 @@ RUN pip install --upgrade pip && \
   python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 ## MiCall
-COPY micall_basespace.py micall_kive.py micall_kive_resistance.py version.tx[t] /opt/micall/
+COPY micall_docker.py micall_kive.py micall_kive_resistance.py version.tx[t] /opt/micall/
 COPY micall/__init__.py micall/project* /opt/micall/micall/
 
 COPY micall/blast_db/make_blast_db.py    /opt/micall/micall/blast_db/make_blast_db.py
