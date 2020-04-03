@@ -83,6 +83,7 @@ AA
         self.assertEqual(expected_text, self.censored_file.getvalue())
 
     def testDifferentDirection(self):
+        """ Bad cycle doesn't match this read. """
         self.original_bytes = b"""\
 @M01841:45:000000000-A5FEG:1:1101:5296:13227 2:N:0:9
 ACGT
@@ -96,7 +97,8 @@ AAAA
         censor(self.original_file,
                self.bad_cycles,
                self.censored_file,
-               use_gzip=False)
+               use_gzip=False,
+               cycle_sign=-1)
 
         self.assertEqual(expected_text, self.censored_file.getvalue())
 
@@ -119,7 +121,8 @@ AA#A
         censor(self.original_file,
                self.bad_cycles,
                self.censored_file,
-               use_gzip=False)
+               use_gzip=False,
+               cycle_sign=-1)
 
         self.assertEqual(expected_text, self.censored_file.getvalue())
 

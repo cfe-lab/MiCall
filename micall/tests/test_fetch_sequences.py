@@ -2,25 +2,7 @@ from io import StringIO
 from unittest import TestCase
 
 from micall.core.project_config import ProjectConfig
-from micall.utils.fetch_sequences import extract_sequence, parse_fasta, \
-    compare_config
-
-
-class FetchSequencesTest(TestCase):
-    def test(self):
-        source = """\
-preceding text
-ORIGIN
-       1 actggattca tcagtttgca
-      21 taccg
-//
-following text
-"""
-        expected_sequence = 'ACTGGATTCATCAGTTTGCATACCG'
-
-        sequence = extract_sequence(source)
-
-        self.assertEqual(expected_sequence, sequence)
+from micall.utils.fetch_sequences import parse_fasta, compare_config
 
 
 class ParseFastaTest(TestCase):

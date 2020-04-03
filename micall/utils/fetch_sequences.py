@@ -37,6 +37,8 @@ def main():
     error_count += check_hiv_wild_types(project_config)
     error_count += check_hla_seeds(project_config, unchecked_ref_names)
     error_count += check_hla_coordinates(project_config, unchecked_ref_names)
+    error_count += check_sars_seeds(project_config, unchecked_ref_names)
+    error_count += check_sars_coordinates(project_config, unchecked_ref_names)
 
     if not unchecked_ref_names:
         print('No unchecked refs.')
@@ -118,7 +120,7 @@ the nucleotide from the overall consensus.
 Our G2P reference is the same V3LOOP with a bunch of X's added to leave space
 for insertions in the scoring matrix. See pssm_lib.py for more details.
 """)
-    hxb2 = fetch_hiv_by_accession('K03455')
+    hxb2 = fetch_by_accession('K03455')
 
     consensus_sequences = fetch_alignment_sequences(2004,
                                                     'CON',  # Consensus/Ancestral
@@ -243,11 +245,14 @@ This script contains a complete list of the reference accession numbers.
                   'HCV-6u': 'EU408330',
                   'HCV-6v': 'EU158186',
                   'HCV-6w': 'Ref.6w.TW.x.HCV-6-D140.EU643834',
-                  'HCV-7a': 'Ref.7a.CA.x.QC69.EF108306'}
+                  # EF108306.2 is available, but only extends 5' and 3'.
+                  'HCV-7a': 'Ref.7a.CA.x.QC69.EF108306.1'}
     source_sequences = {}
     for ref_name, source_id in source_ids.items():
-        accession_number = source_id.split('.')[-1]
-        source_sequences[ref_name] = fetch_hcv_by_accession(accession_number)
+        match = re.search(r'[A-Z_]+[0-9.]+$', source_id)
+        assert match is not None, source_id
+        accession_number = match.group(0)
+        source_sequences[ref_name] = fetch_by_accession(accession_number)
 
     ref_names = project_config.getProjectSeeds('HCV')
     unchecked_ref_names.difference_update(ref_names)
@@ -274,7 +279,7 @@ This script contains a complete list of the reference accession numbers.
                          'HCV6': 'Y12083',
                          'HCV7': 'EF108306'}
     source_nuc_sequences = {
-        genotype: fetch_hcv_by_accession(accession_number)
+        genotype: fetch_by_accession(accession_number)
         for genotype, accession_number in accession_numbers.items()}
 
     gene_names = [
@@ -321,21 +326,10 @@ This script contains a complete list of the reference accession numbers.
 
 def check_hla_seeds(project_config, unchecked_ref_names: set):
     print("""\
-HLA seed reference is downloaded from
-https://www.ncbi.nlm.nih.gov/nuccore/AJ458991.3?report=fasta
+HLA seed reference is downloaded from accession AJ458991.3
 """)
 
-    response = requests.get('https://www.ncbi.nlm.nih.gov/nuccore/AJ458991.3?'
-                            'report=fasta&format=text')
-    response.raise_for_status()
-    match = re.search(r'<div id="viewercontent1".*val="(\d+)"', response.text)
-    response_id = match.group(1)
-
-    response = requests.get(f'https://www.ncbi.nlm.nih.gov/sviewer/viewer.fcgi?'
-                            f'id={response_id}&db=nuccore&report=fasta')
-    response.raise_for_status()
-    hla_fasta = StringIO(response.text)
-    source_sequence, = parse_fasta(hla_fasta).values()
+    source_sequence = fetch_by_accession('AJ458991.3')
     source_sequences = {'HLA-B-seed': source_sequence[301:1869]}
 
     ref_names = project_config.getProjectSeeds('HLA-B')
@@ -363,6 +357,57 @@ HLA coordinate references are translated from the seed reference.
     for ref_name, (start, end) in boundaries.items():
         source_nuc_sequence = seed_sequence[start:end]
         source_sequences[ref_name] = translate(source_nuc_sequence)
+
+    report, error_count = compare_config(ref_names,
+                                         project_config,
+                                         source_sequences)
+    print(report)
+    return error_count
+
+
+def check_sars_seeds(project_config, unchecked_ref_names: set):
+    print("""\
+SARS-CoV-2 seed reference is downloaded from accession MN908947
+""")
+
+    source_sequence = fetch_by_accession('MN908947')
+    source_sequences = {'SARS-CoV-2-seed': source_sequence}
+
+    ref_names = project_config.getProjectSeeds('SARS-CoV-2')
+    unchecked_ref_names.difference_update(ref_names)
+
+    report, error_count = compare_config(ref_names,
+                                         project_config,
+                                         source_sequences)
+    print(report)
+    return error_count
+
+
+def check_sars_coordinates(project_config, unchecked_ref_names: set):
+    print("""\
+SARS-CoV-2 coordinate references are translated from the seed reference.
+""")
+    boundaries = {'SARS-CoV-2-orf1a': (266, 13483),
+                  'SARS-CoV-2-S': (21563, 25384),
+                  'SARS-CoV-2-ORF3a': (25393, 26220),
+                  'SARS-CoV-2-E': (26245, 26472),
+                  'SARS-CoV-2-M': (26523, 27191),
+                  'SARS-CoV-2-ORF6': (27202, 27387),
+                  'SARS-CoV-2-ORF7a': (27394, 27759),
+                  'SARS-CoV-2-ORF7b': (27756, 27887),
+                  'SARS-CoV-2-ORF8': (27894, 28259),
+                  'SARS-CoV-2-N': (28274, 29533),
+                  'SARS-CoV-2-ORF10': (29558, 29674)}
+
+    seed_sequence = project_config.getReference('SARS-CoV-2')
+    ref_names = sorted(boundaries.keys())
+    unchecked_ref_names.difference_update(ref_names)
+
+    source_sequences = {}
+    for ref_name, (start, end) in boundaries.items():
+        source_nuc_sequence = seed_sequence[start-1:end-3]  # Trim stop codons.
+        source_sequences[ref_name] = translate(source_nuc_sequence)
+        print(ref_name, len(source_sequences[ref_name]))
 
     report, error_count = compare_config(ref_names,
                                          project_config,
@@ -413,36 +458,19 @@ def fetch_hcv_sequences(year, alignment_type='REF', region='GENOME'):
     return sequences
 
 
-def fetch_hiv_by_accession(accession):
-    response = requests.get(
-        'https://www.hiv.lanl.gov/components/sequence/HIV/asearch/'
-        'query_one.comp?se_id=' + accession)
-    return extract_sequence(response.text)
+def fetch_by_accession(accession):
+    response = requests.get('https://www.ncbi.nlm.nih.gov/nuccore/' +
+                            accession + '?report=fasta&format=text')
+    response.raise_for_status()
+    match = re.search(r'<div id="viewercontent1".*val="(\d+)"', response.text)
+    response_id = match.group(1)
 
-
-def fetch_hcv_by_accession(accession):
-    response = requests.get(
-        'https://www.hcv.lanl.gov/components/sequence/HCV/asearch/'
-        'query_one.comp?se_id=' + accession)
-    return extract_sequence(response.text)
-
-
-def extract_sequence(source):
-    """ Extract a reference's sequence from its search page.
-
-    :param str source: HTML from the search result page
-    """
-    match = re.search(r'ORIGIN(.*?)//', source, re.DOTALL)
-    assert match, source
-    sections = []
-    for line in match.group(1).splitlines():
-        if not line:
-            continue
-        line_match = re.match(r'^\s*\d+\s*([acgtryswkmbdhvn\s]+)$', line)
-        assert line_match, line
-        section = line_match.group(1)
-        sections.append(section.replace(' ', '').upper())
-    return ''.join(sections)
+    response = requests.get(f'https://www.ncbi.nlm.nih.gov/sviewer/viewer.fcgi?'
+                            f'id={response_id}&db=nuccore&report=fasta')
+    response.raise_for_status()
+    fasta = StringIO(response.text)
+    source_sequence, = parse_fasta(fasta).values()
+    return source_sequence
 
 
 def parse_fasta(fasta):

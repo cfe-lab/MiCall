@@ -127,7 +127,7 @@ mapped,valid,X4calls,X4pct,final,validpct
                     "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
                     "TGTACAAGA-------------------------------------------------"
                     "--------------------------------------------------"),
-                   100)                  ]
+                   100)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,300,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
@@ -158,7 +158,7 @@ mapped,valid,X4calls,X4pct,final,validpct
                     "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
                     "TGTACAAGA-------------------------------------------------"
                     "--------------------------------------------------"),
-                   100)                  ]
+                   100)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,300,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
@@ -189,7 +189,7 @@ mapped,valid,X4calls,X4pct,final,validpct
                     "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
                     "TGTACAAGA-------------------------------------------------"
                     "--------------------------------------------------"),
-                   100)                  ]
+                   100)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,300,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
@@ -449,8 +449,9 @@ class ExtractTargetTest(unittest.TestCase):
         extract = extract_target(seed, coord)
 
         self.assertEqual(expected_extract, extract)
-        
 
+
+# noinspection DuplicatedCode
 class FastqReaderTest(unittest.TestCase):
     def test_one_pair(self):
         self.fastq1 = StringIO("""\
@@ -557,6 +558,28 @@ LAUQ
 
         with self.assertRaisesRegex(FastqError, 'No match for read A:B:C.'):
             list(reader)
+
+    def test_extra_description(self):
+        self.fastq1 = StringIO("""\
+@A:B:C X:Y Z
+ACGT
++
+QUAL
+""")
+        self.fastq2 = StringIO("""\
+@A:B:C Q:R
+TTGG
++
+LAUQ
+""")
+        expected_reads = [("A:B:C",
+                           ("X:Y Z", "ACGT", "QUAL"),
+                           ("Q:R", "TTGG", "LAUQ"))]
+        reader = FastqReader(self.fastq1, self.fastq2)
+
+        reads = list(reader)
+
+        self.assertEqual(expected_reads, reads)
 
 
 class MergeReadsTest(unittest.TestCase):
@@ -739,6 +762,7 @@ class TrimReadsTest(unittest.TestCase):
         self.assertEqual(expected_reads, trimmed_reads)
 
 
+# noinspection DuplicatedCode
 class WriteUnmappedTest(unittest.TestCase):
     def test_unmapped(self):
         reads = [("A:B:C",
