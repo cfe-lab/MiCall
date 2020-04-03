@@ -1,55 +1,14 @@
-# Generate the Docker container to run MiCall on BaseSpace.
+# Dockerized version of MiCall.
 
-# The Docker container may also be used to process a run folder from the command
-# line without the use of BaseSpace.  When launched with `docker run [image] folder`,
-# the container will by default look for your run directory (i.e. the "input" directory
-# which contains your FASTQ files and your SampleSheet.csv etc) in the `/input`
-# directory of the container, and it will write its results to the `/data` directory
-# of the container.  Thus you specify your input directory and output directory via
-# bind mounts.
-
-# Example: if you built your container as `micall:v0.1.2-3`, your run directory is
-# at `/path/on/host/run`, and you want your output to be written to
-# `/path/on/host/output`, you would invoke it as follows:
+# This Docker container will be used by BaseSpace, as well as for running on a
+# Docker-enabled workstation.  Instructions may be found by running with the
+# --help option; e.g. if you build this Docker image as micall:version, call
 #
-# docker run \
-#    --mount type=bind,source=/path/on/host/run/,destination=/input \
-#    --mount type=bind,source=/path/on/host/output/,destination=/data \
-#    micall:v0.1.2-3 folder
-
-# You may also process a single sample by launching the container with the `sample`
-# subcommand.  Again, the container will expect inputs to be made available in the
-# `/input` directory, and will write the outputs to the `/data` directory, so set up
-# your bind mounts accordingly.  You will specify file paths as parameters; if these
-# are absolute paths, they will be interpreted as such inside the container, and if
-# not, then they will be interpreted as relative to `/input` and `/data`.
-
-# Example: assuming the same setup as the previous, if you wish to process files
-# `1234A_forward.fastq` and `1234A_reverse.fastq` in the `/path/on/host/run`
-# directory, you would invoke it as follows:
+# docker run micall:version --help
 #
-# docker run \
-#    --mount type=bind,source=/path/on/host/run/,destination=/input \
-#    --mount type=bind,source=/path/on/host/output/,destination=/data \
-#    micall:v0.1.2-3 sample 1234A_forward.fastq 1234A_reverse.fastq
-
-# Likewise you can process a single HCV sample by launching the container with the
-# `hcv_sample` subcommand.  The previous details about bind mounts apply.
-
-# Example: assuming the same setup as the previous, if you wish to process files
-# `1234A_forward.fastq`, `1234A_reverse.fastq`, `1234A_forward_MIDI.fastq`, and
-# `1234A_reverse_MIDI.fastq`, all in the `/path/on/host/run`
-# directory, you would invoke it as follows:
+# or for help on the specific subcommands,
 #
-# docker run \
-#    --mount type=bind,source=/path/on/host/run/,destination=/input \
-#    --mount type=bind,source=/path/on/host/output/,destination=/data \
-#    micall:v0.1.2-3 hcv_sample 1234A_forward.fastq 1234A_reverse.fastq \
-#    1234A_forward_MIDI.fastq 1234A_reverse_MIDI.fastq
-
-# You can see all of the command-line options by calling
-#
-# docker run [image] {folder,sample,hcv_sample} --help
+# docker run micall:version {basespace,folder,sample,hcv_sample} --help
 
 FROM python:3.7
 
