@@ -139,4 +139,4 @@ COPY micall/utils   /opt/micall/micall/utils/
 
 RUN python /opt/micall/micall/blast_db/make_blast_db.py
 
-ENTRYPOINT ["python", "/opt/micall/micall_basespace.py", "--input_dir", "/input", "--data_path", "/data"]
+ENTRYPOINT ["python", "/opt/micall/micall_docker.py", "--input_dir", "/input", "--data_path", "/data"]
