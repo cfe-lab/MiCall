@@ -185,7 +185,7 @@ on your host machine as "/path/on/host/", you would invoke it as follows:
 
     docker run \\
         --mount type=bind,source=/path/on/host/,destination=/data \\
-        micall:v0.1.2-3 basespace`
+        micall:v0.1.2-3 basespace
 """
 
 FOLDER_DESCRIPTION = """\
@@ -194,7 +194,8 @@ Map FASTQ files to references for a MiCall run.
 This will look for MiSeq output in the path specified by the optional 
 "run_folder" argument (by default, this is "/data").  The output will be 
 written to the path specified by the option "results_folder" argument (by 
-default, "/data/results").
+default, "Results"), which itself will be taken as relative to the path 
+specified by "run_folder" if it is not an absolute path.
 
 As this will typically be run in a Dockerized setting, you should make sure
 your bind mounts are appropriately set; also note that any input/output paths
@@ -202,7 +203,7 @@ will be handled as if they are *inside* the container.
 
 For example: if you built your container as "micall:v0.1.2-3", your MiSeq data is
 on your host machine as "/path/on/host/", and you want the outputs to be  
-written to "/path/on/host/results", you would invoke it as follows:
+written to "/path/on/host/Results", you would invoke it as follows:
 
     docker run \\ 
         --mount type=bind,source=/path/on/host/,destination=/data \\ 
@@ -226,8 +227,8 @@ This will process the sample specified by the command-line arguments.  Input
 paths specified by these arguments will be taken as relative to the "base" 
 path specified by "--run_folder" (default "/data"), or can be specified as 
 absolute paths themselves.  Output paths will be taken as relative to the path 
-specified by the optional "results_folder" path (default "/data/results"),
-which itself will be taken as relative to the path specified by "--run_folder"
+specified by the optional "results_folder" path (default "Results"), which 
+itself will be taken as relative to the path specified by "--run_folder"
 if it is not an absolute path.
 
 As this will typically be run in a Dockerized setting, you should make sure
@@ -237,7 +238,7 @@ will be handled as if they are *inside* the container.
 For example: if you built your container as "micall:v0.1.2-3", your MiSeq data is
 on your host machine as "/path/on/host/" as "1234A_forward.fastq" and 
 "1234A_reverse.fastq", and you want the outputs to be written to 
-"/path/on/host/results", you would invoke it as follows:
+"/path/on/host/Results", you would invoke it as follows:
 
     docker run \\ 
         --mount type=bind,source=/path/on/host/,destination=/data \\ 
@@ -262,7 +263,7 @@ This will process the HCV sample specified by the command-line arguments.
 Input paths specified by these arguments will be taken as relative to the 
 "base" path specified by "--run_folder" (default "/data"), or can be specified 
 as absolute paths themselves.  Output paths will be taken as relative to the 
-path specified by the optional "results_folder" path (default "/data/results"),
+path specified by the optional "results_folder" path (default "Results"), 
 which itself will be taken as relative to the path specified by "--run_folder"
 if it is not an absolute path.
 
@@ -274,7 +275,7 @@ For example: if you built your container as "micall:v0.1.2-3", your MiSeq data i
 on your host machine as "/path/on/host/" as "1234A_forward.fastq", 
 "1234A_reverse.fastq", "1234A_MIDI_forward.fastq", and 
 "1234A_MIDI_reverse.fastq", and you want the outputs to be written to 
-"/path/on/host/results", you would invoke it as follows:
+"/path/on/host/Results", you would invoke it as follows:
 
     docker run \\ 
         --mount type=bind,source=/path/on/host/,destination=/data \\ 
@@ -395,8 +396,12 @@ def parse_args():
     folder_parser.add_argument(
         "results_folder",
         nargs="?",
-        help="Folder to write results to",
-        default="/data/results",
+        help="Directory to write outputs to (if Dockerized, this is "
+             "the path *inside* the container; point a bind mount here).  If "
+             "output file paths are not specified as absolute paths, they will "
+             "be taken as being relative to this path.  If *this* path is not"
+             "absolute, it will be taken as relative to --run_folder.",
+        default="Results",
     )
     folder_parser.add_argument(
         "--all_projects",
@@ -466,8 +471,9 @@ def parse_args():
         help="(Optional) directory to write outputs to (if Dockerized, this is "
              "the path *inside* the container; point a bind mount here).  If "
              "output file paths are not specified as absolute paths, they will "
-             "be taken as being relative to this path.",
-        default="/data/results",
+             "be taken as being relative to this path.  If *this* path is not"
+             "absolute, it will be taken as relative to --run_folder.",
+        default="Results",
     )
 
     single_sample_parser.add_argument(
@@ -649,8 +655,9 @@ def parse_args():
         help="(Optional) directory to write outputs to (if Dockerized, this is "
              "the path *inside* the container; point a bind mount here).  If "
              "output file paths are not specified as absolute paths, they will "
-             "be taken as being relative to this path.",
-        default="/data/results",
+             "be taken as being relative to this path.  If *this* path is not"
+             "absolute, it will be taken as relative to --run_folder.",
+        default="Results",
     )
 
     hcv_sample_parser.add_argument(
@@ -956,7 +963,7 @@ class MiCallArgs:
         if not os.path.isabs(resolved_path):
             io_prefix = (self.original_args["run_folder"]
                          if arg_name in self.PREFIX_WITH_RUN_FOLDER
-                         else self.original_args["data_path"])
+                         else self.original_args["results_folder"])
             resolved_path = os.path.join(io_prefix, resolved_path)
         return resolved_path
 
@@ -1278,7 +1285,7 @@ def link_samples(run_path: str, data_path: str, is_denovo: bool):
     try:
         os.link(basespace_dir, output_path)
     except OSError as e:
-        if e.errno == errno.EXDEV:
+        if e.errno in (errno.EXDEV, errno.EPERM):
             logger.info(
                 "Unable to link %s to %s; writing results directly to the latter.",
                 basespace_dir,
