@@ -1,4 +1,5 @@
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, \
+    RawDescriptionHelpFormatter
 import csv
 import errno
 import fnmatch
@@ -156,7 +157,9 @@ class BSrequest:
         return set(sample_id_lst) & sample_set
 
 
-MAIN_EPILOGUE = """\
+MAIN_DESCRIPTION = """\
+Map FASTQ files to references.
+
 This driver can run in several different modes; for more specific help, 
 see the help for the different subcommands.
 
@@ -169,21 +172,25 @@ All input and output paths will be handled as if they are inside the container,
 so you will have to set up bind mounts for your inputs and outputs.
 """
 
-BASESPACE_EPILOGUE = """\
+BASESPACE_DESCRIPTION = """\
+Map FASTQ files to references for a BaseSpace run.
+
 This will look for MiSeq output in the folder /data, and a BaseSpace-generated
 file at "/data/input/AppSession.json"; output will be written to
 "/data/output/".  This should always be run in a Docker container with the
 appropriate bind mounts to "/data", as done by BaseSpace. 
 
-Example: if you built your container as `micall:v0.1.2-3` and your data is
+For example: if you built your container as "micall:v0.1.2-3" and your data is
 on your host machine as "/path/on/host/", you would invoke it as follows:
 
-    docker run \
-        --mount type=bind,source=/path/on/host/,destination=/data \
-        micall:v0.1.2-3 basespace
+    docker run \\
+        --mount type=bind,source=/path/on/host/,destination=/data \\
+        micall:v0.1.2-3 basespace`
 """
 
-FOLDER_EPILOGUE = """\
+FOLDER_DESCRIPTION = """\
+Map FASTQ files to references for a MiCall run.
+
 This will look for MiSeq output in the path specified by the optional 
 "run_folder" argument (by default, this is "/data").  The output will be 
 written to the path specified by the option "results_folder" argument (by 
@@ -193,12 +200,12 @@ As this will typically be run in a Dockerized setting, you should make sure
 your bind mounts are appropriately set; also note that any input/output paths
 will be handled as if they are *inside* the container.
 
-Example: if you built your container as `micall:v0.1.2-3`, your MiSeq data is
+For example: if you built your container as "micall:v0.1.2-3", your MiSeq data is
 on your host machine as "/path/on/host/", and you want the outputs to be  
 written to "/path/on/host/results", you would invoke it as follows:
 
-    docker run \
-        --mount type=bind,source=/path/on/host/,destination=/data \
+    docker run \\ 
+        --mount type=bind,source=/path/on/host/,destination=/data \\ 
         micall:v0.1.2-3 folder
         
 If you wanted the outputs to be written to a path that is *not* a subfolder of
@@ -206,13 +213,15 @@ the run directory, you can achieve this with an additional bind mount, and
 specifying both of the aforementioned optional parameters.  For example,
 if you want to write the outputs to "/path/for/output/on/host":
 
-    docker run \
-        --mount type=bind,source=/path/on/host/,destination=/data \
-        --mount type=bind,source=/path/for/output/on/host,destination=/results \
+    docker run \\ 
+        --mount type=bind,source=/path/on/host/,destination=/data \\ 
+        --mount type=bind,source=/path/for/output/on/host,destination=/results \\ 
         micall:v0.1.2-3 folder /data /results
 """
 
-SAMPLE_EPILOGUE = """\
+SAMPLE_DESCRIPTION = """\
+Map FASTQ files to references for a single sample.
+
 This will process the sample specified by the command-line arguments.  Input 
 paths specified by these arguments will be taken as relative to the "base" 
 path specified by "--run_folder" (default "/data"), or can be specified as 
@@ -225,28 +234,30 @@ As this will typically be run in a Dockerized setting, you should make sure
 your bind mounts are appropriately set; also note that any input/output paths
 will be handled as if they are *inside* the container.
 
-Example: if you built your container as `micall:v0.1.2-3`, your MiSeq data is
+For example: if you built your container as "micall:v0.1.2-3", your MiSeq data is
 on your host machine as "/path/on/host/" as "1234A_forward.fastq" and 
 "1234A_reverse.fastq", and you want the outputs to be written to 
 "/path/on/host/results", you would invoke it as follows:
 
-    docker run \
-        --mount type=bind,source=/path/on/host/,destination=/data \
+    docker run \\ 
+        --mount type=bind,source=/path/on/host/,destination=/data \\ 
         micall:v0.1.2-3 sample 1234A_forward.fastq 1234A_reverse.fastq
 
 If you wanted the outputs to be written to a path that is *not* a subfolder of
 the run directory, you can achieve this with an additional bind mount, and 
 specifying both of the aforementioned optional parameters.  For example,
-if you want to write the outputs to "/path/for/output/on/host":
+if you want to write the outputs to "/host/output/path/":
 
-    docker run \
-        --mount type=bind,source=/path/on/host/,destination=/data \
-        --mount type=bind,source=/path/for/output/on/host,destination=/results \
-        micall:v0.1.2-3 folder 1234A_forward.fastq 1234A_reverse.fastq \ 
+    docker run \\
+        --mount type=bind,source=/path/on/host/,destination=/data \\
+        --mount type=bind,source=/host/output/path/,destination=/results \\
+        micall:v0.1.2-3 folder 1234A_forward.fastq 1234A_reverse.fastq \\
         /data /results
 """
 
-HCV_SAMPLE_EPILOGUE = """\
+HCV_SAMPLE_DESCRIPTION = """\
+Map FASTQ files to references for a single HCV sample.
+
 This will process the HCV sample specified by the command-line arguments.
 Input paths specified by these arguments will be taken as relative to the 
 "base" path specified by "--run_folder" (default "/data"), or can be specified 
@@ -259,36 +270,39 @@ As this will typically be run in a Dockerized setting, you should make sure
 your bind mounts are appropriately set; also note that any input/output paths
 will be handled as if they are *inside* the container.
 
-Example: if you built your container as `micall:v0.1.2-3`, your MiSeq data is
+For example: if you built your container as "micall:v0.1.2-3", your MiSeq data is
 on your host machine as "/path/on/host/" as "1234A_forward.fastq", 
 "1234A_reverse.fastq", "1234A_MIDI_forward.fastq", and 
 "1234A_MIDI_reverse.fastq", and you want the outputs to be written to 
 "/path/on/host/results", you would invoke it as follows:
 
-    docker run \
-        --mount type=bind,source=/path/on/host/,destination=/data \
-        micall:v0.1.2-3 hcv_sample 1234A_forward.fastq 1234A_reverse.fastq \
+    docker run \\ 
+        --mount type=bind,source=/path/on/host/,destination=/data \\ 
+        micall:v0.1.2-3 hcv_sample 1234A_forward.fastq 1234A_reverse.fastq \\ 
         1234A_MIDI_forward.fastq 1234A_MIDI_reverse.fastq
 
 If you wanted the outputs to be written to a path that is *not* a subfolder of
 the run directory, you can achieve this with an additional bind mount, and 
 specifying both of the aforementioned optional parameters.  For example,
-if you want to write the outputs to "/path/for/output/on/host":
+if you want to write the outputs to "/host/output/path/":
 
-    docker run \
-        --mount type=bind,source=/path/on/host/,destination=/data \
-        --mount type=bind,source=/path/for/output/on/host,destination=/results \
-        micall:v0.1.2-3 folder 1234A_forward.fastq 1234A_reverse.fastq \
-        1234A_MIDI_forward.fastq 1234A_MIDI_reverse.fastq \
+    docker run \\ 
+        --mount type=bind,source=/path/on/host/,destination=/data \\ 
+        --mount type=bind,source=/host/output/path/,destination=/results \\
+        micall:v0.1.2-3 folder 1234A_forward.fastq 1234A_reverse.fastq \\ 
+        1234A_MIDI_forward.fastq 1234A_MIDI_reverse.fastq \\ 
         /data /results
 """
 
 
+class MiCallFormatter(ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter):
+    pass
+
+
 def parse_args():
     parser = ArgumentParser(
-        description="Map FASTQ files to references.",
-        epilog=MAIN_EPILOGUE,
-        formatter_class=ArgumentDefaultsHelpFormatter,
+        description=MAIN_DESCRIPTION,
+        formatter_class=MiCallFormatter,
     )
     subparsers = parser.add_subparsers(
         title="Sub-commands (i.e. modes of operation)",
@@ -299,9 +313,9 @@ def parse_args():
     # ####
     basespace_parser = subparsers.add_parser(
         "basespace",
-        description="Map FASTQ files to references for a BaseSpace run.",
-        epilog=BASESPACE_EPILOGUE,
+        description=BASESPACE_DESCRIPTION,
         help="Used by BaseSpace; if invoking manually you will typically not use this.",
+        formatter_class=MiCallFormatter,
     )
     basespace_parser.add_argument(
         "--all_projects",
@@ -334,9 +348,9 @@ def parse_args():
     # ####
     folder_parser = subparsers.add_parser(
         "folder",
-        description="Map FASTQ files to references for a MiSeq run.",
-        epilog=FOLDER_EPILOGUE,
+        description=FOLDER_DESCRIPTION,
         help="Process an entire run",
+        formatter_class=MiCallFormatter,
     )
     folder_parser.add_argument(
         "run_folder",
@@ -382,9 +396,9 @@ def parse_args():
     # First, the inputs.
     single_sample_parser = subparsers.add_parser(
         "sample",
-        description="Map FASTQ files to references for a single sample.",
-        epliog=SAMPLE_EPILOGUE,
+        description=SAMPLE_DESCRIPTION,
         help="Process a single sample",
+        formatter_class=MiCallFormatter,
     )
     single_sample_parser.add_argument(
         "fastq1",
@@ -415,10 +429,10 @@ def parse_args():
     single_sample_parser.add_argument(
         "results_folder",
         nargs="?",
-        help="Directory to write outputs to (if Dockerized, this is the "
-             "path *inside* the container; point a bind mount here).  If output "
-             "file paths are not specified as absolute paths, they will be taken "
-             "as being relative to this path.",
+        help="(Optional) directory to write outputs to (if Dockerized, this is "
+             "the path *inside* the container; point a bind mount here).  If "
+             "output file paths are not specified as absolute paths, they will "
+             "be taken as being relative to this path.",
         default="/data/results",
     )
 
@@ -551,9 +565,9 @@ def parse_args():
     # First, the inputs.
     hcv_sample_parser = subparsers.add_parser(
         "hcv_sample",
-        description="Map FASTQ files to references for a single HCV sample.",
-        epilog=HCV_SAMPLE_EPILOGUE,
+        description=HCV_SAMPLE_DESCRIPTION,
         help="Process a single HCV sample",
+        formatter_class=MiCallFormatter,
     )
     hcv_sample_parser.add_argument(
         "fastq1",
@@ -598,10 +612,10 @@ def parse_args():
     hcv_sample_parser.add_argument(
         "results_folder",
         nargs="?",
-        help="Directory to write outputs to (if Dockerized, this is the "
-             "path *inside* the container; point a bind mount here).  If output "
-             "file paths are not specified as absolute paths, they will be taken "
-             "as being relative to this path.",
+        help="(Optional) directory to write outputs to (if Dockerized, this is "
+             "the path *inside* the container; point a bind mount here).  If "
+             "output file paths are not specified as absolute paths, they will "
+             "be taken as being relative to this path.",
         default="/data/results",
     )
 
