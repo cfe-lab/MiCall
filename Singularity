@@ -31,7 +31,7 @@ From: centos:7
 
 %files
     ## MiCall
-    micall_basespace.py /opt/micall/
+    micall_docker.py /opt/micall/
     micall_kive.py /opt/micall/
     micall_kive_resistance.py /opt/micall/
     micall/__init__.py /opt/micall/micall/
