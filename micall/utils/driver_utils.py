@@ -45,6 +45,40 @@ class MiCallFormatter(ArgumentDefaultsHelpFormatter):
         return wrapped
 
 
+class MiCallArgs:
+    """
+    Wrapper that performs some path translation on our inputs and outputs.
+    """
+    PREFIX_WITH_RUN_FOLDER = [
+        "fastq1",
+        "fastq2",
+        "bad_cycles_csv",
+        "midi1",
+        "midi2",
+        "midi_bad_cycles_csv",
+        "results_folder",
+    ]
+
+    def __init__(self, args):
+        self.original_args = vars(args)
+
+    def __getattr__(self, arg_name):
+        if arg_name.startswith('__'):
+            raise AttributeError(arg_name)
+        resolved_path = self.original_args.get(arg_name)
+        if resolved_path is None:
+            return None
+        if not os.path.isabs(resolved_path):
+            results = self.original_args["results_folder"]
+            if not os.path.isabs(results):
+                results = os.path.join(self.original_args["run_folder"], results)
+            io_prefix = (self.original_args["run_folder"]
+                         if arg_name in self.PREFIX_WITH_RUN_FOLDER
+                         else results)
+            resolved_path = os.path.join(io_prefix, resolved_path)
+        return resolved_path
+
+
 def safe_file_move(src, dst):
     """
     Helper that attempts to move a file from src to dst.

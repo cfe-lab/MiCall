@@ -1,5 +1,4 @@
-import re
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser
 import csv
 import errno
 import fnmatch
@@ -24,7 +23,8 @@ from micall.monitor.find_groups import find_groups
 from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.pssm_lib import Pssm
 from micall.monitor.tile_metrics_parser import summarize_tiles
-from micall.utils.driver_utils import MiCallFormatter, safe_file_move, makedirs
+from micall.utils.driver_utils import MiCallFormatter, safe_file_move, makedirs, \
+    MiCallArgs
 
 EXCLUDED_SEEDS = ['HLA-B-seed']  # Not ready yet.
 EXCLUDED_PROJECTS = ['HCV-NS5a',
@@ -898,40 +898,6 @@ def parse_args():
     hcv_sample_parser.set_defaults(func=hcv_sample)
 
     return parser.parse_args()
-
-
-class MiCallArgs:
-    """
-    Wrapper that performs some path translation on our inputs and outputs.
-    """
-    PREFIX_WITH_RUN_FOLDER = [
-        "fastq1",
-        "fastq2",
-        "bad_cycles_csv",
-        "midi1",
-        "midi2",
-        "midi_bad_cycles_csv",
-        "results_folder",
-    ]
-
-    def __init__(self, args):
-        self.original_args = vars(args)
-
-    def __getattr__(self, arg_name):
-        if arg_name.startswith('__'):
-            raise AttributeError(arg_name)
-        resolved_path = self.original_args.get(arg_name)
-        if resolved_path is None:
-            return None
-        if not os.path.isabs(resolved_path):
-            results = self.original_args["results_folder"]
-            if not os.path.isabs(results):
-                results = os.path.join(self.original_args["run_folder"], results)
-            io_prefix = (self.original_args["run_folder"]
-                         if arg_name in self.PREFIX_WITH_RUN_FOLDER
-                         else results)
-            resolved_path = os.path.join(io_prefix, resolved_path)
-        return resolved_path
 
 
 def basespace_run(args):
