@@ -601,12 +601,12 @@ def parse_args():
              " to the bind-mounted input directory)"
     )
     hcv_sample_parser.add_argument(
-        "midi1",
+        "midi_fastq1",
         help="FASTQ file containing HCV MIDI forward reads (either an absolute path "
              "or relative to the bind-mounted input directory)"
     )
     hcv_sample_parser.add_argument(
-        "midi2",
+        "midi_fastq2",
         help="FASTQ file containing HCV MIDI reverse reads (either an absolute path "
              "or relative to the bind-mounted input directory)"
     )
@@ -736,11 +736,7 @@ def process_run(run_info, args):
     logger.info('Done.')
 
 
-def single_sample(args):
-    resolved_args = MiCallArgs(args)
-    scratch_path = os.path.join(os.path.dirname(resolved_args.cascade_csv), "scratch")
-    shutil.rmtree(scratch_path, ignore_errors=True)
-
+def sample_process_helper(resolved_args, scratch_path, use_denovo):
     sample = Sample(
         fastq1=resolved_args.fastq1,
         fastq2=resolved_args.fastq2,
@@ -771,7 +767,7 @@ def single_sample(args):
     )
 
     pssm = Pssm()
-    sample.process(pssm, use_denovo=args.denovo)
+    sample.process(pssm, use_denovo=use_denovo)
 
     with tarfile.open(resolved_args.coverage_maps_tar, mode='w') as tar:
         for image_name in os.listdir(sample.coverage_maps):
@@ -782,53 +778,22 @@ def single_sample(args):
     return sample
 
 
+def single_sample(args):
+    resolved_args = MiCallArgs(args)
+    scratch_path = os.path.join(os.path.dirname(resolved_args.cascade_csv), "scratch")
+    shutil.rmtree(scratch_path, ignore_errors=True)
+    return sample_process_helper(resolved_args, scratch_path, args.denovo)
+
+
 def hcv_sample(args):
     # First, process the main samples.
     single_sample(args)
 
     # Do the same for the MIDI samples.
-    resolved_args = MiCallArgs(args)
-    scratch_path = os.path.join(os.path.dirname(resolved_args.midi_cascade_csv), "midi_scratch")
+    resolved_args = MiCallArgs(args, map_midi=True)
+    scratch_path = os.path.join(os.path.dirname(resolved_args.cascade_csv), "midi_scratch")
     shutil.rmtree(scratch_path, ignore_errors=True)
-
-    # First process the main samples.
-    midi_sample = Sample(
-        fastq1=resolved_args.midi1,
-        fastq2=resolved_args.midi2,
-        bad_cycles_csv=resolved_args.midi_bad_cycles_csv,
-        g2p_csv=resolved_args.midi_g2p_csv,
-        g2p_summary_csv=resolved_args.midi_g2p_summary_csv,
-        remap_counts_csv=resolved_args.midi_remap_counts_csv,
-        remap_conseq_csv=resolved_args.midi_remap_conseq_csv,
-        unmapped1_fastq=resolved_args.midi_unmapped1_fastq,
-        unmapped2_fastq=resolved_args.midi_unmapped2_fastq,
-        conseq_ins_csv=resolved_args.midi_conseq_ins_csv,
-        failed_csv=resolved_args.midi_failed_csv,
-        cascade_csv=resolved_args.midi_cascade_csv,
-        nuc_csv=resolved_args.midi_nuc_csv,
-        amino_csv=resolved_args.midi_amino_csv,
-        coord_ins_csv=resolved_args.midi_coord_ins_csv,
-        conseq_csv=resolved_args.midi_conseq_csv,
-        conseq_region_csv=resolved_args.midi_conseq_region_csv,
-        failed_align_csv=resolved_args.midi_failed_align_csv,
-        coverage_scores_csv=resolved_args.midi_coverage_scores_csv,
-        aligned_csv=resolved_args.midi_aligned_csv,
-        g2p_aligned_csv=resolved_args.midi_g2p_aligned_csv,
-        contigs_csv=resolved_args.midi_contigs_csv,
-        genome_coverage_csv=resolved_args.midi_genome_coverage_csv,
-        genome_coverage_svg=resolved_args.midi_genome_coverage_svg,
-        read_entropy_csv=resolved_args.midi_read_entropy_csv,
-        scratch_path=scratch_path
-    )
-
-    pssm = Pssm()
-    midi_sample.process(pssm, use_denovo=args.denovo)
-
-    with tarfile.open(resolved_args.midi_coverage_maps_tar, mode='w') as tar:
-        for image_name in os.listdir(midi_sample.coverage_maps):
-            image_path = os.path.join(midi_sample.coverage_maps, image_name)
-            archive_path = os.path.join('coverage_maps', image_name)
-            tar.add(image_path, archive_path)
+    sample_process_helper(resolved_args, scratch_path, args.denovo)
 
     # Now, analyze the two samples together for resistance.
     # scratch_path = os.path.join(os.path.dirname(resolved_args.main_amino_csv), 'scratch')

@@ -49,24 +49,29 @@ class MiCallFormatter(ArgumentDefaultsHelpFormatter):
 class MiCallArgs:
     """
     Wrapper that performs some path translation on our inputs and outputs.
+
+    Optionally map parameters to their "MIDI" equivalent, which is useful
+    because the HCV sample processing mode has two of every input argument; one
+    for the main sample and one for the MIDI sample.
     """
     PREFIX_WITH_RUN_FOLDER = [
         "fastq1",
         "fastq2",
         "bad_cycles_csv",
-        "midi1",
-        "midi2",
-        "midi_bad_cycles_csv",
         "results_folder",
     ]
+    MIDI_ARGUMENT_PREFIX = "midi_"
 
-    def __init__(self, args):
+    def __init__(self, args, map_midi=False):
         self.original_args = vars(args)
+        self.map_midi = map_midi
 
     def __getattr__(self, arg_name):
         if arg_name.startswith('__'):
             raise AttributeError(arg_name)
-        resolved_path = self.original_args.get(arg_name)
+
+        mapped_arg_name = self.MIDI_ARGUMENT_PREFIX + arg_name if self.map_midi else arg_name
+        resolved_path = self.original_args.get(mapped_arg_name)
         if resolved_path is None:
             return None
         if not os.path.isabs(resolved_path):
