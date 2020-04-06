@@ -1,5 +1,5 @@
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, \
-    RawDescriptionHelpFormatter
+import re
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import csv
 import errno
 import fnmatch
@@ -215,7 +215,7 @@ if you want to write the outputs to "/path/for/output/on/host":
 
     docker run \\ 
         --mount type=bind,source=/path/on/host/,destination=/data \\ 
-        --mount type=bind,source=/path/for/output/on/host,destination=/results \\ 
+        --mount type=bind,source=/output/path/on/host,destination=/results \\ 
         micall:v0.1.2-3 folder /data /results
 """
 
@@ -295,8 +295,42 @@ if you want to write the outputs to "/host/output/path/":
 """
 
 
-class MiCallFormatter(ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter):
-    pass
+class MiCallFormatter(ArgumentDefaultsHelpFormatter):
+    def _fill_text(self, text, width, indent):
+        import textwrap
+        lines = text.splitlines(keepends=True)
+        wrapped = ''
+        paragraph = ''
+        is_done = False
+        while not is_done:
+            if not lines:
+                is_done = True
+                is_blank = False
+                extra_indent = next_line = ''
+            else:
+                next_line = lines.pop(0)
+                indent_match = re.match(r'\s+', next_line)
+                extra_indent = indent_match.group(0) if indent_match else ''
+                is_blank = extra_indent == next_line
+                if is_blank:
+                    extra_indent = ''
+            if (is_done or is_blank or extra_indent) and paragraph:
+                paragraph = self._whitespace_matcher.sub(' ', paragraph).strip()
+                wrapped += textwrap.fill(paragraph,
+                                         width,
+                                         initial_indent=indent,
+                                         subsequent_indent=indent)
+                wrapped += os.linesep
+                paragraph = ''
+            if extra_indent:
+                wrapped += textwrap.fill(next_line,
+                                         width,
+                                         initial_indent=indent,
+                                         subsequent_indent=indent+extra_indent)
+                wrapped += os.linesep
+            elif not is_done and not is_blank:
+                paragraph += next_line
+        return wrapped
 
 
 def parse_args():
