@@ -297,6 +297,141 @@ if you want to write the outputs to "/host/output/path/":
 """
 
 
+def add_output_arguments(parser, midi=False):
+    # Specifying arguments; each tuple goes (argument, help, default).  These
+    # are all assumed to be optional arguments, so you can leave off the leading
+    # "--".
+    arguments = [
+        (
+            "g2p_csv",
+            "CSV containing g2p predictions",
+            "g2p.csv",
+        ),
+        (
+            "g2p_summary_csv",
+            "CSV containing overall call for the sample",
+            "g2p_summary.csv",
+        ),
+        (
+            "remap_counts_csv",
+            "CSV containing numbers of mapped reads",
+            "remap_counts.csv",
+        ),
+        (
+            "remap_conseq_csv",
+            "CSV containing mapping consensus sequences",
+            "remap_conseq.csv",
+        ),
+        (
+            "unmapped1_fastq",
+            "FASTQ R1 of reads that failed to map to any region",
+            "unmapped1.fastq",
+        ),
+        (
+            "unmapped2_fastq",
+            "FASTQ R2 of reads that failed to map to any region",
+            "unmapped2.fastq",
+        ),
+        (
+            "conseq_ins_csv",
+            "CSV containing insertions relative to sample consensus",
+            "conseq_ins.csv",
+        ),
+        (
+            "failed_csv",
+            "CSV containing reads that failed to merge",
+            "failed.csv",
+        ),
+        (
+            "cascade_csv",
+            "count of reads at each step",
+            "cascade.csv",
+        ),
+        (
+            "nuc_csv",
+            "CSV containing nucleotide frequencies",
+            "nuc.csv",
+        ),
+        (
+            "amino_csv",
+            "CSV containing amino frequencies",
+            "amino.csv",
+        ),
+        (
+            "coord_ins_csv",
+            "CSV containing insertions relative to coordinate reference",
+            "coord_ins.csv",
+        ),
+        (
+            "conseq_csv",
+            "CSV containing consensus sequences",
+            "conseq.csv",
+        ),
+        (
+            "conseq_region_csv",
+            "CSV containing consensus sequences, split by region",
+            "conseq_region.csv",
+        ),
+        (
+            "failed_align_csv",
+            "CSV containing any consensus that failed to align",
+            "failed_align.csv",
+        ),
+        (
+            "coverage_scores_csv",
+            "CSV coverage scores",
+            "coverage_scores.csv",
+        ),
+        (
+            "coverage_maps_tar",
+            "tar file of coverage maps",
+            "coverage_maps.tar",
+        ),
+        (
+            "aligned_csv",
+            "CSV containing individual reads aligned to consensus",
+            "aligned.csv",
+        ),
+        (
+            "g2p_aligned_csv",
+            "CSV containing individual reads aligned to V3LOOP",
+            "g2p_aligned.csv",
+        ),
+        (
+            "genome_coverage_csv",
+            "CSV of coverage levels in full-genome coordinates",
+            "genome_coverage.csv",
+        ),
+        (
+            "genome_coverage_svg",
+            "SVG diagram of coverage in full-genome coordinates",
+            "genome_coverage.svg",
+        ),
+        (
+            "contigs_csv",
+            "CSV containing contigs built by de novo assembly",
+            "contigs.csv (ignored if --denovo is not specified)",
+        ),
+        (
+            "read_entropy_csv",
+            "CSV containing read pair length counts",
+            "read_entropy.csv (ignored if --denovo is not specified)",
+        )
+    ]
+
+    for argument_tuple in arguments:
+        arg_name = "--" + argument_tuple[0]
+        arg_help = argument_tuple[1]
+        arg_default = argument_tuple[2]
+        if midi:
+            arg_name = "--midi_" + argument_tuple[0]
+            arg_help = argument_tuple[1] + " (MIDI)"
+            arg_default = "midi_" + argument_tuple[2]
+        parser.add_argument(arg_name, help=arg_help, default=arg_default)
+
+    return parser
+
+
 def parse_args():
     parser = ArgumentParser(
         description=MAIN_DESCRIPTION,
@@ -426,7 +561,6 @@ def parse_args():
              "as being relative to this path.",
         default="/data"
     )
-
     # Next, the outputs.
     single_sample_parser.add_argument(
         "results_folder",
@@ -438,128 +572,12 @@ def parse_args():
              "absolute, it will be taken as relative to --run_folder.",
         default="Results",
     )
-
-    single_sample_parser.add_argument(
-        "--g2p_csv",
-        help="CSV containing g2p predictions.",
-        default="g2p.csv",
-    )
-    single_sample_parser.add_argument(
-        "--g2p_summary_csv",
-        help="CSV containing overall call for the sample.",
-        default="g2p_summary.csv",
-
-    )
-    single_sample_parser.add_argument(
-        "--remap_counts_csv",
-        help="CSV containing numbers of mapped reads",
-        default="remap_counts.csv",
-    )
-    single_sample_parser.add_argument(
-        "--remap_conseq_csv",
-        help="CSV containing mapping consensus sequences",
-        default="remap_conseq.csv",
-    )
-    single_sample_parser.add_argument(
-        "--unmapped1_fastq",
-        help="FASTQ R1 of reads that failed to map to any region",
-        default="unmapped1.fastq",
-    )
-    single_sample_parser.add_argument(
-        "--unmapped2_fastq",
-        help="FASTQ R2 of reads that failed to map to any region",
-        default="unmapped2.fastq",
-    )
-    single_sample_parser.add_argument(
-        "--conseq_ins_csv",
-        help="CSV containing insertions relative to sample consensus",
-        default="conseq_ins.csv",
-    )
-    single_sample_parser.add_argument(
-        "--failed_csv",
-        help="CSV containing reads that failed to merge",
-        default="failed.csv",
-    )
-    single_sample_parser.add_argument(
-        "--cascade_csv",
-        help="count of reads at each step",
-        default="cascade.csv",
-    )
-    single_sample_parser.add_argument(
-        "--nuc_csv",
-        help="CSV containing nucleotide frequencies",
-        default="nuc.csv",
-    )
-    single_sample_parser.add_argument(
-        "--amino_csv",
-        help="CSV containing amino frequencies",
-        default="amino.csv",
-    )
-    single_sample_parser.add_argument(
-        "--coord_ins_csv",
-        help="CSV containing insertions relative to coordinate reference",
-        default="coord_ins.csv",
-    )
-    single_sample_parser.add_argument(
-        "--conseq_csv",
-        help="CSV containing consensus sequences",
-        default="conseq.csv",
-    )
-    single_sample_parser.add_argument(
-        "--conseq_region_csv",
-        help="CSV containing consensus sequences, split by region",
-        default="conseq_region.csv",
-    )
-    single_sample_parser.add_argument(
-        "--failed_align_csv",
-        help="CSV containing any consensus that failed to align",
-        default="failed_align.csv",
-    )
-    single_sample_parser.add_argument(
-        "--coverage_scores_csv",
-        help="CSV coverage scores.",
-        default="coverage_scores.csv",
-    )
-    single_sample_parser.add_argument(
-        "--coverage_maps_tar",
-        help="tar file of coverage maps.",
-        default="coverage_maps.tar",
-    )
-    single_sample_parser.add_argument(
-        "--aligned_csv",
-        help="CSV containing individual reads aligned to consensus",
-        default="aligned.csv",
-    )
-    single_sample_parser.add_argument(
-        "--g2p_aligned_csv",
-        help="CSV containing individual reads aligned to V3LOOP",
-        default="g2p_aligned.csv",
-    )
-    single_sample_parser.add_argument(
-        "--genome_coverage_csv",
-        help="CSV of coverage levels in full-genome coordinates",
-        default="genome_coverage.csv",
-    )
-    single_sample_parser.add_argument(
-        "--genome_coverage_svg",
-        help="SVG diagram of coverage in full-genome coordinates",
-        default="genome_coverage.svg",
-    )
     single_sample_parser.add_argument(
         "--denovo",
         action="store_true",
         help="Use de novo assembly instead of mapping to reference sequences.",
     )
-    single_sample_parser.add_argument(
-        "--contigs_csv",
-        help="CSV containing contigs built by de novo assembly",
-        default="contigs.csv (ignored if --denovo is not specified)",
-    )
-    single_sample_parser.add_argument(
-        "--read_entropy_csv",
-        help="CSV containing read pair length counts",
-        default="read_entropy.csv (ignored if --denovo is not specified)",
-    )
+    add_output_arguments(single_sample_parser)
     single_sample_parser.set_defaults(func=single_sample)
 
     # ####
@@ -629,246 +647,10 @@ def parse_args():
         help="Use de novo assembly instead of mapping to reference sequences.",
     )
 
-    # Next, the outputs pertaining to the main samples.
-    hcv_sample_parser.add_argument(
-        "--g2p_csv",
-        help="CSV containing g2p predictions.",
-        default="g2p.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--g2p_summary_csv",
-        help="CSV containing overall call for the sample.",
-        default="g2p_summary.csv",
+    add_output_arguments(hcv_sample_parser)
+    add_output_arguments(hcv_sample_parser, midi=True)
 
-    )
-    hcv_sample_parser.add_argument(
-        "--remap_counts_csv",
-        help="CSV containing numbers of mapped reads",
-        default="remap_counts.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--remap_conseq_csv",
-        help="CSV containing mapping consensus sequences",
-        default="remap_conseq.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--unmapped1_fastq",
-        help="FASTQ R1 of reads that failed to map to any region",
-        default="unmapped1.fastq",
-    )
-    hcv_sample_parser.add_argument(
-        "--unmapped2_fastq",
-        help="FASTQ R2 of reads that failed to map to any region",
-        default="unmapped2.fastq",
-    )
-    hcv_sample_parser.add_argument(
-        "--conseq_ins_csv",
-        help="CSV containing insertions relative to sample consensus",
-        default="conseq_ins.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--failed_csv",
-        help="CSV containing reads that failed to merge",
-        default="failed.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--cascade_csv",
-        help="count of reads at each step",
-        default="cascade.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--nuc_csv",
-        help="CSV containing nucleotide frequencies",
-        default="nuc.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--amino_csv",
-        help="CSV containing amino frequencies",
-        default="amino.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--coord_ins_csv",
-        help="CSV containing insertions relative to coordinate reference",
-        default="coord_ins.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--conseq_csv",
-        help="CSV containing consensus sequences",
-        default="conseq.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--conseq_region_csv",
-        help="CSV containing consensus sequences, split by region",
-        default="conseq_region.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--failed_align_csv",
-        help="CSV containing any consensus that failed to align",
-        default="failed_align.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--coverage_scores_csv",
-        help="CSV coverage scores.",
-        default="coverage_scores.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--coverage_maps_tar",
-        help="tar file of coverage maps.",
-        default="coverage_maps.tar",
-    )
-    hcv_sample_parser.add_argument(
-        "--aligned_csv",
-        help="CSV containing individual reads aligned to consensus",
-        default="aligned.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--g2p_aligned_csv",
-        help="CSV containing individual reads aligned to V3LOOP",
-        default="g2p_aligned.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--genome_coverage_csv",
-        help="CSV of coverage levels in full-genome coordinates",
-        default="genome_coverage.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--genome_coverage_svg",
-        help="SVG diagram of coverage in full-genome coordinates",
-        default="genome_coverage.svg",
-    )
-    hcv_sample_parser.add_argument(
-        "--contigs_csv",
-        help="CSV containing contigs built by de novo assembly "
-             "(ignored if --denovo is not specified)",
-        default="contigs.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--read_entropy_csv",
-        help="CSV containing read pair length counts "
-             "(ignored if --denovo is not specified)",
-        default="read_entropy.csv",
-    )
-
-    # Next, outputs pertaining to the MIDI samples.
-    hcv_sample_parser.add_argument(
-        "--midi_g2p_csv",
-        help="CSV containing g2p predictions (MIDI).",
-        default="midi_g2p.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_g2p_summary_csv",
-        help="CSV containing overall call for the sample (MIDI).",
-        default="midi_g2p_summary.csv",
-
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_remap_counts_csv",
-        help="CSV containing numbers of mapped reads (MIDI)",
-        default="midi_remap_counts.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_remap_conseq_csv",
-        help="CSV containing mapping consensus sequences (MIDI)",
-        default="midi_remap_conseq.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_unmapped1_fastq",
-        help="FASTQ R1 of reads that failed to map to any region (MIDI)",
-        default="midi_unmapped1.fastq",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_unmapped2_fastq",
-        help="FASTQ R2 of reads that failed to map to any region (MIDI)",
-        default="midi_unmapped2.fastq",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_conseq_ins_csv",
-        help="CSV containing insertions relative to sample consensus (MIDI)",
-        default="midi_conseq_ins.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_failed_csv",
-        help="CSV containing reads that failed to merge (MIDI)",
-        default="midi_failed.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_cascade_csv",
-        help="count of reads at each step (MIDI)",
-        default="midi_cascade.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_nuc_csv",
-        help="CSV containing nucleotide frequencies (MIDI)",
-        default="midi_nuc.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_amino_csv",
-        help="CSV containing amino frequencies (MIDI)",
-        default="midi_amino.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_coord_ins_csv",
-        help="CSV containing insertions relative to coordinate reference (MIDI)",
-        default="midi_coord_ins.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_conseq_csv",
-        help="CSV containing consensus sequences (MIDI)",
-        default="midi_conseq.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_conseq_region_csv",
-        help="CSV containing consensus sequences, split by region (MIDI)",
-        default="midi_conseq_region.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_failed_align_csv",
-        help="CSV containing any consensus that failed to align (MIDI)",
-        default="midi_failed_align.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_coverage_scores_csv",
-        help="CSV coverage scores (MIDI).",
-        default="midi_coverage_scores.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_coverage_maps_tar",
-        help="tar file of coverage maps (MIDI).",
-        default="midi_coverage_maps.tar",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_aligned_csv",
-        help="CSV containing individual reads aligned to consensus (MIDI)",
-        default="midi_aligned.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_g2p_aligned_csv",
-        help="CSV containing individual reads aligned to V3LOOP (MIDI)",
-        default="midi_g2p_aligned.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_genome_coverage_csv",
-        help="CSV of coverage levels in full-genome coordinates (MIDI)",
-        default="midi_genome_coverage.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_genome_coverage_svg",
-        help="SVG diagram of coverage in full-genome coordinates (MIDI)",
-        default="midi_genome_coverage.svg",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_contigs_csv",
-        help="CSV containing contigs built by de novo assembly (MIDI) "
-             "(ignored if --denovo is not specified)",
-        default="midi_contigs.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--midi_read_entropy_csv",
-        help="CSV containing read pair length counts (MIDI) "
-             "(ignored if --denovo is not specified)",
-        default="midi_read_entropy.csv",
-    )
-
+    # Resistance outputs.
     hcv_sample_parser.add_argument(
         "--resistance_csv",
         help="CSV containing resistance calls.",
