@@ -13,6 +13,7 @@ from micall.core.sam2aln import sam2aln
 from micall.core.trim_fastqs import trim
 from micall.core.denovo import denovo
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
+from micall.utils.driver_utils import makedirs
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +114,7 @@ class Sample:
         """
         logger.info('Processing %s (%r).', self, self.fastq1)
         scratch_path = self.get_scratch_path()
-        os.mkdir(scratch_path)
+        makedirs(scratch_path)
         use_gzip = force_gzip or self.fastq1.endswith('.gz')
 
         with open(self.read_summary_csv, 'w') as read_summary:
