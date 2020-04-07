@@ -790,14 +790,21 @@ def hcv_sample(args):
     single_sample(args)
 
     # Do the same for the MIDI samples.
-    resolved_args = MiCallArgs(args, map_midi=True)
-    scratch_path = os.path.join(os.path.dirname(resolved_args.cascade_csv), "midi_scratch")
-    shutil.rmtree(scratch_path, ignore_errors=True)
-    sample_process_helper(resolved_args, scratch_path, args.denovo)
+    midi_args = MiCallArgs(args, map_midi=True)
+    midi_scratch_path = os.path.join(
+        os.path.dirname(midi_args.cascade_csv),
+        "midi_scratch"
+    )
+    shutil.rmtree(midi_scratch_path, ignore_errors=True)
+    sample_process_helper(midi_args, midi_scratch_path, args.denovo)
 
     # Now, analyze the two samples together for resistance.
-    # scratch_path = os.path.join(os.path.dirname(resolved_args.main_amino_csv), 'scratch')
-    # shutil.rmtree(scratch_path, ignore_errors=True)
+    resolved_args = MiCallArgs(args)
+    resistance_scratch_path = os.path.join(
+        os.path.dirname(midi_args.cascade_csv),
+        "resistance_scratch"
+    )
+    shutil.rmtree(resistance_scratch_path, ignore_errors=True)
     sample1 = Sample(
         amino_csv=resolved_args.amino_csv,
         resistance_csv=resolved_args.resistance_csv,
@@ -805,7 +812,7 @@ def hcv_sample(args):
         resistance_fail_csv=resolved_args.resistance_fail_csv,
         resistance_pdf=resolved_args.resistance_pdf,
         resistance_consensus_csv=resolved_args.resistance_consensus_csv,
-        scratch_path=scratch_path
+        scratch_path=resistance_scratch_path
     )
     sample2 = Sample(amino_csv=resolved_args.midi_amino_csv)
     main_and_midi = SampleGroup(sample1, sample2)
