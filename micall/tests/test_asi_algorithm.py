@@ -4,6 +4,7 @@ from operator import attrgetter
 from unittest import TestCase
 
 from micall.resistance.asi_algorithm import AsiAlgorithm
+from micall.resistance.resistance import HIV_RULES_PATH
 
 
 class AsiAlgorithmTest(TestCase):
@@ -11,7 +12,7 @@ class AsiAlgorithmTest(TestCase):
         self.asi = AsiAlgorithm(os.path.join(os.path.dirname(__file__),
                                              "..",
                                              "resistance",
-                                             "HIVDB_8.8.xml"))
+                                             HIV_RULES_PATH))
 
     def test_interpret(self):
         aa_seq = [[amino] for amino in self.asi.stds['RT']]
@@ -29,14 +30,7 @@ class AsiAlgorithmTest(TestCase):
                           ('ETR', 0.0, 1, 'Susceptible'),
                           ('NVP', 0.0, 1, 'Susceptible'),
                           ('RPV', 0.0, 1, 'Susceptible')]
-        # The L234I message looks like a bug in the HIVdb rules.
-        # We don't actually use the comments, so ignore the problem for now.
         expected_mutation_comments = [
-            'L234I is a nonpolymorphic mutation selected in persons receiving NVP and '
-            'EFV. It is also selected in vitro by ETR and DOR. In combination with V106A, '
-            'it is associated with high-level DOR resistance. Its effect on '
-            'susceptibility when it occurs alone has not been studied. V108V is a highly '
-            'unusual mutation at this position.',
             'M41L is a TAM that usually occurs with T215Y. In combination, '
             'M41L plus T215Y confer intermediate / high-level resistance to '
             'AZT and d4T and contribute to reduced ddI, ABC and TDF '
