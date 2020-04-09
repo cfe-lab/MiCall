@@ -166,7 +166,16 @@ def main():
                    FastqFile('2180A-HIV_S22_L001_R2_001.fastq',
                              '2180',
                              True,
-                             sections_2180_2)]
+                             sections_2180_2),
+                   FastqFile('2190A-SARS_S23_L001_R1_001.fastq',
+                             '2190',
+                             False,
+                             (FastqSection('SARS-CoV-2-orf1ab', 4393, 4413, 100),)),
+                   FastqFile('2190A-SARS_S23_L001_R2_001.fastq',
+                             '2190',
+                             True,
+                             (FastqSection('SARS-CoV-2-orf1ab', 4393, 4413, 100),))]
+    fastq_files = fastq_files[-2:]
     for fastq_file in fastq_files:
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1

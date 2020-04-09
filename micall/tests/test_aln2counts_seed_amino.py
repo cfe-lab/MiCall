@@ -190,3 +190,53 @@ def test_add():
 
     assert expected_counts == amino.counts
     assert expected_nucleotide_counts == amino.nucleotides[0].counts
+
+
+def test_amino_repeat_nuc0():
+    """ Repeat first nucleotide in the codon.
+    Columns are:       A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+    """
+    nuc_seq1 = 'GAG'  # -> E
+    nuc_seq2 = 'GAC'  # -> D
+    # repeat = 'GGA'  # -> G
+    expected_counts = '0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0'
+    amino = SeedAmino(None)
+
+    amino.count_aminos(nuc_seq1, 4)
+    amino.count_aminos(nuc_seq2, 5)
+    counts = amino.apply_repeat(0).get_report()
+
+    assert counts == expected_counts
+
+
+def test_amino_repeat_nuc1():
+    """ Repeat second nucleotide in the codon.
+    Columns are:       A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+    """
+    nuc_seq1 = 'GAG'  # -> E
+    nuc_seq2 = 'GAC'  # -> D
+    # repeat = 'GAA'  # -> E
+    expected_counts = '0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0'
+    amino = SeedAmino(None)
+
+    amino.count_aminos(nuc_seq1, 4)
+    amino.count_aminos(nuc_seq2, 5)
+    counts = amino.apply_repeat(1).get_report()
+
+    assert counts == expected_counts
+
+
+def test_amino_repeat_nuc2():
+    """ Repeat last nucleotide in the codon.
+    Columns are:       A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+    """
+    nuc_seq1 = 'GAG'  # -> E
+    nuc_seq2 = 'GAC'  # -> D
+    expected_counts = '0,0,5,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0'
+    amino = SeedAmino(None)
+
+    amino.count_aminos(nuc_seq1, 4)
+    amino.count_aminos(nuc_seq2, 5)
+    counts = amino.apply_repeat(2).get_report()
+
+    assert counts == expected_counts

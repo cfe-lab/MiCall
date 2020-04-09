@@ -497,7 +497,7 @@ def parse_args():
         help="Directory to write outputs to (if Dockerized, this is "
              "the path *inside* the container; point a bind mount here).  If "
              "output file paths are not specified as absolute paths, they will "
-             "be taken as being relative to this path.  If *this* path is not"
+             "be taken as being relative to this path.  If *this* path is not "
              "absolute, it will be taken as relative to --run_folder.",
         default="Results",
     )

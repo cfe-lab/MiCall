@@ -6,6 +6,7 @@ import pytest
 
 from micall.core import project_config
 from micall.core.aln2counts import InsertionWriter, SequenceReport
+from micall.core.project_config import ProjectConfig
 
 
 def prepare_reads(aligned_reads_text):
@@ -517,3 +518,170 @@ R1-seed,R1-expanded,15,,21,0,0,0,0,0,0,0,0,0,0
     report.write_nuc_counts()
 
     assert report_file.getvalue() == expected_text
+
+
+# noinspection DuplicatedCode
+def test_duplicated_sars_base_amino(sequence_report):
+    """ Special case for duplicated base in SARS orf1ab.
+
+    Expect amino sequence AQSFLNRVCG.
+    """
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+SARS-CoV-2-seed,15,0,9,0,GCACAATCGTTTTTAAACGGGTTTGCGGT
+""")
+    # Repeat is here:                     ^
+
+    #                                       A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
+    expected_text = """\
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,1,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,4,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,7,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,10,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,13,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,16,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,18,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,21,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,24,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
+    sequence_report.projects = ProjectConfig.loadDefault()
+    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+
+    report_file = StringIO()
+    sequence_report.write_amino_header(report_file)
+    sequence_report.read(aligned_reads)
+    sequence_report.write_amino_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    if len(report_lines) != orf1ab_size + 1:
+        assert (len(report_lines), report) is None  # Not the expected size, just print everything.
+
+    key_lines = report_lines[4396:4406]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
+# noinspection DuplicatedCode
+def test_duplicated_sars_base_amino_offset10(sequence_report):
+    """ Special case for duplicated base in SARS orf1ab with offset.
+
+    Expect amino sequence AQSFLNRVCG.
+    """
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+SARS-CoV-2-seed,15,0,9,10,GCACAATCGTTTTTAAACGGGTTTGCGGT
+""")
+
+    #                                        A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
+    expected_text = """\
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,11,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,14,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,17,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,20,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,23,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,26,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,28,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,31,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,34,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
+    sequence_report.projects = ProjectConfig.loadDefault()
+    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+
+    report_file = StringIO()
+    sequence_report.write_amino_header(report_file)
+    sequence_report.read(aligned_reads)
+    sequence_report.write_amino_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    if len(report_lines) != orf1ab_size + 1:
+        assert (len(report_lines), report) is None  # Not the expected size, just print everything.
+
+    key_lines = report_lines[4396:4406]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
+# noinspection DuplicatedCode
+def test_duplicated_sars_base_amino_offset11(sequence_report):
+    """ Special case for duplicated base in SARS orf1ab (reading frame 1).
+
+    Expect amino sequence AQSFLNRVCG.
+    """
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+SARS-CoV-2-seed,15,0,9,11,GCACAATCGTTTTTAAACGGGTTTGCGGT
+""")
+
+    #                                        A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
+    expected_text = """\
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,12,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,15,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,18,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,21,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,24,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,27,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,29,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,32,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,35,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
+    sequence_report.projects = ProjectConfig.loadDefault()
+    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+
+    report_file = StringIO()
+    sequence_report.write_amino_header(report_file)
+    sequence_report.read(aligned_reads)
+    sequence_report.write_amino_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    if len(report_lines) != orf1ab_size + 1:
+        assert (len(report_lines), report) is None  # Not the expected size, just print everything.
+
+    key_lines = report_lines[4396:4406]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
+def test_duplicated_sars_base_nuc(sequence_report):
+    """ Make sure duplicated base in SARS isn't duplicated in nuc.csv. """
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGT
+""")
+
+    #                  A,C,G,T,N,...,coverage
+    expected_text = """\
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,21,13198,0,0,0,9,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,22,13199,0,0,0,9,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,23,13200,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,24,13201,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,25,13202,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,26,13203,0,9,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,27,13205,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,28,13206,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,29,13207,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,30,13208,0,0,0,9,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,31,13209,0,0,0,9,0,0,0,0,0,9"""
+    sequence_report.projects = ProjectConfig.loadDefault()
+    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+
+    report_file = StringIO()
+    sequence_report.write_nuc_header(report_file)
+    sequence_report.read(aligned_reads)
+    sequence_report.write_nuc_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = orf1ab_size * 3  # +1 for header, -1 for duplicated row.
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+
+    key_lines = report_lines[13198:13209]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text

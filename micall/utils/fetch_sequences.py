@@ -387,7 +387,7 @@ def check_sars_coordinates(project_config, unchecked_ref_names: set):
     print("""\
 SARS-CoV-2 coordinate references are translated from the seed reference.
 """)
-    boundaries = {'SARS-CoV-2-orf1a': (266, 13483),
+    boundaries = {'SARS-CoV-2-orf1ab': (266, 21555),
                   'SARS-CoV-2-S': (21563, 25384),
                   'SARS-CoV-2-ORF3a': (25393, 26220),
                   'SARS-CoV-2-E': (26245, 26472),
@@ -399,13 +399,19 @@ SARS-CoV-2 coordinate references are translated from the seed reference.
                   'SARS-CoV-2-N': (28274, 29533),
                   'SARS-CoV-2-ORF10': (29558, 29674)}
 
-    seed_sequence = project_config.getReference('SARS-CoV-2')
+    # Funky translation at this base: it gets duplicated.
+    duplicated_base = 13468
+    seed_sequence = project_config.getReference('SARS-CoV-2-seed')
     ref_names = sorted(boundaries.keys())
     unchecked_ref_names.difference_update(ref_names)
 
     source_sequences = {}
     for ref_name, (start, end) in boundaries.items():
         source_nuc_sequence = seed_sequence[start-1:end-3]  # Trim stop codons.
+        if start <= duplicated_base <= end:
+            source_nuc_sequence = (
+                source_nuc_sequence[:duplicated_base-start+1] +
+                source_nuc_sequence[duplicated_base-start:])
         source_sequences[ref_name] = translate(source_nuc_sequence)
         print(ref_name, len(source_sequences[ref_name]))
 
@@ -586,7 +592,7 @@ def compare_config(ref_names,
 
 def join_and_wrap(sections: typing.Sequence[str]) -> typing.List[str]:
     joined = ''.join(sections)
-    wrapped = wrap(joined)
+    wrapped = wrap(joined, width=65)
     return [line + '\n' for line in wrapped]
 
 

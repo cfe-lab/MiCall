@@ -5,7 +5,7 @@
       "description": "Severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2)",
       "regions": [
         {
-          "coordinate_region": "SARS-CoV-2-orf1a",
+          "coordinate_region": "SARS-CoV-2-orf1ab",
           "coordinate_region_length": 4405,
           "key_positions": [],
           "min_coverage1": 10,
