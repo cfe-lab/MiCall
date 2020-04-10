@@ -124,6 +124,171 @@
           "seed_region_names": [
             "SARS-CoV-2-seed"
           ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp1",
+          "coordinate_region_length": 540,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp2",
+          "coordinate_region_length": 1914,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp3",
+          "coordinate_region_length": 5835,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp4",
+          "coordinate_region_length": 1500,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp5",
+          "coordinate_region_length": 918,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp6",
+          "coordinate_region_length": 870,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp7",
+          "coordinate_region_length": 249,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp8",
+          "coordinate_region_length": 594,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp9",
+          "coordinate_region_length": 339,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp10",
+          "coordinate_region_length": 417,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp12",
+          "coordinate_region_length": 2795,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp13",
+          "coordinate_region_length": 1803,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp14",
+          "coordinate_region_length": 1581,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp15",
+          "coordinate_region_length": 1038,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
+        },
+        {
+          "coordinate_region": "SARS-CoV-2-nsp16",
+          "coordinate_region_length": 894,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "SARS-CoV-2-seed"
+          ]
         }
       ]
     },

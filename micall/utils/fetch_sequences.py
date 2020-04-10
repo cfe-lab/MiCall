@@ -397,7 +397,22 @@ SARS-CoV-2 coordinate references are translated from the seed reference.
                   'SARS-CoV-2-ORF7b': (27756, 27887),
                   'SARS-CoV-2-ORF8': (27894, 28259),
                   'SARS-CoV-2-N': (28274, 29533),
-                  'SARS-CoV-2-ORF10': (29558, 29674)}
+                  'SARS-CoV-2-ORF10': (29558, 29674),
+                  'SARS-CoV-2-nsp1': (266, 805),
+                  'SARS-CoV-2-nsp2': (806, 2719),
+                  'SARS-CoV-2-nsp3': (2720, 8554),
+                  'SARS-CoV-2-nsp4': (8555, 10054),
+                  'SARS-CoV-2-nsp5': (10055, 10972),
+                  'SARS-CoV-2-nsp6': (10973, 11842),
+                  'SARS-CoV-2-nsp7': (11843, 12091),
+                  'SARS-CoV-2-nsp8': (12092, 12685),
+                  'SARS-CoV-2-nsp9': (12686, 13024),
+                  'SARS-CoV-2-nsp10': (13025, 13441),
+                  'SARS-CoV-2-nsp12': (13442, 16236),
+                  'SARS-CoV-2-nsp13': (16237, 18039),
+                  'SARS-CoV-2-nsp14': (18040, 19620),
+                  'SARS-CoV-2-nsp15': (19621, 20658),
+                  'SARS-CoV-2-nsp16': (20659, 21552)}
 
     # Funky translation at this base: it gets duplicated.
     duplicated_base = 13468

@@ -503,8 +503,11 @@ class SequenceReport(object):
         ref_pos = offset
         conseq_pos = 0
         for ref_nuc, conseq_nuc in zip(aref, aseq):
-            while consensus[conseq_pos] == 'x':
+            while conseq_pos < len(consensus) and consensus[conseq_pos] == 'x':
                 conseq_pos += 1
+            if conseq_pos >= len(consensus):
+                break
+
             if ref_nuc == seed_ref[ref_pos]:
                 ref_pos += 1
             if conseq_nuc == consensus[conseq_pos]:
@@ -512,7 +515,7 @@ class SequenceReport(object):
             if ref_pos == repeated_ref_pos:
                 self.repeated_pos = conseq_pos
                 break
-            if ref_pos >= len(seed_ref) or conseq_pos >= len(consensus):
+            if ref_pos >= len(seed_ref):
                 break
 
     def read_clipping(self, clipping_csv):
@@ -889,8 +892,8 @@ class SequenceReport(object):
 
     def write_nuc_report(self, nuc_writer, reports, seed):
         self.merge_extra_counts()
-        min_query_position = None
         if not self.coordinate_refs:
+            min_query_position = None
             for seed_amino in self.seed_aminos[0]:
                 min_query_position = self.write_counts(seed,
                                                        seed,
@@ -900,6 +903,7 @@ class SequenceReport(object):
                                                        min_query_position)
         else:
             for region, report_aminos in sorted(reports.items()):
+                min_query_position = None
                 for report_amino in report_aminos:
                     min_query_position = self.write_counts(seed,
                                                            region,

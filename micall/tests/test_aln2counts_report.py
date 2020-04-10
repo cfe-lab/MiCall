@@ -529,7 +529,7 @@ def test_duplicated_sars_base_amino(sequence_report):
 
     # refname,qcut,rank,count,offset,seq
     aligned_reads = prepare_reads("""\
-SARS-CoV-2-seed,15,0,9,0,GCACAATCGTTTTTAAACGGGTTTGCGGT
+SARS-CoV-2-seed,15,0,9,0,GCACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACAC
 """)
     # Repeat is here:                     ^
 
@@ -547,6 +547,7 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,24,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
     sequence_report.projects = ProjectConfig.loadDefault()
     orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+    nsp12_size = len(sequence_report.projects.getReference('SARS-CoV-2-nsp12'))
 
     report_file = StringIO()
     sequence_report.write_amino_header(report_file)
@@ -555,10 +556,11 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    if len(report_lines) != orf1ab_size + 1:
-        assert (len(report_lines), report) is None  # Not the expected size, just print everything.
+    expected_size = orf1ab_size + nsp12_size + 1
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[4396:4406]
+    key_lines = report_lines[nsp12_size + 4396:nsp12_size + 4406]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 
@@ -572,7 +574,7 @@ def test_duplicated_sars_base_amino_offset10(sequence_report):
 
     # refname,qcut,rank,count,offset,seq
     aligned_reads = prepare_reads("""\
-SARS-CoV-2-seed,15,0,9,10,GCACAATCGTTTTTAAACGGGTTTGCGGT
+SARS-CoV-2-seed,15,0,9,10,GCACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTA
 """)
 
     #                                        A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
@@ -589,6 +591,7 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,34,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
     sequence_report.projects = ProjectConfig.loadDefault()
     orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+    nsp12_size = len(sequence_report.projects.getReference('SARS-CoV-2-nsp12'))
 
     report_file = StringIO()
     sequence_report.write_amino_header(report_file)
@@ -597,10 +600,11 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    if len(report_lines) != orf1ab_size + 1:
-        assert (len(report_lines), report) is None  # Not the expected size, just print everything.
+    expected_size = orf1ab_size + nsp12_size + 1
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[4396:4406]
+    key_lines = report_lines[nsp12_size + 4396:nsp12_size + 4406]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 
@@ -614,7 +618,7 @@ def test_duplicated_sars_base_amino_offset11(sequence_report):
 
     # refname,qcut,rank,count,offset,seq
     aligned_reads = prepare_reads("""\
-SARS-CoV-2-seed,15,0,9,11,GCACAATCGTTTTTAAACGGGTTTGCGGT
+SARS-CoV-2-seed,15,0,9,11,GCACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTA
 """)
 
     #                                        A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
@@ -631,6 +635,7 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,35,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
     sequence_report.projects = ProjectConfig.loadDefault()
     orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+    nsp12_size = len(sequence_report.projects.getReference('SARS-CoV-2-nsp12'))
 
     report_file = StringIO()
     sequence_report.write_amino_header(report_file)
@@ -639,10 +644,11 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    if len(report_lines) != orf1ab_size + 1:
-        assert (len(report_lines), report) is None  # Not the expected size, just print everything.
+    expected_size = orf1ab_size + nsp12_size + 1
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[4396:4406]
+    key_lines = report_lines[nsp12_size + 4396:nsp12_size + 4406]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 
@@ -652,7 +658,7 @@ def test_duplicated_sars_base_nuc(sequence_report):
 
     # refname,qcut,rank,count,offset,seq
     aligned_reads = prepare_reads("""\
-SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGT
+SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
 """)
 
     #                  A,C,G,T,N,...,coverage
@@ -670,6 +676,7 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,30,13208,0,0,0,9,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,31,13209,0,0,0,9,0,0,0,0,0,9"""
     sequence_report.projects = ProjectConfig.loadDefault()
     orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+    nsp12_size = len(sequence_report.projects.getReference('SARS-CoV-2-nsp12'))
 
     report_file = StringIO()
     sequence_report.write_nuc_header(report_file)
@@ -678,10 +685,12 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,31,13209,0,0,0,9,0,0,0,0,0,9"""
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = orf1ab_size * 3  # +1 for header, -1 for duplicated row.
+    header_size = 1
+    skipped_rows = 2
+    expected_size = (orf1ab_size + nsp12_size)*3 + header_size - skipped_rows
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[13198:13209]
+    key_lines = report_lines[nsp12_size*3 + 13197:nsp12_size*3 + 13208]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
