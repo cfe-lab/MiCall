@@ -956,7 +956,7 @@ def load_sample(sample_json, data_path, scratch_path):
 
 
 def link_samples(run_path: str, data_path: str, is_denovo: bool):
-    """ Load the data from a run folder into the BaseSpace layout. """
+    """ Load the data from a run folder. """
 
     shutil.rmtree(data_path, ignore_errors=True)
     makedirs(data_path)
@@ -1002,27 +1002,55 @@ def link_samples(run_path: str, data_path: str, is_denovo: bool):
                        read_sizes=read_sizes,
                        is_denovo=is_denovo)
 
-    fastq_files = list(glob(os.path.join(run_path,
-                                         'Data',
-                                         'Intensities',
-                                         'BaseCalls',
-                                         '*_R1_*')) or
-                       glob(os.path.join(run_path,
-                                         '*_R1_*')))
-    source_folder = fastq_files and os.path.dirname(fastq_files[0])
-    file_names = [os.path.basename(fastq_file) for fastq_file in fastq_files]
-    groups = find_groups(file_names,
-                         os.path.join(run_path, 'SampleSheet.csv'))
-    for group in groups:
-        main_file, midi_file = group.names
-        if main_file.startswith('Undetermined'):
-            continue
-        main_sample = Sample(fastq1=os.path.join(source_folder, main_file))
-        if midi_file is None:
-            midi_sample = None
-        else:
-            midi_sample = Sample(fastq1=os.path.join(source_folder, midi_file))
-        sample_groups.append(SampleGroup(main_sample, midi_sample))
+    sample_sheet_path = os.path.join(run_path, "SampleSheet.csv")
+    if os.path.exists(sample_sheet_path):
+        fastq_files = list(glob(os.path.join(run_path,
+                                             'Data',
+                                             'Intensities',
+                                             'BaseCalls',
+                                             '*_R1_*')) or
+                           glob(os.path.join(run_path,
+                                             '*_R1_*')))
+        source_folder = fastq_files and os.path.dirname(fastq_files[0])
+        file_names = [os.path.basename(fastq_file) for fastq_file in fastq_files]
+        groups = find_groups(file_names,
+                             os.path.join(run_path, 'SampleSheet.csv'))
+        for group in groups:
+            main_file, midi_file = group.names
+            if main_file.startswith('Undetermined'):
+                continue
+            main_sample = Sample(fastq1=os.path.join(source_folder, main_file))
+            if midi_file is None:
+                midi_sample = None
+            else:
+                midi_sample = Sample(fastq1=os.path.join(source_folder, midi_file))
+            sample_groups.append(SampleGroup(main_sample, midi_sample))
+    else:
+        # Sort the FASTQ files alphabetically and run them in pairs.
+        logger.info(
+            "No sample sheet found; running on all FASTQ files in folder {}".format(
+                run_path
+            )
+        )
+        fastq_files = (list(glob(os.path.join(run_path, "*.fastq")))
+                       + list(glob(os.path.join(run_path, "*.fastq.gz"))))
+        fastq_files.sort()
+
+        for idx in range(0, len(fastq_files), 2):
+            forward = fastq_files[idx]
+            if idx == len(fastq_files) - 1:
+                # We have an odd number of FASTQ files; ignore this last one.
+                logger.info("File {} appears extraneous; omitting.".format(forward))
+                break
+            reverse = fastq_files[idx + 1]
+            logger.info(
+                "Pairing files {} and {}.".format(forward, reverse)
+            )
+            sample = Sample(
+                fastq1=os.path.join(run_path, forward),
+                fastq2=os.path.join(run_path, reverse),
+            )
+            sample_groups.append(SampleGroup(sample, midi_sample=None))
 
     sample_count = sum(1 for _ in run_info.get_all_samples())
     for i, sample in enumerate(run_info.get_all_samples(), 1):
