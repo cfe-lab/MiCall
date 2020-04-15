@@ -14,6 +14,7 @@ import shutil
 import socket
 from zipfile import ZipFile, ZIP_DEFLATED
 import tarfile
+from typing import Iterable, Optional
 
 from micall.core.filter_quality import report_bad_cycles
 from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
@@ -525,6 +526,20 @@ def parse_args():
         action="store_true",
         help="Use de novo assembly instead of mapping to reference sequences.",
     )
+    folder_parser.add_argument(
+        "--fastq1s",
+        nargs="*",
+        help="Forward-read files to be paired with their reverse counterparts,"
+             "specified with the --fastq2s option.  If these are not specified,"
+             "all files with a .fastq or .fastq.gz extension will be paired "
+             "alphabetically."
+    )
+    folder_parser.add_argument(
+        "--fastq2s",
+        nargs="*",
+        help="Reverse-read counterparts to the files specified by --fastq1s; "
+             "ignored if --fastq1s is not specified."
+    )
     folder_parser.set_defaults(func=process_folder)
 
     # ####
@@ -694,6 +709,8 @@ def process_folder(args):
         resolved_args.run_folder,
         resolved_args.results_folder,
         args.denovo,
+        args.fastq1s,
+        args.fastq2s
     )
     process_run(run_info, args)
 
@@ -955,7 +972,13 @@ def load_sample(sample_json, data_path, scratch_path):
     return sample
 
 
-def link_samples(run_path: str, data_path: str, is_denovo: bool):
+def link_samples(
+        run_path: str,
+        data_path: str,
+        is_denovo: bool,
+        fastq1s: Optional[Iterable[str]],
+        fastq2s: Optional[Iterable[str]],
+):
     """ Load the data from a run folder. """
 
     shutil.rmtree(data_path, ignore_errors=True)
@@ -1003,7 +1026,51 @@ def link_samples(run_path: str, data_path: str, is_denovo: bool):
                        is_denovo=is_denovo)
 
     sample_sheet_path = os.path.join(run_path, "SampleSheet.csv")
-    if os.path.exists(sample_sheet_path):
+    if (fastq1s is not None and len(fastq1s) > 0
+            or not os.path.exists(sample_sheet_path)):
+        if fastq1s is not None and len(fastq1s) > 0:  # forward files are specified
+            if fastq2s is None:
+                raise ValueError("Reverse read files must also be specified.")
+            elif len(fastq2s) != len(fastq1s):
+                raise ValueError(
+                    "The same number of forward and reverse read files must be "
+                    "specified."
+                )
+            forward_reverse_pairs = zip(fastq1s, fastq2s)
+
+        else:  # there is no sample sheet
+            # Sort the FASTQ files alphabetically and run them in pairs.
+            logger.info(
+                "No sample sheet found; running on all FASTQ files in folder {}".format(
+                    run_path
+                )
+            )
+            fastq_files = (list(glob(os.path.join(run_path, "*.fastq")))
+                           + list(glob(os.path.join(run_path, "*.fastq.gz"))))
+            fastq_files.sort()
+            forward_reverse_pairs = []
+            for idx in range(0, len(fastq_files), 2):
+                forward = fastq_files[idx]
+                if idx == len(fastq_files) - 1:
+                    # We have an odd number of FASTQ files; ignore this last one.
+                    logger.info(
+                        "File {} appears extraneous; omitting.".format(forward)
+                    )
+                    break
+                reverse = fastq_files[idx + 1]
+                logger.info(
+                    "Pairing files {} and {}.".format(forward, reverse)
+                )
+                forward_reverse_pairs.append((forward, reverse))
+
+        for forward, reverse in forward_reverse_pairs:
+            sample = Sample(
+                fastq1=os.path.join(run_path, forward),
+                fastq2=os.path.join(run_path, reverse),
+            )
+            sample_groups.append(SampleGroup(sample, midi_sample=None))
+
+    else:  # a sample sheet is specified
         fastq_files = list(glob(os.path.join(run_path,
                                              'Data',
                                              'Intensities',
@@ -1013,8 +1080,7 @@ def link_samples(run_path: str, data_path: str, is_denovo: bool):
                                              '*_R1_*')))
         source_folder = fastq_files and os.path.dirname(fastq_files[0])
         file_names = [os.path.basename(fastq_file) for fastq_file in fastq_files]
-        groups = find_groups(file_names,
-                             os.path.join(run_path, 'SampleSheet.csv'))
+        groups = find_groups(file_names, sample_sheet_path)
         for group in groups:
             main_file, midi_file = group.names
             if main_file.startswith('Undetermined'):
@@ -1025,32 +1091,6 @@ def link_samples(run_path: str, data_path: str, is_denovo: bool):
             else:
                 midi_sample = Sample(fastq1=os.path.join(source_folder, midi_file))
             sample_groups.append(SampleGroup(main_sample, midi_sample))
-    else:
-        # Sort the FASTQ files alphabetically and run them in pairs.
-        logger.info(
-            "No sample sheet found; running on all FASTQ files in folder {}".format(
-                run_path
-            )
-        )
-        fastq_files = (list(glob(os.path.join(run_path, "*.fastq")))
-                       + list(glob(os.path.join(run_path, "*.fastq.gz"))))
-        fastq_files.sort()
-
-        for idx in range(0, len(fastq_files), 2):
-            forward = fastq_files[idx]
-            if idx == len(fastq_files) - 1:
-                # We have an odd number of FASTQ files; ignore this last one.
-                logger.info("File {} appears extraneous; omitting.".format(forward))
-                break
-            reverse = fastq_files[idx + 1]
-            logger.info(
-                "Pairing files {} and {}.".format(forward, reverse)
-            )
-            sample = Sample(
-                fastq1=os.path.join(run_path, forward),
-                fastq2=os.path.join(run_path, reverse),
-            )
-            sample_groups.append(SampleGroup(sample, midi_sample=None))
 
     sample_count = sum(1 for _ in run_info.get_all_samples())
     for i, sample in enumerate(run_info.get_all_samples(), 1):
