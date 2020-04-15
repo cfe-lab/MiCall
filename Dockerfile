@@ -10,7 +10,7 @@
 #
 # docker run micall:version {basespace,folder,sample,hcv_sample} --help
 
-FROM python:3.7
+FROM python:3.7 as production
 
 MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 
@@ -99,3 +99,8 @@ COPY micall/utils   /opt/micall/micall/utils/
 RUN python /opt/micall/micall/blast_db/make_blast_db.py
 
 ENTRYPOINT ["python", "/opt/micall/micall_docker.py"]
+
+FROM production as dev
+## Add the dev packages.
+COPY requirements-test.txt requirements-watcher.txt requirements-dev.txt /opt/micall/
+RUN pip install -r /opt/micall/requirements-dev.txt
