@@ -74,6 +74,10 @@ def parse_args():
     parser.add_argument('conseq_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing consensus sequences')
+    parser.add_argument('conseq_all_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing consensus sequences (ignoring inadequate '
+                             'coverage)')
     parser.add_argument('failed_align_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing any consensus that failed to align')
@@ -410,6 +414,8 @@ class SequenceReport(object):
                 self.write_nuc_counts(self.nuc_writer)
             if self.conseq_writer is not None:
                 self.write_consensus(self.conseq_writer)
+            if self.conseq_all_writer is not None:
+                self.write_consensus_all(self.conseq_all_writer)
             if self.conseq_region_writer is not None:
                 self.write_consensus_regions(self.conseq_region_writer)
             if self.genome_coverage_writer is not None:
@@ -1501,7 +1507,8 @@ def aln2counts(aligned_csv,
                amino_detail_csv=None,
                genome_coverage_csv=None,
                nuc_detail_csv=None,
-               contigs_csv=None):
+               contigs_csv=None,
+               conseq_all_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1531,6 +1538,8 @@ def aln2counts(aligned_csv,
     @param genome_coverage_csv: Open file handle to write coverage for individual
         contigs.
     @param contigs_csv: Open file handle to read contig sequences.
+    @param conseq_all_csv: Open file handle to write consensus sequences *ignoring
+        inadequate coverage*.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1572,6 +1581,8 @@ def aln2counts(aligned_csv,
                 file_size = os.stat(aligned_filename).st_size
                 report.enable_callback(callback, file_size)
 
+        if conseq_all_csv is not None:
+            report.write_consensus_all_header(conseq_all_csv)
         if clipping_csv is not None:
             report.read_clipping(clipping_csv)
         if conseq_ins_csv is not None:
@@ -1616,7 +1627,8 @@ def main():
                amino_detail_csv=args.amino_detail_csv,
                nuc_detail_csv=args.nuc_detail_csv,
                genome_coverage_csv=args.genome_coverage_csv,
-               contigs_csv=args.contigs_csv)
+               contigs_csv=args.contigs_csv,
+               conseq_all_csv=args.conseq_all_csv)
 
 
 if __name__ == '__main__':
