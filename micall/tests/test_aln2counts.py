@@ -180,6 +180,135 @@ R1-seed,15,0.100,0,AAAT
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testConsensusAllFromTwoReads(self):
+        """ The second read is out voted by the first one.
+        CCC -> P
+        GGG -> G
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,9,0,AAATTT
+R1-seed,15,0,1,0,CCCGGG
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAATTT
+"""
+
+        self.report.write_consensus_all_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus_all()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusAllWithOffset(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,9,3,AAATTT
+R1-seed,15,0,1,7,TTGGG
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,3,AAATTTGGG
+"""
+
+        self.report.write_consensus_all_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus_all()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusAllLowQualitySections(self):
+        """Low-quality bases still get reported as x."""
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,9,3,NNNTTT
+R1-seed,15,0,1,7,TTNGG
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,6,TTTxGG
+"""
+        self.report.consensus_min_coverage = 1
+
+        self.report.write_consensus_all_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus_all()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusAllLowQuality(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,9,3,NNNNNN
+R1-seed,15,0,1,7,NNNNN
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+"""
+        self.report.consensus_min_coverage = 1
+
+        self.report.write_consensus_all_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus_all()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusAllLowCoverageInMiddle(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,9,0,AAATTTGGG
+R1-seed,15,0,1,0,AAAT
+R1-seed,15,0,1,6,GGG
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAATTTGGG
+"""
+        self.report.consensus_min_coverage = 10
+
+        self.report.write_consensus_all_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus_all()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusAllLowCoverageAtStart(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,9,0,AAATTTGGG
+R1-seed,15,0,1,4,TTGGG
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAATTTGGG
+"""
+        self.report.consensus_min_coverage = 10
+
+        self.report.write_consensus_all_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus_all()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusAllLowCoverageAtEnd(self):
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,9,0,AAATTTGGG
+R1-seed,15,0,1,0,AAAT
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,AAATTTGGG
+"""
+        self.report.consensus_min_coverage = 10
+
+        self.report.write_consensus_all_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus_all()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testMultiplePrefixAminoReport(self):
         """ Assemble counts from three contigs to two references.
 

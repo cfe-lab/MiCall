@@ -922,18 +922,17 @@ class SequenceReport(object):
                                'sequence'],
                               lineterminator=os.linesep)
 
-    def write_consensus_header(self, conseq_file):
-        self.conseq_writer = self._create_consensus_writer(conseq_file)
-        self.conseq_writer.writeheader()
-
-    def get_consensus_rows(self, seed_amino_entries):
-        for mixture_cutoff in self.conseq_mixture_cutoffs:
+    def get_consensus_rows(self, seed_amino_entries, ignore_coverage=False):
+        mixture_cutoffs = ([MAX_CUTOFF] if ignore_coverage
+                           else self.conseq_mixture_cutoffs)
+        min_coverage = 1 if ignore_coverage else self.consensus_min_coverage
+        for mixture_cutoff in mixture_cutoffs:
             consensus = ''
             offset = None
             for pos, seed_amino in seed_amino_entries:
                 for nuc_index, seed_nuc in enumerate(seed_amino.nucleotides):
                     nuc_coverage = seed_nuc.get_coverage()
-                    if nuc_coverage < self.consensus_min_coverage:
+                    if nuc_coverage < min_coverage:
                         if offset is not None:
                             consensus += 'x'
                     else:
@@ -952,13 +951,31 @@ class SequenceReport(object):
                        'offset': offset,
                        'sequence': consensus}
 
-    def write_consensus(self, conseq_writer=None):
-        conseq_writer = conseq_writer or self.conseq_writer
+    def _write_consensus_helper(self, csv_writer, ignore_coverage=False):
+        csv_writer = csv_writer or (self.conseq_writer if not ignore_coverage
+                                    else self.conseq_all_writer)
         seed_amino_entries = [(seed_amino.consensus_nuc_index, seed_amino)
                               for seed_amino in self.seed_aminos[0]]
-        for row in self.get_consensus_rows(seed_amino_entries):
+        for row in self.get_consensus_rows(
+                seed_amino_entries,
+                ignore_coverage=ignore_coverage
+        ):
             row['region'] = self.detail_seed
-            conseq_writer.writerow(row)
+            csv_writer.writerow(row)
+
+    def write_consensus_header(self, conseq_file):
+        self.conseq_writer = self._create_consensus_writer(conseq_file)
+        self.conseq_writer.writeheader()
+
+    def write_consensus(self, conseq_writer=None):
+        self._write_consensus_helper(conseq_writer)
+
+    def write_consensus_all_header(self, conseq_all_file):
+        self.conseq_all_writer = self._create_consensus_writer(conseq_all_file)
+        self.conseq_all_writer.writeheader()
+
+    def write_consensus_all(self, conseq_all_writer=None):
+        self._write_consensus_helper(conseq_all_writer, ignore_coverage=True)
 
     def write_consensus_regions_header(self, conseq_region_file):
         self.conseq_region_writer = csv.DictWriter(conseq_region_file,
