@@ -70,6 +70,10 @@ class MiCallArgs:
         if arg_name.startswith('__'):
             raise AttributeError(arg_name)
 
+        abs_run_folder = os.path.abspath(self.original_args.get("run_folder"))
+        if arg_name == "run_folder":
+            return abs_run_folder
+
         mapped_arg_name = self.MIDI_ARGUMENT_PREFIX + arg_name if self.map_midi else arg_name
         resolved_path = self.original_args.get(mapped_arg_name)
         if resolved_path is None:
@@ -77,8 +81,8 @@ class MiCallArgs:
         if not os.path.isabs(resolved_path):
             results = self.original_args["results_folder"]
             if not os.path.isabs(results):
-                results = os.path.join(self.original_args["run_folder"], results)
-            io_prefix = (self.original_args["run_folder"]
+                results = os.path.join(abs_run_folder, results)
+            io_prefix = (abs_run_folder
                          if arg_name in self.PREFIX_WITH_RUN_FOLDER
                          else results)
             resolved_path = os.path.join(io_prefix, resolved_path)

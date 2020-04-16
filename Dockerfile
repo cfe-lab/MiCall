@@ -98,6 +98,7 @@ COPY micall/utils   /opt/micall/micall/utils/
 
 RUN python /opt/micall/micall/blast_db/make_blast_db.py
 
+WORKDIR /data
 ENTRYPOINT ["python", "/opt/micall/micall_docker.py"]
 
 FROM production as dev

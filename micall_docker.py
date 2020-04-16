@@ -194,14 +194,17 @@ FOLDER_DESCRIPTION = """\
 Map FASTQ files to references for a MiCall run.
 
 This will look for MiSeq output in the path specified by the optional 
-"run_folder" argument (by default, this is "/data").  The output will be 
+"run_folder" argument (by default, this is ".").  The output will be 
 written to the path specified by the option "results_folder" argument (by 
 default, "Results"), which itself will be taken as relative to the path 
 specified by "run_folder" if it is not an absolute path.
 
 As this will typically be run in a Dockerized setting, you should make sure
 your bind mounts are appropriately set; also note that any input/output paths
-will be handled as if they are *inside* the container.
+will be handled as if they are *inside* the container.  The working directory
+in the container will be "/data", so that the default "run_folder" argument
+will resolve as "/data"; this is typically where you will mount your folder
+containing MiSeq output.
 
 For example: if you built your container as "micall:v0.1.2-3", your MiSeq data is
 on your host machine as "/path/on/host/", and you want the outputs to be  
@@ -495,7 +498,7 @@ def parse_args():
         "run_folder",
         nargs="?",
         help="Path to the folder containing the MiSeq data",
-        default="/data",
+        default=".",
     )
     folder_parser.add_argument(
         "results_folder",
