@@ -196,7 +196,8 @@ class Sample:
                 open(self.conseq_region_csv, 'w') as conseq_region_csv, \
                 open(self.failed_align_csv, 'w') as failed_align_csv, \
                 open(self.coverage_summary_csv, 'w') as coverage_summary_csv, \
-                open(self.genome_coverage_csv, 'w') as genome_coverage_csv:
+                open(self.genome_coverage_csv, 'w') as genome_coverage_csv, \
+                open(self.conseq_all_csv, "w") as conseq_all_csv:
 
             if not use_denovo:
                 for f in (amino_detail_csv, nuc_detail_csv):
@@ -218,7 +219,8 @@ class Sample:
                        amino_detail_csv=amino_detail_csv,
                        nuc_detail_csv=nuc_detail_csv,
                        genome_coverage_csv=genome_coverage_csv,
-                       contigs_csv=contigs_csv)
+                       contigs_csv=contigs_csv,
+                       conseq_all_csv=conseq_all_csv)
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)
