@@ -6,7 +6,7 @@
       "regions": [
         {
           "coordinate_region": "SARS-CoV-2-orf1ab",
-          "coordinate_region_length": 4405,
+          "coordinate_region_length": 7096,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -127,7 +127,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp1",
-          "coordinate_region_length": 540,
+          "coordinate_region_length": 179,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -138,7 +138,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp2",
-          "coordinate_region_length": 1914,
+          "coordinate_region_length": 637,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -149,7 +149,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp3",
-          "coordinate_region_length": 5835,
+          "coordinate_region_length": 1944,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -160,7 +160,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp4",
-          "coordinate_region_length": 1500,
+          "coordinate_region_length": 499,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -171,7 +171,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp5",
-          "coordinate_region_length": 918,
+          "coordinate_region_length": 305,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -182,7 +182,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp6",
-          "coordinate_region_length": 870,
+          "coordinate_region_length": 289,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -193,7 +193,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp7",
-          "coordinate_region_length": 249,
+          "coordinate_region_length": 82,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -204,7 +204,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp8",
-          "coordinate_region_length": 594,
+          "coordinate_region_length": 197,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -215,7 +215,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp9",
-          "coordinate_region_length": 339,
+          "coordinate_region_length": 112,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -226,7 +226,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp10",
-          "coordinate_region_length": 417,
+          "coordinate_region_length": 138,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -237,7 +237,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp12",
-          "coordinate_region_length": 2795,
+          "coordinate_region_length": 931,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -248,7 +248,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp13",
-          "coordinate_region_length": 1803,
+          "coordinate_region_length": 600,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -259,7 +259,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp14",
-          "coordinate_region_length": 1581,
+          "coordinate_region_length": 526,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -270,7 +270,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp15",
-          "coordinate_region_length": 1038,
+          "coordinate_region_length": 345,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -281,7 +281,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp16",
-          "coordinate_region_length": 894,
+          "coordinate_region_length": 297,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
