@@ -151,6 +151,7 @@ class SequenceReport(object):
         self.amino_writer = self.amino_detail_writer = None
         self.genome_coverage_writer = None
         self.conseq_region_writer = self.fail_writer = None
+        self.conseq_all_writer = None
 
     @property
     def has_detail_counts(self):
