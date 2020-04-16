@@ -369,6 +369,11 @@ def add_output_arguments(parser, midi=False):
             "conseq.csv",
         ),
         (
+            "conseq_all_csv",
+            "CSV containing consensus sequences *ignoring poor coverage*",
+            "conseq_all.csv",
+        ),
+        (
             "conseq_region_csv",
             "CSV containing consensus sequences, split by region",
             "conseq_region.csv",
@@ -771,6 +776,7 @@ def sample_process_helper(resolved_args, scratch_path, use_denovo):
         amino_csv=resolved_args.amino_csv,
         coord_ins_csv=resolved_args.coord_ins_csv,
         conseq_csv=resolved_args.conseq_csv,
+        conseq_all_csv=resolved_args.conseq_all_csv,
         conseq_region_csv=resolved_args.conseq_region_csv,
         failed_align_csv=resolved_args.failed_align_csv,
         coverage_scores_csv=resolved_args.coverage_scores_csv,
@@ -1262,6 +1268,7 @@ def collate_samples(run_info):
                  'amino.csv',
                  'coord_ins.csv',
                  'conseq.csv',
+                 'conseq_all.csv',
                  'conseq_region.csv',
                  'failed_align.csv',
                  'coverage_scores.csv',
