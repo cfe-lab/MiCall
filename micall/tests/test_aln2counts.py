@@ -50,6 +50,25 @@ R1-seed,15,0.100,0,MMMKKK
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testConsensusExactTie(self):
+        """ There is an exact tie between sequences. """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,5,0,AAATTT
+R1-seed,15,0,5,0,CCCGGG
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,MMMKKK
+R1-seed,15,0.100,0,MMMKKK
+"""
+
+        self.report.write_consensus_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
     def testConsensusWithOffset(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
@@ -193,6 +212,24 @@ R1-seed,15,0,1,0,CCCGGG
         expected_text = """\
 region,q-cutoff,consensus-percent-cutoff,offset,sequence
 R1-seed,15,MAX,0,AAATTT
+"""
+
+        self.report.write_consensus_all_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_consensus_all()
+
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
+    def testConsensusAllExactTie(self):
+        """ Exact ties still result in mixtures. """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,5,0,AAATTT
+R1-seed,15,0,5,0,CCCGGG
+""")
+        expected_text = """\
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,15,MAX,0,MMMKKK
 """
 
         self.report.write_consensus_all_header(self.report_file)
