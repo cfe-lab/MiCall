@@ -484,6 +484,8 @@ def fetch_by_accession(accession):
                             accession + '?report=fasta&format=text')
     response.raise_for_status()
     match = re.search(r'<div id="viewercontent1".*val="(\d+)"', response.text)
+    if not match:
+        raise ValueError(f'Accession not found: {accession!r}.')
     response_id = match.group(1)
 
     response = requests.get(f'https://www.ncbi.nlm.nih.gov/sviewer/viewer.fcgi?'
