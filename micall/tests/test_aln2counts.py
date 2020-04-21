@@ -210,8 +210,9 @@ R1-seed,15,0,9,0,AAATTT
 R1-seed,15,0,1,0,CCCGGG
 """)
         expected_text = """\
-region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,0,AAATTT
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,ALL,15,MAX,0,AAATTT
+R1-seed,R1,15,MAX,0,AAATTT
 """
 
         self.report.write_consensus_all_header(self.report_file)
@@ -228,8 +229,9 @@ R1-seed,15,0,5,0,AAATTT
 R1-seed,15,0,5,0,CCCGGG
 """)
         expected_text = """\
-region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,0,MMMKKK
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,ALL,15,MAX,0,MMMKKK
+R1-seed,R1,15,MAX,0,MMMKKK
 """
 
         self.report.write_consensus_all_header(self.report_file)
@@ -245,8 +247,9 @@ R1-seed,15,0,9,3,AAATTT
 R1-seed,15,0,1,7,TTGGG
 """)
         expected_text = """\
-region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,3,AAATTTGGG
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,ALL,15,MAX,3,AAATTTGGG
+R1-seed,R1,15,MAX,0,AAATTTGGG
 """
 
         self.report.write_consensus_all_header(self.report_file)
@@ -263,8 +266,9 @@ R1-seed,15,0,9,3,NNNTTT
 R1-seed,15,0,1,7,TTNGG
 """)
         expected_text = """\
-region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,6,TTTxGG
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,ALL,15,MAX,6,TTTxGG
+R1-seed,R1,15,MAX,3,TTTxGG
 """
         self.report.consensus_min_coverage = 1
 
@@ -281,7 +285,7 @@ R1-seed,15,0,9,3,NNNNNN
 R1-seed,15,0,1,7,NNNNN
 """)
         expected_text = """\
-region,q-cutoff,consensus-percent-cutoff,offset,sequence
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
 """
         self.report.consensus_min_coverage = 1
 
@@ -299,8 +303,9 @@ R1-seed,15,0,1,0,AAAT
 R1-seed,15,0,1,6,GGG
 """)
         expected_text = """\
-region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,0,AAATTTGGG
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,ALL,15,MAX,0,AAATTTGGG
+R1-seed,R1,15,MAX,0,AAATTTGGG
 """
         self.report.consensus_min_coverage = 10
 
@@ -317,8 +322,9 @@ R1-seed,15,0,9,0,AAATTTGGG
 R1-seed,15,0,1,4,TTGGG
 """)
         expected_text = """\
-region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,0,AAATTTGGG
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,ALL,15,MAX,0,AAATTTGGG
+R1-seed,R1,15,MAX,0,AAATTTGGG
 """
         self.report.consensus_min_coverage = 10
 
@@ -335,8 +341,9 @@ R1-seed,15,0,9,0,AAATTTGGG
 R1-seed,15,0,1,0,AAAT
 """)
         expected_text = """\
-region,q-cutoff,consensus-percent-cutoff,offset,sequence
-R1-seed,15,MAX,0,AAATTTGGG
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+R1-seed,ALL,15,MAX,0,AAATTTGGG
+R1-seed,R1,15,MAX,0,AAATTTGGG
 """
         self.report.consensus_min_coverage = 10
 
