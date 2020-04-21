@@ -3,6 +3,10 @@ from csv import DictReader
 from operator import attrgetter
 from pathlib import Path
 
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+
 from micall.utils.alignment_wrapper import align_nucs
 
 try:
@@ -60,9 +64,13 @@ def main():
         conseq_accession = fields[3]
         accessions[reads_accession] = conseq_accession
 
+    summaries = []
     source_path = Path(__file__)
     working_path = source_path.parent.parent / 'tests' / 'working'
     conseq_path = working_path / 'corona' / 'sars_results20200417' / 'conseq_all.csv'
+    accessions_path = working_path / 'fetched_accessions.fasta'
+    accessions_file = accessions_path.open('a')
+    accessions_index = None
     with conseq_path.open() as f:
         for row in DictReader(f):
             cutoff = row['consensus-percent-cutoff']
@@ -71,30 +79,53 @@ def main():
             sample_name = row['sample']
             reads_accession = sample_name.split('-')[0]
             conseq_accession = accessions[reads_accession]
+            if accessions_index is None:
+                accessions_index = SeqIO.index(str(accessions_path), 'fasta')
+
             try:
-                print('Fetching', conseq_accession)
-                published_seq = fetch_by_accession(conseq_accession)
-                print('Fetched', conseq_accession)
-            except ValueError as ex:
-                print(ex)
+                published_seq = str(accessions_index[conseq_accession].seq)
+            except KeyError:
+                try:
+                    print('Fetching', conseq_accession)
+                    published_seq = fetch_by_accession(conseq_accession)
+                    print('Fetched', conseq_accession)
+                except ValueError as ex:
+                    print(ex)
+                    published_seq = ''
+                SeqIO.write([SeqRecord(Seq(published_seq), id=conseq_accession)],
+                            accessions_file,
+                            'fasta')
+                accessions_file.flush()
+                accessions_index = None
+            if published_seq == '':
+                print(f'Skipping conseq {conseq_accession}.')
+                summary = f'{sample_name}|{conseq_accession}|Failed to fetch comparison sequence.'
+                summaries.append(summary)
                 continue
             if Aligner is not None:
                 compare_using_mappy(row, conseq_accession, published_seq)
             else:
-                compare_using_gotoh(row, conseq_accession, published_seq)
+                summary = compare_using_gotoh(row, conseq_accession, published_seq)
+                summaries.append(summary)
             print()
+    print('Run|Compared to|Differences')
+    print('---|-----------|-----------')
+    print('\n'.join(summaries))
 
 
 def compare_using_gotoh(row, conseq_accession, published_seq):
-    conseq = row['sequence']
+    conseq = row['sequence'].replace('x', '')
     sample_name = row['sample']
-    print(sample_name, conseq_accession)
+    header = f'{conseq_accession} => {sample_name}'
+    print(header)
     print(len(conseq), len(published_seq))
     aln_pub_seq, aln_conseq, score = align_nucs(published_seq,
                                                 conseq)
     screen_width = int(os.environ.get('COLUMNS', 100))
     print(aln_pub_seq[:screen_width])
     print(aln_conseq[:screen_width])
+    print('...', aln_pub_seq[-screen_width+4:])
+    print('...', aln_conseq[-screen_width+4:])
     mismatch_count = add_count = missing_count = 0
     for i, (theirs, ours) in enumerate(zip(aln_pub_seq, aln_conseq)):
         if theirs == ours:
@@ -107,8 +138,10 @@ def compare_using_gotoh(row, conseq_accession, published_seq):
             mismatch_count += 1
             if mismatch_count < 100:
                 print(f'{i}: {theirs} => {ours}')
-    print(f'{mismatch_count} mismatches, {missing_count} missing, and '
-          f'{add_count} added out of {len(published_seq)}.')
+    summary = (f'{mismatch_count} mismatches, {missing_count} missing, and '
+               f'{add_count} added out of {len(published_seq)}.')
+    print(summary)
+    return f'{sample_name}|{conseq_accession}|{summary}'
 
 
 def compare_using_mappy(row, conseq_accession, published_seq):
