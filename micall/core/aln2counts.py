@@ -920,59 +920,75 @@ class SequenceReport(object):
                                                            min_query_position)
 
     @staticmethod
-    def _create_consensus_writer(conseq_file, include_seed=False):
-        columns = [
-            'region',
-            'q-cutoff',
-            'consensus-percent-cutoff',
-            'offset',
-            'sequence'
-        ]
+    def _create_consensus_writer(
+            conseq_file,
+            include_seed=False,
+            include_seed_region_offsets=False,
+    ):
+        columns = ["region", "q-cutoff", "consensus-percent-cutoff"]
+        offsets = ["offset"]
+        if include_seed_region_offsets:
+            offsets = ["seed-offset", "region-offset"]
+        columns = columns + offsets
+        columns.append("sequence")
         if include_seed:
             columns = ["seed"] + columns
         return csv.DictWriter(conseq_file, columns, lineterminator=os.linesep)
 
-    def get_consensus_rows(self, seed_amino_entries, ignore_coverage=False):
+    def get_consensus_rows(
+            self,
+            seed_amino_entries,
+            ignore_coverage=False,
+    ):
         mixture_cutoffs = ([MAX_CUTOFF] if ignore_coverage
                            else self.conseq_mixture_cutoffs)
         min_coverage = 1 if ignore_coverage else self.consensus_min_coverage
         for mixture_cutoff in mixture_cutoffs:
             consensus = ''
-            offset = None
-            for pos, seed_amino in seed_amino_entries:
+            seed_offset = None
+            region_offset = None
+            for seed_pos, region_pos, seed_amino in seed_amino_entries:
                 for nuc_index, seed_nuc in enumerate(seed_amino.nucleotides):
                     nuc_coverage = seed_nuc.get_coverage()
                     if nuc_coverage < min_coverage:
-                        if offset is not None:
+                        if seed_offset is not None:
                             consensus += 'x'
                     else:
                         nuc_consensus = seed_nuc.get_consensus(mixture_cutoff)
-                        if offset is None and nuc_consensus:
-                            offset = pos + nuc_index
+                        if seed_offset is None and nuc_consensus:
+                            seed_offset = seed_pos + nuc_index
+                            if region_pos is not None:
+                                region_offset = region_pos + nuc_index
                         consensus += nuc_consensus
-                if offset is None:
+                if seed_offset is None:
                     # Still haven't started, so reset the consensus.
                     consensus = ''
-            if offset is not None:
+            if seed_offset is not None:
                 consensus = consensus.rstrip('x')
-                yield {'q-cutoff': self.qcut,
-                       'consensus-percent-cutoff':
-                           format_cutoff(mixture_cutoff),
-                       'offset': offset,
-                       'sequence': consensus}
+                yield {
+                    'q-cutoff': self.qcut,
+                    'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
+                    'seed-offset': seed_offset,
+                    'region-offset': region_offset,
+                    'sequence': consensus
+                }
 
     def _write_consensus_helper(
             self,
             amino_entries,
             csv_writer,
             row_metadata,
-            ignore_coverage=False
+            ignore_coverage=False,
+            include_seed_region_offsets=False,
     ):
         for row in self.get_consensus_rows(
                 amino_entries,
                 ignore_coverage=ignore_coverage
         ):
             row.update(row_metadata)
+            if not include_seed_region_offsets:
+                row.pop("region-offset")
+                row["offset"] = row.pop("seed-offset")
             csv_writer.writerow(row)
 
     def write_consensus_header(self, conseq_file):
@@ -981,8 +997,10 @@ class SequenceReport(object):
 
     def write_consensus(self, conseq_writer=None):
         conseq_writer = conseq_writer or self.conseq_writer
-        seed_amino_entries = [(seed_amino.consensus_nuc_index, seed_amino)
-                              for seed_amino in self.seed_aminos[0]]
+        seed_amino_entries = [
+            (seed_amino.consensus_nuc_index, None, seed_amino)
+            for seed_amino in self.seed_aminos[0]
+        ]
         self._write_consensus_helper(
             seed_amino_entries,
             conseq_writer,
@@ -992,28 +1010,36 @@ class SequenceReport(object):
     def write_consensus_all_header(self, conseq_all_file):
         self.conseq_all_writer = self._create_consensus_writer(
             conseq_all_file,
-            include_seed=True
+            include_seed=True,
+            include_seed_region_offsets=True,
         )
         self.conseq_all_writer.writeheader()
 
     def write_consensus_all(self, conseq_all_writer=None):
         conseq_all_writer = conseq_all_writer or self.conseq_all_writer
-        seed_amino_entries = [(seed_amino.consensus_nuc_index, seed_amino)
-                              for seed_amino in self.seed_aminos[0]]
+        seed_amino_entries = [
+            (seed_amino.consensus_nuc_index, None, seed_amino)
+            for seed_amino in self.seed_aminos[0]
+        ]
         self._write_consensus_helper(
             seed_amino_entries,
             conseq_all_writer,
             {
                 "seed": self.detail_seed,
-                "region": "ALL",
+                "region": None,
             },
             ignore_coverage=True,
+            include_seed_region_offsets=True,
         )
 
         regions = sorted(self.reports.keys())
         for region in regions:
             region_amino_entries = [
-                (3 * (report_amino.position-1), report_amino.seed_amino)
+                (
+                    report_amino.seed_amino.consensus_nuc_index,
+                    3 * (report_amino.position - 1),
+                    report_amino.seed_amino
+                )
                 for report_amino in self.reports[region]
             ]
             self._write_consensus_helper(
@@ -1024,6 +1050,7 @@ class SequenceReport(object):
                     "region": region,
                 },
                 ignore_coverage=True,
+                include_seed_region_offsets=True,
             )
 
     def write_consensus_regions_header(self, conseq_region_file):
@@ -1038,7 +1065,7 @@ class SequenceReport(object):
         regions = sorted(self.reports.keys())
         for region in regions:
             region_amino_entries = [
-                (3 * (report_amino.position-1), report_amino.seed_amino)
+                (3 * (report_amino.position-1), None, report_amino.seed_amino)
                 for report_amino in self.reports[region]
             ]
             self._write_consensus_helper(
