@@ -12,6 +12,7 @@ import requests
 import io
 import zipfile
 import shutil
+from pathlib import Path
 
 import Levenshtein
 from gotoh import align_it
@@ -34,6 +35,11 @@ class Hivseqinr:
         self.fix_wds()
         self.copy_fasta()
         self.run()
+        self.finalize()
+
+
+    def to_rpath(self, path):
+        return path.replace('\\', '\\\\')
 
 
     def copy_fasta(self):
@@ -44,11 +50,11 @@ class Hivseqinr:
 
 
     def make_blast_dir(self):
-        dbdir = '/'.join((self.outpath, 'hxb2_blast_db'))
+        dbdir = os.path.join(self.outpath, 'hxb2_blast_db')
         os.mkdir(dbdir)
-        hxb2_path = '/'.join((dbdir, 'HXB2.fasta'))
+        hxb2_path = os.path.join(dbdir, 'HXB2.fasta')
         shutil.copyfile(
-            '/'.join((self.outpath, 'R_HXB2.fasta')),
+            os.path.join(self.outpath, 'R_HXB2.fasta'),
             hxb2_path
         )
         cmd = [
@@ -75,16 +81,16 @@ class Hivseqinr:
 
 
     def fix_wds(self):
-        rscript_path = '/'.join((self.outpath, 'R_HIVSeqinR_Combined_ver09_ScrambleFix.R'))
-        new_rscript_path = '/'.join((self.outpath, 'modified.R'))
+        rscript_path = os.path.join(self.outpath, 'R_HIVSeqinR_Combined_ver09_ScrambleFix.R')
+        new_rscript_path = os.path.join(self.outpath, 'modified.R')
         self.new_rscript_path = new_rscript_path
         with open(self.new_rscript_path, 'w') as outfile:
             with open(rscript_path, 'r') as infile:
                 for line in infile:
                     if 'MyWD <- getwd()' in line:
-                        line = line.replace('MyWD <- getwd()', f'MyWD = "{self.outpath}"\n')
+                        line = line.replace('MyWD <- getwd()', f'MyWD = "{self.to_rpath(self.outpath)}"\n')
                     elif line.startswith('MyBlastnDir <-'):
-                        line = f'MyBlastnDir = "{self.dbdir}/"\n'
+                        line = f'MyBlastnDir = "{self.to_rpath(self.dbdir) + os.path.sep*2}"\n'
                     outfile.write(line)
 
 
@@ -98,6 +104,10 @@ class Hivseqinr:
         job = subprocess.run(cmd)
         os.chdir(cwd)
         return job
+
+    def finalize(self):
+        path = os.path.join(self.outpath, 'COMPLETE')
+        Path(path).touch()
 
 
 # Note these are 1-based indicies
@@ -141,8 +151,9 @@ def parse_args():
     return parser.parse_args()
 
 
-def find_primers(csv_filepath, outpath, name):
-    columns = ['sample', 'contig', 'error', 'sequence', 'seqlen', 'nmixtures']
+def find_primers(csv_filepath, outpath, run_name):
+    print(run_name)
+    columns = ['run_name', 'sample', 'reference', 'error', 'sequence', 'seqlen', 'nmixtures']
     for target_name in primers:
         for column_type in [
             'probe_hxb2_start',
@@ -162,7 +173,7 @@ def find_primers(csv_filepath, outpath, name):
         ]:
             columns.append(target_name + '_' + column_type)
     non_tcga = re.compile(r'[^TCGA-]+')
-    outfilepath = os.path.join(outpath, f'{name}_primer_analysis.csv')
+    outfilepath = os.path.join(outpath, f'{run_name}_primer_analysis.csv')
     outfile = open(outfilepath, 'w')
     writer = DictWriter(outfile, columns, lineterminator='\n')
     writer.writeheader()
@@ -181,14 +192,17 @@ def find_primers(csv_filepath, outpath, name):
             seed_name = row.get('genotype') or row.get('ref') or row['region']
             conseq_cutoff = row.get('consensus-percent-cutoff')
             contig_num += 1
-            contig_name = f'{contig_num}-{seed_name}'
+            contig_name = f'{contig_num}_{seed_name}'
             uname = f'{sample_name}_{contig_name}_{contig_num}'
 
-            interesting_sample = 'HIV3428G2-P19-HIV_S56'
-            if sample_name == interesting_sample:
-                import pdb; pdb.set_trace()
+            # interesting_sample = 'HIV3428G2-P19-HIV_S56'
+            # pause = False
+            # if ((sample_name == interesting_sample)
+            #  and (seed_name == '1-HIV1-B-FR-K03455-seed')
+            #  and (run_name.endswith('conseqs'))):
+            #     pause = True
 
-            new_row = dict(sample=sample_name, contig=contig_name)
+            new_row = dict(run_name=run_name, sample=sample_name, reference=contig_name)
             contig_seq: str = row.get('contig') or row['sequence']
             contig_seq = contig_seq.upper()
             new_row['seqlen'] = len(contig_seq)
@@ -199,9 +213,17 @@ def find_primers(csv_filepath, outpath, name):
                 new_row['error'] = skipped[uname]
                 writer.writerow(new_row)
                 continue
+
+            # interest = 'HIV3428F1-L22-HIV_S6'
+            # if (sample_name == interest
+            #     and contig_name == '1_1-HIV1-B-FR-K03455-seed'
+            # ):
+            #     import pdb; pdb.set_trace()
+
             # Determine if sequence has internal Xs
             x_locations = [i for i,j in enumerate(contig_seq) if j=='X']
-            if any([(len(contig_seq)/6 < i < len(contig_seq) - len(contig_seq)/6) for i in x_locations]):
+            probelen = 30
+            if any([(probelen < i < len(contig_seq) - (probelen)) for i in x_locations]):
                 skipped[uname] = 'contig sequence contained internal X'
                 new_row['error'] = skipped[uname]
                 writer.writerow(new_row)
@@ -216,15 +238,13 @@ def find_primers(csv_filepath, outpath, name):
                 new_row['nmixtures'] = mixtures
                 writer.writerow(new_row)
                 continue
-            probelen = 100
-            probelen = 30
             prime5_seq = contig_seq[:probelen]
             prime3_seq = contig_seq[-probelen:]
             gap_open_penalty = 15
             gap_extend_penalty = 3
             use_terminal_gap_penalty = 1
             for key in columns:
-                if key not in ['sample', 'contig', 'seqlen', 'error', 'sequence']:
+                if key not in ['sample', 'contig', 'seqlen', 'error', 'sequence', 'run_name', 'reference']:
                     new_row[key] = None
             for end, seq in [(5, prime5_seq), (3, prime3_seq)]:
                 if end == 5:
@@ -241,11 +261,15 @@ def find_primers(csv_filepath, outpath, name):
 
                 if 'X' in seq:
                     seqlen = len(seq)
+                    oldseq = seq
                     seq = handle_x(seq)
                     if not seq or len(seq) < seqlen / 6:
                         skipped[uname] = 'too many X in sequence'
                         new_row[prefix + 'error'] = skipped[uname]
                         continue
+
+                # if 'X' in seq:
+                #     import pdb; pdb.set_trace()
 
                 finder = ProbeFinder(hxb2_target_seq, seq)
                 finder.start += hxb2_target_start
@@ -314,9 +338,9 @@ def handle_x(sequence):
         leftmost_x = None
     if rightmost_x is not None and leftmost_x is not None:
         sequence = sequence[rightmost_x+1:leftmost_x]
-    elif rightmost_x:
+    elif rightmost_x is not None:
         sequence = sequence[rightmost_x+1:]
-    else:
+    elif leftmost_x is not None:
         sequence = sequence[:leftmost_x]
     return sequence
 
@@ -431,7 +455,10 @@ def filter_df(df):
         & df['rev_error'].isna()
     )]
     filtered = filtered.apply(add_primers, axis=1)
-    filtered = filtered[['name', 'sample', 'sequence', 'seqtype']]
+    # filtered = filtered.drop_duplicates(subset='sample', keep=False)
+    # duplicates = filtered.duplicated(subset='sample', keep=False)
+    # duplicates = filtered[duplicates[duplicates].index]['sample'].unique()
+    filtered = filtered[['name', 'sample', 'reference', 'sequence', 'seqtype']]
     return filtered
 
 
@@ -455,9 +482,11 @@ def output_filtered_data(contigs_csv, conseqs_csv, name, outpath, disable_hivseq
         joined['seqtype'] = joined['seqtype_conseq'].fillna(joined['seqtype_contig'])
         joined['name'] = joined['name_conseq'].fillna(joined['name_contig'])
         joined['seqlen'] = joined['sequence'].str.len()
+        joined['reference'] = joined['reference_conseq'].fillna(joined['reference_contig'])
         joined = joined[[
             'name',
             'sample',
+            'reference',
             'seqtype',
             'sequence',
             'seqlen'
@@ -473,9 +502,10 @@ def output_filtered_data(contigs_csv, conseqs_csv, name, outpath, disable_hivseq
             fasta_outpath, 'w'
         ) as o:
             for row in joined.itertuples():
-                o.write(f'>{row.name}_{row.sample}_{row.seqtype}\n{primers["fwd"]["nomix"] + row.sequence.replace("-", "") + primers["rev"]["nomix"]}\n')
+                header = f'>{row.name}_{row.sample}_{row.reference}_{row.seqtype}'.replace('-', '_')
+                o.write(f'{header}\n{primers["fwd"]["nomix"] + row.sequence.replace("-", "") + primers["rev"]["nomix"]}\n')
             if not disable_hivseqinr:
-                hivseqinr = Hivseqinr('/'.join((outpath, 'hivseqinr')), fasta_outpath)
+                hivseqinr = Hivseqinr(os.path.join(outpath, 'hivseqinr'), fasta_outpath)
 
 
 def main():
