@@ -12,9 +12,9 @@
 #
 # This Dockerfile can be used to build two types of MiCall images:
 # - a "production" image, which can be used to deploy and run Micall; and
-# - a "development" image, which contains packages needed for testing
+# - a "dev" image, which contains packages needed for testing
 #   and development of MiCall.
-# The development image is slower to build.
+# The dev image is slower to build.
 #
 # To specify which image you want to build, use the `--target` tag to
 # `docker build`, e.g.
