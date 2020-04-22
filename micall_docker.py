@@ -441,7 +441,7 @@ def add_output_arguments(parser, midi=False):
     return parser
 
 
-def parse_args():
+def get_parser():
     parser = ArgumentParser(
         description=MAIN_DESCRIPTION,
         formatter_class=MiCallFormatter,
@@ -702,7 +702,7 @@ def parse_args():
 
     hcv_sample_parser.set_defaults(func=hcv_sample)
 
-    return parser.parse_args()
+    return parser
 
 
 def basespace_run(args):
@@ -1348,10 +1348,15 @@ def collate_samples(run_info):
 
 # noinspection PyTypeChecker,PyUnresolvedReferences
 def main():
+    parser = get_parser()
+    args = parser.parse_args()
+    if not hasattr(args, "func"):
+        # No valid subcommand was given; print the help message and exit.
+        parser.print_help()
+        return
     logger.info("Starting on %s with %d CPU's.",
                 socket.gethostname(),
                 multiprocessing.cpu_count())
-    args = parse_args()
     args.func(args)
 
 
