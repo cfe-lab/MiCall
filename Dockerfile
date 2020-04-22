@@ -9,6 +9,20 @@
 # or for help on the specific subcommands,
 #
 # docker run micall:version {basespace,folder,sample,hcv_sample} --help
+#
+# This Dockerfile can be used to build two types of MiCall images:
+# - a "production" image, which can be used to deploy and run Micall; and
+# - a "development" image, which contains packages needed for testing
+#   and development of MiCall.
+# The development image is slower to build.
+#
+# To specify which image you want to build, use the `--target` tag to
+# `docker build`, e.g.
+#
+# docker build --target production -t [image name]:[tag] [source directory]
+#
+# If you omit the `--target` tag altogether, `docker build` will build
+# the development image.
 
 FROM python:3.7 as production
 
