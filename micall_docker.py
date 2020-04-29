@@ -3,18 +3,18 @@ import csv
 import errno
 import fnmatch
 import functools
+from concurrent.futures.process import ProcessPoolExecutor
 from glob import glob
 import json
 import logging
 import multiprocessing
-from multiprocessing.pool import Pool
 from operator import attrgetter
 import os
 import shutil
 import socket
 from zipfile import ZipFile, ZIP_DEFLATED
 import tarfile
-from typing import Iterable, Optional
+import typing
 
 from micall.core.filter_quality import report_bad_cycles
 from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
@@ -442,10 +442,10 @@ def add_output_arguments(parser, midi=False):
 
 
 def get_parser():
+    # noinspection PyTypeChecker
     parser = ArgumentParser(
         description=MAIN_DESCRIPTION,
-        formatter_class=MiCallFormatter,
-    )
+        formatter_class=MiCallFormatter)
     subparsers = parser.add_subparsers(
         title="Sub-commands (i.e. modes of operation)",
     )
@@ -538,7 +538,7 @@ def get_parser():
         "--fastq1s",
         nargs="*",
         help="Forward-read files to be paired with their reverse counterparts,"
-             "specified with the --fastq2s option.  If these are not specified,"
+             "specified with the --fastq2s option.  If these are not specified, "
              "all files with a .fastq or .fastq.gz extension will be paired "
              "alphabetically."
     )
@@ -739,22 +739,19 @@ def process_run(run_info, args):
         logger.info('Summarizing run.')
         run_summary = summarize_run(run_info)
 
-    pool = Pool(processes=args.max_active)
-    pool.map(functools.partial(process_sample,
-                               args=args,
-                               pssm=pssm,
-                               use_denovo=run_info.is_denovo),
-             run_info.get_all_samples())
+    with ProcessPoolExecutor(max_workers=args.max_active) as pool:
+        for _ in pool.map(functools.partial(process_sample,
+                                            args=args,
+                                            pssm=pssm,
+                                            use_denovo=run_info.is_denovo),
+                          run_info.get_all_samples()):
+            pass
 
-    pool.close()
-    pool.join()
-    pool = Pool()
-    pool.map(functools.partial(process_resistance,
-                               run_info=run_info),
-             run_info.sample_groups)
+        for _ in pool.map(functools.partial(process_resistance,
+                                            run_info=run_info),
+                          run_info.sample_groups):
+            pass
 
-    pool.close()
-    pool.join()
     collate_samples(run_info)
     if run_summary is not None:
         summarize_samples(run_info, run_summary)
@@ -985,9 +982,8 @@ def link_samples(
         run_path: str,
         data_path: str,
         is_denovo: bool,
-        fastq1s: Optional[Iterable[str]],
-        fastq2s: Optional[Iterable[str]],
-):
+        fastq1s: typing.Sequence[str] = None,
+        fastq2s: typing.Sequence[str] = None):
     """ Load the data from a run folder. """
 
     shutil.rmtree(data_path, ignore_errors=True)
