@@ -16,12 +16,13 @@ from io import StringIO, BytesIO
 from time import sleep
 from zipfile import ZipFile, ZIP_DEFLATED
 
+# noinspection PyPackageRequirements
 from requests.adapters import HTTPAdapter
 from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
 
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
-from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType
+from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType, PIPELINE_GROUPS
 from micall.monitor.find_groups import find_groups
 
 logger = logging.getLogger(__name__)
@@ -156,7 +157,7 @@ def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
         if error_path.exists():
             continue
         done_path = (run_path /
-                     f"Results/version_{pipeline_version}/doneprocessing")
+                     f"Results/version_{pipeline_version}/done_all_processing")
         if done_path.exists():
             continue
         base_calls_path = run_path / "Data/Intensities/BaseCalls"
@@ -262,6 +263,29 @@ def calculate_retry_wait(min_wait, max_wait, attempt_count):
     seconds = min_seconds * (2 ** (attempt_count - 1))
     seconds = min(seconds, max_wait.total_seconds())
     return timedelta(seconds=seconds)
+
+
+def get_scratch_path(results_path, pipeline_group):
+    if pipeline_group == PipelineType.MAIN:
+        scratch_name = "scratch"
+    elif pipeline_group == PipelineType.DENOVO_MAIN:
+        scratch_name = "scratch_denovo"
+    else:
+        assert pipeline_group == PipelineType.MIXED_HCV_MAIN
+        scratch_name = "scratch_mixed_hcv"
+    scratch_path = results_path / scratch_name
+    return scratch_path
+
+
+def get_collated_path(results_path, pipeline_group):
+    if pipeline_group == PipelineType.MAIN:
+        target_path = results_path
+    elif pipeline_group == PipelineType.DENOVO_MAIN:
+        target_path = results_path / "denovo"
+    else:
+        assert pipeline_group == PipelineType.MIXED_HCV_MAIN
+        target_path = results_path / "mixed_hcv"
+    return target_path
 
 
 class KiveWatcher:
@@ -449,13 +473,6 @@ class KiveWatcher:
                                 direction + ' read from MiSeq run ' +
                                 folder_watcher.run_name)
                             sample_watcher.fastq_datasets.append(fastq_dataset)
-                    if (self.config.denovo_pipeline_id or
-                            self.config.denovo_combined_pipeline_id):
-                        sample_name = trim_name(fastq_name)
-                        name_dataset = self.find_or_upload_dataset(
-                            BytesIO(sample_name.encode('UTF8')),
-                            f'{sample_name}_name.txt')
-                        sample_watcher.name_datasets.append(name_dataset)
 
                 folder_watcher.sample_watchers.append(sample_watcher)
                 return sample_watcher
@@ -484,34 +501,45 @@ class KiveWatcher:
                 poll_only_new_runs = any(
                     folder_watcher.has_new_runs
                     for folder_watcher in self.folder_watchers.values())
-                completed_folders = []
                 for folder, folder_watcher in self.folder_watchers.items():
                     folder_watcher.poll_only_new_runs = poll_only_new_runs
                     folder_watcher.poll_runs()
-                    if folder in self.loaded_folders and folder_watcher.is_complete:
-                        completed_folders.append(folder)
-                for folder in completed_folders:
-                    folder_watcher = self.folder_watchers.pop(folder)
-                    results_path = self.collate_folder(folder_watcher)
-                    if results_path is None:
-                        continue
-                    if (results_path / "coverage_scores.csv").exists():
-                        self.qai_upload_queue.put(results_path)
-                    (results_path / "doneprocessing").touch()
-                    if not self.folder_watchers:
-                        logger.info('No more folders to process.')
+
+                self.check_completed_folders()
                 return
             except Exception:
                 if not self.retry:
                     raise
                 wait_for_retry(attempt_count)
 
-    def collate_folder(self, folder_watcher):
+    def check_completed_folders(self):
+        for folder, folder_watcher in list(self.folder_watchers.items()):
+            if folder not in self.loaded_folders:
+                # Still loading samples, can't be completed.
+                continue
+            for pipeline_group in list(folder_watcher.active_pipeline_groups):
+                if not folder_watcher.is_pipeline_group_finished(pipeline_group):
+                    continue
+                results_path = self.collate_folder(folder_watcher,
+                                                   pipeline_group)
+                folder_watcher.active_pipeline_groups.remove(pipeline_group)
+                if results_path is not None:
+                    if (results_path / "coverage_scores.csv").exists():
+                        self.qai_upload_queue.put(results_path)
+                    if not folder_watcher.active_pipeline_groups:
+                        (results_path / "done_all_processing").touch()
+                        self.folder_watchers.pop(folder)
+                if not self.folder_watchers:
+                    logger.info('No more folders to process.')
+
+    def collate_folder(self, folder_watcher, pipeline_group):
         """ Collate scratch files for a run folder.
 
         :param FolderWatcher folder_watcher: holds details about the run folder
+        :param PipelineType pipeline_group: the group of runs to collate
         """
         results_path = self.get_results_path(folder_watcher)
+
         error_message = None
         if folder_watcher.is_folder_failed:
             error_message = 'Filter quality failed in Kive.'
@@ -528,13 +556,14 @@ class KiveWatcher:
             (run_path / 'errorprocessing').write_text(error_message + '\n')
             logger.error('Error in folder %s: %s', run_path, error_message)
             return
-        logger.info('Collating results in %s', results_path)
-        scratch_path = results_path / "scratch"
-        self.copy_outputs(folder_watcher, scratch_path, results_path)
-        self.copy_outputs(folder_watcher,
-                          scratch_path / "denovo",
-                          results_path / "denovo")
+        if pipeline_group == PipelineType.FILTER_QUALITY:
+            return results_path
+        scratch_path = get_scratch_path(results_path, pipeline_group)
+        target_path = get_collated_path(results_path, pipeline_group)
+        logger.info('Collating results in %s', target_path)
+        self.copy_outputs(folder_watcher, scratch_path, target_path)
         shutil.rmtree(scratch_path)
+        (target_path / 'doneprocessing').touch()
         return results_path
 
     def copy_outputs(self,
@@ -691,31 +720,6 @@ class KiveWatcher:
                 input_datasets,
                 'Mixed HCV on ' + trim_name(sample_name),
                 folder_watcher.batch)
-        if pipeline_type == PipelineType.DENOVO:
-            if self.config.denovo_pipeline_id is None:
-                return None
-            input_datasets = dict(r1=sample_watcher.fastq_datasets[0],
-                                  r2=sample_watcher.fastq_datasets[1],
-                                  sample_name=sample_watcher.name_datasets[0])
-            sample_name = sample_watcher.sample_group.names[0]
-            return self.find_or_launch_run(
-                self.config.denovo_pipeline_id,
-                input_datasets,
-                'Denovo on ' + trim_name(sample_name),
-                folder_watcher.batch)
-        if pipeline_type == PipelineType.DENOVO_COMBINED:
-            if self.config.denovo_combined_pipeline_id is None:
-                return None
-            input_datasets = dict(wg1=sample_watcher.fastq_datasets[0],
-                                  wg2=sample_watcher.fastq_datasets[1],
-                                  mid1=sample_watcher.fastq_datasets[2],
-                                  mid2=sample_watcher.fastq_datasets[3],
-                                  sample_name=sample_watcher.name_datasets[0])
-            return self.find_or_launch_run(
-                self.config.denovo_combined_pipeline_id,
-                input_datasets,
-                'Denovo combined on ' + sample_watcher.sample_group.enum,
-                folder_watcher.batch)
         if pipeline_type == PipelineType.MAIN:
             fastq1, fastq2 = sample_watcher.fastq_datasets[:2]
             sample_name = sample_watcher.sample_group.names[0]
@@ -858,17 +862,15 @@ class KiveWatcher:
                 for other_run in sample_watcher.runs.values():
                     if other_run['id'] == run['id']:
                         other_run['datasets'] = run_datasets
+                        break
                 sample_name = (sample_watcher.sample_group.names[1]
                                if pipeline_type in (PipelineType.MIDI,
                                                     PipelineType.MIXED_HCV_MIDI,
                                                     PipelineType.DENOVO_MIDI)
                                else sample_watcher.sample_group.names[0])
                 results_path = self.get_results_path(folder_watcher)
-                scratch_path = results_path / "scratch"
-                if pipeline_type in (PipelineType.DENOVO_MAIN,
-                                     PipelineType.DENOVO_MIDI,
-                                     PipelineType.DENOVO_RESISTANCE):
-                    scratch_path /= 'denovo'
+                pipeline_group = PIPELINE_GROUPS[pipeline_type]
+                scratch_path = get_scratch_path(results_path, pipeline_group)
                 scratch_path /= trim_name(sample_name)
                 scratch_path.mkdir(parents=True, exist_ok=True)
                 for output_name in DOWNLOADED_RESULTS:

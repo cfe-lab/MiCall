@@ -369,20 +369,16 @@ def test_hcv_filter_quality_finished():
             104: dict(id=104,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO_COMBINED),
+                      pipeline_type=PipelineType.DENOVO_MAIN),
             105: dict(id=105,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO_MAIN),
+                      pipeline_type=PipelineType.DENOVO_MIDI),
             106: dict(id=106,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO_MIDI),
-            107: dict(id=107,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
                       pipeline_type=PipelineType.MAIN),
-            108: dict(id=108,
+            107: dict(id=107,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
                       pipeline_type=PipelineType.MIDI)
@@ -390,7 +386,7 @@ def test_hcv_filter_quality_finished():
     expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
     assert expected_active_samples == folder_watcher.active_samples
-    assert 7 == len(folder_watcher.active_runs)
+    assert 6 == len(folder_watcher.active_runs)
 
 
 # noinspection DuplicatedCode
@@ -415,19 +411,15 @@ def test_hcv_filter_quality_finished_on_singleton():
             103: dict(id=103,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO),
-            104: dict(id=104,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
                       pipeline_type=PipelineType.DENOVO_MAIN),
-            105: dict(id=105,
+            104: dict(id=104,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
                       pipeline_type=PipelineType.MAIN)
             } == session.active_runs
     expected_active_samples = {'NEG1-HCV_S15_L001_R1_001.fastq.gz'}
     assert expected_active_samples == folder_watcher.active_samples
-    assert 4 == len(folder_watcher.active_runs)
+    assert 3 == len(folder_watcher.active_runs)
 
 
 # noinspection DuplicatedCode
@@ -460,12 +452,8 @@ def test_hcv_mixed_hcv_running():
             104: dict(id=104,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO_COMBINED),
-            105: dict(id=105,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
                       pipeline_type=PipelineType.MAIN),
-            106: dict(id=106,
+            105: dict(id=105,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
                       pipeline_type=PipelineType.MIDI)
@@ -473,7 +461,7 @@ def test_hcv_mixed_hcv_running():
     expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
     assert expected_active_samples == folder_watcher.active_samples
-    assert 5 == len(folder_watcher.active_runs)
+    assert 4 == len(folder_watcher.active_runs)
 
 
 # noinspection DuplicatedCode
@@ -501,15 +489,11 @@ def test_hcv_mixed_hcv_running_on_singleton():
             103: dict(id=103,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO),
-            104: dict(id=104,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
                       pipeline_type=PipelineType.MAIN)
             } == session.active_runs
     expected_active_samples = {'NEG1-HCV_S15_L001_R1_001.fastq.gz'}
     assert expected_active_samples == folder_watcher.active_samples
-    assert 3 == len(folder_watcher.active_runs)
+    assert 2 == len(folder_watcher.active_runs)
 
 
 # noinspection DuplicatedCode
@@ -537,12 +521,8 @@ def test_hcv_mixed_hcv_finished():
     assert {104: dict(id=104,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO_COMBINED),
-            105: dict(id=105,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
                       pipeline_type=PipelineType.MAIN),
-            106: dict(id=106,
+            105: dict(id=105,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
                       pipeline_type=PipelineType.MIDI)
@@ -550,7 +530,7 @@ def test_hcv_mixed_hcv_finished():
     expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
     assert expected_active_samples == folder_watcher.active_samples
-    assert 3 == len(folder_watcher.active_runs)
+    assert 2 == len(folder_watcher.active_runs)
 
 
 # noinspection DuplicatedCode
@@ -570,10 +550,10 @@ def test_hcv_mixed_hcv_not_finished():
     session.finish_all_runs()  # Finish filter_quality
 
     folder_watcher.poll_runs()   # start main, midi, and mixed HCV
-    session.finish_run(dict(id=105))  # Finish main
-    session.finish_run(dict(id=106))  # Finish midi
+    session.finish_run(dict(id=104))  # Finish main
+    session.finish_run(dict(id=105))  # Finish midi
     folder_watcher.poll_runs()   # mixed HCV still running, resistance started
-    session.finish_run(dict(id=107))  # Finish res
+    session.finish_run(dict(id=106))  # Finish res
     folder_watcher.poll_runs()   # mixed HCV still running, resistance finished
 
     assert {102: dict(id=102,
@@ -583,16 +563,12 @@ def test_hcv_mixed_hcv_not_finished():
             103: dict(id=103,
                       folder_watcher=folder_watcher,
                       sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIXED_HCV_MIDI),
-            104: dict(id=104,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO_COMBINED)
+                      pipeline_type=PipelineType.MIXED_HCV_MIDI)
             } == session.active_runs
     expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
     assert expected_active_samples == folder_watcher.active_samples
-    assert 3 == len(folder_watcher.active_runs)
+    assert 2 == len(folder_watcher.active_runs)
     assert not folder_watcher.is_complete
 
 
@@ -601,8 +577,6 @@ def test_mixed_hcv_skipped():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession(skipped_types={PipelineType.MIXED_HCV_MAIN,
                                           PipelineType.MIXED_HCV_MIDI,
-                                          PipelineType.DENOVO,
-                                          PipelineType.DENOVO_COMBINED,
                                           PipelineType.DENOVO_MAIN,
                                           PipelineType.DENOVO_MIDI,
                                           PipelineType.DENOVO_RESISTANCE})
@@ -638,8 +612,6 @@ def test_mid_hcv_complete():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession(skipped_types={PipelineType.MIXED_HCV_MAIN,
                                           PipelineType.MIXED_HCV_MIDI,
-                                          PipelineType.DENOVO,
-                                          PipelineType.DENOVO_COMBINED,
                                           PipelineType.DENOVO_MAIN,
                                           PipelineType.DENOVO_MIDI,
                                           PipelineType.DENOVO_RESISTANCE})

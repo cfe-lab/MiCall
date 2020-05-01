@@ -381,15 +381,15 @@ def process_folder(result_folder,
                               qai_password)
                 run = find_run(session, sample_sheet["Experiment Name"])
 
-                with open(collated_conseqs, "rU") as f:
+                with open(collated_conseqs) as f:
                     conseqs = build_conseqs(f,
                                             run,
                                             sample_sheet,
                                             ok_sample_regions)
 
-                with open(coverage_scores, "rU") as f, \
-                        open(collated_counts, "rU") as f2, \
-                        open(cascade, "rU") as f3:
+                with open(coverage_scores) as f, \
+                        open(collated_counts) as f2, \
+                        open(cascade) as f3:
                     upload_review_to_qai(f,
                                          f2,
                                          f3,
@@ -398,8 +398,8 @@ def process_folder(result_folder,
                                          conseqs,
                                          session,
                                          pipeline_version)
-                    logger.info('Upload success!')
-                    break
+                logger.info('Upload success!')
+                break
             except Exception:
                 attempt_count += 1
                 wait_for_retry(attempt_count)
