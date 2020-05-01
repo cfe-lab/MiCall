@@ -13,6 +13,7 @@ from micall.core.sam2aln import sam2aln
 from micall.core.trim_fastqs import trim
 from micall.core.denovo import denovo
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
+from micall.utils.driver_utils import makedirs
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +114,7 @@ class Sample:
         """
         logger.info('Processing %s (%r).', self, self.fastq1)
         scratch_path = self.get_scratch_path()
-        os.mkdir(scratch_path)
+        makedirs(scratch_path)
         use_gzip = force_gzip or self.fastq1.endswith('.gz')
 
         with open(self.read_summary_csv, 'w') as read_summary:
@@ -195,7 +196,8 @@ class Sample:
                 open(self.conseq_region_csv, 'w') as conseq_region_csv, \
                 open(self.failed_align_csv, 'w') as failed_align_csv, \
                 open(self.coverage_summary_csv, 'w') as coverage_summary_csv, \
-                open(self.genome_coverage_csv, 'w') as genome_coverage_csv:
+                open(self.genome_coverage_csv, 'w') as genome_coverage_csv, \
+                open(self.conseq_all_csv, "w") as conseq_all_csv:
 
             if not use_denovo:
                 for f in (amino_detail_csv, nuc_detail_csv):
@@ -217,7 +219,8 @@ class Sample:
                        amino_detail_csv=amino_detail_csv,
                        nuc_detail_csv=nuc_detail_csv,
                        genome_coverage_csv=genome_coverage_csv,
-                       contigs_csv=contigs_csv)
+                       contigs_csv=contigs_csv,
+                       conseq_all_csv=conseq_all_csv)
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)

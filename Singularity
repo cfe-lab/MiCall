@@ -17,7 +17,7 @@ From: centos:7
     KIVE_OUTPUTS g2p_csv g2p_summary_csv remap_counts_csv \
         remap_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \
         failed_csv cascade_csv nuc_csv amino_csv coord_ins_csv conseq_csv \
-        conseq_region_csv failed_align_csv coverage_scores_csv \
+        conseq_all_csv conseq_region_csv failed_align_csv coverage_scores_csv \
         coverage_maps_tar aligned_csv g2p_aligned_csv genome_coverage_csv \
         genome_coverage_svg
     KIVE_THREADS 1
@@ -31,7 +31,7 @@ From: centos:7
 
 %files
     ## MiCall
-    micall_basespace.py /opt/micall/
+    micall_docker.py /opt/micall/
     micall_kive.py /opt/micall/
     micall_kive_resistance.py /opt/micall/
     micall/__init__.py /opt/micall/micall/
@@ -193,7 +193,7 @@ From: centos:7
     KIVE_OUTPUTS g2p_csv g2p_summary_csv remap_counts_csv \
         remap_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \
         failed_csv cascade_csv nuc_csv amino_csv coord_ins_csv conseq_csv \
-        conseq_region_csv failed_align_csv coverage_scores_csv \
+        conseq_all_csv conseq_region_csv failed_align_csv coverage_scores_csv \
         coverage_maps_tar aligned_csv g2p_aligned_csv genome_coverage_csv \
         genome_coverage_svg contigs_csv read_entropy_csv
     KIVE_THREADS 2

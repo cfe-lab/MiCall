@@ -1,23 +1,30 @@
-# Generate the Docker container to run MiCall on BaseSpace.
+# Dockerized version of MiCall.
 
-# The Docker container may also be used to process a run folder from the command
-# line without the use of BaseSpace.  When launched with `docker run`, the container
-# will by default look for your run directory (i.e. the "input" directory which
-# contains your FASTQ files and your SampleSheet.csv etc) in the `/input` directory
-# of the container, and it will write its results to the `/data` directory of the
-# container.  Thus you specify your input directory and output directory via bind
-# mounts.
-
-# Example: if you built your container as `micall:v0.1.2-3`, your run directory is
-# at `/path/on/host/run`, and you want your output to be written to
-# `/path/on/host/output`, you would invoke it as follows:
+# This Docker container will be used by BaseSpace, as well as for running on a
+# Docker-enabled workstation.  Instructions may be found by running with the
+# --help option; e.g. if you build this Docker image as micall:version, call
 #
-# docker run \
-#    --mount type=bind,source=/path/on/host/run/,destination=/input \
-#    --mount type=bind,source=/path/on/host/output/,destination=/data \
-#    micall:v0.1.2-3
+# docker run micall:version --help
+#
+# or for help on the specific subcommands,
+#
+# docker run micall:version {basespace,folder,sample,hcv_sample} --help
+#
+# This Dockerfile can be used to build two types of MiCall images:
+# - a "production" image, which can be used to deploy and run Micall; and
+# - a "dev" image, which contains packages needed for testing
+#   and development of MiCall.
+# The dev image is slower to build.
+#
+# To specify which image you want to build, use the `--target` tag to
+# `docker build`, e.g.
+#
+# docker build --target production -t [image name]:[tag] [source directory]
+#
+# If you omit the `--target` tag altogether, `docker build` will build
+# the development image.
 
-FROM python:3.7
+FROM python:3.7 as production
 
 MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 
@@ -91,7 +98,7 @@ RUN pip install --upgrade pip && \
   python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 ## MiCall
-COPY micall_basespace.py micall_kive.py micall_kive_resistance.py version.tx[t] /opt/micall/
+COPY micall_docker.py micall_kive.py micall_kive_resistance.py version.tx[t] /opt/micall/
 COPY micall/__init__.py micall/project* /opt/micall/micall/
 
 COPY micall/blast_db/make_blast_db.py    /opt/micall/micall/blast_db/make_blast_db.py
@@ -105,4 +112,10 @@ COPY micall/utils   /opt/micall/micall/utils/
 
 RUN python /opt/micall/micall/blast_db/make_blast_db.py
 
-CMD ["python", "/opt/micall/micall_basespace.py", "--link_run", "/input"]
+WORKDIR /data
+ENTRYPOINT ["python", "/opt/micall/micall_docker.py"]
+
+FROM production as dev
+## Add the dev packages.
+COPY requirements-test.txt requirements-watcher.txt requirements-dev.txt /opt/micall/
+RUN pip install -r /opt/micall/requirements-dev.txt

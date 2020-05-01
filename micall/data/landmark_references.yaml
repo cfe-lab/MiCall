@@ -146,3 +146,31 @@
   landmarks:
     - {name: exon2, start: 200, end: 470, colour: '#ff7f0e'}
     - {name: exon3, start: 716, end: 992, colour: '#2ca02c'}
+- seed_pattern: SARS-CoV-2-seed
+  coordinates: SARS-CoV-2-seed
+  landmarks:
+    - {name: 3a, start: 25393, end: 26220, frame: 0, colour: '#2ca02c'}
+    - {name: E, start: 26245, end: 26472, frame: 0, colour: '#d62728'}
+    - {name: '6', start: 27202, end: 27387, frame: 0, colour: '#8c564b'}
+    - {name: 7a, start: 27394, end: 27759, frame: 0, colour: '#7f7f7f'}
+    - {name: nsp2, start: 806, end: 2719, frame: 1, colour: darkgrey}
+    - {name: nsp1, start: 266, end: 805, frame: 1, colour: grey}
+    - {name: nsp3, start: 2720, end: 8554, frame: 1, colour: grey}
+    - {name: nsp4, start: 8555, end: 10054, frame: 1, colour: darkgrey}
+    - {name: nsp5, start: 10055, end: 10972, frame: 1, colour: grey}
+    - {name: nsp6, start: 10973, end: 11842, frame: 1, colour: darkgrey}
+    - {name: '7', start: 11843, end: 12091, frame: 1, colour: grey}
+    - {name: '8', start: 12092, end: 12685, frame: 1, colour: darkgrey}
+    - {name: '9', start: 12686, end: 13024, frame: 1, colour: grey}
+    - {name: '10', start: 13025, end: 13441, frame: 1, colour: darkgrey}
+    - {name: nsp12, start: 13442, end: 16236, frame: 1, colour: grey}
+    - {name: nsp13, start: 16237, end: 18039, frame: 1, colour: darkgrey}
+    - {name: nsp14, start: 18040, end: 19620, frame: 1, colour: grey}
+    - {name: nsp15, start: 19621, end: 20658, frame: 1, colour: darkgrey}
+    - {name: nsp16, start: 20659, end: 21552, frame: 1, colour: grey}
+    - {name: S, start: 21563, end: 25384, frame: 1, colour: '#ff7f0e'}
+    - {name: N, start: 28274, end: 29533, frame: 1, colour: '#17becf'}
+    - {name: '10', start: 29558, end: 29674, frame: 1, colour: 'darkorange'}
+    - {name: M, start: 26523, end: 27191, frame: 2, colour: '#9467bd'}
+    - {name: '8', start: 27894, end: 28259, frame: 2, colour: '#bcbd22'}
+    - {name: 7b, start: 27756, end: 27887, frame: 2, colour: '#e377c2'}

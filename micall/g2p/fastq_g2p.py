@@ -285,7 +285,7 @@ class FastqReader:
         for header, bases, sep, quality in zip(fastq, fastq, fastq, fastq):
             assert header.startswith('@'), header
             assert sep.startswith('+'), sep
-            pair_name, read_name = header[1:].split()
+            pair_name, read_name = header[1:].rstrip().split(maxsplit=1)
             yield pair_name, (read_name, bases.rstrip('\n'), quality.rstrip('\n'))
 
 

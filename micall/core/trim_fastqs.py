@@ -69,9 +69,11 @@ def trim(original_fastq_filenames,
     else:
         with open(bad_cycles_filename, 'rU') as bad_cycles:
             bad_cycles = list(csv.DictReader(bad_cycles))
-    for src_name, dest_name in zip(original_fastq_filenames, censored_filenames):
+    for i, (src_name, dest_name) in enumerate(
+            zip(original_fastq_filenames, censored_filenames)):
+        cycle_sign = 1 - 2*i
         with open(src_name, 'rb') as src, open(dest_name, 'w') as dest:
-            censor(src, bad_cycles, dest, use_gzip, summary_writer)
+            censor(src, bad_cycles, dest, use_gzip, summary_writer, cycle_sign)
 
     script_path = os.path.dirname(__file__)
     adapter_files = [os.path.join(script_path, 'adapters_read{}.fasta'.format(i))
@@ -96,7 +98,8 @@ def censor(original_file,
            bad_cycles_reader,
            censored_file,
            use_gzip=True,
-           summary_writer=None):
+           summary_writer=None,
+           cycle_sign=1):
     """ Censor bases from a FASTQ file that were read in bad cycles.
 
     @param original_file: an open FASTQ file to read from
@@ -107,6 +110,8 @@ def censor(original_file,
     @param use_gzip: True if the original file should be unzipped
     @param summary_writer: an open CSV DictWriter to write to: write a single row
         with the average read quality for the whole sample
+    @param cycle_sign: +1 or -1, shows which direction to run cycles when
+        checking bad_cycles.
     """
     bad_cycles = set()
     for cycle in bad_cycles_reader:
@@ -122,22 +127,24 @@ def censor(original_file,
 
     for ident, seq, opt, qual in itertools.zip_longest(src, src, src, src):
         # returns an aggregate of 4 lines per call
-        ident_fields, read_fields = map(str.split, ident.split(' '), '::')
-        tile = ident_fields[4]
-        read_direction = read_fields[0]
-        cycle_sign = 1 if read_direction == '1' else -1
         dest.write(ident)
-        bad_count = 0
-        for cycle, base in enumerate(seq.rstrip(), start=1):
-            cycle = math.copysign(cycle, cycle_sign)
-            if (tile, cycle) in bad_cycles:
-                bad_count += 1
-            else:
-                if bad_count:
-                    dest.write('N' * bad_count)
-                    bad_count = 0
-                dest.write(base)
-        dest.write('\n')
+        if not bad_cycles:
+            dest.write(seq)
+            tile = None
+        else:
+            ident_fields, read_fields = map(str.split, ident.split(' '), '::')
+            tile = ident_fields[4]
+            bad_count = 0
+            for cycle, base in enumerate(seq.rstrip(), start=1):
+                cycle = math.copysign(cycle, cycle_sign)
+                if (tile, cycle) in bad_cycles:
+                    bad_count += 1
+                else:
+                    if bad_count:
+                        dest.write('N' * bad_count)
+                        bad_count = 0
+                    dest.write(base)
+            dest.write('\n')
         dest.write(opt)
         bad_count = 0
         for cycle, score in enumerate(qual.rstrip(), start=1):

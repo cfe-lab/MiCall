@@ -383,7 +383,8 @@ def build_conseqs(samfilename,
                   is_filtered=False,
                   filter_coverage=1,
                   distance_report=None,
-                  original_seeds=None):
+                  original_seeds=None,
+                  debug_reports=None):
     """ Build the new consensus sequences from the mapping results.
 
     @param samfilename: the mapping results in SAM format
@@ -401,6 +402,10 @@ def build_conseqs(samfilename,
         'other_seed': other_seed}}
     @param original_seeds: {name: sequence} Original seed references used in
         the distance report.
+    @param debug_reports: {(rname, pos): None} a dictionary with keys for all
+        of the regions and positions that you want a report for. The value
+        will be set to a string describing the counts and qualities at that
+        position.
     @return: {reference_name: consensus_sequence}
     """
     with open(samfilename) as samfile:
@@ -410,7 +415,8 @@ def build_conseqs(samfilename,
                                  is_filtered=is_filtered,
                                  filter_coverage=filter_coverage,
                                  distance_report=distance_report,
-                                 original_seeds=original_seeds)
+                                 original_seeds=original_seeds,
+                                 debug_reports=debug_reports)
 
     return conseqs
 
@@ -497,8 +503,14 @@ def remap(fastq1,
                                     count_threshold,
                                     projects)
 
+    # debug_reports = {('SARS-CoV-2-seed', pos): None
+    #                  for pos in range(20290, 20311)}
+    debug_reports = None
     # regenerate consensus sequences based on preliminary map
-    prelim_conseqs = build_conseqs(samfile, seeds=seeds)
+    prelim_conseqs = build_conseqs(samfile,
+                                   seeds=seeds,
+                                   debug_reports=debug_reports)
+    print_debug_reports(debug_reports, 'Preliminary mapping report:')
 
     # exclude references with low counts (post filtering)
     conseqs = {rname: prelim_conseqs[rname]
@@ -546,9 +558,12 @@ def remap(fastq1,
                                 is_filtered=True,
                                 filter_coverage=count_threshold//2,  # pairs
                                 distance_report=distance_report,
-                                original_seeds=seeds)
+                                original_seeds=seeds,
+                                debug_reports=debug_reports)
         new_seed_names = set(conseqs.keys())
         n_remaps += 1
+        print_debug_reports(debug_reports, f'Remap {n_remaps} report:')
+
         write_remap_counts(remap_counts_writer,
                            new_counts,
                            title='remap-{}'.format(n_remaps),
@@ -618,6 +633,14 @@ def remap(fastq1,
     # report number of unmapped reads
     remap_counts_writer.writerow(dict(type='unmapped',
                                       count=unmapped_count))
+
+
+def print_debug_reports(debug_reports, title):
+    if debug_reports is None:
+        return
+    print(title)
+    for (rname, pos), summary in debug_reports.items():
+        print(pos, summary)
 
 
 def map_to_contigs(fastq1,
