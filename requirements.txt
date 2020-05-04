@@ -4,7 +4,7 @@ git+https://github.com/cfe-lab/iva.git@v1.1.1
 biopython==1.76
 git+https://github.com/cfe-lab/MiCall.git@v7.7.0#egg=gotoh&subdirectory=micall/alignment
 git+https://github.com/cfe-lab/pyvdrm.git@v0.3.1
-numpy==1.18.3
+numpy==1.18.4
 scipy<1.5  # Newer versions incompatible with our version of numpy.
 matplotlib==3.2.1
 cutadapt==2.10
