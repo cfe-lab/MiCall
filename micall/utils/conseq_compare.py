@@ -19,40 +19,41 @@ from micall.utils.fetch_sequences import fetch_by_accession
 
 # Source: https://github.com/PoonLab/sam2conseq/wiki
 MAPPING = """\
-SRR11177792	RNA-Seq	2020-02-25	MT072688	sam2conseq reports	
-SRR10903401	RNA-Seq	2020-01-18	MN988669.1	sam2conseq reports	
-SRR10903402	RNA-Seq	2020-01-18	MN988668.1	sam2conseq reports	
-SRR10971381	RNA-Seq	2020-01-27	MN908947	published sequence	
+SRR11177792	RNA-Seq	2020-02-25	MT072688	sam2conseq reports
+SRR10903401	RNA-Seq	2020-01-18	MN988669.1	sam2conseq reports
+SRR10903402	RNA-Seq	2020-01-18	MN988668.1	sam2conseq reports
+SRR10971381	RNA-Seq	2020-01-27	MN908947	published sequence
 SRR11241254	RNA-Seq	2020-03-04	MT163716.1 or EPI_ISL_413025
 SRR11241255	RNA-Seq	2020-03-04	MT163717.1	3 nt differences (
-SRR11247075	RNA-Seq	2020-03-05	MT163721.1		
-SRR11247076	RNA-Seq	2020-03-05	MT163720.1		
-SRR11247077	RNA-Seq	2020-03-05	MT163719.1		
-SRR11247078	RNA-Seq	2020-03-05	MT163718.1		
-SRR11278090	RNA-Seq	2020-03-09	EPI_ISL_413601		
+SRR11247075	RNA-Seq	2020-03-05	MT163721.1
+SRR11247076	RNA-Seq	2020-03-05	MT163720.1
+SRR11247077	RNA-Seq	2020-03-05	MT163719.1
+SRR11247078	RNA-Seq	2020-03-05	MT163718.1
+SRR11278090	RNA-Seq	2020-03-09	EPI_ISL_413601
 SRR11278091	RNA-Seq	2020-03-09	EPI_ISL_413563	Exact match except 3' end has extra "?"	Y
-SRR11278092	RNA-Seq	2020-03-09	EPI_ISL_413562		
-SRR11278164	RNA-Seq	2020-03-09	EPI_ISL_413653		
-SRR11278165	RNA-Seq	2020-03-09	EPI_ISL_413652		
-SRR11278166	RNA-Seq	2020-03-09	EPI_ISL_413651		
-SRR11278167	RNA-Seq	2020-03-09	EPI_ISL_413650		
-SRR11278168	RNA-Seq	2020-03-09	EPI_ISL_413649		
-SRR11140744	WGS	2020-02-21	EPI_ISL_408670		
-SRR11140746	WGS	2020-02-21	EPI_ISL_408670	Published has extra 3 A's at 3' end	
-SRR11140748	WGS	2020-02-21	EPI_ISL_408670		
-SRR11140750	WGS	2020-02-21	EPI_ISL_408670		
-SRR11092057	RNA-Seq	2020-02-15	MN996528.1		
-SRR11092058	RNA-Seq	2020-02-15	MN996527.1		
-SRR11092064	RNA-Seq	2020-02-15	MN996531.1		
-SRR11085733	RNA-Seq	2020-02-13	MN611525	non-human, failure to map	
-SRR11085736	RNA-Seq	2020-02-13	MN611522	non-human, failure to map	
-SRR11085737	RNA-Seq	2020-02-13	MN611521	non-human, failure to map	
-SRR11085738	RNA-Seq	2020-02-13	MN611520	non-human, failure to map	
-SRR11085740	RNA-Seq	2020-02-13	MN611518	non-human, failure to map	
-SRR11085741	RNA-Seq	2020-02-13	MN611517	non-human, failure to map	
-SRR11085797	RNA-Seq	2020-02-13	MN996532.1		
-SRR11314339	RNA-Seq	2020-03-17	MT192765		
+SRR11278092	RNA-Seq	2020-03-09	EPI_ISL_413562
+SRR11278164	RNA-Seq	2020-03-09	EPI_ISL_413653
+SRR11278165	RNA-Seq	2020-03-09	EPI_ISL_413652
+SRR11278166	RNA-Seq	2020-03-09	EPI_ISL_413651
+SRR11278167	RNA-Seq	2020-03-09	EPI_ISL_413650
+SRR11278168	RNA-Seq	2020-03-09	EPI_ISL_413649
+SRR11140744	WGS	2020-02-21	EPI_ISL_408670
+SRR11140746	WGS	2020-02-21	EPI_ISL_408670	Published has extra 3 A's at 3' end
+SRR11140748	WGS	2020-02-21	EPI_ISL_408670
+SRR11140750	WGS	2020-02-21	EPI_ISL_408670
+SRR11092057	RNA-Seq	2020-02-15	MN996528.1
+SRR11092058	RNA-Seq	2020-02-15	MN996527.1
+SRR11092064	RNA-Seq	2020-02-15	MN996531.1
+SRR11085733	RNA-Seq	2020-02-13	MN611525	non-human, failure to map
+SRR11085736	RNA-Seq	2020-02-13	MN611522	non-human, failure to map
+SRR11085737	RNA-Seq	2020-02-13	MN611521	non-human, failure to map
+SRR11085738	RNA-Seq	2020-02-13	MN611520	non-human, failure to map
+SRR11085740	RNA-Seq	2020-02-13	MN611518	non-human, failure to map
+SRR11085741	RNA-Seq	2020-02-13	MN611517	non-human, failure to map
+SRR11085797	RNA-Seq	2020-02-13	MN996532.1
+SRR11314339	RNA-Seq	2020-03-17	MT192765
 SRR11092056	RNA-Seq	2020-02-15	MN996530	Low coverage, sample is mostly human DNA (known issue)	Y
+SRR11593354	RNA-Seq	2020-02-15	EPI_ISL_414507
 """
 
 
@@ -66,8 +67,8 @@ def main():
 
     summaries = []
     source_path = Path(__file__)
-    working_path = source_path.parent.parent / 'tests' / 'working'
-    conseq_path = working_path / 'corona' / 'sars_results20200417' / 'conseq_all.csv'
+    working_path = source_path.parent.parent.parent
+    conseq_path = working_path / 'covid' / 'SRR11593354' / 'inputs' / 'Results' / 'conseq_all.csv'
     accessions_path = working_path / 'fetched_accessions.fasta'
     accessions_file = accessions_path.open('a')
     accessions_index = None
@@ -110,7 +111,7 @@ def main():
             print()
     print('Run|Compared to|Differences')
     print('---|-----------|-----------')
-    print('\n'.join(summaries))
+    print(os.linesep.join(summaries))
 
 
 def compare_using_gotoh(row, conseq_accession, published_seq):
