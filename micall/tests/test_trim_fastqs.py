@@ -218,10 +218,10 @@ def test_trim(tmpdir):
     adapters_read2_path = core_path / 'adapters_read1.fasta'
     adapter_read1 = adapters_read1_path.read_text().splitlines()[1]
     adapter_read2 = adapters_read2_path.read_text().splitlines()[1]
-    read1_content = 'ACTCTACTAACTGTCGTGTTT'
+    read1_content = 'TATCTACTAACTGTCGGTCTAC'
     read2_content = reverse_and_complement(read1_content)
-    read1_extra = 'GGGAAATTT'
-    read2_extra = 'CCCAAATTT'
+    read1_extra = 'GGGAAATAT'
+    read2_extra = 'CCCAAACCC'
     content_quality = 'A' * len(read1_content)
     adapter_quality = 'A' * len(adapter_read1)
     extra_quality = 'A' * len(read1_extra)
