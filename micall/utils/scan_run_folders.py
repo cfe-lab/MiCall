@@ -3,7 +3,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from collections import Counter, defaultdict
 from csv import DictWriter
 from pathlib import Path
-from tempfile import TemporaryFile
+from tempfile import NamedTemporaryFile
 from zipfile import ZipFile, ZIP_DEFLATED
 
 import seaborn as sns
@@ -35,7 +35,7 @@ def format_size(size):
 
 
 def zip_factory():
-    return ZipFile(TemporaryFile(), 'w', ZIP_DEFLATED)
+    return ZipFile(NamedTemporaryFile(), 'w', ZIP_DEFLATED)
 
 
 def scan_run_folders(runs_folder: Path, run_sizes_csv, group_size: int):

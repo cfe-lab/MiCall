@@ -11,7 +11,7 @@ import argparse
 from collections import Counter, defaultdict
 from csv import DictReader, DictWriter
 from io import StringIO
-from tempfile import TemporaryFile
+from tempfile import NamedTemporaryFile
 
 import numpy as np
 import os
@@ -408,7 +408,7 @@ class TempFileFactory:
         if self.aligned_file_name is None:
             return StringIO()
         dirname = os.path.dirname(self.aligned_file_name)
-        return TemporaryFile(mode='w+',
+        return NamedTemporaryFile(mode='w+',
                              dir=os.path.abspath(dirname),
                              prefix='aligned_temp',
                              suffix='.csv')
