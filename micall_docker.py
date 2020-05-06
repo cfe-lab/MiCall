@@ -13,7 +13,6 @@ import os
 import shutil
 import socket
 from zipfile import ZipFile, ZIP_DEFLATED
-import tarfile
 import typing
 
 from micall.core.filter_quality import report_bad_cycles
@@ -425,6 +424,31 @@ def add_output_arguments(parser, midi=False):
             "read_entropy_csv",
             "CSV containing read pair length counts",
             "read_entropy.csv (ignored if --denovo is not specified)",
+        ),
+        (
+            "resistance_csv",
+            "CSV containing drug resistance calls",
+            "resistance.csv",
+        ),
+        (
+            "resistance_pdf",
+            "PDF report of drug resistance calls",
+            "resistance.pdf",
+        ),
+        (
+            "resistance_consensus_csv",
+            "CSV containing consensus sequence used for resistance calculation",
+            "resistance_consensus.csv",
+        ),
+        (
+            "resistance_fail_csv",
+            "CSV containing failure messages from resistance calculation",
+            "resistance_fail.csv",
+        ),
+        (
+            "mutations_csv",
+            "CSV containing mutations used in the resistance calculation",
+            "mutations.csv",
         )
     ]
 
@@ -673,33 +697,6 @@ def get_parser():
     add_output_arguments(hcv_sample_parser)
     add_output_arguments(hcv_sample_parser, midi=True)
 
-    # Resistance outputs.
-    hcv_sample_parser.add_argument(
-        "--resistance_csv",
-        help="CSV containing resistance calls.",
-        default="resistance.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--mutations_csv",
-        help="CSV containing resistance mutations.",
-        default="mutations.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--resistance_fail_csv",
-        help="CSV containing failure reasons.",
-        default="resistance_fail.csv",
-    )
-    hcv_sample_parser.add_argument(
-        "--resistance_pdf",
-        help="resistance report",
-        default="resistance.pdf",
-    )
-    hcv_sample_parser.add_argument(
-        "--resistance_consensus_csv",
-        help="CSV with amino consensus used for resistance.",
-        default="resistance_consensus.csv",
-    )
-
     hcv_sample_parser.set_defaults(func=hcv_sample)
 
     return parser
@@ -786,18 +783,16 @@ def sample_process_helper(resolved_args, scratch_path, use_denovo):
         genome_coverage_csv=resolved_args.genome_coverage_csv,
         genome_coverage_svg=resolved_args.genome_coverage_svg,
         read_entropy_csv=resolved_args.read_entropy_csv,
+        resistance_csv=resolved_args.resistance_csv,
+        resistance_pdf=resolved_args.resistance_pdf,
+        resistance_fail_csv=resolved_args.resistance_fail_csv,
+        resistance_consensus_csv=resolved_args.resistance_consensus_csv,
+        mutations_csv=resolved_args.mutations_csv,
         scratch_path=scratch_path
     )
 
     pssm = Pssm()
     sample.process(pssm, use_denovo=use_denovo)
-
-    with tarfile.open(resolved_args.coverage_maps_tar, mode='w') as tar:
-        for image_name in os.listdir(sample.coverage_maps):
-            image_path = os.path.join(sample.coverage_maps, image_name)
-            archive_path = os.path.join('coverage_maps', image_name)
-            tar.add(image_path, archive_path)
-
     return sample
 
 
@@ -805,7 +800,11 @@ def single_sample(args):
     resolved_args = MiCallArgs(args)
     scratch_path = os.path.join(os.path.dirname(resolved_args.cascade_csv), "scratch")
     shutil.rmtree(scratch_path, ignore_errors=True)
-    return sample_process_helper(resolved_args, scratch_path, args.denovo)
+    sample = sample_process_helper(resolved_args, scratch_path, args.denovo)
+    sample_group = SampleGroup(sample)
+    run_info = RunInfo([sample_group])
+    process_resistance(sample_group, run_info)
+    return sample
 
 
 def hcv_sample(args):
