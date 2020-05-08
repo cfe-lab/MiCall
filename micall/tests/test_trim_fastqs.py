@@ -5,7 +5,9 @@ from io import StringIO
 import unittest
 from pathlib import Path
 
-from micall.core.trim_fastqs import censor, trim
+import pytest
+
+from micall.core.trim_fastqs import censor, trim, cut_adapters, cut_primers
 from micall.utils.translation import reverse_and_complement
 
 
@@ -213,80 +215,18 @@ avg_quality,base_count
 
 
 def test_trim(tmpdir):
-    core_path = Path(__file__).parent.parent / 'core'
-    adapters_read1_path = core_path / 'adapters_read1.fasta'
-    adapters_read2_path = core_path / 'adapters_read1.fasta'
-    adapter_read1 = adapters_read1_path.read_text().splitlines()[1]
-    adapter_read2 = adapters_read2_path.read_text().splitlines()[1]
     read1_content = 'TATCTACTAACTGTCGGTCTAC'
     read2_content = reverse_and_complement(read1_content)
-    read1_extra = 'GGGAAATAT'
-    read2_extra = 'CCCAAACCC'
-    content_quality = 'A' * len(read1_content)
-    adapter_quality = 'A' * len(adapter_read1)
-    extra_quality = 'A' * len(read1_extra)
+    expected1 = build_fastq(read1_content)
+    expected2 = build_fastq(read2_content)
 
     tmp_path = Path(tmpdir)
     fastq1_path = tmp_path / 'read1.fastq'
     fastq2_path = tmp_path / 'read2.fastq'
     trimmed1_path = tmp_path / 'trimmed1.fastq'
     trimmed2_path = tmp_path / 'trimmed2.fastq'
-    fastq1_path.write_text(f'''\
-@pair1::::tile1:: 1:::
-{read1_content}
-+
-{content_quality}
-@pair2::::tile1:: 1:::
-{read1_content}{read1_extra}
-+
-{content_quality}{extra_quality}
-@pair3::::tile1:: 1:::
-{read1_content}{adapter_read1}{read1_extra}
-+
-{content_quality}{adapter_quality}{extra_quality}
-''')
-    fastq2_path.write_text(f'''\
-@pair1::::tile1:: 2:::
-{read2_content}
-+
-{content_quality}
-@pair2::::tile1:: 2:::
-{read2_content}{read2_extra}
-+
-{content_quality}{extra_quality}
-@pair3::::tile1:: 2:::
-{read2_content}{adapter_read2}{read2_extra}
-+
-{content_quality}{adapter_quality}{extra_quality}
-''')
-    expected_trimmed1 = f'''\
-@pair1::::tile1:: 1:::
-{read1_content}
-+
-{content_quality}
-@pair2::::tile1:: 1:::
-{read1_content}{read1_extra}
-+
-{content_quality}{extra_quality}
-@pair3::::tile1:: 1:::
-{read1_content}
-+
-{content_quality}
-'''
-    expected_trimmed2 = f'''\
-@pair1::::tile1:: 2:::
-{read2_content}
-+
-{content_quality}
-@pair2::::tile1:: 2:::
-{read2_content}{read2_extra}
-+
-{content_quality}{extra_quality}
-@pair3::::tile1:: 2:::
-{read2_content}{adapter_read2}{read2_extra}
-+
-{content_quality}{adapter_quality}{extra_quality}
-'''
+    fastq1_path.write_text(expected1)
+    fastq2_path.write_text(expected2)
 
     trim([fastq1_path, fastq2_path],
          'no_bad_cycles.csv',
@@ -295,5 +235,208 @@ def test_trim(tmpdir):
 
     trimmed1 = trimmed1_path.read_text()
     trimmed2 = trimmed2_path.read_text()
-    assert trimmed1 == expected_trimmed1
-    assert trimmed2 == expected_trimmed2
+    assert trimmed1 == expected1
+    assert trimmed2 == expected2
+
+
+@pytest.mark.parametrize(
+    "scenario,read1,read2,expected1,expected2,cut_method",
+    [('no adapter',
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(REF)
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # unchanged
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # unchanged
+      cut_adapters
+      ),
+     ('full adapters',
+      'TGGAAGGGCTAATTCACTCCCAACGCTGTCTCTTATACACATCTCCGAGCCCACGAGAC',
+      # REF                    ][ rev(ADAPTER2)
+      'CGTTGGGAGTGAATTAGCCCTTCCACTGTCTCTTATACACATCTGACGCTGCCGACGA',
+      # rev(REF)               ][ rev(ADAPTER1)
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(REF)
+      cut_adapters
+      ),
+     ('full adapters plus garbage',
+      'TGGAAGGGCTAATTCACTCCCAACGCTGTCTCTTATACACATCTCCGAGCCCACGAGACCAGTACGCA',
+      # REF                    ][ rev(ADAPTER2)                  ][ garbage
+      'CGTTGGGAGTGAATTAGCCCTTCCACTGTCTCTTATACACATCTGACGCTGCCGACGAAAGTAGCAAC',
+      # rev(REF)               ][ rev(ADAPTER1)                 ][ garbage
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(REF)
+      cut_adapters
+      ),
+     ('partial adapters',
+      'TGGAAGGGCTAATTCACTCCCAACGCTGTCTCTTATACACATCTCCGAG',
+      # REF                    ][ partial rev(ADAPTER2)
+      'CGTTGGGAGTGAATTAGCCCTTCCACTGTCTCTTATACACATCTGACGC',
+      # rev(REF)               ][ partial rev(ADAPTER1)
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(REF)
+      cut_adapters
+      ),
+     ('partial adapters plus garbage',
+      'TGGAAGGGCTAATTCACTCCCAACGCTGTCTCTTATACACATCTCCGAGCCAGTACGCA',
+      # REF                    ][ partial rev(ADAPTER2)][ garbage
+      'CGTTGGGAGTGAATTAGCCCTTCCACTGTCTCTTATACACATCTGACGCAAGTAGCAAC',
+      # rev(REF)               ][ partial rev(ADAPTER1)][ garbage
+      'TGGAAGGGCTAATTCACTCCCAACGCTGTCTCTTATACACATCTCCGAGCCAGTACGCA',
+      # unchanged, because partial adapters only trimmed off the end
+      'CGTTGGGAGTGAATTAGCCCTTCCACTGTCTCTTATACACATCTGACGCAAGTAGCAAC',
+      # unchanged
+      cut_adapters
+      ),
+     ('no primers',
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(REF)
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # unchanged
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # unchanged
+      cut_primers
+      ),
+     ('full right primers',
+      'TGGAAGGGCTAATTCACTCCCAACGCATCTTTAAGATGTTGACGTGCCTC',
+      # REF                    ][ RIGHT
+      'GAGGCACGTCAACATCTTAAAGATGCGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(RIGHT)             ][ rev(REF)
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(REF)
+      cut_primers
+      ),
+     ('partial right primers',
+      'TGGAAGGGCTAATTCACTCCCAACGCATCTTTAAGATGTTGACGT',
+      # REF                    ][ partial RIGHT
+      'ACGTCAACATCTTAAAGATGCGTTGGGAGTGAATTAGCCCTTCCA',
+      # partial rev(RIGHT)][ rev(REF)
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(REF)
+      cut_primers
+      ),
+     ('full left primers',
+      'ACCAACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACG',
+      # LEFT                  ][ REF
+      'CGTTGGGAGTGAATTAGCCCTTCCAACAAGAGATCGAAAGTTGGTTGGT',
+      # rev(REF)               ][ rev(LEFT)
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(REF)
+      cut_primers
+      ),
+     ('partial left primers',
+      'ACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACG',
+      # partial LEFT      ][ REF
+      'CGTTGGGAGTGAATTAGCCCTTCCAACAAGAGATCGAAAGTTGG',
+      # rev(REF)               ][ rev(partial LEFT)
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(REF)
+      cut_primers
+      ),
+     ('partial left primers plus garbage',
+      'CATAAGGATACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACG',
+      # garbage][ partial LEFT     ][ REF
+      'CGTTGGGAGTGAATTAGCCCTTCCAACAAGAGATCGAAAGTTGGATCCTTATG',
+      # rev(REF)               ][ rev(part LEFT)  ][garbage
+      'CATAAGGATACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACG',
+      # unchanged
+      'CGTTGGGAGTGAATTAGCCCTTCCAACAAGAGATCGAAAGTTGGATCCTTATG',
+      # unchanged
+      cut_primers
+      ),
+     ('full left primers plus garbage',
+      'CATAAGGATACCAACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACG',
+      # garbage][ LEFT                 ][ REF
+      'CGTTGGGAGTGAATTAGCCCTTCCAACAAGAGATCGAAAGTTGGTTGGTATCCTTATG',
+      # rev(REF)               ][ rev(LEFT)            ][garbage
+      'CATAAGGATACCAACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACG',
+      # unchanged
+      'CGTTGGGAGTGAATTAGCCCTTCCAACAAGAGATCGAAAGTTGGTTGGTATCCTTATG',
+      # unchanged
+      cut_primers
+      ),
+     ('full right primers plus garbage',
+      'TGGAAGGGCTAATTCACTCCCAACGCATCTTTAAGATGTTGACGTGCCTCATGCACTT',
+      # REF                    ][ RIGHT                 ][garbage
+      'TACCGGACTGAGGCACGTCAACATCTTAAAGATGCGTTGGGAGTGAATTAGCCCTTCCA',
+      # garbage][ rev(RIGHT)            ][ rev(REF)
+      'TGGAAGGGCTAATTCACTCCCAACGCATCTTTAAGATGTTGACGTGCCTCATGCACTT',
+      # unchanged
+      'TACCGGACTGAGGCACGTCAACATCTTAAAGATGCGTTGGGAGTGAATTAGCCCTTCCA',
+      # unchanged
+      cut_primers
+      ),
+     ])
+def test_cut_adapters(tmpdir: str,
+                      scenario: str,
+                      read1: str,
+                      read2: str,
+                      expected1: str,
+                      expected2: str,
+                      cut_method: callable):
+    """ Cut adapter sequence from a read pair.
+
+    The reference section is pulled from the start of HXB2:
+    TGGAAGGGCTAATTCACTCCCAACG
+    Reverse complement of that is:
+    CGTTGGGAGTGAATTAGCCCTTCCA
+    Nextera Read 1 adapter:
+    TCGTCGGCAGCGTCAGATGTGTATAAGAGACAG
+    Reverse complement:
+    CTGTCTCTTATACACATCTGACGCTGCCGACGA
+    Nextera Read 2 adapter:
+    GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG
+    Reverse complement:
+    CTGTCTCTTATACACATCTCCGAGCCCACGAGAC
+    Left primer:
+    ACCAACCAACTTTCGATCTCTTGT
+    Reverse complement:
+    ACAAGAGATCGAAAGTTGGTTGGT
+    Right primer:
+    CATCTTTAAGATGTTGACGTGCCTC
+    Reverse complement:
+    GAGGCACGTCAACATCTTAAAGATG
+    """
+    tmp_path = Path(tmpdir)
+    fastq1_path = tmp_path / 'read1.fastq'
+    fastq2_path = tmp_path / 'read2.fastq'
+    trimmed1_path = tmp_path / 'trimmed1.fastq'
+    trimmed2_path = tmp_path / 'trimmed2.fastq'
+    fastq1_path.write_text(build_fastq(read1))
+    fastq2_path.write_text(build_fastq(read2))
+    expected_trimmed1 = build_fastq(expected1)
+    expected_trimmed2 = build_fastq(expected2)
+
+    cut_method(fastq1_path, fastq2_path, trimmed1_path, trimmed2_path)
+
+    assert trimmed1_path.read_text() == expected_trimmed1
+    assert trimmed2_path.read_text() == expected_trimmed2
+
+
+def build_fastq(read_sequence):
+    expected_quality1 = 'A' * len(read_sequence)
+    expected_trimmed1 = f'''\
+@pair1
+{read_sequence}
++
+{expected_quality1}
+'''
+    return expected_trimmed1

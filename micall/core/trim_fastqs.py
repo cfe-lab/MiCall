@@ -4,14 +4,17 @@
 
 import argparse
 import csv
+import logging
+import sys
 from gzip import GzipFile
 import itertools
 import math
 import os
 
 from io import TextIOWrapper
+from pathlib import Path
 
-from micall.utils.externals import CutAdapt
+from cutadapt.__main__ import main as cutadapt_main
 
 
 def parse_args():
@@ -60,8 +63,9 @@ def trim(original_fastq_filenames,
                                         ['avg_quality', 'base_count'],
                                         lineterminator=os.linesep)
         summary_writer.writeheader()
-    cut_adapt = CutAdapt()
 
+    dedapted_filenames = [filename + '.dedapted.fastq'
+                          for filename in trimmed_fastq_filenames]
     censored_filenames = [filename + '.censored.fastq'
                           for filename in trimmed_fastq_filenames]
     if not os.path.exists(bad_cycles_filename):
@@ -75,23 +79,63 @@ def trim(original_fastq_filenames,
         with open(src_name, 'rb') as src, open(dest_name, 'w') as dest:
             censor(src, bad_cycles, dest, use_gzip, summary_writer, cycle_sign)
 
-    script_path = os.path.dirname(__file__)
-    adapter_files = [os.path.join(script_path, 'adapters_read{}.fasta'.format(i))
-                     for i in (1, 2)]
-    cutadapt_args = ['-a', 'file:' + adapter_files[0],
-                     '-A', 'file:' + adapter_files[1],
-                     '-o', trimmed_fastq_filenames[0],
-                     '-p', trimmed_fastq_filenames[1],
-                     '--quiet',
-                     censored_filenames[0],
-                     censored_filenames[1]]
-    cut_adapt.check_output(cutadapt_args)
-    for filename in censored_filenames:
+    cut_adapters(censored_filenames[0],
+                 censored_filenames[1],
+                 dedapted_filenames[0],
+                 dedapted_filenames[1])
+    cut_primers(dedapted_filenames[0],
+                dedapted_filenames[1],
+                trimmed_fastq_filenames[0],
+                trimmed_fastq_filenames[1])
+    for filename in censored_filenames + dedapted_filenames:
         try:
             os.remove(filename)
         except OSError:
             # We tried to tidy up a temporary file, but it's not critical.
             pass
+
+
+def cut_adapters(original_fastq1: Path,
+                 original_fastq2: Path,
+                 trimmed_fastq1: Path,
+                 trimmed_fastq2: Path):
+    script_path = os.path.dirname(__file__)
+    adapter_files = [os.path.join(script_path, 'adapters_read{}.fasta'.format(i))
+                     for i in (1, 2)]
+    run_cut_adapt(['-a', 'file:' + adapter_files[0],
+                   '-A', 'file:' + adapter_files[1],
+                   '-o', str(trimmed_fastq1),
+                   '-p', str(trimmed_fastq2),
+                   str(original_fastq1),
+                   str(original_fastq2)])
+
+
+def cut_primers(original_fastq1: Path,
+                original_fastq2: Path,
+                trimmed_fastq1: Path,
+                trimmed_fastq2: Path):
+    script_path = Path(__file__).parent
+    run_cut_adapt(['-g', f'file:{script_path/"primers_left.fasta"}',
+                   '-a', f'file:{script_path/"primers_right.fasta"}',
+                   '-G', f'file:{script_path/"primers_right_rev.fasta"}',
+                   '-A', f'file:{script_path/"primers_left_rev.fasta"}',
+                   '-o', str(trimmed_fastq1),
+                   '-p', str(trimmed_fastq2),
+                   '--overlap=5',
+                   str(original_fastq1),
+                   str(original_fastq2)])
+
+
+def run_cut_adapt(args):
+    # Instead of launching a child process, run it in the current process.
+    # Requires messing with the default logging.
+    root_logger = logging.getLogger()
+    original_level = root_logger.getEffectiveLevel()
+    root_logger.setLevel(logging.CRITICAL)
+    try:
+        cutadapt_main(args)
+    finally:
+        root_logger.setLevel(original_level)
 
 
 def censor(original_file,
