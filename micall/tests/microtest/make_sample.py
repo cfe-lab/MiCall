@@ -61,6 +61,22 @@ def main():
                              True,
                              (FastqSection('HIV1-CON-XX-Consensus-seed', 855, 906, 10),
                               FastqSection('HIV1-CON-XX-Consensus-seed', 912, 960, 10))),
+                   FastqFile('2020A-GP41_S4_L001_R1_001.fastq',
+                             '2020',
+                             False,
+                             (FastqSection('GP41',
+                                           2,
+                                           30,
+                                           10,
+                                           (CodonMutation(10, 'GGGATA'),)),)),
+                   FastqFile('2020A-GP41_S4_L001_R2_001.fastq',
+                             '2020',
+                             True,
+                             (FastqSection('GP41',
+                                           2,
+                                           30,
+                                           10,
+                                           (CodonMutation(10, 'GGGATA'),)),)),
                    FastqFile('2040A-HLA-B_S6_L001_R1_001.fastq',
                              '2040',
                              False,
@@ -175,7 +191,6 @@ def main():
                              '2190',
                              True,
                              (FastqSection('SARS-CoV-2-orf1ab', 4393, 4413, 100),))]
-    fastq_files = fastq_files[-2:]
     for fastq_file in fastq_files:
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1
