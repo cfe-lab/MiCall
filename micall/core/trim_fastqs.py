@@ -5,7 +5,6 @@
 import argparse
 import csv
 import logging
-import sys
 from gzip import GzipFile
 import itertools
 import math
@@ -71,7 +70,7 @@ def trim(original_fastq_filenames,
     if not os.path.exists(bad_cycles_filename):
         bad_cycles = []
     else:
-        with open(bad_cycles_filename, 'rU') as bad_cycles:
+        with open(bad_cycles_filename, 'r') as bad_cycles:
             bad_cycles = list(csv.DictReader(bad_cycles))
     for i, (src_name, dest_name) in enumerate(
             zip(original_fastq_filenames, censored_filenames)):
@@ -102,7 +101,8 @@ def cut_adapters(original_fastq1: Path,
     script_path = os.path.dirname(__file__)
     adapter_files = [os.path.join(script_path, 'adapters_read{}.fasta'.format(i))
                      for i in (1, 2)]
-    run_cut_adapt(['-a', 'file:' + adapter_files[0],
+    run_cut_adapt(['--quiet',
+                   '-a', 'file:' + adapter_files[0],
                    '-A', 'file:' + adapter_files[1],
                    '-o', str(trimmed_fastq1),
                    '-p', str(trimmed_fastq2),
@@ -115,7 +115,8 @@ def cut_primers(original_fastq1: Path,
                 trimmed_fastq1: Path,
                 trimmed_fastq2: Path):
     script_path = Path(__file__).parent
-    run_cut_adapt(['-g', f'file:{script_path/"primers_left.fasta"}',
+    run_cut_adapt(['--quiet',
+                   '-g', f'file:{script_path/"primers_left.fasta"}',
                    '-a', f'file:{script_path/"primers_right.fasta"}',
                    '-G', f'file:{script_path/"primers_right_rev.fasta"}',
                    '-A', f'file:{script_path/"primers_left_rev.fasta"}',
@@ -126,14 +127,14 @@ def cut_primers(original_fastq1: Path,
                    str(original_fastq2)])
 
 
-def run_cut_adapt(args):
+def run_cut_adapt(cut_adapt_args):
     # Instead of launching a child process, run it in the current process.
     # Requires messing with the default logging.
     root_logger = logging.getLogger()
     original_level = root_logger.getEffectiveLevel()
     root_logger.setLevel(logging.CRITICAL)
     try:
-        cutadapt_main(args)
+        cutadapt_main(cut_adapt_args)
     finally:
         root_logger.setLevel(original_level)
 
