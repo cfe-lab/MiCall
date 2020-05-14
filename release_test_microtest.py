@@ -119,7 +119,7 @@ class ResultsFolder:
             pos = int(row['refseq.nuc.pos'])
             assert row['seed'] in expected_seeds, pos
             assert row['region'] == 'GP41', pos
-            if 3 < pos <= 81:
+            if 3 < pos <= 90:
                 assert row['coverage'] == '10', pos
             else:
                 assert row['coverage'] == '0', pos
