@@ -10,6 +10,7 @@ from operator import itemgetter
 from pathlib import Path
 from subprocess import run, PIPE, CalledProcessError
 from tempfile import mkdtemp
+from traceback import print_exc
 
 from micall.monitor.find_groups import find_groups, SampleGroup
 
@@ -277,7 +278,7 @@ class ResultsFolder:
             pos = int(row['refseq.aa.pos'])
             coverage = int(row['coverage'])
             coverage_message = f'{coverage} coverage at {pos}'
-            if pos < 40:
+            if pos < 30:
                 assert coverage < 10, coverage_message
             elif 70 < pos < 150:
                 assert 10 < coverage, coverage_message
@@ -292,9 +293,9 @@ class ResultsFolder:
             pos = int(row['refseq.aa.pos'])
             coverage = int(row['coverage'])
             coverage_message = f'{coverage} coverage at {pos}'
-            if pos < 350:
+            if pos < 300:
                 assert coverage < 10, coverage_message
-            elif 420 <= pos < 520:
+            elif 320 <= pos < 410:
                 assert 10 < coverage, coverage_message
             elif 580 <= pos:
                 assert coverage < 10, coverage_message
@@ -312,16 +313,17 @@ class ResultsFolder:
                 elif 50 <= pos:
                     assert 10 < coverage, coverage_message
             elif row['region'] == 'HCV1A-H77-NS5b':
-                if pos <= 580:
+                if pos <= 570:
                     assert 10 < coverage, coverage_message
             elif row['region'] == 'HCV2-JFH-1-NS5a':
                 if pos < 15:
                     assert coverage < 10, coverage_message
-                elif 100 <= pos:
+                elif 100 <= pos < 449:
                     assert 10 < coverage, coverage_message
             else:
                 assert row['region'] == 'HCV2-JFH-1-NS5b', row['region']
-                assert 10 < coverage, coverage_message
+                if pos < 540:
+                    assert 10 < coverage, coverage_message
 
     def check_2180(self):
         amino_rows = list(self.read_file('2180A-HIV_S22', 'amino.csv'))
@@ -506,6 +508,7 @@ def find_full_groups(fastq_files, sandbox_path):
 
 
 def main():
+    # noinspection PyTypeChecker
     parser = ArgumentParser(description='Validate with small test samples.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--sandbox',
@@ -554,16 +557,27 @@ def main():
     check_methods = [(name, method)
                      for name, method in folder_methods
                      if name.startswith('check_')]
+    error_count = 0
     for name, method in check_methods:
         if not inspect.signature(method).parameters:
             # Doesn't require any parameters, so it's a top level check method.
             print(name)
             results_folder.is_denovo = False
-            method()
+            try:
+                method()
+            except AssertionError:
+                print_exc()
+                error_count += 1
 
             print(name, '(denovo)')
             results_folder.is_denovo = True
-            method()
+            try:
+                method()
+            except AssertionError:
+                print_exc()
+                error_count += 1
+    print('Finished checking.')
+    assert error_count == 0, error_count
 
     # If they all passed, clean up.
     if all_sandboxes:

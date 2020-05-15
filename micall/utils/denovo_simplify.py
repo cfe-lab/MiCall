@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
+    # noinspection PyTypeChecker
     parser = ArgumentParser(
         description='Find the simplest FASTQ that can still be assembled.',
         formatter_class=ArgumentDefaultsHelpFormatter)
@@ -185,7 +186,7 @@ def read_fastq(filename, reads):
     @param filename: the FASTQ file to open
     @param reads: defaultdict({qname: [line1, line2, line3, line4, line1, line2, line3, line4]}
     """
-    with open(filename, 'rU') as f:
+    with open(filename, 'r') as f:
         for line1, line2, line3, line4 in zip(f, f, f, f):
             qname = line1.split()[0]
             lines = reads[qname]
