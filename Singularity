@@ -37,13 +37,13 @@ From: centos:7
     micall/__init__.py /opt/micall/micall/
     micall/project* /opt/micall/micall/
 
-    micall/core    /opt/micall/micall/core/
-    micall/data    /opt/micall/micall/data/
-    micall/drivers    /opt/micall/micall/drivers/
-    micall/g2p     /opt/micall/micall/g2p/
-    micall/resistance   /opt/micall/micall/resistance/
-    micall/monitor /opt/micall/micall/monitor/
-    micall/utils   /opt/micall/micall/utils/
+    micall/core    /opt/micall/micall/core
+    micall/data    /opt/micall/micall/data
+    micall/drivers    /opt/micall/micall/drivers
+    micall/g2p     /opt/micall/micall/g2p
+    micall/resistance   /opt/micall/micall/resistance
+    micall/monitor /opt/micall/micall/monitor
+    micall/utils   /opt/micall/micall/utils
 
     ## Gotoh
     micall/alignment /opt/micall/alignment
