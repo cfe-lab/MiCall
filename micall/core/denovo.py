@@ -138,10 +138,11 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
             if match_seed_group == contig_seed_group:
                 match_scores[ref_name] += float(match['score'])
 
-    group_top_refs = {projects.getSeedGroup(ref_name): ref_name
-                      for ref_name, count in reversed(match_scores.most_common())}
-    for ref_name in contig_top_matches.values():
-        group_refs[ref_name] = group_top_refs[projects.getSeedGroup(ref_name)]
+    if group_refs is not None:
+        group_top_refs = {projects.getSeedGroup(ref_name): ref_name
+                          for ref_name, count in reversed(match_scores.most_common())}
+        for ref_name in contig_top_matches.values():
+            group_refs[ref_name] = group_top_refs[projects.getSeedGroup(ref_name)]
 
     for match in matches:
         matched_fraction = float(match['qcovhsp']) / 100

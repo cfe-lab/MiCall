@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pytest import fixture
 
-from micall.core.denovo import write_contig_refs, denovo, DEFAULT_DATABASE
+from micall.core.denovo import write_contig_refs, denovo, DEFAULT_DATABASE, genotype
 from micall.blast_db.make_blast_db import make_blast_db, DEFAULT_PROJECTS
 
 
@@ -120,7 +120,28 @@ HCV-1a,-0.75,HCV-1a,GTCGTCGCCACACACGAGCATGGTGCAGTCCTGGAGCCCTGTCTCCTATGTGATG
     assert expected_contigs_csv == contigs_csv.getvalue()
 
 
-def test_write_blast(tmpdir, hcv_db):
+def test_genotype(tmpdir, hcv_db):
+    contigs_fasta = Path(tmpdir) / "contigs.fasta"
+    contigs_fasta.write_text("""\
+>foo
+TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
+>bar
+CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
+""")
+    blast_csv = StringIO()
+    expected_blast_csv = """\
+contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
+2,HCV-1g,37,0.67,100,19,55,8506,8542
+2,HCV-1a,41,0.75,100,15,55,8518,8558
+1,HCV-1a,41,1.0,100,1,41,8187,8227
+"""
+
+    genotype(str(contigs_fasta), blast_csv=blast_csv)
+
+    assert expected_blast_csv == blast_csv.getvalue()
+
+
+def test_write_contig_refs(tmpdir, hcv_db):
     contigs_fasta = Path(tmpdir) / "contigs.fasta"
     contigs_fasta.write_text("""\
 >foo
