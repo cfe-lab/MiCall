@@ -22,6 +22,7 @@
 /micall/tests/working/*
 /micall/tests/microtest/Results
 /micall/tests/microtest/scratch
+/micall/utils/ptrimmer_data/
 /venv_micall
 /simgs/*.simg
 /sandbox
