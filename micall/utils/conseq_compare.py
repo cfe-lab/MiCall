@@ -17,10 +17,33 @@ except ImportError:
 
 from micall.utils.fetch_sequences import fetch_by_accession
 
+
+# Dan stuff
+import sys
+from micall.core.project_config import ProjectConfig
+
+REFERENCE = ProjectConfig.loadDefault()
+REFERENCE = REFERENCE.getReference('SARS-CoV-2-seed')
+
+def load_coverage(csv):
+    result = {}
+    with open(csv) as csvfile:
+        reader = DictReader(csvfile)
+        for row in reader:
+            result[int(row['query_nuc_pos'])] = int(row['coverage'])
+    return result
+
+ROOT = (
+    Path('/wow')
+    / 'Results'
+    / 'scratch'
+)
+# end Dan stuff
+
 # Source: https://github.com/PoonLab/sam2conseq/wiki
 MAPPING = """\
 SRR11177792	RNA-Seq	2020-02-25	MT072688	sam2conseq reports
-SRR10903401	RNA-Seq	2020-01-18	MN988669.1	sam2conseq reports
+	RNA-Seq	2020-01-18	MN988669.1	sam2conseq reports
 SRR10903402	RNA-Seq	2020-01-18	MN988668.1	sam2conseq reports
 SRR10971381	RNA-Seq	2020-01-27	MN908947	published sequence
 SRR11241254	RNA-Seq	2020-03-04	MT163716.1 or EPI_ISL_413025
@@ -53,7 +76,27 @@ SRR11085741	RNA-Seq	2020-02-13	MN611517	non-human, failure to map
 SRR11085797	RNA-Seq	2020-02-13	MN996532.1
 SRR11314339	RNA-Seq	2020-03-17	MT192765
 SRR11092056	RNA-Seq	2020-02-15	MN996530	Low coverage, sample is mostly human DNA (known issue)	Y
-SRR11593354	RNA-Seq	2020-02-15	EPI_ISL_414507
+SRR11578349	RNA-Seq	2020-05-04	EPI_ISL_427024
+SRR11578341	RNA-Seq	2020-05-04	EPI_ISL_426901
+SRR11578342	RNA-Seq	2020-05-04	EPI_ISL_426900
+SRR11578343	RNA-Seq	2020-05-04	EPI_ISL_426899
+SRR11578344	RNA-Seq	2020-05-04	EPI_ISL_426899
+SRR11578345	RNA-Seq	2020-05-04	EPI_ISL_426656
+SRR11578346	RNA-Seq	2020-05-04	EPI_ISL_426898
+SRR11578347	RNA-Seq	2020-05-04	EPI_ISL_427026
+SRR11578348	RNA-Seq	2020-05-04	EPI_ISL_427025
+SRR11578349	RNA-Seq	2020-05-04	EPI_ISL_427024
+SRR11593354_1.fastq	RNA-Seq	2020-05-08	EPI_ISL_414507
+SRR11593355_1.fastq	RNA-Seq	2020-05-08	EPI_ISL_414574
+SRR11593356_1.fastq	RNA-Seq	2020-05-08	EPI_ISL_414509
+SRR11593357_1.fastq	RNA-Seq	2020-05-08	EPI_ISL_414508
+SRR11593358_1.fastq	RNA-Seq	2020-05-08	EPI_ISL_414506
+SRR11593359_1.fastq	RNA-Seq	2020-05-08	EPI_ISL_414505
+SRR11593360_1.fastq	RNA-Seq	2020-05-08	EPI_ISL_414504
+SRR11593361_1.fastq	RNA-Seq	2020-05-08	EPI_ISL_414499
+SRR11593362_1.fastq	RNA-Seq	2020-05-08	EPI_ISL_414498
+SRR11593364_1.fastq	RNA-Seq	2020-05-08	EPI_ISL_414497
+SRR11593365_1.fastq	RNA-Seq	2020-05-08	EPI_ISL_413488
 """
 
 
@@ -67,8 +110,8 @@ def main():
 
     summaries = []
     source_path = Path(__file__)
-    working_path = source_path.parent.parent.parent
-    conseq_path = working_path / 'covid' / 'SRR11593354' / 'inputs' / 'Results' / 'conseq_all.csv'
+    working_path = source_path.parent.parent.parent / 'micall' / 'tests' / 'working'
+    conseq_path = working_path / 'conseq_all.csv'
     accessions_path = working_path / 'fetched_accessions.fasta'
     accessions_file = accessions_path.open('a')
     accessions_index = None
@@ -76,6 +119,9 @@ def main():
         for row in DictReader(f):
             cutoff = row['consensus-percent-cutoff']
             if cutoff != 'MAX':
+                continue
+            region = row['region']
+            if region != '':
                 continue
             sample_name = row['sample']
             reads_accession = sample_name.split('-')[0]
@@ -128,19 +174,99 @@ def compare_using_gotoh(row, conseq_accession, published_seq):
     print('...', aln_pub_seq[-screen_width+4:])
     print('...', aln_conseq[-screen_width+4:])
     mismatch_count = add_count = missing_count = 0
+
+    mycsv = ROOT / sample_name / 'genome_coverage.csv'
+    conseq = ROOT / sample_name / 'conseq_all.csv'
+    offset = None
+    with open(conseq) as csvfile:
+        reader = DictReader(csvfile)
+        for row in reader:
+            offset = int(row['seed-offset'])
+            break
+    coverages = load_coverage(mycsv)
+    # matchfile = open(ROOT / sample_name / 'mymatches.txt', 'w')
+    # mismatchfile = open(ROOT / sample_name / 'mymismatches.txt', 'w')
+    # addedfile = open(ROOT / sample_name / 'myadded.txt', 'w')
+    datafile = open(ROOT / sample_name / 'data.tsv', 'w')
+    header = '\t'.join([
+        'sample',
+        'type',
+        'pos',
+        'micall_base',
+        'gisaid_base',
+        'ref_base',
+        'coverage',
+        # 'mean_quality'
+    ])
+    datafile.write(header + '\n')
     for i, (theirs, ours) in enumerate(zip(aln_pub_seq, aln_conseq)):
+        pos = i + 1 + offset
+        coverage = '0'
+        refbase = '?'
+        try:
+            refbase = REFERENCE[pos - 1]
+        except IndexError:
+            pass
+        try:
+            coverage = str(coverages[pos])
+        except KeyError:
+            pass
+        pos = str(pos)
         if theirs == ours:
+            # try:
+            #     matchfile.write(str(coverages[i]) + '\n')
+            # except KeyError:
+            #     matchfile.write('0' + '\n')
             pass
         elif ours == '-':
+            datafile.write('\t'.join([
+                sample_name,
+                'deletion',
+                pos,
+                ours,
+                theirs,
+                refbase,
+                coverage
+            ]) + '\n')
             missing_count += 1
         elif theirs == '-':
+            datafile.write('\t'.join([
+                sample_name,
+                'addition',
+                pos,
+                ours,
+                theirs,
+                refbase,
+                coverage
+            ]) + '\n')
             add_count += 1
+            # try:
+            #     addedfile.write(str(coverages[i]) + '\n')
+            # except KeyError:
+            #     addedfile.write('0' + '\n')
         else:
+            datafile.write('\t'.join([
+                sample_name,
+                'mismatch',
+                pos,
+                ours,
+                theirs,
+                refbase,
+                coverage
+            ]) + '\n')
+            # try:
+            #     mismatchfile.write(str(coverages[i]) + '\n')
+            # except KeyError:
+            #     mismatchfile.write('0' + '\n')
             mismatch_count += 1
             if mismatch_count < 100:
                 print(f'{i}: {theirs} => {ours}')
     summary = (f'{mismatch_count} mismatches, {missing_count} missing, and '
                f'{add_count} added out of {len(published_seq)}.')
+    datafile.close()
+    # matchfile.close()
+    # mismatchfile.close()
+    # addedfile.close()
     print(summary)
     return f'{sample_name}|{conseq_accession}|{summary}'
 
