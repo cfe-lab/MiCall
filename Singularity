@@ -59,7 +59,6 @@ From: centos:7
 
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
-    yum install -q -y https://centos7.iuscommunity.org/ius-release.rpm
     yum install -q -y unzip wget fontconfig bzip2-devel xz-devel openssl-devel libffi-devel
 
     echo ===== Installing Python ===== >/dev/null
