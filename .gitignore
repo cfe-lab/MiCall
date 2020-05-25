@@ -20,7 +20,7 @@
 .pytest_cache
 /.idea
 /micall/tests/working/*
-/micall/tests/microtest/Results
+/micall/tests/microtest/micall-results
 /micall/tests/microtest/scratch
 /venv_micall
 /simgs/*.simg
@@ -32,5 +32,4 @@
 */.DS_Store
 *.log
 /test_samples.csv
-/venv_micall
 .vscode

@@ -190,12 +190,12 @@ on your host machine as "/path/on/host/", you would invoke it as follows:
 """
 
 FOLDER_DESCRIPTION = """\
-Map FASTQ files to references for a MiCall run.
+Map FASTQ files to references for a MiSeq run folder.
 
 This will look for MiSeq output in the path specified by the optional 
 "run_folder" argument (by default, this is ".").  The output will be 
 written to the path specified by the option "results_folder" argument (by 
-default, "Results"), which itself will be taken as relative to the path 
+default, "micall-results"), which itself will be taken as relative to the path 
 specified by "run_folder" if it is not an absolute path.
 
 As this will typically be run in a Dockerized setting, you should make sure
@@ -230,10 +230,9 @@ Map FASTQ files to references for a single sample.
 This will process the sample specified by the command-line arguments.  Input 
 paths specified by these arguments will be taken as relative to the "base" 
 path specified by "--run_folder" (default "/data"), or can be specified as 
-absolute paths themselves.  Output paths will be taken as relative to the path 
-specified by the optional "results_folder" path (default "Results"), which 
-itself will be taken as relative to the path specified by "--run_folder"
-if it is not an absolute path.
+absolute paths themselves.  The optional "results_folder" path
+(default "micall-results"), will be taken as relative to the path specified by
+"--run_folder" if it is not an absolute path.
 
 As this will typically be run in a Dockerized setting, you should make sure
 your bind mounts are appropriately set; also note that any input/output paths
@@ -266,10 +265,9 @@ Map FASTQ files to references for a single HCV sample.
 This will process the HCV sample specified by the command-line arguments.
 Input paths specified by these arguments will be taken as relative to the 
 "base" path specified by "--run_folder" (default "/data"), or can be specified 
-as absolute paths themselves.  Output paths will be taken as relative to the 
-path specified by the optional "results_folder" path (default "Results"), 
-which itself will be taken as relative to the path specified by "--run_folder"
-if it is not an absolute path.
+as absolute paths themselves.  The optional "results_folder" path
+(default "micall-results"), will be taken as relative to the path specified by
+"--run_folder" if it is not an absolute path.
 
 As this will typically be run in a Dockerized setting, you should make sure
 your bind mounts are appropriately set; also note that any input/output paths
@@ -279,7 +277,7 @@ For example: if you built your container as "micall:v0.1.2-3", your MiSeq data i
 on your host machine as "/path/on/host/" as "1234A_forward.fastq", 
 "1234A_reverse.fastq", "1234A_MIDI_forward.fastq", and 
 "1234A_MIDI_reverse.fastq", and you want the outputs to be written to 
-"/path/on/host/Results", you would invoke it as follows:
+"/path/on/host/micall-results", you would invoke it as follows:
 
     docker run \\ 
         --mount type=bind,source=/path/on/host/,destination=/data \\ 
@@ -300,171 +298,6 @@ if you want to write the outputs to "/host/output/path/":
 """
 
 
-def add_output_arguments(parser, midi=False):
-    # Specifying arguments; each tuple goes (argument, help, default).  These
-    # are all assumed to be optional arguments, so you can leave off the leading
-    # "--".
-    arguments = [
-        (
-            "g2p_csv",
-            "CSV containing g2p predictions",
-            "g2p.csv",
-        ),
-        (
-            "g2p_summary_csv",
-            "CSV containing overall call for the sample",
-            "g2p_summary.csv",
-        ),
-        (
-            "remap_counts_csv",
-            "CSV containing numbers of mapped reads",
-            "remap_counts.csv",
-        ),
-        (
-            "remap_conseq_csv",
-            "CSV containing mapping consensus sequences",
-            "remap_conseq.csv",
-        ),
-        (
-            "unmapped1_fastq",
-            "FASTQ R1 of reads that failed to map to any region",
-            "unmapped1.fastq",
-        ),
-        (
-            "unmapped2_fastq",
-            "FASTQ R2 of reads that failed to map to any region",
-            "unmapped2.fastq",
-        ),
-        (
-            "conseq_ins_csv",
-            "CSV containing insertions relative to sample consensus",
-            "conseq_ins.csv",
-        ),
-        (
-            "failed_csv",
-            "CSV containing reads that failed to merge",
-            "failed.csv",
-        ),
-        (
-            "cascade_csv",
-            "count of reads at each step",
-            "cascade.csv",
-        ),
-        (
-            "nuc_csv",
-            "CSV containing nucleotide frequencies",
-            "nuc.csv",
-        ),
-        (
-            "amino_csv",
-            "CSV containing amino frequencies",
-            "amino.csv",
-        ),
-        (
-            "coord_ins_csv",
-            "CSV containing insertions relative to coordinate reference",
-            "coord_ins.csv",
-        ),
-        (
-            "conseq_csv",
-            "CSV containing consensus sequences",
-            "conseq.csv",
-        ),
-        (
-            "conseq_all_csv",
-            "CSV containing consensus sequences *ignoring poor coverage*",
-            "conseq_all.csv",
-        ),
-        (
-            "conseq_region_csv",
-            "CSV containing consensus sequences, split by region",
-            "conseq_region.csv",
-        ),
-        (
-            "failed_align_csv",
-            "CSV containing any consensus that failed to align",
-            "failed_align.csv",
-        ),
-        (
-            "coverage_scores_csv",
-            "CSV coverage scores",
-            "coverage_scores.csv",
-        ),
-        (
-            "coverage_maps_tar",
-            "tar file of coverage maps",
-            "coverage_maps.tar",
-        ),
-        (
-            "aligned_csv",
-            "CSV containing individual reads aligned to consensus",
-            "aligned.csv",
-        ),
-        (
-            "g2p_aligned_csv",
-            "CSV containing individual reads aligned to V3LOOP",
-            "g2p_aligned.csv",
-        ),
-        (
-            "genome_coverage_csv",
-            "CSV of coverage levels in full-genome coordinates",
-            "genome_coverage.csv",
-        ),
-        (
-            "genome_coverage_svg",
-            "SVG diagram of coverage in full-genome coordinates",
-            "genome_coverage.svg",
-        ),
-        (
-            "contigs_csv",
-            "CSV containing contigs built by de novo assembly",
-            "contigs.csv (ignored if --denovo is not specified)",
-        ),
-        (
-            "read_entropy_csv",
-            "CSV containing read pair length counts",
-            "read_entropy.csv (ignored if --denovo is not specified)",
-        ),
-        (
-            "resistance_csv",
-            "CSV containing drug resistance calls",
-            "resistance.csv",
-        ),
-        (
-            "resistance_pdf",
-            "PDF report of drug resistance calls",
-            "resistance.pdf",
-        ),
-        (
-            "resistance_consensus_csv",
-            "CSV containing consensus sequence used for resistance calculation",
-            "resistance_consensus.csv",
-        ),
-        (
-            "resistance_fail_csv",
-            "CSV containing failure messages from resistance calculation",
-            "resistance_fail.csv",
-        ),
-        (
-            "mutations_csv",
-            "CSV containing mutations used in the resistance calculation",
-            "mutations.csv",
-        )
-    ]
-
-    for argument_tuple in arguments:
-        arg_name = "--" + argument_tuple[0]
-        arg_help = argument_tuple[1]
-        arg_default = argument_tuple[2]
-        if midi:
-            arg_name = "--midi_" + argument_tuple[0]
-            arg_help = argument_tuple[1] + " (MIDI)"
-            arg_default = "midi_" + argument_tuple[2]
-        parser.add_argument(arg_name, help=arg_help, default=arg_default)
-
-    return parser
-
-
 def get_parser():
     # noinspection PyTypeChecker
     parser = ArgumentParser(
@@ -474,6 +307,15 @@ def get_parser():
         title="Sub-commands (i.e. modes of operation)",
     )
 
+    add_folder_parser(subparsers)
+    add_sample_parser(subparsers)
+    add_hcv_sample_parser(subparsers)
+    add_basespace_parser(subparsers)
+
+    return parser
+
+
+def add_basespace_parser(subparsers):
     # ####
     # BaseSpace mode.
     # ####
@@ -509,6 +351,8 @@ def get_parser():
     )
     basespace_parser.set_defaults(func=basespace_run)
 
+
+def add_folder_parser(subparsers):
     # ####
     # The "process a full directory" subcommand.
     # ####
@@ -529,10 +373,9 @@ def get_parser():
         nargs="?",
         help="Directory to write outputs to (if Dockerized, this is "
              "the path *inside* the container; point a bind mount here).  If "
-             "output file paths are not specified as absolute paths, they will "
-             "be taken as being relative to this path.  If *this* path is not "
-             "absolute, it will be taken as relative to --run_folder.",
-        default="Results",
+             "this path is not absolute, it will be taken as relative to "
+             "--run_folder.",
+        default="micall-results",
     )
     folder_parser.add_argument(
         "--all_projects",
@@ -564,7 +407,7 @@ def get_parser():
         help="Forward-read files to be paired with their reverse counterparts,"
              "specified with the --fastq2s option.  If these are not specified, "
              "all files with a .fastq or .fastq.gz extension will be paired "
-             "alphabetically."
+             "by sample sheet names, or alphabetically."
     )
     folder_parser.add_argument(
         "--fastq2s",
@@ -574,6 +417,8 @@ def get_parser():
     )
     folder_parser.set_defaults(func=process_folder)
 
+
+def add_sample_parser(subparsers):
     # ####
     # The "process a single sample" subcommand.
     # ####
@@ -614,19 +459,19 @@ def get_parser():
         nargs="?",
         help="(Optional) directory to write outputs to (if Dockerized, this is "
              "the path *inside* the container; point a bind mount here).  If "
-             "output file paths are not specified as absolute paths, they will "
-             "be taken as being relative to this path.  If *this* path is not"
-             "absolute, it will be taken as relative to --run_folder.",
-        default="Results",
+             "this path is not absolute, it will be taken as relative to "
+             "--run_folder.",
+        default="micall-results",
     )
     single_sample_parser.add_argument(
         "--denovo",
         action="store_true",
         help="Use de novo assembly instead of mapping to reference sequences.",
     )
-    add_output_arguments(single_sample_parser)
     single_sample_parser.set_defaults(func=single_sample)
 
+
+def add_hcv_sample_parser(subparsers):
     # ####
     # The "process a single HCV sample" subcommand.
     # ####
@@ -682,10 +527,9 @@ def get_parser():
         nargs="?",
         help="(Optional) directory to write outputs to (if Dockerized, this is "
              "the path *inside* the container; point a bind mount here).  If "
-             "output file paths are not specified as absolute paths, they will "
-             "be taken as being relative to this path.  If *this* path is not"
-             "absolute, it will be taken as relative to --run_folder.",
-        default="Results",
+             "this path is not absolute, it will be taken as relative to "
+             "--run_folder.",
+        default="micall-results",
     )
 
     hcv_sample_parser.add_argument(
@@ -693,13 +537,7 @@ def get_parser():
         action="store_true",
         help="Use de novo assembly instead of mapping to reference sequences.",
     )
-
-    add_output_arguments(hcv_sample_parser)
-    add_output_arguments(hcv_sample_parser, midi=True)
-
     hcv_sample_parser.set_defaults(func=hcv_sample)
-
-    return parser
 
 
 def basespace_run(args):
@@ -979,39 +817,16 @@ def load_sample(sample_json, data_path, scratch_path):
 
 def link_samples(
         run_path: str,
-        data_path: str,
+        output_path: str,
         is_denovo: bool,
         fastq1s: typing.Sequence[str] = None,
         fastq2s: typing.Sequence[str] = None):
     """ Load the data from a run folder. """
 
-    shutil.rmtree(data_path, ignore_errors=True)
-    makedirs(data_path)
+    shutil.rmtree(output_path, ignore_errors=True)
+    makedirs(output_path)
 
-    results_dir = os.path.join(run_path, "Results")
-    basespace_dir = os.path.join(results_dir, "basespace")
-    output_path = os.path.join(data_path, 'output')
-
-    results_dir_exists = os.path.exists(results_dir)
-    basespace_dir_exists = os.path.exists(basespace_dir)
-    makedirs(basespace_dir)
-    try:
-        os.link(basespace_dir, output_path)
-    except OSError as e:
-        if e.errno in (errno.EXDEV, errno.EPERM):
-            logger.info(
-                "Unable to link %s to %s; writing results directly to the latter.",
-                basespace_dir,
-                output_path,
-            )
-            if not results_dir_exists:
-                shutil.rmtree(results_dir)
-            elif not basespace_dir_exists:
-                shutil.rmtree(basespace_dir)
-            makedirs(output_path)
-        else:
-            raise
-    scratch_path = os.path.join(data_path, 'scratch')
+    scratch_path = os.path.join(output_path, 'scratch')
     makedirs(scratch_path)
 
     sample_groups = []
