@@ -28,6 +28,7 @@
 /timing.*
 /micall/blast_db/refs.fasta*
 /micall/utils/hcv_reference_tree
+/micall/utils/ptrimmer_data
 .DS_Store
 */.DS_Store
 *.log

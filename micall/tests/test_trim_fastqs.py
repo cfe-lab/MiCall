@@ -308,10 +308,10 @@ def test_trim(tmpdir):
       cut_primers
       ),
      ('full right primers',
-      'TGGAAGGGCTAATTCACTCCCAACGCATCTTTAAGATGTTGACGTGCCTC',
-      # REF                    ][ RIGHT
-      'GAGGCACGTCAACATCTTAAAGATGCGTTGGGAGTGAATTAGCCCTTCCA',
-      # rev(RIGHT)             ][ rev(REF)
+      'TGGAAGGGCTAATTCACTCCCAACGGAGGCACGTCAACATCTTAAAGATG',
+      # REF                    ][ rev(RIGHT)
+      'CATCTTTAAGATGTTGACGTGCCTCCGTTGGGAGTGAATTAGCCCTTCCA',
+      # RIGHT                  ][ rev(REF)
       'TGGAAGGGCTAATTCACTCCCAACG',
       # REF
       'CGTTGGGAGTGAATTAGCCCTTCCA',
@@ -319,10 +319,10 @@ def test_trim(tmpdir):
       cut_primers
       ),
      ('partial right primers',
-      'TGGAAGGGCTAATTCACTCCCAACGCATCTTTAAGATGTTGACGT',
-      # REF                    ][ partial RIGHT
-      'ACGTCAACATCTTAAAGATGCGTTGGGAGTGAATTAGCCCTTCCA',
-      # partial rev(RIGHT)][ rev(REF)
+      'TGGAAGGGCTAATTCACTCCCAACGGAGGCACGTCAACATCTTAA',
+      # REF                    ][ partial rev(RIGHT)
+      'TTAAGATGTTGACGTGCCTCCGTTGGGAGTGAATTAGCCCTTCCA',
+      # partial RIGHT     ][ rev(REF)
       'TGGAAGGGCTAATTCACTCCCAACG',
       # REF
       'CGTTGGGAGTGAATTAGCCCTTCCA',
@@ -374,13 +374,13 @@ def test_trim(tmpdir):
       cut_primers
       ),
      ('full right primers plus garbage',
-      'TGGAAGGGCTAATTCACTCCCAACGCATCTTTAAGATGTTGACGTGCCTCATGCACTT',
-      # REF                    ][ RIGHT                 ][garbage
-      'TACCGGACTGAGGCACGTCAACATCTTAAAGATGCGTTGGGAGTGAATTAGCCCTTCCA',
-      # garbage][ rev(RIGHT)            ][ rev(REF)
-      'TGGAAGGGCTAATTCACTCCCAACGCATCTTTAAGATGTTGACGTGCCTCATGCACTT',
+      'TGGAAGGGCTAATTCACTCCCAACGGAGGCACGTCAACATCTTAAAGATGATGCACTT',
+      # REF                    ][ rev(RIGHT)            ][garbage
+      'TACCGGACTCATCTTTAAGATGTTGACGTGCCTCCGTTGGGAGTGAATTAGCCCTTCCA',
+      # garbage][ RIGHT                 ][ rev(REF)
+      'TGGAAGGGCTAATTCACTCCCAACGGAGGCACGTCAACATCTTAAAGATGATGCACTT',
       # unchanged
-      'TACCGGACTGAGGCACGTCAACATCTTAAAGATGCGTTGGGAGTGAATTAGCCCTTCCA',
+      'TACCGGACTCATCTTTAAGATGTTGACGTGCCTCCGTTGGGAGTGAATTAGCCCTTCCA',
       # unchanged
       cut_primers
       ),
@@ -410,9 +410,9 @@ def test_cut_adapters(tmpdir: str,
     ACCAACCAACTTTCGATCTCTTGT
     Reverse complement:
     ACAAGAGATCGAAAGTTGGTTGGT
-    Right primer:
+    Right primer (matches reverse complement of reference):
     CATCTTTAAGATGTTGACGTGCCTC
-    Reverse complement:
+    Reverse complement (matches forward reference):
     GAGGCACGTCAACATCTTAAAGATG
     """
     tmp_path = Path(tmpdir)

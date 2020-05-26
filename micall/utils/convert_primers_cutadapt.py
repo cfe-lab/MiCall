@@ -1,7 +1,10 @@
+from contextlib import contextmanager
 from csv import DictReader
+from difflib import Differ
 from io import StringIO
 from pathlib import Path
 
+import requests
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -16,26 +19,16 @@ def main():
     load_hcv(seqs)
     load_corona(source_path, seqs)
     for name, seq_list in seqs.items():
-        if name == 'left':
-            fwd_seqs = [SeqRecord('X' + seq.seq,
-                                  id=seq.id,
-                                  description=seq.description)
-                        for seq in seq_list]
-            rev_seqs = [SeqRecord(seq.reverse_complement().seq + 'X',
-                                  id=seq.id,
-                                  description=seq.description)
-                        for seq in seq_list]
-        else:
-            fwd_seqs = [SeqRecord(seq.seq + 'X',
-                                  id=seq.id,
-                                  description=seq.description)
-                        for seq in seq_list]
-            rev_seqs = [SeqRecord('X' + seq.reverse_complement().seq,
-                                  id=seq.id,
-                                  description=seq.description)
-                        for seq in seq_list]
-        SeqIO.write(fwd_seqs, str(target_path/f'primers_{name}.fasta'), 'fasta')
-        SeqIO.write(rev_seqs, str(target_path/f'primers_{name}_rev.fasta'), 'fasta')
+        start_seqs = [SeqRecord('X' + seq.seq,
+                                id=seq.id,
+                                description=seq.description)
+                      for seq in seq_list]
+        end_seqs = [SeqRecord(seq.reverse_complement().seq + 'X',
+                              id=seq.id,
+                              description=seq.description)
+                    for seq in seq_list]
+        SeqIO.write(start_seqs, str(target_path/f'primers_{name}.fasta'), 'fasta')
+        SeqIO.write(end_seqs, str(target_path/f'primers_{name}_end.fasta'), 'fasta')
 
 
 def load_hcv(seqs):
@@ -57,6 +50,7 @@ HCV miDi,Pr1,F,31,8245-8275,TGGGGTTCGCGTATGATACCCGCTGCTTTGA
     projects = ProjectConfig.loadDefault()
     h77 = projects.getReference('HCV-1a')
     is_comparing = True
+    differ = Differ()
     for row in hcv_definitions:
         name = 'HCV ' + row['name']
         start, end = (int(pos) for pos in row['h77_pos'].split('-'))
@@ -66,18 +60,18 @@ HCV miDi,Pr1,F,31,8245-8275,TGGGGTTCGCGTATGATACCCGCTGCTTTGA
         if direction == 'F':
             seqs['left'].append(primer)
         else:
-            primer, complement = complement, primer
             seqs['right'].append(primer)
+            primer, complement = complement, primer
         h77_section = Seq(h77[start - 1:end])
         if is_comparing and primer.seq != h77_section:
             print(name, 'does not match.')
-            print(primer.seq)
-            print(h77_section)
+            diffs = differ.compare([str(primer.seq) + '\n'],
+                                   [str(h77_section) + '\n'])
+            print(*diffs, sep='')
 
 
 def load_corona(source_path, seqs):
-    with (source_path / 'nCoV-2019.tsv').open() as f:
-        rows = DictReader(f, delimiter='\t')
+    with load_artic_rows(source_path) as rows:
         for row in rows:
             new_seq = SeqRecord(Seq(row['seq']), row['name'], description='')
             if 'LEFT' in row['name']:
@@ -86,6 +80,27 @@ def load_corona(source_path, seqs):
                 assert 'RIGHT' in row['name'], row['name']
                 fwd_seqs = seqs['right']
             fwd_seqs.append(new_seq)
+
+
+@contextmanager
+def load_artic_file(filename: str, data_path: Path):
+    local_path = data_path / filename
+    if not local_path.exists():
+        url = 'https://github.com/artic-network/artic-ncov2019/raw/master/' \
+              'primer_schemes/nCoV-2019/V3/' + filename
+        response = requests.get(url)
+        response.raise_for_status()
+        with local_path.open('wb') as f:
+            for chunk in response.iter_content(chunk_size=1000):
+                f.write(chunk)
+    with local_path.open() as source_file:
+        yield source_file
+
+
+@contextmanager
+def load_artic_rows(data_path: Path):
+    with load_artic_file('nCoV-2019.tsv', data_path) as source_file:
+        yield DictReader(source_file, delimiter='\t')
 
 
 main()
