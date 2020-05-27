@@ -151,6 +151,7 @@ def main():
                                            99,
                                            100,
                                            (CodonMutation(24, 'ATA'),)),)),
+                   # Simplify with one_contig.
                    FastqFile('2160A-HCV_S19_L001_R1_001.fastq',
                              '2160',
                              False,
@@ -159,6 +160,7 @@ def main():
                              '2160',
                              True,
                              sections_2160_2),
+                   # Simplify with one_contig.
                    FastqFile('2160AMIDI-MidHCV_S20_L001_R1_001.fastq',
                              '2160',
                              False,
@@ -167,6 +169,7 @@ def main():
                              '2160',
                              True,
                              sections_2160midi_2),
+                   # Simplify with two_long_contigs.
                    FastqFile('2170A-HCV_S21_L001_R1_001.fastq',
                              '2170',
                              False,

@@ -248,7 +248,7 @@ class ResultsFolder:
     def check_2130(self):
         conseq_rows = list(self.read_file('2130A-HCV_S15', 'conseq.csv'))
         regions = set(map(itemgetter('region'), conseq_rows))
-        expected_regions = ({'1-HCV-2a', '2-HCV-2a'}
+        expected_regions = ({'1-HCV-2a'}
                             if self.is_denovo
                             else {'HCV-2a'})
         assert regions == expected_regions, regions
@@ -293,11 +293,11 @@ class ResultsFolder:
             pos = int(row['refseq.aa.pos'])
             coverage = int(row['coverage'])
             coverage_message = f'{coverage} coverage at {pos}'
-            if pos < 300:
+            if pos < 370:
                 assert coverage < 10, coverage_message
-            elif 320 <= pos < 410:
-                assert 10 < coverage, coverage_message
-            elif 580 <= pos:
+            elif 400 <= pos < 520:
+                assert 10 <= coverage, coverage_message
+            elif 540 <= pos:
                 assert coverage < 10, coverage_message
 
     def check_2170(self):
@@ -336,7 +336,7 @@ class ResultsFolder:
                 assert row['seed'] == 'HIV1-B-FR-K03455-seed', row['seed']
                 if pos < 50:
                     assert coverage < 10, coverage_message
-                elif 80 < pos < 180:
+                elif 230 < pos < 330:
                     assert 10 < coverage, coverage_message
                 elif 380 < pos:
                     assert coverage < 10, coverage_message
@@ -422,14 +422,11 @@ class SampleRunner:
                         'genome_coverage.svg']
         output_paths = [output_path/name for name in output_names]
         app_name = 'denovo' if self.is_denovo else None
-        run(self.build_command([fastq_input1,
-                                fastq_input2,
-                                self.bad_cycles_path],
-                               output_paths,
-                               app_name),
-            stdout=PIPE,
-            stderr=PIPE,
-            check=True)
+        run_with_retries(self.build_command([fastq_input1,
+                                             fastq_input2,
+                                             self.bad_cycles_path],
+                                            output_paths,
+                                            app_name))
         return sample_name
 
     def process_resistance(self, sample_group: SampleGroup):
@@ -467,12 +464,10 @@ class SampleRunner:
                         'resistance.pdf',
                         'resistance_consensus.csv']
         output_paths = [output_path2/name for name in output_names]
-        run(self.build_command([main_amino_input, midi_amino_input],
+        run_with_retries(
+            self.build_command([main_amino_input, midi_amino_input],
                                output_paths,
-                               app_name='resistance'),
-            stdout=PIPE,
-            stderr=PIPE,
-            check=True)
+                               app_name='resistance'))
         return sample_group.enum
 
     def build_command(self, inputs, outputs, app_name=None):
@@ -505,6 +500,18 @@ def find_full_groups(fastq_files, sandbox_path):
                            for name in group.names)
         full_groups.append(SampleGroup(group.enum, full_names))
     return full_groups
+
+
+def run_with_retries(command_args: typing.List[str], retries=2):
+    while retries:
+        try:
+            run(command_args, stdout=PIPE, stderr=PIPE, check=True)
+            break
+        except CalledProcessError as ex:
+            if ex.returncode != 255:
+                raise
+            # Singularity 2.5 seems to be flaky, just retry.
+            retries -= 1
 
 
 def main():
