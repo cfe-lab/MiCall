@@ -20,7 +20,6 @@ except ImportError:
 from micall.utils.fetch_sequences import fetch_by_accession
 
 
-# Dan stuff
 import sys
 from micall.core.project_config import ProjectConfig
 
@@ -53,12 +52,11 @@ DATA = (
 def load_yaml(yaml_file):
     with open(yaml_file) as f:
         return yaml.load(f, Loader=yaml.SafeLoader)
-# end Dan stuff
 
 # Source: https://github.com/PoonLab/sam2conseq/wiki
 MAPPING = """\
 SRR11177792	RNA-Seq	2020-02-25	MT072688	sam2conseq reports
-	RNA-Seq	2020-01-18	MN988669.1	sam2conseq reports
+SRR10903401	RNA-Seq	2020-01-18	MN988669.1	sam2conseq reports
 SRR10903402	RNA-Seq	2020-01-18	MN988668.1	sam2conseq reports
 SRR10971381	RNA-Seq	2020-01-27	MN908947	published sequence
 SRR11241254	RNA-Seq	2020-03-04	MT163716.1 or EPI_ISL_413025
