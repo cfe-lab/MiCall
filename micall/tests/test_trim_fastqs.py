@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from micall.core.trim_fastqs import censor, trim, cut_adapters, cut_primers
+from micall.core.trim_fastqs import censor, trim, cut_all
 from micall.utils.translation import reverse_and_complement
 
 
@@ -240,7 +240,7 @@ def test_trim(tmpdir):
 
 
 @pytest.mark.parametrize(
-    "scenario,read1,read2,expected1,expected2,cut_method",
+    "scenario,read1,read2,expected1,expected2",
     [('no adapter',
       'TGGAAGGGCTAATTCACTCCCAACG',
       # REF
@@ -250,7 +250,6 @@ def test_trim(tmpdir):
       # unchanged
       'CGTTGGGAGTGAATTAGCCCTTCCA',
       # unchanged
-      cut_adapters
       ),
      ('full adapters',
       'TGGAAGGGCTAATTCACTCCCAACGCTGTCTCTTATACACATCTCCGAGCCCACGAGAC',
@@ -261,7 +260,6 @@ def test_trim(tmpdir):
       # REF
       'CGTTGGGAGTGAATTAGCCCTTCCA',
       # rev(REF)
-      cut_adapters
       ),
      ('full adapters plus garbage',
       'TGGAAGGGCTAATTCACTCCCAACGCTGTCTCTTATACACATCTCCGAGCCCACGAGACCAGTACGCA',
@@ -272,7 +270,6 @@ def test_trim(tmpdir):
       # REF
       'CGTTGGGAGTGAATTAGCCCTTCCA',
       # rev(REF)
-      cut_adapters
       ),
      ('partial adapters',
       'TGGAAGGGCTAATTCACTCCCAACGCTGTCTCTTATACACATCTCCGAG',
@@ -283,7 +280,6 @@ def test_trim(tmpdir):
       # REF
       'CGTTGGGAGTGAATTAGCCCTTCCA',
       # rev(REF)
-      cut_adapters
       ),
      ('partial adapters plus garbage',
       'TGGAAGGGCTAATTCACTCCCAACGCTGTCTCTTATACACATCTCCGAGCCAGTACGCA',
@@ -294,7 +290,6 @@ def test_trim(tmpdir):
       # unchanged, because partial adapters only trimmed off the end
       'CGTTGGGAGTGAATTAGCCCTTCCACTGTCTCTTATACACATCTGACGCAAGTAGCAAC',
       # unchanged
-      cut_adapters
       ),
      ('no primers',
       'TGGAAGGGCTAATTCACTCCCAACG',
@@ -305,7 +300,6 @@ def test_trim(tmpdir):
       # unchanged
       'CGTTGGGAGTGAATTAGCCCTTCCA',
       # unchanged
-      cut_primers
       ),
      ('full right primers',
       'TGGAAGGGCTAATTCACTCCCAACGGAGGCACGTCAACATCTTAAAGATG',
@@ -316,7 +310,6 @@ def test_trim(tmpdir):
       # REF
       'CGTTGGGAGTGAATTAGCCCTTCCA',
       # rev(REF)
-      cut_primers
       ),
      ('partial right primers',
       'TGGAAGGGCTAATTCACTCCCAACGGAGGCACGTCAACATCTTAA',
@@ -327,7 +320,6 @@ def test_trim(tmpdir):
       # REF
       'CGTTGGGAGTGAATTAGCCCTTCCA',
       # rev(REF)
-      cut_primers
       ),
      ('full left primers',
       'ACCAACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACG',
@@ -338,7 +330,6 @@ def test_trim(tmpdir):
       # REF
       'CGTTGGGAGTGAATTAGCCCTTCCA',
       # rev(REF)
-      cut_primers
       ),
      ('partial left primers',
       'ACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACG',
@@ -349,7 +340,6 @@ def test_trim(tmpdir):
       # REF
       'CGTTGGGAGTGAATTAGCCCTTCCA',
       # rev(REF)
-      cut_primers
       ),
      ('partial left primers plus garbage',
       'CATAAGGATACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACG',
@@ -360,7 +350,6 @@ def test_trim(tmpdir):
       # unchanged
       'CGTTGGGAGTGAATTAGCCCTTCCAACAAGAGATCGAAAGTTGGATCCTTATG',
       # unchanged
-      cut_primers
       ),
      ('full left primers plus garbage',
       'CATAAGGATACCAACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACG',
@@ -371,7 +360,6 @@ def test_trim(tmpdir):
       # unchanged
       'CGTTGGGAGTGAATTAGCCCTTCCAACAAGAGATCGAAAGTTGGTTGGTATCCTTATG',
       # unchanged
-      cut_primers
       ),
      ('full right primers plus garbage',
       'TGGAAGGGCTAATTCACTCCCAACGGAGGCACGTCAACATCTTAAAGATGATGCACTT',
@@ -382,7 +370,26 @@ def test_trim(tmpdir):
       # unchanged
       'TACCGGACTCATCTTTAAGATGTTGACGTGCCTCCGTTGGGAGTGAATTAGCCCTTCCA',
       # unchanged
-      cut_primers
+      ),
+     ('left and right primers',
+      'ACCAACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACGGAGGCACGTCAACATCTTAAAGATG',
+      # LEFT                  ][ REF                   ][ rev(RIGHT)            ]
+      'CATCTTTAAGATGTTGACGTGCCTCCGTTGGGAGTGAATTAGCCCTTCCAACAAGAGATCGAAAGTTGGTTGGT',
+      # RIGHT                  ][ rev(REF)              ][ rev(LEFT)
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(REF)
+      ),
+     ('right primers plus adapters',
+      'TGGAAGGGCTAATTCACTCCCAACGGAGGCACGTCAACATCTTAAAGATGCTGTCTCTTATACACATCTCCGAGCCCACGAGAC',
+      # REF                    ][ rev(RIGHT)            ][ rev(ADAPTER2)
+      'CATCTTTAAGATGTTGACGTGCCTCCGTTGGGAGTGAATTAGCCCTTCCACTGTCTCTTATACACATCTGACGCTGCCGACGA',
+      # RIGHT                  ][ rev(REF)              ][ rev(ADAPTER1)
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTCCA',
+      # rev(REF)
       ),
      ])
 def test_cut_adapters(tmpdir: str,
@@ -390,8 +397,7 @@ def test_cut_adapters(tmpdir: str,
                       read1: str,
                       read2: str,
                       expected1: str,
-                      expected2: str,
-                      cut_method: callable):
+                      expected2: str):
     """ Cut adapter sequence from a read pair.
 
     The reference section is pulled from the start of HXB2:
@@ -425,7 +431,7 @@ def test_cut_adapters(tmpdir: str,
     expected_trimmed1 = build_fastq(expected1)
     expected_trimmed2 = build_fastq(expected2)
 
-    cut_method(fastq1_path, fastq2_path, trimmed1_path, trimmed2_path)
+    cut_all(fastq1_path, fastq2_path, trimmed1_path, trimmed2_path)
 
     assert trimmed1_path.read_text() == expected_trimmed1
     assert trimmed2_path.read_text() == expected_trimmed2

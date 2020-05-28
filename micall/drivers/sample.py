@@ -2,6 +2,8 @@
 import logging
 import os
 
+import typing
+
 from micall.core.aln2counts import aln2counts
 from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
@@ -25,6 +27,7 @@ class Sample:
                  rank=None,
                  debug_remap=False,
                  scratch_path=None,
+                 skip: typing.Tuple[str] = (),
                  **paths):
         """ Record the details.
 
@@ -35,6 +38,7 @@ class Sample:
         :param str rank: rank within the run, like '2 of 10'
         :param bool debug_remap: write debug files during remap step
         :param str scratch_path: path where unknown outputs are written
+        :param skip: (step_name,) of steps to skip
         :param paths: {output_name: file_path}
         """
         fastq1 = paths.get('fastq1')
@@ -54,6 +58,7 @@ class Sample:
         self.rank = rank
         self.debug_remap = debug_remap
         self.scratch_path = scratch_path
+        self.skip = skip
         self.paths = paths
 
     def __repr__(self):
@@ -122,7 +127,8 @@ class Sample:
                  self.bad_cycles_csv,
                  (self.trimmed1_fastq, self.trimmed2_fastq),
                  summary_file=read_summary,
-                 use_gzip=use_gzip)
+                 use_gzip=use_gzip,
+                 skip=self.skip)
 
         if use_denovo:
             logger.info('Running merge_for_entropy on %s.', self)

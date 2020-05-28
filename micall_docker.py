@@ -16,6 +16,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 import typing
 
 from micall.core.filter_quality import report_bad_cycles
+from micall.core.trim_fastqs import TrimSteps
 from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
 from micall.drivers.sample import Sample
 from micall.drivers.sample_group import SampleGroup
@@ -307,10 +308,30 @@ def get_parser():
         title="Sub-commands (i.e. modes of operation)",
     )
 
-    add_folder_parser(subparsers)
-    add_sample_parser(subparsers)
-    add_hcv_sample_parser(subparsers)
-    add_basespace_parser(subparsers)
+    commands = [add_folder_parser(subparsers),
+                add_sample_parser(subparsers),
+                add_hcv_sample_parser(subparsers),
+                add_basespace_parser(subparsers)]
+    for command_parser in commands:
+        command_parser.add_argument(
+            "--all_projects",
+            "-a",
+            action="store_true",
+            help="Don't exclude any projects or seeds.")
+        command_parser.add_argument(
+            "--debug_remap",
+            "-d",
+            action="store_true",
+            help="Write debug files for remapping steps.")
+        command_parser.add_argument(
+            "--denovo",
+            action="store_true",
+            help="Use de novo assembly instead of mapping to reference sequences.")
+        command_parser.add_argument(
+            '--skip',
+            nargs='*',
+            choices=TrimSteps.all,
+            help='Skip over some steps to speed up the analysis.')
 
     return parser
 
@@ -326,30 +347,14 @@ def add_basespace_parser(subparsers):
         formatter_class=MiCallFormatter,
     )
     basespace_parser.add_argument(
-        "--all_projects",
-        "-a",
-        action="store_true",
-        help="Don't exclude any projects or seeds.",
-    )
-    basespace_parser.add_argument(
-        "--debug_remap",
-        "-d",
-        action="store_true",
-        help="Write debug files for remapping steps.",
-    )
-    basespace_parser.add_argument(
         "--max_active",
         "-m",
         type=int,
         help="Maximum number of samples to process at once, "
              "if not the number of CPUs.",
     )
-    basespace_parser.add_argument(
-        "--denovo",
-        action="store_true",
-        help="Use de novo assembly instead of mapping to reference sequences.",
-    )
     basespace_parser.set_defaults(func=basespace_run)
+    return basespace_parser
 
 
 def add_folder_parser(subparsers):
@@ -378,28 +383,11 @@ def add_folder_parser(subparsers):
         default="micall-results",
     )
     folder_parser.add_argument(
-        "--all_projects",
-        "-a",
-        action="store_true",
-        help="Don't exclude any projects or seeds.",
-    )
-    folder_parser.add_argument(
-        "--debug_remap",
-        "-d",
-        action="store_true",
-        help="Write debug files for remapping steps.",
-    )
-    folder_parser.add_argument(
         "--max_active",
         "-m",
         type=int,
         help="Maximum number of samples to process at once, "
              "if not the number of CPU's.",
-    )
-    folder_parser.add_argument(
-        "--denovo",
-        action="store_true",
-        help="Use de novo assembly instead of mapping to reference sequences.",
     )
     folder_parser.add_argument(
         "--fastq1s",
@@ -416,6 +404,7 @@ def add_folder_parser(subparsers):
              "ignored if --fastq1s is not specified."
     )
     folder_parser.set_defaults(func=process_folder)
+    return folder_parser
 
 
 def add_sample_parser(subparsers):
@@ -463,12 +452,8 @@ def add_sample_parser(subparsers):
              "--run_folder.",
         default="micall-results",
     )
-    single_sample_parser.add_argument(
-        "--denovo",
-        action="store_true",
-        help="Use de novo assembly instead of mapping to reference sequences.",
-    )
     single_sample_parser.set_defaults(func=single_sample)
+    return single_sample_parser
 
 
 def add_hcv_sample_parser(subparsers):
@@ -531,13 +516,8 @@ def add_hcv_sample_parser(subparsers):
              "--run_folder.",
         default="micall-results",
     )
-
-    hcv_sample_parser.add_argument(
-        "--denovo",
-        action="store_true",
-        help="Use de novo assembly instead of mapping to reference sequences.",
-    )
     hcv_sample_parser.set_defaults(func=hcv_sample)
+    return hcv_sample_parser
 
 
 def basespace_run(args):
@@ -553,8 +533,7 @@ def process_folder(args):
         resolved_args.results_folder,
         args.denovo,
         args.fastq1s,
-        args.fastq2s
-    )
+        args.fastq2s)
     process_run(run_info, args)
 
 
@@ -593,7 +572,7 @@ def process_run(run_info, args):
     logger.info('Done.')
 
 
-def sample_process_helper(resolved_args, scratch_path, use_denovo):
+def sample_process_helper(resolved_args, scratch_path, use_denovo, skip=()):
     sample = Sample(
         fastq1=resolved_args.fastq1,
         fastq2=resolved_args.fastq2,
@@ -626,8 +605,8 @@ def sample_process_helper(resolved_args, scratch_path, use_denovo):
         resistance_fail_csv=resolved_args.resistance_fail_csv,
         resistance_consensus_csv=resolved_args.resistance_consensus_csv,
         mutations_csv=resolved_args.mutations_csv,
-        scratch_path=scratch_path
-    )
+        scratch_path=scratch_path,
+        skip=skip)
 
     pssm = Pssm()
     sample.process(pssm, use_denovo=use_denovo)
@@ -636,9 +615,12 @@ def sample_process_helper(resolved_args, scratch_path, use_denovo):
 
 def single_sample(args):
     resolved_args = MiCallArgs(args)
-    scratch_path = os.path.join(os.path.dirname(resolved_args.cascade_csv), "scratch")
+    scratch_path = os.path.join(args.results_folder, "scratch")
     shutil.rmtree(scratch_path, ignore_errors=True)
-    sample = sample_process_helper(resolved_args, scratch_path, args.denovo)
+    sample = sample_process_helper(resolved_args,
+                                   scratch_path,
+                                   args.denovo,
+                                   args.skip)
     sample_group = SampleGroup(sample)
     run_info = RunInfo([sample_group])
     process_resistance(sample_group, run_info)
@@ -646,38 +628,27 @@ def single_sample(args):
 
 
 def hcv_sample(args):
-    # First, process the main samples.
-    single_sample(args)
-
-    # Do the same for the MIDI samples.
-    midi_args = MiCallArgs(args, map_midi=True)
-    midi_scratch_path = os.path.join(
-        os.path.dirname(midi_args.cascade_csv),
-        "midi_scratch"
-    )
-    shutil.rmtree(midi_scratch_path, ignore_errors=True)
-    sample_process_helper(midi_args, midi_scratch_path, args.denovo)
-
-    # Now, analyze the two samples together for resistance.
+    args.max_active = 2
     resolved_args = MiCallArgs(args)
-    resistance_scratch_path = os.path.join(
-        os.path.dirname(midi_args.cascade_csv),
-        "resistance_scratch"
-    )
-    shutil.rmtree(resistance_scratch_path, ignore_errors=True)
-    sample1 = Sample(
-        amino_csv=resolved_args.amino_csv,
-        resistance_csv=resolved_args.resistance_csv,
-        mutations_csv=resolved_args.mutations_csv,
-        resistance_fail_csv=resolved_args.resistance_fail_csv,
-        resistance_pdf=resolved_args.resistance_pdf,
-        resistance_consensus_csv=resolved_args.resistance_consensus_csv,
-        scratch_path=resistance_scratch_path
-    )
-    sample2 = Sample(amino_csv=resolved_args.midi_amino_csv)
-    main_and_midi = SampleGroup(sample1, sample2)
+    midi_args = MiCallArgs(args, map_midi=True)
+    scratch_path = os.path.join(args.results_folder, "scratch")
+    midi_scratch_path = os.path.join(args.results_folder, "scratch_midi")
+    makedirs(scratch_path)
+    shutil.rmtree(midi_scratch_path, ignore_errors=True)
 
-    main_and_midi.process_resistance(RunInfo([main_and_midi]))
+    sample_groups = []
+    run_info = RunInfo(sample_groups,
+                       reports=['PR_RT', 'IN', 'NS3', 'NS5a', 'NS5b'],
+                       output_path=args.results_folder,
+                       scratch_path=scratch_path,
+                       is_denovo=args.denovo)
+    main_sample = Sample(fastq1=resolved_args.fastq1, scratch_path=scratch_path)
+    midi_sample = Sample(fastq1=midi_args.fastq1, scratch_path=midi_scratch_path)
+    main_and_midi = SampleGroup(main_sample, midi_sample)
+    sample_groups.append(main_and_midi)
+
+    process_run(run_info, args)
+
     return main_and_midi
 
 
@@ -949,6 +920,7 @@ def process_sample(sample, args, pssm, use_denovo=False):
     :param use_denovo: use denovo assembly instead of mapping to references
     """
     sample.debug_remap = args.debug_remap
+    sample.skip = args.skip
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
@@ -1164,6 +1136,7 @@ def main():
         # No valid subcommand was given; print the help message and exit.
         parser.print_help()
         return
+    args.skip = args.skip or ()
     logger.info("Starting on %s with %d CPU's.",
                 socket.gethostname(),
                 multiprocessing.cpu_count())

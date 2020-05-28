@@ -5,6 +5,7 @@
 import argparse
 import csv
 import logging
+import shutil
 from gzip import GzipFile
 import itertools
 import math
@@ -13,7 +14,15 @@ import os
 from io import TextIOWrapper
 from pathlib import Path
 
+import typing
 from cutadapt.__main__ import main as cutadapt_main
+
+
+class TrimSteps:
+    censor = 'trim.censor'
+    adapters = 'trim.adapters'
+    primers = 'trim.primers'
+    all = (censor, adapters, primers)
 
 
 def parse_args():
@@ -42,7 +51,8 @@ def trim(original_fastq_filenames,
          bad_cycles_filename,
          trimmed_fastq_filenames,
          use_gzip=True,
-         summary_file=None):
+         summary_file=None,
+         skip: typing.Tuple[str] = ()):
     """
 
     :param original_fastq_filenames: sequence of two filenames, containing
@@ -54,6 +64,7 @@ def trim(original_fastq_filenames,
     :param use_gzip: True if the original file should be unzipped
     :param summary_file: an open CSV file to write to: write one row
         with the average read quality for each file
+    :param skip: names of steps to skip
     """
     if summary_file is None:
         summary_writer = None
@@ -63,30 +74,63 @@ def trim(original_fastq_filenames,
                                         lineterminator=os.linesep)
         summary_writer.writeheader()
 
-    dedapted_filenames = [filename + '.dedapted.fastq'
-                          for filename in trimmed_fastq_filenames]
     censored_filenames = [filename + '.censored.fastq'
                           for filename in trimmed_fastq_filenames]
-    if not os.path.exists(bad_cycles_filename):
+    if (TrimSteps.censor in skip) or not os.path.exists(bad_cycles_filename):
         bad_cycles = []
     else:
         with open(bad_cycles_filename, 'r') as bad_cycles:
             bad_cycles = list(csv.DictReader(bad_cycles))
     for i, (src_name, dest_name) in enumerate(
             zip(original_fastq_filenames, censored_filenames)):
+
         cycle_sign = 1 - 2*i
         with open(src_name, 'rb') as src, open(dest_name, 'w') as dest:
             censor(src, bad_cycles, dest, use_gzip, summary_writer, cycle_sign)
 
-    cut_adapters(censored_filenames[0],
-                 censored_filenames[1],
-                 dedapted_filenames[0],
-                 dedapted_filenames[1])
-    cut_primers(dedapted_filenames[0],
-                dedapted_filenames[1],
-                trimmed_fastq_filenames[0],
-                trimmed_fastq_filenames[1])
-    for filename in censored_filenames + dedapted_filenames:
+    cut_all(censored_filenames[0],
+            censored_filenames[1],
+            trimmed_fastq_filenames[0],
+            trimmed_fastq_filenames[1],
+            skip)
+    purge_temp_files(censored_filenames)
+
+
+def cut_all(censored_fastq1: Path,
+            censored_fastq2: Path,
+            trimmed_fastq1: Path,
+            trimmed_fastq2: Path,
+            skip: typing.Tuple[str] = ()):
+    dedapted_filenames = [Path(str(filename) + '.dedapted.fastq')
+                          for filename in (censored_fastq1, censored_fastq2)]
+    ltrimmed_filenames = [Path(str(filename) + '.ltrimmed.fastq')
+                          for filename in (censored_fastq1, censored_fastq2)]
+    if TrimSteps.adapters in skip:
+        dedapted_filenames[0].symlink_to(censored_fastq1)
+        dedapted_filenames[1].symlink_to(censored_fastq2)
+    else:
+        cut_adapters(censored_fastq1,
+                     censored_fastq2,
+                     dedapted_filenames[0],
+                     dedapted_filenames[1])
+    if TrimSteps.primers in skip:
+        shutil.copy(str(dedapted_filenames[0]), str(trimmed_fastq1))
+        shutil.copy(str(dedapted_filenames[1]), str(trimmed_fastq2))
+    else:
+        cut_left_primers(dedapted_filenames[0],
+                         dedapted_filenames[1],
+                         ltrimmed_filenames[0],
+                         ltrimmed_filenames[1])
+        cut_right_primers(ltrimmed_filenames[0],
+                          ltrimmed_filenames[1],
+                          trimmed_fastq1,
+                          trimmed_fastq2)
+    purge_temp_files(dedapted_filenames)
+    purge_temp_files(ltrimmed_filenames)
+
+
+def purge_temp_files(filenames):
+    for filename in filenames:
         try:
             os.remove(filename)
         except OSError:
@@ -110,16 +154,29 @@ def cut_adapters(original_fastq1: Path,
                    str(original_fastq2)])
 
 
-def cut_primers(original_fastq1: Path,
-                original_fastq2: Path,
-                trimmed_fastq1: Path,
-                trimmed_fastq2: Path):
+def cut_left_primers(original_fastq1: Path,
+                     original_fastq2: Path,
+                     trimmed_fastq1: Path,
+                     trimmed_fastq2: Path):
     script_path = Path(__file__).parent
     run_cut_adapt(['--quiet',
                    '-g', f'file:{script_path/"primers_left.fasta"}',
+                   '-A', f'file:{script_path/"primers_left_end.fasta"}',
+                   '-o', str(trimmed_fastq1),
+                   '-p', str(trimmed_fastq2),
+                   '--overlap=5',
+                   str(original_fastq1),
+                   str(original_fastq2)])
+
+
+def cut_right_primers(original_fastq1: Path,
+                      original_fastq2: Path,
+                      trimmed_fastq1: Path,
+                      trimmed_fastq2: Path):
+    script_path = Path(__file__).parent
+    run_cut_adapt(['--quiet',
                    '-a', f'file:{script_path/"primers_right_end.fasta"}',
                    '-G', f'file:{script_path/"primers_right.fasta"}',
-                   '-A', f'file:{script_path/"primers_left_end.fasta"}',
                    '-o', str(trimmed_fastq1),
                    '-p', str(trimmed_fastq2),
                    '--overlap=5',
@@ -134,7 +191,11 @@ def run_cut_adapt(cut_adapt_args):
     original_level = root_logger.getEffectiveLevel()
     root_logger.setLevel(logging.CRITICAL)
     try:
-        cutadapt_main(cut_adapt_args)
+        try:
+            cutadapt_main(cut_adapt_args)
+        except SystemExit:
+            raise RuntimeError('Cutadapt failed for args: ' +
+                               ' '.join(cut_adapt_args))
     finally:
         root_logger.setLevel(original_level)
 
