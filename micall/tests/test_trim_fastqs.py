@@ -241,7 +241,8 @@ def test_trim(tmpdir):
 
 @pytest.mark.parametrize(
     "scenario,read1,read2,expected1,expected2",
-    [('no adapter',
+    [
+     ('no adapter',
       'TGGAAGGGCTAATTCACTCCCAACG',
       # REF
       'CGTTGGGAGTGAATTAGCCCTTCCA',
@@ -391,6 +392,18 @@ def test_trim(tmpdir):
       'CGTTGGGAGTGAATTAGCCCTTCCA',
       # rev(REF)
       ),
+     ('primer dimer',
+      'TGGAAATACCCACAAGTTAATGGTTTAACAGGCACAGGTGTCTGTCTCTTATACACATCTCCGAGCCCACGAGACACTACCTGGAA',
+      # nCoV-2019_18_LEFT          ]            [ rev(ADAPTER2)                  ][ garbage
+      #                   [ rev(..._76_RIGHT)  ]
+      'ACACCTGTGCCTGTTAAACCATTAACTTGTGGGTATTTCCACTGTCTCTTATACACATCTGACGCTGCCGACGAAGGTTCTCAGGA',
+      # nCoV-2019_76_RIGHT  ]                   [ rev(ADAPTER1)                 ][ garbage
+      #            [ rev(nCoV-2019_18_LEFT)    ]
+      '',
+      # Trimmed to nothing
+      '',
+      # Trimmed to nothing
+      )
      ])
 def test_cut_adapters(tmpdir: str,
                       scenario: str,
@@ -438,9 +451,14 @@ def test_cut_adapters(tmpdir: str,
 
 
 def build_fastq(read_sequence):
+    # Write two reads in the file to test primer dimer caching.
     expected_quality1 = 'A' * len(read_sequence)
     expected_trimmed1 = f'''\
 @pair1
+{read_sequence}
++
+{expected_quality1}
+@pair2
 {read_sequence}
 +
 {expected_quality1}

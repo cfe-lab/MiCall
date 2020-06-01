@@ -15,7 +15,10 @@ from io import TextIOWrapper
 from pathlib import Path
 
 import typing
+
+from Bio.Seq import Seq
 from cutadapt.__main__ import main as cutadapt_main
+from Bio import SeqIO
 
 
 class TrimSteps:
@@ -105,6 +108,8 @@ def cut_all(censored_fastq1: Path,
                           for filename in (censored_fastq1, censored_fastq2)]
     ltrimmed_filenames = [Path(str(filename) + '.ltrimmed.fastq')
                           for filename in (censored_fastq1, censored_fastq2)]
+    rtrimmed_filenames = [Path(str(filename) + '.rtrimmed.fastq')
+                          for filename in (censored_fastq1, censored_fastq2)]
     if TrimSteps.adapters in skip:
         dedapted_filenames[0].symlink_to(censored_fastq1)
         dedapted_filenames[1].symlink_to(censored_fastq2)
@@ -123,10 +128,15 @@ def cut_all(censored_fastq1: Path,
                          ltrimmed_filenames[1])
         cut_right_primers(ltrimmed_filenames[0],
                           ltrimmed_filenames[1],
-                          trimmed_fastq1,
-                          trimmed_fastq2)
+                          rtrimmed_filenames[0],
+                          rtrimmed_filenames[1])
+        cut_primer_dimers(rtrimmed_filenames[0],
+                          rtrimmed_filenames[1],
+                          Path(trimmed_fastq1),
+                          Path(trimmed_fastq2))
     purge_temp_files(dedapted_filenames)
     purge_temp_files(ltrimmed_filenames)
+    purge_temp_files(rtrimmed_filenames)
 
 
 def purge_temp_files(filenames):
@@ -182,6 +192,59 @@ def cut_right_primers(original_fastq1: Path,
                    '--overlap=5',
                    str(original_fastq1),
                    str(original_fastq2)])
+
+
+def cut_primer_dimers(original_fastq1: Path,
+                      original_fastq2: Path,
+                      trimmed_fastq1: Path,
+                      trimmed_fastq2: Path):
+    script_path = Path(__file__).parent
+    for source, dest, primer_name in (
+            (original_fastq1, trimmed_fastq1, 'primers_right_end.fasta'),
+            (original_fastq2, trimmed_fastq2, 'primers_right.fasta')):
+        primers = SeqIO.index(str(script_path / primer_name), 'fasta')
+        with source.open() as source_file, dest.open('w') as dest_file:
+            source_sequences = SeqIO.parse(source_file, 'fastq')
+            dest_sequences = cut_primer_dimer_sequences(source_sequences,
+                                                        primers)
+            SeqIO.write(dest_sequences, dest_file, 'fastq')
+
+
+def cut_primer_dimer_sequences(source_sequences, primers: dict):
+    is_first = True
+    is_end = False
+    full_primers = []
+    max_length = 0
+    primer_dimers = set()
+    for seq in primers.values():
+        if is_first:
+            is_end = seq.seq.endswith('X')
+            is_first = False
+        if is_end:
+            trimmed_seq = seq.seq[:-1]
+        else:
+            trimmed_seq = seq.seq[1:]
+        max_length = max(max_length, len(trimmed_seq))
+        full_primers.append(trimmed_seq)
+    for read_sequence in source_sequences:
+        if len(read_sequence) <= max_length:
+            read_bases = str(read_sequence.seq)
+            if read_bases in primer_dimers:
+                is_primer_dimer = True
+            else:
+                if is_end:
+                    is_primer_dimer = any(primer_seq.endswith(read_bases)
+                                          for primer_seq in full_primers)
+                else:
+                    is_primer_dimer = any(primer_seq.startswith(read_bases)
+                                          for primer_seq in full_primers)
+                if is_primer_dimer:
+                    primer_dimers.add(read_bases)
+            if is_primer_dimer:
+                read_sequence.letter_annotations.clear()
+                read_sequence.seq = Seq('')
+                read_sequence.letter_annotations['phred_quality'] = []
+        yield read_sequence
 
 
 def run_cut_adapt(cut_adapt_args):

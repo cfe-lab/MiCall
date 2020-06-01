@@ -20,11 +20,11 @@ def main():
     load_corona(source_path, seqs)
     for name, seq_list in seqs.items():
         start_seqs = [SeqRecord('X' + seq.seq,
-                                id=seq.id,
+                                id=seq.id.replace(' ', '_'),
                                 description=seq.description)
                       for seq in seq_list]
         end_seqs = [SeqRecord(seq.reverse_complement().seq + 'X',
-                              id=seq.id,
+                              id=seq.id.replace(' ', '_'),
                               description=seq.description)
                     for seq in seq_list]
         SeqIO.write(start_seqs, str(target_path/f'primers_{name}.fasta'), 'fasta')
