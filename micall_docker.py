@@ -614,17 +614,22 @@ def sample_process_helper(resolved_args, scratch_path, use_denovo, skip=()):
 
 
 def single_sample(args):
+    args.max_active = 1
     resolved_args = MiCallArgs(args)
     scratch_path = os.path.join(args.results_folder, "scratch")
-    shutil.rmtree(scratch_path, ignore_errors=True)
-    sample = sample_process_helper(resolved_args,
-                                   scratch_path,
-                                   args.denovo,
-                                   args.skip)
+    makedirs(scratch_path)
+
+    sample_groups = []
+    run_info = RunInfo(sample_groups,
+                       reports=['PR_RT', 'IN', 'NS3', 'NS5a', 'NS5b'],
+                       output_path=args.results_folder,
+                       scratch_path=scratch_path,
+                       is_denovo=args.denovo)
+    sample = Sample(fastq1=resolved_args.fastq1, scratch_path=scratch_path)
     sample_group = SampleGroup(sample)
-    run_info = RunInfo([sample_group])
-    process_resistance(sample_group, run_info)
-    return sample
+    sample_groups.append(sample_group)
+
+    process_run(run_info, args)
 
 
 def hcv_sample(args):
@@ -648,8 +653,6 @@ def hcv_sample(args):
     sample_groups.append(main_and_midi)
 
     process_run(run_info, args)
-
-    return main_and_midi
 
 
 class Args(object):
