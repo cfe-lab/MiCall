@@ -403,6 +403,18 @@ def test_trim(tmpdir):
       # Trimmed to nothing
       '',
       # Trimmed to nothing
+      ),
+     ('primer dimer with partial right match',
+      'TGGCTATTGATTATAAACACTACACACCCTGCACAAGAAAAGAACTTCACCTGTCTCTTATACACATCTCCGAGCCCACGAGACACTACCTGGAA',
+      #  nCoV-2019_21_LEFT         ]                     [ rev(ADAPTER2)                  ][ garbage ]
+      #                          [ rev(..._81_RIGHT)    ] last 5 of 81_RIGHT match start of HCV_Pr3
+      'GTGAAGTTCTTTTCTTGTGCAGGGTGTGTAGTGTTTATAATCAATAGCCACTGTCTCTTATACACATCTGACGCTGCCGACGAAGGTTCTCAGGA',
+      # nCoV-2019_81_RIGHT    ]                          [ rev(ADAPTER1)                 ][ garbage
+      #                     [ rev(nCoV-2019_21_LEFT)    ]
+      '',
+      # Trimmed to nothing
+      '',
+      # Trimmed to nothing
       )
      ])
 def test_cut_adapters(tmpdir: str,

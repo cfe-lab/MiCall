@@ -108,7 +108,7 @@ def cut_all(censored_fastq1: Path,
                           for filename in (censored_fastq1, censored_fastq2)]
     ltrimmed_filenames = [Path(str(filename) + '.ltrimmed.fastq')
                           for filename in (censored_fastq1, censored_fastq2)]
-    rtrimmed_filenames = [Path(str(filename) + '.rtrimmed.fastq')
+    dtrimmed_filenames = [Path(str(filename) + '.dtrimmed.fastq')
                           for filename in (censored_fastq1, censored_fastq2)]
     if TrimSteps.adapters in skip:
         dedapted_filenames[0].symlink_to(censored_fastq1)
@@ -126,17 +126,17 @@ def cut_all(censored_fastq1: Path,
                          dedapted_filenames[1],
                          ltrimmed_filenames[0],
                          ltrimmed_filenames[1])
-        cut_right_primers(ltrimmed_filenames[0],
+        cut_primer_dimers(ltrimmed_filenames[0],
                           ltrimmed_filenames[1],
-                          rtrimmed_filenames[0],
-                          rtrimmed_filenames[1])
-        cut_primer_dimers(rtrimmed_filenames[0],
-                          rtrimmed_filenames[1],
+                          dtrimmed_filenames[0],
+                          dtrimmed_filenames[1])
+        cut_right_primers(dtrimmed_filenames[0],
+                          dtrimmed_filenames[1],
                           Path(trimmed_fastq1),
                           Path(trimmed_fastq2))
     purge_temp_files(dedapted_filenames)
     purge_temp_files(ltrimmed_filenames)
-    purge_temp_files(rtrimmed_filenames)
+    purge_temp_files(dtrimmed_filenames)
 
 
 def purge_temp_files(filenames):
