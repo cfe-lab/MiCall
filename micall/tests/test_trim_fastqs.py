@@ -382,6 +382,16 @@ def test_trim(tmpdir):
       'CGTTGGGAGTGAATTAGCCCTTCCA',
       # rev(REF)
       ),
+     ('left primer in read 1 only',
+      'ACCAACCAACTTTCGATCTCTTGTTGGAAGGGCTAATTCACTCCCAACG',
+      # LEFT                  ][ REF
+      'CGTTGGGAGTGAATTAGCCCTTC',
+      # rev(REF)            ]
+      'TGGAAGGGCTAATTCACTCCCAACG',
+      # REF
+      'CGTTGGGAGTGAATTAGCCCTTC',
+      # rev(REF)
+      ),
      ('right primers plus adapters',
       'TGGAAGGGCTAATTCACTCCCAACGGAGGCACGTCAACATCTTAAAGATGCTGTCTCTTATACACATCTCCGAGCCCACGAGAC',
       # REF                    ][ rev(RIGHT)            ][ rev(ADAPTER2)
@@ -411,6 +421,20 @@ def test_trim(tmpdir):
       'GTGAAGTTCTTTTCTTGTGCAGGGTGTGTAGTGTTTATAATCAATAGCCACTGTCTCTTATACACATCTGACGCTGCCGACGAAGGTTCTCAGGA',
       # nCoV-2019_81_RIGHT    ]                          [ rev(ADAPTER1)                 ][ garbage
       #                     [ rev(nCoV-2019_21_LEFT)    ]
+      '',
+      # Trimmed to nothing
+      '',
+      # Trimmed to nothing
+      ),
+     ('primer dimer with read error',
+      'TGGAAATACCCACAAGTTAATGGTTTAACAGGCAAAGGTGTCTGTCTCTTATACACATCTCCGAGCCCACGAGACACTACCTGGAA',
+      # nCoV-2019_18_LEFT          ]            [ rev(ADAPTER2)                  ][ garbage
+      #                   [ rev(..._76_RIGHT)  ]
+      #                       read error ^
+      'ACACCTTTGCCTGTTAAACCATTAACTTGTGGGTATTTCCACTGTCTCTTATACACATCTGACGCTGCCGACGAAGGTTCTCAGGA',
+      # nCoV-2019_76_RIGHT  ]                   [ rev(ADAPTER1)                 ][ garbage
+      #            [ rev(nCoV-2019_18_LEFT)    ]
+      #      ^ read error
       '',
       # Trimmed to nothing
       '',

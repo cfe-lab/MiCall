@@ -6,19 +6,23 @@ import argparse
 import csv
 import logging
 import shutil
+from datetime import datetime
 from gzip import GzipFile
 import itertools
 import math
 import os
 
 from io import TextIOWrapper
+from itertools import chain
 from pathlib import Path
 
 import typing
 
-from Bio.Seq import Seq
-from cutadapt.__main__ import main as cutadapt_main
 from Bio import SeqIO
+
+from micall.utils.externals import CutAdapt
+
+logger = logging.getLogger(__name__)
 
 
 class TrimSteps:
@@ -84,12 +88,16 @@ def trim(original_fastq_filenames,
     else:
         with open(bad_cycles_filename, 'r') as bad_cycles:
             bad_cycles = list(csv.DictReader(bad_cycles))
+    start_time = datetime.now()
     for i, (src_name, dest_name) in enumerate(
             zip(original_fastq_filenames, censored_filenames)):
 
         cycle_sign = 1 - 2*i
         with open(src_name, 'rb') as src, open(dest_name, 'w') as dest:
             censor(src, bad_cycles, dest, use_gzip, summary_writer, cycle_sign)
+    logger.info('Finished censoring in %s for %s.',
+                datetime.now() - start_time,
+                trimmed_fastq_filenames[0])
 
     cut_all(censored_filenames[0],
             censored_filenames[1],
@@ -108,35 +116,58 @@ def cut_all(censored_fastq1: Path,
                           for filename in (censored_fastq1, censored_fastq2)]
     ltrimmed_filenames = [Path(str(filename) + '.ltrimmed.fastq')
                           for filename in (censored_fastq1, censored_fastq2)]
-    dtrimmed_filenames = [Path(str(filename) + '.dtrimmed.fastq')
+    rtrimmed_filenames = [Path(str(filename) + '.rtrimmed.fastq')
                           for filename in (censored_fastq1, censored_fastq2)]
     if TrimSteps.adapters in skip:
         dedapted_filenames[0].symlink_to(censored_fastq1)
         dedapted_filenames[1].symlink_to(censored_fastq2)
     else:
+        start_time = datetime.now()
         cut_adapters(censored_fastq1,
                      censored_fastq2,
                      dedapted_filenames[0],
                      dedapted_filenames[1])
+        logger.info('Trimmed adapters in %s for %s.',
+                    datetime.now() - start_time,
+                    trimmed_fastq1)
     if TrimSteps.primers in skip:
         shutil.copy(str(dedapted_filenames[0]), str(trimmed_fastq1))
         shutil.copy(str(dedapted_filenames[1]), str(trimmed_fastq2))
     else:
+        start_time = datetime.now()
         cut_left_primers(dedapted_filenames[0],
                          dedapted_filenames[1],
                          ltrimmed_filenames[0],
                          ltrimmed_filenames[1])
-        cut_primer_dimers(ltrimmed_filenames[0],
-                          ltrimmed_filenames[1],
-                          dtrimmed_filenames[0],
-                          dtrimmed_filenames[1])
-        cut_right_primers(dtrimmed_filenames[0],
-                          dtrimmed_filenames[1],
-                          Path(trimmed_fastq1),
-                          Path(trimmed_fastq2))
+        logger.debug('Trimmed left primers in %s for %s.',
+                     datetime.now() - start_time,
+                     trimmed_fastq1)
+        right_start_time = datetime.now()
+        cut_right_primers(dedapted_filenames[0],
+                          dedapted_filenames[1],
+                          rtrimmed_filenames[0],
+                          rtrimmed_filenames[1])
+        logger.debug('Trimmed right primers in %s for %s.',
+                     datetime.now() - right_start_time,
+                     trimmed_fastq1)
+        dimer_start_time = datetime.now()
+        combine_primer_trimming(dedapted_filenames[0],
+                                dedapted_filenames[1],
+                                ltrimmed_filenames[0],
+                                ltrimmed_filenames[1],
+                                rtrimmed_filenames[0],
+                                rtrimmed_filenames[1],
+                                trimmed_fastq1,
+                                trimmed_fastq2)
+        logger.debug('Combined primer trimming in %s for %s.',
+                     datetime.now() - dimer_start_time,
+                     trimmed_fastq1)
+        logger.debug('Trimmed all primers in %s for %s.',
+                     datetime.now() - start_time,
+                     trimmed_fastq1)
     purge_temp_files(dedapted_filenames)
     purge_temp_files(ltrimmed_filenames)
-    purge_temp_files(dtrimmed_filenames)
+    purge_temp_files(rtrimmed_filenames)
 
 
 def purge_temp_files(filenames):
@@ -168,6 +199,15 @@ def cut_left_primers(original_fastq1: Path,
                      original_fastq2: Path,
                      trimmed_fastq1: Path,
                      trimmed_fastq2: Path):
+    """ Trim left primers off both sets of reads.
+
+    The filtering options are a little tricky. --trimmed-only means that only
+    the reads that got filtered are written into the ltrimmed.fastq file.
+    --pair-filter=both means that both reads have to be untrimmed before they
+    will get excluded from the ltrimmed.fastq file. In other words, if either
+    read had a primer trimmed off, then both reads will get written to the
+    ltrimmed.fastq file.
+    """
     script_path = Path(__file__).parent
     run_cut_adapt(['--quiet',
                    '-g', f'file:{script_path/"primers_left.fasta"}',
@@ -175,6 +215,8 @@ def cut_left_primers(original_fastq1: Path,
                    '-o', str(trimmed_fastq1),
                    '-p', str(trimmed_fastq2),
                    '--overlap=5',
+                   '--trimmed-only',
+                   '--pair-filter=both',
                    str(original_fastq1),
                    str(original_fastq2)])
 
@@ -190,77 +232,56 @@ def cut_right_primers(original_fastq1: Path,
                    '-o', str(trimmed_fastq1),
                    '-p', str(trimmed_fastq2),
                    '--overlap=5',
+                   '--trimmed-only',
+                   '--pair-filter=both',
                    str(original_fastq1),
                    str(original_fastq2)])
 
 
-def cut_primer_dimers(original_fastq1: Path,
-                      original_fastq2: Path,
-                      trimmed_fastq1: Path,
-                      trimmed_fastq2: Path):
-    script_path = Path(__file__).parent
-    for source, dest, primer_name in (
-            (original_fastq1, trimmed_fastq1, 'primers_right_end.fasta'),
-            (original_fastq2, trimmed_fastq2, 'primers_right.fasta')):
-        primers = SeqIO.index(str(script_path / primer_name), 'fasta')
-        with source.open() as source_file, dest.open('w') as dest_file:
-            source_sequences = SeqIO.parse(source_file, 'fastq')
-            dest_sequences = cut_primer_dimer_sequences(source_sequences,
-                                                        primers)
-            SeqIO.write(dest_sequences, dest_file, 'fastq')
+def combine_primer_trimming(original_fastq1: Path,
+                            original_fastq2: Path,
+                            ltrimmed_fastq1: Path,
+                            ltrimmed_fastq2: Path,
+                            rtrimmed_fastq1: Path,
+                            rtrimmed_fastq2: Path,
+                            trimmed_fastq1: Path,
+                            trimmed_fastq2: Path):
+    for original_fastq, start_trimmed_fastq, end_trimmed_fastq, trimmed_fastq in (
+            (original_fastq1, ltrimmed_fastq1, rtrimmed_fastq1, trimmed_fastq1),
+            (original_fastq2, rtrimmed_fastq2, ltrimmed_fastq2, trimmed_fastq2)):
+        trimmed_sequences = cut_primer_dimer_sequences(original_fastq,
+                                                       start_trimmed_fastq,
+                                                       end_trimmed_fastq)
+        SeqIO.write(trimmed_sequences, trimmed_fastq, 'fastq')
 
 
-def cut_primer_dimer_sequences(source_sequences, primers: dict):
-    is_first = True
-    is_end = False
-    full_primers = []
-    max_length = 0
-    primer_dimers = set()
-    for seq in primers.values():
-        if is_first:
-            is_end = seq.seq.endswith('X')
-            is_first = False
-        if is_end:
-            trimmed_seq = seq.seq[:-1]
+def cut_primer_dimer_sequences(original_fastq: Path,
+                               start_trimmed_fastq: Path,
+                               end_trimmed_fastq: Path):
+    start_trimmed_seqs = chain(SeqIO.parse(start_trimmed_fastq, 'fastq'), [None])
+    end_trimmed_seqs = chain(SeqIO.parse(end_trimmed_fastq, 'fastq'), [None])
+    next_start_trimmed_seq = next(start_trimmed_seqs)
+    next_end_trimmed_seq = next(end_trimmed_seqs)
+    for original_seq in SeqIO.parse(original_fastq, 'fastq'):
+        if (next_start_trimmed_seq is None or
+                next_start_trimmed_seq.id != original_seq.id):
+            start = 0
         else:
-            trimmed_seq = seq.seq[1:]
-        max_length = max(max_length, len(trimmed_seq))
-        full_primers.append(trimmed_seq)
-    for read_sequence in source_sequences:
-        if len(read_sequence) <= max_length:
-            read_bases = str(read_sequence.seq)
-            if read_bases in primer_dimers:
-                is_primer_dimer = True
-            else:
-                if is_end:
-                    is_primer_dimer = any(primer_seq.endswith(read_bases)
-                                          for primer_seq in full_primers)
-                else:
-                    is_primer_dimer = any(primer_seq.startswith(read_bases)
-                                          for primer_seq in full_primers)
-                if is_primer_dimer:
-                    primer_dimers.add(read_bases)
-            if is_primer_dimer:
-                read_sequence.letter_annotations.clear()
-                read_sequence.seq = Seq('')
-                read_sequence.letter_annotations['phred_quality'] = []
-        yield read_sequence
+            start = len(original_seq) - len(next_start_trimmed_seq)
+            next_start_trimmed_seq = next(start_trimmed_seqs)
+
+        if (next_end_trimmed_seq is None or
+                next_end_trimmed_seq.id != original_seq.id):
+            end = None
+        else:
+            end = len(next_end_trimmed_seq)
+            next_end_trimmed_seq = next(end_trimmed_seqs)
+        yield original_seq[start:end]
 
 
 def run_cut_adapt(cut_adapt_args):
-    # Instead of launching a child process, run it in the current process.
-    # Requires messing with the default logging.
-    root_logger = logging.getLogger()
-    original_level = root_logger.getEffectiveLevel()
-    root_logger.setLevel(logging.CRITICAL)
-    try:
-        try:
-            cutadapt_main(cut_adapt_args)
-        except SystemExit:
-            raise RuntimeError('Cutadapt failed for args: ' +
-                               ' '.join(cut_adapt_args))
-    finally:
-        root_logger.setLevel(original_level)
+    cut_adapt = CutAdapt()
+    cut_adapt.check_output(cut_adapt_args)
 
 
 def censor(original_file,
