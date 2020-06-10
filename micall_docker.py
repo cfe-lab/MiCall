@@ -43,6 +43,7 @@ DOWNLOAD_BATCH_SIZE = 1000
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
 logger = logging.getLogger('micall')
+# logging.getLogger('micall.core.trim_fastqs').setLevel(logging.DEBUG)
 
 
 class BSrequest:
