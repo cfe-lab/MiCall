@@ -898,13 +898,17 @@ def convert_prelim(prelim_csv,
     ref_counts = defaultdict(lambda: [0, 0])  # {rname: [filtered_count, count]}
     reader = csv.DictReader(prelim_csv)
     for row in reader:
-        counts = ref_counts[row['rname']]
+        is_unmapped = is_unmapped_read(row['flag'])
+        refname = row['rname']
+        if is_unmapped:
+            refname = '*'
+        counts = ref_counts[refname]
         counts[1] += 1  # full count
 
         # write SAM row
         target.write('\t'.join([row[field] for field in SAM_FIELDS]) + '\n')
 
-        if is_unmapped_read(row['flag']):
+        if is_unmapped:
             continue
         if is_short_read(row, max_primer_length=50):
             # exclude short reads

@@ -1034,6 +1034,53 @@ prelim R1-seed,2,2
         self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
         self.assertEqual(expected_seed_counts, seed_counts)
 
+    def test_unmapped_flag(self):
+        self.maxDiff = None
+        prelim_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+example1,89,R1-seed,1,0,54M,=,1,0,\
+AAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example2,89,R1-seed,1,0,54M,=,1,0,\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example3,93,R1-seed,*,*,*,*,*,*,\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT,\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+""")
+        count_threshold = 2
+        expected_sam_file = """\
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:R1-seed	LN:9
+@SQ	SN:R2-seed	LN:12
+@PG	ID:bowtie2	PN:bowtie2	VN:2.2.3	CL:""
+example1\t89\tR1-seed\t1\t0\t54M\t=\t1\t0\t\
+AAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTTAAACCCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example2\t89\tR1-seed\t1\t0\t54M\t=\t1\t0\t\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+example3\t93\tR1-seed\t*\t*\t*\t*\t*\t*\t\
+AAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTTAAAACCTTT\t\
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+"""
+        expected_remap_counts = """\
+type,filtered_count,count
+prelim *,0,1
+prelim R1-seed,2,2
+"""
+        expected_seed_counts = {'R1-seed': 2}
+
+        seed_counts = convert_prelim(prelim_csv,
+                                     self.sam_file,
+                                     self.remap_counts_writer,
+                                     count_threshold,
+                                     self.projects)
+
+        self.assertEqual(expected_sam_file, self.sam_file.getvalue())
+        self.assertEqual(expected_remap_counts, self.remap_counts.getvalue())
+        self.assertEqual(expected_seed_counts, seed_counts)
+
     def test_best_in_group(self):
         self.maxDiff = None
         prelim_csv = StringIO("""\

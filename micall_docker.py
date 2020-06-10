@@ -524,6 +524,8 @@ def basespace_run(args):
     resolved_args = MiCallArgs(args)
     run_info = load_samples(resolved_args.results_folder)
     process_run(run_info, args)
+    zip_folder(run_info.output_path, 'resistance_reports')
+    zip_folder(run_info.output_path, 'coverage_maps')
 
 
 def process_folder(args):
@@ -572,47 +574,6 @@ def process_run(run_info, args):
     logger.info('Done.')
 
 
-def sample_process_helper(resolved_args, scratch_path, use_denovo, skip=()):
-    sample = Sample(
-        fastq1=resolved_args.fastq1,
-        fastq2=resolved_args.fastq2,
-        bad_cycles_csv=resolved_args.bad_cycles_csv,
-        g2p_csv=resolved_args.g2p_csv,
-        g2p_summary_csv=resolved_args.g2p_summary_csv,
-        remap_counts_csv=resolved_args.remap_counts_csv,
-        remap_conseq_csv=resolved_args.remap_conseq_csv,
-        unmapped1_fastq=resolved_args.unmapped1_fastq,
-        unmapped2_fastq=resolved_args.unmapped2_fastq,
-        conseq_ins_csv=resolved_args.conseq_ins_csv,
-        failed_csv=resolved_args.failed_csv,
-        cascade_csv=resolved_args.cascade_csv,
-        nuc_csv=resolved_args.nuc_csv,
-        amino_csv=resolved_args.amino_csv,
-        coord_ins_csv=resolved_args.coord_ins_csv,
-        conseq_csv=resolved_args.conseq_csv,
-        conseq_all_csv=resolved_args.conseq_all_csv,
-        conseq_region_csv=resolved_args.conseq_region_csv,
-        failed_align_csv=resolved_args.failed_align_csv,
-        coverage_scores_csv=resolved_args.coverage_scores_csv,
-        aligned_csv=resolved_args.aligned_csv,
-        g2p_aligned_csv=resolved_args.g2p_aligned_csv,
-        contigs_csv=resolved_args.contigs_csv,
-        genome_coverage_csv=resolved_args.genome_coverage_csv,
-        genome_coverage_svg=resolved_args.genome_coverage_svg,
-        read_entropy_csv=resolved_args.read_entropy_csv,
-        resistance_csv=resolved_args.resistance_csv,
-        resistance_pdf=resolved_args.resistance_pdf,
-        resistance_fail_csv=resolved_args.resistance_fail_csv,
-        resistance_consensus_csv=resolved_args.resistance_consensus_csv,
-        mutations_csv=resolved_args.mutations_csv,
-        scratch_path=scratch_path,
-        skip=skip)
-
-    pssm = Pssm()
-    sample.process(pssm, use_denovo=use_denovo)
-    return sample
-
-
 def single_sample(args):
     args.max_active = 1
     resolved_args = MiCallArgs(args)
@@ -625,7 +586,10 @@ def single_sample(args):
                        output_path=args.results_folder,
                        scratch_path=scratch_path,
                        is_denovo=args.denovo)
-    sample = Sample(fastq1=resolved_args.fastq1, scratch_path=scratch_path)
+    sample = Sample(fastq1=resolved_args.fastq1,
+                    fastq2=resolved_args.fastq2,
+                    bad_cycles_csv=resolved_args.bad_cycles_csv,
+                    scratch_path=scratch_path)
     sample_group = SampleGroup(sample)
     sample_groups.append(sample_group)
 
@@ -647,8 +611,14 @@ def hcv_sample(args):
                        output_path=args.results_folder,
                        scratch_path=scratch_path,
                        is_denovo=args.denovo)
-    main_sample = Sample(fastq1=resolved_args.fastq1, scratch_path=scratch_path)
-    midi_sample = Sample(fastq1=midi_args.fastq1, scratch_path=midi_scratch_path)
+    main_sample = Sample(fastq1=resolved_args.fastq1,
+                         fastq2=resolved_args.fastq2,
+                         bad_cycles_csv=resolved_args.bad_cycles_csv,
+                         scratch_path=scratch_path)
+    midi_sample = Sample(fastq1=midi_args.fastq1,
+                         fastq2=midi_args.fastq2,
+                         bad_cycles_csv=resolved_args.bad_cycles_csv,
+                         scratch_path=midi_scratch_path)
     main_and_midi = SampleGroup(main_sample, midi_sample)
     sample_groups.append(main_and_midi)
 
@@ -1127,8 +1097,6 @@ def collate_samples(run_info):
     except OSError:
         # Guess it wasn't empty.
         pass
-    zip_folder(run_info.output_path, 'resistance_reports')
-    zip_folder(run_info.output_path, 'coverage_maps')
 
 
 # noinspection PyTypeChecker,PyUnresolvedReferences
