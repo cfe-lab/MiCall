@@ -62,15 +62,15 @@ From: centos:7
     yum install -q -y unzip wget fontconfig bzip2-devel xz-devel openssl-devel libffi-devel
 
     echo ===== Installing Python ===== >/dev/null
-    wget -q https://www.python.org/ftp/python/3.7.6/Python-3.7.6.tgz
-    tar xzf Python*
-    rm Python*.tgz
+    wget -q https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tar.xz
+    tar xJf Python*
+    rm Python*.xz
     cd Python*
     ./configure --enable-optimizations
     make altinstall
     cd ..
     rm -rf Python*
-    ln -s /usr/local/bin/python3.7 /usr/local/bin/python3
+    ln -s /usr/local/bin/python3.8 /usr/local/bin/python3
 
     echo ===== Installing Rust and merge-mates ===== >/dev/null
     yum install -q -y rust cargo

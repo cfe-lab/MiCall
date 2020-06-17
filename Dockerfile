@@ -24,7 +24,7 @@
 # If you omit the `--target` tag altogether, `docker build` will build
 # the development image.
 
-FROM python:3.7 as production
+FROM python:3.8 as production
 
 MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 
@@ -32,7 +32,6 @@ MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 RUN apt-get update -qq --fix-missing && apt-get install -qq -y \
   unzip \
   wget \
-  libpython3.7-dev \
   && rm -rf /var/lib/apt/lists/*
 
 RUN wget -qO rustup.sh https://sh.rustup.rs && \

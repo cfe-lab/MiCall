@@ -54,11 +54,11 @@ def parse_args():
     return parser.parse_args()
 
 
-def trim(original_fastq_filenames,
-         bad_cycles_filename,
-         trimmed_fastq_filenames,
-         use_gzip=True,
-         summary_file=None,
+def trim(original_fastq_filenames: typing.Sequence[str],
+         bad_cycles_filename: str,
+         trimmed_fastq_filenames: typing.Sequence[str],
+         use_gzip: bool = True,
+         summary_file: typing.TextIO = None,
          skip: typing.Tuple[str] = ()):
     """
 
@@ -95,14 +95,14 @@ def trim(original_fastq_filenames,
         cycle_sign = 1 - 2*i
         with open(src_name, 'rb') as src, open(dest_name, 'w') as dest:
             censor(src, bad_cycles, dest, use_gzip, summary_writer, cycle_sign)
-    logger.info('Finished censoring in %s for %s.',
-                datetime.now() - start_time,
-                trimmed_fastq_filenames[0])
+    logger.debug('Finished censoring in %s for %s.',
+                 datetime.now() - start_time,
+                 trimmed_fastq_filenames[0])
 
-    cut_all(censored_filenames[0],
-            censored_filenames[1],
-            trimmed_fastq_filenames[0],
-            trimmed_fastq_filenames[1],
+    cut_all(Path(censored_filenames[0]),
+            Path(censored_filenames[1]),
+            Path(trimmed_fastq_filenames[0]),
+            Path(trimmed_fastq_filenames[1]),
             skip)
     purge_temp_files(censored_filenames)
 
@@ -127,9 +127,9 @@ def cut_all(censored_fastq1: Path,
                      censored_fastq2,
                      dedapted_filenames[0],
                      dedapted_filenames[1])
-        logger.info('Trimmed adapters in %s for %s.',
-                    datetime.now() - start_time,
-                    trimmed_fastq1)
+        logger.debug('Trimmed adapters in %s for %s.',
+                     datetime.now() - start_time,
+                     trimmed_fastq1)
     if TrimSteps.primers in skip:
         shutil.copy(str(dedapted_filenames[0]), str(trimmed_fastq1))
         shutil.copy(str(dedapted_filenames[1]), str(trimmed_fastq2))
@@ -246,13 +246,19 @@ def combine_primer_trimming(original_fastq1: Path,
                             rtrimmed_fastq2: Path,
                             trimmed_fastq1: Path,
                             trimmed_fastq2: Path):
-    for original_fastq, start_trimmed_fastq, end_trimmed_fastq, trimmed_fastq in (
-            (original_fastq1, ltrimmed_fastq1, rtrimmed_fastq1, trimmed_fastq1),
-            (original_fastq2, rtrimmed_fastq2, ltrimmed_fastq2, trimmed_fastq2)):
-        trimmed_sequences = cut_primer_dimer_sequences(original_fastq,
-                                                       start_trimmed_fastq,
-                                                       end_trimmed_fastq)
-        SeqIO.write(trimmed_sequences, trimmed_fastq, 'fastq')
+    trimmed_sequences1 = cut_primer_dimer_sequences(
+        original_fastq1,
+        start_trimmed_fastq=ltrimmed_fastq1,
+        end_trimmed_fastq=rtrimmed_fastq1)
+    trimmed_sequences2 = cut_primer_dimer_sequences(
+        original_fastq2,
+        start_trimmed_fastq=rtrimmed_fastq2,
+        end_trimmed_fastq=ltrimmed_fastq2)
+    with trimmed_fastq1.open('w') as f1, trimmed_fastq2.open('w') as f2:
+        for seq1, seq2 in zip(trimmed_sequences1, trimmed_sequences2):
+            if len(seq1) > 0 and len(seq2) > 0:
+                SeqIO.write([seq1], f1, 'fastq')
+                SeqIO.write([seq2], f2, 'fastq')
 
 
 def cut_primer_dimer_sequences(original_fastq: Path,

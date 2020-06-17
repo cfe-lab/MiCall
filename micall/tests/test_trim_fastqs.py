@@ -439,6 +439,16 @@ def test_trim(tmpdir):
       # Trimmed to nothing
       '',
       # Trimmed to nothing
+      ),
+     ('one empty read',
+      'TGGAAATACCCACAAGTTAATGGTTTAACCTGTCTCTTATACACATCTCCGAGCCCACGAGACACTACCTGGAA',
+      # nCoV-2019_18_LEFT          ][ rev(ADAPTER2)                  ][ garbage
+      'CGTTGGGAGTGAATTAGCCCTTCCACTGTCTCTTATACACATCTGACGCTGCCGACGAAGGTTCTCAGGA',
+      # rev(REF)               ][ rev(ADAPTER1)                 ][ garbage
+      '',
+      # Trimmed to nothing
+      '',
+      # Trimmed to nothing, because mate was.
       )
      ])
 def test_cut_adapters(tmpdir: str,
@@ -487,6 +497,10 @@ def test_cut_adapters(tmpdir: str,
 
 
 def build_fastq(read_sequence):
+    if not read_sequence:
+        # Eliminate reads that get trimmed to nothing.
+        return ''
+
     # Write two reads in the file to test primer dimer caching.
     expected_quality1 = 'A' * len(read_sequence)
     expected_trimmed1 = f'''\
