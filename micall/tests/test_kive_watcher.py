@@ -257,7 +257,7 @@ def create_raw_data_with_two_runs(tmpdir):
     return raw_data
 
 
-def test_pipeline_not_set(capsys, monkeypatch):
+def test_filter_pipeline_not_set(capsys, monkeypatch):
     monkeypatch.delenv('MICALL_FILTER_QUALITY_PIPELINE_ID', raising=False)
     expected_error = "Argument --micall_filter_quality_pipeline_id not set " \
                      "and $MICALL_FILTER_QUALITY_PIPELINE_ID environment " \
@@ -271,16 +271,30 @@ def test_pipeline_not_set(capsys, monkeypatch):
 
 
 def test_pipeline_set():
-    args = parse_args(['--micall_filter_quality_pipeline_id', '402'])
+    args = parse_args(['--micall_filter_quality_pipeline_id', '402',
+                       '--micall_main_pipeline_id', '403'])
 
     assert args.micall_filter_quality_pipeline_id == 402
 
 
 def test_pipeline_set_with_environment_variable(monkeypatch):
     monkeypatch.setenv('MICALL_FILTER_QUALITY_PIPELINE_ID', '99')
+    monkeypatch.setenv('MICALL_MAIN_PIPELINE_ID', '99')
     args = parse_args([])
 
     assert args.micall_filter_quality_pipeline_id == 99
+
+
+def test_main_pipeline_not_set(capsys, monkeypatch):
+    monkeypatch.delenv('MICALL_MAIN_PIPELINE_ID', raising=False)
+    expected_error = "No arguments or environment variables set for main " \
+                     "pipeline ids"
+
+    with pytest.raises(SystemExit):
+        parse_args(['--micall_filter_quality_pipeline_id', '402'])
+
+    stderr = capsys.readouterr().err
+    assert expected_error in stderr
 
 
 def test_hcv_pair(raw_data_with_hcv_pair):
@@ -1573,6 +1587,45 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
         name='MiCall resistance on 2110A',
         batch='/batches/101',
         groups_allowed=['Everyone']))
+
+
+def test_skip_resistance_run(raw_data_with_two_samples, mock_open_kive, pipelines_config):
+    pipelines_config.micall_resistance_pipeline_id = None
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    kive_watcher = KiveWatcher(pipelines_config)
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = dict(url='/batches/101')
+    folder_watcher.add_run(dict(id=106),
+                           PipelineType.FILTER_QUALITY,
+                           is_complete=True)
+    sample_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    folder_watcher.add_run(
+        dict(id=107),
+        PipelineType.MAIN,
+        sample_watcher)
+    kive_watcher.finish_folder(base_calls)
+
+    kive_watcher.check_session()
+    mock_session = kive_watcher.session
+    mock_session.endpoints.containerruns.get.side_effect = [
+        dict(id=107, state='C'),  # refresh run state
+        [dict(dataset='/datasets/111/',
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/112/',
+              argument_name='nuc_csv')]]  # run datasets
+    mock_session.get.return_value.json.side_effect = [
+        dict(url='/datasets/111/', id=111)]
+
+    kive_watcher.poll_runs()
+
+    mock_session.endpoints.containerruns.post.assert_not_called()
+    assert kive_watcher.is_idle()
 
 
 def test_resistance_run_missing_input(raw_data_with_two_samples,

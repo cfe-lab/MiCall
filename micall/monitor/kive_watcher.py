@@ -764,6 +764,9 @@ class KiveWatcher:
             folder_watcher.batch)
 
     def run_resistance_pipeline(self, sample_watcher, folder_watcher, input_pipeline_types, description):
+        pipeline_id = self.config.micall_resistance_pipeline_id
+        if pipeline_id is None:
+            return None
         main_runs = filter(None,
                            (sample_watcher.runs.get(pipeline_type)
                             for pipeline_type in input_pipeline_types))
@@ -778,7 +781,7 @@ class KiveWatcher:
         inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv'),
                                input_datasets))
         run = self.find_or_launch_run(
-            self.config.micall_resistance_pipeline_id,
+            pipeline_id,
             inputs_dict,
             description + ' on ' + sample_watcher.sample_group.enum,
             folder_watcher.batch)

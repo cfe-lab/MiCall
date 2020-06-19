@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args(argv=None):
+    # noinspection PyTypeChecker
     parser = ArgumentParser(description='Watch the raw data folder for new runs.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
@@ -99,6 +100,17 @@ def parse_args(argv=None):
         parser.error("Argument --micall_filter_quality_pipeline_id not set and "
                      "$MICALL_FILTER_QUALITY_PIPELINE_ID environment variable "
                      "not set.")
+    main_pipeline_ids = ('micall_main_pipeline_id',
+                         'denovo_main_pipeline_id',
+                         'mixed_hcv_pipeline_id')
+    for arg_name in main_pipeline_ids:
+        pipeline_id = getattr(args, arg_name)
+        if pipeline_id is not None:
+            break
+    else:
+        parser.error(f"No arguments or environment variables set for main "
+                     f"pipeline ids ({', '.join(main_pipeline_ids)}).")
+
     return args
 
 
