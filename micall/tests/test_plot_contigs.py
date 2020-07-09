@@ -3,6 +3,8 @@ from io import StringIO, BytesIO
 from pathlib import Path
 from turtle import Turtle
 
+# noinspection PyPep8Naming
+import drawSvg as draw
 import pytest
 from PIL import Image
 from drawSvg import Drawing, Line, Lines, Circle, Text, Rectangle
@@ -68,7 +70,9 @@ class SvgDiffer:
         if display_image is not None:
             t = Turtle()
             try:
+                # noinspection PyUnresolvedReferences
                 w = t.screen.cv.cget('width')
+                # noinspection PyUnresolvedReferences
                 h = t.screen.cv.cget('height')
                 ox, oy = w/2, h/2
                 text_height = 20
@@ -1038,3 +1042,22 @@ def test_arrow_group_small_neighbour(svg_differ):
     svg = f.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+
+
+def test_draw_coverage(svg_differ):
+    expected_figure = Figure()
+    expected_figure.add(Track(0, 1, color='', h=-4))  # Just a spacer.
+    expected_figure.add(Track(100, 200, label='Bar'))
+    expected_svg = expected_figure.show()
+    expected_svg.insert(0, draw.Rectangle(100, 20, 25, 5, fill='blue'))
+    expected_svg.insert(1, draw.Rectangle(125, 20, 25, 10, fill='blue'))
+    expected_svg.insert(2, draw.Rectangle(175, 20, 25, 1, fill='blue'))
+
+    figure = Figure()
+    coverage_depths = 25 * [5] + 25 * [10] + 25 * [0] + 25 * [1]
+    figure.add(SmoothCoverage(100, 200, coverage_depths), gap=-4)
+    figure.add(Track(100, 200, label="Bar"))
+
+    svg = figure.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_draw_coverage')

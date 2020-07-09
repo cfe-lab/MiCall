@@ -45,7 +45,7 @@ class SmoothCoverage(Coverage):
         for y, count in self.coverage_groups:
             if y != 0:
                 d.append(draw.Rectangle(a+(pos*xscale),
-                                        0,
+                                        self.h//2-1,
                                         count*xscale,
                                         y*yscale,
                                         fill=self.get_color(y),
