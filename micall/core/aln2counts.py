@@ -12,15 +12,18 @@ This assumes a consistent reading frame across the entire region.
 import argparse
 import re
 import typing
+from argparse import Namespace
 from collections import Counter, defaultdict, OrderedDict
 import csv
+from enum import IntEnum
 from itertools import groupby
-from operator import itemgetter
+from operator import itemgetter, attrgetter
 import os
 from pathlib import Path
 
 import gotoh
 import yaml
+from mappy import Aligner
 
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 from micall.core.remap import PARTIAL_CONTIG_SUFFIX, REVERSED_CONTIG_SUFFIX
@@ -34,6 +37,12 @@ GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
 CONSENSUS_MIN_COVERAGE = 100
 MAX_CUTOFF = 'MAX'
+
+
+CigarActions = IntEnum(
+    'CigarActions',
+    'MATCH INSERT DELETE SKIPPED SOFT_CLIPPED HARD_CLIPPED',
+    start=0)
 
 
 def parse_args():
@@ -135,6 +144,10 @@ class SequenceReport(object):
         self.inserts = self.consensus = self.seed = None
         self.contigs = None  # [(ref, group_ref, seq)]
         self.consensus_by_reading_frame = None  # {frame: seq}
+        if landmarks_yaml is None:
+            landmarks_path = (Path(__file__).parent.parent / 'data' /
+                              'landmark_references.yaml')
+            landmarks_yaml = landmarks_path.read_text()
         self.landmarks = yaml.safe_load(landmarks_yaml)
         self.coordinate_refs = self.remap_conseqs = None
 
@@ -691,7 +704,8 @@ class SequenceReport(object):
             else:
                 seed_landmarks = None
 
-        self.write_sequence_coverage_counts(genome_coverage_writer,
+        self.write_sequence_coverage_counts(self.projects,
+                                            genome_coverage_writer,
                                             self.detail_seed,
                                             seed_landmarks,
                                             consensus,
@@ -707,66 +721,87 @@ class SequenceReport(object):
         for contig_num in contig_nums:
             contig_ref, group_ref, contig_seq = self.contigs[contig_num-1]
             contig_name = f'contig-{contig_num}-{contig_ref}'
-            self.write_sequence_coverage_counts(genome_coverage_writer,
+            self.write_sequence_coverage_counts(self.projects,
+                                                genome_coverage_writer,
                                                 contig_name,
                                                 seed_landmarks,
                                                 contig_seq)
 
-    def write_sequence_coverage_counts(self,
+    @staticmethod
+    def write_sequence_coverage_counts(projects,
                                        genome_coverage_writer,
                                        contig_name,
                                        seed_landmarks,
                                        consensus,
                                        consensus_offset=0,
                                        seed_nucs=None):
-        aligned_consensus = '-' * consensus_offset + consensus
         if seed_landmarks is None:
-            aref = aseq = consensus
             coordinate_name = None
-            ref_pos = ref_length = None
+            alignments = []
         else:
             coordinate_name = seed_landmarks['coordinates']
-            coordinate_seq = self.projects.getReference(coordinate_name)
-            gap_open_penalty = 15
-            gap_extend_penalty = 5
-            use_terminal_gap_penalty = 1
-            aref, aseq, score = gotoh.align_it(coordinate_seq,
-                                               consensus,
-                                               gap_open_penalty,
-                                               gap_extend_penalty,
-                                               use_terminal_gap_penalty)
-            ref_length = len(coordinate_seq)
-            ref_pos = len(aref.lstrip('-')) - len(aref)
-        seq_pos = consensus_offset
-        for ref_nuc, seq_nuc in zip(aref, aseq):
-            if ref_pos is not None and (ref_nuc != '-' or
-                                        ref_pos < 0 or
-                                        ref_pos >= ref_length):
-                ref_pos += 1
-                ref_pos_display = ref_pos
-            else:
-                ref_pos_display = None
-            next_seq_pos = seq_pos + 1
-            next_seq_nuc = (aligned_consensus[seq_pos]
-                            if seq_pos < len(aligned_consensus)
-                            else '')
-            if seq_nuc == next_seq_nuc:
-                seq_pos = next_seq_pos
-                if not seed_nucs:
-                    coverage = dels = None
-                else:
-                    seed_nuc: SeedNucleotide = seed_nucs[seq_pos - 1][1]
-                    coverage = seed_nuc.get_coverage()
-                    if coverage == 0:
-                        continue
-                    dels = seed_nuc.counts['-']
-                row = dict(contig=contig_name,
-                           coordinates=coordinate_name,
-                           query_nuc_pos=seq_pos,
-                           refseq_nuc_pos=ref_pos_display,
-                           dels=dels,
-                           coverage=coverage)
-                genome_coverage_writer.writerow(row)
+            coordinate_seq = projects.getReference(coordinate_name)
+            aligner = Aligner(seq=coordinate_seq, preset='map-ont')
+            alignments = sorted(aligner.map(consensus), key=attrgetter('r_st'))
+        if not alignments:
+            missing_length = len(consensus)
+            alignments.append(Namespace(q_st=0,
+                                        q_en=missing_length,
+                                        r_st=0,
+                                        cigar=[(missing_length,
+                                                CigarActions.INSERT)]))
+        else:
+            first_alignment = alignments[0]
+            missing_length = first_alignment.q_st
+            if 0 < missing_length:
+                alignments.insert(
+                    0,
+                    Namespace(q_st=0,
+                              q_en=missing_length,
+                              r_st=first_alignment.r_st - missing_length,
+                              cigar=[(missing_length,
+                                      CigarActions.MATCH)]))
+        last_alignment = alignments[-1]
+        last_pos = last_alignment.q_en
+        missing_length = len(consensus) - last_pos
+        if 0 < missing_length:
+            alignments.append(Namespace(q_st=last_pos,
+                                        r_st=last_alignment.r_en,
+                                        cigar=[(missing_length,
+                                                CigarActions.MATCH)]))
+        for alignment in alignments:
+            seq_pos = alignment.q_st
+            ref_pos = alignment.r_st
+            for length, action in alignment.cigar:
+                if action == CigarActions.DELETE:
+                    ref_pos += length
+                    continue
+                for _ in range(length):
+                    if action == CigarActions.INSERT:
+                        seq_pos += 1
+                        ref_pos_display = None
+                    elif action == CigarActions.MATCH:
+                        seq_pos += 1
+                        ref_pos += 1
+                        ref_pos_display = ref_pos
+                    else:
+                        name = CigarActions(action).name
+                        raise ValueError(f'Unexpected CIGAR action: {name}.')
+                    if not seed_nucs:
+                        coverage = dels = None
+                    else:
+                        seed_nuc: SeedNucleotide = seed_nucs[seq_pos - 1][1]
+                        coverage = seed_nuc.get_coverage()
+                        if coverage == 0:
+                            continue
+                        dels = seed_nuc.counts['-']
+                    row = dict(contig=contig_name,
+                               coordinates=coordinate_name,
+                               query_nuc_pos=seq_pos+consensus_offset,
+                               refseq_nuc_pos=ref_pos_display,
+                               dels=dels,
+                               coverage=coverage)
+                    genome_coverage_writer.writerow(row)
 
     @staticmethod
     def _create_nuc_writer(nuc_file):

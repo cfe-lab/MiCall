@@ -216,6 +216,7 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
     if blast_csv is not None:
         for blast_row in DictReader(blast_csv):
             for field_name in ('start', 'end', 'ref_start', 'ref_end'):
+                # noinspection PyTypeChecker
                 blast_row[field_name] = int(blast_row[field_name])
             blast_rows.append(blast_row)
     blast_rows.sort(key=itemgetter('start', 'ref_start'))
@@ -529,6 +530,7 @@ def summarize_figure(figure: Figure):
 
 
 def main():
+    # noinspection PyTypeChecker
     parser = ArgumentParser(
         description='Plot assembled contigs against a reference.',
         formatter_class=ArgumentDefaultsHelpFormatter)
