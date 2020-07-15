@@ -1032,7 +1032,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
         '1-my-contig',
         landmarks,
         seq,
-    seed_nucs=seed_nucs)
+        seed_nucs=seed_nucs)
 
     report_text = report_file.getvalue()
     head = report_text[:len(expected_head)]
@@ -1075,7 +1075,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
         '1-my-contig',
         landmarks,
         seq,
-    seed_nucs=seed_nucs)
+        seed_nucs=seed_nucs)
 
     report_text = report_file.getvalue()
     head = report_text[:len(expected_head)]
@@ -1114,7 +1114,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
         '1-my-contig',
         landmarks,
         seq,
-    seed_nucs=seed_nucs)
+       seed_nucs=seed_nucs)
 
     report_text = report_file.getvalue()
     head = report_text[:len(expected_head)]
@@ -1157,8 +1157,44 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
         '1-my-contig',
         landmarks,
         seq,
-    seed_nucs=seed_nucs)
+        seed_nucs=seed_nucs)
 
     report_text = report_file.getvalue()
     head = report_text[:len(expected_head)]
     assert head == expected_head
+
+
+# noinspection DuplicatedCode
+def test_write_sequence_coverage_counts_with_unaligned_middle(projects,
+                                                              sequence_report):
+    """ The middle 100 bases are from a different reference.
+
+    They get reported with query positions, but no reference positions.
+    """
+    hxb2_name = 'HIV1-B-FR-K03455-seed'
+    ref = projects.getReference(hxb2_name)
+    hcv_ref = projects.getReference('HCV-1a')
+    landmarks = dict(coordinates=hxb2_name)
+    seq = ref[:100] + hcv_ref[1000:1100] + ref[1000:1100]
+    expected_ref_positions = set(range(1, 101)) | set(range(1001, 1101))
+    expected_query_positions = set(range(1, 301))
+
+    report_file = StringIO()
+    sequence_report.write_genome_coverage_header(report_file)
+    SequenceReport.write_sequence_coverage_counts(
+        projects,
+        sequence_report.genome_coverage_writer,
+        '1-my-contig',
+        landmarks,
+        seq)
+
+    report_file.seek(0)
+    rows = list(DictReader(report_file))
+    ref_positions = {int(row['refseq_nuc_pos'])
+                     for row in rows
+                     if row['refseq_nuc_pos']}
+    query_positions = {int(row['query_nuc_pos'])
+                       for row in rows
+                       if row['query_nuc_pos']}
+    assert query_positions == expected_query_positions
+    assert ref_positions == expected_ref_positions

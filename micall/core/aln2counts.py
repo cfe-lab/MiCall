@@ -50,53 +50,71 @@ def parse_args():
         description='Post-processing of short-read alignments.')
 
     parser.add_argument('aligned_csv',
-                        type=argparse.FileType('r'),
+                        type=argparse.FileType(),
                         help='input CSV with aligned reads')
-    parser.add_argument('clipping_csv',
-                        type=argparse.FileType('r'),
-                        help='input CSV with count of soft-clipped reads at each position')
     parser.add_argument('remap_conseq_csv',
-                        type=argparse.FileType('r'),
+                        type=argparse.FileType(),
                         help='input CSV with consensus sequences from remap step')
-    parser.add_argument('conseq_ins_csv',
-                        type=argparse.FileType('r'),
+    parser.add_argument('--clipping_csv',
+                        type=argparse.FileType(),
+                        default=os.devnull,
+                        help='input CSV with count of soft-clipped reads at each position')
+    parser.add_argument('--conseq_ins_csv',
+                        type=argparse.FileType(),
+                        default=os.devnull,
                         help='input CSV with insertions relative to consensus sequence')
-    parser.add_argument('contigs_csv',
-                        type=argparse.FileType('r'),
+    parser.add_argument('--contigs_csv',
+                        type=argparse.FileType(),
                         help='input CSV with assembled contigs')
-    parser.add_argument('nuc_csv',
+    parser.add_argument('--g2p_aligned_csv',
+                        type=argparse.FileType(),
+                        help='CSV of aligned reads from the G2P process')
+    parser.add_argument('--nuc_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing nucleotide frequencies')
-    parser.add_argument('nuc_detail_csv',
+    parser.add_argument('--nuc_detail_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing nucleotide frequencies for each '
                              'contig')
-    parser.add_argument('amino_csv',
+    parser.add_argument('--amino_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing amino frequencies')
-    parser.add_argument('amino_detail_csv',
+    parser.add_argument('--amino_detail_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing amino frequencies for each contig')
-    parser.add_argument('coord_ins_csv',
+    parser.add_argument('--coord_ins_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing insertions relative to coordinate reference')
-    parser.add_argument('conseq_csv',
+    parser.add_argument('--conseq_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing consensus sequences')
-    parser.add_argument('conseq_all_csv',
+    parser.add_argument('--conseq_all_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing consensus sequences (ignoring inadequate '
                              'coverage)')
-    parser.add_argument('failed_align_csv',
+    parser.add_argument('--failed_align_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing any consensus that failed to align')
-    parser.add_argument('conseq_region_csv',
+    parser.add_argument('--conseq_region_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing consensus sequences, split by region')
-    parser.add_argument('genome_coverage_csv',
+    parser.add_argument('--genome_coverage_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV of coverage levels in full-genome coordinates')
-
+    parser.add_argument('--coverage_summary_csv',
+                        type=argparse.FileType('w'),
+                        default=os.devnull,
+                        help='CSV of coverage levels for the whole sample')
     return parser.parse_args()
 
 
@@ -743,6 +761,27 @@ class SequenceReport(object):
             coordinate_seq = projects.getReference(coordinate_name)
             aligner = Aligner(seq=coordinate_seq, preset='map-ont')
             alignments = sorted(aligner.map(consensus), key=attrgetter('r_st'))
+            alignments = [alignment
+                          for alignment in alignments
+                          if alignment.is_primary]
+        patched_alignments = []
+        prev_alignment = None
+        for alignment in alignments:
+            if prev_alignment is not None:
+                prev_end = prev_alignment.q_en
+                curr_start = alignment.q_st
+                expected_start = prev_end
+                if expected_start < curr_start:
+                    patched_alignments.append(
+                        Namespace(q_st=expected_start,
+                                  q_en=curr_start,
+                                  r_st=alignment.r_st,
+                                  r_en=alignment.r_st,
+                                  cigar=[(curr_start-expected_start,
+                                          CigarActions.INSERT)]))
+            patched_alignments.append(alignment)
+            prev_alignment = alignment
+        alignments = patched_alignments
         if not alignments:
             missing_length = len(consensus)
             alignments.append(Namespace(q_st=0,
@@ -1481,7 +1520,7 @@ class InsertionWriter(object):
         self.insert_pos_counts = defaultdict(Counter)
         self.seed = self.qcut = None
         self.insert_file_name = getattr(insert_file, 'name', None)
-        if self.insert_file_name is None:
+        if self.insert_file_name is None or self.insert_file_name == os.devnull:
             self.nuc_seqs = Counter()
             self.nuc_seqs_context = None
         else:
@@ -1726,8 +1765,10 @@ def main():
                args.coord_ins_csv,
                args.conseq_csv,
                args.failed_align_csv,
+               coverage_summary_csv=args.coverage_summary_csv,
                clipping_csv=args.clipping_csv,
                conseq_ins_csv=args.conseq_ins_csv,
+               g2p_aligned_csv=args.g2p_aligned_csv,
                remap_conseq_csv=args.remap_conseq_csv,
                conseq_region_csv=args.conseq_region_csv,
                amino_detail_csv=args.amino_detail_csv,
