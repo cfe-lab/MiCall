@@ -80,7 +80,7 @@ def test_iter():
     expected_display_starts = [0, 105]
 
     wire.align()
-    display_starts = [round(bead.display_start) for bead in wire]
+    display_starts = [bead.display_start for bead in wire]
 
     assert display_starts == expected_display_starts
 

@@ -10,11 +10,15 @@ class Bead:
                  start: int,
                  end: int,
                  target_start: int = None,
-                 target_end: int = None):
+                 target_end: int = None,
+                 alignment=None,
+                 skipped=0):
         self.start = self.display_start = start
         self.end = self.display_end = end
         self.target_start = target_start
         self.target_end = target_end
+        self.alignment = alignment
+        self.skipped = skipped
         self.force = 0.0
         self.left: typing.Optional['Bead'] = None
         self.right: typing.Optional['Bead'] = None
@@ -73,8 +77,11 @@ class Wire(list):
             movement = sum(abs(bead.apply_force()) for bead in self)
             if movement < min_movement:
                 break
+        for bead in self:
+            bead.display_start = round(bead.display_start)
+            bead.display_end = round(bead.display_end)
 
     @property
     def displays(self):
-        return [(round(bead.display_start), round(bead.display_end))
+        return [(bead.display_start, bead.display_end)
                 for bead in self]

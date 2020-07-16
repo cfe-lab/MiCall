@@ -12,7 +12,6 @@ This assumes a consistent reading frame across the entire region.
 import argparse
 import re
 import typing
-from argparse import Namespace
 from collections import Counter, defaultdict, OrderedDict
 import csv
 from enum import IntEnum
@@ -29,6 +28,7 @@ from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 from micall.core.remap import PARTIAL_CONTIG_SUFFIX, REVERSED_CONTIG_SUFFIX
 from micall.utils.alignment_wrapper import align_nucs
 from micall.utils.big_counter import BigCounter
+from micall.utils.spring_beads import Wire, Bead
 from micall.utils.translation import translate, ambig_dict
 
 AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'
@@ -57,11 +57,9 @@ def parse_args():
                         help='input CSV with consensus sequences from remap step')
     parser.add_argument('--clipping_csv',
                         type=argparse.FileType(),
-                        default=os.devnull,
                         help='input CSV with count of soft-clipped reads at each position')
     parser.add_argument('--conseq_ins_csv',
                         type=argparse.FileType(),
-                        default=os.devnull,
                         help='input CSV with insertions relative to consensus sequence')
     parser.add_argument('--contigs_csv',
                         type=argparse.FileType(),
@@ -75,7 +73,6 @@ def parse_args():
                         help='CSV containing nucleotide frequencies')
     parser.add_argument('--nuc_detail_csv',
                         type=argparse.FileType('w'),
-                        default=os.devnull,
                         help='CSV containing nucleotide frequencies for each '
                              'contig')
     parser.add_argument('--amino_csv',
@@ -84,7 +81,6 @@ def parse_args():
                         help='CSV containing amino frequencies')
     parser.add_argument('--amino_detail_csv',
                         type=argparse.FileType('w'),
-                        default=os.devnull,
                         help='CSV containing amino frequencies for each contig')
     parser.add_argument('--coord_ins_csv',
                         type=argparse.FileType('w'),
@@ -96,7 +92,6 @@ def parse_args():
                         help='CSV containing consensus sequences')
     parser.add_argument('--conseq_all_csv',
                         type=argparse.FileType('w'),
-                        default=os.devnull,
                         help='CSV containing consensus sequences (ignoring inadequate '
                              'coverage)')
     parser.add_argument('--failed_align_csv',
@@ -109,11 +104,9 @@ def parse_args():
                         help='CSV containing consensus sequences, split by region')
     parser.add_argument('--genome_coverage_csv',
                         type=argparse.FileType('w'),
-                        default=os.devnull,
                         help='CSV of coverage levels in full-genome coordinates')
     parser.add_argument('--coverage_summary_csv',
                         type=argparse.FileType('w'),
-                        default=os.devnull,
                         help='CSV of coverage levels for the whole sample')
     return parser.parse_args()
 
@@ -690,7 +683,8 @@ class SequenceReport(object):
                    'query_nuc_pos',
                    'refseq_nuc_pos',
                    'dels',
-                   'coverage']
+                   'coverage',
+                   'link']
         self.genome_coverage_writer = csv.DictWriter(genome_coverage_file,
                                                      columns,
                                                      lineterminator=os.linesep)
@@ -764,54 +758,43 @@ class SequenceReport(object):
             alignments = [alignment
                           for alignment in alignments
                           if alignment.is_primary]
-        patched_alignments = []
-        prev_alignment = None
+        wire = Wire()
+        bead_end = source_end = 0
         for alignment in alignments:
-            if prev_alignment is not None:
-                prev_end = prev_alignment.q_en
-                curr_start = alignment.q_st
-                expected_start = prev_end
-                if expected_start < curr_start:
-                    patched_alignments.append(
-                        Namespace(q_st=expected_start,
-                                  q_en=curr_start,
-                                  r_st=alignment.r_st,
-                                  r_en=alignment.r_st,
-                                  cigar=[(curr_start-expected_start,
-                                          CigarActions.INSERT)]))
-            patched_alignments.append(alignment)
-            prev_alignment = alignment
-        alignments = patched_alignments
-        if not alignments:
-            missing_length = len(consensus)
-            alignments.append(Namespace(q_st=0,
-                                        q_en=missing_length,
-                                        r_st=0,
-                                        cigar=[(missing_length,
-                                                CigarActions.INSERT)]))
-        else:
-            first_alignment = alignments[0]
-            missing_length = first_alignment.q_st
-            if 0 < missing_length:
-                alignments.insert(
-                    0,
-                    Namespace(q_st=0,
-                              q_en=missing_length,
-                              r_st=first_alignment.r_st - missing_length,
-                              cigar=[(missing_length,
-                                      CigarActions.MATCH)]))
-        last_alignment = alignments[-1]
-        last_pos = last_alignment.q_en
-        missing_length = len(consensus) - last_pos
-        if 0 < missing_length:
-            alignments.append(Namespace(q_st=last_pos,
-                                        r_st=last_alignment.r_en,
-                                        cigar=[(missing_length,
-                                                CigarActions.MATCH)]))
-        for alignment in alignments:
-            seq_pos = alignment.q_st
-            ref_pos = alignment.r_st
-            for length, action in alignment.cigar:
+            x = alignment.q_st, alignment.q_en
+            x = alignment.r_st, alignment.r_en
+            x = alignment.cigar_str
+            curr_start = alignment.q_st
+            if source_end < curr_start:
+                bead_size = curr_start - source_end
+                wire.append(Bead(start=bead_end, end=bead_end+bead_size))
+                bead_end += bead_size
+                skipped_source = 0
+            else:
+                skipped_source = source_end - curr_start
+            bead_size = alignment.r_en - alignment.r_st - skipped_source
+            wire.append(Bead(bead_end,
+                             bead_end+bead_size,
+                             alignment.r_st+skipped_source,
+                             alignment.r_en,
+                             alignment,
+                             skipped_source))
+            bead_end += bead_size
+            source_end = alignment.q_en
+        expected_end = len(consensus)
+        if source_end < expected_end:
+            wire.append(Bead(start=source_end, end=expected_end))
+        wire.align()
+        seq_pos = skipped_source = 0
+        for bead in wire:
+            ref_pos = bead.display_start - bead.skipped
+            skipped_source += bead.skipped
+            seq_pos -= bead.skipped
+            if bead.alignment is not None:
+                cigar = bead.alignment.cigar
+            else:
+                cigar = [(bead.end - bead.start, None)]
+            for length, action in cigar:
                 if action == CigarActions.DELETE:
                     ref_pos += length
                     continue
@@ -819,10 +802,12 @@ class SequenceReport(object):
                     if action == CigarActions.INSERT:
                         seq_pos += 1
                         ref_pos_display = None
-                    elif action == CigarActions.MATCH:
+                        link = 'I'
+                    elif action == CigarActions.MATCH or action is None:
                         seq_pos += 1
                         ref_pos += 1
                         ref_pos_display = ref_pos
+                        link = 'U' if action is None else 'M'
                     else:
                         name = CigarActions(action).name
                         raise ValueError(f'Unexpected CIGAR action: {name}.')
@@ -834,13 +819,17 @@ class SequenceReport(object):
                         if coverage == 0:
                             continue
                         dels = seed_nuc.counts['-']
-                    row = dict(contig=contig_name,
-                               coordinates=coordinate_name,
-                               query_nuc_pos=seq_pos+consensus_offset,
-                               refseq_nuc_pos=ref_pos_display,
-                               dels=dels,
-                               coverage=coverage)
-                    genome_coverage_writer.writerow(row)
+                    if 0 < skipped_source:
+                        skipped_source -= 1
+                    else:
+                        row = dict(contig=contig_name,
+                                   coordinates=coordinate_name,
+                                   query_nuc_pos=seq_pos+consensus_offset,
+                                   refseq_nuc_pos=ref_pos_display,
+                                   dels=dels,
+                                   coverage=coverage,
+                                   link=link)
+                        genome_coverage_writer.writerow(row)
 
     @staticmethod
     def _create_nuc_writer(nuc_file):
