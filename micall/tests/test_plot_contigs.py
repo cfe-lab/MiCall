@@ -586,6 +586,35 @@ Coverage 5x3, 7x3, 8x3
     assert expected_figure == summarize_figure(figure)
 
 
+def test_plot_genome_coverage_unmapped():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage,link
+1-HCV-1a,HCV-1a,1,1,0,0,5,M
+1-HCV-1a,HCV-1a,2,2,0,0,5,M
+1-HCV-1a,HCV-1a,3,3,0,0,5,M
+1-HCV-1a,HCV-1a,4,4,0,0,6,M
+1-HCV-1a,HCV-1a,5,5,0,0,6,U
+1-HCV-1a,HCV-1a,6,6,0,0,6,U
+1-HCV-1a,HCV-1a,7,7,0,0,7,U
+1-HCV-1a,HCV-1a,8,8,0,0,7,U
+1-HCV-1a,HCV-1a,9,9,0,0,7,U
+1-HCV-1a,HCV-1a,10,10,0,0,8,M
+1-HCV-1a,HCV-1a,11,11,0,0,8,M
+1-HCV-1a,HCV-1a,12,12,0,0,8,M
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9374], 3'[9375-9646]
+Coverage 5x3, 6x3, 7x3, 8x3
+[1-12], 1-HCV-1a - depth 8(1-9646), yellow{5-9}
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv)
+
+    assert summarize_figure(figure) == expected_figure
+
+
 def test_plot_genome_coverage_two_contigs():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage

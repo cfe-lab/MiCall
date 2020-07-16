@@ -365,6 +365,7 @@ def build_contig(reader,
 
     insertion_size = 0
     insertion_ranges = []  # [(start, end)]
+    unmatched_ranges = []  # [[start, end]]
     for contig_name2, contig_rows in groupby(reader, itemgetter('contig')):
         if contig_name2 != contig_name:
             continue
@@ -401,6 +402,13 @@ def build_contig(reader,
                         blast_ranges[blast_num-1][0] = pos
                     for blast_num in blast_ends[event_pos]:
                         blast_ranges[blast_num-1][1] = pos
+            link = contig_row.get('link')
+            if link == 'U':
+                # Position is unmatched, add to list.
+                if not unmatched_ranges or unmatched_ranges[-1][-1] != pos-1:
+                    unmatched_ranges.append([pos, pos])
+                else:
+                    unmatched_ranges[-1][-1] = pos
         while event_positions:
             # Use up any events that went past the end of the contig.
             event_pos = event_positions.pop()
@@ -455,7 +463,11 @@ def build_contig(reader,
                                regions=[(a+position_offset,
                                          b+position_offset,
                                          'lightgreen')
-                                        for a, b in insertion_ranges]))
+                                        for a, b in insertion_ranges] +
+                                       [(a+position_offset,
+                                         b+position_offset,
+                                         'yellow')
+                                        for a, b in unmatched_ranges]))
         f.add(Multitrack(subtracks))
         break
 
