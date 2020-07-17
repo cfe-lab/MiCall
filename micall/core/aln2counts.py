@@ -108,6 +108,9 @@ def parse_args():
     parser.add_argument('--coverage_summary_csv',
                         type=argparse.FileType('w'),
                         help='CSV of coverage levels for the whole sample')
+    parser.add_argument('--minimap_hits_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV of minimap2 match locations')
     return parser.parse_args()
 
 
@@ -173,7 +176,7 @@ class SequenceReport(object):
                                         defaultdict(Counter))
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
         self.amino_writer = self.amino_detail_writer = None
-        self.genome_coverage_writer = None
+        self.genome_coverage_writer = self.minimap_hits_writer = None
         self.conseq_region_writer = self.fail_writer = None
         self.conseq_all_writer = None
 
@@ -677,6 +680,17 @@ class SequenceReport(object):
                     coverage_summary['coverage_region'] = region
                     coverage_summary['region_width'] = pos_count
 
+    def write_minimap_hits_header(self, minimap_hits_file):
+        self.minimap_hits_writer = csv.DictWriter(minimap_hits_file,
+                                                  ['contig',
+                                                   'ref_name',
+                                                   'start',
+                                                   'end',
+                                                   'ref_start',
+                                                   'ref_end'],
+                                                  lineterminator=os.linesep)
+        self.minimap_hits_writer.writeheader()
+
     def write_genome_coverage_header(self, genome_coverage_file):
         columns = ['contig',
                    'coordinates',
@@ -690,8 +704,7 @@ class SequenceReport(object):
                                                      lineterminator=os.linesep)
         self.genome_coverage_writer.writeheader()
 
-    def write_genome_coverage_counts(self, genome_coverage_writer=None):
-        genome_coverage_writer = genome_coverage_writer or self.genome_coverage_writer
+    def write_genome_coverage_counts(self):
         seed_nucs = [(seed_nuc.get_consensus(MAX_CUTOFF) or '?', seed_nuc)
                      for seed_amino in self.seed_aminos[0]
                      for seed_nuc in seed_amino.nucleotides]
@@ -708,18 +721,17 @@ class SequenceReport(object):
         is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
                       self.seed.endswith(REVERSED_CONTIG_SUFFIX))
         if is_partial:
-            seed_landmarks = None
+            coordinate_name = None
         else:
             for seed_landmarks in self.landmarks:
                 if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
+                    coordinate_name = seed_landmarks['coordinates']
                     break
             else:
-                seed_landmarks = None
+                coordinate_name = None
 
-        self.write_sequence_coverage_counts(self.projects,
-                                            genome_coverage_writer,
-                                            self.detail_seed,
-                                            seed_landmarks,
+        self.write_sequence_coverage_counts(self.detail_seed,
+                                            coordinate_name,
                                             consensus,
                                             consensus_offset,
                                             seed_nucs)
@@ -733,37 +745,28 @@ class SequenceReport(object):
         for contig_num in contig_nums:
             contig_ref, group_ref, contig_seq = self.contigs[contig_num-1]
             contig_name = f'contig-{contig_num}-{contig_ref}'
-            self.write_sequence_coverage_counts(self.projects,
-                                                genome_coverage_writer,
-                                                contig_name,
-                                                seed_landmarks,
+            self.write_sequence_coverage_counts(contig_name,
+                                                coordinate_name,
                                                 contig_seq)
 
-    @staticmethod
-    def write_sequence_coverage_counts(projects,
-                                       genome_coverage_writer,
-                                       contig_name,
-                                       seed_landmarks,
-                                       consensus,
+    def write_sequence_coverage_counts(self,
+                                       contig_name: str,
+                                       coordinate_name: typing.Optional[str],
+                                       consensus: str,
                                        consensus_offset=0,
                                        seed_nucs=None):
-        if seed_landmarks is None:
-            coordinate_name = None
+        if coordinate_name is None:
             alignments = []
         else:
-            coordinate_name = seed_landmarks['coordinates']
-            coordinate_seq = projects.getReference(coordinate_name)
+            coordinate_seq = self.projects.getReference(coordinate_name)
             aligner = Aligner(seq=coordinate_seq, preset='map-ont')
-            alignments = sorted(aligner.map(consensus), key=attrgetter('r_st'))
+            alignments = sorted(aligner.map(consensus), key=attrgetter('q_st'))
             alignments = [alignment
                           for alignment in alignments
                           if alignment.is_primary]
         wire = Wire()
         bead_end = source_end = 0
         for alignment in alignments:
-            x = alignment.q_st, alignment.q_en
-            x = alignment.r_st, alignment.r_en
-            x = alignment.cigar_str
             curr_start = alignment.q_st
             if source_end < curr_start:
                 bead_size = curr_start - source_end
@@ -779,6 +782,13 @@ class SequenceReport(object):
                              alignment.r_en,
                              alignment,
                              skipped_source))
+            if self.minimap_hits_writer is not None:
+                self.minimap_hits_writer.writerow(dict(contig=contig_name,
+                                                       ref_name=coordinate_name,
+                                                       start=alignment.q_st+1,
+                                                       end=alignment.q_en,
+                                                       ref_start=alignment.r_st+1,
+                                                       ref_end=alignment.r_en))
             bead_end += bead_size
             source_end = alignment.q_en
         expected_end = len(consensus)
@@ -811,10 +821,11 @@ class SequenceReport(object):
                     else:
                         name = CigarActions(action).name
                         raise ValueError(f'Unexpected CIGAR action: {name}.')
+                    offset_seq_pos = seq_pos + consensus_offset
                     if not seed_nucs:
                         coverage = dels = None
                     else:
-                        seed_nuc: SeedNucleotide = seed_nucs[seq_pos - 1][1]
+                        seed_nuc: SeedNucleotide = seed_nucs[offset_seq_pos - 1][1]
                         coverage = seed_nuc.get_coverage()
                         if coverage == 0:
                             continue
@@ -824,12 +835,12 @@ class SequenceReport(object):
                     else:
                         row = dict(contig=contig_name,
                                    coordinates=coordinate_name,
-                                   query_nuc_pos=seq_pos+consensus_offset,
+                                   query_nuc_pos=offset_seq_pos,
                                    refseq_nuc_pos=ref_pos_display,
                                    dels=dels,
                                    coverage=coverage,
                                    link=link)
-                        genome_coverage_writer.writerow(row)
+                        self.genome_coverage_writer.writerow(row)
 
     @staticmethod
     def _create_nuc_writer(nuc_file):
@@ -1642,7 +1653,8 @@ def aln2counts(aligned_csv,
                genome_coverage_csv=None,
                nuc_detail_csv=None,
                contigs_csv=None,
-               conseq_all_csv=None):
+               conseq_all_csv=None,
+               minimap_hits_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1674,6 +1686,7 @@ def aln2counts(aligned_csv,
     @param contigs_csv: Open file handle to read contig sequences.
     @param conseq_all_csv: Open file handle to write consensus sequences *ignoring
         inadequate coverage*.
+    @param minimap_hits_csv: Open file handle to write minimap2 match locations.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1727,6 +1740,8 @@ def aln2counts(aligned_csv,
             report.read_contigs(contigs_csv)
         if genome_coverage_csv is not None:
             report.write_genome_coverage_header(genome_coverage_csv)
+        if minimap_hits_csv is not None:
+            report.write_minimap_hits_header(minimap_hits_csv)
 
         report.process_reads(aligned_csv,
                              coverage_summary,
@@ -1764,7 +1779,8 @@ def main():
                nuc_detail_csv=args.nuc_detail_csv,
                genome_coverage_csv=args.genome_coverage_csv,
                contigs_csv=args.contigs_csv,
-               conseq_all_csv=args.conseq_all_csv)
+               conseq_all_csv=args.conseq_all_csv,
+               minimap_hits_csv=args.minimap_hits_csv)
 
 
 if __name__ == '__main__':

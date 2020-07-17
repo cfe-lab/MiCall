@@ -203,7 +203,8 @@ class Sample:
                 open(self.failed_align_csv, 'w') as failed_align_csv, \
                 open(self.coverage_summary_csv, 'w') as coverage_summary_csv, \
                 open(self.genome_coverage_csv, 'w') as genome_coverage_csv, \
-                open(self.conseq_all_csv, "w") as conseq_all_csv:
+                open(self.conseq_all_csv, "w") as conseq_all_csv, \
+                open(self.minimap_hits_csv, "w") as minimap_hits_csv:
 
             if not use_denovo:
                 for f in (amino_detail_csv, nuc_detail_csv):
@@ -226,7 +227,8 @@ class Sample:
                        nuc_detail_csv=nuc_detail_csv,
                        genome_coverage_csv=genome_coverage_csv,
                        contigs_csv=contigs_csv,
-                       conseq_all_csv=conseq_all_csv)
+                       conseq_all_csv=conseq_all_csv,
+                       minimap_hits_csv=minimap_hits_csv)
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)
@@ -238,16 +240,12 @@ class Sample:
                           coverage_maps_prefix=self.name,
                           excluded_projects=excluded_projects)
 
-        if use_denovo:
-            blast_path = self.blast_csv
-        else:
-            blast_path = os.devnull
         with open(self.genome_coverage_csv) as genome_coverage_csv, \
-                open(blast_path) as blast_csv:
+                open(self.minimap_hits_csv) as minimap_hits_csv:
             if not use_denovo:
-                blast_csv = None
+                minimap_hits_csv = None
             plot_genome_coverage(genome_coverage_csv,
-                                 blast_csv,
+                                 minimap_hits_csv,
                                  self.genome_coverage_svg)
 
         logger.info('Running cascade_report on %s.', self)

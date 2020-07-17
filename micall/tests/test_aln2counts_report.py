@@ -738,7 +738,6 @@ HIV1-B-FR-K03455-seed,15,0,4,0,{seq}
 def test_contig_coverage_report_past_reference_end(projects, sequence_report):
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
-    landmarks = dict(coordinates=hxb2_name)
     assert len(ref) == 9719
     seq = ref[-100:] + 'CGTAC'
     seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq)
@@ -753,14 +752,12 @@ def test_contig_coverage_report_past_reference_end(projects, sequence_report):
 """
 
     report_file = StringIO()
+    sequence_report.projects = projects
     sequence_report.write_genome_coverage_header(report_file)
-    SequenceReport.write_sequence_coverage_counts(
-        projects,
-        sequence_report.genome_coverage_writer,
-        '1-my-contig',
-        landmarks,
-        seq,
-        seed_nucs=seed_nucs)
+    sequence_report.write_sequence_coverage_counts('1-my-contig',
+                                                   hxb2_name,
+                                                   seq,
+                                                   seed_nucs=seed_nucs)
 
     report_text = report_file.getvalue()
     tail = report_text[-len(expected_tail):]
@@ -771,7 +768,6 @@ def test_contig_coverage_report_past_reference_end(projects, sequence_report):
 def test_contig_coverage_report_past_reference_start(projects, sequence_report):
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
-    landmarks = dict(coordinates=hxb2_name)
     seq = 'CGTAC' + ref[:100]
     seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq)
     # link is (M)apped, (U)nmapped, or (I)nserted
@@ -787,14 +783,12 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 """
 
     report_file = StringIO()
+    sequence_report.projects = projects
     sequence_report.write_genome_coverage_header(report_file)
-    SequenceReport.write_sequence_coverage_counts(
-        projects,
-        sequence_report.genome_coverage_writer,
-        '1-my-contig',
-        landmarks,
-        seq,
-        seed_nucs=seed_nucs)
+    sequence_report.write_sequence_coverage_counts('1-my-contig',
+                                                   hxb2_name,
+                                                   seq,
+                                                   seed_nucs=seed_nucs)
 
     report_text = report_file.getvalue()
     head = report_text[:len(expected_head)]
@@ -805,9 +799,9 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 def test_contig_coverage_report_offset_reads(projects, sequence_report):
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
-    landmarks = dict(coordinates=hxb2_name)
     seq = ref[50:150]
-    seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq)
+    seed_nucs = ([('C', SeedNucleotide())] * 50 +
+                 [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq))
     expected_head = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 1-my-contig,HIV1-B-FR-K03455-seed,51,51,0,1,M
@@ -816,15 +810,13 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 """
 
     report_file = StringIO()
+    sequence_report.projects = projects
     sequence_report.write_genome_coverage_header(report_file)
-    SequenceReport.write_sequence_coverage_counts(
-        projects,
-        sequence_report.genome_coverage_writer,
-        '1-my-contig',
-        landmarks,
-        seq,
-        consensus_offset=50,
-        seed_nucs=seed_nucs)
+    sequence_report.write_sequence_coverage_counts('1-my-contig',
+                                                   hxb2_name,
+                                                   seq,
+                                                   consensus_offset=50,
+                                                   seed_nucs=seed_nucs)
 
     report_text = report_file.getvalue()
     head = report_text[:len(expected_head)]
@@ -980,18 +972,15 @@ def test_write_sequence_coverage_counts_without_coverage(projects,
                                                          sequence_report):
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
-    landmarks = dict(coordinates=hxb2_name)
     seq = ref[100:150] + ref[1000:1050]
     expected_positions = list(range(101, 151)) + list(range(1001, 1051))
 
     report_file = StringIO()
+    sequence_report.projects = projects
     sequence_report.write_genome_coverage_header(report_file)
-    SequenceReport.write_sequence_coverage_counts(
-        projects,
-        sequence_report.genome_coverage_writer,
-        '1-my-contig',
-        landmarks,
-        seq)
+    sequence_report.write_sequence_coverage_counts('1-my-contig',
+                                                   hxb2_name,
+                                                   seq)
 
     report_file.seek(0)
     covered_positions = [int(row['refseq_nuc_pos'])
@@ -1005,7 +994,6 @@ def test_write_sequence_coverage_counts_with_coverage(projects,
                                                       sequence_report):
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
-    landmarks = dict(coordinates=hxb2_name)
     seq = ref[100:150] + ref[1000:1050]
     seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * 100
     seed_nucs[2] = ('G', SeedNucleotide(Counter({'G': 4})))
@@ -1024,14 +1012,12 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 """
 
     report_file = StringIO()
+    sequence_report.projects = projects
     sequence_report.write_genome_coverage_header(report_file)
-    SequenceReport.write_sequence_coverage_counts(
-        projects,
-        sequence_report.genome_coverage_writer,
-        '1-my-contig',
-        landmarks,
-        seq,
-        seed_nucs=seed_nucs)
+    sequence_report.write_sequence_coverage_counts('1-my-contig',
+                                                   hxb2_name,
+                                                   seq,
+                                                   seed_nucs=seed_nucs)
 
     report_text = report_file.getvalue()
     head = report_text[:len(expected_head)]
@@ -1044,7 +1030,6 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 def test_write_sequence_coverage_counts_with_deletion(projects, sequence_report):
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
-    landmarks = dict(coordinates=hxb2_name)
     seq = ref[100:110] + ref[115:160]
     seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq)
     seed_nucs[12] = ('G', SeedNucleotide(Counter({'G': 4})))
@@ -1067,14 +1052,12 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 """
 
     report_file = StringIO()
+    sequence_report.projects = projects
     sequence_report.write_genome_coverage_header(report_file)
-    SequenceReport.write_sequence_coverage_counts(
-        projects,
-        sequence_report.genome_coverage_writer,
-        '1-my-contig',
-        landmarks,
-        seq,
-        seed_nucs=seed_nucs)
+    sequence_report.write_sequence_coverage_counts('1-my-contig',
+                                                   hxb2_name,
+                                                   seq,
+                                                   seed_nucs=seed_nucs)
 
     report_text = report_file.getvalue()
     head = report_text[:len(expected_head)]
@@ -1087,7 +1070,6 @@ def test_write_sequence_coverage_counts_with_some_deletions(projects,
     """ Some reads had deletions at a position. """
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
-    landmarks = dict(coordinates=hxb2_name)
     seq = ref[100:150]
     seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq)
     seed_nucs[5] = ('G', SeedNucleotide(Counter({'G': 4, '-': 2})))
@@ -1106,14 +1088,12 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 """
 
     report_file = StringIO()
+    sequence_report.projects = projects
     sequence_report.write_genome_coverage_header(report_file)
-    SequenceReport.write_sequence_coverage_counts(
-        projects,
-        sequence_report.genome_coverage_writer,
-        '1-my-contig',
-        landmarks,
-        seq,
-        seed_nucs=seed_nucs)
+    sequence_report.write_sequence_coverage_counts('1-my-contig',
+                                                   hxb2_name,
+                                                   seq,
+                                                   seed_nucs=seed_nucs)
 
     report_text = report_file.getvalue()
     head = report_text[:len(expected_head)]
@@ -1124,7 +1104,6 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 def test_write_sequence_coverage_counts_with_insert(projects, sequence_report):
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
-    landmarks = dict(coordinates=hxb2_name)
     seq = ref[100:110] + 'ACTGA' + ref[110:160]
     seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq)
     seed_nucs[12] = ('T', SeedNucleotide(Counter({'T': 4})))
@@ -1149,14 +1128,12 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 """
 
     report_file = StringIO()
+    sequence_report.projects = projects
     sequence_report.write_genome_coverage_header(report_file)
-    SequenceReport.write_sequence_coverage_counts(
-        projects,
-        sequence_report.genome_coverage_writer,
-        '1-my-contig',
-        landmarks,
-        seq,
-        seed_nucs=seed_nucs)
+    sequence_report.write_sequence_coverage_counts('1-my-contig',
+                                                   hxb2_name,
+                                                   seq,
+                                                   seed_nucs=seed_nucs)
 
     report_text = report_file.getvalue()
     head = report_text[:len(expected_head)]
@@ -1173,7 +1150,6 @@ def test_write_sequence_coverage_counts_with_unaligned_middle(projects,
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     hcv_ref = projects.getReference('HCV-1a')
-    landmarks = dict(coordinates=hxb2_name)
     seq = ref[:100] + hcv_ref[1000:1100] + ref[1000:1100]
     expected_ref_positions = (list(range(1, 101)) +
                               list(range(501, 601)) +
@@ -1181,13 +1157,11 @@ def test_write_sequence_coverage_counts_with_unaligned_middle(projects,
     expected_query_positions = list(range(1, 301))
 
     report_file = StringIO()
+    sequence_report.projects = projects
     sequence_report.write_genome_coverage_header(report_file)
-    SequenceReport.write_sequence_coverage_counts(
-        projects,
-        sequence_report.genome_coverage_writer,
-        '1-my-contig',
-        landmarks,
-        seq)
+    sequence_report.write_sequence_coverage_counts('1-my-contig',
+                                                   hxb2_name,
+                                                   seq)
 
     report_file.seek(0)
     rows = list(DictReader(report_file))
@@ -1213,19 +1187,16 @@ def test_write_sequence_coverage_counts_with_double_mapped_edges(
     """
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
-    landmarks = dict(coordinates=hxb2_name)
     seq = ref[2858:2908] + ref[8187:8237]
     expected_ref_positions = (list(range(2859, 2916)) + list(range(8196, 8238)))
     expected_query_positions = list(range(1, len(seq)+1))
 
     report_file = StringIO()
+    sequence_report.projects = projects
     sequence_report.write_genome_coverage_header(report_file)
-    SequenceReport.write_sequence_coverage_counts(
-        projects,
-        sequence_report.genome_coverage_writer,
-        '1-my-contig',
-        landmarks,
-        seq)
+    sequence_report.write_sequence_coverage_counts('1-my-contig',
+                                                   hxb2_name,
+                                                   seq)
 
     report_file.seek(0)
     rows = list(DictReader(report_file))
@@ -1237,3 +1208,22 @@ def test_write_sequence_coverage_counts_with_double_mapped_edges(
                        if row['query_nuc_pos']]
     assert query_positions == expected_query_positions
     assert ref_positions == expected_ref_positions
+
+
+# noinspection DuplicatedCode
+def test_write_sequence_coverage_minimap_hits(projects, sequence_report):
+    hxb2_name = 'HIV1-B-FR-K03455-seed'
+    ref = projects.getReference(hxb2_name)
+    seq = ref[1000:1100] + ref[2000:2100]
+    expected_minimap_hits = """\
+contig,ref_name,start,end,ref_start,ref_end
+1-my-contig,HIV1-B-FR-K03455-seed,1,100,1001,1100
+1-my-contig,HIV1-B-FR-K03455-seed,101,200,2001,2100
+"""
+    report_file = StringIO()
+    sequence_report.projects = projects
+    sequence_report.write_genome_coverage_header(StringIO())
+    sequence_report.write_minimap_hits_header(report_file)
+    sequence_report.write_sequence_coverage_counts('1-my-contig', hxb2_name, seq)
+
+    assert report_file.getvalue() == expected_minimap_hits
