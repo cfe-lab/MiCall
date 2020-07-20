@@ -185,10 +185,11 @@ class ContigMatcher:
         if row_contig is not None:
             if row_contig != self.name:
                 return False
-        elif row['contig_num'] != self.num:
-            return False
-        if row['ref_name'] != self.ref:
-            return False
+        else:
+            if row['contig_num'] != self.num:
+                return False
+            if row['ref_name'] != self.ref:
+                return False
         return True
 
 

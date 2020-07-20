@@ -715,7 +715,6 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 """)
     minimap_hits_csv = StringIO("""\
 contig,ref_name,score,match,pident,start,end,ref_start,ref_end
-1-HCV-1a,HCV-1g,30,0.33,90,1,2,5001,5002
 1-HCV-1a,HCV-1a,40,0.33,100,5,6,7006,7005
 1-HCV-1a,HCV-1a,50,0.5,100,1,3,8001,8003
 """)
