@@ -783,12 +783,16 @@ class SequenceReport(object):
                              alignment,
                              skipped_source))
             if self.minimap_hits_writer is not None:
+                ref_start = alignment.r_st+1
+                ref_end = alignment.r_en
+                if alignment.strand < 0:
+                    ref_start, ref_end = ref_end, ref_start
                 self.minimap_hits_writer.writerow(dict(contig=contig_name,
                                                        ref_name=coordinate_name,
                                                        start=alignment.q_st+1,
                                                        end=alignment.q_en,
-                                                       ref_start=alignment.r_st+1,
-                                                       ref_end=alignment.r_en))
+                                                       ref_start=ref_start,
+                                                       ref_end=ref_end))
             bead_end += bead_size
             source_end = alignment.q_en
         expected_end = len(consensus)

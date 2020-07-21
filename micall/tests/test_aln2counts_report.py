@@ -5,6 +5,7 @@ from csv import DictReader
 from io import StringIO
 
 import pytest
+from mappy import revcomp
 
 from micall.core import project_config
 from micall.core.aln2counts import InsertionWriter, SequenceReport, SeedNucleotide
@@ -1219,6 +1220,25 @@ def test_write_sequence_coverage_minimap_hits(projects, sequence_report):
 contig,ref_name,start,end,ref_start,ref_end
 1-my-contig,HIV1-B-FR-K03455-seed,1,100,1001,1100
 1-my-contig,HIV1-B-FR-K03455-seed,101,200,2001,2100
+"""
+    report_file = StringIO()
+    sequence_report.projects = projects
+    sequence_report.write_genome_coverage_header(StringIO())
+    sequence_report.write_minimap_hits_header(report_file)
+    sequence_report.write_sequence_coverage_counts('1-my-contig', hxb2_name, seq)
+
+    assert report_file.getvalue() == expected_minimap_hits
+
+
+# noinspection DuplicatedCode
+def test_write_sequence_coverage_minimap_hits_reversed(projects, sequence_report):
+    hxb2_name = 'HIV1-B-FR-K03455-seed'
+    ref = projects.getReference(hxb2_name)
+    seq = ref[1000:1100] + revcomp(ref[2000:2100])
+    expected_minimap_hits = """\
+contig,ref_name,start,end,ref_start,ref_end
+1-my-contig,HIV1-B-FR-K03455-seed,1,100,1001,1100
+1-my-contig,HIV1-B-FR-K03455-seed,101,200,2100,2001
 """
     report_file = StringIO()
     sequence_report.projects = projects
