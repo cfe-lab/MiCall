@@ -10,8 +10,8 @@ from PIL import Image
 from drawSvg import Drawing, Line, Lines, Circle, Text, Rectangle
 from genetracks import Figure, Track, Multitrack, Label, Coverage
 
-from micall.core.plot_contigs import summarize_figure, \
-    build_coverage_figure, SmoothCoverage, add_partial_banner, Arrow, ArrowGroup
+from micall.core.plot_contigs import summarize_figure, build_coverage_figure, \
+    SmoothCoverage, add_partial_banner, Arrow, ArrowGroup, ContigMatcher
 
 
 class SvgDiffer:
@@ -827,6 +827,45 @@ Coverage 5x10
     assert summarize_figure(figure) == expected_figure
 
 
+def test_plot_genome_coverage_g2p():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,1,2261,0,5,M
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,2,2262,0,5,M
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,3,2263,0,5,M
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,4,2264,0,5,M
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,5,2265,0,5,M
+1-HIV1-G-CM-KP718923-seed,HIV1-B-FR-K03455-seed,6,2266,0,5,M
+HIV1-CON-XX-Consensus-seed,HIV1-B-FR-K03455-seed,1,7201,0,100,M
+HIV1-CON-XX-Consensus-seed,HIV1-B-FR-K03455-seed,2,7202,0,100,M
+HIV1-CON-XX-Consensus-seed,HIV1-B-FR-K03455-seed,3,7203,0,100,M
+HIV1-CON-XX-Consensus-seed,HIV1-B-FR-K03455-seed,4,7204,0,100,M
+HIV1-CON-XX-Consensus-seed,HIV1-B-FR-K03455-seed,5,7205,0,100,M
+HIV1-CON-XX-Consensus-seed,HIV1-B-FR-K03455-seed,6,7206,0,100,M
+""")
+    minimap_hits_csv = StringIO("""\
+contig,ref_name,start,end,ref_start,ref_end
+1-HIV1-G-CM-KP718923-seed,HIV1-G-CM-KP718923-seed,1,10,1653,1658
+HIV1-CON-XX-Consensus-seed,HIV1-B-FR-K03455-seed,1,6,7201,7206
+""")
+    expected_figure = """\
+5' LTR[1-634], gag[789-2289], vif[5040-5616], tat[8379-8469], nef[8797-9417]
+tat[5831-6045], vpu[6061-6307], rev[8379-8653], 3' LTR[9086-9719]
+pol[2085-5096], vpr[5558-5847], rev[5970-6045], env[6225-8795]
+PR[2252-2549], RT[2549-3869], INT[4229-5093], V3[7109-7217], GP41[7757-8792]
+2261--1.1->2266
+Coverage 100x6
+[7201-7206], HIV1-CON-XX-Consensus-seed - depth 100(1-9719)
+2261--1.1->2266
+Coverage 5x6
+[2261-2266], 1-HIV1-G-CM-KP718923-seed - depth 5(1-9719)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, minimap_hits_csv)
+
+    assert summarize_figure(figure) == expected_figure
+
+
 def test_plot_genome_coverage_blast_collision():
     """ Two blast results end at the same position. """
     genome_coverage_csv = StringIO("""\
@@ -1121,3 +1160,21 @@ def test_draw_coverage(svg_differ):
     svg = figure.show()
 
     svg_differ.assert_equal(svg, expected_svg, 'test_draw_coverage')
+
+
+def test_match_contig():
+    contig_name = 'contig-1-HIV1-B-FR-KF716496-seed'
+    contig_matcher = ContigMatcher(contig_name)
+
+    assert contig_matcher.ref == 'HIV1-B-FR-KF716496-seed'
+    assert contig_matcher.num == '1'
+    assert contig_matcher.name == contig_name
+
+
+def test_match_g2p_fake_contig():
+    contig_name = 'HIV1-CON-XX-Consensus-seed'
+    contig_matcher = ContigMatcher(contig_name)
+
+    assert contig_matcher.ref == contig_name
+    assert contig_matcher.num is None
+    assert contig_matcher.name == contig_name

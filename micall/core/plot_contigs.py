@@ -179,8 +179,17 @@ class ContigMatcher:
     def __init__(self, contig_name):
         self.name = contig_name
         self.num, self.ref = contig_name.split('-', 1)
+        if self.num == 'contig':
+            self.num, self.ref = self.ref.split('-', 1)
+        try:
+            int(self.num)
+        except ValueError:
+            self.num = None
+            self.ref = self.name
 
     def is_match(self, row):
+        if self.num is None:
+            return False
         row_contig = row.get('contig')
         if row_contig is not None:
             if row_contig != self.name:
@@ -274,6 +283,9 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
         sorted_contig_names = sort_contig_names(contig_names, contig_depths)
         ref_arrows = []
         for contig_name in sorted_contig_names:
+            if contig_name.startswith('contig-'):
+                # No arrows on original contig tracks.
+                continue
             contig_matcher = ContigMatcher(contig_name)
             ref_positions = None
             arrow_count = 0
@@ -282,8 +294,8 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
                     continue
                 if (ref_positions is None and
                         coordinates_name != '' and
-                        contig_matcher.ref != coordinates_name):
-                    ref_positions = map_references(contig_matcher.ref,
+                        blast_row['ref_name'] != coordinates_name):
+                    ref_positions = map_references(blast_row['ref_name'],
                                                    coordinates_name,
                                                    projects)
                 arrow_count += 1
@@ -367,13 +379,14 @@ def build_contig(reader,
     blast_ranges = []  # [[start, end, blast_num]]
     blast_starts = defaultdict(set)  # {start: {blast_num}}
     blast_ends = defaultdict(set)  # {end: {blast_num}}
-    for blast_row in blast_rows:
-        if not contig_matcher.is_match(blast_row):
-            continue
-        blast_num = len(blast_ranges) + 1
-        blast_ranges.append([None, None, blast_num])
-        blast_starts[blast_row['start']].add(blast_num)
-        blast_ends[blast_row['end']].add(blast_num)
+    if not contig_name.startswith('contig-'):
+        for blast_row in blast_rows:
+            if not contig_matcher.is_match(blast_row):
+                continue
+            blast_num = len(blast_ranges) + 1
+            blast_ranges.append([None, None, blast_num])
+            blast_starts[blast_row['start']].add(blast_num)
+            blast_ends[blast_row['end']].add(blast_num)
     event_positions = set(blast_starts)
     event_positions.update(blast_ends)
     event_positions = sorted(event_positions, reverse=True)
