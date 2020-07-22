@@ -19,10 +19,13 @@ A monitoring system regularly checks the file system for unprocessed runs,
 transfers FASTQ.gz files to the cluster and executes the pipeline.
 
 See the [list of steps and files][steps] for details of what the pipeline does.
-The [admin] page describes how to look after the pipeline.
+The [admin] page describes how to look after the pipeline in Kive, and the
+[getting started] page describes how to get the docker version set up and run it
+on your own data.
 
-[steps]: http://cfe-lab.github.io/MiCall/steps
-[admin]: http://cfe-lab.github.io/MiCall/admin
+[steps]: https://cfe-lab.github.io/MiCall/steps
+[admin]: https://cfe-lab.github.io/MiCall/admin
+[getting started]: https://cfe-lab.github.io/MiCall/getting_started
 
 ## Dual Licensing ##
 Copyright (C) 2016, University of British Columbia
@@ -63,8 +66,8 @@ Reportlab is distributed under the BSD license.
 Pyyaml and Cutadapt are distributed under the MIT license.
 
 
-[gnu]: http://www.gnu.org/licenses/
+[gnu]: https://www.gnu.org/licenses/
 [github]: https://github.com/cfe-lab/MiCall
 [contact]: mailto:micalldev@cfenet.ubc.ca
 [python]: https://docs.python.org/3/license.html
-[matplotlib]: http://matplotlib.org/users/license.html
+[matplotlib]: https://matplotlib.org/users/license.html

@@ -1,9 +1,9 @@
-# Contributing to the MiCall Project #
+# Contributing to the MiCall Project
 
 If you like this project and want to make it better, help out. You could report
 a bug, or pitch in with some development work.
 
-## Bug Reports and Enhancement Requests ##
+## Bug Reports and Enhancement Requests
 
 Please create issue descriptions [on GitHub][issues]. Be as specific as possible.
 Which version are you using? What did you do? What did you expect to happen? Are
@@ -11,7 +11,7 @@ you planning to submit your own fix in a pull request?
 
 [issues]: https://github.com/cfe-lab/MiCall/issues
 
-## Development ##
+## Development
 This will document the installation steps to get MiCall running locally on your workstation.
 The steps are for Eclipse with PyDev on Ubuntu, adapt as needed to your preferred IDE or operating system.
 
@@ -20,7 +20,7 @@ in our [milestones].
 
 [milestones]: https://github.com/cfe-lab/MiCall/milestones
 
-### Java and Python ###
+### Java and Python
 1. Check that you are running a 64-bit operating system, or bowtie2 won't work.
    Check About this Computer under the gear menu.
 2. If you want to edit Python code using PyDev and Eclipse, you will need to
@@ -55,7 +55,7 @@ in our [milestones].
 
 [pip]: https://pip.pypa.io/en/latest/installing.html
 
-### Eclipse ###
+### Eclipse
 1. Install Eclipse, although you might prefer a more recent version from the [Eclipse web site][eclipse]:
 
         sudo apt-get install eclipse
@@ -72,7 +72,7 @@ in our [milestones].
 [eclipse]: https://www.eclipse.org/downloads/
 [pydev]: http://pydev.org/updates
 
-### Python ###
+### Python
 Check that Python is already installed.
 
     python --version
@@ -83,7 +83,7 @@ On Windows, you can install [Anaconda Python][anaconda].
 
 [anaconda]: http://continuum.io/downloads
 
-### Bowtie and HyPhy ###
+### Bowtie and HyPhy
 1. Download the latest version of [bowtie2's binaries for Linux][bowtie2].
 2. Right click and choose Extract Here. Change the folder owner to root, move it to /opt, and add it to the path.
 
@@ -130,7 +130,7 @@ On Windows, you can install [Anaconda Python][anaconda].
 [hyphy]: https://github.com/veg/hyphy
 [hyphy-python]: https://github.com/veg/hyphy-python
 
-### Cutadapt library ###
+### Cutadapt library
 In order to support more than one version of this library installed in parallel,
 install it in a Python virtual environment, then put a symbolic link to it on
 the path.
@@ -139,7 +139,7 @@ the path.
     sudo /usr/local/share/vcutadapt-1.11/bin/pip install cutadapt==1.11
     sudo ln -s /usr/local/share/vcutadapt-1.11/bin/cutadapt /usr/local/bin/cutadapt-1.11
 
-### Gotoh library ###
+### Gotoh library
 MiCall uses an implementation of a modified Gotoh algorithm for pairwise sequence alignment.
 This is written in the C++ source file `gotoh.cpp`, so you will need the
 Python 3 development tools.  To compile this into a shared library
@@ -154,12 +154,12 @@ to [install Visual C++ for Python][vcpp].
 [vcpp]: http://stackoverflow.com/a/26127562/4794
 
 
-### Matplotlib ###
+### Matplotlib
 To install it on Ubuntu, use pip:
 
     sudo pip install matplotlib
 
-### BaseSpace ###
+### BaseSpace
 Set up the [native apps virtual machine][bsvm], and configure a shared folder
 called MiCall that points to the source code. Make sure you have a developer
 account on illumina.com.
@@ -175,61 +175,8 @@ Builder page on BaseSpace.
 
 [bsvm]: https://developer.basespace.illumina.com/docs/content/documentation/native-apps/setup-dev-environment
 
-### PyInstaller ###
-If you want to distribute a stand-alone Windows executable version, you need
-to use [PyInstaller][pyinstaller].
-
-1. If you haven't done all the previous steps, install Python and PyWin32.
-2. If you want to rebuild the bowtie2 binaries, install it as described above.
-    You might also want ActivePerl if you plan to play with bowtie2's Perl
-    wrapper scripts. Micall doesn't require Perl, and you can just build with
-    the bowtie2 binaries included in the git repository.
-3. Install [git for Windows][wingit], and clone the MiCall repository.
-4. Follow the instructions above to install the Gotoh package from the
-    `micall/alignment` folder.
-5. Copy `settings_default.py` to `settings.py` and edit the settings. Point
-    bowtie2 at the copy in the bin folder.
-6. Try running micall.py and processing the FASTQ files in
-    `micall/tests/microtest`.
-6. Use pip to install pyinstaller.
-
-    pip install pyinstaller
-
-6. Run pyinstaller.
-
-    cd git\micall
-    pyinstaller micall.spec
-
-The application is created as `dist\micall.exe`.
-
-
-[pyinstaller]: https://github.com/pyinstaller/pyinstaller
-[wingit]: https://git-scm.com/download/win
-
-### Running the code ###
-1. Copy settings_default.py to settings.py, and open it for editing.
-3. Change `counting_processes` to match the number of processors on your
-   computer, and set `mapping_processes` to be that number divided by four.
-5. Copy hostfile_default to hostfile, and open it for editing.
-6. You probably just want to uncomment the localhost line.
-7. Try the launch configurations. They are saved in the `micall/tests/working`
-    directory, but you should see them if you open the Run menu and choose Run
-    configurations.... If you want to run all steps at once, skip to the next
-    step, otherwise go through the numbered launch configurations in order. If
-    you are not running under Eclipse, just run each command to display the
-    list of command-line parameters.
-8. Copy or link all the files from the microtest folder to the working folder.
-9. Run the sample_pipeline or run_processor launch configurations. They will
-    process all the sample files in the working folder. If you are not running
-    under Eclipse, both commands take the run folder as a command-line parameter.
-12. Run the unit tests. Either run them from Eclipse, or run them from the
-    command line like this:
-
-        cd ~/git/MiCall
-        python -m unittest discover -p '*_test.py'
-
-### Test data ###
-If you want to run MISEQ_MONITOR.py, you have to set up data folders for raw
+### Test data
+If you want to run `micall_watcher.py`, you have to set up data folders for raw
 data and for the working folders. You'll also need to set up the QAI project
 and the MiseqQCReport so you can download QC data and upload results.
 
@@ -256,7 +203,7 @@ and the MiseqQCReport so you can download QC data and upload results.
 
 [cifs]: https://wiki.ubuntu.com/MountWindowsSharesPermanently
 
-### Looking at SAM files ###
+### Looking at SAM files
 When you don't understand the pipeline's output, it can be helpful to look at
 the raw reads in a sequence viewer like [Tablet][tablet]. Run the micall_basespace
 script on a run with a single sample, like this:
@@ -274,7 +221,43 @@ you'll probably have to sort it with the `micall/utils/sort_sam.py` script.
 
 [tablet]: http://ics.hutton.ac.uk/tablet/
 
-### Releases ###
+### GitHub Web Site
+Most of the time, you can change the web site content just by editing the
+markdown files in the `docs` folder. However, you may occasionally need to dig
+into the page templates or do more serious work. If that happens, you can test
+out the web site locally before publishing it.
+
+1. Install Ruby 2.6, preferably with [Ruby Version Manager].
+
+       rvm install 2.6
+       rvm use 2.6
+
+2. Install the gems for the web site.
+
+       cd MiCall/docs
+       gem install bundler
+       bundle install
+
+3. Serve the web site.
+
+       bundle exec jekyll serve
+
+What changes might you want to make? The web site is based on the
+[Bulma Clean Theme], so read through the documentation there to see if it
+already has the feature you want. Usually, the advanced features require you
+to write files in the `docs/_data` folder or add settings to the front matter
+at the top of a markdown file.
+
+If you have to add a new feature to the web site, you can override one of the
+files in the theme by copying it into the `docs/_includes` folder, and making
+changes there. Consider offering it back to the theme project as a pull request,
+because any files you override won't get automatic improvements from the
+original theme project.
+
+[Ruby Version Manager]: https://rvm.io/rvm/install
+[Bulma Clean Theme]: https://github.com/chrisrhymes/bulma-clean-theme
+
+### Releases
 This section assumes you already have a working server up and running, and you
 just want to publish a new release. If you're setting up a new server, follow
 similar steps to setting up a development workstation. Follow these steps:

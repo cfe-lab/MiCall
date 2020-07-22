@@ -1,6 +1,6 @@
 ---
 title: CFE HCV Algorithm
-description: version cfe-hcv 1.7 - 13 Jun 2018
+subtitle: version cfe-hcv 1.7 - 13 Jun 2018
 ---
 
 Rules are applied for each drug and each genotype found in a sample. Each rule

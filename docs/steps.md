@@ -1,6 +1,6 @@
 ---
 title: Steps and their input / output files
-description: Where the data goes
+subtitle: Where the data goes
 ---
 Individual files are described after the list of steps.
 
