@@ -1,6 +1,7 @@
 .git
 .idea
 bin
+docs
 micall/tests/working
 micall/tests/microtest/scratch
 micall/tests/microtest/Results

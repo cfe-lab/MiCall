@@ -352,6 +352,12 @@ similar steps to setting up a development workstation. Follow these steps:
 16. Edit the `callbacks.js` in the form builder, and add the `:vX.Y` tag to the
     `containerImageId` field.
 17. Activate the new revisions in the form builder and the report builder.
+17. Tag the same docker image and push it to docker hub. You might have to log
+    in to docker with your docker hub account before doing this.
+
+        sudo docker tag docker.illumina.com/cfe_lab/micall:vX.Y cfelab/micall:vX.Y
+        sudo docker push cfelab/micall:vX.Y
+
 18. Send an e-mail to users describing the major changes in the release.
 19. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
