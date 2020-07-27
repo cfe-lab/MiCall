@@ -175,6 +175,33 @@ class ArrowGroup(Element):
         return group
 
 
+class ContigMatcher:
+    def __init__(self, contig_name):
+        self.name = contig_name
+        self.num, self.ref = contig_name.split('-', 1)
+        if self.num == 'contig':
+            self.num, self.ref = self.ref.split('-', 1)
+        try:
+            int(self.num)
+        except ValueError:
+            self.num = None
+            self.ref = self.name
+
+    def is_match(self, row):
+        if self.num is None:
+            return False
+        row_contig = row.get('contig')
+        if row_contig is not None:
+            if row_contig != self.name:
+                return False
+        else:
+            if row['contig_num'] != self.num:
+                return False
+            if row['ref_name'] != self.ref:
+                return False
+        return True
+
+
 def plot_genome_coverage(genome_coverage_csv,
                          blast_csv,
                          genome_coverage_svg_path):
@@ -216,6 +243,7 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
     if blast_csv is not None:
         for blast_row in DictReader(blast_csv):
             for field_name in ('start', 'end', 'ref_start', 'ref_end'):
+                # noinspection PyTypeChecker
                 blast_row[field_name] = int(blast_row[field_name])
             blast_rows.append(blast_row)
     blast_rows.sort(key=itemgetter('start', 'ref_start'))
@@ -255,18 +283,19 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
         sorted_contig_names = sort_contig_names(contig_names, contig_depths)
         ref_arrows = []
         for contig_name in sorted_contig_names:
-            contig_num, contig_ref = contig_name.split('-', 1)
+            if contig_name.startswith('contig-'):
+                # No arrows on original contig tracks.
+                continue
+            contig_matcher = ContigMatcher(contig_name)
             ref_positions = None
             arrow_count = 0
             for blast_row in blast_rows:
-                if blast_row['contig_num'] != contig_num:
-                    continue
-                if blast_row['ref_name'] != contig_ref:
+                if not contig_matcher.is_match(blast_row):
                     continue
                 if (ref_positions is None and
                         coordinates_name != '' and
-                        contig_ref != coordinates_name):
-                    ref_positions = map_references(contig_ref,
+                        blast_row['ref_name'] != coordinates_name):
+                    ref_positions = map_references(blast_row['ref_name'],
                                                    coordinates_name,
                                                    projects)
                 arrow_count += 1
@@ -278,10 +307,11 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
                 else:
                     coordinate_start = ref_positions[ref_start]
                     coordinate_end = ref_positions[ref_end]
-                ref_arrows.append(Arrow(coordinate_start+position_offset,
-                                        coordinate_end+position_offset,
-                                        elevation=1,
-                                        label=f'{contig_num}.{arrow_count}'))
+                ref_arrows.append(
+                    Arrow(coordinate_start+position_offset,
+                          coordinate_end+position_offset,
+                          elevation=1,
+                          label=f'{contig_matcher.num}.{arrow_count}'))
         if ref_arrows:
             f.add(ArrowGroup(ref_arrows))
         for contig_name in sorted_contig_names:
@@ -345,25 +375,25 @@ def build_contig(reader,
                  max_position,
                  position_offset,
                  blast_rows):
-    contig_num, contig_ref = contig_name.split('-', 1)
+    contig_matcher = ContigMatcher(contig_name)
     blast_ranges = []  # [[start, end, blast_num]]
     blast_starts = defaultdict(set)  # {start: {blast_num}}
     blast_ends = defaultdict(set)  # {end: {blast_num}}
-    for blast_row in blast_rows:
-        if blast_row['contig_num'] != contig_num:
-            continue
-        if blast_row['ref_name'] != contig_ref:
-            continue
-        blast_num = len(blast_ranges) + 1
-        blast_ranges.append([None, None, blast_num])
-        blast_starts[blast_row['start']].add(blast_num)
-        blast_ends[blast_row['end']].add(blast_num)
+    if not contig_name.startswith('contig-'):
+        for blast_row in blast_rows:
+            if not contig_matcher.is_match(blast_row):
+                continue
+            blast_num = len(blast_ranges) + 1
+            blast_ranges.append([None, None, blast_num])
+            blast_starts[blast_row['start']].add(blast_num)
+            blast_ends[blast_row['end']].add(blast_num)
     event_positions = set(blast_starts)
     event_positions.update(blast_ends)
     event_positions = sorted(event_positions, reverse=True)
 
     insertion_size = 0
     insertion_ranges = []  # [(start, end)]
+    unmatched_ranges = []  # [[start, end]]
     for contig_name2, contig_rows in groupby(reader, itemgetter('contig')):
         if contig_name2 != contig_name:
             continue
@@ -400,6 +430,13 @@ def build_contig(reader,
                         blast_ranges[blast_num-1][0] = pos
                     for blast_num in blast_ends[event_pos]:
                         blast_ranges[blast_num-1][1] = pos
+            link = contig_row.get('link')
+            if link == 'U':
+                # Position is unmatched, add to list.
+                if not unmatched_ranges or unmatched_ranges[-1][-1] != pos-1:
+                    unmatched_ranges.append([pos, pos])
+                else:
+                    unmatched_ranges[-1][-1] = pos
         while event_positions:
             # Use up any events that went past the end of the contig.
             event_pos = event_positions.pop()
@@ -413,7 +450,7 @@ def build_contig(reader,
             arrows.append(Arrow(arrow_start+position_offset,
                                 arrow_end+position_offset,
                                 elevation=-1,
-                                label=f'{contig_num}.{blast_num}'))
+                                label=f'{contig_matcher.num}.{blast_num}'))
         if arrows:
             f.add(ArrowGroup(arrows))
         subtracks = []
@@ -454,7 +491,11 @@ def build_contig(reader,
                                regions=[(a+position_offset,
                                          b+position_offset,
                                          'lightgreen')
-                                        for a, b in insertion_ranges]))
+                                        for a, b in insertion_ranges] +
+                                       [(a+position_offset,
+                                         b+position_offset,
+                                         'yellow')
+                                        for a, b in unmatched_ranges]))
         f.add(Multitrack(subtracks))
         break
 
@@ -529,6 +570,7 @@ def summarize_figure(figure: Figure):
 
 
 def main():
+    # noinspection PyTypeChecker
     parser = ArgumentParser(
         description='Plot assembled contigs against a reference.',
         formatter_class=ArgumentDefaultsHelpFormatter)

@@ -14,18 +14,21 @@ import re
 import typing
 from collections import Counter, defaultdict, OrderedDict
 import csv
+from enum import IntEnum
 from itertools import groupby
-from operator import itemgetter
+from operator import itemgetter, attrgetter
 import os
 from pathlib import Path
 
 import gotoh
 import yaml
+from mappy import Aligner
 
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 from micall.core.remap import PARTIAL_CONTIG_SUFFIX, REVERSED_CONTIG_SUFFIX
 from micall.utils.alignment_wrapper import align_nucs
 from micall.utils.big_counter import BigCounter
+from micall.utils.spring_beads import Wire, Bead
 from micall.utils.translation import translate, ambig_dict
 
 AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'
@@ -36,58 +39,78 @@ CONSENSUS_MIN_COVERAGE = 100
 MAX_CUTOFF = 'MAX'
 
 
+CigarActions = IntEnum(
+    'CigarActions',
+    'MATCH INSERT DELETE SKIPPED SOFT_CLIPPED HARD_CLIPPED',
+    start=0)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Post-processing of short-read alignments.')
 
     parser.add_argument('aligned_csv',
-                        type=argparse.FileType('r'),
+                        type=argparse.FileType(),
                         help='input CSV with aligned reads')
-    parser.add_argument('clipping_csv',
-                        type=argparse.FileType('r'),
-                        help='input CSV with count of soft-clipped reads at each position')
     parser.add_argument('remap_conseq_csv',
-                        type=argparse.FileType('r'),
+                        type=argparse.FileType(),
                         help='input CSV with consensus sequences from remap step')
-    parser.add_argument('conseq_ins_csv',
-                        type=argparse.FileType('r'),
+    parser.add_argument('--clipping_csv',
+                        type=argparse.FileType(),
+                        help='input CSV with count of soft-clipped reads at each position')
+    parser.add_argument('--conseq_ins_csv',
+                        type=argparse.FileType(),
                         help='input CSV with insertions relative to consensus sequence')
-    parser.add_argument('contigs_csv',
-                        type=argparse.FileType('r'),
+    parser.add_argument('--contigs_csv',
+                        type=argparse.FileType(),
                         help='input CSV with assembled contigs')
-    parser.add_argument('nuc_csv',
+    parser.add_argument('--g2p_aligned_csv',
+                        type=argparse.FileType(),
+                        help='CSV of aligned reads from the G2P process')
+    parser.add_argument('--nuc_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing nucleotide frequencies')
-    parser.add_argument('nuc_detail_csv',
+    parser.add_argument('--nuc_detail_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing nucleotide frequencies for each '
                              'contig')
-    parser.add_argument('amino_csv',
+    parser.add_argument('--amino_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing amino frequencies')
-    parser.add_argument('amino_detail_csv',
+    parser.add_argument('--amino_detail_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing amino frequencies for each contig')
-    parser.add_argument('coord_ins_csv',
+    parser.add_argument('--coord_ins_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing insertions relative to coordinate reference')
-    parser.add_argument('conseq_csv',
+    parser.add_argument('--conseq_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing consensus sequences')
-    parser.add_argument('conseq_all_csv',
+    parser.add_argument('--conseq_all_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing consensus sequences (ignoring inadequate '
                              'coverage)')
-    parser.add_argument('failed_align_csv',
+    parser.add_argument('--failed_align_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing any consensus that failed to align')
-    parser.add_argument('conseq_region_csv',
+    parser.add_argument('--conseq_region_csv',
                         type=argparse.FileType('w'),
+                        default=os.devnull,
                         help='CSV containing consensus sequences, split by region')
-    parser.add_argument('genome_coverage_csv',
+    parser.add_argument('--genome_coverage_csv',
                         type=argparse.FileType('w'),
                         help='CSV of coverage levels in full-genome coordinates')
-
+    parser.add_argument('--coverage_summary_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV of coverage levels for the whole sample')
+    parser.add_argument('--minimap_hits_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV of minimap2 match locations')
     return parser.parse_args()
 
 
@@ -135,6 +158,10 @@ class SequenceReport(object):
         self.inserts = self.consensus = self.seed = None
         self.contigs = None  # [(ref, group_ref, seq)]
         self.consensus_by_reading_frame = None  # {frame: seq}
+        if landmarks_yaml is None:
+            landmarks_path = (Path(__file__).parent.parent / 'data' /
+                              'landmark_references.yaml')
+            landmarks_yaml = landmarks_path.read_text()
         self.landmarks = yaml.safe_load(landmarks_yaml)
         self.coordinate_refs = self.remap_conseqs = None
 
@@ -149,7 +176,7 @@ class SequenceReport(object):
                                         defaultdict(Counter))
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
         self.amino_writer = self.amino_detail_writer = None
-        self.genome_coverage_writer = None
+        self.genome_coverage_writer = self.minimap_hits_writer = None
         self.conseq_region_writer = self.fail_writer = None
         self.conseq_all_writer = None
 
@@ -653,20 +680,31 @@ class SequenceReport(object):
                     coverage_summary['coverage_region'] = region
                     coverage_summary['region_width'] = pos_count
 
+    def write_minimap_hits_header(self, minimap_hits_file):
+        self.minimap_hits_writer = csv.DictWriter(minimap_hits_file,
+                                                  ['contig',
+                                                   'ref_name',
+                                                   'start',
+                                                   'end',
+                                                   'ref_start',
+                                                   'ref_end'],
+                                                  lineterminator=os.linesep)
+        self.minimap_hits_writer.writeheader()
+
     def write_genome_coverage_header(self, genome_coverage_file):
         columns = ['contig',
                    'coordinates',
                    'query_nuc_pos',
                    'refseq_nuc_pos',
                    'dels',
-                   'coverage']
+                   'coverage',
+                   'link']
         self.genome_coverage_writer = csv.DictWriter(genome_coverage_file,
                                                      columns,
                                                      lineterminator=os.linesep)
         self.genome_coverage_writer.writeheader()
 
-    def write_genome_coverage_counts(self, genome_coverage_writer=None):
-        genome_coverage_writer = genome_coverage_writer or self.genome_coverage_writer
+    def write_genome_coverage_counts(self):
         seed_nucs = [(seed_nuc.get_consensus(MAX_CUTOFF) or '?', seed_nuc)
                      for seed_amino in self.seed_aminos[0]
                      for seed_nuc in seed_amino.nucleotides]
@@ -683,17 +721,17 @@ class SequenceReport(object):
         is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
                       self.seed.endswith(REVERSED_CONTIG_SUFFIX))
         if is_partial:
-            seed_landmarks = None
+            coordinate_name = None
         else:
             for seed_landmarks in self.landmarks:
                 if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
+                    coordinate_name = seed_landmarks['coordinates']
                     break
             else:
-                seed_landmarks = None
+                coordinate_name = None
 
-        self.write_sequence_coverage_counts(genome_coverage_writer,
-                                            self.detail_seed,
-                                            seed_landmarks,
+        self.write_sequence_coverage_counts(self.detail_seed,
+                                            coordinate_name,
                                             consensus,
                                             consensus_offset,
                                             seed_nucs)
@@ -707,66 +745,106 @@ class SequenceReport(object):
         for contig_num in contig_nums:
             contig_ref, group_ref, contig_seq = self.contigs[contig_num-1]
             contig_name = f'contig-{contig_num}-{contig_ref}'
-            self.write_sequence_coverage_counts(genome_coverage_writer,
-                                                contig_name,
-                                                seed_landmarks,
+            self.write_sequence_coverage_counts(contig_name,
+                                                coordinate_name,
                                                 contig_seq)
 
     def write_sequence_coverage_counts(self,
-                                       genome_coverage_writer,
-                                       contig_name,
-                                       seed_landmarks,
-                                       consensus,
+                                       contig_name: str,
+                                       coordinate_name: typing.Optional[str],
+                                       consensus: str,
                                        consensus_offset=0,
                                        seed_nucs=None):
-        aligned_consensus = '-' * consensus_offset + consensus
-        if seed_landmarks is None:
-            aref = aseq = consensus
-            coordinate_name = None
-            ref_pos = ref_length = None
+        if coordinate_name is None:
+            alignments = []
         else:
-            coordinate_name = seed_landmarks['coordinates']
             coordinate_seq = self.projects.getReference(coordinate_name)
-            gap_open_penalty = 15
-            gap_extend_penalty = 5
-            use_terminal_gap_penalty = 1
-            aref, aseq, score = gotoh.align_it(coordinate_seq,
-                                               consensus,
-                                               gap_open_penalty,
-                                               gap_extend_penalty,
-                                               use_terminal_gap_penalty)
-            ref_length = len(coordinate_seq)
-            ref_pos = len(aref.lstrip('-')) - len(aref)
-        seq_pos = consensus_offset
-        for ref_nuc, seq_nuc in zip(aref, aseq):
-            if ref_pos is not None and (ref_nuc != '-' or
-                                        ref_pos < 0 or
-                                        ref_pos >= ref_length):
-                ref_pos += 1
-                ref_pos_display = ref_pos
+            aligner = Aligner(seq=coordinate_seq, preset='map-ont')
+            alignments = sorted(aligner.map(consensus), key=attrgetter('q_st'))
+            alignments = [alignment
+                          for alignment in alignments
+                          if alignment.is_primary]
+        wire = Wire()
+        bead_end = source_end = 0
+        for alignment in alignments:
+            curr_start = alignment.q_st
+            if source_end < curr_start:
+                bead_size = curr_start - source_end
+                wire.append(Bead(start=bead_end, end=bead_end+bead_size))
+                bead_end += bead_size
+                skipped_source = 0
             else:
-                ref_pos_display = None
-            next_seq_pos = seq_pos + 1
-            next_seq_nuc = (aligned_consensus[seq_pos]
-                            if seq_pos < len(aligned_consensus)
-                            else '')
-            if seq_nuc == next_seq_nuc:
-                seq_pos = next_seq_pos
-                if not seed_nucs:
-                    coverage = dels = None
-                else:
-                    seed_nuc: SeedNucleotide = seed_nucs[seq_pos - 1][1]
-                    coverage = seed_nuc.get_coverage()
-                    if coverage == 0:
-                        continue
-                    dels = seed_nuc.counts['-']
-                row = dict(contig=contig_name,
-                           coordinates=coordinate_name,
-                           query_nuc_pos=seq_pos,
-                           refseq_nuc_pos=ref_pos_display,
-                           dels=dels,
-                           coverage=coverage)
-                genome_coverage_writer.writerow(row)
+                skipped_source = source_end - curr_start
+            bead_size = alignment.r_en - alignment.r_st - skipped_source
+            wire.append(Bead(bead_end,
+                             bead_end+bead_size,
+                             alignment.r_st+skipped_source,
+                             alignment.r_en,
+                             alignment,
+                             skipped_source))
+            if self.minimap_hits_writer is not None:
+                ref_start = alignment.r_st+1
+                ref_end = alignment.r_en
+                if alignment.strand < 0:
+                    ref_start, ref_end = ref_end, ref_start
+                self.minimap_hits_writer.writerow(dict(contig=contig_name,
+                                                       ref_name=coordinate_name,
+                                                       start=alignment.q_st+1,
+                                                       end=alignment.q_en,
+                                                       ref_start=ref_start,
+                                                       ref_end=ref_end))
+            bead_end += bead_size
+            source_end = alignment.q_en
+        expected_end = len(consensus)
+        if source_end < expected_end:
+            wire.append(Bead(start=source_end, end=expected_end))
+        wire.align()
+        seq_pos = skipped_source = 0
+        for bead in wire:
+            ref_pos = bead.display_start - bead.skipped
+            skipped_source += bead.skipped
+            seq_pos -= bead.skipped
+            if bead.alignment is not None:
+                cigar = bead.alignment.cigar
+            else:
+                cigar = [(bead.end - bead.start, None)]
+            for length, action in cigar:
+                if action == CigarActions.DELETE:
+                    ref_pos += length
+                    continue
+                for _ in range(length):
+                    if action == CigarActions.INSERT:
+                        seq_pos += 1
+                        ref_pos_display = None
+                        link = 'I'
+                    elif action == CigarActions.MATCH or action is None:
+                        seq_pos += 1
+                        ref_pos += 1
+                        ref_pos_display = ref_pos
+                        link = 'U' if action is None else 'M'
+                    else:
+                        name = CigarActions(action).name
+                        raise ValueError(f'Unexpected CIGAR action: {name}.')
+                    offset_seq_pos = seq_pos + consensus_offset
+                    if not seed_nucs:
+                        coverage = dels = None
+                    else:
+                        seed_nuc: SeedNucleotide = seed_nucs[offset_seq_pos - 1][1]
+                        coverage = seed_nuc.get_coverage()
+                        if coverage == 0:
+                            continue
+                        dels = seed_nuc.counts['-']
+                    if 0 < skipped_source:
+                        skipped_source -= 1
+                    else:
+                        row = dict(contig=contig_name,
+                                   coordinates=coordinate_name,
+                                   query_nuc_pos=offset_seq_pos,
+                                   refseq_nuc_pos=ref_pos_display,
+                                   dels=dels,
+                                   coverage=coverage,
+                                   link=link)
+                        self.genome_coverage_writer.writerow(row)
 
     @staticmethod
     def _create_nuc_writer(nuc_file):
@@ -1446,7 +1524,7 @@ class InsertionWriter(object):
         self.insert_pos_counts = defaultdict(Counter)
         self.seed = self.qcut = None
         self.insert_file_name = getattr(insert_file, 'name', None)
-        if self.insert_file_name is None:
+        if self.insert_file_name is None or self.insert_file_name == os.devnull:
             self.nuc_seqs = Counter()
             self.nuc_seqs_context = None
         else:
@@ -1579,7 +1657,8 @@ def aln2counts(aligned_csv,
                genome_coverage_csv=None,
                nuc_detail_csv=None,
                contigs_csv=None,
-               conseq_all_csv=None):
+               conseq_all_csv=None,
+               minimap_hits_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1611,6 +1690,7 @@ def aln2counts(aligned_csv,
     @param contigs_csv: Open file handle to read contig sequences.
     @param conseq_all_csv: Open file handle to write consensus sequences *ignoring
         inadequate coverage*.
+    @param minimap_hits_csv: Open file handle to write minimap2 match locations.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1664,6 +1744,8 @@ def aln2counts(aligned_csv,
             report.read_contigs(contigs_csv)
         if genome_coverage_csv is not None:
             report.write_genome_coverage_header(genome_coverage_csv)
+        if minimap_hits_csv is not None:
+            report.write_minimap_hits_header(minimap_hits_csv)
 
         report.process_reads(aligned_csv,
                              coverage_summary,
@@ -1691,15 +1773,18 @@ def main():
                args.coord_ins_csv,
                args.conseq_csv,
                args.failed_align_csv,
+               coverage_summary_csv=args.coverage_summary_csv,
                clipping_csv=args.clipping_csv,
                conseq_ins_csv=args.conseq_ins_csv,
+               g2p_aligned_csv=args.g2p_aligned_csv,
                remap_conseq_csv=args.remap_conseq_csv,
                conseq_region_csv=args.conseq_region_csv,
                amino_detail_csv=args.amino_detail_csv,
                nuc_detail_csv=args.nuc_detail_csv,
                genome_coverage_csv=args.genome_coverage_csv,
                contigs_csv=args.contigs_csv,
-               conseq_all_csv=args.conseq_all_csv)
+               conseq_all_csv=args.conseq_all_csv,
+               minimap_hits_csv=args.minimap_hits_csv)
 
 
 if __name__ == '__main__':
