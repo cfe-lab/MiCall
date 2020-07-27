@@ -7,7 +7,6 @@ from concurrent.futures.process import ProcessPoolExecutor
 from glob import glob
 import json
 import logging
-import multiprocessing
 from operator import attrgetter
 import os
 import shutil
@@ -300,7 +299,7 @@ if you want to write the outputs to "/host/output/path/":
 """
 
 
-def get_parser():
+def get_parser(default_max_active):
     # noinspection PyTypeChecker
     parser = ArgumentParser(
         description=MAIN_DESCRIPTION,
@@ -309,10 +308,10 @@ def get_parser():
         title="Sub-commands (i.e. modes of operation)",
     )
 
-    commands = [add_folder_parser(subparsers),
+    commands = [add_folder_parser(subparsers, default_max_active),
                 add_sample_parser(subparsers),
-                add_hcv_sample_parser(subparsers),
-                add_basespace_parser(subparsers)]
+                add_hcv_sample_parser(subparsers, default_max_active),
+                add_basespace_parser(subparsers, default_max_active)]
     for command_parser in commands:
         command_parser.add_argument(
             "--all_projects",
@@ -337,7 +336,17 @@ def get_parser():
     return parser
 
 
-def add_basespace_parser(subparsers):
+def get_available_memory():
+    with open('/proc/meminfo') as meminfo:
+        for line in meminfo:
+            label, value, *units = line.split()
+            if label == 'MemAvailable:':
+                assert units == ['kB'], units
+                return int(value) * 1024
+    raise ValueError('MemAvailable not found in /proc/meminfo.')
+
+
+def add_basespace_parser(subparsers, default_max_active):
     # ####
     # BaseSpace mode.
     # ####
@@ -351,14 +360,14 @@ def add_basespace_parser(subparsers):
         "--max_active",
         "-m",
         type=int,
-        help="Maximum number of samples to process at once, "
-             "if not the number of CPUs.",
+        default=default_max_active,
+        help="Maximum number of samples to process at once.",
     )
     basespace_parser.set_defaults(func=basespace_run)
     return basespace_parser
 
 
-def add_folder_parser(subparsers):
+def add_folder_parser(subparsers, default_max_max_active):
     # ####
     # The "process a full directory" subcommand.
     # ####
@@ -387,8 +396,8 @@ def add_folder_parser(subparsers):
         "--max_active",
         "-m",
         type=int,
-        help="Maximum number of samples to process at once, "
-             "if not the number of CPU's.",
+        default=default_max_max_active,
+        help="Maximum number of samples to process at once.",
     )
     folder_parser.add_argument(
         "--fastq1s",
@@ -453,11 +462,12 @@ def add_sample_parser(subparsers):
              "--run_folder.",
         default="micall-results",
     )
-    single_sample_parser.set_defaults(func=single_sample)
+    single_sample_parser.set_defaults(func=single_sample,
+                                      max_active=1)
     return single_sample_parser
 
 
-def add_hcv_sample_parser(subparsers):
+def add_hcv_sample_parser(subparsers, default_max_active):
     # ####
     # The "process a single HCV sample" subcommand.
     # ####
@@ -517,7 +527,8 @@ def add_hcv_sample_parser(subparsers):
              "--run_folder.",
         default="micall-results",
     )
-    hcv_sample_parser.set_defaults(func=hcv_sample)
+    hcv_sample_parser.set_defaults(func=hcv_sample,
+                                   max_active=min(default_max_active, 2))
     return hcv_sample_parser
 
 
@@ -576,7 +587,6 @@ def process_run(run_info, args):
 
 
 def single_sample(args):
-    args.max_active = 1
     resolved_args = MiCallArgs(args)
     scratch_path = os.path.join(args.results_folder, "scratch")
     makedirs(scratch_path)
@@ -598,7 +608,6 @@ def single_sample(args):
 
 
 def hcv_sample(args):
-    args.max_active = 2
     resolved_args = MiCallArgs(args)
     midi_args = MiCallArgs(args, map_midi=True)
     scratch_path = os.path.join(args.results_folder, "scratch")
@@ -1102,16 +1111,24 @@ def collate_samples(run_info):
 
 # noinspection PyTypeChecker,PyUnresolvedReferences
 def main():
-    parser = get_parser()
+    available_memory = get_available_memory()
+    recommended_memory = 1 << 30  # 1GB
+    default_max_active = max(1, available_memory // recommended_memory)
+    cpu_count = len(os.sched_getaffinity(0))
+    default_max_active = min(default_max_active, cpu_count)
+
+    parser = get_parser(default_max_active)
     args = parser.parse_args()
     if not hasattr(args, "func"):
         # No valid subcommand was given; print the help message and exit.
         parser.print_help()
         return
     args.skip = args.skip or ()
+    if available_memory < recommended_memory:
+        logger.warning("Available memory is less than 1GB, processing may fail.")
     logger.info("Starting on %s with %d CPU's.",
                 socket.gethostname(),
-                multiprocessing.cpu_count())
+                cpu_count)
     args.func(args)
 
 
