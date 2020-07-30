@@ -5826,7 +5826,7 @@
         "CCCATGTGATTTTAATAGCTTCTTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "AAA"
       ],
-      "seed_group": null
+      "seed_group": "SARS-CoV-2-seeds"
     },
     "GP120": {
       "is_nucleotide": false,
