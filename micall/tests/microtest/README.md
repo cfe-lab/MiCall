@@ -51,3 +51,6 @@ The scenarios that each file tests are:
   details.
 * 2170A-HCV - a mixed infection of HCV-1a and HCV-2a, each about 3000 bases
   long, with enough coverage to assemble two contigs.
+* 2180A-HIV - random reads from GP120 that can be assembled. See the
+  `make_sample.py` script for details.
+* 2190A-SARS - amplicon from the start of nsp12.

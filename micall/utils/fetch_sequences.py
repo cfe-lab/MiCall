@@ -9,7 +9,7 @@ import re
 import typing
 from difflib import Differ, SequenceMatcher
 from io import StringIO
-from itertools import chain
+from itertools import chain, groupby
 from textwrap import fill, wrap
 
 from yaml import safe_load
@@ -387,7 +387,9 @@ def check_sars_coordinates(project_config, unchecked_ref_names: set):
     print("""\
 SARS-CoV-2 coordinate references are translated from the seed reference.
 """)
-    boundaries = {'SARS-CoV-2-orf1ab': (266, 21555),
+    boundaries = {"SARS-CoV-2-5'UTR": (1, 265),
+                  'SARS-CoV-2-ORF1a': (266, 13483),
+                  'SARS-CoV-2-ORF1b': (13468, 21555),
                   'SARS-CoV-2-S': (21563, 25384),
                   'SARS-CoV-2-ORF3a': (25393, 26220),
                   'SARS-CoV-2-E': (26245, 26472),
@@ -398,6 +400,7 @@ SARS-CoV-2 coordinate references are translated from the seed reference.
                   'SARS-CoV-2-ORF8': (27894, 28259),
                   'SARS-CoV-2-N': (28274, 29533),
                   'SARS-CoV-2-ORF10': (29558, 29674),
+                  "SARS-CoV-2-3'UTR": (29675, 29903),
                   'SARS-CoV-2-nsp1': (266, 805),
                   'SARS-CoV-2-nsp2': (806, 2719),
                   'SARS-CoV-2-nsp3': (2720, 8554),
@@ -412,7 +415,16 @@ SARS-CoV-2 coordinate references are translated from the seed reference.
                   'SARS-CoV-2-nsp13': (16237, 18039),
                   'SARS-CoV-2-nsp14': (18040, 19620),
                   'SARS-CoV-2-nsp15': (19621, 20658),
-                  'SARS-CoV-2-nsp16': (20659, 21552)}
+                  'SARS-CoV-2-nsp16': (20659, 21552),
+                  'SARS-CoV-2-TRS-B-1': (21556, 21562),
+                  'SARS-CoV-2-TRS-B-2': (25385, 25392),
+                  'SARS-CoV-2-TRS-B-3': (26221, 26244),
+                  'SARS-CoV-2-TRS-B-4': (26473, 26522),
+                  'SARS-CoV-2-TRS-B-5': (27192, 27201),
+                  'SARS-CoV-2-TRS-B-6': (27388, 27393),
+                  'SARS-CoV-2-TRS-B-7': (27888, 27893),
+                  'SARS-CoV-2-TRS-B-8': (28260, 28273),
+                  'SARS-CoV-2-TRS-B-9': (29534, 29557)}
 
     # Funky translation at this base: it gets duplicated.
     duplicated_base = 13468
@@ -421,14 +433,31 @@ SARS-CoV-2 coordinate references are translated from the seed reference.
     unchecked_ref_names.difference_update(ref_names)
 
     source_sequences = {}
+    ref_positions = set()
     for ref_name, (start, end) in boundaries.items():
-        source_nuc_sequence = seed_sequence[start-1:end-3]  # Trim stop codons.
-        if start <= duplicated_base <= end:
+        ref_positions = ref_positions.union(range(start, end+1))
+        source_nuc_sequence = seed_sequence[start-1:end]
+        if start < duplicated_base <= end:
             source_nuc_sequence = (
                 source_nuc_sequence[:duplicated_base-start+1] +
                 source_nuc_sequence[duplicated_base-start:])
-        source_sequences[ref_name] = translate(source_nuc_sequence)
+        if 'TRS-B' in ref_name or ref_name.endswith('UTR'):
+            source_sequences[ref_name] = source_nuc_sequence
+        else:
+            source_sequences[ref_name] = translate(source_nuc_sequence)
         print(ref_name, len(source_sequences[ref_name]))
+
+    all_positions = set(range(1, len(seed_sequence)+1))
+    missing_positions = sorted(all_positions - ref_positions)
+    if missing_positions:
+        print('Missing positions from SARS:')
+    for offset, items in groupby(enumerate(missing_positions),
+                                 lambda item: item[1]-item[0]):
+        positions = [x for i, x in items]
+        if len(positions) == 1:
+            print(*positions)
+        else:
+            print(f'{positions[0]}-{positions[-1]}')
 
     report, error_count = compare_config(ref_names,
                                          project_config,
@@ -536,7 +565,10 @@ def compare_config(ref_names,
         else:
             project_sequence = None
         if project_sequence is None:
-            project_sequence = project_config.getReference(ref_name)
+            try:
+                project_sequence = project_config.getReference(ref_name)
+            except KeyError:
+                project_sequence = ''
         if name_part is None:
             source_name = ref_name
         else:
