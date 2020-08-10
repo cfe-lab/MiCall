@@ -12,18 +12,25 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
-    parser = ArgumentParser(description='Map FASTQ files to references.',
+    # noinspection PyTypeChecker
+    parser = ArgumentParser(description='Predict resistance from mutations.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     # inputs
     parser.add_argument('main_amino_csv',
                         help='CSV containing amino frequencies from main sample')
     parser.add_argument('midi_amino_csv',
                         help='CSV containing amino frequencies from MIDI sample')
+    parser.add_argument('main_nuc_csv',
+                        help='CSV containing nucleotide frequencies from main sample')
+    parser.add_argument('midi_nuc_csv',
+                        help='CSV containing nucleotide frequencies from MIDI sample')
 
     # outputs
     parser.add_argument('resistance_csv',
                         help='CSV containing resistance calls.')
     parser.add_argument('mutations_csv',
+                        help='CSV containing resistance mutations.')
+    parser.add_argument('nuc_mutations_csv',
                         help='CSV containing resistance mutations.')
     parser.add_argument('resistance_fail_csv',
                         help='CSV containing failure reasons.')
@@ -41,13 +48,14 @@ def load_sample(args):
     shutil.rmtree(scratch_path, ignore_errors=True)
 
     sample1 = Sample(amino_csv=args.main_amino_csv,
+                     nuc_csv=args.main_nuc_csv,
                      resistance_csv=args.resistance_csv,
                      mutations_csv=args.mutations_csv,
                      resistance_fail_csv=args.resistance_fail_csv,
                      resistance_pdf=args.resistance_pdf,
                      resistance_consensus_csv=args.resistance_consensus_csv,
                      scratch_path=scratch_path)
-    sample2 = Sample(amino_csv=args.midi_amino_csv)
+    sample2 = Sample(amino_csv=args.midi_amino_csv, nuc_csv=args.midi_nuc_csv)
     return SampleGroup(sample1, sample2)
 
 

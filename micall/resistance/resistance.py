@@ -1,4 +1,5 @@
 import os
+import typing
 from argparse import ArgumentParser, FileType
 from collections import namedtuple
 from csv import DictReader, DictWriter
@@ -29,16 +30,23 @@ class LowCoverageError(Exception):
 def parse_args():
     parser = ArgumentParser(
         description='Make resistance calls and list mutations from amino counts.')
-    parser.add_argument('aminos_csv', type=FileType(), help='amino counts')
-    parser.add_argument('midi_aminos_csv',
-                        type=FileType(),
-                        help='amino counts for HCV MIDI region or the same as aminos_csv')
+    parser.add_argument('main_amino_csv',
+                        help='CSV containing amino frequencies from main sample')
+    parser.add_argument('midi_amino_csv',
+                        help='CSV containing amino frequencies from MIDI sample')
+    parser.add_argument('main_nuc_csv',
+                        help='CSV containing nucleotide frequencies from main sample')
+    parser.add_argument('midi_nuc_csv',
+                        help='CSV containing nucleotide frequencies from MIDI sample')
     parser.add_argument('resistance_csv',
                         type=FileType('w'),
                         help='resistance calls')
     parser.add_argument('mutations_csv',
                         type=FileType('w'),
                         help='Relevant mutations present above a threshold')
+    parser.add_argument('nuc_mutations_csv',
+                        type=FileType('w'),
+                        help='Relevant nucleotide mutations present above a threshold')
     parser.add_argument('resistance_fail_csv',
                         type=FileType('w'),
                         help='regions that failed to make a resistance call')
@@ -116,16 +124,19 @@ def check_coverage(region, rows, start_pos=1, end_pos=None):
         raise LowCoverageError('not enough high-coverage amino acids')
 
 
-def combine_aminos(amino_csv, midi_amino_csv, failures):
+def combine_aminos(amino_csv, midi_amino_csv, failures: dict, midi_positions: dict):
     """ Combine amino rows from the two amplified regions.
 
     :param amino_csv: an open file with the amino counts from the whole genome
         region.
     :param midi_amino_csv: an open file with the amino counts from the MIDI
         region.
-    :param dict failures: {(seed, region, is_midi): message} messages for any regions
+    :param failures: {(seed, region, is_midi): message} messages for any regions
         that did not have enough coverage. is_midi is True if the region was
         in the midi_amino_csv file.
+    :param midi_positions: Will get filled in with {genotype: {pos}}, where each
+        pos is a reference amino acid position that was pulled from the midi
+        sample.
     """
     is_midi = True
     midi_rows = {}  # {genotype: [row]}
@@ -172,7 +183,14 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
                     low_coverage_message = None
                 except LowCoverageError:
                     region_midi_rows = []
-            main_rows = combine_midi_rows(main_rows, region_midi_rows, seed)
+            try:
+                genotype_midi_positions = midi_positions[genotype]
+            except KeyError:
+                genotype_midi_positions = midi_positions[genotype] = set()
+            main_rows = combine_midi_rows(main_rows,
+                                          region_midi_rows,
+                                          seed,
+                                          genotype_midi_positions)
         if low_coverage_message:
             failures[(seed, region, is_midi)] = low_coverage_message
         yield from main_rows
@@ -195,7 +213,7 @@ def write_failure(fail_writer, seed, region, reason):
                               reason=reason))
 
 
-def combine_midi_rows(main_rows, midi_rows, seed):
+def combine_midi_rows(main_rows, midi_rows, seed, genotype_midi_positions: set):
     main_row_map = {int(row['refseq.aa.pos']): row
                     for row in main_rows}
     midi_row_map = {int(row['refseq.aa.pos']): row
@@ -213,14 +231,57 @@ def combine_midi_rows(main_rows, midi_rows, seed):
             if pos <= 336:
                 yield main_row
         elif main_row is None:
-            midi_row['seed'] = seed  # Override MIDI seed with main seed.
+            genotype_midi_positions.add(pos)
             yield midi_row
         elif (pos <= 336 and
               int(main_row['coverage']) > int(midi_row['coverage'])):
             yield main_row
         else:
+            genotype_midi_positions.add(pos)
             yield midi_row
-            
+
+
+def combine_nucs(nuc_csv: typing.TextIO,
+                 midi_nuc_csv: typing.TextIO,
+                 midi_positions: typing.Dict[str, typing.Set[int]]):
+    """ Combine amino rows from the two amplified regions.
+
+    :param nuc_csv: an open file with the nucleotide counts from the whole genome
+        region.
+    :param midi_nuc_csv: an open file with the nucleotide counts from the MIDI
+        region.
+    :param midi_positions: {genotype: {pos}}, where each pos is a reference
+        amino acid position that was pulled from the midi sample.
+    """
+    midi_rows = {}  # {genotype: {nuc_pos: midi_row}}
+    for (seed, region), seed_rows in groupby(DictReader(midi_nuc_csv),
+                                             itemgetter('seed', 'region')):
+        if not region.endswith('-NS5b'):
+            continue
+        genotype = get_genotype(seed)
+        genotype_midi_positions = midi_positions[genotype]
+        genotype_midi_rows = midi_rows[genotype] = {}
+        for midi_row in seed_rows:
+            nuc_pos = midi_row['refseq.nuc.pos']
+            amino_pos = (int(nuc_pos) + 2) // 3
+            if amino_pos in genotype_midi_positions:
+                genotype_midi_rows[nuc_pos] = midi_row
+    for (seed, region), seed_rows in groupby(DictReader(nuc_csv),
+                                             itemgetter('seed', 'region')):
+        if not region.endswith('-NS5b'):
+            yield from seed_rows
+            continue
+        genotype = get_genotype(seed)
+        genotype_midi_rows = midi_rows.pop(genotype, {})
+        for main_row in seed_rows:
+            try:
+                midi_row = genotype_midi_rows.pop(main_row['refseq.nuc.pos'])
+                yield midi_row
+            except KeyError:
+                yield main_row
+        yield from genotype_midi_rows.values()
+        genotype_midi_rows.clear()
+
 
 def read_aminos(amino_rows,
                 min_fraction,
@@ -438,6 +499,31 @@ def write_resistance(aminos,
                                                    version=alg_version))
 
 
+def write_nuc_mutations(nuc_rows: typing.Iterable[dict],
+                        nuc_mutations_csv: typing.TextIO,
+                        algorithms: typing.Dict[str, AsiAlgorithm]):
+    mutations_writer = DictWriter(nuc_mutations_csv,
+                                  ['seed',
+                                   'region',
+                                   'wt',
+                                   'refseq_nuc_pos',
+                                   'var',
+                                   'prevalance'],
+                                  lineterminator=os.linesep)
+    mutations_writer.writeheader()
+    for seed, seed_rows in groupby(nuc_rows, itemgetter('seed')):
+        genotype = get_genotype(seed)
+        algorithm = algorithms.get(genotype)
+        for region, region_rows in groupby(seed_rows, itemgetter('region')):
+            resistance_positions = algorithm.get_gene_positions(region)
+            # TODO: read start/end pos from landmarks, and get wild type nucs.
+            for row in region_rows:
+                nuc_pos = int(row['refseq.nuc.pos'])
+                amino_pos = (nuc_pos + 2) // 3
+                if amino_pos not in resistance_positions:
+                    continue
+
+
 def create_consensus_writer(resistance_consensus_csv):
     resistance_consensus_writer = DictWriter(resistance_consensus_csv,
                                              ['seed',
@@ -552,8 +638,11 @@ def write_failures(failures, filtered_aminos, fail_csv):
 
 def report_resistance(amino_csv,
                       midi_amino_csv,
+                      nuc_csv,
+                      midi_nuc_csv,
                       resistance_csv,
                       mutations_csv,
+                      nuc_mutations_csv,
                       fail_csv,
                       region_choices=None,
                       resistance_consensus_csv=None):
@@ -562,7 +651,14 @@ def report_resistance(amino_csv,
     else:
         selected_regions = select_reported_regions(region_choices, REPORTED_REGIONS)
     failures = {}
-    amino_rows = combine_aminos(amino_csv, midi_amino_csv, failures)
+    midi_positions = {}
+    amino_rows = combine_aminos(amino_csv,
+                                midi_amino_csv,
+                                failures,
+                                midi_positions)
+    nuc_rows = combine_nucs(nuc_csv,
+                            midi_nuc_csv,
+                            midi_positions)
     algorithms = load_asi()
     aminos = read_aminos(amino_rows,
                          MIN_FRACTION,
@@ -576,14 +672,20 @@ def report_resistance(amino_csv,
                      mutations_csv,
                      algorithms,
                      resistance_consensus_csv)
+    write_nuc_mutations(nuc_rows,
+                        nuc_mutations_csv,
+                        algorithms)
 
 
 def main():
     args = parse_args()
     report_resistance(args.aminos_csv,
                       args.midi_aminos_csv,
+                      args.nuc_csv,
+                      args.midi_nuc_csv,
                       args.resistance_csv,
                       args.mutations_csv,
+                      args.nuc_mutations_csv,
                       args.resistance_fail_csv)
 
 
