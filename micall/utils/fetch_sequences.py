@@ -14,6 +14,7 @@ from textwrap import fill, wrap
 
 from yaml import safe_load
 
+from micall.data.landmark_reader import LandmarkReader
 from micall.resistance.asi_algorithm import WILD_TYPES_PATH
 from micall.utils.translation import translate
 
@@ -134,29 +135,32 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
     overall_consensus_env = \
         consensus_sequences['CON_OF_CONS'].replace('-', '').upper()
 
-    region_boundaries = {'HIV1B-gag': (789, 2289),
-                         'PR': (2252, 2549),
-                         'RT': (2549, 3869),  # p51 only
-                         'INT': (4229, 5093),
-                         'HIV1B-vif': (5040, 5616),
-                         'HIV1B-vpr': (5558, 5847),
-                         'HIV1B-vpu': (6061, 6307),
-                         'GP120': (6224, 7757),
-                         'GP41': (7757, 8792),
-                         'HIV1B-nef': (8796, 9414)}
+    region_names = ['HIV1B-gag',
+                    'PR',
+                    'RT',  # p51 only
+                    'INT',
+                    'HIV1B-vif',
+                    'HIV1B-vpr',
+                    'HIV1B-vpu',
+                    'GP120',
+                    'GP41',
+                    'HIV1B-nef']
     source_sequences = {}
-    for region, (start, stop) in region_boundaries.items():
-        source_nuc_sequence = hxb2[start:stop]
-        if region == 'HIV1B-nef':
+    landmark_reader = LandmarkReader.load()
+    for region_name in region_names:
+        region = landmark_reader.get_gene('HIV1-B-FR-K03455-seed',
+                                          region_name)
+        source_nuc_sequence = hxb2[region['start']:region['end']]
+        if region_name == 'HIV1B-nef':
             # Replace premature stop codon with Consensus B.
             source_nuc_sequence = (source_nuc_sequence[:369] +
                                    consensus_b_nef[369:372] +
                                    source_nuc_sequence[372:])
-        elif region == 'HIV1B-vpr':
+        elif region_name == 'HIV1B-vpr':
             # Drop nucleotide to avoid frame shift.
             source_nuc_sequence = (source_nuc_sequence[:213] +
                                    source_nuc_sequence[214:])
-        source_sequences[region] = translate(source_nuc_sequence)
+        source_sequences[region_name] = translate(source_nuc_sequence)
 
     consensus_b_v3_nuc_seq = consensus_b_env[876:981]
     overall_v3_nuc_seq = overall_consensus_env[855:960]
@@ -277,43 +281,34 @@ This script contains a complete list of the reference accession numbers.
                          'HCV4': 'GU814265',
                          'HCV5': 'AF064490',
                          'HCV6': 'Y12083',
-                         'HCV7': 'EF108306'}
+                         # EF108306.2 is available, but only extends 5' and 3'.
+                         'HCV7': 'EF108306.1'}
     source_nuc_sequences = {
         genotype: fetch_by_accession(accession_number)
         for genotype, accession_number in accession_numbers.items()}
 
-    gene_names = [
-        'Core', 'E1', 'E2', 'p7', 'NS2', 'NS3', 'NS4a', 'NS4b', 'NS5a', 'NS5b']
-    # Boundary positions are from the European HCV database records.
+    # Boundary positions in landmarks are from the European HCV database records.
     # https://euhcvdb.ibcp.fr/euHCVdb/do/displayHCVEntry?primaryAC=AF009606
     # That is the original H77 accession number for HCV1A. NC_004102 is the
     # curated and annotated version that was derived from the AF009606 entry.
     # All the other genotypes can be found by their regular accession numbers.
 
-    genotype_boundaries = {
-        #         Core E1   E2    p7    NS2   NS3   NS4a  NS4b  NS5a  NS5b
-        'HCV1A': [342, 915, 1491, 2580, 2769, 3420, 5313, 5475, 6258, 7602, 9375],
-        'HCV1B': [342, 915, 1491, 2580, 2769, 3420, 5313, 5475, 6258, 7599, 9372],
-        'HCV2': [341, 914, 1490, 2591, 2780, 3431, 5324, 5486, 6269, 7667, 9440],
-        'HCV3': [340, 913, 1489, 2596, 2785, 3436, 5329, 5491, 6274, 7630, 9403],
-        'HCV4': [341, 914, 1490, 2579, 2768, 3419, 5312, 5474, 6257, 7592, 9365],
-        'HCV5': [247, 820, 1396, 2488, 2677, 3328, 5221, 5383, 6166, 7516, 9289],
-        'HCV6': [284, 857, 1433, 2534, 2723, 3374, 5267, 5429, 6212, 7565, 9338],
-        'HCV7': [309, 882, 1458, 2559, 2748, 3399, 5292, 5454, 6237, 7575, 9348]}
-
     hcv_project = project_config.config['projects']['HCV']
     ref_names = {project_region['coordinate_region']
                  for project_region in hcv_project['regions']}
     unchecked_ref_names.difference_update(ref_names)
+    landmark_reader = LandmarkReader.load()
 
     source_sequences = {}
     for ref_name in sorted(ref_names):
         ref_parts = ref_name.split('-')
         genotype = ref_parts[0]
-        gene_name = ref_parts[-1]
-        gene_index = gene_names.index(gene_name)
-        boundaries = genotype_boundaries[genotype]
-        start, stop = boundaries[gene_index:gene_index+2]
+        seed_name = f'HCV-{genotype[3:].lower()}'
+        if len(seed_name) == 5:
+            seed_name += 'a'
+
+        region = landmark_reader.get_gene(seed_name, ref_name)
+        start, stop = region['start'], region['end']
         nuc_seq_ref_trimmed = source_nuc_sequences[genotype][start-1:stop-1]
         source_sequences[ref_name] = translate(nuc_seq_ref_trimmed)
 
@@ -346,16 +341,16 @@ def check_hla_coordinates(project_config, unchecked_ref_names: set):
     print("""\
 HLA coordinate references are translated from the seed reference.
 """)
-    boundaries = {'HLA-B-exon2': (200, 470),
-                  'HLA-B-exon3': (716, 992)}
+    ref_names = ('HLA-B-exon2', 'HLA-B-exon3')
 
     seed_sequence = project_config.getReference('HLA-B-seed')
-    ref_names = sorted(boundaries.keys())
     unchecked_ref_names.difference_update(ref_names)
+    landmark_reader = LandmarkReader.load()
 
     source_sequences = {}
-    for ref_name, (start, end) in boundaries.items():
-        source_nuc_sequence = seed_sequence[start:end]
+    for ref_name in ref_names:
+        region = landmark_reader.get_gene('HLA-B-seed', ref_name[6:])
+        source_nuc_sequence = seed_sequence[region['start']:region['end']]
         source_sequences[ref_name] = translate(source_nuc_sequence)
 
     report, error_count = compare_config(ref_names,
@@ -387,41 +382,44 @@ def check_sars_coordinates(project_config, unchecked_ref_names: set):
     print("""\
 SARS-CoV-2 coordinate references are translated from the seed reference.
 """)
-    boundaries = {'SARS-CoV-2-orf1ab': (266, 21555),
-                  'SARS-CoV-2-S': (21563, 25384),
-                  'SARS-CoV-2-ORF3a': (25393, 26220),
-                  'SARS-CoV-2-E': (26245, 26472),
-                  'SARS-CoV-2-M': (26523, 27191),
-                  'SARS-CoV-2-ORF6': (27202, 27387),
-                  'SARS-CoV-2-ORF7a': (27394, 27759),
-                  'SARS-CoV-2-ORF7b': (27756, 27887),
-                  'SARS-CoV-2-ORF8': (27894, 28259),
-                  'SARS-CoV-2-N': (28274, 29533),
-                  'SARS-CoV-2-ORF10': (29558, 29674),
-                  'SARS-CoV-2-nsp1': (266, 805),
-                  'SARS-CoV-2-nsp2': (806, 2719),
-                  'SARS-CoV-2-nsp3': (2720, 8554),
-                  'SARS-CoV-2-nsp4': (8555, 10054),
-                  'SARS-CoV-2-nsp5': (10055, 10972),
-                  'SARS-CoV-2-nsp6': (10973, 11842),
-                  'SARS-CoV-2-nsp7': (11843, 12091),
-                  'SARS-CoV-2-nsp8': (12092, 12685),
-                  'SARS-CoV-2-nsp9': (12686, 13024),
-                  'SARS-CoV-2-nsp10': (13025, 13441),
-                  'SARS-CoV-2-nsp12': (13442, 16236),
-                  'SARS-CoV-2-nsp13': (16237, 18039),
-                  'SARS-CoV-2-nsp14': (18040, 19620),
-                  'SARS-CoV-2-nsp15': (19621, 20658),
-                  'SARS-CoV-2-nsp16': (20659, 21552)}
+    ref_names = ('SARS-CoV-2-orf1ab',
+                 'SARS-CoV-2-S',
+                 'SARS-CoV-2-ORF3a',
+                 'SARS-CoV-2-E',
+                 'SARS-CoV-2-M',
+                 'SARS-CoV-2-ORF6',
+                 'SARS-CoV-2-ORF7a',
+                 'SARS-CoV-2-ORF7b',
+                 'SARS-CoV-2-ORF8',
+                 'SARS-CoV-2-N',
+                 'SARS-CoV-2-ORF10',
+                 'SARS-CoV-2-nsp1',
+                 'SARS-CoV-2-nsp2',
+                 'SARS-CoV-2-nsp3',
+                 'SARS-CoV-2-nsp4',
+                 'SARS-CoV-2-nsp5',
+                 'SARS-CoV-2-nsp6',
+                 'SARS-CoV-2-nsp7',
+                 'SARS-CoV-2-nsp8',
+                 'SARS-CoV-2-nsp9',
+                 'SARS-CoV-2-nsp10',
+                 'SARS-CoV-2-nsp12',
+                 'SARS-CoV-2-nsp13',
+                 'SARS-CoV-2-nsp14',
+                 'SARS-CoV-2-nsp15',
+                 'SARS-CoV-2-nsp16')
 
     # Funky translation at this base: it gets duplicated.
     duplicated_base = 13468
     seed_sequence = project_config.getReference('SARS-CoV-2-seed')
-    ref_names = sorted(boundaries.keys())
     unchecked_ref_names.difference_update(ref_names)
+    landmark_reader = LandmarkReader.load()
 
     source_sequences = {}
-    for ref_name, (start, end) in boundaries.items():
+    for ref_name in ref_names:
+        region = landmark_reader.get_gene('SARS-CoV-2-seed', ref_name)
+        start = region['start']
+        end = region['end']
         source_nuc_sequence = seed_sequence[start-1:end-3]  # Trim stop codons.
         if start <= duplicated_base <= end:
             source_nuc_sequence = (
