@@ -796,7 +796,6 @@ class KiveWatcher:
         return run
 
     def run_proviral_pipeline(self, sample_watcher, folder_watcher, input_pipeline_types, description):
-        import pdb; pdb.set_trace()
         pipeline_id = self.config.micall_proviral_pipeline_id
         if pipeline_id is None:
             return None
