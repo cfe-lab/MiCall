@@ -100,7 +100,6 @@ def genreport_rerun(source, working):
         with open(os.path.join(working_path, 'amino.csv')) as amino_csv, \
                 open(os.path.join(midi_path, 'amino.csv')) as midi_amino_csv, \
                 open(os.path.join(working_path, 'nuc.csv')) as nuc_csv, \
-                open(os.path.join(midi_path, 'nuc.csv')) as midi_nuc_csv, \
                 open(os.path.join(working_path, 'resistance.csv'), 'w') as resistance_csv, \
                 open(os.path.join(working_path, 'mutations.csv'), 'w') as mutations_csv, \
                 open(os.path.join(working_path, 'nuc_mutations.csv'), 'w') as nuc_mutations_csv, \
@@ -108,7 +107,6 @@ def genreport_rerun(source, working):
             report_resistance(amino_csv,
                               midi_amino_csv,
                               nuc_csv,
-                              midi_nuc_csv,
                               resistance_csv,
                               mutations_csv,
                               nuc_mutations_csv,

@@ -8,7 +8,7 @@ import pytest
 from micall.resistance.resistance import read_aminos, write_resistance, \
     select_reported_regions, AminoList, filter_aminos, load_asi, get_genotype, \
     combine_aminos, write_consensus, create_consensus_writer, write_failures, \
-    combine_nucs, write_nuc_mutations
+    write_nuc_mutations
 
 
 @pytest.fixture(scope="module")
@@ -65,8 +65,7 @@ def check_combination(
         amino_csv,
         midi_amino_csv,
         expected_csv,
-        expected_failures=None,
-        expected_midi_positions=None):
+        expected_failures=None):
     """ Combine two amino count CSV files, and check result.
 
     :param amino_csv: open file with main amino counts
@@ -74,21 +73,16 @@ def check_combination(
         file as amino_csv, in which case it will be ignored.
     :param expected_csv: text expected to find in combined CSV
     :param expected_failures: None for no failures, or {(region, is_midi): message}
-    :param expected_midi_positions: None to skip checking, or {seed: {pos}}
     """
     if expected_failures is None:
         expected_failures = {}
     failures = {}
-    midi_positions = {}
     combined_rows = list(combine_aminos(amino_csv,
                                         midi_amino_csv,
-                                        failures,
-                                        midi_positions))
+                                        failures))
 
     assert_csv_rows(combined_rows, expected_csv)
     assert failures == expected_failures
-    if expected_midi_positions is not None:
-        assert midi_positions == expected_midi_positions
 
 
 def assert_csv_rows(rows: typing.Iterable[dict], expected_csv: str):
@@ -276,12 +270,10 @@ HCV-1a,HCV1A-H77-NS5b,15,4,559,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-1a,HCV1A-H77-NS5b,15,7,560,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 HCV-1a,HCV1A-H77-NS5b,15,10,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
-    expected_midi_positions = {'HCV-1a': {558, 559, 560, 561}}
 
     check_combination(amino_csv,
                       midi_amino_csv,
-                      expected_csv,
-                      expected_midi_positions=expected_midi_positions)
+                      expected_csv)
 
 
 def test_combine_aminos_ns5b_multiple_seeds():
@@ -541,12 +533,10 @@ HCV-1a,HCV1A-H77-NS5b,15,10,559,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,
 HCV-1a,HCV1A-H77-NS5b,15,13,560,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 HCV-1a,HCV1A-H77-NS5b,15,16,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
-    expected_midi_positions = {'HCV-1a': {228, 558, 559, 560, 561}}
 
     check_combination(amino_csv,
                       midi_amino_csv,
-                      expected_csv,
-                      expected_midi_positions=expected_midi_positions)
+                      expected_csv)
 
 
 def test_combine_aminos_ignores_main_tail():
@@ -694,66 +684,9 @@ HCV-1a,HCV1A-H77-NS5b,15,10,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     check_combination(amino_csv, amino_csv, expected_csv, expected_failures)
 
 
-def test_combine_nucs():
+def test_write_nuc_mutations_not_sars():
+    """ Only SARS-CoV-2 samples report nucleotide mutations. """
     nuc_csv = StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-HCV-1a,HCV1A-H77-NS5a,15,1101,1504,10000,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2101,1501,10000,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2102,1502,0,10000,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2103,1503,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2104,1504,0,0,0,10000,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2105,1505,0,0,0,10000,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2106,1506,0,0,0,10000,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2107,1507,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2108,1508,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2109,1509,0,0,10000,0,0,0,0,0,0,10000
-""")
-    midi_nuc_csv = StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-HCV-1a,HCV1A-H77-NS5a,15,11,1504,0,0,0,10000,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,101,1504,10000,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,102,1505,0,10000,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,103,1506,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,104,1507,0,0,0,10000,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,105,1508,0,0,0,10000,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,106,1509,0,0,0,10000,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,107,1510,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,108,1511,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,109,1512,0,0,10000,0,0,0,0,0,0,10000
-""")
-    expected_csv = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-HCV-1a,HCV1A-H77-NS5a,15,1101,1504,10000,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2101,1501,10000,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2102,1502,0,10000,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2103,1503,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,101,1504,10000,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,102,1505,0,10000,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,103,1506,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2107,1507,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2108,1508,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,2109,1509,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,107,1510,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,108,1511,0,0,10000,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,109,1512,0,0,10000,0,0,0,0,0,0,10000
-"""
-    midi_positions = {'1A': {502, 504}}
-
-    nuc_rows = combine_nucs(nuc_csv,
-                            midi_nuc_csv,
-                            midi_positions)
-    assert_csv_rows(nuc_rows, expected_csv)
-
-
-def test_write_nuc_mutations(asi_algorithms):
-    """ Report nucleotide diffs from wild type at resistance locations.
-
-    HCV1A rules check for G307R, and that translates to nuc positions 2101-2103.
-    Wild type for that codon is GGG. The following codon is CTC.
-    In this sample, the first codon is GGT, and the second is CTT. Expect only
-    the first mutation to be reported.
-    """
-    nuc_rows = DictReader(StringIO("""\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 HCV-1a,HCV1A-H77-NS5b,15,2101,919,0,0,10000,0,0,0,0,0,0,10000
 HCV-1a,HCV1A-H77-NS5b,15,2102,920,0,0,10000,0,0,0,0,0,0,10000
@@ -761,16 +694,13 @@ HCV-1a,HCV1A-H77-NS5b,15,2103,921,0,0,0,10000,0,0,0,0,0,10000
 HCV-1a,HCV1A-H77-NS5b,15,2104,922,0,10000,0,0,0,0,0,0,0,10000
 HCV-1a,HCV1A-H77-NS5b,15,2105,923,0,0,0,10000,0,0,0,0,0,10000
 HCV-1a,HCV1A-H77-NS5b,15,2106,924,0,10000,0,0,0,0,0,0,0,10000
-"""))
+""")
     expected_nuc_mutations_csv = """\
 seed,region,wt,refseq_nuc_pos,var,prevalance
-HCV-1a,HCV1A-H77-NS5b,G,921,T,1.0
 """
     nuc_mutations_csv = StringIO()
 
-    write_nuc_mutations(nuc_rows,
-                        nuc_mutations_csv,
-                        asi_algorithms)
+    write_nuc_mutations(nuc_csv, nuc_mutations_csv)
 
     assert nuc_mutations_csv.getvalue() == expected_nuc_mutations_csv
 

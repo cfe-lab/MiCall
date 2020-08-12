@@ -22,8 +22,6 @@ def parse_args():
                         help='CSV containing amino frequencies from MIDI sample')
     parser.add_argument('main_nuc_csv',
                         help='CSV containing nucleotide frequencies from main sample')
-    parser.add_argument('midi_nuc_csv',
-                        help='CSV containing nucleotide frequencies from MIDI sample')
 
     # outputs
     parser.add_argument('resistance_csv',
@@ -55,7 +53,7 @@ def load_sample(args):
                      resistance_pdf=args.resistance_pdf,
                      resistance_consensus_csv=args.resistance_consensus_csv,
                      scratch_path=scratch_path)
-    sample2 = Sample(amino_csv=args.midi_amino_csv, nuc_csv=args.midi_nuc_csv)
+    sample2 = Sample(amino_csv=args.midi_amino_csv)
     return SampleGroup(sample1, sample2)
 
 
