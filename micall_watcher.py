@@ -47,7 +47,7 @@ def parse_args(argv=None):
         default=os.environ.get('MICALL_DENOVO_MAIN_PIPELINE_ID', None),
         help="id of general purpose denovo pipeline's container app")
     parser.add_argument(
-        '--proviral_main_pipeline_id',
+        '--proviral_pipeline_id',
         type=int,
         default=os.environ.get('MICALL_PROVIRAL_MAIN_PIPELINE_ID', None),
         help="id of general purpose proviral pipeline's container app")

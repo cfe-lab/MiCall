@@ -694,7 +694,7 @@ class KiveWatcher:
             run = self.run_proviral_pipeline(
                 sample_watcher,
                 folder_watcher,
-                (PipelineType.DENOVO_MAIN),
+                (PipelineType.DENOVO_MAIN,),
                 'MiCall proviral')
             return run
         if pipeline_type == PipelineType.RESISTANCE:
@@ -796,7 +796,7 @@ class KiveWatcher:
         return run
 
     def run_proviral_pipeline(self, sample_watcher, folder_watcher, input_pipeline_types, description):
-        pipeline_id = self.config.micall_proviral_pipeline_id
+        pipeline_id = self.config.proviral_pipeline_id
         if pipeline_id is None:
             return None
         main_runs = filter(None,
@@ -805,7 +805,7 @@ class KiveWatcher:
         input_dataset_urls = [run_dataset['dataset']
                               for run in main_runs
                               for run_dataset in run['datasets']
-                              if run_dataset['argument_name'] in ('conseq', 'contigs')]
+                              if run_dataset['argument_name'] in ('conseq_csv', 'contigs_csv')]
         input_datasets = [self.kive_retry(lambda: self.session.get(url).json())
                           for url in input_dataset_urls]
         if len(input_datasets) == 1:
