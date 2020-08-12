@@ -32,7 +32,7 @@ class FolderWatcher:
         :param base_calls_folder: path to the BaseCalls folder under a MiSeq
             run folder
         :param runner: an object for running Kive pipelines. Must have these
-            methods:
+            methods (this is usually a KiveWatcher instance):
             run_pipeline(folder_watcher, pipeline_type, sample_watcher)
                 returns run, or None if that pipeline_type is not configured.
             fetch_run_status(
@@ -227,6 +227,15 @@ class FolderWatcher:
             return sample_watcher.is_failed
         if resistance_run['id'] in self.active_runs:
             if not self.fetch_run_status(resistance_run):
+                # Still running, nothing more to check on sample.
+                return sample_watcher.is_failed
+        proviral_run = sample_watcher.runs.get(PipelineType.PROVIRAL)
+        if proviral_run is None:
+            self.run_pipeline(PipelineType.PROVIRAL, sample_watcher)
+            # Launched resistance run, nothing more to check on sample.
+            return sample_watcher.is_failed
+        if proviral_run['id'] in self.active_runs:
+            if not self.fetch_run_status(proviral_run):
                 # Still running, nothing more to check on sample.
                 return sample_watcher.is_failed
         return ((is_denovo_main_complete and

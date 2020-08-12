@@ -690,6 +690,13 @@ class KiveWatcher:
                 dict(quality_csv=folder_watcher.quality_dataset),
                 'MiCall filter quality on ' + folder_watcher.run_name,
                 folder_watcher.batch)
+        if pipeline_type == PipelineType.PROVIRAL:
+            run = self.run_proviral_pipeline(
+                sample_watcher,
+                folder_watcher,
+                (PipelineType.DENOVO_MAIN),
+                'MiCall proviral')
+            return run
         if pipeline_type == PipelineType.RESISTANCE:
             run = self.run_resistance_pipeline(
                 sample_watcher,
@@ -781,6 +788,32 @@ class KiveWatcher:
             input_datasets *= 2
         inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv'),
                                input_datasets))
+        run = self.find_or_launch_run(
+            pipeline_id,
+            inputs_dict,
+            description + ' on ' + sample_watcher.sample_group.enum,
+            folder_watcher.batch)
+        return run
+
+    def run_proviral_pipeline(self, sample_watcher, folder_watcher, input_pipeline_types, description):
+        import pdb; pdb.set_trace()
+        pipeline_id = self.config.micall_proviral_pipeline_id
+        if pipeline_id is None:
+            return None
+        main_runs = filter(None,
+                           (sample_watcher.runs.get(pipeline_type)
+                            for pipeline_type in input_pipeline_types))
+        input_dataset_urls = [run_dataset['dataset']
+                              for run in main_runs
+                              for run_dataset in run['datasets']
+                              if run_dataset['argument_name'] in ('conseq', 'contigs')]
+        input_datasets = [self.kive_retry(lambda: self.session.get(url).json())
+                          for url in input_dataset_urls]
+        if len(input_datasets) == 1:
+            input_datasets *= 2
+        # inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv'),
+        #                        input_datasets))
+        # I need to re-implement the above
         run = self.find_or_launch_run(
             pipeline_id,
             inputs_dict,
