@@ -189,11 +189,19 @@ def main():
                    FastqFile('2190A-SARS_S23_L001_R1_001.fastq',
                              '2190',
                              False,
-                             (FastqSection('SARS-CoV-2-orf1ab', 4393, 4413, 100),)),
+                             (FastqSection('SARS-CoV-2-orf1ab',
+                                           4393,
+                                           4413,
+                                           100,
+                                           (CodonMutation(4400, 'TCA'),)),)),
                    FastqFile('2190A-SARS_S23_L001_R2_001.fastq',
                              '2190',
                              True,
-                             (FastqSection('SARS-CoV-2-orf1ab', 4393, 4413, 100),))]
+                             (FastqSection('SARS-CoV-2-orf1ab',
+                                           4393,
+                                           4413,
+                                           100,
+                                           (CodonMutation(4400, 'TCA'),)),))]
     for fastq_file in fastq_files:
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1

@@ -9,6 +9,8 @@ from operator import itemgetter, attrgetter
 import yaml
 from pyvdrm.vcf import Mutation
 
+from micall.core.project_config import ProjectConfig
+from micall.data.landmark_reader import LandmarkReader
 from micall.resistance.asi_algorithm import AsiAlgorithm, HcvResistanceLevels, HivResistanceLevels
 from micall.core.aln2counts import AMINO_ALPHABET
 
@@ -454,17 +456,34 @@ def write_nuc_mutations(nuc_csv: typing.TextIO,
                                    'wt',
                                    'refseq_nuc_pos',
                                    'var',
-                                   'prevalance'],
+                                   'prevalence'],
                                   lineterminator=os.linesep)
     mutations_writer.writeheader()
     for seed, seed_rows in groupby(nuc_rows, itemgetter('seed')):
         if seed != 'SARS-CoV-2-seed':
             continue
-        for region, region_rows in groupby(seed_rows, itemgetter('region')):
-            # TODO: read start/end pos from landmarks, and get wild type nucs.
+        landmark_reader = LandmarkReader.load()
+        projects = ProjectConfig.loadDefault()
+        for region_name, region_rows in groupby(seed_rows, itemgetter('region')):
+            region = landmark_reader.get_gene(seed, region_name)
+            seed_seq = projects.getReference(seed)
+            ref_seq = seed_seq[region['start']-1:region['end']]
             for row in region_rows:
                 nuc_pos = int(row['refseq.nuc.pos'])
-                amino_pos = (nuc_pos + 2) // 3
+                wild_type = ref_seq[nuc_pos-1]
+                coverage = int(row['coverage'])
+                for nuc in 'ACGT':
+                    if nuc == wild_type:
+                        continue
+                    nuc_count = int(row[nuc])
+                    prevalence = nuc_count / coverage
+                    if prevalence >= 0.05:
+                        mutations_writer.writerow(dict(seed=seed,
+                                                       region=region_name,
+                                                       wt=wild_type,
+                                                       refseq_nuc_pos=nuc_pos,
+                                                       var=nuc,
+                                                       prevalence=prevalence))
 
 
 def create_consensus_writer(resistance_consensus_csv):

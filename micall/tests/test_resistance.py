@@ -696,7 +696,62 @@ HCV-1a,HCV1A-H77-NS5b,15,2105,923,0,0,0,10000,0,0,0,0,0,10000
 HCV-1a,HCV1A-H77-NS5b,15,2106,924,0,10000,0,0,0,0,0,0,0,10000
 """)
     expected_nuc_mutations_csv = """\
-seed,region,wt,refseq_nuc_pos,var,prevalance
+seed,region,wt,refseq_nuc_pos,var,prevalence
+"""
+    nuc_mutations_csv = StringIO()
+
+    write_nuc_mutations(nuc_csv, nuc_mutations_csv)
+
+    assert nuc_mutations_csv.getvalue() == expected_nuc_mutations_csv
+
+
+def test_write_nuc_mutation_complete():
+    nuc_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,100,0,0,0,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,0,0,0,100,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,0,100,0,0,0,0,0,0,0,100
+""")
+    expected_nuc_mutations_csv = """\
+seed,region,wt,refseq_nuc_pos,var,prevalence
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,G,3,C,1.0
+"""
+    nuc_mutations_csv = StringIO()
+
+    write_nuc_mutations(nuc_csv, nuc_mutations_csv)
+
+    assert nuc_mutations_csv.getvalue() == expected_nuc_mutations_csv
+
+
+def test_write_nuc_mutations_prevalence():
+    nuc_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,100,0,0,0,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,0,0,5,95,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,0,4,96,0,0,0,0,0,0,100
+""")
+    expected_nuc_mutations_csv = """\
+seed,region,wt,refseq_nuc_pos,var,prevalence
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,G,0.05
+"""
+    nuc_mutations_csv = StringIO()
+
+    write_nuc_mutations(nuc_csv, nuc_mutations_csv)
+
+    assert nuc_mutations_csv.getvalue() == expected_nuc_mutations_csv
+
+
+def test_write_nuc_mutations_multiple():
+    nuc_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,100,0,0,0,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,0,5,6,89,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,0,4,96,0,0,0,0,0,0,100
+""")
+    expected_nuc_mutations_csv = """\
+seed,region,wt,refseq_nuc_pos,var,prevalence
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,C,0.05
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,G,0.06
 """
     nuc_mutations_csv = StringIO()
 
