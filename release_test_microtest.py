@@ -440,9 +440,12 @@ class SampleRunner:
             output_path: Path = main_scratch / 'output'
             input_path: Path = main_scratch / 'input_resistance'
         main_amino_path = output_path / 'amino.csv'
+        main_nuc_path = output_path / 'nuc.csv'
         input_path.mkdir()
         main_amino_input = input_path / 'main_amino.csv'
+        main_nuc_input = input_path / 'main_nuc.csv'
         shutil.copy(str(main_amino_path), str(main_amino_input))
+        shutil.copy(str(main_nuc_path), str(main_nuc_input))
         if midi_fastq_path is None:
             midi_amino_input = main_amino_input
         else:
@@ -460,12 +463,15 @@ class SampleRunner:
         output_path2.mkdir()
         output_names = ['resistance.csv',
                         'mutations.csv',
+                        'nuc_mutations.csv',
                         'resistance_fail.csv',
                         'resistance.pdf',
                         'resistance_consensus.csv']
         output_paths = [output_path2/name for name in output_names]
         run_with_retries(
-            self.build_command([main_amino_input, midi_amino_input],
+            self.build_command([main_amino_input,
+                                midi_amino_input,
+                                main_nuc_input],
                                output_paths,
                                app_name='resistance'))
         return sample_group.enum
