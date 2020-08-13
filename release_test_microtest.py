@@ -468,12 +468,13 @@ class SampleRunner:
                         'resistance.pdf',
                         'resistance_consensus.csv']
         output_paths = [output_path2/name for name in output_names]
-        run_with_retries(
-            self.build_command([main_amino_input,
-                                midi_amino_input,
-                                main_nuc_input],
-                               output_paths,
-                               app_name='resistance'))
+        command_args = self.build_command([main_amino_input,
+                                           midi_amino_input,
+                                           main_nuc_input],
+                                          output_paths,
+                                          app_name='resistance')
+        # print(*command_args)
+        run_with_retries(command_args)
         return sample_group.enum
 
     def build_command(self, inputs, outputs, app_name=None):

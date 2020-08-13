@@ -49,6 +49,7 @@ def load_sample(args):
                      nuc_csv=args.main_nuc_csv,
                      resistance_csv=args.resistance_csv,
                      mutations_csv=args.mutations_csv,
+                     nuc_mutations_csv=args.nuc_mutations_csv,
                      resistance_fail_csv=args.resistance_fail_csv,
                      resistance_pdf=args.resistance_pdf,
                      resistance_consensus_csv=args.resistance_consensus_csv,

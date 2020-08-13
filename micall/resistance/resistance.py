@@ -472,6 +472,8 @@ def write_nuc_mutations(nuc_csv: typing.TextIO,
                 nuc_pos = int(row['refseq.nuc.pos'])
                 wild_type = ref_seq[nuc_pos-1]
                 coverage = int(row['coverage'])
+                if coverage == 0:
+                    continue
                 for nuc in 'ACGT':
                     if nuc == wild_type:
                         continue
