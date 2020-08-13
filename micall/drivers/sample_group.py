@@ -34,7 +34,6 @@ class SampleGroup:
         with open(self.main_sample.amino_csv) as amino_csv, \
                 open(midi_sample.amino_csv) as midi_amino_csv, \
                 open(self.main_sample.nuc_csv) as nuc_csv, \
-                open(midi_sample.nuc_csv) as midi_nuc_csv, \
                 open(self.main_sample.resistance_csv, 'w') as resistance_csv, \
                 open(self.main_sample.mutations_csv, 'w') as mutations_csv, \
                 open(self.main_sample.nuc_mutations_csv, 'w') as nuc_mutations_csv, \
@@ -44,7 +43,6 @@ class SampleGroup:
             report_resistance(amino_csv,
                               midi_amino_csv,
                               nuc_csv,
-                              midi_nuc_csv,
                               resistance_csv,
                               mutations_csv,
                               nuc_mutations_csv,
