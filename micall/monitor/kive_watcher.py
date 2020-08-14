@@ -810,9 +810,9 @@ class KiveWatcher:
                           for url in input_dataset_urls]
         if len(input_datasets) == 1:
             input_datasets *= 2
-        # inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv'),
-        #                        input_datasets))
-        # I need to re-implement the above
+        input_datasets = sorted(input_datasets, key=lambda x: x['name'])
+        inputs_dict = dict(zip(('conseqs_csv', 'contigs_csv'),
+                               input_datasets))
         run = self.find_or_launch_run(
             pipeline_id,
             inputs_dict,
