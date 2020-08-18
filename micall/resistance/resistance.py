@@ -614,9 +614,7 @@ def report_resistance(amino_csv,
     else:
         selected_regions = select_reported_regions(region_choices, REPORTED_REGIONS)
     failures = {}
-    amino_rows = combine_aminos(amino_csv,
-                                midi_amino_csv,
-                                failures)
+    amino_rows = combine_aminos(amino_csv, midi_amino_csv, failures)
     algorithms = load_asi()
     aminos = read_aminos(amino_rows,
                          MIN_FRACTION,

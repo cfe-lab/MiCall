@@ -271,9 +271,7 @@ HCV-1a,HCV1A-H77-NS5b,15,7,560,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-1a,HCV1A-H77-NS5b,15,10,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
 
-    check_combination(amino_csv,
-                      midi_amino_csv,
-                      expected_csv)
+    check_combination(amino_csv, midi_amino_csv, expected_csv)
 
 
 def test_combine_aminos_ns5b_multiple_seeds():
@@ -534,9 +532,7 @@ HCV-1a,HCV1A-H77-NS5b,15,13,560,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 HCV-1a,HCV1A-H77-NS5b,15,16,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
 
-    check_combination(amino_csv,
-                      midi_amino_csv,
-                      expected_csv)
+    check_combination(amino_csv, midi_amino_csv, expected_csv)
 
 
 def test_combine_aminos_ignores_main_tail():
