@@ -49,6 +49,8 @@ def parse_args():
                         help='CSV containing insertions relative to coordinate reference')
     parser.add_argument('conseq_csv',
                         help='CSV containing consensus sequences')
+    parser.add_argument('conseq_all_csv',
+                        help='CSV containing consensus sequences with low coverage')
     parser.add_argument('conseq_region_csv',
                         help='CSV containing consensus sequences, split by region')
     parser.add_argument('failed_align_csv',
