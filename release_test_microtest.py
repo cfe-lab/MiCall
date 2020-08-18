@@ -412,6 +412,7 @@ class SampleRunner:
                         'amino.csv',
                         'coord_ins.csv',
                         'conseq.csv',
+                        'conseq_all.csv',
                         'conseq_region.csv',
                         'failed_align.csv',
                         'coverage_scores.csv',
