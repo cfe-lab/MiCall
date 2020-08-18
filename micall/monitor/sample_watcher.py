@@ -19,7 +19,8 @@ PIPELINE_GROUPS = {
     PipelineType.MIXED_HCV_MIDI: PipelineType.MIXED_HCV_MAIN,
     PipelineType.DENOVO_MAIN: PipelineType.DENOVO_MAIN,
     PipelineType.DENOVO_MIDI: PipelineType.DENOVO_MAIN,
-    PipelineType.DENOVO_RESISTANCE: PipelineType.DENOVO_MAIN
+    PipelineType.DENOVO_RESISTANCE: PipelineType.DENOVO_MAIN,
+    PipelineType.PROVIRAL: PipelineType.PROVIRAL
 }
 
 
