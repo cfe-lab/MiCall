@@ -345,6 +345,13 @@ class ResultsFolder:
                 assert row['seed'] == 'HIV1-CON-XX-Consensus-seed', row['seed']
                 assert 10 < coverage, coverage_message
 
+    def check_2190(self):
+        mutation_rows = self.read_file('2190A-SARS_S23', 'nuc_mutations.csv')
+        mutations = [''.join(fields)
+                     for fields in map(itemgetter('wt', 'refseq_nuc_pos', 'var'),
+                                       mutation_rows)]
+        assert mutations == ['T23C', 'T13199C'], mutations
+
 
 def gzip_compress(source_path: Path, target_path: Path):
     with source_path.open('rb') as source:
