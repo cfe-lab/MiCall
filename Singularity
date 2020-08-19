@@ -175,9 +175,9 @@ From: centos:7
     interpretation.
 
 %applabels resistance
-    KIVE_INPUTS main_amino_csv midi_amino_csv
-    KIVE_OUTPUTS resistance_csv mutations_csv resistance_fail_csv \
-        resistance_pdf resistance_consensus_csv
+    KIVE_INPUTS main_amino_csv midi_amino_csv main_nuc_csv
+    KIVE_OUTPUTS resistance_csv mutations_csv nuc_mutations_csv \
+        resistance_fail_csv resistance_pdf resistance_consensus_csv
     KIVE_THREADS 1
     KIVE_MEMORY 200
 

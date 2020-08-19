@@ -3,16 +3,16 @@
   coordinates: HIV1-B-FR-K03455-seed
   landmarks:
     - {name: "5' LTR", start: 1, end: 634, frame: 0, colour: darkgrey}
-    - {name: gag, start: 789, end: 2289, frame: 0, colour: lightblue}
-    - {name: vif, start: 5040, end: 5616, frame: 0, colour: steelblue}
+    - {name: gag, full_name: HIV1B-gag, start: 789, end: 2289, frame: 0, colour: lightblue}
+    - {name: vif, full_name: HIV1B-vif, start: 5040, end: 5616, frame: 0, colour: steelblue}
     - {name: tat, start: 8379, end: 8469, frame: 0, colour: plum}
-    - {name: nef, start: 8797, end: 9417, frame: 0, colour: mediumaquamarine}
+    - {name: nef, full_name: HIV1B-nef, start: 8796, end: 9414, frame: 0, colour: mediumaquamarine}
     - {name: tat, start: 5831, end: 6045, frame: 1, colour: plum}
-    - {name: vpu, start: 6061, end: 6307, frame: 1, colour: red}
+    - {name: vpu, full_name: HIV1B-vpu, start: 6061, end: 6307, frame: 1, colour: red}
     - {name: rev, start: 8379, end: 8653, frame: 1, colour: yellowgreen}
     - {name: "3' LTR", start: 9086, end: 9719, frame: 1, colour: darkgrey}
     - {name: pol, start: 2085, end: 5096, frame: 2, colour: orange}
-    - {name: vpr, start: 5558, end: 5847, frame: 2, colour: turquoise}
+    - {name: vpr, full_name: HIV1B-vpr, start: 5558, end: 5847, frame: 2, colour: turquoise}
     - {name: rev, start: 5970, end: 6045, frame: 2, colour: yellowgreen}
     - {name: env, start: 6225, end: 8795, frame: 2, colour: salmon}
     - {name: PR, start: 2252, end: 2549, frame: 3, colour: orange}
@@ -20,11 +20,13 @@
     - {name: INT, start: 4229, end: 5093, frame: 3, colour: orange}
     - {name: V3, start: 7109, end: 7217, frame: 3, colour: salmon}
     - {name: GP41, start: 7757, end: 8792, frame: 3, colour: salmon}
+    - {name: GP120, start: 6224, end: 7757, frame: 3}  # Not displayed.
 - seed_pattern: HCV-1b
   coordinates: HCV-1b
+  prefix: HCV1B-Con1-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, start: 342, colour: '#1f77b4'}
+    - {name: C, full_name: Core, start: 342, colour: '#1f77b4'}
     - {name: E1, start: 915, colour: '#ff7f0e'}
     - {name: E2, start: 1491, colour: '#2ca02c'}
     - {name: p7, start: 2580, colour: '#d62728'}
@@ -38,9 +40,10 @@
     - {name: "3'", start: 9372, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-1.*
   coordinates: HCV-1a
+  prefix: HCV1A-H77-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, start: 342, colour: '#1f77b4'}
+    - {name: C, full_name: Core, start: 342, colour: '#1f77b4'}
     - {name: E1, start: 915, colour: '#ff7f0e'}
     - {name: E2, start: 1491, colour: '#2ca02c'}
     - {name: p7, start: 2580, colour: '#d62728'}
@@ -53,9 +56,10 @@
     - {name: "3'", start: 9375, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-2.*
   coordinates: HCV-2a
+  prefix: HCV2-JFH-1-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, start: 341, colour: '#1f77b4'}
+    - {name: C, full_name: Core, start: 341, colour: '#1f77b4'}
     - {name: E1, start: 914, colour: '#ff7f0e'}
     - {name: E2, start: 1490, colour: '#2ca02c'}
     - {name: p7, start: 2591, colour: '#d62728'}
@@ -68,24 +72,26 @@
     - {name: "3'", start: 9441, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-3.*
   coordinates: HCV-3a
+  prefix: HCV3-S52-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, start: 340, colour: '#1f77b4'}
+    - {name: C, full_name: Core, start: 340, colour: '#1f77b4'}
     - {name: E1, start: 913, colour: '#ff7f0e'}
     - {name: E2, start: 1489, colour: '#2ca02c'}
     - {name: p7, start: 2596, colour: '#d62728'}
     - {name: NS2, start: 2785, colour: '#9467bd'}
     - {name: NS3, start: 3436, colour: '#8c564b'}
     - {name: NS4b, start: 5491, colour: '#7f7f7f'}
-    - {name: NS4a, start: 5328, colour: '#e377c2'}
+    - {name: NS4a, start: 5329, colour: '#e377c2'}
     - {name: NS5a, start: 6274, colour: '#bcbd22'}
     - {name: NS5b, start: 7630, colour: '#17becf'}
     - {name: "3'", start: 9404, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-4.*
   coordinates: HCV-4a
+  prefix: HCV4-ED43-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, start: 341, colour: '#1f77b4'}
+    - {name: C, full_name: Core, start: 341, colour: '#1f77b4'}
     - {name: E1, start: 914, colour: '#ff7f0e'}
     - {name: E2, start: 1490, colour: '#2ca02c'}
     - {name: p7, start: 2579, colour: '#d62728'}
@@ -98,9 +104,10 @@
     - {name: "3'", start: 9366, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-5.*
   coordinates: HCV-5a
+  prefix: HCV5-SA13-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, start: 247, colour: '#1f77b4'}
+    - {name: C, full_name: Core, start: 247, colour: '#1f77b4'}
     - {name: E1, start: 820, colour: '#ff7f0e'}
     - {name: E2, start: 1396, colour: '#2ca02c'}
     - {name: p7, start: 2488, colour: '#d62728'}
@@ -113,9 +120,10 @@
     - {name: "3'", start: 9289, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-6.*
   coordinates: HCV-6a
+  prefix: HCV6-EUHK2-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, start: 284, colour: '#1f77b4'}
+    - {name: C, full_name: Core, start: 284, colour: '#1f77b4'}
     - {name: E1, start: 857, colour: '#ff7f0e'}
     - {name: E2, start: 1433, colour: '#2ca02c'}
     - {name: p7, start: 2534, colour: '#d62728'}
@@ -128,9 +136,10 @@
     - {name: "3'", start: 9339, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-7.*
   coordinates: HCV-7a
+  prefix: HCV7-QC69-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, start: 309, colour: '#1f77b4'}
+    - {name: C, full_name: Core, start: 309, colour: '#1f77b4'}
     - {name: E1, start: 882, colour: '#ff7f0e'}
     - {name: E2, start: 1458, colour: '#2ca02c'}
     - {name: p7, start: 2559, colour: '#d62728'}
@@ -148,21 +157,23 @@
     - {name: exon3, start: 716, end: 992, colour: '#2ca02c'}
 - seed_pattern: SARS-CoV-2-seed
   coordinates: SARS-CoV-2-seed
+  prefix: SARS-CoV-2-
   landmarks:
-    - {name: 3a, start: 25393, end: 26220, frame: 0, colour: '#2ca02c'}
+    - {name: 3a, full_name: ORF3a, start: 25393, end: 26220, frame: 0, colour: '#2ca02c'}
     - {name: E, start: 26245, end: 26472, frame: 0, colour: '#d62728'}
-    - {name: '6', start: 27202, end: 27387, frame: 0, colour: '#8c564b'}
-    - {name: 7a, start: 27394, end: 27759, frame: 0, colour: '#7f7f7f'}
+    - {name: '6', full_name: ORF6, start: 27202, end: 27387, frame: 0, colour: '#8c564b'}
+    - {name: 7a, full_name: ORF7a, start: 27394, end: 27759, frame: 0, colour: '#7f7f7f'}
+    - {name: orf1ab, start: 266, end: 21555, frame: 1}  # Not displayed.
     - {name: nsp2, start: 806, end: 2719, frame: 1, colour: darkgrey}
     - {name: nsp1, start: 266, end: 805, frame: 1, colour: grey}
     - {name: nsp3, start: 2720, end: 8554, frame: 1, colour: grey}
     - {name: nsp4, start: 8555, end: 10054, frame: 1, colour: darkgrey}
     - {name: nsp5, start: 10055, end: 10972, frame: 1, colour: grey}
     - {name: nsp6, start: 10973, end: 11842, frame: 1, colour: darkgrey}
-    - {name: '7', start: 11843, end: 12091, frame: 1, colour: grey}
-    - {name: '8', start: 12092, end: 12685, frame: 1, colour: darkgrey}
-    - {name: '9', start: 12686, end: 13024, frame: 1, colour: grey}
-    - {name: '10', start: 13025, end: 13441, frame: 1, colour: darkgrey}
+    - {name: '7', full_name: nsp7, start: 11843, end: 12091, frame: 1, colour: grey}
+    - {name: '8', full_name: nsp8, start: 12092, end: 12685, frame: 1, colour: darkgrey}
+    - {name: '9', full_name: nsp9, start: 12686, end: 13024, frame: 1, colour: grey}
+    - {name: '10', full_name: nsp10, start: 13025, end: 13441, frame: 1, colour: darkgrey}
     - {name: nsp12, start: 13442, end: 16236, frame: 1, colour: grey}
     - {name: nsp13, start: 16237, end: 18039, frame: 1, colour: darkgrey}
     - {name: nsp14, start: 18040, end: 19620, frame: 1, colour: grey}
@@ -170,7 +181,7 @@
     - {name: nsp16, start: 20659, end: 21552, frame: 1, colour: grey}
     - {name: S, start: 21563, end: 25384, frame: 1, colour: '#ff7f0e'}
     - {name: N, start: 28274, end: 29533, frame: 1, colour: '#17becf'}
-    - {name: '10', start: 29558, end: 29674, frame: 1, colour: 'darkorange'}
+    - {name: '10', full_name: ORF10, start: 29558, end: 29674, frame: 1, colour: 'darkorange'}
     - {name: M, start: 26523, end: 27191, frame: 2, colour: '#9467bd'}
-    - {name: '8', start: 27894, end: 28259, frame: 2, colour: '#bcbd22'}
-    - {name: 7b, start: 27756, end: 27887, frame: 2, colour: '#e377c2'}
+    - {name: '8', full_name: ORF8, start: 27894, end: 28259, frame: 2, colour: '#bcbd22'}
+    - {name: 7b, full_name: ORF7b, start: 27756, end: 27887, frame: 2, colour: '#e377c2'}

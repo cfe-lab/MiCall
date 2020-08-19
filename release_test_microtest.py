@@ -345,6 +345,13 @@ class ResultsFolder:
                 assert row['seed'] == 'HIV1-CON-XX-Consensus-seed', row['seed']
                 assert 10 < coverage, coverage_message
 
+    def check_2190(self):
+        mutation_rows = self.read_file('2190A-SARS_S23', 'nuc_mutations.csv')
+        mutations = [''.join(fields)
+                     for fields in map(itemgetter('wt', 'refseq_nuc_pos', 'var'),
+                                       mutation_rows)]
+        assert mutations == ['T23C', 'T13199C'], mutations
+
 
 def gzip_compress(source_path: Path, target_path: Path):
     with source_path.open('rb') as source:
@@ -441,9 +448,12 @@ class SampleRunner:
             output_path: Path = main_scratch / 'output'
             input_path: Path = main_scratch / 'input_resistance'
         main_amino_path = output_path / 'amino.csv'
+        main_nuc_path = output_path / 'nuc.csv'
         input_path.mkdir()
         main_amino_input = input_path / 'main_amino.csv'
+        main_nuc_input = input_path / 'main_nuc.csv'
         shutil.copy(str(main_amino_path), str(main_amino_input))
+        shutil.copy(str(main_nuc_path), str(main_nuc_input))
         if midi_fastq_path is None:
             midi_amino_input = main_amino_input
         else:
@@ -461,14 +471,18 @@ class SampleRunner:
         output_path2.mkdir()
         output_names = ['resistance.csv',
                         'mutations.csv',
+                        'nuc_mutations.csv',
                         'resistance_fail.csv',
                         'resistance.pdf',
                         'resistance_consensus.csv']
         output_paths = [output_path2/name for name in output_names]
-        run_with_retries(
-            self.build_command([main_amino_input, midi_amino_input],
-                               output_paths,
-                               app_name='resistance'))
+        command_args = self.build_command([main_amino_input,
+                                           midi_amino_input,
+                                           main_nuc_input],
+                                          output_paths,
+                                          app_name='resistance')
+        # print(*command_args)
+        run_with_retries(command_args)
         return sample_group.enum
 
     def build_command(self, inputs, outputs, app_name=None):

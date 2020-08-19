@@ -7,7 +7,8 @@ import pytest
 
 from micall.resistance.resistance import read_aminos, write_resistance, \
     select_reported_regions, AminoList, filter_aminos, load_asi, get_genotype, \
-    combine_aminos, write_consensus, create_consensus_writer, write_failures
+    combine_aminos, write_consensus, create_consensus_writer, write_failures, \
+    write_nuc_mutations
 
 
 @pytest.fixture(scope="module")
@@ -76,13 +77,19 @@ def check_combination(
     if expected_failures is None:
         expected_failures = {}
     failures = {}
-    combined_rows = list(combine_aminos(amino_csv, midi_amino_csv, failures))
+    combined_rows = list(combine_aminos(amino_csv,
+                                        midi_amino_csv,
+                                        failures))
 
+    assert_csv_rows(combined_rows, expected_csv)
+    assert failures == expected_failures
+
+
+def assert_csv_rows(rows: typing.Iterable[dict], expected_csv: str):
     expected_reader = DictReader(StringIO(expected_csv))
     expected_rows = list(expected_reader)
-    assert (format_rows(expected_reader.fieldnames, expected_rows) ==
-            format_rows(expected_reader.fieldnames, combined_rows))
-    assert expected_failures == failures
+    assert (format_rows(expected_reader.fieldnames, rows) ==
+            format_rows(expected_reader.fieldnames, expected_rows))
 
 
 def test_combine_aminos_simple():
@@ -247,9 +254,9 @@ HCV-1a,HCV1A-H77-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,g2p_overlap,coverage
 HCV-1a,HCV1A-H77-NS5b,15,1,558,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,1,559,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,4,560,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,7,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,4,559,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,7,560,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,10,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """)
     midi_amino_csv.name = 'midi_amino.csv'
     expected_csv = """\
@@ -259,9 +266,9 @@ HCV-1a,HCV1A-H77-NS5b,15,1,1,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 HCV-1a,HCV1A-H77-NS5b,15,4,2,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 HCV-1a,HCV1A-H77-NS5b,15,7,228,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 HCV-1a,HCV1A-H77-NS5b,15,1,558,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,1,559,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,4,560,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
-HCV-1a,HCV1A-H77-NS5b,15,7,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,4,559,0,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,7,560,0,0,0,0,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,10,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000
 """
 
     check_combination(amino_csv, midi_amino_csv, expected_csv)
@@ -671,6 +678,99 @@ HCV-1a,HCV1A-H77-NS5b,15,10,561,10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     expected_failures = {}
 
     check_combination(amino_csv, amino_csv, expected_csv, expected_failures)
+
+
+def test_write_nuc_mutations_not_sars():
+    """ Only SARS-CoV-2 samples report nucleotide mutations. """
+    nuc_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+HCV-1a,HCV1A-H77-NS5b,15,2101,919,0,0,10000,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,2102,920,0,0,10000,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,2103,921,0,0,0,10000,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,2104,922,0,10000,0,0,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,2105,923,0,0,0,10000,0,0,0,0,0,10000
+HCV-1a,HCV1A-H77-NS5b,15,2106,924,0,10000,0,0,0,0,0,0,0,10000
+""")
+    expected_nuc_mutations_csv = """\
+seed,region,wt,refseq_nuc_pos,var,prevalence
+"""
+    nuc_mutations_csv = StringIO()
+
+    write_nuc_mutations(nuc_csv, nuc_mutations_csv)
+
+    assert nuc_mutations_csv.getvalue() == expected_nuc_mutations_csv
+
+
+def test_write_nuc_mutation_complete():
+    nuc_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,100,0,0,0,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,0,0,0,100,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,0,100,0,0,0,0,0,0,0,100
+""")
+    expected_nuc_mutations_csv = """\
+seed,region,wt,refseq_nuc_pos,var,prevalence
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,G,3,C,1.0
+"""
+    nuc_mutations_csv = StringIO()
+
+    write_nuc_mutations(nuc_csv, nuc_mutations_csv)
+
+    assert nuc_mutations_csv.getvalue() == expected_nuc_mutations_csv
+
+
+def test_write_nuc_mutations_prevalence():
+    nuc_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,100,0,0,0,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,0,0,5,95,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,0,4,96,0,0,0,0,0,0,100
+""")
+    expected_nuc_mutations_csv = """\
+seed,region,wt,refseq_nuc_pos,var,prevalence
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,G,0.05
+"""
+    nuc_mutations_csv = StringIO()
+
+    write_nuc_mutations(nuc_csv, nuc_mutations_csv)
+
+    assert nuc_mutations_csv.getvalue() == expected_nuc_mutations_csv
+
+
+def test_write_nuc_mutations_multiple():
+    nuc_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,100,0,0,0,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,0,5,6,89,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,0,4,96,0,0,0,0,0,0,100
+""")
+    expected_nuc_mutations_csv = """\
+seed,region,wt,refseq_nuc_pos,var,prevalence
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,C,0.05
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,G,0.06
+"""
+    nuc_mutations_csv = StringIO()
+
+    write_nuc_mutations(nuc_csv, nuc_mutations_csv)
+
+    assert nuc_mutations_csv.getvalue() == expected_nuc_mutations_csv
+
+
+def test_write_nuc_mutations_no_coverage():
+    nuc_csv = StringIO("""\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,100,0,0,0,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,0,0,0,0,0,0,0,0,0,0
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,0,0,100,0,0,0,0,0,0,100
+""")
+    expected_nuc_mutations_csv = """\
+seed,region,wt,refseq_nuc_pos,var,prevalence
+"""
+    nuc_mutations_csv = StringIO()
+
+    write_nuc_mutations(nuc_csv, nuc_mutations_csv)
+
+    assert nuc_mutations_csv.getvalue() == expected_nuc_mutations_csv
 
 
 def test_read_aminos_simple():
@@ -1308,7 +1408,6 @@ def test_filter_aminos_exclude(asi_algorithms):
 
     aminos = filter_aminos(all_aminos, asi_algorithms)
 
-    # assert expected_aminos[0].aminos == aminos[0].aminos
     assert expected_aminos == aminos
 
 
@@ -1328,19 +1427,7 @@ def test_write_failures_empty():
     expected_fail_csv = """\
 seed,region,coord_region,genotype,reason
 """
-    filtered_aminos = [AminoList('R1',
-                                 [{'F': 1.0}, {'A': 1.0}],
-                                 None,
-                                 'R1-seed'),
-                       AminoList('R2',
-                                 [{'V': 1.0}, {'L': 1.0}],
-                                 None,
-                                 'R2-seed')]
-    fail_csv = StringIO()
-
-    write_failures(failures, filtered_aminos, fail_csv)
-
-    assert expected_fail_csv == fail_csv.getvalue()
+    check_failure_report(failures, expected_fail_csv)
 
 
 def test_write_failures_one():
@@ -1349,19 +1436,7 @@ def test_write_failures_one():
 seed,region,coord_region,genotype,reason
 R1-seed,R1,R1,,low average coverage
 """
-    filtered_aminos = [AminoList('R1',
-                                 [{'F': 1.0}, {'A': 1.0}],
-                                 None,
-                                 'R1-seed'),
-                       AminoList('R2',
-                                 [{'V': 1.0}, {'L': 1.0}],
-                                 None,
-                                 'R2-seed')]
-    fail_csv = StringIO()
-
-    write_failures(failures, filtered_aminos, fail_csv)
-
-    assert expected_fail_csv == fail_csv.getvalue()
+    check_failure_report(failures, expected_fail_csv)
 
 
 def test_write_failures_two():
@@ -1372,19 +1447,7 @@ seed,region,coord_region,genotype,reason
 R1-seed,R1,R1,,low average coverage
 R2-seed,R2,R2,,not enough high-coverage amino acids
 """
-    filtered_aminos = [AminoList('R1',
-                                 [{'F': 1.0}, {'A': 1.0}],
-                                 None,
-                                 'R1-seed'),
-                       AminoList('R2',
-                                 [{'V': 1.0}, {'L': 1.0}],
-                                 None,
-                                 'R2-seed')]
-    fail_csv = StringIO()
-
-    write_failures(failures, filtered_aminos, fail_csv)
-
-    assert expected_fail_csv == fail_csv.getvalue()
+    check_failure_report(failures, expected_fail_csv)
 
 
 def test_write_failures_midi():
@@ -1395,6 +1458,10 @@ seed,region,coord_region,genotype,reason
 R1-seed,R1,R1,,not enough high-coverage amino acids
 R1-seed,R1,R1,,MIDI: low average coverage
 """
+    check_failure_report(failures, expected_fail_csv)
+
+
+def check_failure_report(failures, expected_fail_csv):
     filtered_aminos = [AminoList('R1',
                                  [{'F': 1.0}, {'A': 1.0}],
                                  None,
@@ -1407,6 +1474,20 @@ R1-seed,R1,R1,,MIDI: low average coverage
 
     write_failures(failures, filtered_aminos, fail_csv)
 
+    assert expected_fail_csv == fail_csv.getvalue()
+
+
+def check_failure_report_nothing_mapped(failures, expected_fail_csv):
+    filtered_aminos = [AminoList('R1',
+                                 [{}, {}],
+                                 None,
+                                 'R1-seed'),
+                       AminoList('R2',
+                                 [{'V': 1.0}, {'L': 1.0}],
+                                 None,
+                                 'R2-seed')]
+    fail_csv = StringIO()
+    write_failures(failures, filtered_aminos, fail_csv)
     assert expected_fail_csv == fail_csv.getvalue()
 
 
@@ -1416,19 +1497,7 @@ def test_write_failures_nothing_mapped_in_region():
 seed,region,coord_region,genotype,reason
 R1-seed,R1,R1,,nothing mapped
 """
-    filtered_aminos = [AminoList('R1',
-                                 [{}, {}],
-                                 None,
-                                 'R1-seed'),
-                       AminoList('R2',
-                                 [{'V': 1.0}, {'L': 1.0}],
-                                 None,
-                                 'R2-seed')]
-    fail_csv = StringIO()
-
-    write_failures(failures, filtered_aminos, fail_csv)
-
-    assert expected_fail_csv == fail_csv.getvalue()
+    check_failure_report_nothing_mapped(failures, expected_fail_csv)
 
 
 def test_write_failures_nothing_mapped_conflict():
@@ -1437,19 +1506,7 @@ def test_write_failures_nothing_mapped_conflict():
 seed,region,coord_region,genotype,reason
 R1-seed,R1,R1,,low average coverage
 """
-    filtered_aminos = [AminoList('R1',
-                                 [{}, {}],
-                                 None,
-                                 'R1-seed'),
-                       AminoList('R2',
-                                 [{'V': 1.0}, {'L': 1.0}],
-                                 None,
-                                 'R2-seed')]
-    fail_csv = StringIO()
-
-    write_failures(failures, filtered_aminos, fail_csv)
-
-    assert expected_fail_csv == fail_csv.getvalue()
+    check_failure_report_nothing_mapped(failures, expected_fail_csv)
 
 
 def test_write_failures_extra_region():
@@ -1457,19 +1514,7 @@ def test_write_failures_extra_region():
     expected_fail_csv = """\
 seed,region,coord_region,genotype,reason
 """
-    filtered_aminos = [AminoList('R1',
-                                 [{'F': 1.0}, {'A': 1.0}],
-                                 None,
-                                 'R1-seed'),
-                       AminoList('R2',
-                                 [{'V': 1.0}, {'L': 1.0}],
-                                 None,
-                                 'R2-seed')]
-    fail_csv = StringIO()
-
-    write_failures(failures, filtered_aminos, fail_csv)
-
-    assert expected_fail_csv == fail_csv.getvalue()
+    check_failure_report(failures, expected_fail_csv)
 
 
 def test_write_failures_hcv():
@@ -1725,6 +1770,9 @@ drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
 
     def test_hcv_low_coverage(self):
         aminos = []
+        self.check_low_coverage_reports(aminos)
+
+    def check_low_coverage_reports(self, aminos):
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         expected_resistance = """\
@@ -1744,19 +1792,7 @@ drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
                             [{'T': 1.0}] + [{}] * 319 + [{'I': 1.0}] + [{}] * 200,
                             '1B',
                             'HCV-1b')]
-        resistance_csv = StringIO()
-        mutations_csv = StringIO()
-        expected_resistance = """\
-region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
-"""
-        expected_mutations = """\
-drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
-"""
-
-        write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
-
-        self.assertEqual(expected_resistance, resistance_csv.getvalue())
-        self.assertEqual(expected_mutations, mutations_csv.getvalue())
+        self.check_low_coverage_reports(aminos)
 
 
 class GenotypeTest(TestCase):
