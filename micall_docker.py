@@ -1044,6 +1044,7 @@ def collate_samples(run_info):
                  'g2p_summary.csv',
                  'resistance.csv',
                  'mutations.csv',
+                 'nuc_mutations.csv',
                  'resistance_fail.csv',
                  'resistance_consensus.csv',
                  'cascade.csv',

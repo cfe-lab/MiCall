@@ -2,12 +2,12 @@
 from argparse import ArgumentParser
 import csv
 from collections import namedtuple, defaultdict
+from concurrent.futures.process import ProcessPoolExecutor
 from difflib import Differ
 from enum import IntEnum
 from functools import partial
 from itertools import groupby, zip_longest, chain
 from glob import glob
-from multiprocessing.pool import Pool
 from operator import itemgetter
 import os
 
@@ -544,33 +544,33 @@ def plot_distances(distance_data, filename, title, plot_variable='distance'):
 def main():
     print('Starting.')
     args = parse_args()
-    pool = Pool()
-    runs = find_runs(args.source_folder, args.target_folder, args.denovo)
-    runs = report_source_versions(runs)
-    samples = read_samples(runs)
-    # noinspection PyTypeChecker
-    scenarios_reported = (Scenarios.OTHER_CONSENSUS_CHANGED |
-                          Scenarios.CONSENSUS_DELETIONS_CHANGED |
-                          Scenarios.VPR_FRAME_SHIFT_FIXED |
-                          Scenarios.CONSENSUS_EXTENDED)
-    results = pool.imap(partial(compare_sample,
-                                scenarios_reported=scenarios_reported,
-                                use_denovo=args.denovo),
-                        samples,
-                        chunksize=50)
-    scenario_summaries = defaultdict(list)
-    i = 0
-    all_consensus_distances = []
-    report_count = 0
-    for i, (report, scenarios, consensus_distances) in enumerate(results, 1):
-        if report:
-            report_count += 1
-            if report_count > 100:
-                break
-        print(report, end='')
-        all_consensus_distances.extend(consensus_distances)
-        for key, messages in scenarios.items():
-            scenario_summaries[key] += scenarios[key]
+    with ProcessPoolExecutor() as pool:
+        runs = find_runs(args.source_folder, args.target_folder, args.denovo)
+        runs = report_source_versions(runs)
+        samples = read_samples(runs)
+        # noinspection PyTypeChecker
+        scenarios_reported = (Scenarios.OTHER_CONSENSUS_CHANGED |
+                              Scenarios.CONSENSUS_DELETIONS_CHANGED |
+                              Scenarios.VPR_FRAME_SHIFT_FIXED |
+                              Scenarios.CONSENSUS_EXTENDED)
+        results = pool.imap(partial(compare_sample,
+                                    scenarios_reported=scenarios_reported,
+                                    use_denovo=args.denovo),
+                            samples,
+                            chunksize=50)
+        scenario_summaries = defaultdict(list)
+        i = 0
+        all_consensus_distances = []
+        report_count = 0
+        for i, (report, scenarios, consensus_distances) in enumerate(results, 1):
+            if report:
+                report_count += 1
+                if report_count > 100:
+                    break
+            print(report, end='')
+            all_consensus_distances.extend(consensus_distances)
+            for key, messages in scenarios.items():
+                scenario_summaries[key] += scenarios[key]
     for key, messages in sorted(scenario_summaries.items()):
         if messages:
             sample_names = {message.split()[0] for message in messages}

@@ -38,6 +38,7 @@ GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
 CONSENSUS_MIN_COVERAGE = 100
 MAX_CUTOFF = 'MAX'
+FIRST_CUTOFF = 'FIRST'
 
 
 CigarActions = IntEnum(
@@ -1454,7 +1455,7 @@ class SeedNucleotide(object):
             return no_coverage
 
         coverage = self.get_coverage()
-        if mixture_cutoff != MAX_CUTOFF:
+        if mixture_cutoff not in (MAX_CUTOFF, FIRST_CUTOFF):
             min_count = coverage * mixture_cutoff
         else:
             min_count = 0
@@ -1464,7 +1465,7 @@ class SeedNucleotide(object):
                 break
             if nuc in self.COUNTED_NUCS:
                 mixture.append(nuc)
-                if mixture_cutoff == MAX_CUTOFF:
+                if mixture_cutoff in (MAX_CUTOFF, FIRST_CUTOFF):
                     # Catch any ties before breaking out.
                     min_count = count
 
@@ -1473,7 +1474,10 @@ class SeedNucleotide(object):
             mixture.remove('-')
         if len(mixture) > 1:
             mixture.sort()
-            consensus = ambig_dict[''.join(mixture)]
+            if mixture_cutoff == FIRST_CUTOFF:
+                consensus = mixture[0]
+            else:
+                consensus = ambig_dict[''.join(mixture)]
         elif len(mixture) == 1:
             # no ambiguity
             consensus = mixture[0]

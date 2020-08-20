@@ -72,10 +72,6 @@ From: centos:7
     rm -rf Python*
     ln -s /usr/local/bin/python3.8 /usr/local/bin/python3
 
-    echo ===== Installing Rust and merge-mates ===== >/dev/null
-    yum install -q -y rust cargo
-    cargo install --root / --git https://github.com/jeff-k/merge-mates.git
-
     echo ===== Installing blast ===== >/dev/null
     cd /root
     # Saved our own copy, because download was slow from ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
@@ -84,6 +80,9 @@ From: centos:7
     rm ncbi-blast-2.6.0+-1.x86_64.rpm
     python3 /opt/micall/micall/blast_db/make_blast_db.py
 
+    echo ===== Installing Rust and merge-mates ===== >/dev/null
+    yum install -q -y rust cargo
+    cargo install --root / --git https://github.com/jeff-k/merge-mates.git
 
     ## Miniconda (Python 2) (Don't use this)
     #wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
