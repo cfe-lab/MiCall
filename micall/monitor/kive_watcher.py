@@ -771,7 +771,8 @@ class KiveWatcher:
         main_runs = (
             (pipeline_type, run)
             for pipeline_type in input_pipeline_types
-            if (run := sample_watcher.runs.get(pipeline_type)) is not None)
+            for run in [sample_watcher.runs.get(pipeline_type)]
+            if run is not None)
         input_dataset_urls = {
             (pipeline_type, run_dataset['argument_name']): run_dataset['dataset']
             for pipeline_type, run in main_runs
