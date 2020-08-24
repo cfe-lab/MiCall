@@ -127,7 +127,8 @@ def create_kive_watcher_with_filter_run(config, base_calls, is_complete=False):
             bad_cycles_csv='/containerargs/108'),
         config.micall_resistance_pipeline_id: dict(
             main_amino_csv='/containerargs/109',
-            midi_amino_csv='/containerargs/110')}
+            midi_amino_csv='/containerargs/110',
+            main_nuc_csv='/containerargs/111')}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
     folder_watcher.batch = dict(url='/batches/101')
@@ -1548,7 +1549,8 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
     kive_watcher.app_args = {
         pipelines_config.micall_resistance_pipeline_id: dict(
             main_amino_csv='/containerargs/104',
-            midi_amino_csv='/containerargs/105')}
+            midi_amino_csv='/containerargs/105',
+            main_nuc_csv='/containerargs/106')}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
     folder_watcher.batch = dict(url='/batches/101')
@@ -1574,7 +1576,9 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
          dict(dataset='/datasets/112/',
               argument_name='nuc_csv')]]  # run datasets
     mock_session.get.return_value.json.side_effect = [
-        dict(url='/datasets/111/', id=111)]
+        dict(url='/datasets/111/', id=111),
+        dict(url='/datasets/111/', id=111),
+        dict(url='/datasets/112/', id=112)]
 
     kive_watcher.poll_runs()
 
@@ -1583,7 +1587,9 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
         datasets=[dict(argument='/containerargs/104',
                        dataset='/datasets/111/'),
                   dict(argument='/containerargs/105',
-                       dataset='/datasets/111/')],
+                       dataset='/datasets/111/'),
+                  dict(argument='/containerargs/106',
+                       dataset='/datasets/112/')],
         name='MiCall resistance on 2110A',
         batch='/batches/101',
         groups_allowed=['Everyone']))
@@ -1691,14 +1697,19 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state for main run
         [dict(dataset='/datasets/111/',
-              argument_name='amino_csv')],  # run datasets
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/112/',
+              argument_name='nuc_csv')],  # run datasets
         dict(id=108, state='C'),  # refresh run state for midi run
-        [dict(dataset='/datasets/112/',
-              argument_name='amino_csv')]]  # run datasets
+        [dict(dataset='/datasets/113/',
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/114/',
+              argument_name='nuc_csv')]]  # run datasets
     mock_session.get.reset_mock(side_effect=True)
     mock_session.get.return_value.json.side_effect = [
         dict(url='/datasets/111/', id=111),
-        dict(url='/datasets/112/', id=112)]
+        dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/113/', id=113)]
 
     kive_watcher.poll_runs()
 
@@ -1707,13 +1718,16 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
         datasets=[dict(argument=ANY,
                        dataset='/datasets/111/'),
                   dict(argument=ANY,
-                       dataset='/datasets/112/')],
+                       dataset='/datasets/112/'),
+                  dict(argument=ANY,
+                       dataset='/datasets/113/')],
         name='MiCall resistance on 2130A',
         batch=ANY,
         groups_allowed=['Everyone']))
 
 
 def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_config):
+    """ Same MIDI sample gets paired with two different main samples. """
     run_folder = raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234"
     sample_sheet = run_folder / "SampleSheet.csv"
     sample_sheet_text = sample_sheet.read_text()
@@ -1759,19 +1773,27 @@ def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kiv
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state for main run
         [dict(dataset='/datasets/111/',
-              argument_name='amino_csv')],  # run datasets
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/121/',
+              argument_name='nuc_csv')],  # run datasets
         dict(id=108, state='C'),  # refresh run state for midi run
         [dict(dataset='/datasets/112/',
-              argument_name='amino_csv')],  # run datasets
-        dict(id=109, state='C'),  # refresh run state for midi run
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/122/',
+              argument_name='nuc_csv')],  # run datasets
+        dict(id=109, state='C'),  # refresh run state for other main run
         [dict(dataset='/datasets/113/',
-              argument_name='amino_csv')]]  # run datasets
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/123/',
+              argument_name='nuc_csv')]]  # run datasets
     mock_session.get.reset_mock(side_effect=True)
     mock_session.get.return_value.json.side_effect = [
         dict(url='/datasets/111/', id=111),
         dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/121/', id=121),
         dict(url='/datasets/113/', id=113),
-        dict(url='/datasets/112/', id=112)]
+        dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/123/', id=123)]
     mock_session.endpoints.containerruns.post.return_value = dict(id=None)
 
     kive_watcher.poll_runs()
@@ -1779,13 +1801,15 @@ def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kiv
     expected_calls = [
         call(json=dict(app=ANY,
                        datasets=[dict(argument=ANY, dataset='/datasets/111/'),
-                                 dict(argument=ANY, dataset='/datasets/112/')],
+                                 dict(argument=ANY, dataset='/datasets/112/'),
+                                 dict(argument=ANY, dataset='/datasets/121/')],
                        name='MiCall resistance on 2130A',
                        batch=ANY,
                        groups_allowed=['Everyone'])),
         call(json=dict(app=ANY,
                        datasets=[dict(argument=ANY, dataset='/datasets/113/'),
-                                 dict(argument=ANY, dataset='/datasets/112/')],
+                                 dict(argument=ANY, dataset='/datasets/112/'),
+                                 dict(argument=ANY, dataset='/datasets/123/')],
                        name='MiCall resistance on 2130A',
                        batch=ANY,
                        groups_allowed=['Everyone']))]
@@ -2258,7 +2282,9 @@ def test_folder_completed_except_denovo(raw_data_with_two_samples, mock_open_kiv
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=151, state='C'),  # refresh run state for denovo main
         [dict(dataset='/datasets/161/',
-              argument_name='amino_csv')],  # run datasets
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/171/',
+              argument_name='nuc_csv')],  # run datasets
         dict(id=152, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/162/',
               argument_name='resistance_csv')],  # run datasets
