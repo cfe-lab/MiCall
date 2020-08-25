@@ -332,6 +332,11 @@ def get_parser(default_max_active):
             nargs='*',
             choices=TrimSteps.all,
             help='Skip over some steps to speed up the analysis.')
+        command_parser.add_argument(
+            "--keep_scratch",
+            "-s",
+            action='store_true',
+            help="Don't delete the scratch folder when the run is complete.")
 
     return parser
 
@@ -583,6 +588,8 @@ def process_run(run_info, args):
     collate_samples(run_info)
     if run_summary is not None:
         summarize_samples(run_info, run_summary)
+    if not args.keep_scratch:
+        shutil.rmtree(run_info.scratch_path, ignore_errors=True)
     logger.info('Done.')
 
 
@@ -1023,10 +1030,10 @@ def zip_folder(parent_path, folder_name):
                                os.path.join(folder_name, relpath, filename))
 
 
-def collate_samples(run_info):
+def collate_samples(run_info: RunInfo):
     """ Combine all the sample files into run files.
 
-    :param RunInfo run_info: details of the run and samples
+    :param run_info: details of the run and samples
     """
     filenames = ['remap_counts.csv',
                  'remap_conseq.csv',
