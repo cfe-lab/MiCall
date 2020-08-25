@@ -33,6 +33,8 @@ MAXIMUM_RETRY_WAIT = timedelta(days=1)
 MAX_RUN_NAME_LENGTH = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_csv',
+                      'conseq_all_csv',
+                      'conseq_region_csv',
                       'conseq_ins_csv',
                       'failed_csv',
                       'nuc_csv',
