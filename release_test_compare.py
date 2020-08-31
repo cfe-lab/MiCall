@@ -481,41 +481,52 @@ def compare_consensus(sample: Sample,
         target_details = target_seqs.get(key)
         source_nucs = []
         target_nucs = []
-        has_big_change = False
-        for source_item, target_item in zip(source_details, target_details):
-            source_consensus, source_row = source_item
-            target_consensus, target_row = target_item
-            if source_consensus != target_consensus:
-                if has_big_prevalence_change(source_consensus,
-                                             source_row,
-                                             target_row):
-                    has_big_change = True
-                else:
-                    source_consensus = source_consensus.lower()
-                if has_big_prevalence_change(target_consensus,
-                                             target_row,
-                                             source_row):
-                    has_big_change = True
-                else:
-                    target_consensus = target_consensus.lower()
-                if not has_big_change and 'x' in (source_consensus,
-                                                  target_consensus):
-                    pos = int(target_row['refseq.nuc.pos'])
-                    is_ignored = primer_tracker.is_ignored(seed, region, pos)
-                    is_dropping = target_consensus == 'x'
-                    if MICALL_VERSION == '7.13' and is_ignored and is_dropping:
-                        pass
+        if source_details is None:
+            has_big_change = True
+            target_nucs = [nuc for nuc, row in target_details]
+        elif target_details is None:
+            has_big_change = True
+            source_nucs = [nuc for nuc, row in source_details]
+        else:
+            has_big_change = False
+            dummy_row = {'refseq.nuc.pos': '-1',
+                         'coverage': '0'}
+            for source_item, target_item in zip_longest(source_details,
+                                                        target_details,
+                                                        fillvalue=('', dummy_row)):
+                source_consensus, source_row = source_item
+                target_consensus, target_row = target_item
+                if source_consensus != target_consensus:
+                    if has_big_prevalence_change(source_consensus,
+                                                 source_row,
+                                                 target_row):
+                        has_big_change = True
                     else:
-                        old_coverage = int(source_row['coverage'])
-                        new_coverage = int(target_row['coverage'])
-                        has_big_change = (old_coverage < new_coverage/2 or
-                                          new_coverage < old_coverage/2)
+                        source_consensus = source_consensus.lower()
+                    if has_big_prevalence_change(target_consensus,
+                                                 target_row,
+                                                 source_row):
+                        has_big_change = True
+                    else:
+                        target_consensus = target_consensus.lower()
+                    if not has_big_change and 'x' in (source_consensus,
+                                                      target_consensus):
+                        pos = int(target_row['refseq.nuc.pos'])
+                        is_ignored = primer_tracker.is_ignored(seed, region, pos)
+                        is_dropping = target_consensus == 'x'
+                        if MICALL_VERSION == '7.13' and is_ignored and is_dropping:
+                            pass
+                        else:
+                            old_coverage = int(source_row['coverage'])
+                            new_coverage = int(target_row['coverage'])
+                            has_big_change = (old_coverage < new_coverage/2 or
+                                              new_coverage < old_coverage/2)
 
-            source_nucs.append(source_consensus)
-            target_nucs.append(target_consensus)
+                source_nucs.append(source_consensus)
+                target_nucs.append(target_consensus)
 
-        source_seq = ''.join(source_nucs)
-        target_seq = ''.join(target_nucs)
+        source_seq = ''.join(source_nucs) or None
+        target_seq = ''.join(target_nucs) or None
         consensus_distance = calculate_distance(region,
                                                 cutoff,
                                                 source_seq,
