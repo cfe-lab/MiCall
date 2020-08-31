@@ -1,3 +1,4 @@
+import re
 import typing
 from operator import itemgetter
 from pathlib import Path
@@ -50,3 +51,10 @@ class LandmarkReader:
             raise ValueError(f'Landmarks not found for gene {gene_name!r} in '
                              f'{coordinates}.')
         return region
+
+    def get_coordinates(self, seed_name: str) -> str:
+        for genotype_landmarks in self.landmarks:
+            seed_pattern = genotype_landmarks['seed_pattern']
+            if re.fullmatch(seed_pattern, seed_name):
+                return genotype_landmarks['coordinates']
+        raise ValueError(f'No landmarks match {seed_name!r}.')

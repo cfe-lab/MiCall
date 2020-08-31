@@ -57,9 +57,7 @@ def test_gene_without_end():
     assert gene == expected_gene
 
 
-def test():
-    """    - {name: PR, start: 2252, end: 2549, frame: 3, colour: orange}
-"""
+def test_load_defaults():
     expected_gene = dict(name='PR',
                          start=2252,
                          end=2549,
@@ -132,3 +130,30 @@ def test_gene_with_full_name():
     gene = reader.get_gene('R1-seed', 'R1-group-gene2')
 
     assert gene == expected_gene
+
+
+def test_get_coordinates_found():
+    landmarks_yaml = StringIO("""\
+- seed_pattern: R1.*
+  coordinates: R1a
+  landmarks:
+    - {name: '1', full_name: gene1, start: 1, frame: 0, colour: darkgrey}
+""")
+    reader = LandmarkReader.load(landmarks_yaml)
+
+    coordinates = reader.get_coordinates('R1b')
+
+    assert coordinates == 'R1a'
+
+
+def test_get_coordinates_unknown():
+    landmarks_yaml = StringIO("""\
+- seed_pattern: R1.*
+  coordinates: R1a
+  landmarks:
+    - {name: '1', full_name: gene1, start: 1, frame: 0, colour: darkgrey}
+""")
+    reader = LandmarkReader.load(landmarks_yaml)
+
+    with pytest.raises(ValueError, match=r"No landmarks match 'R2b'"):
+        reader.get_coordinates('R2b')
