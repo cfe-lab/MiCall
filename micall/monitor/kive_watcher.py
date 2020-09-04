@@ -59,7 +59,8 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'assembly_fasta',
                       'genome_coverage_csv',
                       'genome_coverage_svg',
-                      'read_entropy_csv']
+                      'read_entropy_csv'
+                      'table_precursor_csv']
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
@@ -271,6 +272,8 @@ def get_scratch_path(results_path, pipeline_group):
         scratch_name = "scratch"
     elif pipeline_group == PipelineType.DENOVO_MAIN:
         scratch_name = "scratch_denovo"
+    elif pipeline_group == PipelineType.PROVIRAL:
+        scratch_name = "scratch_proviral"
     else:
         assert pipeline_group == PipelineType.MIXED_HCV_MAIN
         scratch_name = "scratch_mixed_hcv"
