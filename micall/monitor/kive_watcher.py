@@ -59,7 +59,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'assembly_fasta',
                       'genome_coverage_csv',
                       'genome_coverage_svg',
-                      'read_entropy_csv'
+                      'read_entropy_csv',
                       'table_precursor_csv']
 
 # noinspection PyArgumentList
