@@ -286,6 +286,8 @@ def get_collated_path(results_path, pipeline_group):
         target_path = results_path
     elif pipeline_group == PipelineType.DENOVO_MAIN:
         target_path = results_path / "denovo"
+    elif pipeline_group == PipelineType.PROVIRAL:
+        target_path == results_path / "proviral"
     else:
         assert pipeline_group == PipelineType.MIXED_HCV_MAIN
         target_path = results_path / "mixed_hcv"
