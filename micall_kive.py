@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
+    # noinspection PyTypeChecker
     parser = ArgumentParser(description='Map FASTQ files to references.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     # inputs
@@ -104,6 +105,7 @@ def load_sample(args):
                     amino_csv=args.amino_csv,
                     coord_ins_csv=args.coord_ins_csv,
                     conseq_csv=args.conseq_csv,
+                    conseq_all_csv=args.conseq_all_csv,
                     conseq_region_csv=args.conseq_region_csv,
                     failed_align_csv=args.failed_align_csv,
                     coverage_scores_csv=args.coverage_scores_csv,
