@@ -205,14 +205,14 @@ and the MiseqQCReport so you can download QC data and upload results.
 
 ### Looking at SAM files
 When you don't understand the pipeline's output, it can be helpful to look at
-the raw reads in a sequence viewer like [Tablet][tablet]. Run the micall_basespace
-script on a run with a single sample, like this:
+the raw reads in a sequence viewer like [Tablet][tablet]. Run the `micall_docker`
+script on a run folder or a single sample, like this:
 
-    python micall_basespace.py --debug_remap --all_projects --link_run /path/to/run /working/path
+    python micall_docker.py folder --debug_remap --all_projects --keep_scratch /path/to/run
 
-The options tell it to write the debug files, use all projects, link to the run
-with the sample you're interested in, and put all the working files in the
-given folder. Look through the scratch folders under the working path to find
+The options tell it to write the debug files, use all projects, and save the
+scratch folder that holds all the debug files. Look through the scratch folders
+under the run folder to find
 the one for the sample you're interested in. The remap step writes the mapping
 results as `debug_remapX_debug.sam` and `debug_remapX_debug_ref.fasta`, where
 `X` is the remapping iteration number. You should be able to open an assembly
