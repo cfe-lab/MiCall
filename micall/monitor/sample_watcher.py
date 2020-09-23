@@ -203,15 +203,16 @@ class FolderWatcher:
                         or self.fetch_run_status(denovo_resistance_run))
                 # TODO: Put proviral run here
                 proviral_run = sample_watcher.runs.get(PipelineType.PROVIRAL)
-                is_proviral_complete = (proviral_run['id']
-                                        not in self.active_runs
-                                        or self.fetch_run_status(proviral_run))
                 if proviral_run is None:
                     if 'NFLS' not in sample_watcher.sample_group.names[0]:
                         is_proviral_complete = True
                     else:
                         self.run_pipeline(PipelineType.PROVIRAL,
                                           sample_watcher)
+                else:
+                    is_proviral_complete = (
+                        proviral_run['id'] not in self.active_runs
+                        or self.fetch_run_status(proviral_run))
 
         main_run = sample_watcher.runs.get(PipelineType.MAIN)
         if main_run is None:
