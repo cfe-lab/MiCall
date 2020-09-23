@@ -178,6 +178,7 @@ class FolderWatcher:
             is_mixed_hcv_complete = not active_mixed_runs
 
         is_denovo_main_complete = False
+        is_proviral_complete = False
         denovo_main_run = sample_watcher.runs.get(PipelineType.DENOVO_MAIN)
         if denovo_main_run is None:
             self.run_pipeline(PipelineType.DENOVO_MAIN, sample_watcher)
@@ -202,8 +203,15 @@ class FolderWatcher:
                         or self.fetch_run_status(denovo_resistance_run))
                 # TODO: Put proviral run here
                 proviral_run = sample_watcher.runs.get(PipelineType.PROVIRAL)
+                is_proviral_complete = (proviral_run['id']
+                                        not in self.active_runs
+                                        or self.fetch_run_status(proviral_run))
                 if proviral_run is None:
-                    self.run_pipeline(PipelineType.PROVIRAL, sample_watcher)
+                    if 'NFLS' not in sample_watcher.sample_group.names[0]:
+                        is_proviral_complete = True
+                    else:
+                        self.run_pipeline(PipelineType.PROVIRAL,
+                                          sample_watcher)
 
         main_run = sample_watcher.runs.get(PipelineType.MAIN)
         if main_run is None:
@@ -230,21 +238,8 @@ class FolderWatcher:
             if not self.fetch_run_status(resistance_run):
                 # Still running, nothing more to check on sample.
                 return sample_watcher.is_failed
-
-        # TODO Take a closer look at this and resistance
-        # add is_resistance_complete, and do not return right away
-        # Or move proviral up above resistance
-        # proviral_run = sample_watcher.runs.get(PipelineType.PROVIRAL)
-        # if proviral_run is None:
-        #     self.run_pipeline(PipelineType.PROVIRAL, sample_watcher)
-        #     # Launched resistance run, nothing more to check on sample.
-        #     return sample_watcher.is_failed
-        # if proviral_run['id'] in self.active_runs:
-        #     if not self.fetch_run_status(proviral_run):
-        #         # Still running, nothing more to check on sample.
-        #         return sample_watcher.is_failed
-        # return ((is_denovo_main_complete and is_mixed_hcv_complete)
-        #         or sample_watcher.is_failed)
+        return ((is_denovo_main_complete and is_mixed_hcv_complete
+                 and is_proviral_complete) or sample_watcher.is_failed)
 
     @property
     def has_new_runs(self):
