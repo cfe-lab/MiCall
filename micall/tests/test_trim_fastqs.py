@@ -449,6 +449,16 @@ def test_trim(tmpdir):
       # Trimmed to nothing
       '',
       # Trimmed to nothing, because mate was.
+      ),
+     ('happens to match start of primer',
+      'TCGCCGACCTCATGGGGTACATACCGCTCGTCGGCGCCCCTCTTGGAGGC',
+      # HCV-1a                                     ][ Still HCV-1a, start of nCoV-2019_1_RIGHT
+      'GCCTCCAAGAGGGGCGCCGACGAGCGGTATGTACCCCATGAGGTCGGCGA',
+      #    ][ rev(HCV-1a)
+      'TCGCCGACCTCATGGGGTACATACCGCTCGTCGGCGCCCCTCTTGGAGGC',
+      # unchanged
+      'GCCTCCAAGAGGGGCGCCGACGAGCGGTATGTACCCCATGAGGTCGGCGA',
+      # unchanged
       )
      ])
 def test_cut_adapters(tmpdir: str,
