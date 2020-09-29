@@ -95,9 +95,6 @@ def trim(original_fastq_filenames: typing.Sequence[str],
         cycle_sign = 1 - 2*i
         with open(src_name, 'rb') as src, open(dest_name, 'w') as dest:
             censor(src, bad_cycles, dest, use_gzip, summary_writer, cycle_sign)
-    logger.debug('Finished censoring in %s for %s.',
-                 datetime.now() - start_time,
-                 trimmed_fastq_filenames[0])
 
     cut_all(Path(censored_filenames[0]),
             Path(censored_filenames[1]),
@@ -127,9 +124,6 @@ def cut_all(censored_fastq1: Path,
                      censored_fastq2,
                      dedapted_filenames[0],
                      dedapted_filenames[1])
-        logger.debug('Trimmed adapters in %s for %s.',
-                     datetime.now() - start_time,
-                     trimmed_fastq1)
     if TrimSteps.primers in skip:
         shutil.copy(str(dedapted_filenames[0]), str(trimmed_fastq1))
         shutil.copy(str(dedapted_filenames[1]), str(trimmed_fastq2))
@@ -139,17 +133,11 @@ def cut_all(censored_fastq1: Path,
                          dedapted_filenames[1],
                          ltrimmed_filenames[0],
                          ltrimmed_filenames[1])
-        logger.debug('Trimmed left primers in %s for %s.',
-                     datetime.now() - start_time,
-                     trimmed_fastq1)
         right_start_time = datetime.now()
         cut_right_primers(dedapted_filenames[0],
                           dedapted_filenames[1],
                           rtrimmed_filenames[0],
                           rtrimmed_filenames[1])
-        logger.debug('Trimmed right primers in %s for %s.',
-                     datetime.now() - right_start_time,
-                     trimmed_fastq1)
         dimer_start_time = datetime.now()
         combine_primer_trimming(dedapted_filenames[0],
                                 dedapted_filenames[1],
@@ -159,12 +147,6 @@ def cut_all(censored_fastq1: Path,
                                 rtrimmed_filenames[1],
                                 trimmed_fastq1,
                                 trimmed_fastq2)
-        logger.debug('Combined primer trimming in %s for %s.',
-                     datetime.now() - dimer_start_time,
-                     trimmed_fastq1)
-        logger.debug('Trimmed all primers in %s for %s.',
-                     datetime.now() - start_time,
-                     trimmed_fastq1)
     purge_temp_files(dedapted_filenames)
     purge_temp_files(ltrimmed_filenames)
     purge_temp_files(rtrimmed_filenames)

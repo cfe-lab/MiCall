@@ -181,9 +181,9 @@ class ResultsFolder:
         regions = set(map(itemgetter('region'), conseq_rows))
         if self.is_denovo:
             expected_regions = {'HIV1-CON-XX-Consensus-seed',
-                                '2-HIV1-B-FR-K03455-seed',
-                                '3-HIV1-B-FR-K03455-seed',
-                                '1-HCV-1a'}
+                                '1-HIV1-B-FR-K03455-seed',
+                                '2-HCV-1a',
+                                '3-HIV1-B-FR-K03455-seed'}
         else:
             expected_regions = {'HIV1-CON-XX-Consensus-seed',
                                 'HCV-1a',
