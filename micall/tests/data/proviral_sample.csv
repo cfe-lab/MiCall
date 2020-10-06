@@ -1,2 +1,2 @@
-sample,sequence,verdict,X1,PSI_SL1,PSI_SL2,PSI_SL3,PSI_SL4,GAG,POL,PROTEASE,RT,INTEGRASE,VIF,VPR,TAT_EXON1,REV_EXON1,D4,X2,VPU,ENV,GP120,GP41,TAT_EXON2,REV_EXON2,X3,NEF,LTR3
+sample,sequence,verdict,x1,psi_sl1,psi_sl2,psi_sl3,psi_sl4,gag,pol,protease,rt,integrase,vif,vpr,tat_exon1,rev_exon1,d4,x2,vpu,env,gp120,gp41,tat_exon2,rev_exon2,x3,nef,ltr3
 test_sample,ABCDEFGHIJKLMNOPQRSTUVWXY,Intact,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y
