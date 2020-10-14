@@ -26,8 +26,11 @@ def parse_args():
 
 def convert_from_csv(csv_name: str,
                      sam_name: str,
+                     ref_name: str,
                      projects_file: typing.TextIO):
-    with open(csv_name) as csv_file, open(sam_name, 'w') as sam_file:
+    with open(csv_name) as csv_file, \
+            open(sam_name, 'w') as sam_file, \
+            open(ref_name, 'w') as ref_file:
         writer = csv.writer(sam_file, delimiter='\t', lineterminator=os.linesep)
         writer.writerow(['@HD', 'VN:1.0', 'SO:unsorted'])
 
@@ -45,6 +48,9 @@ def convert_from_csv(csv_name: str,
                 reference_length = len(reference)
                 row = ['@SQ', f'SN:{region}', f'LN:{reference_length}']
                 writer.writerow(row)
+                print(f'>{region}', file=ref_file)
+                for line in info['reference']:
+                    print(line, file=ref_file)
 
         csv_file.seek(0)
         reader = csv.reader(csv_file)
@@ -59,7 +65,8 @@ def main():
     if sam_ext == '.csv':
         csv_name = sam_name
         sam_name = sam_root + '.sam'
-        convert_from_csv(csv_name, sam_name, args.projects)
+        ref_name = sam_root + '_ref.fasta'
+        convert_from_csv(csv_name, sam_name, ref_name, args.projects)
     # samtools view -Sb example.sam -o example.bam
     subprocess.check_call(
         ['samtools', 'view', '-Sb', sam_name, '-o', sam_root + '.bam'])
@@ -75,5 +82,4 @@ def main():
                            sam_root + '.sorted.bam'])
 
 
-if __name__ == '__main__':
-    main()
+main()
