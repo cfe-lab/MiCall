@@ -10,6 +10,9 @@
 #
 #     docker run --rm -it --entrypoint pytest -w /opt/micall \
 #     --volume ~/git/micall:/opt/micall micall:dev
+#
+# That lets you edit the source code on your host system, but run it under
+# docker with all the tools installed for you.
 
 FROM docker.illumina.com/cfe_lab/micall:latest
 
