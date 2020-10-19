@@ -161,8 +161,10 @@ To install it on Ubuntu, use pip:
 
 ### BaseSpace
 Set up the [native apps virtual machine][bsvm], and configure a shared folder
-called MiCall that points to the source code. Make sure you have a developer
-account on illumina.com.
+called MiCall that points to the source code. To get the shared folder working,
+you'll probably need to update the VBox guest additions and add the basespace
+user to the `vboxsf` group. Make sure you have a developer account on
+illumina.com.
 
 Use the `docker_build.py` script to build a Docker image and push it to
 BaseSpace. If you add `-t vX.Y`, it will add a tag to the Docker image. If you

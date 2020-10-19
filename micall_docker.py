@@ -361,6 +361,10 @@ def add_basespace_parser(subparsers, default_max_active):
         help="Used by BaseSpace; if invoking manually you will typically not use this.",
         formatter_class=MiCallFormatter,
     )
+    basespace_parser.add_argument('run_folder',
+                                  default='/data',
+                                  nargs='?',
+                                  help='data folder filled in by BaseSpace')
     basespace_parser.add_argument(
         "--max_active",
         "-m",
@@ -539,7 +543,7 @@ def add_hcv_sample_parser(subparsers, default_max_active):
 
 def basespace_run(args):
     resolved_args = MiCallArgs(args)
-    run_info = load_samples(resolved_args.results_folder)
+    run_info = load_samples(resolved_args.run_folder)
     process_run(run_info, args)
     zip_folder(run_info.output_path, 'resistance_reports')
     zip_folder(run_info.output_path, 'coverage_maps')
