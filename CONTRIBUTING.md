@@ -222,11 +222,21 @@ similar steps to setting up a development workstation. Follow these steps:
 16. Edit the `callbacks.js` in the form builder, and add the `:vX.Y` tag to the
     `containerImageId` field.
 17. Activate the new revisions in the form builder and the report builder.
-17. Tag the same docker image and push it to docker hub. You might have to log
-    in to docker with your docker hub account before doing this.
+17. Submit the new revision of the MiCall app for review, and ask our contact
+    at Illumina to set the price to zero for the list of test users.
+17. Tag the same docker image and push it to docker hub. Unfortunately, the old
+    version of docker that comes with the basespace virtual machine
+    [can't log in] to docker hub, so you'll have to save it to a tar file and
+    load that into your host system's version of docker.
 
+        ssh basespace@localhost -p2222
+        cd /media/sf_micall
         sudo docker tag docker.illumina.com/cfe_lab/micall:vX.Y cfelab/micall:vX.Y
+        sudo docker save cfelab/micall:vX.Y >micall-vX.Y.tar
+        exit
+        sudo docker load <micall-vX.Y.tar
         sudo docker push cfelab/micall:vX.Y
+        rm micall-vX.Y.tar
 
 18. Send an e-mail to users describing the major changes in the release.
 19. Close the milestone for this release, create one for the next release, and
