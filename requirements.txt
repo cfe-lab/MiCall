@@ -1,5 +1,5 @@
 # Requirements for running the bare pipeline under Kive or BaseSpace
-pytz==2020.1
+pytz==2020.4
 git+https://github.com/cfe-lab/iva.git@v1.1.1
 biopython==1.78
 git+https://github.com/cfe-lab/MiCall.git@v7.7.0#egg=gotoh&subdirectory=micall/alignment
