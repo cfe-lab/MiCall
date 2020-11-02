@@ -93,7 +93,11 @@ in Tablet using those two files. If the SAM file contains multiple regions,
 you'll probably have to sort it with the `micall/utils/sort_sam.py` script. That
 same script can convert `prelim.csv` into a SAM file.
 
-[tablet]: http://ics.hutton.ac.uk/tablet/
+If you want to understand the de novo assembly process, read through the
+[assembly page].
+
+[tablet]: https://ics.hutton.ac.uk/tablet/
+[assembly page]: https://cfe-lab.github.io/MiCall/design/assembly.html
 
 ### GitHub Web Site
 Most of the time, you can change the web site content just by editing the

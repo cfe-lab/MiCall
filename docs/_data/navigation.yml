@@ -4,5 +4,14 @@
   link: /admin.html
 - name: Steps and Files
   link: /steps.html
+  dropdown:
+    - name: G2P
+      link: /design/fastq_g2p.html
+    - name: Remap
+      link: /design/remap.html
+    - name: De Novo Assembly
+      link: /design/assembly.html
+    - name: Resistance
+      link: /design/resistance.html
 - name: GitHub
   link: https://github.com/cfe-lab/MiCall
