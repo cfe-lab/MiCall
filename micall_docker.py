@@ -18,7 +18,7 @@ from micall.core.filter_quality import report_bad_cycles
 from micall.core.trim_fastqs import TrimSteps
 from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
 from micall.drivers.sample import Sample
-from micall.drivers.sample_group import SampleGroup
+from micall.drivers.sample_group import SampleGroup, load_git_version
 from micall.monitor.find_groups import find_groups
 from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.pssm_lib import Pssm
@@ -307,10 +307,13 @@ def get_parser(default_max_active):
     subparsers = parser.add_subparsers(
         title="Sub-commands (i.e. modes of operation)",
     )
+    default_folder = "micall-results-" + load_git_version()
 
-    commands = [add_folder_parser(subparsers, default_max_active),
-                add_sample_parser(subparsers),
-                add_hcv_sample_parser(subparsers, default_max_active),
+    commands = [add_folder_parser(subparsers, default_max_active, default_folder),
+                add_sample_parser(subparsers, default_folder),
+                add_hcv_sample_parser(subparsers,
+                                      default_max_active,
+                                      default_folder),
                 add_basespace_parser(subparsers, default_max_active)]
     for command_parser in commands:
         command_parser.add_argument(
@@ -376,7 +379,7 @@ def add_basespace_parser(subparsers, default_max_active):
     return basespace_parser
 
 
-def add_folder_parser(subparsers, default_max_max_active):
+def add_folder_parser(subparsers, default_max_max_active, default_results_folder):
     # ####
     # The "process a full directory" subcommand.
     # ####
@@ -399,7 +402,7 @@ def add_folder_parser(subparsers, default_max_max_active):
              "the path *inside* the container; point a bind mount here).  If "
              "this path is not absolute, it will be taken as relative to "
              "--run_folder.",
-        default="micall-results",
+        default=default_results_folder,
     )
     folder_parser.add_argument(
         "--max_active",
@@ -426,7 +429,7 @@ def add_folder_parser(subparsers, default_max_max_active):
     return folder_parser
 
 
-def add_sample_parser(subparsers):
+def add_sample_parser(subparsers, default_results_folder):
     # ####
     # The "process a single sample" subcommand.
     # ####
@@ -469,14 +472,14 @@ def add_sample_parser(subparsers):
              "the path *inside* the container; point a bind mount here).  If "
              "this path is not absolute, it will be taken as relative to "
              "--run_folder.",
-        default="micall-results",
+        default=default_results_folder,
     )
     single_sample_parser.set_defaults(func=single_sample,
                                       max_active=1)
     return single_sample_parser
 
 
-def add_hcv_sample_parser(subparsers, default_max_active):
+def add_hcv_sample_parser(subparsers, default_max_active, default_results_folder):
     # ####
     # The "process a single HCV sample" subcommand.
     # ####
@@ -534,7 +537,7 @@ def add_hcv_sample_parser(subparsers, default_max_active):
              "the path *inside* the container; point a bind mount here).  If "
              "this path is not absolute, it will be taken as relative to "
              "--run_folder.",
-        default="micall-results",
+        default=default_results_folder,
     )
     hcv_sample_parser.set_defaults(func=hcv_sample,
                                    max_active=min(default_max_active, 2))
