@@ -71,7 +71,7 @@ def parse_args(argv=None):
         help='password for Kive server (default not shown)')
     parser.add_argument(
         '--qai_server',
-        default=os.environ.get('MICALL_QAI_SERVER', 'http://localhost:3000'),
+        default=os.environ.get('MICALL_QAI_SERVER', 'http://localhost:4567'),
         help='server to post reviews on')
     parser.add_argument(
         '--qai_user',

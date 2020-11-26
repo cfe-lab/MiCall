@@ -638,8 +638,8 @@ class KiveWatcher:
 
     @staticmethod
     def extract_coverage_maps(folder_watcher, scratch_path, results_path):
-        coverage_path = results_path / "coverage_maps"
-        coverage_path.mkdir()
+        coverage_path: Path = results_path / "coverage_maps"
+        coverage_path.mkdir(exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / 'coverage_maps.tar'
