@@ -540,7 +540,9 @@ class SequenceReport(object):
         if self.seed != repeated_ref_name:
             return
 
-        seed_ref = self.projects.getReference(self.seed)
+        seed_start = repeated_ref_pos-100
+        seed_end = seed_start + 200
+        seed_ref = self.projects.getReference(self.seed)[seed_start:seed_end]
         consensus = ''.join(nuc.get_consensus('MAX', no_coverage='x')
                             for amino in self.seed_aminos[0]
                             for nuc in amino.nucleotides)
@@ -549,7 +551,7 @@ class SequenceReport(object):
         offset = len(aseq) - len(aseq.lstrip('-'))
         aref = aref[offset:]
         aseq = aseq[offset:]
-        ref_pos = offset
+        ref_pos = offset+seed_start
         conseq_pos = 0
         for ref_nuc, conseq_nuc in zip(aref, aseq):
             while conseq_pos < len(consensus) and consensus[conseq_pos] == 'x':
@@ -557,14 +559,14 @@ class SequenceReport(object):
             if conseq_pos >= len(consensus):
                 break
 
-            if ref_nuc == seed_ref[ref_pos]:
+            if ref_nuc == seed_ref[ref_pos-seed_start]:
                 ref_pos += 1
             if conseq_nuc == consensus[conseq_pos]:
                 conseq_pos += 1
             if ref_pos == repeated_ref_pos:
                 self.repeated_pos = conseq_pos
                 break
-            if ref_pos >= len(seed_ref):
+            if ref_pos >= len(seed_ref) + seed_start:
                 break
 
     def read_clipping(self, clipping_csv):

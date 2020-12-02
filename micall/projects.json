@@ -1,6 +1,6 @@
 {
   "projects": {
-    "SARS-CoV-2": {
+    "SARSCOV2": {
       "max_variants": 0,
       "regions": [
         {
