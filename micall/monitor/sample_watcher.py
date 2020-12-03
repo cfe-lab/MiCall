@@ -204,7 +204,7 @@ class FolderWatcher:
                 # TODO: Put proviral run here
                 proviral_run = sample_watcher.runs.get(PipelineType.PROVIRAL)
                 if proviral_run is None:
-                    if 'NFLS' not in sample_watcher.sample_group.names[0]:
+                    if 'NFL' not in sample_watcher.sample_group.names[0]:
                         is_proviral_complete = True
                     else:
                         self.run_pipeline(PipelineType.PROVIRAL,

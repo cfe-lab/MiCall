@@ -11,8 +11,10 @@ from pathlib import Path
 def conn():
     with qai.Session() as session:
         try:
-            session.login('http://localhost:4567', 'qai',
-                          os.environ.get('QAI_PWD'))
+            session.login(
+                    'http://localhost:4567',
+                    'bob',
+                    os.environ.get('QAI_PWD'))
         except Exception as e:
             logging.error(
                 'SESSION FAILED TO LOG IN, did you set the password env var? "export QAI_PWD="'
@@ -25,8 +27,10 @@ def conn():
 
 
 def test_create(conn):
+    #import pdb; pdb.set_trace()
     table = conn['cwd'] / 'data' / 'proviral_sample.csv'
     with open(table, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            conn['session'].post_json('/proviral/create', row)
+            response = conn['session'].post_json('/proviral/create', row)
+            print(response)
