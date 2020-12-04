@@ -6,7 +6,6 @@ import argparse
 import csv
 import logging
 import shutil
-from datetime import datetime
 from gzip import GzipFile
 import itertools
 import math
@@ -50,6 +49,9 @@ def parse_args():
                         '-u',
                         action='store_true',
                         help='Set if the original FASTQ files are not compressed')
+    parser.add_argument('--project',
+                        '-p',
+                        help='Project code to choose primers')
 
     return parser.parse_args()
 
@@ -59,7 +61,8 @@ def trim(original_fastq_filenames: typing.Sequence[str],
          trimmed_fastq_filenames: typing.Sequence[str],
          use_gzip: bool = True,
          summary_file: typing.TextIO = None,
-         skip: typing.Tuple[str] = ()):
+         skip: typing.Tuple[str] = (),
+         project_code: str = None):
     """
 
     :param original_fastq_filenames: sequence of two filenames, containing
@@ -72,6 +75,8 @@ def trim(original_fastq_filenames: typing.Sequence[str],
     :param summary_file: an open CSV file to write to: write one row
         with the average read quality for each file
     :param skip: names of steps to skip
+    :param project_code: select primers to trim from files that start with this
+        name
     """
     if summary_file is None:
         summary_writer = None
@@ -88,7 +93,6 @@ def trim(original_fastq_filenames: typing.Sequence[str],
     else:
         with open(bad_cycles_filename, 'r') as bad_cycles:
             bad_cycles = list(csv.DictReader(bad_cycles))
-    start_time = datetime.now()
     for i, (src_name, dest_name) in enumerate(
             zip(original_fastq_filenames, censored_filenames)):
 
@@ -100,7 +104,8 @@ def trim(original_fastq_filenames: typing.Sequence[str],
             Path(censored_filenames[1]),
             Path(trimmed_fastq_filenames[0]),
             Path(trimmed_fastq_filenames[1]),
-            skip)
+            skip,
+            project_code)
     purge_temp_files(censored_filenames)
 
 
@@ -108,7 +113,8 @@ def cut_all(censored_fastq1: Path,
             censored_fastq2: Path,
             trimmed_fastq1: Path,
             trimmed_fastq2: Path,
-            skip: typing.Tuple[str] = ()):
+            skip: typing.Tuple[str] = (),
+            project_code: str = None):
     dedapted_filenames = [Path(str(filename) + '.dedapted.fastq')
                           for filename in (censored_fastq1, censored_fastq2)]
     ltrimmed_filenames = [Path(str(filename) + '.ltrimmed.fastq')
@@ -119,26 +125,37 @@ def cut_all(censored_fastq1: Path,
         dedapted_filenames[0].symlink_to(censored_fastq1)
         dedapted_filenames[1].symlink_to(censored_fastq2)
     else:
-        start_time = datetime.now()
         cut_adapters(censored_fastq1,
                      censored_fastq2,
                      dedapted_filenames[0],
                      dedapted_filenames[1])
-    if TrimSteps.primers in skip:
+
+    if project_code is None:
+        primers_root = None
+    else:
+        if 'HCV' in project_code:
+            primer_set = 'hcv'
+        else:
+            primer_set = project_code.lower()
+        primers_folder = Path(__file__).parent.parent / 'data'
+        primers_root = str(primers_folder / f'primers_{primer_set}_')
+        if not Path(primers_root + 'left.fasta').exists():
+            primers_root = None
+
+    if TrimSteps.primers in skip or primers_root is None:
         shutil.copy(str(dedapted_filenames[0]), str(trimmed_fastq1))
         shutil.copy(str(dedapted_filenames[1]), str(trimmed_fastq2))
     else:
-        start_time = datetime.now()
         cut_left_primers(dedapted_filenames[0],
                          dedapted_filenames[1],
                          ltrimmed_filenames[0],
-                         ltrimmed_filenames[1])
-        right_start_time = datetime.now()
+                         ltrimmed_filenames[1],
+                         primers_root)
         cut_right_primers(dedapted_filenames[0],
                           dedapted_filenames[1],
                           rtrimmed_filenames[0],
-                          rtrimmed_filenames[1])
-        dimer_start_time = datetime.now()
+                          rtrimmed_filenames[1],
+                          primers_root)
         combine_primer_trimming(dedapted_filenames[0],
                                 dedapted_filenames[1],
                                 ltrimmed_filenames[0],
@@ -165,8 +182,8 @@ def cut_adapters(original_fastq1: Path,
                  original_fastq2: Path,
                  trimmed_fastq1: Path,
                  trimmed_fastq2: Path):
-    script_path = os.path.dirname(__file__)
-    adapter_files = [os.path.join(script_path, 'adapters_read{}.fasta'.format(i))
+    script_path = Path(__file__).parent.parent / 'data'
+    adapter_files = [str(script_path / f'adapters_read{i}.fasta')
                      for i in (1, 2)]
     run_cut_adapt(['--quiet',
                    '-a', 'file:' + adapter_files[0],
@@ -180,7 +197,8 @@ def cut_adapters(original_fastq1: Path,
 def cut_left_primers(original_fastq1: Path,
                      original_fastq2: Path,
                      trimmed_fastq1: Path,
-                     trimmed_fastq2: Path):
+                     trimmed_fastq2: Path,
+                     primers_root: str):
     """ Trim left primers off both sets of reads.
 
     The filtering options are a little tricky. --trimmed-only means that only
@@ -190,10 +208,9 @@ def cut_left_primers(original_fastq1: Path,
     read had a primer trimmed off, then both reads will get written to the
     ltrimmed.fastq file.
     """
-    script_path = Path(__file__).parent
     run_cut_adapt(['--quiet',
-                   '-g', f'file:{script_path/"primers_left.fasta"}',
-                   '-A', f'file:{script_path/"primers_left_end.fasta"}',
+                   '-g', f'file:{primers_root}left.fasta',
+                   '-A', f'file:{primers_root}left_end.fasta',
                    '-o', str(trimmed_fastq1),
                    '-p', str(trimmed_fastq2),
                    '--overlap=8',
@@ -206,11 +223,11 @@ def cut_left_primers(original_fastq1: Path,
 def cut_right_primers(original_fastq1: Path,
                       original_fastq2: Path,
                       trimmed_fastq1: Path,
-                      trimmed_fastq2: Path):
-    script_path = Path(__file__).parent
+                      trimmed_fastq2: Path,
+                      primers_root: str):
     run_cut_adapt(['--quiet',
-                   '-a', f'file:{script_path/"primers_right_end.fasta"}',
-                   '-G', f'file:{script_path/"primers_right.fasta"}',
+                   '-a', f'file:{primers_root}right_end.fasta',
+                   '-G', f'file:{primers_root}right.fasta',
                    '-o', str(trimmed_fastq1),
                    '-p', str(trimmed_fastq2),
                    '--overlap=8',

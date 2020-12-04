@@ -297,7 +297,7 @@ class SampleWatcher:
     def __init__(self, sample_group):
         self.sample_group = sample_group
         self.fastq_datasets = []
-        self.name_datasets = []
+        self.sample_info_datasets = []
         self.runs = {}  # {pipeline_type: run}
         self.is_failed = False
 

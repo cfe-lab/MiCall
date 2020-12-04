@@ -20,7 +20,7 @@
 .pytest_cache
 /.idea
 /micall/tests/working/*
-/micall/tests/microtest/micall-results
+/micall/tests/microtest/micall-results*
 /micall/tests/microtest/scratch
 /venv_micall
 /simgs/*.simg

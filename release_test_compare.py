@@ -85,8 +85,8 @@ class PrimerTracker:
                     if name.startswith('HCV-')}
         primers = {}
         core_path = Path(__file__).parent / 'micall' / 'core'
-        left_primers_path = core_path / 'primers_left.fasta'
-        right_primers_path = core_path / 'primers_right_end.fasta'
+        left_primers_path = core_path / 'primers_sarscov2_left.fasta'
+        right_primers_path = core_path / 'primers_sarscov2_right_end.fasta'
         for primers_path in (left_primers_path, right_primers_path):
             with primers_path.open() as f:
                 for primer in SeqIO.parse(f, 'fasta'):

@@ -16,6 +16,8 @@ def parse_args():
     parser = ArgumentParser(description='Map FASTQ files to references.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     # inputs
+    parser.add_argument('sample_info_csv',
+                        help='sample name and project code')
     parser.add_argument('fastq1',
                         help='FASTQ containing forward reads')
     parser.add_argument('fastq2',
@@ -89,7 +91,8 @@ def load_sample(args):
     scratch_path = os.path.join(os.path.dirname(args.cascade_csv), 'scratch')
     shutil.rmtree(scratch_path, ignore_errors=True)
 
-    sample = Sample(fastq1=args.fastq1,
+    sample = Sample(sample_info_csv=args.sample_info_csv,
+                    fastq1=args.fastq1,
                     fastq2=args.fastq2,
                     bad_cycles_csv=args.bad_cycles_csv,
                     g2p_csv=args.g2p_csv,
