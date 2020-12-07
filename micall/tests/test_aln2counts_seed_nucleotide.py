@@ -1,4 +1,4 @@
-from micall.core.aln2counts import SeedNucleotide, MAX_CUTOFF
+from micall.core.aln2counts import SeedNucleotide, MAX_CUTOFF, FIRST_CUTOFF
 
 
 def test_single_read():
@@ -73,11 +73,14 @@ def test_consensus_mixed_max():
     nuc.count_nucleotides('C', 2)
     nuc.count_nucleotides('T', 2)
     nuc.count_nucleotides('G', 1)
+    consensus_first = nuc.get_consensus(FIRST_CUTOFF)
     consensus_max = nuc.get_consensus(MAX_CUTOFF)
     consensus_mix = nuc.get_consensus(0.1)
 
+    expected_consensus_first = 'C'  # C and T tie for max, alphabetical first=C
     expected_consensus_max = 'Y'  # C and T tie for max, mix is Y
     expected_consensus_mix = 'B'  # C, T, and G mix is B
+    assert expected_consensus_first == consensus_first
     assert expected_consensus_max == consensus_max
     assert expected_consensus_mix == consensus_mix
 

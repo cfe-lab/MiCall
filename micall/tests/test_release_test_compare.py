@@ -2,9 +2,23 @@ from collections import defaultdict
 from io import StringIO
 from unittest import TestCase
 
+import typing
+
 from release_test_compare import compare_sample, SampleFiles, Sample, \
     MiseqRun, Scenarios, ConsensusDistance, group_samples_file, \
     group_nucs_file, compare_consensus
+
+
+def make_nuc_rows(consensus_seq: str) -> typing.List[typing.Tuple[str, dict]]:
+    """ Make a set of nuc.csv rows to represent an expected consensus. """
+
+    rows = []
+    for consensus_nuc in consensus_seq:
+        row = {nuc: '100' if nuc == consensus_nuc else '0'
+               for nuc in 'ACGT'}
+        row['coverage'] = '100'
+        rows.append((consensus_nuc, row))
+    return rows
 
 
 # noinspection DuplicatedCode
@@ -366,8 +380,8 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_scenario_counts, scenario_counts)
 
     def test_consensus_change(self):
-        source_seqs = {('R1-seed', 'R1'): 'ACACACGT'}
-        target_seqs = {('R1-seed', 'R1'): 'ACACACGG'}
+        source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACACGT')}
+        target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACACGG')}
         coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
@@ -391,8 +405,8 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_consensus_distances, consensus_distances)
 
     def test_consensus_change_diff(self):
-        source_seqs = {('R1-seed', 'R1'): 'ACACAC'}
-        target_seqs = {('R1-seed', 'R1'): 'ACACAT'}
+        source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAC')}
+        target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAT')}
         coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
@@ -419,8 +433,8 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_scenarios, scenarios)
 
     def test_consensus_change_scenario(self):
-        source_seqs = {('R1-seed', 'R1'): 'ACACAC'}
-        target_seqs = {('R1-seed', 'R1'): 'ACACAT'}
+        source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAC')}
+        target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAT')}
         coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
@@ -443,8 +457,8 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_scenarios, scenarios)
 
     def test_same_consensus(self):
-        source_seqs = {('R1-seed', 'R1'): 'ACACAC'}
-        target_seqs = {('R1-seed', 'R1'): 'ACACAC'}
+        source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAC')}
+        target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAC')}
         coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
@@ -467,10 +481,10 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_scenarios, scenarios)
 
     def test_one_consensus_changes(self):
-        source_seqs = {('R1-seed', 'R1'): 'ACACACGT',
-                       ('R2-seed', 'R2'): 'ACACACGT'}
-        target_seqs = {('R1-seed', 'R1'): 'ACACACGT',
-                       ('R2-seed', 'R2'): 'ACACAMGT'}
+        source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACACGT'),
+                       ('R2-seed', 'R2'): make_nuc_rows('ACACACGT')}
+        target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACACGT'),
+                       ('R2-seed', 'R2'): make_nuc_rows('ACACAMGT')}
         coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'},
                            {'seed': 'R2-seed', 'region': 'R2', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
@@ -505,8 +519,8 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_consensus_distances, consensus_distances)
 
     def test_consensus_trailing_change(self):
-        source_seqs = {('R1-seed', 'R1'): 'ACTTAC------GTAC'}
-        target_seqs = {('R1-seed', 'R1'): 'ACTTAC'}
+        source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACTTAC------GTAC')}
+        target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACTTAC')}
         coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
@@ -534,7 +548,7 @@ class CompareSampleTest(TestCase):
         self.assertEqual(expected_consensus_distances, consensus_distances)
 
     def test_consensus_missing(self):
-        source_seqs = {('R1-seed', 'R1'): 'ACTTAC'}
+        source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACTTAC')}
         target_seqs = {}
         coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
@@ -560,7 +574,7 @@ class CompareSampleTest(TestCase):
 
     def test_consensus_added(self):
         source_seqs = {}
-        target_seqs = {('R1-seed', 'R1'): 'ACTTAC'}
+        target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACTTAC')}
         coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
@@ -600,13 +614,24 @@ s2,a2,b2
 
         self.assertEqual(expected_groups, groups)
 
+    # noinspection DuplicatedCode
     def test_group_nucs_single(self):
         output_file = StringIO("""\
 sample,seed,region,query.nuc.pos,coverage
 s1,R1-seed,R1,100,10
 s1,R1-seed,R1,110,10
 """)
-        expected_groups = dict(s1={('R1-seed', 'R1'): 'xx'})
+        expected_groups = dict(s1={('R1-seed', 'R1'): [
+            ('x', {'coverage': '10',
+                   'query.nuc.pos': '100',
+                   'region': 'R1',
+                   'sample': 's1',
+                   'seed': 'R1-seed'}),
+            ('x', {'coverage': '10',
+                   'query.nuc.pos': '110',
+                   'region': 'R1',
+                   'sample': 's1',
+                   'seed': 'R1-seed'})]})
 
         groups = group_nucs_file(output_file)
 
@@ -620,12 +645,57 @@ s1,R1-seed,R1,101,99,1,0,0,0,0,100
 s1,R1-seed,R1,102,1,99,0,0,0,0,100
 s1,R1-seed,R1,103,0,99,0,0,0,0,99
 """)
-        expected_groups = dict(s1={('R1-seed', 'R1'): 'AACx'})
+        expected_groups = dict(s1={('R1-seed', 'R1'): [
+            ('A', {'A': '100',
+                   'C': '0',
+                   'G': '0',
+                   'T': '0',
+                   'coverage': '100',
+                   'del': '0',
+                   'ins': '0',
+                   'query.nuc.pos': '100',
+                   'region': 'R1',
+                   'sample': 's1',
+                   'seed': 'R1-seed'}),
+            ('A', {'A': '99',
+                   'C': '1',
+                   'G': '0',
+                   'T': '0',
+                   'coverage': '100',
+                   'del': '0',
+                   'ins': '0',
+                   'query.nuc.pos': '101',
+                   'region': 'R1',
+                   'sample': 's1',
+                   'seed': 'R1-seed'}),
+            ('C', {'A': '1',
+                   'C': '99',
+                   'G': '0',
+                   'T': '0',
+                   'coverage': '100',
+                   'del': '0',
+                   'ins': '0',
+                   'query.nuc.pos': '102',
+                   'region': 'R1',
+                   'sample': 's1',
+                   'seed': 'R1-seed'}),
+            ('x', {'A': '0',
+                   'C': '99',
+                   'G': '0',
+                   'T': '0',
+                   'coverage': '99',
+                   'del': '0',
+                   'ins': '0',
+                   'query.nuc.pos': '103',
+                   'region': 'R1',
+                   'sample': 's1',
+                   'seed': 'R1-seed'})]})
 
         groups = group_nucs_file(output_file)
 
         self.assertEqual(expected_groups, groups)
 
+    # noinspection DuplicatedCode
     def test_group_nucs_two_samples(self):
         output_file = StringIO("""\
 sample,seed,region,query.nuc.pos,coverage
@@ -634,8 +704,27 @@ s1,R1-seed,R1,110,10
 s2,R1-seed,R1,101,10
 s2,R1-seed,R1,111,10
 """)
-        expected_groups = dict(s1={('R1-seed', 'R1'): 'xx'},
-                               s2={('R1-seed', 'R1'): 'xx'})
+        expected_groups = dict(
+            s1={('R1-seed', 'R1'): [('x', {'coverage': '10',
+                                           'query.nuc.pos': '100',
+                                           'region': 'R1',
+                                           'sample': 's1',
+                                           'seed': 'R1-seed'}),
+                                    ('x', {'coverage': '10',
+                                           'query.nuc.pos': '110',
+                                           'region': 'R1',
+                                           'sample': 's1',
+                                           'seed': 'R1-seed'})]},
+            s2={('R1-seed', 'R1'): [('x', {'coverage': '10',
+                                           'query.nuc.pos': '101',
+                                           'region': 'R1',
+                                           'sample': 's2',
+                                           'seed': 'R1-seed'}),
+                                    ('x', {'coverage': '10',
+                                           'query.nuc.pos': '111',
+                                           'region': 'R1',
+                                           'sample': 's2',
+                                           'seed': 'R1-seed'})]})
 
         groups = group_nucs_file(output_file)
 
@@ -649,8 +738,27 @@ s1,R1-seed,R1a,110,10
 s1,R1-seed,R1b,201,10
 s1,R1-seed,R1b,211,10
 """)
-        expected_groups = dict(s1={('R1-seed', 'R1a'): 'xx',
-                                   ('R1-seed', 'R1b'): 'xx'})
+        expected_groups = dict(
+            s1={('R1-seed', 'R1a'): [('x', {'coverage': '10',
+                                            'query.nuc.pos': '100',
+                                            'region': 'R1a',
+                                            'sample': 's1',
+                                            'seed': 'R1-seed'}),
+                                     ('x', {'coverage': '10',
+                                            'query.nuc.pos': '110',
+                                            'region': 'R1a',
+                                            'sample': 's1',
+                                            'seed': 'R1-seed'})],
+                ('R1-seed', 'R1b'): [('x', {'coverage': '10',
+                                            'query.nuc.pos': '201',
+                                            'region': 'R1b',
+                                            'sample': 's1',
+                                            'seed': 'R1-seed'}),
+                                     ('x', {'coverage': '10',
+                                            'query.nuc.pos': '211',
+                                            'region': 'R1b',
+                                            'sample': 's1',
+                                            'seed': 'R1-seed'})]})
 
         groups = group_nucs_file(output_file)
 
@@ -663,7 +771,22 @@ s1,R1-seed,R1,100,10
 s1,R1-seed,R1,110,10
 s1,R1-seed,R1,,0
 """)
-        expected_groups = dict(s1={('R1-seed', 'R1'): 'xxx'})
+        expected_groups = dict(s1={('R1-seed', 'R1'): [
+            ('x', {'coverage': '10',
+                   'query.nuc.pos': '100',
+                   'region': 'R1',
+                   'sample': 's1',
+                   'seed': 'R1-seed'}),
+            ('x', {'coverage': '10',
+                   'query.nuc.pos': '110',
+                   'region': 'R1',
+                   'sample': 's1',
+                   'seed': 'R1-seed'}),
+            ('x', {'coverage': '0',
+                   'query.nuc.pos': '',
+                   'region': 'R1',
+                   'sample': 's1',
+                   'seed': 'R1-seed'})]})
 
         groups = group_nucs_file(output_file)
 

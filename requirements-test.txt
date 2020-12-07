@@ -2,11 +2,11 @@
 
 -r requirements.txt
 -r requirements-watcher.txt
-pytest==6.0.1
-coverage==5.2.1
-pandas==1.1.0
-seaborn==0.10.1
+pytest==6.0.2
+coverage==5.3
+pandas==1.1.2
+seaborn==0.11.0
 ete3
 
 # For reading HCV rules from an Excel file.
-openpyxl==3.0.4
+openpyxl==3.0.5

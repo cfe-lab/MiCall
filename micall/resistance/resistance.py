@@ -1,4 +1,5 @@
 import os
+import typing
 from argparse import ArgumentParser, FileType
 from collections import namedtuple
 from csv import DictReader, DictWriter
@@ -8,6 +9,8 @@ from operator import itemgetter, attrgetter
 import yaml
 from pyvdrm.vcf import Mutation
 
+from micall.core.project_config import ProjectConfig
+from micall.data.landmark_reader import LandmarkReader
 from micall.resistance.asi_algorithm import AsiAlgorithm, HcvResistanceLevels, HivResistanceLevels
 from micall.core.aln2counts import AMINO_ALPHABET
 
@@ -29,16 +32,21 @@ class LowCoverageError(Exception):
 def parse_args():
     parser = ArgumentParser(
         description='Make resistance calls and list mutations from amino counts.')
-    parser.add_argument('aminos_csv', type=FileType(), help='amino counts')
-    parser.add_argument('midi_aminos_csv',
-                        type=FileType(),
-                        help='amino counts for HCV MIDI region or the same as aminos_csv')
+    parser.add_argument('main_amino_csv',
+                        help='CSV containing amino frequencies from main sample')
+    parser.add_argument('midi_amino_csv',
+                        help='CSV containing amino frequencies from MIDI sample')
+    parser.add_argument('main_nuc_csv',
+                        help='CSV containing nucleotide frequencies from main sample')
     parser.add_argument('resistance_csv',
                         type=FileType('w'),
                         help='resistance calls')
     parser.add_argument('mutations_csv',
                         type=FileType('w'),
                         help='Relevant mutations present above a threshold')
+    parser.add_argument('nuc_mutations_csv',
+                        type=FileType('w'),
+                        help='Relevant nucleotide mutations present above a threshold')
     parser.add_argument('resistance_fail_csv',
                         type=FileType('w'),
                         help='regions that failed to make a resistance call')
@@ -116,14 +124,14 @@ def check_coverage(region, rows, start_pos=1, end_pos=None):
         raise LowCoverageError('not enough high-coverage amino acids')
 
 
-def combine_aminos(amino_csv, midi_amino_csv, failures):
+def combine_aminos(amino_csv, midi_amino_csv, failures: dict):
     """ Combine amino rows from the two amplified regions.
 
     :param amino_csv: an open file with the amino counts from the whole genome
         region.
     :param midi_amino_csv: an open file with the amino counts from the MIDI
         region.
-    :param dict failures: {(seed, region, is_midi): message} messages for any regions
+    :param failures: {(seed, region, is_midi): message} messages for any regions
         that did not have enough coverage. is_midi is True if the region was
         in the midi_amino_csv file.
     """
@@ -172,7 +180,9 @@ def combine_aminos(amino_csv, midi_amino_csv, failures):
                     low_coverage_message = None
                 except LowCoverageError:
                     region_midi_rows = []
-            main_rows = combine_midi_rows(main_rows, region_midi_rows, seed)
+            main_rows = combine_midi_rows(main_rows,
+                                          region_midi_rows,
+                                          seed)
         if low_coverage_message:
             failures[(seed, region, is_midi)] = low_coverage_message
         yield from main_rows
@@ -213,14 +223,13 @@ def combine_midi_rows(main_rows, midi_rows, seed):
             if pos <= 336:
                 yield main_row
         elif main_row is None:
-            midi_row['seed'] = seed  # Override MIDI seed with main seed.
             yield midi_row
         elif (pos <= 336 and
               int(main_row['coverage']) > int(midi_row['coverage'])):
             yield main_row
         else:
             yield midi_row
-            
+
 
 def read_aminos(amino_rows,
                 min_fraction,
@@ -438,6 +447,47 @@ def write_resistance(aminos,
                                                    version=alg_version))
 
 
+def write_nuc_mutations(nuc_csv: typing.TextIO,
+                        nuc_mutations_csv: typing.TextIO):
+    nuc_rows = DictReader(nuc_csv)
+    mutations_writer = DictWriter(nuc_mutations_csv,
+                                  ['seed',
+                                   'region',
+                                   'wt',
+                                   'refseq_nuc_pos',
+                                   'var',
+                                   'prevalence'],
+                                  lineterminator=os.linesep)
+    mutations_writer.writeheader()
+    for seed, seed_rows in groupby(nuc_rows, itemgetter('seed')):
+        if seed != 'SARS-CoV-2-seed':
+            continue
+        landmark_reader = LandmarkReader.load()
+        projects = ProjectConfig.loadDefault()
+        for region_name, region_rows in groupby(seed_rows, itemgetter('region')):
+            region = landmark_reader.get_gene(seed, region_name)
+            seed_seq = projects.getReference(seed)
+            ref_seq = seed_seq[region['start']-1:region['end']]
+            for row in region_rows:
+                nuc_pos = int(row['refseq.nuc.pos'])
+                wild_type = ref_seq[nuc_pos-1]
+                coverage = int(row['coverage'])
+                if coverage == 0:
+                    continue
+                for nuc in 'ACGT':
+                    if nuc == wild_type:
+                        continue
+                    nuc_count = int(row[nuc])
+                    prevalence = nuc_count / coverage
+                    if prevalence >= 0.05:
+                        mutations_writer.writerow(dict(seed=seed,
+                                                       region=region_name,
+                                                       wt=wild_type,
+                                                       refseq_nuc_pos=nuc_pos,
+                                                       var=nuc,
+                                                       prevalence=prevalence))
+
+
 def create_consensus_writer(resistance_consensus_csv):
     resistance_consensus_writer = DictWriter(resistance_consensus_csv,
                                              ['seed',
@@ -552,8 +602,10 @@ def write_failures(failures, filtered_aminos, fail_csv):
 
 def report_resistance(amino_csv,
                       midi_amino_csv,
+                      nuc_csv,
                       resistance_csv,
                       mutations_csv,
+                      nuc_mutations_csv,
                       fail_csv,
                       region_choices=None,
                       resistance_consensus_csv=None):
@@ -576,14 +628,17 @@ def report_resistance(amino_csv,
                      mutations_csv,
                      algorithms,
                      resistance_consensus_csv)
+    write_nuc_mutations(nuc_csv, nuc_mutations_csv)
 
 
 def main():
     args = parse_args()
-    report_resistance(args.aminos_csv,
-                      args.midi_aminos_csv,
+    report_resistance(args.main_amino_csv,
+                      args.midi_amino_csv,
+                      args.main_nuc_csv,
                       args.resistance_csv,
                       args.mutations_csv,
+                      args.nuc_mutations_csv,
                       args.resistance_fail_csv)
 
 

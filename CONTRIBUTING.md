@@ -264,8 +264,8 @@ similar steps to setting up a development workstation. Follow these steps:
 
 1. Check that all the issues in the current milestone are closed, and make sure
     the code works in your development environment. Run all the unit
-    tests as described above, process the microtest data set with your local copy
-    `micall_basespace.py`.
+    tests as described above, process the microtest data set with
+    `release_test_microtest.py`.
 2. Check if the kiveapi package needs a new release by looking for new commits.
     Make sure you tested with the latest version.
 3. Determine what version number should be used next.

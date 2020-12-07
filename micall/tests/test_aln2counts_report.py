@@ -668,18 +668,18 @@ SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
 """)
 
     #                  A,C,G,T,N,...,coverage
-    expected_text = """\
+    expected_section = """\
 SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,21,13198,0,0,0,9,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,22,13199,0,0,0,9,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,23,13200,9,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,24,13201,9,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,25,13202,9,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,26,13203,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,27,13205,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,28,13206,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,29,13207,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,30,13208,0,0,0,9,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,31,13209,0,0,0,9,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,27,13204,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,28,13205,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,29,13206,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,30,13207,0,0,0,9,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,31,13208,0,0,0,9,0,0,0,0,0,9"""
     sequence_report.projects = ProjectConfig.loadDefault()
     orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
     nsp12_size = len(sequence_report.projects.getReference('SARS-CoV-2-nsp12'))
@@ -699,7 +699,7 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,31,13209,0,0,0,9,0,0,0,0,0,9"""
 
     key_lines = report_lines[nsp12_size*3 + 13197:nsp12_size*3 + 13208]
     key_report = '\n'.join(key_lines)
-    assert key_report == expected_text
+    assert key_report == expected_section
 
 
 # noinspection DuplicatedCode

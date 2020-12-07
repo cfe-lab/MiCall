@@ -33,6 +33,8 @@ MAXIMUM_RETRY_WAIT = timedelta(days=1)
 MAX_RUN_NAME_LENGTH = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_csv',
+                      'conseq_all_csv',
+                      'conseq_region_csv',
                       'conseq_ins_csv',
                       'failed_csv',
                       'nuc_csv',
@@ -49,6 +51,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'mixed_amino_merged_csv',
                       'resistance_csv',
                       'mutations_csv',
+                      'nuc_mutations_csv',
                       'resistance_fail_csv',
                       'resistance_consensus_csv',
                       'wg_fasta',
@@ -780,18 +783,26 @@ class KiveWatcher:
         pipeline_id = self.config.micall_resistance_pipeline_id
         if pipeline_id is None:
             return None
-        main_runs = filter(None,
-                           (sample_watcher.runs.get(pipeline_type)
-                            for pipeline_type in input_pipeline_types))
-        input_dataset_urls = [run_dataset['dataset']
-                              for run in main_runs
-                              for run_dataset in run['datasets']
-                              if run_dataset['argument_name'] == 'amino_csv']
+        main_runs = (
+            (pipeline_type, run)
+            for pipeline_type in input_pipeline_types
+            for run in [sample_watcher.runs.get(pipeline_type)]
+            if run is not None)
+        input_dataset_urls = {
+            (pipeline_type, run_dataset['argument_name']): run_dataset['dataset']
+            for pipeline_type, run in main_runs
+            for run_dataset in run['datasets']}
+        main_type, midi_type = input_pipeline_types
+        input_types = [(main_type, 'amino_csv'),
+                       (midi_type, 'amino_csv'),
+                       (main_type, 'nuc_csv')]
+        if input_types[1] not in input_dataset_urls:
+            input_types[1] = input_types[0]
+        selected_urls = [input_dataset_urls[input_type]
+                         for input_type in input_types]
         input_datasets = [self.kive_retry(lambda: self.session.get(url).json())
-                          for url in input_dataset_urls]
-        if len(input_datasets) == 1:
-            input_datasets *= 2
-        inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv'),
+                          for url in selected_urls]
+        inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv', 'main_nuc_csv'),
                                input_datasets))
         run = self.find_or_launch_run(
             pipeline_id,

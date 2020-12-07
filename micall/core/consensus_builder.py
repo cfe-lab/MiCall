@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 
-from micall.core.aln2counts import SeedNucleotide, MAX_CUTOFF
+from micall.core.aln2counts import SeedNucleotide, FIRST_CUTOFF
 
 
 class ConsensusBuilder:
@@ -30,7 +30,8 @@ class ConsensusBuilder:
 
     def get_consensus_for_length(self, length):
         nucleotides = self.length_nucleotides[length]
-        return ''.join(nucleotides[i].get_consensus(MAX_CUTOFF)
+        # IVA can't handle seeds with mixtures, so always avoid them.
+        return ''.join(nucleotides[i].get_consensus(FIRST_CUTOFF)
                        for i in range(length))
 
     def get_consensus_by_lengths(self):

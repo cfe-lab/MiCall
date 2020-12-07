@@ -269,10 +269,13 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
                                                   itemgetter('frame')):
                 subtracks = []
                 for landmark in frame_landmarks:
-                    subtracks.append(Track(landmark['start']+position_offset,
-                                           landmark['end']+position_offset,
+                    landmark_colour = landmark.get('colour')
+                    if landmark_colour is None:
+                        continue
+                    subtracks.append(Track(landmark['start'] + position_offset,
+                                           landmark['end'] + position_offset,
                                            label=landmark['name'],
-                                           color=landmark['colour']))
+                                           color=landmark_colour))
                     max_position = max(max_position,
                                        landmark['end'] + position_offset)
                 f.add(Multitrack(subtracks))
