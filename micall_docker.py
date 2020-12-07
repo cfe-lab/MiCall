@@ -563,7 +563,8 @@ def process_folder(args):
         resolved_args.results_folder,
         args.denovo,
         args.fastq1s,
-        args.fastq2s)
+        args.fastq2s,
+        project_code=args.project_code)
     process_run(run_info, args)
 
 
@@ -619,6 +620,7 @@ def single_sample(args):
                     fastq2=resolved_args.fastq2,
                     bad_cycles_csv=resolved_args.bad_cycles_csv,
                     scratch_path=scratch_path)
+    sample.project_code = args.project_code
     sample_group = SampleGroup(sample)
     sample_groups.append(sample_group)
 
@@ -702,6 +704,11 @@ def load_samples(data_path):
             is_denovo = False
         else:
             is_denovo = builder_node['Content'] == 'denovo'
+        primer_node = arg_map.get('Input.project_code')
+        if primer_node is None:
+            project_code = None
+        else:
+            project_code = primer_node['Content']
 
         scratch_path = os.path.join(data_path, 'scratch')
         sample_groups = []
@@ -718,10 +725,12 @@ def load_samples(data_path):
         for main_sample_json, midi_sample_json in zip(main_samples, midi_samples):
             sample_group = SampleGroup(load_sample(main_sample_json,
                                                    data_path,
-                                                   scratch_path),
+                                                   scratch_path,
+                                                   project_code),
                                        load_sample(midi_sample_json,
                                                    data_path,
-                                                   scratch_path))
+                                                   scratch_path,
+                                                   project_code))
             sample_groups.append(sample_group)
 
         # Do we have run_ids for all sample_ids ?
@@ -756,7 +765,10 @@ def load_samples(data_path):
     return run_info
 
 
-def load_sample(sample_json, data_path, scratch_path):
+def load_sample(sample_json,
+                data_path,
+                scratch_path,
+                project_code: typing.Optional[str]):
     if sample_json is None:
         return None
     sample_dir = os.path.join(data_path,
@@ -784,6 +796,7 @@ def load_sample(sample_json, data_path, scratch_path):
                     basespace_id=sample_json['Id'],
                     basespace_href=sample_json['Href'])
     sample.scratch_path = os.path.join(scratch_path, sample.name)
+    sample.project_code = project_code
     return sample
 
 
@@ -792,7 +805,8 @@ def link_samples(
         output_path: str,
         is_denovo: bool,
         fastq1s: typing.Sequence[str] = None,
-        fastq2s: typing.Sequence[str] = None):
+        fastq2s: typing.Sequence[str] = None,
+        project_code: str = None):
     """ Load the data from a run folder. """
 
     shutil.rmtree(output_path, ignore_errors=True)
@@ -859,6 +873,7 @@ def link_samples(
                 fastq1=os.path.join(run_path, forward),
                 fastq2=os.path.join(run_path, reverse),
             )
+            sample.project_code = project_code
             sample_groups.append(SampleGroup(sample, midi_sample=None))
 
     else:  # a sample sheet is specified
@@ -877,10 +892,12 @@ def link_samples(
             if main_file.startswith('Undetermined'):
                 continue
             main_sample = Sample(fastq1=os.path.join(source_folder, main_file))
+            main_sample.project_code = project_code
             if midi_file is None:
                 midi_sample = None
             else:
                 midi_sample = Sample(fastq1=os.path.join(source_folder, midi_file))
+                midi_sample.project_code = project_code
             sample_groups.append(SampleGroup(main_sample, midi_sample))
 
     sample_count = sum(1 for _ in run_info.get_all_samples())
@@ -922,7 +939,6 @@ def process_sample(sample, args, pssm, use_denovo=False):
     """
     sample.debug_remap = args.debug_remap
     sample.skip = args.skip
-    sample.project_code = args.project_code
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS

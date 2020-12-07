@@ -78,6 +78,28 @@
             ]
         },
         {
+            "$type": "RadioButton",
+            "id": "project_code",
+            "label": "Primer Set to Trim",
+            "helpText": "Which set of primers to trim before processing.",
+            "value": null,
+            "required": false,
+            "choices": [
+                {
+                    "value": null,
+                    "label": "None"
+                },
+                {
+                    "value": "HCV",
+                    "label": "Hepatitis C"
+                },
+                {
+                    "value": "SARSCOV2",
+                    "label": "SARS-CoV-2"
+                }
+            ]
+        },
+        {
             "$type": "ProjectChooser",
             "size": 300,
             "valueType": "Output",
