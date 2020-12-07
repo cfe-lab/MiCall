@@ -62,6 +62,7 @@ class Sample:
         self.scratch_path = scratch_path
         self.skip = skip
         self.paths = paths
+        self.project_code = None
 
     def __repr__(self):
         fastq1 = self.paths.get('fastq1')
@@ -268,7 +269,10 @@ class Sample:
     def load_sample_info(self):
         path = Path(self.sample_info_csv)
         if not path.exists():
-            return {}
+            sample_info = {}
+            if self.project_code is not None:
+                sample_info['project'] = self.project_code
+            return sample_info
         with path.open() as info_file:
             reader = DictReader(info_file)
             return next(reader)

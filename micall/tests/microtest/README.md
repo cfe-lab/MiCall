@@ -56,4 +56,5 @@ The scenarios that each file tests are:
   pairwise alignment to a reference.
 * 2190A-SARSCOV2 - two lengths of SARS-CoV-2 reads, to test that similar amplicons
   of slightly different lengths can be combined.
-* 2200A-SARSCOV2 - SARS-CoV-2 amplicon that gets primers trimmed off the left.
+* 2200A-SARSCOV2 - SARS-CoV-2 amplicon that gets primers trimmed off the left,
+  so the coverage starts on amino 27 of nsp1, instead of 20.

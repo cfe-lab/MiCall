@@ -340,6 +340,10 @@ def get_parser(default_max_active):
             "-s",
             action='store_true',
             help="Don't delete the scratch folder when the run is complete.")
+        command_parser.add_argument(
+            "--project_code",
+            "-p",
+            help="Select primers to trim: HCV or SARSCOV2.")
 
     return parser
 
@@ -918,6 +922,7 @@ def process_sample(sample, args, pssm, use_denovo=False):
     """
     sample.debug_remap = args.debug_remap
     sample.skip = args.skip
+    sample.project_code = args.project_code
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
@@ -1030,8 +1035,10 @@ def zip_folder(parent_path, folder_name):
     source_path = os.path.join(parent_path, folder_name)
     zip_filename = os.path.join(parent_path, folder_name + '.zip')
     with ZipFile(zip_filename, mode='w', compression=ZIP_DEFLATED) as zip_file:
+        dirpath: str
         for dirpath, dirnames, filenames in os.walk(source_path):
             relpath = os.path.relpath(dirpath, source_path)
+            filename: str
             for filename in filenames:
                 zip_file.write(os.path.join(dirpath, filename),
                                os.path.join(folder_name, relpath, filename))
