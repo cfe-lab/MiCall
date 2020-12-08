@@ -42,6 +42,7 @@ class MicallDD(DD):
                   'multiple_genotypes',
                   'type_error',
                   'one_long_contig',
+                  'one_medium_contig',
                   'two_long_contigs')
 
     def __init__(self,
@@ -139,6 +140,15 @@ class MicallDD(DD):
         contig_sizes = MicallDD.get_contig_sizes(contigs_csv, read_count)
         return (DD.FAIL
                 if len(contig_sizes) == 1 and min(contig_sizes.values()) >= 1000
+                else DD.PASS)
+
+    @staticmethod
+    def check_one_medium_contig(contigs_csv, read_count, exception):
+        if exception is not None:
+            return DD.UNRESOLVED
+        contig_sizes = MicallDD.get_contig_sizes(contigs_csv, read_count)
+        return (DD.FAIL
+                if len(contig_sizes) == 1 and min(contig_sizes.values()) >= 585
                 else DD.PASS)
 
     @staticmethod
