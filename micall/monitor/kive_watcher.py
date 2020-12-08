@@ -771,7 +771,7 @@ class KiveWatcher:
                         pipeline_id: int,
                         sample_watcher: SampleWatcher,
                         group_position: int):
-        pipeline_args = self.app_args[pipeline_id]
+        pipeline_args = self.get_kive_arguments(pipeline_id)
         if 'sample_info_csv' not in pipeline_args:
             return None
 
