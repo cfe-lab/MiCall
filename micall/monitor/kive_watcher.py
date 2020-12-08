@@ -31,39 +31,17 @@ SLEEP_SECONDS = 60
 MINIMUM_RETRY_WAIT = timedelta(seconds=5)
 MAXIMUM_RETRY_WAIT = timedelta(days=1)
 MAX_RUN_NAME_LENGTH = 60
-DOWNLOADED_RESULTS = ['remap_counts_csv',
-                      'conseq_csv',
-                      'conseq_all_csv',
-                      'conseq_region_csv',
-                      'conseq_ins_csv',
-                      'failed_csv',
-                      'nuc_csv',
-                      'amino_csv',
-                      'coord_ins_csv',
-                      'failed_align_csv',
-                      'g2p_csv',
-                      'g2p_summary_csv',
-                      'coverage_scores_csv',
-                      'coverage_maps_tar',
-                      'cascade_csv',
-                      'mixed_counts_csv',
-                      'mixed_amino_csv',
-                      'mixed_amino_merged_csv',
-                      'resistance_csv',
-                      'mutations_csv',
-                      'nuc_mutations_csv',
-                      'resistance_fail_csv',
-                      'resistance_consensus_csv',
-                      'wg_fasta',
-                      'mid_fasta',
-                      'contigs_csv',
-                      'alignment_svg',
-                      'alignment_png',
-                      'assembly_fasta',
-                      'genome_coverage_csv',
-                      'genome_coverage_svg',
-                      'read_entropy_csv',
-                      'table_precursor_csv']
+DOWNLOADED_RESULTS = [
+    'remap_counts_csv', 'conseq_csv', 'conseq_all_csv', 'conseq_region_csv',
+    'conseq_ins_csv', 'failed_csv', 'nuc_csv', 'amino_csv', 'coord_ins_csv',
+    'failed_align_csv', 'g2p_csv', 'g2p_summary_csv', 'coverage_scores_csv',
+    'coverage_maps_tar', 'cascade_csv', 'mixed_counts_csv', 'mixed_amino_csv',
+    'mixed_amino_merged_csv', 'resistance_csv', 'mutations_csv',
+    'nuc_mutations_csv', 'resistance_fail_csv', 'resistance_consensus_csv',
+    'wg_fasta', 'mid_fasta', 'contigs_csv', 'alignment_svg', 'alignment_png',
+    'assembly_fasta', 'genome_coverage_csv', 'genome_coverage_svg',
+    'read_entropy_csv', 'table_precursor_csv', 'aligned_table_precursor_csv'
+]
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
