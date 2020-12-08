@@ -54,5 +54,9 @@ The scenarios that each file tests are:
 * 2180A-HIV - Nextera reads from GP120 and V3LOOP, to show how GP120 is now
   reported based on remapping or assembly, and V3LOOP is reported based on
   pairwise alignment to a reference.
-* 2190A-SARS - two lengths of SARS-CoV-2 reads, to test that similar amplicons
+* 2190A-SARSCOV2 - two lengths of SARS-CoV-2 reads, to test that similar amplicons
   of slightly different lengths can be combined.
+* 2200A-SARSCOV2 - SARS-CoV-2 amplicon that gets primers trimmed off the left,
+  so the coverage starts on amino 27 of nsp1, instead of 20.
+* 2210A-NFLHIVDNA - two amplicons that cover the primer sections we check for
+  in HIV proviral samples.

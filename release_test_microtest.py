@@ -5,7 +5,7 @@ import shutil
 import typing
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from concurrent.futures.process import ProcessPoolExecutor
-from csv import DictReader
+from csv import DictReader, DictWriter
 from operator import itemgetter
 from pathlib import Path
 from subprocess import run, PIPE, CalledProcessError
@@ -181,9 +181,9 @@ class ResultsFolder:
         regions = set(map(itemgetter('region'), conseq_rows))
         if self.is_denovo:
             expected_regions = {'HIV1-CON-XX-Consensus-seed',
-                                '2-HIV1-B-FR-K03455-seed',
-                                '3-HIV1-B-FR-K03455-seed',
-                                '1-HCV-1a'}
+                                '1-HIV1-B-FR-K03455-seed',
+                                '2-HCV-1a',
+                                '3-HIV1-B-FR-K03455-seed'}
         else:
             expected_regions = {'HIV1-CON-XX-Consensus-seed',
                                 'HCV-1a',
@@ -310,7 +310,7 @@ class ResultsFolder:
             coverage = int(row['coverage'])
             coverage_message = f'{coverage} coverage at {pos}'
             if row['region'] == 'HCV1A-H77-NS5a':
-                if pos < 20:
+                if pos < 15:
                     assert coverage < 10, coverage_message
                 elif 50 <= pos:
                     assert 10 < coverage, coverage_message
@@ -320,7 +320,7 @@ class ResultsFolder:
             elif row['region'] == 'HCV2-JFH-1-NS5a':
                 if pos < 15:
                     assert coverage < 10, coverage_message
-                elif 100 <= pos < 449:
+                elif 100 <= pos:
                     assert 10 < coverage, coverage_message
             else:
                 assert row['region'] == 'HCV2-JFH-1-NS5b', row['region']
@@ -348,11 +348,24 @@ class ResultsFolder:
                 assert 10 < coverage, coverage_message
 
     def check_2190(self):
-        mutation_rows = self.read_file('2190A-SARS_S23', 'nuc_mutations.csv')
+        mutation_rows = self.read_file('2190A-SARSCOV2_S23', 'nuc_mutations.csv')
         mutations = [''.join(fields)
                      for fields in map(itemgetter('wt', 'refseq_nuc_pos', 'var'),
                                        mutation_rows)]
         assert mutations == ['T23C', 'T13199C'], mutations
+
+    def check_2200(self):
+        amino_rows = list(self.read_file('2200A-SARSCOV2_S24', 'amino.csv'))
+        assert amino_rows
+        for row in amino_rows:
+            pos = int(row['refseq.aa.pos'])
+            coverage = int(row['coverage'])
+            coverage_message = f'{coverage} coverage at {pos}'
+            assert row['region'] in ('SARS-CoV-2-nsp1', 'SARS-CoV-2-orf1ab'), row
+            if 27 <= pos <= 102:
+                assert coverage == 100, coverage_message
+            else:
+                assert coverage == 0, coverage_message
 
 
 def gzip_compress(source_path: Path, target_path: Path):
@@ -408,6 +421,14 @@ class SampleRunner:
         fastq_input2 = input_path / fastq_file2.name
         gzip_compress(fastq_file, fastq_input1)
         gzip_compress(fastq_file2, fastq_input2)
+        sample_info_path = input_path / 'sample_info.csv'
+        with sample_info_path.open('w') as f:
+            writer = DictWriter(f, ['sample', 'project'])
+            writer.writeheader()
+            sections = sample_name.split('_')
+            fields = sections[0].split('-')
+            project_code = fields[-1]
+            writer.writerow(dict(sample=sample_name, project=project_code))
         output_names = ['g2p.csv',
                         'g2p_summary.csv',
                         'remap_counts.csv',
@@ -432,7 +453,8 @@ class SampleRunner:
                         'genome_coverage.svg']
         output_paths = [output_path/name for name in output_names]
         app_name = 'denovo' if self.is_denovo else None
-        run_with_retries(self.build_command([fastq_input1,
+        run_with_retries(self.build_command([sample_info_path,
+                                             fastq_input1,
                                              fastq_input2,
                                              self.bad_cycles_path],
                                             output_paths,

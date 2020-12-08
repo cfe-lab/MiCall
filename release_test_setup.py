@@ -161,7 +161,6 @@ class Sample(object):
             os.symlink(os.path.join(self.run_name, 'InterOp'),
                        os.path.join(target_run_path, 'InterOp'))
             for filename in ('RunInfo.xml',
-                             'runParameters.xml',
                              'SampleSheet.csv',
                              'needsprocessing'):
                 copy(os.path.join(self.run_name, filename),

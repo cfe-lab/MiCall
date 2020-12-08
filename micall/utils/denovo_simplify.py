@@ -1,3 +1,4 @@
+import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from collections import defaultdict
 import logging
@@ -30,6 +31,8 @@ def parse_args():
                         help='name of the test to run',
                         choices=MicallDD.test_names,
                         default=MicallDD.test_names[0])
+    parser.add_argument('--project_code',
+                        help='Project code for trimming primers')
 
     return parser.parse_args()
 
@@ -47,13 +50,15 @@ class MicallDD(DD):
                  bad_cycles_filename,
                  simple1,
                  simple2,
-                 test_name):
+                 test_name,
+                 project_code=None):
         super(MicallDD, self).__init__()
         self.filename1 = filename1
         self.filename2 = filename2
         self.bad_cycles_filename = bad_cycles_filename
         self.simple1 = simple1
         self.simple2 = simple2
+        self.project_code = project_code
         base, ext = os.path.splitext(simple1)
         self.best1 = base + '_best' + ext
         base, ext = os.path.splitext(simple2)
@@ -80,7 +85,8 @@ class MicallDD(DD):
             trim((self.simple1, self.simple2),
                  self.bad_cycles_filename,
                  (trimmed_filename1, trimmed_filename2),
-                 use_gzip=False)
+                 use_gzip=False,
+                 project_code=self.project_code)
             exception = None
             # noinspection PyBroadException
             try:
@@ -199,7 +205,8 @@ def read_fastq(filename, reads):
 def main():
     logging.basicConfig(
         level=logging.DEBUG,
-        format='%(asctime)s[%(levelname)s]%(module)s:%(lineno)d - %(message)s')
+        format='%(asctime)s[%(levelname)s]%(module)s:%(lineno)d - %(message)s',
+        stream=sys.stdout)
     args = parse_args()
     try:
         logger.info('Starting.')
@@ -208,7 +215,8 @@ def main():
                       args.bad_cycles_csv,
                       args.simple1,
                       args.simple2,
-                      args.test)
+                      args.test,
+                      args.project_code)
         read_indexes = list(range(len(dd.reads)))
         min_indexes = dd.ddmin(read_indexes)
         dd.test(min_indexes)

@@ -24,7 +24,7 @@
 # If you omit the `--target` tag altogether, `docker build` will build
 # the development image.
 
-FROM python:3.8 as production
+FROM python:3.8
 
 LABEL BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 
@@ -113,8 +113,3 @@ RUN python /opt/micall/micall/blast_db/make_blast_db.py
 
 WORKDIR /data
 ENTRYPOINT ["python", "/opt/micall/micall_docker.py"]
-
-FROM production as dev
-## Add the dev packages.
-COPY requirements-test.txt requirements-watcher.txt requirements-dev.txt /opt/micall/
-RUN pip install -r /opt/micall/requirements-dev.txt

@@ -835,7 +835,7 @@ def test_add_first_sample_with_compression(raw_data_with_two_samples, mock_open_
 
 
 def test_compress_old_versions_no_results(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     version_path = results_path / 'version_3.0'
 
@@ -845,7 +845,7 @@ def test_compress_old_versions_no_results(tmpdir):
 
 
 def test_compress_old_versions_no_old_versions(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     results_path.mkdir()
     version_path = results_path / 'version_3.0'
@@ -854,7 +854,7 @@ def test_compress_old_versions_no_old_versions(tmpdir):
 
 
 def test_compress_old_versions_sorting(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     results_path.mkdir()
     version_path9 = results_path / 'version_0.9'
@@ -870,7 +870,7 @@ def test_compress_old_versions_sorting(tmpdir):
 
 
 def test_compress_old_versions_skip_current_and_newer(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     results_path.mkdir()
     version_path1 = results_path / 'version_1'
@@ -891,7 +891,7 @@ def test_compress_old_versions_skip_current_and_newer(tmpdir):
 
 
 def test_compress_old_versions_other_files(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     results_path.mkdir()
     other_file = results_path / 'other_file.txt'
@@ -907,7 +907,7 @@ def test_compress_old_versions_other_files(tmpdir):
 
 
 def test_compress_old_versions_other_dirs(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     results_path.mkdir()
     other_stuff = results_path / 'other_stuff'
@@ -1421,6 +1421,82 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
                                           dataset='/datasets/104'),
                                      dict(argument='/containerargs/112',
                                           dataset='/datasets/105')],
+                           name='MiCall main on 2110A-V3LOOP_S13',
+                           batch='/batches/101',
+                           groups_allowed=['Everyone']))
+            ] == mock_session.endpoints.containerruns.post.call_args_list
+
+
+def test_launch_main_run_with_sample_info(raw_data_with_two_samples,
+                                          mock_open_kive,
+                                          pipelines_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    mock_session.endpoints.datasets.post.side_effect = [
+        dict(url='/datasets/104', id=104),
+        dict(url='/datasets/105', id=105),
+        dict(url='/datasets/106', id=106)]
+
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config)
+    kive_watcher.app_urls = {
+        pipelines_config.micall_main_pipeline_id: '/containerapps/102',
+        pipelines_config.denovo_main_pipeline_id: '/containerapps/103'}
+    kive_watcher.app_args = {
+        pipelines_config.micall_main_pipeline_id: dict(
+            bad_cycles_csv='/containerargs/110',
+            fastq1='/containerargs/111',
+            fastq2='/containerargs/112',
+            sample_info_csv='/containerargs/113'),
+        pipelines_config.denovo_main_pipeline_id: dict(
+            bad_cycles_csv='/containerargs/114',
+            fastq1='/containerargs/115',
+            fastq2='/containerargs/116',
+            sample_info_csv='/containerargs/117')}
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = dict(url='/batches/101')
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None)))
+    folder_watcher.add_run(
+        dict(id=106),
+        PipelineType.FILTER_QUALITY)
+
+    mock_session.endpoints.containerruns.get.side_effect = [
+        dict(id=106, state='C'),  # refresh run status
+        [dict(argument_name='bad_cycles_csv',
+              dataset='/datasets/107',
+              dataset_purged=False)]]  # get dataset list
+    mock_session.get.return_value.json.return_value = dict(url='/datasets/107',
+                                                           id=107)
+
+    kive_watcher.poll_runs()
+
+    assert [call(json=dict(app='/containerapps/103',
+                           datasets=[dict(argument='/containerargs/114',
+                                          dataset='/datasets/107'),
+                                     dict(argument='/containerargs/115',
+                                          dataset='/datasets/104'),
+                                     dict(argument='/containerargs/116',
+                                          dataset='/datasets/105'),
+                                     dict(argument='/containerargs/117',
+                                          dataset='/datasets/106')],
+                           name='MiCall denovo main on 2110A-V3LOOP_S13',
+                           batch='/batches/101',
+                           groups_allowed=['Everyone'])),
+            call(json=dict(app='/containerapps/102',
+                           datasets=[dict(argument='/containerargs/110',
+                                          dataset='/datasets/107'),
+                                     dict(argument='/containerargs/111',
+                                          dataset='/datasets/104'),
+                                     dict(argument='/containerargs/112',
+                                          dataset='/datasets/105'),
+                                     dict(argument='/containerargs/113',
+                                          dataset='/datasets/106')],
                            name='MiCall main on 2110A-V3LOOP_S13',
                            batch='/batches/101',
                            groups_allowed=['Everyone']))

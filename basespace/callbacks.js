@@ -1,8 +1,8 @@
 function launchSpec(dataProvider)
 {
     var ret = {
-        commandLine: [ "python", "/opt/micall/micall_basespace.py" ],
-        containerImageId: "docker.illumina.com/cfe_lab/micall",
+        commandLine: [ "basespace" ],
+        containerImageId: "docker.illumina.com/cfe_lab/micall:latest",
         Options: [ "bsfs.enabled=true" ]
     };
     return ret;

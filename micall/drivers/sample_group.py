@@ -13,6 +13,20 @@ class EmptySample:
         return None
 
 
+def load_git_version() -> str:
+    source_path = os.path.dirname(__file__)
+    version_filename = os.path.join(source_path,
+                                    '..',
+                                    '..',
+                                    'version.txt')
+    if not os.path.exists(version_filename):
+        git_version = 'v0-dev'
+    else:
+        with open(version_filename) as version_file:
+            git_version = version_file.read().strip()
+    return git_version
+
+
 class SampleGroup:
     def __init__(self, main_sample, midi_sample=None):
         self.main_sample = main_sample
@@ -51,16 +65,6 @@ class SampleGroup:
                               resistance_consensus_csv=resistance_consensus_csv)
 
         logger.info('Running resistance report on %s.', self.main_sample)
-        source_path = os.path.dirname(__file__)
-        version_filename = os.path.join(source_path,
-                                        '..',
-                                        '..',
-                                        'version.txt')
-        if not os.path.exists(version_filename):
-            git_version = 'v0-dev'
-        else:
-            with open(version_filename) as version_file:
-                git_version = version_file.read().strip()
         with open(self.main_sample.resistance_csv) as resistance_csv, \
                 open(self.main_sample.mutations_csv) as mutations_csv, \
                 open(self.main_sample.resistance_pdf, 'wb') as report_pdf:
@@ -68,7 +72,7 @@ class SampleGroup:
                        mutations_csv,
                        report_pdf,
                        self.main_sample.name,
-                       git_version=git_version)
+                       git_version=load_git_version())
         if not os.stat(self.main_sample.resistance_pdf).st_size:
             os.remove(self.main_sample.resistance_pdf)
         logger.info('Finished resistance of %s.', self.main_sample)

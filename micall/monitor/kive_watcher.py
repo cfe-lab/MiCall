@@ -6,6 +6,7 @@ import re
 import shutil
 import tarfile
 from collections import namedtuple
+from csv import DictWriter
 from datetime import datetime, timedelta
 from enum import Enum
 from itertools import count
@@ -621,8 +622,8 @@ class KiveWatcher:
 
     @staticmethod
     def extract_coverage_maps(folder_watcher, scratch_path, results_path):
-        coverage_path = results_path / "coverage_maps"
-        coverage_path.mkdir()
+        coverage_path: Path = results_path / "coverage_maps"
+        coverage_path.mkdir(exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / 'coverage_maps.tar'
@@ -669,7 +670,10 @@ class KiveWatcher:
                 pass
         remove_empty_directory(plots_path)
 
-    def run_pipeline(self, folder_watcher, pipeline_type, sample_watcher):
+    def run_pipeline(self,
+                     folder_watcher: FolderWatcher,
+                     pipeline_type: PipelineType,
+                     sample_watcher: SampleWatcher):
         if pipeline_type == PipelineType.FILTER_QUALITY:
             return self.find_or_launch_run(
                 self.config.micall_filter_quality_pipeline_id,
@@ -715,28 +719,31 @@ class KiveWatcher:
                 'Mixed HCV on ' + trim_name(sample_name),
                 folder_watcher.batch)
         if pipeline_type == PipelineType.MAIN:
-            fastq1, fastq2 = sample_watcher.fastq_datasets[:2]
-            sample_name = sample_watcher.sample_group.names[0]
-            run_name = 'MiCall main on ' + trim_name(sample_name)
+            group_position = 0
+            run_name = 'MiCall main'
             pipeline_id = self.config.micall_main_pipeline_id
         elif pipeline_type == PipelineType.MIDI:
-            fastq1, fastq2 = sample_watcher.fastq_datasets[2:]
-            sample_name = sample_watcher.sample_group.names[1]
-            run_name = 'MiCall main on ' + trim_name(sample_name)
+            group_position = 1
+            run_name = 'MiCall main'
             pipeline_id = self.config.micall_main_pipeline_id
         elif pipeline_type == PipelineType.DENOVO_MAIN:
-            fastq1, fastq2 = sample_watcher.fastq_datasets[:2]
-            sample_name = sample_watcher.sample_group.names[0]
-            run_name = 'MiCall denovo main on ' + trim_name(sample_name)
+            group_position = 0
+            run_name = 'MiCall denovo main'
             pipeline_id = self.config.denovo_main_pipeline_id
         else:
             assert pipeline_type == PipelineType.DENOVO_MIDI
-            fastq1, fastq2 = sample_watcher.fastq_datasets[2:]
-            sample_name = sample_watcher.sample_group.names[1]
-            run_name = 'MiCall denovo main on ' + trim_name(sample_name)
+            group_position = 1
+            run_name = 'MiCall denovo main'
             pipeline_id = self.config.denovo_main_pipeline_id
         if pipeline_id is None:
             return None
+        fastq1, fastq2 = sample_watcher.fastq_datasets[
+                         group_position*2:(group_position+1)*2]
+        sample_name = sample_watcher.sample_group.names[group_position]
+        run_name += ' on ' + trim_name(sample_name)
+        sample_info = self.get_sample_info(pipeline_id,
+                                           sample_watcher,
+                                           group_position)
         if folder_watcher.bad_cycles_dataset is None:
             filter_run_id = folder_watcher.filter_quality_run['id']
             run_datasets = self.kive_retry(
@@ -749,13 +756,46 @@ class KiveWatcher:
             folder_watcher.bad_cycles_dataset = self.kive_retry(
                 lambda: self.session.get(bad_cycles_run_dataset['dataset']).json())
 
+        inputs = dict(fastq1=fastq1,
+                      fastq2=fastq2,
+                      bad_cycles_csv=folder_watcher.bad_cycles_dataset)
+        if sample_info is not None:
+            inputs['sample_info_csv'] = sample_info
         return self.find_or_launch_run(
             pipeline_id,
-            dict(fastq1=fastq1,
-                 fastq2=fastq2,
-                 bad_cycles_csv=folder_watcher.bad_cycles_dataset),
+            inputs,
             run_name,
             folder_watcher.batch)
+
+    def get_sample_info(self,
+                        pipeline_id: int,
+                        sample_watcher: SampleWatcher,
+                        group_position: int):
+        pipeline_args = self.app_args[pipeline_id]
+        if 'sample_info_csv' not in pipeline_args:
+            return None
+
+        # We need a sample info dataset.
+        if group_position < len(sample_watcher.sample_info_datasets):
+            return sample_watcher.sample_info_datasets[group_position]
+        assert group_position == len(sample_watcher.sample_info_datasets)
+
+        fastq_name = sample_watcher.sample_group.names[group_position]
+        sample_name = trim_name(fastq_name)
+        name_sections = sample_name.split('_')
+        name_fields = name_sections[0].split('-')
+        project_code = name_fields[-1]
+        info_file = StringIO()
+        writer = DictWriter(info_file, ['sample', 'project'])
+        writer.writeheader()
+        writer.writerow(dict(sample=sample_name, project=project_code))
+        bytes_file = BytesIO(info_file.getvalue().encode('utf8'))
+        info_dataset = self.find_or_upload_dataset(
+            bytes_file,
+            f'{sample_name}_info.csv')
+        sample_watcher.sample_info_datasets.append(info_dataset)
+
+        return info_dataset
 
     def run_resistance_pipeline(self, sample_watcher, folder_watcher, input_pipeline_types, description):
         pipeline_id = self.config.micall_resistance_pipeline_id

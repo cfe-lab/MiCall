@@ -85,8 +85,8 @@ class PrimerTracker:
                     if name.startswith('HCV-')}
         primers = {}
         core_path = Path(__file__).parent / 'micall' / 'core'
-        left_primers_path = core_path / 'primers_left.fasta'
-        right_primers_path = core_path / 'primers_right_end.fasta'
+        left_primers_path = core_path / 'primers_sarscov2_left.fasta'
+        right_primers_path = core_path / 'primers_sarscov2_right_end.fasta'
         for primers_path in (left_primers_path, right_primers_path):
             with primers_path.open() as f:
                 for primer in SeqIO.parse(f, 'fasta'):
@@ -307,8 +307,6 @@ def compare_g2p(sample, diffs):
     target_fields = sample.target_files.g2p_summary
     if source_fields == target_fields:
         return
-    if MICALL_VERSION == '7.11' and source_fields is None and sample.name.startswith('90308A'):
-        return
     assert source_fields is not None, (sample.run, sample.name)
     assert target_fields is not None, (sample.run, sample.name)
     assert len(source_fields) == 1, source_fields
@@ -472,6 +470,8 @@ def compare_consensus(sample: Sample,
     source_seqs = filter_consensus_sequences(sample.source_files, use_denovo)
     target_seqs = filter_consensus_sequences(sample.target_files, use_denovo)
     run_name = get_run_name(sample)
+    source_counts = map_remap_counts(sample.source_files.remap_counts)
+    target_counts = map_remap_counts(sample.target_files.remap_counts)
     keys = sorted(set(source_seqs.keys()) | target_seqs.keys())
     primer_tracker = PrimerTracker()
     cutoff = MAX_CUTOFF
@@ -566,7 +566,12 @@ def compare_consensus(sample: Sample,
                 if source_seq == target_seq:
                     scenarios[Scenarios.VPR_FRAME_SHIFT_FIXED].append('.')
                     continue
-        if is_main and scenarios_reported & Scenarios.MAIN_CONSENSUS_CHANGED:
+        if (source_counts != target_counts and
+                is_main and
+                scenarios_reported & Scenarios.REMAP_COUNTS_CHANGED):
+            scenario = f'  {run_name}:{sample.name} consensus {region}\n'
+            scenarios[Scenarios.REMAP_COUNTS_CHANGED].append(scenario)
+        elif is_main and scenarios_reported & Scenarios.MAIN_CONSENSUS_CHANGED:
             scenarios[Scenarios.MAIN_CONSENSUS_CHANGED].append('.')
         elif (not is_main and
                 scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
@@ -679,7 +684,8 @@ def main():
         scenarios_reported = (Scenarios.OTHER_CONSENSUS_CHANGED |
                               Scenarios.CONSENSUS_DELETIONS_CHANGED |
                               Scenarios.VPR_FRAME_SHIFT_FIXED |
-                              Scenarios.CONSENSUS_EXTENDED)
+                              Scenarios.CONSENSUS_EXTENDED |
+                              Scenarios.REMAP_COUNTS_CHANGED)
         results = pool.map(partial(compare_sample,
                                    scenarios_reported=scenarios_reported,
                                    use_denovo=args.denovo),

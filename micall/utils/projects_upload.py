@@ -2,17 +2,19 @@ import json
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 from operator import itemgetter
+from pathlib import Path
 
 from micall.core.project_config import ProjectConfig
 from micall.monitor import qai_helper
 
 
 def parse_args():
+    # noinspection PyTypeChecker
     parser = ArgumentParser(description='Upload project definitions to QAI.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         '--qai_server',
-        default=os.environ.get('MICALL_QAI_SERVER', 'http://localhost:3000'),
+        default=os.environ.get('MICALL_QAI_SERVER', 'http://localhost:4567'),
         help='server to post reviews on')
     parser.add_argument(
         '--qai_user',
@@ -40,7 +42,8 @@ def parse_args():
 def main():
     args = parse_args()
     project_config = ProjectConfig.loadDefault()
-    with open('../project_scoring.json', 'rU') as scoring_file:
+    scoring_path = Path(__file__).parent.parent / 'project_scoring.json'
+    with scoring_path.open() as scoring_file:
         scoring_config = json.load(scoring_file)
     with qai_helper.Session() as session:
         session.login(args.qai_server,
@@ -55,6 +58,7 @@ def main():
                 args.pipeline_version))
 
         seed_groups = session.get_json("/lab_miseq_seed_groups")
+        # noinspection PyTypeChecker
         seed_group_ids = dict(map(itemgetter('name', 'id'), seed_groups))
         old_regions = session.get_json("/lab_miseq_regions", retries=0)
         regions = dict(((region['name'], region) for region in old_regions))
