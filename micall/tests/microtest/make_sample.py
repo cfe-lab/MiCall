@@ -249,7 +249,17 @@ def main():
                    FastqFile('2200A-SARSCOV2_S24_L001_R2_001.fastq',
                              '2200',
                              True,
-                             (FastqSection('SARS-CoV-2-nsp1', 56, 102, 100),))]
+                             (FastqSection('SARS-CoV-2-nsp1', 56, 102, 100),)),
+                   FastqFile('2210A-NFLHIVDNA_S25_L001_R1_001.fastq',
+                             '2210',
+                             False,
+                             (FastqSection('HIV1-B-FR-K03455-seed', 627, 747, 100),
+                              FastqSection('HIV1-B-FR-K03455-seed', 9358, 9518, 100))),
+                   FastqFile('2210A-NFLHIVDNA_S25_L001_R2_001.fastq',
+                             '2210',
+                             True,
+                             (FastqSection('HIV1-B-FR-K03455-seed', 708, 828, 100),
+                              FastqSection('HIV1-B-FR-K03455-seed', 9482, 9642, 100)))]
     for fastq_file in fastq_files:
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1

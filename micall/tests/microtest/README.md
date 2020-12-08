@@ -58,3 +58,5 @@ The scenarios that each file tests are:
   of slightly different lengths can be combined.
 * 2200A-SARSCOV2 - SARS-CoV-2 amplicon that gets primers trimmed off the left,
   so the coverage starts on amino 27 of nsp1, instead of 20.
+* 2210A-NFLHIVDNA - two amplicons that cover the primer sections we check for
+  in HIV proviral samples.
