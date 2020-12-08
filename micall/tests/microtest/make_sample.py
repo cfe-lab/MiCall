@@ -53,6 +53,15 @@ def main():
         'HIV1-B-FR-K03455-seed',
         6225,
         7757)
+    hxb2_ref = projects.getReference('HIV1-B-FR-K03455-seed')
+
+    projects.config['regions']['HXB2-with-deletion'] = dict(
+        reference=hxb2_ref[617:928] + hxb2_ref[9358:9652],
+        is_nucleotide=True,
+        seed_group=None)
+    sections_2210_1, sections_2210_2 = make_random_sections(
+        'HXB2-with-deletion',
+        projects=projects)
     fastq_files = [FastqFile('2010A-V3LOOP_S3_L001_R1_001.fastq',
                              '2010',
                              False,
@@ -253,13 +262,11 @@ def main():
                    FastqFile('2210A-NFLHIVDNA_S25_L001_R1_001.fastq',
                              '2210',
                              False,
-                             (FastqSection('HIV1-B-FR-K03455-seed', 627, 747, 100),
-                              FastqSection('HIV1-B-FR-K03455-seed', 9358, 9518, 100))),
+                             sections_2210_1),
                    FastqFile('2210A-NFLHIVDNA_S25_L001_R2_001.fastq',
                              '2210',
                              True,
-                             (FastqSection('HIV1-B-FR-K03455-seed', 708, 828, 100),
-                              FastqSection('HIV1-B-FR-K03455-seed', 9482, 9642, 100)))]
+                             sections_2210_2)]
     for fastq_file in fastq_files:
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1
@@ -297,8 +304,8 @@ def main():
 
 
 def make_random_sections(coord_name,
-                         min_start,
-                         max_end,
+                         min_start: int = None,
+                         max_end: int = None,
                          projects=None,
                          read_count=10000,
                          mutations=()):
@@ -327,11 +334,18 @@ def make_random_sections(coord_name,
     return sections_1, sections_2
 
 
-def find_coord_pos(projects, coord_name, start_pos, end_pos):
+def find_coord_pos(projects: ProjectConfig,
+                   coord_name: str,
+                   start_pos: int = None,
+                   end_pos: int = None):
+    coord_seq = projects.getReference(coord_name)
+    if start_pos is None:
+        start_pos = 1
+    if end_pos is None:
+        end_pos = len(coord_seq) + 1
     if projects.config['regions'][coord_name]['is_nucleotide']:
         # Already have a nucleotide sequence, nothing to do.
         return coord_name, start_pos, end_pos
-    coord_seq = projects.getReference(coord_name)
     gap_open = 40
     gap_extend = 10
     use_terminal_gap_penalty = 1
