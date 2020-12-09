@@ -537,7 +537,9 @@ def find_full_groups(fastq_files, sandbox_path):
     for group in groups:
         full_names = tuple(name and (sandbox_path / name)
                            for name in group.names)
-        full_groups.append(SampleGroup(group.enum, full_names))
+        full_groups.append(SampleGroup(group.enum,
+                                       full_names,
+                                       group.project_codes))
     return full_groups
 
 
