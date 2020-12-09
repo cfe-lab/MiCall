@@ -5590,7 +5590,6 @@
       ]
     },
     "SARSCOV2": {
-      "description": "Severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2)",
       "max_variants": 0,
       "regions": [
         {
