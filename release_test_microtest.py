@@ -367,6 +367,15 @@ class ResultsFolder:
             else:
                 assert coverage == 0, coverage_message
 
+    def check_2210(self):
+        conseq_rows = [row
+                       for row in self.read_file('2210A-NFLHIVDNA_S25',
+                                                 'conseq_all.csv')
+                       if not row['region']]  # Whole-genome conseq only.
+        assert len(conseq_rows) == 1, len(conseq_rows)
+        conseq = conseq_rows[0]['sequence']
+        assert 585 <= len(conseq), len(conseq)
+
 
 def gzip_compress(source_path: Path, target_path: Path):
     with source_path.open('rb') as source:
@@ -561,6 +570,8 @@ def main():
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--sandbox',
                         help='Folder to copy microtest samples into.')
+    parser.add_argument('--sample',
+                        help='Prefix of sample name to run.')
     # noinspection PyTypeChecker
     parser.add_argument('image',
                         type=Path,
@@ -583,7 +594,10 @@ def main():
             shutil.copy(str(source_file), str(target_file))
     runner = SampleRunner(args.image)
     with ProcessPoolExecutor() as pool:
-        fastq_files = sorted(sandbox_path.glob('*_R1_*.fastq'))
+        search_pattern = '*_R1_*.fastq'
+        if args.sample:
+            search_pattern = args.sample + search_pattern
+        fastq_files = sorted(sandbox_path.glob(search_pattern))
         sample_groups = find_full_groups(fastq_files, sandbox_path)
         try:
             runner.process_quality(sandbox_path / 'quality.csv')
@@ -602,9 +616,12 @@ def main():
 
     results_folder = ResultsFolder(sandbox_path, is_denovo=False)
     folder_methods = inspect.getmembers(results_folder, inspect.ismethod)
+    check_pattern = 'check_'
+    if args.sample:
+        check_pattern += args.sample
     check_methods = [(name, method)
                      for name, method in folder_methods
-                     if name.startswith('check_')]
+                     if name.startswith(check_pattern)]
     error_count = 0
     for name, method in check_methods:
         if not inspect.signature(method).parameters:
