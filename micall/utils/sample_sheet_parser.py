@@ -1,6 +1,7 @@
 #! /usr/bin/env python3.6
 
 import re
+from csv import DictReader
 
 
 def sample_sheet_parser(handle):
@@ -115,7 +116,7 @@ def sample_sheet_parser(handle):
 
                 for desc_subfield in desc_subfields:
                     desc_subfield_tokens = desc_subfield.split(':')
-                    if(sample_sheet_version == 2):  # for compatibility
+                    if sample_sheet_version == 2:  # for compatibility
                         sample, project, value = desc_subfield.split(project_delimiter)
                         desc_subfield_tokens = [
                             sample + project_delimiter + project,
@@ -165,35 +166,47 @@ def sample_sheet_parser(handle):
                 # appropriately.
                 for desc_field in desc_fields:
                     name, value, tmp = None, None, None
-                    if(sample_sheet_version == 1):
+                    if sample_sheet_version == 1:
                         name = desc_field.split(':')[0]  # slice #actually this is wrong...
                         value = desc_field.replace(name + ':', '')
                         tmp = value.split(sample_delimiter_v1)
-                    elif(sample_sheet_version == 2):
+                    elif sample_sheet_version == 2:
                         name, value = desc_field.split(':')
                         tmp = value.split(sample_delimiter_v2)
 
                     for elem in tmp:
                         samp, proj, val = None, None, None
-                        if(sample_sheet_version == 1):
+                        if sample_sheet_version == 1:
                             sj, val = elem.split(':')
                             samp, proj = sj.split(project_delimiter_v1)
-                        elif(sample_sheet_version == 2):
+                        elif sample_sheet_version == 2:
                             samp, proj, val = elem.split(project_delimiter_v2)
 
-                        if(samp == entry['sample'] and proj == entry['project']):
-                            if(name == 'Research'):
+                        if samp == entry['sample'] and proj == entry['project']:
+                            if name == 'Research':
                                 entry['research'] = (val == 'TRUE')
-                            elif(name == 'Comments' and val is not None):
+                            elif name == 'Comments' and val is not None:
                                 entry['comments'] = val
-                            elif(name == 'Chemistry'):
+                            elif name == 'Chemistry':
                                 entry['chemistry'] = val
-                            elif(name == 'Disablecontamcheck'):
+                            elif name == 'Disablecontamcheck':
                                 entry['disable_contamination_check'] = (val == 'TRUE')
 
+                # noinspection PyTypeChecker
                 run_info['DataSplit'].append(entry)
             sample_number += 1
     return run_info
+
+
+def read_sample_sheet_overrides(override_file, run_info):
+    reader = DictReader(override_file)
+    project_overrides = {row['sample']: row['project']
+                         for row in reader}
+    for row in run_info['DataSplit']:
+        sample_name = row['filename']
+        old_project = row['project']
+        new_project = project_overrides.get(sample_name, old_project)
+        row['project'] = new_project
 
 
 def main():

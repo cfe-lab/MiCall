@@ -81,23 +81,27 @@ def test_folder_watcher_run_details():
 
 def test_sample_watcher_repr_pair():
     expected_repr = "SampleWatcher(SampleGroup('1234A', ('...', '...')))"
-    watcher = SampleWatcher(SampleGroup('1234A', ('foo', 'bar')))
+    watcher = SampleWatcher(SampleGroup('1234A', ('foo', 'bar'), ('baz', 'baz')))
 
     assert expected_repr == repr(watcher)
 
 
 def test_sample_watcher_repr_single():
     expected_repr = "SampleWatcher(SampleGroup('1234A', ('...', None)))"
-    watcher = SampleWatcher(SampleGroup('1234A', ('foo', None)))
+    watcher = SampleWatcher(SampleGroup('1234A', ('foo', None), ('baz', 'baz')))
 
     assert expected_repr == repr(watcher)
 
 
+# noinspection DuplicatedCode
 def test_launch_filter_quality():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
-    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    sample_watcher = SampleWatcher(
+        SampleGroup('1234A',
+                    ('1234A-V3LOOP_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()  # Start filter_quality
@@ -116,7 +120,10 @@ def test_filter_quality_running():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
-    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    sample_watcher = SampleWatcher(
+        SampleGroup('1234A',
+                    ('1234A-V3LOOP_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()  # Start filter_quality
@@ -136,7 +143,10 @@ def test_filter_quality_finished():
                                           PipelineType.DENOVO_MIDI,
                                           PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
-    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    sample_watcher = SampleWatcher(
+        SampleGroup('1234A',
+                    ('1234A-V3LOOP_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -156,7 +166,10 @@ def test_filter_quality_failed():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
-    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    sample_watcher = SampleWatcher(
+        SampleGroup('1234A',
+                    ('1234A-V3LOOP_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -176,7 +189,10 @@ def test_main_running():
                                           PipelineType.DENOVO_MIDI,
                                           PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
-    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    sample_watcher = SampleWatcher(
+        SampleGroup('1234A',
+                    ('1234A-V3LOOP_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -199,7 +215,10 @@ def test_main_finished():
                                           PipelineType.DENOVO_MIDI,
                                           PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
-    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    sample_watcher = SampleWatcher(
+        SampleGroup('1234A',
+                    ('1234A-V3LOOP_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -221,7 +240,10 @@ def test_main_failed():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
-    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    sample_watcher = SampleWatcher(
+        SampleGroup('1234A',
+                    ('1234A-V3LOOP_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -250,7 +272,11 @@ def test_denovo_main_finished():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
-    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    sample_watcher = SampleWatcher(
+        SampleGroup('1234A',
+                    ('1234A-V3LOOP_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
+
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -278,7 +304,11 @@ def test_resistance_running():
                                           PipelineType.DENOVO_MIDI,
                                           PipelineType.DENOVO_RESISTANCE})
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
-    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    sample_watcher = SampleWatcher(
+        SampleGroup('1234A',
+                    ('1234A-V3LOOP_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
+
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -302,7 +332,11 @@ def test_denovo_resistance_complete():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
-    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    sample_watcher = SampleWatcher(
+        SampleGroup('1234A',
+                    ('1234A-V3LOOP_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
+
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -325,7 +359,11 @@ def test_resistance_finished():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession()
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
-    sample_watcher = SampleWatcher(SampleGroup('1234A', ('1234A-V3LOOP_R1_001.fastq.gz', None)))
+    sample_watcher = SampleWatcher(
+        SampleGroup('1234A',
+                    ('1234A-V3LOOP_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
+
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -350,7 +388,8 @@ def test_hcv_filter_quality_finished():
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
         ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+        ('HCV', 'MidHCV')))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -396,7 +435,8 @@ def test_hcv_filter_quality_finished_on_singleton():
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup(
         'NEG1',
-        ('NEG1-HCV_S15_L001_R1_001.fastq.gz', None)))
+        ('NEG1-HCV_S15_L001_R1_001.fastq.gz', None),
+        ('HCV', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -432,7 +472,8 @@ def test_hcv_mixed_hcv_running():
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
         ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+        ('HCV', 'MidHCV')))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -473,7 +514,8 @@ def test_hcv_mixed_hcv_running_on_singleton():
     folder_watcher = FolderWatcher(base_calls_folder, runner=session)
     sample_watcher = SampleWatcher(SampleGroup(
         'NEG1',
-        ('NEG1-HCV_S15_L001_R1_001.fastq.gz', None)))
+        ('NEG1-HCV_S15_L001_R1_001.fastq.gz', None),
+        ('HCV', None)))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -506,7 +548,8 @@ def test_hcv_mixed_hcv_finished():
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
         ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+        ('HCV', 'MidHCV')))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -543,7 +586,8 @@ def test_hcv_mixed_hcv_not_finished():
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
         ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+        ('HCV', 'MidHCV')))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -584,7 +628,8 @@ def test_mixed_hcv_skipped():
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
         ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+        ('HCV', 'MidHCV')))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -619,7 +664,8 @@ def test_mid_hcv_complete():
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
         ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+        ('HCV', 'MidHCV')))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
@@ -639,6 +685,7 @@ def test_mid_hcv_complete():
     assert expected_active_samples == folder_watcher.active_samples
 
 
+# noinspection DuplicatedCode
 def test_mixed_hcv_skipped_and_complete():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     session = DummySession(skipped_types={PipelineType.MIXED_HCV_MAIN,
@@ -650,7 +697,8 @@ def test_mixed_hcv_skipped_and_complete():
     sample_watcher = SampleWatcher(SampleGroup(
         '2130A',
         ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+         '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+        ('HCV', 'MidHCV')))
     folder_watcher.sample_watchers.append(sample_watcher)
 
     folder_watcher.poll_runs()   # Start filter_quality
