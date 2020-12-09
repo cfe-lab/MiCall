@@ -352,7 +352,7 @@ class ResultsFolder:
         mutations = [''.join(fields)
                      for fields in map(itemgetter('wt', 'refseq_nuc_pos', 'var'),
                                        mutation_rows)]
-        assert mutations == ['T23C', 'T13199C'], mutations
+        assert mutations == ['T13199C', 'T23C'], mutations
 
     def check_2200(self):
         amino_rows = list(self.read_file('2200A-SARSCOV2_S24', 'amino.csv'))
