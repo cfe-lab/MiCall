@@ -1,6 +1,8 @@
 import unittest
 from io import StringIO
-from micall.utils.sample_sheet_parser import sample_sheet_parser
+from pathlib import Path
+
+from micall.utils.sample_sheet_parser import sample_sheet_parser, read_sample_sheet_overrides
 
 """
 Test suite for the sample sheet parser.
@@ -16,6 +18,7 @@ Later: do we need to check
 """
 
 
+# noinspection DuplicatedCode
 class VersionOneTest(unittest.TestCase):
     stub_sample_sheet = """
 [Header]
@@ -152,6 +155,7 @@ Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
         )
 
 
+# noinspection DuplicatedCode
 class VersionTwoTest(unittest.TestCase):
     stub_sample_sheet = """
 [Header]
@@ -285,6 +289,7 @@ Chemistry:Sample4--Proj4--BreakingBad Disablecontamcheck:Sample4--Proj4--TRUE,
         )
 
 
+# noinspection DuplicatedCode
 class MultipleSamplesV1Test(unittest.TestCase):
     stub_sample_sheet = """
 [Header]
@@ -453,6 +458,7 @@ Disablecontamcheck:Sample3_Proj3:TRUE;Sample4_Proj4:TRUE,
         )
 
 
+# noinspection DuplicatedCode
 class MultipleSamplesV2Test(unittest.TestCase):
     stub_sample_sheet = """
 [Header]
@@ -723,3 +729,51 @@ Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 
         ss = sample_sheet_parser(StringIO(stub_sample_sheet))
         self.assertEqual(ss["Experiment Name"], "10-Jul-2014")
+
+
+def test_read_sample_sheet_overrides(tmpdir):
+    sample_sheet_path = Path(str(tmpdir)) / 'SampleSheet.csv'
+    overrides_path = sample_sheet_path.parent / 'SampleSheetOverrides.csv'
+
+    sample_sheet_path.write_text("""\
+[Header]
+IEMFileVersion,3
+Investigator Name,RL
+Project Name,10-Jul-2014_v1test
+Experiment Name,10-Jul-2014_v1test
+Date,07/10/2014
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,Nextera
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Settings]
+[Data]
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
+CFE_SomeId_10-Jul-2014_N501-N701_Sample1_Proj1,Sample1_Proj1,10-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,\
+10-Jul-2014_testing,Research:Sample1_Proj1:TRUE Comments:Sample1_Proj1:thisiscommentone \
+Disablecontamcheck:Sample1_Proj1:FALSE,
+CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,\
+10-Jul-2014_testing,Research:Sample2_Proj2:FALSE Comments:Sample2_Proj2:thisiscommenttwo \
+Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
+""")
+    overrides_path.write_text("""\
+sample,project
+Sample2-Proj2_S2,AltB
+""")
+
+    with sample_sheet_path.open() as f:
+        run_info = sample_sheet_parser(f)
+
+    with overrides_path.open() as f:
+        read_sample_sheet_overrides(f, run_info)
+
+    sample_map = run_info['Data']
+    assert len(sample_map) == 2
+
+    split_rows = run_info['DataSplit']
+    assert len(split_rows) == 2
+    assert split_rows[0]['project'] == 'Proj1'
+    assert split_rows[1]['project'] == 'AltB'

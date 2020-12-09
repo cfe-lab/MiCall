@@ -771,7 +771,7 @@ class KiveWatcher:
                         pipeline_id: int,
                         sample_watcher: SampleWatcher,
                         group_position: int):
-        pipeline_args = self.app_args[pipeline_id]
+        pipeline_args = self.get_kive_arguments(pipeline_id)
         if 'sample_info_csv' not in pipeline_args:
             return None
 
@@ -782,9 +782,7 @@ class KiveWatcher:
 
         fastq_name = sample_watcher.sample_group.names[group_position]
         sample_name = trim_name(fastq_name)
-        name_sections = sample_name.split('_')
-        name_fields = name_sections[0].split('-')
-        project_code = name_fields[-1]
+        project_code = sample_watcher.sample_group.project_codes[group_position]
         info_file = StringIO()
         writer = DictWriter(info_file, ['sample', 'project'])
         writer.writeheader()

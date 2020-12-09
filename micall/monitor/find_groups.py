@@ -1,8 +1,9 @@
 from collections import namedtuple
+from pathlib import Path
 
-from micall.utils.sample_sheet_parser import sample_sheet_parser
+from micall.utils.sample_sheet_parser import sample_sheet_parser, read_sample_sheet_overrides
 
-SampleGroup = namedtuple('SampleGroup', 'enum names')
+SampleGroup = namedtuple('SampleGroup', 'enum names project_codes')
 
 
 def find_groups(file_names, sample_sheet_path, included_projects=None):
@@ -15,23 +16,29 @@ def find_groups(file_names, sample_sheet_path, included_projects=None):
     """
     with open(sample_sheet_path) as sample_sheet_file:
         run_info = sample_sheet_parser(sample_sheet_file)
+    overrides_path = Path(sample_sheet_path).parent / 'SampleSheetOverrides.csv'
+    if overrides_path.exists():
+        with overrides_path.open() as overrides_file:
+            read_sample_sheet_overrides(overrides_file, run_info)
 
+    midi_hcv_code = 'MidHCV'
     midi_files = {row['sample']: row['filename']
                   for row in run_info['DataSplit']
-                  if row['project'] == 'MidHCV'}
-    wide_names = {row['filename']: row['sample']
+                  if row['project'] == midi_hcv_code}
+    wide_names = {row['filename']: (row['sample'], row['project'])
                   for row in run_info['DataSplit']
-                  if (row['project'] != 'MidHCV' and
+                  if (row['project'] != midi_hcv_code and
                       (included_projects is None or
                        row['project'] in included_projects))}
     trimmed_names = {'_'.join(file_name.split('_')[:2]): file_name
                      for file_name in file_names}
     unused_names = set(trimmed_names.values())
     for trimmed_name, file_name in sorted(trimmed_names.items()):
-        sample_name = wide_names.get(trimmed_name)
-        if sample_name is None:
+        sample_entry = wide_names.get(trimmed_name)
+        if sample_entry is None:
             # Project was not included.
             continue
+        sample_name, project_code = sample_entry
         midi_trimmed = midi_files.get(sample_name + 'MIDI')
         if midi_trimmed is None and sample_name.upper().endswith('WG'):
             sample_name = sample_name[:-2]
@@ -39,7 +46,10 @@ def find_groups(file_names, sample_sheet_path, included_projects=None):
         midi_name = trimmed_names.get(midi_trimmed)
         unused_names.discard(file_name)
         unused_names.discard(midi_name)
-        yield SampleGroup(sample_name, (file_name, midi_name))
+        midi_project = midi_name and midi_hcv_code
+        yield SampleGroup(sample_name,
+                          (file_name, midi_name),
+                          (project_code, midi_project))
 
     if unused_names:
         sample_names = {file_name: sample_name
@@ -49,4 +59,6 @@ def find_groups(file_names, sample_sheet_path, included_projects=None):
                 unused_names.discard(file_name)
                 sample_name = sample_names.get(trimmed_name)
                 if sample_name is not None:
-                    yield SampleGroup(sample_name, (file_name, None))
+                    yield SampleGroup(sample_name,
+                                      (file_name, None),
+                                      (midi_hcv_code, None))
