@@ -361,7 +361,7 @@ class ResultsFolder:
             pos = int(row['refseq.aa.pos'])
             coverage = int(row['coverage'])
             coverage_message = f'{coverage} coverage at {pos}'
-            assert row['region'] in ('SARS-CoV-2-nsp1', 'SARS-CoV-2-orf1ab'), row
+            assert row['region'] in ('SARS-CoV-2-nsp1', 'SARS-CoV-2-ORF1ab'), row
             if 27 <= pos <= 102:
                 assert coverage == 100, coverage_message
             else:
