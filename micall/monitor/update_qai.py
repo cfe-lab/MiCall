@@ -244,14 +244,9 @@ def build_review_decisions(coverage_file,
     return list(decisions.values())
 
 
-def upload_review_to_qai(coverage_file,
-                         collated_counts_file,
-                         cascade_file,
-                         run,
-                         sample_sheet,
-                         conseqs,
-                         session,
-                         pipeline_version):
+def upload_review_to_qai(coverage_file, collated_counts_file, cascade_file,
+                         proviral_file, aln_proviral_file, run, sample_sheet,
+                         conseqs, session, pipeline_version):
     """ Create a review.
 
     @param coverage_file: the coverage scores to upload
@@ -268,6 +263,9 @@ def upload_review_to_qai(coverage_file,
     """
 
     runid = run['id']
+
+    upload_proviral_tables(session, runid, proviral_file, aln_proviral_file)
+
     sequencings = run['sequencing_summary']
 
     project_regions = session.get_json(
@@ -291,6 +289,25 @@ def upload_review_to_qai(coverage_file,
                                                        pipeline_version),
                        'lab_miseq_review_decisions': decisions,
                        'lab_miseq_conseqs': conseqs})
+
+
+def upload_proviral_tables(session, run_id, proviral_file, aln_proviral_file):
+    proviral_responses = upload_proviral_csv(session, run_id, proviral_file,
+                                             '/proviral/create')
+    proviral_responses = upload_proviral_csv(session, run_id,
+                                             aln_proviral_file,
+                                             '/aligned_proviral/create')
+
+
+def upload_proviral_csv(session, run_id, csv_path, endpoint):
+    responses = []
+    with open(csv_path, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            row['lab_miseq_run_id'] = run_id
+            response = session.post_json(endpoint, row)
+            responses.append(response)
+    return responses
 
 
 def clean_runname(runname):
@@ -366,6 +383,9 @@ def process_folder(result_folder,
     all_results_path, _ = os.path.split(os.path.normpath(result_folder))
     run_path, _ = os.path.split(all_results_path)
     sample_sheet_file = os.path.join(run_path, "SampleSheet.csv")
+    proviral = os.path.join(result_folder, "proviral", "table_precursor.csv")
+    aln_proviral = os.path.join(result_folder, "proviral",
+                                "aligned_table_precursor.csv")
     with open(sample_sheet_file, "rU") as f:
         sample_sheet = sample_sheet_parser.sample_sheet_parser(f)
 
@@ -389,15 +409,11 @@ def process_folder(result_folder,
 
                 with open(coverage_scores) as f, \
                         open(collated_counts) as f2, \
-                        open(cascade) as f3:
-                    upload_review_to_qai(f,
-                                         f2,
-                                         f3,
-                                         run,
-                                         sample_sheet,
-                                         conseqs,
-                                         session,
-                                         pipeline_version)
+                        open(cascade) as f3, \
+                        open(proviral) as f4, \
+                        open(aln_proviral) as f5:
+                    upload_review_to_qai(f, f2, f3, f4, f5, run, sample_sheet,
+                                         conseqs, session, pipeline_version)
                 logger.info('Upload success!')
                 break
             except Exception:
