@@ -409,11 +409,10 @@ def process_folder(result_folder,
 
                 with open(coverage_scores) as f, \
                         open(collated_counts) as f2, \
-                        open(cascade) as f3, \
-                        open(proviral) as f4, \
-                        open(aln_proviral) as f5:
-                    upload_review_to_qai(f, f2, f3, f4, f5, run, sample_sheet,
-                                         conseqs, session, pipeline_version)
+                        open(cascade) as f3:
+                    upload_review_to_qai(f, f2, f3, proviral, aln_proviral,
+                                         run, sample_sheet, conseqs, session,
+                                         pipeline_version)
                 logger.info('Upload success!')
                 break
             except Exception:
