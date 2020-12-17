@@ -513,7 +513,8 @@ class KiveWatcher:
                 folder_watcher.active_pipeline_groups.remove(pipeline_group)
                 if results_path is not None:
                     if (results_path / "coverage_scores.csv").exists():
-                        self.qai_upload_queue.put(results_path)
+                        self.qai_upload_queue.put(
+                            (results_path, pipeline_group))
                     if not folder_watcher.active_pipeline_groups:
                         (results_path / "done_all_processing").touch()
                         self.folder_watchers.pop(folder)
