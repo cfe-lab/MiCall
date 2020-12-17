@@ -387,7 +387,7 @@ def process_folder(item, qai_server, qai_user, qai_password, pipeline_version):
                 upload_proviral_tables(session, result_folder, run,
                                        pipeline_version)
             ## DENOVO
-            elif pipeline_group in (PipelineType.DENOVO,
+            elif pipeline_group in (PipelineType.DENOVO_MAIN,
                                     PipelineType.DENOVO_MIDI,
                                     PipelineType.DENOVO_RESISTANCE):
                 # Do nothing
