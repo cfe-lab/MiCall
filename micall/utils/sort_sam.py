@@ -11,7 +11,6 @@ import typing
 
 
 def parse_args():
-    # noinspection PyTypeChecker
     parser = ArgumentParser(description='Sort SAM file before viewing.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('sam', help='SAM file to sort, or prelim.csv')

@@ -986,23 +986,19 @@ class SequenceReport(object):
 
     def write_nuc_report(self, nuc_writer, reports, seed):
         self.merge_extra_counts()
-        if not self.coordinate_refs:
-            for seed_amino in self.seed_aminos[0]:
-                self.write_counts(seed, seed, seed_amino, None, nuc_writer)
-        else:
-            for region, report_aminos in sorted(reports.items()):
-                start_ref_offset = None
-                for report_amino in report_aminos:
-                    # If the region starts with an offset, we reverse it.
-                    if start_ref_offset is None:
-                        start_ref_offset = report_amino.seed_amino.ref_offset
-                    report_amino.seed_amino.ref_offset -= start_ref_offset
-                    self.write_counts(seed,
-                                      region,
-                                      report_amino.seed_amino,
-                                      report_amino,
-                                      nuc_writer)
-                    report_amino.seed_amino.ref_offset += start_ref_offset
+        for region, report_aminos in sorted(reports.items()):
+            start_ref_offset = None
+            for report_amino in report_aminos:
+                # If the region starts with an offset, we reverse it.
+                if start_ref_offset is None:
+                    start_ref_offset = report_amino.seed_amino.ref_offset
+                report_amino.seed_amino.ref_offset -= start_ref_offset
+                self.write_counts(seed,
+                                  region,
+                                  report_amino.seed_amino,
+                                  report_amino,
+                                  nuc_writer)
+                report_amino.seed_amino.ref_offset += start_ref_offset
 
     @staticmethod
     def _create_consensus_writer(

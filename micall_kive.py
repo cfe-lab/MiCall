@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
-    # noinspection PyTypeChecker
     parser = ArgumentParser(description='Map FASTQ files to references.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     # inputs

@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
-    # noinspection PyTypeChecker
     parser = ArgumentParser(
         description='Find the simplest FASTQ that can still be assembled.',
         formatter_class=ArgumentDefaultsHelpFormatter)

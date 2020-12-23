@@ -565,7 +565,6 @@ def run_with_retries(command_args: typing.List[str], retries=2):
 
 
 def main():
-    # noinspection PyTypeChecker
     parser = ArgumentParser(description='Validate with small test samples.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--sandbox',

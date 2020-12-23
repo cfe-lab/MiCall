@@ -15,7 +15,6 @@ from micall.resistance.resistance import report_resistance
 
 
 def parse_args():
-    # noinspection PyTypeChecker
     parser = ArgumentParser(
         description='Rerun resistance interpretations.',
         formatter_class=ArgumentDefaultsHelpFormatter)

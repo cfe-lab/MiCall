@@ -4,7 +4,6 @@ from pathlib import Path
 
 
 def parse_args():
-    # noinspection PyTypeChecker
     parser = ArgumentParser(
         description='Remove folders that have already been zipped.',
         formatter_class=ArgumentDefaultsHelpFormatter)

@@ -300,7 +300,6 @@ if you want to write the outputs to "/host/output/path/":
 
 
 def get_parser(default_max_active):
-    # noinspection PyTypeChecker
     parser = ArgumentParser(
         description=MAIN_DESCRIPTION,
         formatter_class=MiCallFormatter)
