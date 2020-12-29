@@ -1,0 +1,61 @@
+name: Build and Test MiCall
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      PATH: $PATH:~/bin
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - run: mkdir -p ~/bin
+
+      - name: Singularity
+        run: sudo apt-get install -qq python dh-autoreconf build-essential libarchive-dev squashfs-tools
+      - run: git clone https://github.com/singularityware/singularity.git
+      - run: cd singularity
+      - run: git checkout -q tags/2.5.2
+      - run: ./autogen.sh
+      - run: ./configure --prefix=/usr/local
+      - run: make
+      - run: sudo make install
+      - run: cd ..
+      - run: rm -rf singularity
+
+      - name: IVA assembler
+        run: sudo apt-get install -y zlib1g-dev libncurses5-dev libncursesw5-dev mummer samtools ncbi-blast+
+      - run: pushd ~/bin
+      - run: wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
+      - run: wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
+      - run: chmod +x kmc kmc_dump
+      - run: cd ~
+      - run: wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
+      - run: tar -xzf smalt-0.7.6-bin.tar.gz
+      - run: ln -s ~/smalt-0.7.6-bin/smalt_x86_64 ~/bin/smalt
+
+      - name: Rust and merge-mates
+        run: sudo curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: source ~/.cargo/env
+      - run: cargo install --root ~/ --git https://github.com/jeff-k/merge-mates.git
+      - run: popd
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-test.txt
+
+      - name: Test with pytest
+        run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
+      - name: Singularity build
+        run: sudo singularity build micall.simg Singularity
+      - name: Singularity test
+        run: python release_test_microtest.py micall.simg
+
+      - name: Report code coverage
+        run: |
+          rm -rf micall/tests/microtest/scratch
+          python -m pip install codecov
+          codecov
