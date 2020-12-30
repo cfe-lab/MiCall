@@ -2,7 +2,7 @@ name: Build and Test MiCall
 on: push
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -53,6 +53,12 @@ jobs:
         run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
       - name: Singularity build
         run: sudo singularity build micall.simg Singularity
+      - name: Upload Singularity Image
+        uses: actions/upload-artifact@v2
+        with:
+          name: micall.simg
+          path: micall.simg
+
       - name: Singularity test
         run: python release_test_microtest.py micall.simg
 
