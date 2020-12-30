@@ -3,8 +3,6 @@ on: push
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      PATH: $PATH:~/bin
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -12,6 +10,7 @@ jobs:
         with:
           python-version: 3.8
       - run: mkdir -p ~/bin
+      - run: echo ~/bin >> $GITHUB_PATH
 
       - name: Singularity
         run: sudo apt-get install -qq python dh-autoreconf build-essential libarchive-dev squashfs-tools
