@@ -16,9 +16,6 @@ jobs:
         run: |
           sudo apt-get install -qq python dh-autoreconf build-essential libarchive-dev squashfs-tools
           touch real_file
-          rm real_file && echo OK
-          rm bogus_file && echo OK
-          rm bogus_file # Check if failed step halts script
           git clone https://github.com/singularityware/singularity.git
           cd singularity
           git checkout -q tags/2.5.2
@@ -30,21 +27,22 @@ jobs:
           rm -rf singularity
 
       - name: Install IVA assembler
-        run: sudo apt-get install -y zlib1g-dev libncurses5-dev libncursesw5-dev mummer samtools ncbi-blast+
-      - run: pushd ~/bin
-      - run: wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
-      - run: wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
-      - run: chmod +x kmc kmc_dump
-      - run: cd ~
-      - run: wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
-      - run: tar -xzf smalt-0.7.6-bin.tar.gz
-      - run: ln -s ~/smalt-0.7.6-bin/smalt_x86_64 ~/bin/smalt
+        run: |
+          sudo apt-get install -y zlib1g-dev libncurses5-dev libncursesw5-dev mummer samtools ncbi-blast+
+          cd ~/bin
+          wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
+          wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
+          chmod +x kmc kmc_dump
+          cd ~
+          wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
+          tar -xzf smalt-0.7.6-bin.tar.gz
+          ln -s ~/smalt-0.7.6-bin/smalt_x86_64 ~/bin/smalt
 
       - name: Install Rust and merge-mates
-        run: sudo curl https://sh.rustup.rs -sSf | sh -s -- -y
-      - run: source ~/.cargo/env
-      - run: cargo install --root ~/ --git https://github.com/jeff-k/merge-mates.git
-      - run: popd
+        run: |
+          sudo curl https://sh.rustup.rs -sSf | sh -s -- -y
+          source ~/.cargo/env
+          cargo install --root ~/ --git https://github.com/jeff-k/merge-mates.git
 
       - name: Install MiCall's Python dependencies
         run: |
