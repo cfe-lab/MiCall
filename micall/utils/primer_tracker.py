@@ -1,32 +1,37 @@
 import typing
-from collections import defaultdict
 from pathlib import Path
 
 from Bio import SeqIO
 
-from micall.core.project_config import ProjectConfig
-from micall.data.landmark_reader import LandmarkReader
 from micall.utils.alignment_wrapper import align_nucs
 
 
 class PrimerTracker:
-    @staticmethod
-    def load_locations() -> typing.Dict[str, typing.Dict[str, typing.Set[int]]]:
-        """ Load ignored primer locations for each HCV gene.
+    def __init__(self, conseq: str, seed_name: str):
+        self.conseq = conseq
+        self.seed_name = seed_name
+        self.ignored_positions: typing.Optional[typing.Set[int]] = None
 
-        :return: {seed_name: {gene_name: {ignored_pos}}}
+    def is_ignored(self, pos: int):
+        """ Check if a position should be ignored because it's in a primer.
+
+        :param pos: the one-based nucleotide position within the full seed
+            sequence
+        :return: True if that position should be ignored.
         """
-        locations = defaultdict(lambda: defaultdict(set))
+        self.check_positions()
+        return pos in self.ignored_positions
 
-        projects = ProjectConfig.loadDefault()
-        all_refs = projects.getAllReferences()
-        hcv_refs = {name: ref
-                    for name, ref in all_refs.items()
-                    if name.startswith('HCV-')}
-        primers = {}
-        core_path = Path(__file__).parent / 'micall' / 'core'
-        left_primers_path = core_path / 'primers_sarscov2_left.fasta'
-        right_primers_path = core_path / 'primers_sarscov2_right_end.fasta'
+    def check_positions(self):
+        if self.ignored_positions is not None:
+            return
+        self.ignored_positions = set()
+        if not self.seed_name.startswith('HCV-'):
+            return
+        cleaned_conseq = self.conseq.replace('-', 'x')
+        data_path = Path(__file__).parent.parent / 'data'
+        left_primers_path = data_path / f'primers_hcv_left.fasta'
+        right_primers_path = data_path / f'primers_hcv_right_end.fasta'
         for primers_path in (left_primers_path, right_primers_path):
             with primers_path.open() as f:
                 for primer in SeqIO.parse(f, 'fasta'):
@@ -36,45 +41,14 @@ class PrimerTracker:
                     if 'dA20' in primer_name or 'TIM' in primer_name:
                         continue
                     primer_seq = str(primer.seq).replace('X', '')
-                    primers[primer_name] = primer_seq
-        landmark_reader = LandmarkReader.load()
-        for seed_name, seed_seq in hcv_refs.items():
-            region_names = list(projects.getCoordinateReferences(seed_name))
-            coordinate_name = landmark_reader.get_coordinates(seed_name)
-            if coordinate_name != seed_name:
-                locations[seed_name] = locations[coordinate_name]
-                continue
-            for primer_name, primer_seq in primers.items():
-                aseed, aprimer, score = align_nucs(seed_seq, primer_seq)
-                primer_end = seed_pos = 0
-                primer_start = len(aseed)
-                for seed_nuc, primer_nuc in zip(aseed, aprimer):
-                    if seed_nuc != '-':
-                        seed_pos += 1
-                    if primer_nuc != '-':
-                        primer_start = min(primer_start, seed_pos)
-                        primer_end = max(primer_end, seed_pos)
-                for region in region_names:
-                    region_details = landmark_reader.get_gene(seed_name, region)
-                    region_start = region_details['start']
-                    region_end = region_details['end']
-                    if region_start <= primer_end and primer_start <= region_end:
-                        start = max(1, primer_start - region_start + 1)
-                        end = min(region_end-region_start+1,
-                                  primer_end-region_start+1)
-                        # print(f'Adding {seed_name}, {region}: {start}->{end} '
-                        #       f'({region_start=}, {region_end=},'
-                        #       f'{primer_start=}, {primer_end=})')
-                        locations[seed_name][region] |= set(range(start, end+1))
-        return locations
-
-    locations = None
-
-    def __init__(self):
-        pass
-
-    def is_ignored(self, seed: str, region: str, pos: int):
-        if PrimerTracker.locations is None:
-            PrimerTracker.locations = self.load_locations()
-        ignored_positions = self.locations[seed][region]
-        return pos in ignored_positions
+                    aligned_primer, aligned_conseq, score = align_nucs(
+                        primer_seq,
+                        cleaned_conseq)
+                    primer_start = aligned_primer.lstrip('-')
+                    start = len(aligned_primer) - len(primer_start)
+                    primer_end = aligned_primer.rstrip('-')
+                    padded_end = len(primer_end)
+                    conseq_match = aligned_conseq[start:padded_end]
+                    unpadded_match = conseq_match.replace('-', '')
+                    end = start + len(unpadded_match)
+                    self.ignored_positions.update(range(start+1, end+1))

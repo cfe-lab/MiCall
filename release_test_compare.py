@@ -25,7 +25,7 @@ MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
 SampleFiles = namedtuple(
     'SampleFiles',
-    'cascade coverage_scores g2p_summary region_consensus remap_counts')
+    'cascade coverage_scores g2p_summary region_consensus remap_counts conseq')
 SampleFiles.__new__.__defaults__ = (None,) * 6
 Sample = namedtuple('Sample', 'run name source_files target_files')
 ConsensusDistance = namedtuple('ConsensusDistance',
@@ -84,7 +84,11 @@ def find_runs(source_folder, target_folder, use_denovo):
                                            run_name,
                                            'Results')
         source_versions = os.listdir(source_results_path)
-        source_versions.sort(key=parse_version)
+        try:
+            source_versions.sort(key=parse_version)
+        except ValueError as ex:
+            message = f'Unexpected results file name in {run_name}.'
+            raise ValueError(message) from ex
         source_path = os.path.join(source_results_path, source_versions[-1])
         yield MiseqRun(source_path, target_path, is_done)
 
@@ -138,6 +142,10 @@ def read_samples(runs):
                                                           'coverage_scores.csv'))
             target_coverages = group_samples(os.path.join(run.target_path,
                                                           'coverage_scores.csv'))
+            source_conseq = group_samples(os.path.join(run.source_path,
+                                                       'conseq.csv'))
+            target_conseq = group_samples(os.path.join(run.target_path,
+                                                       'conseq.csv'))
             source_region_consensus = group_nucs(os.path.join(run.source_path,
                                                               'nuc.csv'))
             target_region_consensus = group_nucs(os.path.join(run.target_path,
@@ -161,12 +169,14 @@ def read_samples(runs):
                                      source_coverages.get(sample_name),
                                      source_g2ps.get(sample_name),
                                      source_region_consensus.get(sample_name),
-                                     source_counts.get(sample_name)),
+                                     source_counts.get(sample_name),
+                                     source_conseq.get(sample_name)),
                          SampleFiles(target_cascades.get(sample_name),
                                      target_coverages.get(sample_name),
                                      target_g2ps.get(sample_name),
                                      target_region_consensus.get(sample_name),
-                                     target_counts.get(sample_name)))
+                                     target_counts.get(sample_name),
+                                     target_conseq.get(sample_name)))
     if missing_targets:
         print('Missing targets: ', missing_targets)
     if missing_sources:
@@ -399,10 +409,18 @@ def compare_consensus(sample: Sample,
     source_counts = map_remap_counts(sample.source_files.remap_counts)
     target_counts = map_remap_counts(sample.target_files.remap_counts)
     keys = sorted(set(source_seqs.keys()) | target_seqs.keys())
-    primer_tracker = PrimerTracker()
+    primer_trackers = {}
+    for row in sample.target_files.conseq or ():
+        if row['consensus-percent-cutoff'] == 'MAX':
+            conseq = row['sequence']
+            offset = int(row['offset'])
+            conseq = 'x' * offset + conseq
+            seed_name = row['region']
+            primer_trackers[seed_name] = PrimerTracker(conseq, seed_name)
     cutoff = MAX_CUTOFF
     for key in keys:
         seed, region = key
+        primer_tracker = primer_trackers.get(seed)
         source_details = source_seqs.get(key)
         target_details = target_seqs.get(key)
         source_nucs = []
@@ -437,8 +455,8 @@ def compare_consensus(sample: Sample,
                         target_consensus = target_consensus.lower()
                     if not has_big_change and 'x' in (source_consensus,
                                                       target_consensus):
-                        pos = int(target_row['refseq.nuc.pos'])
-                        is_ignored = primer_tracker.is_ignored(seed, region, pos)
+                        pos = int(target_row['query.nuc.pos'])
+                        is_ignored = primer_tracker and primer_tracker.is_ignored(pos)
                         is_dropping = target_consensus == 'x'
                         if MICALL_VERSION == '7.14' and is_ignored and is_dropping:
                             pass
@@ -500,7 +518,7 @@ def compare_consensus(sample: Sample,
         elif is_main and scenarios_reported & Scenarios.MAIN_CONSENSUS_CHANGED:
             scenarios[Scenarios.MAIN_CONSENSUS_CHANGED].append('.')
         elif (not is_main and
-                scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
+              scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
             scenarios[Scenarios.OTHER_CONSENSUS_CHANGED].append('.')
         else:
             diffs.append('{}:{} consensus: {} {} {}'.format(run_name,
