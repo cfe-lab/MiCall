@@ -541,18 +541,18 @@ SARS-CoV-2-seed,15,0,9,0,GCACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACAC
 
     #                                       A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
     expected_text = """\
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,1,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,4,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,7,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,10,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,13,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,16,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,18,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,21,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,24,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,1,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,4,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,7,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,10,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,13,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,16,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,18,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,21,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,24,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
     sequence_report.projects = ProjectConfig.loadDefault()
-    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-ORF1ab'))
     nsp12_size = len(sequence_report.projects.getReference('SARS-CoV-2-nsp12'))
 
     report_file = StringIO()
@@ -566,7 +566,7 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[nsp12_size + 4396:nsp12_size + 4406]
+    key_lines = report_lines[4396:4406]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 
@@ -585,18 +585,18 @@ SARS-CoV-2-seed,15,0,9,10,GCACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTA
 
     #                                        A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
     expected_text = """\
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,11,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,14,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,17,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,20,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,23,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,26,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,28,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,31,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,34,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,11,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,14,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,17,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,20,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,23,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,26,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,28,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,31,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,34,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
     sequence_report.projects = ProjectConfig.loadDefault()
-    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-ORF1ab'))
     nsp12_size = len(sequence_report.projects.getReference('SARS-CoV-2-nsp12'))
 
     report_file = StringIO()
@@ -610,7 +610,7 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[nsp12_size + 4396:nsp12_size + 4406]
+    key_lines = report_lines[4396:4406]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 
@@ -629,18 +629,18 @@ SARS-CoV-2-seed,15,0,9,11,GCACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTA
 
     #                                        A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
     expected_text = """\
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,12,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,15,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,18,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,21,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,24,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,27,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,29,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,32,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,35,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,12,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,15,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,18,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,21,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,24,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,27,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,29,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,32,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,35,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
     sequence_report.projects = ProjectConfig.loadDefault()
-    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-ORF1ab'))
     nsp12_size = len(sequence_report.projects.getReference('SARS-CoV-2-nsp12'))
 
     report_file = StringIO()
@@ -654,7 +654,7 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[nsp12_size + 4396:nsp12_size + 4406]
+    key_lines = report_lines[4396:4406]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 
@@ -669,19 +669,19 @@ SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
 
     #                  A,C,G,T,N,...,coverage
     expected_section = """\
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,21,13198,0,0,0,9,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,22,13199,0,0,0,9,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,23,13200,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,24,13201,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,25,13202,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,26,13203,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,27,13204,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,28,13205,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,29,13206,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,30,13207,0,0,0,9,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,31,13208,0,0,0,9,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,21,13198,0,0,0,9,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,22,13199,0,0,0,9,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,23,13200,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,24,13201,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,25,13202,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,26,13203,0,9,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,27,13204,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,28,13205,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,29,13206,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,30,13207,0,0,0,9,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,31,13208,0,0,0,9,0,0,0,0,0,9"""
     sequence_report.projects = ProjectConfig.loadDefault()
-    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-orf1ab'))
+    orf1ab_size = len(sequence_report.projects.getReference('SARS-CoV-2-ORF1ab'))
     nsp12_size = len(sequence_report.projects.getReference('SARS-CoV-2-nsp12'))
 
     report_file = StringIO()
@@ -697,7 +697,7 @@ SARS-CoV-2-seed,SARS-CoV-2-orf1ab,15,31,13208,0,0,0,9,0,0,0,0,0,9"""
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[nsp12_size*3 + 13197:nsp12_size*3 + 13208]
+    key_lines = report_lines[13198:13209]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_section
 

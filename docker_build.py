@@ -7,7 +7,6 @@ import errno
 
 
 def parse_args():
-    # noinspection PyTypeChecker
     parser = ArgumentParser(
         description="Build docker image from local source code or a tag.",
         formatter_class=ArgumentDefaultsHelpFormatter)

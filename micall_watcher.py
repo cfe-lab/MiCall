@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args(argv=None):
-    # noinspection PyTypeChecker
     parser = ArgumentParser(description='Watch the raw data folder for new runs.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(

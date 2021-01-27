@@ -382,7 +382,7 @@ def check_sars_coordinates(project_config, unchecked_ref_names: set):
     print("""\
 SARS-CoV-2 coordinate references are translated from the seed reference.
 """)
-    ref_names = ('SARS-CoV-2-orf1ab',
+    ref_names = ('SARS-CoV-2-ORF1ab',
                  'SARS-CoV-2-S',
                  'SARS-CoV-2-ORF3a',
                  'SARS-CoV-2-E',

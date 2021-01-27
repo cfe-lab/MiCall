@@ -382,7 +382,10 @@ class CompareSampleTest(TestCase):
     def test_consensus_change(self):
         source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACACGT')}
         target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACACGG')}
-        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
+        coverage_scores = [{'seed': 'R1-seed',
+                            'region': 'R1',
+                            'project': 'R1',
+                            'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
                         SampleFiles(region_consensus=source_seqs,
@@ -407,7 +410,10 @@ class CompareSampleTest(TestCase):
     def test_consensus_change_diff(self):
         source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAC')}
         target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAT')}
-        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
+        coverage_scores = [{'seed': 'R1-seed',
+                            'region': 'R1',
+                            'project': 'R1',
+                            'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
                         SampleFiles(region_consensus=source_seqs,
@@ -435,7 +441,10 @@ class CompareSampleTest(TestCase):
     def test_consensus_change_scenario(self):
         source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAC')}
         target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAT')}
-        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
+        coverage_scores = [{'seed': 'R1-seed',
+                            'region': 'R1',
+                            'project': 'R1',
+                            'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
                         SampleFiles(region_consensus=source_seqs,
@@ -459,7 +468,10 @@ class CompareSampleTest(TestCase):
     def test_same_consensus(self):
         source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAC')}
         target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACAC')}
-        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
+        coverage_scores = [{'seed': 'R1-seed',
+                            'region': 'R1',
+                            'project': 'R1',
+                            'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
                         SampleFiles(region_consensus=source_seqs,
@@ -485,8 +497,14 @@ class CompareSampleTest(TestCase):
                        ('R2-seed', 'R2'): make_nuc_rows('ACACACGT')}
         target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACACACGT'),
                        ('R2-seed', 'R2'): make_nuc_rows('ACACAMGT')}
-        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'},
-                           {'seed': 'R2-seed', 'region': 'R2', 'on.score': '4'}]
+        coverage_scores = [{'seed': 'R1-seed',
+                            'region': 'R1',
+                            'project': 'R1',
+                            'on.score': '4'},
+                           {'seed': 'R2-seed',
+                            'region': 'R2',
+                            'project': 'R2',
+                            'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
                         SampleFiles(region_consensus=source_seqs,
@@ -521,7 +539,10 @@ class CompareSampleTest(TestCase):
     def test_consensus_trailing_change(self):
         source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACTTAC------GTAC')}
         target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACTTAC')}
-        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
+        coverage_scores = [{'seed': 'R1-seed',
+                            'region': 'R1',
+                            'project': 'R1',
+                            'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
                         SampleFiles(region_consensus=source_seqs,
@@ -550,7 +571,10 @@ class CompareSampleTest(TestCase):
     def test_consensus_missing(self):
         source_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACTTAC')}
         target_seqs = {}
-        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
+        coverage_scores = [{'seed': 'R1-seed',
+                            'region': 'R1',
+                            'project': 'R1',
+                            'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
                         SampleFiles(region_consensus=source_seqs,
@@ -575,7 +599,10 @@ class CompareSampleTest(TestCase):
     def test_consensus_added(self):
         source_seqs = {}
         target_seqs = {('R1-seed', 'R1'): make_nuc_rows('ACTTAC')}
-        coverage_scores = [{'seed': 'R1-seed', 'region': 'R1', 'on.score': '4'}]
+        coverage_scores = [{'seed': 'R1-seed',
+                            'region': 'R1',
+                            'project': 'R1',
+                            'on.score': '4'}]
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
                         SampleFiles(region_consensus=source_seqs,

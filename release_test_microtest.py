@@ -352,7 +352,7 @@ class ResultsFolder:
         mutations = [''.join(fields)
                      for fields in map(itemgetter('wt', 'refseq_nuc_pos', 'var'),
                                        mutation_rows)]
-        assert mutations == ['T23C', 'T13199C'], mutations
+        assert mutations == ['T13199C', 'T23C'], mutations
 
     def check_2200(self):
         amino_rows = list(self.read_file('2200A-SARSCOV2_S24', 'amino.csv'))
@@ -361,11 +361,20 @@ class ResultsFolder:
             pos = int(row['refseq.aa.pos'])
             coverage = int(row['coverage'])
             coverage_message = f'{coverage} coverage at {pos}'
-            assert row['region'] in ('SARS-CoV-2-nsp1', 'SARS-CoV-2-orf1ab'), row
+            assert row['region'] in ('SARS-CoV-2-nsp1', 'SARS-CoV-2-ORF1ab'), row
             if 27 <= pos <= 102:
                 assert coverage == 100, coverage_message
             else:
                 assert coverage == 0, coverage_message
+
+    def check_2210(self):
+        conseq_rows = [row
+                       for row in self.read_file('2210A-NFLHIVDNA_S25',
+                                                 'conseq_all.csv')
+                       if not row['region']]  # Whole-genome conseq only.
+        assert len(conseq_rows) == 1, len(conseq_rows)
+        conseq = conseq_rows[0]['sequence']
+        assert 585 <= len(conseq), len(conseq)
 
 
 def gzip_compress(source_path: Path, target_path: Path):
@@ -537,7 +546,9 @@ def find_full_groups(fastq_files, sandbox_path):
     for group in groups:
         full_names = tuple(name and (sandbox_path / name)
                            for name in group.names)
-        full_groups.append(SampleGroup(group.enum, full_names))
+        full_groups.append(SampleGroup(group.enum,
+                                       full_names,
+                                       group.project_codes))
     return full_groups
 
 
@@ -554,11 +565,12 @@ def run_with_retries(command_args: typing.List[str], retries=2):
 
 
 def main():
-    # noinspection PyTypeChecker
     parser = ArgumentParser(description='Validate with small test samples.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--sandbox',
                         help='Folder to copy microtest samples into.')
+    parser.add_argument('--sample',
+                        help='Prefix of sample name to run.')
     # noinspection PyTypeChecker
     parser.add_argument('image',
                         type=Path,
@@ -581,7 +593,10 @@ def main():
             shutil.copy(str(source_file), str(target_file))
     runner = SampleRunner(args.image)
     with ProcessPoolExecutor() as pool:
-        fastq_files = sorted(sandbox_path.glob('*_R1_*.fastq'))
+        search_pattern = '*_R1_*.fastq'
+        if args.sample:
+            search_pattern = args.sample + search_pattern
+        fastq_files = sorted(sandbox_path.glob(search_pattern))
         sample_groups = find_full_groups(fastq_files, sandbox_path)
         try:
             runner.process_quality(sandbox_path / 'quality.csv')
@@ -600,9 +615,12 @@ def main():
 
     results_folder = ResultsFolder(sandbox_path, is_denovo=False)
     folder_methods = inspect.getmembers(results_folder, inspect.ismethod)
+    check_pattern = 'check_'
+    if args.sample:
+        check_pattern += args.sample
     check_methods = [(name, method)
                      for name, method in folder_methods
-                     if name.startswith('check_')]
+                     if name.startswith(check_pattern)]
     error_count = 0
     for name, method in check_methods:
         if not inspect.signature(method).parameters:

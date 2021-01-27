@@ -573,7 +573,6 @@ def summarize_figure(figure: Figure):
 
 
 def main():
-    # noinspection PyTypeChecker
     parser = ArgumentParser(
         description='Plot assembled contigs against a reference.',
         formatter_class=ArgumentDefaultsHelpFormatter)

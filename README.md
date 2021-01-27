@@ -57,7 +57,8 @@ Requests is distributed under the Apache 2.0 license.
 
 Python 3 is distributed under the [Python 3 license][python].
 
-Bowtie2 and Python-Levenshtein are distributed under the GNU General Public License (GPL).
+Bowtie2, IVA, and Python-Levenshtein are distributed under the GNU General
+Public License (GPL).
 
 Matplotlib is distributed under the [Matplotlib license][matplotlib].
 

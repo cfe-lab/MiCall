@@ -163,7 +163,7 @@
     - {name: E, start: 26245, end: 26472, frame: 0, colour: '#d62728'}
     - {name: '6', full_name: ORF6, start: 27202, end: 27387, frame: 0, colour: '#8c564b'}
     - {name: 7a, full_name: ORF7a, start: 27394, end: 27759, frame: 0, colour: '#7f7f7f'}
-    - {name: orf1ab, start: 266, end: 21555, frame: 1}  # Not displayed.
+    - {name: ORF1ab, start: 266, end: 21555, frame: 1}  # Not displayed.
     - {name: nsp2, start: 806, end: 2719, frame: 1, colour: darkgrey}
     - {name: nsp1, start: 266, end: 805, frame: 1, colour: grey}
     - {name: nsp3, start: 2720, end: 8554, frame: 1, colour: grey}

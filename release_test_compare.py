@@ -1,5 +1,5 @@
 """ Compare result files in shared folder with previous release. """
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import csv
 from collections import namedtuple, defaultdict
 from concurrent.futures.process import ProcessPoolExecutor
@@ -10,28 +10,22 @@ from itertools import groupby, zip_longest, chain
 from glob import glob
 from operator import itemgetter
 import os
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import Levenshtein
-import typing
-
-from Bio import SeqIO
 
 from micall.core.aln2counts import SeedNucleotide, MAX_CUTOFF
-from micall.core.project_config import ProjectConfig
-from micall.data.landmark_reader import LandmarkReader
-from micall.utils.alignment_wrapper import align_nucs
+from micall.utils.primer_tracker import PrimerTracker
 
-MICALL_VERSION = '7.13'
+MICALL_VERSION = '7.14'
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
 SampleFiles = namedtuple(
     'SampleFiles',
-    'cascade coverage_scores g2p_summary region_consensus remap_counts')
+    'cascade coverage_scores g2p_summary region_consensus remap_counts conseq')
 SampleFiles.__new__.__defaults__ = (None,) * 6
 Sample = namedtuple('Sample', 'run name source_files target_files')
 ConsensusDistance = namedtuple('ConsensusDistance',
@@ -58,7 +52,10 @@ differ = Differ()
 
 
 def parse_args():
-    parser = ArgumentParser(description='Compare sample results for testing a new release.')
+    # noinspection PyTypeChecker
+    parser = ArgumentParser(
+        description='Compare sample results for testing a new release.',
+        formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--denovo',
                         action='store_true',
                         help='Compare old remapped results to new assembled results.')
@@ -67,77 +64,6 @@ def parse_args():
     parser.add_argument('target_folder',
                         help='Testing RAWDATA folder to compare with.')
     return parser.parse_args()
-
-
-class PrimerTracker:
-    @staticmethod
-    def load_locations() -> typing.Dict[str, typing.Dict[str, typing.Set[int]]]:
-        """ Load ignored primer locations for each HCV gene.
-
-        :return: {seed_name: {gene_name: {ignored_pos}}}
-        """
-        locations = defaultdict(lambda: defaultdict(set))
-
-        projects = ProjectConfig.loadDefault()
-        all_refs = projects.getAllReferences()
-        hcv_refs = {name: ref
-                    for name, ref in all_refs.items()
-                    if name.startswith('HCV-')}
-        primers = {}
-        core_path = Path(__file__).parent / 'micall' / 'core'
-        left_primers_path = core_path / 'primers_sarscov2_left.fasta'
-        right_primers_path = core_path / 'primers_sarscov2_right_end.fasta'
-        for primers_path in (left_primers_path, right_primers_path):
-            with primers_path.open() as f:
-                for primer in SeqIO.parse(f, 'fasta'):
-                    primer_name = primer.name
-                    if not primer_name.startswith('HCV'):
-                        continue
-                    if 'dA20' in primer_name or 'TIM' in primer_name:
-                        continue
-                    primer_seq = str(primer.seq).replace('X', '')
-                    primers[primer_name] = primer_seq
-        landmark_reader = LandmarkReader.load()
-        for seed_name, seed_seq in hcv_refs.items():
-            region_names = list(projects.getCoordinateReferences(seed_name))
-            coordinate_name = landmark_reader.get_coordinates(seed_name)
-            if coordinate_name != seed_name:
-                locations[seed_name] = locations[coordinate_name]
-                continue
-            for primer_name, primer_seq in primers.items():
-                aseed, aprimer, score = align_nucs(seed_seq, primer_seq)
-                primer_end = seed_pos = 0
-                primer_start = len(aseed)
-                for seed_nuc, primer_nuc in zip(aseed, aprimer):
-                    if seed_nuc != '-':
-                        seed_pos += 1
-                    if primer_nuc != '-':
-                        primer_start = min(primer_start, seed_pos)
-                        primer_end = max(primer_end, seed_pos)
-                for region in region_names:
-                    region_details = landmark_reader.get_gene(seed_name, region)
-                    region_start = region_details['start']
-                    region_end = region_details['end']
-                    if region_start <= primer_end and primer_start <= region_end:
-                        start = max(1, primer_start - region_start + 1)
-                        end = min(region_end-region_start+1,
-                                  primer_end-region_start+1)
-                        # print(f'Adding {seed_name}, {region}: {start}->{end} '
-                        #       f'({region_start=}, {region_end=},'
-                        #       f'{primer_start=}, {primer_end=})')
-                        locations[seed_name][region] |= set(range(start, end+1))
-        return locations
-
-    locations = None
-
-    def __init__(self):
-        pass
-
-    def is_ignored(self, seed: str, region: str, pos: int):
-        if PrimerTracker.locations is None:
-            PrimerTracker.locations = self.load_locations()
-        ignored_positions = self.locations[seed][region]
-        return pos in ignored_positions
 
 
 def find_runs(source_folder, target_folder, use_denovo):
@@ -158,7 +84,11 @@ def find_runs(source_folder, target_folder, use_denovo):
                                            run_name,
                                            'Results')
         source_versions = os.listdir(source_results_path)
-        source_versions.sort(key=parse_version)
+        try:
+            source_versions.sort(key=parse_version)
+        except ValueError as ex:
+            message = f'Unexpected results file name in {run_name}.'
+            raise ValueError(message) from ex
         source_path = os.path.join(source_results_path, source_versions[-1])
         yield MiseqRun(source_path, target_path, is_done)
 
@@ -212,6 +142,10 @@ def read_samples(runs):
                                                           'coverage_scores.csv'))
             target_coverages = group_samples(os.path.join(run.target_path,
                                                           'coverage_scores.csv'))
+            source_conseq = group_samples(os.path.join(run.source_path,
+                                                       'conseq.csv'))
+            target_conseq = group_samples(os.path.join(run.target_path,
+                                                       'conseq.csv'))
             source_region_consensus = group_nucs(os.path.join(run.source_path,
                                                               'nuc.csv'))
             target_region_consensus = group_nucs(os.path.join(run.target_path,
@@ -235,12 +169,14 @@ def read_samples(runs):
                                      source_coverages.get(sample_name),
                                      source_g2ps.get(sample_name),
                                      source_region_consensus.get(sample_name),
-                                     source_counts.get(sample_name)),
+                                     source_counts.get(sample_name),
+                                     source_conseq.get(sample_name)),
                          SampleFiles(target_cascades.get(sample_name),
                                      target_coverages.get(sample_name),
                                      target_g2ps.get(sample_name),
                                      target_region_consensus.get(sample_name),
-                                     target_counts.get(sample_name)))
+                                     target_counts.get(sample_name),
+                                     target_conseq.get(sample_name)))
     if missing_targets:
         print('Missing targets: ', missing_targets)
     if missing_sources:
@@ -346,11 +282,11 @@ def map_coverage(coverage_scores):
                                            score.get('seed'),
                                            score.get('which.key.pos'))
                        for score in coverage_scores}
-    if MICALL_VERSION == '7.12':
+    if MICALL_VERSION == '7.14':
         filtered_scores = {
             (project, region): scores
             for (project, region), scores in filtered_scores.items()
-            if region != 'GP120'}
+            if project not in ('NFLHIVDNA', 'SARSCOV2')}
 
     return filtered_scores
 
@@ -473,10 +409,18 @@ def compare_consensus(sample: Sample,
     source_counts = map_remap_counts(sample.source_files.remap_counts)
     target_counts = map_remap_counts(sample.target_files.remap_counts)
     keys = sorted(set(source_seqs.keys()) | target_seqs.keys())
-    primer_tracker = PrimerTracker()
+    primer_trackers = {}
+    for row in sample.target_files.conseq or ():
+        if row['consensus-percent-cutoff'] == 'MAX':
+            conseq = row['sequence']
+            offset = int(row['offset'])
+            conseq = 'x' * offset + conseq
+            seed_name = row['region']
+            primer_trackers[seed_name] = PrimerTracker(conseq, seed_name)
     cutoff = MAX_CUTOFF
     for key in keys:
         seed, region = key
+        primer_tracker = primer_trackers.get(seed)
         source_details = source_seqs.get(key)
         target_details = target_seqs.get(key)
         source_nucs = []
@@ -511,10 +455,10 @@ def compare_consensus(sample: Sample,
                         target_consensus = target_consensus.lower()
                     if not has_big_change and 'x' in (source_consensus,
                                                       target_consensus):
-                        pos = int(target_row['refseq.nuc.pos'])
-                        is_ignored = primer_tracker.is_ignored(seed, region, pos)
+                        pos = int(target_row['query.nuc.pos'])
+                        is_ignored = primer_tracker and primer_tracker.is_ignored(pos)
                         is_dropping = target_consensus == 'x'
-                        if MICALL_VERSION == '7.13' and is_ignored and is_dropping:
+                        if MICALL_VERSION == '7.14' and is_ignored and is_dropping:
                             pass
                         else:
                             old_coverage = int(source_row['coverage'])
@@ -574,7 +518,7 @@ def compare_consensus(sample: Sample,
         elif is_main and scenarios_reported & Scenarios.MAIN_CONSENSUS_CHANGED:
             scenarios[Scenarios.MAIN_CONSENSUS_CHANGED].append('.')
         elif (not is_main and
-                scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
+              scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
             scenarios[Scenarios.OTHER_CONSENSUS_CHANGED].append('.')
         else:
             diffs.append('{}:{} consensus: {} {} {}'.format(run_name,
@@ -593,6 +537,11 @@ def filter_consensus_sequences(files, use_denovo):
     coverage_scores = files.coverage_scores
     if not (region_consensus and coverage_scores):
         return {}
+
+    if MICALL_VERSION == '7.14':
+        coverage_scores = [row
+                           for row in coverage_scores
+                           if row['project'] != 'SARSCOV2']
 
     covered_regions = {(row.get('seed'), row.get('region'))
                        for row in coverage_scores
@@ -694,11 +643,13 @@ def main():
         scenario_summaries = defaultdict(list)
         i = 0
         all_consensus_distances = []
+        report_limit = 1000
         report_count = 0
         for i, (report, scenarios, consensus_distances) in enumerate(results, 1):
             if report:
                 report_count += 1
-                if report_count > 100:
+                if report_count > report_limit:
+                    print(f'More than {report_limit} reports, skipping the rest.')
                     break
             print(report, end='')
             all_consensus_distances.extend(consensus_distances)

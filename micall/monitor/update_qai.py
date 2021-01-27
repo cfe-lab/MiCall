@@ -187,8 +187,8 @@ def build_review_decisions(coverage_file, collated_counts_file, cascade_file,
         tags = sample_tags[coverage['sample']]
         project_map = sequencing_map.get(tags)
         if project_map is None:
-            raise KeyError("No sequencing found with tags '%s'. Are tagged "
-                           "layouts missing?" % tags)
+            raise KeyError("No sequencing found with tags '%s' for %s. Are "
+                           "tagged layouts missing?" % (tags, coverage_file.name))
         sequencing = project_map.get(coverage['project'])
         if sequencing is not None:
             score = int(coverage['on.score'])
