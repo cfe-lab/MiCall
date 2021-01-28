@@ -41,7 +41,8 @@ DOWNLOADED_RESULTS = [
     'nuc_mutations_csv', 'resistance_fail_csv', 'resistance_consensus_csv',
     'wg_fasta', 'mid_fasta', 'contigs_csv', 'alignment_svg', 'alignment_png',
     'assembly_fasta', 'genome_coverage_csv', 'genome_coverage_svg',
-    'read_entropy_csv', 'table_precursor_csv', 'aligned_table_precursor_csv'
+    'read_entropy_csv', 'table_precursor_csv', 'aligned_table_precursor_csv',
+    'outcome_summary_csv'
 ]
 
 # noinspection PyArgumentList
