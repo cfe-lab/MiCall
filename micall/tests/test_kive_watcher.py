@@ -73,8 +73,10 @@ def create_mock_open_kive():
 def mock_containerruns_get(path):
     if 'dataset_list' in str(path):
         return [dict(dataset='/datasets/111/',
+                     argument_type='I',
                      argument_name='bad_cycles_csv'),
                 dict(dataset='/datasets/112/',
+                     argument_type='O',
                      argument_name='amino_csv')]
     return dict(state='C')
 
@@ -1690,8 +1692,10 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state
         [dict(dataset='/datasets/111/',
+              argument_type='O',
               argument_name='amino_csv'),
          dict(dataset='/datasets/112/',
+              argument_type='O',
               argument_name='nuc_csv')]]  # run datasets
     mock_session.get.return_value.json.side_effect = [
         dict(url='/datasets/111/', id=111),
@@ -1741,8 +1745,10 @@ def test_skip_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeline
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state
         [dict(dataset='/datasets/111/',
+              argument_type='O',
               argument_name='amino_csv'),
          dict(dataset='/datasets/112/',
+              argument_type='O',
               argument_name='nuc_csv')]]  # run datasets
     mock_session.get.return_value.json.side_effect = [
         dict(url='/datasets/111/', id=111)]
@@ -1819,13 +1825,17 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state for main run
         [dict(dataset='/datasets/111/',
+              argument_type='O',
               argument_name='amino_csv'),
          dict(dataset='/datasets/112/',
+              argument_type='O',
               argument_name='nuc_csv')],  # run datasets
         dict(id=108, state='C'),  # refresh run state for midi run
         [dict(dataset='/datasets/113/',
+              argument_type='O',
               argument_name='amino_csv'),
          dict(dataset='/datasets/114/',
+              argument_type='O',
               argument_name='nuc_csv')]]  # run datasets
     mock_session.get.reset_mock(side_effect=True)
     mock_session.get.return_value.json.side_effect = [
@@ -1897,18 +1907,24 @@ def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kiv
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state for main run
         [dict(dataset='/datasets/111/',
+              argument_type='O',
               argument_name='amino_csv'),
          dict(dataset='/datasets/121/',
+              argument_type='O',
               argument_name='nuc_csv')],  # run datasets
         dict(id=108, state='C'),  # refresh run state for midi run
         [dict(dataset='/datasets/112/',
+              argument_type='O',
               argument_name='amino_csv'),
          dict(dataset='/datasets/122/',
+              argument_type='O',
               argument_name='nuc_csv')],  # run datasets
         dict(id=109, state='C'),  # refresh run state for other main run
         [dict(dataset='/datasets/113/',
+              argument_type='O',
               argument_name='amino_csv'),
          dict(dataset='/datasets/123/',
+              argument_type='O',
               argument_name='nuc_csv')]]  # run datasets
     mock_session.get.reset_mock(side_effect=True)
     mock_session.get.return_value.json.side_effect = [
@@ -2142,8 +2158,10 @@ def test_fetch_run_status_main(raw_data_with_two_runs,
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(state='C'),  # run state refresh
         [dict(argument_name='coord_ins_csv',
+              argument_type='O',
               dataset='/datasets/110/'),
          dict(argument_name='nuc_csv',
+              argument_type='O',
               dataset='/datasets/111/')]]  # run datasets
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_coord_ins_path = expected_scratch / "2000A-V3LOOP_S2/coord_ins.csv"
@@ -2181,9 +2199,11 @@ def test_fetch_run_status_main_and_resistance(raw_data_with_two_runs,
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(state='C'),  # main run refresh
         [dict(argument_name='nuc_csv',
+              argument_type='O',
               dataset='/datasets/110/')],  # main run datasets
         dict(state='C'),  # resistance run refresh
         [dict(argument_name='resistance_csv',
+              argument_type='O',
               dataset='/datasets/112/')]]  # resistance run datasets
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_nuc_path = expected_scratch / "2000A-V3LOOP_S2/nuc.csv"
@@ -2225,9 +2245,11 @@ def test_fetch_run_status_main_and_midi(raw_data_with_hcv_pair,
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(state='C'),  # main run refresh
         [dict(argument_name='nuc_csv',
+              argument_type='O',
               dataset='/datasets/110/')],  # main outputs
         dict(state='C'),  # midi run refresh
         [dict(argument_name='nuc_csv',
+              argument_type='O',
               dataset='/datasets/111/')]]  # midi outputs
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_main_nuc_path = expected_scratch / "2130A-HCV_S15/nuc.csv"
@@ -2337,9 +2359,11 @@ def test_folder_completed(raw_data_with_two_samples, mock_open_kive, default_con
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
+              argument_type='O',
               argument_name='resistance_csv')],  # run datasets
         dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
+              argument_type='O',
               argument_name='resistance_csv')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
@@ -2419,14 +2443,18 @@ def test_folder_completed_except_denovo(raw_data_with_two_samples, mock_open_kiv
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=151, state='C'),  # refresh run state for denovo main
         [dict(dataset='/datasets/161/',
+              argument_type='O',
               argument_name='amino_csv'),
          dict(dataset='/datasets/171/',
+              argument_type='O',
               argument_name='nuc_csv')],  # run datasets
         dict(id=152, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/162/',
+              argument_type='O',
               argument_name='resistance_csv')],  # run datasets
         dict(id=153, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/163/',
+              argument_type='O',
               argument_name='resistance_csv')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
@@ -2483,9 +2511,11 @@ def test_folder_completed_with_fasta(raw_data_with_two_samples, mock_open_kive, 
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
+              argument_type='O',
               argument_name='wg_fasta')],  # run datasets
         dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
+              argument_type='O',
               argument_name='wg_fasta')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
@@ -2548,9 +2578,11 @@ def test_folder_completed_with_svg(raw_data_with_two_samples, mock_open_kive, de
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
+              argument_type='O',
               argument_name='alignment_svg')],  # run datasets
         dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
+              argument_type='O',
               argument_name='alignment_svg')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     expected_alignment1_path = results_path / "alignment" / "2110A-V3LOOP_S13_alignment.svg"
@@ -2593,9 +2625,11 @@ def test_folder_not_finished(raw_data_with_two_samples, mock_open_kive, default_
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
+              argument_type='O',
               argument_name='resistance_csv')],  # run datasets
         dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
+              argument_type='O',
               argument_name='resistance_csv')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
@@ -2727,6 +2761,7 @@ def test_folder_failed_sample(raw_data_with_two_samples, mock_open_kive, default
         dict(state='F', id=107),  # main run for 2110 fails
         dict(state='C', id=152),  # resistance run for 2120 complete
         [dict(argument_name='resistance_csv',
+              argument_type='O',
               dataset='/datasets/167/')]]  # outputs for resistance run
     run_path = base_calls / "../../.."
     results_path = run_path / "Results/version_0-dev"

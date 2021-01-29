@@ -946,7 +946,8 @@ class KiveWatcher:
                 for output_name in DOWNLOADED_RESULTS:
                     matches = [run_dataset
                                for run_dataset in run_datasets
-                               if run_dataset['argument_name'] == output_name]
+                               if (run_dataset['argument_name'] == output_name and
+                                   run_dataset['argument_type'] == 'O')]
                     if not matches:
                         continue
                     filename = get_output_filename(output_name)
