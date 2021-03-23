@@ -14,6 +14,6 @@
     - name: Resistance
       link: /design/resistance.html
     - name: Genome Coverage
-      link: /genome_coverage.md
+      link: /genome_coverage.html
 - name: GitHub
   link: https://github.com/cfe-lab/MiCall
