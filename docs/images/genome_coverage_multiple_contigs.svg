@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="970.0" height="419.0" viewBox="0 -419.0 970.0 419.0">
+<defs>
+</defs>
+<g transform="translate(0 -404.0)">
+<g transform="translate(0.0 0)">
+<rect x="0.09980450663648524" y="-10" width="33.93353225640498" height="10" fill="darkgrey" stroke="darkgrey" />
+<g transform="translate(17.06657063483898 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">5'</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="34.13314126967795" y="-10" width="57.08817779606956" height="10" fill="#1f77b4" stroke="#1f77b4" />
+<g transform="translate(62.67723016771273 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">C</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="91.321123572384" y="-10" width="57.38759131597901" height="10" fill="#ff7f0e" stroke="#ff7f0e" />
+<g transform="translate(120.0149192303735 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">E1</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="148.8085193949995" y="-10" width="108.58730322049593" height="10" fill="#2ca02c" stroke="#2ca02c" />
+<g transform="translate(203.10217100524747 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">E2</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="257.4956271221319" y="-10" width="18.76324724765925" height="10" fill="#d62728" stroke="#d62728" />
+<g transform="translate(266.87725074596153 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">p7</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="276.35867887642763" y="-10" width="64.87292931371542" height="10" fill="#9467bd" stroke="#9467bd" />
+<g transform="translate(308.79514353328534 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">NS2</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="341.3314126967795" y="-10" width="188.83012655623003" height="10" fill="#8c564b" stroke="#8c564b" />
+<g transform="translate(435.74647597489457 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">NS3</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="546.4296738347567" y="-10" width="78.04712418973145" height="10" fill="#7f7f7f" stroke="#7f7f7f" />
+<g transform="translate(585.4532359296225 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">NS4b</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="530.2613437596461" y="-10" width="16.068525568474115" height="10" fill="#e377c2" stroke="#e377c2" />
+<g transform="translate(538.2956065438832 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">NS4a</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="624.5766025311246" y="-10" width="134.03745241279967" height="10" fill="#bcbd22" stroke="#bcbd22" />
+<g transform="translate(691.5953287375245 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">NS5a</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="758.7138594505608" y="-10" width="176.85358575985185" height="10" fill="#17becf" stroke="#17becf" />
+<g transform="translate(847.1406523304868 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">NS5b</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="935.6672497170491" y="-10" width="27.047021298487493" height="10" fill="darkgrey" stroke="darkgrey" />
+<g transform="translate(949.1907603662928 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">3'</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -374.0)">
+<g transform="translate(0.0 0)">
+<path d="M628.768391809857,-20.0 L705.4045683712317,-20.0" stroke="black" />
+<circle cx="670.5864800905443" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M712.4045683712317,-20.0 L705.4045683712317,-23.5 L705.4045683712317,-16.5 L712.4045683712317,-20.0" fill="black" />
+<text x="670.5864800905443" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">2.1</text>
+</g>
+</g>
+<g transform="translate(0 -344.0)">
+<g transform="translate(0.0 0)">
+<path d="M628.768391809857,-0.0 L705.4045683712317,-0.0" stroke="black" />
+<circle cx="670.5864800905443" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M712.4045683712317,-0.0 L705.4045683712317,-3.5 L705.4045683712317,3.5 L712.4045683712317,-0.0" fill="black" />
+<text x="670.5864800905443" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">2.1</text>
+</g>
+</g>
+<g transform="translate(0.0 -324.0)">
+<rect x="628.768391809857" y="-5.126760563380282" width="1.5968721061837639" height="1.1267605633802817" fill="#7ad151" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="630.3652639160408" y="-5.267605633802817" width="1.0978495730013376" height="1.267605633802817" fill="#75d054" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="631.4631134890421" y="-5.408450704225352" width="1.2974585862743082" height="1.4084507042253522" fill="#70cf57" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="632.7605720753164" y="-5.619718309859155" width="1.4970675995472786" height="1.619718309859155" fill="#69cd5b" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="634.2576396748636" y="-5.830985915492958" width="0.29941351990945575" height="1.8309859154929577" fill="#65cb5e" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="634.5570531947732" y="-6.04225352112676" width="0.5988270398189115" height="2.0422535211267605" fill="#60ca60" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="635.155880234592" y="-6.253521126760564" width="1.696676612820249" height="2.2535211267605635" fill="#5cc863" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="636.8525568474123" y="-6.535211267605634" width="0.39921802654594096" height="2.535211267605634" fill="#58c765" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="637.2517748739582" y="-6.816901408450704" width="1.0978495730013376" height="2.8169014084507045" fill="#54c568" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="638.3496244469596" y="-7.169014084507042" width="2.5949171725486164" height="3.1690140845070425" fill="#50c46a" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="640.9445416195082" y="-7.52112676056338" width="1.8962856260932195" height="3.5211267605633805" fill="#4cc26c" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="642.8408272456014" y="-7.943661971830986" width="1.7964811194567343" height="3.943661971830986" fill="#48c16e" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="644.6373083650582" y="-8.366197183098592" width="1.4970675995472786" height="4.366197183098592" fill="#44bf70" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="646.1343759646054" y="-8.859154929577464" width="1.9960901327297047" height="4.859154929577465" fill="#40bd72" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="648.1304660973351" y="-9.352112676056338" width="1.4970675995472786" height="5.352112676056338" fill="#3dbc74" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="649.6275336968824" y="-9.985915492957748" width="8.18396954419179" height="5.985915492957747" fill="#3aba76" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="657.8115032410742" y="-10.619718309859156" width="2.5949171725486164" height="6.619718309859155" fill="#37b878" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="660.4064204136229" y="-11.3943661971831" width="2.6947216791851014" height="7.394366197183099" fill="#34b679" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="663.1011420928079" y="-12.169014084507042" width="5.9882703981891146" height="8.169014084507042" fill="#31b57b" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="669.089412490997" y="-13.014084507042254" width="7.385533491099908" height="9.014084507042254" fill="#2fb47c" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="676.474945982097" y="-14.0" width="20.659532873752443" height="10.0" fill="#2db27d" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="697.1344788558494" y="-12.873239436619718" width="4.990225331824262" height="8.873239436619718" fill="#2fb47c" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="702.1247041876736" y="-11.95774647887324" width="2.09589463936619" height="7.95774647887324" fill="#32b67a" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="704.2205988270398" y="-11.04225352112676" width="2.6947216791851014" height="7.042253521126761" fill="#35b779" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="706.9153205062249" y="-10.267605633802816" width="0.4990225331824262" height="6.267605633802817" fill="#38b977" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="707.4143430394074" y="-9.56338028169014" width="2.6947216791851014" height="5.563380281690141" fill="#3dbc74" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="710.1090647185924" y="-8.859154929577464" width="0.8982405597283671" height="4.859154929577465" fill="#40bd72" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="711.0073052783208" y="-8.366197183098592" width="0.6986315464553967" height="4.366197183098592" fill="#44bf70" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="711.7059368247762" y="-7.802816901408451" width="0.4990225331824262" height="3.802816901408451" fill="#4ac16d" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="712.2049593579586" y="-7.23943661971831" width="0.19960901327297048" height="3.23943661971831" fill="#50c46a" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="712.4045683712317" y="-6.816901408450704" width="0.09980450663648524" height="2.8169014084507045" fill="#54c568" fill-opacity="1.0" shape-rendering="crispEdges" />
+</g>
+<g transform="translate(0 -318.0)">
+<g transform="translate(0.0 0)">
+<rect x="628.768391809857" y="-10" width="83.63617656137467" height="10" fill="lightgrey" stroke="lightgrey" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="0.09980450663648524" y="-10" width="962.6144665089001" height="10" fill="none" stroke="none" />
+<g transform="translate(481.40703776108654 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">2-HCV-1a - depth 150</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -298.0)">
+<g transform="translate(0.0 0)">
+<rect x="628.768391809857" y="-10" width="83.63617656137467" height="10" fill="lightgrey" stroke="lightgrey" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="0.09980450663648524" y="-10" width="962.6144665089001" height="10" fill="none" stroke="none" />
+<g transform="translate(481.40703776108654 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">contig-2-HCV-1a</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -278.0)">
+<g transform="translate(0.0 0)">
+<rect x="0.09980450663648524" y="-10" width="63.176252700895155" height="10" fill="darkgrey" stroke="darkgrey" />
+<g transform="translate(31.687930857084066 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">5' LTR</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="78.74575573618685" y="-10" width="149.70675995472786" height="10" fill="lightblue" stroke="lightblue" />
+<g transform="translate(153.59913571355077 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">gag</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="503.01471344788564" y="-10" width="57.4873958226155" height="10" fill="steelblue" stroke="steelblue" />
+<g transform="translate(531.7584113591934 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">vif</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="836.2619611071099" y="-10" width="8.982405597283673" height="10" fill="plum" stroke="plum" />
+<g transform="translate(840.7531639057518 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">tat</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="877.8804403745241" y="-10" width="61.67918510134791" height="10" fill="mediumaquamarine" stroke="mediumaquamarine" />
+<g transform="translate(908.7200329251981 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">nef</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -258.0)">
+<g transform="translate(0.0 0)">
+<rect x="581.9600781973454" y="-10" width="21.358164420207913" height="10" fill="plum" stroke="plum" />
+<g transform="translate(592.6391604074494 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">tat</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="604.915114723737" y="-10" width="24.55190863257542" height="10" fill="red" stroke="red" />
+<g transform="translate(617.1910690400248 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">vpu</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="836.2619611071099" y="-10" width="27.346434818396915" height="10" fill="yellowgreen" stroke="yellowgreen" />
+<g transform="translate(849.9351785163083 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">rev</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="906.8237472991049" y="-10" width="63.176252700895134" height="10" fill="darkgrey" stroke="darkgrey" />
+<g transform="translate(938.4118736495525 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">3' LTR</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -238.0)">
+<g transform="translate(0.0 0)">
+<rect x="208.09239633707173" y="-10" width="300.5113694824571" height="10" fill="orange" stroke="orange" />
+<g transform="translate(358.34808107830025 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">pol</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="554.713447885585" y="-10" width="28.84350241794425" height="10" fill="turquoise" stroke="turquoise" />
+<g transform="translate(569.135199094557 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">vpr</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="595.8329046198169" y="-10" width="7.485337997736451" height="10" fill="yellowgreen" stroke="yellowgreen" />
+<g transform="translate(599.5755736186851 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">rev</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="621.2830538121207" y="-10" width="256.497582055767" height="10" fill="salmon" stroke="salmon" />
+<g transform="translate(749.5318448400042 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">env</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -218.0)">
+<g transform="translate(0.0 0)">
+<rect x="224.75974894536475" y="-10" width="29.641938471036127" height="10" fill="orange" stroke="orange" />
+<g transform="translate(239.5807181808828 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">PR</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="254.40168741640088" y="-10" width="131.74194876016054" height="10" fill="darkorange" stroke="darkorange" />
+<g transform="translate(320.27266179648115 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">RT</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="422.0732585656961" y="-10" width="86.23109373392322" height="10" fill="orange" stroke="orange" />
+<g transform="translate(465.1888054326577 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">INT</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="709.5102376787736" y="-10" width="10.77888671674043" height="10" fill="salmon" stroke="salmon" />
+<g transform="translate(714.8996810371439 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">V3</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="774.1835579792161" y="-10" width="103.29766436876218" height="10" fill="salmon" stroke="salmon" />
+<g transform="translate(825.8323901635972 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">GP41</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -188.0)">
+<g transform="translate(0.0 0)">
+<path d="M256.5973865624035,-20.0 L336.1278938162363,-20.0" stroke="black" />
+<circle cx="299.8626401893199" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M343.1278938162363,-20.0 L336.1278938162363,-23.5 L336.1278938162363,-16.5 L343.1278938162363,-20.0" fill="black" />
+<text x="299.8626401893199" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1.1</text>
+</g>
+<g transform="translate(0.0 0)">
+<path d="M704.3204033336764,-20.0 L729.1580409507152,-20.0" stroke="black" />
+<circle cx="720.2392221421958" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M736.1580409507152,-20.0 L729.1580409507152,-23.5 L729.1580409507152,-16.5 L736.1580409507152,-20.0" fill="black" />
+<text x="720.2392221421958" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">3.1</text>
+</g>
+</g>
+<g transform="translate(0 -158.0)">
+<g transform="translate(0.0 0)">
+<path d="M256.5973865624035,-0.0 L336.1278938162363,-0.0" stroke="black" />
+<circle cx="299.8626401893199" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M343.1278938162363,-0.0 L336.1278938162363,-3.5 L336.1278938162363,3.5 L343.1278938162363,-0.0" fill="black" />
+<text x="299.8626401893199" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1.1</text>
+</g>
+</g>
+<g transform="translate(0.0 -138.0)">
+<rect x="256.5973865624035" y="-4.775193798449612" width="0.19960901327297048" height="0.7751937984496124" fill="#90d743" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="256.7969955756765" y="-4.930232558139535" width="0.19960901327297048" height="0.9302325581395349" fill="#86d549" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="256.9966045889495" y="-5.0852713178294575" width="0.19960901327297048" height="1.0852713178294573" fill="#81d34d" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="257.19621360222243" y="-5.24031007751938" width="0.4990225331824262" height="1.2403100775193798" fill="#7ad151" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="257.69523613540485" y="-5.550387596899225" width="0.8982405597283671" height="1.550387596899225" fill="#70cf57" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="258.59347669513323" y="-5.782945736434108" width="0.4990225331824262" height="1.7829457364341086" fill="#69cd5b" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="259.09249922831566" y="-6.015503875968992" width="0.8982405597283671" height="2.0155038759689923" fill="#65cb5e" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="259.99073978804404" y="-6.248062015503876" width="0.39921802654594096" height="2.248062015503876" fill="#60ca60" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="260.38995781459" y="-6.48062015503876" width="1.2974585862743082" height="2.4806201550387597" fill="#5cc863" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="261.68741640086427" y="-6.790697674418604" width="1.0978495730013376" height="2.7906976744186047" fill="#58c765" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="262.7852659738656" y="-7.10077519379845" width="0.7984360530918819" height="3.10077519379845" fill="#54c568" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="263.5837020269575" y="-7.565891472868217" width="1.7964811194567343" height="3.565891472868217" fill="#50c46a" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="265.38018314641425" y="-8.031007751937985" width="0.7984360530918819" height="4.0310077519379846" fill="#4ac16d" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="266.1786191995061" y="-8.496124031007753" width="1.197654079637823" height="4.496124031007752" fill="#46c06f" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="267.37627327914396" y="-8.96124031007752" width="2.2955036526391606" height="4.961240310077519" fill="#42be71" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="269.6717769317831" y="-9.503875968992247" width="1.3972630929107934" height="5.503875968992248" fill="#40bd72" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="271.0690400246939" y="-10.124031007751938" width="2.495112665912131" height="6.124031007751938" fill="#3dbc74" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="273.564152690606" y="-10.744186046511627" width="1.4970675995472786" height="6.7441860465116275" fill="#3aba76" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="275.0612202901533" y="-11.441860465116278" width="3.293548719004013" height="7.441860465116279" fill="#37b878" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="278.35476900915734" y="-12.217054263565892" width="6.886510957917482" height="8.217054263565892" fill="#34b679" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="285.2412799670748" y="-13.069767441860465" width="3.1937442123675277" height="9.069767441860465" fill="#31b57b" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="288.43502417944234" y="-14.0" width="41.11945673423192" height="10.0" fill="#2eb37c" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="329.55448091367424" y="-12.992248062015504" width="2.09589463936619" height="8.992248062015504" fill="#31b57b" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="331.6503755530404" y="-12.062015503875969" width="2.195699146002675" height="8.062015503875969" fill="#34b679" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="333.84607469904313" y="-11.131782945736434" width="1.3972630929107934" height="7.131782945736434" fill="#38b977" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="335.2433377919539" y="-10.279069767441861" width="1.0978495730013376" height="6.27906976744186" fill="#3bbb75" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="336.3411873649552" y="-9.503875968992247" width="1.197654079637823" height="5.503875968992248" fill="#40bd72" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="337.53884144459306" y="-8.883720930232558" width="0.6986315464553967" height="4.883720930232558" fill="#44bf70" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="338.23747299104843" y="-8.186046511627907" width="0.6986315464553967" height="4.186046511627907" fill="#4ac16d" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="338.93610453750387" y="-7.643410852713178" width="2.5949171725486164" height="3.643410852713178" fill="#4ec36b" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="341.53102171005247" y="-7.178294573643411" width="0.29941351990945575" height="3.1782945736434107" fill="#54c568" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="341.83043522996195" y="-6.790697674418604" width="0.29941351990945575" height="2.7906976744186047" fill="#58c765" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="342.12984874987137" y="-6.325581395348838" width="0.5988270398189115" height="2.3255813953488373" fill="#5ec962" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="342.72867578969027" y="-5.937984496124031" width="0.19960901327297048" height="1.937984496124031" fill="#67cc5c" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="342.9282848029633" y="-5.705426356589147" width="0.19960901327297048" height="1.7054263565891472" fill="#6ccd5a" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="343.1278938162362" y="-5.317829457364341" width="0.09980450663648524" height="1.317829457364341" fill="#77d153" fill-opacity="1.0" shape-rendering="crispEdges" />
+</g>
+<g transform="translate(0 -132.0)">
+<g transform="translate(0.0 0)">
+<rect x="256.5973865624035" y="-10" width="86.53050725383275" height="10" fill="lightgrey" stroke="lightgrey" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="0.09980450663648524" y="-10" width="969.9001954933635" height="10" fill="none" stroke="none" />
+<g transform="translate(485.04990225331824 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">1-HIV1-B-FR-K03455-seed - depth 137</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -112.0)">
+<g transform="translate(0.0 0)">
+<rect x="256.5973865624035" y="-10" width="86.53050725383275" height="10" fill="lightgrey" stroke="lightgrey" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="0.09980450663648524" y="-10" width="969.9001954933635" height="10" fill="none" stroke="none" />
+<g transform="translate(485.04990225331824 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">contig-1-HIV1-B-FR-K03455-seed</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -82.0)">
+<g transform="translate(0.0 0)">
+<path d="M704.3204033336764,-0.0 L729.1580409507152,-0.0" stroke="black" />
+<circle cx="720.2392221421958" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M736.1580409507152,-0.0 L729.1580409507152,-3.5 L729.1580409507152,3.5 L736.1580409507152,-0.0" fill="black" />
+<text x="720.2392221421958" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">3.1</text>
+</g>
+</g>
+<g transform="translate(0.0 -62.0)">
+<rect x="704.3204033336764" y="-9.0" width="0.5988270398189115" height="5.0" fill="#4cc26c" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="704.9192303734953" y="-14.0" width="31.03920156394691" height="10.0" fill="#35b779" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="735.9584319374422" y="-9.0" width="0.29941351990945575" height="5.0" fill="#4cc26c" fill-opacity="1.0" shape-rendering="crispEdges" />
+</g>
+<g transform="translate(0 -56.0)">
+<g transform="translate(0.0 0)">
+<rect x="704.3204033336764" y="-10" width="31.83763761703881" height="10" fill="lightgrey" stroke="lightgrey" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="0.09980450663648524" y="-10" width="969.9001954933635" height="10" fill="none" stroke="none" />
+<g transform="translate(485.04990225331824 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">3-HIV1-B-FR-K03455-seed - depth 100</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -36.0)">
+<g transform="translate(0.0 0)">
+<rect x="704.3204033336764" y="-10" width="31.83763761703881" height="10" fill="lightgrey" stroke="lightgrey" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="0.09980450663648524" y="-10" width="969.9001954933635" height="10" fill="none" stroke="none" />
+<g transform="translate(485.04990225331824 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">contig-3-HIV1-B-FR-K03455-seed</text>
+</g>
+</g>
+</g>
+<g transform="translate(0.0 -16.0)">
+<rect x="709.6100421854101" y="-14.0" width="4.091984772095895" height="10.0" fill="#35b779" fill-opacity="1.0" shape-rendering="crispEdges" />
+<rect x="714.3008539973249" y="-14.0" width="6.0880749048256" height="10.0" fill="#35b779" fill-opacity="1.0" shape-rendering="crispEdges" />
+</g>
+<g transform="translate(0 -10.0)">
+<g transform="translate(0.0 0)">
+<rect x="709.6100421854101" y="-10" width="3.9921802654594103" height="10" fill="lightgrey" stroke="lightgrey" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="714.3008539973249" y="-10" width="5.988270398189115" height="10" fill="lightgrey" stroke="lightgrey" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="0.09980450663648524" y="-10" width="969.9001954933635" height="10" fill="none" stroke="none" />
+<rect x="717.6942072229654" y="-10" width="0.19960901327294778" height="10" fill="lightgreen" stroke="lightgreen" />
+<g transform="translate(485.04990225331824 0)">
+<text x="0" y="-5.0" font-size="10" font-family="monospace" text-anchor="middle" dy="0.5em">HIV1-CON-XX-Consensus-seed - depth 100</text>
+</g>
+</g>
+</g>
+</svg>
