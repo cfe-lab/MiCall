@@ -255,3 +255,4 @@ similar steps to setting up a development workstation. Follow these steps:
 [release]: https://help.github.com/categories/85/articles
 [parse_args]: https://github.com/cfe-lab/MiCall/blame/master/micall_watcher.py
 [Zenodo]: https://doi.org/10.5281/zenodo.2644171
+[can't log in]: https://www.docker.com/blog/registry-v1-api-deprecation/
