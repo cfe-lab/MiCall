@@ -88,7 +88,7 @@ Individual files are described after the list of steps.
   * coverage_maps.tar - binary file &rarr; untar in results/coverage_maps
   * coverage_scores.csv - downloaded - a score for each region based on the
     coverage at key positions.
-* `plot_genome_coverage`: convert genome coverage to a graph
+* `plot_genome_coverage`: convert [genome coverage] to a graph
   * in - genome_coverage.csv
   * genome_coverage.svg
 * `cascade_report`: summarize how many reads made it through each step of the
@@ -110,6 +110,7 @@ Individual files are described after the list of steps.
 [fastq_g2p_design]: http://cfe-lab.github.io/MiCall/design/fastq_g2p
 [remap design]: http://cfe-lab.github.io/MiCall/design/remap
 [resistance design]: http://cfe-lab.github.io/MiCall/design/resistance
+[genome coverage]: genome_coverage.md
 
 ## File descriptions ##
 * aligned.csv and g2p_aligned.csv
