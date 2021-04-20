@@ -201,7 +201,6 @@ class FolderWatcher:
                     is_denovo_main_complete = (
                         denovo_resistance_run['id'] not in self.active_runs
                         or self.fetch_run_status(denovo_resistance_run))
-                # TODO: Put proviral run here
                 proviral_run = sample_watcher.runs.get(PipelineType.PROVIRAL)
                 if proviral_run is None:
                     if 'NFL' not in sample_watcher.sample_group.names[0]:

@@ -395,7 +395,6 @@ def process_folder(item, qai_server, qai_user, qai_password, pipeline_version):
             ## REMAPPED
             else:
                 process_remapped(result_folder, session, run, pipeline_version)
-                pass
 
         except Exception:
             attempt_count += 1
