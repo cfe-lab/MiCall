@@ -706,8 +706,7 @@ class KiveWatcher:
             run = self.run_proviral_pipeline(
                 sample_watcher,
                 folder_watcher,
-                (PipelineType.DENOVO_MAIN,),
-                'MiCall proviral')
+                'Proviral HIVSeqinR')
             return run
         if pipeline_type == PipelineType.RESISTANCE:
             run = self.run_resistance_pipeline(
@@ -849,27 +848,26 @@ class KiveWatcher:
             folder_watcher.batch)
         return run
 
-    def run_proviral_pipeline(self, sample_watcher, folder_watcher, input_pipeline_types, description):
+    def run_proviral_pipeline(self, sample_watcher, folder_watcher, description):
         pipeline_id = self.config.proviral_pipeline_id
         if pipeline_id is None:
             return None
-        main_runs = filter(None,
-                           (sample_watcher.runs.get(pipeline_type)
-                            for pipeline_type in input_pipeline_types))
-        input_dataset_urls = [run_dataset['dataset']
-                              for run in main_runs
-                              for run_dataset in run['datasets']
-                              if run_dataset['argument_name'] in ('conseq_csv', 'contigs_csv')]
-        input_datasets = [self.kive_retry(lambda: self.session.get(url).json())
-                          for url in input_dataset_urls]
-        if len(input_datasets) == 1:
-            input_datasets *= 2
-        input_datasets = sorted(input_datasets, key=lambda x: x['name'])
-        inputs_dict = dict(zip(('conseqs_csv', 'contigs_csv'),
-                               input_datasets))
+        main_run = sample_watcher.runs.get(PipelineType.DENOVO_MAIN)
+        if main_run is None:
+            return None
+        input_dataset_urls = {
+            run_dataset['argument_name']: run_dataset['dataset']
+            for run_dataset in main_run['datasets']
+            if run_dataset['argument_name'] in ('conseq_csv',
+                                                'contigs_csv',
+                                                'cascade_csv')}
+        input_datasets = {
+            argument_name: self.kive_retry(lambda: self.session.get(url).json())
+            for argument_name, url in input_dataset_urls.items()}
+        input_datasets['conseqs_csv'] = input_datasets.pop('conseq_csv')
         run = self.find_or_launch_run(
             pipeline_id,
-            inputs_dict,
+            input_datasets,
             description + ' on ' + sample_watcher.sample_group.enum,
             folder_watcher.batch)
         return run

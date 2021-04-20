@@ -140,7 +140,7 @@ class FolderWatcher:
                     name for name in sample_watcher.sample_group.names
                     if name is not None)
 
-    def poll_sample_runs(self, sample_watcher):
+    def poll_sample_runs(self, sample_watcher: 'SampleWatcher'):
         """ Poll all active runs for a sample.
 
         :param sample_watcher: details about the sample to poll
@@ -203,7 +203,7 @@ class FolderWatcher:
                         or self.fetch_run_status(denovo_resistance_run))
                 proviral_run = sample_watcher.runs.get(PipelineType.PROVIRAL)
                 if proviral_run is None:
-                    if 'NFL' not in sample_watcher.sample_group.names[0]:
+                    if 'NFL' not in sample_watcher.sample_group.project_codes[0]:
                         is_proviral_complete = True
                     else:
                         self.run_pipeline(PipelineType.PROVIRAL,

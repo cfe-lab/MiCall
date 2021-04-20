@@ -1717,6 +1717,71 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
         groups_allowed=['Everyone']))
 
 
+def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
+    pipelines_config = parse_args(argv=['--micall_filter_quality_pipeline_id', '42',
+                                        '--denovo_main_pipeline_id', '43',
+                                        '--proviral_pipeline_id', '145'])
+
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    kive_watcher = KiveWatcher(pipelines_config)
+    kive_watcher.app_urls = {
+        pipelines_config.proviral_pipeline_id: '/containerapps/103'}
+    kive_watcher.app_args = {
+        pipelines_config.proviral_pipeline_id: dict(
+            contigs_csv='/containerargs/104',
+            conseqs_csv='/containerargs/105',
+            cascade_csv='/containerargs/106')}
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = dict(url='/batches/101')
+    folder_watcher.add_run(dict(id=106),
+                           PipelineType.FILTER_QUALITY,
+                           is_complete=True)
+    sample_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2120A',
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                  None),
+                                 ('HIVNFLDNA', None)))
+    folder_watcher.add_run(
+        dict(id=107),
+        PipelineType.DENOVO_MAIN,
+        sample_watcher)
+
+    kive_watcher.check_session()
+    mock_session = kive_watcher.session
+    mock_session.endpoints.containerruns.get.side_effect = [
+        dict(id=107, state='C'),  # refresh run state
+        [dict(dataset='/datasets/111/',
+              argument_type='O',
+              argument_name='contigs_csv'),
+         dict(dataset='/datasets/112/',
+              argument_type='O',
+              argument_name='conseq_csv'),
+         dict(dataset='/datasets/113/',
+              argument_type='O',
+              argument_name='cascade_csv')]]  # run datasets
+    mock_session.get.return_value.json.side_effect = [
+        dict(url='/datasets/111/', id=111),
+        dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/113/', id=113)]
+
+    kive_watcher.poll_runs()
+
+    mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
+        app='/containerapps/103',
+        datasets=[dict(argument='/containerargs/104',
+                       dataset='/datasets/111/'),
+                  dict(argument='/containerargs/105',
+                       dataset='/datasets/112/'),
+                  dict(argument='/containerargs/106',
+                       dataset='/datasets/113/')],
+        name='Proviral HIVSeqinR on 2120A',
+        batch='/batches/101',
+        groups_allowed=['Everyone']))
+
+
 def test_skip_resistance_run(raw_data_with_two_samples, mock_open_kive, pipelines_config):
     pipelines_config.micall_resistance_pipeline_id = None
     base_calls = (raw_data_with_two_samples /
