@@ -777,6 +777,7 @@ class KiveWatcher:
         run_name += ' on ' + trim_name(sample_name)
         sample_info = self.get_sample_info(pipeline_id,
                                            sample_watcher,
+                                           folder_watcher,
                                            group_position)
         if folder_watcher.bad_cycles_dataset is None:
             filter_run_id = folder_watcher.filter_quality_run['id']
@@ -804,6 +805,7 @@ class KiveWatcher:
     def get_sample_info(self,
                         pipeline_id: int,
                         sample_watcher: SampleWatcher,
+                        folder_watcher: FolderWatcher,
                         group_position: int):
         pipeline_args = self.get_kive_arguments(pipeline_id)
         if 'sample_info_csv' not in pipeline_args:
@@ -818,9 +820,11 @@ class KiveWatcher:
         sample_name = trim_name(fastq_name)
         project_code = sample_watcher.sample_group.project_codes[group_position]
         info_file = StringIO()
-        writer = DictWriter(info_file, ['sample', 'project'])
+        writer = DictWriter(info_file, ['sample', 'project', 'run_name'])
         writer.writeheader()
-        writer.writerow(dict(sample=sample_name, project=project_code))
+        writer.writerow(dict(sample=sample_name,
+                             project=project_code,
+                             run_name=folder_watcher.run_name))
         bytes_file = BytesIO(info_file.getvalue().encode('utf8'))
         info_dataset = self.find_or_upload_dataset(
             bytes_file,
