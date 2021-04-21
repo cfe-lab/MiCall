@@ -630,12 +630,17 @@ class KiveWatcher:
     @staticmethod
     def extract_csv(source, target, sample_name, source_count):
         reader = DictReader(source)
-        fieldnames = reader.fieldnames[:]
+        fieldnames = reader.fieldnames
+        if fieldnames is None:
+            # Empty file, nothing to copy.
+            return
+        fieldnames = list(fieldnames)
         has_sample = 'sample' in fieldnames
         if not has_sample:
             fieldnames.insert(0, 'sample')
         writer = DictWriter(target, fieldnames, lineterminator=os.linesep)
         if source_count == 0:
+            # First source file, copy header.
             writer.writeheader()
         for row in reader:
             if not has_sample:
