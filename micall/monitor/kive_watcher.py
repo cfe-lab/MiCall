@@ -6,7 +6,7 @@ import re
 import shutil
 import tarfile
 from collections import namedtuple
-from csv import DictWriter
+from csv import DictWriter, DictReader
 from datetime import datetime, timedelta
 from enum import Enum
 from itertools import count
@@ -625,14 +625,18 @@ class KiveWatcher:
 
     @staticmethod
     def extract_csv(source, target, sample_name, source_count):
-        for i, line in enumerate(source):
-            if i != 0:
-                prefix = sample_name
-            elif source_count == 0:
-                prefix = 'sample'
-            else:
-                continue
-            target.write(prefix + ',' + line)
+        reader = DictReader(source)
+        fieldnames = reader.fieldnames[:]
+        has_sample = 'sample' in fieldnames
+        if not has_sample:
+            fieldnames.insert(0, 'sample')
+        writer = DictWriter(target, fieldnames, lineterminator=os.linesep)
+        if source_count == 0:
+            writer.writeheader()
+        for row in reader:
+            if not has_sample:
+                row['sample'] = sample_name
+            writer.writerow(row)
 
     @staticmethod
     def extract_fasta(source, target, sample_name):
@@ -858,7 +862,8 @@ class KiveWatcher:
         input_dataset_urls = {
             run_dataset['argument_name']: run_dataset['dataset']
             for run_dataset in main_run['datasets']
-            if run_dataset['argument_name'] in ('conseq_csv',
+            if run_dataset['argument_name'] in ('sample_info_csv',
+                                                'conseq_csv',
                                                 'contigs_csv',
                                                 'cascade_csv')}
         input_datasets = {

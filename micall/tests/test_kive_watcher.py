@@ -1,7 +1,7 @@
 import shutil
 import tarfile
 from gzip import GzipFile
-from io import BytesIO
+from io import BytesIO, StringIO
 from pathlib import Path
 from queue import Full
 from tarfile import TarInfo
@@ -1729,6 +1729,7 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
         pipelines_config.proviral_pipeline_id: '/containerapps/103'}
     kive_watcher.app_args = {
         pipelines_config.proviral_pipeline_id: dict(
+            sample_info_csv='/containerargs/103',
             contigs_csv='/containerargs/104',
             conseqs_csv='/containerargs/105',
             cascade_csv='/containerargs/106')}
@@ -1753,7 +1754,10 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
     mock_session = kive_watcher.session
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state
-        [dict(dataset='/datasets/111/',
+        [dict(dataset='/datasets/110/',
+              argument_type='I',
+              argument_name='sample_info_csv'),
+         dict(dataset='/datasets/111/',
               argument_type='O',
               argument_name='contigs_csv'),
          dict(dataset='/datasets/112/',
@@ -1763,6 +1767,7 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
               argument_type='O',
               argument_name='cascade_csv')]]  # run datasets
     mock_session.get.return_value.json.side_effect = [
+        dict(url='/datasets/110/', id=110),
         dict(url='/datasets/111/', id=111),
         dict(url='/datasets/112/', id=112),
         dict(url='/datasets/113/', id=113)]
@@ -1771,7 +1776,9 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
 
     mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
         app='/containerapps/103',
-        datasets=[dict(argument='/containerargs/104',
+        datasets=[dict(argument='/containerargs/103',
+                       dataset='/datasets/110/'),
+                  dict(argument='/containerargs/104',
                        dataset='/datasets/111/'),
                   dict(argument='/containerargs/105',
                        dataset='/datasets/112/'),
@@ -3059,3 +3066,51 @@ def test_collate_mixed_hcv_results(raw_data_with_two_samples, default_config, mo
 
     assert expected_cascade_path.exists()
     assert expected_done_path.exists()
+
+
+def test_collate_csv():
+    source1 = StringIO("""\
+a,b,c
+1,2,3
+_,-,=
+""")
+    source2 = StringIO("""\
+a,b,c
+10,20,30
+""")
+    expected_target = """\
+sample,a,b,c
+E12345,1,2,3
+E12345,_,-,=
+E22222,10,20,30
+"""
+    target = StringIO()
+
+    KiveWatcher.extract_csv(source1, target, 'E12345', source_count=0)
+    KiveWatcher.extract_csv(source2, target, 'E22222', source_count=1)
+
+    assert target.getvalue() == expected_target
+
+
+def test_collate_csv_with_sample_already_filled():
+    source1 = StringIO("""\
+sample,a,b,c
+E12345,1,2,3
+E12345,_,-,=
+""")
+    source2 = StringIO("""\
+sample,a,b,c
+E22222,10,20,30
+""")
+    expected_target = """\
+sample,a,b,c
+E12345,1,2,3
+E12345,_,-,=
+E22222,10,20,30
+"""
+    target = StringIO()
+
+    KiveWatcher.extract_csv(source1, target, 'ignored', source_count=0)
+    KiveWatcher.extract_csv(source2, target, 'ignored', source_count=1)
+
+    assert target.getvalue() == expected_target
