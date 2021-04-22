@@ -23,6 +23,10 @@ PIPELINE_GROUPS = {
     PipelineType.PROVIRAL: PipelineType.PROVIRAL
 }
 
+PIPELINE_GROUP_DEPENDENCIES = {
+    PipelineType.PROVIRAL: PipelineType.DENOVO_MAIN
+}
+
 
 class FolderWatcher:
     def __init__(self, base_calls_folder, runner=None):
@@ -112,6 +116,10 @@ class FolderWatcher:
         return self.is_folder_failed or not self.active_samples
 
     def is_pipeline_group_finished(self, pipeline_group):
+        dependency_group = PIPELINE_GROUP_DEPENDENCIES.get(pipeline_group)
+        if dependency_group is not None and not self.is_pipeline_group_finished(
+                dependency_group):
+            return False
         return not any(
             PIPELINE_GROUPS[pipeline_type] == pipeline_group
             for sample_watchers, pipeline_type in self.active_runs.values())
