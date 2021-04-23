@@ -55,6 +55,72 @@ def main():
         7757)
     hxb2_ref = projects.getReference('HIV1-B-FR-K03455-seed')
 
+    sections_2220_mix1a_1, sections_2220_mix1a_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                    6225,
+                                                                    7757,
+                                                                    projects,
+                                                                    9000
+                                                                    )
+    sections_2220_mix1b_1, sections_2220_mix1b_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                   6225,
+                                                                   7757,
+                                                                   projects,
+                                                                   1000,
+                                                                   mutations = (CodonMutation(7000, 'AAA'),)
+                                                                   )
+    sections_2220_mix2a_1, sections_2220_mix2a_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                    6225,
+                                                                    7757,
+                                                                    projects,
+                                                                    8000
+                                                                    )
+    sections_2220_mix2b_1, sections_2220_mix2b_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                   6225,
+                                                                   7757,
+                                                                   projects,
+                                                                   2000,
+                                                                   mutations = (CodonMutation(7000, 'AAA'),)
+                                                                   )
+    sections_2220_mix3a_1, sections_2220_mix3a_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                    6225,
+                                                                    7757,
+                                                                    projects,
+                                                                    7000
+                                                                    )
+    sections_2220_mix3b_1, sections_2220_mix3b_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                   6225,
+                                                                   7757,
+                                                                   projects,
+                                                                   3000,
+                                                                   mutations = (CodonMutation(7000, 'AAA'),)
+                                                                   )
+    sections_2220_mix4a_1, sections_2220_mix4a_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                    6225,
+                                                                    7757,
+                                                                    projects,
+                                                                    6000
+                                                                    )
+    sections_2220_mix4b_1, sections_2220_mix4b_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                   6225,
+                                                                   7757,
+                                                                   projects,
+                                                                   4000,
+                                                                   mutations = (CodonMutation(7000, 'AAA'),)
+                                                                   )
+    sections_2220_mix5a_1, sections_2220_mix5a_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                    6225,
+                                                                    7757,
+                                                                    projects,
+                                                                    5000
+                                                                    )
+    sections_2220_mix5b_1, sections_2220_mix5b_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                   6225,
+                                                                   7757,
+                                                                   projects,
+                                                                   5000,
+                                                                   mutations = (CodonMutation(7000, 'AAA'),)
+                                                                   )
+
     projects.config['regions']['HXB2-with-deletion'] = dict(
         reference=hxb2_ref[617:928] + hxb2_ref[9358:9652],
         is_nucleotide=True,
@@ -266,8 +332,51 @@ def main():
                    FastqFile('2210A-NFLHIVDNA_S25_L001_R2_001.fastq',
                              '2210',
                              True,
-                             sections_2210_2)]
+                             sections_2210_2),
+                   FastqFile('2220-HIV-mixture10_S26_L001_R1_001.fastq',
+                             '2220',
+                             False,
+                             sections_2220_mix1a_1 + sections_2220_mix1b_1),
+                   FastqFile('2220-HIV-mixture10_S26_L001_R2_001.fastq',
+                             '2220',
+                             True,
+                             sections_2220_mix1a_2 + sections_2220_mix1b_2),
+                   FastqFile('2220-HIV-mixture20_S27_L001_R1_001.fastq',
+                             '2220',
+                             False,
+                             sections_2220_mix2a_1 + sections_2220_mix2b_1),
+                   FastqFile('2220-HIV-mixture20_S27_L001_R2_001.fastq',
+                             '2220',
+                             True,
+                             sections_2220_mix2a_2 + sections_2220_mix2b_2),
+                   FastqFile('2220-HIV-mixture30_S28_L001_R1_001.fastq',
+                             '2220',
+                             False,
+                             sections_2220_mix3a_1 + sections_2220_mix3b_1),
+                   FastqFile('2220-HIV-mixture30_S28_L001_R2_001.fastq',
+                             '2220',
+                             True,
+                             sections_2220_mix3a_2 + sections_2220_mix3b_2),
+                   FastqFile('2220-HIV-mixture40_S29_L001_R1_001.fastq',
+                             '2220',
+                             False,
+                             sections_2220_mix4a_1 + sections_2220_mix4b_1),
+                   FastqFile('2220-HIV-mixture40_S29_L001_R2_001.fastq',
+                             '2220',
+                             True,
+                             sections_2220_mix4a_2 + sections_2220_mix4b_2),
+                   FastqFile('2220-HIV-mixture50_S30_L001_R1_001.fastq',
+                             '2220',
+                             False,
+                             sections_2220_mix5a_1 + sections_2220_mix5b_1),
+                   FastqFile('2220-HIV-mixture50_S30_L001_R2_001.fastq',
+                             '2220',
+                             True,
+                             sections_2220_mix5a_2 + sections_2220_mix5b_2)
+                   ]
     for fastq_file in fastq_files:
+        if not fastq_file.name.startswith('2220-HIV-mixture30'):
+            continue
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1
             for section in fastq_file.sections:

@@ -203,27 +203,32 @@ def denovo(fastq1_path: str,
         check=True)
     iva_out_path = os.path.join(tmp_dir, 'iva_out')
     contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-    iva_args = [IVA, '--fr', joined_path, '-t', '2']
-    if merged_contigs_csv is not None:
-        seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
-        with open(seeds_fasta_path, 'w') as seeds_fasta:
-            SeqIO.write((SeqRecord(Seq(row['contig']), f'seed-{i}', '', '')
-                         for i, row in enumerate(DictReader(merged_contigs_csv))),
-                        seeds_fasta,
-                        'fasta')
-            seeds_size = seeds_fasta.tell()
-        if seeds_size > 0:
-            iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
-    iva_args.append(iva_out_path)
-    try:
-        run(iva_args, check=True, stdout=PIPE, stderr=STDOUT)
-    except CalledProcessError as ex:
-        output = ex.output and ex.output.decode('UTF8')
-        if output != 'Failed to make first seed. Cannot continue\n':
-            logger.warning('iva failed to assemble.', exc_info=True)
-            logger.warning(output)
-        with open(contigs_fasta_path, 'a'):
-            pass
+#    iva_args = [IVA, '--fr', joined_path, '-t', '2']
+    with open(os.path.join(tmp_dir, 'iva.log'), 'w') as log_file:
+        iva_args = [IVA, '-vv', '--fr', joined_path, '-t', '2']
+        if merged_contigs_csv is not None:
+            seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
+            with open(seeds_fasta_path, 'w') as seeds_fasta:
+                SeqIO.write((SeqRecord(Seq(row['contig']), f'seed-{i}', '', '')
+                            for i, row in enumerate(DictReader(merged_contigs_csv))),
+                            seeds_fasta,
+                            'fasta')
+                seeds_size = seeds_fasta.tell()
+            if seeds_size > 0:
+                iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
+        iva_args.append(iva_out_path)
+        try:
+            run(iva_args,
+                check=True,
+                stdout=log_file,
+                stderr=STDOUT)
+        except CalledProcessError as ex:
+            output = ex.output and ex.output.decode('UTF8')
+            if output != 'Failed to make first seed. Cannot continue\n':
+                logger.warning('iva failed to assemble.', exc_info=True)
+                logger.warning(output)
+            with open(contigs_fasta_path, 'a'):
+                pass
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time

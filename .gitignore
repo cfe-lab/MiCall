@@ -35,3 +35,8 @@
 /test_samples.csv
 .vscode
 /docs/_site
+/scripts/*
+/micall/tests/microtest/.Rhistory
+/Results/*
+/SPAdes-3.15.2/*
+/Spades/*
