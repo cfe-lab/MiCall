@@ -202,8 +202,8 @@ def denovo(fastq1_path: str,
          '-o', joined_path],
         check=True)
     spades_out_path = os.path.join(tmp_dir, 'spades_out')
-    contigs_fasta_path = os.path.join(spades_out_path, 'contigs.fasta')
-    spades_args = [SPAdes, '--12', joined_path, '--phred-offset', '33']
+    contigs_fasta_path = os.path.join(spades_out_path, 'scaffolds.fasta')
+    spades_args = [SPAdes, '--12', joined_path, '--cov-cutoff', '20']
     # Setting Phred offset manually is only required for microtests
     if merged_contigs_csv is not None:
         seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
