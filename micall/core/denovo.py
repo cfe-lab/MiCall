@@ -20,6 +20,8 @@ from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
 
+from iva.assembly import Assembly
+
 SPAdes = "Spades/bin/spades.py"
 nucmer = "nucmer"
 delta_filter = "delta-filter"
@@ -232,23 +234,11 @@ def denovo(fastq1_path: str,
         with open(contigs_fasta_path, 'a'):
             pass
 
-    # run nucmer, delta-filter and show-coords to paste contigs together
-    query = contigs_fasta_path
-    ref = contigs_fasta_path
-    delta_out_path = os.path.join(tmp_dir, 'p')
-    nucmer_args = [nucmer, '--maxmatch', '-p', delta_out_path, '-b', '200', query, ref]
-    run(nucmer_args, check=True)
-
-    delta_out_path = os.path.join(tmp_dir, 'p.delta')
-    deltafilter_out_path = os.path.join(tmp_dir, 'p.delta.filter')
-    deltafilter_args = [delta_filter, '-i', '95', '-l', '100', delta_out_path]
-    with open(deltafilter_out_path, 'w') as deltafilter_file:
-        run(deltafilter_args, check=True, stdout=deltafilter_file)
-
-    show_coords_out_path = os.path.join(tmp_dir, 'nucmer.out')
-    show_coords_args = [show_coords, '-dTlro', deltafilter_out_path]
-    with open(show_coords_out_path, 'w') as outfile:
-        run(show_coords_args, check=True, stdout=outfile)
+    spades_assembly = Assembly(contigs_file=contigs_fasta_path)
+    spades_assembly._remove_contained_contigs(list(spades_assembly.contigs.keys()))
+    spades_assembly._merge_overlapping_contigs(list(spades_assembly.contigs.keys()))
+    contigs_fasta_path = os.path.join(spades_out_path, 'finalcontigs.fasta')
+    spades_assembly.write_contigs_to_file(contigs_fasta_path)
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
