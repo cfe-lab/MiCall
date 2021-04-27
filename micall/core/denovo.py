@@ -21,6 +21,9 @@ from Bio.SeqRecord import SeqRecord
 from micall.core.project_config import ProjectConfig
 
 SPAdes = "Spades/bin/spades.py"
+nucmer = "nucmer"
+delta_filter = "delta-filter"
+show_coords = "show-coords"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
                                 'blast_db',
@@ -203,7 +206,7 @@ def denovo(fastq1_path: str,
         check=True)
     spades_out_path = os.path.join(tmp_dir, 'spades_out')
     contigs_fasta_path = os.path.join(spades_out_path, 'scaffolds.fasta')
-    spades_args = [SPAdes, '--12', joined_path, '--cov-cutoff', '20']
+    spades_args = [SPAdes, '--12', joined_path, '--phred-offset', '33', '--cov-cutoff', '20']
     # Setting Phred offset manually is only required for microtests
     if merged_contigs_csv is not None:
         seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
@@ -228,6 +231,24 @@ def denovo(fastq1_path: str,
             logger.warning(output)
         with open(contigs_fasta_path, 'a'):
             pass
+
+    # run nucmer, delta-filter and show-coords to paste contigs together
+    query = contigs_fasta_path
+    ref = contigs_fasta_path
+    delta_out_path = os.path.join(tmp_dir, 'p')
+    nucmer_args = [nucmer, '--maxmatch', '-p', delta_out_path, '-b', '200', query, ref]
+    run(nucmer_args, check=True)
+
+    delta_out_path = os.path.join(tmp_dir, 'p.delta')
+    deltafilter_out_path = os.path.join(tmp_dir, 'p.delta.filter')
+    deltafilter_args = [delta_filter, '-i', '95', '-l', '100', delta_out_path]
+    with open(deltafilter_out_path, 'w') as deltafilter_file:
+        run(deltafilter_args, check=True, stdout=deltafilter_file)
+
+    show_coords_out_path = os.path.join(tmp_dir, 'nucmer.out')
+    show_coords_args = [show_coords, '-dTlro', deltafilter_out_path]
+    with open(show_coords_out_path, 'w') as outfile:
+        run(show_coords_args, check=True, stdout=outfile)
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
