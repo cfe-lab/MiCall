@@ -21,11 +21,9 @@ from Bio.SeqRecord import SeqRecord
 from micall.core.project_config import ProjectConfig
 
 from iva.assembly import Assembly
+from pyfastaq.tasks import deinterleave
 
 SPAdes = "Spades/bin/spades.py"
-nucmer = "nucmer"
-delta_filter = "delta-filter"
-show_coords = "show-coords"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
                                 'blast_db',
@@ -235,6 +233,11 @@ def denovo(fastq1_path: str,
             pass
 
     spades_assembly = Assembly(contigs_file=contigs_fasta_path)
+    reads_prefix = 'reads'
+    reads_1 = reads_prefix + '_1.fa'
+    reads_2 = reads_prefix + '_2.fa'
+    deinterleave(joined_path, reads_1, reads_2, fasta_out=True)
+    spades_assembly._trim_strand_biased_ends(reads_prefix, tag_as_trimmed=True)
     spades_assembly._remove_contained_contigs(list(spades_assembly.contigs.keys()))
     spades_assembly._merge_overlapping_contigs(list(spades_assembly.contigs.keys()))
     contigs_fasta_path = os.path.join(spades_out_path, 'finalcontigs.fasta')
