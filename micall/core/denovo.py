@@ -233,7 +233,7 @@ def denovo(fastq1_path: str,
             pass
 
     spades_assembly = Assembly(contigs_file=contigs_fasta_path)
-    reads_prefix = 'reads'
+    reads_prefix = os.path.join(tmp_dir, 'reads')
     reads_1 = reads_prefix + '_1.fa'
     reads_2 = reads_prefix + '_2.fa'
     deinterleave(joined_path, reads_1, reads_2, fasta_out=True)
