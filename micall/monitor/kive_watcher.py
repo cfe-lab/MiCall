@@ -619,7 +619,10 @@ class KiveWatcher:
                             if output_name.endswith('_fasta'):
                                 self.extract_fasta(source, target, sample_name)
                             else:
-                                self.extract_csv(source, target, sample_name, source_count)
+                                self.extract_csv(source,
+                                                 target,
+                                                 sample_name,
+                                                 source_count)
                             source_count += 1
                     except FileNotFoundError:
                         # Skip the file.
@@ -632,8 +635,8 @@ class KiveWatcher:
         reader = DictReader(source)
         fieldnames = reader.fieldnames
         if fieldnames is None:
-            # Empty file, nothing to copy.
-            return
+            # Empty file, nothing to copy. Raise error to keep source_count at 0.
+            raise FileNotFoundError(f'CSV file {source.name} is empty.')
         fieldnames = list(fieldnames)
         has_sample = 'sample' in fieldnames
         if not has_sample:
