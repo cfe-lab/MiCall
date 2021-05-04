@@ -63,6 +63,7 @@ def build_conseqs(conseqs_file, run, sample_sheet, ok_sample_regions):
     result = []
     ss = sample_sheet
     sequencings = run['sequencing_summary']
+    run_name = run['runname']
     conseqs_csv = csv.DictReader(conseqs_file)
     # ss["Data"] is keyed by (what should be) the FASTQ
     # filename, which looks like
@@ -83,10 +84,15 @@ def build_conseqs(conseqs_file, run, sample_sheet, ok_sample_regions):
     projects = ProjectConfig.loadDefault()
     target_regions = set()  # set([(tags, seed_name)])
     for entry in sequencings:
+        target_project = entry['target_project']
         try:
-            seeds = projects.getProjectSeeds(entry['target_project'])
+            seeds = projects.getProjectSeeds(target_project)
         except KeyError:
-            logger.warning('Failed to load project seeds.', exc_info=True)
+            if target_project != 'Unknown':
+                logger.warning('Failed to load project seeds for %s in %s.',
+                               entry['tag'],
+                               run_name,
+                               exc_info=True)
             seeds = set()
         for seed in seeds:
             target_regions.add((entry['tag'], seed))
@@ -149,10 +155,10 @@ def build_review_decisions(coverage_file, collated_counts_file, cascade_file,
                                  entry['coordinate_region_name']), entry['id'])
                                for entry in project_regions])
     region_map = dict([(entry['name'], entry['id']) for entry in regions])
-    sample_tags = dict(
-        map(itemgetter('filename', 'tags'), sample_sheet['DataSplit']))
-    sample_names = dict(
-        map(itemgetter('tags', 'filename'), sample_sheet['DataSplit']))
+    # noinspection PyTypeChecker
+    sample_tags = dict(map(itemgetter('filename', 'tags'), sample_sheet['DataSplit']))
+    # noinspection PyTypeChecker
+    sample_names = dict(map(itemgetter('tags', 'filename'), sample_sheet['DataSplit']))
 
     counts_map = {}  # {tags: raw, (tags, seed): mapped]}
     # sample,type,count
