@@ -20,10 +20,11 @@ from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
 
-from iva.assembly import Assembly
-from pyfastaq.tasks import deinterleave
+from tempfile import mkstemp
+from shutil import move, copymode
+from os import fdopen, remove
 
-SPAdes = "Spades/bin/spades.py"
+Abyss = "abyss-pe"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
                                 'blast_db',
@@ -90,6 +91,24 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
         mismatches).
     """
     contig_nums = {}  # {contig_name: contig_num}
+
+    # spaces in the contig name will cause errors. Replace by underscores
+    #Create temp file
+    fh, abs_path = mkstemp()
+    with fdopen(fh,'w') as new_file:
+        with open(fasta) as old_file:
+            for line in old_file:
+                if line.startswith('>'):
+                    new_file.write(line.replace(" ", "_"))
+                else:
+                    new_file.write(line)
+    #Copy the file permissions from the old file to the new file
+    copymode(fasta, abs_path)
+    #Remove original file
+    remove(fasta)
+    #Move new file
+    move(abs_path, fasta)
+
     with open(fasta) as f:
         for line in f:
             if line.startswith('>'):
@@ -204,44 +223,26 @@ def denovo(fastq1_path: str,
          '--interleave',
          '-o', joined_path],
         check=True)
-    spades_out_path = os.path.join(tmp_dir, 'spades_out')
-    contigs_fasta_path = os.path.join(spades_out_path, 'scaffolds.fasta')
-    spades_args = [SPAdes, '--12', joined_path, '--phred-offset', '33', '--cov-cutoff', '20']
-    # Setting Phred offset manually is only required for microtests
-    if merged_contigs_csv is not None:
-        seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
-        with open(seeds_fasta_path, 'w') as seeds_fasta:
-            SeqIO.write((SeqRecord(Seq(row['contig']), f'seed-{i}', '', '')
-                         for i, row in enumerate(DictReader(merged_contigs_csv))),
-                        seeds_fasta,
-                        'fasta')
-            seeds_size = seeds_fasta.tell()
-        if seeds_size > 0:
-            spades_args.extend(['--trusted-contigs', seeds_fasta_path])
-    spades_args.extend(['-o', spades_out_path])
+    abyss_out_path = tmp_dir
+    #os.path.join(tmp_dir, 'abyss_out')
+    contigs_fasta_path = os.path.join(abyss_out_path, 'abyss-scaffolds.fa')
+
+    abyss_args = [Abyss, 'name=abyss', 'k=96', f"in='{joined_path}'"]
+    # .format(variable)
+    # Removed additional contigs for now
+    abyss_args.extend(['-C', abyss_out_path])
     try:
-        run(spades_args,
+        run(abyss_args,
             check=True,
             stdout=PIPE,
             stderr=STDOUT)
     except CalledProcessError as ex:
         output = ex.output and ex.output.decode('UTF8')
         if output != 'Failed to make first seed. Cannot continue\n':
-            logger.warning('SPAdes failed to assemble.', exc_info=True)
+            logger.warning('Abyss failed to assemble.', exc_info=True)
             logger.warning(output)
         with open(contigs_fasta_path, 'a'):
             pass
-
-    spades_assembly = Assembly(contigs_file=contigs_fasta_path)
-    reads_prefix = os.path.join(tmp_dir, 'reads')
-    reads_1 = reads_prefix + '_1.fa'
-    reads_2 = reads_prefix + '_2.fa'
-    deinterleave(joined_path, reads_1, reads_2, fasta_out=True)
-    spades_assembly._trim_strand_biased_ends(reads_prefix, tag_as_trimmed=True)
-    spades_assembly._remove_contained_contigs(list(spades_assembly.contigs.keys()))
-    spades_assembly._merge_overlapping_contigs(list(spades_assembly.contigs.keys()))
-    contigs_fasta_path = os.path.join(spades_out_path, 'finalcontigs.fasta')
-    spades_assembly.write_contigs_to_file(contigs_fasta_path)
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
