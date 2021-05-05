@@ -67,7 +67,8 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'outcome_summary_csv',  # proviral outputs
                       'conseqs_primers_csv',
                       'contigs_primers_csv',
-                      'table_precursor_csv']
+                      'table_precursor_csv',
+                      'hivseqinr_results_tar']
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
@@ -706,14 +707,17 @@ class KiveWatcher:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / (archive_name + '.tar')
             try:
+                sample_target_path = output_path / sample_name
+                sample_target_path.mkdir(exist_ok=True)
                 with tarfile.open(source_path) as f:
                     for source_info in f:
                         filename = os.path.basename(source_info.name)
-                        target_path = output_path / sample_name / filename
+                        target_path = sample_target_path / filename
                         assert not target_path.exists(), target_path
                         with f.extractfile(source_info) as source, \
                                 open(target_path, 'wb') as target:
                             shutil.copyfileobj(source, target)
+                remove_empty_directory(sample_target_path)
             except FileNotFoundError:
                 pass
         remove_empty_directory(output_path)
