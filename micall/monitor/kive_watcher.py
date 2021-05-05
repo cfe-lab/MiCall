@@ -591,6 +591,12 @@ class KiveWatcher:
                                            scratch_path,
                                            results_path)
                 continue
+            if output_name.endswith('_tar'):
+                self.extract_archive(folder_watcher,
+                                     scratch_path,
+                                     results_path,
+                                     output_name)
+                continue
             if output_name == 'alignment_svg':
                 self.move_alignment_plot(folder_watcher,
                                          '.svg',
@@ -676,6 +682,41 @@ class KiveWatcher:
             except FileNotFoundError:
                 pass
         remove_empty_directory(coverage_path)
+
+    @staticmethod
+    def extract_archive(folder_watcher: FolderWatcher,
+                        scratch_path: Path,
+                        results_path: Path,
+                        output_name: str):
+        """ Extract contents of tar files.
+
+        There will be a folder named after the output name, with a subfolder
+        for each sample.
+        :param folder_watcher: holds a list of all samples to extract from
+        :param scratch_path: parent folder of all sample working files
+        :param results_path: parent folder to extract into
+        :param output_name: the name of tar files to look for with "_tar"
+            instead of ".tar".
+        """
+        assert output_name.endswith('_tar'), output_name
+        archive_name = output_name[:-4]
+        output_path: Path = results_path / archive_name
+        output_path.mkdir(exist_ok=True)
+        for sample_name in folder_watcher.all_samples:
+            sample_name = trim_name(sample_name)
+            source_path = scratch_path / sample_name / (archive_name + '.tar')
+            try:
+                with tarfile.open(source_path) as f:
+                    for source_info in f:
+                        filename = os.path.basename(source_info.name)
+                        target_path = output_path / sample_name / filename
+                        assert not target_path.exists(), target_path
+                        with f.extractfile(source_info) as source, \
+                                open(target_path, 'wb') as target:
+                            shutil.copyfileobj(source, target)
+            except FileNotFoundError:
+                pass
+        remove_empty_directory(output_path)
 
     @staticmethod
     def move_alignment_plot(folder_watcher,
