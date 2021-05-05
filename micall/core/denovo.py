@@ -92,21 +92,17 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
     """
     contig_nums = {}  # {contig_name: contig_num}
 
-    # spaces in the contig name will cause errors. Replace by underscores
-    #Create temp file
+    # spaces and commas in the contig name will cause errors. Replace by underscores
     fh, abs_path = mkstemp()
     with fdopen(fh,'w') as new_file:
         with open(fasta) as old_file:
             for line in old_file:
                 if line.startswith('>'):
-                    new_file.write(line.replace(" ", "_"))
+                    new_file.write(line.replace(" ", "_").replace(",", "_"))
                 else:
                     new_file.write(line)
-    #Copy the file permissions from the old file to the new file
     copymode(fasta, abs_path)
-    #Remove original file
     remove(fasta)
-    #Move new file
     move(abs_path, fasta)
 
     with open(fasta) as f:
