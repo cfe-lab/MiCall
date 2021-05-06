@@ -563,7 +563,8 @@ def process_folder(args):
         args.denovo,
         args.fastq1s,
         args.fastq2s,
-        project_code=args.project_code)
+        project_code=args.project_code,
+        skip_censor=TrimSteps.censor in args.skip)
     process_run(run_info, args)
 
 
@@ -805,7 +806,8 @@ def link_samples(
         is_denovo: bool,
         fastq1s: typing.Sequence[str] = None,
         fastq2s: typing.Sequence[str] = None,
-        project_code: str = None):
+        project_code: str = None,
+        skip_censor=False):
     """ Load the data from a run folder. """
 
     shutil.rmtree(output_path, ignore_errors=True)
@@ -817,8 +819,11 @@ def link_samples(
     sample_groups = []
     run_info_path = os.path.join(run_path, 'RunInfo.xml')
     interop_path = os.path.join(run_path, 'InterOp')
-    if not (os.path.exists(run_info_path) and os.path.exists(interop_path)):
+    if skip_censor:
         read_sizes = None
+    elif not os.path.exists(run_info_path):
+        raise FileNotFoundError(
+            f'Cannot censor without {run_info_path}, use "--skip trim.censor".')
     else:
         read_sizes = parse_read_sizes(run_info_path)
     run_info = RunInfo(sample_groups,
@@ -981,6 +986,10 @@ def summarize_run(run_info):
                         run_info.read_sizes.index2,
                         run_info.read_sizes.read2]
         phix_path = os.path.join(run_info.interop_path, 'ErrorMetricsOut.bin')
+        if not os.path.exists(phix_path):
+            raise FileNotFoundError(
+                f'Cannot censor without {phix_path}, use "--skip trim.censor".')
+
         with open(phix_path, 'rb') as phix, \
                 open(run_info.quality_csv, 'w') as quality:
             records = error_metrics_parser.read_errors(phix)
