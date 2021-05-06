@@ -465,6 +465,8 @@ class KiveWatcher:
                     compress_old_versions(results_path)
                     self.create_batch(folder_watcher)
                     self.upload_filter_quality(folder_watcher)
+                    if folder_watcher.quality_dataset is None:
+                        return None
                     shutil.rmtree(results_path, ignore_errors=True)
                     try:
                         results_zip.unlink()
@@ -1061,11 +1063,20 @@ class KiveWatcher:
                         read_sizes.read2]
         error_path = folder_watcher.run_folder / "InterOp/ErrorMetricsOut.bin"
         quality_csv = StringIO()
-        with error_path.open('rb') as error_file:
-            records = error_metrics_parser.read_errors(error_file)
-            error_metrics_parser.write_phix_csv(quality_csv,
-                                                records,
-                                                read_lengths)
+        # noinspection PyBroadException
+        try:
+            with error_path.open('rb') as error_file:
+                records = error_metrics_parser.read_errors(error_file)
+                error_metrics_parser.write_phix_csv(quality_csv,
+                                                    records,
+                                                    read_lengths)
+        except Exception:
+            logger.error("Finding error metrics in %s",
+                         folder_watcher.run_folder,
+                         exc_info=True)
+            (folder_watcher.run_folder / "errorprocessing").write_text(
+                "Finding error metrics failed.\n")
+            return
         quality_csv_bytes = BytesIO()
         quality_csv_bytes.write(quality_csv.getvalue().encode('utf8'))
         quality_csv_bytes.seek(0)
