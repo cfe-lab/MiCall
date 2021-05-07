@@ -69,14 +69,14 @@ class AsiAlgorithmTest(TestCase):
         aa_seq[50] = ['Y']  # Resistance mutation.
         compared_attrs = ('code', 'score', 'level', 'level_name')
         expected_drugs = [('BIC', 10.0, 2, 'Susceptible'),
+                          ('CAB', 15.0, 3, 'Low-Level Resistance'),
                           ('DTG', 10.0, 2, 'Susceptible'),
                           ('EVG', 15.0, 3, 'Low-Level Resistance'),
                           ('RAL', 15.0, 3, 'Low-Level Resistance')]
         expected_mutation_comments = [
             'H51Y is a rare non-polymorphic accessory mutation selected in '
             'patients receiving RAL and EVG and in vitro by DTG. H51Y '
-            'minimally reduces EVG susceptibility (~2 to 3-fold). It does not '
-            'reduce RAL or DTG susceptibility.']
+            'minimally reduces EVG and possibly CAB susceptibility.']
 
         result = self.asi.interpret(aa_seq, 'IN')
 
@@ -88,6 +88,7 @@ class AsiAlgorithmTest(TestCase):
         aa_seq = [[]] * len(self.asi.stds['IN'])
         compared_attrs = ('code', 'score', 'level', 'level_name')
         expected_drugs = [('BIC', 0.0, 0, 'Sequence does not meet quality-control standards'),
+                          ('CAB', 0.0, 0, 'Sequence does not meet quality-control standards'),
                           ('DTG', 0.0, 0, 'Sequence does not meet quality-control standards'),
                           ('EVG', 0.0, 0, 'Sequence does not meet quality-control standards'),
                           ('RAL', 0.0, 0, 'Sequence does not meet quality-control standards')]

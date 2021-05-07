@@ -220,7 +220,7 @@ def test_trim(tmpdir):
     expected1 = build_fastq(read1_content)
     expected2 = build_fastq(read2_content)
 
-    tmp_path = Path(tmpdir)
+    tmp_path = Path(str(tmpdir))
     fastq1_path = tmp_path / 'read1.fastq'
     fastq2_path = tmp_path / 'read2.fastq'
     trimmed1_path = tmp_path / 'trimmed1.fastq'
@@ -449,6 +449,16 @@ def test_trim(tmpdir):
       # Trimmed to nothing
       '',
       # Trimmed to nothing, because mate was.
+      ),
+     ('happens to match start of primer',
+      'TCGCCGACCTCATGGGGTACATACCGCTCGTCGGCGCCCCTCTTGGAGGC',
+      # HCV-1a                                     ][ Still HCV-1a, start of nCoV-2019_1_RIGHT
+      'GCCTCCAAGAGGGGCGCCGACGAGCGGTATGTACCCCATGAGGTCGGCGA',
+      #    ][ rev(HCV-1a)
+      'TCGCCGACCTCATGGGGTACATACCGCTCGTCGGCGCCCCTCTTGGAGGC',
+      # unchanged
+      'GCCTCCAAGAGGGGCGCCGACGAGCGGTATGTACCCCATGAGGTCGGCGA',
+      # unchanged
       )
      ])
 def test_cut_adapters(tmpdir: str,
@@ -471,11 +481,11 @@ def test_cut_adapters(tmpdir: str,
     GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG
     Reverse complement:
     CTGTCTCTTATACACATCTCCGAGCCCACGAGAC
-    Left primer:
+    Left primer nCoV-2019_1_LEFT:
     ACCAACCAACTTTCGATCTCTTGT
     Reverse complement:
     ACAAGAGATCGAAAGTTGGTTGGT
-    Right primer (matches reverse complement of reference):
+    Right primer nCoV-2019_1_RIGHT (matches reverse complement of reference):
     CATCTTTAAGATGTTGACGTGCCTC
     Reverse complement (matches forward reference):
     GAGGCACGTCAACATCTTAAAGATG
@@ -490,7 +500,11 @@ def test_cut_adapters(tmpdir: str,
     expected_trimmed1 = build_fastq(expected1)
     expected_trimmed2 = build_fastq(expected2)
 
-    cut_all(fastq1_path, fastq2_path, trimmed1_path, trimmed2_path)
+    cut_all(fastq1_path,
+            fastq2_path,
+            trimmed1_path,
+            trimmed2_path,
+            project_code='SARSCOV2')
 
     assert trimmed1_path.read_text() == expected_trimmed1
     assert trimmed2_path.read_text() == expected_trimmed2

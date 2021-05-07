@@ -6,6 +6,7 @@ See docs/design/remap.md for a detailed description.
 """
 
 import argparse
+import typing
 from collections import Counter, defaultdict
 import csv
 from csv import DictReader, DictWriter
@@ -17,6 +18,8 @@ import shutil
 import sys
 
 # noinspection PyUnresolvedReferences
+from pathlib import Path
+
 from gotoh import align_it
 
 import Levenshtein
@@ -241,34 +244,48 @@ def sam_to_conseqs(samfile,
             debug_reports[key] = ', '.join(sorted(mixtures))
 
     new_conseqs = counts_to_conseqs(refmap, seeds)
-    relevant_conseqs = None
     is_filtering = original_seeds and is_filtered
+    if not is_filtering or len(new_conseqs) <= 1:
+        return new_conseqs
 
+    relevant_conseqs = {}
+    for name in sorted(new_conseqs.keys()):
+        conseq = new_conseqs[name]
+        counts = refmap[name]
+        relevant_conseq = u''
+        for pos, c in enumerate(conseq, 1):
+            pos_counts = sum(counts[pos].values())
+            if pos_counts >= filter_coverage:
+                relevant_conseq += c
+        relevant_conseqs[name] = relevant_conseq
+
+    drop_drifters(relevant_conseqs, original_seeds, distance_report, read_counts)
+    return {seed_name: new_conseqs[seed_name] for seed_name in relevant_conseqs}
+
+
+def drop_drifters(relevant_conseqs: typing.Dict[str, str],
+                  original_seeds: typing.Dict[str, str],
+                  distance_report: typing.Dict[str, dict],
+                  read_counts: typing.Dict[str, int]):
     gap_open_penalty = 15
     gap_extend_penalty = 3
     use_terminal_gap_penalty = 1
-    while is_filtering and len(new_conseqs) > 1:
+    is_filtering = True
+    while is_filtering and len(relevant_conseqs) > 1:
         drifted_seeds = []  # [(count, name)]
-        if relevant_conseqs is None:
-            relevant_conseqs = {}
-            for name in sorted(new_conseqs.keys()):
-                conseq = new_conseqs[name]
-                counts = refmap[name]
-                relevant_conseq = u''
-                for pos, c in enumerate(conseq, 1):
-                    pos_counts = sum(counts[pos].values())
-                    if pos_counts >= filter_coverage:
-                        relevant_conseq += c
-                relevant_conseqs[name] = relevant_conseq
-        for name in sorted(new_conseqs.keys()):
+        for name in sorted(relevant_conseqs.keys()):
             relevant_conseq = relevant_conseqs[name]
             if not relevant_conseq:
                 # None of the coverage was acceptable.
                 drifted_seeds.append((read_counts[name], name))
                 continue
+            if len(relevant_conseq) > 10_000:
+                # Gotoh is too expensive on long sequences, and we only really
+                # need to check drift between HCV genotypes.
+                continue
 
             other_seed = other_dist = seed_dist = None
-            for seed_name in sorted(new_conseqs.keys()):
+            for seed_name in sorted(relevant_conseqs.keys()):
                 seed_ref = original_seeds[seed_name]
                 aligned_seed, aligned_conseq, _score = align_it(seed_ref,
                                                                 relevant_conseq,
@@ -294,9 +311,8 @@ def sam_to_conseqs(samfile,
         if drifted_seeds:
             drifted_seeds.sort()
             dropped_seed = drifted_seeds[0][1]
-            del new_conseqs[dropped_seed]
+            del relevant_conseqs[dropped_seed]
         is_filtering = len(drifted_seeds) > 1
-    return new_conseqs
 
 
 def update_counts(rname,

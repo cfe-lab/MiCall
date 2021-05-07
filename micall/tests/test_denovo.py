@@ -100,7 +100,7 @@ HCV-1a,0.75,HCV-1a,CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 
 
 def test_write_contig_refs_reversed_match(tmpdir, hcv_db):
-    """ Reverse-complemented sequence gets reported with a negative match. """
+    """ If BLAST match is reversed, then reverse the contig before reporting. """
     contigs_fasta = Path(tmpdir) / "contigs.fasta"
     contigs_fasta.write_text("""\
 >foo
@@ -112,7 +112,7 @@ GTCGTCGCCACACACGAGCATGGTGCAGTCCTGGAGCCCTGTCTCCTATGTGATG
     expected_contigs_csv = """\
 ref,match,group_ref,contig
 HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
-HCV-1a,-0.75,HCV-1a,GTCGTCGCCACACACGAGCATGGTGCAGTCCTGGAGCCCTGTCTCCTATGTGATG
+HCV-1a,0.75,HCV-1a,CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """
 
     write_contig_refs(str(contigs_fasta), contigs_csv)

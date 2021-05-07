@@ -72,9 +72,12 @@ class GenReportTest(TestCase):
             mutations={})
         expected_genotypes = [genotype]
         expected_drug_classes = {'C1'}
+        expected_drugs = {'D1'}
 
         reported_genotypes = template.get_reported_genotypes()
         reported_drug_classes = template.get_reported_drug_classes(genotype)
+        reported_drugs = template.get_reported_drugs(genotype)
 
         self.assertEqual(expected_genotypes, reported_genotypes)
         self.assertEqual(expected_drug_classes, reported_drug_classes)
+        self.assertEqual(expected_drugs, reported_drugs)

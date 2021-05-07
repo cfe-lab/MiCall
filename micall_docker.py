@@ -18,7 +18,7 @@ from micall.core.filter_quality import report_bad_cycles
 from micall.core.trim_fastqs import TrimSteps
 from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
 from micall.drivers.sample import Sample
-from micall.drivers.sample_group import SampleGroup
+from micall.drivers.sample_group import SampleGroup, load_git_version
 from micall.monitor.find_groups import find_groups
 from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.pssm_lib import Pssm
@@ -300,17 +300,19 @@ if you want to write the outputs to "/host/output/path/":
 
 
 def get_parser(default_max_active):
-    # noinspection PyTypeChecker
     parser = ArgumentParser(
         description=MAIN_DESCRIPTION,
         formatter_class=MiCallFormatter)
     subparsers = parser.add_subparsers(
         title="Sub-commands (i.e. modes of operation)",
     )
+    default_folder = "micall-results-" + load_git_version()
 
-    commands = [add_folder_parser(subparsers, default_max_active),
-                add_sample_parser(subparsers),
-                add_hcv_sample_parser(subparsers, default_max_active),
+    commands = [add_folder_parser(subparsers, default_max_active, default_folder),
+                add_sample_parser(subparsers, default_folder),
+                add_hcv_sample_parser(subparsers,
+                                      default_max_active,
+                                      default_folder),
                 add_basespace_parser(subparsers, default_max_active)]
     for command_parser in commands:
         command_parser.add_argument(
@@ -332,6 +334,15 @@ def get_parser(default_max_active):
             nargs='*',
             choices=TrimSteps.all,
             help='Skip over some steps to speed up the analysis.')
+        command_parser.add_argument(
+            "--keep_scratch",
+            "-s",
+            action='store_true',
+            help="Don't delete the scratch folder when the run is complete.")
+        command_parser.add_argument(
+            "--project_code",
+            "-p",
+            help="Select primers to trim: HCV or SARSCOV2.")
 
     return parser
 
@@ -356,6 +367,10 @@ def add_basespace_parser(subparsers, default_max_active):
         help="Used by BaseSpace; if invoking manually you will typically not use this.",
         formatter_class=MiCallFormatter,
     )
+    basespace_parser.add_argument('run_folder',
+                                  default='/data',
+                                  nargs='?',
+                                  help='data folder filled in by BaseSpace')
     basespace_parser.add_argument(
         "--max_active",
         "-m",
@@ -367,7 +382,7 @@ def add_basespace_parser(subparsers, default_max_active):
     return basespace_parser
 
 
-def add_folder_parser(subparsers, default_max_max_active):
+def add_folder_parser(subparsers, default_max_max_active, default_results_folder):
     # ####
     # The "process a full directory" subcommand.
     # ####
@@ -390,7 +405,7 @@ def add_folder_parser(subparsers, default_max_max_active):
              "the path *inside* the container; point a bind mount here).  If "
              "this path is not absolute, it will be taken as relative to "
              "--run_folder.",
-        default="micall-results",
+        default=default_results_folder,
     )
     folder_parser.add_argument(
         "--max_active",
@@ -417,7 +432,7 @@ def add_folder_parser(subparsers, default_max_max_active):
     return folder_parser
 
 
-def add_sample_parser(subparsers):
+def add_sample_parser(subparsers, default_results_folder):
     # ####
     # The "process a single sample" subcommand.
     # ####
@@ -460,14 +475,14 @@ def add_sample_parser(subparsers):
              "the path *inside* the container; point a bind mount here).  If "
              "this path is not absolute, it will be taken as relative to "
              "--run_folder.",
-        default="micall-results",
+        default=default_results_folder,
     )
     single_sample_parser.set_defaults(func=single_sample,
                                       max_active=1)
     return single_sample_parser
 
 
-def add_hcv_sample_parser(subparsers, default_max_active):
+def add_hcv_sample_parser(subparsers, default_max_active, default_results_folder):
     # ####
     # The "process a single HCV sample" subcommand.
     # ####
@@ -525,7 +540,7 @@ def add_hcv_sample_parser(subparsers, default_max_active):
              "the path *inside* the container; point a bind mount here).  If "
              "this path is not absolute, it will be taken as relative to "
              "--run_folder.",
-        default="micall-results",
+        default=default_results_folder,
     )
     hcv_sample_parser.set_defaults(func=hcv_sample,
                                    max_active=min(default_max_active, 2))
@@ -534,7 +549,7 @@ def add_hcv_sample_parser(subparsers, default_max_active):
 
 def basespace_run(args):
     resolved_args = MiCallArgs(args)
-    run_info = load_samples(resolved_args.results_folder)
+    run_info = load_samples(resolved_args.run_folder)
     process_run(run_info, args)
     zip_folder(run_info.output_path, 'resistance_reports')
     zip_folder(run_info.output_path, 'coverage_maps')
@@ -547,7 +562,9 @@ def process_folder(args):
         resolved_args.results_folder,
         args.denovo,
         args.fastq1s,
-        args.fastq2s)
+        args.fastq2s,
+        project_code=args.project_code,
+        skip_censor=TrimSteps.censor in args.skip)
     process_run(run_info, args)
 
 
@@ -583,6 +600,8 @@ def process_run(run_info, args):
     collate_samples(run_info)
     if run_summary is not None:
         summarize_samples(run_info, run_summary)
+    if not args.keep_scratch:
+        shutil.rmtree(run_info.scratch_path, ignore_errors=True)
     logger.info('Done.')
 
 
@@ -601,6 +620,7 @@ def single_sample(args):
                     fastq2=resolved_args.fastq2,
                     bad_cycles_csv=resolved_args.bad_cycles_csv,
                     scratch_path=scratch_path)
+    sample.project_code = args.project_code
     sample_group = SampleGroup(sample)
     sample_groups.append(sample_group)
 
@@ -684,6 +704,11 @@ def load_samples(data_path):
             is_denovo = False
         else:
             is_denovo = builder_node['Content'] == 'denovo'
+        primer_node = arg_map.get('Input.project_code')
+        if primer_node is None:
+            project_code = None
+        else:
+            project_code = primer_node['Content']
 
         scratch_path = os.path.join(data_path, 'scratch')
         sample_groups = []
@@ -700,10 +725,12 @@ def load_samples(data_path):
         for main_sample_json, midi_sample_json in zip(main_samples, midi_samples):
             sample_group = SampleGroup(load_sample(main_sample_json,
                                                    data_path,
-                                                   scratch_path),
+                                                   scratch_path,
+                                                   project_code),
                                        load_sample(midi_sample_json,
                                                    data_path,
-                                                   scratch_path))
+                                                   scratch_path,
+                                                   project_code))
             sample_groups.append(sample_group)
 
         # Do we have run_ids for all sample_ids ?
@@ -738,7 +765,10 @@ def load_samples(data_path):
     return run_info
 
 
-def load_sample(sample_json, data_path, scratch_path):
+def load_sample(sample_json,
+                data_path,
+                scratch_path,
+                project_code: typing.Optional[str]):
     if sample_json is None:
         return None
     sample_dir = os.path.join(data_path,
@@ -766,6 +796,7 @@ def load_sample(sample_json, data_path, scratch_path):
                     basespace_id=sample_json['Id'],
                     basespace_href=sample_json['Href'])
     sample.scratch_path = os.path.join(scratch_path, sample.name)
+    sample.project_code = project_code
     return sample
 
 
@@ -774,7 +805,9 @@ def link_samples(
         output_path: str,
         is_denovo: bool,
         fastq1s: typing.Sequence[str] = None,
-        fastq2s: typing.Sequence[str] = None):
+        fastq2s: typing.Sequence[str] = None,
+        project_code: str = None,
+        skip_censor=False):
     """ Load the data from a run folder. """
 
     shutil.rmtree(output_path, ignore_errors=True)
@@ -786,8 +819,11 @@ def link_samples(
     sample_groups = []
     run_info_path = os.path.join(run_path, 'RunInfo.xml')
     interop_path = os.path.join(run_path, 'InterOp')
-    if not (os.path.exists(run_info_path) and os.path.exists(interop_path)):
+    if skip_censor:
         read_sizes = None
+    elif not os.path.exists(run_info_path):
+        raise FileNotFoundError(
+            f'Cannot censor without {run_info_path}, use "--skip trim.censor".')
     else:
         read_sizes = parse_read_sizes(run_info_path)
     run_info = RunInfo(sample_groups,
@@ -841,6 +877,7 @@ def link_samples(
                 fastq1=os.path.join(run_path, forward),
                 fastq2=os.path.join(run_path, reverse),
             )
+            sample.project_code = project_code
             sample_groups.append(SampleGroup(sample, midi_sample=None))
 
     else:  # a sample sheet is specified
@@ -859,10 +896,12 @@ def link_samples(
             if main_file.startswith('Undetermined'):
                 continue
             main_sample = Sample(fastq1=os.path.join(source_folder, main_file))
+            main_sample.project_code = project_code
             if midi_file is None:
                 midi_sample = None
             else:
                 midi_sample = Sample(fastq1=os.path.join(source_folder, midi_file))
+                midi_sample.project_code = project_code
             sample_groups.append(SampleGroup(main_sample, midi_sample))
 
     sample_count = sum(1 for _ in run_info.get_all_samples())
@@ -947,6 +986,10 @@ def summarize_run(run_info):
                         run_info.read_sizes.index2,
                         run_info.read_sizes.read2]
         phix_path = os.path.join(run_info.interop_path, 'ErrorMetricsOut.bin')
+        if not os.path.exists(phix_path):
+            raise FileNotFoundError(
+                f'Cannot censor without {phix_path}, use "--skip trim.censor".')
+
         with open(phix_path, 'rb') as phix, \
                 open(run_info.quality_csv, 'w') as quality:
             records = error_metrics_parser.read_errors(phix)
@@ -1016,17 +1059,19 @@ def zip_folder(parent_path, folder_name):
     source_path = os.path.join(parent_path, folder_name)
     zip_filename = os.path.join(parent_path, folder_name + '.zip')
     with ZipFile(zip_filename, mode='w', compression=ZIP_DEFLATED) as zip_file:
+        dirpath: str
         for dirpath, dirnames, filenames in os.walk(source_path):
             relpath = os.path.relpath(dirpath, source_path)
+            filename: str
             for filename in filenames:
                 zip_file.write(os.path.join(dirpath, filename),
                                os.path.join(folder_name, relpath, filename))
 
 
-def collate_samples(run_info):
+def collate_samples(run_info: RunInfo):
     """ Combine all the sample files into run files.
 
-    :param RunInfo run_info: details of the run and samples
+    :param run_info: details of the run and samples
     """
     filenames = ['remap_counts.csv',
                  'remap_conseq.csv',
@@ -1044,6 +1089,7 @@ def collate_samples(run_info):
                  'g2p_summary.csv',
                  'resistance.csv',
                  'mutations.csv',
+                 'nuc_mutations.csv',
                  'resistance_fail.csv',
                  'resistance_consensus.csv',
                  'cascade.csv',

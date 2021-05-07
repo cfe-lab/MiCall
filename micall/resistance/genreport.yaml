@@ -6,6 +6,7 @@
     # in the report tables.
     INSTI:
       - [BIC, Bictegravir]
+      - [CAB, Cabotegravir]
       - [DTG, Dolutegravir]
       - [EVG, Elvitegravir]
       - [RAL, Raltegravir]

@@ -12,6 +12,8 @@ from micall.core.remap import is_first_read, is_short_read, \
     MixedReferenceSplitter, write_remap_counts, convert_prelim, read_contigs
 from micall.utils.externals import Bowtie2, Bowtie2Build
 
+HXB2_NAME = "HIV1-B-FR-K03455-seed"
+
 
 @fixture(name='projects', scope="session")
 def load_projects():
@@ -459,224 +461,223 @@ class SamToConseqsTest(unittest.TestCase):
 
         self.assertDictEqual(expected_reports, reports)
 
-    def testSeedsConverged(self):
-        # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        sam_file = StringIO(
-            "@SQ\tSN:test\tSN:other\tSN:wayoff\n"
-            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
-            "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
-            "wayoff1\t99\twayoff\t1\t44\t10M\t=\t1\t10\tATGAGGGTAC\tJJJJJJJJJJJJ\n"
-        )
-        seeds = {'test': 'ATGAAGTA',
-                 'other': 'AAGCCGAA',
-                 'wayoff': 'TCATGTAC'}
-        expected_conseqs = {'test': 'ATGAGGAGTA'}
-        expected_distances = {'test': dict(seed_dist=2,
-                                           other_dist=5,
-                                           other_seed='other'),
-                              'other': dict(seed_dist=4,
-                                            other_dist=2,
-                                            other_seed='test'),
-                              'wayoff': dict(seed_dist=4,
-                                             other_dist=3,
-                                             other_seed='test')}
-        distances = {}
 
-        conseqs = remap.sam_to_conseqs(sam_file,
-                                       seeds=seeds,
-                                       original_seeds=seeds,
-                                       is_filtered=True,
-                                       distance_report=distances)
+def test_drop_drifters_seeds_converged():
+    relevant_conseqs = dict(test='ATGAGGAGTA',
+                            other='ATGACCAGTA',
+                            wayoff='ATGAGGGTAC')
+    original_seeds = dict(test='ATGAAGTA',
+                          other='AAGCCGAA',
+                          wayoff='TCATGTAC')
+    read_counts = dict(test=1, other=1, wayoff=1)
+    distance_report = {}
 
-        self.maxDiff = 1000
-        self.assertEqual(expected_conseqs, conseqs)
-        self.assertEqual(expected_distances, distances)
+    expected_seed_names = {'test'}
+    expected_distances = dict(test=dict(seed_dist=2,
+                                        other_dist=5,
+                                        other_seed='other'),
+                              other=dict(seed_dist=4,
+                                         other_dist=2,
+                                         other_seed='test'),
+                              wayoff=dict(seed_dist=4,
+                                          other_dist=3,
+                                          other_seed='test'))
 
-    def testSeedsConvergedWithDifferentAlignment(self):
-        """ Seeds have similar regions, but at different positions.
-        """
-        sam_file = StringIO(
-            "@SQ\tSN:test\tSN:other\n"
-            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
-            "other1\t99\tother\t11\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
-        )
-        seeds = {'test': 'ATGAAGTA',
-                 'other': 'TCTCTCTCTCAAGCCGAA'}
-        expected_conseqs = {'test': 'ATGAGGAGTA'}
+    remap.drop_drifters(relevant_conseqs,
+                        original_seeds,
+                        distance_report,
+                        read_counts)
 
-        conseqs = remap.sam_to_conseqs(sam_file,
-                                       seeds=seeds,
-                                       original_seeds=seeds,
-                                       is_filtered=True)
+    assert distance_report == expected_distances
+    assert set(relevant_conseqs) == expected_seed_names
 
-        self.assertDictEqual(expected_conseqs, conseqs)
 
-    def testSeedsConvergedWithDifferentAlignmentAndGap(self):
-        """ Gaps between areas with coverage.
-        """
-        sam_file = StringIO(
-            "@SQ\tSN:test\tSN:other\n"
-            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
-            "other1\t99\tother\t11\t44\t5M\t=\t1\t5\tATGAC\tJJJJJJJ\n"
-            "other2\t99\tother\t26\t44\t5M\t=\t1\t5\tCAGTA\tJJJJJJJ\n"
-        )
-        seeds = {'test': 'ATGAAGTA',
-                 'other': 'TCTCTCTCTCAAGCTATATATATACGAA'}
-        expected_conseqs = {'test': 'ATGAGGAGTA'}
+def test_drop_drifters_seeds_converged_with_different_alignment():
+    """ Seeds have similar regions, but at different positions.
+    """
+    relevant_conseqs = dict(test='ATGAGGAGTA',
+                            other='ATGACCAGTA')
+    original_seeds = dict(test='ATGAAGTA',
+                          other='TCTCTCTCTCAAGCCGAA')
+    read_counts = dict(test=1, other=1)
+    distance_report = {}
+    expected_seed_names = {'test'}
 
-        conseqs = remap.sam_to_conseqs(sam_file,
-                                       seeds=seeds,
-                                       original_seeds=seeds,
-                                       is_filtered=True)
+    remap.drop_drifters(relevant_conseqs,
+                        original_seeds,
+                        distance_report,
+                        read_counts)
 
-        self.assertDictEqual(expected_conseqs, conseqs)
+    assert set(relevant_conseqs) == expected_seed_names
 
-    def testSeedsConvergedWithConfusingGap(self):
-        """ Reads match other seed well, but with a big gap.
-        """
-        sam_file = StringIO(
-            "@SQ\tSN:test\tSN:other\n"
-            "test1\t99\ttest\t1\t44\t8M\t=\t1\t8\tATGTCGTA\tJJJJJJJJ\n"
-            "other1\t99\tother\t14\t44\t9M\t=\t1\t9\tAAGCTATAT\tJJJJJJJJJ\n"
-        )
-        seeds = {'test': 'ATGAAGTA',
-                 'other': 'ATGTCTCTCTCTCAAGCTATATATATACGAAGTA'}
-        expected_conseqs = {'test': 'ATGTCGTA',
-                            'other': 'ATGTCTCTCTCTCAAGCTATATATATACGAAGTA'}
 
-        conseqs = remap.sam_to_conseqs(sam_file,
-                                       seeds=seeds,
-                                       original_seeds=seeds,
-                                       is_filtered=True)
+def test_sam_to_conseqs_seeds_converged_with_different_alignment_and_gap():
+    """ Gaps between areas with coverage.
+    """
+    sam_file = StringIO(
+        f"@SQ\tSN:test\tSN:other\n"
+        f"test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
+        f"other1\t99\tother\t11\t44\t5M\t=\t1\t5\tATGAC\tJJJJJJJ\n"
+        f"other2\t99\tother\t26\t44\t5M\t=\t1\t5\tCAGTA\tJJJJJJJ\n"
+    )
+    seeds = {'test': 'ATGAAGTA',
+             'other': 'TCTCTCTCTCAAGCTATATATATACGAA'}
+    expected_conseqs = {'test': 'ATGAGGAGTA'}
 
-        self.assertDictEqual(expected_conseqs, conseqs)
+    conseqs = remap.sam_to_conseqs(sam_file,
+                                   seeds=seeds,
+                                   original_seeds=seeds,
+                                   is_filtered=True)
 
-    def testSeedsConvergedPlusOtherLowCoverage(self):
-        """ Portion with decent coverage has converged, other hasn't.
-        """
-        sam_file = StringIO(
-            "@SQ\tSN:test\tSN:other\n"
-            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
-            "test2\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
-            "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
-            "other2\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
-            "other3\t99\tother\t11\t44\t6M\t=\t1\t16\tGTGTGT\tJJJJJJ\n"
-        )
-        seeds = {'test': 'ATGAAGTACTCTCT',
-                 'other': 'AAGCCGAAGTGTGT'}
-        expected_conseqs = {'test': 'ATGAGGAGTACTCT'}
+    assert conseqs == expected_conseqs
 
-        conseqs = remap.sam_to_conseqs(sam_file,
-                                       seeds=seeds,
-                                       original_seeds=seeds,
-                                       is_filtered=True,
-                                       filter_coverage=2)
 
-        self.assertDictEqual(expected_conseqs, conseqs)
+def test_drop_drifters_seeds_converged_with_confusing_gap():
+    """ Reads match other seed well, but with a big gap.
+    """
+    #                             vvvvvvvv
+    relevant_conseqs = dict(test='ATGTCGTA',
+                            #      |||||||||
+                            other='AAGCTATAT')
+    original_seeds = dict(
+        #     vvv??vvv
+        test='ATGAAGTA',
+        #      vvvvv        |||||||||         vvv
+        other='ATGTCTCTCTCTCAAGCTATATATATACGAAGTA')
+    read_counts = dict(test=1, other=1)
+    distance_report = {}
+    expected_seed_names = {'test', 'other'}
 
-    def testSeedsBothConverged(self):
-        """ Both references are now closer to the other seed than the start.
+    remap.drop_drifters(relevant_conseqs,
+                        original_seeds,
+                        distance_report,
+                        read_counts)
 
-        Don't drop both. Keep test because it has more reads.
-        """
-        # SAM:qname, flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual
-        sam_file = StringIO(
-            "@SQ\tSN:test\tSN:other\tSN:unrelated\n"
-            "test1\t99\ttest\t1\t44\t8M\t=\t1\t10\tAAGCCGTA\tJJJJJJJJJJ\n"
-            "test2\t99\ttest\t1\t44\t8M\t=\t1\t10\tAAGCCGTA\tJJJJJJJJJJ\n"
-            "other1\t99\tother\t1\t44\t8M\t=\t1\t10\tATGAAGTA\tJJJJJJJJJJ\n"
-            "unrelated1\t99\tunrelated\t1\t44\t9M\t=\t1\t10\tGGGTTTGGG\tJJJJJJJJJ\n"
-        )
-        seeds = {'test': 'ATGAAGTA',
-                 'other': 'AAGCCGAA',
-                 'unrelated': 'GGGTTTGGG'}
-        expected_conseqs = {'test': 'AAGCCGTA',
-                            'unrelated': 'GGGTTTGGG'}
-        expected_distances = {'test': dict(seed_dist=3,
-                                           other_dist=1,
-                                           other_seed='other'),
-                              'other': dict(seed_dist=5,
-                                            other_dist=0,
-                                            other_seed='test'),
-                              'unrelated': dict(seed_dist=0,
-                                                other_dist=7,
-                                                other_seed='test')}
-        distances = {}
+    assert set(relevant_conseqs) == expected_seed_names
 
-        conseqs = remap.sam_to_conseqs(sam_file,
-                                       seeds=seeds,
-                                       original_seeds=seeds,
-                                       is_filtered=True,
-                                       distance_report=distances)
 
-        self.maxDiff = 1000
-        self.assertEqual(expected_distances, distances)
-        self.assertEqual(expected_conseqs, conseqs)
+def test_drop_drifters_seeds_converged_plus_other_low_coverage():
+    """ Portion with decent coverage has converged, other hasn't.
+    """
+    relevant_conseqs = dict(test='ATGAGGAGTA', other='ATGACCAGTA')
+    original_seeds = dict(test='ATGAAGTACTCTCT', other='AAGCCGAAGTGTGT')
+    read_counts = dict(test=2, other=3)
+    distance_report = {}
 
-    def testAllSeedsLowCoverage(self):
-        """ Multiple seeds mapped, but none have good coverage.
+    expected_seed_names = {'test'}
 
-        Choose most reads.
-        """
+    remap.drop_drifters(relevant_conseqs,
+                        original_seeds,
+                        distance_report,
+                        read_counts)
 
-        sam_file = StringIO(
-            "@SQ\tSN:test\tSN:other\n"
-            "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
-            "test2\t99\ttest\t11\t44\t6M\t=\t1\t10\tCTCTCT\tJJJJJJ\n"
-            "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
-        )
-        seeds = {'test': 'ATGAAGTACTCTCT',
-                 'other': 'AAGCCGAAGTGTGT'}
-        expected_conseqs = {'test': 'ATGAGGAGTACTCTCT'}
+    assert set(relevant_conseqs) == expected_seed_names
 
-        conseqs = remap.sam_to_conseqs(sam_file,
-                                       seeds=seeds,
-                                       original_seeds=seeds,
-                                       is_filtered=True,
-                                       filter_coverage=2)
 
-        self.assertDictEqual(expected_conseqs, conseqs)
+def test_drop_drifters_seeds_both_converged(projects):
+    """ Both references are now closer to the other seed than the start.
 
-    def testExtractRelevantSeeds(self):
-        expectations = [  # (aligned_conseq, aligned_seed, expected_seed)
-            ('ACTG',
-             'ATTG',
-             'ATTG'),
-            ('-ACTG-',
-             'CATTGT',
-             'ATTG'),
-            ('-AC-TG--',
-             'CATATGT',
-             'ATATG'),
-            ('-AC-TG-AT-',
-             'CATATGTATC',
-             'ATATGTAT'),
-            ('--T--',
-             'CATAT',
-             'T'),
-            ('TACG----',
-             '----GGCC',
-             '')]
-        for aligned_conseq, aligned_seed, expected_seed in expectations:
-            relevant = remap.extract_relevant_seed(aligned_conseq, aligned_seed)
-            self.assertEqual((aligned_conseq, aligned_seed, expected_seed),
-                             (aligned_conseq, aligned_seed, relevant))
+    Don't drop both. Keep test because it has more reads.
+    """
+    hxb2_end = projects.getReference(HXB2_NAME)[-200:]
+    relevant_conseqs = dict(test='AAGCCGTA' + hxb2_end,
+                            #      ^ ^^
+                            other='ATGAAGTA' + hxb2_end,
+                            #       ^ ^^ ^
+                            unrelated='GGGTTTGGG' + hxb2_end)
+    original_seeds = dict(test='ATGAAGTA' + hxb2_end,
+                          other='AAGCCGAA' + hxb2_end,
+                          unrelated='GGGTTTGGG' + hxb2_end)
+    read_counts = dict(test=2, other=1, unrelated=1)
+    distance_report = {}
 
-    def testNothingMapped(self):
-        sam_file = StringIO(
-            "@SQ\tSN:test\tSN:other\n"
-        )
-        seeds = {'test': 'ATGAAGTACTCTCT',
-                 'other': 'AAGCCGAAGTGTGT'}
-        expected_conseqs = {}
+    expected_seed_names = {'test', 'unrelated'}
+    expected_distances = dict(test=dict(seed_dist=3,
+                                        other_dist=1,
+                                        other_seed='other'),
+                              other=dict(seed_dist=4,
+                                         other_dist=0,
+                                         other_seed='test'),
+                              unrelated=dict(seed_dist=0,
+                                             other_dist=7,
+                                             other_seed='other'))
 
-        conseqs = remap.sam_to_conseqs(sam_file,
-                                       seeds=seeds,
-                                       original_seeds=seeds,
-                                       is_filtered=True,
-                                       filter_coverage=2)
+    remap.drop_drifters(relevant_conseqs,
+                        original_seeds,
+                        distance_report,
+                        read_counts)
 
-        self.assertDictEqual(expected_conseqs, conseqs)
+    assert distance_report == expected_distances
+    assert set(relevant_conseqs) == expected_seed_names
+
+
+def test_sam_to_conseqs_all_seeds_low_coverage():
+    """ Multiple seeds mapped, but none have good coverage.
+
+    Choose most reads.
+    """
+
+    sam_file = StringIO(
+        "@SQ\tSN:test\tSN:other\n"
+        "test1\t99\ttest\t1\t44\t10M\t=\t1\t10\tATGAGGAGTA\tJJJJJJJJJJJJ\n"
+        "test2\t99\ttest\t11\t44\t6M\t=\t1\t10\tCTCTCT\tJJJJJJ\n"
+        "other1\t99\tother\t1\t44\t10M\t=\t1\t10\tATGACCAGTA\tJJJJJJJJJJJJ\n"
+    )
+    seeds = {'test': 'ATGAAGTACTCTCT',
+             'other': 'AAGCCGAAGTGTGT'}
+    expected_conseqs = {'test': 'ATGAGGAGTACTCTCT'}
+
+    conseqs = remap.sam_to_conseqs(sam_file,
+                                   seeds=seeds,
+                                   original_seeds=seeds,
+                                   is_filtered=True,
+                                   filter_coverage=2)
+
+    assert conseqs == expected_conseqs
+
+
+def test_extract_relevant_seeds():
+    expectations = [  # (aligned_conseq, aligned_seed, expected_seed)
+        ('ACTG',
+         'ATTG',
+         'ATTG'),
+        ('-ACTG-',
+         'CATTGT',
+         'ATTG'),
+        ('-AC-TG--',
+         'CATATGT',
+         'ATATG'),
+        ('-AC-TG-AT-',
+         'CATATGTATC',
+         'ATATGTAT'),
+        ('--T--',
+         'CATAT',
+         'T'),
+        ('TACG----',
+         '----GGCC',
+         '')]
+    for aligned_conseq, aligned_seed, expected_seed in expectations:
+        relevant = remap.extract_relevant_seed(aligned_conseq, aligned_seed)
+        assert (aligned_conseq,
+                aligned_seed,
+                relevant) == (aligned_conseq, aligned_seed, expected_seed)
+
+
+def test_sam_to_conseqs_nothing_mapped():
+    sam_file = StringIO(
+        "@SQ\tSN:test\tSN:other\n"
+    )
+    seeds = {'test': 'ATGAAGTACTCTCT',
+             'other': 'AAGCCGAAGTGTGT'}
+    expected_conseqs = {}
+
+    conseqs = remap.sam_to_conseqs(sam_file,
+                                   seeds=seeds,
+                                   original_seeds=seeds,
+                                   is_filtered=True,
+                                   filter_coverage=2)
+
+    assert conseqs == expected_conseqs
 
 
 class MixedReferenceMemorySplitter(MixedReferenceSplitter):

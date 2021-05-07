@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import typing
 from collections import Counter
 from csv import DictWriter, DictReader
 from datetime import datetime
@@ -14,6 +15,8 @@ from tempfile import mkdtemp
 
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
 
@@ -55,10 +58,14 @@ def write_contig_refs(contigs_fasta_path,
     genotype_count = 0
     for i, record in enumerate(SeqIO.parse(contigs_fasta_path, "fasta")):
         (ref_name, match_fraction) = genotypes.get(record.name, ('unknown', 0))
+        seq = record.seq
+        if match_fraction < 0:
+            seq = seq.reverse_complement()
+            match_fraction *= -1
         writer.writerow(dict(ref=ref_name,
                              match=match_fraction,
                              group_ref=group_refs.get(ref_name),
-                             contig=record.seq))
+                             contig=seq))
         genotype_count += 1
     return genotype_count
 
@@ -164,18 +171,18 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
     return samples
 
 
-def denovo(fastq1_path,
-           fastq2_path,
-           contigs_csv,
-           work_dir='.',
-           merged_contigs_csv=None,
-           blast_csv=None):
+def denovo(fastq1_path: str,
+           fastq2_path: str,
+           contigs_csv: typing.TextIO,
+           work_dir: str = '.',
+           merged_contigs_csv: typing.TextIO = None,
+           blast_csv: typing.TextIO = None):
     """ Use de novo assembly to build contigs from reads.
 
-    :param str fastq1_path: FASTQ file name for read 1 reads
-    :param str fastq2_path: FASTQ file name for read 2 reads
+    :param fastq1_path: FASTQ file name for read 1 reads
+    :param fastq2_path: FASTQ file name for read 2 reads
     :param contigs_csv: open file to write assembled contigs to
-    :param str work_dir: path for writing temporary files
+    :param work_dir: path for writing temporary files
     :param merged_contigs_csv: open file to read contigs that were merged from
         amplicon reads
     :param blast_csv: open file to write BLAST search results for each contig
@@ -196,13 +203,22 @@ def denovo(fastq1_path,
         check=True)
     iva_out_path = os.path.join(tmp_dir, 'iva_out')
     contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
+    iva_args = [IVA, '--fr', joined_path, '-t', '2']
+    if merged_contigs_csv is not None:
+        seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
+        with open(seeds_fasta_path, 'w') as seeds_fasta:
+            SeqIO.write((SeqRecord(Seq(row['contig']), f'seed-{i}', '', '')
+                         for i, row in enumerate(DictReader(merged_contigs_csv))),
+                        seeds_fasta,
+                        'fasta')
+            seeds_size = seeds_fasta.tell()
+        if seeds_size > 0:
+            iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
+    iva_args.append(iva_out_path)
     try:
-        run([IVA, '--fr', joined_path, '-t', '2', iva_out_path],
-            check=True,
-            stdout=PIPE,
-            stderr=STDOUT)
+        run(iva_args, check=True, stdout=PIPE, stderr=STDOUT)
     except CalledProcessError as ex:
-        output = ex.output.decode('UTF8')
+        output = ex.output and ex.output.decode('UTF8')
         if output != 'Failed to make first seed. Cannot continue\n':
             logger.warning('iva failed to assemble.', exc_info=True)
             logger.warning(output)
@@ -213,8 +229,7 @@ def denovo(fastq1_path,
     duration = datetime.now() - start_time
     contig_count = write_contig_refs(contigs_fasta_path,
                                      contigs_csv,
-                                     merged_contigs_csv,
-                                     blast_csv)
+                                     blast_csv=blast_csv)
     logger.info('Assembled %d contigs in %s (%ds) on %s.',
                 contig_count,
                 duration,

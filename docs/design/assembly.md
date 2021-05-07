@@ -1,4 +1,8 @@
-# Notes on de novo assembly
+---
+title: De Novo Assembly
+subtitle: Our understanding so far
+---
+
 So far, we've had the best assembly results with [IVA]. It's not perfect, though,
 so this is a summary of what we've learned about how it works.
 
@@ -12,7 +16,25 @@ details to a log file like this:
         stderr=STDOUT)
 
 That will show you the contig sequence as it gets assembled throughout the
-process by writing its progress to the `iva.log` file. Below, I'll walk through
+process by writing its progress to the `iva.log` file.
+
+Another option is to look in the scratch folder of a sample that was already
+assembled, copy the `iva` command out of the assembly temp folder's `info.txt`
+file, and add the `-vv` option when you run it again. You also have to change
+the `iva_out` path to a folder that doesn't exist yet. For example, suppose this
+is the command in `info.txt`:
+
+    /git/MiCall/venv_micall/bin/iva --fr
+    /data/run/micall-results/scratch/E1234_S1/assembly_ayvdjhcw/joined.fastq -t 2
+    /data/run/micall-results/scratch/E1234_S1/assembly_ayvdjhcw/iva_out
+
+You could rerun the assembly with this command to see all the assembly details:
+
+    /git/MiCall/venv_micall/bin/iva -vv --fr
+    /data/run/micall-results/scratch/E1234_S1/assembly_ayvdjhcw/joined.fastq -t 2
+    /data/run/micall-results/scratch/E1234_S1/assembly_ayvdjhcw/iva_out2 > assembly.log 2>&1
+
+Below, I'll walk through
 a typical assembly, and explain what you see in the log file.
 
 [IVA]: https://sanger-pathogens.github.io/iva

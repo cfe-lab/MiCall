@@ -25,6 +25,34 @@ def test_simple():
     assert expected_consensus == builder.get_consensus()
 
 
+def test_mixture():
+    merged_reads = list(prepare_reads("AAACCCTTTGGGAAACCC",
+                                      "ATACCCTATGGGAAACCC",
+                                      "AAACCCTTTGGGAAACCC"))
+    expected_consensus = "AAACCCTTTGGGAAACCC"
+    builder = ConsensusBuilder()
+
+    returned_reads = list(builder.build(merged_reads))
+
+    assert merged_reads == returned_reads
+    assert expected_consensus == builder.get_consensus()
+
+
+def test_tie():
+    """ If there's an exact 50/50 mixture, pick alphabetically first. """
+    merged_reads = list(prepare_reads("AAACCCTTTGGGAAACCC",
+                                      "ATACCCTATGGGAAACCC",
+                                      "ATACCCTATGGGAAACCC",
+                                      "AAACCCTTTGGGAAACCC"))
+    expected_consensus = "AAACCCTATGGGAAACCC"
+    builder = ConsensusBuilder()
+
+    returned_reads = list(builder.build(merged_reads))
+
+    assert merged_reads == returned_reads
+    assert expected_consensus == builder.get_consensus()
+
+
 def test_different_lengths():
     merged_reads = prepare_reads("AAACCCTTTGGGAAACCC",
                                  "ATACCCTTTGGGAAACCC",

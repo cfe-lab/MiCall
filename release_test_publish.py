@@ -3,7 +3,7 @@
 They should also be processed by the report scripts.
 """
 import os
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from glob import glob
 
 from os import makedirs
@@ -12,7 +12,10 @@ from subprocess import run
 
 
 def parse_args():
-    parser = ArgumentParser(description='Publish sample results for testing a new release.')
+    # noinspection PyTypeChecker
+    parser = ArgumentParser(
+        description='Publish sample results for testing a new release.',
+        formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         '--test_folder',
         type=Path,
@@ -43,7 +46,7 @@ def main():
         results_path = os.path.join(run_path,
                                     'Results',
                                     'version_' + args.pipeline_version)
-        done_path = os.path.join(results_path, 'doneprocessing')
+        done_path = os.path.join(results_path, 'done_all_processing')
         target_path = os.path.join(args.publish_folder,
                                    'MiSeq',
                                    'runs',

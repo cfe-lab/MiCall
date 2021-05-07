@@ -14,6 +14,7 @@ import re
 import typing
 from collections import Counter, defaultdict, OrderedDict
 import csv
+from csv import DictWriter
 from enum import IntEnum
 from itertools import groupby
 from operator import itemgetter, attrgetter
@@ -37,6 +38,7 @@ GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
 CONSENSUS_MIN_COVERAGE = 100
 MAX_CUTOFF = 'MAX'
+FIRST_CUTOFF = 'FIRST'
 
 
 CigarActions = IntEnum(
@@ -316,6 +318,19 @@ class SequenceReport(object):
              a_consensus,
              frame_seed_aminos) = best_alignment
 
+            ref_offset = 0
+            prev_nuc_index = None
+            for seed_amino in frame_seed_aminos:
+                if seed_amino.consensus_nuc_index is None:
+                    pass
+                elif prev_nuc_index is None:
+                    pass
+                elif seed_amino.consensus_nuc_index - prev_nuc_index == 2:
+                    ref_offset = -1
+                    seed_amino.nucleotides_to_skip = 1
+                seed_amino.ref_offset = ref_offset
+                prev_nuc_index = seed_amino.consensus_nuc_index
+
             coord2conseq = self.map_sequences(coordinate_ref,
                                               consensus,
                                               a_coord,
@@ -373,7 +388,7 @@ class SequenceReport(object):
         pos = 1
         while True:
             try:
-                seed_amino = self.seed_aminos[reading_frame][pos-1]
+                seed_amino: SeedAmino = self.seed_aminos[reading_frame][pos-1]
             except IndexError:
                 break
             past_repeat = seed_amino.consensus_nuc_index - self.repeated_pos
@@ -525,7 +540,9 @@ class SequenceReport(object):
         if self.seed != repeated_ref_name:
             return
 
-        seed_ref = self.projects.getReference(self.seed)
+        seed_start = repeated_ref_pos-100
+        seed_end = seed_start + 200
+        seed_ref = self.projects.getReference(self.seed)[seed_start:seed_end]
         consensus = ''.join(nuc.get_consensus('MAX', no_coverage='x')
                             for amino in self.seed_aminos[0]
                             for nuc in amino.nucleotides)
@@ -534,7 +551,7 @@ class SequenceReport(object):
         offset = len(aseq) - len(aseq.lstrip('-'))
         aref = aref[offset:]
         aseq = aseq[offset:]
-        ref_pos = offset
+        ref_pos = offset+seed_start
         conseq_pos = 0
         for ref_nuc, conseq_nuc in zip(aref, aseq):
             while conseq_pos < len(consensus) and consensus[conseq_pos] == 'x':
@@ -542,14 +559,14 @@ class SequenceReport(object):
             if conseq_pos >= len(consensus):
                 break
 
-            if ref_nuc == seed_ref[ref_pos]:
+            if ref_nuc == seed_ref[ref_pos-seed_start]:
                 ref_pos += 1
             if conseq_nuc == consensus[conseq_pos]:
                 conseq_pos += 1
             if ref_pos == repeated_ref_pos:
                 self.repeated_pos = conseq_pos
                 break
-            if ref_pos >= len(seed_ref):
+            if ref_pos >= len(seed_ref) + seed_start:
                 break
 
     def read_clipping(self, clipping_csv):
@@ -875,12 +892,11 @@ class SequenceReport(object):
         self.nuc_detail_writer.writeheader()
 
     def write_counts(self,
-                     seed,
-                     region,
-                     seed_amino,
-                     report_amino,
-                     nuc_writer,
-                     min_query_position: int = None) -> typing.Optional[int]:
+                     seed: str,
+                     region: str,
+                     seed_amino: 'SeedAmino',
+                     report_amino: typing.Optional['ReportAmino'],
+                     nuc_writer: DictWriter):
         """ Write rows of nucleotide counts for a single codon.
 
         :param seed: the seed reference name
@@ -888,23 +904,17 @@ class SequenceReport(object):
         :param seed_amino: the SeedAmino object for this position
         :param ReportAmino? report_amino: the ReportAmino object for this position
         :param nuc_writer: the CSV writer to write the row into
-        :param min_query_position: the lowest query position to report, or
-            None if there is no limit.
-        :return: the next query position to report.
         """
+        ref_offset = seed_amino.ref_offset
         for i, seed_nuc in enumerate(seed_amino.nucleotides):
+            if i < seed_amino.nucleotides_to_skip:
+                continue
             if seed_amino.consensus_nuc_index is None:
                 query_pos_txt = ''
             else:
                 query_pos = i + seed_amino.consensus_nuc_index + 1
                 query_pos_txt = str(query_pos)
-                if min_query_position is None:
-                    min_query_position = query_pos
-                else:
-                    if query_pos < min_query_position:
-                        continue
-                    min_query_position = query_pos + 1
-            ref_pos = (str(i + 3*report_amino.position - 2)
+            ref_pos = (str(i + 3*report_amino.position - 2 + ref_offset)
                        if report_amino is not None
                        else '')
             row = {'seed': seed,
@@ -921,7 +931,6 @@ class SequenceReport(object):
                 nuc_count = seed_nuc.counts[base]
                 row[base] = nuc_count
             nuc_writer.writerow(row)
-        return min_query_position
 
     def merge_extra_counts(self):
         for region, report_aminos in self.reports.items():
@@ -977,25 +986,19 @@ class SequenceReport(object):
 
     def write_nuc_report(self, nuc_writer, reports, seed):
         self.merge_extra_counts()
-        if not self.coordinate_refs:
-            min_query_position = None
-            for seed_amino in self.seed_aminos[0]:
-                min_query_position = self.write_counts(seed,
-                                                       seed,
-                                                       seed_amino,
-                                                       None,
-                                                       nuc_writer,
-                                                       min_query_position)
-        else:
-            for region, report_aminos in sorted(reports.items()):
-                min_query_position = None
-                for report_amino in report_aminos:
-                    min_query_position = self.write_counts(seed,
-                                                           region,
-                                                           report_amino.seed_amino,
-                                                           report_amino,
-                                                           nuc_writer,
-                                                           min_query_position)
+        for region, report_aminos in sorted(reports.items()):
+            start_ref_offset = None
+            for report_amino in report_aminos:
+                # If the region starts with an offset, we reverse it.
+                if start_ref_offset is None:
+                    start_ref_offset = report_amino.seed_amino.ref_offset
+                report_amino.seed_amino.ref_offset -= start_ref_offset
+                self.write_counts(seed,
+                                  region,
+                                  report_amino.seed_amino,
+                                  report_amino,
+                                  nuc_writer)
+                report_amino.seed_amino.ref_offset += start_ref_offset
 
     @staticmethod
     def _create_consensus_writer(
@@ -1317,6 +1320,8 @@ class SeedAmino(object):
         self.partial = 0
         self.deletions = 0
         self.read_count = 0
+        self.ref_offset = 0
+        self.nucleotides_to_skip = 0
 
     def __repr__(self):
         if self.counts:
@@ -1350,12 +1355,14 @@ class SeedAmino(object):
                 seed_nucleotide = self.nucleotides[i]
                 seed_nucleotide.count_nucleotides(nuc, count)
 
-    def add(self, other):
+    def add(self, other: 'SeedAmino'):
         self.counts += other.counts
         self.partial += other.partial
         self.deletions += other.deletions
         self.read_count += other.read_count
         self.low_quality += other.low_quality
+        self.nucleotides_to_skip = other.nucleotides_to_skip
+        self.ref_offset = other.ref_offset
         for nuc, other_nuc in zip(self.nucleotides, other.nucleotides):
             nuc.add(other_nuc)
 
@@ -1452,7 +1459,7 @@ class SeedNucleotide(object):
             return no_coverage
 
         coverage = self.get_coverage()
-        if mixture_cutoff != MAX_CUTOFF:
+        if mixture_cutoff not in (MAX_CUTOFF, FIRST_CUTOFF):
             min_count = coverage * mixture_cutoff
         else:
             min_count = 0
@@ -1462,7 +1469,7 @@ class SeedNucleotide(object):
                 break
             if nuc in self.COUNTED_NUCS:
                 mixture.append(nuc)
-                if mixture_cutoff == MAX_CUTOFF:
+                if mixture_cutoff in (MAX_CUTOFF, FIRST_CUTOFF):
                     # Catch any ties before breaking out.
                     min_count = count
 
@@ -1471,7 +1478,10 @@ class SeedNucleotide(object):
             mixture.remove('-')
         if len(mixture) > 1:
             mixture.sort()
-            consensus = ambig_dict[''.join(mixture)]
+            if mixture_cutoff == FIRST_CUTOFF:
+                consensus = mixture[0]
+            else:
+                consensus = ambig_dict[''.join(mixture)]
         elif len(mixture) == 1:
             # no ambiguity
             consensus = mixture[0]

@@ -1,7 +1,7 @@
 import shutil
 import tarfile
 from gzip import GzipFile
-from io import BytesIO
+from io import BytesIO, StringIO
 from pathlib import Path
 from queue import Full
 from tarfile import TarInfo
@@ -73,8 +73,10 @@ def create_mock_open_kive():
 def mock_containerruns_get(path):
     if 'dataset_list' in str(path):
         return [dict(dataset='/datasets/111/',
+                     argument_type='I',
                      argument_name='bad_cycles_csv'),
                 dict(dataset='/datasets/112/',
+                     argument_type='O',
                      argument_name='amino_csv')]
     return dict(state='C')
 
@@ -127,7 +129,8 @@ def create_kive_watcher_with_filter_run(config, base_calls, is_complete=False):
             bad_cycles_csv='/containerargs/108'),
         config.micall_resistance_pipeline_id: dict(
             main_amino_csv='/containerargs/109',
-            midi_amino_csv='/containerargs/110')}
+            midi_amino_csv='/containerargs/110',
+            main_nuc_csv='/containerargs/111')}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
     folder_watcher.batch = dict(url='/batches/101')
@@ -305,7 +308,8 @@ def test_hcv_pair(raw_data_with_hcv_pair):
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2130A',
                                 ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-                                 '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'))))
+                                 '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+                                ('HCV', 'MidHCV'))))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -336,7 +340,8 @@ def test_hcv_pair_with_wg_suffix(raw_data_with_hcv_pair):
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2130A',
                                 ('2130AWG-HCV_S15_L001_R1_001.fastq.gz',
-                                 '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'))))
+                                 '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+                                ('HCV', 'MidHCV'))))
     sample_queue.expect_put(
         FolderEvent(base_calls_folder,
                     FolderEventType.FINISH_FOLDER,
@@ -363,7 +368,8 @@ def test_hcv_midi_alone(raw_data_with_hcv_pair):
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2130AMIDI',
                                 ('2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('MidHCV', None))))
     sample_queue.expect_put(
         FolderEvent(base_calls_path,
                     FolderEventType.FINISH_FOLDER,
@@ -387,7 +393,8 @@ def test_two_runs(raw_data_with_two_runs):
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2010A',
                                 ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('V3LOOP', None))))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -399,7 +406,8 @@ def test_two_runs(raw_data_with_two_runs):
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2000A',
                                 ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('V3LOOP', None))))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -420,14 +428,16 @@ def test_two_samples(raw_data_with_two_samples):
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2120A',
                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('PR', None))))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2110A',
                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('V3LOOP', None))))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -455,13 +465,15 @@ def test_undetermined_file(raw_data_with_two_samples):
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2120A',
                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('PR', None))))
     sample_queue.expect_put(
         FolderEvent(base_calls,
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2110A',
                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('V3LOOP', None))))
     sample_queue.expect_put(
         FolderEvent(base_calls,
                     FolderEventType.FINISH_FOLDER,
@@ -487,7 +499,8 @@ def test_skip_done_runs(raw_data_with_two_runs):
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2000A',
                                 ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('V3LOOP', None))))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -515,7 +528,8 @@ def test_skip_failed_runs(raw_data_with_two_runs):
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2000A',
                                 ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('V3LOOP', None))))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -547,7 +561,8 @@ Garbage!
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2000A',
                                 ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('V3LOOP', None))))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -571,7 +586,8 @@ def test_full_queue(raw_data_with_two_runs):
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2010A',
                                 ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('V3LOOP', None))))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -582,7 +598,8 @@ def test_full_queue(raw_data_with_two_runs):
                         FolderEventType.ADD_SAMPLE,
                         SampleGroup('2000A',
                                     ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                                     None)))
+                                     None),
+                                    ('V3LOOP', None)))
     sample_queue.expect_put(item2, is_full=True)
     sample_queue.expect_put(item2)
     sample_queue.expect_put(
@@ -614,7 +631,8 @@ def test_scan_for_new_runs(raw_data_with_two_runs, mock_clock):
                         FolderEventType.ADD_SAMPLE,
                         SampleGroup('2000A',
                                     ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                                     None)))
+                                     None),
+                                    ('V3LOOP', None)))
     finish1 = FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
                           "Data/Intensities/BaseCalls",
                           FolderEventType.FINISH_FOLDER,
@@ -624,7 +642,8 @@ def test_scan_for_new_runs(raw_data_with_two_runs, mock_clock):
                         FolderEventType.ADD_SAMPLE,
                         SampleGroup('2010A',
                                     ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
-                                     None)))
+                                     None),
+                                    ('V3LOOP', None)))
     finish2 = FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
                           "Data/Intensities/BaseCalls",
                           FolderEventType.FINISH_FOLDER,
@@ -666,14 +685,16 @@ def test_scan_error(raw_data_with_two_samples, monkeypatch):
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2120A',
                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('PR', None))))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
                     FolderEventType.ADD_SAMPLE,
                     SampleGroup('2110A',
                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                 None))))
+                                 None),
+                                ('V3LOOP', None))))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -750,7 +771,8 @@ def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_con
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
 
     mock_open_kive.assert_called_once_with(default_config.kive_server)
     mock_session.login.assert_called_once_with(default_config.kive_user,
@@ -823,7 +845,8 @@ def test_add_first_sample_with_compression(raw_data_with_two_samples, mock_open_
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
 
     assert not version3_zip.exists()
     assert version2_folder.exists()
@@ -834,7 +857,7 @@ def test_add_first_sample_with_compression(raw_data_with_two_samples, mock_open_
 
 
 def test_compress_old_versions_no_results(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     version_path = results_path / 'version_3.0'
 
@@ -844,7 +867,7 @@ def test_compress_old_versions_no_results(tmpdir):
 
 
 def test_compress_old_versions_no_old_versions(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     results_path.mkdir()
     version_path = results_path / 'version_3.0'
@@ -853,7 +876,7 @@ def test_compress_old_versions_no_old_versions(tmpdir):
 
 
 def test_compress_old_versions_sorting(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     results_path.mkdir()
     version_path9 = results_path / 'version_0.9'
@@ -869,7 +892,7 @@ def test_compress_old_versions_sorting(tmpdir):
 
 
 def test_compress_old_versions_skip_current_and_newer(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     results_path.mkdir()
     version_path1 = results_path / 'version_1'
@@ -890,7 +913,7 @@ def test_compress_old_versions_skip_current_and_newer(tmpdir):
 
 
 def test_compress_old_versions_other_files(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     results_path.mkdir()
     other_file = results_path / 'other_file.txt'
@@ -906,7 +929,7 @@ def test_compress_old_versions_other_files(tmpdir):
 
 
 def test_compress_old_versions_other_dirs(tmpdir):
-    run_path = Path(tmpdir)
+    run_path = Path(str(tmpdir))
     results_path = run_path / 'Results'
     results_path.mkdir()
     other_stuff = results_path / 'other_stuff'
@@ -936,7 +959,8 @@ def test_create_batch_with_expired_session(raw_data_with_two_samples,
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
 
     folder_watcher, = kive_watcher.folder_watchers.values()
     assert mock_batch is folder_watcher.batch
@@ -962,7 +986,8 @@ def test_add_external_dataset(raw_data_with_two_samples, mock_open_kive, default
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
 
     mock_session.endpoints.externalfiledirectories.get.assert_called_once_with()
     assert [call('name', '140101_M01234_quality.csv',
@@ -1018,7 +1043,8 @@ def test_poll_first_sample(raw_data_with_two_samples, mock_open_kive, default_co
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()
 
     mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
@@ -1053,13 +1079,15 @@ def test_poll_second_folder(raw_data_with_two_runs, mock_open_kive, default_conf
         base_calls=base_calls2,
         sample_group=SampleGroup('2010A',
                                  ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()  # Start filter run for folder 1.
     kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2000A',
                                  ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()  # Check filter run 1 and start filter run 2.
 
     fetch_count_before = mock_session.endpoints.containerruns.get.call_count
@@ -1092,13 +1120,15 @@ def test_poll_all_folders(raw_data_with_two_runs, mock_open_kive, default_config
         base_calls=base_calls2,
         sample_group=SampleGroup('2010A',
                                  ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()  # Start filter run for folder 1.
     kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2000A',
                                  ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()  # Check filter run 1 and start filter run 2.
     kive_watcher.poll_runs()  # Only check filter run 2.
 
@@ -1119,7 +1149,8 @@ def test_poll_first_sample_twice(raw_data_with_two_samples, mock_open_kive, defa
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()
     kive_watcher.poll_runs()
 
@@ -1160,7 +1191,8 @@ def test_poll_first_sample_already_started(raw_data_with_two_samples,
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()
 
     mock_session.endpoints.batches.post.assert_not_called()
@@ -1204,7 +1236,8 @@ def test_poll_first_sample_completed_and_purged(raw_data_with_two_samples,
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()
 
     mock_session.endpoints.containerruns.post.assert_called_once()
@@ -1220,12 +1253,14 @@ def test_second_sample(raw_data_with_two_samples, mock_open_kive, default_config
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2120A',
                                  ('2120A-PR_S14_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('PR', None)))
 
     mock_session.endpoints.batches.post.assert_called_once_with(
         json=dict(name='140101_M01234 v0-dev',
@@ -1247,7 +1282,8 @@ def test_sample_with_hcv_pair(raw_data_with_hcv_pair, mock_open_kive, default_co
         base_calls=base_calls,
         sample_group=SampleGroup('2130A',
                                  ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-                                  '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+                                  '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+                                 ('HCV', 'MidHCV')))
 
     expected_dataset_count = 5  # quality_csv + 2 pairs of FASTQ files
     assert expected_dataset_count == len(
@@ -1275,7 +1311,8 @@ def test_sample_fails_to_upload(raw_data_with_two_samples,
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
 
     assert sample_watcher is not None
     mock_wait.assert_called_once_with(1)
@@ -1300,7 +1337,8 @@ def test_create_batch_fails(raw_data_with_two_samples,
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()
 
     assert sample_watcher is not None
@@ -1329,7 +1367,8 @@ def test_sample_already_uploaded(raw_data_with_two_samples, mock_open_kive, defa
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
 
     assert [call('name', '140101_M01234_quality.csv',
                  # MD5 of header with no records.
@@ -1388,7 +1427,8 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     folder_watcher.add_run(
         dict(id=106),
         PipelineType.FILTER_QUALITY)
@@ -1426,6 +1466,83 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
             ] == mock_session.endpoints.containerruns.post.call_args_list
 
 
+def test_launch_main_run_with_sample_info(raw_data_with_two_samples,
+                                          mock_open_kive,
+                                          pipelines_config):
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    mock_session.endpoints.datasets.post.side_effect = [
+        dict(url='/datasets/104', id=104),
+        dict(url='/datasets/105', id=105),
+        dict(url='/datasets/106', id=106)]
+
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config)
+    kive_watcher.app_urls = {
+        pipelines_config.micall_main_pipeline_id: '/containerapps/102',
+        pipelines_config.denovo_main_pipeline_id: '/containerapps/103'}
+    kive_watcher.app_args = {
+        pipelines_config.micall_main_pipeline_id: dict(
+            bad_cycles_csv='/containerargs/110',
+            fastq1='/containerargs/111',
+            fastq2='/containerargs/112',
+            sample_info_csv='/containerargs/113'),
+        pipelines_config.denovo_main_pipeline_id: dict(
+            bad_cycles_csv='/containerargs/114',
+            fastq1='/containerargs/115',
+            fastq2='/containerargs/116',
+            sample_info_csv='/containerargs/117')}
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = dict(url='/batches/101')
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None),
+                                 ('V3LOOP', None)))
+    folder_watcher.add_run(
+        dict(id=106),
+        PipelineType.FILTER_QUALITY)
+
+    mock_session.endpoints.containerruns.get.side_effect = [
+        dict(id=106, state='C'),  # refresh run status
+        [dict(argument_name='bad_cycles_csv',
+              dataset='/datasets/107',
+              dataset_purged=False)]]  # get dataset list
+    mock_session.get.return_value.json.return_value = dict(url='/datasets/107',
+                                                           id=107)
+
+    kive_watcher.poll_runs()
+
+    assert [call(json=dict(app='/containerapps/103',
+                           datasets=[dict(argument='/containerargs/114',
+                                          dataset='/datasets/107'),
+                                     dict(argument='/containerargs/115',
+                                          dataset='/datasets/104'),
+                                     dict(argument='/containerargs/116',
+                                          dataset='/datasets/105'),
+                                     dict(argument='/containerargs/117',
+                                          dataset='/datasets/106')],
+                           name='MiCall denovo main on 2110A-V3LOOP_S13',
+                           batch='/batches/101',
+                           groups_allowed=['Everyone'])),
+            call(json=dict(app='/containerapps/102',
+                           datasets=[dict(argument='/containerargs/110',
+                                          dataset='/datasets/107'),
+                                     dict(argument='/containerargs/111',
+                                          dataset='/datasets/104'),
+                                     dict(argument='/containerargs/112',
+                                          dataset='/datasets/105'),
+                                     dict(argument='/containerargs/113',
+                                          dataset='/datasets/106')],
+                           name='MiCall main on 2110A-V3LOOP_S13',
+                           batch='/batches/101',
+                           groups_allowed=['Everyone']))
+            ] == mock_session.endpoints.containerruns.post.call_args_list
+
+
 def test_launch_main_run_long_name(raw_data_with_two_samples, mock_open_kive, pipelines_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
@@ -1441,7 +1558,8 @@ def test_launch_main_run_long_name(raw_data_with_two_samples, mock_open_kive, pi
         sample_group=SampleGroup(
             '2110A',
             ('2110A-V3LOOP-987654321REALLYVERYLONGNAME-HCV_S13_L001_R1_001.fastq.gz',
-             None)))
+             None),
+            ('V3LOOP', None)))
 
     kive_watcher.poll_runs()
 
@@ -1493,7 +1611,8 @@ def test_launch_main_run_after_connection_error(raw_data_with_two_samples,
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
 
     mock_session.endpoints.containerruns.get.side_effect = mock_failures(
         failure_count=4,  # We get one extra retry after a login for each request.
@@ -1521,7 +1640,8 @@ def test_launch_midi_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_confi
         base_calls=base_calls,
         sample_group=SampleGroup('2130A',
                                  ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-                                  '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+                                  '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+                                 ('HCV', 'MidHCV')))
 
     kive_watcher.poll_runs()
 
@@ -1548,7 +1668,8 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
     kive_watcher.app_args = {
         pipelines_config.micall_resistance_pipeline_id: dict(
             main_amino_csv='/containerargs/104',
-            midi_amino_csv='/containerargs/105')}
+            midi_amino_csv='/containerargs/105',
+            main_nuc_csv='/containerargs/106')}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
     folder_watcher.batch = dict(url='/batches/101')
@@ -1559,7 +1680,8 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     folder_watcher.add_run(
         dict(id=107),
         PipelineType.MAIN,
@@ -1570,11 +1692,15 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state
         [dict(dataset='/datasets/111/',
+              argument_type='O',
               argument_name='amino_csv'),
          dict(dataset='/datasets/112/',
+              argument_type='O',
               argument_name='nuc_csv')]]  # run datasets
     mock_session.get.return_value.json.side_effect = [
-        dict(url='/datasets/111/', id=111)]
+        dict(url='/datasets/111/', id=111),
+        dict(url='/datasets/111/', id=111),
+        dict(url='/datasets/112/', id=112)]
 
     kive_watcher.poll_runs()
 
@@ -1583,8 +1709,82 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
         datasets=[dict(argument='/containerargs/104',
                        dataset='/datasets/111/'),
                   dict(argument='/containerargs/105',
-                       dataset='/datasets/111/')],
+                       dataset='/datasets/111/'),
+                  dict(argument='/containerargs/106',
+                       dataset='/datasets/112/')],
         name='MiCall resistance on 2110A',
+        batch='/batches/101',
+        groups_allowed=['Everyone']))
+
+
+def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
+    pipelines_config = parse_args(argv=['--micall_filter_quality_pipeline_id', '42',
+                                        '--denovo_main_pipeline_id', '43',
+                                        '--proviral_pipeline_id', '145'])
+
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    kive_watcher = KiveWatcher(pipelines_config)
+    kive_watcher.app_urls = {
+        pipelines_config.proviral_pipeline_id: '/containerapps/103'}
+    kive_watcher.app_args = {
+        pipelines_config.proviral_pipeline_id: dict(
+            sample_info_csv='/containerargs/103',
+            contigs_csv='/containerargs/104',
+            conseqs_csv='/containerargs/105',
+            cascade_csv='/containerargs/106')}
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = dict(url='/batches/101')
+    folder_watcher.add_run(dict(id=106),
+                           PipelineType.FILTER_QUALITY,
+                           is_complete=True)
+    sample_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2120A',
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                  None),
+                                 ('HIVNFLDNA', None)))
+    folder_watcher.add_run(
+        dict(id=107),
+        PipelineType.DENOVO_MAIN,
+        sample_watcher)
+
+    kive_watcher.check_session()
+    mock_session = kive_watcher.session
+    mock_session.endpoints.containerruns.get.side_effect = [
+        dict(id=107, state='C'),  # refresh run state
+        [dict(dataset='/datasets/110/',
+              argument_type='I',
+              argument_name='sample_info_csv'),
+         dict(dataset='/datasets/111/',
+              argument_type='O',
+              argument_name='contigs_csv'),
+         dict(dataset='/datasets/112/',
+              argument_type='O',
+              argument_name='conseq_csv'),
+         dict(dataset='/datasets/113/',
+              argument_type='O',
+              argument_name='cascade_csv')]]  # run datasets
+    mock_session.get.return_value.json.side_effect = [
+        dict(url='/datasets/110/', id=110),
+        dict(url='/datasets/111/', id=111),
+        dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/113/', id=113)]
+
+    kive_watcher.poll_runs()
+
+    mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
+        app='/containerapps/103',
+        datasets=[dict(argument='/containerargs/103',
+                       dataset='/datasets/110/'),
+                  dict(argument='/containerargs/104',
+                       dataset='/datasets/111/'),
+                  dict(argument='/containerargs/105',
+                       dataset='/datasets/112/'),
+                  dict(argument='/containerargs/106',
+                       dataset='/datasets/113/')],
+        name='Proviral HIVSeqinR on 2120A',
         batch='/batches/101',
         groups_allowed=['Everyone']))
 
@@ -1604,7 +1804,8 @@ def test_skip_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeline
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     folder_watcher.add_run(
         dict(id=107),
         PipelineType.MAIN,
@@ -1616,8 +1817,10 @@ def test_skip_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeline
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state
         [dict(dataset='/datasets/111/',
+              argument_type='O',
               argument_name='amino_csv'),
          dict(dataset='/datasets/112/',
+              argument_type='O',
               argument_name='nuc_csv')]]  # run datasets
     mock_session.get.return_value.json.side_effect = [
         dict(url='/datasets/111/', id=111)]
@@ -1638,7 +1841,8 @@ def test_resistance_run_missing_input(raw_data_with_two_samples,
         base_calls,
         SampleGroup('2110A',
                     ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                     None)))
+                     None),
+                    ('V3LOOP', None)))
     mock_session = kive_watcher.session
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state
@@ -1661,7 +1865,8 @@ def test_poll_main_run_cancelled(raw_data_with_two_samples,
         base_calls,
         SampleGroup('2110A',
                     ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                     None)))
+                     None),
+                    ('V3LOOP', None)))
     mock_session = kive_watcher.session
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='X')]  # refresh run state
@@ -1679,7 +1884,8 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
         base_calls,
         SampleGroup('2130A',
                     ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-                     '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+                     '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+                    ('HCV', 'MidHCV')))
     mock_session = kive_watcher.session
     folder_watcher, = kive_watcher.folder_watchers.values()
     sample_watcher, = folder_watcher.sample_watchers
@@ -1691,14 +1897,23 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state for main run
         [dict(dataset='/datasets/111/',
-              argument_name='amino_csv')],  # run datasets
+              argument_type='O',
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/112/',
+              argument_type='O',
+              argument_name='nuc_csv')],  # run datasets
         dict(id=108, state='C'),  # refresh run state for midi run
-        [dict(dataset='/datasets/112/',
-              argument_name='amino_csv')]]  # run datasets
+        [dict(dataset='/datasets/113/',
+              argument_type='O',
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/114/',
+              argument_type='O',
+              argument_name='nuc_csv')]]  # run datasets
     mock_session.get.reset_mock(side_effect=True)
     mock_session.get.return_value.json.side_effect = [
         dict(url='/datasets/111/', id=111),
-        dict(url='/datasets/112/', id=112)]
+        dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/113/', id=113)]
 
     kive_watcher.poll_runs()
 
@@ -1707,13 +1922,16 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
         datasets=[dict(argument=ANY,
                        dataset='/datasets/111/'),
                   dict(argument=ANY,
-                       dataset='/datasets/112/')],
+                       dataset='/datasets/112/'),
+                  dict(argument=ANY,
+                       dataset='/datasets/113/')],
         name='MiCall resistance on 2130A',
         batch=ANY,
         groups_allowed=['Everyone']))
 
 
 def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_config):
+    """ Same MIDI sample gets paired with two different main samples. """
     run_folder = raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234"
     sample_sheet = run_folder / "SampleSheet.csv"
     sample_sheet_text = sample_sheet.read_text()
@@ -1734,7 +1952,8 @@ def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kiv
         base_calls_folder,
         SampleGroup('2130A',
                     ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-                     '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+                     '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+                    ('HCV', 'MidHCV')))
     mock_session = kive_watcher.session
     folder_watcher, = kive_watcher.folder_watchers.values()
     sample_watcher, = folder_watcher.sample_watchers
@@ -1746,7 +1965,8 @@ def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kiv
         base_calls=base_calls_folder,
         sample_group=SampleGroup('2130A',
                                  ('2130AWG-HCV_S18_L001_R1_001.fastq.gz',
-                                  '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+                                  '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+                                 ('HCV', 'MidHCV')))
     folder_watcher.add_run(
         dict(id=109),
         PipelineType.MAIN,
@@ -1759,19 +1979,33 @@ def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kiv
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state for main run
         [dict(dataset='/datasets/111/',
-              argument_name='amino_csv')],  # run datasets
+              argument_type='O',
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/121/',
+              argument_type='O',
+              argument_name='nuc_csv')],  # run datasets
         dict(id=108, state='C'),  # refresh run state for midi run
         [dict(dataset='/datasets/112/',
-              argument_name='amino_csv')],  # run datasets
-        dict(id=109, state='C'),  # refresh run state for midi run
+              argument_type='O',
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/122/',
+              argument_type='O',
+              argument_name='nuc_csv')],  # run datasets
+        dict(id=109, state='C'),  # refresh run state for other main run
         [dict(dataset='/datasets/113/',
-              argument_name='amino_csv')]]  # run datasets
+              argument_type='O',
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/123/',
+              argument_type='O',
+              argument_name='nuc_csv')]]  # run datasets
     mock_session.get.reset_mock(side_effect=True)
     mock_session.get.return_value.json.side_effect = [
         dict(url='/datasets/111/', id=111),
         dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/121/', id=121),
         dict(url='/datasets/113/', id=113),
-        dict(url='/datasets/112/', id=112)]
+        dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/123/', id=123)]
     mock_session.endpoints.containerruns.post.return_value = dict(id=None)
 
     kive_watcher.poll_runs()
@@ -1779,13 +2013,15 @@ def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kiv
     expected_calls = [
         call(json=dict(app=ANY,
                        datasets=[dict(argument=ANY, dataset='/datasets/111/'),
-                                 dict(argument=ANY, dataset='/datasets/112/')],
+                                 dict(argument=ANY, dataset='/datasets/112/'),
+                                 dict(argument=ANY, dataset='/datasets/121/')],
                        name='MiCall resistance on 2130A',
                        batch=ANY,
                        groups_allowed=['Everyone'])),
         call(json=dict(app=ANY,
                        datasets=[dict(argument=ANY, dataset='/datasets/113/'),
-                                 dict(argument=ANY, dataset='/datasets/112/')],
+                                 dict(argument=ANY, dataset='/datasets/112/'),
+                                 dict(argument=ANY, dataset='/datasets/123/')],
                        name='MiCall resistance on 2130A',
                        batch=ANY,
                        groups_allowed=['Everyone']))]
@@ -1831,7 +2067,8 @@ def test_launch_mixed_hcv_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_
         base_calls=base_calls,
         sample_group=SampleGroup('2130A',
                                  ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-                                  '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+                                  '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+                                 ('HCV', 'MidHCV')))
 
     kive_watcher.poll_runs()
 
@@ -1884,14 +2121,16 @@ def test_full_with_two_samples(raw_data_with_two_samples, mock_open_kive, pipeli
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()
     is_full1 = kive_watcher.is_full()
     kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2120A',
                                  ('2120A-PR_S14_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('PR', None)))
     kive_watcher.poll_runs()
     is_full2 = kive_watcher.is_full()
 
@@ -1917,14 +2156,16 @@ def test_full_with_two_runs(raw_data_with_two_runs, mock_open_kive, pipelines_co
         base_calls=base_calls1,
         sample_group=SampleGroup('2000A',
                                  ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()
     is_full1 = kive_watcher.is_full()
     kive_watcher.add_sample_group(
         base_calls=base_calls2,
         sample_group=SampleGroup('2010A',
                                  ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     kive_watcher.poll_runs()
     is_full2 = kive_watcher.is_full()
 
@@ -1983,13 +2224,16 @@ def test_fetch_run_status_main(raw_data_with_two_runs,
     sample_watcher = SampleWatcher(
         SampleGroup('2000A',
                     ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                     None)))
+                     None),
+                    ('V3LOOP', None)))
     mock_run = dict(id=123)
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(state='C'),  # run state refresh
         [dict(argument_name='coord_ins_csv',
+              argument_type='O',
               dataset='/datasets/110/'),
          dict(argument_name='nuc_csv',
+              argument_type='O',
               dataset='/datasets/111/')]]  # run datasets
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_coord_ins_path = expected_scratch / "2000A-V3LOOP_S2/coord_ins.csv"
@@ -2020,15 +2264,18 @@ def test_fetch_run_status_main_and_resistance(raw_data_with_two_runs,
     sample_watcher = SampleWatcher(
         SampleGroup('2000A',
                     ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                     None)))
+                     None),
+                    ('V3LOOP', None)))
     main_run = dict(id=123)
     resistance_run = dict(id=124)
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(state='C'),  # main run refresh
         [dict(argument_name='nuc_csv',
+              argument_type='O',
               dataset='/datasets/110/')],  # main run datasets
         dict(state='C'),  # resistance run refresh
         [dict(argument_name='resistance_csv',
+              argument_type='O',
               dataset='/datasets/112/')]]  # resistance run datasets
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_nuc_path = expected_scratch / "2000A-V3LOOP_S2/nuc.csv"
@@ -2061,16 +2308,20 @@ def test_fetch_run_status_main_and_midi(raw_data_with_hcv_pair,
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     folder_watcher = FolderWatcher(base_calls)
     sample_watcher = SampleWatcher(
-        SampleGroup('2130A', ('2130A-HCV_S15_L001_R1_001.fastq.gz',
-                              '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz')))
+        SampleGroup('2130A',
+                    ('2130A-HCV_S15_L001_R1_001.fastq.gz',
+                     '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
+                    ('HCV', 'MidHCV')))
     main_run = dict(id=123)
     midi_run = dict(id=124)
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(state='C'),  # main run refresh
         [dict(argument_name='nuc_csv',
+              argument_type='O',
               dataset='/datasets/110/')],  # main outputs
         dict(state='C'),  # midi run refresh
         [dict(argument_name='nuc_csv',
+              argument_type='O',
               dataset='/datasets/111/')]]  # midi outputs
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_main_nuc_path = expected_scratch / "2130A-HCV_S15/nuc.csv"
@@ -2109,7 +2360,9 @@ def test_fetch_run_status_session_expired(raw_data_with_two_runs,
 
     sample_watcher = kive_watcher.add_sample_group(
         base_calls,
-        SampleGroup('2000A', ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz', None)))
+        SampleGroup('2000A',
+                    ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
     folder_watcher, = kive_watcher.folder_watchers.values()
 
     new_run = kive_watcher.fetch_run_status(mock_run,
@@ -2128,7 +2381,9 @@ def test_fetch_run_status_user_cancelled(raw_data_with_two_runs,
     kive_watcher = create_kive_watcher_with_main_run(
         pipelines_config,
         base_calls,
-        SampleGroup('2000A', ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz', None)))
+        SampleGroup('2000A',
+                    ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
     mock_session = kive_watcher.session
     original_run = dict(id=123)
     mock_session.endpoints.containerruns.get.side_effect = [
@@ -2152,16 +2407,16 @@ def test_folder_completed(raw_data_with_two_samples, mock_open_kive, default_con
         default_config,
         base_calls,
         SampleGroup('2110A',
-                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                     None)),
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)),
         is_complete=True)
     folder_watcher = kive_watcher.folder_watchers[base_calls]
     sample1_watcher, = folder_watcher.sample_watchers
     sample2_watcher = kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2120A',
-                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
-                                  None)))
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
+                                 ('V3LOOP', None)))
     kive_watcher.finish_folder(base_calls)
     folder_watcher.add_run(dict(id=150),
                            PipelineType.MAIN,
@@ -2176,9 +2431,11 @@ def test_folder_completed(raw_data_with_two_samples, mock_open_kive, default_con
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
+              argument_type='O',
               argument_name='resistance_csv')],  # run datasets
         dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
+              argument_type='O',
               argument_name='resistance_csv')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
@@ -2226,8 +2483,8 @@ def test_folder_completed_except_denovo(raw_data_with_two_samples, mock_open_kiv
         default_config,
         base_calls,
         SampleGroup('2110A',
-                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                     None)),
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)),
         is_complete=True)
     kive_watcher.app_urls[default_config.denovo_main_pipeline_id] = '/containerapps/105'
     kive_watcher.app_args[default_config.denovo_main_pipeline_id] = dict(
@@ -2239,8 +2496,8 @@ def test_folder_completed_except_denovo(raw_data_with_two_samples, mock_open_kiv
     sample2_watcher = kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2120A',
-                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
-                                  None)))
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
+                                 ('PR', None)))
     kive_watcher.finish_folder(base_calls)
     folder_watcher.add_run(dict(id=150),
                            PipelineType.MAIN,
@@ -2258,12 +2515,18 @@ def test_folder_completed_except_denovo(raw_data_with_two_samples, mock_open_kiv
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=151, state='C'),  # refresh run state for denovo main
         [dict(dataset='/datasets/161/',
-              argument_name='amino_csv')],  # run datasets
+              argument_type='O',
+              argument_name='amino_csv'),
+         dict(dataset='/datasets/171/',
+              argument_type='O',
+              argument_name='nuc_csv')],  # run datasets
         dict(id=152, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/162/',
+              argument_type='O',
               argument_name='resistance_csv')],  # run datasets
         dict(id=153, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/163/',
+              argument_type='O',
               argument_name='resistance_csv')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
@@ -2294,8 +2557,8 @@ def test_folder_completed_with_fasta(raw_data_with_two_samples, mock_open_kive, 
         default_config,
         base_calls,
         SampleGroup('2110A',
-                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                     None)),
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)),
         is_complete=True)
     mock_session = mock_open_kive.return_value
     mock_session.download_file.side_effect = mock_session_download_fasta
@@ -2304,8 +2567,8 @@ def test_folder_completed_with_fasta(raw_data_with_two_samples, mock_open_kive, 
     sample2_watcher = kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2120A',
-                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
-                                  None)))
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
+                                 ('PR', None)))
     kive_watcher.finish_folder(base_calls)
     folder_watcher.add_run(dict(id=150),
                            PipelineType.MAIN,
@@ -2320,9 +2583,11 @@ def test_folder_completed_with_fasta(raw_data_with_two_samples, mock_open_kive, 
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
+              argument_type='O',
               argument_name='wg_fasta')],  # run datasets
         dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
+              argument_type='O',
               argument_name='wg_fasta')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
@@ -2361,16 +2626,16 @@ def test_folder_completed_with_svg(raw_data_with_two_samples, mock_open_kive, de
         default_config,
         base_calls,
         SampleGroup('2110A',
-                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                     None)),
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)),
         is_complete=True)
     folder_watcher = kive_watcher.folder_watchers[base_calls]
     sample1_watcher, = folder_watcher.sample_watchers
     sample2_watcher = kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2120A',
-                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
-                                  None)))
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
+                                 ('PR', None)))
     kive_watcher.finish_folder(base_calls)
     folder_watcher.add_run(dict(id=150),
                            PipelineType.MAIN,
@@ -2385,9 +2650,11 @@ def test_folder_completed_with_svg(raw_data_with_two_samples, mock_open_kive, de
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
+              argument_type='O',
               argument_name='alignment_svg')],  # run datasets
         dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
+              argument_type='O',
               argument_name='alignment_svg')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     expected_alignment1_path = results_path / "alignment" / "2110A-V3LOOP_S13_alignment.svg"
@@ -2406,16 +2673,16 @@ def test_folder_not_finished(raw_data_with_two_samples, mock_open_kive, default_
         default_config,
         base_calls,
         SampleGroup('2110A',
-                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                     None)),
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)),
         is_complete=True)
     folder_watcher = kive_watcher.folder_watchers[base_calls]
     sample1_watcher, = folder_watcher.sample_watchers
     sample2_watcher = kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2120A',
-                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
-                                  None)))
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
+                                 ('PR', None)))
     # Did not call kive_watcher.finish_folder(), more samples could be coming.
     folder_watcher.add_run(dict(id=150),
                            PipelineType.MAIN,
@@ -2430,9 +2697,11 @@ def test_folder_not_finished(raw_data_with_two_samples, mock_open_kive, default_
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
         dict(id=151, state='C'),  # refresh run state for 2110
         [dict(dataset='/datasets/161/',
+              argument_type='O',
               argument_name='resistance_csv')],  # run datasets
         dict(id=152, state='C'),  # refresh run state for 2120
         [dict(dataset='/datasets/162/',
+              argument_type='O',
               argument_name='resistance_csv')]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
@@ -2455,8 +2724,8 @@ def test_folder_not_finished_before_new_start(raw_data_with_two_runs,
         default_config,
         base_calls1,
         SampleGroup('2000A',
-                    ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
-                     None)),
+                    ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)),
         is_complete=True)
     folder_watcher1 = kive_watcher.folder_watchers[base_calls1]
     sample1_watcher, = folder_watcher1.sample_watchers
@@ -2467,8 +2736,8 @@ def test_folder_not_finished_before_new_start(raw_data_with_two_runs,
     kive_watcher.add_sample_group(
         base_calls=base_calls2,
         sample_group=SampleGroup('2010A',
-                                 ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz',
-                                  None)))
+                                 ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz', None),
+                                 ('V3LOOP', None)))
     folder_watcher1.add_run(dict(id=151),
                             PipelineType.RESISTANCE,
                             sample1_watcher)
@@ -2520,7 +2789,8 @@ def test_folder_failed_quality_incomplete(raw_data_with_two_samples,
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     run_path = base_calls / "../../.."
     results_path = run_path / "Results/version_0-dev"
     expected_done_path = results_path / "doneprocessing"
@@ -2542,15 +2812,15 @@ def test_folder_failed_sample(raw_data_with_two_samples, mock_open_kive, default
         default_config,
         base_calls,
         SampleGroup('2110A',
-                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                     None)))
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
     folder_watcher = kive_watcher.folder_watchers[base_calls]
 
     sample2_watcher = kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2120A',
-                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
-                                  None)))
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
+                                 ('PR', None)))
     kive_watcher.finish_folder(base_calls)
     folder_watcher.add_run(dict(id=151),
                            PipelineType.MAIN,
@@ -2563,6 +2833,7 @@ def test_folder_failed_sample(raw_data_with_two_samples, mock_open_kive, default
         dict(state='F', id=107),  # main run for 2110 fails
         dict(state='C', id=152),  # resistance run for 2120 complete
         [dict(argument_name='resistance_csv',
+              argument_type='O',
               dataset='/datasets/167/')]]  # outputs for resistance run
     run_path = base_calls / "../../.."
     results_path = run_path / "Results/version_0-dev"
@@ -2589,12 +2860,14 @@ def test_add_duplicate_sample(raw_data_with_two_samples,
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
     sample_watcher2 = kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
 
     assert sample_watcher1 is sample_watcher2
 
@@ -2617,7 +2890,8 @@ def test_add_finished_sample(raw_data_with_two_samples,
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
 
     assert done_path.exists()
     assert sample_watcher1 is None
@@ -2639,7 +2913,8 @@ def test_add_failed_sample(raw_data_with_two_samples,
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
                                  ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                                  None)))
+                                  None),
+                                 ('V3LOOP', None)))
 
     assert sample_watcher1 is None
 
@@ -2696,8 +2971,16 @@ def test_collate_main_results(raw_data_with_two_samples, default_config, mock_op
 
     kive_watcher = KiveWatcher(default_config)
     folder_watcher = kive_watcher.add_folder(base_calls)
-    kive_watcher.add_sample_group(base_calls, SampleGroup('2120A', ('2120A-PR_S14_L001_R1_001.fastq.gz', None)))
-    kive_watcher.add_sample_group(base_calls, SampleGroup('2110A', ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None)))
+    kive_watcher.add_sample_group(
+        base_calls,
+        SampleGroup('2120A',
+                    ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
+                    ('PR', None)))
+    kive_watcher.add_sample_group(
+        base_calls,
+        SampleGroup('2110A',
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
 
     kive_watcher.collate_folder(folder_watcher, PipelineType.MAIN)
 
@@ -2730,8 +3013,16 @@ def test_collate_denovo_results(raw_data_with_two_samples, default_config, mock_
 
     kive_watcher = KiveWatcher(default_config)
     folder_watcher = kive_watcher.add_folder(base_calls)
-    kive_watcher.add_sample_group(base_calls, SampleGroup('2120A', ('2120A-PR_S14_L001_R1_001.fastq.gz', None)))
-    kive_watcher.add_sample_group(base_calls, SampleGroup('2110A', ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None)))
+    kive_watcher.add_sample_group(
+        base_calls,
+        SampleGroup('2120A',
+                    ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
+                    ('PR', None)))
+    kive_watcher.add_sample_group(
+        base_calls,
+        SampleGroup('2110A',
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
 
     kive_watcher.collate_folder(folder_watcher, PipelineType.DENOVO_MAIN)
 
@@ -2760,10 +3051,66 @@ def test_collate_mixed_hcv_results(raw_data_with_two_samples, default_config, mo
 
     kive_watcher = KiveWatcher(default_config)
     folder_watcher = kive_watcher.add_folder(base_calls)
-    kive_watcher.add_sample_group(base_calls, SampleGroup('2120A', ('2120A-PR_S14_L001_R1_001.fastq.gz', None)))
-    kive_watcher.add_sample_group(base_calls, SampleGroup('2110A', ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None)))
+    kive_watcher.add_sample_group(
+        base_calls,
+        SampleGroup('2120A',
+                    ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
+                    ('PR', None)))
+    kive_watcher.add_sample_group(
+        base_calls,
+        SampleGroup('2110A',
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
 
     kive_watcher.collate_folder(folder_watcher, PipelineType.MIXED_HCV_MAIN)
 
     assert expected_cascade_path.exists()
     assert expected_done_path.exists()
+
+
+def test_collate_csv():
+    source1 = StringIO("""\
+a,b,c
+1,2,3
+_,-,=
+""")
+    source2 = StringIO("""\
+a,b,c
+10,20,30
+""")
+    expected_target = """\
+sample,a,b,c
+E12345,1,2,3
+E12345,_,-,=
+E22222,10,20,30
+"""
+    target = StringIO()
+
+    KiveWatcher.extract_csv(source1, target, 'E12345', source_count=0)
+    KiveWatcher.extract_csv(source2, target, 'E22222', source_count=1)
+
+    assert target.getvalue() == expected_target
+
+
+def test_collate_csv_with_sample_already_filled():
+    source1 = StringIO("""\
+sample,a,b,c
+E12345,1,2,3
+E12345,_,-,=
+""")
+    source2 = StringIO("""\
+sample,a,b,c
+E22222,10,20,30
+""")
+    expected_target = """\
+sample,a,b,c
+E12345,1,2,3
+E12345,_,-,=
+E22222,10,20,30
+"""
+    target = StringIO()
+
+    KiveWatcher.extract_csv(source1, target, 'ignored', source_count=0)
+    KiveWatcher.extract_csv(source2, target, 'ignored', source_count=1)
+
+    assert target.getvalue() == expected_target

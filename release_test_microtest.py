@@ -4,13 +4,15 @@ import os
 import shutil
 import typing
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-from csv import DictReader
-from multiprocessing.pool import Pool
+from concurrent.futures.process import ProcessPoolExecutor
+from csv import DictReader, DictWriter
 from operator import itemgetter
 from pathlib import Path
 from subprocess import run, PIPE, CalledProcessError
 from tempfile import mkdtemp
 from traceback import print_exc
+
+import sys
 
 from micall.monitor.find_groups import find_groups, SampleGroup
 
@@ -120,7 +122,7 @@ class ResultsFolder:
             pos = int(row['refseq.nuc.pos'])
             assert row['seed'] in expected_seeds, pos
             assert row['region'] == 'GP41', pos
-            if 3 < pos <= 90:
+            if 3 < pos <= 111:
                 assert row['coverage'] == '10', pos
             else:
                 assert row['coverage'] == '0', pos
@@ -135,9 +137,9 @@ class ResultsFolder:
         conseq_rows = list(self.read_file('2040A-HLA-B_S6', 'conseq.csv'))
         num_rows = len(conseq_rows)
         assert num_rows == 7, num_rows
-        max_row = conseq_rows[0]
-        cutoff = max_row['consensus-percent-cutoff']
-        assert cutoff == 'MAX', cutoff
+        max_row = conseq_rows[5]
+        cutoff = float(max_row['consensus-percent-cutoff'])
+        assert cutoff == 0.2, cutoff
         conseq = max_row['sequence']
 
         # Check for mixture
@@ -161,10 +163,10 @@ class ResultsFolder:
             assert row['seed'] == 'HIV1-B-FR-K03455-seed', row['seed']
             assert row['region'] == 'PR', row['region']
             pos = int(row['refseq.nuc.pos'])
-            if 118 <= pos <= 207:
-                assert row['coverage'] == '13', pos
+            if 118 <= pos <= 240:
+                assert row['coverage'] == '15', pos
                 if 133 <= pos <= 135:
-                    assert row['del'] == '13', pos
+                    assert row['del'] == '15', pos
                 elif 193 <= pos <= 195:
                     assert row['del'] == '3', pos
             else:
@@ -179,9 +181,9 @@ class ResultsFolder:
         regions = set(map(itemgetter('region'), conseq_rows))
         if self.is_denovo:
             expected_regions = {'HIV1-CON-XX-Consensus-seed',
-                                '2-HIV1-B-FR-K03455-seed',
-                                '3-HIV1-B-FR-K03455-seed',
-                                '1-HCV-1a'}
+                                '1-HIV1-B-FR-K03455-seed',
+                                '2-HCV-1a',
+                                '3-HIV1-B-FR-K03455-seed'}
         else:
             expected_regions = {'HIV1-CON-XX-Consensus-seed',
                                 'HCV-1a',
@@ -248,7 +250,7 @@ class ResultsFolder:
     def check_2130(self):
         conseq_rows = list(self.read_file('2130A-HCV_S15', 'conseq.csv'))
         regions = set(map(itemgetter('region'), conseq_rows))
-        expected_regions = ({'1-HCV-2a'}
+        expected_regions = ({'1-HCV-2a', '2-HCV-2a'}
                             if self.is_denovo
                             else {'HCV-2a'})
         assert regions == expected_regions, regions
@@ -308,7 +310,7 @@ class ResultsFolder:
             coverage = int(row['coverage'])
             coverage_message = f'{coverage} coverage at {pos}'
             if row['region'] == 'HCV1A-H77-NS5a':
-                if pos < 20:
+                if pos < 15:
                     assert coverage < 10, coverage_message
                 elif 50 <= pos:
                     assert 10 < coverage, coverage_message
@@ -318,7 +320,7 @@ class ResultsFolder:
             elif row['region'] == 'HCV2-JFH-1-NS5a':
                 if pos < 15:
                     assert coverage < 10, coverage_message
-                elif 100 <= pos < 449:
+                elif 100 <= pos:
                     assert 10 < coverage, coverage_message
             else:
                 assert row['region'] == 'HCV2-JFH-1-NS5b', row['region']
@@ -344,6 +346,35 @@ class ResultsFolder:
                 assert row['region'] == 'V3LOOP', row['region']
                 assert row['seed'] == 'HIV1-CON-XX-Consensus-seed', row['seed']
                 assert 10 < coverage, coverage_message
+
+    def check_2190(self):
+        mutation_rows = self.read_file('2190A-SARSCOV2_S23', 'nuc_mutations.csv')
+        mutations = [''.join(fields)
+                     for fields in map(itemgetter('wt', 'refseq_nuc_pos', 'var'),
+                                       mutation_rows)]
+        assert mutations == ['T13199C', 'T23C'], mutations
+
+    def check_2200(self):
+        amino_rows = list(self.read_file('2200A-SARSCOV2_S24', 'amino.csv'))
+        assert amino_rows
+        for row in amino_rows:
+            pos = int(row['refseq.aa.pos'])
+            coverage = int(row['coverage'])
+            coverage_message = f'{coverage} coverage at {pos}'
+            assert row['region'] in ('SARS-CoV-2-nsp1', 'SARS-CoV-2-ORF1ab'), row
+            if 27 <= pos <= 102:
+                assert coverage == 100, coverage_message
+            else:
+                assert coverage == 0, coverage_message
+
+    def check_2210(self):
+        conseq_rows = [row
+                       for row in self.read_file('2210A-NFLHIVDNA_S25',
+                                                 'conseq_all.csv')
+                       if not row['region']]  # Whole-genome conseq only.
+        assert len(conseq_rows) == 1, len(conseq_rows)
+        conseq = conseq_rows[0]['sequence']
+        assert 585 <= len(conseq), len(conseq)
 
 
 def gzip_compress(source_path: Path, target_path: Path):
@@ -399,6 +430,14 @@ class SampleRunner:
         fastq_input2 = input_path / fastq_file2.name
         gzip_compress(fastq_file, fastq_input1)
         gzip_compress(fastq_file2, fastq_input2)
+        sample_info_path = input_path / 'sample_info.csv'
+        with sample_info_path.open('w') as f:
+            writer = DictWriter(f, ['sample', 'project'])
+            writer.writeheader()
+            sections = sample_name.split('_')
+            fields = sections[0].split('-')
+            project_code = fields[-1]
+            writer.writerow(dict(sample=sample_name, project=project_code))
         output_names = ['g2p.csv',
                         'g2p_summary.csv',
                         'remap_counts.csv',
@@ -412,6 +451,7 @@ class SampleRunner:
                         'amino.csv',
                         'coord_ins.csv',
                         'conseq.csv',
+                        'conseq_all.csv',
                         'conseq_region.csv',
                         'failed_align.csv',
                         'coverage_scores.csv',
@@ -422,7 +462,8 @@ class SampleRunner:
                         'genome_coverage.svg']
         output_paths = [output_path/name for name in output_names]
         app_name = 'denovo' if self.is_denovo else None
-        run_with_retries(self.build_command([fastq_input1,
+        run_with_retries(self.build_command([sample_info_path,
+                                             fastq_input1,
                                              fastq_input2,
                                              self.bad_cycles_path],
                                             output_paths,
@@ -440,9 +481,12 @@ class SampleRunner:
             output_path: Path = main_scratch / 'output'
             input_path: Path = main_scratch / 'input_resistance'
         main_amino_path = output_path / 'amino.csv'
+        main_nuc_path = output_path / 'nuc.csv'
         input_path.mkdir()
         main_amino_input = input_path / 'main_amino.csv'
+        main_nuc_input = input_path / 'main_nuc.csv'
         shutil.copy(str(main_amino_path), str(main_amino_input))
+        shutil.copy(str(main_nuc_path), str(main_nuc_input))
         if midi_fastq_path is None:
             midi_amino_input = main_amino_input
         else:
@@ -460,14 +504,18 @@ class SampleRunner:
         output_path2.mkdir()
         output_names = ['resistance.csv',
                         'mutations.csv',
+                        'nuc_mutations.csv',
                         'resistance_fail.csv',
                         'resistance.pdf',
                         'resistance_consensus.csv']
         output_paths = [output_path2/name for name in output_names]
-        run_with_retries(
-            self.build_command([main_amino_input, midi_amino_input],
-                               output_paths,
-                               app_name='resistance'))
+        command_args = self.build_command([main_amino_input,
+                                           midi_amino_input,
+                                           main_nuc_input],
+                                          output_paths,
+                                          app_name='resistance')
+        # print(*command_args)
+        run_with_retries(command_args)
         return sample_group.enum
 
     def build_command(self, inputs, outputs, app_name=None):
@@ -498,7 +546,9 @@ def find_full_groups(fastq_files, sandbox_path):
     for group in groups:
         full_names = tuple(name and (sandbox_path / name)
                            for name in group.names)
-        full_groups.append(SampleGroup(group.enum, full_names))
+        full_groups.append(SampleGroup(group.enum,
+                                       full_names,
+                                       group.project_codes))
     return full_groups
 
 
@@ -515,11 +565,12 @@ def run_with_retries(command_args: typing.List[str], retries=2):
 
 
 def main():
-    # noinspection PyTypeChecker
     parser = ArgumentParser(description='Validate with small test samples.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--sandbox',
                         help='Folder to copy microtest samples into.')
+    parser.add_argument('--sample',
+                        help='Prefix of sample name to run.')
     # noinspection PyTypeChecker
     parser.add_argument('image',
                         type=Path,
@@ -541,29 +592,35 @@ def main():
             target_file: Path = sandbox_path / source_file.name
             shutil.copy(str(source_file), str(target_file))
     runner = SampleRunner(args.image)
-    pool = Pool()
-    fastq_files = sorted(sandbox_path.glob('*_R1_*.fastq'))
-    sample_groups = find_full_groups(fastq_files, sandbox_path)
-    try:
-        runner.process_quality(sandbox_path / 'quality.csv')
-        for sample in pool.map(runner.process_sample, fastq_files):
-            print(f'Processed {sample}.')
-        for sample_enum in pool.map(runner.process_resistance, sample_groups):
-            print(f'Processed resistance for {sample_enum}.')
-        runner.is_denovo = True
-        for sample in pool.map(runner.process_sample, fastq_files):
-            print(f'Processed denovo {sample}.')
-        for sample_enum in pool.map(runner.process_resistance, sample_groups):
-            print(f'Processed resistance for denovo {sample_enum}.')
-    except CalledProcessError as ex:
-        print(ex.stderr.decode('utf8'))
-        raise
+    with ProcessPoolExecutor() as pool:
+        search_pattern = '*_R1_*.fastq'
+        if args.sample:
+            search_pattern = args.sample + search_pattern
+        fastq_files = sorted(sandbox_path.glob(search_pattern))
+        sample_groups = find_full_groups(fastq_files, sandbox_path)
+        try:
+            runner.process_quality(sandbox_path / 'quality.csv')
+            for sample in pool.map(runner.process_sample, fastq_files):
+                print(f'Processed {sample}.')
+            for sample_enum in pool.map(runner.process_resistance, sample_groups):
+                print(f'Processed resistance for {sample_enum}.')
+            runner.is_denovo = True
+            for sample in pool.map(runner.process_sample, fastq_files):
+                print(f'Processed denovo {sample}.')
+            for sample_enum in pool.map(runner.process_resistance, sample_groups):
+                print(f'Processed resistance for denovo {sample_enum}.')
+        except CalledProcessError as ex:
+            print(ex.stderr.decode('utf8'))
+            raise
 
     results_folder = ResultsFolder(sandbox_path, is_denovo=False)
     folder_methods = inspect.getmembers(results_folder, inspect.ismethod)
+    check_pattern = 'check_'
+    if args.sample:
+        check_pattern += args.sample
     check_methods = [(name, method)
                      for name, method in folder_methods
-                     if name.startswith('check_')]
+                     if name.startswith(check_pattern)]
     error_count = 0
     for name, method in check_methods:
         if not inspect.signature(method).parameters:
@@ -573,7 +630,7 @@ def main():
             try:
                 method()
             except AssertionError:
-                print_exc()
+                print_exc(file=sys.stdout)
                 error_count += 1
 
             print(name, '(denovo)')
@@ -581,7 +638,7 @@ def main():
             try:
                 method()
             except AssertionError:
-                print_exc()
+                print_exc(file=sys.stdout)
                 error_count += 1
     print('Finished checking.')
     assert error_count == 0, error_count

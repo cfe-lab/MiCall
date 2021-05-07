@@ -183,7 +183,15 @@ def write_report_one_column(report_templates, fname, sample_name=None):
             if doc_els:
                 doc_els.append(PageBreak())
             got_dc_set = report_template.get_reported_drug_classes(genotype)
+            got_drugs = report_template.get_reported_drugs(genotype)
             cfg_dct = report_template.virus_config
+            known_drug_codes = {drug_code
+                                for drug_class in cfg_dct['known_drugs'].values()
+                                for drug_code, drug_name in drug_class}
+            unknown_drug_codes = got_drugs - known_drug_codes
+            if unknown_drug_codes:
+                raise ValueError(
+                    f'Unknown drug codes: {", ".join(unknown_drug_codes)}')
             col_tab = cfg_dct["resistance_level_colours"]
             level_coltab = dict([(k, (colors.HexColor(v[1]), colors.HexColor(v[2])))
                                  for k, v in col_tab.items()])

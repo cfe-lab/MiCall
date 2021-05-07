@@ -2,8 +2,8 @@
 <!DOCTYPE ALGORITHM SYSTEM "https://cms.hivdb.org/prod/downloads/asi/ASI2.2.dtd">
 <ALGORITHM>
   <ALGNAME>HIVDB</ALGNAME>
-  <ALGVERSION>8.9-1</ALGVERSION>
-  <ALGDATE>2019-10-25</ALGDATE>
+  <ALGVERSION>9.0</ALGVERSION>
+  <ALGDATE>2021-03-01</ALGDATE>
   <DEFINITIONS>
     <GENE_DEFINITION>
       <NAME>PR</NAME>
@@ -56,10 +56,18 @@
     </DRUGCLASS>
     <DRUGCLASS>
       <NAME>INSTI</NAME>
-      <DRUGLIST>BIC,DTG,EVG,RAL</DRUGLIST>
+      <DRUGLIST>BIC,CAB,DTG,EVG,RAL</DRUGLIST>
     </DRUGCLASS>
     <GLOBALRANGE><![CDATA[(-INF TO 9 => 1,  10 TO 14 => 2,  15 TO 29 => 3,  30 TO 59 => 4,  60 TO INF => 5)]]></GLOBALRANGE>
     <COMMENT_DEFINITIONS>
+      <COMMENT_STRING id="CABIntermediate">
+        <TEXT><![CDATA[This virus is predicted to have intermediate-level reduced susceptibility to CAB. The use of the combination of CAB/RPV should be considered to be contraindicated.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="CABLow">
+        <TEXT><![CDATA[This virus is predicted to have low-level reduced susceptibility to CAB. The use of the combination of CAB/RPV should be considered to be relatively contraindicated.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
       <COMMENT_STRING id="DRVHigh">
         <TEXT><![CDATA[There is evidence for high-level DRV resistance. If DRV is administered it should be used twice daily.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
@@ -101,23 +109,27 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN118ACDEFHIKLMNPQSTVWY_-">
-        <TEXT><![CDATA[G118R is an extremely rare non-polymorphic mutation selected in patients receiving RAL and DTG and in vitro by DTG. It causes intermediate reductions in RAL and EVG susceptibility and low-level reductions in DTG and BIC susceptibility. $listMutsIn{118(NOT R)} is an unusual mutation at this position.]]></TEXT>
+        <TEXT><![CDATA[G118R is a rare non-polymorphic mutation selected in patients receiving RAL and DTG and in vitro by DTG. Depending on the mutational context it causes 3 to 30-fold reduced susceptibility to each of the INSTIs. $listMutsIn{118(NOT R)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN118R">
-        <TEXT><![CDATA[G118R is a rare non-polymorphic mutation selected in patients receiving RAL and DTG and in vitro by DTG. It causes a variable reduction in susceptibility to each of the INSTIs of about 5-fold.]]></TEXT>
+        <TEXT><![CDATA[G118R is a rare non-polymorphic mutation selected in patients receiving RAL and DTG and in vitro by DTG. Depending on the mutational context it causes 3 to 30-fold reduced susceptibility to each of the INSTIs.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN119R">
         <TEXT><![CDATA[S119R is a polymorphic mutation that is weakly selected by INSTIs usually in combination with several major INSTI-associated DRMs. Alone, it has little, if any effect, on INSTI susceptibility . ]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
-      <COMMENT_STRING id="IN121ACDEGHIKLMNPQRSTVW_-">
-        <TEXT><![CDATA[F121Y is a non-polymorphic mutation selected in vitro by RAL and EVG. It has been reported rarely in patients receiving RAL. It causes intermediate to high-level reductions in RAL and EVG susceptibility but does not appear to reduce DTG or BIC susceptibility. $listMutsIn{121(NOT Y)} is an unusual mutation at this position.]]></TEXT>
+      <COMMENT_STRING id="IN121ADEGHIKLMNPQRSTVW_-">
+        <TEXT><![CDATA[F121Y is a non-polymorphic mutation selected in vitro by RAL and EVG. It has been reported rarely in patients receiving RAL. It causes intermediate to high-level reductions in RAL and EVG susceptibility but does not appear to reduce DTG or BIC susceptibility. F121C is an exceedingly rare mutation that has been reported to cause high-level resistance to RAL, EVG, and CAB but low-level reduced susceptibility to DRG and BIC. $listMutsIn{121(NOT Y)} is an unusual mutation at this position.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="IN121C">
+        <TEXT><![CDATA[F121C is a rare mutation; preliminary data suggests it confers high level phenotypic resistance to RAL, EVG, and CAB.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN121Y">
-        <TEXT><![CDATA[F121Y is a non-polymorphic mutation selected in vitro by RAL and EVG. It has been reported rarely in patients receiving RAL. It causes intermediate to high-level reductions in RAL and EVG susceptibility but does not appear to reduce DTG or BIC susceptibility.]]></TEXT>
+        <TEXT><![CDATA[F121Y is a non-polymorphic mutation selected in vitro by RAL and EVG. It has been reported rarely in patients receiving RAL. It causes intermediate to high-level reductions in RAL and EVG susceptibility but does not appear to reduce DTG or BIC susceptibility. F121C is an exceedingly rare mutation that has been reported to cause high-level resistance to RAL, EVG, and CAB but low-level reduced susceptibility to DRG and BIC.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN128T">
@@ -137,31 +149,27 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN140DEFHIKLMNPQTVWY_-">
-        <TEXT><![CDATA[G140S/A/C are non-polymorphic mutations that usually occur with Q148 mutations. Alone, they have minimal effects on INSTI susceptibility. However, in combination with Q148 mutations they are associated with high-level resistance to RAL and EVG and intermediate reductions in DTG and BIC susceptibility. $listMutsIn{140(NOT SACR)} is an unusual mutation at this position.]]></TEXT>
+        <TEXT><![CDATA[G140S/A/C are non-polymorphic mutations that usually occur with Q148 mutations. Alone, they have minimal effects on INSTI susceptibility. However, in combination with Q148 mutations they are associated with high-level resistance to RAL and EVG and intermediate reductions in DTG and BIC susceptibility. Their appearance may suggest that a Q148 mutation may have once been present. $listMutsIn{140(NOT SACR)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN140R">
-        <TEXT><![CDATA[G140R is a nonpolymorphic mutation reported in one patient receiving the investigational INSTI cabotegravir. It appears to reduce cabotegravir susceptibility by 5-10-fold.]]></TEXT>
+        <TEXT><![CDATA[G140R is a nonpolymorphic mutation reported in n macaques receiving CAB pre-exposure prophylaxis and in a person receiving simplification therapy with RPV/CAB. It reduces CAB susceptibility by 7-fold.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN140SAC">
-        <TEXT><![CDATA[G140S/A/C are non-polymorphic mutations that usually occur with Q148 mutations. Alone, they have minimal effects on INSTI susceptibility. However, in combination with Q148 mutations they are associated with high-level resistance to RAL and EVG and intermediate reductions in DTG and BIC susceptibility.]]></TEXT>
+        <TEXT><![CDATA[G140S/A/C are non-polymorphic mutations that usually occur with Q148 mutations. Alone, they have minimal effects on INSTI susceptibility. However, in combination with Q148 mutations they are associated with high-level resistance to RAL and EVG and intermediate reductions in DTG and BIC susceptibility. Their appearance may suggest that a Q148 mutation may have once been present.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN142T">
         <TEXT><![CDATA[P142T is a rare nonpolymorphic mutation selected in vitro and in vivo by RAL. It usually occurs in combination with other INSTI-resistance mutations. Its effect on susceptibility has not been studied.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
-      <COMMENT_STRING id="IN143CR">
-        <TEXT><![CDATA[Y143C/R are non-polymorphic mutations associated with high-level RAL resistance. Alone, they have minimal effects on EVG susceptibility. However, they are associated with intermediate reductions in EVG susceptibility when they occur in combination with one or more accessory INSTI-resistance mutations. Y143 mutations do not reduce DTG or BIC susceptibility.]]></TEXT>
+      <COMMENT_STRING id="IN143CRH">
+        <TEXT><![CDATA[Y143C/R/H are non-polymorphic mutations associated with high-level RAL resistance. Alone, they have minimal effects on EVG susceptibility. However, they are associated with intermediate reductions in EVG susceptibility when they occur in combination with one or more accessory INSTI-resistance mutations. Y143 mutations do not reduce susceptibility to DTG, BIC, or CAB.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN143DEFILMNPQTVW_-">
-        <TEXT><![CDATA[Y143C/R are non-polymorphic mutations associated with high-level RAL resistance. Alone, they have minimal effects on EVG susceptibility. However, they are associated with intermediate to high-level reductions in EVG susceptibility when they occur in combination with one or more accessory INSTI-resistance mutations. Y143 mutations do not reduce DTG or BIC susceptibility. $listMutsIn{143(NOT CRHKGSA)} is an unusual mutation at this position.]]></TEXT>
-        <SORT_TAG>1</SORT_TAG>
-      </COMMENT_STRING>
-      <COMMENT_STRING id="IN143H">
-        <TEXT><![CDATA[Y143C/R are non-polymorphic mutations associated with high-level RAL resistance. Alone, they have minimal effects on EVG susceptibility. However, they are associated with intermediate reductions in EVG susceptibility when they occur in combination with one or more accessory INSTI-resistance mutations. Y143 mutations do not reduce DTG or BIC susceptibility. Y143H is a less-common mutation at this position that is likely a transitional mutation between the wildtype Y amino acid and the mutant R (which differs from the wildtype Y by two nucleotides).]]></TEXT>
+        <TEXT><![CDATA[Y143C/R/H are non-polymorphic mutations associated with high-level RAL resistance. Alone, they have minimal effects on EVG susceptibility. However, they are associated with intermediate reductions in EVG susceptibility when they occur in combination with one or more accessory INSTI-resistance mutations. Y143 mutations do not reduce susceptibility to DTG, BIC, or CAB. $listMutsIn{143(NOT CRHKGSA)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN143KGSA">
@@ -169,23 +177,23 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN145ACDEFGHIKLMNQRTVWY_-">
-        <TEXT><![CDATA[P145S is a rare non-polymorphic mutation selected in vitro by EVG and rarely in patients receiving EVG. It causes high-level resistance to EVG but not to RAL or DTG. $listMutsIn{145(NOT S)} is an unusual mutation at this position.]]></TEXT>
+        <TEXT><![CDATA[P145S is a rare non-polymorphic mutation selected in vitro by EVG and rarely in patients receiving EVG. It causes high-level resistance to EVG but not to any other INSTI. $listMutsIn{145(NOT S)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN145S">
-        <TEXT><![CDATA[P145S is a rare non-polymorphic mutation selected in vitro by EVG and rarely in patients receiving EVG. It causes high-level resistance to EVG but not to RAL or DTG.]]></TEXT>
+        <TEXT><![CDATA[P145S is a rare non-polymorphic mutation selected in vitro by EVG and rarely in patients receiving EVG. It causes high-level resistance to EVG but not to any other INSTI.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN146ACDEFGHIKLMNRSTVWY_-">
-        <TEXT><![CDATA[Q146P is a rare non-polymorphic mutation selected in vitro by EVG which causes low-to-intermediate reductions in EVG susceptibility. $listMutsIn{146(NOT P)} is an unusual mutation at this position.]]></TEXT>
+        <TEXT><![CDATA[Q146P is a rare non-polymorphic mutation selected in vitro by EVG which causes low-to-intermediate reductions in EVG and CAB susceptibility. $listMutsIn{146(NOT P)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN146P">
-        <TEXT><![CDATA[Q146P is a rare non-polymorphic mutation selected in vitro by EVG which causes low-to-intermediate reductions in EVG susceptibility.]]></TEXT>
+        <TEXT><![CDATA[Q146P is a rare non-polymorphic mutation selected in vitro by EVG which causes low-to-intermediate reductions in EVG and CAB susceptibility.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN147ACDEFHIKLMNPQRTVWY_-">
-        <TEXT><![CDATA[S147G is a non-polymorphic mutation selected primarily in patients receiving EVG. It moderately reduces EVG susceptibility. It does not reduce RAL, DTG, or BIC susceptibility. $listMutsIn{147(NOT G)} is an unusual mutation at this position.]]></TEXT>
+        <TEXT><![CDATA[S147G is a non-polymorphic mutation selected primarily in patients receiving EVG and less commonly in patients receiving RAL and DTG. It moderately reduces EVG susceptibility. It does not reduce RAL, DTG, or BIC susceptibility. $listMutsIn{147(NOT G)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN147G">
@@ -193,15 +201,15 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN148ACDEFGILMPSTVWY_-">
-        <TEXT><![CDATA[Q148H/K/R are non-polymorphic mutations selected by RAL, EVG, and rarely DTG. Q148H/R/K are associated with high-level reductions in RAL and EVG susceptibility particularly when they occur In combination with E138 or G140 mutations. Alone, Q148H/K/R have minimal effects on DTG and BIC susceptibility. But in combination with E138 and G140 mutations they cause moderate and occasionally high-level reductions in DTG and BIC susceptibility. $listMutsIn{148(NOT HKRN)} is an unusual mutation at this position.]]></TEXT>
+        <TEXT><![CDATA[Q148H/K/R are non-polymorphic mutations selected by RAL, EVG, and rarely DTG. They nearly always occur in combination with G140A/S or E138K. In this setting they are associated with near complete resistance to RAL and EVG, high-levels of reduction in CAB susceptibility, and intermediate reductions in DTG and BIC susceptibility. The presence of Q148H/K/R plus two INSTI DRMs is usually associated with high-level reductions in susceptibility to all INSTIs. $listMutsIn{148(NOT HKRN)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN148HKR">
-        <TEXT><![CDATA[Q148H/K/R are non-polymorphic mutations selected by RAL, EVG, and rarely DTG. Q148H/R/K are associated with high-level reductions in RAL and EVG susceptibility particularly when they occur In combination with E138 or G140 mutations. Alone, Q148H/K/R have minimal effects on DTG and BIC susceptibility. But in combination with E138 and G140 mutations they cause moderate and occasionally high-level reductions in DTG and BIC susceptibility.]]></TEXT>
+        <TEXT><![CDATA[Q148H/K/R are non-polymorphic mutations selected by RAL, EVG, and rarely DTG. They nearly always occur in combination with G140A/S or E138K. In this setting they are associated with near complete resistance to RAL and EVG, high-levels of reduction in CAB susceptibility, and intermediate reductions in DTG and BIC susceptibility. The presence of Q148H/K/R plus two INSTI DRMs is usually associated with high-level reductions in susceptibility to all INSTIs.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN148N">
-        <TEXT><![CDATA[Q148H/K/R are non-polymorphic mutations selected by RAL, EVG, and rarely DTG. Q148H/R/K are associated with high-level reductions in RAL and EVG susceptibility particularly when they occur In combination with E138 or G140 mutations. Alone, Q148H/K/R have minimal effects on DTG and BIC susceptibility. But in combination with E138 and G140 mutations they cause moderate and occasionally high-level reductions in DTG and BIC susceptibility. Q148N is a rare INSTI-selected mutation that causes ~3-fold reduced EVG susceptibility and may represent a reversion from Q148H or Q148K.]]></TEXT>
+        <TEXT><![CDATA[Q148H/K/R are non-polymorphic mutations selected by RAL, EVG, and rarely DTG. They nearly always occur in combination with G140A/S or E138K. In this setting they are associated with near complete resistance to RAL and EVG, high-levels of reduction in CAB susceptibility, and intermediate reductions in DTG and BIC susceptibility. The presence of Q148H/K/R plus two INSTI DRMs is usually associated with high-level reductions in susceptibility to all INSTIs. Q148N is a rare INSTI-selected mutation that causes ~3-fold reduced EVG susceptibility and may represent a reversion from Q148H or Q148K.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN149A">
@@ -213,7 +221,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN151CDEFGHKMNPQRSTWY_-">
-        <TEXT><![CDATA[V151I is an accessory INSTI selected mutation that occurs in 1% to 5% of viruses from ARV-naive patients depending on subtype. It appears to have little or no effect on INSTI susceptibility. V151L is an extremely rare non-polymorphic mutation that confers intermediate / high-level reduced susceptibility to RAL and EVG and low-level reduced susceptibility to DTG. V151A is an extremely rare non-polymorphic mutation associated with minimally reduced susceptibility to RAL and EVG. $listMutsIn{151(NOT IAL)} is an unusual mutation at this position.]]></TEXT>
+        <TEXT><![CDATA[V151I is an accessory INSTI selected mutation that occurs in 1% to 5% of viruses from ARV-naive patients depending on subtype. Alone, it appears to have little or no effect on INSTI susceptibility. V151L is an extremely rare non-polymorphic mutation that confers intermediate / high-level reduced susceptibility to RAL and EVG and low-level reduced susceptibility to DTG. V151A is an extremely rare non-polymorphic mutation associated with minimally reduced susceptibility to RAL and EVG. $listMutsIn{151(NOT IAL)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN151I">
@@ -233,7 +241,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN155ACDEFGIKLMPQRVWY_-">
-        <TEXT><![CDATA[N155H is a non-polymorphic mutation selected in patients receiving RAL, EVG, and rarely DTG. It is associated with high-level reductions in RAL and EVG susceptibility. It causes low-level reductions in DTG susceptibility. N155S/T are rare non-polymorphic mutations selected in vitro by investigational INSTIs. They reduce RAL and EVG susceptibility somewhat less than does N155H. $listMutsIn{155(NOT HST)} is an unusual mutation at this position.]]></TEXT>
+        <TEXT><![CDATA[N155H is a non-polymorphic mutation selected in patients receiving RAL, EVG, and rarely DTG. It is associated with high-level reductions in RAL and EVG susceptibility. It causes low-level reductions in DTG susceptibility. N155S/T are extremely rare non-polymorphic mutations selected in vitro by investigational INSTIs. They reduce RAL and EVG susceptibility somewhat less than does N155H. $listMutsIn{155(NOT HST)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN155H">
@@ -257,7 +265,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN230R">
-        <TEXT><![CDATA[S230R is a non-polymorphic mutation selected by RAL, EVG, and DTG. It causes low-level reductions in DTG susceptibility.]]></TEXT>
+        <TEXT><![CDATA[S230R is a non-polymorphic mutation selected by RAL, EVG, and DTG. It possibly causes low-level reductions in DTG susceptibility.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN232N">
@@ -269,7 +277,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN263K">
-        <TEXT><![CDATA[R263K is selected in vitro by EVG, DTG, and BIC, and in patients receiving DTG. It reduces DTG and BIC susceptibility about 2-fold and EVG susceptibility somewhat more. ]]></TEXT>
+        <TEXT><![CDATA[R263K is selected in vitro by EVG, DTG, and BIC, and in patients receiving DTG. It reduces DTG and BIC susceptibility about 2-fold and EVG susceptibility somewhat more.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN49G">
@@ -281,35 +289,35 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN51ACDEFGIKLMNPQRSTVW_-">
-        <TEXT><![CDATA[H51Y is a rare non-polymorphic accessory mutation selected in patients receiving RAL and EVG and in vitro by DTG. H51Y reduces EVG susceptibility 2 to 3-fold. It does not reduce RAL or DTG susceptibility. $listMutsIn{51(NOT Y)} is an unusual mutation at this position.]]></TEXT>
+        <TEXT><![CDATA[H51Y is a rare non-polymorphic accessory mutation selected in patients receiving RAL and EVG and in vitro by DTG. H51Y minimally reduces EVG and possibly CAB susceptibility. $listMutsIn{51(NOT CY)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN51Y">
-        <TEXT><![CDATA[H51Y is a rare non-polymorphic accessory mutation selected in patients receiving RAL and EVG and in vitro by DTG. H51Y minimally reduces EVG susceptibility (~2 to 3-fold). It does not reduce RAL or DTG susceptibility.]]></TEXT>
+        <TEXT><![CDATA[H51Y is a rare non-polymorphic accessory mutation selected in patients receiving RAL and EVG and in vitro by DTG. H51Y minimally reduces EVG and possibly CAB susceptibility.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN66A">
-        <TEXT><![CDATA[T66A is a non-polymorphic mutation selected in patients receiving EVG and RAL, usually in combination with other INSTI-resistance mutations. It causes a moderate reduction in EVG susceptibility but does not appear to reduce RAL, DTG, or BIC susceptibility.]]></TEXT>
+        <TEXT><![CDATA[T66A is a non-polymorphic mutation selected in patients receiving EVG and RAL, usually in combination with other INSTI-resistance mutations. It causes a moderate reduction in EVG susceptibility but does not appear to reduce susceptibility to other INSTIs.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN66CDEFGHLMNPQRSVWY_-">
-        <TEXT><![CDATA[T66A/I/K are non-polymorphic mutations selected primarily by EVG. T66K is associated with high-level EVG resistance, intermediate/high-level RAL resistance, and low-level DTG resistance. Its effect on BIC is not known. $listMutsIn{66(NOT IAK)} is an unusual mutation at this position.]]></TEXT>
+        <TEXT><![CDATA[T66A/I/K are non-polymorphic mutations selected primarily by EVG. T66K is associated with high-level EVG resistance, intermediate/high-level RAL resistance, and low-level DTG and CAB resistance. Its effect on BIC is not known. $listMutsIn{66(NOT IAK)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN66I">
-        <TEXT><![CDATA[T66I is a non-polymorphic mutation selected in patients receiving EVG, RAL, and DTG. It reduces EVG susceptibility about 10-fold but does not reduce RAL, DTG, or BIC susceptibility.]]></TEXT>
+        <TEXT><![CDATA[T66I is a non-polymorphic mutation selected in patients receiving EVG, RAL, and DTG. It reduces EVG susceptibility about 10-fold but does not reduce susceptibility to other INSTIs.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN66K">
-        <TEXT><![CDATA[T66K is a non-polymorphic mutation selected in patients receiving EVG. It is associated with high-level EVG resistance, intermediate/high-level RAL resistance, and low-level DTG resistance. Its effect on BIC is not known.]]></TEXT>
+        <TEXT><![CDATA[T66K is a non-polymorphic mutation selected in patients receiving EVG. It is associated with high-level EVG resistance, intermediate/high-level RAL resistance, and low-level DTG and CAB resistance. Its effect on BIC is not known.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN74MIF">
-        <TEXT><![CDATA[L74M/I are polymorphic accessory mutations commonly selected by each of the INSTIs. In ARV-naive patients, L74M occurs in 0.5% to 10% of patients and L74I occurs in 3% to 20% of patients depending on subtype. Alone, L74M/I have minimal, if any, effect on INSTI susceptibility. However, they contribute reduced susceptibility to each of the INSTIs when they occur with major INSTI-resistance mutations. L74F is a rare nonpolymorphic mutation which also contributes reduced susceptibility when it occurs with other INSTI-resistance mutations.]]></TEXT>
+        <TEXT><![CDATA[L74M is a polymorphic accessory mutations commonly selected by each of the INSTIs. In ARV-naive patients, L74M occurs in 0.5% to 5% of patients depending on subtype. L74I occurs in 4% to 40% of patients depending on subtype. L74I is the consensus amino acid for subtype A6 and does not appear to be selected by INSTI therapy. Alone, L74M/I have minimal, if any, effect on INSTI susceptibility. However, L74M and possibly L74I reduce susceptibility to each of the INSTIs when they occur with major INSTI-resistance mutations. L74F is a rare nonpolymorphic mutation which also contributes reduced susceptibility when it occurs with other INSTI-resistance mutations.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN92ACDFHIKLMNPRSTWY_-">
-        <TEXT><![CDATA[E92Q is a common non-polymorphic mutation selected in patients receiving RAL and EVG. It reduces RAL susceptibility 5 to 10-fold and EVG susceptibility ~30-fold. It is selected in vitro by DTG and reduces DTG susceptibility ~1.5-fold. $listMutsIn{92(NOT GQV)} is an unusual mutation at this position.]]></TEXT>
+        <TEXT><![CDATA[E92Q is a common non-polymorphic mutation selected in patients receiving RAL and EVG. It reduces RAL susceptibility 5 to 10-fold and EVG susceptibility ~30-fold. It is selected in vitro by DTG and reduces DTG susceptibility ~1.5-fold. It does not appear to reduce BIC susceptibility. $listMutsIn{92(NOT GQV)} is an unusual mutation at this position.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN92G">
@@ -321,7 +329,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN92V">
-        <TEXT><![CDATA[E92V is a rare non-polymorphic mutation selected in vitro by an investigational INSTI. It causes intermediate and high-level reductions in EVG and RAL susceptibility, respectively.]]></TEXT>
+        <TEXT><![CDATA[E92V is a rare non-polymorphic mutation selected in vitro by an investigational INSTI. It causes high-level resistance to EVG and intermediate resistance to RAL.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN95K">
@@ -329,7 +337,7 @@
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="IN97A">
-        <TEXT><![CDATA[T97A is a polymorphic INSTI-selected mutation that, depending on subtype, occurs in 1% to 5% of viruses from untreated persons. Alone, it has minimal effects on INSTI susceptibility but in combination with other major resistance mutations, it synergistically reduces susceptibility to EVG, RAL, DTG, and possibly BIC.]]></TEXT>
+        <TEXT><![CDATA[T97A is a polymorphic INSTI-selected mutation that, depending on subtype, occurs in 1% to 5% of viruses from untreated persons. Alone, it has minimal effects on INSTI susceptibility but in combination with other major resistance mutations, it synergistically reduces susceptibility to each of the INSTIs.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="PR10ACDEGHKMNPQSTW_-">
@@ -636,6 +644,14 @@
       </COMMENT_STRING>
       <COMMENT_STRING id="PR90M">
         <TEXT><![CDATA[L90M is a non-polymorphic PI-selected mutation that reduces susceptibility to each of the PIs except TPV and DRV.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="RPVIntermediate">
+        <TEXT><![CDATA[This virus is predicted to have intermediate-level reduced susceptibility to RPV. The use of the combination of CAB/RPV should be considered to be contraindicated.]]></TEXT>
+        <SORT_TAG>1</SORT_TAG>
+      </COMMENT_STRING>
+      <COMMENT_STRING id="RPVLow">
+        <TEXT><![CDATA[This virus is predicted to have low-level reduced susceptibility to RPV. The use of the combination of CAB/RPV should be considered to be relatively contraindicated.]]></TEXT>
         <SORT_TAG>1</SORT_TAG>
       </COMMENT_STRING>
       <COMMENT_STRING id="RT100ACDEFGHKMNPQRSTWY_-">
@@ -1900,10 +1916,11 @@
                          MAX ( 66I => 5, 66K => 15 ),
                          92Q => 10,
                          118R => 30,
-                         121Y => 10,
+                         MAX ( 121C => 15, 121Y => 10 ),
                          MAX ( 138A => 10, 138K => 10, 138T => 10 ),
-                         MAX ( 140A => 10, 140C => 10, 140S => 10 ),
+                         MAX ( 140A => 10, 140C => 10, 140R => 10, 140S => 10 ),
                          MAX ( 143A => 5, 143C => 5, 143G => 5, 143H => 5, 143K => 5, 143R => 5, 143S => 5 ),
+                         147G => 10,
                          MAX ( 148H => 25, 148K => 30, 148R => 25 ),
                          151L => 15,
                          MAX ( 153F => 15, 153Y => 15 ),
@@ -1918,9 +1935,9 @@
                          (143ACGHRS AND 163R) => 5,
                          (143ACGHRS AND 230R) => 5,
                          (147G AND 148HKR) => 15,
+                         (147G AND 155H) => 10,
                          (148HKR AND 155H) => 20,
                          (148HKR AND 163KR) => 5,
-                         (155H AND 147G) => 10,
                          (155H AND 263K) => 20,
                          (157Q AND 263K) => 10,
                          (51Y AND 263K) => 10,
@@ -1938,17 +1955,66 @@
     </RULE>
   </DRUG>
   <DRUG>
+    <NAME>CAB</NAME>
+    <FULLNAME>cabotegravir</FULLNAME>
+    <RULE>
+      <CONDITION><![CDATA[SCORE FROM(51Y => 15,
+                         MAX ( 66I => 10, 66K => 20 ),
+                         MAX ( 92G => 10, 92Q => 15, 92V => 10 ),
+                         118R => 60,
+                         MAX ( 121C => 60, 121Y => 15 ),
+                         MAX ( 138A => 10, 138K => 10, 138T => 10 ),
+                         MAX ( 140A => 10, 140C => 10, 140R => 60, 140S => 10 ),
+                         MAX ( 143A => 10, 143C => 10, 143G => 10, 143H => 10, 143K => 10, 143R => 10, 143S => 10 ),
+                         146P => 30,
+                         147G => 10,
+                         MAX ( 148H => 30, 148K => 50, 148N => 15, 148R => 40 ),
+                         151L => 15,
+                         MAX ( 153F => 25, 153Y => 25 ),
+                         MAX ( 155H => 25, 155S => 15, 155T => 15 ),
+                         230R => 20,
+                         263K => 30,
+                         (118R AND 138AKT) => 10,
+                         (138AKT AND 140ACS) => 15,
+                         (138AKT AND 148HKR) => 20,
+                         (140ACS AND 148HKR) => 20,
+                         (140ACS AND 148HKR AND 149A) => 10,
+                         (143ACGHRS AND 163R) => 5,
+                         (143ACGHRS AND 230R) => 5,
+                         (147G AND 148HKR) => 20,
+                         (147G AND 155H) => 25,
+                         (148HKR AND 155H) => 20,
+                         (148HKR AND 163KR) => 20,
+                         (155H AND 263K) => 20,
+                         (157Q AND 263K) => 10,
+                         (51Y AND 263K) => 10,
+                         (74FIM AND 118R) => 10,
+                         (74FIM AND 143ACGHRS) => 10,
+                         (74FIM AND 148HKR) => 15,
+                         (92Q AND 155H) => 20,
+                         (97A AND 118R) => 10,
+                         (97A AND 143ACGHRS) => 5,
+                         (97A AND 148HKR) => 20)]]></CONDITION>
+      <ACTIONS>
+        <SCORERANGE>
+          <USE_GLOBALRANGE/>
+        </SCORERANGE>
+      </ACTIONS>
+    </RULE>
+  </DRUG>
+  <DRUG>
     <NAME>DTG</NAME>
     <FULLNAME>dolutegravir</FULLNAME>
     <RULE>
       <CONDITION><![CDATA[SCORE FROM(51Y => 10,
                          MAX ( 66I => 5, 66K => 15 ),
                          92Q => 10,
-                         118R => 30,
-                         121Y => 10,
+                         118R => 50,
+                         MAX ( 121C => 15, 121Y => 10 ),
                          MAX ( 138A => 10, 138K => 10, 138T => 10 ),
-                         MAX ( 140A => 10, 140C => 10, 140S => 10 ),
+                         MAX ( 140A => 10, 140C => 10, 140R => 10, 140S => 10 ),
                          MAX ( 143A => 5, 143C => 5, 143G => 5, 143H => 5, 143K => 5, 143R => 5, 143S => 5 ),
+                         147G => 10,
                          MAX ( 148H => 25, 148K => 30, 148R => 25 ),
                          151L => 15,
                          MAX ( 153F => 15, 153Y => 15 ),
@@ -1963,9 +2029,9 @@
                          (143ACGHRS AND 163R) => 5,
                          (143ACGHRS AND 230R) => 5,
                          (147G AND 148HKR) => 15,
+                         (147G AND 155H) => 10,
                          (148HKR AND 155H) => 20,
                          (148HKR AND 163KR) => 5,
-                         (155H AND 147G) => 10,
                          (155H AND 263K) => 20,
                          (157Q AND 263K) => 10,
                          (51Y AND 263K) => 10,
@@ -1991,17 +2057,17 @@
                          MAX ( 92G => 30, 92Q => 60, 92V => 60 ),
                          95K => 10,
                          97A => 10,
-                         118R => 30,
-                         121Y => 60,
+                         118R => 60,
+                         MAX ( 121C => 60, 121Y => 60 ),
                          MAX ( 138A => 15, 138K => 15, 138T => 15 ),
-                         MAX ( 140A => 30, 140C => 30, 140S => 30 ),
+                         MAX ( 140A => 30, 140C => 30, 140R => 30, 140S => 30 ),
                          MAX ( 143A => 10, 143C => 10, 143G => 10, 143H => 10, 143K => 10, 143R => 10, 143S => 10 ),
                          145S => 60,
                          146P => 60,
                          147G => 60,
                          MAX ( 148H => 60, 148K => 60, 148N => 15, 148R => 60 ),
                          MAX ( 151A => 30, 151L => 60 ),
-                         MAX ( 153F => 15, 153Y => 15 ),
+                         MAX ( 153F => 25, 153Y => 25 ),
                          MAX ( 155H => 60, 155S => 30, 155T => 30 ),
                          157Q => 10,
                          MAX ( 163K => 15, 163R => 15 ),
@@ -2013,7 +2079,7 @@
                          (140ACS AND 148HKR AND 149A) => 10,
                          (143ACGHRS AND 163R) => 5,
                          (143ACGHRS AND 230R) => 5,
-                         (155H AND 147G) => 10,
+                         (147G AND 155H) => 10,
                          (51Y AND 263K) => 15,
                          (74FIM AND 118R) => 10,
                          (74FIM AND 143ACGHRS) => 5,
@@ -2037,13 +2103,15 @@
                          MAX ( 92G => 15, 92Q => 30, 92V => 30 ),
                          95K => 10,
                          97A => 10,
-                         118R => 30,
-                         121Y => 60,
+                         118R => 60,
+                         MAX ( 121C => 60, 121Y => 60 ),
                          MAX ( 138A => 15, 138K => 15, 138T => 15 ),
-                         MAX ( 140A => 30, 140C => 30, 140S => 30 ),
+                         MAX ( 140A => 30, 140C => 30, 140R => 30, 140S => 30 ),
                          MAX ( 143A => 60, 143C => 60, 143G => 60, 143H => 60, 143K => 60, 143R => 60, 143S => 60 ),
-                         MAX ( 148H => 60, 148K => 60, 148N => 10, 148R => 60 ),
+                         147G => 10,
+                         MAX ( 148H => 60, 148K => 60, 148N => 15, 148R => 60 ),
                          MAX ( 151A => 15, 151L => 30 ),
+                         MAX ( 153F => 10, 153Y => 10 ),
                          MAX ( 155H => 60, 155S => 30, 155T => 30 ),
                          157Q => 10,
                          MAX ( 163K => 15, 163R => 15 ),
@@ -2086,9 +2154,15 @@
         </ACTIONS>
       </RULE>
       <RULE>
-        <CONDITION>121ACDEGHIKLMNPQRSTVWid</CONDITION>
+        <CONDITION>121ADEGHIKLMNPQRSTVWid</CONDITION>
         <ACTIONS>
-          <COMMENT ref="IN121ACDEGHIKLMNPQRSTVW_-"/>
+          <COMMENT ref="IN121ADEGHIKLMNPQRSTVW_-"/>
+        </ACTIONS>
+      </RULE>
+      <RULE>
+        <CONDITION>121C</CONDITION>
+        <ACTIONS>
+          <COMMENT ref="IN121C"/>
         </ACTIONS>
       </RULE>
       <RULE>
@@ -2146,21 +2220,15 @@
         </ACTIONS>
       </RULE>
       <RULE>
-        <CONDITION>143CR</CONDITION>
+        <CONDITION>143CRH</CONDITION>
         <ACTIONS>
-          <COMMENT ref="IN143CR"/>
+          <COMMENT ref="IN143CRH"/>
         </ACTIONS>
       </RULE>
       <RULE>
         <CONDITION>143DEFILMNPQTVWid</CONDITION>
         <ACTIONS>
           <COMMENT ref="IN143DEFILMNPQTVW_-"/>
-        </ACTIONS>
-      </RULE>
-      <RULE>
-        <CONDITION>143H</CONDITION>
-        <ACTIONS>
-          <COMMENT ref="IN143H"/>
         </ACTIONS>
       </RULE>
       <RULE>
@@ -3639,6 +3707,28 @@
     <RESULT_COMMENT_RULE>
       <DRUG_LEVEL_CONDITIONS>
         <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>CAB</DRUG_NAME>
+          <EQ>4</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="CABIntermediate"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>CAB</DRUG_NAME>
+          <EQ>3</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="CABLow"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
           <DRUG_NAME>DRV/r</DRUG_NAME>
           <EQ>5</EQ>
         </DRUG_LEVEL_CONDITION>
@@ -3760,6 +3850,28 @@
       </DRUG_LEVEL_CONDITIONS>
       <LEVEL_ACTION>
         <COMMENT ref="DTGLow"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>RPV</DRUG_NAME>
+          <EQ>4</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="RPVIntermediate"/>
+      </LEVEL_ACTION>
+    </RESULT_COMMENT_RULE>
+    <RESULT_COMMENT_RULE>
+      <DRUG_LEVEL_CONDITIONS>
+        <DRUG_LEVEL_CONDITION>
+          <DRUG_NAME>RPV</DRUG_NAME>
+          <EQ>3</EQ>
+        </DRUG_LEVEL_CONDITION>
+      </DRUG_LEVEL_CONDITIONS>
+      <LEVEL_ACTION>
+        <COMMENT ref="RPVLow"/>
       </LEVEL_ACTION>
     </RESULT_COMMENT_RULE>
   </RESULT_COMMENTS>

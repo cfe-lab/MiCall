@@ -1,13 +1,13 @@
 """ Compare result files in shared folder with previous release. """
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import csv
 from collections import namedtuple, defaultdict
+from concurrent.futures.process import ProcessPoolExecutor
 from difflib import Differ
 from enum import IntEnum
 from functools import partial
 from itertools import groupby, zip_longest, chain
 from glob import glob
-from multiprocessing.pool import Pool
 from operator import itemgetter
 import os
 
@@ -17,14 +17,15 @@ import seaborn as sns
 import Levenshtein
 
 from micall.core.aln2counts import SeedNucleotide, MAX_CUTOFF
+from micall.utils.primer_tracker import PrimerTracker
 
-MICALL_VERSION = '7.12'
+MICALL_VERSION = '7.14'
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
 SampleFiles = namedtuple(
     'SampleFiles',
-    'cascade coverage_scores g2p_summary region_consensus remap_counts')
+    'cascade coverage_scores g2p_summary region_consensus remap_counts conseq')
 SampleFiles.__new__.__defaults__ = (None,) * 6
 Sample = namedtuple('Sample', 'run name source_files target_files')
 ConsensusDistance = namedtuple('ConsensusDistance',
@@ -51,7 +52,10 @@ differ = Differ()
 
 
 def parse_args():
-    parser = ArgumentParser(description='Compare sample results for testing a new release.')
+    # noinspection PyTypeChecker
+    parser = ArgumentParser(
+        description='Compare sample results for testing a new release.',
+        formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--denovo',
                         action='store_true',
                         help='Compare old remapped results to new assembled results.')
@@ -80,7 +84,11 @@ def find_runs(source_folder, target_folder, use_denovo):
                                            run_name,
                                            'Results')
         source_versions = os.listdir(source_results_path)
-        source_versions.sort(key=parse_version)
+        try:
+            source_versions.sort(key=parse_version)
+        except ValueError as ex:
+            message = f'Unexpected results file name in {run_name}.'
+            raise ValueError(message) from ex
         source_path = os.path.join(source_results_path, source_versions[-1])
         yield MiseqRun(source_path, target_path, is_done)
 
@@ -134,6 +142,10 @@ def read_samples(runs):
                                                           'coverage_scores.csv'))
             target_coverages = group_samples(os.path.join(run.target_path,
                                                           'coverage_scores.csv'))
+            source_conseq = group_samples(os.path.join(run.source_path,
+                                                       'conseq.csv'))
+            target_conseq = group_samples(os.path.join(run.target_path,
+                                                       'conseq.csv'))
             source_region_consensus = group_nucs(os.path.join(run.source_path,
                                                               'nuc.csv'))
             target_region_consensus = group_nucs(os.path.join(run.target_path,
@@ -157,12 +169,14 @@ def read_samples(runs):
                                      source_coverages.get(sample_name),
                                      source_g2ps.get(sample_name),
                                      source_region_consensus.get(sample_name),
-                                     source_counts.get(sample_name)),
+                                     source_counts.get(sample_name),
+                                     source_conseq.get(sample_name)),
                          SampleFiles(target_cascades.get(sample_name),
                                      target_coverages.get(sample_name),
                                      target_g2ps.get(sample_name),
                                      target_region_consensus.get(sample_name),
-                                     target_counts.get(sample_name)))
+                                     target_counts.get(sample_name),
+                                     target_conseq.get(sample_name)))
     if missing_targets:
         print('Missing targets: ', missing_targets)
     if missing_sources:
@@ -195,8 +209,8 @@ def group_nucs_file(output_file):
         sample_conseqs = {}
         for seed, seed_rows in groupby(sample_rows, itemgetter('seed')):
             for region, region_rows in groupby(seed_rows, itemgetter('region')):
-                consensus = ''.join(choose_consensus(row)
-                                    for row in region_rows)
+                consensus = [(choose_consensus(row), row)
+                             for row in region_rows]
                 sample_conseqs[(seed, region)] = consensus
         groups[sample] = sample_conseqs
     return groups
@@ -228,8 +242,6 @@ def compare_g2p(sample, diffs):
     source_fields = sample.source_files.g2p_summary
     target_fields = sample.target_files.g2p_summary
     if source_fields == target_fields:
-        return
-    if MICALL_VERSION == '7.11' and source_fields is None and sample.name.startswith('90308A'):
         return
     assert source_fields is not None, (sample.run, sample.name)
     assert target_fields is not None, (sample.run, sample.name)
@@ -270,11 +282,11 @@ def map_coverage(coverage_scores):
                                            score.get('seed'),
                                            score.get('which.key.pos'))
                        for score in coverage_scores}
-    if MICALL_VERSION == '7.12':
+    if MICALL_VERSION == '7.14':
         filtered_scores = {
             (project, region): scores
             for (project, region), scores in filtered_scores.items()
-            if region != 'GP120'}
+            if project not in ('NFLHIVDNA', 'SARSCOV2')}
 
     return filtered_scores
 
@@ -367,7 +379,25 @@ def calculate_distance(region, cutoff, sequence1, sequence2):
                              pct_diff=distance/len(sequence1)*100)
 
 
-def compare_consensus(sample,
+def has_big_prevalence_change(nuc: str, old_counts: dict, new_counts: dict):
+    """ Check if a nucleotide's prevalence has changed significantly.
+    
+    True if it has changed by more than 5 percentage points.
+    Ignore deletions and low coverage. Ties in the MAX consensus are always
+    significant.
+    """
+    if nuc in 'x-':
+        return False
+    if nuc not in 'ACTG':
+        return True
+    if old_counts['coverage'] == '0' or new_counts['coverage'] == '0':
+        return True
+    old_prevalence = int(old_counts[nuc]) / int(old_counts['coverage'])
+    new_prevalence = int(new_counts[nuc]) / int(new_counts['coverage'])
+    return 0.05 < abs(new_prevalence - old_prevalence)
+
+
+def compare_consensus(sample: Sample,
                       diffs,
                       scenarios_reported,
                       scenarios,
@@ -376,19 +406,71 @@ def compare_consensus(sample,
     source_seqs = filter_consensus_sequences(sample.source_files, use_denovo)
     target_seqs = filter_consensus_sequences(sample.target_files, use_denovo)
     run_name = get_run_name(sample)
+    source_counts = map_remap_counts(sample.source_files.remap_counts)
+    target_counts = map_remap_counts(sample.target_files.remap_counts)
     keys = sorted(set(source_seqs.keys()) | target_seqs.keys())
+    primer_trackers = {}
+    for row in sample.target_files.conseq or ():
+        if row['consensus-percent-cutoff'] == 'MAX':
+            conseq = row['sequence']
+            offset = int(row['offset'])
+            conseq = 'x' * offset + conseq
+            seed_name = row['region']
+            primer_trackers[seed_name] = PrimerTracker(conseq, seed_name)
     cutoff = MAX_CUTOFF
     for key in keys:
         seed, region = key
-        source_seq = source_seqs.get(key)
-        target_seq = target_seqs.get(key)
-        if (MICALL_VERSION == '7.12' and
-                region == 'GP41' and
-                target_seq.startswith('---')):
-            # Adding the GP120 region made full-codon deletions at the start
-            # of GP41 start aligning to codon boundaries.
-            source_seq = source_seq[3:]
-            target_seq = target_seq[3:]
+        primer_tracker = primer_trackers.get(seed)
+        source_details = source_seqs.get(key)
+        target_details = target_seqs.get(key)
+        source_nucs = []
+        target_nucs = []
+        if source_details is None:
+            has_big_change = True
+            target_nucs = [nuc for nuc, row in target_details]
+        elif target_details is None:
+            has_big_change = True
+            source_nucs = [nuc for nuc, row in source_details]
+        else:
+            has_big_change = False
+            dummy_row = {'refseq.nuc.pos': '-1',
+                         'coverage': '0'}
+            for source_item, target_item in zip_longest(source_details,
+                                                        target_details,
+                                                        fillvalue=('', dummy_row)):
+                source_consensus, source_row = source_item
+                target_consensus, target_row = target_item
+                if source_consensus != target_consensus:
+                    if has_big_prevalence_change(source_consensus,
+                                                 source_row,
+                                                 target_row):
+                        has_big_change = True
+                    else:
+                        source_consensus = source_consensus.lower()
+                    if has_big_prevalence_change(target_consensus,
+                                                 target_row,
+                                                 source_row):
+                        has_big_change = True
+                    else:
+                        target_consensus = target_consensus.lower()
+                    if not has_big_change and 'x' in (source_consensus,
+                                                      target_consensus):
+                        pos = int(target_row['query.nuc.pos'])
+                        is_ignored = primer_tracker and primer_tracker.is_ignored(pos)
+                        is_dropping = target_consensus == 'x'
+                        if MICALL_VERSION == '7.14' and is_ignored and is_dropping:
+                            pass
+                        else:
+                            old_coverage = int(source_row['coverage'])
+                            new_coverage = int(target_row['coverage'])
+                            has_big_change = (old_coverage < new_coverage/2 or
+                                              new_coverage < old_coverage/2)
+
+                source_nucs.append(source_consensus)
+                target_nucs.append(target_consensus)
+
+        source_seq = ''.join(source_nucs) or None
+        target_seq = ''.join(target_nucs) or None
         consensus_distance = calculate_distance(region,
                                                 cutoff,
                                                 source_seq,
@@ -399,7 +481,7 @@ def compare_consensus(sample,
             print(target_seq)
         if consensus_distance is not None:
             consensus_distances.append(consensus_distance)
-        if source_seq == target_seq:
+        if not has_big_change:
             continue
         is_main = is_consensus_interesting(region, cutoff)
 
@@ -411,13 +493,6 @@ def compare_consensus(sample,
                 (scenarios_reported & Scenarios.CONSENSUS_DELETIONS_CHANGED)):
             scenarios[Scenarios.CONSENSUS_DELETIONS_CHANGED].append('.')
             continue
-        if MICALL_VERSION == '7.12' and source_seq and target_seq:
-            stripped_source_seq = source_seq.replace('i', '')
-            stripped_target_seq = target_seq.replace('i', '')
-            if (stripped_source_seq == stripped_target_seq and
-                    len(source_seq) < len(target_seq)):
-                scenarios[Scenarios.INSERTIONS_ADDED].append('.')
-                continue
         if source_seq and target_seq:
             stripped_source_seq = source_seq.strip('x')
             stripped_target_seq = target_seq.strip('x')
@@ -435,10 +510,15 @@ def compare_consensus(sample,
                 if source_seq == target_seq:
                     scenarios[Scenarios.VPR_FRAME_SHIFT_FIXED].append('.')
                     continue
-        if is_main and scenarios_reported & Scenarios.MAIN_CONSENSUS_CHANGED:
+        if (source_counts != target_counts and
+                is_main and
+                scenarios_reported & Scenarios.REMAP_COUNTS_CHANGED):
+            scenario = f'  {run_name}:{sample.name} consensus {region}\n'
+            scenarios[Scenarios.REMAP_COUNTS_CHANGED].append(scenario)
+        elif is_main and scenarios_reported & Scenarios.MAIN_CONSENSUS_CHANGED:
             scenarios[Scenarios.MAIN_CONSENSUS_CHANGED].append('.')
         elif (not is_main and
-                scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
+              scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
             scenarios[Scenarios.OTHER_CONSENSUS_CHANGED].append('.')
         else:
             diffs.append('{}:{} consensus: {} {} {}'.format(run_name,
@@ -458,13 +538,14 @@ def filter_consensus_sequences(files, use_denovo):
     if not (region_consensus and coverage_scores):
         return {}
 
+    if MICALL_VERSION == '7.14':
+        coverage_scores = [row
+                           for row in coverage_scores
+                           if row['project'] != 'SARSCOV2']
+
     covered_regions = {(row.get('seed'), row.get('region'))
                        for row in coverage_scores
                        if row['on.score'] == '4'}
-    if MICALL_VERSION == '7.12':
-        covered_regions = {(seed, region)
-                           for seed, region in covered_regions
-                           if region != 'GP120'}
     return {adjust_seed(seed, region, use_denovo): consensus
             for (seed, region), consensus in region_consensus.items()
             if (seed, region) in covered_regions}
@@ -544,33 +625,36 @@ def plot_distances(distance_data, filename, title, plot_variable='distance'):
 def main():
     print('Starting.')
     args = parse_args()
-    pool = Pool()
-    runs = find_runs(args.source_folder, args.target_folder, args.denovo)
-    runs = report_source_versions(runs)
-    samples = read_samples(runs)
-    # noinspection PyTypeChecker
-    scenarios_reported = (Scenarios.OTHER_CONSENSUS_CHANGED |
-                          Scenarios.CONSENSUS_DELETIONS_CHANGED |
-                          Scenarios.VPR_FRAME_SHIFT_FIXED |
-                          Scenarios.CONSENSUS_EXTENDED)
-    results = pool.imap(partial(compare_sample,
-                                scenarios_reported=scenarios_reported,
-                                use_denovo=args.denovo),
-                        samples,
-                        chunksize=50)
-    scenario_summaries = defaultdict(list)
-    i = 0
-    all_consensus_distances = []
-    report_count = 0
-    for i, (report, scenarios, consensus_distances) in enumerate(results, 1):
-        if report:
-            report_count += 1
-            if report_count > 100:
-                break
-        print(report, end='')
-        all_consensus_distances.extend(consensus_distances)
-        for key, messages in scenarios.items():
-            scenario_summaries[key] += scenarios[key]
+    with ProcessPoolExecutor() as pool:
+        runs = find_runs(args.source_folder, args.target_folder, args.denovo)
+        runs = report_source_versions(runs)
+        samples = read_samples(runs)
+        # noinspection PyTypeChecker
+        scenarios_reported = (Scenarios.OTHER_CONSENSUS_CHANGED |
+                              Scenarios.CONSENSUS_DELETIONS_CHANGED |
+                              Scenarios.VPR_FRAME_SHIFT_FIXED |
+                              Scenarios.CONSENSUS_EXTENDED |
+                              Scenarios.REMAP_COUNTS_CHANGED)
+        results = pool.map(partial(compare_sample,
+                                   scenarios_reported=scenarios_reported,
+                                   use_denovo=args.denovo),
+                           samples,
+                           chunksize=50)
+        scenario_summaries = defaultdict(list)
+        i = 0
+        all_consensus_distances = []
+        report_limit = 1000
+        report_count = 0
+        for i, (report, scenarios, consensus_distances) in enumerate(results, 1):
+            if report:
+                report_count += 1
+                if report_count > report_limit:
+                    print(f'More than {report_limit} reports, skipping the rest.')
+                    break
+            print(report, end='')
+            all_consensus_distances.extend(consensus_distances)
+            for key, messages in scenarios.items():
+                scenario_summaries[key] += scenarios[key]
     for key, messages in sorted(scenario_summaries.items()):
         if messages:
             sample_names = {message.split()[0] for message in messages}
@@ -605,94 +689,3 @@ def report_distances(all_consensus_distances):
 
 if __name__ == '__main__':
     main()
-
-"""
-=== Detailed comparison of the 190621 run ===
-Comparison scenarios:
-1. In general, vpr looks better with de novo assembly. Samples that mapped to
-HXB2 would often get the frame shift around base 212, and that is usually fixed.
-2. Large deletions can cause duplicated sections in the merged reference.
-Example: 190621_M04401_0143_000000000-CCNNJ:1693P1Y04608-1D4-HIV_S16
-3. Large deletions can cause some genes to not be reported at all.
-Example: 190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2A4-HIV_S13
-
-Comparison samples:
-190621:1693P1Y04608-1C6-HIV_S21
-* A deletion near the start of gag made coverage drop in the mapped version. De
-novo assembly included the deletion.
-* A deletion near the end of vpu caused several partial deletions in the mapped
-version, and coverage dropped. De novo assembly included the deletion.
-
-190621_M04401_0143_000000000-CCNNJ:1693P1Y04608-1D4-HIV_S16
-There's a huge deletion between RT and GP41. The mapped version soft clips both
-sides. The assembled version had very low coverage in GP41 and nef, probably
-because the merged ref had a mostly duplicated region after the deletion pulled
-GP41 and nef to the left.
-
-190621_M04401_0143_000000000-CCNNJ:1693P1Y04608-1E10-HIV_S22
-The assembly seems to loop around from 3' to 5', and the section from 5' to gag
-makes the gag no longer align, and gag is not reported. The mapped reads in gag
-look like they're obviously in the wrong place because of soft clipping, but it
-has good coverage.
-
-190621_M04401_0143_000000000-CCNNJ:1693P1Y04608-1F9-HIV_S17
-A similar problem to S22, but in this one, the remapping version seems to have
-replaced a bunch of stop codons at the end of gag. There might be a large
-deletion between gag and the start of RT. I suspect there are different reads
-mapping to the end of gag in the two versions. But then what's mapping to PR in
-the remapped version? Is there a mixture? A large insertion?
-In vpu, the remapped version has a 4 codon deletion and reports some insertions
-nearby. The assembled version includes 3 codons from those insertions, and just
-has a single codon deletion.
-In GP41, maybe there's a large insertion near the end? Could that explain why
-the contig hangs off the 3' end?
-
-190621_M04401_0143_000000000-CCNNJ:2569P1Y02945-1B10-HIV_S10
-The assembled version has a four codon insertion near the start of nef, that's
-an exact duplicate of the four neighbouring codons. It seems real, because the
-remapped version has a bunch of soft clipping on either side.
-
-190621_M04401_0143_000000000-CCNNJ:2569P1Y02945-1C11-HIV_S20
-A giant deletion from gag to nef? Or maybe the 5' primer mapped to some part
-near the boundary of env/nef.
-
-190621_M04401_0143_000000000-CCNNJ:2569P1Y02945-1D9-HIV_S5
-The assembled version has a 3 codon insertion around codon 450 of gag. The
-remapped version has a lot of soft clipping in that area.
-
-190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2A4-HIV_S13
-The remapped version has a deletion through most of PR, and stops at the end of
-RT. The assembled version looks like most of RT got pulled to the left, but
-for some reason, neither PR nor RT successfully aligned. Maybe the pieces that
-remapping left as the original reference were enough to do the coordinate
-alignment.
-
-190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2D7-HIV_S35
-Looks like a large deletion from the end of RT to 3'LTR. The remapped version
-just drops coverage at the end of RT, and the 3'LTR section incorrectly maps to
-the 5'LTR. The assembled version sticks the 3'LTR to the end of RT. To add to
-the confusion, there are three stop codons in the first half of RT, and they
-appear in both versions. Then there's an insertion in the remapped version just
-before position 300, and it has some soft clipping around it. The assembled
-version includes that insertion, and it throws the reading frame off, so there
-are a bunch of stop codons and deletions after it.
-
-190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2E1-HIV_S34
-Looks similar to S13.
-
-190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2E5-HIV_S27
-Looks similar to S13.
-
-190621_M04401_0143_000000000-CCNNJ:3428P1Y04602-2F3-HIV_S3
-The assembled version correctly found an insertion near the end of vpu.
-
-190621_M04401:61693P1Y04608-1E6-HIV_S29
-Vpr got worse, because no contig assembled around vpr, and the one mapping run
-on HXB2 was worse than the remapped version.
-
-Questions:
-1. Are there any effects of the stop codon in nef? It didn't change alignment,
-so maybe it didn't cause problems.
-2. What the heck happened in 190621:1693P1Y04608-1F9-HIV_S17? Large deletion?
-Duplication? Mixture?
-"""

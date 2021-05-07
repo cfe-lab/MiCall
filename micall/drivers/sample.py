@@ -3,6 +3,8 @@ import logging
 import os
 
 import typing
+from csv import DictReader
+from pathlib import Path
 
 from micall.core.aln2counts import aln2counts
 from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
@@ -60,6 +62,7 @@ class Sample:
         self.scratch_path = scratch_path
         self.skip = skip
         self.paths = paths
+        self.project_code = None
 
     def __repr__(self):
         fastq1 = self.paths.get('fastq1')
@@ -122,13 +125,16 @@ class Sample:
         makedirs(scratch_path)
         use_gzip = force_gzip or self.fastq1.endswith('.gz')
 
+        sample_info = self.load_sample_info()
+
         with open(self.read_summary_csv, 'w') as read_summary:
             trim((self.fastq1, self.fastq2),
                  self.bad_cycles_csv,
                  (self.trimmed1_fastq, self.trimmed2_fastq),
                  summary_file=read_summary,
                  use_gzip=use_gzip,
-                 skip=self.skip)
+                 skip=self.skip,
+                 project_code=sample_info.get('project'))
 
         if use_denovo:
             logger.info('Running merge_for_entropy on %s.', self)
@@ -259,6 +265,17 @@ class Sample:
             cascade_report.aligned_csv = aligned_csv
             cascade_report.generate()
         logger.info('Finished sample %s.', self)
+
+    def load_sample_info(self):
+        path = Path(self.sample_info_csv)
+        if not path.exists():
+            sample_info = {}
+            if self.project_code is not None:
+                sample_info['project'] = self.project_code
+            return sample_info
+        with path.open() as info_file:
+            reader = DictReader(info_file)
+            return next(reader)
 
     def run_mapping(self, excluded_seeds):
         logger.info('Running prelim_map on %s.', self)

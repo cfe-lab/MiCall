@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args(argv=None):
-    # noinspection PyTypeChecker
     parser = ArgumentParser(description='Watch the raw data folder for new runs.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
@@ -46,6 +45,11 @@ def parse_args(argv=None):
         type=int,
         default=os.environ.get('MICALL_DENOVO_MAIN_PIPELINE_ID', None),
         help="id of general purpose denovo pipeline's container app")
+    parser.add_argument(
+        '--proviral_pipeline_id',
+        type=int,
+        default=os.environ.get('MICALL_PROVIRAL_MAIN_PIPELINE_ID', None),
+        help="id of general purpose proviral pipeline's container app")
     # noinspection PyTypeChecker
     parser.add_argument(
         '--raw_data',
@@ -71,7 +75,7 @@ def parse_args(argv=None):
         help='password for Kive server (default not shown)')
     parser.add_argument(
         '--qai_server',
-        default=os.environ.get('MICALL_QAI_SERVER', 'http://localhost:3000'),
+        default=os.environ.get('MICALL_QAI_SERVER', 'http://localhost:4567'),
         help='server to post reviews on')
     parser.add_argument(
         '--qai_user',

@@ -22,7 +22,7 @@ Chemistry,Amplicon
 
 
 def test_two_samples(tmpdir):
-    sample_sheet_path = Path(tmpdir) / 'SampleSheet.csv'
+    sample_sheet_path = Path(str(tmpdir)) / 'SampleSheet.csv'
     sample_sheet_path.write_text(BASIC_HEADER + """\
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
 CFE_SomeId_10-Jul-2014_N501-N701_Sample1_Proj1,Sample1_Proj1,,,ACGTACGT,TGCATGCA,,,
@@ -30,10 +30,12 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,,,AAAAGGGG,CCCCTTTT
 """)
     expected_groups = [SampleGroup('Sample1',
                                    ('Sample1-Proj1_S1_L001_R1_001.fastq.gz',
-                                    None)),
+                                    None),
+                                   ('Proj1', None)),
                        SampleGroup('Sample2',
                                    ('Sample2-Proj2_S2_L001_R1_001.fastq.gz',
-                                    None))]
+                                    None),
+                                   ('Proj2', None))]
 
     groups = list(find_groups(['Sample1-Proj1_S1_L001_R1_001.fastq.gz',
                                'Sample2-Proj2_S2_L001_R1_001.fastq.gz'],
@@ -43,7 +45,7 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,,,AAAAGGGG,CCCCTTTT
 
 
 def test_combine_midi(tmpdir):
-    sample_sheet_path = Path(tmpdir) / 'SampleSheet.csv'
+    sample_sheet_path = Path(str(tmpdir)) / 'SampleSheet.csv'
     sample_sheet_path.write_text(BASIC_HEADER + """\
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
 CFE_SomeId_10-Jul-2014_N501-N701_Sample1_HCV,Sample1_HCV,,,ACGTACGT,TGCATGCA,,,
@@ -51,7 +53,8 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample1MIDI_MidHCV,Sample1MIDI_MidHCV,,,AAAAGGG
 """)
     expected_groups = [SampleGroup('Sample1',
                                    ('Sample1-HCV_S1_L001_R1_001.fastq.gz',
-                                    'Sample1MIDI-MidHCV_S2_L001_R1_001.fastq.gz'))]
+                                    'Sample1MIDI-MidHCV_S2_L001_R1_001.fastq.gz'),
+                                   ('HCV', 'MidHCV'))]
 
     groups = list(find_groups(['Sample1-HCV_S1_L001_R1_001.fastq.gz',
                                'Sample1MIDI-MidHCV_S2_L001_R1_001.fastq.gz'],
@@ -61,14 +64,15 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample1MIDI_MidHCV,Sample1MIDI_MidHCV,,,AAAAGGG
 
 
 def test_midi_unmatched(tmpdir):
-    sample_sheet_path = Path(tmpdir) / 'SampleSheet.csv'
+    sample_sheet_path = Path(str(tmpdir)) / 'SampleSheet.csv'
     sample_sheet_path.write_text(BASIC_HEADER + """\
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
 CFE_SomeId_10-Jul-2014_N501-N701_Sample1MIDI_MidHCV,Sample1MIDI_MidHCV,,,ACGTACGT,TGCATGCA,,,
 """)
     expected_groups = [SampleGroup('Sample1MIDI',
                                    ('Sample1MIDI-MidHCV_S1_L001_R1_001.fastq.gz',
-                                    None))]
+                                    None),
+                                   ('MidHCV', None))]
 
     groups = list(find_groups(['Sample1MIDI-MidHCV_S1_L001_R1_001.fastq.gz'],
                               sample_sheet_path))
@@ -77,7 +81,7 @@ CFE_SomeId_10-Jul-2014_N501-N701_Sample1MIDI_MidHCV,Sample1MIDI_MidHCV,,,ACGTACG
 
 
 def test_unmatched_midi_file_not_found(tmpdir):
-    sample_sheet_path = Path(tmpdir) / 'SampleSheet.csv'
+    sample_sheet_path = Path(str(tmpdir)) / 'SampleSheet.csv'
     sample_sheet_path.write_text(BASIC_HEADER + """\
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
 CFE_SomeId_10-Jul-2014_N501-N701_Sample1MIDI_MidHCV,Sample1MIDI_MidHCV,,,ACGTACGT,TGCATGCA,,,
@@ -85,9 +89,38 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,,,AAAAGGGG,CCCCTTTT
 """)
     expected_groups = [SampleGroup('Sample2',
                                    ('Sample2-Proj2_S2_L001_R1_001.fastq.gz',
-                                    None))]
+                                    None),
+                                   ('Proj2', None))]
 
     groups = list(find_groups(['Sample2-Proj2_S2_L001_R1_001.fastq.gz'],
+                              sample_sheet_path))
+
+    assert expected_groups == groups
+
+
+def test_find_groups_checks_overrides(tmpdir):
+    sample_sheet_path = Path(str(tmpdir)) / 'SampleSheet.csv'
+    sample_sheet_path.write_text(BASIC_HEADER + """\
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
+CFE_SomeId_10-Jul-2014_N501-N701_Sample1_Proj1,Sample1_Proj1,,,ACGTACGT,TGCATGCA,,,
+CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,,,AAAAGGGG,CCCCTTTT,,,
+""")
+    sample_sheet_overrides_path = sample_sheet_path.parent / 'SampleSheetOverrides.csv'
+    sample_sheet_overrides_path.write_text("""\
+sample,project
+Sample1-Proj1_S1,AltProjA
+""")
+    expected_groups = [SampleGroup('Sample1',
+                                   ('Sample1-Proj1_S1_L001_R1_001.fastq.gz',
+                                    None),
+                                   ('AltProjA', None)),
+                       SampleGroup('Sample2',
+                                   ('Sample2-Proj2_S2_L001_R1_001.fastq.gz',
+                                    None),
+                                   ('Proj2', None))]
+
+    groups = list(find_groups(['Sample1-Proj1_S1_L001_R1_001.fastq.gz',
+                               'Sample2-Proj2_S2_L001_R1_001.fastq.gz'],
                               sample_sheet_path))
 
     assert expected_groups == groups

@@ -27,10 +27,15 @@ def main():
     if args.tag is not None:
         repository_name += ':' + args.tag
 
-    source_path = os.path.dirname(__file__)
+    source_path = os.path.abspath(os.path.dirname(__file__))
     version_filename = os.path.join(source_path, 'version.txt')
     with open(version_filename, 'w') as version_file:
-        check_call(['git', 'describe', '--tags', '--dirty'],
+        # VirtualBox shared folder messes up file modes, so ignore them.
+        check_call(['git',
+                    '-c', 'core.fileMode=false',  # Ignore file mode
+                    'describe',
+                    '--tags',
+                    '--dirty'],
                    cwd=source_path,
                    stdout=version_file)
     try:
@@ -58,5 +63,6 @@ def main():
         except KeyboardInterrupt:
             print()  # Clear the line after Ctrl-C.
             print('Shutting down.')
+
 
 main()

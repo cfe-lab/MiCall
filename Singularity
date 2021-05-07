@@ -9,11 +9,12 @@ From: centos:7
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-    Change Notes: Includes denovo assembly apps with BLAST results displayed.
+    Change Notes: SARS-CoV-2 added, HIVdb upgraded to 8.9-1, filter primer
+    dimers.
 
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
-    KIVE_INPUTS fastq1 fastq2 bad_cycles_csv
+    KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv
     KIVE_OUTPUTS g2p_csv g2p_summary_csv remap_counts_csv \
         remap_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \
         failed_csv cascade_csv nuc_csv amino_csv coord_ins_csv conseq_csv \
@@ -72,10 +73,6 @@ From: centos:7
     rm -rf Python*
     ln -s /usr/local/bin/python3.8 /usr/local/bin/python3
 
-    echo ===== Installing Rust and merge-mates ===== >/dev/null
-    yum install -q -y rust cargo
-    cargo install --root / --git https://github.com/jeff-k/merge-mates.git
-
     echo ===== Installing blast ===== >/dev/null
     cd /root
     # Saved our own copy, because download was slow from ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
@@ -84,6 +81,9 @@ From: centos:7
     rm ncbi-blast-2.6.0+-1.x86_64.rpm
     python3 /opt/micall/micall/blast_db/make_blast_db.py
 
+    echo ===== Installing Rust and merge-mates ===== >/dev/null
+    yum install -q -y rust cargo
+    cargo install --root / --git https://github.com/jeff-k/merge-mates.git
 
     ## Miniconda (Python 2) (Don't use this)
     #wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
@@ -175,9 +175,9 @@ From: centos:7
     interpretation.
 
 %applabels resistance
-    KIVE_INPUTS main_amino_csv midi_amino_csv
-    KIVE_OUTPUTS resistance_csv mutations_csv resistance_fail_csv \
-        resistance_pdf resistance_consensus_csv
+    KIVE_INPUTS main_amino_csv midi_amino_csv main_nuc_csv
+    KIVE_OUTPUTS resistance_csv mutations_csv nuc_mutations_csv \
+        resistance_fail_csv resistance_pdf resistance_consensus_csv
     KIVE_THREADS 1
     KIVE_MEMORY 200
 
@@ -188,7 +188,7 @@ From: centos:7
     python /opt/micall/micall_kive.py --denovo "$@"
 
 %applabels denovo
-    KIVE_INPUTS fastq1 fastq2 bad_cycles_csv
+    KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv
     KIVE_OUTPUTS g2p_csv g2p_summary_csv remap_counts_csv \
         remap_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \
         failed_csv cascade_csv nuc_csv amino_csv coord_ins_csv conseq_csv \

@@ -1,0 +1,2 @@
+sample,sequence,verdict,x1,psi_sl1,psi_sl2,psi_sl3,psi_sl4,gag,pol,protease,rt,integrase,vif,vpr,tat_exon1,rev_exon1,d4,x2,vpu,env,gp120,gp41,tat_exon2,rev_exon2,x3,nef,ltr3
+test_sample,ABCDEFGHIJKLMNOPQRSTUVWXY,Intact,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y

@@ -1,0 +1,69 @@
+name: Build and Test MiCall
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - run: mkdir -p ~/bin
+      - run: echo ~/bin >> $GITHUB_PATH
+
+      - name: Install Singularity
+        run: |
+          sudo apt-get install -qq python dh-autoreconf build-essential libarchive-dev squashfs-tools
+          touch real_file
+          git clone https://github.com/singularityware/singularity.git
+          cd singularity
+          git checkout -q tags/2.5.2
+          ./autogen.sh
+          ./configure --prefix=/usr/local
+          make
+          sudo make install
+          cd ..
+          rm -rf singularity
+
+      - name: Install IVA assembler
+        run: |
+          sudo apt-get install -y zlib1g-dev libncurses5-dev libncursesw5-dev mummer samtools ncbi-blast+
+          cd ~/bin
+          wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
+          wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
+          chmod +x kmc kmc_dump
+          cd ~
+          wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
+          tar -xzf smalt-0.7.6-bin.tar.gz
+          ln -s ~/smalt-0.7.6-bin/smalt_x86_64 ~/bin/smalt
+
+      - name: Install Rust and merge-mates
+        run: |
+          sudo curl https://sh.rustup.rs -sSf | sh -s -- -y
+          source ~/.cargo/env
+          cargo install --root ~/ --git https://github.com/jeff-k/merge-mates.git
+
+      - name: Install MiCall's Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-test.txt
+
+      - name: Test with pytest
+        run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
+      - name: Singularity build
+        run: sudo singularity build micall.simg Singularity
+      - name: Upload Singularity Image
+        uses: actions/upload-artifact@v2
+        with:
+          name: micall.simg
+          path: micall.simg
+
+      - name: Singularity test
+        run: python release_test_microtest.py micall.simg
+
+      - name: Report code coverage
+        run: |
+          rm -rf micall/tests/microtest/scratch
+          python -m pip install codecov
+          codecov

@@ -15,6 +15,8 @@ def parse_args():
     parser = ArgumentParser(description='Map FASTQ files to references.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     # inputs
+    parser.add_argument('sample_info_csv',
+                        help='sample name and project code')
     parser.add_argument('fastq1',
                         help='FASTQ containing forward reads')
     parser.add_argument('fastq2',
@@ -49,6 +51,8 @@ def parse_args():
                         help='CSV containing insertions relative to coordinate reference')
     parser.add_argument('conseq_csv',
                         help='CSV containing consensus sequences')
+    parser.add_argument('conseq_all_csv',
+                        help='CSV containing consensus sequences with low coverage')
     parser.add_argument('conseq_region_csv',
                         help='CSV containing consensus sequences, split by region')
     parser.add_argument('failed_align_csv',
@@ -86,7 +90,8 @@ def load_sample(args):
     scratch_path = os.path.join(os.path.dirname(args.cascade_csv), 'scratch')
     shutil.rmtree(scratch_path, ignore_errors=True)
 
-    sample = Sample(fastq1=args.fastq1,
+    sample = Sample(sample_info_csv=args.sample_info_csv,
+                    fastq1=args.fastq1,
                     fastq2=args.fastq2,
                     bad_cycles_csv=args.bad_cycles_csv,
                     g2p_csv=args.g2p_csv,
@@ -102,6 +107,7 @@ def load_sample(args):
                     amino_csv=args.amino_csv,
                     coord_ins_csv=args.coord_ins_csv,
                     conseq_csv=args.conseq_csv,
+                    conseq_all_csv=args.conseq_all_csv,
                     conseq_region_csv=args.conseq_region_csv,
                     failed_align_csv=args.failed_align_csv,
                     coverage_scores_csv=args.coverage_scores_csv,

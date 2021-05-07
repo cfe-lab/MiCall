@@ -6,6 +6,7 @@ import re
 import shutil
 import tarfile
 from collections import namedtuple
+from csv import DictWriter, DictReader
 from datetime import datetime, timedelta
 from enum import Enum
 from itertools import count
@@ -33,6 +34,8 @@ MAXIMUM_RETRY_WAIT = timedelta(days=1)
 MAX_RUN_NAME_LENGTH = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_csv',
+                      'conseq_all_csv',
+                      'conseq_region_csv',
                       'conseq_ins_csv',
                       'failed_csv',
                       'nuc_csv',
@@ -49,6 +52,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'mixed_amino_merged_csv',
                       'resistance_csv',
                       'mutations_csv',
+                      'nuc_mutations_csv',
                       'resistance_fail_csv',
                       'resistance_consensus_csv',
                       'wg_fasta',
@@ -59,7 +63,12 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'assembly_fasta',
                       'genome_coverage_csv',
                       'genome_coverage_svg',
-                      'read_entropy_csv']
+                      'read_entropy_csv',
+                      'outcome_summary_csv',  # proviral outputs
+                      'conseqs_primers_csv',
+                      'contigs_primers_csv',
+                      'table_precursor_csv',
+                      'hivseqinr_results_tar']
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
@@ -271,6 +280,8 @@ def get_scratch_path(results_path, pipeline_group):
         scratch_name = "scratch"
     elif pipeline_group == PipelineType.DENOVO_MAIN:
         scratch_name = "scratch_denovo"
+    elif pipeline_group == PipelineType.PROVIRAL:
+        scratch_name = "scratch_proviral"
     else:
         assert pipeline_group == PipelineType.MIXED_HCV_MAIN
         scratch_name = "scratch_mixed_hcv"
@@ -283,6 +294,8 @@ def get_collated_path(results_path, pipeline_group):
         target_path = results_path
     elif pipeline_group == PipelineType.DENOVO_MAIN:
         target_path = results_path / "denovo"
+    elif pipeline_group == PipelineType.PROVIRAL:
+        target_path = results_path / "proviral"
     else:
         assert pipeline_group == PipelineType.MIXED_HCV_MAIN
         target_path = results_path / "mixed_hcv"
@@ -452,6 +465,8 @@ class KiveWatcher:
                     compress_old_versions(results_path)
                     self.create_batch(folder_watcher)
                     self.upload_filter_quality(folder_watcher)
+                    if folder_watcher.quality_dataset is None:
+                        return None
                     shutil.rmtree(results_path, ignore_errors=True)
                     try:
                         results_zip.unlink()
@@ -526,7 +541,8 @@ class KiveWatcher:
                 folder_watcher.active_pipeline_groups.remove(pipeline_group)
                 if results_path is not None:
                     if (results_path / "coverage_scores.csv").exists():
-                        self.qai_upload_queue.put(results_path)
+                        self.qai_upload_queue.put(
+                            (results_path, pipeline_group))
                     if not folder_watcher.active_pipeline_groups:
                         (results_path / "done_all_processing").touch()
                         self.folder_watchers.pop(folder)
@@ -578,6 +594,12 @@ class KiveWatcher:
                                            scratch_path,
                                            results_path)
                 continue
+            if output_name.endswith('_tar'):
+                self.extract_archive(folder_watcher,
+                                     scratch_path,
+                                     results_path,
+                                     output_name)
+                continue
             if output_name == 'alignment_svg':
                 self.move_alignment_plot(folder_watcher,
                                          '.svg',
@@ -606,7 +628,10 @@ class KiveWatcher:
                             if output_name.endswith('_fasta'):
                                 self.extract_fasta(source, target, sample_name)
                             else:
-                                self.extract_csv(source, target, sample_name, source_count)
+                                self.extract_csv(source,
+                                                 target,
+                                                 sample_name,
+                                                 source_count)
                             source_count += 1
                     except FileNotFoundError:
                         # Skip the file.
@@ -616,14 +641,23 @@ class KiveWatcher:
 
     @staticmethod
     def extract_csv(source, target, sample_name, source_count):
-        for i, line in enumerate(source):
-            if i != 0:
-                prefix = sample_name
-            elif source_count == 0:
-                prefix = 'sample'
-            else:
-                continue
-            target.write(prefix + ',' + line)
+        reader = DictReader(source)
+        fieldnames = reader.fieldnames
+        if fieldnames is None:
+            # Empty file, nothing to copy. Raise error to keep source_count at 0.
+            raise FileNotFoundError(f'CSV file {source.name} is empty.')
+        fieldnames = list(fieldnames)
+        has_sample = 'sample' in fieldnames
+        if not has_sample:
+            fieldnames.insert(0, 'sample')
+        writer = DictWriter(target, fieldnames, lineterminator=os.linesep)
+        if source_count == 0:
+            # First source file, copy header.
+            writer.writeheader()
+        for row in reader:
+            if not has_sample:
+                row['sample'] = sample_name
+            writer.writerow(row)
 
     @staticmethod
     def extract_fasta(source, target, sample_name):
@@ -635,8 +669,8 @@ class KiveWatcher:
 
     @staticmethod
     def extract_coverage_maps(folder_watcher, scratch_path, results_path):
-        coverage_path = results_path / "coverage_maps"
-        coverage_path.mkdir()
+        coverage_path: Path = results_path / "coverage_maps"
+        coverage_path.mkdir(exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / 'coverage_maps.tar'
@@ -651,6 +685,44 @@ class KiveWatcher:
             except FileNotFoundError:
                 pass
         remove_empty_directory(coverage_path)
+
+    @staticmethod
+    def extract_archive(folder_watcher: FolderWatcher,
+                        scratch_path: Path,
+                        results_path: Path,
+                        output_name: str):
+        """ Extract contents of tar files.
+
+        There will be a folder named after the output name, with a subfolder
+        for each sample.
+        :param folder_watcher: holds a list of all samples to extract from
+        :param scratch_path: parent folder of all sample working files
+        :param results_path: parent folder to extract into
+        :param output_name: the name of tar files to look for with "_tar"
+            instead of ".tar".
+        """
+        assert output_name.endswith('_tar'), output_name
+        archive_name = output_name[:-4]
+        output_path: Path = results_path / archive_name
+        output_path.mkdir(exist_ok=True)
+        for sample_name in folder_watcher.all_samples:
+            sample_name = trim_name(sample_name)
+            source_path = scratch_path / sample_name / (archive_name + '.tar')
+            try:
+                sample_target_path = output_path / sample_name
+                sample_target_path.mkdir(exist_ok=True)
+                with tarfile.open(source_path) as f:
+                    for source_info in f:
+                        filename = os.path.basename(source_info.name)
+                        target_path = sample_target_path / filename
+                        assert not target_path.exists(), target_path
+                        with f.extractfile(source_info) as source, \
+                                open(target_path, 'wb') as target:
+                            shutil.copyfileobj(source, target)
+                remove_empty_directory(sample_target_path)
+            except FileNotFoundError:
+                pass
+        remove_empty_directory(output_path)
 
     @staticmethod
     def move_alignment_plot(folder_watcher,
@@ -683,13 +755,22 @@ class KiveWatcher:
                 pass
         remove_empty_directory(plots_path)
 
-    def run_pipeline(self, folder_watcher, pipeline_type, sample_watcher):
+    def run_pipeline(self,
+                     folder_watcher: FolderWatcher,
+                     pipeline_type: PipelineType,
+                     sample_watcher: SampleWatcher):
         if pipeline_type == PipelineType.FILTER_QUALITY:
             return self.find_or_launch_run(
                 self.config.micall_filter_quality_pipeline_id,
                 dict(quality_csv=folder_watcher.quality_dataset),
                 'MiCall filter quality on ' + folder_watcher.run_name,
                 folder_watcher.batch)
+        if pipeline_type == PipelineType.PROVIRAL:
+            run = self.run_proviral_pipeline(
+                sample_watcher,
+                folder_watcher,
+                'Proviral HIVSeqinR')
+            return run
         if pipeline_type == PipelineType.RESISTANCE:
             run = self.run_resistance_pipeline(
                 sample_watcher,
@@ -722,28 +803,32 @@ class KiveWatcher:
                 'Mixed HCV on ' + trim_name(sample_name),
                 folder_watcher.batch)
         if pipeline_type == PipelineType.MAIN:
-            fastq1, fastq2 = sample_watcher.fastq_datasets[:2]
-            sample_name = sample_watcher.sample_group.names[0]
-            run_name = 'MiCall main on ' + trim_name(sample_name)
+            group_position = 0
+            run_name = 'MiCall main'
             pipeline_id = self.config.micall_main_pipeline_id
         elif pipeline_type == PipelineType.MIDI:
-            fastq1, fastq2 = sample_watcher.fastq_datasets[2:]
-            sample_name = sample_watcher.sample_group.names[1]
-            run_name = 'MiCall main on ' + trim_name(sample_name)
+            group_position = 1
+            run_name = 'MiCall main'
             pipeline_id = self.config.micall_main_pipeline_id
         elif pipeline_type == PipelineType.DENOVO_MAIN:
-            fastq1, fastq2 = sample_watcher.fastq_datasets[:2]
-            sample_name = sample_watcher.sample_group.names[0]
-            run_name = 'MiCall denovo main on ' + trim_name(sample_name)
+            group_position = 0
+            run_name = 'MiCall denovo main'
             pipeline_id = self.config.denovo_main_pipeline_id
         else:
             assert pipeline_type == PipelineType.DENOVO_MIDI
-            fastq1, fastq2 = sample_watcher.fastq_datasets[2:]
-            sample_name = sample_watcher.sample_group.names[1]
-            run_name = 'MiCall denovo main on ' + trim_name(sample_name)
+            group_position = 1
+            run_name = 'MiCall denovo main'
             pipeline_id = self.config.denovo_main_pipeline_id
         if pipeline_id is None:
             return None
+        fastq1, fastq2 = sample_watcher.fastq_datasets[
+                         group_position*2:(group_position+1)*2]
+        sample_name = sample_watcher.sample_group.names[group_position]
+        run_name += ' on ' + trim_name(sample_name)
+        sample_info = self.get_sample_info(pipeline_id,
+                                           sample_watcher,
+                                           folder_watcher,
+                                           group_position)
         if folder_watcher.bad_cycles_dataset is None:
             filter_run_id = folder_watcher.filter_quality_run['id']
             run_datasets = self.kive_retry(
@@ -756,34 +841,101 @@ class KiveWatcher:
             folder_watcher.bad_cycles_dataset = self.kive_retry(
                 lambda: self.session.get(bad_cycles_run_dataset['dataset']).json())
 
+        inputs = dict(fastq1=fastq1,
+                      fastq2=fastq2,
+                      bad_cycles_csv=folder_watcher.bad_cycles_dataset)
+        if sample_info is not None:
+            inputs['sample_info_csv'] = sample_info
         return self.find_or_launch_run(
             pipeline_id,
-            dict(fastq1=fastq1,
-                 fastq2=fastq2,
-                 bad_cycles_csv=folder_watcher.bad_cycles_dataset),
+            inputs,
             run_name,
             folder_watcher.batch)
+
+    def get_sample_info(self,
+                        pipeline_id: int,
+                        sample_watcher: SampleWatcher,
+                        folder_watcher: FolderWatcher,
+                        group_position: int):
+        pipeline_args = self.get_kive_arguments(pipeline_id)
+        if 'sample_info_csv' not in pipeline_args:
+            return None
+
+        # We need a sample info dataset.
+        if group_position < len(sample_watcher.sample_info_datasets):
+            return sample_watcher.sample_info_datasets[group_position]
+        assert group_position == len(sample_watcher.sample_info_datasets)
+
+        fastq_name = sample_watcher.sample_group.names[group_position]
+        sample_name = trim_name(fastq_name)
+        project_code = sample_watcher.sample_group.project_codes[group_position]
+        info_file = StringIO()
+        writer = DictWriter(info_file, ['sample', 'project', 'run_name'])
+        writer.writeheader()
+        writer.writerow(dict(sample=sample_name,
+                             project=project_code,
+                             run_name=folder_watcher.run_name))
+        bytes_file = BytesIO(info_file.getvalue().encode('utf8'))
+        info_dataset = self.find_or_upload_dataset(
+            bytes_file,
+            f'{sample_name}_info.csv')
+        sample_watcher.sample_info_datasets.append(info_dataset)
+
+        return info_dataset
 
     def run_resistance_pipeline(self, sample_watcher, folder_watcher, input_pipeline_types, description):
         pipeline_id = self.config.micall_resistance_pipeline_id
         if pipeline_id is None:
             return None
-        main_runs = filter(None,
-                           (sample_watcher.runs.get(pipeline_type)
-                            for pipeline_type in input_pipeline_types))
-        input_dataset_urls = [run_dataset['dataset']
-                              for run in main_runs
-                              for run_dataset in run['datasets']
-                              if run_dataset['argument_name'] == 'amino_csv']
+        main_runs = (
+            (pipeline_type, run)
+            for pipeline_type in input_pipeline_types
+            for run in [sample_watcher.runs.get(pipeline_type)]
+            if run is not None)
+        input_dataset_urls = {
+            (pipeline_type, run_dataset['argument_name']): run_dataset['dataset']
+            for pipeline_type, run in main_runs
+            for run_dataset in run['datasets']}
+        main_type, midi_type = input_pipeline_types
+        input_types = [(main_type, 'amino_csv'),
+                       (midi_type, 'amino_csv'),
+                       (main_type, 'nuc_csv')]
+        if input_types[1] not in input_dataset_urls:
+            input_types[1] = input_types[0]
+        selected_urls = [input_dataset_urls[input_type]
+                         for input_type in input_types]
         input_datasets = [self.kive_retry(lambda: self.session.get(url).json())
-                          for url in input_dataset_urls]
-        if len(input_datasets) == 1:
-            input_datasets *= 2
-        inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv'),
+                          for url in selected_urls]
+        inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv', 'main_nuc_csv'),
                                input_datasets))
         run = self.find_or_launch_run(
             pipeline_id,
             inputs_dict,
+            description + ' on ' + sample_watcher.sample_group.enum,
+            folder_watcher.batch)
+        return run
+
+    def run_proviral_pipeline(self, sample_watcher, folder_watcher, description):
+        pipeline_id = self.config.proviral_pipeline_id
+        if pipeline_id is None:
+            return None
+        main_run = sample_watcher.runs.get(PipelineType.DENOVO_MAIN)
+        if main_run is None:
+            return None
+        input_dataset_urls = {
+            run_dataset['argument_name']: run_dataset['dataset']
+            for run_dataset in main_run['datasets']
+            if run_dataset['argument_name'] in ('sample_info_csv',
+                                                'conseq_csv',
+                                                'contigs_csv',
+                                                'cascade_csv')}
+        input_datasets = {
+            argument_name: self.kive_retry(lambda: self.session.get(url).json())
+            for argument_name, url in input_dataset_urls.items()}
+        input_datasets['conseqs_csv'] = input_datasets.pop('conseq_csv')
+        run = self.find_or_launch_run(
+            pipeline_id,
+            input_datasets,
             description + ' on ' + sample_watcher.sample_group.enum,
             folder_watcher.batch)
         return run
@@ -880,7 +1032,8 @@ class KiveWatcher:
                 for output_name in DOWNLOADED_RESULTS:
                     matches = [run_dataset
                                for run_dataset in run_datasets
-                               if run_dataset['argument_name'] == output_name]
+                               if (run_dataset['argument_name'] == output_name and
+                                   run_dataset['argument_type'] == 'O')]
                     if not matches:
                         continue
                     filename = get_output_filename(output_name)
@@ -910,11 +1063,20 @@ class KiveWatcher:
                         read_sizes.read2]
         error_path = folder_watcher.run_folder / "InterOp/ErrorMetricsOut.bin"
         quality_csv = StringIO()
-        with error_path.open('rb') as error_file:
-            records = error_metrics_parser.read_errors(error_file)
-            error_metrics_parser.write_phix_csv(quality_csv,
-                                                records,
-                                                read_lengths)
+        # noinspection PyBroadException
+        try:
+            with error_path.open('rb') as error_file:
+                records = error_metrics_parser.read_errors(error_file)
+                error_metrics_parser.write_phix_csv(quality_csv,
+                                                    records,
+                                                    read_lengths)
+        except Exception:
+            logger.error("Finding error metrics in %s",
+                         folder_watcher.run_folder,
+                         exc_info=True)
+            (folder_watcher.run_folder / "errorprocessing").write_text(
+                "Finding error metrics failed.\n")
+            return
         quality_csv_bytes = BytesIO()
         quality_csv_bytes.write(quality_csv.getvalue().encode('utf8'))
         quality_csv_bytes.seek(0)

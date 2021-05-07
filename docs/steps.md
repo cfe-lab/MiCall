@@ -88,7 +88,7 @@ Individual files are described after the list of steps.
   * coverage_maps.tar - binary file &rarr; untar in results/coverage_maps
   * coverage_scores.csv - downloaded - a score for each region based on the
     coverage at key positions.
-* `plot_genome_coverage`: convert genome coverage to a graph
+* `plot_genome_coverage`: convert [genome coverage] to a graph
   * in - genome_coverage.csv
   * genome_coverage.svg
 * `cascade_report`: summarize how many reads made it through each step of the
@@ -110,6 +110,7 @@ Individual files are described after the list of steps.
 [fastq_g2p_design]: http://cfe-lab.github.io/MiCall/design/fastq_g2p
 [remap design]: http://cfe-lab.github.io/MiCall/design/remap
 [resistance design]: http://cfe-lab.github.io/MiCall/design/resistance
+[genome coverage]: genome_coverage.md
 
 ## File descriptions ##
 * aligned.csv and g2p_aligned.csv
@@ -275,12 +276,14 @@ Individual files are described after the list of steps.
   * prevalence - the fraction of coverage that contained this mutation
   * genotype - the HCV genotype
 * nuc.csv
-  * seed - seed reference the reads mapped to
+  * seed - seed reference or contig the reads mapped to
   * region - coordinate reference for reporting against, usually a gene
   * q-cutoff - minimum Phred quality score to include a nucleotide
   * query.nuc.pos - the 1-based index of the base in the consensus sequence that
-    came from this set of counts
+    came from this set of counts, stretching across the entire seed reference or
+    contig that the reads were mapped to
   * refseq.nuc.pos - the 1-based index of the base in the coordinate reference
+    for a single gene region on non-coding region, named in the region column
   * A,C,G,T - counts for the nucleotides at this position
   * N - count of reads with Phred quality score below the cutoff
   * del - count of reads with a deletion at this position

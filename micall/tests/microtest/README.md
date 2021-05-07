@@ -18,12 +18,12 @@ The scenarios that each file tests are:
   the end, with a two-codon gap between
 * 2020A-GP41 - starts at second codon and inserts extra codon after first ten
 * 2030A-V3LOOP - garbage reads, all different
-* 2040A-HLA-B - exon2 of HLA-B, half have a changed base at nucleotide 7 to test
+* 2040A-HLA-B - exon2 of HLA-B, 20% have a changed base at nucleotide 7 to test
   mixtures in the consensus
 * 2050-V3LOOP - low quality
 * 2060A-V3LOOP - clean read tests g2p with four codon overlap between forward
   and reverse
-* 2070A-PR - three reads with two deletions and ten with one deletion
+* 2070A-PR - three reads with two deletions and twelve with one deletion
 * 2080A-V3LOOP - PR contamination below remap threshold
 * 2100A-HCV-1337B-V3LOOP-PWND-HIV - three samples using same tags on different
   regions: Nextera HIV-RT and HCV-NS5a, plus V3LOOP amplicon.
@@ -51,6 +51,12 @@ The scenarios that each file tests are:
   details.
 * 2170A-HCV - a mixed infection of HCV-1a and HCV-2a, each about 3000 bases
   long, with enough coverage to assemble two contigs.
-* 2180A-HIV - random reads from GP120 that can be assembled. See the
-  `make_sample.py` script for details.
-* 2190A-SARS - amplicon from the start of nsp12.
+* 2180A-HIV - Nextera reads from GP120 and V3LOOP, to show how GP120 is now
+  reported based on remapping or assembly, and V3LOOP is reported based on
+  pairwise alignment to a reference.
+* 2190A-SARSCOV2 - two lengths of SARS-CoV-2 reads, to test that similar amplicons
+  of slightly different lengths can be combined.
+* 2200A-SARSCOV2 - SARS-CoV-2 amplicon that gets primers trimmed off the left,
+  so the coverage starts on amino 27 of nsp1, instead of 20.
+* 2210A-NFLHIVDNA - Nextera reads that cover the primer sections we check for
+  in HIV proviral samples.
