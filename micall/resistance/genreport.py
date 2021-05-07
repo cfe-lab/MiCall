@@ -169,11 +169,14 @@ class ReportTemplate:
         return sorted(self.genotype_pages.keys())
 
     def get_reported_drug_classes(self, genotype):
-        reported_drug_codes = set(self.genotype_pages[genotype].resistance_calls.keys())
+        reported_drug_codes = self.get_reported_drugs(genotype)
         return {class_code
                 for class_code, drugs in self.virus_config['known_drugs'].items()
                 if any(drug_code in reported_drug_codes
                        for drug_code, _ in drugs)}
+
+    def get_reported_drugs(self, genotype):
+        return set(self.genotype_pages[genotype].resistance_calls.keys())
 
 
 def read_mutations(drug_classes, csv_file):

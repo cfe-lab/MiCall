@@ -17,7 +17,7 @@ from micall.core.aln2counts import AMINO_ALPHABET
 MIN_FRACTION = 0.05  # prevalence of mutations to report
 MIN_COVERAGE = 100
 REPORTED_REGIONS = {'PR', 'RT', 'IN', 'NS3', 'NS5a', 'NS5b'}
-HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_8.9-1.xml')
+HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_9.0.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
 NOTHING_MAPPED_MESSAGE = 'nothing mapped'
 
