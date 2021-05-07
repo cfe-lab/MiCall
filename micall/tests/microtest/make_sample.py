@@ -120,6 +120,12 @@ def main():
                                                                    5000,
                                                                    mutations = (CodonMutation(7000, 'AAA'),)
                                                                    )
+    sections_2230_1, sections_2230_2 = make_random_sections('HCV-1a',
+                                                            6258,
+                                                            9375,
+                                                            projects,
+                                                            10000
+                                                            )
 
     projects.config['regions']['HXB2-with-deletion'] = dict(
         reference=hxb2_ref[617:928] + hxb2_ref[9358:9652],
@@ -372,10 +378,19 @@ def main():
                    FastqFile('2220-HIV-mixture50_S30_L001_R2_001.fastq',
                              '2220',
                              True,
-                             sections_2220_mix5a_2 + sections_2220_mix5b_2)
+                             sections_2220_mix5a_2 + sections_2220_mix5b_2),
+                   FastqFile('2230-HCV_S31_L001_R1_001.fastq',
+                             '2220',
+                             False,
+                             sections_2230_1),
+                   FastqFile('2230-HCV_S31_L001_R2_001.fastq',
+                             '2220',
+                             True,
+                             sections_2230_2)
                    ]
+
     for fastq_file in fastq_files:
-        if not fastq_file.name.startswith('2220-HIV-mixture30'):
+        if not fastq_file.name.startswith('2230'):
             continue
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1
