@@ -653,7 +653,11 @@ class SequenceReport(object):
                 old_report[i].seed_amino.add(report_amino.seed_amino)
         self.reports.clear()
 
-    def write_amino_report(self, amino_writer, reports, seed, coverage_summary=None):
+    def write_amino_report(self,
+                           amino_writer: DictWriter,
+                           reports: typing.Dict[str, typing.List['ReportAmino']],
+                           seed: str,
+                           coverage_summary: dict = None):
         if not reports:
             return
         regions = sorted(reports.keys())
@@ -687,8 +691,20 @@ class SequenceReport(object):
                     row[letter] = letter_count
                     coverage_sum += letter_count
                     row['coverage'] += letter_count
-                amino_writer.writerow(row)
                 pos_count += 1
+                for field_name in ('coverage',
+                                   'clip',
+                                   'v3_overlap',
+                                   'ins',
+                                   'del',
+                                   'partial',
+                                   'X'):
+                    if row[field_name]:
+                        break
+                else:
+                    # Nothing useful, don't write this row.
+                    continue
+                amino_writer.writerow(row)
             if coverage_summary is not None and pos_count > 0:
                 region_coverage = coverage_sum / pos_count
                 old_coverage = coverage_summary.get('avg_coverage', -1)
@@ -930,6 +946,17 @@ class SequenceReport(object):
             for base in 'ACTGN':
                 nuc_count = seed_nuc.counts[base]
                 row[base] = nuc_count
+            for field_name in ('coverage',
+                               'clip',
+                               'N',
+                               'ins',
+                               'del',
+                               'v3_overlap'):
+                if row[field_name]:
+                    break
+            else:
+                # No useful data, don't write this row.
+                continue
             nuc_writer.writerow(row)
 
     def merge_extra_counts(self):
@@ -1356,6 +1383,10 @@ class SeedAmino(object):
                 seed_nucleotide.count_nucleotides(nuc, count)
 
     def add(self, other: 'SeedAmino'):
+        if self.read_count and other.read_count:
+            self.consensus_nuc_index = None
+        elif other.read_count:
+            self.consensus_nuc_index = other.consensus_nuc_index
         self.counts += other.counts
         self.partial += other.partial
         self.deletions += other.deletions
@@ -1498,7 +1529,7 @@ class SeedNucleotide(object):
 
 
 class ReportAmino(object):
-    def __init__(self, seed_amino, position):
+    def __init__(self, seed_amino: SeedAmino, position: int):
         """ Create a new instance.
 
         @param seed_amino: Counts for the

@@ -368,7 +368,7 @@ SARS-CoV-2 seed reference is downloaded from accession MN908947
     source_sequence = fetch_by_accession('MN908947')
     source_sequences = {'SARS-CoV-2-seed': source_sequence}
 
-    ref_names = project_config.getProjectSeeds('SARS-CoV-2')
+    ref_names = project_config.getProjectSeeds('SARSCOV2')
     unchecked_ref_names.difference_update(ref_names)
 
     report, error_count = compare_config(ref_names,
@@ -382,44 +382,44 @@ def check_sars_coordinates(project_config, unchecked_ref_names: set):
     print("""\
 SARS-CoV-2 coordinate references are translated from the seed reference.
 """)
-    boundaries = {"SARS-CoV-2-5'UTR": (1, 265),
-                  'SARS-CoV-2-ORF1a': (266, 13483),
-                  'SARS-CoV-2-ORF1b': (13468, 21555),
-                  'SARS-CoV-2-S': (21563, 25384),
-                  'SARS-CoV-2-ORF3a': (25393, 26220),
-                  'SARS-CoV-2-E': (26245, 26472),
-                  'SARS-CoV-2-M': (26523, 27191),
-                  'SARS-CoV-2-ORF6': (27202, 27387),
-                  'SARS-CoV-2-ORF7a': (27394, 27759),
-                  'SARS-CoV-2-ORF7b': (27756, 27887),
-                  'SARS-CoV-2-ORF8': (27894, 28259),
-                  'SARS-CoV-2-N': (28274, 29533),
-                  'SARS-CoV-2-ORF10': (29558, 29674),
-                  "SARS-CoV-2-3'UTR": (29675, 29903),
-                  'SARS-CoV-2-nsp1': (266, 805),
-                  'SARS-CoV-2-nsp2': (806, 2719),
-                  'SARS-CoV-2-nsp3': (2720, 8554),
-                  'SARS-CoV-2-nsp4': (8555, 10054),
-                  'SARS-CoV-2-nsp5': (10055, 10972),
-                  'SARS-CoV-2-nsp6': (10973, 11842),
-                  'SARS-CoV-2-nsp7': (11843, 12091),
-                  'SARS-CoV-2-nsp8': (12092, 12685),
-                  'SARS-CoV-2-nsp9': (12686, 13024),
-                  'SARS-CoV-2-nsp10': (13025, 13441),
-                  'SARS-CoV-2-nsp12': (13442, 16236),
-                  'SARS-CoV-2-nsp13': (16237, 18039),
-                  'SARS-CoV-2-nsp14': (18040, 19620),
-                  'SARS-CoV-2-nsp15': (19621, 20658),
-                  'SARS-CoV-2-nsp16': (20659, 21552),
-                  'SARS-CoV-2-TRS-B-1': (21556, 21562),
-                  'SARS-CoV-2-TRS-B-2': (25385, 25392),
-                  'SARS-CoV-2-TRS-B-3': (26221, 26244),
-                  'SARS-CoV-2-TRS-B-4': (26473, 26522),
-                  'SARS-CoV-2-TRS-B-5': (27192, 27201),
-                  'SARS-CoV-2-TRS-B-6': (27388, 27393),
-                  'SARS-CoV-2-TRS-B-7': (27888, 27893),
-                  'SARS-CoV-2-TRS-B-8': (28260, 28273),
-                  'SARS-CoV-2-TRS-B-9': (29534, 29557)}
+    ref_names = ["SARS-CoV-2-5'UTR",
+                 'SARS-CoV-2-ORF1a',
+                 'SARS-CoV-2-ORF1b',
+                 'SARS-CoV-2-S',
+                 'SARS-CoV-2-ORF3a',
+                 'SARS-CoV-2-E',
+                 'SARS-CoV-2-M',
+                 'SARS-CoV-2-ORF6',
+                 'SARS-CoV-2-ORF7a',
+                 'SARS-CoV-2-ORF7b',
+                 'SARS-CoV-2-ORF8',
+                 'SARS-CoV-2-N',
+                 'SARS-CoV-2-ORF10',
+                 "SARS-CoV-2-3'UTR",
+                 'SARS-CoV-2-nsp1',
+                 'SARS-CoV-2-nsp2',
+                 'SARS-CoV-2-nsp3',
+                 'SARS-CoV-2-nsp4',
+                 'SARS-CoV-2-nsp5',
+                 'SARS-CoV-2-nsp6',
+                 'SARS-CoV-2-nsp7',
+                 'SARS-CoV-2-nsp8',
+                 'SARS-CoV-2-nsp9',
+                 'SARS-CoV-2-nsp10',
+                 'SARS-CoV-2-nsp12',
+                 'SARS-CoV-2-nsp13',
+                 'SARS-CoV-2-nsp14',
+                 'SARS-CoV-2-nsp15',
+                 'SARS-CoV-2-nsp16',
+                 'SARS-CoV-2-TRS-B-1',
+                 'SARS-CoV-2-TRS-B-2',
+                 'SARS-CoV-2-TRS-B-3',
+                 'SARS-CoV-2-TRS-B-4',
+                 'SARS-CoV-2-TRS-B-5',
+                 'SARS-CoV-2-TRS-B-6',
+                 'SARS-CoV-2-TRS-B-7',
+                 'SARS-CoV-2-TRS-B-8',
+                 'SARS-CoV-2-TRS-B-9']
 
     # Funky translation at this base: it gets duplicated.
     duplicated_base = 13468
@@ -429,10 +429,13 @@ SARS-CoV-2 coordinate references are translated from the seed reference.
 
     source_sequences = {}
     ref_positions = set()
-    for ref_name, (start, end) in boundaries.items():
+    for ref_name in ref_names:
+        region = landmark_reader.get_gene('SARS-CoV-2-seed', ref_name)
+        start = region['start']
+        end = region['end']
         ref_positions = ref_positions.union(range(start, end+1))
-        source_nuc_sequence = seed_sequence[start-1:end]
-        if start <= duplicated_base <= end:
+        source_nuc_sequence = seed_sequence[start-1:end-3]  # Trim stop codons.
+        if start < duplicated_base <= end:
             source_nuc_sequence = (
                 source_nuc_sequence[:duplicated_base-start+1] +
                 source_nuc_sequence[duplicated_base-start:])

@@ -17,8 +17,11 @@ from micall.core.aln2counts import AMINO_ALPHABET
 MIN_FRACTION = 0.05  # prevalence of mutations to report
 MIN_COVERAGE = 100
 REPORTED_REGIONS = {'PR', 'RT', 'IN', 'NS3', 'NS5a', 'NS5b'}
+
+# Rules configuration - remember to update version numbers in genreport.yaml.
 HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_9.0.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
+
 NOTHING_MAPPED_MESSAGE = 'nothing mapped'
 
 AminoList = namedtuple('AminoList', 'region aminos genotype seed is_report_needed')
@@ -33,10 +36,13 @@ def parse_args():
     parser = ArgumentParser(
         description='Make resistance calls and list mutations from amino counts.')
     parser.add_argument('main_amino_csv',
+                        type=FileType(),
                         help='CSV containing amino frequencies from main sample')
     parser.add_argument('midi_amino_csv',
+                        type=FileType(),
                         help='CSV containing amino frequencies from MIDI sample')
     parser.add_argument('main_nuc_csv',
+                        type=FileType(),
                         help='CSV containing nucleotide frequencies from main sample')
     parser.add_argument('resistance_csv',
                         type=FileType('w'),

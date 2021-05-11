@@ -188,8 +188,21 @@ def test_add():
 
     amino.add(other)
 
-    assert expected_counts == amino.counts
-    assert expected_nucleotide_counts == amino.nucleotides[0].counts
+    assert amino.counts == expected_counts
+    assert amino.nucleotides[0].counts == expected_nucleotide_counts
+    assert amino.consensus_nuc_index is None
+
+
+def test_add_first_time():
+    amino = SeedAmino(None)
+    other = SeedAmino(consensus_nuc_index=7)
+    other.count_aminos('AAA', 5)  # => K
+    expected_counts = {'K': 5}
+
+    amino.add(other)
+
+    assert amino.counts == expected_counts
+    assert amino.consensus_nuc_index == 7
 
 
 def test_amino_repeat_nuc0():

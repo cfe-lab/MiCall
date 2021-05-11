@@ -576,18 +576,18 @@ def main():
     parser = ArgumentParser(
         description='Plot assembled contigs against a reference.',
         formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--blast',
+                        help='CSV file with BLAST results for each contig',
+                        type=FileType())
     parser.add_argument('genome_coverage_csv',
                         help='CSV file with coverage counts for each contig',
-                        type=FileType())
-    parser.add_argument('blast_csv',
-                        help='CSV file with BLAST results for each contig',
                         type=FileType())
     parser.add_argument('genome_coverage_svg',
                         help='SVG file to plot coverage counts for each contig')
     args = parser.parse_args()
 
     plot_genome_coverage(args.genome_coverage_csv,
-                         args.blast_csv,
+                         args.blast,
                          args.genome_coverage_svg)
     print('Wrote', args.genome_coverage_svg)
 
