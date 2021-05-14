@@ -840,7 +840,8 @@ class SequenceReport(object):
             if bead.alignment is not None:
                 cigar = bead.alignment.cigar
             else:
-                cigar = [(bead.end - bead.start, None)]
+                action = CigarActions.MATCH if coordinate_name is None else None
+                cigar = [(bead.end - bead.start, action)]
             for length, action in cigar:
                 if action == CigarActions.DELETE:
                     ref_pos += length

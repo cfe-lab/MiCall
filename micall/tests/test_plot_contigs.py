@@ -115,7 +115,7 @@ def drawing_to_image(drawing: Drawing) -> Image:
     return image
 
 
-def encode_image(image: Image) -> bytes:
+def encode_image(image: Image) -> str:
     writer = BytesIO()
     image.save(writer, format='PNG')
     encoded = standard_b64encode(writer.getvalue())

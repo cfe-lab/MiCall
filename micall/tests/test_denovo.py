@@ -1,7 +1,7 @@
 from io import StringIO
 from pathlib import Path
 
-from pytest import fixture
+from pytest import fixture, mark
 
 from micall.core.denovo import write_contig_refs, denovo, DEFAULT_DATABASE, genotype
 from micall.blast_db.make_blast_db import make_blast_db, DEFAULT_PROJECTS
@@ -207,6 +207,7 @@ HIV1-C-BR-JX140663-seed,1.0,HIV1-C-BR-JX140663-seed,TGCACAAGACCCAACAACAATACAAGAA
     assert expected_contigs_csv == contigs_csv.getvalue()
 
 
+@mark.iva()
 def test_denovo_iva(tmpdir, hcv_db):
     microtest_path = Path(__file__).parent / 'microtest'
     contigs_csv = StringIO()
@@ -221,8 +222,8 @@ GCCTCATCGTTTACCCTGACCTCGGCGTCAGGGTCTGCGAGAAGATGGCCCTTTATGATGTCACACAAAAGCTTCCTC\
 AGGCGGTGATGGGGGCTTCTTATGGATTCCAGTACTCCC
 """
 
-    denovo(microtest_path / '2160A-HCV_S19_L001_R1_001.fastq',
-           microtest_path / '2160A-HCV_S19_L001_R2_001.fastq',
+    denovo(str(microtest_path / '2160A-HCV_S19_L001_R1_001.fastq'),
+           str(microtest_path / '2160A-HCV_S19_L001_R2_001.fastq'),
            contigs_csv,
            tmpdir)
 

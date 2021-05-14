@@ -801,12 +801,12 @@ R1-seed,1,R1-seed,CCCCCC
 
     expected_text = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-R1-seed-partial,,1,1,0,5,U
-1-R1-seed-partial,,2,2,0,5,U
-1-R1-seed-partial,,3,3,0,5,U
-1-R1-seed-partial,,4,4,0,5,U
-1-R1-seed-partial,,5,5,0,5,U
-1-R1-seed-partial,,6,6,0,5,U
+1-R1-seed-partial,,1,1,0,5,M
+1-R1-seed-partial,,2,2,0,5,M
+1-R1-seed-partial,,3,3,0,5,M
+1-R1-seed-partial,,4,4,0,5,M
+1-R1-seed-partial,,5,5,0,5,M
+1-R1-seed-partial,,6,6,0,5,M
 """
 
     report_file = StringIO()
@@ -835,12 +835,12 @@ R1-seed,1,R1-seed,CCCCCC
 
     expected_text = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-R1-seed-reversed,,1,1,0,5,U
-1-R1-seed-reversed,,2,2,0,5,U
-1-R1-seed-reversed,,3,3,0,5,U
-1-R1-seed-reversed,,4,4,0,5,U
-1-R1-seed-reversed,,5,5,0,5,U
-1-R1-seed-reversed,,6,6,0,5,U
+1-R1-seed-reversed,,1,1,0,5,M
+1-R1-seed-reversed,,2,2,0,5,M
+1-R1-seed-reversed,,3,3,0,5,M
+1-R1-seed-reversed,,4,4,0,5,M
+1-R1-seed-reversed,,5,5,0,5,M
+1-R1-seed-reversed,,6,6,0,5,M
 """
 
     report_file = StringIO()
