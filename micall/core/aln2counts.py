@@ -15,7 +15,6 @@ import typing
 from collections import Counter, defaultdict, OrderedDict
 import csv
 from csv import DictWriter
-from enum import IntEnum
 from itertools import groupby
 from operator import itemgetter, attrgetter
 import os
@@ -29,6 +28,7 @@ from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 from micall.core.remap import PARTIAL_CONTIG_SUFFIX, REVERSED_CONTIG_SUFFIX
 from micall.utils.alignment_wrapper import align_nucs
 from micall.utils.big_counter import BigCounter
+from micall.utils.consensus_aligner import CigarActions
 from micall.utils.spring_beads import Wire, Bead
 from micall.utils.translation import translate, ambig_dict
 
@@ -39,12 +39,6 @@ GAP_EXTEND_COORD = 10
 CONSENSUS_MIN_COVERAGE = 100
 MAX_CUTOFF = 'MAX'
 FIRST_CUTOFF = 'FIRST'
-
-
-CigarActions = IntEnum(
-    'CigarActions',
-    'MATCH INSERT DELETE SKIPPED SOFT_CLIPPED HARD_CLIPPED',
-    start=0)
 
 
 def parse_args():
