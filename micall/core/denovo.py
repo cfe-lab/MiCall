@@ -23,6 +23,8 @@ from micall.core.project_config import ProjectConfig
 from tempfile import mkstemp
 from shutil import move, copymode
 from os import fdopen, remove
+from iva.assembly import Assembly
+from pyfastaq.tasks import deinterleave
 
 Abyss = "abyss-pe"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
@@ -93,17 +95,6 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
     contig_nums = {}  # {contig_name: contig_num}
 
     # spaces and commas in the contig name will cause errors. Replace by underscores
-    fh, abs_path = mkstemp()
-    with fdopen(fh,'w') as new_file:
-        with open(fasta) as old_file:
-            for line in old_file:
-                if line.startswith('>'):
-                    new_file.write(line.replace(" ", "_").replace(",", "_"))
-                else:
-                    new_file.write(line)
-    copymode(fasta, abs_path)
-    remove(fasta)
-    move(abs_path, fasta)
 
     with open(fasta) as f:
         for line in f:
@@ -223,10 +214,10 @@ def denovo(fastq1_path: str,
     #os.path.join(tmp_dir, 'abyss_out')
     contigs_fasta_path = os.path.join(abyss_out_path, 'abyss-scaffolds.fa')
 
-    abyss_args = [Abyss, 'name=abyss', 'k=96', f"in='{joined_path}'"]
+    abyss_args = [Abyss, 'name=abyss', 'k=220', f"in='{joined_path}'"]
     # .format(variable)
     # Removed additional contigs for now
-    abyss_args.extend(['-C', abyss_out_path])
+    abyss_args.extend(['B=100M', 'H=3', 'kc=3', '-C', abyss_out_path])
     try:
         run(abyss_args,
             check=True,
@@ -239,6 +230,32 @@ def denovo(fastq1_path: str,
             logger.warning(output)
         with open(contigs_fasta_path, 'a'):
             pass
+
+    fh, abs_path = mkstemp()
+    i = 0
+    with fdopen(fh, 'w') as new_file:
+        with open(contigs_fasta_path) as old_file:
+            for line in old_file:
+                if line.startswith('>'):
+                    new_file.write(f">contig{i}\n")
+                    i += 1
+                else:
+                    new_file.write(line)
+    copymode(contigs_fasta_path, abs_path)
+    remove(contigs_fasta_path)
+    move(abs_path, contigs_fasta_path)
+    print(f"Number of contigs before trimming and joining: {i}")
+
+    abyss_assembly = Assembly(contigs_file=contigs_fasta_path)
+    reads_prefix = os.path.join(tmp_dir, 'reads')
+    reads_1 = reads_prefix + '_1.fa'
+    reads_2 = reads_prefix + '_2.fa'
+    deinterleave(joined_path, reads_1, reads_2, fasta_out=True)
+    abyss_assembly._trim_strand_biased_ends(reads_prefix, tag_as_trimmed=True)
+    abyss_assembly._remove_contained_contigs(list(abyss_assembly.contigs.keys()))
+    abyss_assembly._merge_overlapping_contigs(list(abyss_assembly.contigs.keys()))
+    contigs_fasta_path = os.path.join(abyss_out_path, 'finalcontigs.fasta')
+    abyss_assembly.write_contigs_to_file(contigs_fasta_path)
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
