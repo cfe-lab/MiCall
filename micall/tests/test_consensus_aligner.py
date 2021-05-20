@@ -1,7 +1,16 @@
-# noinspection PyUnresolvedReferences
-from random import randrange, choice
-
+from micall.core.aln2counts import SeedAmino
 from micall.utils.consensus_aligner import ConsensusAligner, AlignmentWrapper, CigarActions
+
+# noinspection PyUnresolvedReferences
+from micall.tests.test_remap import load_projects
+
+
+def assert_alignments(aligner: ConsensusAligner,
+                      *expected_alignments: AlignmentWrapper):
+    __tracebackhide__ = True
+    wrapped_alignments = tuple(AlignmentWrapper.wrap(alignment)
+                               for alignment in aligner.alignments)
+    assert wrapped_alignments == expected_alignments
 
 
 def test_alignment_repr():
@@ -34,39 +43,40 @@ def test_align(projects):
     aligner.align(seed_name, consensus)
 
     assert aligner.consensus == consensus
-    assert len(aligner.alignments) == 1
-    alignment, = aligner.alignments
-    alignment = AlignmentWrapper.wrap(alignment)
-    assert alignment == expected_alignment
+    assert_alignments(aligner, expected_alignment)
     assert aligner.algorithm == 'minimap2'
 
 
 def test_align_multiple_sections(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
-    consensus = seed_seq[3000:4000] + seed_seq[1000:2000]
+    consensus = seed_seq[3000:3500] + seed_seq[1000:2000] + seed_seq[5000:5500]
     expected_alignments = [AlignmentWrapper(ctg='N/A',
                                             ctg_len=len(seed_seq),
                                             r_st=3000,
-                                            r_en=4000,
+                                            r_en=3500,
                                             q_st=0,
-                                            q_en=1000,
+                                            q_en=500,
                                             mapq=60),
                            AlignmentWrapper(ctg='N/A',
                                             ctg_len=len(seed_seq),
                                             r_st=1000,
                                             r_en=2000,
-                                            q_st=1000,
+                                            q_st=500,
+                                            q_en=1500,
+                                            mapq=60),
+                           AlignmentWrapper(ctg='N/A',
+                                            ctg_len=len(seed_seq),
+                                            r_st=5000,
+                                            r_en=5500,
+                                            q_st=1500,
                                             q_en=2000,
                                             mapq=60)]
     aligner = ConsensusAligner(projects)
 
     aligner.align(seed_name, consensus)
 
-    assert aligner.consensus == consensus
-    alignments = [AlignmentWrapper.wrap(alignment)
-                  for alignment in aligner.alignments]
-    assert alignments == expected_alignments
+    assert_alignments(aligner, *expected_alignments)
 
 
 def test_align_short_consensus(projects):
@@ -86,10 +96,7 @@ def test_align_short_consensus(projects):
 
     aligner.align(seed_name, consensus)
 
-    assert len(aligner.alignments) == 1
-    alignment, = aligner.alignments
-    alignment = AlignmentWrapper.wrap(alignment, mapq=0)
-    assert alignment == expected_alignment
+    assert_alignments(aligner, expected_alignment)
     assert aligner.algorithm == 'gotoh'
 
 
@@ -112,9 +119,7 @@ def test_align_deletion_minimap2(projects):
 
     aligner.align(seed_name, consensus)
 
-    assert len(aligner.alignments) == 1
-    alignment, = aligner.alignments
-    assert alignment == expected_alignment
+    assert_alignments(aligner, expected_alignment)
     assert aligner.algorithm == 'minimap2'
 
 
@@ -137,9 +142,7 @@ def test_align_deletion_gotoh(projects):
 
     aligner.align(seed_name, consensus)
 
-    assert len(aligner.alignments) == 1
-    alignment, = aligner.alignments
-    assert alignment == expected_alignment
+    assert_alignments(aligner, expected_alignment)
     assert aligner.algorithm == 'gotoh'
 
 
@@ -162,10 +165,7 @@ def test_align_insertion_minimap2(projects):
 
     aligner.align(seed_name, consensus)
 
-    assert len(aligner.alignments) == 1
-    alignment, = aligner.alignments
-    alignment = AlignmentWrapper.wrap(alignment)
-    assert alignment == expected_alignment
+    assert_alignments(aligner, expected_alignment)
     assert aligner.algorithm == 'minimap2'
 
 
@@ -188,7 +188,111 @@ def test_align_insertion_gotoh(projects):
 
     aligner.align(seed_name, consensus)
 
-    assert len(aligner.alignments) == 1
-    alignment, = aligner.alignments
-    assert alignment == expected_alignment
+    assert_alignments(aligner, expected_alignment)
     assert aligner.algorithm == 'gotoh'
+
+
+def test_align_with_only_primary_matches(projects):
+    """ HXB2 has very similar sections in 5' LTR and 3' LTR. """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    consensus = seed_seq[:500]
+    expected_alignment = AlignmentWrapper(ctg='N/A',
+                                          ctg_len=len(seed_seq),
+                                          r_st=0,
+                                          r_en=500,
+                                          q_st=0,
+                                          q_en=500,
+                                          mapq=60)
+    aligner = ConsensusAligner(projects)
+
+    aligner.align(seed_name, consensus)
+
+    assert_alignments(aligner, expected_alignment)
+    assert aligner.algorithm == 'minimap2'
+
+
+# noinspection DuplicatedCode
+def test_align_seed_aminos(projects):
+    seed_aminos = [SeedAmino(i) for i in range(3)]
+    seed_aminos[0].count_aminos('AAA', 1)
+    seed_aminos[1].count_aminos('CCC', 1)
+    seed_aminos[2].count_aminos('GGG', 1)
+    seed_name = 'HCV-6t'
+    seed_seq = projects.getReference(seed_name)
+    expected_consensus = 'AAACCCGGG'
+    expected_alignment = AlignmentWrapper(ctg='N/A',
+                                          ctg_len=len(seed_seq),
+                                          r_st=4798,
+                                          r_en=4807,
+                                          q_st=0,
+                                          q_en=9,
+                                          mapq=0)
+    aligner = ConsensusAligner(projects)
+
+    aligner.align(seed_name, seed_aminos=seed_aminos)
+
+    assert aligner.consensus == expected_consensus
+    assert_alignments(aligner, expected_alignment)
+    assert len(aligner.seed_nucs) == 9
+
+
+def test_clear(projects):
+    seed_name = 'SARS-CoV-2-seed'
+    seed_seq = projects.getReference(seed_name)
+    consensus = seed_seq[1000:2000]
+    aligner = ConsensusAligner(projects)
+    aligner.align(seed_name, consensus)
+
+    aligner.clear()
+
+    assert aligner.consensus == ''
+    assert aligner.algorithm == ''
+    assert len(aligner.alignments) == 0
+
+
+# noinspection DuplicatedCode
+def test_align_twice(projects):
+    seed_aminos = [SeedAmino(i) for i in range(3)]
+    seed_aminos[0].count_aminos('AAA', 1)
+    seed_aminos[1].count_aminos('CCC', 1)
+    seed_aminos[2].count_aminos('GGG', 1)
+    seed_name = 'HCV-6t'
+    seed_seq = projects.getReference(seed_name)
+    consensus2 = seed_seq[:100]
+    aligner = ConsensusAligner(projects)
+    aligner.align(seed_name, seed_aminos=seed_aminos)
+
+    aligner.align(seed_name, consensus2)
+
+    assert aligner.consensus == consensus2
+    assert not aligner.seed_nucs
+
+
+def test_align_without_seed_name(projects):
+    seed_aminos = [SeedAmino(i) for i in range(3)]
+    seed_aminos[0].count_aminos('ATA', 1)
+    seed_aminos[1].count_aminos('CGC', 1)
+    seed_aminos[2].count_aminos('GTG', 1)
+    expected_consensus = 'ATACGCGTG'
+    seed_name = None
+    aligner = ConsensusAligner(projects)
+    aligner.align(seed_name, seed_aminos=seed_aminos)
+
+    assert aligner.consensus == expected_consensus
+    assert len(aligner.seed_nucs) == 9
+
+
+def test_align_consensus_offset(projects):
+    seed_aminos = [SeedAmino(i) for i in range(3)]
+    seed_aminos[1].count_aminos('CCC', 1)
+    seed_aminos[2].count_aminos('GGG', 1)
+    seed_name = 'HCV-6t'
+    expected_consensus = 'CCCGGG'
+    aligner = ConsensusAligner(projects)
+
+    aligner.align(seed_name, seed_aminos=seed_aminos)
+
+    assert aligner.consensus == expected_consensus
+    assert aligner.consensus_offset == 3
+    assert len(aligner.seed_nucs) == 9

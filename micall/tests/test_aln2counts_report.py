@@ -703,7 +703,7 @@ def test_contig_coverage_report_past_reference_end(projects, sequence_report):
     ref = projects.getReference(hxb2_name)
     assert len(ref) == 9719
     seq = ref[-100:] + 'CGTAC'
-    seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq)
+    seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     expected_tail = """\
 1-my-contig,HIV1-B-FR-K03455-seed,99,9718,0,1,M
 1-my-contig,HIV1-B-FR-K03455-seed,100,9719,0,1,M
@@ -732,7 +732,7 @@ def test_contig_coverage_report_past_reference_start(projects, sequence_report):
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     seq = 'CGTAC' + ref[:100]
-    seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq)
+    seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     # link is (M)apped, (U)nmapped, or (I)nserted
     expected_head = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
@@ -763,8 +763,8 @@ def test_contig_coverage_report_offset_reads(projects, sequence_report):
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     seq = ref[50:150]
-    seed_nucs = ([('C', SeedNucleotide())] * 50 +
-                 [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq))
+    seed_nucs = ([SeedNucleotide()] * 50 +
+                 [SeedNucleotide(Counter({'C': 1}))] * len(seq))
     expected_head = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 1-my-contig,HIV1-B-FR-K03455-seed,51,51,0,1,M
@@ -958,9 +958,9 @@ def test_write_sequence_coverage_counts_with_coverage(projects,
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     seq = ref[100:150] + ref[1000:1050]
-    seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * 100
-    seed_nucs[2] = ('G', SeedNucleotide(Counter({'G': 4})))
-    seed_nucs[98] = ('T', SeedNucleotide(Counter({'T': 5})))
+    seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * 100
+    seed_nucs[2] = SeedNucleotide(Counter({'G': 4}))
+    seed_nucs[98] = SeedNucleotide(Counter({'T': 5}))
     expected_head = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M
@@ -994,8 +994,8 @@ def test_write_sequence_coverage_counts_with_deletion(projects, sequence_report)
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     seq = ref[100:110] + ref[115:160]
-    seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq)
-    seed_nucs[12] = ('G', SeedNucleotide(Counter({'G': 4})))
+    seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
+    seed_nucs[12] = SeedNucleotide(Counter({'G': 4}))
     expected_head = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M
@@ -1034,8 +1034,8 @@ def test_write_sequence_coverage_counts_with_some_deletions(projects,
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     seq = ref[100:150]
-    seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq)
-    seed_nucs[5] = ('G', SeedNucleotide(Counter({'G': 4, '-': 2})))
+    seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
+    seed_nucs[5] = SeedNucleotide(Counter({'G': 4, '-': 2}))
     expected_head = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M
@@ -1068,8 +1068,8 @@ def test_write_sequence_coverage_counts_with_insert(projects, sequence_report):
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     seq = ref[100:110] + 'ACTGA' + ref[110:160]
-    seed_nucs = [('C', SeedNucleotide(Counter({'C': 1})))] * len(seq)
-    seed_nucs[12] = ('T', SeedNucleotide(Counter({'T': 4})))
+    seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
+    seed_nucs[12] = SeedNucleotide(Counter({'T': 4}))
     expected_head = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
 1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M

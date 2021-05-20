@@ -28,7 +28,7 @@ from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 from micall.core.remap import PARTIAL_CONTIG_SUFFIX, REVERSED_CONTIG_SUFFIX
 from micall.utils.alignment_wrapper import align_nucs
 from micall.utils.big_counter import BigCounter
-from micall.utils.consensus_aligner import CigarActions
+from micall.utils.consensus_aligner import CigarActions, ConsensusAligner
 from micall.utils.spring_beads import Wire, Bead
 from micall.utils.translation import translate, ambig_dict
 
@@ -154,6 +154,7 @@ class SequenceReport(object):
         self.inserts = self.consensus = self.seed = None
         self.contigs = None  # [(ref, group_ref, seq)]
         self.consensus_by_reading_frame = None  # {frame: seq}
+        self.consensus_aligner = ConsensusAligner(projects)
         if landmarks_yaml is None:
             landmarks_path = (Path(__file__).parent.parent / 'data' /
                               'landmark_references.yaml')
@@ -320,6 +321,7 @@ class SequenceReport(object):
                 elif prev_nuc_index is None:
                     pass
                 elif seed_amino.consensus_nuc_index - prev_nuc_index == 2:
+                    # This amino starts with the duplicated nuc in SARS-CoV-2.
                     ref_offset = -1
                     seed_amino.nucleotides_to_skip = 1
                 seed_amino.ref_offset = ref_offset
@@ -400,13 +402,8 @@ class SequenceReport(object):
             pos += 1
         return seed_aminos
 
-    def map_sequences(self, from_seq, to_seq, from_aligned=None, to_aligned=None):
-        if from_aligned is None or to_aligned is None:
-            from_aligned, to_aligned, _score = self._pair_align(
-                from_seq,
-                to_seq,
-                gap_open=GAP_OPEN_COORD,
-                gap_extend=GAP_EXTEND_COORD)
+    @staticmethod
+    def map_sequences(from_seq, to_seq, from_aligned, to_aligned):
         seq_map = {}
         from_index = to_index = 0
         for from_aa, to_aa in zip(from_aligned, to_aligned):
@@ -494,9 +491,25 @@ class SequenceReport(object):
         self.reading_frames = {}  # {coord_name: reading_frame}
         self.inserts = {}  # {coord_name: set([consensus_index])}
         self.consensus = {}  # {coord_name: consensus_amino_seq}
+        if self.consensus_aligner.consensus is not None:
+            self.consensus_aligner = ConsensusAligner(self.projects)
 
         # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
+        is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
+                      self.seed.endswith(REVERSED_CONTIG_SUFFIX))
+        if is_partial:
+            coordinate_name = None
+        else:
+            for seed_landmarks in self.landmarks:
+                if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
+                    coordinate_name = seed_landmarks['coordinates']
+                    break
+            else:
+                coordinate_name = None
+
+        self.consensus_aligner.align(coordinate_name,
+                                     seed_aminos=self.seed_aminos[0])
 
         if (self.seed is None or
                 self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
@@ -732,37 +745,13 @@ class SequenceReport(object):
         self.genome_coverage_writer.writeheader()
 
     def write_genome_coverage_counts(self):
-        seed_nucs = [(seed_nuc.get_consensus(MAX_CUTOFF) or '?', seed_nuc)
-                     for seed_amino in self.seed_aminos[0]
-                     for seed_nuc in seed_amino.nucleotides]
-        aligned_consensus = ''.join(nuc for nuc, coverage in seed_nucs)
-        consensus = aligned_consensus.lstrip('?')
-        consensus_offset = len(aligned_consensus) - len(consensus)
-        consensus = consensus.rstrip('?')
-
-        # Fill in gaps from remap conseq.
-        seed_seq = self.remap_conseqs and self.remap_conseqs.get(self.detail_seed)
-        if seed_seq:
-            consensus = ''.join(nuc if nuc != '?' else seed_seq[i+consensus_offset]
-                                for i, nuc in enumerate(consensus))
-        is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
-                      self.seed.endswith(REVERSED_CONTIG_SUFFIX))
-        if is_partial:
-            coordinate_name = None
-        else:
-            for seed_landmarks in self.landmarks:
-                if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
-                    coordinate_name = seed_landmarks['coordinates']
-                    break
-            else:
-                coordinate_name = None
-
-        self.write_sequence_coverage_counts(self.detail_seed,
-                                            coordinate_name,
-                                            consensus,
-                                            consensus_offset,
-                                            seed_nucs)
-        if is_partial or not self.contigs:
+        self.write_sequence_coverage_counts(
+            self.detail_seed,
+            self.consensus_aligner.coordinate_name,
+            self.consensus_aligner.consensus,
+            self.consensus_aligner.consensus_offset,
+            self.consensus_aligner.seed_nucs)
+        if not self.consensus_aligner.coordinate_name or not self.contigs:
             return
         seed_prefix = self.detail_seed.split('-')[0]
         try:
@@ -773,7 +762,7 @@ class SequenceReport(object):
             contig_ref, group_ref, contig_seq = self.contigs[contig_num-1]
             contig_name = f'contig-{contig_num}-{contig_ref}'
             self.write_sequence_coverage_counts(contig_name,
-                                                coordinate_name,
+                                                self.consensus_aligner.coordinate_name,
                                                 contig_seq)
 
     def write_sequence_coverage_counts(self,
@@ -782,7 +771,8 @@ class SequenceReport(object):
                                        consensus: str,
                                        consensus_offset=0,
                                        seed_nucs=None):
-        if coordinate_name is None:
+        if not coordinate_name:
+            coordinate_name = None
             alignments = []
         else:
             coordinate_seq = self.projects.getReference(coordinate_name)
@@ -857,7 +847,7 @@ class SequenceReport(object):
                     if not seed_nucs:
                         coverage = dels = None
                     else:
-                        seed_nuc: SeedNucleotide = seed_nucs[offset_seq_pos - 1][1]
+                        seed_nuc = seed_nucs[offset_seq_pos - 1]
                         coverage = seed_nuc.get_coverage()
                         if coverage == 0:
                             continue

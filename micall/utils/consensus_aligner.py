@@ -1,9 +1,11 @@
 import typing
 from enum import IntEnum
+from operator import attrgetter
 
 from gotoh import align_it
 from mappy import Alignment, Aligner
 
+from micall.core import aln2counts
 from micall.core.project_config import ProjectConfig
 
 CigarActions = IntEnum(
@@ -119,24 +121,41 @@ class ConsensusAligner:
     def __init__(self, projects: ProjectConfig):
         self.projects = projects
         self.coordinate_name = self.consensus = self.algorithm = ''
+        self.consensus_offset = 0
         self.alignments: typing.List[Alignment] = []
+        self.seed_nucs: typing.List[aln2counts.SeedNucleotide] = []
 
-    def align(self, coordinate_name: str, consensus: str):
+    def align(self,
+              coordinate_name: str = None,
+              consensus: str = None,
+              seed_aminos: typing.Iterable['aln2counts.SeedAmino'] = None):
+        self.clear()
+        if consensus:
+            self.consensus = consensus
+        elif seed_aminos:
+            self.seed_nucs = [seed_nuc
+                              for seed_amino in seed_aminos
+                              for seed_nuc in seed_amino.nucleotides]
+            aligned_consensus = ''.join(nuc.get_consensus('MAX') or '?'
+                                        for nuc in self.seed_nucs)
+            consensus = aligned_consensus.lstrip('?')
+            self.consensus_offset = len(aligned_consensus) - len(consensus)
+            self.consensus = consensus.rstrip('?')
+        if not coordinate_name:
+            return
         self.coordinate_name = coordinate_name
-        self.consensus = consensus
         coordinate_seq = self.projects.getReference(coordinate_name)
-        aligner = Aligner(seq=coordinate_seq, preset='map-ont')
+        aligner = Aligner(seq=coordinate_seq, preset='map-ont', best_n=5)
         self.alignments = list(aligner.map(consensus))
         if self.alignments or 10_000 < len(consensus):
             self.algorithm = 'minimap2'
         else:
             self.algorithm = 'gotoh'
             self.align_gotoh(coordinate_seq, consensus)
-        # TODO: Sort and filter alignments.
-        # self.alignments = sorted(aligner.map(consensus), key=attrgetter('q_st'))
-        # self.alignments = [alignment
-        #                    for alignment in self.alignments
-        #                    if alignment.is_primary]
+        self.alignments = [alignment
+                           for alignment in self.alignments
+                           if alignment.is_primary]
+        self.alignments.sort(key=attrgetter('q_st'))
 
     def align_gotoh(self, coordinate_seq, consensus):
         gap_open_penalty = 15
@@ -178,3 +197,8 @@ class ConsensusAligner:
                 q_st=0,
                 q_en=consensus_index,
                 cigar=cigar))
+
+    def clear(self):
+        self.coordinate_name = self.consensus = self.algorithm = ''
+        self.alignments.clear()
+        self.seed_nucs.clear()

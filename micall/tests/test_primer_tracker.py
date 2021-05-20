@@ -3,10 +3,8 @@ import pytest
 from micall.core.project_config import ProjectConfig
 from micall.utils.primer_tracker import PrimerTracker
 
-
-@pytest.fixture(scope='session', name='projects')
-def load_projects() -> ProjectConfig:
-    return ProjectConfig.loadDefault()
+# noinspection PyUnresolvedReferences
+from micall.tests.test_remap import load_projects
 
 
 def test_hcv1a(projects):
