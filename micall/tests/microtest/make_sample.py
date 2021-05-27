@@ -56,76 +56,115 @@ def main():
     hxb2_ref = projects.getReference('HIV1-B-FR-K03455-seed')
 
     sections_2220_mix1a_1, sections_2220_mix1a_2 = make_random_sections('HIV1-B-FR-K03455-seed',
-                                                                    6225,
-                                                                    7757,
-                                                                    projects,
-                                                                    9000
-                                                                    )
+                                                                        6225,
+                                                                        7757,
+                                                                        projects,
+                                                                        9000
+                                                                        )
     sections_2220_mix1b_1, sections_2220_mix1b_2 = make_random_sections('HIV1-B-FR-K03455-seed',
-                                                                   6225,
-                                                                   7757,
-                                                                   projects,
-                                                                   1000,
-                                                                   mutations = (CodonMutation(7000, 'AAA'),)
-                                                                   )
+                                                                       6225,
+                                                                       7757,
+                                                                       projects,
+                                                                       1000,
+                                                                       mutations = (CodonMutation(7000, 'AAA'),)
+                                                                       )
     sections_2220_mix2a_1, sections_2220_mix2a_2 = make_random_sections('HIV1-B-FR-K03455-seed',
-                                                                    6225,
-                                                                    7757,
-                                                                    projects,
-                                                                    8000
-                                                                    )
+                                                                        6225,
+                                                                        7757,
+                                                                        projects,
+                                                                        8000
+                                                                        )
     sections_2220_mix2b_1, sections_2220_mix2b_2 = make_random_sections('HIV1-B-FR-K03455-seed',
-                                                                   6225,
-                                                                   7757,
-                                                                   projects,
-                                                                   2000,
-                                                                   mutations = (CodonMutation(7000, 'AAA'),)
-                                                                   )
+                                                                       6225,
+                                                                       7757,
+                                                                       projects,
+                                                                       2000,
+                                                                       mutations = (CodonMutation(7000, 'AAA'),)
+                                                                       )
     sections_2220_mix3a_1, sections_2220_mix3a_2 = make_random_sections('HIV1-B-FR-K03455-seed',
-                                                                    6225,
-                                                                    7757,
-                                                                    projects,
-                                                                    7000
-                                                                    )
+                                                                        6225,
+                                                                        7757,
+                                                                        projects,
+                                                                        7000
+                                                                        )
     sections_2220_mix3b_1, sections_2220_mix3b_2 = make_random_sections('HIV1-B-FR-K03455-seed',
-                                                                   6225,
-                                                                   7757,
-                                                                   projects,
-                                                                   3000,
-                                                                   mutations = (CodonMutation(7000, 'AAA'),)
-                                                                   )
+                                                                        6225,
+                                                                        7757,
+                                                                        projects,
+                                                                        3000,
+                                                                        mutations=(CodonMutation(7000, 'AAA'),)
+                                                                        )
     sections_2220_mix4a_1, sections_2220_mix4a_2 = make_random_sections('HIV1-B-FR-K03455-seed',
-                                                                    6225,
-                                                                    7757,
-                                                                    projects,
-                                                                    6000
-                                                                    )
+                                                                        6225,
+                                                                        7757,
+                                                                        projects,
+                                                                        6000
+                                                                        )
     sections_2220_mix4b_1, sections_2220_mix4b_2 = make_random_sections('HIV1-B-FR-K03455-seed',
-                                                                   6225,
-                                                                   7757,
-                                                                   projects,
-                                                                   4000,
-                                                                   mutations = (CodonMutation(7000, 'AAA'),)
-                                                                   )
+                                                                        6225,
+                                                                        7757,
+                                                                        projects,
+                                                                        4000,
+                                                                        mutations=(CodonMutation(7000, 'AAA'),)
+                                                                        )
     sections_2220_mix5a_1, sections_2220_mix5a_2 = make_random_sections('HIV1-B-FR-K03455-seed',
-                                                                    6225,
-                                                                    7757,
-                                                                    projects,
-                                                                    5000
-                                                                    )
+                                                                        6225,
+                                                                        7757,
+                                                                        projects,
+                                                                        5000
+                                                                        )
     sections_2220_mix5b_1, sections_2220_mix5b_2 = make_random_sections('HIV1-B-FR-K03455-seed',
-                                                                   6225,
-                                                                   7757,
-                                                                   projects,
-                                                                   5000,
-                                                                   mutations = (CodonMutation(7000, 'AAA'),)
-                                                                   )
+                                                                        6225,
+                                                                        7757,
+                                                                        projects,
+                                                                        5000,
+                                                                        mutations=(CodonMutation(7000, 'AAA'),)
+                                                                        )
     sections_2230_1, sections_2230_2 = make_random_sections('HCV-1a',
                                                             6258,
                                                             9375,
                                                             projects,
                                                             10000
                                                             )
+    sections2240_1A_1, sections2240_1A_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                6225,
+                                                                7757,
+                                                                projects,
+                                                                5000,
+                                                                mutations=(CodonMutation(7000, 'AAA'),)
+                                                                )
+    sections2240_1B_1, sections2240_1B_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                6225,
+                                                                7757,
+                                                                projects,
+                                                                5000
+                                                                )
+    sections2240_2A_1, sections2240_2A_2 = make_random_sections('HCV-1a',
+                                                                  6258,
+                                                                  9375,
+                                                                  projects,
+                                                                  5000,
+                                                                  mutations=(CodonMutation(7000, 'AAA'),)
+                                                                  )
+    sections2240_2B_1, sections2240_2B_2 = make_random_sections('HCV-1a',
+                                                                  6258,
+                                                                  9375,
+                                                                  projects,
+                                                                  5000
+                                                                  )
+    sections2240_3A_1, sections2240_3A_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                3000,
+                                                                5000,
+                                                                projects,
+                                                                5000,
+                                                                mutations=(CodonMutation(4000, 'AAA'),)
+                                                                )
+    sections2240_3B_1, sections2240_3B_2 = make_random_sections('HIV1-B-FR-K03455-seed',
+                                                                3000,
+                                                                5000,
+                                                                projects,
+                                                                5000
+                                                                )
 
     projects.config['regions']['HXB2-with-deletion'] = dict(
         reference=hxb2_ref[617:928] + hxb2_ref[9358:9652],
@@ -386,11 +425,21 @@ def main():
                    FastqFile('2230-HCV_S31_L001_R2_001.fastq',
                              '2220',
                              True,
-                             sections_2230_2)
+                             sections_2230_2),
+                   FastqFile('2240-HIVHCV-mixtures_S32_L001_R1_001.fastq',
+                             '2240',
+                             False,
+                             sections2240_1A_1 + sections2240_1B_1 + sections2240_2A_1 + sections2240_2B_1 +
+                             sections2240_3A_1 + sections2240_3B_1),
+                   FastqFile('2240-HIVHCV-mixtures_S32_L001_R2_001.fastq',
+                             '2240',
+                             True,
+                             sections2240_1A_2 + sections2240_1B_2 + sections2240_2A_2 + sections2240_2B_2 +
+                             sections2240_3A_2 + sections2240_3B_2)
                    ]
 
     for fastq_file in fastq_files:
-        if not fastq_file.name.startswith('2230'):
+        if not fastq_file.name.startswith('2240'):
             continue
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1
