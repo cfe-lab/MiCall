@@ -381,6 +381,11 @@ SARS-CoV-2 seed reference is downloaded from accession MN908947
 def check_sars_coordinates(project_config, unchecked_ref_names: set):
     print("""\
 SARS-CoV-2 coordinate references are translated from the seed reference.
+Some boundaries come from https://www.ncbi.nlm.nih.gov/nuccore/MN908947
+Others come from supplemental data #2 in:
+https://www.nature.com/articles/s41467-021-22905-7#Sec26
+TRS-B entries, or Transcription Regulatory Sequences (Body) were created to
+cover any sections that weren't included elsewhere.
 """)
     ref_names = ["SARS-CoV-2-5'UTR",
                  'SARS-CoV-2-ORF1a',
@@ -423,18 +428,27 @@ SARS-CoV-2 coordinate references are translated from the seed reference.
 
     # Funky translation at this base: it gets duplicated.
     duplicated_base = 13468
-    seed_sequence = project_config.getReference('SARS-CoV-2-seed')
+    seed_name = 'SARS-CoV-2-seed'
+    seed_sequence = project_config.getReference(seed_name)
+    coordinate_references = project_config.getCoordinateReferences(seed_name)
+    unconfigured_references = set(ref_names).difference(coordinate_references)
+    if unconfigured_references:
+        print('Unconfigured references:')
+        print('  ' + ', '.join(sorted(unconfigured_references)))
     unchecked_ref_names.difference_update(ref_names)
     landmark_reader = LandmarkReader.load()
 
     source_sequences = {}
     ref_positions = set()
     for ref_name in ref_names:
-        region = landmark_reader.get_gene('SARS-CoV-2-seed', ref_name)
+        region = landmark_reader.get_gene(seed_name, ref_name)
+        full_region = landmark_reader.get_gene(seed_name,
+                                               ref_name,
+                                               drop_stop_codon=False)
         start = region['start']
         end = region['end']
-        ref_positions = ref_positions.union(range(start, end+1))
-        source_nuc_sequence = seed_sequence[start-1:end-3]  # Trim stop codons.
+        ref_positions = ref_positions.union(range(start, full_region['end']+1))
+        source_nuc_sequence = seed_sequence[start-1:end]
         if start < duplicated_base <= end:
             source_nuc_sequence = (
                 source_nuc_sequence[:duplicated_base-start+1] +

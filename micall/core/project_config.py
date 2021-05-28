@@ -71,6 +71,9 @@ class ProjectConfig(object):
         reference = self.config['regions'][region_name]['reference']
         return ''.join(reference)
 
+    def isAmino(self, region_name):
+        return not self.config['regions'][region_name]['is_nucleotide']
+
     def getCoordinateReferences(self, seed_region):
         """ Find any coordinate references that are linked to a seed reference.
 

@@ -5,11 +5,13 @@ from csv import DictReader
 from io import StringIO
 
 import pytest
+import yaml
 from mappy import revcomp
 
 from micall.core import project_config
-from micall.core.aln2counts import InsertionWriter, SequenceReport, SeedNucleotide
+from micall.core.aln2counts import InsertionWriter, SequenceReport
 from micall.core.project_config import ProjectConfig
+from micall.utils.report_amino import SeedNucleotide
 
 # noinspection PyUnresolvedReferences
 from micall.tests.test_remap import load_projects
@@ -24,6 +26,15 @@ def prepare_reads(aligned_reads_text):
 @pytest.fixture
 def sequence_report():
     return create_sequence_report()
+
+
+@pytest.fixture
+def default_sequence_report():
+    """ Sequence report with stubbed files, but all default projects. """
+    conseq_mixture_cutoffs = [0.1]
+    return StubbedSequenceReport(InsertionWriter(StringIO()),
+                                 ProjectConfig.loadDefault(),
+                                 conseq_mixture_cutoffs)
 
 
 def create_sequence_report():
@@ -215,11 +226,11 @@ def create_sequence_report():
 - seed_pattern: R1-.*
   coordinates: R1-seed
   landmarks:
-    - {name: ref, start: 1, end: 9, colour: steelblue}
+    - {name: R1, start: 1, end: 9, colour: steelblue}
 - seed_pattern: R2-.*
   coordinates: R2-seed
   landmarks:
-    - {name: ref, start: 1, end: 15, colour: steelblue}
+    - {name: R2, start: 1, end: 15, colour: steelblue}
 - seed_pattern: R3-.*
   coordinates: R3-seed
   landmarks:
@@ -257,7 +268,7 @@ def sequence_report_overlapping_regions(sequence_report):
     "R1-seed": {
       "is_nucleotide": true,
       "reference": [
-        "AAATTTAGG"
+        "GGCCCCAAATTTAGGGAGCAC"
       ]
     },
     "R1": {
@@ -275,6 +286,14 @@ def sequence_report_overlapping_regions(sequence_report):
   }
 }
     """))
+    sequence_report.landmarks = yaml.safe_load("""\
+- seed_pattern: R1-seed
+  coordinates: R1-seed
+  landmarks:
+    # Extra 3 nucleotides at end, because stop codons will get dropped.
+    - {name: R1, start: 7, end: 18, frame: 0}
+    - {name: R1-expanded, start: 1, end: 24, frame: 0}
+""")
     return sequence_report
 
 
@@ -499,7 +518,7 @@ R1-seed,R1-expanded,15,9,15,0,0,5,0,0,0,0,0,0,5
 
 
 # noinspection DuplicatedCode
-def test_duplicated_sars_base_amino(sequence_report):
+def test_duplicated_sars_base_amino(default_sequence_report):
     """ Special case for duplicated base in SARS orf1ab.
 
     Expect amino sequence AQSFLNRVCG.
@@ -523,16 +542,15 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,18,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,21,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,24,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
-    sequence_report.projects = ProjectConfig.loadDefault()
 
     report_file = StringIO()
-    sequence_report.write_amino_header(report_file)
-    sequence_report.read(aligned_reads)
-    sequence_report.write_amino_counts()
+    default_sequence_report.write_amino_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_amino_counts()
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 61
+    expected_size = 39
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -542,7 +560,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
 
 
 # noinspection DuplicatedCode
-def test_duplicated_sars_base_amino_offset10(sequence_report):
+def test_duplicated_sars_base_amino_offset10(default_sequence_report):
     """ Special case for duplicated base in SARS orf1ab with offset.
 
     Expect amino sequence AQSFLNRVCG.
@@ -565,16 +583,14 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,28,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,31,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,34,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
-    sequence_report.projects = ProjectConfig.loadDefault()
-
     report_file = StringIO()
-    sequence_report.write_amino_header(report_file)
-    sequence_report.read(aligned_reads)
-    sequence_report.write_amino_counts()
+    default_sequence_report.write_amino_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_amino_counts()
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 59
+    expected_size = 31
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -584,7 +600,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
 
 
 # noinspection DuplicatedCode
-def test_duplicated_sars_base_amino_offset11(sequence_report):
+def test_duplicated_sars_base_amino_offset11(default_sequence_report):
     """ Special case for duplicated base in SARS orf1ab (reading frame 1).
 
     Expect amino sequence AQSFLNRVCG.
@@ -607,16 +623,14 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,29,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,32,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,35,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
-    sequence_report.projects = ProjectConfig.loadDefault()
-
     report_file = StringIO()
-    sequence_report.write_amino_header(report_file)
-    sequence_report.read(aligned_reads)
-    sequence_report.write_amino_counts()
+    default_sequence_report.write_amino_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_amino_counts()
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 59
+    expected_size = 29
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -625,7 +639,8 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
     assert key_report == expected_text
 
 
-def test_duplicated_sars_base_nuc(sequence_report):
+# noinspection DuplicatedCode
+def test_duplicated_sars_base_nuc(default_sequence_report):
     """ Make sure duplicated base in SARS isn't duplicated in nuc.csv. """
 
     # refname,qcut,rank,count,offset,seq
@@ -646,12 +661,47 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,28,13205,0,0,9,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,29,13206,0,0,9,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,30,13207,0,0,0,9,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,31,13208,0,0,0,9,0,0,0,0,0,9"""
-    sequence_report.projects = ProjectConfig.loadDefault()
 
     report_file = StringIO()
-    sequence_report.write_nuc_header(report_file)
-    sequence_report.read(aligned_reads)
-    sequence_report.write_nuc_counts()
+    default_sequence_report.write_nuc_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 96
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+
+    key_lines = report_lines[11:22]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+
+def test_nucleotide_coordinates(default_sequence_report):
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+SARS-CoV-2-seed,15,0,9,0,ACGAACAAACT
+""")
+
+    #                                     A,C,G,T,N,...,coverage
+    expected_section = """\
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,1,1,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,2,2,0,9,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,3,3,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,4,4,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,5,5,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,6,6,0,9,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,7,7,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,8,8,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,9,9,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,10,10,0,9,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,11,11,0,0,0,9,0,0,0,0,0,9"""
+
+    report_file = StringIO()
+    default_sequence_report.write_nuc_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_counts()
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
@@ -665,12 +715,9 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,31,13208,0,0,0,9,0,0,0,0,0,9"""
 
 
 # noinspection DuplicatedCode
-def test_contig_coverage_report_huge_gap(projects):
+def test_contig_coverage_report_huge_gap(default_sequence_report):
     """ A gap so big that Gotoh can't bridge it, but minimap2 can. """
-    sequence_report = SequenceReport(InsertionWriter(StringIO()),
-                                     projects,
-                                     conseq_mixture_cutoffs=[0.1])
-    ref = projects.getReference('HIV1-B-FR-K03455-seed')
+    ref = default_sequence_report.projects.getReference('HIV1-B-FR-K03455-seed')
     seq = ref[100:150] + ref[1000:1050]
     expected_positions = list(range(101, 151)) + list(range(1001, 1051))
     remap_conseq_csv = StringIO(f"""\
@@ -683,12 +730,12 @@ HIV1-B-FR-K03455-seed,15,0,4,0,{seq}
 """)
 
     report_file = StringIO()
-    sequence_report.read_remap_conseqs(remap_conseq_csv)
-    sequence_report.write_amino_header(StringIO())
-    sequence_report.write_genome_coverage_header(report_file)
-    sequence_report.read(aligned_reads1)
-    sequence_report.write_genome_coverage_counts()
-    sequence_report.write_amino_counts()
+    default_sequence_report.read_remap_conseqs(remap_conseq_csv)
+    default_sequence_report.write_amino_header(StringIO())
+    default_sequence_report.write_genome_coverage_header(report_file)
+    default_sequence_report.read(aligned_reads1)
+    default_sequence_report.write_genome_coverage_counts()
+    default_sequence_report.write_amino_counts()
 
     report_file.seek(0)
     covered_positions = [int(row['refseq_nuc_pos'])

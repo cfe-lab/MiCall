@@ -1,4 +1,4 @@
-from micall.core.aln2counts import SeedNucleotide, MAX_CUTOFF, FIRST_CUTOFF
+from micall.utils.report_amino import SeedNucleotide, MAX_CUTOFF, FIRST_CUTOFF
 
 
 def test_single_read():

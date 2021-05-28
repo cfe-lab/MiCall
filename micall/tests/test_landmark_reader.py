@@ -26,7 +26,7 @@ def test_gene_with_end():
                          colour='lightblue')
     reader = LandmarkReader.load(landmarks_yaml)
 
-    gene = reader.get_gene('R1-seed', 'gene2')
+    gene = reader.get_gene('R1-seed', 'gene2', drop_stop_codon=False)
 
     assert gene == expected_gene
 
@@ -52,7 +52,7 @@ def test_gene_without_end():
                          colour='lightblue')
     reader = LandmarkReader.load(landmarks_yaml)
 
-    gene = reader.get_gene('R1-seed', 'gene2')
+    gene = reader.get_gene('R1-seed', 'gene2', drop_stop_codon=False)
 
     assert gene == expected_gene
 
@@ -65,7 +65,7 @@ def test_load_defaults():
                          colour='orange')
     reader = LandmarkReader.load()
 
-    gene = reader.get_gene('HIV1-B-FR-K03455-seed', 'PR')
+    gene = reader.get_gene('HIV1-B-FR-K03455-seed', 'PR', drop_stop_codon=False)
 
     assert gene == expected_gene
 
@@ -87,7 +87,28 @@ def test_gene_with_prefix():
                          colour='lightblue')
     reader = LandmarkReader.load(landmarks_yaml)
 
-    gene = reader.get_gene('R1-seed', 'R1-group-gene2')
+    gene = reader.get_gene('R1-seed', 'R1-group-gene2', drop_stop_codon=False)
+
+    assert gene == expected_gene
+
+
+def test_gene_drop_stop_codon():
+    landmarks_yaml = StringIO("""\
+- seed_pattern: R1
+  coordinates: R1-seed
+  landmarks:
+    - {name: gene1, start: 1, frame: 0, colour: darkgrey}
+    - {name: gene2, start: 789, frame: 0, colour: lightblue}
+    - {name: gene3, start: 5040, end: 5616, frame: 0, colour: steelblue}
+""")
+    expected_gene = dict(name='gene2',
+                         start=789,
+                         end=5037,
+                         frame=0,
+                         colour='lightblue')
+    reader = LandmarkReader.load(landmarks_yaml)
+
+    gene = reader.get_gene('R1-seed', 'gene2', drop_stop_codon=True)
 
     assert gene == expected_gene
 
@@ -127,7 +148,7 @@ def test_gene_with_full_name():
                          colour='lightblue')
     reader = LandmarkReader.load(landmarks_yaml)
 
-    gene = reader.get_gene('R1-seed', 'R1-group-gene2')
+    gene = reader.get_gene('R1-seed', 'R1-group-gene2', drop_stop_codon=False)
 
     assert gene == expected_gene
 
@@ -157,3 +178,16 @@ def test_get_coordinates_unknown():
 
     with pytest.raises(ValueError, match=r"No landmarks match 'R2b'"):
         reader.get_coordinates('R2b')
+
+
+def test_get_gene_unknown():
+    landmarks_yaml = StringIO("""\
+- seed_pattern: R1.*
+  coordinates: R1a
+  landmarks:
+    - {name: '1', full_name: gene1, start: 1, frame: 0, colour: darkgrey}
+""")
+    reader = LandmarkReader.load(landmarks_yaml)
+
+    with pytest.raises(ValueError, match=r"Coordinates unknown: 'R2b'"):
+        reader.get_gene('R2b', '2')

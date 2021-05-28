@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 
-from micall.core.aln2counts import SeedNucleotide, FIRST_CUTOFF
+from micall.utils.report_amino import SeedNucleotide, FIRST_CUTOFF
 
 
 class ConsensusBuilder:

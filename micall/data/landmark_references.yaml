@@ -18,7 +18,7 @@
     - {name: PR, start: 2252, end: 2549, frame: 3, colour: orange}
     - {name: RT, start: 2549, end: 3869, frame: 3, colour: darkorange}
     - {name: INT, start: 4229, end: 5093, frame: 3, colour: orange}
-    - {name: V3, start: 7109, end: 7217, frame: 3, colour: salmon}
+    - {name: V3, full_name: V3LOOP, start: 7109, end: 7217, frame: 3, colour: salmon}
     - {name: GP41, start: 7757, end: 8792, frame: 3, colour: salmon}
     - {name: GP120, start: 6224, end: 7757, frame: 3}  # Not displayed.
 - seed_pattern: HCV-1b

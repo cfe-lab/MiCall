@@ -5,8 +5,8 @@ from operator import attrgetter
 from gotoh import align_it
 from mappy import Alignment, Aligner
 
-from micall.core import aln2counts
 from micall.core.project_config import ProjectConfig
+from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, SeedNucleotide
 
 CigarActions = IntEnum(
     'CigarActions',
@@ -123,16 +123,24 @@ class ConsensusAligner:
         self.coordinate_name = self.consensus = self.algorithm = ''
         self.consensus_offset = 0
         self.alignments: typing.List[Alignment] = []
-        self.seed_nucs: typing.List[aln2counts.SeedNucleotide] = []
+        self.reading_frames: typing.List[typing.List[SeedAmino]] = []
+        self.seed_nucs: typing.List[SeedNucleotide] = []
 
-    def align(self,
-              coordinate_name: str = None,
-              consensus: str = None,
-              seed_aminos: typing.Iterable['aln2counts.SeedAmino'] = None):
+    def start_contig(self,
+                     coordinate_name: str = None,
+                     consensus: str = None,
+                     reading_frames: typing.Dict[
+                         int,
+                         typing.List[SeedAmino]] = None):
         self.clear()
+
         if consensus:
             self.consensus = consensus
-        elif seed_aminos:
+        elif reading_frames:
+            self.reading_frames = {
+                frame_offset: list(seed_aminos)
+                for frame_offset, seed_aminos in reading_frames.items()}
+            seed_aminos = self.reading_frames[0]
             self.seed_nucs = [seed_nuc
                               for seed_amino in seed_aminos
                               for seed_nuc in seed_amino.nucleotides]
@@ -145,7 +153,7 @@ class ConsensusAligner:
             return
         self.coordinate_name = coordinate_name
         coordinate_seq = self.projects.getReference(coordinate_name)
-        aligner = Aligner(seq=coordinate_seq, preset='map-ont', best_n=5)
+        aligner = Aligner(seq=coordinate_seq, preset='map-ont')
         self.alignments = list(aligner.map(consensus))
         if self.alignments or 10_000 < len(consensus):
             self.algorithm = 'minimap2'
@@ -202,3 +210,63 @@ class ConsensusAligner:
         self.coordinate_name = self.consensus = self.algorithm = ''
         self.alignments.clear()
         self.seed_nucs.clear()
+
+    def report_region(
+            self,
+            start_pos: int,
+            end_pos: int,
+            report_nucleotides: typing.List[ReportNucleotide],
+            report_aminos: typing.List[ReportAmino] = None,
+            repeat_position: int = None):
+        """ Add read counts to report counts for a section of the reference.
+
+        :param start_pos: 1-based position of first nucleotide to report in
+            reference coordinates.
+        :param end_pos: 1-based position of last nucleotide to report in
+            reference coordinates.
+        :param report_nucleotides: list of nucleotide objects to collect counts.
+            Will be extended to required size, if needed.
+        :param report_aminos: list of amino objects to collect counts.
+            Will be extended to required size, if needed.
+        :param repeat_position: if not None, repeat the nucleotide at this
+            1-based position in reference coordinates, but only in report_aminos.
+        """
+        nuc_count = end_pos - start_pos + 1
+        report_nucleotides.extend(ReportNucleotide(i+1)
+                                  for i in range(nuc_count))
+        extra_nucs = 1 if repeat_position is not None else 0
+        amino_count = (nuc_count + extra_nucs + 2) // 3
+        if report_aminos is not None:
+            report_aminos.extend(ReportAmino(SeedAmino(None), i+1)
+                                 for i in range(amino_count))
+
+        for alignment in self.alignments:
+            ref_nuc_index = alignment.r_st
+            consensus_nuc_index = alignment.q_st + self.consensus_offset
+            frame_offset = (ref_nuc_index - start_pos + 1 -
+                            consensus_nuc_index) % 3
+            source_amino_index = 0
+            seed_aminos = self.reading_frames[frame_offset]
+            while consensus_nuc_index < alignment.q_en:
+                if start_pos-1 <= ref_nuc_index < end_pos:
+                    target_nuc_index = ref_nuc_index - start_pos + 1
+                    while True:
+                        seed_amino = seed_aminos[source_amino_index]
+                        codon_nuc_index = (consensus_nuc_index -
+                                           seed_amino.consensus_nuc_index)
+                        if codon_nuc_index < 3:
+                            break
+                        source_amino_index += 1
+                    seed_nuc = seed_amino.nucleotides[codon_nuc_index]
+                    report_nuc = report_nucleotides[target_nuc_index]
+                    report_nuc.seed_nucleotide.add(seed_nuc)
+                    q = report_nuc.seed_nucleotide.consensus_index
+                    if codon_nuc_index == 2 and report_aminos:
+                        target_amino_index = target_nuc_index // 3
+                        report_amino = report_aminos[target_amino_index]
+                        report_amino.seed_amino.add(seed_amino)
+                    if ref_nuc_index+1 == repeat_position:
+                        frame_offset = (frame_offset + 1) % 3
+                        seed_aminos = self.reading_frames[frame_offset]
+                ref_nuc_index += 1
+                consensus_nuc_index += 1

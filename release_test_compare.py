@@ -14,10 +14,11 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+# noinspection PyPackageRequirements
 import Levenshtein
 
-from micall.core.aln2counts import SeedNucleotide, MAX_CUTOFF
 from micall.utils.primer_tracker import PrimerTracker
+from micall.utils.report_amino import SeedNucleotide, MAX_CUTOFF
 
 MICALL_VERSION = '7.14'
 

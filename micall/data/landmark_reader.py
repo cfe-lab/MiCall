@@ -23,17 +23,28 @@ class LandmarkReader:
     def __init__(self, landmarks: list):
         self.landmarks = landmarks
 
-    def get_gene(self, coordinates: str, gene_name: str):
+    def get_gene(self,
+                 coordinates: str,
+                 gene_name: str,
+                 drop_stop_codon=True) -> dict:
         """ Get the details for a gene in the given set of coordinates.
 
         :param coordinates: the group of seeds that are displayed together
         :param gene_name: the gene within the group
+        :param drop_stop_codon: True if the last three bases should be dropped
+            when they are a stop codon
         """
-        genotype_landmarks, = (entry
-                               for entry in self.landmarks
-                               if entry['coordinates'] == coordinates)
+        matches = [entry
+                   for entry in self.landmarks
+                   if entry['coordinates'] == coordinates]
+        if not matches:
+            raise ValueError(f'Coordinates unknown: {coordinates!r}')
+        genotype_landmarks, = matches
         regions = sorted(genotype_landmarks['landmarks'], key=itemgetter('start'))
         prefix = genotype_landmarks.get('prefix', '')
+        if (gene_name.startswith('SARS-CoV-2-TRS-B') or
+                gene_name.startswith('SARS-CoV-2-nsp')):
+            drop_stop_codon = False
         if not gene_name.startswith(prefix):
             raise ValueError(f'Gene name {gene_name!r} does not start with '
                              f'prefix {prefix!r}.')
@@ -44,13 +55,16 @@ class LandmarkReader:
                 full_name = region.get('name')
             if full_name != gene_name:
                 continue
-            if 'end' not in region:
-                region['end'] = regions[i+1]['start']
+            region_copy = dict(region)
+            if 'end' not in region_copy:
+                region_copy['end'] = regions[i+1]['start']
             break
         else:
             raise ValueError(f'Landmarks not found for gene {gene_name!r} in '
                              f'{coordinates}.')
-        return region
+        if drop_stop_codon:
+            region_copy['end'] -= 3
+        return region_copy
 
     def get_coordinates(self, seed_name: str) -> str:
         for genotype_landmarks in self.landmarks:

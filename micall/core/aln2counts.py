@@ -26,19 +26,19 @@ from mappy import Aligner
 
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 from micall.core.remap import PARTIAL_CONTIG_SUFFIX, REVERSED_CONTIG_SUFFIX
+from micall.data.landmark_reader import LandmarkReader
 from micall.utils.alignment_wrapper import align_nucs
 from micall.utils.big_counter import BigCounter
 from micall.utils.consensus_aligner import CigarActions, ConsensusAligner
+from micall.utils.report_amino import ReportAmino, MAX_CUTOFF, SeedAmino, AMINO_ALPHABET, ReportNucleotide, \
+    SeedNucleotide
 from micall.utils.spring_beads import Wire, Bead
-from micall.utils.translation import translate, ambig_dict
+from micall.utils.translation import translate
 
-AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'
 CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
 CONSENSUS_MIN_COVERAGE = 100
-MAX_CUTOFF = 'MAX'
-FIRST_CUTOFF = 'FIRST'
 
 
 def parse_args():
@@ -126,17 +126,17 @@ class SequenceReport(object):
     single region, and then write out all the reports for that region.
     """
     def __init__(self,
-                 insert_writer,
-                 projects,
-                 conseq_mixture_cutoffs,
+                 insert_writer: 'InsertionWriter',
+                 projects: ProjectConfig,
+                 conseq_mixture_cutoffs: typing.List[float],
                  clipping_counts=None,
                  conseq_insertion_counts=None,
                  landmarks_yaml=None):
         """ Create an object instance.
 
-        :param insert_writer: InsertionWriter object that will track reads and
-            write out any insertions relative to the coordinate reference.
-        :param projects: ProjectConfig object
+        :param insert_writer: will track reads and write out any insertions
+            relative to the coordinate reference.
+        :param projects: details of reference sequences and project codes
         :param conseq_mixture_cutoffs: a list of cutoff fractions used to
             determine what portion a variant must exceed before it will be
             included as a mixture in the consensus.
@@ -150,7 +150,13 @@ class SequenceReport(object):
         self.conseq_mixture_cutoffs = list(conseq_mixture_cutoffs)
         self.conseq_mixture_cutoffs.insert(0, MAX_CUTOFF)
         self.callback = None
-        self.seed_aminos = self.reports = self.reading_frames = None
+        self.seed_aminos = self.reading_frames = None
+        self.report_nucleotides: typing.Dict[
+            str,  # coordinate_name
+            typing.List[ReportNucleotide]] = defaultdict(list)
+        self.reports: typing.Dict[
+            str,  # coordinate_name
+            typing.List[ReportAmino]] = defaultdict(list)
         self.inserts = self.consensus = self.seed = None
         self.contigs = None  # [(ref, group_ref, seq)]
         self.consensus_by_reading_frame = None  # {frame: seq}
@@ -266,114 +272,36 @@ class SequenceReport(object):
         return aligned_ref, aligned_query, score
 
     def _map_to_coordinate_ref(self, coordinate_name, coordinate_ref):
-        """
-        Align consensus of aligned reads in each reading frame to the
-        coordinate reference to determine best frame.
-        Generate a map of consensus indices to the coordinate reference.
+        """ Extract the coordinate region from the aligned reads.
+
+        Consensus has already been aligned against the full-genome nucleotide
+        sequence. Populates self.reports with ReportAmino objects and
+        self.report_nucleotides with ReportNucleotide objects.
 
         :param coordinate_name: Name of coordinate reference.
         :param coordinate_ref: Amino acid sequence of coordinate reference.
-        :return: Dict object containing coordinate map.
         """
 
-        # Start max_score with the minimum score we can consider a valid
-        # alignment. Anything worse, we won't bother
-        consensus_length = len([amino for amino in self.seed_aminos[0] if amino.counts])
-        max_score = min(consensus_length, len(coordinate_ref))
-
-        best_alignment = None
-        for reading_frame in self.seed_aminos:
-            frame_seed_aminos = self.get_seed_aminos(reading_frame)
-            consensus = ''.join([seed_amino1.get_consensus()
-                                 for seed_amino1 in frame_seed_aminos])
-            if reading_frame == 0:
-                # best guess before aligning - if alignments fail, this will be non-empty
-                self.consensus[coordinate_name] = consensus
-
-            # map to reference coordinates by aligning consensus
-            a_coord, a_consensus, score = self._pair_align(
-                coordinate_ref,
-                consensus,
-                gap_open=GAP_OPEN_COORD,
-                gap_extend=GAP_EXTEND_COORD)
-            if score < max_score:
-                continue
-            max_score = score
-            best_alignment = (reading_frame,
-                              consensus,
-                              a_coord,
-                              a_consensus,
-                              frame_seed_aminos)
-
-        report_aminos = []
-        if best_alignment is not None:
-            (reading_frame,
-             consensus,
-             a_coord,
-             a_consensus,
-             frame_seed_aminos) = best_alignment
-
-            ref_offset = 0
-            prev_nuc_index = None
-            for seed_amino in frame_seed_aminos:
-                if seed_amino.consensus_nuc_index is None:
-                    pass
-                elif prev_nuc_index is None:
-                    pass
-                elif seed_amino.consensus_nuc_index - prev_nuc_index == 2:
-                    # This amino starts with the duplicated nuc in SARS-CoV-2.
-                    ref_offset = -1
-                    seed_amino.nucleotides_to_skip = 1
-                seed_amino.ref_offset = ref_offset
-                prev_nuc_index = seed_amino.consensus_nuc_index
-
-            coord2conseq = self.map_sequences(coordinate_ref,
-                                              consensus,
-                                              a_coord,
-                                              a_consensus)
-            self.reading_frames[coordinate_name] = reading_frame
-            self.consensus[coordinate_name] = consensus
-            coordinate_inserts = {seed_amino.consensus_nuc_index
-                                  for seed_amino in frame_seed_aminos}
-            prev_conseq_index = None
-            prev_consensus_nuc_index = None
-            for coord_index in range(len(coordinate_ref)):
-                conseq_index = coord2conseq.get(coord_index)
-                if conseq_index is None:
-                    seed_amino = SeedAmino(None)
-                    if (prev_conseq_index is not None and
-                            prev_conseq_index+1 < len(frame_seed_aminos)):
-                        prev_seed_amino = frame_seed_aminos[prev_conseq_index]
-                        prev_count = sum(prev_seed_amino.counts.values())
-                        prev_count += prev_seed_amino.deletions
-                        next_seed_amino = frame_seed_aminos[prev_conseq_index+1]
-                        next_count = sum(next_seed_amino.counts.values())
-                        next_count += next_seed_amino.deletions
-                        min_count = min(prev_count, next_count)
-                        seed_amino.deletions = min_count
-                        for nuc in seed_amino.nucleotides:
-                            nuc.count_nucleotides('-', min_count)
-                else:
-                    seed_amino = frame_seed_aminos[conseq_index]
-                    if prev_conseq_index is None:
-                        coordinate_inserts = {i
-                                              for i in coordinate_inserts
-                                              if i >= seed_amino.consensus_nuc_index}
-                    prev_conseq_index = conseq_index
-
-                report_aminos.append(ReportAmino(seed_amino, coord_index + 1))
-                if seed_amino.consensus_nuc_index is not None:
-                    coordinate_inserts.remove(seed_amino.consensus_nuc_index)
-                    prev_consensus_nuc_index = seed_amino.consensus_nuc_index
-            if prev_consensus_nuc_index is None:
-                coordinate_inserts.clear()
-            else:
-                coordinate_inserts = {i
-                                      for i in coordinate_inserts
-                                      if i <= prev_consensus_nuc_index}
-            self.inserts[coordinate_name] = coordinate_inserts
-
-        self.reports[coordinate_name] = report_aminos
+        is_amino_coordinate = self.projects.isAmino(coordinate_name)
+        landmark_reader = LandmarkReader(self.landmarks)
+        region_info = landmark_reader.get_gene(
+            self.consensus_aligner.coordinate_name,
+            coordinate_name)
+        report_nucleotides = self.report_nucleotides[coordinate_name]
+        repeated_ref_name = 'SARS-CoV-2-seed'
+        if self.consensus_aligner.coordinate_name == repeated_ref_name:
+            repeated_ref_pos = 13468  # 1-based position of duplicated base
+        else:
+            repeated_ref_pos = None
+        if is_amino_coordinate:
+            report_aminos = self.reports[coordinate_name]
+        else:
+            report_aminos = None
+        self.consensus_aligner.report_region(region_info['start'],
+                                             region_info['end'],
+                                             report_nucleotides,
+                                             report_aminos,
+                                             repeated_ref_pos)
 
     def get_seed_aminos(self, reading_frame: int) -> typing.List['SeedAmino']:
         if self.repeated_pos is None:
@@ -403,8 +331,8 @@ class SequenceReport(object):
         return seed_aminos
 
     @staticmethod
-    def map_sequences(from_seq, to_seq, from_aligned, to_aligned):
-        seq_map = {}
+    def map_amino_sequences(from_seq, to_seq, from_aligned, to_aligned):
+        seq_map = {}  # {from_aa_index: to_aa_index}
         from_index = to_index = 0
         for from_aa, to_aa in zip(from_aligned, to_aligned):
             if (to_index < len(to_seq) and
@@ -415,6 +343,10 @@ class SequenceReport(object):
                     from_aa == from_seq[from_index]):
                 from_index += 1
         return seq_map
+
+    def map_nuc_sequences(self):
+        consensus_length = len(self.consensus_aligner.consensus)
+        return {i: i for i in range(consensus_length)}
 
     def process_reads(self,
                       aligned_csv,
@@ -487,7 +419,8 @@ class SequenceReport(object):
         aligned_reads = self.align_deletions(aligned_reads)
 
         self.seed_aminos = {}  # {reading_frame: [SeedAmino(consensus_nuc_index)]}
-        self.reports = {}  # {coord_name: [ReportAmino()]}
+        self.reports.clear()  # {coord_name: [ReportAmino()]}
+        self.report_nucleotides.clear()  # {coord_name: [ReportNucleotide()]
         self.reading_frames = {}  # {coord_name: reading_frame}
         self.inserts = {}  # {coord_name: set([consensus_index])}
         self.consensus = {}  # {coord_name: consensus_amino_seq}
@@ -508,8 +441,8 @@ class SequenceReport(object):
             else:
                 coordinate_name = None
 
-        self.consensus_aligner.align(coordinate_name,
-                                     seed_aminos=self.seed_aminos[0])
+        self.consensus_aligner.start_contig(coordinate_name,
+                                            reading_frames=self.seed_aminos)
 
         if (self.seed is None or
                 self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
@@ -656,7 +589,7 @@ class SequenceReport(object):
             for i, report_amino in enumerate(report):
                 while len(old_report) <= i:
                     old_report.append(ReportAmino(SeedAmino(None),
-                                                  len(old_report)+1))
+                                                  len(old_report) + 1))
                 old_report[i].seed_amino.add(report_amino.seed_amino)
         self.reports.clear()
 
@@ -895,8 +828,8 @@ class SequenceReport(object):
     def write_counts(self,
                      seed: str,
                      region: str,
-                     seed_amino: 'SeedAmino',
-                     report_amino: typing.Optional['ReportAmino'],
+                     seed_nuc: SeedNucleotide,
+                     report_nuc: ReportNucleotide,
                      nuc_writer: DictWriter):
         """ Write rows of nucleotide counts for a single codon.
 
@@ -906,43 +839,35 @@ class SequenceReport(object):
         :param ReportAmino? report_amino: the ReportAmino object for this position
         :param nuc_writer: the CSV writer to write the row into
         """
-        ref_offset = seed_amino.ref_offset
-        for i, seed_nuc in enumerate(seed_amino.nucleotides):
-            if i < seed_amino.nucleotides_to_skip:
-                continue
-            if seed_amino.consensus_nuc_index is None:
-                query_pos_txt = ''
-            else:
-                query_pos = i + seed_amino.consensus_nuc_index + 1
-                query_pos_txt = str(query_pos)
-            ref_pos = (str(i + 3*report_amino.position - 2 + ref_offset)
-                       if report_amino is not None
-                       else '')
-            row = {'seed': seed,
-                   'region': region,
-                   'q-cutoff': self.qcut,
-                   'query.nuc.pos': query_pos_txt,
-                   'refseq.nuc.pos': ref_pos,
-                   'del': seed_nuc.counts['-'],
-                   'ins': seed_nuc.insertion_count,
-                   'clip': seed_nuc.clip_count,
-                   'v3_overlap': seed_nuc.v3_overlap,
-                   'coverage': seed_nuc.get_coverage()}
-            for base in 'ACTGN':
-                nuc_count = seed_nuc.counts[base]
-                row[base] = nuc_count
-            for field_name in ('coverage',
-                               'clip',
-                               'N',
-                               'ins',
-                               'del',
-                               'v3_overlap'):
-                if row[field_name]:
-                    break
-            else:
-                # No useful data, don't write this row.
-                continue
-            nuc_writer.writerow(row)
+        if seed_nuc.consensus_index is None:
+            query_pos_txt = ''
+        else:
+            query_pos_txt = str(seed_nuc.consensus_index + 1)
+        ref_pos = (str(report_nuc.position)
+                   if report_nuc.position is not None
+                   else '')
+        row = {'seed': seed,
+               'region': region,
+               'q-cutoff': self.qcut,
+               'query.nuc.pos': query_pos_txt,
+               'refseq.nuc.pos': ref_pos,
+               'del': seed_nuc.counts['-'],
+               'ins': seed_nuc.insertion_count,
+               'clip': seed_nuc.clip_count,
+               'v3_overlap': seed_nuc.v3_overlap,
+               'coverage': seed_nuc.get_coverage()}
+        for base in 'ACTGN':
+            nuc_count = seed_nuc.counts[base]
+            row[base] = nuc_count
+        for field_name in ('coverage',
+                           'clip',
+                           'N',
+                           'ins',
+                           'del',
+                           'v3_overlap'):
+            if row[field_name]:
+                nuc_writer.writerow(row)
+                break
 
     def merge_extra_counts(self):
         for region, report_aminos in self.reports.items():
@@ -985,7 +910,9 @@ class SequenceReport(object):
 
     def write_nuc_detail_counts(self, nuc_detail_writer=None):
         nuc_detail_writer = nuc_detail_writer or self.nuc_detail_writer
-        self.write_nuc_report(nuc_detail_writer, self.reports, self.detail_seed)
+        self.write_nuc_report(nuc_detail_writer,
+                              self.report_nucleotides,
+                              self.detail_seed)
 
     def write_nuc_counts(self, nuc_writer=None):
         nuc_writer = nuc_writer or self.nuc_writer
@@ -994,23 +921,21 @@ class SequenceReport(object):
             for seed, reports in self.combined_reports.items():
                 self.write_nuc_report(nuc_writer, reports, seed)
         elif self.reports:
-            self.write_nuc_report(nuc_writer, self.reports, self.seed)
+            self.write_nuc_report(nuc_writer, self.report_nucleotides, self.seed)
 
-    def write_nuc_report(self, nuc_writer, reports, seed):
+    def write_nuc_report(self,
+                         nuc_writer: DictWriter,
+                         reports: typing.Dict[str, typing.List[ReportNucleotide]],
+                         seed: str):
         self.merge_extra_counts()
-        for region, report_aminos in sorted(reports.items()):
-            start_ref_offset = None
-            for report_amino in report_aminos:
-                # If the region starts with an offset, we reverse it.
-                if start_ref_offset is None:
-                    start_ref_offset = report_amino.seed_amino.ref_offset
-                report_amino.seed_amino.ref_offset -= start_ref_offset
+        report_nucleotides: typing.List[ReportNucleotide]
+        for region, report_nucleotides in sorted(reports.items()):
+            for report_nucleotide in report_nucleotides:
                 self.write_counts(seed,
                                   region,
-                                  report_amino.seed_amino,
-                                  report_amino,
+                                  report_nucleotide.seed_nucleotide,
+                                  report_nucleotide,
                                   nuc_writer)
-                report_amino.seed_amino.ref_offset += start_ref_offset
 
     @staticmethod
     def _create_consensus_writer(
@@ -1315,217 +1240,6 @@ class SequenceReport(object):
                 for i in range(3):
                     result[nuc_pos+i] = frame_index
         return result
-
-
-class SeedAmino(object):
-    """
-    Records the frequencies of amino acids at a given position of the
-    aligned reads as determined by the consensus sequence.
-    """
-    def __init__(self, consensus_nuc_index, counts=None):
-        self.v3_overlap = 0
-        self.consensus_nuc_index = consensus_nuc_index
-        self.counts = counts or Counter()  # {amino: count}
-        self.codon_counts = Counter()  # {codon_nucs: count}
-        self.nucleotides = [SeedNucleotide() for _ in range(3)]
-        self.low_quality = 0
-        self.partial = 0
-        self.deletions = 0
-        self.read_count = 0
-        self.ref_offset = 0
-        self.nucleotides_to_skip = 0
-
-    def __repr__(self):
-        if self.counts:
-            return 'SeedAmino({!r}, {!r})'.format(self.consensus_nuc_index,
-                                                  dict(self.counts))
-        return 'SeedAmino({})'.format(self.consensus_nuc_index)
-
-    def count_aminos(self, codon_seq, count):
-        """ Record a set of reads at this position in the seed reference.
-        @param codon_seq: a string of three nucleotides that were read at this
-                          position, may be padded with spaces at the start
-                          or end of a sequence, or dashes for deletions
-        @param count: the number of times they were read
-        """
-        self.read_count += count
-        self.codon_counts[codon_seq] += count
-        if 'N' in codon_seq:
-            self.low_quality += count
-        elif '---' == codon_seq:
-            self.deletions += count
-        elif '-' in codon_seq:
-            self.partial += count  # Partial deletion
-        elif ' ' not in codon_seq and 'n' not in codon_seq:
-            amino = translate(codon_seq.upper())
-            self.counts[amino] += count
-        elif 'nnn' == codon_seq:
-            # Don't count the gap between forward and reverse reads in a pair.
-            self.read_count -= count
-        for i, nuc in enumerate(codon_seq):
-            if nuc != ' ':
-                seed_nucleotide = self.nucleotides[i]
-                seed_nucleotide.count_nucleotides(nuc, count)
-
-    def add(self, other: 'SeedAmino'):
-        if self.read_count and other.read_count:
-            self.consensus_nuc_index = None
-        elif other.read_count:
-            self.consensus_nuc_index = other.consensus_nuc_index
-        self.counts += other.counts
-        self.partial += other.partial
-        self.deletions += other.deletions
-        self.read_count += other.read_count
-        self.low_quality += other.low_quality
-        self.nucleotides_to_skip = other.nucleotides_to_skip
-        self.ref_offset = other.ref_offset
-        for nuc, other_nuc in zip(self.nucleotides, other.nucleotides):
-            nuc.add(other_nuc)
-
-    def get_report(self) -> str:
-        """ Build a report string with the counts of each amino acid.
-
-        Report how many times each amino acid was seen in count_aminos().
-        @return: comma-separated list of counts in the same order as the
-        AMINO_ALPHABET list
-        """
-        return ','.join([str(self.counts[amino])
-                         for amino in AMINO_ALPHABET])
-
-    def apply_repeat(self, repeated_nuc: int) -> 'SeedAmino':
-        new_amino = SeedAmino(self.consensus_nuc_index)
-        for codon, count in self.codon_counts.items():
-            new_codon = codon[:repeated_nuc + 1] + codon[repeated_nuc:2]
-            new_amino.count_aminos(new_codon, count)
-        return new_amino
-
-    def get_consensus(self) -> str:
-        """ Find the amino acid that was seen most often in count_aminos().
-
-        If there is a tie, just pick one of the tied amino acids.
-        @return: the letter of the most common amino acid
-        """
-        consensus = self.counts.most_common(1)
-        if consensus:
-            return consensus[0][0]
-        if self.read_count:
-            return '?'
-        return '-'
-
-    def count_overlap(self, other):
-        for nuc1, nuc2 in zip(self.nucleotides, other.nucleotides):
-            nuc1.count_overlap(nuc2)
-            self.v3_overlap = max(self.v3_overlap, nuc1.v3_overlap)
-
-
-class SeedNucleotide(object):
-    """
-    Records the frequencies of nucleotides at a given position of the
-    aligned reads as determined by the consensus sequence.
-    """
-    COUNTED_NUCS = 'ACTG-'
-
-    def __init__(self, counts=None):
-        self.v3_overlap = self.clip_count = self.insertion_count = 0
-        self.counts = counts or Counter()
-
-    def __repr__(self):
-        return 'SeedNucleotide({!r})'.format(dict(self.counts))
-
-    def count_nucleotides(self, nuc_seq, count=1):
-        """ Record a set of reads at this position in the seed reference.
-        @param nuc_seq: a single nucleotide letter that was read at this
-        position
-        @param count: the number of times it was read
-        """
-        if nuc_seq == 'n':
-            "Represents gap between forward and reverse read, ignore."
-        else:
-            self.counts[nuc_seq] += count
-
-    def add(self, other):
-        self.counts += other.counts
-        self.clip_count += other.clip_count
-        self.insertion_count += other.insertion_count
-
-    def get_report(self):
-        """ Build a report string with the counts of each nucleotide.
-
-        Report how many times each nucleotide was seen in count_nucleotides().
-        @return: comma-separated list of counts for A, C, G, and T.
-        """
-        return ','.join(map(str, [self.counts[nuc] for nuc in 'ACGT']))
-
-    def get_coverage(self):
-        return sum(self.counts[nuc] for nuc in self.COUNTED_NUCS)
-
-    def get_consensus(self, mixture_cutoff, no_coverage=''):
-        """ Choose consensus nucleotide or mixture from the counts.
-
-        @param mixture_cutoff: the minimum fraction of reads
-            that a nucleotide must be found in for it to be considered,
-            or MAX_CUTOFF to consider only the most common nucleotide.
-        @param no_coverage: what to return when there are no reads mapped to
-            this position.
-        @return: The letter for the consensus nucleotide or mixture.
-            Nucleotide mixtures are encoded by IUPAC symbols, and the most common
-            nucleotide can be a mixture if there is a tie.
-        """
-        if not self.counts:
-            return no_coverage
-
-        coverage = self.get_coverage()
-        if mixture_cutoff not in (MAX_CUTOFF, FIRST_CUTOFF):
-            min_count = coverage * mixture_cutoff
-        else:
-            min_count = 0
-        mixture = []
-        for nuc, count in self.counts.most_common():
-            if count < min_count:
-                break
-            if nuc in self.COUNTED_NUCS:
-                mixture.append(nuc)
-                if mixture_cutoff in (MAX_CUTOFF, FIRST_CUTOFF):
-                    # Catch any ties before breaking out.
-                    min_count = count
-
-        has_deletion = '-' in mixture
-        if has_deletion:
-            mixture.remove('-')
-        if len(mixture) > 1:
-            mixture.sort()
-            if mixture_cutoff == FIRST_CUTOFF:
-                consensus = mixture[0]
-            else:
-                consensus = ambig_dict[''.join(mixture)]
-        elif len(mixture) == 1:
-            # no ambiguity
-            consensus = mixture[0]
-        else:
-            # Nothing left to go in the mixture.
-            consensus = '-' if has_deletion else 'N'
-        if has_deletion:
-            consensus = consensus.lower()
-        return consensus
-
-    def count_overlap(self, other):
-        for nuc in 'ACGT':
-            self.v3_overlap += other.counts[nuc]
-
-
-class ReportAmino(object):
-    def __init__(self, seed_amino: SeedAmino, position: int):
-        """ Create a new instance.
-
-        @param seed_amino: Counts for the
-        """
-        self.seed_amino = seed_amino
-        self.position = position
-        self.max_clip_count = 0
-        self.insertion_count = 0
-
-    def __repr__(self):
-        return 'ReportAmino({!r}, {})'.format(self.seed_amino, self.position)
 
 
 class InsertionWriter(object):
