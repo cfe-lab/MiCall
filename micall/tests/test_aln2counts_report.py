@@ -226,16 +226,19 @@ def create_sequence_report():
 - seed_pattern: R1-.*
   coordinates: R1-seed
   landmarks:
-    - {name: R1, start: 1, end: 9, colour: steelblue}
+    # Extra 3 positions for stop codon to get dropped.
+    - {name: R1, start: 1, end: 12, colour: steelblue}
 - seed_pattern: R2-.*
   coordinates: R2-seed
   landmarks:
-    - {name: R2, start: 1, end: 15, colour: steelblue}
+    # Extra 3 positions for stop codon to get dropped.
+    - {name: R2, start: 1, end: 18, colour: steelblue}
 - seed_pattern: R3-.*
   coordinates: R3-seed
   landmarks:
-    - {name: a, start: 1, end: 12, colour: lightblue}
-    - {name: z, start: 13, end: 24, colour: steelblue}
+    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    - {name: a, start: 1, end: 15, colour: lightblue}
+    - {name: z, start: 13, end: 27, colour: steelblue}
 """
     conseq_mixture_cutoffs = [0.1]
     report = StubbedSequenceReport(InsertionWriter(StringIO()),
@@ -684,8 +687,9 @@ def test_nucleotide_coordinates(default_sequence_report):
 SARS-CoV-2-seed,15,0,9,0,ACGAACAAACT
 """)
 
-    #                                     A,C,G,T,N,...,coverage
-    expected_section = """\
+    #                                     A,C,G,T
+    expected_report = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
 SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,1,1,9,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,2,2,0,9,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,3,3,0,0,9,0,0,0,0,0,0,9
@@ -696,22 +700,15 @@ SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,7,7,9,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,8,8,9,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,9,9,9,0,0,0,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,10,10,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,11,11,0,0,0,9,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,11,11,0,0,0,9,0,0,0,0,0,9
+"""
 
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_nuc_counts()
 
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    expected_size = 180
-    if len(report_lines) != expected_size:
-        assert (len(report_lines), report) == (expected_size, '')
-
-    key_lines = report_lines[11:22]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_section
+    assert report_file.getvalue() == expected_report
 
 
 # noinspection DuplicatedCode

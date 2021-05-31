@@ -27,7 +27,6 @@ from mappy import Aligner
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 from micall.core.remap import PARTIAL_CONTIG_SUFFIX, REVERSED_CONTIG_SUFFIX
 from micall.data.landmark_reader import LandmarkReader
-from micall.utils.alignment_wrapper import align_nucs
 from micall.utils.big_counter import BigCounter
 from micall.utils.consensus_aligner import CigarActions, ConsensusAligner
 from micall.utils.report_amino import ReportAmino, MAX_CUTOFF, SeedAmino, AMINO_ALPHABET, ReportNucleotide, \
@@ -141,7 +140,6 @@ class SequenceReport(object):
             determine what portion a variant must exceed before it will be
             included as a mixture in the consensus.
         """
-        self.repeated_pos = None
         self.consensus_min_coverage = 0
         self.callback_progress = 0
         self.callback_next = self.callback_chunk_size = self.callback_max = None
@@ -168,8 +166,16 @@ class SequenceReport(object):
         self.landmarks = yaml.safe_load(landmarks_yaml)
         self.coordinate_refs = self.remap_conseqs = None
 
-        # {seed: {coord_region: [ReportAmino]}}
-        self.combined_reports = defaultdict(lambda: defaultdict(list))
+        self.combined_reports: typing.Dict[
+            str,  # seed
+            typing.Dict[str,  # coord_region
+                        typing.List[ReportAmino]]] = defaultdict(
+            lambda: defaultdict(list))
+        self.combined_report_nucleotides: typing.Dict[
+            str,  # seed
+            typing.Dict[str,  # coord_region
+                        typing.List[ReportNucleotide]]] = defaultdict(
+            lambda: defaultdict(list))
 
         # {seed_name: {pos: count}}
         self.clipping_counts = clipping_counts or defaultdict(Counter)
@@ -271,7 +277,7 @@ class SequenceReport(object):
             use_terminal_gap_penalty)
         return aligned_ref, aligned_query, score
 
-    def _map_to_coordinate_ref(self, coordinate_name, coordinate_ref):
+    def _map_to_coordinate_ref(self, coordinate_name):
         """ Extract the coordinate region from the aligned reads.
 
         Consensus has already been aligned against the full-genome nucleotide
@@ -279,7 +285,6 @@ class SequenceReport(object):
         self.report_nucleotides with ReportNucleotide objects.
 
         :param coordinate_name: Name of coordinate reference.
-        :param coordinate_ref: Amino acid sequence of coordinate reference.
         """
 
         is_amino_coordinate = self.projects.isAmino(coordinate_name)
@@ -302,33 +307,6 @@ class SequenceReport(object):
                                              report_nucleotides,
                                              report_aminos,
                                              repeated_ref_pos)
-
-    def get_seed_aminos(self, reading_frame: int) -> typing.List['SeedAmino']:
-        if self.repeated_pos is None:
-            return self.seed_aminos[reading_frame]
-
-        seed_aminos = []
-        has_passed_repeat = False
-        pos = 1
-        while True:
-            try:
-                seed_amino: SeedAmino = self.seed_aminos[reading_frame][pos-1]
-            except IndexError:
-                break
-            past_repeat = seed_amino.consensus_nuc_index - self.repeated_pos
-            if 0 <= past_repeat <= 2 and not has_passed_repeat:
-                has_passed_repeat = True
-                new_reading_frame = (reading_frame + 1) % 3
-                if new_reading_frame < reading_frame:
-                    pos -= 1
-                reading_frame = new_reading_frame
-                try:
-                    seed_amino = self.seed_aminos[reading_frame][pos-1]
-                except IndexError:
-                    break
-            seed_aminos.append(seed_amino)
-            pos += 1
-        return seed_aminos
 
     @staticmethod
     def map_amino_sequences(from_seq, to_seq, from_aligned, to_aligned):
@@ -462,52 +440,14 @@ class SequenceReport(object):
                 while len(self.seed_aminos[0])*3 < len(seed_ref):
                     self.seed_aminos[0].append(SeedAmino(3*len(self.seed_aminos[0])))
 
-        self.find_repeated_pos()
-
         # iterate over coordinate references defined for this region
-        for coordinate_name, coordinate_ref in self.coordinate_refs.items():
+        for coordinate_name in self.coordinate_refs:
             if included_regions is not None and \
                     coordinate_name not in included_regions:
                 continue
             if coordinate_name in excluded_regions:
                 continue
-            self._map_to_coordinate_ref(coordinate_name, coordinate_ref)
-
-    def find_repeated_pos(self):
-        self.repeated_pos = None
-        repeated_ref_name = 'SARS-CoV-2-seed'
-        repeated_ref_pos = 13468  # 1-based position of duplicated base
-        if self.seed != repeated_ref_name:
-            return
-
-        seed_start = repeated_ref_pos-100
-        seed_end = seed_start + 200
-        seed_ref = self.projects.getReference(self.seed)[seed_start:seed_end]
-        consensus = ''.join(nuc.get_consensus('MAX', no_coverage='x')
-                            for amino in self.seed_aminos[0]
-                            for nuc in amino.nucleotides)
-        consensus_stripped = consensus.replace('x', '')
-        aref, aseq, score = align_nucs(seed_ref, consensus_stripped)
-        offset = len(aseq) - len(aseq.lstrip('-'))
-        aref = aref[offset:]
-        aseq = aseq[offset:]
-        ref_pos = offset+seed_start
-        conseq_pos = 0
-        for ref_nuc, conseq_nuc in zip(aref, aseq):
-            while conseq_pos < len(consensus) and consensus[conseq_pos] == 'x':
-                conseq_pos += 1
-            if conseq_pos >= len(consensus):
-                break
-
-            if ref_nuc == seed_ref[ref_pos-seed_start]:
-                ref_pos += 1
-            if conseq_nuc == consensus[conseq_pos]:
-                conseq_pos += 1
-            if ref_pos == repeated_ref_pos:
-                self.repeated_pos = conseq_pos
-                break
-            if ref_pos >= len(seed_ref) + seed_start:
-                break
+            self._map_to_coordinate_ref(coordinate_name)
 
     def read_clipping(self, clipping_csv):
         for row in csv.DictReader(clipping_csv):
@@ -591,7 +531,15 @@ class SequenceReport(object):
                     old_report.append(ReportAmino(SeedAmino(None),
                                                   len(old_report) + 1))
                 old_report[i].seed_amino.add(report_amino.seed_amino)
+        old_report_nucs = self.combined_report_nucleotides[group_ref]
+        for region, report in self.report_nucleotides.items():
+            old_report_nuc = old_report_nucs[region]
+            for i, report_nuc in enumerate(report):
+                while len(old_report_nuc) <= i:
+                    old_report_nuc.append(ReportNucleotide(len(old_report_nuc)+1))
+                old_report_nuc[i].seed_nucleotide.add(report_nuc.seed_nucleotide)
         self.reports.clear()
+        self.report_nucleotides.clear()
 
     def write_amino_report(self,
                            amino_writer: DictWriter,
@@ -835,8 +783,8 @@ class SequenceReport(object):
 
         :param seed: the seed reference name
         :param region: the coordinate reference name
-        :param seed_amino: the SeedAmino object for this position
-        :param ReportAmino? report_amino: the ReportAmino object for this position
+        :param seed_nuc: the SeedNucleotide object for this position
+        :param report_nuc: the ReportNucleotide object for this position
         :param nuc_writer: the CSV writer to write the row into
         """
         if seed_nuc.consensus_index is None:
@@ -917,8 +865,8 @@ class SequenceReport(object):
     def write_nuc_counts(self, nuc_writer=None):
         nuc_writer = nuc_writer or self.nuc_writer
 
-        if self.combined_reports:
-            for seed, reports in self.combined_reports.items():
+        if self.combined_report_nucleotides:
+            for seed, reports in self.combined_report_nucleotides.items():
                 self.write_nuc_report(nuc_writer, reports, seed)
         elif self.reports:
             self.write_nuc_report(nuc_writer, self.report_nucleotides, self.seed)

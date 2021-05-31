@@ -231,6 +231,9 @@ class ConsensusAligner:
         :param repeat_position: if not None, repeat the nucleotide at this
             1-based position in reference coordinates, but only in report_aminos.
         """
+        if not self.alignments:
+            return
+
         nuc_count = end_pos - start_pos + 1
         report_nucleotides.extend(ReportNucleotide(i+1)
                                   for i in range(nuc_count))
@@ -260,7 +263,6 @@ class ConsensusAligner:
                     seed_nuc = seed_amino.nucleotides[codon_nuc_index]
                     report_nuc = report_nucleotides[target_nuc_index]
                     report_nuc.seed_nucleotide.add(seed_nuc)
-                    q = report_nuc.seed_nucleotide.consensus_index
                     if codon_nuc_index == 2 and report_aminos:
                         target_amino_index = target_nuc_index // 3
                         report_amino = report_aminos[target_amino_index]
