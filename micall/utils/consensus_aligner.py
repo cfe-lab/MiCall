@@ -184,10 +184,11 @@ class ConsensusAligner:
             consensus_index = 0
             cigar = []
             for ref_nuc, nuc in zip(aligned_coordinate, aligned_consensus):
+                expected_nuc = consensus[consensus_index]
                 ref_index += 1
                 consensus_index += 1
                 expected_action = CigarActions.MATCH
-                if nuc == '-':
+                if nuc == '-' and nuc != expected_nuc:
                     expected_action = CigarActions.DELETE
                     consensus_index -= 1
                 if ref_nuc == '-':
@@ -246,29 +247,46 @@ class ConsensusAligner:
         for alignment in self.alignments:
             ref_nuc_index = alignment.r_st
             consensus_nuc_index = alignment.q_st + self.consensus_offset
-            frame_offset = (ref_nuc_index - start_pos + 1 -
-                            consensus_nuc_index) % 3
+            frame_offset = -1
             source_amino_index = 0
-            seed_aminos = self.reading_frames[frame_offset]
-            while consensus_nuc_index < alignment.q_en:
-                if start_pos-1 <= ref_nuc_index < end_pos:
-                    target_nuc_index = ref_nuc_index - start_pos + 1
-                    while True:
-                        seed_amino = seed_aminos[source_amino_index]
-                        codon_nuc_index = (consensus_nuc_index -
-                                           seed_amino.consensus_nuc_index)
-                        if codon_nuc_index < 3:
-                            break
-                        source_amino_index += 1
-                    seed_nuc = seed_amino.nucleotides[codon_nuc_index]
-                    report_nuc = report_nucleotides[target_nuc_index]
-                    report_nuc.seed_nucleotide.add(seed_nuc)
-                    if codon_nuc_index == 2 and report_aminos:
-                        target_amino_index = target_nuc_index // 3
-                        report_amino = report_aminos[target_amino_index]
-                        report_amino.seed_amino.add(seed_amino)
-                    if ref_nuc_index+1 == repeat_position:
-                        frame_offset = (frame_offset + 1) % 3
-                        seed_aminos = self.reading_frames[frame_offset]
-                ref_nuc_index += 1
-                consensus_nuc_index += 1
+            seed_aminos = self.reading_frames[0]
+            for section_size, section_action in alignment.cigar:
+                if section_action == CigarActions.INSERT:
+                    consensus_nuc_index += section_size
+                    # TODO: Record insertion positions.
+                    continue
+                if section_action == CigarActions.DELETE:
+                    # TODO: Increase deletion counts.
+                    ref_nuc_index += section_size
+                    continue
+                assert section_action == CigarActions.MATCH, section_action
+                if frame_offset < 0:
+                    # Skip over insertions at the start of the consensus before
+                    # choosing the right reading frame.
+                    frame_offset = (ref_nuc_index - start_pos + 1 -
+                                    consensus_nuc_index) % 3
+                    seed_aminos = self.reading_frames[frame_offset]
+                section_nuc_index = 0
+                while section_nuc_index < section_size:
+                    if start_pos-1 <= ref_nuc_index < end_pos:
+                        target_nuc_index = ref_nuc_index - start_pos + 1
+                        while True:
+                            seed_amino = seed_aminos[source_amino_index]
+                            codon_nuc_index = (consensus_nuc_index -
+                                               seed_amino.consensus_nuc_index)
+                            if codon_nuc_index < 3:
+                                break
+                            source_amino_index += 1
+                        seed_nuc = seed_amino.nucleotides[codon_nuc_index]
+                        report_nuc = report_nucleotides[target_nuc_index]
+                        report_nuc.seed_nucleotide.add(seed_nuc)
+                        if codon_nuc_index == 2 and report_aminos:
+                            target_amino_index = target_nuc_index // 3
+                            report_amino = report_aminos[target_amino_index]
+                            report_amino.seed_amino.add(seed_amino)
+                        if ref_nuc_index+1 == repeat_position:
+                            frame_offset = (frame_offset + 1) % 3
+                            seed_aminos = self.reading_frames[frame_offset]
+                    ref_nuc_index += 1
+                    consensus_nuc_index += 1
+                    section_nuc_index += 1

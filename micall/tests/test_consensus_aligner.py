@@ -179,6 +179,29 @@ def test_start_contig_deletion_gotoh(projects):
     assert aligner.algorithm == 'gotoh'
 
 
+def test_start_contig_matched_deletion_gotoh(projects):
+    """ The consensus contains a deletion, but that aligns as a match. """
+    seed_name = 'SARS-CoV-2-seed'
+    seed_seq = projects.getReference(seed_name)
+    consensus = seed_seq[2000:2030] + '-' + seed_seq[2031:2050]
+    expected_alignment = AlignmentWrapper(ctg='N/A',
+                                          ctg_len=len(seed_seq),
+                                          r_st=2000,
+                                          r_en=2050,
+                                          q_st=0,
+                                          q_en=50,
+                                          mapq=0,
+                                          cigar=[[50, CigarActions.MATCH]],
+                                          NM=0)
+    aligner = ConsensusAligner(projects)
+
+    aligner.start_contig(seed_name, consensus)
+
+    assert aligner.alignments[0].cigar_str == '50M'
+    assert_alignments(aligner, expected_alignment)
+    assert aligner.algorithm == 'gotoh'
+
+
 def test_start_contig_insertion_minimap2(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)

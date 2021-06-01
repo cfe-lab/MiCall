@@ -1,6 +1,8 @@
 from io import StringIO
 import unittest
 
+import yaml
+
 from micall.core.aln2counts import InsertionWriter, SeedAmino, \
     ReportAmino
 from micall.tests.test_aln2counts_report import create_sequence_report, prepare_reads
@@ -473,9 +475,9 @@ A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,cove
         self.report.combine_reports()
         self.report.write_amino_counts()
 
-        self.assertMultiLineEqual(expected_detail_text,
-                                  self.detail_report_file.getvalue())
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        self.assertEqual(expected_detail_text,
+                         self.detail_report_file.getvalue())
+        self.assertEqual(expected_text, self.report_file.getvalue())
 
     def testMultiplePrefixNucleotideReport(self):
         """ Assemble counts from three contigs to two references.
@@ -957,7 +959,7 @@ R1-seed,R1,15,5,9,0,0,9,0,0,0,0,0,0,9
     def testReadPairGapInMiddleOfAminoReport(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
-R3-seed,15,0,9,0,AAATTTnnnnnnnnnnnnnnnnnnTACTAC
+R3-seed,15,0,9,0,AAATTTCAGACCCCAnnnnnnnnnTACTAC
 """)
 
         expected_text = """\
@@ -965,13 +967,15 @@ seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
 R3-seed,R3,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,10,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,9
 """
 
         self.report.read(aligned_reads)
         self.report.write_amino_header(self.report_file)
         self.report.write_amino_counts()
 
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        self.assertEqual(expected_text, self.report_file.getvalue())
 
     def testLowQualityNucleotideReport(self):
         # refname,qcut,rank,count,offset,seq
@@ -1057,7 +1061,7 @@ R1-seed,R1,15,8,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
         self.report.write_amino_header(self.report_file)
         self.report.write_amino_counts()
 
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        self.assertEqual(expected_text, self.report_file.getvalue())
 
     def testShiftedReadingFrameNucleotideReport(self):
         """ The seed's reading frame doesn't match the coordinate reference's
@@ -1462,6 +1466,14 @@ R3-seed,R3,15,13,G,9,5
   }
 }
 """))
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R3-seed
+  coordinates: R3-seed
+  landmarks:
+    # Extra 3 nucleotides at end, because stop codons will get dropped.
+    - {name: R3a, start: 1, end: 27, frame: 0}
+    - {name: R3b, start: 1, end: 27, frame: 0}
+""")
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
@@ -1733,6 +1745,15 @@ seed,region,qcut,queryseq,refseq
   }
 }
 """))
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R1-seed
+  coordinates: R1-seed
+  landmarks:
+    # Extra 3 nucleotides at end, because stop codons will get dropped.
+    - {name: R1a, start: 4, end: 15, frame: 0}
+    - {name: R1b, start: 1, end: 15, frame: 0}
+""")
+
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTT
@@ -1795,6 +1816,15 @@ R1-seed,R1b,15,4,3,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
   }
 }
 """))
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R1-seed
+  coordinates: R1-seed
+  landmarks:
+    # Extra 3 nucleotides at end, because stop codons will get dropped.
+    - {name: R1a, start: 4, end: 15, frame: 0}
+    - {name: R1b, start: 1, end: 15, frame: 0}
+""")
+
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTT

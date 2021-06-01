@@ -237,8 +237,24 @@ def create_sequence_report():
   coordinates: R3-seed
   landmarks:
     # Extra 3 positions for stop codons to get dropped, one codon overlaps.
-    - {name: a, start: 1, end: 15, colour: lightblue}
-    - {name: z, start: 13, end: 27, colour: steelblue}
+    - {name: R3, start: 1, end: 15, colour: lightblue}
+    - {name: R3-extra, start: 13, end: 27, colour: steelblue}
+- seed_pattern: R4-.*
+  coordinates: R4-seed
+  landmarks:
+    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    - {name: R4, start: 10, end: 21}
+- seed_pattern: R5-.*
+  coordinates: R5-seed
+  landmarks:
+    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    - {name: R5, start: 1, end: 15}
+- seed_pattern: R7-.*
+  coordinates: R7-seed
+  landmarks:
+    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    - {name: R7a, start: 1, end: 12}
+    - {name: R7b, start: 16, end: 27}
 """
     conseq_mixture_cutoffs = [0.1]
     report = StubbedSequenceReport(InsertionWriter(StringIO()),
