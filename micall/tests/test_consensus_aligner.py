@@ -349,12 +349,17 @@ def test_report_region(projects):
     # ORF7b runs from 1-based positions 27756 to 27884 (excluding stop codon).
     consensus = seed_seq[27000:27999]
     reading_frames = create_reading_frames(consensus)
+    amino_ref = projects.getReference('SARS-CoV-2-ORF7b')
     aligner = ConsensusAligner(projects)
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
     report_aminos: typing.List[ReportAmino] = []
     report_nucleotides: typing.List[ReportNucleotide] = []
-    aligner.report_region(27756, 27884, report_nucleotides, report_aminos)
+    aligner.report_region(27756,
+                          27884,
+                          report_nucleotides,
+                          report_aminos,
+                          amino_ref=amino_ref)
 
     assert len(report_aminos) == 43
     assert len(report_nucleotides) == 129  # 27884-27756+1
@@ -385,12 +390,17 @@ def test_report_region_no_overlap(projects):
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[27000:27999]
     reading_frames = create_reading_frames(consensus)
+    amino_ref = 'F' * 100
     aligner = ConsensusAligner(projects)
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
     report_aminos: typing.List[ReportAmino] = []
     report_nucleotides: typing.List[ReportNucleotide] = []
-    aligner.report_region(10_001, 10_300, report_nucleotides, report_aminos)
+    aligner.report_region(10_001,
+                          10_300,
+                          report_nucleotides,
+                          report_aminos,
+                          amino_ref=amino_ref)
 
     assert len(report_aminos) == 100
     assert len(report_nucleotides) == 300
@@ -404,12 +414,17 @@ def test_report_region_after_start(projects):
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[28000:28999]
     reading_frames = create_reading_frames(consensus)
+    amino_ref = 'PVSYSLLF*M'
     aligner = ConsensusAligner(projects)
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
     report_aminos: typing.List[ReportAmino] = []
     report_nucleotides: typing.List[ReportNucleotide] = []
-    aligner.report_region(27998, 28027, report_nucleotides, report_aminos)
+    aligner.report_region(27998,
+                          28027,
+                          report_nucleotides,
+                          report_aminos,
+                          amino_ref=amino_ref)
 
     assert len(report_aminos) == 10
     assert report_aminos[0].seed_amino.consensus_nuc_index is None
@@ -423,12 +438,17 @@ def test_report_region_before_end(projects):
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[28000:28999]
     reading_frames = create_reading_frames(consensus)
+    amino_ref = 'QQQGQ'
     aligner = ConsensusAligner(projects)
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
     report_aminos: typing.List[ReportAmino] = []
     report_nucleotides: typing.List[ReportNucleotide] = []
-    aligner.report_region(28991, 29005, report_nucleotides, report_aminos)
+    aligner.report_region(28991,
+                          29005,
+                          report_nucleotides,
+                          report_aminos,
+                          amino_ref=amino_ref)
 
     assert len(report_aminos) == 5
     assert report_aminos[0].seed_amino.consensus_nuc_index == 990
@@ -442,6 +462,7 @@ def test_report_region_with_repeated_nucleotide(projects):
     # nsp12 runs from 1-based positions 13442 to 16236, with repeat at 13468.
     consensus = seed_seq[13000:13500]
     reading_frames = create_reading_frames(consensus)
+    amino_ref = projects.getReference('SARS-CoV-2-nsp12')
     aligner = ConsensusAligner(projects)
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
@@ -451,7 +472,8 @@ def test_report_region_with_repeated_nucleotide(projects):
                           16236,
                           report_nucleotides,
                           report_aminos,
-                          repeat_position=13468)
+                          repeat_position=13468,
+                          amino_ref=amino_ref)
 
     amino_consensus = ''.join(report_amino.seed_amino.get_consensus()
                               for report_amino in report_aminos[:21])

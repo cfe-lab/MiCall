@@ -833,7 +833,7 @@ R4-seed,R4,15,16,3,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         self.report.read(aligned_reads)
         self.report.write_amino_counts()
 
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        self.assertEqual(expected_text, self.report_file.getvalue())
 
     def testCoverageSummary(self):
         """ R1 has coverage 9.
@@ -1211,7 +1211,7 @@ R5-seed,R5,15,13,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
         self.report.read(aligned_reads)
         self.report.write_amino_counts()
 
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        self.assertEqual(expected_text, self.report_file.getvalue())
 
     def testDeletionWithMinorityVariant(self):
         """ Aligned reads are mostly K-R, but some are KFR.

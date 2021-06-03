@@ -569,7 +569,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 39
+    expected_size = 40
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -609,7 +609,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 31
+    expected_size = 38
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -649,7 +649,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 29
+    expected_size = 37
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -688,7 +688,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,31,13208,0,0,0,9,0,0,0,0,0,9"""
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 96
+    expected_size = 115
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 

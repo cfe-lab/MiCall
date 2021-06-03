@@ -300,31 +300,15 @@ class SequenceReport(object):
             repeated_ref_pos = None
         if is_amino_coordinate:
             report_aminos = self.reports[coordinate_name]
+            amino_ref = self.projects.getReference(coordinate_name)
         else:
-            report_aminos = None
+            report_aminos = amino_ref = None
         self.consensus_aligner.report_region(region_info['start'],
                                              region_info['end'],
                                              report_nucleotides,
                                              report_aminos,
-                                             repeated_ref_pos)
-
-    @staticmethod
-    def map_amino_sequences(from_seq, to_seq, from_aligned, to_aligned):
-        seq_map = {}  # {from_aa_index: to_aa_index}
-        from_index = to_index = 0
-        for from_aa, to_aa in zip(from_aligned, to_aligned):
-            if (to_index < len(to_seq) and
-                    to_aa == to_seq[to_index]):
-                seq_map[from_index] = to_index
-                to_index += 1
-            if (from_index < len(from_seq) and
-                    from_aa == from_seq[from_index]):
-                from_index += 1
-        return seq_map
-
-    def map_nuc_sequences(self):
-        consensus_length = len(self.consensus_aligner.consensus)
-        return {i: i for i in range(consensus_length)}
+                                             repeated_ref_pos,
+                                             amino_ref)
 
     def process_reads(self,
                       aligned_csv,
