@@ -31,6 +31,22 @@ def align_aminos(reference: str,
     return aligned_ref, aligned_query, score
 
 
+def map_amino_sequences(from_seq: str, to_seq: str):
+    from_aligned, to_aligned, _score = align_aminos(from_seq, to_seq)
+    seq_map = {}
+    from_index = to_index = 0
+    for from_aa, to_aa in zip(from_aligned, to_aligned):
+        if (to_index < len(to_seq) and
+                from_index < len(from_seq) and
+                to_aa == to_seq[to_index]):
+            seq_map[from_index] = to_index
+            to_index += 1
+        if (from_index < len(from_seq) and
+                from_aa == from_seq[from_index]):
+            from_index += 1
+    return seq_map
+
+
 class AlignmentWrapper(Alignment):
     init_fields = (
         'ctg ctg_len r_st r_en strand q_st q_en mapq cigar is_primary mlen '
@@ -192,7 +208,7 @@ class ConsensusAligner:
             gap_open_penalty,
             gap_extend_penalty,
             use_terminal_gap_penalty)
-        if len(consensus) < score:
+        if min(len(coordinate_seq), len(consensus)) < score:
             ref_start = len(aligned_consensus) - len(aligned_consensus.lstrip('-'))
             aligned_consensus: str = aligned_consensus[ref_start:]
             aligned_coordinate: str = aligned_coordinate[ref_start:]
@@ -296,11 +312,6 @@ class ConsensusAligner:
         :param amino_ref: amino acid sequence to align with, or None if only
             nucleotides are reported.
         """
-        if repeat_position is None:
-            repeat_index = None
-        else:
-            repeat_index = repeat_position - start_pos
-
         for alignment in self.alignments:
             ref_nuc_index = alignment.r_st
             consensus_nuc_index = alignment.q_st + self.consensus_offset
@@ -330,6 +341,7 @@ class ConsensusAligner:
                 while section_nuc_index < section_size:
                     if start_pos - 1 <= ref_nuc_index < end_pos:
                         while True:
+                            # Find seed amino that covers consensus_nuc_index.
                             seed_amino = seed_aminos[source_amino_index]
                             codon_nuc_index = (consensus_nuc_index -
                                                seed_amino.consensus_nuc_index)
@@ -339,7 +351,9 @@ class ConsensusAligner:
                         if region_start_consensus_amino_index < 0:
                             region_start_consensus_amino_index = source_amino_index
                         region_end_consensus_amino_index = source_amino_index + 1
-                        if ref_nuc_index + 1 == repeat_position:
+                        if (repeat_position == ref_nuc_index + 1 and
+                                start_pos < repeat_position):
+                            # Shift reading frames.
                             region_seed_aminos = seed_aminos[
                                                  region_start_consensus_amino_index:
                                                  region_end_consensus_amino_index]
@@ -352,37 +366,92 @@ class ConsensusAligner:
             region_seed_aminos.extend(
                 seed_aminos[region_start_consensus_amino_index:
                             region_end_consensus_amino_index])
+            if not region_seed_aminos:
+                continue
             amino_consensus = ''.join(seed_amino.get_consensus() or '?'
                                       for seed_amino in region_seed_aminos)
-            aref, aconseq, score = align_aminos(amino_ref, amino_consensus)
+            coord2conseq = map_amino_sequences(amino_ref, amino_consensus)
 
-            consensus_amino_index = ref_amino_index = 0
-            consensus_nuc_index = -1
-            repeat_count = 0
-            for consensus_amino, ref_amino in zip(aconseq, aref):
-                if consensus_amino == '-':
-                    seed_amino = None
+            coordinate_inserts = {seed_amino.consensus_nuc_index
+                                  for seed_amino in region_seed_aminos}
+            prev_conseq_index = None
+            prev_consensus_nuc_index = None
+            for coord_index in range(len(amino_ref)):
+                conseq_index = coord2conseq.get(coord_index)
+                if conseq_index is None:
+                    seed_amino = SeedAmino(None)
+                    if (prev_conseq_index is not None and
+                            prev_conseq_index+1 < len(region_seed_aminos)):
+                        prev_seed_amino = region_seed_aminos[prev_conseq_index]
+                        prev_count = sum(prev_seed_amino.counts.values())
+                        prev_count += prev_seed_amino.deletions
+                        next_seed_amino = region_seed_aminos[prev_conseq_index+1]
+                        next_count = sum(next_seed_amino.counts.values())
+                        next_count += next_seed_amino.deletions
+                        min_count = min(prev_count, next_count)
+                        seed_amino.deletions = min_count
+                        for nuc in seed_amino.nucleotides:
+                            nuc.count_nucleotides('-', min_count)
                 else:
-                    seed_amino = region_seed_aminos[consensus_amino_index]
-                    consensus_amino_index += 1
-                if ref_amino == '-':
-                    report_amino = report_codon = None
-                else:
-                    report_amino = report_aminos[ref_amino_index]
-                    codon_start = ref_amino_index*3
-                    if repeat_index is not None and repeat_index < codon_start:
-                        codon_start -= 1
-                    report_codon = report_nucleotides[codon_start:codon_start+3]
-                    ref_amino_index += 1
-                if seed_amino is not None and report_amino is not None:
-                    report_amino.seed_amino.add(seed_amino)
-                    for seed_nuc, report_nuc in zip(seed_amino.nucleotides,
-                                                    report_codon):
-                        if seed_nuc.consensus_index <= consensus_nuc_index:
-                            repeat_count += 1
+                    seed_amino = region_seed_aminos[conseq_index]
+                    if prev_conseq_index is None:
+                        coordinate_inserts = {i
+                                              for i in coordinate_inserts
+                                              if i >= seed_amino.consensus_nuc_index}
+                    prev_conseq_index = conseq_index
+
+                report_amino = report_aminos[coord_index]
+                report_amino.seed_amino.add(seed_amino)
+                # if seed_amino.consensus_nuc_index is not None:
+                #     coordinate_inserts.remove(seed_amino.consensus_nuc_index)
+                #     prev_consensus_nuc_index = seed_amino.consensus_nuc_index
+                ref_nuc_pos = coord_index*3 + start_pos
+                for codon_nuc_index, seed_nuc in enumerate(
+                        seed_amino.nucleotides):
+                    if len(report_nucleotides) <= coord_index*3 + codon_nuc_index:
+                        continue
+
+                    report_nuc_index = coord_index*3 + codon_nuc_index
+                    if repeat_position is not None and start_pos < repeat_position:
+                        if repeat_position < ref_nuc_pos:
+                            report_nuc_index -= 1
+                        if repeat_position == ref_nuc_pos-1 and codon_nuc_index == 0:
                             continue
-                        consensus_nuc_index = seed_nuc.consensus_index
-                        report_nuc.seed_nucleotide.add(seed_nuc)
+                    report_nuc = report_nucleotides[report_nuc_index]
+                    report_nuc.seed_nucleotide.add(seed_nuc)
+            if prev_consensus_nuc_index is None:
+                coordinate_inserts.clear()
+            else:
+                coordinate_inserts = {i
+                                      for i in coordinate_inserts
+                                      if i <= prev_consensus_nuc_index}
+            # consensus_amino_index = ref_amino_index = 0
+            # consensus_nuc_index = -1
+            # repeat_count = 0
+            # for consensus_amino, ref_amino in zip(aconseq, aref):
+            #     if consensus_amino == '-':
+            #         seed_amino = None
+            #     else:
+            #         seed_amino = region_seed_aminos[consensus_amino_index]
+            #         consensus_amino_index += 1
+            #     if ref_amino == '-':
+            #         report_amino = report_codon = None
+            #     else:
+            #         report_amino = report_aminos[ref_amino_index]
+            #         codon_start = ref_amino_index*3
+            #         if repeat_index is not None and repeat_index < codon_start:
+            #             codon_start -= 1
+            #         report_codon = report_nucleotides[codon_start:codon_start+3]
+            #         ref_amino_index += 1
+            #     if seed_amino is not None and report_amino is not None:
+            #         report_amino.seed_amino.add(seed_amino)
+            #         for seed_nuc, report_nuc in zip(seed_amino.nucleotides,
+            #                                         report_codon):
+            #             if seed_nuc.consensus_index <= consensus_nuc_index:
+            #                 repeat_count += 1
+            #                 continue
+            #             consensus_nuc_index = seed_nuc.consensus_index
+            #             report_nuc.seed_nucleotide.add(seed_nuc)
 
     def build_nucleotide_report(self,
                                 start_pos: int,

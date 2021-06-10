@@ -569,7 +569,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 40
+    expected_size = 39
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -609,7 +609,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 38
+    expected_size = 37
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -660,14 +660,18 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
 
 # noinspection DuplicatedCode
 def test_duplicated_sars_base_nuc(default_sequence_report):
-    """ Make sure duplicated base in SARS isn't duplicated in nuc.csv. """
+    """ Make sure duplicated base in SARS isn't duplicated in nuc.csv.
+
+    Duplicated base is position 13468 in the whole genome, or 13203 in ORF1a.
+    """
 
     # refname,qcut,rank,count,offset,seq
     aligned_reads = prepare_reads("""\
 SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
 """)
+    #                                    ^ Duplicated base
 
-    #                  A,C,G,T,N,...,coverage
+    #                                        A,C,G,T,N,...,coverage
     expected_section = """\
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,21,13198,0,0,0,9,0,0,0,0,0,9
 SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,22,13199,0,0,0,9,0,0,0,0,0,9

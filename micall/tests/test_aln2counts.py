@@ -1185,7 +1185,7 @@ R2-seed,R2,15,10,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
         self.report.write_amino_header(self.report_file)
         self.report.write_amino_counts()
 
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        self.assertEqual(expected_text, self.report_file.getvalue())
 
     def testDeletionBetweenSeedAndConsensusAminoReport(self):
         """ Coordinate and consensus are KFGPR, but seed is KFPR.
