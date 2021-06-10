@@ -19,6 +19,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
+from micall.core.remap import remap, map_to_contigs
 
 IVA = "iva"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
@@ -171,6 +172,38 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
     return samples
 
 
+def run_iva(tmp_dir: str,
+            joined_path: str,
+            iva_out_path: str,
+            contigs_fasta_path: str,
+            merged_contigs_csv: typing.TextIO = None,
+            is_pessimistic: bool = False):
+
+    iva_args = [IVA, '--fr', joined_path, '-t', '2']
+    if is_pessimistic:
+        iva_args.append('--pessimistic')
+    if merged_contigs_csv is not None:
+        seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
+        with open(seeds_fasta_path, 'w') as seeds_fasta:
+            SeqIO.write((SeqRecord(Seq(row['contig']), f'seed-{i}', '', '')
+                         for i, row in enumerate(DictReader(merged_contigs_csv))),
+                        seeds_fasta,
+                        'fasta')
+            seeds_size = seeds_fasta.tell()
+        if seeds_size > 0:
+            iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
+    iva_args.append(iva_out_path)
+    try:
+        run(iva_args, check=True, stdout=PIPE, stderr=STDOUT)
+    except CalledProcessError as ex:
+        output = ex.output and ex.output.decode('UTF8')
+        if output != 'Failed to make first seed. Cannot continue\n':
+            logger.warning('iva failed to assemble.', exc_info=True)
+            logger.warning(output)
+        with open(contigs_fasta_path, 'a'):
+            pass
+
+
 def denovo(fastq1_path: str,
            fastq2_path: str,
            contigs_csv: typing.TextIO,
@@ -201,29 +234,32 @@ def denovo(fastq1_path: str,
          '--interleave',
          '-o', joined_path],
         check=True)
+
+    if True: # set to pessimistic option!
+        iva_out_path = os.path.join(tmp_dir, 'iva_out_pess')
+        contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
+        run_iva(tmp_dir, joined_path, iva_out_path, contigs_fasta_path, merged_contigs_csv, is_pessimistic=True)
+        contig_count = write_contig_refs(contigs_fasta_path, contigs_csv, blast_csv=blast_csv)
+        # figure out which contigs are worth keeping from blast results!
+        new_contigs_csv = contigs_csv #for now
+        with open(os.path.join(tmp_dir, 'remap.csv'), 'w') as remap_csv, \
+                open(os.path.join(tmp_dir, 'remap_counts.csv'), 'w') as counts_csv, \
+                open(os.path.join(tmp_dir, 'remap_conseq_csv'), 'w') as conseq_csv, \
+                open(os.path.join(tmp_dir, 'unmapped1.fastq'), 'w') as unmapped1, \
+                open(os.path.join(tmp_dir, 'unmapped2_fastq'), 'w') as unmapped2:
+            map_to_contigs(fastq1_path,
+                           fastq2_path,
+                           new_contigs_csv,
+                           remap_csv,
+                           counts_csv,
+                           conseq_csv,
+                           unmapped1,
+                           unmapped2,
+                           tmp_dir,)
+
     iva_out_path = os.path.join(tmp_dir, 'iva_out')
     contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-    iva_args = [IVA, '--fr', joined_path, '-t', '2']
-    if merged_contigs_csv is not None:
-        seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
-        with open(seeds_fasta_path, 'w') as seeds_fasta:
-            SeqIO.write((SeqRecord(Seq(row['contig']), f'seed-{i}', '', '')
-                         for i, row in enumerate(DictReader(merged_contigs_csv))),
-                        seeds_fasta,
-                        'fasta')
-            seeds_size = seeds_fasta.tell()
-        if seeds_size > 0:
-            iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
-    iva_args.append(iva_out_path)
-    try:
-        run(iva_args, check=True, stdout=PIPE, stderr=STDOUT)
-    except CalledProcessError as ex:
-        output = ex.output and ex.output.decode('UTF8')
-        if output != 'Failed to make first seed. Cannot continue\n':
-            logger.warning('iva failed to assemble.', exc_info=True)
-            logger.warning(output)
-        with open(contigs_fasta_path, 'a'):
-            pass
+    run_iva(tmp_dir, joined_path, iva_out_path, contigs_fasta_path, merged_contigs_csv, is_pessimistic=False)
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time

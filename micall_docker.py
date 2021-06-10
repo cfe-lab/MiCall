@@ -343,6 +343,11 @@ def get_parser(default_max_active):
             "--project_code",
             "-p",
             help="Select primers to trim: HCV or SARSCOV2.")
+        command_parser.add_argument(
+            '--pessimistic',
+            action='store_true',
+            help='Run pessimistic IVAto filter reads and re-run regular IVA.'
+        )
 
     return parser
 
