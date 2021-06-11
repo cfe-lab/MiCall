@@ -242,17 +242,17 @@ def create_sequence_report():
 - seed_pattern: R4-.*
   coordinates: R4-seed
   landmarks:
-    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    # Extra 3 positions for stop codons to get dropped.
     - {name: R4, start: 10, end: 21}
 - seed_pattern: R5-.*
   coordinates: R5-seed
   landmarks:
-    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    # Extra 3 positions for stop codons to get dropped.
     - {name: R5, start: 1, end: 15}
 - seed_pattern: R7-.*
   coordinates: R7-seed
   landmarks:
-    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    # Extra 3 positions for stop codons to get dropped.
     - {name: R7a, start: 1, end: 12}
     - {name: R7b, start: 16, end: 27}
 """
@@ -325,7 +325,11 @@ class StubbedSequenceReport(SequenceReport):
         override = self.overrides.get((reference, query))
         return (override
                 if override is not None
-                else SequenceReport._pair_align(self, reference, query))
+                else SequenceReport._pair_align(self,
+                                                reference,
+                                                query,
+                                                *args,
+                                                **kwargs))
 
     def add_override(self,
                      reference,

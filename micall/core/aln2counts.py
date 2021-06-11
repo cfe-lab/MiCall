@@ -309,6 +309,8 @@ class SequenceReport(object):
                                              report_aminos,
                                              repeated_ref_pos,
                                              amino_ref)
+        self.consensus[coordinate_name] = self.consensus_aligner.amino_consensus
+        self.inserts[coordinate_name] = self.consensus_aligner.inserts
 
     def process_reads(self,
                       aligned_csv,
@@ -820,6 +822,8 @@ class SequenceReport(object):
                     seed_name = self.detail_seed
                 seed_clipping = self.clipping_counts[seed_name]
                 seed_insertion_counts = self.conseq_insertion_counts[seed_name]
+                report_nucleotides = self.report_nucleotides[region]
+                report_nuc_index = 0
                 for i, report_amino in enumerate(report_aminos):
                     seed_amino = report_amino.seed_amino
                     if i < first_amino_index:
@@ -832,13 +836,20 @@ class SequenceReport(object):
                         if consensus_nuc_index is None:
                             continue
                     for j, seed_nuc in enumerate(seed_amino.nucleotides):
+                        report_nuc = report_nucleotides[report_nuc_index]
                         query_pos = j + consensus_nuc_index + 1
                         seed_nuc.clip_count = seed_clipping[query_pos]
                         seed_nuc.insertion_count = seed_insertion_counts[query_pos]
+                        report_nuc.seed_nucleotide.clip_count = seed_clipping[query_pos]
+                        report_nuc.seed_nucleotide.insertion_count = seed_insertion_counts[query_pos]
                         if j == 2:
                             insertion_counts = self.insert_writer.insert_pos_counts[
                                 (self.seed, region)]
-                            seed_nuc.insertion_count += insertion_counts[report_amino.position]
+                            seed_nuc.insertion_count += (
+                                insertion_counts[report_amino.position])
+                            report_nuc.seed_nucleotide.insertion_count += (
+                                insertion_counts[report_amino.position])
+                        report_nuc_index += 1
 
     def write_nuc_detail_counts(self, nuc_detail_writer=None):
         nuc_detail_writer = nuc_detail_writer or self.nuc_detail_writer

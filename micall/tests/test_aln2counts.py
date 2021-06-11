@@ -644,14 +644,14 @@ R1-seed,8,9
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,1,1,0,0,0,0,0,0,0,9,0,0
-R1-seed,R1,15,2,2,0,0,0,0,0,0,0,9,0,0
+R1-seed,R1,15,,1,0,0,0,0,0,0,0,9,0,0
+R1-seed,R1,15,,2,0,0,0,0,0,0,0,9,0,0
 R1-seed,R1,15,3,3,9,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,4,4,0,0,0,9,0,0,0,0,0,9
 R1-seed,R1,15,5,5,0,0,0,9,0,0,0,0,0,9
 R1-seed,R1,15,6,6,0,0,0,9,0,0,0,0,0,9
 R1-seed,R1,15,7,7,9,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,8,8,0,0,0,0,0,0,0,9,0,0
+R1-seed,R1,15,,8,0,0,0,0,0,0,0,9,0,0
 """
 
         self.report.read_clipping(clipping)
@@ -1125,60 +1125,84 @@ R1-seed,R1,15,9,9,0,0,9,0,0,0,0,0,0,9
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
     def testDeletionBetweenSeedAndCoordinateNucleotideReport(self):
-        """ Coordinate sequence is KFGPR, and this aligned read is KFPR.
+        """ Coordinate sequence is KFQTPREH, and this aligned read is KFQPREH.
 
         Must be a deletion in the seed reference with respect to the coordinate
         reference.
         """
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R3-.*
+  coordinates: R3-seed
+  landmarks:
+    - {name: R3, start: 1, end: 27}
+    """)
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
-R2-seed,15,0,9,0,AAATTTCCCCGA
+R3-seed,15,0,9,0,AAATTTCAGCCACGAGAGCAT
 """)
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R2-seed,R2,15,1,1,9,0,0,0,0,0,0,0,0,9
-R2-seed,R2,15,2,2,9,0,0,0,0,0,0,0,0,9
-R2-seed,R2,15,3,3,9,0,0,0,0,0,0,0,0,9
-R2-seed,R2,15,4,4,0,0,0,9,0,0,0,0,0,9
-R2-seed,R2,15,5,5,0,0,0,9,0,0,0,0,0,9
-R2-seed,R2,15,6,6,0,0,0,9,0,0,0,0,0,9
-R2-seed,R2,15,,7,0,0,0,0,0,9,0,0,0,9
-R2-seed,R2,15,,8,0,0,0,0,0,9,0,0,0,9
-R2-seed,R2,15,,9,0,0,0,0,0,9,0,0,0,9
-R2-seed,R2,15,7,10,0,9,0,0,0,0,0,0,0,9
-R2-seed,R2,15,8,11,0,9,0,0,0,0,0,0,0,9
-R2-seed,R2,15,9,12,0,9,0,0,0,0,0,0,0,9
-R2-seed,R2,15,10,13,0,9,0,0,0,0,0,0,0,9
-R2-seed,R2,15,11,14,0,0,9,0,0,0,0,0,0,9
-R2-seed,R2,15,12,15,9,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,1,1,9,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,2,2,9,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,3,3,9,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,4,4,0,0,0,9,0,0,0,0,0,9
+R3-seed,R3,15,5,5,0,0,0,9,0,0,0,0,0,9
+R3-seed,R3,15,6,6,0,0,0,9,0,0,0,0,0,9
+R3-seed,R3,15,7,7,0,9,0,0,0,0,0,0,0,9
+R3-seed,R3,15,8,8,9,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,9,9,0,0,9,0,0,0,0,0,0,9
+R3-seed,R3,15,,10,0,0,0,0,0,9,0,0,0,9
+R3-seed,R3,15,,11,0,0,0,0,0,9,0,0,0,9
+R3-seed,R3,15,,12,0,0,0,0,0,9,0,0,0,9
+R3-seed,R3,15,10,13,0,9,0,0,0,0,0,0,0,9
+R3-seed,R3,15,11,14,0,9,0,0,0,0,0,0,0,9
+R3-seed,R3,15,12,15,9,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,13,16,0,9,0,0,0,0,0,0,0,9
+R3-seed,R3,15,14,17,0,0,9,0,0,0,0,0,0,9
+R3-seed,R3,15,15,18,9,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,16,19,0,0,9,0,0,0,0,0,0,9
+R3-seed,R3,15,17,20,9,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,18,21,0,0,9,0,0,0,0,0,0,9
+R3-seed,R3,15,19,22,0,9,0,0,0,0,0,0,0,9
+R3-seed,R3,15,20,23,9,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,21,24,0,0,0,9,0,0,0,0,0,9
 """
 
         self.report.read(aligned_reads)
         self.report.write_nuc_header(self.report_file)
         self.report.write_nuc_counts()
 
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        self.assertEqual(expected_text, self.report_file.getvalue())
 
     def testDeletionBetweenSeedAndCoordinateAminoReport(self):
-        """ Coordinate sequence is KFGPR, and this aligned read is KFPR.
+        """ Coordinate sequence is KFQTPREH, and this aligned read is KFQPREH.
 
         Must be a deletion in the seed reference with respect to the coordinate
         reference.
         """
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R3-.*
+  coordinates: R3-seed
+  landmarks:
+    - {name: R3, start: 1, end: 27}
+    """)
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
-R2-seed,15,0,9,0,AAATTTCCCCGA
+R3-seed,15,0,9,0,AAATTTCAGCCACGAGAGCAT
 """)
 
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-R2-seed,R2,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R2-seed,R2,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R2-seed,R2,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,9
-R2-seed,R2,15,7,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-R2-seed,R2,15,10,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,9
+R3-seed,R3,15,10,5,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,13,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,16,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R3-seed,R3,15,19,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """
 
         self.report.read(aligned_reads)
@@ -1221,8 +1245,8 @@ R5-seed,R5,15,13,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
         """
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
-R1-seed,15,0,5,0,AAA---CGA
-R1-seed,15,0,2,0,AAATTTCGA
+R1-seed,15,0,5,0,AAA---AGG
+R1-seed,15,0,2,0,AAATTTAGG
 """)
 
         expected_text = """\
@@ -1237,12 +1261,12 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,7
         self.report.write_amino_header(self.report_file)
         self.report.write_amino_counts()
 
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        self.assertEqual(expected_text, self.report_file.getvalue())
 
     def testDeletionNotAlignedToCodons(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
-R1-seed,15,0,5,0,AAAC---GA
+R1-seed,15,0,5,0,AAAA---GG
 """)
 
         expected_text = """\
@@ -1258,7 +1282,7 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,5
         self.report.write_amino_header(self.report_file)
         self.report.write_amino_counts()
 
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        self.assertEqual(expected_text, self.report_file.getvalue())
 
     def testInsertionBetweenSeedAndCoordinateAminoReport(self):
         """ Coordinate sequence is KFQTPREH, and this aligned read is HERKFQTGPREHQFK.
@@ -1269,6 +1293,13 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,5
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
+""")
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R3-.*
+  coordinates: R3-seed
+  landmarks:
+    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    - {name: R3, start: 1, end: 27, colour: lightblue}
 """)
 
         expected_text = """\
@@ -1308,6 +1339,13 @@ R3-seed,R3,15,22,G,9,5
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
+""")
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R3-.*
+  coordinates: R3-seed
+  landmarks:
+    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    - {name: R3, start: 1, end: 27, colour: lightblue}
 """)
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
