@@ -1380,13 +1380,20 @@ R3-seed,R3,15,36,24,0,0,0,9,0,0,0,0,0,9
         self.report.write_nuc_header(self.report_file)
         self.report.write_nuc_counts()
 
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        self.assertEqual(expected_text, self.report_file.getvalue())
 
     def testInsertionsSortedByCount(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
 R3-seed,15,0,8,0,CATGAGCGAAAATTTCAGACTAAACCCCGAGAGCATCAGTTTAAA
+""")
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R3-.*
+  coordinates: R3-seed
+  landmarks:
+    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    - {name: R3, start: 1, end: 27, colour: lightblue}
 """)
         expected_insertions = """\
 seed,region,qcut,left,insert,count,before
@@ -1401,14 +1408,56 @@ R3-seed,R3,15,22,K,8,5
                          self.report.insert_writer.insert_file.getvalue())
 
     def testInsertionsSortedByLeft(self):
+        """ Two insertions within a single consensus, sorted by position.
+
+        Consensus is HERKFQTGPRKEHQFKL
+        Reference is  ERKF-TGPRK-HQFKL (without the dashes)
+        """
+
+        self.report.projects.load(StringIO("""\
+{
+  "projects": {
+    "R3": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "R3",
+          "seed_region_names": ["R3-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R3-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "CATGAGCGAAAATTTACTGGGCCCCGAAAACATCAGTTTAAACTC"
+      ]
+    },
+    "R3": {
+      "is_nucleotide": false,
+      "reference": [
+        "ERKFTGPRKHQFKL"
+      ]
+    }
+  }
+}
+"""))
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R3-seed
+  coordinates: R3-seed
+  landmarks:
+    # Extra 3 nucleotides at end, because stop codons will get dropped.
+    - {name: R3, start: 4, end: 48, frame: 0}
+""")
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
-R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAAAAGAGCATCAGTTTAAA
+R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAAAAGAGCATCAGTTTAAACTC
 """)
         expected_insertions = """\
 seed,region,qcut,left,insert,count,before
-R3-seed,R3,15,22,G,9,5
-R3-seed,R3,15,31,K,9,7
+R3-seed,R3,15,16,Q,9,5
+R3-seed,R3,15,34,E,9,10
 """
 
         self.report.read(aligned_reads)
@@ -1423,6 +1472,13 @@ R3-seed,R3,15,31,K,9,7
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
 R3-seed,15,0,9,0,AATTTCAGACTGGGCCCCGAGAGCAT
+""")
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R3-.*
+  coordinates: R3-seed
+  landmarks:
+    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    - {name: R3, start: 1, end: 27, colour: lightblue}
 """)
 
         expected_insertions = """\
@@ -1446,6 +1502,13 @@ R3-seed,R3,15,12,G,9,5
 R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
 R3-seed,15,1,5,0,AAATTTCAG
 R3-seed,15,2,4,0,AAATTTCAGACTG
+""")
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R3-.*
+  coordinates: R3-seed
+  landmarks:
+    # Extra 3 positions for stop codons to get dropped, one codon overlaps.
+    - {name: R3, start: 1, end: 27, colour: lightblue}
 """)
 
         expected_insertions = """\

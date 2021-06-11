@@ -274,6 +274,7 @@ class ConsensusAligner:
         :param amino_ref: amino acid sequence to align with, or None if only
             nucleotides are reported.
         """
+        self.inserts = set()
         if not self.alignments:
             # Take a wild guess at the consensus to report the failure.
             self.amino_consensus = ''.join(

@@ -836,12 +836,10 @@ class SequenceReport(object):
                         if consensus_nuc_index is None:
                             continue
                     for j, seed_nuc in enumerate(seed_amino.nucleotides):
-                        report_nuc = report_nucleotides[report_nuc_index]
                         query_pos = j + consensus_nuc_index + 1
                         seed_nuc.clip_count = seed_clipping[query_pos]
                         seed_nuc.insertion_count = seed_insertion_counts[query_pos]
-                        report_nuc.seed_nucleotide.clip_count = seed_clipping[query_pos]
-                        report_nuc.seed_nucleotide.insertion_count = seed_insertion_counts[query_pos]
+                        report_nuc = report_nucleotides[report_nuc_index]
                         if j == 2:
                             insertion_counts = self.insert_writer.insert_pos_counts[
                                 (self.seed, region)]
@@ -849,7 +847,13 @@ class SequenceReport(object):
                                 insertion_counts[report_amino.position])
                             report_nuc.seed_nucleotide.insertion_count += (
                                 insertion_counts[report_amino.position])
-                        report_nuc_index += 1
+                        if (report_nuc.seed_nucleotide.consensus_index in
+                                (None, seed_nuc.consensus_index)):
+                            report_nuc.seed_nucleotide.clip_count = \
+                                seed_clipping[query_pos]
+                            report_nuc.seed_nucleotide.insertion_count += \
+                                seed_insertion_counts[query_pos]
+                            report_nuc_index += 1
 
     def write_nuc_detail_counts(self, nuc_detail_writer=None):
         nuc_detail_writer = nuc_detail_writer or self.nuc_detail_writer
