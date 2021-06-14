@@ -227,7 +227,7 @@ def separate_contigs(contigs_csv, blast_csv, ref_contigs_csv, noref_contigs_csv)
     noref_contig_writer.writeheader()
     contig_reader = DictReader(contigs_csv)
     for row in contig_reader:
-        if row['match'] > threshold:
+        if float(row['match']) > threshold:
             ref_contig_writer.writerow(row)
         else:
             noref_contig_writer.writerow(row)
@@ -271,12 +271,14 @@ def denovo(fastq1_path: str,
         contigs_dir = os.path.join(tmp_dir, 'pessimistic_contigs.csv')
         blast_dir = os.path.join(tmp_dir, 'pessimistic_blast.csv')
         contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
+        ref_contigs_path = os.path.join(tmp_dir, 'ref_contigs.csv')
+        noref_contigs_path = os.path.join(tmp_dir, 'noref_contigs.csv')
         with open(contigs_dir, 'w') as pess_contigs_csv, \
                 open(blast_dir, 'w') as pess_blast_csv:
             contig_count = write_contig_refs(contigs_fasta_path, pess_contigs_csv, blast_csv=pess_blast_csv)
         logger.info('Pessimistic IVA: Assembled %d contigs.', contig_count)
-        with open(os.path.join(tmp_dir, 'ref_contigs.csv'), 'w') as ref_contigs_csv, \
-                open(os.path.join(tmp_dir, 'noref_contigs.csv'), 'w') as noref_contigs_csv, \
+        with open(ref_contigs_path, 'w') as ref_contigs_csv, \
+                open(noref_contigs_path, 'w') as noref_contigs_csv, \
                 open(contigs_dir, 'r') as pess_contigs_csv, \
                 open(blast_dir, 'r') as pess_blast_csv:
             separate_contigs(pess_contigs_csv, pess_blast_csv, ref_contigs_csv, noref_contigs_csv)
@@ -286,7 +288,8 @@ def denovo(fastq1_path: str,
                 open(os.path.join(tmp_dir, 'remap_counts.csv'), 'w') as counts_csv, \
                 open(os.path.join(tmp_dir, 'remap_conseq_csv'), 'w') as conseq_csv, \
                 open(unmapped1_path, 'w') as unmapped1, \
-                open(unmapped2_path, 'w') as unmapped2:
+                open(unmapped2_path, 'w') as unmapped2, \
+                open(noref_contigs_path, 'r') as noref_contigs_csv:
             map_to_contigs(fastq1_path,
                            fastq2_path,
                            noref_contigs_csv,
