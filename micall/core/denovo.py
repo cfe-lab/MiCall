@@ -226,11 +226,16 @@ def separate_contigs(contigs_csv, blast_csv, ref_contigs_csv, noref_contigs_csv)
     noref_contig_writer = DictWriter(noref_contigs_csv, fieldnames)
     noref_contig_writer.writeheader()
     contig_reader = DictReader(contigs_csv)
+    num_total = 0
+    num_match = 0
     for row in contig_reader:
+        num_total += 1
         if float(row['match']) > threshold:
             ref_contig_writer.writerow(row)
+            num_match += 1
         else:
             noref_contig_writer.writerow(row)
+    return num_total - num_match
 
 
 def denovo(fastq1_path: str,
@@ -281,32 +286,33 @@ def denovo(fastq1_path: str,
                 open(noref_contigs_path, 'w') as noref_contigs_csv, \
                 open(contigs_dir, 'r') as pess_contigs_csv, \
                 open(blast_dir, 'r') as pess_blast_csv:
-            separate_contigs(pess_contigs_csv, pess_blast_csv, ref_contigs_csv, noref_contigs_csv)
+            num_noref = separate_contigs(pess_contigs_csv, pess_blast_csv, ref_contigs_csv, noref_contigs_csv)
         unmapped1_path = os.path.join(tmp_dir, 'unmapped1.fastq')
-        unmapped2_path = os.path.join(tmp_dir, 'unmapped2_fastq')
-        with open(os.path.join(tmp_dir, 'remap.csv'), 'w') as remap_csv, \
-                open(os.path.join(tmp_dir, 'remap_counts.csv'), 'w') as counts_csv, \
-                open(os.path.join(tmp_dir, 'remap_conseq_csv'), 'w') as conseq_csv, \
-                open(unmapped1_path, 'w') as unmapped1, \
-                open(unmapped2_path, 'w') as unmapped2, \
-                open(noref_contigs_path, 'r') as noref_contigs_csv:
-            map_to_contigs(fastq1_path,
-                           fastq2_path,
-                           noref_contigs_csv,
-                           remap_csv,
-                           counts_csv,
-                           conseq_csv,
-                           unmapped1,
-                           unmapped2,
-                           tmp_dir,)
-        # we want to use the reads that did not map to the contigs that did not blast to the refs
-        joined_path = os.path.join(tmp_dir, 'filtered_joined.fastq')
-        run(['merge-mates',
-             unmapped1_path,
-             unmapped1_path,
-             '--interleave',
-             '-o', joined_path],
-            check=True)
+        unmapped2_path = os.path.join(tmp_dir, 'unmapped2.fastq')
+        if num_noref:
+            with open(os.path.join(tmp_dir, 'remap.csv'), 'w') as remap_csv, \
+                    open(os.path.join(tmp_dir, 'remap_counts.csv'), 'w') as counts_csv, \
+                    open(os.path.join(tmp_dir, 'remap_conseq.csv'), 'w') as conseq_csv, \
+                    open(unmapped1_path, 'w') as unmapped1, \
+                    open(unmapped2_path, 'w') as unmapped2, \
+                    open(noref_contigs_path, 'r') as noref_contigs_csv:
+                map_to_contigs(fastq1_path,
+                               fastq2_path,
+                               noref_contigs_csv,
+                               remap_csv,
+                               counts_csv,
+                               conseq_csv,
+                               unmapped1,
+                               unmapped2,
+                               tmp_dir,)
+            # we want to use the reads that did not map to the contigs that did not blast to the refs
+            joined_path = os.path.join(tmp_dir, 'filtered_joined.fastq')
+            run(['merge-mates',
+                 unmapped1_path,
+                 unmapped1_path,
+                 '--interleave',
+                 '-o', joined_path],
+                check=True)
 
     iva_out_path = os.path.join(tmp_dir, 'iva_out')
     run_iva(tmp_dir, joined_path, iva_out_path, merged_contigs_csv, is_pessimistic=False)
