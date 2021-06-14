@@ -309,7 +309,7 @@ def denovo(fastq1_path: str,
             joined_path = os.path.join(tmp_dir, 'filtered_joined.fastq')
             run(['merge-mates',
                  unmapped1_path,
-                 unmapped1_path,
+                 unmapped2_path,
                  '--interleave',
                  '-o', joined_path],
                 check=True)
