@@ -287,12 +287,12 @@ def denovo(fastq1_path: str,
                 open(contigs_dir, 'r') as pess_contigs_csv, \
                 open(blast_dir, 'r') as pess_blast_csv:
             num_noref = separate_contigs(pess_contigs_csv, pess_blast_csv, ref_contigs_csv, noref_contigs_csv)
-        unmapped1_path = os.path.join(tmp_dir, 'unmapped1.fastq')
-        unmapped2_path = os.path.join(tmp_dir, 'unmapped2.fastq')
+        unmapped1_path = os.path.join(tmp_dir, 'pess_unmapped1.fastq')
+        unmapped2_path = os.path.join(tmp_dir, 'pess_unmapped2.fastq')
         if num_noref:
-            with open(os.path.join(tmp_dir, 'remap.csv'), 'w') as remap_csv, \
-                    open(os.path.join(tmp_dir, 'remap_counts.csv'), 'w') as counts_csv, \
-                    open(os.path.join(tmp_dir, 'remap_conseq.csv'), 'w') as conseq_csv, \
+            with open(os.path.join(tmp_dir, 'pess_remap.csv'), 'w') as remap_csv, \
+                    open(os.path.join(tmp_dir, 'pess_remap_counts.csv'), 'w') as counts_csv, \
+                    open(os.path.join(tmp_dir, 'pess_remap_conseq.csv'), 'w') as conseq_csv, \
                     open(unmapped1_path, 'w') as unmapped1, \
                     open(unmapped2_path, 'w') as unmapped2, \
                     open(noref_contigs_path, 'r') as noref_contigs_csv:
