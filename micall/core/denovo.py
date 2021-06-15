@@ -176,7 +176,8 @@ def run_iva(tmp_dir: str,
             joined_path: str,
             iva_out_path: str,
             merged_contigs_csv: typing.TextIO = None,
-            is_pessimistic: bool = False):
+            is_pessimistic: bool = False,
+            max_num_contigs: int = 0):
     """ Run IVA with specified arguments.
 
     :param tmp_dir:             directory for temporary files
@@ -188,6 +189,7 @@ def run_iva(tmp_dir: str,
     contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
     iva_args = [IVA, '--fr', joined_path, '-t', '2']
     if is_pessimistic: iva_args.append('--pessimistic')
+    if max_num_contigs: iva_args.extend(['--max_contigs', max_num_contigs])
     if merged_contigs_csv is not None:
         seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
         with open(seeds_fasta_path, 'w') as seeds_fasta:
@@ -235,7 +237,62 @@ def separate_contigs(contigs_csv, blast_csv, ref_contigs_csv, noref_contigs_csv)
             num_match += 1
         else:
             noref_contig_writer.writerow(row)
-    return num_total - num_match
+    return num_match, num_total - num_match
+
+
+def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path, ref_contigs_csv):
+    num_contigs = 0 # plus number of contigs in merged contigs file
+    num_iterations = 0
+    current_interleaved = interleaved_path
+    iva_out_path = os.path.join(tmp_dir, 'pessiva_iteration0')
+    while True:
+        run_iva(tmp_dir, current_interleaved, iva_out_path, ref_contigs_csv, is_pessimistic=True,
+                max_num_contigs=num_contigs+1)
+        contigs_dir = os.path.join(tmp_dir, 'pessimistic_contigs.csv')
+        blast_dir = os.path.join(tmp_dir, 'pessimistic_blast.csv')
+        contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
+        ref_contigs_path = os.path.join(tmp_dir, 'ref_contigs.csv')
+        noref_contigs_path = os.path.join(tmp_dir, 'noref_contigs.csv')
+        with open(contigs_dir, 'w') as pess_contigs_csv, \
+                open(blast_dir, 'w') as pess_blast_csv:
+            contig_count = write_contig_refs(contigs_fasta_path, pess_contigs_csv, blast_csv=pess_blast_csv)
+        if contig_count == num_contigs: # no new contigs found
+            break
+        with open(ref_contigs_path, 'w') as ref_contigs_csv, \
+                open(noref_contigs_path, 'w') as noref_contigs_csv, \
+                open(contigs_dir, 'r') as pess_contigs_csv, \
+                open(blast_dir, 'r') as pess_blast_csv:
+            num_match, num_noref = separate_contigs(pess_contigs_csv, pess_blast_csv, ref_contigs_csv, noref_contigs_csv)
+        num_contigs = num_match # update number of useful contigs
+        logger.info('Pessimistic IVA, iteration %d: Assembled %d useful contigs.', num_iterations, num_contigs)
+        unmapped1_path = os.path.join(tmp_dir, 'pess_unmapped1.fastq')
+        unmapped2_path = os.path.join(tmp_dir, 'pess_unmapped2.fastq')
+        if num_noref:
+            with open(os.path.join(tmp_dir, 'pess_remap.csv'), 'w') as remap_csv, \
+                    open(os.path.join(tmp_dir, 'pess_remap_counts.csv'), 'w') as counts_csv, \
+                    open(os.path.join(tmp_dir, 'pess_remap_conseq.csv'), 'w') as conseq_csv, \
+                    open(unmapped1_path, 'w') as unmapped1, \
+                    open(unmapped2_path, 'w') as unmapped2, \
+                    open(noref_contigs_path, 'r') as noref_contigs_csv:
+                map_to_contigs(forward_reads,
+                               reverse_reads,
+                               noref_contigs_csv,
+                               remap_csv,
+                               counts_csv,
+                               conseq_csv,
+                               unmapped1,
+                               unmapped2,
+                               tmp_dir,)
+            # we want to use the reads that did not map to the contigs that did not blast to the refs
+            current_interleaved = os.path.join(tmp_dir, f'joined_iteration{num_iterations}.fastq')
+            run(['merge-mates',
+                 unmapped1_path,
+                 unmapped2_path,
+                 '--interleave',
+                 '-o', current_interleaved],
+                check=True)
+        num_iterations += 1
+    return current_interleaved
 
 
 def denovo(fastq1_path: str,
@@ -271,48 +328,7 @@ def denovo(fastq1_path: str,
 
     if True: # set to pessimistic option!
         logger.info('First pass over reads with pessimistic IVA...')
-        iva_out_path = os.path.join(tmp_dir, 'iva_out_pess')
-        run_iva(tmp_dir, joined_path, iva_out_path, merged_contigs_csv, is_pessimistic=True)
-        contigs_dir = os.path.join(tmp_dir, 'pessimistic_contigs.csv')
-        blast_dir = os.path.join(tmp_dir, 'pessimistic_blast.csv')
-        contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-        ref_contigs_path = os.path.join(tmp_dir, 'ref_contigs.csv')
-        noref_contigs_path = os.path.join(tmp_dir, 'noref_contigs.csv')
-        with open(contigs_dir, 'w') as pess_contigs_csv, \
-                open(blast_dir, 'w') as pess_blast_csv:
-            contig_count = write_contig_refs(contigs_fasta_path, pess_contigs_csv, blast_csv=pess_blast_csv)
-        logger.info('Pessimistic IVA: Assembled %d contigs.', contig_count)
-        with open(ref_contigs_path, 'w') as ref_contigs_csv, \
-                open(noref_contigs_path, 'w') as noref_contigs_csv, \
-                open(contigs_dir, 'r') as pess_contigs_csv, \
-                open(blast_dir, 'r') as pess_blast_csv:
-            num_noref = separate_contigs(pess_contigs_csv, pess_blast_csv, ref_contigs_csv, noref_contigs_csv)
-        unmapped1_path = os.path.join(tmp_dir, 'pess_unmapped1.fastq')
-        unmapped2_path = os.path.join(tmp_dir, 'pess_unmapped2.fastq')
-        if num_noref:
-            with open(os.path.join(tmp_dir, 'pess_remap.csv'), 'w') as remap_csv, \
-                    open(os.path.join(tmp_dir, 'pess_remap_counts.csv'), 'w') as counts_csv, \
-                    open(os.path.join(tmp_dir, 'pess_remap_conseq.csv'), 'w') as conseq_csv, \
-                    open(unmapped1_path, 'w') as unmapped1, \
-                    open(unmapped2_path, 'w') as unmapped2, \
-                    open(noref_contigs_path, 'r') as noref_contigs_csv:
-                map_to_contigs(fastq1_path,
-                               fastq2_path,
-                               noref_contigs_csv,
-                               remap_csv,
-                               counts_csv,
-                               conseq_csv,
-                               unmapped1,
-                               unmapped2,
-                               tmp_dir,)
-            # we want to use the reads that did not map to the contigs that did not blast to the refs
-            joined_path = os.path.join(tmp_dir, 'filtered_joined.fastq')
-            run(['merge-mates',
-                 unmapped1_path,
-                 unmapped2_path,
-                 '--interleave',
-                 '-o', joined_path],
-                check=True)
+        joined_path = pess_iva_iterations(tmp_dir, fastq1_path, fastq2_path, joined_path, merged_contigs_csv)
 
     iva_out_path = os.path.join(tmp_dir, 'iva_out')
     run_iva(tmp_dir, joined_path, iva_out_path, merged_contigs_csv, is_pessimistic=False)
