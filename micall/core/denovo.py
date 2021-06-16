@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import shutil
 import typing
 from collections import Counter
 from csv import DictWriter, DictReader
@@ -9,7 +10,7 @@ from glob import glob
 from io import StringIO
 from itertools import groupby
 from operator import itemgetter
-from shutil import rmtree
+from shutil import rmtree, copyfile
 from subprocess import run, PIPE, CalledProcessError, STDOUT
 from tempfile import mkdtemp
 
@@ -248,15 +249,17 @@ def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path,
     while True:
         run_iva(tmp_dir, current_interleaved, iva_out_path, ref_contigs_csv, is_pessimistic=True,
                 max_num_contigs=num_contigs+1)
-        contigs_dir = os.path.join(tmp_dir, 'pessimistic_contigs.csv')
-        blast_dir = os.path.join(tmp_dir, 'pessimistic_blast.csv')
+        contigs_dir = os.path.join(iva_out_path, 'pessimistic_contigs.csv')
+        blast_dir = os.path.join(iva_out_path, 'pessimistic_blast.csv')
         contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-        ref_contigs_path = os.path.join(tmp_dir, 'ref_contigs.csv')
-        noref_contigs_path = os.path.join(tmp_dir, 'noref_contigs.csv')
+        ref_contigs_path = os.path.join(iva_out_path, 'ref_contigs.csv')
+        noref_contigs_path = os.path.join(iva_out_path, 'noref_contigs.csv')
         with open(contigs_dir, 'w') as pess_contigs_csv, \
                 open(blast_dir, 'w') as pess_blast_csv:
             contig_count = write_contig_refs(contigs_fasta_path, pess_contigs_csv, blast_csv=pess_blast_csv)
         if contig_count == num_contigs: # no new contigs found
+            rmtree(iva_out_path)
+            logger.info('Pessimistic IVA finished with %d useful contigs.', num_contigs)
             break
         with open(ref_contigs_path, 'w') as ref_contigs_csv, \
                 open(noref_contigs_path, 'w') as noref_contigs_csv, \
@@ -265,12 +268,12 @@ def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path,
             num_match, num_noref = separate_contigs(pess_contigs_csv, pess_blast_csv, ref_contigs_csv, noref_contigs_csv)
         num_contigs = num_match # update number of useful contigs
         logger.info('Pessimistic IVA, iteration %d: Assembled %d useful contigs.', num_iterations, num_contigs)
-        unmapped1_path = os.path.join(tmp_dir, 'pess_unmapped1.fastq')
-        unmapped2_path = os.path.join(tmp_dir, 'pess_unmapped2.fastq')
+        unmapped1_path = os.path.join(iva_out_path, 'pess_unmapped1.fastq')
+        unmapped2_path = os.path.join(iva_out_path, 'pess_unmapped2.fastq')
         if num_noref:
-            with open(os.path.join(tmp_dir, 'pess_remap.csv'), 'w') as remap_csv, \
-                    open(os.path.join(tmp_dir, 'pess_remap_counts.csv'), 'w') as counts_csv, \
-                    open(os.path.join(tmp_dir, 'pess_remap_conseq.csv'), 'w') as conseq_csv, \
+            with open(os.path.join(iva_out_path, 'pess_remap.csv'), 'w') as remap_csv, \
+                    open(os.path.join(iva_out_path, 'pess_remap_counts.csv'), 'w') as counts_csv, \
+                    open(os.path.join(iva_out_path, 'pess_remap_conseq.csv'), 'w') as conseq_csv, \
                     open(unmapped1_path, 'w') as unmapped1, \
                     open(unmapped2_path, 'w') as unmapped2, \
                     open(noref_contigs_path, 'r') as noref_contigs_csv:
@@ -292,6 +295,8 @@ def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path,
                  '-o', current_interleaved],
                 check=True)
         num_iterations += 1
+        rmtree(iva_out_path) # clean up all temp files
+        iva_out_path = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations}')
     return current_interleaved
 
 
