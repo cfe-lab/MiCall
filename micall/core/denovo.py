@@ -1,7 +1,6 @@
 import argparse
 import logging
 import os
-import shutil
 import typing
 from collections import Counter
 from csv import DictWriter, DictReader
@@ -10,7 +9,7 @@ from glob import glob
 from io import StringIO
 from itertools import groupby
 from operator import itemgetter
-from shutil import rmtree, copyfile
+from shutil import rmtree
 from subprocess import run, PIPE, CalledProcessError, STDOUT
 from tempfile import mkdtemp
 
@@ -241,18 +240,24 @@ def separate_contigs(contigs_csv, blast_csv, ref_contigs_csv, noref_contigs_csv)
     return num_match, num_total - num_match
 
 
-def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path, ref_contigs_csv):
-    num_contigs = 0 # plus number of contigs in merged contigs file
+def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path, merged_contigs_csv):
+    num_contigs = 0
+    for _ in DictReader(merged_contigs_csv): num_contigs += 1
     num_iterations = 0
     current_interleaved = interleaved_path
     iva_out_path = os.path.join(tmp_dir, 'pessiva_iteration0')
     while True:
-        run_iva(tmp_dir, current_interleaved, iva_out_path, ref_contigs_csv, is_pessimistic=True,
+        if num_iterations == 0:
+            run_iva(tmp_dir, current_interleaved, iva_out_path, merged_contigs_csv, is_pessimistic=True,
                 max_num_contigs=num_contigs+1)
+        else:
+            with open(ref_contigs_path, 'w') as ref_contigs_csv:
+                run_iva(tmp_dir, current_interleaved, iva_out_path, ref_contigs_csv, is_pessimistic=True,
+                        max_num_contigs=num_contigs + 1)
         contigs_dir = os.path.join(iva_out_path, 'pessimistic_contigs.csv')
         blast_dir = os.path.join(iva_out_path, 'pessimistic_blast.csv')
         contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-        ref_contigs_path = os.path.join(iva_out_path, 'ref_contigs.csv')
+        ref_contigs_path = os.path.join(tmp_dir, 'ref_contigs.csv')
         noref_contigs_path = os.path.join(iva_out_path, 'noref_contigs.csv')
         with open(contigs_dir, 'w') as pess_contigs_csv, \
                 open(blast_dir, 'w') as pess_blast_csv:
