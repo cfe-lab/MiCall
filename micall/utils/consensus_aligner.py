@@ -191,12 +191,12 @@ class ConsensusAligner:
         self.coordinate_name = coordinate_name
         coordinate_seq = self.projects.getReference(coordinate_name)
         aligner = Aligner(seq=coordinate_seq, preset='map-ont')
-        self.alignments = list(aligner.map(consensus))
-        if self.alignments or 10_000 < len(consensus):
+        self.alignments = list(aligner.map(self.consensus))
+        if self.alignments or 10_000 < len(self.consensus):
             self.algorithm = 'minimap2'
         else:
             self.algorithm = 'gotoh'
-            self.align_gotoh(coordinate_seq, consensus)
+            self.align_gotoh(coordinate_seq, self.consensus)
         self.alignments = [alignment
                            for alignment in self.alignments
                            if alignment.is_primary]

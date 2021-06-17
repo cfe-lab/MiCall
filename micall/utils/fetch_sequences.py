@@ -148,9 +148,10 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
     source_sequences = {}
     landmark_reader = LandmarkReader.load()
     for region_name in region_names:
-        region = landmark_reader.get_gene('HIV1-B-FR-K03455-seed',
-                                          region_name)
-        source_nuc_sequence = hxb2[region['start']:region['end']]
+        source_nuc_sequence = extract_region(landmark_reader,
+                                             'HIV1-B-FR-K03455-seed',
+                                             hxb2,
+                                             region_name)
         if region_name == 'HIV1B-nef':
             # Replace premature stop codon with Consensus B.
             source_nuc_sequence = (source_nuc_sequence[:369] +
@@ -185,6 +186,17 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
                                          source_sequences)
     print(report)
     return error_count
+
+
+def extract_region(landmark_reader: LandmarkReader,
+                   coordinate_name: str,
+                   coordinate_seq: str,
+                   region_name: str) -> str:
+    region = landmark_reader.get_gene(coordinate_name,
+                                      region_name,
+                                      drop_stop_codon=False)
+    source_nuc_sequence = coordinate_seq[region['start'] - 1:region['end']]
+    return source_nuc_sequence
 
 
 def check_hcv_seeds(project_config, unchecked_ref_names: set):
@@ -307,9 +319,11 @@ This script contains a complete list of the reference accession numbers.
         if len(seed_name) == 5:
             seed_name += 'a'
 
-        region = landmark_reader.get_gene(seed_name, ref_name)
-        start, stop = region['start'], region['end']
-        nuc_seq_ref_trimmed = source_nuc_sequences[genotype][start-1:stop-1]
+        coordinate_seq = source_nuc_sequences[genotype]
+        nuc_seq_ref_trimmed = extract_region(landmark_reader,
+                                             seed_name,
+                                             coordinate_seq,
+                                             ref_name)
         source_sequences[ref_name] = translate(nuc_seq_ref_trimmed)
 
     report, error_count = compare_config(ref_names,
@@ -643,6 +657,12 @@ def compare_config(ref_names,
         unused_report += ', '.join(sorted(source_sequences))
         unused_report = fill_report(unused_report)
         report.write(unused_report)
+        for source_name, source_sequence in sorted(source_sequences.items()):
+            report.write(source_name + '\n')
+            if 75 < len(source_sequence):
+                source_sequence = f'{source_sequence[:35]}[...]' \
+                                  f'{source_sequence[-35:]}'
+            report.write('  ' + source_sequence + '\n')
         error_count += len(source_sequences)
 
     if diff_report.tell():

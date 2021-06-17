@@ -2,153 +2,160 @@
 - seed_pattern: HIV.*
   coordinates: HIV1-B-FR-K03455-seed
   landmarks:
+    # 1-based, inclusive positions in HXB2, including stop codons.
     - {name: "5' LTR", start: 1, end: 634, frame: 0, colour: darkgrey}
-    - {name: gag, full_name: HIV1B-gag, start: 789, end: 2289, frame: 0, colour: lightblue}
-    - {name: vif, full_name: HIV1B-vif, start: 5040, end: 5616, frame: 0, colour: steelblue}
-    - {name: tat, start: 8379, end: 8469, frame: 0, colour: plum}
-    - {name: nef, full_name: HIV1B-nef, start: 8796, end: 9414, frame: 0, colour: mediumaquamarine}
-    - {name: tat, start: 5831, end: 6045, frame: 1, colour: plum}
-    - {name: vpu, full_name: HIV1B-vpu, start: 6061, end: 6307, frame: 1, colour: red}
-    - {name: rev, start: 8379, end: 8653, frame: 1, colour: yellowgreen}
+    - {name: gag, full_name: HIV1B-gag, start: 790, end: 2292, frame: 0, colour: lightblue}
+    - {name: vif, full_name: HIV1B-vif, start: 5041, end: 5619, frame: 0, colour: steelblue}
+
+    # Actually starts at 8379, spliced to the end of tat in the middle of a codon.
+    - {name: tat, full_name: tat2, start: 8380, end: 8469, frame: 0, colour: plum}
+
+    - {name: nef, full_name: HIV1B-nef, start: 8797, end: 9417, frame: 0, colour: mediumaquamarine}
+    - {name: tat, start: 5831, end: 6049, frame: 1, colour: plum}
+    - {name: vpu, full_name: HIV1B-vpu, start: 6062, end: 6310, frame: 1, colour: red}
+
+    # Actually starts at 8379, spliced to the end of rev in the middle of a codon.
+    - {name: rev, full_name: rev2, start: 8378, end: 8653, frame: 1, colour: yellowgreen}
+
     - {name: "3' LTR", start: 9086, end: 9719, frame: 1, colour: darkgrey}
     - {name: pol, start: 2085, end: 5096, frame: 2, colour: orange}
-    - {name: vpr, full_name: HIV1B-vpr, start: 5558, end: 5847, frame: 2, colour: turquoise}
-    - {name: rev, start: 5970, end: 6045, frame: 2, colour: yellowgreen}
+    - {name: vpr, full_name: HIV1B-vpr, start: 5559, end: 5850, frame: 2, colour: turquoise}
+    - {name: rev, start: 5970, end: 6048, frame: 2, colour: yellowgreen, stop: N}
     - {name: env, start: 6225, end: 8795, frame: 2, colour: salmon}
-    - {name: PR, start: 2252, end: 2549, frame: 3, colour: orange}
-    - {name: RT, start: 2549, end: 3869, frame: 3, colour: darkorange}
-    - {name: INT, start: 4229, end: 5093, frame: 3, colour: orange}
-    - {name: V3, full_name: V3LOOP, start: 7109, end: 7217, frame: 3, colour: salmon}
-    - {name: GP41, start: 7757, end: 8792, frame: 3, colour: salmon}
-    - {name: GP120, start: 6224, end: 7757, frame: 3}  # Not displayed.
+    - {name: PR, start: 2253, end: 2549, frame: 3, colour: orange, stop: N}
+    - {name: RT, start: 2550, end: 3869, frame: 3, colour: darkorange, stop: N}
+    - {name: INT, start: 4230, end: 5096, frame: 3, colour: orange}
+    - {name: V3, full_name: V3LOOP, start: 7110, end: 7217, frame: 3, colour: salmon, stop: N}
+    - {name: GP41, start: 7758, end: 8795, frame: 3, colour: salmon}
+    - {name: GP120, start: 6225, end: 7757, frame: 3, stop: N}  # Not displayed.
 - seed_pattern: HCV-1b
   coordinates: HCV-1b
   prefix: HCV1B-Con1-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, full_name: Core, start: 342, colour: '#1f77b4'}
-    - {name: E1, start: 915, colour: '#ff7f0e'}
-    - {name: E2, start: 1491, colour: '#2ca02c'}
-    - {name: p7, start: 2580, colour: '#d62728'}
-    - {name: NS2, start: 2769, colour: '#9467bd'}
-    - {name: NS3, start: 3420, colour: '#8c564b'}
+    - {name: C, full_name: Core, start: 342, colour: '#1f77b4', stop: N}
+    - {name: E1, start: 915, colour: '#ff7f0e', stop: N}
+    - {name: E2, start: 1491, colour: '#2ca02c', stop: N}
+    - {name: p7, start: 2580, colour: '#d62728', stop: N}
+    - {name: NS2, start: 2769, colour: '#9467bd', stop: N}
+    - {name: NS3, start: 3420, colour: '#8c564b', stop: N}
     # Reverse order to avoid NS4a's label getting cut off.
-    - {name: NS4b, start: 5475, colour: '#7f7f7f'}
-    - {name: NS4a, start: 5313, colour: '#e377c2'}
-    - {name: NS5a, start: 6258, colour: '#bcbd22'}
-    - {name: NS5b, start: 7599, colour: '#17becf'}
+    - {name: NS4b, start: 5475, colour: '#7f7f7f', stop: N}
+    - {name: NS4a, start: 5313, colour: '#e377c2', stop: N}
+    - {name: NS5a, start: 6258, colour: '#bcbd22', stop: N}
+    - {name: NS5b, start: 7599, colour: '#17becf', stop: N}
     - {name: "3'", start: 9372, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-1.*
   coordinates: HCV-1a
   prefix: HCV1A-H77-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, full_name: Core, start: 342, colour: '#1f77b4'}
-    - {name: E1, start: 915, colour: '#ff7f0e'}
-    - {name: E2, start: 1491, colour: '#2ca02c'}
-    - {name: p7, start: 2580, colour: '#d62728'}
-    - {name: NS2, start: 2769, colour: '#9467bd'}
-    - {name: NS3, start: 3420, colour: '#8c564b'}
-    - {name: NS4b, start: 5475, colour: '#7f7f7f'}
-    - {name: NS4a, start: 5313, colour: '#e377c2'}
-    - {name: NS5a, start: 6258, colour: '#bcbd22'}
-    - {name: NS5b, start: 7602, colour: '#17becf'}
+    - {name: C, full_name: Core, start: 342, colour: '#1f77b4', stop: N}
+    - {name: E1, start: 915, colour: '#ff7f0e', stop: N}
+    - {name: E2, start: 1491, colour: '#2ca02c', stop: N}
+    - {name: p7, start: 2580, colour: '#d62728', stop: N}
+    - {name: NS2, start: 2769, colour: '#9467bd', stop: N}
+    - {name: NS3, start: 3420, colour: '#8c564b', stop: N}
+    - {name: NS4b, start: 5475, colour: '#7f7f7f', stop: N}
+    - {name: NS4a, start: 5313, colour: '#e377c2', stop: N}
+    - {name: NS5a, start: 6258, colour: '#bcbd22', stop: N}
+    - {name: NS5b, start: 7602, colour: '#17becf', stop: N}
     - {name: "3'", start: 9375, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-2.*
   coordinates: HCV-2a
   prefix: HCV2-JFH-1-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, full_name: Core, start: 341, colour: '#1f77b4'}
-    - {name: E1, start: 914, colour: '#ff7f0e'}
-    - {name: E2, start: 1490, colour: '#2ca02c'}
-    - {name: p7, start: 2591, colour: '#d62728'}
-    - {name: NS2, start: 2780, colour: '#9467bd'}
-    - {name: NS3, start: 3431, colour: '#8c564b'}
-    - {name: NS4b, start: 5486, colour: '#7f7f7f'}
-    - {name: NS4a, start: 5324, colour: '#e377c2'}
-    - {name: NS5a, start: 6269, colour: '#bcbd22'}
-    - {name: NS5b, start: 7667, colour: '#17becf'}
+    - {name: C, full_name: Core, start: 341, colour: '#1f77b4', stop: N}
+    - {name: E1, start: 914, colour: '#ff7f0e', stop: N}
+    - {name: E2, start: 1490, colour: '#2ca02c', stop: N}
+    - {name: p7, start: 2591, colour: '#d62728', stop: N}
+    - {name: NS2, start: 2780, colour: '#9467bd', stop: N}
+    - {name: NS3, start: 3431, colour: '#8c564b', stop: N}
+    - {name: NS4b, start: 5486, colour: '#7f7f7f', stop: N}
+    - {name: NS4a, start: 5324, colour: '#e377c2', stop: N}
+    - {name: NS5a, start: 6269, colour: '#bcbd22', stop: N}
+    - {name: NS5b, start: 7667, colour: '#17becf', stop: N}
     - {name: "3'", start: 9441, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-3.*
   coordinates: HCV-3a
   prefix: HCV3-S52-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, full_name: Core, start: 340, colour: '#1f77b4'}
-    - {name: E1, start: 913, colour: '#ff7f0e'}
-    - {name: E2, start: 1489, colour: '#2ca02c'}
-    - {name: p7, start: 2596, colour: '#d62728'}
-    - {name: NS2, start: 2785, colour: '#9467bd'}
-    - {name: NS3, start: 3436, colour: '#8c564b'}
-    - {name: NS4b, start: 5491, colour: '#7f7f7f'}
-    - {name: NS4a, start: 5329, colour: '#e377c2'}
-    - {name: NS5a, start: 6274, colour: '#bcbd22'}
-    - {name: NS5b, start: 7630, colour: '#17becf'}
+    - {name: C, full_name: Core, start: 340, colour: '#1f77b4', stop: N}
+    - {name: E1, start: 913, colour: '#ff7f0e', stop: N}
+    - {name: E2, start: 1489, colour: '#2ca02c', stop: N}
+    - {name: p7, start: 2596, colour: '#d62728', stop: N}
+    - {name: NS2, start: 2785, colour: '#9467bd', stop: N}
+    - {name: NS3, start: 3436, colour: '#8c564b', stop: N}
+    - {name: NS4b, start: 5491, colour: '#7f7f7f', stop: N}
+    - {name: NS4a, start: 5329, colour: '#e377c2', stop: N}
+    - {name: NS5a, start: 6274, colour: '#bcbd22', stop: N}
+    - {name: NS5b, start: 7630, colour: '#17becf', stop: N}
     - {name: "3'", start: 9404, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-4.*
   coordinates: HCV-4a
   prefix: HCV4-ED43-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, full_name: Core, start: 341, colour: '#1f77b4'}
-    - {name: E1, start: 914, colour: '#ff7f0e'}
-    - {name: E2, start: 1490, colour: '#2ca02c'}
-    - {name: p7, start: 2579, colour: '#d62728'}
-    - {name: NS2, start: 2768, colour: '#9467bd'}
-    - {name: NS3, start: 3419, colour: '#8c564b'}
-    - {name: NS4b, start: 5474, colour: '#7f7f7f'}
-    - {name: NS4a, start: 5312, colour: '#e377c2'}
-    - {name: NS5a, start: 6257, colour: '#bcbd22'}
-    - {name: NS5b, start: 7592, colour: '#17becf'}
+    - {name: C, full_name: Core, start: 341, colour: '#1f77b4', stop: N}
+    - {name: E1, start: 914, colour: '#ff7f0e', stop: N}
+    - {name: E2, start: 1490, colour: '#2ca02c', stop: N}
+    - {name: p7, start: 2579, colour: '#d62728', stop: N}
+    - {name: NS2, start: 2768, colour: '#9467bd', stop: N}
+    - {name: NS3, start: 3419, colour: '#8c564b', stop: N}
+    - {name: NS4b, start: 5474, colour: '#7f7f7f', stop: N}
+    - {name: NS4a, start: 5312, colour: '#e377c2', stop: N}
+    - {name: NS5a, start: 6257, colour: '#bcbd22', stop: N}
+    - {name: NS5b, start: 7592, colour: '#17becf', stop: N}
     - {name: "3'", start: 9366, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-5.*
   coordinates: HCV-5a
   prefix: HCV5-SA13-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, full_name: Core, start: 247, colour: '#1f77b4'}
-    - {name: E1, start: 820, colour: '#ff7f0e'}
-    - {name: E2, start: 1396, colour: '#2ca02c'}
-    - {name: p7, start: 2488, colour: '#d62728'}
-    - {name: NS2, start: 2677, colour: '#9467bd'}
-    - {name: NS3, start: 3328, colour: '#8c564b'}
-    - {name: NS4b, start: 5383, colour: '#7f7f7f'}
-    - {name: NS4a, start: 5221, colour: '#e377c2'}
-    - {name: NS5a, start: 6166, colour: '#bcbd22'}
-    - {name: NS5b, start: 7516, colour: '#17becf'}
+    - {name: C, full_name: Core, start: 247, colour: '#1f77b4', stop: N}
+    - {name: E1, start: 820, colour: '#ff7f0e', stop: N}
+    - {name: E2, start: 1396, colour: '#2ca02c', stop: N}
+    - {name: p7, start: 2488, colour: '#d62728', stop: N}
+    - {name: NS2, start: 2677, colour: '#9467bd', stop: N}
+    - {name: NS3, start: 3328, colour: '#8c564b', stop: N}
+    - {name: NS4b, start: 5383, colour: '#7f7f7f', stop: N}
+    - {name: NS4a, start: 5221, colour: '#e377c2', stop: N}
+    - {name: NS5a, start: 6166, colour: '#bcbd22', stop: N}
+    - {name: NS5b, start: 7516, colour: '#17becf', stop: N}
     - {name: "3'", start: 9289, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-6.*
   coordinates: HCV-6a
   prefix: HCV6-EUHK2-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, full_name: Core, start: 284, colour: '#1f77b4'}
-    - {name: E1, start: 857, colour: '#ff7f0e'}
-    - {name: E2, start: 1433, colour: '#2ca02c'}
-    - {name: p7, start: 2534, colour: '#d62728'}
-    - {name: NS2, start: 2723, colour: '#9467bd'}
-    - {name: NS3, start: 3374, colour: '#8c564b'}
-    - {name: NS4b, start: 5429, colour: '#7f7f7f'}
-    - {name: NS4a, start: 5267, colour: '#e377c2'}
-    - {name: NS5a, start: 6212, colour: '#bcbd22'}
-    - {name: NS5b, start: 7565, colour: '#17becf'}
+    - {name: C, full_name: Core, start: 284, colour: '#1f77b4', stop: N}
+    - {name: E1, start: 857, colour: '#ff7f0e', stop: N}
+    - {name: E2, start: 1433, colour: '#2ca02c', stop: N}
+    - {name: p7, start: 2534, colour: '#d62728', stop: N}
+    - {name: NS2, start: 2723, colour: '#9467bd', stop: N}
+    - {name: NS3, start: 3374, colour: '#8c564b', stop: N}
+    - {name: NS4b, start: 5429, colour: '#7f7f7f', stop: N}
+    - {name: NS4a, start: 5267, colour: '#e377c2', stop: N}
+    - {name: NS5a, start: 6212, colour: '#bcbd22', stop: N}
+    - {name: NS5b, start: 7565, colour: '#17becf', stop: N}
     - {name: "3'", start: 9339, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-7.*
   coordinates: HCV-7a
   prefix: HCV7-QC69-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
-    - {name: C, full_name: Core, start: 309, colour: '#1f77b4'}
-    - {name: E1, start: 882, colour: '#ff7f0e'}
-    - {name: E2, start: 1458, colour: '#2ca02c'}
-    - {name: p7, start: 2559, colour: '#d62728'}
-    - {name: NS2, start: 2748, colour: '#9467bd'}
-    - {name: NS3, start: 3399, colour: '#8c564b'}
-    - {name: NS4b, start: 5454, colour: '#7f7f7f'}
-    - {name: NS4a, start: 5292, colour: '#e377c2'}
-    - {name: NS5a, start: 6237, colour: '#bcbd22'}
-    - {name: NS5b, start: 7575, colour: '#17becf'}
+    - {name: C, full_name: Core, start: 309, colour: '#1f77b4', stop: N}
+    - {name: E1, start: 882, colour: '#ff7f0e', stop: N}
+    - {name: E2, start: 1458, colour: '#2ca02c', stop: N}
+    - {name: p7, start: 2559, colour: '#d62728', stop: N}
+    - {name: NS2, start: 2748, colour: '#9467bd', stop: N}
+    - {name: NS3, start: 3399, colour: '#8c564b', stop: N}
+    - {name: NS4b, start: 5454, colour: '#7f7f7f', stop: N}
+    - {name: NS4a, start: 5292, colour: '#e377c2', stop: N}
+    - {name: NS5a, start: 6237, colour: '#bcbd22', stop: N}
+    - {name: NS5b, start: 7575, colour: '#17becf', stop: N}
     - {name: "3'", start: 9349, end: 9646, colour: darkgrey}
 - seed_pattern: HLA-B-seed
   coordinates: HLA-B-seed

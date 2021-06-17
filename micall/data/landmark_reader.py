@@ -57,12 +57,12 @@ class LandmarkReader:
                 continue
             region_copy = dict(region)
             if 'end' not in region_copy:
-                region_copy['end'] = regions[i+1]['start']
+                region_copy['end'] = regions[i+1]['start']-1
             break
         else:
             raise ValueError(f'Landmarks not found for gene {gene_name!r} in '
                              f'{coordinates}.')
-        if drop_stop_codon:
+        if drop_stop_codon and region_copy.get('stop') != 'N':
             region_copy['end'] -= 3
         return region_copy
 

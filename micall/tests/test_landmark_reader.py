@@ -47,7 +47,7 @@ def test_gene_without_end():
 """)
     expected_gene = dict(name='gene2',
                          start=789,
-                         end=5040,
+                         end=5039,
                          frame=0,
                          colour='lightblue')
     reader = LandmarkReader.load(landmarks_yaml)
@@ -59,10 +59,11 @@ def test_gene_without_end():
 
 def test_load_defaults():
     expected_gene = dict(name='PR',
-                         start=2252,
+                         start=2253,
                          end=2549,
                          frame=3,
-                         colour='orange')
+                         colour='orange',
+                         stop='N')
     reader = LandmarkReader.load()
 
     gene = reader.get_gene('HIV1-B-FR-K03455-seed', 'PR', drop_stop_codon=False)
@@ -82,7 +83,7 @@ def test_gene_with_prefix():
 """)
     expected_gene = dict(name='gene2',
                          start=789,
-                         end=5040,
+                         end=5039,
                          frame=0,
                          colour='lightblue')
     reader = LandmarkReader.load(landmarks_yaml)
@@ -103,9 +104,31 @@ def test_gene_drop_stop_codon():
 """)
     expected_gene = dict(name='gene2',
                          start=789,
-                         end=5037,
+                         end=5036,
                          frame=0,
                          colour='lightblue')
+    reader = LandmarkReader.load(landmarks_yaml)
+
+    gene = reader.get_gene('R1-seed', 'gene2', drop_stop_codon=True)
+
+    assert gene == expected_gene
+
+
+def test_gene_no_stop_codon():
+    landmarks_yaml = StringIO("""\
+- seed_pattern: R1
+  coordinates: R1-seed
+  landmarks:
+    - {name: gene1, start: 1, frame: 0, colour: darkgrey}
+    - {name: gene2, start: 789, frame: 0, colour: lightblue, stop: N}
+    - {name: gene3, start: 5040, end: 5616, frame: 0, colour: steelblue}
+""")
+    expected_gene = dict(name='gene2',
+                         start=789,
+                         end=5039,
+                         frame=0,
+                         colour='lightblue',
+                         stop='N')
     reader = LandmarkReader.load(landmarks_yaml)
 
     gene = reader.get_gene('R1-seed', 'gene2', drop_stop_codon=True)
@@ -143,7 +166,7 @@ def test_gene_with_full_name():
     expected_gene = dict(name='2',
                          full_name='gene2',
                          start=789,
-                         end=5040,
+                         end=5039,
                          frame=0,
                          colour='lightblue')
     reader = LandmarkReader.load(landmarks_yaml)
