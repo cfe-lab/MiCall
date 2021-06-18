@@ -187,9 +187,9 @@ def run_iva(tmp_dir: str,
     :param is_pessimistic       run IVA in pessimistic mode?
     """
     contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-    iva_args = [IVA, '--fr', joined_path, '-t', '2']
+    iva_args = [IVA, '--fr', joined_path, '-t', '2', '-vv']
     if is_pessimistic: iva_args.append('--pessimistic')
-    if max_num_contigs: iva_args.extend(['--max_contigs', max_num_contigs])
+    if max_num_contigs: iva_args.extend(['--max_contigs', str(max_num_contigs)])
     if merged_contigs_csv is not None:
         seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
         with open(seeds_fasta_path, 'w') as seeds_fasta:
@@ -201,15 +201,17 @@ def run_iva(tmp_dir: str,
         if seeds_size > 0:
             iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
     iva_args.append(iva_out_path)
-    try:
-        run(iva_args, check=True, stdout=PIPE, stderr=STDOUT)
-    except CalledProcessError as ex:
-        output = ex.output and ex.output.decode('UTF8')
-        if output != 'Failed to make first seed. Cannot continue\n':
-            logger.warning('iva failed to assemble.', exc_info=True)
-            logger.warning(output)
-        with open(contigs_fasta_path, 'a'):
-            pass
+    iva_logfile = os.path.join(iva_out_path, 'iva.log')
+    with open(iva_logfile, 'w') as logfile:
+        try:
+            run(iva_args, check=True, stdout=logfile, stderr=STDOUT)
+        except CalledProcessError as ex:
+            output = ex.output and ex.output.decode('UTF8')
+            if output != 'Failed to make first seed. Cannot continue\n':
+                logger.warning('iva failed to assemble.', exc_info=True)
+                logger.warning(output)
+            with open(contigs_fasta_path, 'a'):
+                pass
 
 
 def separate_contigs(contigs_csv, blast_csv, ref_contigs_csv, noref_contigs_csv):
@@ -251,18 +253,19 @@ def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path,
             run_iva(tmp_dir, current_interleaved, iva_out_path, merged_contigs_csv, is_pessimistic=True,
                 max_num_contigs=num_contigs+1)
         else:
-            with open(ref_contigs_path, 'w') as ref_contigs_csv:
+            with open(ref_contigs_path, 'r') as ref_contigs_csv:
                 run_iva(tmp_dir, current_interleaved, iva_out_path, ref_contigs_csv, is_pessimistic=True,
                         max_num_contigs=num_contigs + 1)
         contigs_dir = os.path.join(iva_out_path, 'pessimistic_contigs.csv')
         blast_dir = os.path.join(iva_out_path, 'pessimistic_blast.csv')
         contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-        ref_contigs_path = os.path.join(tmp_dir, 'ref_contigs.csv')
+        ref_contigs_path = os.path.join(tmp_dir, f'ref_contigs_it{num_iterations}.csv')
         noref_contigs_path = os.path.join(iva_out_path, 'noref_contigs.csv')
         with open(contigs_dir, 'w') as pess_contigs_csv, \
                 open(blast_dir, 'w') as pess_blast_csv:
             contig_count = write_contig_refs(contigs_fasta_path, pess_contigs_csv, blast_csv=pess_blast_csv)
-        if contig_count == num_contigs: # no new contigs found
+        print(f'Found {contig_count} contigs, and number of useful contigs currently is {num_contigs}')
+        if contig_count == num_contigs: # no new contigs found -- too simple
             rmtree(iva_out_path)
             logger.info('Pessimistic IVA finished with %d useful contigs.', num_contigs)
             break
@@ -271,6 +274,7 @@ def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path,
                 open(contigs_dir, 'r') as pess_contigs_csv, \
                 open(blast_dir, 'r') as pess_blast_csv:
             num_match, num_noref = separate_contigs(pess_contigs_csv, pess_blast_csv, ref_contigs_csv, noref_contigs_csv)
+        print(f'Num_match is {num_match}, and num_noref is {num_noref}')
         num_contigs = num_match # update number of useful contigs
         logger.info('Pessimistic IVA, iteration %d: Assembled %d useful contigs.', num_iterations, num_contigs)
         unmapped1_path = os.path.join(iva_out_path, 'pess_unmapped1.fastq')
@@ -300,7 +304,7 @@ def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path,
                  '-o', current_interleaved],
                 check=True)
         num_iterations += 1
-        rmtree(iva_out_path) # clean up all temp files
+        #rmtree(iva_out_path) # clean up all temp files
         iva_out_path = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations}')
     return current_interleaved
 
