@@ -191,11 +191,38 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
 def extract_region(landmark_reader: LandmarkReader,
                    coordinate_name: str,
                    coordinate_seq: str,
-                   region_name: str) -> str:
+                   region_name: str,
+                   ref_positions: set = None,
+                   duplicated_base: int = None) -> str:
+    """ Extract a section of reference sequence, based on a gene landmark.
+
+    :param landmark_reader: source of landmark definitions
+    :param coordinate_name: name of coordinate reference for the landmarks
+    :param coordinate_seq: coordinate sequence to extract from
+    :param region_name: gene region to extract
+    :param ref_positions: track which positions have been extracted, so we can
+        check for gaps.
+    :param duplicated_base: the one-based position of a nucleotide that gets
+        duplicated in the extracted sequence.
+    :return: extracted sequence for the gene region
+    """
     region = landmark_reader.get_gene(coordinate_name,
-                                      region_name,
-                                      drop_stop_codon=False)
-    source_nuc_sequence = coordinate_seq[region['start'] - 1:region['end']]
+                                      region_name)
+    full_region = landmark_reader.get_gene(coordinate_name,
+                                           region_name,
+                                           drop_stop_codon=False)
+    check_stop_codons = True
+    if check_stop_codons:
+        region = full_region
+    start = region['start']
+    end = region['end']
+    source_nuc_sequence = coordinate_seq[start - 1:end]
+    if ref_positions is not None:
+        ref_positions.update(range(full_region['start'], full_region['end'] + 1))
+    if start < duplicated_base <= end:
+        source_nuc_sequence = (
+                source_nuc_sequence[:duplicated_base - start + 1] +
+                source_nuc_sequence[duplicated_base - start:])
     return source_nuc_sequence
 
 
@@ -353,7 +380,8 @@ HLA seed reference is downloaded from accession AJ458991.3
 
 def check_hla_coordinates(project_config, unchecked_ref_names: set):
     print("""\
-HLA coordinate references are translated from the seed reference.
+HLA coordinate references are translated from the seed reference. Coordinates
+come from the features described at https://www.ncbi.nlm.nih.gov/nuccore/AJ458991
 """)
     ref_names = ('HLA-B-exon2', 'HLA-B-exon3')
 
@@ -363,8 +391,10 @@ HLA coordinate references are translated from the seed reference.
 
     source_sequences = {}
     for ref_name in ref_names:
-        region = landmark_reader.get_gene('HLA-B-seed', ref_name[6:])
-        source_nuc_sequence = seed_sequence[region['start']:region['end']]
+        source_nuc_sequence = extract_region(landmark_reader,
+                                             'HLA-B-seed',
+                                             seed_sequence,
+                                             ref_name)
         source_sequences[ref_name] = translate(source_nuc_sequence)
 
     report, error_count = compare_config(ref_names,
@@ -455,18 +485,12 @@ cover any sections that weren't included elsewhere.
     source_sequences = {}
     ref_positions = set()
     for ref_name in ref_names:
-        region = landmark_reader.get_gene(seed_name, ref_name)
-        full_region = landmark_reader.get_gene(seed_name,
-                                               ref_name,
-                                               drop_stop_codon=False)
-        start = region['start']
-        end = region['end']
-        ref_positions = ref_positions.union(range(start, full_region['end']+1))
-        source_nuc_sequence = seed_sequence[start-1:end]
-        if start < duplicated_base <= end:
-            source_nuc_sequence = (
-                source_nuc_sequence[:duplicated_base-start+1] +
-                source_nuc_sequence[duplicated_base-start:])
+        source_nuc_sequence = extract_region(landmark_reader,
+                                             seed_name,
+                                             seed_sequence,
+                                             ref_name,
+                                             ref_positions,
+                                             duplicated_base)
         if 'TRS-B' in ref_name or ref_name.endswith('UTR'):
             source_sequences[ref_name] = source_nuc_sequence
         else:

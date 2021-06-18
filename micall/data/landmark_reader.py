@@ -42,9 +42,6 @@ class LandmarkReader:
         genotype_landmarks, = matches
         regions = sorted(genotype_landmarks['landmarks'], key=itemgetter('start'))
         prefix = genotype_landmarks.get('prefix', '')
-        if (gene_name.startswith('SARS-CoV-2-TRS-B') or
-                gene_name.startswith('SARS-CoV-2-nsp')):
-            drop_stop_codon = False
         if not gene_name.startswith(prefix):
             raise ValueError(f'Gene name {gene_name!r} does not start with '
                              f'prefix {prefix!r}.')
