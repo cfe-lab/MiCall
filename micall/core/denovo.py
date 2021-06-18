@@ -278,12 +278,34 @@ def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path,
         num_contigs = num_match # update number of useful contigs
         logger.info('Pessimistic IVA, iteration %d: Assembled %d useful contigs.', num_iterations, num_contigs)
         if num_noref:
-            unmapped1_path = os.path.join(iva_out_path, 'pess_unmapped1.fastq')
-            unmapped2_path = os.path.join(iva_out_path, 'pess_unmapped2.fastq')
+            unmapped1_path = os.path.join(tmp_dir, 'pess_unmapped1.fastq')
+            unmapped2_path = os.path.join(tmp_dir, 'pess_unmapped2.fastq')
+            prev_unmapped1_path = os.path.join(tmp_dir, 'prev_unmapped1.fastq')
+            prev_unmapped2_path = os.path.join(tmp_dir, 'prev_unmapped2.fastq')
             remap_path = os.path.join(iva_out_path, 'pess_remap.csv')
             remap_counts_path = os.path.join(iva_out_path, 'pess_remap_counts.csv')
             remap_conseq_path = os.path.join(iva_out_path, 'pess_remap_conseq.csv')
-            if num_iterations == 0:
+            try:
+                os.replace(unmapped1_path, prev_unmapped1_path)
+                os.replace(unmapped2_path, prev_unmapped2_path)
+                with open(remap_path, 'w') as remap_csv, \
+                        open(remap_counts_path, 'w') as counts_csv, \
+                        open(remap_conseq_path, 'w') as conseq_csv, \
+                        open(unmapped1_path, 'w') as unmapped1, \
+                        open(unmapped2_path, 'w') as unmapped2, \
+                        open(noref_contigs_path, 'r') as noref_contigs_csv, \
+                        open(prev_unmapped1_path, 'r') as prev_reads1, \
+                        open(prev_unmapped2_path, 'r') as prev_reads2:
+                    map_to_contigs(prev_reads1,
+                                   prev_reads2,
+                                   noref_contigs_csv,
+                                   remap_csv,
+                                   counts_csv,
+                                   conseq_csv,
+                                   unmapped1,
+                                   unmapped2,
+                                   tmp_dir, )
+            except FileNotFoundError:
                 with open(remap_path, 'w') as remap_csv, \
                         open(remap_counts_path, 'w') as counts_csv, \
                         open(remap_conseq_path, 'w') as conseq_csv, \
@@ -292,28 +314,6 @@ def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path,
                         open(noref_contigs_path, 'r') as noref_contigs_csv:
                     map_to_contigs(forward_reads,
                                    reverse_reads,
-                                   noref_contigs_csv,
-                                   remap_csv,
-                                   counts_csv,
-                                   conseq_csv,
-                                   unmapped1,
-                                   unmapped2,
-                                   tmp_dir, )
-            else:
-                prev_reads_path1 = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations - 1}',
-                                                'pess_unmapped1.fastq')
-                prev_reads_path2 = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations - 1}',
-                                                'pess_unmapped2.fastq')
-                with open(remap_path, 'w') as remap_csv, \
-                        open(remap_counts_path, 'w') as counts_csv, \
-                        open(remap_conseq_path, 'w') as conseq_csv, \
-                        open(unmapped1_path, 'w') as unmapped1, \
-                        open(unmapped2_path, 'w') as unmapped2, \
-                        open(noref_contigs_path, 'r') as noref_contigs_csv, \
-                        open(prev_reads_path1, 'r') as prev_reads1, \
-                        open(prev_reads_path2, 'r') as prev_reads2:
-                    map_to_contigs(prev_reads1,
-                                   prev_reads2,
                                    noref_contigs_csv,
                                    remap_csv,
                                    counts_csv,
