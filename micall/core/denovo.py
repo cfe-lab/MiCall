@@ -288,39 +288,24 @@ def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path,
             try:
                 os.replace(unmapped1_path, prev_unmapped1_path)
                 os.replace(unmapped2_path, prev_unmapped2_path)
-                with open(remap_path, 'w') as remap_csv, \
-                        open(remap_counts_path, 'w') as counts_csv, \
-                        open(remap_conseq_path, 'w') as conseq_csv, \
-                        open(unmapped1_path, 'w') as unmapped1, \
-                        open(unmapped2_path, 'w') as unmapped2, \
-                        open(noref_contigs_path, 'r') as noref_contigs_csv, \
-                        open(prev_unmapped1_path, 'r') as prev_reads1, \
-                        open(prev_unmapped2_path, 'r') as prev_reads2:
-                    map_to_contigs(prev_reads1,
-                                   prev_reads2,
-                                   noref_contigs_csv,
-                                   remap_csv,
-                                   counts_csv,
-                                   conseq_csv,
-                                   unmapped1,
-                                   unmapped2,
-                                   tmp_dir, )
             except FileNotFoundError:
-                with open(remap_path, 'w') as remap_csv, \
-                        open(remap_counts_path, 'w') as counts_csv, \
-                        open(remap_conseq_path, 'w') as conseq_csv, \
-                        open(unmapped1_path, 'w') as unmapped1, \
-                        open(unmapped2_path, 'w') as unmapped2, \
-                        open(noref_contigs_path, 'r') as noref_contigs_csv:
-                    map_to_contigs(forward_reads,
-                                   reverse_reads,
-                                   noref_contigs_csv,
-                                   remap_csv,
-                                   counts_csv,
-                                   conseq_csv,
-                                   unmapped1,
-                                   unmapped2,
-                                   tmp_dir, )
+                prev_unmapped1_path = forward_reads
+                prev_unmapped2_path = reverse_reads
+            with open(remap_path, 'w') as remap_csv, \
+                    open(remap_counts_path, 'w') as counts_csv, \
+                    open(remap_conseq_path, 'w') as conseq_csv, \
+                    open(unmapped1_path, 'w') as unmapped1, \
+                    open(unmapped2_path, 'w') as unmapped2, \
+                    open(noref_contigs_path, 'r') as noref_contigs_csv:
+                map_to_contigs(prev_unmapped1_path,
+                               prev_unmapped2_path,
+                               noref_contigs_csv,
+                               remap_csv,
+                               counts_csv,
+                               conseq_csv,
+                               unmapped1,
+                               unmapped2,
+                               tmp_dir, )
             # we want to use the reads that did not map to the contigs that did not blast to the refs
             current_interleaved = os.path.join(tmp_dir, f'joined_iteration{num_iterations}.fastq')
             run(['merge-mates',
