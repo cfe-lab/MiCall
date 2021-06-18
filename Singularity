@@ -83,7 +83,7 @@ From: centos:7
 
     echo ===== Installing Rust and merge-mates ===== >/dev/null
     yum install -q -y rust cargo
-    cargo install --root / --git https://github.com/jeff-k/merge-mates.git
+    cargo install --quiet --root / --git https://github.com/jeff-k/merge-mates.git
 
     ## Miniconda (Python 2) (Don't use this)
     #wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh

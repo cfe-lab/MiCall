@@ -93,9 +93,6 @@ class ResultsFolder:
 
     def check_2000(self):
         expected_counts = """\
-1 0 0 0 0
-2 0 0 0 0
-3 0 0 0 0
 4 10 0 0 0
 5 0 10 0 0
 6 10 0 0 0
@@ -342,10 +339,13 @@ class ResultsFolder:
                     assert 10 < coverage, coverage_message
                 elif 380 < pos:
                     assert coverage < 10, coverage_message
-            else:
-                assert row['region'] == 'V3LOOP', row['region']
+            elif row['region'] == 'V3LOOP':
                 assert row['seed'] == 'HIV1-CON-XX-Consensus-seed', row['seed']
                 assert 10 < coverage, coverage_message
+            else:
+                # Last codon of vpu has coverage.
+                assert row['region'] == 'HIV1B-vpu', row['region']
+                assert row['query.nuc.pos'] == '6305', row['query.nuc.pos']
 
     def check_2190(self):
         mutation_rows = self.read_file('2190A-SARSCOV2_S23', 'nuc_mutations.csv')
@@ -361,7 +361,7 @@ class ResultsFolder:
             pos = int(row['refseq.aa.pos'])
             coverage = int(row['coverage'])
             coverage_message = f'{coverage} coverage at {pos}'
-            assert row['region'] in ('SARS-CoV-2-nsp1', 'SARS-CoV-2-ORF1ab'), row
+            assert row['region'] in ('SARS-CoV-2-nsp1', 'SARS-CoV-2-ORF1a'), row
             if 27 <= pos <= 102:
                 assert coverage == 100, coverage_message
             else:
