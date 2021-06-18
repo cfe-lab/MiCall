@@ -201,8 +201,8 @@ def run_iva(tmp_dir: str,
         if seeds_size > 0:
             iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
     iva_args.append(iva_out_path)
-    iva_logfile = os.path.join(iva_out_path, 'iva.log')
-    with open(iva_logfile, 'w') as logfile:
+    iva_logfile = os.path.join(tmp_dir, 'iva.log')
+    with open(iva_logfile, 'a') as logfile:
         try:
             run(iva_args, check=True, stdout=logfile, stderr=STDOUT)
         except CalledProcessError as ex:
