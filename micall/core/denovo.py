@@ -173,7 +173,8 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
 
 
 def run_iva(tmp_dir: str,
-            joined_path: str,
+            reads1: str,
+            reads2: str,
             iva_out_path: str,
             merged_contigs_csv: typing.TextIO = None,
             is_pessimistic: bool = False,
@@ -181,13 +182,14 @@ def run_iva(tmp_dir: str,
     """ Run IVA with specified arguments.
 
     :param tmp_dir:             directory for temporary files
-    :param joined_path:         path to interleaved reads file
+    :param reads1:              path to forward reads file
+    :param reads2:              path to reverse reads file
     :param iva_out_path:        path for iva ouput files (may not exist yet!)
     :param merged_contigs_csv   open file to read contigs that were merged from amplicon reads
     :param is_pessimistic       run IVA in pessimistic mode?
     """
     contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-    iva_args = [IVA, '--fr', joined_path, '-t', '2', '-vv']
+    iva_args = [IVA, '-f', reads1, '-r', reads2, '-t', '2', '-vv']
     if is_pessimistic: iva_args.append('--pessimistic')
     if max_num_contigs: iva_args.extend(['--max_contigs', str(max_num_contigs)])
     if merged_contigs_csv is not None:
@@ -201,7 +203,7 @@ def run_iva(tmp_dir: str,
         if seeds_size > 0:
             iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
     iva_args.append(iva_out_path)
-    iva_logfile = os.path.join(tmp_dir, 'iva.log')
+    iva_logfile = os.path.join(iva_out_path, 'iva.log')
     with open(iva_logfile, 'a') as logfile:
         try:
             run(iva_args, check=True, stdout=logfile, stderr=STDOUT)
@@ -241,10 +243,9 @@ def separate_contigs(contigs_csv, blast_csv, ref_contigs_csv, noref_contigs_csv)
     return num_match, num_total - num_match
 
 
-def pess_iva_iterations(tmp_dir, interleaved_path):
+def pess_iva_iterations(tmp_dir, reads1, reads2):
     num_contigs = 0
     num_iterations = 0
-    current_interleaved = interleaved_path
     iva_out_path = os.path.join(tmp_dir, 'pessiva_iteration0')
     fieldnames = ['ref', 'match', 'group_ref', 'contig']
     ref_contigs_path = os.path.join(tmp_dir, 'ref_contigs.csv')
@@ -256,7 +257,7 @@ def pess_iva_iterations(tmp_dir, interleaved_path):
         noref_contig_writer = DictWriter(noref_contigs_csv, fieldnames)
         noref_contig_writer.writeheader()
     while True:
-        run_iva(tmp_dir, current_interleaved, iva_out_path, is_pessimistic=True, max_num_contigs=1)
+        run_iva(tmp_dir, reads1, reads2, iva_out_path, is_pessimistic=True, max_num_contigs=1)
         contigs_dir = os.path.join(iva_out_path, 'pessimistic_contigs.csv')
         blast_dir = os.path.join(iva_out_path, 'pessimistic_blast.csv')
         contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
@@ -275,17 +276,10 @@ def pess_iva_iterations(tmp_dir, interleaved_path):
         num_contigs += num_match # update number of useful contigs
         logger.info('Pessimistic IVA, iteration %d: Assembled %d useful contigs.', num_iterations, num_contigs)
         # we want to use IVA's filtered reads for the next iteration
-        unmapped1_path = os.path.join(iva_out_path, 'ivafiltered_1.fa')
-        unmapped2_path = os.path.join(iva_out_path, 'ivafiltered_2.fa')
-        current_interleaved = os.path.join(tmp_dir, f'joined_iteration{num_iterations}.fastq')
-        run(['merge-mates',
-             unmapped1_path,
-             unmapped2_path,
-             '--interleave',
-             '-o', current_interleaved],
-            check=True)
+        reads1 = os.path.join(iva_out_path, 'ivafiltered_1.fa')
+        reads2 = os.path.join(iva_out_path, 'ivafiltered_2.fa')
         num_iterations += 1
-        rmtree(iva_out_path) # clean up all temp files
+        #rmtree(iva_out_path) # clean up all temp files
         iva_out_path = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations}')
     return ref_contigs_path
 
@@ -323,7 +317,7 @@ def denovo(fastq1_path: str,
 
     if True: # set to pessimistic option!
         logger.info('First pass over reads with pessimistic IVA...')
-        contigs_fasta_path = pess_iva_iterations(tmp_dir, joined_path)
+        contigs_fasta_path = pess_iva_iterations(tmp_dir, fastq1_path, fastq2_path)
 
     #iva_out_path = os.path.join(tmp_dir, 'iva_out')
     #run_iva(tmp_dir, joined_path, iva_out_path, merged_contigs_csv, is_pessimistic=False)
