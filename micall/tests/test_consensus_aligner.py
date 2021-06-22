@@ -83,26 +83,26 @@ def test_start_contig(projects):
 def test_start_contig_multiple_sections(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
-    consensus = seed_seq[3000:3500] + seed_seq[1000:2000] + seed_seq[5000:5500]
+    consensus = seed_seq[6000:6500] + seed_seq[3000:3500] + seed_seq[1000:2000]
     expected_alignments = [AlignmentWrapper(ctg='N/A',
                                             ctg_len=len(seed_seq),
-                                            r_st=3000,
-                                            r_en=3500,
+                                            r_st=6000,
+                                            r_en=6500,
                                             q_st=0,
                                             q_en=500,
                                             mapq=60),
                            AlignmentWrapper(ctg='N/A',
                                             ctg_len=len(seed_seq),
-                                            r_st=1000,
-                                            r_en=2000,
+                                            r_st=3000,
+                                            r_en=3500,
                                             q_st=500,
-                                            q_en=1500,
+                                            q_en=1000,
                                             mapq=60),
                            AlignmentWrapper(ctg='N/A',
                                             ctg_len=len(seed_seq),
-                                            r_st=5000,
-                                            r_en=5500,
-                                            q_st=1500,
+                                            r_st=1000,
+                                            r_en=2000,
+                                            q_st=1000,
                                             q_en=2000,
                                             mapq=60)]
     aligner = ConsensusAligner(projects)
