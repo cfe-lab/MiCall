@@ -224,6 +224,7 @@ def separate_contigs(contigs_csv, blast_csv, ref_contigs_csv, noref_contigs_csv)
     """
     threshold = 0.1
     # is a match threshold sufficient or do we need info from blast_csv as well?
+    # we might want to keep all blast matches (regardless of how well they match)
     fieldnames = ['ref', 'match', 'group_ref', 'contig']
     ref_contig_writer = DictWriter(ref_contigs_csv, fieldnames)
     ref_contig_writer.writeheader()
@@ -242,80 +243,44 @@ def separate_contigs(contigs_csv, blast_csv, ref_contigs_csv, noref_contigs_csv)
     return num_match, num_total - num_match
 
 
-def pess_iva_iterations(tmp_dir, forward_reads, reverse_reads, interleaved_path, merged_contigs_csv):
+def pess_iva_iterations(tmp_dir, interleaved_path):
     num_contigs = 0
-    for _ in DictReader(merged_contigs_csv): num_contigs += 1
     num_iterations = 0
     current_interleaved = interleaved_path
     iva_out_path = os.path.join(tmp_dir, 'pessiva_iteration0')
     while True:
-        if num_iterations == 0:
-            run_iva(tmp_dir, current_interleaved, iva_out_path, merged_contigs_csv, is_pessimistic=True,
-                max_num_contigs=num_contigs+1)
-        else:
-            with open(ref_contigs_path, 'r') as ref_contigs_csv:
-                run_iva(tmp_dir, current_interleaved, iva_out_path, ref_contigs_csv, is_pessimistic=True,
-                        max_num_contigs=num_contigs + 1)
+        run_iva(tmp_dir, current_interleaved, iva_out_path, is_pessimistic=True, max_num_contigs=1)
         contigs_dir = os.path.join(iva_out_path, 'pessimistic_contigs.csv')
         blast_dir = os.path.join(iva_out_path, 'pessimistic_blast.csv')
         contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-        ref_contigs_path = os.path.join(tmp_dir, f'ref_contigs_it{num_iterations}.csv')
-        noref_contigs_path = os.path.join(iva_out_path, 'noref_contigs.csv')
+        ref_contigs_path = os.path.join(tmp_dir, 'ref_contigs.csv')
+        noref_contigs_path = os.path.join(tmp_dir, 'noref_contigs.csv')
         with open(contigs_dir, 'w') as pess_contigs_csv, \
                 open(blast_dir, 'w') as pess_blast_csv:
             contig_count = write_contig_refs(contigs_fasta_path, pess_contigs_csv, blast_csv=pess_blast_csv)
-        print(f'Found {contig_count} contigs, and number of useful contigs currently is {num_contigs}')
-        if contig_count == num_contigs: # no new contigs found -- too simple
+        if contig_count == 0:
             rmtree(iva_out_path)
-            logger.info('Pessimistic IVA finished with %d useful contigs.', num_contigs)
+            logger.info('Pessimistic IVA finished after %d iterations with %d useful contigs.', num_iterations, num_contigs)
             break
-        with open(ref_contigs_path, 'w') as ref_contigs_csv, \
-                open(noref_contigs_path, 'w') as noref_contigs_csv, \
+        with open(ref_contigs_path, 'a') as ref_contigs_csv, \
+                open(noref_contigs_path, 'a') as noref_contigs_csv, \
                 open(contigs_dir, 'r') as pess_contigs_csv, \
                 open(blast_dir, 'r') as pess_blast_csv:
             num_match, num_noref = separate_contigs(pess_contigs_csv, pess_blast_csv, ref_contigs_csv, noref_contigs_csv)
-        print(f'Num_match is {num_match}, and num_noref is {num_noref}')
-        num_contigs = num_match # update number of useful contigs
+        num_contigs += num_match # update number of useful contigs
         logger.info('Pessimistic IVA, iteration %d: Assembled %d useful contigs.', num_iterations, num_contigs)
-        if num_noref:
-            unmapped1_path = os.path.join(tmp_dir, 'pess_unmapped1.fastq')
-            unmapped2_path = os.path.join(tmp_dir, 'pess_unmapped2.fastq')
-            prev_unmapped1_path = os.path.join(tmp_dir, 'prev_unmapped1.fastq')
-            prev_unmapped2_path = os.path.join(tmp_dir, 'prev_unmapped2.fastq')
-            remap_path = os.path.join(iva_out_path, 'pess_remap.csv')
-            remap_counts_path = os.path.join(iva_out_path, 'pess_remap_counts.csv')
-            remap_conseq_path = os.path.join(iva_out_path, 'pess_remap_conseq.csv')
-            try:
-                os.replace(unmapped1_path, prev_unmapped1_path)
-                os.replace(unmapped2_path, prev_unmapped2_path)
-            except FileNotFoundError:
-                prev_unmapped1_path = forward_reads
-                prev_unmapped2_path = reverse_reads
-            with open(remap_path, 'w') as remap_csv, \
-                    open(remap_counts_path, 'w') as counts_csv, \
-                    open(remap_conseq_path, 'w') as conseq_csv, \
-                    open(unmapped1_path, 'w') as unmapped1, \
-                    open(unmapped2_path, 'w') as unmapped2, \
-                    open(noref_contigs_path, 'r') as noref_contigs_csv:
-                map_to_contigs(prev_unmapped1_path,
-                               prev_unmapped2_path,
-                               noref_contigs_csv,
-                               remap_csv,
-                               counts_csv,
-                               conseq_csv,
-                               unmapped1,
-                               unmapped2,
-                               tmp_dir, )
-            # we want to use the reads that did not map to the contigs that did not blast to the refs
-            current_interleaved = os.path.join(tmp_dir, f'joined_iteration{num_iterations}.fastq')
-            run(['merge-mates',
-                 unmapped1_path,
-                 unmapped2_path,
-                 '--interleave',
-                 '-o', current_interleaved],
-                check=True)
+        # we want to use IVA's filtered reads for the next iteration
+        unmapped1_path = os.path.join(iva_out_path, 'ivafiltered_1.fa')
+        unmapped2_path = os.path.join(iva_out_path, 'ivafiltered_2.fa')
+        current_interleaved = os.path.join(tmp_dir, f'joined_iteration{num_iterations}.fastq')
+        run(['merge-mates',
+             unmapped1_path,
+             unmapped2_path,
+             '--interleave',
+             '-o', current_interleaved],
+            check=True)
         num_iterations += 1
-        #rmtree(iva_out_path) # clean up all temp files
+        rmtree(iva_out_path) # clean up all temp files
         iva_out_path = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations}')
     return current_interleaved
 
@@ -353,7 +318,7 @@ def denovo(fastq1_path: str,
 
     if True: # set to pessimistic option!
         logger.info('First pass over reads with pessimistic IVA...')
-        joined_path = pess_iva_iterations(tmp_dir, fastq1_path, fastq2_path, joined_path, merged_contigs_csv)
+        joined_path = pess_iva_iterations(tmp_dir, joined_path)
 
     iva_out_path = os.path.join(tmp_dir, 'iva_out')
     run_iva(tmp_dir, joined_path, iva_out_path, merged_contigs_csv, is_pessimistic=False)
