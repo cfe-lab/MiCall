@@ -60,7 +60,8 @@ From: centos:7
 
     yum groupinstall -q -y 'development tools'
     yum install -q -y epel-release
-    yum install -q -y unzip wget fontconfig bzip2-devel xz-devel openssl-devel libffi-devel
+    yum install -q -y unzip wget fontconfig bzip2-devel xz-devel openssl-devel \
+        libffi-devel sqlite-devel
 
     echo ===== Installing Python ===== >/dev/null
     wget -q https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tar.xz
