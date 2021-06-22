@@ -16,13 +16,12 @@ from collections import Counter, defaultdict, OrderedDict
 import csv
 from csv import DictWriter
 from itertools import groupby
-from operator import itemgetter, attrgetter
+from operator import itemgetter
 import os
 from pathlib import Path
 
 import gotoh
 import yaml
-from mappy import Aligner
 
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 from micall.core.remap import PARTIAL_CONTIG_SUFFIX, REVERSED_CONTIG_SUFFIX
@@ -642,12 +641,9 @@ class SequenceReport(object):
             coordinate_name = None
             alignments = []
         else:
-            coordinate_seq = self.projects.getReference(coordinate_name)
-            aligner = Aligner(seq=coordinate_seq, preset='map-ont')
-            alignments = sorted(aligner.map(consensus), key=attrgetter('q_st'))
-            alignments = [alignment
-                          for alignment in alignments
-                          if alignment.is_primary]
+            consensus_aligner = ConsensusAligner(self.projects)
+            consensus_aligner.start_contig(coordinate_name, consensus)
+            alignments = consensus_aligner.alignments
         wire = Wire()
         bead_end = source_end = 0
         for alignment in alignments:

@@ -934,6 +934,7 @@ def test_contig_coverage_report_merged_contigs(sequence_report):
     Contig 3-R1 TTTAGG -> FR
 
     Contig 1 and 3 have been combined into R1 with KFR.
+    R1 is KFR, and R2 is KFGPR.
     """
     # refname,qcut,rank,count,offset,seq
     aligned_reads1 = prepare_reads("1_3-R1-seed,15,0,5,0,AAATTT\n"
@@ -948,39 +949,39 @@ R1-seed,1,R1-seed,TTTAGG
 
     expected_text = """\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1_3-R1-seed,R1-seed,1,1,0,5,U
-1_3-R1-seed,R1-seed,2,2,0,5,U
-1_3-R1-seed,R1-seed,3,3,0,5,U
-1_3-R1-seed,R1-seed,4,4,0,7,U
-1_3-R1-seed,R1-seed,5,5,0,7,U
-1_3-R1-seed,R1-seed,6,6,0,7,U
-1_3-R1-seed,R1-seed,7,7,0,2,U
-1_3-R1-seed,R1-seed,8,8,0,2,U
-1_3-R1-seed,R1-seed,9,9,0,2,U
-contig-1-R1-seed,R1-seed,1,1,,,U
-contig-1-R1-seed,R1-seed,2,2,,,U
-contig-1-R1-seed,R1-seed,3,3,,,U
-contig-1-R1-seed,R1-seed,4,4,,,U
-contig-1-R1-seed,R1-seed,5,5,,,U
-contig-1-R1-seed,R1-seed,6,6,,,U
-contig-3-R1-seed,R1-seed,1,1,,,U
-contig-3-R1-seed,R1-seed,2,2,,,U
-contig-3-R1-seed,R1-seed,3,3,,,U
-contig-3-R1-seed,R1-seed,4,4,,,U
-contig-3-R1-seed,R1-seed,5,5,,,U
-contig-3-R1-seed,R1-seed,6,6,,,U
-2-R2-seed,R2-seed,1,1,0,4,U
-2-R2-seed,R2-seed,2,2,0,4,U
-2-R2-seed,R2-seed,3,3,0,4,U
-2-R2-seed,R2-seed,4,4,0,4,U
-2-R2-seed,R2-seed,5,5,0,4,U
-2-R2-seed,R2-seed,6,6,0,4,U
-contig-2-R2-seed,R2-seed,1,1,,,U
-contig-2-R2-seed,R2-seed,2,2,,,U
-contig-2-R2-seed,R2-seed,3,3,,,U
-contig-2-R2-seed,R2-seed,4,4,,,U
-contig-2-R2-seed,R2-seed,5,5,,,U
-contig-2-R2-seed,R2-seed,6,6,,,U
+1_3-R1-seed,R1-seed,1,1,0,5,M
+1_3-R1-seed,R1-seed,2,2,0,5,M
+1_3-R1-seed,R1-seed,3,3,0,5,M
+1_3-R1-seed,R1-seed,4,4,0,7,M
+1_3-R1-seed,R1-seed,5,5,0,7,M
+1_3-R1-seed,R1-seed,6,6,0,7,M
+1_3-R1-seed,R1-seed,7,7,0,2,M
+1_3-R1-seed,R1-seed,8,8,0,2,M
+1_3-R1-seed,R1-seed,9,9,0,2,M
+contig-1-R1-seed,R1-seed,1,1,,,M
+contig-1-R1-seed,R1-seed,2,2,,,M
+contig-1-R1-seed,R1-seed,3,3,,,M
+contig-1-R1-seed,R1-seed,4,4,,,M
+contig-1-R1-seed,R1-seed,5,5,,,M
+contig-1-R1-seed,R1-seed,6,6,,,M
+contig-3-R1-seed,R1-seed,1,4,,,M
+contig-3-R1-seed,R1-seed,2,5,,,M
+contig-3-R1-seed,R1-seed,3,6,,,M
+contig-3-R1-seed,R1-seed,4,7,,,M
+contig-3-R1-seed,R1-seed,5,8,,,M
+contig-3-R1-seed,R1-seed,6,9,,,M
+2-R2-seed,R2-seed,1,7,0,4,M
+2-R2-seed,R2-seed,2,8,0,4,M
+2-R2-seed,R2-seed,3,9,0,4,M
+2-R2-seed,R2-seed,4,10,0,4,M
+2-R2-seed,R2-seed,5,11,0,4,M
+2-R2-seed,R2-seed,6,12,0,4,M
+contig-2-R2-seed,R2-seed,1,7,,,M
+contig-2-R2-seed,R2-seed,2,8,,,M
+contig-2-R2-seed,R2-seed,3,9,,,M
+contig-2-R2-seed,R2-seed,4,10,,,M
+contig-2-R2-seed,R2-seed,5,11,,,M
+contig-2-R2-seed,R2-seed,6,12,,,M
 """
 
     report_file = StringIO()
