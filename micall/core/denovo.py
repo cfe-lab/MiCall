@@ -203,7 +203,7 @@ def run_iva(tmp_dir: str,
         if seeds_size > 0:
             iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
     iva_args.append(iva_out_path)
-    iva_logfile = os.path.join(iva_out_path, 'iva.log')
+    iva_logfile = os.path.join(tmp_dir, 'iva.log')
     with open(iva_logfile, 'a') as logfile:
         try:
             run(iva_args, check=True, stdout=logfile, stderr=STDOUT)
@@ -250,6 +250,7 @@ def pess_iva_iterations(tmp_dir, reads1, reads2):
     fieldnames = ['ref', 'match', 'group_ref', 'contig']
     ref_contigs_path = os.path.join(tmp_dir, 'ref_contigs.csv')
     noref_contigs_path = os.path.join(tmp_dir, 'noref_contigs.csv')
+    finalcontigs_path = os.path.join(tmp_dir, 'finalcontigs.fasta')
     with open(ref_contigs_path, 'w') as ref_contigs_csv, \
             open(noref_contigs_path, 'w') as noref_contigs_csv:
         ref_contig_writer = DictWriter(ref_contigs_csv, fieldnames)
@@ -273,6 +274,10 @@ def pess_iva_iterations(tmp_dir, reads1, reads2):
                 open(contigs_dir, 'r') as pess_contigs_csv, \
                 open(blast_dir, 'r') as pess_blast_csv:
             num_match, num_noref = separate_contigs(pess_contigs_csv, pess_blast_csv, ref_contigs_csv, noref_contigs_csv)
+        if num_match:
+            with open(contigs_fasta_path, 'w') as contigs_fasta, \
+                    open(finalcontigs_path, 'a') as finalcontigs:
+                finalcontigs.write(contigs_fasta.read())
         num_contigs += num_match # update number of useful contigs
         logger.info('Pessimistic IVA, iteration %d: Assembled %d useful contigs.', num_iterations, num_contigs)
         # we want to use IVA's filtered reads for the next iteration
@@ -281,7 +286,7 @@ def pess_iva_iterations(tmp_dir, reads1, reads2):
         num_iterations += 1
         #rmtree(iva_out_path) # clean up all temp files
         iva_out_path = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations}')
-    return ref_contigs_path
+    return finalcontigs_path
 
 
 def denovo(fastq1_path: str,
