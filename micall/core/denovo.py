@@ -173,23 +173,29 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
 
 
 def run_iva(tmp_dir: str,
-            reads1: str,
-            reads2: str,
             iva_out_path: str,
+            reads1: str = None,
+            reads2: str = None,
+            interleaved: str = None,
             merged_contigs_csv: typing.TextIO = None,
             is_pessimistic: bool = False,
             max_num_contigs: int = 0):
     """ Run IVA with specified arguments.
 
     :param tmp_dir:             directory for temporary files
+    :param iva_out_path:        path for iva ouput files (may not exist yet!)
     :param reads1:              path to forward reads file
     :param reads2:              path to reverse reads file
-    :param iva_out_path:        path for iva ouput files (may not exist yet!)
+    :param interleaved:         path to interleaved file
     :param merged_contigs_csv   open file to read contigs that were merged from amplicon reads
     :param is_pessimistic       run IVA in pessimistic mode?
     """
     contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-    iva_args = [IVA, '-f', reads1, '-r', reads2, '-t', '2', '-vv']
+    if reads1 and reads2:
+        iva_args = [IVA, '-f', reads1, '-r', reads2, '-t', '2', '-vv']
+    else:
+        assert interleaved is not None
+        iva_args = [IVA, '--fr', interleaved, '-t', '2', '-vv']
     if is_pessimistic: iva_args.append('--pessimistic')
     if max_num_contigs: iva_args.extend(['--max_contigs', str(max_num_contigs)])
     if merged_contigs_csv is not None:
@@ -243,7 +249,7 @@ def separate_contigs(contigs_csv, blast_csv, ref_contigs_csv, noref_contigs_csv)
     return num_match, num_total - num_match
 
 
-def pess_iva_iterations(tmp_dir, reads1, reads2):
+def pess_iva_iterations(tmp_dir, interleaved):
     num_contigs = 0
     num_iterations = 0
     iva_out_path = os.path.join(tmp_dir, 'pessiva_iteration0')
@@ -258,7 +264,10 @@ def pess_iva_iterations(tmp_dir, reads1, reads2):
         noref_contig_writer = DictWriter(noref_contigs_csv, fieldnames)
         noref_contig_writer.writeheader()
     while True:
-        run_iva(tmp_dir, reads1, reads2, iva_out_path, is_pessimistic=True, max_num_contigs=1)
+        if num_iterations == 0:
+            run_iva(tmp_dir, iva_out_path, interleaved=interleaved, is_pessimistic=True, max_num_contigs=1)
+        else:
+            run_iva(tmp_dir, iva_out_path, reads1=reads1, reads2=reads2, is_pessimistic=True, max_num_contigs=1)
         contigs_dir = os.path.join(iva_out_path, 'pessimistic_contigs.csv')
         blast_dir = os.path.join(iva_out_path, 'pessimistic_blast.csv')
         contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
@@ -275,7 +284,7 @@ def pess_iva_iterations(tmp_dir, reads1, reads2):
                 open(blast_dir, 'r') as pess_blast_csv:
             num_match, num_noref = separate_contigs(pess_contigs_csv, pess_blast_csv, ref_contigs_csv, noref_contigs_csv)
         if num_match:
-            with open(contigs_fasta_path, 'w') as contigs_fasta, \
+            with open(contigs_fasta_path, 'r') as contigs_fasta, \
                     open(finalcontigs_path, 'a') as finalcontigs:
                 finalcontigs.write(contigs_fasta.read())
         num_contigs += num_match # update number of useful contigs
@@ -283,9 +292,14 @@ def pess_iva_iterations(tmp_dir, reads1, reads2):
         # we want to use IVA's filtered reads for the next iteration
         reads1 = os.path.join(iva_out_path, 'ivafiltered_1.fa')
         reads2 = os.path.join(iva_out_path, 'ivafiltered_2.fa')
+        if num_iterations != 0:
+            last_outpath = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations-1}')
+            rmtree(last_outpath) # clean up all temp files from the iteration before last
         num_iterations += 1
-        #rmtree(iva_out_path) # clean up all temp files
         iva_out_path = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations}')
+    last_outpath = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations - 1}')
+    rmtree(last_outpath)  # clean up all temp files from the iteration before last
+    rmtree(iva_out_path)    # clean up after current iteration
     return finalcontigs_path
 
 
