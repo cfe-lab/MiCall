@@ -299,7 +299,6 @@ def pess_iva_iterations(tmp_dir, interleaved):
         iva_out_path = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations}')
     last_outpath = os.path.join(tmp_dir, f'pessiva_iteration{num_iterations - 1}')
     rmtree(last_outpath)  # clean up all temp files from the iteration before last
-    rmtree(iva_out_path)    # clean up after current iteration
     return finalcontigs_path
 
 
@@ -336,7 +335,7 @@ def denovo(fastq1_path: str,
 
     if True: # set to pessimistic option!
         logger.info('First pass over reads with pessimistic IVA...')
-        contigs_fasta_path = pess_iva_iterations(tmp_dir, fastq1_path, fastq2_path)
+        contigs_fasta_path = pess_iva_iterations(tmp_dir, joined_path)
 
     #iva_out_path = os.path.join(tmp_dir, 'iva_out')
     #run_iva(tmp_dir, joined_path, iva_out_path, merged_contigs_csv, is_pessimistic=False)
