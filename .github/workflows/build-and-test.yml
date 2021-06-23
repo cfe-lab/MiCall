@@ -12,26 +12,41 @@ jobs:
       - run: mkdir -p ~/bin
       - run: echo ~/bin >> $GITHUB_PATH
 
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.15.6'
       - name: Install Singularity
         run: |
-          sudo apt-get install -qq python dh-autoreconf build-essential libarchive-dev squashfs-tools
-          touch real_file
+          sudo apt-get install -qq \
+              build-essential \
+              uuid-dev \
+              libgpgme-dev \
+              squashfs-tools \
+              libseccomp-dev \
+              wget \
+              pkg-config \
+              git \
+              cryptsetup-bin
           git clone https://github.com/singularityware/singularity.git
           cd singularity
-          git checkout -q tags/2.5.2
-          ./autogen.sh
-          ./configure --prefix=/usr/local
-          make
-          sudo make install
+          git checkout -q tags/v3.7.1
+          ./mconfig && \
+              make -C ./builddir && \
+              sudo make -C ./builddir install
           cd ..
           rm -rf singularity
+          singularity --version
 
       - name: Install IVA assembler
         run: |
-          sudo apt-get install -y zlib1g-dev libncurses5-dev libncursesw5-dev mummer ncbi-blast+
+          sudo apt-get install -qq zlib1g-dev libncurses5-dev libncursesw5-dev mummer ncbi-blast+
           cd ~/bin
           wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
           wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
+          # Server doesn't support HTTPS, so check for changed files.
+          echo "\
+            db1935884aec2d23d4d623ff85eb4eae8d7a946c9ee0c33ea1818215c40d3099  kmc
+            34a97db2dab5fdae0276d2589c940142813e9cd87ae10e5e2dd37ed3545b4436  kmc_dump" | sha256sum --check
           chmod +x kmc kmc_dump
           wget -q https://github.com/samtools/samtools/releases/download/1.3.1/samtools-1.3.1.tar.bz2
           tar -xf samtools-1.3.1.tar.bz2 --no-same-owner --bzip2
@@ -40,7 +55,7 @@ jobs:
           make
           make install
           cd ~
-          wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
+          wget -q https://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
           tar -xzf smalt-0.7.6-bin.tar.gz
           ln -s ~/smalt-0.7.6-bin/smalt_x86_64 ~/bin/smalt
 
