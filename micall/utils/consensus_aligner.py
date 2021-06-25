@@ -116,7 +116,7 @@ class AlignmentWrapper(Alignment):
         if not blen:
             blen = max(q_en-q_st, r_en-r_st)
         if not cigar:
-            cigar = [[blen, CigarActions.MATCH]]
+            cigar = [[max(q_en-q_st, r_en-r_st), CigarActions.MATCH]]
         return super().__new__(cls,
                                ctg,
                                ctg_len,
@@ -201,6 +201,7 @@ class ConsensusAligner:
                            for alignment in self.alignments
                            if alignment.is_primary]
         self.alignments.sort(key=attrgetter('q_st'))
+        self.remove_overlaps()
 
     def align_gotoh(self, coordinate_seq, consensus):
         gap_open_penalty = 15
@@ -243,6 +244,25 @@ class ConsensusAligner:
                 q_st=0,
                 q_en=consensus_index,
                 cigar=cigar))
+
+    def remove_overlaps(self):
+        max_query_pos = -1
+        for alignment_num, alignment in enumerate(self.alignments):
+            query_start = alignment.q_st
+            if query_start < max_query_pos:
+                offset = max_query_pos - alignment.q_st
+                new_cigar = [section[:] for section in alignment.cigar]
+                new_cigar[0][0] -= offset
+                new_alignment = AlignmentWrapper.wrap(alignment,
+                                                      q_st=max_query_pos,
+                                                      r_st=alignment.r_st+offset,
+                                                      cigar=new_cigar,
+                                                      # Unneeded fields => -1.
+                                                      mlen=-1,
+                                                      blen=-1,
+                                                      NM=-1)
+                self.alignments[alignment_num] = new_alignment
+            max_query_pos = alignment.q_en
 
     def clear(self):
         self.coordinate_name = self.consensus = self.amino_consensus = ''

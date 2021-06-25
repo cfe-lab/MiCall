@@ -735,6 +735,64 @@ SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,11,11,0,0,0,9,0,0,0,0,0,9
     assert report_file.getvalue() == expected_report
 
 
+def test_minimap_overlap(default_sequence_report, projects):
+    """ Similar sections can fool minimap2 into reporting a section twice.
+
+    In this example, positions 1-104 of the read map to pos 4401-4504 of the
+    reference. Positions 101-200 of the read map to pos 3001-3100 of the ref.
+    Even though positions 101-104 are in both alignments, only report them once.
+    """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    read_seq = seed_seq[4440:4500] + seed_seq[3000:3060]
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads(f"""\
+HIV1-B-FR-K03455-seed,15,0,9,0,{read_seq}
+""")
+
+    # TODO: Remove repeated query positions: 61, 62, 60.
+    #                                     A,C,G,T
+    expected_text = """\
+HIV1-B-FR-K03455-seed,INT,15,51,262,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,52,263,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,53,264,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,54,265,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,55,266,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,56,267,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,57,268,0,9,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,58,269,0,9,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,59,270,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,60,271,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,61,272,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,62,273,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,RT,15,60,451,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,RT,15,61,452,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,RT,15,62,453,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,RT,15,63,454,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,RT,15,64,455,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,RT,15,65,456,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,RT,15,66,457,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,RT,15,67,458,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,RT,15,68,459,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,RT,15,69,460,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,RT,15,70,461,9,0,0,0,0,0,0,0,0,9"""
+    report_file = StringIO()
+    default_sequence_report.write_nuc_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 124
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+
+    key_lines = report_lines[51:74]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
 # noinspection DuplicatedCode
 def test_contig_coverage_report_huge_gap(default_sequence_report):
     """ A gap so big that Gotoh can't bridge it, but minimap2 can. """

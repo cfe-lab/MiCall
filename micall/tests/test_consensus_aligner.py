@@ -14,6 +14,14 @@ def assert_alignments(aligner: ConsensusAligner,
     __tracebackhide__ = True
     wrapped_alignments = tuple(AlignmentWrapper.wrap(alignment)
                                for alignment in aligner.alignments)
+    if repr(wrapped_alignments) != repr(expected_alignments):
+        assert wrapped_alignments == expected_alignments
+    for i, (wrapped_alignment, expected_alignment) in enumerate(
+            zip(wrapped_alignments, expected_alignments)):
+        for field_name in AlignmentWrapper.init_fields:
+            wrapped = (i, field_name, getattr(wrapped_alignment, field_name))
+            expected = (i, field_name, getattr(expected_alignment, field_name))
+            assert wrapped == expected
     assert wrapped_alignments == expected_alignments
 
 
@@ -105,6 +113,42 @@ def test_start_contig_multiple_sections(projects):
                                             q_st=1000,
                                             q_en=2000,
                                             mapq=60)]
+    aligner = ConsensusAligner(projects)
+
+    aligner.start_contig(seed_name, consensus)
+
+    assert_alignments(aligner, *expected_alignments)
+
+
+def test_start_contig_overlapping_sections(projects):
+    """ Similar sections can fool minimap2 into reporting a section twice.
+
+    In this example, positions 1-60 of the read map to pos 4441-4500 of the
+    reference. Positions 55-120 of the read map to pos 2995-3060 of the ref.
+    Since positions 55-60 are in both alignments, remove them from the second
+    one.
+    """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    consensus = seed_seq[4440:4500] + seed_seq[3000:3060]
+    expected_alignments = [AlignmentWrapper(ctg='N/A',
+                                            ctg_len=len(seed_seq),
+                                            r_st=4440,
+                                            r_en=4500,
+                                            q_st=0,
+                                            q_en=60,
+                                            mapq=27),
+                           AlignmentWrapper(ctg='N/A',
+                                            ctg_len=len(seed_seq),
+                                            r_st=3000,
+                                            r_en=3060,
+                                            q_st=60,
+                                            q_en=120,
+                                            mapq=13,
+                                            # Unneeded fields forced to -1.
+                                            mlen=-1,
+                                            blen=-1,
+                                            NM=-1)]
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
