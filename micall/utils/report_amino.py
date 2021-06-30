@@ -51,7 +51,7 @@ class SeedAmino(object):
             self.deletions += count
         elif '-' in codon_seq:
             self.partial += count  # Partial deletion
-        elif ' ' not in codon_seq and 'n' not in codon_seq:
+        elif ' ' not in codon_seq and 'n' not in codon_seq and len(codon_seq) == 3:
             amino = translate(codon_seq.upper())
             self.counts[amino] += count
         elif 'nnn' == codon_seq:
@@ -62,20 +62,31 @@ class SeedAmino(object):
                 seed_nucleotide = self.nucleotides[i]
                 seed_nucleotide.count_nucleotides(nuc, count)
 
-    def add(self, other: 'SeedAmino'):
+    def add(self, other: 'SeedAmino', start_nuc: int = 0, end_nuc: int = 2):
+        """ Add counts from another SeedAmino to this one.
+
+        :param other: source to copy from
+        :param start_nuc: first nucleotide index to copy: 0, 1, or 2.
+        :param end_nuc: last nucleotide index to copy: 0, 1, or 2.
+        """
         if self.read_count and other.read_count:
             self.consensus_nuc_index = None
         elif other.read_count:
             self.consensus_nuc_index = other.consensus_nuc_index
-        self.counts += other.counts
+        if 0 < start_nuc or end_nuc < 2:
+            prefix = ' ' * start_nuc
+            for nucs, count in other.codon_counts.items():
+                self.count_aminos(prefix + nucs[start_nuc:end_nuc+1], count)
+        else:
+            self.counts += other.counts
+            for nuc, other_nuc in zip(self.nucleotides, other.nucleotides):
+                nuc.add(other_nuc)
         self.partial += other.partial
         self.deletions += other.deletions
         self.read_count += other.read_count
         self.low_quality += other.low_quality
         self.nucleotides_to_skip = other.nucleotides_to_skip
         self.ref_offset = other.ref_offset
-        for nuc, other_nuc in zip(self.nucleotides, other.nucleotides):
-            nuc.add(other_nuc)
 
     def get_report(self) -> str:
         """ Build a report string with the counts of each amino acid.

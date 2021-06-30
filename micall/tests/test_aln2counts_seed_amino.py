@@ -205,6 +205,36 @@ def test_add_first_time():
     assert amino.consensus_nuc_index == 7
 
 
+def test_add_clipped_start():
+    amino = SeedAmino(None)
+    other = SeedAmino(consensus_nuc_index=7)
+    other.count_aminos('ACT', 5)
+    expected_counts = {}
+    expected_nucleotide_counts = [{}, {'C': 5}, {'T': 5}]
+
+    amino.add(other, start_nuc=1)
+
+    nucleotide_counts = [nuc.counts for nuc in amino.nucleotides]
+    assert amino.counts == expected_counts
+    assert nucleotide_counts == expected_nucleotide_counts
+    assert amino.partial == 0  # Only count partials in the middle.
+
+
+def test_add_clipped_end():
+    amino = SeedAmino(None)
+    other = SeedAmino(consensus_nuc_index=7)
+    other.count_aminos('ACT', 5)
+    expected_counts = {}
+    expected_nucleotide_counts = [{'A': 5}, {'C': 5}, {}]
+
+    amino.add(other, end_nuc=1)
+
+    nucleotide_counts = [nuc.counts for nuc in amino.nucleotides]
+    assert amino.counts == expected_counts
+    assert nucleotide_counts == expected_nucleotide_counts
+    assert amino.partial == 0  # Only count partials in the middle.
+
+
 def test_amino_repeat_nuc0():
     """ Repeat first nucleotide in the codon.
     Columns are:       A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*

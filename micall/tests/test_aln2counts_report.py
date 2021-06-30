@@ -751,7 +751,6 @@ def test_minimap_overlap(default_sequence_report, projects):
 HIV1-B-FR-K03455-seed,15,0,9,0,{read_seq}
 """)
 
-    # TODO: Remove repeated query positions: 61, 62, 60.
     #                                     A,C,G,T
     expected_text = """\
 HIV1-B-FR-K03455-seed,INT,15,51,262,0,0,9,0,0,0,0,0,0,9
@@ -764,9 +763,6 @@ HIV1-B-FR-K03455-seed,INT,15,57,268,0,9,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,INT,15,58,269,0,9,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,INT,15,59,270,9,0,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,INT,15,60,271,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,61,272,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,62,273,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,60,451,0,0,9,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,RT,15,61,452,9,0,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,RT,15,62,453,0,0,9,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,RT,15,63,454,0,0,9,0,0,0,0,0,0,9
@@ -784,11 +780,11 @@ HIV1-B-FR-K03455-seed,RT,15,70,461,9,0,0,0,0,0,0,0,0,9"""
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 124
+    expected_size = 121
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[51:74]
+    key_lines = report_lines[51:71]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 

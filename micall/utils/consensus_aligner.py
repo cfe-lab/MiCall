@@ -150,6 +150,40 @@ class AlignmentWrapper(Alignment):
                 f'{self.q_st}, {self.q_en})')
 
 
+def clip_seed_aminos(seed_aminos: typing.List[SeedAmino],
+                     region_start_consensus_amino_index: int,
+                     region_end_consensus_amino_index: int,
+                     start_codon_nuc_index: int,
+                     end_codon_nuc_index: int):
+    """ Extract a section of seed aminos for counting.
+
+    Handles boundary codons by clipping as needed.
+    :param seed_aminos: source seed aminos to copy
+    :param region_start_consensus_amino_index: first seed amino to copy
+    :param region_end_consensus_amino_index: one past the last one to copy
+    :param start_codon_nuc_index: first codon index within the first seed amino
+        that should be copied
+    :param end_codon_nuc_index: last codon index to copy within the last codon
+    """
+    assert 0 <= region_start_consensus_amino_index
+    assert 0 <= region_end_consensus_amino_index
+    assert 0 <= start_codon_nuc_index
+    assert 0 <= end_codon_nuc_index
+    result = seed_aminos[region_start_consensus_amino_index:
+                         region_end_consensus_amino_index]
+    if start_codon_nuc_index != 0:
+        old_start_amino = result[0]
+        start_amino = SeedAmino(old_start_amino.consensus_nuc_index)
+        start_amino.add(old_start_amino, start_nuc=start_codon_nuc_index)
+        result[0] = start_amino
+    if end_codon_nuc_index != 2:
+        old_end_amino = result[-1]
+        end_amino = SeedAmino(old_end_amino.consensus_nuc_index)
+        end_amino.add(old_end_amino, end_nuc=end_codon_nuc_index)
+        result[-1] = end_amino
+    return result
+
+
 class ConsensusAligner:
     def __init__(self, projects: ProjectConfig):
         self.projects = projects
@@ -350,6 +384,8 @@ class ConsensusAligner:
             frame_offset = -1
             region_start_consensus_amino_index = -1
             region_end_consensus_amino_index = -1
+            start_codon_nuc_index = -1
+            end_codon_nuc_index = -1
             source_amino_index = 0
             seed_aminos = self.reading_frames[0]
             region_seed_aminos: typing.List[SeedAmino] = []
@@ -382,22 +418,40 @@ class ConsensusAligner:
                             source_amino_index += 1
                         if region_start_consensus_amino_index < 0:
                             region_start_consensus_amino_index = source_amino_index
+                            start_codon_nuc_index = codon_nuc_index
                         region_end_consensus_amino_index = source_amino_index + 1
+                        end_codon_nuc_index = codon_nuc_index
                         if (repeat_position == ref_nuc_index + 1 and
-                                start_pos < repeat_position):
+                                codon_nuc_index != 0):
                             # Shift reading frames.
-                            region_seed_aminos = seed_aminos[
-                                                 region_start_consensus_amino_index:
-                                                 region_end_consensus_amino_index]
+                            region_seed_aminos = clip_seed_aminos(
+                                seed_aminos,
+                                region_start_consensus_amino_index,
+                                region_end_consensus_amino_index,
+                                start_codon_nuc_index,
+                                end_codon_nuc_index)
+                            # Reset start positions
                             region_start_consensus_amino_index = -1
+                            start_codon_nuc_index = -1
+                            # Step back source position
+                            source_amino_index -= 1
+                            # Repeat current position
+                            ref_nuc_index -= 1
+                            consensus_nuc_index -= 1
+                            section_nuc_index -= 1
+                            # Adjust reading frame
                             frame_offset = (frame_offset + 1) % 3
                             seed_aminos = self.reading_frames[frame_offset]
                     ref_nuc_index += 1
                     consensus_nuc_index += 1
                     section_nuc_index += 1
-            region_seed_aminos.extend(
-                seed_aminos[region_start_consensus_amino_index:
-                            region_end_consensus_amino_index])
+            if 0 <= region_start_consensus_amino_index:
+                region_seed_aminos.extend(clip_seed_aminos(
+                    seed_aminos,
+                    region_start_consensus_amino_index,
+                    region_end_consensus_amino_index,
+                    start_codon_nuc_index,
+                    end_codon_nuc_index))
             if not region_seed_aminos:
                 continue
             self.amino_consensus = ''.join(seed_amino.get_consensus() or '?'
