@@ -3,7 +3,7 @@
   coordinates: HIV1-B-FR-K03455-seed
   landmarks:
     # 1-based, inclusive positions in HXB2, including stop codons.
-    - {name: "5' LTR", start: 1, end: 634, frame: 0, colour: darkgrey}
+    - {name: "5' LTR", full_name: "HIV1B-5' LTR", start: 1, end: 634, frame: 0, colour: darkgrey, stop: N}
     - {name: gag, full_name: HIV1B-gag, start: 790, end: 2292, frame: 0, colour: lightblue}
     - {name: vif, full_name: HIV1B-vif, start: 5041, end: 5619, frame: 0, colour: steelblue}
 
@@ -17,7 +17,7 @@
     # Actually starts at 8379, spliced to the end of rev in the middle of a codon.
     - {name: rev, full_name: rev2, start: 8378, end: 8653, frame: 1, colour: yellowgreen}
 
-    - {name: "3' LTR", start: 9086, end: 9719, frame: 1, colour: darkgrey}
+    - {name: "3' LTR", full_name: "HIV1B-3' LTR", start: 9086, end: 9719, frame: 1, colour: darkgrey, stop: N}
     - {name: pol, start: 2085, end: 5096, frame: 2, colour: orange}
     - {name: vpr, full_name: HIV1B-vpr, start: 5559, end: 5850, frame: 2, colour: turquoise}
     - {name: rev, start: 5970, end: 6048, frame: 2, colour: yellowgreen, stop: N}

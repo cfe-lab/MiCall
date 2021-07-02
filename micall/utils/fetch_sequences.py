@@ -9,7 +9,7 @@ import re
 import typing
 from difflib import Differ, SequenceMatcher
 from io import StringIO
-from itertools import chain, groupby
+from itertools import chain, groupby, zip_longest
 from textwrap import fill, wrap
 
 from yaml import safe_load
@@ -135,7 +135,8 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
     overall_consensus_env = \
         consensus_sequences['CON_OF_CONS'].replace('-', '').upper()
 
-    region_names = ['HIV1B-gag',
+    region_names = ["HIV1B-5' LTR",
+                    'HIV1B-gag',
                     'PR',
                     'RT',  # p51 only
                     'INT',
@@ -144,14 +145,17 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
                     'HIV1B-vpu',
                     'GP120',
                     'GP41',
-                    'HIV1B-nef']
+                    'HIV1B-nef',
+                    "HIV1B-3' LTR"]
     source_sequences = {}
+    ref_positions = set()
     landmark_reader = LandmarkReader.load()
     for region_name in region_names:
         source_nuc_sequence = extract_region(landmark_reader,
                                              'HIV1-B-FR-K03455-seed',
                                              hxb2,
-                                             region_name)
+                                             region_name,
+                                             ref_positions)
         if region_name == 'HIV1B-nef':
             # Replace premature stop codon with Consensus B.
             source_nuc_sequence = (source_nuc_sequence[:369] +
@@ -161,7 +165,10 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
             # Drop nucleotide to avoid frame shift.
             source_nuc_sequence = (source_nuc_sequence[:213] +
                                    source_nuc_sequence[214:])
-        source_sequences[region_name] = translate(source_nuc_sequence)
+        if 'TRS-B' in region_name or region_name.endswith('LTR'):
+            source_sequences[region_name] = source_nuc_sequence
+        else:
+            source_sequences[region_name] = translate(source_nuc_sequence)
 
     consensus_b_v3_nuc_seq = consensus_b_env[876:981]
     overall_v3_nuc_seq = overall_consensus_env[855:960]
@@ -181,6 +188,7 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
                  for project_region in hiv_project['regions']}
     unchecked_ref_names.difference_update(ref_names)
 
+    report_missing_positions(ref_positions, hxb2)
     report, error_count = compare_config(ref_names,
                                          project_config,
                                          source_sequences)
@@ -219,7 +227,7 @@ def extract_region(landmark_reader: LandmarkReader,
     source_nuc_sequence = coordinate_seq[start - 1:end]
     if ref_positions is not None:
         ref_positions.update(range(full_region['start'], full_region['end'] + 1))
-    if start < duplicated_base <= end:
+    if duplicated_base is not None and start < duplicated_base <= end:
         source_nuc_sequence = (
                 source_nuc_sequence[:duplicated_base - start + 1] +
                 source_nuc_sequence[duplicated_base - start:])
@@ -497,23 +505,31 @@ cover any sections that weren't included elsewhere.
             source_sequences[ref_name] = translate(source_nuc_sequence)
         print(ref_name, len(source_sequences[ref_name]))
 
-    all_positions = set(range(1, len(seed_sequence)+1))
-    missing_positions = sorted(all_positions - ref_positions)
-    if missing_positions:
-        print('Missing positions from SARS:')
-    for offset, items in groupby(enumerate(missing_positions),
-                                 lambda item: item[1]-item[0]):
-        positions = [x for i, x in items]
-        if len(positions) == 1:
-            print(*positions)
-        else:
-            print(f'{positions[0]}-{positions[-1]}')
-
+    report_missing_positions(ref_positions, seed_sequence)
     report, error_count = compare_config(ref_names,
                                          project_config,
                                          source_sequences)
     print(report)
     return error_count
+
+
+def report_missing_positions(ref_positions: typing.Set[int], seed_sequence: str):
+    """ Print positions that were not covered by reported regions.
+
+    :param ref_positions: all 1-based positions that were covered
+    :param seed_sequence: reference sequence to show how long it is.
+    """
+    all_positions = set(range(1, len(seed_sequence) + 1))
+    missing_positions = sorted(all_positions - ref_positions)
+    if missing_positions:
+        print('Missing positions from genome:')
+    for offset, items in groupby(enumerate(missing_positions),
+                                 lambda item: item[1] - item[0]):
+        positions = [x for i, x in items]
+        if len(positions) == 1:
+            print(*positions)
+        else:
+            print(f'{positions[0]}-{positions[-1]}')
 
 
 def fetch_alignment_sequences(year, alignment_type, region='GENOME'):
@@ -681,12 +697,21 @@ def compare_config(ref_names,
         unused_report += ', '.join(sorted(source_sequences))
         unused_report = fill_report(unused_report)
         report.write(unused_report)
+        is_compressed = False
         for source_name, source_sequence in sorted(source_sequences.items()):
             report.write(source_name + '\n')
-            if 75 < len(source_sequence):
-                source_sequence = f'{source_sequence[:35]}[...]' \
-                                  f'{source_sequence[-35:]}'
-            report.write('  ' + source_sequence + '\n')
+            if is_compressed:
+                if 75 < len(source_sequence):
+                    source_sequence = f'{source_sequence[:35]}[...]' \
+                                      f'{source_sequence[-35:]}'
+                report.write('  ' + source_sequence + '\n')
+            else:
+                iters = [iter(source_sequence)] * 65
+                lines = []
+                for row in zip_longest(*iters, fillvalue=''):
+                    line = ''.join(row)
+                    lines.append(f'"{line}"')
+                report.write(',\n'.join(lines) + '\n')
         error_count += len(source_sequences)
 
     if diff_report.tell():

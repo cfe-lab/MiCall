@@ -43,9 +43,9 @@ def coverage_plot(amino_csv,
     @param excluded_projects: a list of project names to exclude
     @return: a list of full paths to the image files.
     """
-    # imports project information from JSON
     if coverage_maps_path is None:
         coverage_maps_path, _ = os.path.split(amino_csv.name)
+    # imports project information from JSON
     projects = project_config.ProjectConfig.loadScoring()
     reader = DictReader(amino_csv)
     writer = DictWriter(coverage_scores_csv,
