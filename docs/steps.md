@@ -56,7 +56,8 @@ Individual files are described after the list of steps.
   * remap.csv - SAM file format with commas instead of tabs.
   * remap_counts.csv - downloaded - how many reads mapped to each reference at
     each stage.
-  * remap_conseq.csv - downloaded - consensus sequence
+  * remap_conseq.csv - downloaded - consensus sequence that reads were mapped to
+    on the final iteration
   * unmapped1.fastq - FASTQ format (unstructured text) reads that didn't map to
     any of the final references.
   * unmapped2.fastq - FASTQ 

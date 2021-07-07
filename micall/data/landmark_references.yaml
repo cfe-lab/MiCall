@@ -4,14 +4,21 @@
   landmarks:
     # 1-based, inclusive positions in HXB2, including stop codons.
     - {name: "5' LTR", full_name: "HIV1B-5' LTR", start: 1, end: 634, frame: 0, colour: darkgrey, stop: N}
+    - {name: HIV1B-635-789, start: 635, end: 789, frame: 0, stop: N}
+    - {name: HIV1B-sl1, start: 697, end: 731, frame: 0, stop: N}
+    - {name: HIV1B-sl2, start: 736, end: 754, frame: 0, stop: N}
+    - {name: HIV1B-sl3, start: 766, end: 779, frame: 0, stop: N}
+    - {name: HIV1B-sl4, start: 793, end: 806, frame: 0, stop: N}
     - {name: gag, full_name: HIV1B-gag, start: 790, end: 2292, frame: 0, colour: lightblue}
     - {name: vif, full_name: HIV1B-vif, start: 5041, end: 5619, frame: 0, colour: steelblue}
 
     # Actually starts at 8379, spliced to the end of tat in the middle of a codon.
-    - {name: tat, full_name: tat2, start: 8380, end: 8469, frame: 0, colour: plum}
+    - {name: tat, full_name: HIV1B-tat2, start: 8380, end: 8469, frame: 0, colour: plum}
 
     - {name: nef, full_name: HIV1B-nef, start: 8797, end: 9417, frame: 0, colour: mediumaquamarine}
-    - {name: tat, start: 5831, end: 6049, frame: 1, colour: plum}
+    - {name: tat, full_name: HIV1B-tat, start: 5831, end: 6049, frame: 1, colour: plum}
+    - {name: HIV1B-D4, start: 6045, end: 6051, frame: 1, stop: N}
+    - {name: HIV1B-6046-6061, start: 6046, end: 6061, frame: 1, stop: N}
     - {name: vpu, full_name: HIV1B-vpu, start: 6062, end: 6310, frame: 1, colour: red}
 
     # Actually starts at 8379, spliced to the end of rev in the middle of a codon.
@@ -23,10 +30,11 @@
     - {name: rev, start: 5970, end: 6048, frame: 2, colour: yellowgreen, stop: N}
     - {name: env, start: 6225, end: 8795, frame: 2, colour: salmon}
     - {name: PR, start: 2253, end: 2549, frame: 3, colour: orange, stop: N}
-    - {name: RT, start: 2550, end: 3869, frame: 3, colour: darkorange, stop: N}
+    - {name: RT, start: 2550, end: 4229, frame: 3, colour: darkorange}
     - {name: INT, start: 4230, end: 5096, frame: 3, colour: orange}
     - {name: V3, full_name: V3LOOP, start: 7110, end: 7217, frame: 3, colour: salmon, stop: N}
     - {name: GP41, start: 7758, end: 8795, frame: 3, colour: salmon}
+    - {name: HIV1B-8796, start: 8796, end: 8796, frame: 3, stop: N}
     - {name: GP120, start: 6225, end: 7757, frame: 3, stop: N}  # Not displayed.
 - seed_pattern: HCV-1b
   coordinates: HCV-1b

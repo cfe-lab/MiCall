@@ -290,7 +290,8 @@ class SequenceReport(object):
         landmark_reader = LandmarkReader(self.landmarks)
         region_info = landmark_reader.get_gene(
             self.consensus_aligner.coordinate_name,
-            coordinate_name)
+            coordinate_name,
+            drop_stop_codon=False)
         report_nucleotides = self.report_nucleotides[coordinate_name]
         repeated_ref_name = 'SARS-CoV-2-seed'
         if self.consensus_aligner.coordinate_name == repeated_ref_name:
@@ -832,10 +833,12 @@ class SequenceReport(object):
                         if consensus_nuc_index is None:
                             continue
                     for j, seed_nuc in enumerate(seed_amino.nucleotides):
+                        if len(report_nucleotides) <= report_nuc_index:
+                            break
+                        report_nuc = report_nucleotides[report_nuc_index]
                         query_pos = j + consensus_nuc_index + 1
                         seed_nuc.clip_count = seed_clipping[query_pos]
                         seed_nuc.insertion_count = seed_insertion_counts[query_pos]
-                        report_nuc = report_nucleotides[report_nuc_index]
                         if j == 2:
                             insertion_counts = self.insert_writer.insert_pos_counts[
                                 (self.seed, region)]

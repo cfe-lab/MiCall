@@ -135,22 +135,31 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
     overall_consensus_env = \
         consensus_sequences['CON_OF_CONS'].replace('-', '').upper()
 
-    region_names = ["HIV1B-5' LTR",
-                    'HIV1B-gag',
+    region_names = ['HIV1B-gag',
                     'PR',
                     'RT',  # p51 only
                     'INT',
+                    'HIV1B-tat',
                     'HIV1B-vif',
                     'HIV1B-vpr',
                     'HIV1B-vpu',
                     'GP120',
                     'GP41',
-                    'HIV1B-nef',
-                    "HIV1B-3' LTR"]
+                    'HIV1B-nef']
+    nucleotide_region_names = ["HIV1B-5' LTR",
+                               'HIV1B-635-789',
+                               'HIV1B-sl1',
+                               'HIV1B-sl2',
+                               'HIV1B-sl3',
+                               'HIV1B-sl4',
+                               'HIV1B-D4',
+                               'HIV1B-6046-6061',
+                               'HIV1B-8796',
+                               "HIV1B-3' LTR"]
     source_sequences = {}
     ref_positions = set()
     landmark_reader = LandmarkReader.load()
-    for region_name in region_names:
+    for region_name in region_names + nucleotide_region_names:
         source_nuc_sequence = extract_region(landmark_reader,
                                              'HIV1-B-FR-K03455-seed',
                                              hxb2,
@@ -165,7 +174,7 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
             # Drop nucleotide to avoid frame shift.
             source_nuc_sequence = (source_nuc_sequence[:213] +
                                    source_nuc_sequence[214:])
-        if 'TRS-B' in region_name or region_name.endswith('LTR'):
+        if region_name in nucleotide_region_names:
             source_sequences[region_name] = source_nuc_sequence
         else:
             source_sequences[region_name] = translate(source_nuc_sequence)
