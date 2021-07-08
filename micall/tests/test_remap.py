@@ -2,6 +2,7 @@ from csv import DictWriter
 from io import StringIO
 import os
 import unittest
+from pathlib import Path
 from unittest.mock import patch, Mock, DEFAULT
 
 from pytest import fixture
@@ -1451,3 +1452,43 @@ HCV-2b,1.0,HCV-2b,TAGTTTCCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAGACATATTACC
     conseqs = read_contigs(contigs_csv)
 
     assert expected_conseqs == conseqs
+
+
+def test_full_remap(tmp_path):
+    """ Test the full process of the remapping step. """
+    microtest_path = Path(__file__).parent / 'microtest'
+    fastq1 = str(microtest_path / '1234A-V3LOOP_S1_L001_R1_001.fastq')
+    fastq2 = str(microtest_path / '1234A-V3LOOP_S1_L001_R2_001.fastq')
+    prelim_csv = StringIO("""\
+qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
+M01234:01:000000000-AAAAA:1:1101:01234:0001,99,HIV1-C-BR-JX140663-seed,6535,36,51M,=,6535,-51,\
+TGCACAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+M01234:01:000000000-AAAAA:1:1101:01234:0001,147,HIV1-C-BR-JX140663-seed,6535,36,51M,=,6535,-51,\
+TGCACAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+""")
+    remap_csv = StringIO()
+    remap_counts_csv = StringIO()
+    remap_conseq_csv = StringIO()
+    unmapped1_fastq = StringIO()
+    unmapped2_fastq = StringIO()
+    expected_remap_counts = """\
+type,count,filtered_count,seed_dist,other_dist,other_seed
+raw,20,,,,
+prelim HIV1-C-BR-JX140663-seed,2,2,,,
+remap-1 HIV1-C-BR-JX140663-seed,20,,,,
+remap-final HIV1-C-BR-JX140663-seed,20,,,,
+unmapped,0,,,,
+"""
+
+    remap.remap(fastq1,
+                fastq2,
+                prelim_csv,
+                remap_csv,
+                remap_counts_csv,
+                remap_conseq_csv,
+                unmapped1_fastq,
+                unmapped2_fastq,
+                count_threshold=1,
+                work_path=tmp_path)
+
+    assert remap_counts_csv.getvalue() == expected_remap_counts

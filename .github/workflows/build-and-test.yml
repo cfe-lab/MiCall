@@ -3,6 +3,8 @@ on: push
 jobs:
   build:
     runs-on: ubuntu-20.04
+    env:
+      PATH: $PATH:/opt/bowtie2
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -64,6 +66,13 @@ jobs:
           sudo curl https://sh.rustup.rs -sSf | sh -s -- -y
           source ~/.cargo/env
           cargo install --root ~/ --git https://github.com/jeff-k/merge-mates.git
+
+      - name: Install Bowtie2
+        run: |
+          wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip
+          sudo unzip -qq bowtie2.zip -d /opt/
+          sudo ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2
+          rm bowtie2.zip
 
       - name: Install MiCall's Python dependencies
         run: |

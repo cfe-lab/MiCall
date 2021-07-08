@@ -73,8 +73,9 @@ class CommandWrapper(AssetWrapper):
         except AttributeError:
             pass
         kwargs.setdefault('universal_newlines', True)
-        kwargs.setdefault('stdin', sys.stdin)
-        return subprocess.Popen(self.build_args(args or []), *popenargs, **kwargs)
+        with open(os.devnull) as devnull:
+            kwargs.setdefault('stdin', devnull)
+            return subprocess.Popen(self.build_args(args or []), *popenargs, **kwargs)
 
     def check_logger(self):
         """ Raise an exception if no logger is set for this command. """

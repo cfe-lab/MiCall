@@ -446,14 +446,14 @@ def write_remap_counts(remap_counts_writer, counts, title, distance_report=None)
         remap_counts_writer.writerow(row)
 
 
-def remap(fastq1,
-          fastq2,
-          prelim_csv,
-          remap_csv,
-          remap_counts_csv,
-          remap_conseq_csv,
-          unmapped1,
-          unmapped2,
+def remap(fastq1: str,
+          fastq2: str,
+          prelim_csv: typing.IO,
+          remap_csv: typing.IO,
+          remap_counts_csv: typing.IO,
+          remap_conseq_csv: typing.IO,
+          unmapped1: typing.IO,
+          unmapped2: typing.IO,
           work_path='',
           callback=None,
           count_threshold=10,
