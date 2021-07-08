@@ -20,7 +20,8 @@ from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
 
-IVA = "iva"
+VELVETG = "velvetg"
+VELVETH = "velveth"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
                                 'blast_db',
@@ -201,29 +202,16 @@ def denovo(fastq1_path: str,
          '--interleave',
          '-o', joined_path],
         check=True)
-    iva_out_path = os.path.join(tmp_dir, 'iva_out')
-    contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-    iva_args = [IVA, '--fr', joined_path, '-t', '2']
-    if merged_contigs_csv is not None:
-        seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
-        with open(seeds_fasta_path, 'w') as seeds_fasta:
-            SeqIO.write((SeqRecord(Seq(row['contig']), f'seed-{i}', '', '')
-                         for i, row in enumerate(DictReader(merged_contigs_csv))),
-                        seeds_fasta,
-                        'fasta')
-            seeds_size = seeds_fasta.tell()
-        if seeds_size > 0:
-            iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
-    iva_args.append(iva_out_path)
-    try:
-        run(iva_args, check=True, stdout=PIPE, stderr=STDOUT)
-    except CalledProcessError as ex:
-        output = ex.output and ex.output.decode('UTF8')
-        if output != 'Failed to make first seed. Cannot continue\n':
-            logger.warning('iva failed to assemble.', exc_info=True)
-            logger.warning(output)
-        with open(contigs_fasta_path, 'a'):
-            pass
+    velvet_out_path = os.path.join(tmp_dir, 'velvet_out')
+
+    velveth_args = [VELVETH, velvet_out_path, '31', '-fastq', '-interleaved', '-shortPaired', joined_path]
+    run(velveth_args, check=True, stdout=PIPE, stderr=STDOUT)
+
+    velvetg_args = [VELVETG, velvet_out_path, '-ins_length', '100', '-exp_cov', '7000', '-cov_cutoff', '100',
+                    '-min_contig_lgth', '200']
+    run(velvetg_args, check=True, stdout=PIPE, stderr=STDOUT)
+
+    contigs_fasta_path = os.path.join(velvet_out_path, 'contigs.fa')
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
