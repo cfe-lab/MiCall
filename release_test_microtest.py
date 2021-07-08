@@ -343,9 +343,10 @@ class ResultsFolder:
                 assert row['seed'] == 'HIV1-CON-XX-Consensus-seed', row['seed']
                 assert 10 < coverage, coverage_message
             else:
-                # Last codon of vpu has coverage.
+                # Last 2 codons of vpu have coverage.
                 assert row['region'] == 'HIV1B-vpu', row['region']
-                assert row['query.nuc.pos'] == '6305', row['query.nuc.pos']
+                pos = row['query.nuc.pos']
+                assert pos in ('6305', '6308'), pos
 
     def check_2190(self):
         mutation_rows = self.read_file('2190A-SARSCOV2_S23', 'nuc_mutations.csv')
