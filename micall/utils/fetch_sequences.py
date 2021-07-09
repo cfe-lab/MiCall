@@ -29,6 +29,7 @@ from micall.core.project_config import ProjectConfig
 
 def main():
     project_config = ProjectConfig.loadDefault()
+    scoring_config = ProjectConfig.loadScoring()
     error_count = 0
     unchecked_ref_names = set(project_config.getAllReferences().keys())
     error_count += check_hcv_seeds(project_config, unchecked_ref_names)
@@ -40,6 +41,7 @@ def main():
     error_count += check_hla_coordinates(project_config, unchecked_ref_names)
     error_count += check_sars_seeds(project_config, unchecked_ref_names)
     error_count += check_sars_coordinates(project_config, unchecked_ref_names)
+    error_count += check_scoring_config(scoring_config, project_config)
 
     if not unchecked_ref_names:
         print('No unchecked refs.')
@@ -519,6 +521,39 @@ cover any sections that weren't included elsewhere.
                                          project_config,
                                          source_sequences)
     print(report)
+    return error_count
+
+
+def check_scoring_config(scoring_config: ProjectConfig,
+                         project_config: ProjectConfig) -> int:
+    error_count = 0
+    protein_lengths = {}
+    for ref_name in project_config.getAllReferences():
+        if not project_config.isAmino(ref_name):
+            continue
+        ref = project_config.getReference(ref_name)
+        protein_lengths[ref_name] = len(ref)
+    unscored_protein_names = set(protein_lengths)
+    for project_name, project in scoring_config.config['projects'].items():
+        for region in project['regions']:
+            coordinate_name = region['coordinate_region']
+            coordinate_length = region['coordinate_region_length']
+            try:
+                expected_length = protein_lengths[coordinate_name]
+            except KeyError:
+                error_count += 1
+                print(f'{coordinate_name} not a protein in {project_name}?')
+                continue
+            if coordinate_length != expected_length:
+                error_count += 1
+                print(f'{coordinate_name} expected length {expected_length} '
+                      f'in {project_name} but found {coordinate_length}.')
+            unscored_protein_names.discard(coordinate_name)
+
+    if unscored_protein_names:
+        print('Unscored protein regions:')
+        print(', '.join(sorted(unscored_protein_names)))
+
     return error_count
 
 

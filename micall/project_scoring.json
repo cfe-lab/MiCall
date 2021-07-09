@@ -1897,7 +1897,7 @@
         },
         {
           "coordinate_region": "GP41",
-          "coordinate_region_length": 345,
+          "coordinate_region_length": 346,
           "key_positions": [
             {
               "end_pos": 40,
@@ -2028,7 +2028,7 @@
         },
         {
           "coordinate_region": "HIV1B-gag",
-          "coordinate_region_length": 500,
+          "coordinate_region_length": 501,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -2150,7 +2150,7 @@
         },
         {
           "coordinate_region": "HIV1B-nef",
-          "coordinate_region_length": 206,
+          "coordinate_region_length": 207,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -2272,7 +2272,7 @@
         },
         {
           "coordinate_region": "HIV1B-vif",
-          "coordinate_region_length": 192,
+          "coordinate_region_length": 193,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -2394,7 +2394,7 @@
         },
         {
           "coordinate_region": "HIV1B-vpr",
-          "coordinate_region_length": 96,
+          "coordinate_region_length": 97,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -2516,7 +2516,7 @@
         },
         {
           "coordinate_region": "HIV1B-vpu",
-          "coordinate_region_length": 82,
+          "coordinate_region_length": 83,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -2638,7 +2638,7 @@
         },
         {
           "coordinate_region": "INT",
-          "coordinate_region_length": 288,
+          "coordinate_region_length": 289,
           "key_positions": [
             {
               "end_pos": null,
@@ -3016,7 +3016,7 @@
         },
         {
           "coordinate_region": "RT",
-          "coordinate_region_length": 440,
+          "coordinate_region_length": 560,
           "key_positions": [
             {
               "end_pos": 41,
@@ -3378,7 +3378,7 @@
       "regions": [
         {
           "coordinate_region": "GP41",
-          "coordinate_region_length": 345,
+          "coordinate_region_length": 346,
           "key_positions": [
             {
               "end_pos": 40,
@@ -3514,7 +3514,7 @@
       "regions": [
         {
           "coordinate_region": "INT",
-          "coordinate_region_length": 288,
+          "coordinate_region_length": 289,
           "key_positions": [
             {
               "end_pos": null,
@@ -3892,7 +3892,7 @@
         },
         {
           "coordinate_region": "RT",
-          "coordinate_region_length": 440,
+          "coordinate_region_length": 560,
           "key_positions": [
             {
               "end_pos": 41,
@@ -4159,7 +4159,7 @@
       "regions": [
         {
           "coordinate_region": "INT",
-          "coordinate_region_length": 288,
+          "coordinate_region_length": 289,
           "key_positions": [
             {
               "end_pos": null,
@@ -4727,7 +4727,7 @@
       "regions": [
         {
           "coordinate_region": "RT",
-          "coordinate_region_length": 440,
+          "coordinate_region_length": 560,
           "key_positions": [
             {
               "end_pos": null,
@@ -5062,7 +5062,7 @@
         },
         {
           "coordinate_region": "GP41",
-          "coordinate_region_length": 345,
+          "coordinate_region_length": 346,
           "key_positions": [
             {
               "end_pos": 40,
@@ -5193,7 +5193,7 @@
         },
         {
           "coordinate_region": "HIV1B-gag",
-          "coordinate_region_length": 500,
+          "coordinate_region_length": 501,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -5315,7 +5315,129 @@
         },
         {
           "coordinate_region": "HIV1B-nef",
-          "coordinate_region_length": 206,
+          "coordinate_region_length": 207,
+          "key_positions": [],
+          "min_coverage1": 10,
+          "min_coverage2": 50,
+          "min_coverage3": 100,
+          "seed_region_names": [
+            "HIV1-A1-CD-AM000053-seed",
+            "HIV1-A1-CM-KP718928-seed",
+            "HIV1-A1-CY-JF683783-seed",
+            "HIV1-A1-IN-KT152839-seed",
+            "HIV1-A1-KE-KF716474-seed",
+            "HIV1-A1-RU-JX500694-seed",
+            "HIV1-A1-RW-KF716472-seed",
+            "HIV1-A1-SN-AY521629-seed",
+            "HIV1-A1-UG-KF716486-seed",
+            "HIV1-A1-ZA-KT183312-seed",
+            "HIV1-A2-CD-AF286238-seed",
+            "HIV1-A2-CM-GU201516-seed",
+            "HIV1-A2-CY-AF286237-seed",
+            "HIV1-B-BR-KJ849801-seed",
+            "HIV1-B-CA-JF320424-seed",
+            "HIV1-B-CH-KC797225-seed",
+            "HIV1-B-CN-KP109511-seed",
+            "HIV1-B-CU-KR914676-seed",
+            "HIV1-B-ES-KT276255-seed",
+            "HIV1-B-FR-K03455-seed",
+            "HIV1-B-FR-KF716496-seed",
+            "HIV1-B-HT-EU839602-seed",
+            "HIV1-B-JP-KF716498-seed",
+            "HIV1-B-KR-KJ140263-seed",
+            "HIV1-B-RU-JX500708-seed",
+            "HIV1-B-SE-KP411828-seed",
+            "HIV1-B-TH-KP109514-seed",
+            "HIV1-B-US-KT284371-seed",
+            "HIV1-B-ZA-KP109515-seed",
+            "HIV1-C-BR-JX140663-seed",
+            "HIV1-C-BW-AF443115-seed",
+            "HIV1-C-CN-KC870038-seed",
+            "HIV1-C-CY-JF683803-seed",
+            "HIV1-C-ES-KT276258-seed",
+            "HIV1-C-ET-AY713417-seed",
+            "HIV1-C-IN-KC156210-seed",
+            "HIV1-C-KE-KT022371-seed",
+            "HIV1-C-MW-KC156214-seed",
+            "HIV1-C-SE-KP411835-seed",
+            "HIV1-C-TZ-KC156220-seed",
+            "HIV1-C-US-KF526226-seed",
+            "HIV1-C-YE-AY795906-seed",
+            "HIV1-C-ZA-KP109517-seed",
+            "HIV1-C-ZM-KF716467-seed",
+            "HIV1-CON-XX-Consensus-seed",
+            "HIV1-CPZ-CD-U42720-seed",
+            "HIV1-CPZ-CM-DQ373064-seed",
+            "HIV1-CPZ-CM-FR686511-seed",
+            "HIV1-CPZ-TZ-JN091691-seed",
+            "HIV1-CPZ-US-AF103818-seed",
+            "HIV1-D-CM-JX140670-seed",
+            "HIV1-D-CY-FJ388945-seed",
+            "HIV1-D-KE-KF716476-seed",
+            "HIV1-D-KR-DQ054367-seed",
+            "HIV1-D-SN-AB485648-seed",
+            "HIV1-D-TZ-AY253311-seed",
+            "HIV1-D-UG-KF716479-seed",
+            "HIV1-D-UG-KF716480-seed",
+            "HIV1-D-YE-AY795907-seed",
+            "HIV1-D-ZA-EF633445-seed",
+            "HIV1-F1-AO-FJ900266-seed",
+            "HIV1-F1-AR-DQ189088-seed",
+            "HIV1-F1-BR-FJ771010-seed",
+            "HIV1-F1-BR-KJ849782-seed",
+            "HIV1-F1-BR-KJ849791-seed",
+            "HIV1-F1-CY-JF683771-seed",
+            "HIV1-F1-ES-FJ670516-seed",
+            "HIV1-F1-ES-KJ883138-seed",
+            "HIV1-F1-RO-AB485658-seed",
+            "HIV1-F1-RU-GQ290462-seed",
+            "HIV1-F2-CM-AY371158-seed",
+            "HIV1-F2-CM-JX140672-seed",
+            "HIV1-F2-CM-JX140673-seed",
+            "HIV1-G-CM-JX140676-seed",
+            "HIV1-G-CM-KP109502-seed",
+            "HIV1-G-CM-KP718923-seed",
+            "HIV1-G-CN-JN106043-seed",
+            "HIV1-G-ES-GU362882-seed",
+            "HIV1-G-ES-KT276261-seed",
+            "HIV1-G-GH-AB287004-seed",
+            "HIV1-G-KE-KF716477-seed",
+            "HIV1-G-NG-JN248593-seed",
+            "HIV1-G-PT-FR846409-seed",
+            "HIV1-GOR-CM-FJ424866-seed",
+            "HIV1-GOR-CM-KP004990-seed",
+            "HIV1-GOR-CM-KP004991-seed",
+            "HIV1-H-BE-AF190127-seed",
+            "HIV1-H-BE-AF190128-seed",
+            "HIV1-H-CF-AF005496-seed",
+            "HIV1-H-GB-FJ711703-seed",
+            "HIV1-J-CD-EF614151-seed",
+            "HIV1-J-SE-AF082394-seed",
+            "HIV1-J-SE-AF082395-seed",
+            "HIV1-K-CD-AJ249235-seed",
+            "HIV1-K-CM-AJ249239-seed",
+            "HIV1-N-CM-AY532635-seed",
+            "HIV1-N-CM-DQ017382-seed",
+            "HIV1-N-CM-GQ324959-seed",
+            "HIV1-N-CM-GQ324962-seed",
+            "HIV1-N-FR-JN572926-seed",
+            "HIV1-O-BE-L20587-seed",
+            "HIV1-O-CM-AY169802-seed",
+            "HIV1-O-CM-AY169804-seed",
+            "HIV1-O-CM-AY169807-seed",
+            "HIV1-O-CM-AY169808-seed",
+            "HIV1-O-CM-AY169815-seed",
+            "HIV1-O-FR-AF407418-seed",
+            "HIV1-O-GA-JX245015-seed",
+            "HIV1-O-SN-AJ302646-seed",
+            "HIV1-O-US-JN571034-seed",
+            "HIV1-P-CM-HQ179987-seed",
+            "HIV1-P-FR-GU111555-seed"
+          ]
+        },
+        {
+          "coordinate_region": "HIV1B-tat",
+          "coordinate_region_length": 73,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -5437,7 +5559,7 @@
         },
         {
           "coordinate_region": "HIV1B-vif",
-          "coordinate_region_length": 192,
+          "coordinate_region_length": 193,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -5559,7 +5681,7 @@
         },
         {
           "coordinate_region": "HIV1B-vpr",
-          "coordinate_region_length": 96,
+          "coordinate_region_length": 97,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -5681,7 +5803,7 @@
         },
         {
           "coordinate_region": "HIV1B-vpu",
-          "coordinate_region_length": 82,
+          "coordinate_region_length": 83,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -5803,7 +5925,7 @@
         },
         {
           "coordinate_region": "INT",
-          "coordinate_region_length": 288,
+          "coordinate_region_length": 289,
           "key_positions": [
             {
               "end_pos": null,
@@ -6181,7 +6303,7 @@
         },
         {
           "coordinate_region": "RT",
-          "coordinate_region_length": 440,
+          "coordinate_region_length": 560,
           "key_positions": [
             {
               "end_pos": 41,
@@ -6722,7 +6844,7 @@
         },
         {
           "coordinate_region": "RT",
-          "coordinate_region_length": 440,
+          "coordinate_region_length": 560,
           "key_positions": [
             {
               "end_pos": 41,
@@ -6962,7 +7084,7 @@
       "regions": [
         {
           "coordinate_region": "RT",
-          "coordinate_region_length": 440,
+          "coordinate_region_length": 560,
           "key_positions": [
             {
               "end_pos": 41,
@@ -7201,30 +7323,8 @@
       "max_variants": 0,
       "regions": [
         {
-          "coordinate_region": "SARS-CoV-2-3'UTR",
-          "coordinate_region_length": 226,
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "SARS-CoV-2-seed"
-          ]
-        },
-        {
-          "coordinate_region": "SARS-CoV-2-5'UTR",
-          "coordinate_region_length": 262,
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "SARS-CoV-2-seed"
-          ]
-        },
-        {
           "coordinate_region": "SARS-CoV-2-E",
-          "coordinate_region_length": 75,
+          "coordinate_region_length": 76,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7235,7 +7335,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-M",
-          "coordinate_region_length": 222,
+          "coordinate_region_length": 223,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7246,7 +7346,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-N",
-          "coordinate_region_length": 419,
+          "coordinate_region_length": 420,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7257,7 +7357,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-ORF10",
-          "coordinate_region_length": 38,
+          "coordinate_region_length": 39,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7279,7 +7379,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-ORF1b",
-          "coordinate_region_length": 2695,
+          "coordinate_region_length": 2696,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7290,7 +7390,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-ORF3a",
-          "coordinate_region_length": 275,
+          "coordinate_region_length": 276,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7301,7 +7401,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-ORF6",
-          "coordinate_region_length": 61,
+          "coordinate_region_length": 62,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7312,7 +7412,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-ORF7a",
-          "coordinate_region_length": 121,
+          "coordinate_region_length": 122,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7323,7 +7423,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-ORF7b",
-          "coordinate_region_length": 43,
+          "coordinate_region_length": 44,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7334,7 +7434,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-ORF8",
-          "coordinate_region_length": 121,
+          "coordinate_region_length": 122,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7345,106 +7445,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-S",
-          "coordinate_region_length": 1273,
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "SARS-CoV-2-seed"
-          ]
-        },
-        {
-          "coordinate_region": "SARS-CoV-2-TRS-B-1",
-          "coordinate_region_length": 4,
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "SARS-CoV-2-seed"
-          ]
-        },
-        {
-          "coordinate_region": "SARS-CoV-2-TRS-B-2",
-          "coordinate_region_length": 5,
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "SARS-CoV-2-seed"
-          ]
-        },
-        {
-          "coordinate_region": "SARS-CoV-2-TRS-B-3",
-          "coordinate_region_length": 21,
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "SARS-CoV-2-seed"
-          ]
-        },
-        {
-          "coordinate_region": "SARS-CoV-2-TRS-B-4",
-          "coordinate_region_length": 47,
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "SARS-CoV-2-seed"
-          ]
-        },
-        {
-          "coordinate_region": "SARS-CoV-2-TRS-B-5",
-          "coordinate_region_length": 7,
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "SARS-CoV-2-seed"
-          ]
-        },
-        {
-          "coordinate_region": "SARS-CoV-2-TRS-B-6",
-          "coordinate_region_length": 3,
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "SARS-CoV-2-seed"
-          ]
-        },
-        {
-          "coordinate_region": "SARS-CoV-2-TRS-B-7",
-          "coordinate_region_length": 3,
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "SARS-CoV-2-seed"
-          ]
-        },
-        {
-          "coordinate_region": "SARS-CoV-2-TRS-B-8",
-          "coordinate_region_length": 11,
-          "key_positions": [],
-          "min_coverage1": 10,
-          "min_coverage2": 50,
-          "min_coverage3": 100,
-          "seed_region_names": [
-            "SARS-CoV-2-seed"
-          ]
-        },
-        {
-          "coordinate_region": "SARS-CoV-2-TRS-B-9",
-          "coordinate_region_length": 21,
+          "coordinate_region_length": 1274,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7455,7 +7456,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp1",
-          "coordinate_region_length": 179,
+          "coordinate_region_length": 180,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7466,7 +7467,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp10",
-          "coordinate_region_length": 138,
+          "coordinate_region_length": 139,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7477,7 +7478,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp12",
-          "coordinate_region_length": 931,
+          "coordinate_region_length": 932,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7488,7 +7489,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp13",
-          "coordinate_region_length": 600,
+          "coordinate_region_length": 601,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7499,7 +7500,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp14",
-          "coordinate_region_length": 526,
+          "coordinate_region_length": 527,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7510,7 +7511,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp15",
-          "coordinate_region_length": 345,
+          "coordinate_region_length": 346,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7521,7 +7522,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp16",
-          "coordinate_region_length": 297,
+          "coordinate_region_length": 298,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7532,7 +7533,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp2",
-          "coordinate_region_length": 637,
+          "coordinate_region_length": 638,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7543,7 +7544,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp3",
-          "coordinate_region_length": 1944,
+          "coordinate_region_length": 1945,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7554,7 +7555,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp4",
-          "coordinate_region_length": 499,
+          "coordinate_region_length": 500,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7565,7 +7566,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp5",
-          "coordinate_region_length": 305,
+          "coordinate_region_length": 306,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7576,7 +7577,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp6",
-          "coordinate_region_length": 289,
+          "coordinate_region_length": 290,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7587,7 +7588,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp7",
-          "coordinate_region_length": 82,
+          "coordinate_region_length": 83,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7598,7 +7599,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp8",
-          "coordinate_region_length": 197,
+          "coordinate_region_length": 198,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
@@ -7609,7 +7610,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-nsp9",
-          "coordinate_region_length": 112,
+          "coordinate_region_length": 113,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
