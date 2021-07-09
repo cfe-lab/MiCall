@@ -96,19 +96,28 @@ HIV wild types for resistance reports are extracted from Consensus B.
     with open(WILD_TYPES_PATH) as wild_types_file:
         wild_types = safe_load(wild_types_file)
     boundaries = {'PR': (171, 468),
-                  'RT': (468, 1788),
-                  'INT': (2148, 3014)}
+                  'RT': (468, 2148),
+                  'INT': (2148, 3017)}
     ref_names = sorted(boundaries.keys())
     source_wild_types = {}
+    length_errors = 0
     for ref_name, (start, end) in boundaries.items():
         source_nuc_sequence = consensus_b[start:end]
-        source_wild_types[ref_name] = translate(source_nuc_sequence)
+        source_wild_type = translate(source_nuc_sequence)
+        source_wild_types[ref_name] = source_wild_type
+        mapping_ref = project_config.getReference(ref_name)
+        wild_type_length = len(source_wild_type)
+        mapping_length = len(mapping_ref)
+        if wild_type_length != mapping_length:
+            print(f'{ref_name} expected length {mapping_length}, '
+                  f'was {wild_type_length}')
+            length_errors += 1
     report, error_count = compare_config(ref_names,
                                          project_config,
                                          source_wild_types,
                                          reference_overrides=wild_types)
     print(report)
-    return error_count
+    return error_count + length_errors
 
 
 def check_hiv_coordinates(project_config, unchecked_ref_names: set):
