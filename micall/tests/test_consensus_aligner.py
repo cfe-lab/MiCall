@@ -405,7 +405,7 @@ def test_report_region(projects):
                           report_aminos,
                           amino_ref=amino_ref)
 
-    assert len(report_aminos) == 43
+    assert len(report_aminos) == 44
     assert len(report_nucleotides) == 129  # 27884-27756+1
     assert report_aminos[0].seed_amino.consensus_nuc_index == 755
     assert report_nucleotides[0].seed_nucleotide.consensus_index == 755
