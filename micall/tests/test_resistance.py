@@ -1306,7 +1306,7 @@ def test_filter_aminos_missing(asi_algorithms):
                             None,
                             'HIV1B-seed',
                             True)]
-    expected_aminos = [AminoList('INT', [{}]*288, None, 'HIV1B-seed'),
+    expected_aminos = [AminoList('INT', [{}]*289, None, 'HIV1B-seed'),
                        AminoList('PR', [{}]*99, None, 'HIV1B-seed'),
                        AminoList('RT',
                                  [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
@@ -1356,7 +1356,7 @@ def test_filter_aminos_missing_with_some_genotypes(asi_algorithms):
                                  '1A',
                                  'HCV-1a',
                                  True),
-                       AminoList('INT', [{}]*288, None, 'HIV1B-seed'),
+                       AminoList('INT', [{}]*289, None, 'HIV1B-seed'),
                        AminoList('PR', [{}]*99, None, 'HIV1B-seed'),
                        AminoList('RT',
                                  [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
@@ -1596,7 +1596,9 @@ TIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPDIVIYQYMDDLYVGSDLEI\
 GQHRTKIEELRQHLLRWGFTTPDKKHQKEPPFLWMGYELHPDKWTVQPIVLPEKDSWTVNDIQKL\
 VGKLNWASQIYAGIKVKQLCKLLRGTKALTEVIPLTEEAELELAENREILKEPVHGVYYDPSKDL\
 IAEIQKQGQGQWTYQIYQEPFKNLKTGKYARMRGAHTNDVKQLTEAVQKIATESIVIWGKTPKFK\
-LPIQKETWEAWWTEYWQATWIPEWEFVNTPPLVKLWYQLEKEPIVGAETF
+LPIQKETWEAWWTEYWQATWIPEWEFVNTPPLVKLWYQLEKEPIVGAETFYVDGAANRETKLGKA\
+GYVTDRGRQKVVSLTDTTNQKTELQAIHLALQDSGLEVNIVTDSQYALGIIQAQPDKSESELVSQ\
+IIEQLIKKEKVYLAWVPAHKGIGGNEQVDKLVSAGIRKVL
 """
 
         write_resistance(aminos,
@@ -1612,7 +1614,7 @@ LPIQKETWEAWWTEYWQATWIPEWEFVNTPPLVKLWYQLEKEPIVGAETF
     def test_low_coverage(self):
         rt_aminos = [{c: 1.0} for c in self.algorithms[None].stds['RT']]
         rt_aminos[40] = {'L': 1.0}  # pos 41
-        aminos = [AminoList('IN', [{}]*288, None, 'HIV1B-seed'),
+        aminos = [AminoList('IN', [{}]*289, None, 'HIV1B-seed'),
                   AminoList('PR', [{}]*99, None, 'HIV1B-seed'),
                   AminoList('RT', rt_aminos, None, 'HIV1B-seed')]
         resistance_csv = StringIO()

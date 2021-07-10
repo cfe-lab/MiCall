@@ -182,7 +182,7 @@ class AsiAlgorithmTest(TestCase):
         self.assertEqual(expected_mutations, result.mutations)
 
     def test_drug_classes(self):
-        aa_seq = [[]] * 440
+        aa_seq = [[]] * 560
         compared_attrs = ('code', 'name', 'drug_class')
         expected_drugs = [('3TC', 'lamivudine', 'NRTI'),
                           ('ABC', 'abacavir', 'NRTI'),
