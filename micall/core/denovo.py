@@ -172,6 +172,32 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
     return samples
 
 
+def separate_contigs(contigs_csv, ref_contigs_csv, noref_contigs_csv):
+    """ Separate contigs into those that mapped to or did not map to a reference.
+    :param contigs_csv:         file with contigs, open in read mode
+    :param ref_contigs_csv:     file for contigs that mapped to a reference, open in write mode
+    :param noref_contigs_csv:   file for contigs that did not map to a reference, open in write mode
+    """
+    threshold = 0.1
+    # we might want to keep all blast matches (regardless of how well they match)
+    fieldnames = ['ref', 'match', 'group_ref', 'contig']
+    ref_contig_writer = DictWriter(ref_contigs_csv, fieldnames)
+    noref_contig_writer = DictWriter(noref_contigs_csv, fieldnames)
+    contig_reader = DictReader(contigs_csv)
+    ref_contig_writer.writeheader()
+    noref_contig_writer.writeheader()
+    num_total = 0
+    num_match = 0
+    for row in contig_reader:
+        num_total += 1
+        if float(row['match']) > threshold:
+            ref_contig_writer.writerow(row)
+            num_match += 1
+        else:
+            noref_contig_writer.writerow(row)
+    return num_match, num_total - num_match
+
+
 def denovo(fastq1_path: str,
            fastq2_path: str,
            contigs_csv: typing.TextIO,
@@ -215,11 +241,19 @@ def denovo(fastq1_path: str,
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
-    contig_count = write_contig_refs(contigs_fasta_path,
-                                     contigs_csv,
-                                     blast_csv=blast_csv)
-    logger.info('Assembled %d contigs in %s (%ds) on %s.',
-                contig_count,
+    all_contigs_filename = os.path.join(tmp_dir, 'all_contigs.csv')
+    with open(all_contigs_filename, 'w') as all_contigs_csv:
+        contig_count = write_contig_refs(contigs_fasta_path,
+                                         all_contigs_csv,
+                                         blast_csv=blast_csv)
+    with open(all_contigs_filename, 'r') as all_contigs_csv, \
+            open(os.path.join(tmp_dir, 'noref_contigs.csv'), 'w') as noref_contigs_csv:
+        contigs_ref, contigs_noref = separate_contigs(all_contigs_csv, contigs_csv, noref_contigs_csv)
+
+    logger.info('Assembled %d contigs that mapped to a reference, and %d contigs that did not match to a reference,'
+                ' in %s (%ds) on %s.',
+                contigs_ref,
+                contigs_noref,
                 duration,
                 duration.total_seconds(),
                 fastq1_path)
