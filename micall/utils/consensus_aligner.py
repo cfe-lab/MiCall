@@ -235,7 +235,7 @@ class ConsensusAligner:
                            for alignment in self.alignments
                            if alignment.is_primary]
         self.alignments.sort(key=attrgetter('q_st'))
-        self.remove_overlaps()
+        self.adjust_alignments()
 
     def align_gotoh(self, coordinate_seq, consensus):
         gap_open_penalty = 15
@@ -279,7 +279,10 @@ class ConsensusAligner:
                 q_en=consensus_index,
                 cigar=cigar))
 
-    def remove_overlaps(self):
+    def adjust_alignments(self):
+        """ Remove big deletions and overlaps between alignments. """
+
+        # Overlaps
         max_query_pos = -1
         for alignment_num, alignment in enumerate(self.alignments):
             query_start = alignment.q_st
@@ -297,6 +300,58 @@ class ConsensusAligner:
                                                       NM=-1)
                 self.alignments[alignment_num] = new_alignment
             max_query_pos = alignment.q_en
+
+        # Big deletions
+        new_alignments = []
+        for alignment in self.alignments:
+            new_cigar = []
+            query_start = query_end = alignment.q_st
+            ref_start = ref_end = alignment.r_st
+            for size, action in alignment.cigar:
+                if action == CigarActions.MATCH:
+                    new_cigar.append([size, action])
+                    query_end += size
+                    ref_end += size
+                elif action == CigarActions.INSERT:
+                    new_cigar.append([size, action])
+                    query_end += size
+                else:
+                    assert action == CigarActions.DELETE
+                    if size <= 6:
+                        new_cigar.append([size, action])
+                        ref_end += size
+                    else:
+                        new_alignments.append(AlignmentWrapper.wrap(
+                            alignment,
+                            q_st=query_start,
+                            q_en=query_end,
+                            r_st=ref_start,
+                            r_en=ref_end,
+                            cigar=new_cigar,
+                            # Unneeded fields => -1.
+                            mlen=-1,
+                            blen=-1,
+                            NM=-1))
+                        query_start = query_end
+                        ref_end += size
+                        ref_start = ref_end
+                        new_cigar = []
+            if len(new_cigar) == len(alignment.cigar):
+                # No change, use original alignment.
+                new_alignments.append(alignment)
+            else:
+                new_alignments.append(AlignmentWrapper.wrap(
+                    alignment,
+                    q_st=query_start,
+                    q_en=query_end,
+                    r_st=ref_start,
+                    r_en=ref_end,
+                    cigar=new_cigar,
+                    # Unneeded fields => -1.
+                    mlen=-1,
+                    blen=-1,
+                    NM=-1))
+        self.alignments = new_alignments
 
     def clear(self):
         self.coordinate_name = self.consensus = self.amino_consensus = ''

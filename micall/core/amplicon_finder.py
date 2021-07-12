@@ -1,4 +1,5 @@
 import os
+import typing
 from collections import Counter
 from csv import DictWriter, DictReader
 from pathlib import Path
@@ -37,11 +38,11 @@ def merge_reads(fastq1_path, fastq2_path, joined_fastq_path, merge_lengths_csv, 
             writer.writerow(dict(merge_length=merge_length, count=count))
 
 
-def plot_merge_lengths(read_entropy_path: Path):
+def plot_merge_lengths(read_entropy_file: typing.IO) -> plt.Figure:
     plots = []
     fig, ax1 = plt.subplots()
     # noinspection PyTypeChecker
-    merge_entropy = np.genfromtxt(read_entropy_path,
+    merge_entropy = np.genfromtxt(read_entropy_file,
                                   delimiter=',',
                                   names=True,
                                   dtype=float)
@@ -105,7 +106,8 @@ def plot_merge_lengths(read_entropy_path: Path):
 
 
 def write_merge_lengths_plot(read_entropy_path: str, plot_path: str):
-    fig = plot_merge_lengths(Path(read_entropy_path))
+    with open(read_entropy_path) as read_entropy:
+        fig = plot_merge_lengths(read_entropy)
     fig.savefig(plot_path)
     plt.close(fig)
 
@@ -186,7 +188,8 @@ def main():
         '84681A-V3-WYD-T2-1-V3LOOP_S40')
     scratch_path = scratch_paths['hcv']
     read_entropy_path = scratch_path / 'read_entropy.csv'
-    f = plot_merge_lengths(read_entropy_path)
+    with read_entropy_path.open() as read_entropy:
+        f = plot_merge_lengths(read_entropy)
     f.savefig(scratch_path / 'read_entropy.svg')
     plt.show()
     print('Done.')

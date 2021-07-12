@@ -156,6 +156,80 @@ def test_start_contig_overlapping_sections(projects):
     assert_alignments(aligner, *expected_alignments)
 
 
+def test_start_contig_big_deletion(projects):
+    """ Split alignments around big deletions. """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    consensus = seed_seq[789:1282] + seed_seq[1863:2278]
+    expected_alignments = [AlignmentWrapper(ctg='N/A',
+                                            ctg_len=len(seed_seq),
+                                            r_st=789,
+                                            r_en=1282,
+                                            q_st=0,
+                                            q_en=493,
+                                            mapq=60,
+                                            # Unneeded fields forced to -1.
+                                            mlen=-1,
+                                            blen=-1,
+                                            NM=-1),
+                           AlignmentWrapper(ctg='N/A',
+                                            ctg_len=len(seed_seq),
+                                            r_st=1863,
+                                            r_en=2278,
+                                            q_st=493,
+                                            q_en=908,
+                                            mapq=60,
+                                            # Unneeded fields forced to -1.
+                                            mlen=-1,
+                                            blen=-1,
+                                            NM=-1)]
+    aligner = ConsensusAligner(projects)
+
+    aligner.start_contig(seed_name, consensus)
+
+    assert_alignments(aligner, *expected_alignments)
+
+
+def test_start_contig_insert_and_big_deletion(projects):
+    """ Split alignments around big deletions. """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    consensus = (seed_seq[789:900] +
+                 'ACTGAC' +
+                 seed_seq[900:1282] +
+                 seed_seq[1863:2278])
+    expected_alignments = [AlignmentWrapper(ctg='N/A',
+                                            ctg_len=len(seed_seq),
+                                            r_st=789,
+                                            r_en=1282,
+                                            q_st=0,
+                                            q_en=499,
+                                            cigar=[[111, CigarActions.MATCH],
+                                                   [6, CigarActions.INSERT],
+                                                   [382, CigarActions.MATCH]],
+                                            mapq=60,
+                                            # Unneeded fields forced to -1.
+                                            mlen=-1,
+                                            blen=-1,
+                                            NM=-1),
+                           AlignmentWrapper(ctg='N/A',
+                                            ctg_len=len(seed_seq),
+                                            r_st=1863,
+                                            r_en=2278,
+                                            q_st=499,
+                                            q_en=914,
+                                            mapq=60,
+                                            # Unneeded fields forced to -1.
+                                            mlen=-1,
+                                            blen=-1,
+                                            NM=-1)]
+    aligner = ConsensusAligner(projects)
+
+    aligner.start_contig(seed_name, consensus)
+
+    assert_alignments(aligner, *expected_alignments)
+
+
 def test_start_contig_short_consensus(projects):
     """ Consensus is too short for minimap2, fall back to Gotoh. """
     seed_name = 'SARS-CoV-2-seed'

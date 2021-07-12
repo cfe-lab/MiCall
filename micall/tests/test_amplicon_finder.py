@@ -3,7 +3,7 @@ from io import StringIO
 from pathlib import Path
 
 from micall.core.amplicon_finder import merge_reads, count_kmers, calculate_entropy_from_counts, calculate_entropy, \
-    merge_for_entropy
+    merge_for_entropy, plot_merge_lengths
 
 microtest_path = Path(__file__).parent / 'microtest'
 
@@ -135,6 +135,22 @@ AAAAAAAAAAAA
     entropy = calculate_entropy(merged_fastq, merge_lengths)
 
     assert expected_entropy == entropy
+
+
+def test_plot_merge_lengths():
+    read_entropy = StringIO("""\
+merge_length,count,entropy
+100,5,0.2
+101,5,0.2
+102,5,0.9
+103,5,0.2
+""")
+
+    figure = plot_merge_lengths(read_entropy)
+
+    assert len(figure.axes) == 2
+    assert figure.axes[0].get_title() == 'Count of merged reads at each length'
+    assert figure.axes[1].get_title() == ''
 
 
 def test_merge_for_entropy(tmpdir):

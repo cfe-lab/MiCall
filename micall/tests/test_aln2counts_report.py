@@ -789,6 +789,36 @@ HIV1-B-FR-K03455-seed,RT,15,70,461,9,0,0,0,0,0,0,0,0,9"""
     assert key_report == expected_text
 
 
+def test_minimap_gap(default_sequence_report, projects):
+    """ Large gap should still have coverage on either side. """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    read_seq = seed_seq[789:1282] + seed_seq[1863:2292]
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads(f"""\
+HIV1-B-FR-K03455-seed,15,0,9,0,{read_seq}
+""")
+    #                                     A,C,G,T
+    expected_text = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,493,493,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,494,1075,9,0,0,0,0,0,0,0,0,9"""
+    report_file = StringIO()
+    default_sequence_report.write_nuc_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 961
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+
+    key_lines = report_lines[493:495]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
 # noinspection DuplicatedCode
 def test_contig_coverage_report_huge_gap(default_sequence_report):
     """ A gap so big that Gotoh can't bridge it, but minimap2 can. """
