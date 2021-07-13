@@ -109,7 +109,8 @@ class Sample:
                 excluded_seeds=(),
                 excluded_projects=(),
                 force_gzip=False,
-                use_denovo=False):
+                use_denovo=False,
+                velvet_args=None):
         """ Process a single sample.
 
         :param pssm: the pssm library for running G2P analysis
@@ -171,7 +172,7 @@ class Sample:
                       merged_contigs_csv=merged_contigs_csv)
 
         if use_denovo:
-            self.run_denovo(excluded_seeds)
+            self.run_denovo(excluded_seeds, velvet_args=velvet_args)
         else:
             self.run_mapping(excluded_seeds)
 
@@ -309,7 +310,7 @@ class Sample:
                   scratch_path,
                   debug_file_prefix=debug_file_prefix)
 
-    def run_denovo(self, excluded_seeds):
+    def run_denovo(self, excluded_seeds, velvet_args=None):
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
         with open(self.merged_contigs_csv) as merged_contigs_csv, \
@@ -320,7 +321,8 @@ class Sample:
                    contigs_csv,
                    self.scratch_path,
                    merged_contigs_csv,
-                   blast_csv=blast_csv)
+                   blast_csv=blast_csv,
+                   velvet_args=velvet_args)
         logger.info('Running remap on %s.', self)
         if self.debug_remap:
             debug_file_prefix = os.path.join(scratch_path, 'debug')

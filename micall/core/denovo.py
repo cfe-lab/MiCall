@@ -203,7 +203,8 @@ def denovo(fastq1_path: str,
            contigs_csv: typing.TextIO,
            work_dir: str = '.',
            merged_contigs_csv: typing.TextIO = None,
-           blast_csv: typing.TextIO = None):
+           blast_csv: typing.TextIO = None,
+           velvet_args=None):
     """ Use de novo assembly to build contigs from reads.
 
     :param fastq1_path: FASTQ file name for read 1 reads
@@ -230,12 +231,33 @@ def denovo(fastq1_path: str,
         check=True)
     velvet_out_path = os.path.join(tmp_dir, 'velvet_out')
 
-    velveth_args = [VELVETH, velvet_out_path, '31', '-fastq', '-interleaved', '-shortPaired', joined_path]
-    run(velveth_args, check=True, stdout=PIPE, stderr=STDOUT)
+    if velvet_args is None:
+        velvet_args = {'hash': 31,
+                       'insert': 100,
+                       'expcov': 7000,
+                       'covcutoff': 100,
+                       'mincontig': 200}
 
-    velvetg_args = [VELVETG, velvet_out_path, '-ins_length', '100', '-exp_cov', '7000', '-cov_cutoff', '100',
-                    '-min_contig_lgth', '200']
-    run(velvetg_args, check=True, stdout=PIPE, stderr=STDOUT)
+    velveth_command = [VELVETH,
+                       velvet_out_path,
+                       str(velvet_args['hash']),
+                       '-fastq',
+                       '-interleaved',
+                       '-shortPaired',
+                       joined_path]
+    run(velveth_command, check=True, stdout=PIPE, stderr=STDOUT)
+
+    velvetg_command = [VELVETG,
+                       velvet_out_path,
+                       '-ins_length',
+                       str(velvet_args['insert']),
+                       '-exp_cov',
+                       str(velvet_args['expcov']),
+                       '-cov_cutoff',
+                       str(velvet_args['covcutoff']),
+                       '-min_contig_lgth',
+                       str(velvet_args['mincontig'])]
+    run(velvetg_command, check=True, stdout=PIPE, stderr=STDOUT)
 
     contigs_fasta_path = os.path.join(velvet_out_path, 'contigs.fa')
 

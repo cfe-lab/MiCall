@@ -343,6 +343,31 @@ def get_parser(default_max_active):
             "--project_code",
             "-p",
             help="Select primers to trim: HCV or SARSCOV2.")
+        command_parser.add_argument(
+            "-velvet_hash",
+            type=int,
+            default=31
+        )
+        command_parser.add_argument(
+            "-velvet_insert",
+            type=int,
+            default=100
+        )
+        command_parser.add_argument(
+            "-velvet_expcov",
+            type=int,
+            default=7000
+        )
+        command_parser.add_argument(
+            "-velvet_covcutoff",
+            type=int,
+            default=100
+        )
+        command_parser.add_argument(
+            "-velvet_mincontig",
+            type=int,
+            default=200
+        )
 
     return parser
 
@@ -943,13 +968,19 @@ def process_sample(sample, args, pssm, use_denovo=False):
     """
     sample.debug_remap = args.debug_remap
     sample.skip = args.skip
+    args_velvet = {'hash': args.velvet_hash,
+                   'insert': args.velvet_insert,
+                   'expcov': args.velvet_expcov,
+                   'covcutoff': args.velvet_covcutoff,
+                   'mincontig': args.velvet_mincontig}
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
         sample.process(pssm,
                        excluded_seeds,
                        excluded_projects,
-                       use_denovo=use_denovo)
+                       use_denovo=use_denovo,
+                       velvet_args=args_velvet)
     except Exception:
         message = 'Failed to process {}.'.format(sample)
         logger.error(message, exc_info=True)
