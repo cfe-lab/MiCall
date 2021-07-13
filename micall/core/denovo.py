@@ -20,8 +20,8 @@ from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
 
-VELVETG = "velvetg"
-VELVETH = "velveth"
+VELVETG = "/home/charlotte/Documents/Git/velvet/velvetg"
+VELVETH = "/home/charlotte/Documents/Git/velvet/velveth"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
                                 'blast_db',
