@@ -454,15 +454,15 @@ class ConsensusAligner:
                     ref_nuc_index += section_size
                     continue
                 assert section_action == CigarActions.MATCH, section_action
-                if frame_offset < 0:
-                    # Skip over insertions at the start of the consensus before
-                    # choosing the right reading frame.
-                    frame_offset = (ref_nuc_index - start_pos + 1 -
-                                    consensus_nuc_index) % 3
-                    seed_aminos = self.reading_frames[frame_offset]
                 section_nuc_index = 0
                 while section_nuc_index < section_size:
                     if start_pos - 1 <= ref_nuc_index < end_pos:
+                        if frame_offset < 0:
+                            # Skip over insertions and deletions at the start of the
+                            # consensus before choosing the right reading frame.
+                            frame_offset = (ref_nuc_index - start_pos + 1 -
+                                            consensus_nuc_index) % 3
+                            seed_aminos = self.reading_frames[frame_offset]
                         while True:
                             # Find seed amino that covers consensus_nuc_index.
                             seed_amino = seed_aminos[source_amino_index]
