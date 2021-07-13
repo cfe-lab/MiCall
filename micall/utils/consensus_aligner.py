@@ -1,4 +1,5 @@
 import typing
+from dataclasses import dataclass
 from enum import IntEnum
 from operator import attrgetter
 
@@ -7,6 +8,9 @@ from mappy import Alignment, Aligner
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, SeedNucleotide
+
+# A section between reading frame shifts must be at least this long to be split.
+MINIMUM_READING_FRAME_SHIFT = 30
 
 CigarActions = IntEnum(
     'CigarActions',
@@ -235,7 +239,7 @@ class ConsensusAligner:
                            for alignment in self.alignments
                            if alignment.is_primary]
         self.alignments.sort(key=attrgetter('q_st'))
-        self.adjust_alignments()
+        self.split_alignments()
 
     def align_gotoh(self, coordinate_seq, consensus):
         gap_open_penalty = 15
@@ -279,10 +283,10 @@ class ConsensusAligner:
                 q_en=consensus_index,
                 cigar=cigar))
 
-    def adjust_alignments(self):
-        """ Remove big deletions and overlaps between alignments. """
+    def split_alignments(self):
+        """ Split alignments into sections that can be translated to aminos. """
 
-        # Overlaps
+        # Remove overlaps between alignments.
         max_query_pos = -1
         for alignment_num, alignment in enumerate(self.alignments):
             query_start = alignment.q_st
@@ -301,56 +305,88 @@ class ConsensusAligner:
                 self.alignments[alignment_num] = new_alignment
             max_query_pos = alignment.q_en
 
-        # Big deletions
+        # Split alignments around frame shifts and big deletions.
         new_alignments = []
         for alignment in self.alignments:
-            new_cigar = []
-            query_start = query_end = alignment.q_st
-            ref_start = ref_end = alignment.r_st
-            for size, action in alignment.cigar:
+            breakpoints = [AlignmentBreakpoint(alignment.q_st,
+                                               alignment.q_st,
+                                               alignment.r_st,
+                                               alignment.r_st,
+                                               0,
+                                               0)]
+            query_end = alignment.q_st
+            ref_end = alignment.r_st
+            old_reading_frame = (alignment.r_st - alignment.q_st) % 3
+            for cigar_index, (size, action) in enumerate(alignment.cigar):
                 if action == CigarActions.MATCH:
-                    new_cigar.append([size, action])
                     query_end += size
                     ref_end += size
                 elif action == CigarActions.INSERT:
-                    new_cigar.append([size, action])
                     query_end += size
+                    new_reading_frame = (ref_end - query_end) % 3
+                    if old_reading_frame != new_reading_frame:
+                        breakpoints.append(AlignmentBreakpoint(query_end-size,
+                                                               query_end,
+                                                               ref_end,
+                                                               ref_end,
+                                                               cigar_index,
+                                                               cigar_index+1))
+                        old_reading_frame = new_reading_frame
                 else:
                     assert action == CigarActions.DELETE
-                    if size <= 6:
-                        new_cigar.append([size, action])
-                        ref_end += size
-                    else:
-                        new_alignments.append(AlignmentWrapper.wrap(
-                            alignment,
-                            q_st=query_start,
-                            q_en=query_end,
-                            r_st=ref_start,
-                            r_en=ref_end,
-                            cigar=new_cigar,
-                            # Unneeded fields => -1.
-                            mlen=-1,
-                            blen=-1,
-                            NM=-1))
-                        query_start = query_end
-                        ref_end += size
-                        ref_start = ref_end
-                        new_cigar = []
-            if len(new_cigar) == len(alignment.cigar):
-                # No change, use original alignment.
+                    new_reading_frame = (ref_end + size - query_end)
+                    if new_reading_frame != old_reading_frame or 6 < size:
+                        breakpoints.append(AlignmentBreakpoint(query_end,
+                                                               query_end,
+                                                               ref_end,
+                                                               ref_end+size,
+                                                               cigar_index,
+                                                               cigar_index+1))
+                        old_reading_frame = new_reading_frame
+                    ref_end += size
+            breakpoints.append(AlignmentBreakpoint(alignment.q_en,
+                                                   alignment.q_en,
+                                                   alignment.r_en,
+                                                   alignment.r_en,
+                                                   len(alignment.cigar),
+                                                   len(alignment.cigar)))
+            filtered_breakpoints = [breakpoints[0]]
+            prev_breakpoints = iter(breakpoints)
+            mid_breakpoints = iter(breakpoints)
+            next_breakpoints = iter(breakpoints)
+            next(mid_breakpoints)
+            next(next_breakpoints)
+            next(next_breakpoints)
+            for prev_breakpoint, mid_breakpoint, next_breakpoint in zip(
+                    prev_breakpoints, mid_breakpoints, next_breakpoints):
+                prev_size = (mid_breakpoint.from_query_pos -
+                             prev_breakpoint.to_query_pos)
+                next_size = (next_breakpoint.from_query_pos -
+                             mid_breakpoint.to_query_pos)
+                if MINIMUM_READING_FRAME_SHIFT <= min(prev_size, next_size):
+                    filtered_breakpoints.append(mid_breakpoint)
+            filtered_breakpoints.append(breakpoints[-1])
+            if len(filtered_breakpoints) == 2:
                 new_alignments.append(alignment)
             else:
-                new_alignments.append(AlignmentWrapper.wrap(
-                    alignment,
-                    q_st=query_start,
-                    q_en=query_end,
-                    r_st=ref_start,
-                    r_en=ref_end,
-                    cigar=new_cigar,
-                    # Unneeded fields => -1.
-                    mlen=-1,
-                    blen=-1,
-                    NM=-1))
+                prev_breakpoints = iter(breakpoints)
+                next_breakpoints = iter(breakpoints)
+                next(next_breakpoints)
+                for prev_breakpoint, next_breakpoint in zip(
+                        prev_breakpoints, next_breakpoints):
+                    new_alignment = AlignmentWrapper.wrap(
+                        alignment,
+                        q_st=prev_breakpoint.to_query_pos,
+                        q_en=next_breakpoint.from_query_pos,
+                        r_st=prev_breakpoint.to_ref_pos,
+                        r_en=next_breakpoint.from_ref_pos,
+                        cigar=alignment.cigar[prev_breakpoint.to_cigar:
+                                              next_breakpoint.from_cigar],
+                        # Unneeded fields => -1.
+                        mlen=-1,
+                        blen=-1,
+                        NM=-1)
+                    new_alignments.append(new_alignment)
         self.alignments = new_alignments
 
     def clear(self):
@@ -615,3 +651,14 @@ class ConsensusAligner:
                     ref_nuc_index += 1
                     consensus_nuc_index += 1
                     section_nuc_index += 1
+
+
+@dataclass
+class AlignmentBreakpoint:
+    """ Describe the pieces to remove from an alignment. """
+    from_query_pos: int
+    to_query_pos: int
+    from_ref_pos: int
+    to_ref_pos: int
+    from_cigar: int
+    to_cigar: int

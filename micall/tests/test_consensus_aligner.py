@@ -191,7 +191,7 @@ def test_start_contig_big_deletion(projects):
 
 
 def test_start_contig_insert_and_big_deletion(projects):
-    """ Split alignments around big deletions. """
+    """ Split alignments around a big deletion after an insert. """
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = (seed_seq[789:900] +
@@ -228,6 +228,87 @@ def test_start_contig_insert_and_big_deletion(projects):
     aligner.start_contig(seed_name, consensus)
 
     assert_alignments(aligner, *expected_alignments)
+
+
+def test_start_contig_frame_change_insert(projects):
+    """ Split alignments when the reading frame changes. """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    consensus = (seed_seq[800:900] +
+                 'C' +
+                 seed_seq[900:1000])
+    expected_alignments = [AlignmentWrapper(ctg='N/A',
+                                            ctg_len=len(seed_seq),
+                                            r_st=800,
+                                            r_en=900,
+                                            q_st=0,
+                                            q_en=100,
+                                            mapq=60,
+                                            # Unneeded fields forced to -1.
+                                            mlen=-1,
+                                            blen=-1,
+                                            NM=-1),
+                           AlignmentWrapper(ctg='N/A',
+                                            ctg_len=len(seed_seq),
+                                            r_st=900,
+                                            r_en=1000,
+                                            q_st=101,
+                                            q_en=201,
+                                            mapq=60,
+                                            # Unneeded fields forced to -1.
+                                            mlen=-1,
+                                            blen=-1,
+                                            NM=-1)]
+    aligner = ConsensusAligner(projects)
+
+    aligner.start_contig(seed_name, consensus)
+
+    assert_alignments(aligner, *expected_alignments)
+
+
+def test_start_contig_frame_change_delete(projects):
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    consensus = (seed_seq[800:899] + seed_seq[900:1000])
+    expected_alignments = [AlignmentWrapper(ctg='N/A',
+                                            ctg_len=len(seed_seq),
+                                            r_st=800,
+                                            r_en=899,
+                                            q_st=0,
+                                            q_en=99,
+                                            mapq=60,
+                                            # Unneeded fields forced to -1.
+                                            mlen=-1,
+                                            blen=-1,
+                                            NM=-1),
+                           AlignmentWrapper(ctg='N/A',
+                                            ctg_len=len(seed_seq),
+                                            r_st=900,
+                                            r_en=1000,
+                                            q_st=99,
+                                            q_en=199,
+                                            mapq=60,
+                                            # Unneeded fields forced to -1.
+                                            mlen=-1,
+                                            blen=-1,
+                                            NM=-1)]
+    aligner = ConsensusAligner(projects)
+
+    aligner.start_contig(seed_name, consensus)
+
+    assert_alignments(aligner, *expected_alignments)
+
+
+def test_start_contig_close_frame_changes(projects):
+    """ The reading frame changes and then changes back within 30 bases. """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    consensus = (seed_seq[800:899] + seed_seq[900:920] + seed_seq[922:1000])
+    aligner = ConsensusAligner(projects)
+
+    aligner.start_contig(seed_name, consensus)
+
+    assert len(aligner.alignments) == 1
 
 
 def test_start_contig_short_consensus(projects):
@@ -323,18 +404,18 @@ def test_start_contig_matched_deletion_gotoh(projects):
 def test_start_contig_insertion_minimap2(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
-    consensus = seed_seq[2000:2030] + 'T' + seed_seq[2030:2060]
+    consensus = seed_seq[2000:2030] + 'ACT' + seed_seq[2030:2060]
     expected_alignment = AlignmentWrapper(ctg='N/A',
                                           ctg_len=len(seed_seq),
                                           r_st=2000,
                                           r_en=2060,
                                           q_st=0,
-                                          q_en=61,
-                                          mapq=9,
+                                          q_en=63,
+                                          mapq=7,
                                           cigar=[[30, CigarActions.MATCH],
-                                                 [1, CigarActions.INSERT],
+                                                 [3, CigarActions.INSERT],
                                                  [30, CigarActions.MATCH]],
-                                          NM=1)
+                                          NM=3)
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
