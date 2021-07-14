@@ -15,6 +15,9 @@ class SeedAmino(object):
     def __init__(self, consensus_nuc_index, counts=None):
         self.v3_overlap = 0
         self.consensus_nuc_index = consensus_nuc_index
+        self.all_consensus_nuc_indexes = set()
+        if consensus_nuc_index is not None:
+            self.all_consensus_nuc_indexes.add(consensus_nuc_index)
         self.counts = counts or Counter()  # {amino: count}
         self.codon_counts = Counter()  # {codon_nucs: count}
         self.nucleotides = []
@@ -69,6 +72,7 @@ class SeedAmino(object):
         :param start_nuc: first nucleotide index to copy: 0, 1, or 2.
         :param end_nuc: last nucleotide index to copy: 0, 1, or 2.
         """
+        self.all_consensus_nuc_indexes.update(other.all_consensus_nuc_indexes)
         if self.read_count and other.read_count:
             self.consensus_nuc_index = None
         elif other.read_count:
