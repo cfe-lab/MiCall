@@ -236,7 +236,8 @@ def denovo(fastq1_path: str,
                        'insert': 100,
                        'expcov': 7000,
                        'covcutoff': 100,
-                       'mincontig': 200}
+                       'mincontig': 200,
+                       'keepnoref': False}
 
     velveth_command = [VELVETH,
                        velvet_out_path,
@@ -264,21 +265,31 @@ def denovo(fastq1_path: str,
     os.chdir(start_dir)
     duration = datetime.now() - start_time
     all_contigs_filename = os.path.join(tmp_dir, 'all_contigs.csv')
-    with open(all_contigs_filename, 'w') as all_contigs_csv:
+    if velvet_args['keepnoref']:
         contig_count = write_contig_refs(contigs_fasta_path,
-                                         all_contigs_csv,
+                                         contigs_csv,
                                          blast_csv=blast_csv)
-    with open(all_contigs_filename, 'r') as all_contigs_csv, \
-            open(os.path.join(tmp_dir, 'noref_contigs.csv'), 'w') as noref_contigs_csv:
-        contigs_ref, contigs_noref = separate_contigs(all_contigs_csv, contigs_csv, noref_contigs_csv)
+        logger.info('Assembled %d contigs in %s (%ds) on %s.',
+                    contig_count,
+                    duration,
+                    duration.total_seconds(),
+                    fastq1_path)
+    else:
+        with open(all_contigs_filename, 'w') as all_contigs_csv:
+            contig_count = write_contig_refs(contigs_fasta_path,
+                                             all_contigs_csv,
+                                             blast_csv=blast_csv)
+        with open(all_contigs_filename, 'r') as all_contigs_csv, \
+                open(os.path.join(tmp_dir, 'noref_contigs.csv'), 'w') as noref_contigs_csv:
+            contigs_ref, contigs_noref = separate_contigs(all_contigs_csv, contigs_csv, noref_contigs_csv)
 
-    logger.info('Assembled %d contigs that mapped to a reference, and %d contigs that did not match to a reference,'
-                ' in %s (%ds) on %s.',
-                contigs_ref,
-                contigs_noref,
-                duration,
-                duration.total_seconds(),
-                fastq1_path)
+        logger.info('Assembled %d contigs that mapped to a reference, and %d contigs that did not map to a reference,'
+                    ' in %s (%ds) on %s.',
+                    contigs_ref,
+                    contigs_noref,
+                    duration,
+                    duration.total_seconds(),
+                    fastq1_path)
 
 
 if __name__ == '__main__':

@@ -368,6 +368,10 @@ def get_parser(default_max_active):
             type=int,
             default=200
         )
+        command_parser.add_argument(
+            "-velvet_keepnoref",
+            action='store_true'
+        )
 
     return parser
 
@@ -972,7 +976,8 @@ def process_sample(sample, args, pssm, use_denovo=False):
                    'insert': args.velvet_insert,
                    'expcov': args.velvet_expcov,
                    'covcutoff': args.velvet_covcutoff,
-                   'mincontig': args.velvet_mincontig}
+                   'mincontig': args.velvet_mincontig,
+                   'keepnoref': args.velvet_keepnoref}
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
