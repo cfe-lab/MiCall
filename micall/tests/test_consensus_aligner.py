@@ -216,10 +216,10 @@ def test_start_contig_big_deletion(projects):
                                  list(range(1864, 2279)),
                                  790,
                                  2292)
-    assert report_aminos[162].seed_amino.get_consensus() == 'A'
-    assert report_aminos[163].seed_amino.get_consensus() == '-'
-    assert report_aminos[162].seed_amino.counts['A'] == 1
-    assert report_aminos[163].seed_amino.deletions == 1
+    assert report_aminos[164].seed_amino.get_consensus() == 'K'
+    assert report_aminos[165].seed_amino.get_consensus() == '?'
+    assert report_aminos[164].seed_amino.counts['K'] == 1
+    assert report_aminos[165].seed_amino.deletions == 1
 
 
 # noinspection DuplicatedCode
@@ -585,7 +585,7 @@ def test_report_region(projects):
 
     assert len(report_aminos) == 44
     assert len(report_nucleotides) == 132  # 27887-27756+1
-    assert report_aminos[0].seed_amino.consensus_nuc_index == 755
+    assert report_aminos[0].seed_amino.consensus_nuc_index == 755  # currently, 758
     assert report_nucleotides[0].seed_nucleotide.consensus_index == 755
 
 
