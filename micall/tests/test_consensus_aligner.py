@@ -216,10 +216,10 @@ def test_start_contig_big_deletion(projects):
                                  list(range(1864, 2279)),
                                  790,
                                  2292)
-    assert report_aminos[164].seed_amino.get_consensus() == 'K'
-    assert report_aminos[165].seed_amino.get_consensus() == '?'
-    assert report_aminos[164].seed_amino.counts['K'] == 1
-    assert report_aminos[165].seed_amino.deletions == 1
+    assert report_aminos[163].seed_amino.get_consensus() == 'F'
+    assert report_aminos[164].seed_amino.get_consensus() == '?'
+    assert report_aminos[163].seed_amino.counts['F'] == 1
+    assert report_aminos[164].seed_amino.deletions == 1
 
 
 # noinspection DuplicatedCode

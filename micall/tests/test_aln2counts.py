@@ -445,7 +445,7 @@ A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,cove
         expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
 A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R1-seed,R1,15,1,1,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R1-seed,R1,15,,2,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,9
 R1-seed,R1,15,,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,6
 """
@@ -690,7 +690,7 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
         self.report.write_nuc_counts()
         self.report.write_amino_counts()
 
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        assert self.report_file.getvalue() == expected_text
 
     def testMultiplePrefixSoftClippingAminoReport(self):
         """ Combine the soft clipping data with the read counts.
@@ -802,7 +802,7 @@ R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         self.report.write_nuc_counts()  # calculates ins counts
         self.report.write_amino_counts()
 
-        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+        assert self.report_file.getvalue() == expected_text
 
     def testSubstitutionAtBoundary(self):
         """ In this sample, there are nine identical reads with six codons.
@@ -812,13 +812,14 @@ R1-seed,R1,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         TGG -> W
         ATC -> I
         AAT -> N
-        The R4 coordinate reference is SIN, so its first position will not map.
-        However, the R4-seed reference matches the BAD and the IN, so the first
-        position should get treated as a substitution.
+        GGG -> G
+        The R4 coordinate reference is SING, so its first position will not map.
+        However, the ING should map, so the first position should get treated as
+        a substitution.
         """
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
-R4-seed,15,0,9,0,ATGGCAAACTGGATCAAT
+R4-seed,15,0,9,0,ATGGCAAACTGGATCAATGGG
 """)
 
         expected_text = """\
@@ -827,13 +828,14 @@ A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,cove
 R4-seed,R4,15,10,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,9
 R4-seed,R4,15,13,2,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R4-seed,R4,15,16,3,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R4-seed,R4,15,19,4,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """
 
         self.report.write_amino_header(self.report_file)
         self.report.read(aligned_reads)
         self.report.write_amino_counts()
 
-        self.assertEqual(expected_text, self.report_file.getvalue())
+        assert self.report_file.getvalue() == expected_text
 
     def testCoverageSummary(self):
         """ R1 has coverage 9.
@@ -1217,7 +1219,7 @@ R3-seed,R3,15,19,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         """
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
-R5-seed,15,0,9,0,AAATTTGGCCCCCGA
+R5-seed,15,0,9,0,AAATTTGGCCCCCGACCTCAGGTCACTCTTTGG
 """)
 
         # seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,
@@ -1230,6 +1232,11 @@ R5-seed,R5,15,4,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R5-seed,R5,15,7,3,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R5-seed,R5,15,10,4,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R5-seed,R5,15,13,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+R5-seed,R5,15,16,6,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R5-seed,R5,15,19,7,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R5-seed,R5,15,22,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
+R5-seed,R5,15,25,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,9
+R5-seed,R5,15,28,10,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """
 
         self.report.write_amino_header(self.report_file)

@@ -153,26 +153,26 @@ def create_sequence_report():
 "R4-seed": {
   "is_nucleotide": true,
   "reference": [
-    "ATGGCAAACTCAATCAAT"
+    "ATGGCAAACTCAATCAATGGG"
   ]
 },
 "R4": {
   "is_nucleotide": false,
   "reference": [
-    "SIN"
+    "SING"
   ]
 },
 "R5-seed": {
   "comment": "Coord has G that's not in seed.",
   "is_nucleotide": true,
   "reference": [
-    "AAATTTCCGAGA"
+    "AAATTTCCGAGACCTCAGGTCACTCTTTGG"
   ]
 },
 "R5": {
   "is_nucleotide": false,
   "reference": [
-    "KFGPR"
+    "KFGPRPQVTLW"
   ]
 },
 "R6a-seed": {
@@ -243,12 +243,12 @@ def create_sequence_report():
   coordinates: R4-seed
   landmarks:
     # Extra 3 positions for stop codons to get dropped.
-    - {name: R4, start: 10, end: 21}
+    - {name: R4, start: 10, end: 24}
 - seed_pattern: R5-.*
   coordinates: R5-seed
   landmarks:
     # Extra 3 positions for stop codons to get dropped.
-    - {name: R5, start: 1, end: 15}
+    - {name: R5, start: 1, end: 33}
 - seed_pattern: R7-.*
   coordinates: R7-seed
   landmarks:
@@ -820,10 +820,10 @@ HIV1-B-FR-K03455-seed,PR,15,MAX,0,0,{read_seq}
 
 
 def test_minimap_gap(default_sequence_report, projects):
-    """ Large gap should still have coverage on either side. """
+    """ Large gap should still have coverage on either side, plus deletions. """
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
-    read_seq = seed_seq[789:1282] + seed_seq[1863:2292]
+    read_seq = seed_seq[789:1282] + seed_seq[1861:2292]
 
     # refname,qcut,rank,count,offset,seq
     aligned_reads = prepare_reads(f"""\
@@ -832,7 +832,10 @@ HIV1-B-FR-K03455-seed,15,0,9,0,{read_seq}
     #                                     A,C,G,T
     expected_text = """\
 HIV1-B-FR-K03455-seed,HIV1B-gag,15,493,493,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,494,1075,9,0,0,0,0,0,0,0,0,9"""
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,494,0,0,0,0,0,9,0,0,0,9
+...
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,1072,0,0,0,0,0,9,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,494,1073,9,0,0,0,0,0,0,0,0,9"""
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
     default_sequence_report.read(aligned_reads)
@@ -840,11 +843,11 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,494,1075,9,0,0,0,0,0,0,0,0,9"""
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 1545
+    expected_size = 1542
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[493:495]
+    key_lines = report_lines[493:495] + ['...'] + report_lines[1072:1074]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 
@@ -878,7 +881,7 @@ HIV1-B-FR-K03455-seed,PR,15,152,2,0,9,0,0,0,0,0,0,0,9"""
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[190:193]
+    key_lines = report_lines[192:195]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 
