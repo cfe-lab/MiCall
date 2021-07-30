@@ -73,7 +73,8 @@ class SeedAmino(object):
         :param end_nuc: last nucleotide index to copy: 0, 1, or 2.
         """
         self.all_consensus_nuc_indexes.update(other.all_consensus_nuc_indexes)
-        if self.read_count and other.read_count:
+        if (self.read_count and other.read_count and
+                self.consensus_nuc_index != other.consensus_nuc_index):
             self.consensus_nuc_index = None
         elif other.read_count:
             self.consensus_nuc_index = other.consensus_nuc_index
@@ -81,6 +82,10 @@ class SeedAmino(object):
             prefix = ' ' * start_nuc
             for nucs, count in other.codon_counts.items():
                 self.count_aminos(prefix + nucs[start_nuc:end_nuc+1], count)
+            if self.consensus_nuc_index == other.consensus_nuc_index:
+                for seed_nuc, other_nuc in zip(self.nucleotides,
+                                               other.nucleotides):
+                    seed_nuc.consensus_index = other_nuc.consensus_index
         else:
             self.counts += other.counts
             for nuc, other_nuc in zip(self.nucleotides, other.nucleotides):
