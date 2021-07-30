@@ -455,6 +455,12 @@ class ConsensusAligner:
         seed_amino = self.reading_frames[0][consensus_nuc_index // 3]
         return seed_amino.nucleotides[consensus_nuc_index % 3]
 
+    def get_deletion_coverage(self, consensus_nuc_index):
+        prev_nuc = self.get_seed_nuc(consensus_nuc_index)
+        next_nuc = self.get_seed_nuc(consensus_nuc_index + 1)
+        coverage = min(prev_nuc.get_coverage(), next_nuc.get_coverage())
+        return coverage
+
     def build_amino_report(self,
                            start_pos: int,
                            end_pos: int,
@@ -485,9 +491,8 @@ class ConsensusAligner:
                                    amino_ref)
         for amino_alignment in self.amino_alignments:
             if amino_alignment.action == CigarActions.DELETE:
-                prev_nuc = self.get_seed_nuc(amino_alignment.query_start)
-                next_nuc = self.get_seed_nuc(amino_alignment.query_start+1)
-                coverage = min(prev_nuc.get_coverage(), next_nuc.get_coverage())
+                coverage = self.get_deletion_coverage(
+                    amino_alignment.query_start)
                 seed_amino = SeedAmino(None)
                 seed_amino.count_aminos('---', coverage)
 
@@ -642,12 +647,18 @@ class ConsensusAligner:
                     # TODO: Record insertion positions.
                     continue
                 if section_action == CigarActions.DELETE:
-                    # TODO: Increase deletion counts.
-                    ref_nuc_index += section_size
+                    coverage = self.get_deletion_coverage(consensus_nuc_index)
+                    seed_nuc = SeedNucleotide()
+                    seed_nuc.count_nucleotides('-', coverage)
+                    for _ in range(section_size):
+                        if start_pos - 1 <= ref_nuc_index < end_pos:
+                            target_nuc_index = ref_nuc_index - start_pos + 1
+                            report_nuc = report_nucleotides[target_nuc_index]
+                            report_nuc.seed_nucleotide.add(seed_nuc)
+                        ref_nuc_index += 1
                     continue
                 assert section_action == CigarActions.MATCH, section_action
-                section_nuc_index = 0
-                while section_nuc_index < section_size:
+                for _ in range(section_size):
                     if start_pos - 1 <= ref_nuc_index < end_pos:
                         target_nuc_index = ref_nuc_index - start_pos + 1
                         while True:
@@ -662,7 +673,6 @@ class ConsensusAligner:
                         report_nuc.seed_nucleotide.add(seed_nuc)
                     ref_nuc_index += 1
                     consensus_nuc_index += 1
-                    section_nuc_index += 1
 
 
 @dataclass

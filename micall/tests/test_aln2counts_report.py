@@ -852,6 +852,41 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,494,1073,9,0,0,0,0,0,0,0,0,9"""
     assert key_report == expected_text
 
 
+def test_minimap_gap_around_start(default_sequence_report, projects):
+    """ Large gap surrounding GP41 end, nucleotide gap, and nef start.
+
+    GP41 ends at 8795 gap is at 8796, and nef starts at 8797.
+    """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    read_seq = seed_seq[8500:8700] + seed_seq[8900:9050]
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads(f"""\
+HIV1-B-FR-K03455-seed,15,0,9,0,{read_seq}
+""")
+    expected_text = """\
+HIV1-B-FR-K03455-seed,GP41,15,,1037,0,0,0,0,0,9,0,0,0,9
+HIV1-B-FR-K03455-seed,GP41,15,,1038,0,0,0,0,0,9,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-8796,15,,1,0,0,0,0,0,9,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-nef,15,,1,0,0,0,0,0,9,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-nef,15,,2,0,0,0,0,0,9,0,0,0,9"""
+    report_file = StringIO()
+    default_sequence_report.write_nuc_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 549
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+
+    key_lines = report_lines[294:299]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
 def test_minimap_reading_frame(default_sequence_report, projects):
     """ Deletion before PR shouldn't throw off the reading frame.
 
