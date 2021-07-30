@@ -1,6 +1,7 @@
 import typing
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import IntEnum
+from itertools import count
 from operator import attrgetter
 
 from gotoh import align_it, align_it_aa
@@ -10,7 +11,13 @@ from micall.core.project_config import ProjectConfig
 from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, SeedNucleotide
 
 # A section between reading frame shifts must be at least this long to be split.
+from micall.utils.translation import translate
+
 MINIMUM_READING_FRAME_SHIFT = 30
+# Minimum aminos in a section between reading frame shifts to be split.
+MINIMUM_AMINO_ALIGNMENT = 10
+# Most codons in an insertion or deletion that is still aligned in amino acids.
+MAXIMUM_AMINO_GAP = 10
 
 CigarActions = IntEnum(
     'CigarActions',
@@ -197,6 +204,7 @@ class ConsensusAligner:
         self.alignments: typing.List[Alignment] = []
         self.reading_frames: typing.List[typing.List[SeedAmino]] = []
         self.seed_nucs: typing.List[SeedNucleotide] = []
+        self.amino_alignments: typing.List[AminoAlignment] = []
 
         # consensus nucleotide positions that were inserts
         self.inserts: typing.Set[int] = set()
@@ -239,7 +247,6 @@ class ConsensusAligner:
                            for alignment in self.alignments
                            if alignment.is_primary]
         self.alignments.sort(key=attrgetter('q_st'))
-        self.split_alignments()
 
     def align_gotoh(self, coordinate_seq, consensus):
         gap_open_penalty = 15
@@ -283,111 +290,110 @@ class ConsensusAligner:
                 q_en=consensus_index,
                 cigar=cigar))
 
-    def split_alignments(self):
-        """ Split alignments into sections that can be translated to aminos. """
-
-        # Remove overlaps between alignments.
-        max_query_pos = -1
-        for alignment_num, alignment in enumerate(self.alignments):
-            query_start = alignment.q_st
-            if query_start < max_query_pos:
-                offset = max_query_pos - alignment.q_st
-                new_cigar = [section[:] for section in alignment.cigar]
-                new_cigar[0][0] -= offset
-                new_alignment = AlignmentWrapper.wrap(alignment,
-                                                      q_st=max_query_pos,
-                                                      r_st=alignment.r_st+offset,
-                                                      cigar=new_cigar,
-                                                      # Unneeded fields => -1.
-                                                      mlen=-1,
-                                                      blen=-1,
-                                                      NM=-1)
-                self.alignments[alignment_num] = new_alignment
-            max_query_pos = alignment.q_en
-
-        # Split alignments around frame shifts and big deletions.
-        new_alignments = []
+    def find_amino_alignments(self,
+                              start_pos: int,
+                              end_pos: int,
+                              repeat_pos: typing.Optional[int],
+                              amino_ref: str):
+        translations = {
+            reading_frame: translate(
+                '-'*(reading_frame + self.consensus_offset) +
+                self.consensus +
+                '-'*((3-len(self.consensus) -
+                      reading_frame -
+                      self.consensus_offset) % 3))
+            for reading_frame in range(3)}
+        self.amino_alignments.clear()
+        query_progress = 0
         for alignment in self.alignments:
-            breakpoints = [AlignmentBreakpoint(alignment.q_st,
-                                               alignment.q_st,
-                                               alignment.r_st,
-                                               alignment.r_st,
-                                               0,
-                                               0)]
-            query_end = alignment.q_st
+            amino_sections = []
+            query_end = alignment.q_st + self.consensus_offset
             ref_end = alignment.r_st
-            old_reading_frame = (alignment.r_st - alignment.q_st) % 3
             for cigar_index, (size, action) in enumerate(alignment.cigar):
+                ref_reading_frame = (ref_end - (start_pos-1)) % 3
+                conseq_codon_start = query_end - ref_reading_frame
+                reading_frame = -conseq_codon_start % 3
+                amino_alignment = AminoAlignment(query_end,
+                                                 query_end,
+                                                 ref_end,
+                                                 ref_end,
+                                                 action,
+                                                 reading_frame)
                 if action == CigarActions.MATCH:
-                    query_end += size
-                    ref_end += size
+                    amino_alignment.query_end += size
+                    amino_alignment.ref_end += size
                 elif action == CigarActions.INSERT:
-                    query_end += size
-                    new_reading_frame = (ref_end - query_end) % 3
-                    if old_reading_frame != new_reading_frame:
-                        breakpoints.append(AlignmentBreakpoint(query_end-size,
-                                                               query_end,
-                                                               ref_end,
-                                                               ref_end,
-                                                               cigar_index,
-                                                               cigar_index+1))
-                        old_reading_frame = new_reading_frame
+                    amino_alignment.query_end += size
                 else:
                     assert action == CigarActions.DELETE
-                    new_reading_frame = (ref_end + size - query_end)
-                    if new_reading_frame != old_reading_frame or 6 < size:
-                        breakpoints.append(AlignmentBreakpoint(query_end,
-                                                               query_end,
-                                                               ref_end,
-                                                               ref_end+size,
-                                                               cigar_index,
-                                                               cigar_index+1))
-                        old_reading_frame = new_reading_frame
-                    ref_end += size
-            breakpoints.append(AlignmentBreakpoint(alignment.q_en,
-                                                   alignment.q_en,
-                                                   alignment.r_en,
-                                                   alignment.r_en,
-                                                   len(alignment.cigar),
-                                                   len(alignment.cigar)))
-            filtered_breakpoints = [breakpoints[0]]
-            prev_breakpoints = iter(breakpoints)
-            mid_breakpoints = iter(breakpoints)
-            next_breakpoints = iter(breakpoints)
-            next(mid_breakpoints)
-            next(next_breakpoints)
-            next(next_breakpoints)
-            for prev_breakpoint, mid_breakpoint, next_breakpoint in zip(
-                    prev_breakpoints, mid_breakpoints, next_breakpoints):
-                prev_size = (mid_breakpoint.from_query_pos -
-                             prev_breakpoint.to_query_pos)
-                next_size = (next_breakpoint.from_query_pos -
-                             mid_breakpoint.to_query_pos)
-                if MINIMUM_READING_FRAME_SHIFT <= min(prev_size, next_size):
-                    filtered_breakpoints.append(mid_breakpoint)
-            filtered_breakpoints.append(breakpoints[-1])
-            if len(filtered_breakpoints) == 2:
-                new_alignments.append(alignment)
-            else:
-                prev_breakpoints = iter(breakpoints)
-                next_breakpoints = iter(breakpoints)
-                next(next_breakpoints)
-                for prev_breakpoint, next_breakpoint in zip(
-                        prev_breakpoints, next_breakpoints):
-                    new_alignment = AlignmentWrapper.wrap(
-                        alignment,
-                        q_st=prev_breakpoint.to_query_pos,
-                        q_en=next_breakpoint.from_query_pos,
-                        r_st=prev_breakpoint.to_ref_pos,
-                        r_en=next_breakpoint.from_ref_pos,
-                        cigar=alignment.cigar[prev_breakpoint.to_cigar:
-                                              next_breakpoint.from_cigar],
-                        # Unneeded fields => -1.
-                        mlen=-1,
-                        blen=-1,
-                        NM=-1)
-                    new_alignments.append(new_alignment)
-        self.alignments = new_alignments
+                    amino_alignment.ref_end += size
+                query_end = amino_alignment.query_end
+                ref_end = amino_alignment.ref_end
+                if amino_alignment.has_overlap(start_pos, end_pos):
+                    start_shift = max(0,
+                                      start_pos-1 - amino_alignment.ref_start,
+                                      query_progress -
+                                      amino_alignment.query_start -
+                                      self.consensus_offset)
+                    amino_alignment.ref_start += start_shift
+                    amino_alignment.query_start += start_shift
+                    end_shift = max(0, amino_alignment.ref_end - end_pos)
+                    amino_alignment.ref_end -= end_shift
+                    amino_alignment.query_end -= end_shift
+                    amino_sections.append(amino_alignment)
+                query_progress = query_end
+            if repeat_pos is not None:
+                for i, amino_alignment in enumerate(amino_sections):
+                    if amino_alignment.action != CigarActions.MATCH:
+                        continue
+                    ref_start = amino_alignment.ref_start
+                    ref_end = amino_alignment.ref_end
+                    if ref_start < repeat_pos-1 < ref_end:
+                        offset = repeat_pos - ref_start
+                        query_start = amino_alignment.query_start
+                        amino_alignment2 = replace(
+                            amino_alignment,
+                            ref_start=repeat_pos,
+                            query_start=query_start + offset-1,
+                            reading_frame=(amino_alignment.reading_frame+1) % 3)
+                        amino_alignment.ref_end = repeat_pos
+                        amino_alignment.query_end = query_start + offset
+                        amino_sections.insert(i+1, amino_alignment2)
+                        break
+            for amino_alignment in amino_sections:
+                if amino_alignment.action != CigarActions.MATCH:
+                    continue
+                amino_alignment.find_reading_frame(amino_ref,
+                                                   start_pos,
+                                                   translations)
+            for i in range(len(amino_sections)-2, 0, -1):
+                amino_alignment = amino_sections[i]
+                if amino_alignment.action == CigarActions.MATCH:
+                    continue
+                size = max(amino_alignment.ref_end-amino_alignment.ref_start,
+                           amino_alignment.query_end-amino_alignment.query_start)
+                prev_alignment = amino_sections[i-1]
+                next_alignment = amino_sections[i+1]
+                can_align = (MINIMUM_AMINO_ALIGNMENT <= min(
+                    prev_alignment.amino_size,
+                    next_alignment.amino_size))
+                if can_align and (size % 3 != 0 or MAXIMUM_AMINO_GAP < size//3):
+                    # Keep dividing around this indel.
+                    continue
+                # Merge the two sections on either side of this indel.
+                amino_sections.pop(i+1)
+                amino_sections.pop(i)
+                new_alignment = AminoAlignment(prev_alignment.query_start,
+                                               next_alignment.query_end,
+                                               prev_alignment.ref_start,
+                                               next_alignment.ref_end,
+                                               CigarActions.MATCH,
+                                               prev_alignment.reading_frame)
+                amino_sections[i-1] = new_alignment
+                new_alignment.find_reading_frame(amino_ref,
+                                                 start_pos,
+                                                 translations)
+            self.amino_alignments.extend(amino_sections)
 
     def clear(self):
         self.coordinate_name = self.consensus = self.amino_consensus = ''
@@ -445,6 +451,16 @@ class ConsensusAligner:
                                     repeat_position,
                                     amino_ref)
 
+    def get_seed_nuc(self, consensus_nuc_index: int):
+        seed_amino = self.reading_frames[0][consensus_nuc_index // 3]
+        return seed_amino.nucleotides[consensus_nuc_index % 3]
+
+    def get_deletion_coverage(self, consensus_nuc_index):
+        prev_nuc = self.get_seed_nuc(consensus_nuc_index)
+        next_nuc = self.get_seed_nuc(consensus_nuc_index + 1)
+        coverage = min(prev_nuc.get_coverage(), next_nuc.get_coverage())
+        return coverage
+
     def build_amino_report(self,
                            start_pos: int,
                            end_pos: int,
@@ -469,96 +485,62 @@ class ConsensusAligner:
         :param amino_ref: amino acid sequence to align with, or None if only
             nucleotides are reported.
         """
-        for alignment in self.alignments:
-            ref_nuc_index = alignment.r_st
-            consensus_nuc_index = alignment.q_st + self.consensus_offset
-            frame_offset = -1
-            region_start_consensus_amino_index = -1
-            region_end_consensus_amino_index = -1
-            start_codon_nuc_index = -1
-            end_codon_nuc_index = -1
-            source_amino_index = 0
-            seed_aminos = self.reading_frames[0]
-            region_seed_aminos: typing.List[SeedAmino] = []
-            for section_size, section_action in alignment.cigar:
-                if section_action == CigarActions.INSERT:
-                    consensus_nuc_index += section_size
-                    # TODO: Record insertion positions.
-                    continue
-                if section_action == CigarActions.DELETE:
-                    # TODO: Increase deletion counts.
-                    ref_nuc_index += section_size
-                    continue
-                assert section_action == CigarActions.MATCH, section_action
-                section_nuc_index = 0
-                while section_nuc_index < section_size:
-                    if start_pos - 1 <= ref_nuc_index < end_pos:
-                        if frame_offset < 0:
-                            # Skip over insertions and deletions at the start of the
-                            # consensus before choosing the right reading frame.
-                            frame_offset = (ref_nuc_index - start_pos + 1 -
-                                            consensus_nuc_index) % 3
-                            seed_aminos = self.reading_frames[frame_offset]
-                        while True:
-                            # Find seed amino that covers consensus_nuc_index.
-                            seed_amino = seed_aminos[source_amino_index]
-                            codon_nuc_index = (consensus_nuc_index -
-                                               seed_amino.consensus_nuc_index)
-                            if codon_nuc_index < 3:
-                                break
-                            source_amino_index += 1
-                        if region_start_consensus_amino_index < 0:
-                            region_start_consensus_amino_index = source_amino_index
-                            start_codon_nuc_index = codon_nuc_index
-                        region_end_consensus_amino_index = source_amino_index + 1
-                        end_codon_nuc_index = codon_nuc_index
-                        if (repeat_position == ref_nuc_index + 1 and
-                                codon_nuc_index != 0):
-                            # Shift reading frames.
-                            region_seed_aminos = clip_seed_aminos(
-                                seed_aminos,
-                                region_start_consensus_amino_index,
-                                region_end_consensus_amino_index,
-                                start_codon_nuc_index,
-                                end_codon_nuc_index)
-                            # Reset start positions
-                            region_start_consensus_amino_index = -1
-                            start_codon_nuc_index = -1
-                            # Step back source position
-                            source_amino_index -= 1
-                            # Repeat current position
-                            ref_nuc_index -= 1
-                            consensus_nuc_index -= 1
-                            section_nuc_index -= 1
-                            # Adjust reading frame
-                            frame_offset = (frame_offset + 1) % 3
-                            seed_aminos = self.reading_frames[frame_offset]
-                    ref_nuc_index += 1
-                    consensus_nuc_index += 1
-                    section_nuc_index += 1
-            if 0 <= region_start_consensus_amino_index:
-                region_seed_aminos.extend(clip_seed_aminos(
-                    seed_aminos,
-                    region_start_consensus_amino_index,
-                    region_end_consensus_amino_index,
-                    start_codon_nuc_index,
-                    end_codon_nuc_index))
-            if not region_seed_aminos:
+        self.find_amino_alignments(start_pos,
+                                   end_pos,
+                                   repeat_position,
+                                   amino_ref)
+        for amino_alignment in self.amino_alignments:
+            if amino_alignment.action == CigarActions.DELETE:
+                coverage = self.get_deletion_coverage(
+                    amino_alignment.query_start)
+                seed_amino = SeedAmino(None)
+                seed_amino.count_aminos('---', coverage)
+
+                # Start index within region
+                # TODO: Deletion starts or ends outside gene.
+                del_start_nuc_index = amino_alignment.ref_start - start_pos + 1
+                del_end_nuc_index = amino_alignment.ref_end - start_pos
+                del_start_amino_index = del_start_nuc_index // 3
+                del_end_amino_index = del_end_nuc_index // 3
+                for coord_index in count(del_start_amino_index):
+                    if coord_index == del_start_amino_index:
+                        start_codon_nuc = del_start_nuc_index % 3
+                        trimmed_seed_amino = SeedAmino(None)
+                        trimmed_seed_amino.add(seed_amino, start_codon_nuc)
+                        trimmed_seed_amino.consensus_nuc_index = (
+                                amino_alignment.query_start -
+                                start_codon_nuc)
+                    elif coord_index == del_end_amino_index:
+                        end_codon_nuc = del_end_nuc_index % 3
+                        trimmed_seed_amino = SeedAmino(None)
+                        trimmed_seed_amino.add(seed_amino, 0, end_codon_nuc)
+                    else:
+                        trimmed_seed_amino = seed_amino
+                    self.update_report_amino(coord_index,
+                                             report_aminos,
+                                             report_nucleotides,
+                                             trimmed_seed_amino,
+                                             start_pos,
+                                             repeat_position)
+                    if coord_index == del_end_amino_index:
+                        break
+
+            if amino_alignment.action != CigarActions.MATCH:
                 continue
-            self.amino_consensus = ''.join(seed_amino.get_consensus() or '?'
-                                           for seed_amino in region_seed_aminos)
-            coord2conseq = map_amino_sequences(amino_ref, self.amino_consensus)
+            region_seed_aminos = self.reading_frames[amino_alignment.reading_frame]
+            coord2conseq = amino_alignment.map_amino_sequences()
 
             coordinate_inserts = {seed_amino.consensus_nuc_index
                                   for seed_amino in region_seed_aminos}
             prev_conseq_index = None
             prev_consensus_nuc_index = None
+            max_conseq_index = max(coord2conseq.values())
             for coord_index in range(len(amino_ref)):
                 conseq_index = coord2conseq.get(coord_index)
                 if conseq_index is None:
                     seed_amino = SeedAmino(None)
                     if (prev_conseq_index is not None and
-                            prev_conseq_index+1 < len(region_seed_aminos)):
+                            prev_conseq_index < max_conseq_index):
                         prev_seed_amino = region_seed_aminos[prev_conseq_index]
                         prev_count = sum(prev_seed_amino.counts.values())
                         prev_count += prev_seed_amino.deletions
@@ -571,31 +553,42 @@ class ConsensusAligner:
                             nuc.count_nucleotides('-', min_count)
                 else:
                     seed_amino = region_seed_aminos[conseq_index]
+                    if (seed_amino.consensus_nuc_index <
+                            amino_alignment.query_start):
+                        start_codon_nuc = max(0,
+                                              amino_alignment.query_start -
+                                              seed_amino.consensus_nuc_index)
+                        end_codon_nuc = 2
+                        seed_amino2 = SeedAmino(None)
+                        seed_amino2.add(seed_amino,
+                                        start_codon_nuc,
+                                        end_codon_nuc)
+                        seed_amino = seed_amino2
+                    if (amino_alignment.query_end <
+                            seed_amino.consensus_nuc_index+3):
+                        start_codon_nuc = 0
+                        end_codon_nuc = (amino_alignment.query_end -
+                                         seed_amino.consensus_nuc_index - 1)
+                        seed_amino2 = SeedAmino(None)
+                        seed_amino2.add(seed_amino,
+                                        start_codon_nuc,
+                                        end_codon_nuc)
+                        seed_amino = seed_amino2
                     if prev_conseq_index is None:
                         coordinate_inserts = {i
                                               for i in coordinate_inserts
                                               if i >= seed_amino.consensus_nuc_index}
                     prev_conseq_index = conseq_index
 
-                report_amino = report_aminos[coord_index]
-                report_amino.seed_amino.add(seed_amino)
                 if seed_amino.consensus_nuc_index is not None:
                     coordinate_inserts.remove(seed_amino.consensus_nuc_index)
                     prev_consensus_nuc_index = seed_amino.consensus_nuc_index
-                ref_nuc_pos = coord_index*3 + start_pos
-                for codon_nuc_index, seed_nuc in enumerate(
-                        seed_amino.nucleotides):
-                    if len(report_nucleotides) <= coord_index*3 + codon_nuc_index:
-                        continue
-
-                    report_nuc_index = coord_index*3 + codon_nuc_index
-                    if repeat_position is not None and start_pos < repeat_position:
-                        if repeat_position < ref_nuc_pos:
-                            report_nuc_index -= 1
-                        if repeat_position == ref_nuc_pos-1 and codon_nuc_index == 0:
-                            continue
-                    report_nuc = report_nucleotides[report_nuc_index]
-                    report_nuc.seed_nucleotide.add(seed_nuc)
+                self.update_report_amino(coord_index,
+                                         report_aminos,
+                                         report_nucleotides,
+                                         seed_amino,
+                                         start_pos,
+                                         repeat_position)
             if prev_consensus_nuc_index is None:
                 coordinate_inserts.clear()
             else:
@@ -603,6 +596,30 @@ class ConsensusAligner:
                                       for i in coordinate_inserts
                                       if i <= prev_consensus_nuc_index}
             self.inserts.update(coordinate_inserts)
+
+    @staticmethod
+    def update_report_amino(coord_index: int,
+                            report_aminos: typing.List[ReportAmino],
+                            report_nucleotides: typing.List[ReportNucleotide],
+                            seed_amino: SeedAmino,
+                            start_pos: int,
+                            repeat_position: int = None):
+        report_amino = report_aminos[coord_index]
+        report_amino.seed_amino.add(seed_amino)
+        ref_nuc_pos = coord_index * 3 + start_pos
+        for codon_nuc_index, seed_nuc in enumerate(
+                seed_amino.nucleotides):
+            if len(report_nucleotides) <= coord_index * 3 + codon_nuc_index:
+                continue
+
+            report_nuc_index = coord_index * 3 + codon_nuc_index
+            if repeat_position is not None and start_pos < repeat_position:
+                if repeat_position < ref_nuc_pos:
+                    report_nuc_index -= 1
+                if repeat_position == ref_nuc_pos - 1 and codon_nuc_index == 0:
+                    continue
+            report_nuc = report_nucleotides[report_nuc_index]
+            report_nuc.seed_nucleotide.add(seed_nuc)
 
     def build_nucleotide_report(self,
                                 start_pos: int,
@@ -630,12 +647,18 @@ class ConsensusAligner:
                     # TODO: Record insertion positions.
                     continue
                 if section_action == CigarActions.DELETE:
-                    # TODO: Increase deletion counts.
-                    ref_nuc_index += section_size
+                    coverage = self.get_deletion_coverage(consensus_nuc_index)
+                    seed_nuc = SeedNucleotide()
+                    seed_nuc.count_nucleotides('-', coverage)
+                    for _ in range(section_size):
+                        if start_pos - 1 <= ref_nuc_index < end_pos:
+                            target_nuc_index = ref_nuc_index - start_pos + 1
+                            report_nuc = report_nucleotides[target_nuc_index]
+                            report_nuc.seed_nucleotide.add(seed_nuc)
+                        ref_nuc_index += 1
                     continue
                 assert section_action == CigarActions.MATCH, section_action
-                section_nuc_index = 0
-                while section_nuc_index < section_size:
+                for _ in range(section_size):
                     if start_pos - 1 <= ref_nuc_index < end_pos:
                         target_nuc_index = ref_nuc_index - start_pos + 1
                         while True:
@@ -650,15 +673,83 @@ class ConsensusAligner:
                         report_nuc.seed_nucleotide.add(seed_nuc)
                     ref_nuc_index += 1
                     consensus_nuc_index += 1
-                    section_nuc_index += 1
 
 
 @dataclass
-class AlignmentBreakpoint:
-    """ Describe the pieces to remove from an alignment. """
-    from_query_pos: int
-    to_query_pos: int
-    from_ref_pos: int
-    to_ref_pos: int
-    from_cigar: int
-    to_cigar: int
+class AminoAlignment:
+    """ Part of a full alignment, with aligned aminos. """
+    query_start: int
+    query_end: int
+    ref_start: int
+    ref_end: int
+    action: CigarActions
+    reading_frame: int
+    query: str = None  # Amino sequence
+    ref: str = None  # Amino sequence
+    aligned_query: str = None
+    aligned_ref: str = None
+    ref_amino_start: int = None
+
+    def has_overlap(self, start_pos: int, end_pos: int) -> bool:
+        before_end = self.ref_start < end_pos
+        after_start = start_pos <= self.ref_end
+        return before_end == after_start
+
+    def find_reading_frame(self, amino_ref, start_pos, translations):
+        ref_amino_start = (self.ref_start - start_pos + 1) // 3
+        ref_amino_end = (self.ref_end - start_pos + 3) // 3
+        self.ref_amino_start = ref_amino_start
+
+        ref_section = amino_ref[ref_amino_start:ref_amino_end]
+        # Exclamation marks avoid extra gaps near the ends.
+        assert '!' not in ref_section
+        ref_to_align = '!' + ref_section + '!'
+        max_score = (ref_amino_end - ref_amino_start) // 2
+
+        for reading_frame in range(3):
+            query_amino_start = (self.query_start + reading_frame) // 3
+            query_amino_end = (self.query_end + reading_frame + 2) // 3
+            translation = translations[reading_frame]
+            query_section = translation[query_amino_start:query_amino_end]
+            aref, aquery, score = align_aminos(ref_to_align, query_section)
+            aref = aref.replace('!', '-')
+            if max_score < score:
+                max_score = score
+                self.reading_frame = reading_frame
+                # Record alignments after trimming exclamation marks.
+                self.aligned_query = aquery
+                self.aligned_ref = aref
+
+            if self.reading_frame == reading_frame:
+                # Either had a good match, or we're falling back to best guess.
+                self.query = query_section
+                self.ref = ref_section
+        if self.aligned_ref is None:
+            # Falling back to best guess.
+            self.aligned_ref = self.ref
+            self.aligned_query = self.query
+
+    @property
+    def size(self):
+        return max(self.ref_end - self.ref_start,
+                   self.query_end - self.query_start)
+
+    @property
+    def amino_size(self):
+        return (self.size + 2) // 3
+
+    def map_amino_sequences(self) -> typing.Dict[int, int]:
+        """ Map reference amino indexes to query amino indexes. """
+        seq_map = {}
+        query_offset = (self.query_start + self.reading_frame) // 3
+        ref_index = query_index = 0
+        for from_aa, to_aa in zip(self.aligned_ref, self.aligned_query):
+            if (query_index < len(self.query) and
+                    ref_index < len(self.ref) and
+                    to_aa == self.query[query_index]):
+                seq_map[ref_index+self.ref_amino_start] = query_index+query_offset
+                query_index += 1
+            if (ref_index < len(self.ref) and
+                    from_aa == self.ref[ref_index]):
+                ref_index += 1
+        return seq_map

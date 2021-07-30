@@ -25,6 +25,32 @@ def assert_alignments(aligner: ConsensusAligner,
     assert wrapped_alignments == expected_alignments
 
 
+def assert_consensus_nuc_indexes(
+        report_aminos: typing.List[ReportAmino],
+        ref_positions_in_consensus: typing.List[typing.Optional[int]],
+        start_pos: int,
+        end_pos: int):
+    __hide_traceback_frame__ = True
+    amino_count = (end_pos - start_pos + 1) // 3
+    expected_consensus_nuc_indexes: typing.List[typing.Optional[int]] = (
+            [None] * amino_count)
+    ref_positions_map = {pos: i
+                         for i, pos in enumerate(ref_positions_in_consensus)}
+    for pos in range(start_pos, end_pos+1, 3):
+        for nuc_pos in range(pos, pos+3):
+            consensus_nuc_index = ref_positions_map.get(nuc_pos)
+            if consensus_nuc_index is not None:
+                consensus_nuc_index -= nuc_pos - pos
+                break
+        else:
+            continue
+        amino_num = (pos - start_pos) // 3
+        expected_consensus_nuc_indexes[amino_num] = consensus_nuc_index
+    consensus_nuc_indexes = [report_amino.seed_amino.consensus_nuc_index
+                             for report_amino in report_aminos]
+    assert consensus_nuc_indexes == expected_consensus_nuc_indexes
+
+
 def create_reading_frames(consensus: str) -> typing.Dict[int,
                                                          typing.List[SeedAmino]]:
     reading_frames = {}
@@ -131,65 +157,72 @@ def test_start_contig_overlapping_sections(projects):
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[4440:4500] + seed_seq[3000:3060]
-    expected_alignments = [AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=4440,
-                                            r_en=4500,
-                                            q_st=0,
-                                            q_en=60,
-                                            mapq=27),
-                           AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=3000,
-                                            r_en=3060,
-                                            q_st=60,
-                                            q_en=120,
-                                            mapq=13,
-                                            # Unneeded fields forced to -1.
-                                            mlen=-1,
-                                            blen=-1,
-                                            NM=-1)]
+    reading_frames = create_reading_frames(consensus)
+    int_ref = projects.getReference('INT')
+    rt_ref = projects.getReference('RT')
     aligner = ConsensusAligner(projects)
 
-    aligner.start_contig(seed_name, consensus)
+    aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    assert_alignments(aligner, *expected_alignments)
+    rt_aminos: typing.List[ReportAmino] = []
+    rt_nucleotides: typing.List[ReportNucleotide] = []
+    aligner.report_region(2550,
+                          4229,
+                          rt_nucleotides,
+                          rt_aminos,
+                          amino_ref=rt_ref)
+    int_aminos: typing.List[ReportAmino] = []
+    int_nucleotides: typing.List[ReportNucleotide] = []
+    aligner.report_region(4230,
+                          5096,
+                          int_nucleotides,
+                          int_aminos,
+                          amino_ref=int_ref)
+
+    assert_consensus_nuc_indexes(int_aminos,
+                                 list(range(4441, 4501)) +
+                                 list(range(3001, 3061)),
+                                 4230,
+                                 5096)
+    assert_consensus_nuc_indexes(rt_aminos,
+                                 list(range(4441, 4501)) +
+                                 list(range(3001, 3061)),
+                                 2550,
+                                 4229)
 
 
+# noinspection DuplicatedCode
 def test_start_contig_big_deletion(projects):
     """ Split alignments around big deletions. """
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[789:1282] + seed_seq[1863:2278]
-    expected_alignments = [AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=789,
-                                            r_en=1282,
-                                            q_st=0,
-                                            q_en=493,
-                                            mapq=60,
-                                            # Unneeded fields forced to -1.
-                                            mlen=-1,
-                                            blen=-1,
-                                            NM=-1),
-                           AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=1863,
-                                            r_en=2278,
-                                            q_st=493,
-                                            q_en=908,
-                                            mapq=60,
-                                            # Unneeded fields forced to -1.
-                                            mlen=-1,
-                                            blen=-1,
-                                            NM=-1)]
+    reading_frames = create_reading_frames(consensus)
+    amino_ref = projects.getReference('HIV1B-gag')
     aligner = ConsensusAligner(projects)
 
-    aligner.start_contig(seed_name, consensus)
+    aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    assert_alignments(aligner, *expected_alignments)
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
+    aligner.report_region(790,
+                          2292,
+                          report_nucleotides,
+                          report_aminos,
+                          amino_ref=amino_ref)
+
+    assert_consensus_nuc_indexes(report_aminos,
+                                 list(range(790, 1283)) +
+                                 list(range(1864, 2279)),
+                                 790,
+                                 2292)
+    assert report_aminos[163].seed_amino.get_consensus() == 'F'
+    assert report_aminos[164].seed_amino.get_consensus() == '?'
+    assert report_aminos[163].seed_amino.counts['F'] == 1
+    assert report_aminos[164].seed_amino.deletions == 1
 
 
+# noinspection DuplicatedCode
 def test_start_contig_insert_and_big_deletion(projects):
     """ Split alignments around a big deletion after an insert. """
     seed_name = 'HIV1-B-FR-K03455-seed'
@@ -198,38 +231,30 @@ def test_start_contig_insert_and_big_deletion(projects):
                  'ACTGAC' +
                  seed_seq[900:1282] +
                  seed_seq[1863:2278])
-    expected_alignments = [AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=789,
-                                            r_en=1282,
-                                            q_st=0,
-                                            q_en=499,
-                                            cigar=[[111, CigarActions.MATCH],
-                                                   [6, CigarActions.INSERT],
-                                                   [382, CigarActions.MATCH]],
-                                            mapq=60,
-                                            # Unneeded fields forced to -1.
-                                            mlen=-1,
-                                            blen=-1,
-                                            NM=-1),
-                           AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=1863,
-                                            r_en=2278,
-                                            q_st=499,
-                                            q_en=914,
-                                            mapq=60,
-                                            # Unneeded fields forced to -1.
-                                            mlen=-1,
-                                            blen=-1,
-                                            NM=-1)]
+    reading_frames = create_reading_frames(consensus)
+    amino_ref = projects.getReference('HIV1B-gag')
     aligner = ConsensusAligner(projects)
 
-    aligner.start_contig(seed_name, consensus)
+    aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    assert_alignments(aligner, *expected_alignments)
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
+    aligner.report_region(790,
+                          2292,
+                          report_nucleotides,
+                          report_aminos,
+                          amino_ref=amino_ref)
+
+    assert_consensus_nuc_indexes(report_aminos,
+                                 list(range(790, 901)) +
+                                 [None] * 6 +
+                                 list(range(901, 1283)) +
+                                 list(range(1864, 2279)),
+                                 790,
+                                 2292)
 
 
+# noinspection DuplicatedCode
 def test_start_contig_frame_change_insert(projects):
     """ Split alignments when the reading frame changes. """
     seed_name = 'HIV1-B-FR-K03455-seed'
@@ -237,78 +262,76 @@ def test_start_contig_frame_change_insert(projects):
     consensus = (seed_seq[800:900] +
                  'C' +
                  seed_seq[900:1000])
-    expected_alignments = [AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=800,
-                                            r_en=900,
-                                            q_st=0,
-                                            q_en=100,
-                                            mapq=60,
-                                            # Unneeded fields forced to -1.
-                                            mlen=-1,
-                                            blen=-1,
-                                            NM=-1),
-                           AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=900,
-                                            r_en=1000,
-                                            q_st=101,
-                                            q_en=201,
-                                            mapq=60,
-                                            # Unneeded fields forced to -1.
-                                            mlen=-1,
-                                            blen=-1,
-                                            NM=-1)]
+    reading_frames = create_reading_frames(consensus)
+    amino_ref = projects.getReference('HIV1B-gag')
     aligner = ConsensusAligner(projects)
 
-    aligner.start_contig(seed_name, consensus)
+    aligner.start_contig(seed_name, reading_frames=reading_frames)
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
+    aligner.report_region(790,
+                          2292,
+                          report_nucleotides,
+                          report_aminos,
+                          amino_ref=amino_ref)
 
-    assert_alignments(aligner, *expected_alignments)
+    assert_consensus_nuc_indexes(report_aminos,
+                                 list(range(801, 901)) +
+                                 [None] +
+                                 list(range(901, 1001)),
+                                 790,
+                                 2292)
 
 
+# noinspection DuplicatedCode
 def test_start_contig_frame_change_delete(projects):
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = (seed_seq[800:899] + seed_seq[900:1000])
-    expected_alignments = [AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=800,
-                                            r_en=899,
-                                            q_st=0,
-                                            q_en=99,
-                                            mapq=60,
-                                            # Unneeded fields forced to -1.
-                                            mlen=-1,
-                                            blen=-1,
-                                            NM=-1),
-                           AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=900,
-                                            r_en=1000,
-                                            q_st=99,
-                                            q_en=199,
-                                            mapq=60,
-                                            # Unneeded fields forced to -1.
-                                            mlen=-1,
-                                            blen=-1,
-                                            NM=-1)]
+    reading_frames = create_reading_frames(consensus)
+    amino_ref = projects.getReference('HIV1B-gag')
     aligner = ConsensusAligner(projects)
 
-    aligner.start_contig(seed_name, consensus)
+    aligner.start_contig(seed_name, reading_frames=reading_frames)
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
+    aligner.report_region(790,
+                          2292,
+                          report_nucleotides,
+                          report_aminos,
+                          amino_ref=amino_ref)
 
-    assert_alignments(aligner, *expected_alignments)
+    assert_consensus_nuc_indexes(report_aminos,
+                                 list(range(801, 900)) +
+                                 list(range(901, 1001)),
+                                 790,
+                                 2292)
 
 
+# noinspection DuplicatedCode
 def test_start_contig_close_frame_changes(projects):
     """ The reading frame changes and then changes back within 30 bases. """
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = (seed_seq[800:899] + seed_seq[900:920] + seed_seq[922:1000])
+    reading_frames = create_reading_frames(consensus)
+    amino_ref = projects.getReference('HIV1B-gag')
     aligner = ConsensusAligner(projects)
 
-    aligner.start_contig(seed_name, consensus)
+    aligner.start_contig(seed_name, reading_frames=reading_frames)
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
+    aligner.report_region(790,
+                          2292,
+                          report_nucleotides,
+                          report_aminos,
+                          amino_ref=amino_ref)
 
-    assert len(aligner.alignments) == 1
+    assert_consensus_nuc_indexes(report_aminos,
+                                 list(range(801, 900)) +
+                                 list(range(903, 1001)),
+                                 790,
+                                 2292)
 
 
 def test_start_contig_short_consensus(projects):
@@ -545,7 +568,7 @@ def test_start_contig_consensus_offset(projects):
 def test_report_region(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
-    # ORF7b runs from 1-based positions 27756 to 27884 (excluding stop codon).
+    # ORF7b runs from 1-based positions 27756 to 27887.
     consensus = seed_seq[27000:27999]
     reading_frames = create_reading_frames(consensus)
     amino_ref = projects.getReference('SARS-CoV-2-ORF7b')
@@ -555,14 +578,14 @@ def test_report_region(projects):
     report_aminos: typing.List[ReportAmino] = []
     report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(27756,
-                          27884,
+                          27887,
                           report_nucleotides,
                           report_aminos,
                           amino_ref=amino_ref)
 
     assert len(report_aminos) == 44
-    assert len(report_nucleotides) == 129  # 27884-27756+1
-    assert report_aminos[0].seed_amino.consensus_nuc_index == 755
+    assert len(report_nucleotides) == 132  # 27887-27756+1
+    assert report_aminos[0].seed_amino.consensus_nuc_index == 755  # currently, 758
     assert report_nucleotides[0].seed_nucleotide.consensus_index == 755
 
 
