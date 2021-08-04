@@ -343,6 +343,36 @@ def get_parser(default_max_active):
             "--project_code",
             "-p",
             help="Select primers to trim: HCV or SARSCOV2.")
+        command_parser.add_argument(
+            "-haplo_long",
+            type=int,
+            default=0,
+        )
+        command_parser.add_argument(
+            "-haplo_filter",
+            type=int,
+            default=500,
+        )
+        command_parser.add_argument(
+            "-haplo_thres",
+            type=int,
+            default=-1,
+        )
+        command_parser.add_argument(
+            "-haplo_strict",
+            type=int,
+            default=5,
+        )
+        command_parser.add_argument(
+            "-haplo_error",
+            type=int,
+            default=2,
+        )
+        command_parser.add_argument(
+            "-haplo_kmer",
+            type=int,
+            default=41,
+        )
 
     return parser
 
@@ -943,13 +973,20 @@ def process_sample(sample, args, pssm, use_denovo=False):
     """
     sample.debug_remap = args.debug_remap
     sample.skip = args.skip
+    args_haplo = {'long': args.haplo_long,
+                  'filter': args.haplo_filter,
+                  'thres': args.haplo_thres,
+                  'strict': args.haplo_strict,
+                  'error': args.haplo_error,
+                  'kmer': args.haplo_kmer}
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
         sample.process(pssm,
                        excluded_seeds,
                        excluded_projects,
-                       use_denovo=use_denovo)
+                       use_denovo=use_denovo,
+                       haplo_args=args_haplo)
     except Exception:
         message = 'Failed to process {}.'.format(sample)
         logger.error(message, exc_info=True)

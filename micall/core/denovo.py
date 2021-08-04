@@ -176,7 +176,8 @@ def denovo(fastq1_path: str,
            contigs_csv: typing.TextIO,
            work_dir: str = '.',
            merged_contigs_csv: typing.TextIO = None,
-           blast_csv: typing.TextIO = None):
+           blast_csv: typing.TextIO = None,
+           haplo_args=None):
     """ Use de novo assembly to build contigs from reads.
 
     :param fastq1_path: FASTQ file name for read 1 reads
@@ -201,9 +202,25 @@ def denovo(fastq1_path: str,
          '--interleave',
          '-o', joined_path],
         check=True)
+
+    if haplo_args is None:
+        haplo_args = {'long': 0,
+                  'filter': 500,
+                  'thres': -1,
+                  'strict': 5,
+                  'error': 2,
+                  'kmer': 41}
     haplo_out_path = os.path.join(tmp_dir, 'haplo_out')
     contigs_fasta_path = os.path.join(haplo_out_path, 'contigs.fa')
-    haplo_args = [HAPLOFLOW, '--read-file', joined_path, '--out', haplo_out_path]
+    haplo_args = [HAPLOFLOW,
+                  '--read-file', joined_path,
+                  '--out', haplo_out_path,
+                  '--k', haplo_args['kmer'],
+                  '--error-rate', haplo_args['error'],
+                  '--strict', haplo_args['strict'],
+                  '--filter', haplo_args['filter'],
+                  '--thres', haplo_args['thres'],
+                  '--long', haplo_args['long']]
     try:
         run(haplo_args, check=True, stdout=PIPE, stderr=STDOUT)
     except CalledProcessError as ex:
