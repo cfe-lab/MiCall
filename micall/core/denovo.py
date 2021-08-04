@@ -215,12 +215,13 @@ def denovo(fastq1_path: str,
     haplo_args = [HAPLOFLOW,
                   '--read-file', joined_path,
                   '--out', haplo_out_path,
-                  '--k', haplo_args['kmer'],
-                  '--error-rate', haplo_args['error'],
-                  '--strict', haplo_args['strict'],
-                  '--filter', haplo_args['filter'],
-                  '--thres', haplo_args['thres'],
-                  '--long', haplo_args['long']]
+                  '--k', str(haplo_args['kmer']),
+                  '--error-rate', str(haplo_args['error']),
+                  '--strict', str(haplo_args['strict']),
+                  '--filter', str(haplo_args['filter']),
+                  '--thres', str(haplo_args['thres']),
+                  '--long', str(haplo_args['long']),
+                  '--debug', '1']
     try:
         run(haplo_args, check=True, stdout=PIPE, stderr=STDOUT)
     except CalledProcessError as ex:
