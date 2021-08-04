@@ -365,8 +365,8 @@ def get_parser(default_max_active):
         )
         command_parser.add_argument(
             "-haplo_error",
-            type=int,
-            default=2,
+            type=float,
+            default=0.02,
         )
         command_parser.add_argument(
             "-haplo_kmer",

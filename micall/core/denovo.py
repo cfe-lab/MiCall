@@ -208,7 +208,7 @@ def denovo(fastq1_path: str,
                   'filter': 500,
                   'thres': -1,
                   'strict': 5,
-                  'error': 2,
+                  'error': 0.02,
                   'kmer': 41}
     haplo_out_path = os.path.join(tmp_dir, 'haplo_out')
     contigs_fasta_path = os.path.join(haplo_out_path, 'contigs.fa')
