@@ -20,6 +20,12 @@ from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
 
+from tempfile import mkstemp
+from shutil import move, copymode
+from os import fdopen, remove
+from iva.assembly import Assembly
+from pyfastaq.tasks import deinterleave
+
 HAPLOFLOW = "haploflow"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
@@ -231,6 +237,32 @@ def denovo(fastq1_path: str,
             logger.warning(output)
         with open(contigs_fasta_path, 'a'):
             pass
+
+    fh, abs_path = mkstemp()
+    i = 0
+    with fdopen(fh, 'w') as new_file:
+        with open(contigs_fasta_path) as old_file:
+            for line in old_file:
+                if line.startswith('>'):
+                    new_file.write(f">contig{i}\n")
+                    i += 1
+                else:
+                    new_file.write(line)
+    copymode(contigs_fasta_path, abs_path)
+    remove(contigs_fasta_path)
+    move(abs_path, contigs_fasta_path)
+    print(f"Number of contigs before trimming and joining: {i}")
+
+    haplo_assembly = Assembly(contigs_file=contigs_fasta_path)
+    reads_prefix = os.path.join(tmp_dir, 'reads')
+    reads_1 = reads_prefix + '_1.fa'
+    reads_2 = reads_prefix + '_2.fa'
+    deinterleave(joined_path, reads_1, reads_2, fasta_out=True)
+    haplo_assembly._trim_strand_biased_ends(reads_prefix, tag_as_trimmed=True)
+    haplo_assembly._remove_contained_contigs(list(haplo_assembly.contigs.keys()))
+    haplo_assembly._merge_overlapping_contigs(list(haplo_assembly.contigs.keys()))
+    contigs_fasta_path = os.path.join(haplo_out_path, 'finalcontigs.fasta')
+    haplo_assembly.write_contigs_to_file(contigs_fasta_path)
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
