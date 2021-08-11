@@ -271,29 +271,29 @@ def denovo(fastq1_path: str,
         haplo_assembly.write_contigs_to_file(contigs_fasta_path)
 
     if haplo_args['scaffold']:
-        new_contigs_fasta_path = os.path.join(haplo_out_path, 'contigs_scaffolded.fasta')
+        scaffolding_path = os.path.join(haplo_out_path, 'scaffolding')
         scaffold_cmd = ['python3.8',
                         RAGTAG,
                         'scaffold',
                         haplo_args['ref'],
                         contigs_fasta_path,
-                        '-o', new_contigs_fasta_path,
+                        '-o', scaffolding_path,
                         '--aligner', 'nucmer',
                         '--nucmer_params', "'--maxmatch -l 100 -c 65'"]
         run(scaffold_cmd, check=True, stdout=PIPE, stderr=STDOUT)
-        contigs_fasta_path = new_contigs_fasta_path
+        contigs_fasta_path = os.path.join(scaffolding_path, 'ragtag.scaffold.fasta')
 
     if haplo_args['patch']:
-        new_contigs_fasta_path = os.path.join(haplo_out_path, 'contigs_patched.fasta')
+        patching_path = os.path.join(haplo_out_path, 'patching')
         patch_cmd = ['python3.8',
                      RAGTAG,
                      'patch',
                      contigs_fasta_path,
                      haplo_args['ref'],
-                     '-o', new_contigs_fasta_path,
+                     '-o', patching_path,
                      '--nucmer_params', "'--maxmatch -l 100 -c 65'"]
         run(patch_cmd, check=True, stdout=PIPE, stderr=STDOUT)
-        contigs_fasta_path = new_contigs_fasta_path
+        contigs_fasta_path = os.path.join(patching_path, 'ragtag.patch.fasta')
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
