@@ -27,7 +27,7 @@ from iva.assembly import Assembly
 from pyfastaq.tasks import deinterleave
 
 HAPLOFLOW = "haploflow"
-RAGTAG = ".venv/bin/RagTag/ragtag.py"
+RAGTAG = "/home/charlotte/Documents/Git/MiCall/.venv/bin/RagTag/ragtag.py"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
                                 'blast_db',
@@ -279,9 +279,13 @@ def denovo(fastq1_path: str,
                         contigs_fasta_path,
                         '-o', scaffolding_path,
                         '--aligner', 'nucmer',
-                        '--nucmer_params', "'--maxmatch -l 100 -c 65'"]
-        run(scaffold_cmd, check=True, stdout=PIPE, stderr=STDOUT)
-        contigs_fasta_path = os.path.join(scaffolding_path, 'ragtag.scaffold.fasta')
+                        '--nucmer-params', "'--maxmatch -l 100 -c 65'"]
+        try:
+            run(scaffold_cmd, check=True, stdout=PIPE, stderr=STDOUT)
+            contigs_fasta_path = os.path.join(scaffolding_path, 'ragtag.scaffold.fasta')
+        except CalledProcessError as e:
+            print(e)
+            pass
 
     if haplo_args['patch']:
         patching_path = os.path.join(haplo_out_path, 'patching')
@@ -291,9 +295,13 @@ def denovo(fastq1_path: str,
                      contigs_fasta_path,
                      haplo_args['ref'],
                      '-o', patching_path,
-                     '--nucmer_params', "'--maxmatch -l 100 -c 65'"]
-        run(patch_cmd, check=True, stdout=PIPE, stderr=STDOUT)
-        contigs_fasta_path = os.path.join(patching_path, 'ragtag.patch.fasta')
+                     '--nucmer-params', "'--maxmatch -l 100 -c 65'"]
+        try:
+            run(patch_cmd, check=True, stdout=PIPE, stderr=STDOUT)
+            contigs_fasta_path = os.path.join(patching_path, 'ragtag.patch.fasta')
+        except CalledProcessError as e:
+            print(e)
+            pass
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
