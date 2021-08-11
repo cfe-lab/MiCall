@@ -27,6 +27,7 @@ from iva.assembly import Assembly
 from pyfastaq.tasks import deinterleave
 
 HAPLOFLOW = "haploflow"
+RAGTAG = ".venv/bin/RagTag/ragtag.py"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
                                 'blast_db',
@@ -211,14 +212,18 @@ def denovo(fastq1_path: str,
 
     if haplo_args is None:
         haplo_args = {'long': 0,
-                  'filter': 500,
-                  'thres': -1,
-                  'strict': 5,
-                  'error': 0.02,
-                  'kmer': 41}
+                      'filter': 500,
+                      'thres': -1,
+                      'strict': 5,
+                      'error': 0.02,
+                      'kmer': 41,
+                      'merge': False,
+                      'scaffold': False,
+                      'patch': False,
+                      'ref': None}
     haplo_out_path = os.path.join(tmp_dir, 'haplo_out')
     contigs_fasta_path = os.path.join(haplo_out_path, 'contigs.fa')
-    haplo_args = [HAPLOFLOW,
+    haplo_cmd = [HAPLOFLOW,
                   '--read-file', joined_path,
                   '--out', haplo_out_path,
                   '--k', str(haplo_args['kmer']),
@@ -229,7 +234,7 @@ def denovo(fastq1_path: str,
                   '--long', str(haplo_args['long']),
                   '--debug', '1']
     try:
-        run(haplo_args, check=True, stdout=PIPE, stderr=STDOUT)
+        run(haplo_cmd, check=True, stdout=PIPE, stderr=STDOUT)
     except CalledProcessError as ex:
         output = ex.output and ex.output.decode('UTF8')
         if output != 'Failed to make first seed. Cannot continue\n':
@@ -238,31 +243,57 @@ def denovo(fastq1_path: str,
         with open(contigs_fasta_path, 'a'):
             pass
 
-    fh, abs_path = mkstemp()
-    i = 0
-    with fdopen(fh, 'w') as new_file:
-        with open(contigs_fasta_path) as old_file:
-            for line in old_file:
-                if line.startswith('>'):
-                    new_file.write(f">contig{i}\n")
-                    i += 1
-                else:
-                    new_file.write(line)
-    copymode(contigs_fasta_path, abs_path)
-    remove(contigs_fasta_path)
-    move(abs_path, contigs_fasta_path)
-    print(f"Number of contigs before trimming and joining: {i}")
+    if haplo_args['merge']:
+        fh, abs_path = mkstemp()
+        i = 0
+        with fdopen(fh, 'w') as new_file:
+            with open(contigs_fasta_path) as old_file:
+                for line in old_file:
+                    if line.startswith('>'):
+                        new_file.write(f">contig{i}\n")
+                        i += 1
+                    else:
+                        new_file.write(line)
+        copymode(contigs_fasta_path, abs_path)
+        remove(contigs_fasta_path)
+        move(abs_path, contigs_fasta_path)
+        print(f"Number of contigs before trimming and joining: {i}")
 
-    haplo_assembly = Assembly(contigs_file=contigs_fasta_path)
-    reads_prefix = os.path.join(tmp_dir, 'reads')
-    reads_1 = reads_prefix + '_1.fa'
-    reads_2 = reads_prefix + '_2.fa'
-    deinterleave(joined_path, reads_1, reads_2, fasta_out=True)
-    haplo_assembly._trim_strand_biased_ends(reads_prefix, tag_as_trimmed=True)
-    haplo_assembly._remove_contained_contigs(list(haplo_assembly.contigs.keys()))
-    haplo_assembly._merge_overlapping_contigs(list(haplo_assembly.contigs.keys()))
-    contigs_fasta_path = os.path.join(haplo_out_path, 'finalcontigs.fasta')
-    haplo_assembly.write_contigs_to_file(contigs_fasta_path)
+        haplo_assembly = Assembly(contigs_file=contigs_fasta_path)
+        reads_prefix = os.path.join(tmp_dir, 'reads')
+        reads_1 = reads_prefix + '_1.fa'
+        reads_2 = reads_prefix + '_2.fa'
+        deinterleave(joined_path, reads_1, reads_2, fasta_out=True)
+        haplo_assembly._trim_strand_biased_ends(reads_prefix, tag_as_trimmed=True)
+        haplo_assembly._remove_contained_contigs(list(haplo_assembly.contigs.keys()))
+        haplo_assembly._merge_overlapping_contigs(list(haplo_assembly.contigs.keys()))
+        contigs_fasta_path = os.path.join(haplo_out_path, 'contigs_merged.fasta')
+        haplo_assembly.write_contigs_to_file(contigs_fasta_path)
+
+    if haplo_args['scaffold']:
+        new_contigs_fasta_path = os.path.join(haplo_out_path, 'contigs_scaffolded.fasta')
+        scaffold_cmd = ['python3.8',
+                        RAGTAG,
+                        'scaffold',
+                        haplo_args['ref'],
+                        contigs_fasta_path,
+                        '-o', new_contigs_fasta_path,
+                        '--aligner', 'nucmer',
+                        '--nucmer_params', "'--maxmatch -l 100 -c 65'"]
+        run(scaffold_cmd, check=True, stdout=PIPE, stderr=STDOUT)
+        contigs_fasta_path = new_contigs_fasta_path
+
+    if haplo_args['patch']:
+        new_contigs_fasta_path = os.path.join(haplo_out_path, 'contigs_patched.fasta')
+        patch_cmd = ['python3.8',
+                     RAGTAG,
+                     'patch',
+                     contigs_fasta_path,
+                     haplo_args['ref'],
+                     '-o', new_contigs_fasta_path,
+                     '--nucmer_params', "'--maxmatch -l 100 -c 65'"]
+        run(patch_cmd, check=True, stdout=PIPE, stderr=STDOUT)
+        contigs_fasta_path = new_contigs_fasta_path
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time

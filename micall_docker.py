@@ -373,6 +373,23 @@ def get_parser(default_max_active):
             type=int,
             default=41,
         )
+        command_parser.add_argument(
+            "-denovo_merge",
+            action='store_true',
+        )
+        command_parser.add_argument(
+            "-scaffold",
+            action='store_true',
+        )
+        command_parser.add_argument(
+            "-patch",
+            action='store_true',
+        )
+        command_parser.add_argument(
+            "-ref",
+            type=str,
+            default=None,
+        )
 
     return parser
 
@@ -978,7 +995,11 @@ def process_sample(sample, args, pssm, use_denovo=False):
                   'thres': args.haplo_thres,
                   'strict': args.haplo_strict,
                   'error': args.haplo_error,
-                  'kmer': args.haplo_kmer}
+                  'kmer': args.haplo_kmer,
+                  'merge':args.denovo_merge,
+                  'scaffold': args.scaffold,
+                  'patch': args.patch,
+                  'ref': args.ref}
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS
