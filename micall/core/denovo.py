@@ -280,12 +280,13 @@ def denovo(fastq1_path: str,
                         '-o', scaffolding_path,
                         '--aligner', 'nucmer',
                         '--nucmer-params', "'--maxmatch -l 100 -c 65'"]
-        try:
-            run(scaffold_cmd, check=True, stdout=PIPE, stderr=STDOUT)
-            contigs_fasta_path = os.path.join(scaffolding_path, 'ragtag.scaffold.fasta')
-        except CalledProcessError as e:
-            print(e)
-            pass
+        run(scaffold_cmd, check=True, stdout=PIPE, stderr=STDOUT)
+        new_contigs_fasta_path = os.path.join(scaffolding_path, 'ragtag.scaffold.fasta')
+        if os.path.getsize(new_contigs_fasta_path) > 0:
+            print('Scaffolding was successful!')
+            contigs_fasta_path = new_contigs_fasta_path
+        else:
+            print('Scaffolding was not successful')
 
     if haplo_args['patch']:
         patching_path = os.path.join(haplo_out_path, 'patching')
@@ -296,12 +297,13 @@ def denovo(fastq1_path: str,
                      haplo_args['ref'],
                      '-o', patching_path,
                      '--nucmer-params', "'--maxmatch -l 100 -c 65'"]
-        try:
-            run(patch_cmd, check=True, stdout=PIPE, stderr=STDOUT)
-            contigs_fasta_path = os.path.join(patching_path, 'ragtag.patch.fasta')
-        except CalledProcessError as e:
-            print(e)
-            pass
+        run(patch_cmd, check=True, stdout=PIPE, stderr=STDOUT)
+        new_contigs_fasta_path = os.path.join(patching_path, 'ragtag.patch.fasta')
+        if os.path.getsize(new_contigs_fasta_path) > 0:
+            print('Patching was successful!')
+            contigs_fasta_path = new_contigs_fasta_path
+        else:
+            print('Patching was not successful')
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
