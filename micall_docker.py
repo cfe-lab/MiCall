@@ -390,6 +390,10 @@ def get_parser(default_max_active):
             type=str,
             default=None,
         )
+        command_parser.add_argument(
+            "-RP",
+            action='store_true',
+        )
 
     return parser
 
@@ -999,7 +1003,8 @@ def process_sample(sample, args, pssm, use_denovo=False):
                   'merge':args.denovo_merge,
                   'scaffold': args.scaffold,
                   'patch': args.patch,
-                  'ref': args.ref}
+                  'ref': args.ref,
+                  'RP': args.RP}
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS

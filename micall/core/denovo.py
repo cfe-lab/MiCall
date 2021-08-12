@@ -25,6 +25,7 @@ from shutil import move, copymode
 from os import fdopen, remove
 from iva.assembly import Assembly
 from pyfastaq.tasks import deinterleave
+from micall.core.remap import remap, map_to_contigs
 
 HAPLOFLOW = "haploflow"
 RAGTAG = "/home/charlotte/Documents/Git/MiCall/.venv/bin/RagTag/ragtag.py"
@@ -178,6 +179,32 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
     return samples
 
 
+def separate_contigs(contigs_csv, ref_contigs_csv, noref_contigs_csv):
+    """ Separate contigs into those that mapped to or did not map to a reference.
+    :param contigs_csv:         file with contigs, open in read mode
+    :param ref_contigs_csv:     file for contigs that mapped to a reference, open in write mode
+    :param noref_contigs_csv:   file for contigs that did not map to a reference, open in write mode
+    """
+    threshold = 0.1
+    # is a match threshold sufficient or do we need info from blast_csv as well?
+    fieldnames = ['ref', 'match', 'group_ref', 'contig']
+    ref_contig_writer = DictWriter(ref_contigs_csv, fieldnames)
+    ref_contig_writer.writeheader()
+    noref_contig_writer = DictWriter(noref_contigs_csv, fieldnames)
+    noref_contig_writer.writeheader()
+    contig_reader = DictReader(contigs_csv)
+    num_total = 0
+    num_match = 0
+    for row in contig_reader:
+        num_total += 1
+        if float(row['match']) > threshold:
+            ref_contig_writer.writerow(row)
+            num_match += 1
+        else:
+            noref_contig_writer.writerow(row)
+    return num_total - num_match
+
+
 def denovo(fastq1_path: str,
            fastq2_path: str,
            contigs_csv: typing.TextIO,
@@ -220,7 +247,8 @@ def denovo(fastq1_path: str,
                       'merge': False,
                       'scaffold': False,
                       'patch': False,
-                      'ref': None}
+                      'ref': None,
+                      'RP': False}
     haplo_out_path = os.path.join(tmp_dir, 'haplo_out')
     contigs_fasta_path = os.path.join(haplo_out_path, 'contigs.fa')
     haplo_cmd = [HAPLOFLOW,
@@ -231,8 +259,7 @@ def denovo(fastq1_path: str,
                   '--strict', str(haplo_args['strict']),
                   '--filter', str(haplo_args['filter']),
                   '--thres', str(haplo_args['thres']),
-                  '--long', str(haplo_args['long']),
-                  '--debug', '1']
+                  '--long', str(haplo_args['long'])]
     try:
         run(haplo_cmd, check=True, stdout=PIPE, stderr=STDOUT)
     except CalledProcessError as ex:
@@ -242,6 +269,60 @@ def denovo(fastq1_path: str,
             logger.warning(output)
         with open(contigs_fasta_path, 'a'):
             pass
+
+    if haplo_args['RP']:
+        contigs_firstpass = os.path.join(haplo_out_path, "contigs_firstpass.csv")
+        blast_firstpass = os.path.join(haplo_out_path, "blast_firstpass.csv")
+        ref_contigs = os.path.join(haplo_out_path, "ref_contigs.csv")
+        noref_contigs = os.path.join(haplo_out_path, "noref_contigs.csv")
+        with open(contigs_firstpass, 'w') as contigs_firstpass_csv, \
+                open(blast_firstpass, 'w') as blast_firstpass_csv:
+            contig_count = write_contig_refs(contigs_fasta_path,
+                                         contigs_firstpass_csv,
+                                         blast_csv=blast_firstpass_csv)
+        with open(contigs_firstpass, 'r') as contigs_firstpass_csv, \
+                open(ref_contigs, 'w') as ref_contigs_csv, \
+                open(noref_contigs, 'w') as noref_contigs_csv:
+            num_noref = separate_contigs(contigs_firstpass_csv, ref_contigs_csv, noref_contigs_csv)
+        print(f"Assembled {contig_count} contigs in the first pass, of which {num_noref} did not map to a reference.")
+        unmapped1_path = os.path.join(haplo_out_path, 'firstpass_unmapped1.fastq')
+        unmapped2_path = os.path.join(haplo_out_path, 'firstpass_unmapped2.fastq')
+        if num_noref:
+            with open(os.path.join(haplo_out_path, 'firstpass_remap.csv'), 'w') as remap_csv, \
+                    open(os.path.join(haplo_out_path, 'firstpass_remap_counts.csv'), 'w') as counts_csv, \
+                    open(os.path.join(haplo_out_path, 'firstpass_remap_conseq.csv'), 'w') as conseq_csv, \
+                    open(unmapped1_path, 'w') as unmapped1, \
+                    open(unmapped2_path, 'w') as unmapped2, \
+                    open(noref_contigs, 'r') as noref_contigs_csv:
+                map_to_contigs(fastq1_path,
+                               fastq2_path,
+                               noref_contigs_csv,
+                               remap_csv,
+                               counts_csv,
+                               conseq_csv,
+                               unmapped1,
+                               unmapped2,
+                               haplo_out_path, )
+            # we want to use the reads that did not map to the contigs that did not blast to the refs
+            filtered_joined_path = os.path.join(haplo_out_path, 'filtered_joined.fastq')
+            run(['merge-mates',
+                 unmapped1_path,
+                 unmapped2_path,
+                 '--interleave',
+                 '-o', filtered_joined_path],
+                check=True)
+            haplo_out_path = os.path.join(tmp_dir, 'haplo_secondpass_out')
+            contigs_fasta_path = os.path.join(haplo_out_path, 'contigs.fa')
+            haplo_cmd = [HAPLOFLOW,
+                         '--read-file', filtered_joined_path,
+                         '--out', haplo_out_path,
+                         '--k', str(haplo_args['kmer']),
+                         '--error-rate', str(haplo_args['error']),
+                         '--strict', str(haplo_args['strict']),
+                         '--filter', str(haplo_args['filter']),
+                         '--thres', str(haplo_args['thres']),
+                         '--long', str(haplo_args['long'])]
+            run(haplo_cmd, check=True, stdout=PIPE, stderr=STDOUT)
 
     if haplo_args['merge']:
         fh, abs_path = mkstemp()
