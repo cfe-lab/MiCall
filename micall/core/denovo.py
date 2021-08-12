@@ -279,7 +279,7 @@ def denovo(fastq1_path: str,
                         contigs_fasta_path,
                         '-o', scaffolding_path,
                         '--aligner', 'nucmer',
-                        '--nucmer-params', "'--maxmatch -l 100 -c 65'"]
+                        '--nucmer-params', '--maxmatch -l 100 -c 65']
         run(scaffold_cmd, check=True, stdout=PIPE, stderr=STDOUT)
         new_contigs_fasta_path = os.path.join(scaffolding_path, 'ragtag.scaffold.fasta')
         if os.path.getsize(new_contigs_fasta_path) > 0:
@@ -296,7 +296,7 @@ def denovo(fastq1_path: str,
                      contigs_fasta_path,
                      haplo_args['ref'],
                      '-o', patching_path,
-                     '--nucmer-params', "'--maxmatch -l 100 -c 65'"]
+                     '--nucmer-params', '--maxmatch -l 100 -c 65']
         run(patch_cmd, check=True, stdout=PIPE, stderr=STDOUT)
         new_contigs_fasta_path = os.path.join(patching_path, 'ragtag.patch.fasta')
         if os.path.getsize(new_contigs_fasta_path) > 0:
