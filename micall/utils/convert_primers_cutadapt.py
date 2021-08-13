@@ -1,3 +1,4 @@
+import typing
 from contextlib import contextmanager
 from csv import DictReader
 from difflib import Differ
@@ -14,10 +15,9 @@ from micall.core.project_config import ProjectConfig
 
 def main():
     source_path = Path(__file__).parent / 'ptrimmer_data'
-    target_path = source_path.parent.parent / 'core'
+    target_path = source_path.parent.parent / 'data'
     seqs = {name: [] for name in ('left', 'right')}
-    load_hcv(seqs)
-    load_corona(source_path, seqs)
+    load_hivb(seqs)
     for name, seq_list in seqs.items():
         start_seqs = [SeqRecord('X' + seq.seq,
                                 id=seq.id.replace(' ', '_'),
@@ -27,8 +27,15 @@ def main():
                               id=seq.id.replace(' ', '_'),
                               description=seq.description)
                     for seq in seq_list]
-        SeqIO.write(start_seqs, str(target_path/f'primers_{name}.fasta'), 'fasta')
-        SeqIO.write(end_seqs, str(target_path/f'primers_{name}_end.fasta'), 'fasta')
+        SeqIO.write(start_seqs, str(target_path/f'primers_hivb_{name}.fasta'), 'fasta')
+        SeqIO.write(end_seqs, str(target_path/f'primers_hivb_{name}_end.fasta'), 'fasta')
+
+
+def load_hivb(seqs: typing.Dict[str, typing.List[SeqRecord]]):
+    left_source_path = Path(__file__).parent / 'MiCall project HIVB ForwardPrimers.txt'
+    right_source_path = Path(__file__).parent / 'MiCall project HIVB ReversePrimers.txt'
+    seqs['left'].extend(SeqIO.parse(left_source_path, 'fasta'))
+    seqs['right'].extend(SeqIO.parse(right_source_path, 'fasta'))
 
 
 def load_hcv(seqs):

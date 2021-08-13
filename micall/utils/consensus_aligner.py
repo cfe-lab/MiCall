@@ -497,11 +497,16 @@ class ConsensusAligner:
                 seed_amino.count_aminos('---', coverage)
 
                 # Start index within region
-                # TODO: Deletion starts or ends outside gene.
                 del_start_nuc_index = amino_alignment.ref_start - start_pos + 1
                 del_end_nuc_index = amino_alignment.ref_end - start_pos
-                del_start_amino_index = del_start_nuc_index // 3
-                del_end_amino_index = del_end_nuc_index // 3
+                # Calculate amino index. amino_alignment is already trimmed to
+                # be between start_pos and end_pos, but HIV's vpr has an extra
+                # base that can roll over to an extra amino acid. Trim to length
+                # of amino reference.
+                del_start_amino_index = min(del_start_nuc_index // 3,
+                                            len(amino_ref)-1)
+                del_end_amino_index = min(del_end_nuc_index // 3,
+                                          len(amino_ref)-1)
                 for coord_index in count(del_start_amino_index):
                     if coord_index == del_start_amino_index:
                         start_codon_nuc = del_start_nuc_index % 3
