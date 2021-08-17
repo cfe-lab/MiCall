@@ -1164,7 +1164,7 @@ def test_read_aminos_no_midi(asi_algorithms):
     min_fraction = 0.2
     min_coverage = 9
     expected_aminos = [AminoList('HCV1B-Con1-NS5b',
-                                 [{}] * 200 + [{'A': 1.0}]*136,
+                                 [{}] * 200 + [{'A': 1.0}]*136 + [{}] * 255,
                                  '1B',
                                  'HCV-1b',
                                  False)]
@@ -1174,7 +1174,7 @@ def test_read_aminos_no_midi(asi_algorithms):
                               min_coverage=min_coverage,
                               algorithms=asi_algorithms))
 
-    assert expected_aminos == aminos
+    assert aminos == expected_aminos
 
 
 def test_read_aminos_ns5b_missing_142(asi_algorithms):
