@@ -16,12 +16,12 @@ def asi_algorithms():
     return load_asi()
 
 
-def assert_aminos_lists_match(expected_lists: typing.List[AminoList],
-                              actual_lists: typing.List[AminoList]):
-    if expected_lists and (len(expected_lists) == len(actual_lists)):
+def assert_aminos_lists_match(actual_lists: typing.List[AminoList],
+                              expected_lists: typing.List[AminoList]):
+    if expected_lists and actual_lists and (len(expected_lists) == len(actual_lists)):
         for i, (expected, actual) in enumerate(zip(expected_lists, actual_lists)):
-            assert expected.aminos == actual.aminos, i
-    assert expected_lists == actual_lists
+            assert actual.aminos == expected.aminos, i
+    assert actual_lists == expected_lists
 
 
 class SelectReportedRegionsTest(TestCase):
@@ -1261,6 +1261,32 @@ def test_read_aminos_ns5b_missing_142_and_355(asi_algorithms):
                               algorithms=asi_algorithms))
 
     assert_aminos_lists_match(expected_aminos, aminos)
+
+
+def test_read_aminos_ns5b_short(asi_algorithms):
+    """ Low coverage at the end is no longer reported in amino.csv. """
+    amino_lines = [
+        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
+        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
+        for i in range(1, 401)]
+    amino_csv = DictReader(amino_lines)
+    min_fraction = 0.2
+    min_coverage = 9
+    expected_mixtures = [{'A': 1.0}] * 400 + [{}] * 191
+    expected_aminos = [AminoList('HCV1B-Con1-NS5b',
+                                 expected_mixtures,
+                                 '1B',
+                                 'HCV-1b',
+                                 True)]
+
+    aminos = list(read_aminos(amino_csv,
+                              min_fraction,
+                              min_coverage=min_coverage,
+                              algorithms=asi_algorithms))
+
+    assert_aminos_lists_match(aminos, expected_aminos)
 
 
 def test_filter_aminos_all(asi_algorithms):

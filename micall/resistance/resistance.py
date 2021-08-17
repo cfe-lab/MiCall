@@ -273,6 +273,9 @@ def read_aminos(amino_rows,
         if algorithms is None:
             is_report_required = False
         else:
+            std_length = get_std_length(region, genotype, algorithms)
+            while len(aminos) < std_length:
+                aminos.append({})
             asi_algorithm = algorithms.get(genotype)
             key_positions = asi_algorithm.get_gene_positions(region)
             if not region.endswith('NS5b'):
@@ -295,14 +298,19 @@ def get_algorithm_regions(algorithm):
 
 
 def create_empty_aminos(region, genotype, seed, algorithms):
-    algorithm = algorithms[genotype]
-    std_name = 'IN' if region == 'INT' else region
-    std_length = len(algorithm.stds[std_name])
+    std_length = get_std_length(region, genotype, algorithms)
     return AminoList(region,
                      [{}] * std_length,
                      genotype,
                      seed,
                      False)
+
+
+def get_std_length(region, genotype, algorithms):
+    algorithm = algorithms[genotype]
+    std_name = 'IN' if region == 'INT' else region
+    std_length = len(algorithm.stds[std_name])
+    return std_length
 
 
 def filter_aminos(all_aminos, algorithms):
