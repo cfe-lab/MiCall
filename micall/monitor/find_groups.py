@@ -1,7 +1,7 @@
 from collections import namedtuple
 from pathlib import Path
 
-from micall.utils.sample_sheet_parser import sample_sheet_parser, read_sample_sheet_overrides
+from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
 
 SampleGroup = namedtuple('SampleGroup', 'enum names project_codes')
 
@@ -14,12 +14,7 @@ def find_groups(file_names, sample_sheet_path, included_projects=None):
     :param included_projects: project codes to include, or None to include
         all
     """
-    with open(sample_sheet_path) as sample_sheet_file:
-        run_info = sample_sheet_parser(sample_sheet_file)
-    overrides_path = Path(sample_sheet_path).parent / 'SampleSheetOverrides.csv'
-    if overrides_path.exists():
-        with overrides_path.open() as overrides_file:
-            read_sample_sheet_overrides(overrides_file, run_info)
+    run_info = read_sample_sheet_and_overrides(Path(sample_sheet_path))
 
     midi_hcv_code = 'MidHCV'
     midi_files = {row['sample']: row['filename']

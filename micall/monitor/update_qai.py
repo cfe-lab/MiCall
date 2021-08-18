@@ -3,10 +3,13 @@
 # To execute as a script, run python -m micall.monitor.update_qai
 
 import csv
+import typing
 from argparse import SUPPRESS
 from collections import defaultdict
 from datetime import datetime
 import logging
+from pathlib import Path
+
 from micall.monitor.sample_watcher import PipelineType
 from operator import itemgetter
 import os
@@ -29,9 +32,16 @@ def parse_args():
     parser.add_argument('--pipeline_version',
                         default='0-dev',
                         help='version suffix for batch names and folder names')
+    parser.add_argument('--pipeline_group',
+                        default=PipelineType.MAIN,
+                        type=PipelineType,
+                        choices=(PipelineType.MAIN,
+                                 PipelineType.DENOVO_MAIN,
+                                 PipelineType.PROVIRAL),
+                        help='group of results to upload')
     parser.add_argument('--qai_server',
                         default=os.environ.get('MICALL_QAI_SERVER',
-                                               'http://localhost:3000'),
+                                               'http://localhost:4567'),
                         help='server to post reviews on')
     parser.add_argument('--qai_user',
                         default=os.environ.get('MICALL_QAI_USER', 'bob'),
@@ -45,7 +55,7 @@ def parse_args():
     return args
 
 
-def build_conseqs(conseqs_file, run, sample_sheet, ok_sample_regions):
+def build_conseqs(conseqs_file, run, sample_sheet):
     """
     Parses a Pipeline-produced conseq file and builds JSON objects to send
     to QAI.
@@ -55,14 +65,11 @@ def build_conseqs(conseqs_file, run, sample_sheet, ok_sample_regions):
     @param run: a hash with the attributes of the run record, including a
         sequencing summary of all the samples and their target projects
     @param sample_sheet: The data parsed from the sample sheet.
-    @param ok_sample_regions: A set of (sample_name, region, qcut) tuples that
-        were given a good score by the pipeline.
     @return an array of JSON hashes, one for each conseq.
     """
 
     result = []
     ss = sample_sheet
-    sequencings = run['sequencing_summary']
     run_name = run['runname']
     conseqs_csv = csv.DictReader(conseqs_file)
     # ss["Data"] is keyed by (what should be) the FASTQ
@@ -82,20 +89,7 @@ def build_conseqs(conseqs_file, run, sample_sheet, ok_sample_regions):
     #     FASTQ_lookup[sample_name] = fastq_filename
 
     projects = ProjectConfig.loadDefault()
-    target_regions = set()  # set([(tags, seed_name)])
-    for entry in sequencings:
-        target_project = entry['target_project']
-        try:
-            seeds = projects.getProjectSeeds(target_project)
-        except KeyError:
-            if target_project != 'Unknown':
-                logger.warning('Failed to load project seeds for %s in %s.',
-                               entry['tag'],
-                               run_name,
-                               exc_info=True)
-            seeds = set()
-        for seed in seeds:
-            target_regions.add((entry['tag'], seed))
+    sample_seeds: typing.Dict[str, typing.Set[str]] = {}
 
     for row in conseqs_csv:
         # Each row of this file looks like:
@@ -109,14 +103,25 @@ def build_conseqs(conseqs_file, run, sample_sheet, ok_sample_regions):
         fastq_filename = row["sample"]
         sample_info = ss["Data"][fastq_filename]
         orig_sample_name = sample_info["orig_sample_name"]
-        sample_tags = sample_info["tags"]
         # FIXME if row["sequence"] is blank we replace it with a dash.
         # Need Conan to make that row blank-able.
         curr_seq = row["sequence"] if len(row["sequence"]) > 0 else "-"
-        sample_region = (fastq_filename, row["region"], row["q-cutoff"])
-        ok_region = sample_region in ok_sample_regions
-        is_target_region = (sample_tags, row["region"]) in target_regions
-        ok_for_release = ok_region and is_target_region
+        seeds = sample_seeds.get(fastq_filename)
+        if seeds is None:
+            target_project, = [row['project']
+                               for row in ss["DataSplit"]
+                               if row['filename'] == fastq_filename]
+            try:
+                seeds = projects.getProjectSeeds(target_project)
+            except KeyError:
+                if target_project != 'Unknown':
+                    logger.warning('Failed to load project seeds for %s in %s.',
+                                   fastq_filename,
+                                   run_name,
+                                   exc_info=True)
+                seeds = set()
+            sample_seeds[fastq_filename] = seeds
+        ok_for_release = row["region"] in seeds
         result.append({
             "samplename": orig_sample_name,
             # July 9, 2014: we can't do this properly right now
@@ -287,17 +292,16 @@ def upload_review_to_qai(coverage_file, collated_counts_file, cascade_file,
         })
 
 
-def upload_proviral_tables(session, result_folder, run, pipeline_version):
+def upload_proviral_tables(session, result_folder, run):
     proviral_file = os.path.join(result_folder, "proviral",
                                  "table_precursor.csv")
     aln_proviral_file = os.path.join(result_folder, "proviral",
                                      "aligned_table_precursor.csv")
-    proviral_responses = upload_proviral_csv(session, run['id'], proviral_file,
-                                             '/proviral/create')
+    upload_proviral_csv(session, run['id'], proviral_file, '/proviral/create')
     logger.info('proviral upload success!')
-    proviral_responses = upload_proviral_csv(session, run['id'],
-                                             aln_proviral_file,
-                                             '/aligned_proviral/create')
+    upload_proviral_csv(session, run['id'],
+                        aln_proviral_file,
+                        '/aligned_proviral/create')
     logger.info('aligned proviral upload success!')
 
 
@@ -375,11 +379,9 @@ def load_ok_sample_regions(result_folder):
 def process_folder(item, qai_server, qai_user, qai_password, pipeline_version):
     result_folder, pipeline_group = item
 
-    all_results_path, _ = os.path.split(os.path.normpath(result_folder))
-    run_path, _ = os.path.split(all_results_path)
-    sample_sheet_file = os.path.join(run_path, "SampleSheet.csv")
-    with open(sample_sheet_file, "rU") as f:
-        sample_sheet = sample_sheet_parser.sample_sheet_parser(f)
+    run_path = Path(result_folder).parent.parent
+    sample_sheet = sample_sheet_parser.read_sample_sheet_and_overrides(
+        run_path / 'SampleSheet.csv')
 
     attempt_count = 0
     with qai_helper.Session() as session:
@@ -388,17 +390,16 @@ def process_folder(item, qai_server, qai_user, qai_password, pipeline_version):
             session.login(qai_server, qai_user, qai_password)
             run = find_run(session, sample_sheet["Experiment Name"])
 
-            ## PROVIRAL
+            # PROVIRAL
             if pipeline_group == PipelineType.PROVIRAL:
-                upload_proviral_tables(session, result_folder, run,
-                                       pipeline_version)
-            ## DENOVO
+                upload_proviral_tables(session, result_folder, run)
+            # DENOVO
             elif pipeline_group in (PipelineType.DENOVO_MAIN,
                                     PipelineType.DENOVO_MIDI,
                                     PipelineType.DENOVO_RESISTANCE):
                 # Do nothing
                 pass
-            ## REMAPPED
+            # REMAPPED
             else:
                 process_remapped(result_folder, session, run, pipeline_version)
 
@@ -413,17 +414,12 @@ def process_remapped(result_folder, session, run, pipeline_version):
     collated_counts = os.path.join(result_folder, 'remap_counts.csv')
     cascade = os.path.join(result_folder, 'cascade.csv')
     coverage_scores = os.path.join(result_folder, 'coverage_scores.csv')
-    all_results_path, _ = os.path.split(os.path.normpath(result_folder))
-    run_path, _ = os.path.split(all_results_path)
-    sample_sheet_file = os.path.join(run_path, "SampleSheet.csv")
-
-    with open(sample_sheet_file, "rU") as f:
-        sample_sheet = sample_sheet_parser.sample_sheet_parser(f)
-
-    ok_sample_regions = load_ok_sample_regions(result_folder)
+    run_path = Path(result_folder).parent.parent
+    sample_sheet = sample_sheet_parser.read_sample_sheet_and_overrides(
+        run_path / 'SampleSheet.csv')
 
     with open(collated_conseqs) as f:
-        conseqs = build_conseqs(f, run, sample_sheet, ok_sample_regions)
+        conseqs = build_conseqs(f, run, sample_sheet)
 
     with open(coverage_scores) as f, \
             open(collated_counts) as f2, \
@@ -454,8 +450,11 @@ def upload_loop(qai_server, qai_user, qai_password, pipeline_version,
 def main():
     args = parse_args()
 
-    process_folder(args.result_folder, args.qai_server, args.qai_user,
-                   args.qai_password, args.pipeline_version)
+    process_folder((args.result_folder, args.pipeline_group),
+                   args.qai_server,
+                   args.qai_user,
+                   args.qai_password,
+                   args.pipeline_version)
 
     logger.info('Completed upload to Oracle.')
 

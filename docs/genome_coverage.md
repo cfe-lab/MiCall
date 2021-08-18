@@ -23,7 +23,7 @@ varies along a contig. The colour changes with depth, and darker blue means
 deeper coverage.
 
 Finally, the two arrows show where each part of the contig best matches the
-known reference, according to the BLAST search tool. MiCall will do its best to
+known reference, according to the minimap2 search tool. MiCall will do its best to
 line up the contig with its matching region in the reference, like this example,
 but some of the more complicated sequences need these arrows to understand which
 parts match which.
@@ -51,7 +51,7 @@ depth, and the colour changes with the depth.
 
 Sometimes, a genome will include reversed sections. When that happens, the
 direction of the arrows will show which way each section matched the reference.
-Here's an example where BLAST found three separate sections in a single contig:
+Here's an example where minimap2 found three separate sections in a single contig:
 
 [![inversion]][inversion]
 
@@ -61,6 +61,19 @@ direction. There are also some small, yellow sections on either side of section
 1.2. Yellow means that section didn't match anything in the reference. You will
 also sometimes see green sections that represent insertions and blank sections
 that represent deletions.
+
+Sometimes, a contig matches two sections of the reference, but minimap2 can't
+tell exactly where the boundary is between the two sections. This happens when
+the end of one section in the reference is an exact match for the start of the
+other section. When this happens, the minimap2 matches overlap, and are
+stacked on top of each other, like 1.1 and 1.2 in this diagram:
+
+[![overlap]][overlap]
+
+Because it's impossible to tell which match the overlapped bases belong to,
+MiCall arbitrarily assigns the coverage to the one that comes first in the
+contig. In this example, the two bases in gag would get the coverage, not the
+two bases in nef.
 
 Finally, there are often extra contigs that don't match any references, or only
 match small sections within the contig. Those are displayed after the known
@@ -76,4 +89,5 @@ so you can estimate the length of each contig in that section.
 [basic contig]: images/genome_coverage_basic.svg
 [multiple contigs]: images/genome_coverage_multiple_contigs.svg
 [inversion]: images/genome_coverage_inversion.svg
+[overlap]: images/genome_coverage_hits_overlap.svg
 [partial]: images/genome_coverage_partial.svg

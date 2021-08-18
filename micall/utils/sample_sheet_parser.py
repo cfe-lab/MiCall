@@ -2,6 +2,7 @@
 
 import re
 from csv import DictReader
+from pathlib import Path
 
 
 def sample_sheet_parser(handle):
@@ -207,6 +208,16 @@ def read_sample_sheet_overrides(override_file, run_info):
         old_project = row['project']
         new_project = project_overrides.get(sample_name, old_project)
         row['project'] = new_project
+
+
+def read_sample_sheet_and_overrides(sample_sheet_path: Path) -> dict:
+    with sample_sheet_path.open() as sample_sheet_file:
+        run_info = sample_sheet_parser(sample_sheet_file)
+    overrides_path = sample_sheet_path.parent / 'SampleSheetOverrides.csv'
+    if overrides_path.exists():
+        with overrides_path.open() as overrides_file:
+            read_sample_sheet_overrides(overrides_file, run_info)
+    return run_info
 
 
 def main():

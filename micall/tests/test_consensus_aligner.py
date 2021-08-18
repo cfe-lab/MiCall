@@ -309,6 +309,33 @@ def test_start_contig_frame_change_delete(projects):
 
 
 # noinspection DuplicatedCode
+def test_start_contig_frame_change_delete_across_vpr_boundary(projects):
+    """ Because vpr has 1 base inserted in HXB2, amino ref is shorter. """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    consensus = (seed_seq[5500:5771] + seed_seq[5772:5849] + seed_seq[5850:6200])
+    reading_frames = create_reading_frames(consensus)
+    amino_ref = projects.getReference('HIV1B-vpr')
+    aligner = ConsensusAligner(projects)
+
+    aligner.start_contig(seed_name, reading_frames=reading_frames)
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
+    aligner.report_region(5559,
+                          5850,
+                          report_nucleotides,
+                          report_aminos,
+                          amino_ref=amino_ref)
+
+    # The expected positions look cleaner, because of the single base insertion
+    # in HXB2 at 5772.
+    assert_consensus_nuc_indexes(report_aminos,
+                                 list(range(5501, 5847)),
+                                 5559,
+                                 5849)
+
+
+# noinspection DuplicatedCode
 def test_start_contig_close_frame_changes(projects):
     """ The reading frame changes and then changes back within 30 bases. """
     seed_name = 'HIV1-B-FR-K03455-seed'
@@ -434,7 +461,7 @@ def test_start_contig_insertion_minimap2(projects):
                                           r_en=2060,
                                           q_st=0,
                                           q_en=63,
-                                          mapq=7,
+                                          mapq=8,
                                           cigar=[[30, CigarActions.MATCH],
                                                  [3, CigarActions.INSERT],
                                                  [30, CigarActions.MATCH]],

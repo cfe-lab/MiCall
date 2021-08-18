@@ -342,7 +342,7 @@ def get_parser(default_max_active):
         command_parser.add_argument(
             "--project_code",
             "-p",
-            help="Select primers to trim: HCV or SARSCOV2.")
+            help="Select primers to trim: HCV, HIVB, HIVGHA, or SARSCOV2.")
         command_parser.add_argument(
             "-haplo_long",
             type=int,
