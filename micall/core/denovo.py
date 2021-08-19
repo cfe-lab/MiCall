@@ -320,10 +320,10 @@ def denovo(fastq1_path: str,
                     open(os.path.join(haplo_out_path, 'firstpass_remap_conseq.csv'), 'w') as conseq_csv, \
                     open(unmapped1_path, 'w') as unmapped1, \
                     open(unmapped2_path, 'w') as unmapped2, \
-                    open(contigs_firstpass, 'r') as contigs_csv:
+                    open(contigs_firstpass, 'r') as contigs_firstpass_csv:
                 map_to_contigs(fastq1_path,
                                fastq2_path,
-                               contigs_csv,
+                               contigs_firstpass_csv,
                                remap_csv,
                                counts_csv,
                                conseq_csv,
