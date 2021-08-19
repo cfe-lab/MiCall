@@ -205,6 +205,32 @@ def separate_contigs(contigs_csv, ref_contigs_csv, noref_contigs_csv):
     return num_total - num_match
 
 
+def separate_reads(remap_csv, ref_reads_file, noref_reads_file, unmapped1, unmapped2):
+    """ Separate reads from remap.csv file into those that mapped to un unknown partial and the rest.
+
+    :param remap_csv: remap output file created by map_to_contigs, open in read mode
+    :param ref_reads_file: file to write potentially useful reads (that mapped to useful contigs or that did not map)
+    :param noref_reads_file: file to write useless reads (that mapped to unknown contig)
+    :param unmapped1: fasta file 1 of reads that did not map
+    :param unmapped2: fasta file 2 of reads that did not map
+    """
+    fieldnames = ['qname', 'flag', 'rname', 'pos', 'mapq', 'cigar', 'rnext', 'pnext', 'tlen', 'seq', 'qual']
+    remap_reader = DictReader(remap_csv)
+    for row in remap_reader:
+        if row['rname'][-16:] == "-unknown-partial":
+            file_to_write = noref_reads_file
+        else:
+            file_to_write = ref_reads_file
+        file_to_write.write('@'+row['qname']+'\n')
+        file_to_write.write(row['seq']+'\n')
+        file_to_write.write('+\n')
+        file_to_write.write(row['qual']+'\n')
+    for line in unmapped1:
+        ref_reads_file.write(line)
+    for line in unmapped2:
+        ref_reads_file.write(line)
+
+
 def denovo(fastq1_path: str,
            fastq2_path: str,
            contigs_csv: typing.TextIO,
@@ -287,34 +313,36 @@ def denovo(fastq1_path: str,
         print(f"Assembled {contig_count} contigs in the first pass, of which {num_noref} did not map to a reference.")
         unmapped1_path = os.path.join(haplo_out_path, 'firstpass_unmapped1.fastq')
         unmapped2_path = os.path.join(haplo_out_path, 'firstpass_unmapped2.fastq')
+        remap_path = os.path.join(haplo_out_path, 'firstpass_remap.csv')
         if num_noref:
-            with open(os.path.join(haplo_out_path, 'firstpass_remap.csv'), 'w') as remap_csv, \
+            with open(remap_path, 'w') as remap_csv, \
                     open(os.path.join(haplo_out_path, 'firstpass_remap_counts.csv'), 'w') as counts_csv, \
                     open(os.path.join(haplo_out_path, 'firstpass_remap_conseq.csv'), 'w') as conseq_csv, \
                     open(unmapped1_path, 'w') as unmapped1, \
                     open(unmapped2_path, 'w') as unmapped2, \
-                    open(noref_contigs, 'r') as noref_contigs_csv:
+                    open(contigs_firstpass, 'r') as contigs_csv:
                 map_to_contigs(fastq1_path,
                                fastq2_path,
-                               noref_contigs_csv,
+                               contigs_csv,
                                remap_csv,
                                counts_csv,
                                conseq_csv,
                                unmapped1,
                                unmapped2,
                                haplo_out_path, )
-            # we want to use the reads that did not map to the contigs that did not blast to the refs
-            filtered_joined_path = os.path.join(haplo_out_path, 'filtered_joined.fastq')
-            run(['merge-mates',
-                 unmapped1_path,
-                 unmapped2_path,
-                 '--interleave',
-                 '-o', filtered_joined_path],
-                check=True)
+            # we want to discard the reads that mapped to the contigs that did not blast to the refs
+            ref_reads_path = os.path.join(haplo_out_path, 'ref_reads.fasta')
+            noref_reads_path = os.path.join(haplo_out_path, 'noref_reads.fasta')
+            with open(remap_path, 'r') as remap_csv, \
+                    open(ref_reads_path, 'w') as ref_reads_file, \
+                    open(noref_reads_path, 'w') as noref_reads_file, \
+                    open(unmapped1_path, 'r') as unmapped1, \
+                    open(unmapped2_path, 'r') as unmapped2:
+                separate_reads(remap_csv, ref_reads_file, noref_reads_file, unmapped1, unmapped2)
             haplo_out_path = os.path.join(tmp_dir, 'haplo_secondpass_out')
             contigs_fasta_path = os.path.join(haplo_out_path, 'contigs.fa')
             haplo_cmd = [HAPLOFLOW,
-                         '--read-file', filtered_joined_path,
+                         '--read-file', ref_reads_path,
                          '--out', haplo_out_path,
                          '--k', str(haplo_args['kmer']),
                          '--error-rate', str(haplo_args['error']),
