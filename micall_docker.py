@@ -394,6 +394,10 @@ def get_parser(default_max_active):
             "-RP",
             action='store_true',
         )
+        command_parser.add_argument(
+            "-IVA",
+            action='store_true',
+        )
 
     return parser
 
@@ -1004,7 +1008,8 @@ def process_sample(sample, args, pssm, use_denovo=False):
                   'scaffold': args.scaffold,
                   'patch': args.patch,
                   'ref': args.ref,
-                  'RP': args.RP}
+                  'RP': args.RP,
+                  'IVA': args.IVA}
     try:
         excluded_seeds = [] if args.all_projects else EXCLUDED_SEEDS
         excluded_projects = [] if args.all_projects else EXCLUDED_PROJECTS

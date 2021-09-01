@@ -28,6 +28,7 @@ from pyfastaq.tasks import deinterleave
 from micall.core.remap import remap, map_to_contigs
 
 HAPLOFLOW = "haploflow"
+IVA = "iva"
 RAGTAG = "/home/charlotte/Documents/Git/MiCall/.venv/bin/RagTag/ragtag.py"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 '..',
@@ -274,33 +275,59 @@ def denovo(fastq1_path: str,
                       'scaffold': False,
                       'patch': False,
                       'ref': None,
-                      'RP': False}
-    haplo_out_path = os.path.join(tmp_dir, 'haplo_out')
-    contigs_fasta_path = os.path.join(haplo_out_path, 'contigs.fa')
-    haplo_cmd = [HAPLOFLOW,
-                  '--read-file', joined_path,
-                  '--out', haplo_out_path,
-                  '--k', str(haplo_args['kmer']),
-                  '--error-rate', str(haplo_args['error']),
-                  '--strict', str(haplo_args['strict']),
-                  '--filter', str(haplo_args['filter']),
-                  '--thres', str(haplo_args['thres']),
-                  '--long', str(haplo_args['long'])]
-    try:
-        run(haplo_cmd, check=True, stdout=PIPE, stderr=STDOUT)
-    except CalledProcessError as ex:
-        output = ex.output and ex.output.decode('UTF8')
-        if output != 'Failed to make first seed. Cannot continue\n':
-            logger.warning('Haploflow failed to assemble.', exc_info=True)
-            logger.warning(output)
-        with open(contigs_fasta_path, 'a'):
-            pass
+                      'RP': False,
+                      'IVA': False}
+    if not haplo_args['IVA']:
+        assembly_out_path = os.path.join(tmp_dir, 'haplo_out')
+        contigs_fasta_path = os.path.join(assembly_out_path, 'contigs.fa')
+        haplo_cmd = [HAPLOFLOW,
+                      '--read-file', joined_path,
+                      '--out', assembly_out_path,
+                      '--k', str(haplo_args['kmer']),
+                      '--error-rate', str(haplo_args['error']),
+                      '--strict', str(haplo_args['strict']),
+                      '--filter', str(haplo_args['filter']),
+                      '--thres', str(haplo_args['thres']),
+                      '--long', str(haplo_args['long'])]
+        try:
+            run(haplo_cmd, check=True, stdout=PIPE, stderr=STDOUT)
+        except CalledProcessError as ex:
+            output = ex.output and ex.output.decode('UTF8')
+            if output != 'Failed to make first seed. Cannot continue\n':
+                logger.warning('Haploflow failed to assemble.', exc_info=True)
+                logger.warning(output)
+            with open(contigs_fasta_path, 'a'):
+                pass
+    else:
+        assembly_out_path = os.path.join(tmp_dir, 'iva_out')
+        contigs_fasta_path = os.path.join(assembly_out_path, 'contigs.fasta')
+        iva_args = [IVA, '--fr', joined_path, '-t', '2']
+        if merged_contigs_csv is not None:
+            seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
+            with open(seeds_fasta_path, 'w') as seeds_fasta:
+                SeqIO.write((SeqRecord(Seq(row['contig']), f'seed-{i}', '', '')
+                             for i, row in enumerate(DictReader(merged_contigs_csv))),
+                            seeds_fasta,
+                            'fasta')
+                seeds_size = seeds_fasta.tell()
+            if seeds_size > 0:
+                iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
+        iva_args.append(assembly_out_path)
+        try:
+            run(iva_args, check=True, stdout=PIPE, stderr=STDOUT)
+        except CalledProcessError as ex:
+            output = ex.output and ex.output.decode('UTF8')
+            if output != 'Failed to make first seed. Cannot continue\n':
+                logger.warning('iva failed to assemble.', exc_info=True)
+                logger.warning(output)
+            with open(contigs_fasta_path, 'a'):
+                pass
 
     if haplo_args['RP']:
-        contigs_firstpass = os.path.join(haplo_out_path, "contigs_firstpass.csv")
-        blast_firstpass = os.path.join(haplo_out_path, "blast_firstpass.csv")
-        ref_contigs = os.path.join(haplo_out_path, "ref_contigs.csv")
-        noref_contigs = os.path.join(haplo_out_path, "noref_contigs.csv")
+        contigs_firstpass = os.path.join(assembly_out_path, "contigs_firstpass.csv")
+        blast_firstpass = os.path.join(assembly_out_path, "blast_firstpass.csv")
+        ref_contigs = os.path.join(assembly_out_path, "ref_contigs.csv")
+        noref_contigs = os.path.join(assembly_out_path, "noref_contigs.csv")
         with open(contigs_firstpass, 'w') as contigs_firstpass_csv, \
                 open(blast_firstpass, 'w') as blast_firstpass_csv:
             contig_count = write_contig_refs(contigs_fasta_path,
@@ -311,13 +338,13 @@ def denovo(fastq1_path: str,
                 open(noref_contigs, 'w') as noref_contigs_csv:
             num_noref = separate_contigs(contigs_firstpass_csv, ref_contigs_csv, noref_contigs_csv)
         print(f"Assembled {contig_count} contigs in the first pass, of which {num_noref} did not map to a reference.")
-        unmapped1_path = os.path.join(haplo_out_path, 'firstpass_unmapped1.fastq')
-        unmapped2_path = os.path.join(haplo_out_path, 'firstpass_unmapped2.fastq')
-        remap_path = os.path.join(haplo_out_path, 'firstpass_remap.csv')
+        unmapped1_path = os.path.join(assembly_out_path, 'firstpass_unmapped1.fastq')
+        unmapped2_path = os.path.join(assembly_out_path, 'firstpass_unmapped2.fastq')
+        remap_path = os.path.join(assembly_out_path, 'firstpass_remap.csv')
         if num_noref:
             with open(remap_path, 'w') as remap_csv, \
-                    open(os.path.join(haplo_out_path, 'firstpass_remap_counts.csv'), 'w') as counts_csv, \
-                    open(os.path.join(haplo_out_path, 'firstpass_remap_conseq.csv'), 'w') as conseq_csv, \
+                    open(os.path.join(assembly_out_path, 'firstpass_remap_counts.csv'), 'w') as counts_csv, \
+                    open(os.path.join(assembly_out_path, 'firstpass_remap_conseq.csv'), 'w') as conseq_csv, \
                     open(unmapped1_path, 'w') as unmapped1, \
                     open(unmapped2_path, 'w') as unmapped2, \
                     open(contigs_firstpass, 'r') as contigs_firstpass_csv:
@@ -329,21 +356,21 @@ def denovo(fastq1_path: str,
                                conseq_csv,
                                unmapped1,
                                unmapped2,
-                               haplo_out_path, )
+                               assembly_out_path, )
             # we want to discard the reads that mapped to the contigs that did not blast to the refs
-            ref_reads_path = os.path.join(haplo_out_path, 'ref_reads.fasta')
-            noref_reads_path = os.path.join(haplo_out_path, 'noref_reads.fasta')
+            ref_reads_path = os.path.join(assembly_out_path, 'ref_reads.fasta')
+            noref_reads_path = os.path.join(assembly_out_path, 'noref_reads.fasta')
             with open(remap_path, 'r') as remap_csv, \
                     open(ref_reads_path, 'w') as ref_reads_file, \
                     open(noref_reads_path, 'w') as noref_reads_file, \
                     open(unmapped1_path, 'r') as unmapped1, \
                     open(unmapped2_path, 'r') as unmapped2:
                 separate_reads(remap_csv, ref_reads_file, noref_reads_file, unmapped1, unmapped2)
-            haplo_out_path = os.path.join(tmp_dir, 'haplo_secondpass_out')
-            contigs_fasta_path = os.path.join(haplo_out_path, 'contigs.fa')
+            assembly_out_path = os.path.join(tmp_dir, 'haplo_secondpass_out')
+            contigs_fasta_path = os.path.join(assembly_out_path, 'contigs.fa')
             haplo_cmd = [HAPLOFLOW,
                          '--read-file', ref_reads_path,
-                         '--out', haplo_out_path,
+                         '--out', assembly_out_path,
                          '--k', str(haplo_args['kmer']),
                          '--error-rate', str(haplo_args['error']),
                          '--strict', str(haplo_args['strict']),
@@ -376,11 +403,11 @@ def denovo(fastq1_path: str,
         haplo_assembly._trim_strand_biased_ends(reads_prefix, tag_as_trimmed=True)
         haplo_assembly._remove_contained_contigs(list(haplo_assembly.contigs.keys()))
         haplo_assembly._merge_overlapping_contigs(list(haplo_assembly.contigs.keys()))
-        contigs_fasta_path = os.path.join(haplo_out_path, 'contigs_merged.fasta')
+        contigs_fasta_path = os.path.join(assembly_out_path, 'contigs_merged.fasta')
         haplo_assembly.write_contigs_to_file(contigs_fasta_path)
 
     if haplo_args['scaffold']:
-        scaffolding_path = os.path.join(haplo_out_path, 'scaffolding')
+        scaffolding_path = os.path.join(assembly_out_path, 'scaffolding')
         scaffold_cmd = ['python3.8',
                         RAGTAG,
                         'scaffold',
@@ -388,7 +415,7 @@ def denovo(fastq1_path: str,
                         contigs_fasta_path,
                         '-o', scaffolding_path,
                         '--aligner', 'nucmer',
-                        '--nucmer-params', '--maxmatch -l 100 -c 65']
+                        '--nucmer-params', '--maxmatch -l 30 -c 20']
         run(scaffold_cmd, check=True, stdout=PIPE, stderr=STDOUT)
         new_contigs_fasta_path = os.path.join(scaffolding_path, 'ragtag.scaffold.fasta')
         if os.path.getsize(new_contigs_fasta_path) > 0:
@@ -398,14 +425,14 @@ def denovo(fastq1_path: str,
             print('Scaffolding was not successful')
 
     if haplo_args['patch']:
-        patching_path = os.path.join(haplo_out_path, 'patching')
+        patching_path = os.path.join(assembly_out_path, 'patching')
         patch_cmd = ['python3.8',
                      RAGTAG,
                      'patch',
                      contigs_fasta_path,
                      haplo_args['ref'],
                      '-o', patching_path,
-                     '--nucmer-params', '--maxmatch -l 100 -c 65']
+                     '--nucmer-params', '--maxmatch -l 30 -c 20']
         run(patch_cmd, check=True, stdout=PIPE, stderr=STDOUT)
         new_contigs_fasta_path = os.path.join(patching_path, 'ragtag.patch.fasta')
         if os.path.getsize(new_contigs_fasta_path) > 0:
