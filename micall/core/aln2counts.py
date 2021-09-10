@@ -364,6 +364,8 @@ class SequenceReport(object):
         if self.amino_detail_writer is not None and self.amino_writer is not None:
             self.write_amino_counts(self.amino_writer,
                                     coverage_summary=coverage_summary)
+        if self.conseq_writer is not None:
+            self.write_whole_genome_consensus(self.conseq_writer)
 
     def read(self,
              aligned_reads,
@@ -964,6 +966,23 @@ class SequenceReport(object):
             conseq_writer,
             {"region": self.detail_seed},
         )
+
+
+    def write_whole_genome_consensus(self, conseq_writer=None):
+        conseq_writer = conseq_writer or self.conseq_writer
+        for entry in self.combined_reports:
+            for region in self.combined_reports[entry]:
+                print(region)
+                amino_entries = [
+                    (amino.seed_amino.consensus_nuc_index, amino.seed_amino)
+                    for amino in self.combined_reports[entry][region]
+                ]
+                self._write_consensus_helper(
+                    amino_entries,
+                    conseq_writer,
+                    {"region": region},
+                )
+
 
     def write_consensus_all_header(self, conseq_all_file):
         self.conseq_all_writer = self._create_consensus_writer(
