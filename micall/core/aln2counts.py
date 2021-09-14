@@ -117,6 +117,38 @@ def trim_contig_name(contig_name):
     return seed_name
 
 
+def shift_reading_frame(amino_entries, offset):
+    if offset == 0:
+        return amino_entries
+    shifted_entries = []
+    current_seedamino = SeedAmino(0)
+    for entry in amino_entries:
+        next_seedamino = SeedAmino(entry[1].consensus_nuc_index)
+        for position in range(offset,3):
+            current_seedamino.nucleotides[position] = entry[1].nucleotides[position-offset]
+        for position in range(0,offset):
+            next_seedamino.nucleotides[position] = entry[1].nucleotides[3-offset+position]
+        shifted_entries.append((entry[0]-offset, current_seedamino))
+        current_seedamino = next_seedamino
+    if len(amino_entries) != 0:
+        shifted_entries.append((entry[0]-offset+3, next_seedamino))
+    return shifted_entries
+
+
+def add_amino_entries(amino_dict, new_amino_list):
+    for entry in new_amino_list:
+        if entry[0] not in amino_dict:
+            amino_dict[entry[0]] = entry[1]
+        else:
+            current_entry_nuc = amino_dict[entry[0]].nucleotides
+            new_entry_nuc = entry[1].nucleotides
+            for nuc in range(3):
+                if len(current_entry_nuc[nuc].counts) == 0:
+                    current_entry_nuc[nuc] = new_entry_nuc[nuc]
+            amino_dict[entry[0]].nucleotides = current_entry_nuc
+    return amino_dict
+
+
 class SequenceReport(object):
     """ Hold the data for several reports related to a sample's genetic sequence.
 
@@ -365,6 +397,7 @@ class SequenceReport(object):
             self.write_amino_counts(self.amino_writer,
                                     coverage_summary=coverage_summary)
         if self.conseq_writer is not None:
+            self.write_genome_consensus_regions(self.conseq_writer)
             self.write_whole_genome_consensus(self.conseq_writer)
 
     def read(self,
@@ -967,12 +1000,10 @@ class SequenceReport(object):
             {"region": self.detail_seed},
         )
 
-
-    def write_whole_genome_consensus(self, conseq_writer=None):
+    def write_genome_consensus_regions(self, conseq_writer=None):
         conseq_writer = conseq_writer or self.conseq_writer
         for entry in self.combined_reports:
             for region in self.combined_reports[entry]:
-                print(region)
                 amino_entries = [
                     (amino.seed_amino.consensus_nuc_index, amino.seed_amino)
                     for amino in self.combined_reports[entry][region]
@@ -983,6 +1014,26 @@ class SequenceReport(object):
                     {"region": region},
                 )
 
+    def write_whole_genome_consensus(self, conseq_writer=None):
+        conseq_writer = conseq_writer or self.conseq_writer
+        for entry in self.combined_reports:
+            amino_dict = {}
+            for region in self.combined_reports[entry]:
+                landmark_reader = LandmarkReader(self.landmarks)
+                region_info = landmark_reader.get_gene(entry, region, drop_stop_codon=False)
+                offset = region_info['start']%3
+                current_entries = []
+                for amino in self.combined_reports[entry][region]:
+                    current_entries.append(((amino.position-1)*3 + region_info['start'], amino.seed_amino))
+                shifted_entries = shift_reading_frame(current_entries, offset)
+                add_amino_entries(amino_dict, shifted_entries)
+            amino_entries = list(amino_dict.items())
+            amino_entries.sort(key=lambda elem: elem[0])
+            self._write_consensus_helper(
+                amino_entries,
+                conseq_writer,
+                {"region": entry},
+            )
 
     def write_consensus_all_header(self, conseq_all_file):
         self.conseq_all_writer = self._create_consensus_writer(
