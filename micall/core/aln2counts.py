@@ -399,6 +399,7 @@ class SequenceReport(object):
         if self.conseq_writer is not None:
             self.write_genome_consensus_regions(self.conseq_writer)
             self.write_whole_genome_consensus(self.conseq_writer)
+            self.write_whole_genome_consensus_from_nuc(self.conseq_writer)
 
     def read(self,
              aligned_reads,
@@ -938,6 +939,7 @@ class SequenceReport(object):
             self,
             seed_amino_entries,
             ignore_coverage=False,
+            is_nucleotide=False,
     ):
         mixture_cutoffs = ([MAX_CUTOFF] if ignore_coverage
                            else self.conseq_mixture_cutoffs)
@@ -945,8 +947,23 @@ class SequenceReport(object):
         for mixture_cutoff in mixture_cutoffs:
             consensus = ''
             seed_offset = None
-            for seed_pos, seed_amino in seed_amino_entries:
-                for nuc_index, seed_nuc in enumerate(seed_amino.nucleotides):
+            if not is_nucleotide:
+                for seed_pos, seed_amino in seed_amino_entries:
+                    for nuc_index, seed_nuc in enumerate(seed_amino.nucleotides):
+                        nuc_coverage = seed_nuc.get_coverage()
+                        if nuc_coverage < min_coverage:
+                            if seed_offset is not None:
+                                consensus += 'x'
+                        else:
+                            nuc_consensus = seed_nuc.get_consensus(mixture_cutoff)
+                            if seed_offset is None and nuc_consensus:
+                                seed_offset = seed_pos + nuc_index
+                            consensus += nuc_consensus
+                    if seed_offset is None:
+                        # Still haven't started, so reset the consensus.
+                        consensus = ''
+            else:
+                for nuc_index, seed_nuc in seed_amino_entries:
                     nuc_coverage = seed_nuc.get_coverage()
                     if nuc_coverage < min_coverage:
                         if seed_offset is not None:
@@ -954,11 +971,8 @@ class SequenceReport(object):
                     else:
                         nuc_consensus = seed_nuc.get_consensus(mixture_cutoff)
                         if seed_offset is None and nuc_consensus:
-                            seed_offset = seed_pos + nuc_index
+                            seed_offset = nuc_index
                         consensus += nuc_consensus
-                if seed_offset is None:
-                    # Still haven't started, so reset the consensus.
-                    consensus = ''
             if seed_offset is not None:
                 consensus = consensus.rstrip('x')
                 yield {
@@ -974,10 +988,12 @@ class SequenceReport(object):
             csv_writer,
             row_metadata,
             ignore_coverage=False,
+            is_nucleotide=False,
     ):
         for row in self.get_consensus_rows(
                 amino_entries,
-                ignore_coverage=ignore_coverage
+                ignore_coverage=ignore_coverage,
+                is_nucleotide=is_nucleotide,
         ):
             row.update(row_metadata)
             if 'region-offset' not in row_metadata:
@@ -1033,6 +1049,35 @@ class SequenceReport(object):
                 amino_entries,
                 conseq_writer,
                 {"region": entry},
+            )
+
+    def write_whole_genome_consensus_from_nuc(self, conseq_writer=None):
+        conseq_writer = conseq_writer or self.conseq_writer
+        for entry in self.combined_report_nucleotides:
+            nuc_dict = {}
+            for region in self.combined_report_nucleotides[entry]:
+                landmark_reader = LandmarkReader(self.landmarks)
+                region_info = landmark_reader.get_gene(entry, region, drop_stop_codon=False)
+                region_start = region_info['start']
+                for nuc_index, nucleotide in enumerate(self.combined_report_nucleotides[entry][region]):
+                    position_old = region_start + nucleotide.position - 1
+                    consensus_index = nucleotide.seed_nucleotide.consensus_index
+                    position = region_start + nuc_index
+                    if position not in nuc_dict.keys() and position is not None:
+                        nuc_dict[position] = nucleotide.seed_nucleotide
+                    else:
+                        # if position is None:
+                        #    print(nucleotide.seed_nucleotide.counts) # these should just be deletions
+                        assert nuc_dict[position].counts == nucleotide.seed_nucleotide.counts
+                        # calculated position is somehow shifted??
+                        # assert nuc_dict[position].counts == nucleotide.seed_nucleotide.counts
+            nuc_entries = list(nuc_dict.items())
+            nuc_entries.sort(key=lambda elem: elem[0])
+            self._write_consensus_helper(
+                nuc_entries,
+                conseq_writer,
+                {"region": entry},
+                is_nucleotide=True,
             )
 
     def write_consensus_all_header(self, conseq_all_file):
