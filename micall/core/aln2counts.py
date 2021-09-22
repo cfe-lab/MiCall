@@ -326,10 +326,16 @@ class SequenceReport(object):
             drop_stop_codon=False)
         report_nucleotides = self.report_nucleotides[coordinate_name]
         repeated_ref_name = 'SARS-CoV-2-seed'
+        frame_shift_ref_name = 'HIV1-B-FR-K03455-seed'
+        frame_shift_region = 'HIV1B-vpr'
         if self.consensus_aligner.coordinate_name == repeated_ref_name:
             repeated_ref_pos = 13468  # 1-based position of duplicated base
         else:
             repeated_ref_pos = None
+        if self.consensus_aligner.coordinate_name == frame_shift_ref_name and coordinate_name == frame_shift_region:
+            skipped_ref_pos = 5774
+        else:
+            skipped_ref_pos = None
         if is_amino_coordinate:
             report_aminos = self.reports[coordinate_name]
             amino_ref = self.projects.getReference(coordinate_name)
@@ -340,6 +346,7 @@ class SequenceReport(object):
                                              report_nucleotides,
                                              report_aminos,
                                              repeated_ref_pos,
+                                             skipped_ref_pos,
                                              amino_ref)
         self.consensus[coordinate_name] = self.consensus_aligner.amino_consensus
         self.inserts[coordinate_name] = self.consensus_aligner.inserts
@@ -1066,11 +1073,10 @@ class SequenceReport(object):
                     if position not in nuc_dict.keys() and position is not None:
                         nuc_dict[position] = nucleotide.seed_nucleotide
                     else:
-                        # if position is None:
-                        #    print(nucleotide.seed_nucleotide.counts) # these should just be deletions
-                        assert nuc_dict[position].counts == nucleotide.seed_nucleotide.counts
-                        # calculated position is somehow shifted??
-                        # assert nuc_dict[position].counts == nucleotide.seed_nucleotide.counts
+                        if position is None:
+                            continue  # these should just be deletions
+                        else:
+                            assert nuc_dict[position].counts == nucleotide.seed_nucleotide.counts
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
             self._write_consensus_helper(
