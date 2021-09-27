@@ -117,6 +117,38 @@ def trim_contig_name(contig_name):
     return seed_name
 
 
+def shift_reading_frame(amino_entries, offset):
+    if offset == 0:
+        return amino_entries
+    shifted_entries = []
+    current_seedamino = SeedAmino(0)
+    for entry in amino_entries:
+        next_seedamino = SeedAmino(entry[1].consensus_nuc_index)
+        for position in range(offset,3):
+            current_seedamino.nucleotides[position] = entry[1].nucleotides[position-offset]
+        for position in range(0,offset):
+            next_seedamino.nucleotides[position] = entry[1].nucleotides[3-offset+position]
+        shifted_entries.append((entry[0]-offset, current_seedamino))
+        current_seedamino = next_seedamino
+    if len(amino_entries) != 0:
+        shifted_entries.append((entry[0]-offset+3, next_seedamino))
+    return shifted_entries
+
+
+def add_amino_entries(amino_dict, new_amino_list):
+    for entry in new_amino_list:
+        if entry[0] not in amino_dict:
+            amino_dict[entry[0]] = entry[1]
+        else:
+            current_entry_nuc = amino_dict[entry[0]].nucleotides
+            new_entry_nuc = entry[1].nucleotides
+            for nuc in range(3):
+                if len(current_entry_nuc[nuc].counts) == 0:
+                    current_entry_nuc[nuc] = new_entry_nuc[nuc]
+            amino_dict[entry[0]].nucleotides = current_entry_nuc
+    return amino_dict
+
+
 class SequenceReport(object):
     """ Hold the data for several reports related to a sample's genetic sequence.
 
@@ -294,10 +326,16 @@ class SequenceReport(object):
             drop_stop_codon=False)
         report_nucleotides = self.report_nucleotides[coordinate_name]
         repeated_ref_name = 'SARS-CoV-2-seed'
+        frame_shift_ref_name = 'HIV1-B-FR-K03455-seed'
+        frame_shift_region = 'HIV1B-vpr'
         if self.consensus_aligner.coordinate_name == repeated_ref_name:
             repeated_ref_pos = 13468  # 1-based position of duplicated base
         else:
             repeated_ref_pos = None
+        if self.consensus_aligner.coordinate_name == frame_shift_ref_name and coordinate_name == frame_shift_region:
+            skipped_ref_pos = 5774
+        else:
+            skipped_ref_pos = None
         if is_amino_coordinate:
             report_aminos = self.reports[coordinate_name]
             amino_ref = self.projects.getReference(coordinate_name)
@@ -308,6 +346,7 @@ class SequenceReport(object):
                                              report_nucleotides,
                                              report_aminos,
                                              repeated_ref_pos,
+                                             skipped_ref_pos,
                                              amino_ref)
         self.consensus[coordinate_name] = self.consensus_aligner.amino_consensus
         self.inserts[coordinate_name] = self.consensus_aligner.inserts
@@ -364,6 +403,10 @@ class SequenceReport(object):
         if self.amino_detail_writer is not None and self.amino_writer is not None:
             self.write_amino_counts(self.amino_writer,
                                     coverage_summary=coverage_summary)
+        if self.conseq_writer is not None:
+            # self.write_genome_consensus_regions(self.conseq_writer)
+            # self.write_whole_genome_consensus(self.conseq_writer)
+            self.write_whole_genome_consensus_from_nuc(self.conseq_writer)
 
     def read(self,
              aligned_reads,
@@ -903,6 +946,7 @@ class SequenceReport(object):
             self,
             seed_amino_entries,
             ignore_coverage=False,
+            is_nucleotide=False,
     ):
         mixture_cutoffs = ([MAX_CUTOFF] if ignore_coverage
                            else self.conseq_mixture_cutoffs)
@@ -910,8 +954,23 @@ class SequenceReport(object):
         for mixture_cutoff in mixture_cutoffs:
             consensus = ''
             seed_offset = None
-            for seed_pos, seed_amino in seed_amino_entries:
-                for nuc_index, seed_nuc in enumerate(seed_amino.nucleotides):
+            if not is_nucleotide:
+                for seed_pos, seed_amino in seed_amino_entries:
+                    for nuc_index, seed_nuc in enumerate(seed_amino.nucleotides):
+                        nuc_coverage = seed_nuc.get_coverage()
+                        if nuc_coverage < min_coverage:
+                            if seed_offset is not None:
+                                consensus += 'x'
+                        else:
+                            nuc_consensus = seed_nuc.get_consensus(mixture_cutoff)
+                            if seed_offset is None and nuc_consensus:
+                                seed_offset = seed_pos + nuc_index
+                            consensus += nuc_consensus
+                    if seed_offset is None:
+                        # Still haven't started, so reset the consensus.
+                        consensus = ''
+            else:
+                for nuc_index, seed_nuc in seed_amino_entries:
                     nuc_coverage = seed_nuc.get_coverage()
                     if nuc_coverage < min_coverage:
                         if seed_offset is not None:
@@ -919,11 +978,8 @@ class SequenceReport(object):
                     else:
                         nuc_consensus = seed_nuc.get_consensus(mixture_cutoff)
                         if seed_offset is None and nuc_consensus:
-                            seed_offset = seed_pos + nuc_index
+                            seed_offset = nuc_index
                         consensus += nuc_consensus
-                if seed_offset is None:
-                    # Still haven't started, so reset the consensus.
-                    consensus = ''
             if seed_offset is not None:
                 consensus = consensus.rstrip('x')
                 yield {
@@ -939,10 +995,12 @@ class SequenceReport(object):
             csv_writer,
             row_metadata,
             ignore_coverage=False,
+            is_nucleotide=False,
     ):
         for row in self.get_consensus_rows(
                 amino_entries,
-                ignore_coverage=ignore_coverage
+                ignore_coverage=ignore_coverage,
+                is_nucleotide=is_nucleotide,
         ):
             row.update(row_metadata)
             if 'region-offset' not in row_metadata:
@@ -964,6 +1022,77 @@ class SequenceReport(object):
             conseq_writer,
             {"region": self.detail_seed},
         )
+
+    def write_genome_consensus_regions(self, conseq_writer=None):
+        conseq_writer = conseq_writer or self.conseq_writer
+        for entry in self.combined_reports:
+            for region in self.combined_reports[entry]:
+                amino_entries = [
+                    (amino.seed_amino.consensus_nuc_index, amino.seed_amino)
+                    for amino in self.combined_reports[entry][region]
+                ]
+                self._write_consensus_helper(
+                    amino_entries,
+                    conseq_writer,
+                    {"region": region},
+                )
+
+    def write_whole_genome_consensus(self, conseq_writer=None):
+        conseq_writer = conseq_writer or self.conseq_writer
+        for entry in self.combined_reports:
+            amino_dict = {}
+            for region in self.combined_reports[entry]:
+                landmark_reader = LandmarkReader(self.landmarks)
+                region_info = landmark_reader.get_gene(entry, region, drop_stop_codon=False)
+                offset = region_info['start']%3
+                current_entries = []
+                for amino in self.combined_reports[entry][region]:
+                    current_entries.append(((amino.position-1)*3 + region_info['start'], amino.seed_amino))
+                shifted_entries = shift_reading_frame(current_entries, offset)
+                add_amino_entries(amino_dict, shifted_entries)
+            amino_entries = list(amino_dict.items())
+            amino_entries.sort(key=lambda elem: elem[0])
+            self._write_consensus_helper(
+                amino_entries,
+                conseq_writer,
+                {"region": entry},
+            )
+
+    def write_whole_genome_consensus_from_nuc(self, conseq_writer=None):
+        conseq_writer = conseq_writer or self.conseq_writer
+        for entry in self.combined_report_nucleotides:
+            nuc_dict = {}
+            for region in self.combined_report_nucleotides[entry]:
+                landmark_reader = LandmarkReader(self.landmarks)
+                region_info = landmark_reader.get_gene(entry, region, drop_stop_codon=False)
+                region_start = region_info['start']
+                for nuc_index, nucleotide in enumerate(self.combined_report_nucleotides[entry][region]):
+                    position_old = region_start + nucleotide.position - 1
+                    consensus_index = nucleotide.seed_nucleotide.consensus_index
+                    position = region_start + nuc_index
+                    if position not in nuc_dict.keys() and position is not None:
+                        nuc_dict[position] = nucleotide.seed_nucleotide
+                    else:
+                        if position is None:
+                            continue  # these should just be deletions
+                        elif len(nuc_dict[position].counts) == 0 and len(nucleotide.seed_nucleotide.counts) != 0:
+                            print(f"Zero count at position {position}. Should be fine")
+                            nuc_dict[position] = nucleotide.seed_nucleotide
+                        elif len(nuc_dict[position].counts) != 0 and len(nucleotide.seed_nucleotide.counts) == 0:
+                            print(f"Zero count at position {position}. Should be fine")
+                        else:
+                            if nuc_dict[position].counts != nucleotide.seed_nucleotide.counts:
+                                print(f"Counts don't match up. Position {position}")
+                                print(f'Counts in dict: {nuc_dict[position].counts}')
+                                print(f'Counts in nucleotide: {nucleotide.seed_nucleotide.counts}')
+            nuc_entries = list(nuc_dict.items())
+            nuc_entries.sort(key=lambda elem: elem[0])
+            self._write_consensus_helper(
+                nuc_entries,
+                conseq_writer,
+                {"region": entry},
+                is_nucleotide=True,
+            )
 
     def write_consensus_all_header(self, conseq_all_file):
         self.conseq_all_writer = self._create_consensus_writer(
