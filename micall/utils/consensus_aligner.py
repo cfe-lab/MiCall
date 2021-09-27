@@ -350,7 +350,7 @@ class ConsensusAligner:
                     ref_start = amino_alignment.ref_start
                     ref_end = amino_alignment.ref_end
                     notable_pos = repeat_pos if repeat_pos is not None else skip_pos
-                    if ref_start < repeat_pos-1 < ref_end:
+                    if ref_start < notable_pos-1 < ref_end:
                         offset = notable_pos - ref_start
                         query_start = amino_alignment.query_start
                         amino_alignment2 = replace(

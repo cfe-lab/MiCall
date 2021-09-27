@@ -404,8 +404,8 @@ class SequenceReport(object):
             self.write_amino_counts(self.amino_writer,
                                     coverage_summary=coverage_summary)
         if self.conseq_writer is not None:
-            self.write_genome_consensus_regions(self.conseq_writer)
-            self.write_whole_genome_consensus(self.conseq_writer)
+            # self.write_genome_consensus_regions(self.conseq_writer)
+            # self.write_whole_genome_consensus(self.conseq_writer)
             self.write_whole_genome_consensus_from_nuc(self.conseq_writer)
 
     def read(self,
