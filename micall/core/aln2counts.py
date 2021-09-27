@@ -1075,8 +1075,16 @@ class SequenceReport(object):
                     else:
                         if position is None:
                             continue  # these should just be deletions
+                        elif len(nuc_dict[position].counts) == 0 and len(nucleotide.seed_nucleotide.counts) != 0:
+                            print(f"Zero count at position {position}. Should be fine")
+                            nuc_dict[position] = nucleotide.seed_nucleotide
+                        elif len(nuc_dict[position].counts) != 0 and len(nucleotide.seed_nucleotide.counts) == 0:
+                            print(f"Zero count at position {position}. Should be fine")
                         else:
-                            assert nuc_dict[position].counts == nucleotide.seed_nucleotide.counts
+                            if nuc_dict[position].counts != nucleotide.seed_nucleotide.counts:
+                                print(f"Counts don't match up. Position {position}")
+                                print(f'Counts in dict: {nuc_dict[position].counts}')
+                                print(f'Counts in nucleotide: {nucleotide.seed_nucleotide.counts}')
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
             self._write_consensus_helper(

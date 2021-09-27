@@ -344,22 +344,24 @@ class ConsensusAligner:
                     amino_sections.append(amino_alignment)
                 query_progress = query_end
             if repeat_pos is not None or skip_pos is not None:
-                if skip_pos is not None:
-                    repeat_pos = skip_pos
                 for i, amino_alignment in enumerate(amino_sections):
                     if amino_alignment.action != CigarActions.MATCH:
                         continue
                     ref_start = amino_alignment.ref_start
                     ref_end = amino_alignment.ref_end
+                    notable_pos = repeat_pos if repeat_pos is not None else skip_pos
                     if ref_start < repeat_pos-1 < ref_end:
-                        offset = repeat_pos - ref_start
+                        offset = notable_pos - ref_start
                         query_start = amino_alignment.query_start
                         amino_alignment2 = replace(
                             amino_alignment,
-                            ref_start=repeat_pos,
+                            ref_start=notable_pos,
+                            ref_end=ref_end+1,
                             query_start=query_start + offset-1,
                             reading_frame=(amino_alignment.reading_frame+1) % 3)
-                        amino_alignment.ref_end = repeat_pos
+                        if repeat_pos is not None:
+                            amino_alignment2.ref_end = ref_end+1
+                        amino_alignment.ref_end = notable_pos
                         amino_alignment.query_end = query_start + offset
                         amino_sections.insert(i+1, amino_alignment2)
                         break
@@ -610,7 +612,7 @@ class ConsensusAligner:
                 if seed_amino.consensus_nuc_index is not None:
                     coordinate_inserts.remove(seed_amino.consensus_nuc_index)
                     prev_consensus_nuc_index = seed_amino.consensus_nuc_index
-                if skip_position is not None and coord_index == (skip_position-start_pos)//3 and amino_alignment.ref_end == skip_position and has_skipped_nucleotide is True:
+                if skip_position is not None and coord_index == (skip_position-start_pos)//3 and amino_alignment.ref_end == skip_position and has_skipped_nucleotide:
                     skipped_nuc = self.reading_frames[amino_alignment.reading_frame][coord2conseq[(skip_position-start_pos)//3]+1].nucleotides[0]
                 else:
                     skipped_nuc = None
@@ -645,7 +647,10 @@ class ConsensusAligner:
         for codon_nuc_index, seed_nuc in enumerate(
                 seed_amino.nucleotides):
             if len(report_nucleotides) <= coord_index * 3 + codon_nuc_index:
-                continue
+                if repeat_position is None:
+                    continue
+                elif repeat_position is not None and repeat_position >= ref_nuc_pos:
+                    continue
 
             report_nuc_index = coord_index * 3 + codon_nuc_index
             if repeat_position is not None and start_pos < repeat_position:
