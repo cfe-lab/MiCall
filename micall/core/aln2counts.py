@@ -1060,11 +1060,18 @@ class SequenceReport(object):
 
     def write_whole_genome_consensus_from_nuc(self, conseq_writer=None):
         conseq_writer = conseq_writer or self.conseq_writer
+        landmark_reader = LandmarkReader(self.landmarks)
         for entry in self.combined_report_nucleotides:
             nuc_dict = {}
+            for seed_landmarks in self.landmarks:
+                if re.fullmatch(seed_landmarks['seed_pattern'], entry):
+                    coordinate_name = seed_landmarks['coordinates']
+                    break
+            else:
+                coordinate_name = None
+                print('No coordinate reference found for entry')
             for region in self.combined_report_nucleotides[entry]:
-                landmark_reader = LandmarkReader(self.landmarks)
-                region_info = landmark_reader.get_gene(entry, region, drop_stop_codon=False)
+                region_info = landmark_reader.get_gene(coordinate_name, region, drop_stop_codon=False)
                 region_start = region_info['start']
                 for nuc_index, nucleotide in enumerate(self.combined_report_nucleotides[entry][region]):
                     position_old = region_start + nucleotide.position - 1
