@@ -356,7 +356,6 @@ class ConsensusAligner:
                         amino_alignment2 = replace(
                             amino_alignment,
                             ref_start=notable_pos,
-                            ref_end=ref_end+1,
                             query_start=query_start + offset-1,
                             reading_frame=(amino_alignment.reading_frame+1) % 3)
                         if repeat_pos is not None:
