@@ -1005,7 +1005,10 @@ class SequenceReport(object):
             else:
                 coordinate_name = None
                 print('No coordinate reference found for entry')
-            for region in self.combined_report_nucleotides[entry]:
+            regions_dict = dict(sorted(self.combined_report_nucleotides[entry].items(),
+                                       key=lambda item: landmark_reader.get_gene(coordinate_name, item[0],
+                                                                                 drop_stop_codon=False)['start']))
+            for region in regions_dict:
                 region_info = landmark_reader.get_gene(coordinate_name, region, drop_stop_codon=False)
                 region_start = region_info['start']
                 for nuc_index, nucleotide in enumerate(self.combined_report_nucleotides[entry][region]):
