@@ -372,8 +372,8 @@ class SequenceReport(object):
         if self.amino_detail_writer is not None and self.amino_writer is not None:
             self.write_amino_counts(self.amino_writer,
                                     coverage_summary=coverage_summary)
-        # if self.conseq_writer is not None:
-            # self.write_whole_genome_consensus_from_nuc(self.conseq_all_writer)
+        if self.conseq_all_writer is not None:
+            self.write_whole_genome_consensus_from_nuc(self.conseq_all_writer)
 
     def read(self,
              aligned_reads,
@@ -1004,7 +1004,8 @@ class SequenceReport(object):
                     break
             else:
                 coordinate_name = None
-                print('No coordinate reference found for entry')
+                print(f'No coordinate reference found for entry: {entry}', file=stderr)
+                continue
             regions_dict = dict(sorted(self.combined_report_nucleotides[entry].items(),
                                        key=lambda item: landmark_reader.get_gene(coordinate_name, item[0],
                                                                                  drop_stop_codon=False)['start']))
