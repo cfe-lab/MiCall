@@ -181,7 +181,7 @@ class SeedNucleotide(object):
     def get_coverage(self):
         return sum(self.counts[nuc] for nuc in self.COUNTED_NUCS)
 
-    def get_consensus(self, mixture_cutoff, no_coverage=''):
+    def get_consensus(self, mixture_cutoff, no_coverage='', discard_deletions=False):
         """ Choose consensus nucleotide or mixture from the counts.
 
         @param mixture_cutoff: the minimum fraction of reads
@@ -189,6 +189,7 @@ class SeedNucleotide(object):
             or MAX_CUTOFF to consider only the most common nucleotide.
         @param no_coverage: what to return when there are no reads mapped to
             this position.
+        @param discard_deletions: whether to return nothing for the deletions (if False: '-')
         @return: The letter for the consensus nucleotide or mixture.
             Nucleotide mixtures are encoded by IUPAC symbols, and the most common
             nucleotide can be a mixture if there is a tie.
@@ -228,6 +229,8 @@ class SeedNucleotide(object):
             consensus = '-' if has_deletion else 'N'
         if has_deletion:
             consensus = consensus.lower()
+        if consensus == '-' and discard_deletions:
+            consensus = ''
         return consensus
 
     def count_overlap(self, other):
