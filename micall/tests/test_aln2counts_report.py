@@ -705,6 +705,239 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,31,13208,0,0,0,9,0,0,0,0,0,9"""
     assert key_report == expected_section
 
 
+# noinspection DuplicatedCode
+def test_duplicated_sars_base_last_region_nuc(default_sequence_report):
+    """ Make sure that the last nucleotide of the region with the duplicated position is included in the report"""
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
+""")
+    #                                    ^ Duplicated base
+
+    #                                        A,C,G,T,N,...,coverage
+    expected_section = """\
+SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,34,13211,0,9,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,35,13212,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,36,13213,0,0,9,0,0,0,0,0,0,9"""
+
+    report_file = StringIO()
+    default_sequence_report.write_nuc_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 115
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+
+    key_lines = report_lines[24:27]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+
+# noinspection DuplicatedCode
+def test_duplicated_sars_base_last_contig_nuc(default_sequence_report):
+    """ Make sure that the last nucleotide of the contig is included in the report,
+    if the contig ends in a section with the duplicated nucleotide"""
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
+""")
+    #                                    ^ Duplicated base
+
+    #                                        A,C,G,T,N,...,coverage
+    expected_section = """\
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,58,59,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,59,60,0,9,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,60,61,0,9,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,61,62,0,0,9,0,0,0,0,0,0,9"""
+
+    report_file = StringIO()
+    default_sequence_report.write_nuc_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 115
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+
+    key_lines = report_lines[111:115]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+
+def test_skipped_nucleotide_amino(default_sequence_report):
+    """ Ensure that the aminos are aligned and output correctly for the skipped nucleotide in HXB2"""
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTTCAGAATTGGGTGTCGACATAGCAGAA
+""")
+    # skipped pos is here:                             ^
+    # expected amino sequence: QQLLFIHFRIGCRHSR
+    #                                    A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
+    expected_section = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,14,69,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,17,70,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,20,71,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,72,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,27,73,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,30,74,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,33,75,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
+
+    report_file = StringIO()
+    default_sequence_report.write_amino_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_amino_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 17
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+    key_lines = report_lines[5:12]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+def test_NO_skipped_nucleotide_amino(default_sequence_report):
+    """ Ensure that the aminos are aligned and output correctly if there is no skipped nucleotide in HXB2"""
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTTAGAATTGGGTGTCGACATAGCAGAA
+""")
+    # expected amino sequence: QQLLFIHFRIGCRHSR
+    #                                    A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
+    expected_section = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,14,69,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,17,70,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,20,71,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,72,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,26,73,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,29,74,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,32,75,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
+
+    report_file = StringIO()
+    default_sequence_report.write_amino_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_amino_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 17
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+    key_lines = report_lines[5:12]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+
+def test_skipped_nucleotide_nuc(default_sequence_report):
+    """ Ensure that the nucleotides are output correctly for the skipped nucleotide in HXB2"""
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTTCAGAATTGGGTGTCGACATAGCAGAA
+""")
+    # skipped pos is here:                             ^
+    # skipped pos is 5774 in the genome, and 24 within this read
+
+    expected_section = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,21,212,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,22,213,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,214,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,24,215,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,25,216,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,26,217,0,9,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,27,218,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,28,219,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,29,220,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,30,221,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,31,222,0,0,0,9,0,0,0,0,0,9"""
+
+    report_file = StringIO()
+    default_sequence_report.write_nuc_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_counts()
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 51
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+    key_lines = report_lines[20:31]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+
+def test_NO_skipped_nucleotide_nuc(default_sequence_report):
+    """ Ensure that the nucleotides are output correctly if the skipped nucleotide in HXB2 is not present"""
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTTAGAATTGGGTGTCGACATAGCAGAA
+""")
+    # skipped pos is 5774 in the genome, and 24 within this read
+
+    expected_section = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,21,212,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,22,213,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,214,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,24,215,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,25,216,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,26,218,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,27,219,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,28,220,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,29,221,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,30,222,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,31,223,0,0,0,9,0,0,0,0,0,9"""
+
+    report_file = StringIO()
+    default_sequence_report.write_nuc_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_counts()
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 50
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+    key_lines = report_lines[20:31]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+
+def test_whole_genome_consensus(default_sequence_report):
+    """ Check that the whole genome consensus is correctly added from different regions.
+
+    The given read spans more than 1 region.
+    """
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,9,1,AAAGCCTTAGGCATCTCCTATGGCAGGAAGAAGCGGAGACAGCGACGAAGAGCTCATCAGAACAGTCAGACTCATCAAGCTTCTCTATCAAAGCAGTAAG
+""")
+
+    expected_section = """\
+HIV1-B-FR-K03455-seed,,15,MAX,5951,,AAAGCCTTAGGCATCTCCTATGGCAGGAAGAAGCGGAGACAGCGACGAAGAGCTCATCAGAACAGTCAGACTCATCAAGCTTCTCTATCAAAGCAGTAAG
+HIV1-B-FR-K03455-seed,,15,0.100,5951,,AAAGCCTTAGGCATCTCCTATGGCAGGAAGAAGCGGAGACAGCGACGAAGAGCTCATCAGAACAGTCAGACTCATCAAGCTTCTCTATCAAAGCAGTAAG"""
+
+    report_file = StringIO()
+    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 3
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+    key_lines = report_lines[1:3]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+
 def test_nucleotide_coordinates(default_sequence_report):
     # refname,qcut,rank,count,offset,seq
     aligned_reads = prepare_reads("""\
