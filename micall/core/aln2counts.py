@@ -20,6 +20,7 @@ from operator import itemgetter
 import os
 from pathlib import Path
 from sys import stderr
+import logging
 
 import gotoh
 import yaml
@@ -33,6 +34,8 @@ from micall.utils.report_amino import ReportAmino, MAX_CUTOFF, SeedAmino, AMINO_
     SeedNucleotide
 from micall.utils.spring_beads import Wire, Bead
 from micall.utils.translation import translate
+
+logger = logging.getLogger(__name__)
 
 CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 GAP_OPEN_COORD = 40
@@ -1021,15 +1024,16 @@ class SequenceReport(object):
                         if position is None:
                             continue  # these should just be deletions
                         elif len(nuc_dict[position].counts) == 0 and len(nucleotide.seed_nucleotide.counts) != 0:
-                            print(f"Zero count at position {position}. Should be fine", file=stderr)
+                            logger.debug(f"Zero count in dict at position {position}. Inserting non-zero counts.")
                             nuc_dict[position] = nucleotide.seed_nucleotide
                         elif len(nuc_dict[position].counts) != 0 and len(nucleotide.seed_nucleotide.counts) == 0:
-                            print(f"Zero count at position {position}. Should be fine", file=stderr)
+                            logger.debug(f"Zero count in nucleotide at position {position}. Inserting non-zero counts.")
                         else:
                             if nuc_dict[position].counts != nucleotide.seed_nucleotide.counts:
-                                print(f"Counts don't match up. Position {position}", file=stderr)
-                                print(f'Counts in dict: {nuc_dict[position].counts}', file=stderr)
-                                print(f'Counts in nucleotide: {nucleotide.seed_nucleotide.counts}', file=stderr)
+                                logger.debug(f"Counts don't match up. Position {position}")
+                                logger.debug(f"Counts in dict: {nuc_dict[position].counts}")
+                                logger.debug(f"Counts in nucleotide: {nucleotide.seed_nucleotide.counts}")
+                                logger.debug("Continuing with dict counts.")
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
             self._write_consensus_helper(
@@ -1538,6 +1542,7 @@ def aln2counts(aligned_csv,
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
     args = parse_args()
     aln2counts(args.aligned_csv,
                args.nuc_csv,
