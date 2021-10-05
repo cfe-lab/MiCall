@@ -121,6 +121,28 @@ def trim_contig_name(contig_name):
     return seed_name
 
 
+def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
+    assert region_start is not None
+    for nuc_index, nucleotide in enumerate(region_nucleotides):
+        position_old = region_start + nucleotide.position - 1
+        position = region_start + nuc_index
+        if position not in nuc_dict.keys():
+            nuc_dict[position] = nucleotide.seed_nucleotide
+        else:
+            if len(nuc_dict[position].counts) == 0 and len(nucleotide.seed_nucleotide.counts) != 0:
+                logger.debug(f"Zero count in dict at position {position}. Inserting non-zero counts.")
+                nuc_dict[position] = nucleotide.seed_nucleotide
+            elif len(nuc_dict[position].counts) != 0 and len(nucleotide.seed_nucleotide.counts) == 0:
+                logger.debug(f"Zero count in nucleotide at position {position}. Inserting non-zero counts.")
+            else:
+                if nuc_dict[position].counts != nucleotide.seed_nucleotide.counts:
+                    logger.debug(f"Counts don't match up. Position {position}")
+                    logger.debug(f"Counts in dict: {nuc_dict[position].counts}")
+                    logger.debug(f"Counts in nucleotide: {nucleotide.seed_nucleotide.counts}")
+                    logger.debug("Continuing with dict counts.")
+    return nuc_dict
+
+
 class SequenceReport(object):
     """ Hold the data for several reports related to a sample's genetic sequence.
 
@@ -1015,25 +1037,7 @@ class SequenceReport(object):
             for region in regions_dict:
                 region_info = landmark_reader.get_gene(coordinate_name, region, drop_stop_codon=False)
                 region_start = region_info['start']
-                for nuc_index, nucleotide in enumerate(self.combined_report_nucleotides[entry][region]):
-                    position_old = region_start + nucleotide.position - 1
-                    position = region_start + nuc_index
-                    if position not in nuc_dict.keys() and position is not None:
-                        nuc_dict[position] = nucleotide.seed_nucleotide
-                    else:
-                        if position is None:
-                            continue  # these should just be deletions
-                        elif len(nuc_dict[position].counts) == 0 and len(nucleotide.seed_nucleotide.counts) != 0:
-                            logger.debug(f"Zero count in dict at position {position}. Inserting non-zero counts.")
-                            nuc_dict[position] = nucleotide.seed_nucleotide
-                        elif len(nuc_dict[position].counts) != 0 and len(nucleotide.seed_nucleotide.counts) == 0:
-                            logger.debug(f"Zero count in nucleotide at position {position}. Inserting non-zero counts.")
-                        else:
-                            if nuc_dict[position].counts != nucleotide.seed_nucleotide.counts:
-                                logger.debug(f"Counts don't match up. Position {position}")
-                                logger.debug(f"Counts in dict: {nuc_dict[position].counts}")
-                                logger.debug(f"Counts in nucleotide: {nucleotide.seed_nucleotide.counts}")
-                                logger.debug("Continuing with dict counts.")
+                nuc_dict = combine_region_nucleotides(nuc_dict, self.combined_report_nucleotides[entry][region], region_start)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
             self._write_consensus_helper(
