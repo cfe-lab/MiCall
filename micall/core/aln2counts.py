@@ -1376,6 +1376,7 @@ class InsertionWriter(object):
                     insert_targets[left] = report_amino.position
                     break
             current_counts = Counter()
+            current_nuc_counts = Counter()
             insert_counts[left] = current_counts
             for nuc_seq, count in self.nuc_seqs.items():
                 insert_nuc_seq = nuc_seq[left:right]
@@ -1386,6 +1387,7 @@ class InsertionWriter(object):
                     insert_amino_seq = translate(insert_nuc_seq)
                     if insert_amino_seq:
                         current_counts[insert_amino_seq] += count
+                    current_nuc_counts[insert_nuc_seq] += count
 
         # record insertions to CSV
         for left, counts in insert_counts.items():
