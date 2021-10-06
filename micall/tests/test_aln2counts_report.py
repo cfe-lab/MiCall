@@ -940,36 +940,30 @@ HIV1-B-FR-K03455-seed,,15,0.100,601,,AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCC
 
 def test_consensus_region_differences():
     """ Test that the consensus is stitched together correctly, even if there are differences between the regions """
-    nucleotide1 = nucleotide2 = nucleotide3 = nucleotide4 = nucleotide5 = nucleotide6 = nucleotide_none = SeedNucleotide()
+    nucleotide1 = SeedNucleotide()
+    nucleotide2 = SeedNucleotide()
+    nucleotide3 = SeedNucleotide()
+    nucleotide4 = SeedNucleotide()
+    nucleotide5 = SeedNucleotide()
+    nucleotide6 = SeedNucleotide()
+    nucleotide_none = SeedNucleotide()
     nucleotide1.count_nucleotides('A', 3)
     nucleotide2.count_nucleotides('C', 3)
     nucleotide3.count_nucleotides('G', 3)
     nucleotide4.count_nucleotides('T', 3)
     nucleotide5.count_nucleotides('T', 6)
-    nucleotide5.count_nucleotides('A', 6)
-    nuc_dict = {}
-    nuc_dict[1] = nucleotide1
-    nuc_dict[2] = nucleotide2
-    nuc_dict[3] = nucleotide3
-    nuc_dict[4] = nucleotide_none
-    nuc_dict[5] = nucleotide5
+    nucleotide6.count_nucleotides('A', 6)
+    nuc_dict = {1: nucleotide1, 2: nucleotide2, 3: nucleotide3, 4: nucleotide_none, 5: nucleotide5}
     # counts are: A:3, C:3, G:3, None, T:6
 
-    region_nucleotides = []
-    region_nucleotides.append(ReportNucleotide(1, seed_nucleotide=nucleotide2))
-    region_nucleotides.append(ReportNucleotide(2, seed_nucleotide=nucleotide_none))
-    region_nucleotides.append(ReportNucleotide(3, seed_nucleotide=nucleotide4))
-    region_nucleotides.append(ReportNucleotide(4, seed_nucleotide=nucleotide2))
-    region_nucleotides.append(ReportNucleotide(5, seed_nucleotide=nucleotide6))
+    region_nucleotides = [ReportNucleotide(1, seed_nucleotide=nucleotide2),
+                          ReportNucleotide(2, seed_nucleotide=nucleotide_none),
+                          ReportNucleotide(3, seed_nucleotide=nucleotide4),
+                          ReportNucleotide(4, seed_nucleotide=nucleotide2),
+                          ReportNucleotide(5, seed_nucleotide=nucleotide6)]
     # counts are: C:3, None, T:3, C:3, A:6 (starting at position 2)
 
-    expected_counts = {}
-    expected_counts[1] = nucleotide1    # take info from dict
-    expected_counts[2] = nucleotide2    # dict and region agree
-    expected_counts[3] = nucleotide3    # region has zero counts -> take info from dict
-    expected_counts[4] = nucleotide4    # dict has zero counts -> take info from region
-    expected_counts[5] = nucleotide5    # region has different counts -> go with dict
-    expected_counts[6] = nucleotide6    # dict has no entry -> take info from region
+    expected_counts = {1: nucleotide1, 2: nucleotide2, 3: nucleotide3, 4: nucleotide4, 5: nucleotide5, 6: nucleotide6}
 
     nuc_dict = combine_region_nucleotides(nuc_dict, region_nucleotides, 2)
     assert nuc_dict == expected_counts
