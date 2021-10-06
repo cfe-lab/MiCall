@@ -158,7 +158,7 @@ class SequenceReport(object):
         self.reports: typing.Dict[
             str,  # coordinate_name
             typing.List[ReportAmino]] = defaultdict(list)
-        self.inserts = self.consensus = self.seed = None
+        self.inserts = self.consensus = self.seed = self.insert_nucs = None
         self.contigs = None  # [(ref, group_ref, seq)]
         self.consensus_by_reading_frame = None  # {frame: seq}
         self.consensus_aligner = ConsensusAligner(projects)
@@ -179,6 +179,14 @@ class SequenceReport(object):
             typing.Dict[str,  # coord_region
                         typing.List[ReportNucleotide]]] = defaultdict(
             lambda: defaultdict(list))
+        self.combined_insertion_nucs: typing.Dict[
+            str,    # seed
+            typing.Dict[str,    # coord_region
+                        typing.Dict[int, typing.Counter]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(Counter)))
+        self.combined_insertions: typing.Dict[
+            str,  # seed
+            typing.Dict[str,  # coord_region
+                        typing.Set[int]]] = defaultdict(lambda: defaultdict(set))
 
         # {seed_name: {pos: count}}
         self.clipping_counts = clipping_counts or defaultdict(Counter)
@@ -400,6 +408,7 @@ class SequenceReport(object):
         self.report_nucleotides.clear()  # {coord_name: [ReportNucleotide()]
         self.reading_frames = {}  # {coord_name: reading_frame}
         self.inserts = {}  # {coord_name: set([consensus_index])}
+        self.insert_nucs = {}  # {coord_name: {position: insertion counts}}
         self.consensus = {}  # {coord_name: consensus_amino_seq}
         if self.consensus_aligner.consensus is not None:
             self.consensus_aligner = ConsensusAligner(self.projects)
@@ -537,6 +546,19 @@ class SequenceReport(object):
                 while len(old_report_nuc) <= i:
                     old_report_nuc.append(ReportNucleotide(len(old_report_nuc)+1))
                 old_report_nuc[i].seed_nucleotide.add(report_nuc.seed_nucleotide)
+        old_insertions = self.combined_insertions[group_ref]
+        for region, report in self.inserts.items():
+            old_insertions_region = old_insertions[region]
+            self.combined_insertions[group_ref][region] = old_insertions_region.union(report)
+        old_inserted_nucs = self.combined_insertion_nucs[group_ref]
+        for region, report in self.insert_nucs.items():
+            if report is not None:
+                for key in report:
+                    if key in old_inserted_nucs:
+                        old_inserted_nucs[region][key].update(report[key])
+                    else:
+                        old_inserted_nucs[region][key] = report[key]
+
         self.reports.clear()
         self.report_nucleotides.clear()
 
@@ -1159,9 +1181,10 @@ class SequenceReport(object):
     def write_insertions(self, insert_writer=None):
         insert_writer = insert_writer or self.insert_writer
         for coordinate_name, coordinate_inserts in self.inserts.items():
-            insert_writer.write(coordinate_inserts,
-                                coordinate_name,
-                                self.reports[coordinate_name])
+            self.insert_nucs[coordinate_name] = insert_writer.write(coordinate_inserts,
+                                                                    coordinate_name,
+                                                                    self.reports[coordinate_name],
+                                                                    self.report_nucleotides[coordinate_name])
 
     def read_remap_conseqs(self, remap_conseq_csv):
         # noinspection PyTypeChecker
@@ -1337,7 +1360,7 @@ class InsertionWriter(object):
         """
         self.nuc_seqs[offset_sequence] += count
 
-    def write(self, inserts, region, report_aminos=None):
+    def write(self, inserts, region, report_aminos=None, report_nucleotides=None):
         """ Write any insert ranges to the file.
 
         Sequence data comes from the reads that were added to the current group.
@@ -1359,25 +1382,37 @@ class InsertionWriter(object):
 
         # convert insertion coordinates into contiguous ranges
         insert_ranges = []
+        if len(report_aminos) != 0:
+            distance_insertions = 3
+        else:
+            distance_insertions = 1
         for insert in inserts:
             if not insert_ranges or insert != insert_ranges[-1][1]:
                 # just starting or we hit a gap
-                insert_ranges.append([insert, insert + 3])
+                insert_ranges.append([insert, insert + distance_insertions])
             else:
-                insert_ranges[-1][1] += 3
+                insert_ranges[-1][1] += distance_insertions
 
         # enumerate insertions by popping out all AA sub-string variants
         insert_counts = OrderedDict()  # {left: {insert_seq: count}}
         insert_targets = {}  # {left: inserted_before_pos}
+        insert_nuc_counts = {}
         for left, right in insert_ranges:
             for report_amino in report_aminos:
                 seed_amino = report_amino.seed_amino
                 if seed_amino.consensus_nuc_index == right:
                     insert_targets[left] = report_amino.position
                     break
+            if len(report_aminos) == 0:
+                for report_nuc in report_nucleotides:
+                    seed_nuc = report_nuc.seed_nucleotide
+                    if seed_nuc.consensus_index == right:
+                        insert_targets[left] = report_nuc.position
+                        break
             current_counts = Counter()
             current_nuc_counts = Counter()
             insert_counts[left] = current_counts
+            insert_nuc_counts[insert_targets[left]] = current_nuc_counts
             for nuc_seq, count in self.nuc_seqs.items():
                 insert_nuc_seq = nuc_seq[left:right]
                 is_valid = (insert_nuc_seq and
@@ -1407,6 +1442,7 @@ class InsertionWriter(object):
                     self.insert_writer.writerow(row)
                     if insert_before is not None:
                         region_insert_pos_counts[insert_before-1] += count
+        return insert_nuc_counts
 
 
 def format_cutoff(cutoff):

@@ -688,8 +688,8 @@ class ConsensusAligner:
             seed_aminos = self.reading_frames[0]
             for section_size, section_action in alignment.cigar:
                 if section_action == CigarActions.INSERT:
-                    for i in range(section_size):
-                        if start_pos - 1 <= ref_nuc_index < end_pos and i%3 == 0:
+                    for _ in range(section_size):
+                        if start_pos - 1 <= ref_nuc_index < end_pos:
                             self.inserts.add(consensus_nuc_index)
                         consensus_nuc_index += 1
                     continue
