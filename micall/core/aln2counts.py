@@ -143,6 +143,34 @@ def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
     return nuc_dict
 
 
+def combine_region_insertions(insertions_dict, region_insertions, region_start):
+    assert region_start is not None
+    for position in region_insertions.keys():
+        ref_position = position + region_start - 1.5
+        if ref_position not in insertions_dict:
+            insertions_dict[ref_position] = region_insertions[position]
+        else:
+            if insertions_dict[position].counts != region_insertions[position].counts:
+                logger.debug(f"Insertion counts don't match up. Position {position}")
+                logger.debug(f"Counts in dict: {insertions_dict[position].counts}")
+                logger.debug(f"Counts in region: {region_insertions[position].counts}")
+                logger.debug("Continuing with dict counts.")
+    return insertions_dict
+
+
+def find_consensus_insertions(insertions_dict):
+    consensus_insertions = {}
+    coverage_threshold = 10
+
+    for position, counter in insertions_dict.items():
+        sorted_counts = sorted(counter.items(), key=lambda item: -item[1])
+        most_common = sorted_counts[0]
+        if most_common[1] >= coverage_threshold:
+            consensus_insertions[position] = most_common[0]
+
+    return consensus_insertions
+
+
 class SequenceReport(object):
     """ Hold the data for several reports related to a sample's genetic sequence.
 
@@ -1045,6 +1073,7 @@ class SequenceReport(object):
         landmark_reader = LandmarkReader(self.landmarks)
         for entry in self.combined_report_nucleotides:
             nuc_dict = {}
+            insertions_dict = {}
             for seed_landmarks in self.landmarks:
                 if re.fullmatch(seed_landmarks['seed_pattern'], entry):
                     coordinate_name = seed_landmarks['coordinates']
@@ -1060,6 +1089,9 @@ class SequenceReport(object):
                 region_info = landmark_reader.get_gene(coordinate_name, region, drop_stop_codon=False)
                 region_start = region_info['start']
                 nuc_dict = combine_region_nucleotides(nuc_dict, self.combined_report_nucleotides[entry][region], region_start)
+                insertions_dict = combine_region_insertions(insertions_dict,
+                                                            self.combined_insertion_nucs[entry][region], region_start)
+            consensus_insertions = find_consensus_insertions(insertions_dict)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
             self._write_consensus_helper(
