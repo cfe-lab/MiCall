@@ -1,4 +1,5 @@
 import csv
+import logging
 import sys
 from collections import Counter
 from csv import DictReader
@@ -938,7 +939,7 @@ HIV1-B-FR-K03455-seed,,15,0.100,601,,AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCC
     assert key_report == expected_section
 
 
-def test_consensus_region_differences():
+def test_consensus_region_differences(caplog):
     """ Test that the consensus is stitched together correctly, even if there are differences between the regions """
     nucleotide1 = SeedNucleotide()
     nucleotide2 = SeedNucleotide()
@@ -964,9 +965,21 @@ def test_consensus_region_differences():
     # counts are: C:3, None, T:3, C:3, A:6 (starting at position 2)
 
     expected_counts = {1: nucleotide1, 2: nucleotide2, 3: nucleotide3, 4: nucleotide4, 5: nucleotide5, 6: nucleotide6}
+    expected_log = """\
+DEBUG    micall.core.aln2counts:aln2counts.py:136 Zero count in nucleotide at \
+position 3. Inserting non-zero counts.
+DEBUG    micall.core.aln2counts:aln2counts.py:133 Zero count in dict at \
+position 4. Inserting non-zero counts.
+DEBUG    micall.core.aln2counts:aln2counts.py:139 Counts don't match up. Position 5
+DEBUG    micall.core.aln2counts:aln2counts.py:140 Counts in dict: Counter({'T': 6})
+DEBUG    micall.core.aln2counts:aln2counts.py:141 Counts in nucleotide: Counter({'C': 3})
+DEBUG    micall.core.aln2counts:aln2counts.py:142 Continuing with dict counts.
+"""
 
-    nuc_dict = combine_region_nucleotides(nuc_dict, region_nucleotides, 2)
+    with caplog.at_level(logging.DEBUG):
+        nuc_dict = combine_region_nucleotides(nuc_dict, region_nucleotides, 2)
     assert nuc_dict == expected_counts
+    assert caplog.text == expected_log
 
 
 def test_nucleotide_coordinates(default_sequence_report):
