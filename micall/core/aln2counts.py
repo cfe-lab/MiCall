@@ -1375,6 +1375,7 @@ class InsertionWriter(object):
             return
 
         report_aminos = report_aminos or []
+        report_nucleotides = report_nucleotides or []
 
         region_insert_pos_counts = self.insert_pos_counts[(self.seed, region)]
         inserts = list(inserts)
@@ -1382,10 +1383,10 @@ class InsertionWriter(object):
 
         # convert insertion coordinates into contiguous ranges
         insert_ranges = []
-        if len(report_aminos) != 0:
-            distance_insertions = 3
-        else:
+        if len(report_aminos) == 0 and len(report_nucleotides) != 0:
             distance_insertions = 1
+        else:
+            distance_insertions = 3
         for insert in inserts:
             if not insert_ranges or insert != insert_ranges[-1][1]:
                 # just starting or we hit a gap
@@ -1412,7 +1413,7 @@ class InsertionWriter(object):
             current_counts = Counter()
             current_nuc_counts = Counter()
             insert_counts[left] = current_counts
-            insert_nuc_counts[insert_targets[left]] = current_nuc_counts
+            insert_nuc_counts[insert_targets.get(left)] = current_nuc_counts
             for nuc_seq, count in self.nuc_seqs.items():
                 insert_nuc_seq = nuc_seq[left:right]
                 is_valid = (insert_nuc_seq and
