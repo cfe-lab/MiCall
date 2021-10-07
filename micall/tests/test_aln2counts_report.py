@@ -965,21 +965,29 @@ def test_consensus_region_differences(caplog):
     # counts are: C:3, None, T:3, C:3, A:6 (starting at position 2)
 
     expected_counts = {1: nucleotide1, 2: nucleotide2, 3: nucleotide3, 4: nucleotide4, 5: nucleotide5, 6: nucleotide6}
-    expected_log = """\
-DEBUG    micall.core.aln2counts:aln2counts.py:136 Zero count in nucleotide at \
-position 3. Inserting non-zero counts.
-DEBUG    micall.core.aln2counts:aln2counts.py:133 Zero count in dict at \
-position 4. Inserting non-zero counts.
-DEBUG    micall.core.aln2counts:aln2counts.py:139 Counts don't match up. Position 5
-DEBUG    micall.core.aln2counts:aln2counts.py:140 Counts in dict: Counter({'T': 6})
-DEBUG    micall.core.aln2counts:aln2counts.py:141 Counts in nucleotide: Counter({'C': 3})
-DEBUG    micall.core.aln2counts:aln2counts.py:142 Continuing with dict counts.
-"""
-
+    expected_log = [
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         'Zero count in nucleotide at position 3. Inserting non-zero counts.'),
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         'Zero count in dict at position 4. Inserting non-zero counts.'),
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         "Counts don't match up. Position 5"),
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         "Counts in dict: Counter({'T': 6})"),
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         "Counts in nucleotide: Counter({'C': 3})"),
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         'Continuing with dict counts.')]
     with caplog.at_level(logging.DEBUG):
         nuc_dict = combine_region_nucleotides(nuc_dict, region_nucleotides, 2)
     assert nuc_dict == expected_counts
-    assert caplog.text == expected_log
+    assert caplog.record_tuples == expected_log
 
 
 def test_nucleotide_coordinates(default_sequence_report):
