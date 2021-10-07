@@ -124,7 +124,6 @@ def trim_contig_name(contig_name):
 def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
     assert region_start is not None
     for nuc_index, nucleotide in enumerate(region_nucleotides):
-        position_old = region_start + nucleotide.position - 1
         position = region_start + nuc_index
         if position not in nuc_dict.keys():
             nuc_dict[position] = nucleotide.seed_nucleotide
@@ -1031,13 +1030,22 @@ class SequenceReport(object):
                 coordinate_name = None
                 print(f'No coordinate reference found for entry: {entry}', file=stderr)
                 continue
-            regions_dict = dict(sorted(self.combined_report_nucleotides[entry].items(),
-                                       key=lambda item: landmark_reader.get_gene(coordinate_name, item[0],
-                                                                                 drop_stop_codon=False)['start']))
+            sorted_regions: list = sorted(
+                self.combined_report_nucleotides[entry].items(),
+                key=lambda item: landmark_reader.get_gene(
+                    coordinate_name,
+                    item[0],
+                    drop_stop_codon=False)['start'])
+            regions_dict = dict(sorted_regions)
             for region in regions_dict:
-                region_info = landmark_reader.get_gene(coordinate_name, region, drop_stop_codon=False)
+                region_info = landmark_reader.get_gene(coordinate_name,
+                                                       region,
+                                                       drop_stop_codon=False)
                 region_start = region_info['start']
-                nuc_dict = combine_region_nucleotides(nuc_dict, self.combined_report_nucleotides[entry][region], region_start)
+                nuc_dict = combine_region_nucleotides(
+                    nuc_dict,
+                    self.combined_report_nucleotides[entry][region],
+                    region_start)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
             self._write_consensus_helper(
