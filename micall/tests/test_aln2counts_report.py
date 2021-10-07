@@ -9,9 +9,9 @@ import yaml
 from mappy import revcomp
 
 from micall.core import project_config
-from micall.core.aln2counts import InsertionWriter, SequenceReport
+from micall.core.aln2counts import InsertionWriter, SequenceReport, combine_region_nucleotides
 from micall.core.project_config import ProjectConfig
-from micall.utils.report_amino import SeedNucleotide
+from micall.utils.report_amino import SeedNucleotide, ReportNucleotide
 
 # noinspection PyUnresolvedReferences
 from micall.tests.test_remap import load_projects
@@ -936,6 +936,37 @@ HIV1-B-FR-K03455-seed,,15,0.100,601,,AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCC
     key_lines = report_lines[1:3]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_section
+
+
+def test_consensus_region_differences():
+    """ Test that the consensus is stitched together correctly, even if there are differences between the regions """
+    nucleotide1 = SeedNucleotide()
+    nucleotide2 = SeedNucleotide()
+    nucleotide3 = SeedNucleotide()
+    nucleotide4 = SeedNucleotide()
+    nucleotide5 = SeedNucleotide()
+    nucleotide6 = SeedNucleotide()
+    nucleotide_none = SeedNucleotide()
+    nucleotide1.count_nucleotides('A', 3)
+    nucleotide2.count_nucleotides('C', 3)
+    nucleotide3.count_nucleotides('G', 3)
+    nucleotide4.count_nucleotides('T', 3)
+    nucleotide5.count_nucleotides('T', 6)
+    nucleotide6.count_nucleotides('A', 6)
+    nuc_dict = {1: nucleotide1, 2: nucleotide2, 3: nucleotide3, 4: nucleotide_none, 5: nucleotide5}
+    # counts are: A:3, C:3, G:3, None, T:6
+
+    region_nucleotides = [ReportNucleotide(1, seed_nucleotide=nucleotide2),
+                          ReportNucleotide(2, seed_nucleotide=nucleotide_none),
+                          ReportNucleotide(3, seed_nucleotide=nucleotide4),
+                          ReportNucleotide(4, seed_nucleotide=nucleotide2),
+                          ReportNucleotide(5, seed_nucleotide=nucleotide6)]
+    # counts are: C:3, None, T:3, C:3, A:6 (starting at position 2)
+
+    expected_counts = {1: nucleotide1, 2: nucleotide2, 3: nucleotide3, 4: nucleotide4, 5: nucleotide5, 6: nucleotide6}
+
+    nuc_dict = combine_region_nucleotides(nuc_dict, region_nucleotides, 2)
+    assert nuc_dict == expected_counts
 
 
 def test_nucleotide_coordinates(default_sequence_report):
