@@ -146,7 +146,7 @@ def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
 def combine_region_insertions(insertions_dict, region_insertions, region_start):
     assert region_start is not None
     for position in region_insertions.keys():
-        ref_position = position + region_start - 1.5
+        ref_position = position + region_start - 1
         if ref_position not in insertions_dict:
             insertions_dict[ref_position] = region_insertions[position]
         else:
@@ -160,13 +160,17 @@ def combine_region_insertions(insertions_dict, region_insertions, region_start):
 
 def find_consensus_insertions(insertions_dict):
     consensus_insertions = {}
-    coverage_threshold = 10
 
     for position, counter in insertions_dict.items():
-        sorted_counts = sorted(counter.items(), key=lambda item: -item[1])
-        most_common = sorted_counts[0]
-        if most_common[1] >= coverage_threshold:
-            consensus_insertions[position] = most_common[0]
+        sorted_counts = sorted(counter.items(), key=lambda item: -len(item[0]))
+        length = len(sorted_counts[0][0])
+        for i in range(length):
+            insertion_position = position + (i+1)/(length+1)  # use non-integer positions for insertion nucleotides
+            nuc = SeedNucleotide()
+            for insertion in sorted_counts:
+                if len(insertion[0]) > i:
+                    nuc.count_nucleotides(insertion[0][i], count=insertion[1])
+            consensus_insertions[insertion_position] = nuc
 
     return consensus_insertions
 
@@ -1092,6 +1096,7 @@ class SequenceReport(object):
                 insertions_dict = combine_region_insertions(insertions_dict,
                                                             self.combined_insertion_nucs[entry][region], region_start)
             consensus_insertions = find_consensus_insertions(insertions_dict)
+            nuc_dict.update(consensus_insertions)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
             self._write_consensus_helper(
@@ -1433,23 +1438,26 @@ class InsertionWriter(object):
         # enumerate insertions by popping out all AA sub-string variants
         insert_counts = OrderedDict()  # {left: {insert_seq: count}}
         insert_targets = {}  # {left: inserted_before_pos}
+        insert_behind = {}
         insert_nuc_counts = {}
         for left, right in insert_ranges:
             for report_amino in report_aminos:
                 seed_amino = report_amino.seed_amino
                 if seed_amino.consensus_nuc_index == right:
                     insert_targets[left] = report_amino.position
+                    insert_behind[left] = (report_amino.position-1)*3
                     break
             if len(report_aminos) == 0:
                 for report_nuc in report_nucleotides:
                     seed_nuc = report_nuc.seed_nucleotide
                     if seed_nuc.consensus_index == right:
-                        insert_targets[left] = report_nuc.position
+                        insert_targets[left] = report_nuc.position//3
+                        insert_behind[left] = report_nuc.position-1
                         break
             current_counts = Counter()
             current_nuc_counts = Counter()
             insert_counts[left] = current_counts
-            insert_nuc_counts[insert_targets.get(left)] = current_nuc_counts
+            insert_nuc_counts[insert_behind.get(left)] = current_nuc_counts
             for nuc_seq, count in self.nuc_seqs.items():
                 insert_nuc_seq = nuc_seq[left:right]
                 is_valid = (insert_nuc_seq and

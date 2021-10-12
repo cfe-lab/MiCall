@@ -938,6 +938,113 @@ HIV1-B-FR-K03455-seed,,15,0.100,601,,AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCC
     assert key_report == expected_section
 
 
+def test_whole_genome_consensus_amino_insertions(default_sequence_report):
+    """ Check that insertions are correctly inserted into the whole genome consensus from a translated region"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,9,1,CAGAAAAATTGTGGGTCACAGTCTATTATGAAAAAAAAAGGGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
+""")
+    # this is the ref genome from pos 6315 to 6400
+    # plus an insertion of 'AAAAAAAAA' here                  ^^^^^^^^^
+    # the insertion is between nucleotide 6344 and 6345
+
+    expected_section = """\
+HIV1-B-FR-K03455-seed,,15,MAX,6316,,CAGAAAAATTGTGGGTCACAGTCTATTATGAAAAAAAAAGGGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
+HIV1-B-FR-K03455-seed,,15,0.100,6316,,CAGAAAAATTGTGGGTCACAGTCTATTATGAAAAAAAAAGGGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA"""
+
+    report_file = StringIO()
+    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_insertions()
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 3
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+    key_lines = report_lines[1:3]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+def test_whole_genome_consensus_nuc_insertions(default_sequence_report):
+    """ Check that insertions are correctly inserted into the whole genome consensus from a non-translated region"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,9,1,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+""")
+    # this is the ref genome from pos 1 to 99 plus an insertion of 'AAAAAAAAA' ^^^^^^^^^
+    # the insertion is between nucleotide 48 and 49
+
+    expected_section = """\
+HIV1-B-FR-K03455-seed,,15,MAX,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,,15,0.100,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
+
+    report_file = StringIO()
+    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_insertions()
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 3
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+    key_lines = report_lines[1:3]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+
+def test_whole_genome_consensus_different_insertions(default_sequence_report):
+    """ Check that insertions are correctly inserted into the whole genome consensus from a non-translated region"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,12,1,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,15,0,9,1,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAGGGAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+""")
+    # this is the ref genome from pos 1 to 99 plus two different insertions    ^^^^^^^^^
+    # the insertions are between nucleotide 48 and 49
+
+    expected_section = """\
+HIV1-B-FR-K03455-seed,,15,MAX,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,,15,0.100,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAARRRAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
+
+    report_file = StringIO()
+    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_insertions()
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 3
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+    key_lines = report_lines[1:3]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+
+def test_whole_genome_consensus_insertions_overlap(default_sequence_report):
+    """ Check that insertions are correctly inserted into the whole genome consensus
+
+    Also make sure that the consensus is calculated correctly for the insertion itself"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,9,1,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA
+""")
+    # this is the ref genome from pos 6225 to 6315, plus an insertion of 'AAAAAAAAA' here  ^^^^^^^^^
+    # the insertion is between nucleotide 6284 and 6285
+
+    report_file = StringIO()
+    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_insertions()
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 3
+    # Add assertion after thinking about what we want to happen here!
+
+
 def test_consensus_region_differences():
     """ Test that the consensus is stitched together correctly, even if there are differences between the regions """
     nucleotide1 = SeedNucleotide()
