@@ -611,8 +611,13 @@ class ConsensusAligner:
                 if seed_amino.consensus_nuc_index is not None:
                     coordinate_inserts.remove(seed_amino.consensus_nuc_index)
                     prev_consensus_nuc_index = seed_amino.consensus_nuc_index
-                if skip_position is not None and coord_index == (skip_position-start_pos)//3 and amino_alignment.ref_end == skip_position and has_skipped_nucleotide:
-                    skipped_nuc = self.reading_frames[amino_alignment.reading_frame][coord2conseq[(skip_position-start_pos)//3]+1].nucleotides[0]
+                if skip_position is not None and coord_index == (skip_position-start_pos)//3 and amino_alignment.ref_end == skip_position:
+                    if has_skipped_nucleotide:
+                        skipped_nuc = self.reading_frames[amino_alignment.reading_frame][coord2conseq[(skip_position-start_pos)//3]+1].nucleotides[0]
+                    else:
+                        skipped_nuc = SeedNucleotide()
+                        coverage = self.get_deletion_coverage(coord2conseq[(skip_position-start_pos)//3]+1)
+                        skipped_nuc.count_nucleotides('-', coverage)
                 else:
                     skipped_nuc = None
                 self.update_report_amino(coord_index,

@@ -890,6 +890,7 @@ HIV1-B-FR-K03455-seed,HIV1B-vpr,15,22,213,0,0,0,9,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,214,0,0,0,9,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,24,215,0,0,0,9,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,25,216,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,,217,0,0,0,0,0,9,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,26,218,9,0,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,27,219,0,0,9,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,28,220,9,0,0,0,0,0,0,0,0,9
@@ -903,10 +904,10 @@ HIV1-B-FR-K03455-seed,HIV1B-vpr,15,31,223,0,0,0,9,0,0,0,0,0,9"""
     default_sequence_report.write_nuc_counts()
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 50
+    expected_size = 51
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
-    key_lines = report_lines[20:31]
+    key_lines = report_lines[20:32]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_section
 
