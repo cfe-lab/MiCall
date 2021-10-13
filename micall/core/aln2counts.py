@@ -19,7 +19,6 @@ from itertools import groupby, chain
 from operator import itemgetter
 import os
 from pathlib import Path
-from sys import stderr
 import logging
 
 import gotoh
@@ -935,7 +934,7 @@ class SequenceReport(object):
 
     def get_consensus_rows(
             self,
-            seed_amino_entries,
+            seed_entries,
             ignore_coverage=False,
             is_nucleotide=False,
             discard_deletions=False,
@@ -947,7 +946,7 @@ class SequenceReport(object):
             consensus = ''
             seed_offset = None
             if not is_nucleotide:
-                for seed_pos, seed_amino in seed_amino_entries:
+                for seed_pos, seed_amino in seed_entries:
                     for nuc_index, seed_nuc in enumerate(seed_amino.nucleotides):
                         nuc_coverage = seed_nuc.get_coverage()
                         if nuc_coverage < min_coverage:
@@ -962,7 +961,7 @@ class SequenceReport(object):
                         # Still haven't started, so reset the consensus.
                         consensus = ''
             else:
-                for nuc_index, seed_nuc in seed_amino_entries:
+                for nuc_index, seed_nuc in seed_entries:
                     nuc_coverage = seed_nuc.get_coverage()
                     if nuc_coverage < min_coverage:
                         if seed_offset is not None:
@@ -990,12 +989,8 @@ class SequenceReport(object):
             is_nucleotide=False,
             discard_deletions=False,
     ):
-        for row in self.get_consensus_rows(
-                amino_entries,
-                ignore_coverage=ignore_coverage,
-                is_nucleotide=is_nucleotide,
-                discard_deletions=discard_deletions,
-        ):
+        for row in self.get_consensus_rows(amino_entries, ignore_coverage=ignore_coverage, is_nucleotide=is_nucleotide,
+                                           discard_deletions=discard_deletions):
             row.update(row_metadata)
             if 'region-offset' not in row_metadata:
                 row["offset"] = row.pop("seed-offset")
@@ -1028,19 +1023,17 @@ class SequenceReport(object):
                     break
             else:
                 coordinate_name = None
-                print(f'No coordinate reference found for entry: {entry}', file=stderr)
+                logger.warning(f'No coordinate reference found for entry: {entry}')
                 continue
             sorted_regions: list = sorted(
                 self.combined_report_nucleotides[entry].items(),
                 key=lambda item: landmark_reader.get_gene(
                     coordinate_name,
-                    item[0],
-                    drop_stop_codon=False)['start'])
+                    item[0])['start'])
             regions_dict = dict(sorted_regions)
             for region in regions_dict:
                 region_info = landmark_reader.get_gene(coordinate_name,
-                                                       region,
-                                                       drop_stop_codon=False)
+                                                       region)
                 region_start = region_info['start']
                 nuc_dict = combine_region_nucleotides(
                     nuc_dict,
