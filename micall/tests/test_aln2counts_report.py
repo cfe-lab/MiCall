@@ -1,4 +1,5 @@
 import csv
+import logging
 import sys
 from collections import Counter
 from csv import DictReader
@@ -889,6 +890,7 @@ HIV1-B-FR-K03455-seed,HIV1B-vpr,15,22,213,0,0,0,9,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,214,0,0,0,9,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,24,215,0,0,0,9,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,25,216,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,,217,0,0,0,0,0,9,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,26,218,9,0,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,27,219,0,0,9,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,28,220,9,0,0,0,0,0,0,0,0,9
@@ -902,10 +904,10 @@ HIV1-B-FR-K03455-seed,HIV1B-vpr,15,31,223,0,0,0,9,0,0,0,0,0,9"""
     default_sequence_report.write_nuc_counts()
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 50
+    expected_size = 51
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
-    key_lines = report_lines[20:31]
+    key_lines = report_lines[20:32]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_section
 
@@ -1045,7 +1047,7 @@ HIV1-B-FR-K03455-seed,15,0,9,1,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATG
     # Add assertion after thinking about what we want to happen here!
 
 
-def test_consensus_region_differences():
+def test_consensus_region_differences(caplog):
     """ Test that the consensus is stitched together correctly, even if there are differences between the regions """
     nucleotide1 = SeedNucleotide()
     nucleotide2 = SeedNucleotide()
@@ -1071,9 +1073,29 @@ def test_consensus_region_differences():
     # counts are: C:3, None, T:3, C:3, A:6 (starting at position 2)
 
     expected_counts = {1: nucleotide1, 2: nucleotide2, 3: nucleotide3, 4: nucleotide4, 5: nucleotide5, 6: nucleotide6}
-
-    nuc_dict = combine_region_nucleotides(nuc_dict, region_nucleotides, 2)
+    expected_log = [
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         'Zero count in nucleotide at position 3. Inserting non-zero counts.'),
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         'Zero count in dict at position 4. Inserting non-zero counts.'),
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         "Counts don't match up. Position 5"),
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         "Counts in dict: Counter({'T': 6})"),
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         "Counts in nucleotide: Counter({'C': 3})"),
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         'Continuing with dict counts.')]
+    with caplog.at_level(logging.DEBUG):
+        nuc_dict = combine_region_nucleotides(nuc_dict, region_nucleotides, 2)
     assert nuc_dict == expected_counts
+    assert caplog.record_tuples == expected_log
 
 
 def test_nucleotide_coordinates(default_sequence_report):
