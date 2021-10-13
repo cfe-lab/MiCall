@@ -146,7 +146,12 @@ def combine_region_insertions(insertions_dict, region_insertions, region_start):
     for position in region_insertions.keys():
         ref_position = position + region_start - 1
         if ref_position not in insertions_dict:
-            insertions_dict[ref_position] = region_insertions[position]
+            shifted_positions = (ref_position-3, ref_position-2, ref_position-1, ref_position+1, ref_position+2, ref_position+3)
+            if any(shift_pos in insertions_dict for shift_pos in shifted_positions):
+                # have to check whether shifted insertions agree as well
+                print('Disagreement in counts')
+            else:
+                insertions_dict[ref_position] = region_insertions[position]
         else:
             if insertions_dict[position].counts != region_insertions[position].counts:
                 logger.debug(f"Insertion counts don't match up. Position {position}")
