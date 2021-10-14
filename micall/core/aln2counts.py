@@ -19,7 +19,7 @@ from itertools import groupby, chain
 from operator import itemgetter
 import os
 from pathlib import Path
-from sys import stderr
+import logging
 
 import gotoh
 import yaml
@@ -33,6 +33,8 @@ from micall.utils.report_amino import ReportAmino, MAX_CUTOFF, SeedAmino, AMINO_
     SeedNucleotide
 from micall.utils.spring_beads import Wire, Bead
 from micall.utils.translation import translate
+
+logger = logging.getLogger(__name__)
 
 CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 GAP_OPEN_COORD = 40
@@ -116,6 +118,27 @@ def trim_contig_name(contig_name):
     else:
         _, seed_name = contig_name.split('-', 1)
     return seed_name
+
+
+def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
+    assert region_start is not None
+    for nuc_index, nucleotide in enumerate(region_nucleotides):
+        position = region_start + nuc_index
+        if position not in nuc_dict.keys():
+            nuc_dict[position] = nucleotide.seed_nucleotide
+        else:
+            if len(nuc_dict[position].counts) == 0 and len(nucleotide.seed_nucleotide.counts) != 0:
+                logger.debug(f"Zero count in dict at position {position}. Inserting non-zero counts.")
+                nuc_dict[position] = nucleotide.seed_nucleotide
+            elif len(nuc_dict[position].counts) != 0 and len(nucleotide.seed_nucleotide.counts) == 0:
+                logger.debug(f"Zero count in nucleotide at position {position}. Inserting non-zero counts.")
+            else:
+                if nuc_dict[position].counts != nucleotide.seed_nucleotide.counts:
+                    logger.debug(f"Counts don't match up. Position {position}")
+                    logger.debug(f"Counts in dict: {nuc_dict[position].counts}")
+                    logger.debug(f"Counts in nucleotide: {nucleotide.seed_nucleotide.counts}")
+                    logger.debug("Continuing with dict counts.")
+    return nuc_dict
 
 
 class SequenceReport(object):
@@ -911,7 +934,7 @@ class SequenceReport(object):
 
     def get_consensus_rows(
             self,
-            seed_amino_entries,
+            seed_entries,
             ignore_coverage=False,
             is_nucleotide=False,
             discard_deletions=False,
@@ -923,7 +946,7 @@ class SequenceReport(object):
             consensus = ''
             seed_offset = None
             if not is_nucleotide:
-                for seed_pos, seed_amino in seed_amino_entries:
+                for seed_pos, seed_amino in seed_entries:
                     for nuc_index, seed_nuc in enumerate(seed_amino.nucleotides):
                         nuc_coverage = seed_nuc.get_coverage()
                         if nuc_coverage < min_coverage:
@@ -938,7 +961,7 @@ class SequenceReport(object):
                         # Still haven't started, so reset the consensus.
                         consensus = ''
             else:
-                for nuc_index, seed_nuc in seed_amino_entries:
+                for nuc_index, seed_nuc in seed_entries:
                     nuc_coverage = seed_nuc.get_coverage()
                     if nuc_coverage < min_coverage:
                         if seed_offset is not None:
@@ -966,12 +989,8 @@ class SequenceReport(object):
             is_nucleotide=False,
             discard_deletions=False,
     ):
-        for row in self.get_consensus_rows(
-                amino_entries,
-                ignore_coverage=ignore_coverage,
-                is_nucleotide=is_nucleotide,
-                discard_deletions=discard_deletions,
-        ):
+        for row in self.get_consensus_rows(amino_entries, ignore_coverage=ignore_coverage, is_nucleotide=is_nucleotide,
+                                           discard_deletions=discard_deletions):
             row.update(row_metadata)
             if 'region-offset' not in row_metadata:
                 row["offset"] = row.pop("seed-offset")
@@ -1004,32 +1023,22 @@ class SequenceReport(object):
                     break
             else:
                 coordinate_name = None
-                print(f'No coordinate reference found for entry: {entry}', file=stderr)
+                logger.warning(f'No coordinate reference found for entry: {entry}')
                 continue
-            regions_dict = dict(sorted(self.combined_report_nucleotides[entry].items(),
-                                       key=lambda item: landmark_reader.get_gene(coordinate_name, item[0],
-                                                                                 drop_stop_codon=False)['start']))
+            sorted_regions: list = sorted(
+                self.combined_report_nucleotides[entry].items(),
+                key=lambda item: landmark_reader.get_gene(
+                    coordinate_name,
+                    item[0])['start'])
+            regions_dict = dict(sorted_regions)
             for region in regions_dict:
-                region_info = landmark_reader.get_gene(coordinate_name, region, drop_stop_codon=False)
+                region_info = landmark_reader.get_gene(coordinate_name,
+                                                       region)
                 region_start = region_info['start']
-                for nuc_index, nucleotide in enumerate(self.combined_report_nucleotides[entry][region]):
-                    position_old = region_start + nucleotide.position - 1
-                    position = region_start + nuc_index
-                    if position not in nuc_dict.keys() and position is not None:
-                        nuc_dict[position] = nucleotide.seed_nucleotide
-                    else:
-                        if position is None:
-                            continue  # these should just be deletions
-                        elif len(nuc_dict[position].counts) == 0 and len(nucleotide.seed_nucleotide.counts) != 0:
-                            print(f"Zero count at position {position}. Should be fine", file=stderr)
-                            nuc_dict[position] = nucleotide.seed_nucleotide
-                        elif len(nuc_dict[position].counts) != 0 and len(nucleotide.seed_nucleotide.counts) == 0:
-                            print(f"Zero count at position {position}. Should be fine", file=stderr)
-                        else:
-                            if nuc_dict[position].counts != nucleotide.seed_nucleotide.counts:
-                                print(f"Counts don't match up. Position {position}", file=stderr)
-                                print(f'Counts in dict: {nuc_dict[position].counts}', file=stderr)
-                                print(f'Counts in nucleotide: {nucleotide.seed_nucleotide.counts}', file=stderr)
+                nuc_dict = combine_region_nucleotides(
+                    nuc_dict,
+                    self.combined_report_nucleotides[entry][region],
+                    region_start)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
             self._write_consensus_helper(
@@ -1538,6 +1547,7 @@ def aln2counts(aligned_csv,
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
     args = parse_args()
     aln2counts(args.aligned_csv,
                args.nuc_csv,
