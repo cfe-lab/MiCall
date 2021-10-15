@@ -26,7 +26,7 @@
 
     - {name: "3' LTR", full_name: "HIV1B-3' LTR", start: 9086, end: 9719, frame: 1, colour: darkgrey, stop: N}
     - {name: pol, start: 2085, end: 5096, frame: 2, colour: orange}
-    - {name: vpr, full_name: HIV1B-vpr, start: 5559, end: 5850, frame: 2, colour: turquoise}
+    - {name: vpr, full_name: HIV1B-vpr, start: 5559, end: 5850, frame: 2, colour: turquoise, skipped_pos: 5774}
     - {name: rev, start: 5970, end: 6048, frame: 2, colour: yellowgreen, stop: N}
     - {name: env, start: 6225, end: 8795, frame: 2, colour: salmon}
     - {name: PR, start: 2253, end: 2549, frame: 3, colour: orange, stop: N}
@@ -194,8 +194,7 @@
     - {name: TRS-B-7, start: 27888, end: 27893, frame: 0, stop: N}  # Not displayed.
     - {name: TRS-B-8, start: 28260, end: 28273, frame: 0, stop: N}  # Not displayed.
     - {name: TRS-B-9, start: 29534, end: 29557, frame: 0, stop: N}  # Not displayed.
-    - {name: ORF1a, start: 266, end: 13479, frame: 1, stop: N}  # Not displayed.
-    - {name: ORF1b, start: 13468, end: 21555, frame: 1}  # Not displayed.
+    - {name: ORF1ab, start: 266, end: 21552, frame: 1, stop: N, duplicated_pos: 13468}  # Not displayed.
     - {name: nsp2, start: 806, end: 2719, frame: 1, colour: darkgrey, stop: N}
     - {name: nsp1, start: 266, end: 805, frame: 1, colour: grey, stop: N}
     - {name: nsp3, start: 2720, end: 8554, frame: 1, colour: grey, stop: N}
@@ -206,7 +205,8 @@
     - {name: '8', full_name: nsp8, start: 12092, end: 12685, frame: 1, colour: darkgrey, stop: N}
     - {name: '9', full_name: nsp9, start: 12686, end: 13024, frame: 1, colour: grey, stop: N}
     - {name: '10', full_name: nsp10, start: 13025, end: 13441, frame: 1, colour: darkgrey, stop: N}
-    - {name: nsp12, start: 13442, end: 16236, frame: 1, colour: grey, stop: N}
+    - {name: nsp11, start: 13442, end: 13480, frame: 1, stop: N}
+    - {name: nsp12, start: 13442, end: 16236, frame: 1, colour: grey, stop: N, duplicated_pos: 13468}
     - {name: nsp13, start: 16237, end: 18039, frame: 1, colour: darkgrey, stop: N}
     - {name: nsp14, start: 18040, end: 19620, frame: 1, colour: grey, stop: N}
     - {name: nsp15, start: 19621, end: 20658, frame: 1, colour: darkgrey, stop: N}

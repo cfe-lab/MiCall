@@ -52,6 +52,15 @@ def main():
     print(f'Total errors: {error_count}.')
 
 
+def check_length_and_translate(ref_name, sequence):
+    length_error = 0
+    if len(sequence) % 3 != 0:
+        print(f"Warning: Length of the sequence to be translated is not an even multiple of 3, region {ref_name}")
+        length_error = 1
+    translated_seq = translate(sequence)
+    return translated_seq, length_error
+
+
 def check_hiv_seeds(project_config, unchecked_ref_names: set):
     print("""\
 HIV seed references come from the HIV Sequence Database Compendium. They are
@@ -103,7 +112,8 @@ HIV wild types for resistance reports are extracted from Consensus B.
     length_errors = 0
     for ref_name, (start, end) in boundaries.items():
         source_nuc_sequence = consensus_b[start:end]
-        source_wild_type = translate(source_nuc_sequence)
+        source_wild_type, length_error = check_length_and_translate(ref_name, source_nuc_sequence)
+        length_errors += length_error
         source_wild_types[ref_name] = source_wild_type
         mapping_ref = project_config.getReference(ref_name)
         wild_type_length = len(source_wild_type)
@@ -170,6 +180,7 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
     source_sequences = {}
     ref_positions = set()
     landmark_reader = LandmarkReader.load()
+    length_errors = 0
     for region_name in region_names + nucleotide_region_names:
         source_nuc_sequence = extract_region(landmark_reader,
                                              'HIV1-B-FR-K03455-seed',
@@ -181,19 +192,18 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
             source_nuc_sequence = (source_nuc_sequence[:369] +
                                    consensus_b_nef[369:372] +
                                    source_nuc_sequence[372:])
-        elif region_name == 'HIV1B-vpr':
-            # Drop nucleotide to avoid frame shift.
-            source_nuc_sequence = (source_nuc_sequence[:213] +
-                                   source_nuc_sequence[214:])
         if region_name in nucleotide_region_names:
             source_sequences[region_name] = source_nuc_sequence
         else:
-            source_sequences[region_name] = translate(source_nuc_sequence)
+            source_sequences[region_name], length_error = check_length_and_translate(region_name, source_nuc_sequence)
+            length_errors += length_error
 
     consensus_b_v3_nuc_seq = consensus_b_env[876:981]
     overall_v3_nuc_seq = overall_consensus_env[855:960]
-    consensus_b_v3_amino_seq = translate(consensus_b_v3_nuc_seq)
-    overall_v3_amino_seq = translate(overall_v3_nuc_seq)
+    consensus_b_v3_amino_seq, length_error = check_length_and_translate('consensus_b_v3_nuc_seq', consensus_b_v3_nuc_seq)
+    length_errors += length_error
+    overall_v3_amino_seq, length_error = check_length_and_translate('overall_v3_nuc_seq', overall_v3_nuc_seq)
+    length_errors += length_error
     assert 'CTRPNNNTRKSIHIGPGRAFYTTGEIIGDIRQAHC' == consensus_b_v3_amino_seq, consensus_b_v3_amino_seq
     assert 'CTRPNNNTRKSIRIGPGQAFYATGDIIGDIRQAHC' == overall_v3_amino_seq, overall_v3_amino_seq
     # Difference is here:        ^
@@ -201,7 +211,8 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
     combined_v3_nuc_seq = (consensus_b_v3_nuc_seq[:63] +
                            overall_v3_nuc_seq[63] +
                            consensus_b_v3_nuc_seq[64:])
-    source_sequences['V3LOOP'] = translate(combined_v3_nuc_seq)
+    source_sequences['V3LOOP'], length_error = check_length_and_translate('V3LOOP', combined_v3_nuc_seq)
+    length_errors += length_error
 
     hiv_project = project_config.config['projects']['HIV']
     ref_names = {project_region['coordinate_region']
@@ -213,15 +224,14 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
                                          project_config,
                                          source_sequences)
     print(report)
-    return error_count
+    return error_count + length_errors
 
 
 def extract_region(landmark_reader: LandmarkReader,
                    coordinate_name: str,
                    coordinate_seq: str,
                    region_name: str,
-                   ref_positions: set = None,
-                   duplicated_base: int = None) -> str:
+                   ref_positions: set = None) -> str:
     """ Extract a section of reference sequence, based on a gene landmark.
 
     :param landmark_reader: source of landmark definitions
@@ -230,8 +240,6 @@ def extract_region(landmark_reader: LandmarkReader,
     :param region_name: gene region to extract
     :param ref_positions: track which positions have been extracted, so we can
         check for gaps.
-    :param duplicated_base: the one-based position of a nucleotide that gets
-        duplicated in the extracted sequence.
     :return: extracted sequence for the gene region
     """
     region = landmark_reader.get_gene(coordinate_name,
@@ -245,12 +253,17 @@ def extract_region(landmark_reader: LandmarkReader,
     start = region['start']
     end = region['end']
     source_nuc_sequence = coordinate_seq[start - 1:end]
+    duplicated_base = full_region.get('duplicated_pos')
+    skipped_base = full_region.get('skipped_pos')
     if ref_positions is not None:
         ref_positions.update(range(full_region['start'], full_region['end'] + 1))
-    if duplicated_base is not None and start < duplicated_base <= end:
+    if duplicated_base is not None:
         source_nuc_sequence = (
                 source_nuc_sequence[:duplicated_base - start + 1] +
                 source_nuc_sequence[duplicated_base - start:])
+    if skipped_base is not None:
+        source_nuc_sequence = (source_nuc_sequence[:skipped_base - start] +
+                               source_nuc_sequence[skipped_base - start + 1:])
     return source_nuc_sequence
 
 
@@ -367,6 +380,7 @@ This script contains a complete list of the reference accession numbers.
     landmark_reader = LandmarkReader.load()
 
     source_sequences = {}
+    length_errors = 0
     for ref_name in sorted(ref_names):
         ref_parts = ref_name.split('-')
         genotype = ref_parts[0]
@@ -379,13 +393,14 @@ This script contains a complete list of the reference accession numbers.
                                              seed_name,
                                              coordinate_seq,
                                              ref_name)
-        source_sequences[ref_name] = translate(nuc_seq_ref_trimmed)
+        source_sequences[ref_name], length_error = check_length_and_translate(ref_name, nuc_seq_ref_trimmed)
+        length_errors += length_error
 
     report, error_count = compare_config(ref_names,
                                          project_config,
                                          source_sequences)
     print(report)
-    return error_count
+    return error_count + length_errors
 
 
 def check_hla_seeds(project_config, unchecked_ref_names: set):
@@ -418,18 +433,20 @@ come from the features described at https://www.ncbi.nlm.nih.gov/nuccore/AJ45899
     landmark_reader = LandmarkReader.load()
 
     source_sequences = {}
+    length_errors = 0
     for ref_name in ref_names:
         source_nuc_sequence = extract_region(landmark_reader,
                                              'HLA-B-seed',
                                              seed_sequence,
                                              ref_name)
-        source_sequences[ref_name] = translate(source_nuc_sequence)
+        source_sequences[ref_name], length_error = check_length_and_translate(ref_name, source_nuc_sequence)
+        length_errors += length_error
 
     report, error_count = compare_config(ref_names,
                                          project_config,
                                          source_sequences)
     print(report)
-    return error_count
+    return error_count + length_errors
 
 
 def check_sars_seeds(project_config, unchecked_ref_names: set):
@@ -460,8 +477,7 @@ TRS-B entries, or Transcription Regulatory Sequences (Body) were created to
 cover any sections that weren't included elsewhere.
 """)
     ref_names = ["SARS-CoV-2-5'UTR",
-                 'SARS-CoV-2-ORF1a',
-                 'SARS-CoV-2-ORF1b',
+                 'SARS-CoV-2-ORF1ab',
                  'SARS-CoV-2-S',
                  'SARS-CoV-2-ORF3a',
                  'SARS-CoV-2-E',
@@ -483,6 +499,7 @@ cover any sections that weren't included elsewhere.
                  'SARS-CoV-2-nsp8',
                  'SARS-CoV-2-nsp9',
                  'SARS-CoV-2-nsp10',
+                 'SARS-CoV-2-nsp11',
                  'SARS-CoV-2-nsp12',
                  'SARS-CoV-2-nsp13',
                  'SARS-CoV-2-nsp14',
@@ -498,8 +515,6 @@ cover any sections that weren't included elsewhere.
                  'SARS-CoV-2-TRS-B-8',
                  'SARS-CoV-2-TRS-B-9']
 
-    # Funky translation at this base: it gets duplicated.
-    duplicated_base = 13468
     seed_name = 'SARS-CoV-2-seed'
     seed_sequence = project_config.getReference(seed_name)
     coordinate_references = project_config.getCoordinateReferences(seed_name)
@@ -512,17 +527,18 @@ cover any sections that weren't included elsewhere.
 
     source_sequences = {}
     ref_positions = set()
+    length_errors = 0
     for ref_name in ref_names:
         source_nuc_sequence = extract_region(landmark_reader,
                                              seed_name,
                                              seed_sequence,
                                              ref_name,
-                                             ref_positions,
-                                             duplicated_base)
+                                             ref_positions,)
         if 'TRS-B' in ref_name or ref_name.endswith('UTR'):
             source_sequences[ref_name] = source_nuc_sequence
         else:
-            source_sequences[ref_name] = translate(source_nuc_sequence)
+            source_sequences[ref_name], length_error = check_length_and_translate(ref_name, source_nuc_sequence)
+            length_errors += length_error
         print(ref_name, len(source_sequences[ref_name]))
 
     report_missing_positions(ref_positions, seed_sequence)
@@ -530,7 +546,7 @@ cover any sections that weren't included elsewhere.
                                          project_config,
                                          source_sequences)
     print(report)
-    return error_count
+    return error_count + length_errors
 
 
 def check_scoring_config(scoring_config: ProjectConfig,

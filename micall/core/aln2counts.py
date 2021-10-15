@@ -317,22 +317,13 @@ class SequenceReport(object):
             coordinate_name,
             drop_stop_codon=False)
         report_nucleotides = self.report_nucleotides[coordinate_name]
-        repeated_ref_name = 'SARS-CoV-2-seed'
-        frame_shift_ref_name = 'HIV1-B-FR-K03455-seed'
-        frame_shift_region = 'HIV1B-vpr'
-        if self.consensus_aligner.coordinate_name == repeated_ref_name:
-            repeated_ref_pos = 13468  # 1-based position of duplicated base
-        else:
-            repeated_ref_pos = None
-        if self.consensus_aligner.coordinate_name == frame_shift_ref_name and coordinate_name == frame_shift_region:
-            skipped_ref_pos = 5774
-        else:
-            skipped_ref_pos = None
         if is_amino_coordinate:
             report_aminos = self.reports[coordinate_name]
             amino_ref = self.projects.getReference(coordinate_name)
         else:
             report_aminos = amino_ref = None
+        repeated_ref_pos = region_info.get('duplicated_pos')
+        skipped_ref_pos = region_info.get('skipped_pos')
         self.consensus_aligner.report_region(region_info['start'],
                                              region_info['end'],
                                              report_nucleotides,
