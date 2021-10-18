@@ -928,7 +928,7 @@ class SequenceReport(object):
             seed_entries,
             ignore_coverage=False,
             is_nucleotide=False,
-            discard_deletions=False,
+            discard_deletions=True,
     ):
         mixture_cutoffs = ([MAX_CUTOFF] if ignore_coverage
                            else self.conseq_mixture_cutoffs)
@@ -978,7 +978,7 @@ class SequenceReport(object):
             row_metadata,
             ignore_coverage=False,
             is_nucleotide=False,
-            discard_deletions=False,
+            discard_deletions=True,
     ):
         for row in self.get_consensus_rows(amino_entries, ignore_coverage=ignore_coverage, is_nucleotide=is_nucleotide,
                                            discard_deletions=discard_deletions):
@@ -1041,7 +1041,6 @@ class SequenceReport(object):
                     "region-offset": None,
                 },
                 is_nucleotide=True,
-                discard_deletions=True,
             )
 
     def write_consensus_all_header(self, conseq_all_file):
@@ -1124,6 +1123,7 @@ class SequenceReport(object):
                     "seed": self.seed,
                     "region": region,
                 },
+                discard_deletions=False,
             )
 
     @staticmethod
