@@ -143,28 +143,40 @@ def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
 
 def combine_region_insertions(insertions_dict, region_insertions, region_start):
     assert region_start is not None
+    new_insertions = {}
     for position in region_insertions.keys():
         ref_position = position + region_start - 1
         if ref_position not in insertions_dict:
-            shifted_positions = (ref_position-3, ref_position-2, ref_position-1, ref_position+1, ref_position+2, ref_position+3)
+            shifted_positions = (ref_position-3, ref_position-2, ref_position-1, ref_position+1, ref_position+2,
+                                 ref_position+3)
             if any(shift_pos in insertions_dict for shift_pos in shifted_positions):
-                # have to check whether shifted insertions agree as well
-                print('Disagreement in counts')
+                logger.debug("Disagreement or shift in insertions between regions")
+                logger.debug(f"Insertions in dict: {insertions_dict.get(ref_position-3)},"
+                             f"{insertions_dict.get(ref_position-2)},{insertions_dict.get(ref_position-1)},"
+                             f"{insertions_dict.get(ref_position+1)},{insertions_dict.get(ref_position+2)},"
+                             f"{insertions_dict.get(ref_position+3)}")
+                logger.debug(f"Counts in region: {region_insertions[position]}")
             else:
-                insertions_dict[ref_position] = region_insertions[position]
+                new_insertions[ref_position] = region_insertions[position]
         else:
-            if insertions_dict[position].counts != region_insertions[position].counts:
-                logger.debug(f"Insertion counts don't match up. Position {position}")
-                logger.debug(f"Counts in dict: {insertions_dict[position].counts}")
+            if insertions_dict[ref_position].counts != region_insertions[position].counts:
+                logger.debug(f"Insertion counts don't match up. Position {ref_position}")
+                logger.debug(f"Counts in dict: {insertions_dict[ref_position].counts}")
                 logger.debug(f"Counts in region: {region_insertions[position].counts}")
                 logger.debug("Continuing with dict counts.")
+    insertions_dict.update(new_insertions)
     return insertions_dict
 
 
-def find_consensus_insertions(insertions_dict):
+def find_consensus_insertions(insertions_dict, consensus_nucleotides):
     consensus_insertions = {}
 
     for position, counter in insertions_dict.items():
+        neighbour_left = consensus_nucleotides.get(position)
+        neighbour_right = consensus_nucleotides.get(position + 1)
+        coverage_left = neighbour_left.get_coverage() if neighbour_left is not None else 0
+        coverage_right = neighbour_right.get_coverage() if neighbour_left is not None else 0
+        coverage_nuc = max(coverage_left, coverage_right)
         sorted_counts = sorted(counter.items(), key=lambda item: -len(item[0]))
         length = len(sorted_counts[0][0])
         for i in range(length):
@@ -173,6 +185,10 @@ def find_consensus_insertions(insertions_dict):
             for insertion in sorted_counts:
                 if len(insertion[0]) > i:
                     nuc.count_nucleotides(insertion[0][i], count=insertion[1])
+            coverage_insertion = nuc.get_coverage()
+            coverage_no_insertion = coverage_nuc - coverage_insertion
+            if coverage_no_insertion > 0:
+                nuc.count_nucleotides('-', count=coverage_no_insertion)
             consensus_insertions[insertion_position] = nuc
 
     return consensus_insertions
@@ -1102,7 +1118,7 @@ class SequenceReport(object):
                 insertions_dict = combine_region_insertions(insertions_dict,
                                                             self.combined_insertion_nucs[entry][region],
                                                             region_start)
-            consensus_insertions = find_consensus_insertions(insertions_dict)
+            consensus_insertions = find_consensus_insertions(insertions_dict, nuc_dict)
             nuc_dict.update(consensus_insertions)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])

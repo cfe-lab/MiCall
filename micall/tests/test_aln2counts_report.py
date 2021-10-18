@@ -997,8 +997,9 @@ HIV1-B-FR-K03455-seed,,15,0.100,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCT
     assert key_report == expected_section
 
 
+# noinspection DuplicatedCode
 def test_whole_genome_consensus_different_insertions(default_sequence_report):
-    """ Check that mixed insertions are correctly inserted into the whole genome consensus from a non-translated region"""
+    """ Check that mixed insertions are correctly inserted into the whole genome consensus"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,12,1,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
 HIV1-B-FR-K03455-seed,15,0,9,1,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAGGGAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
@@ -1026,17 +1027,21 @@ HIV1-B-FR-K03455-seed,,15,0.100,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCT
     assert key_report == expected_section
 
 
-def test_whole_genome_consensus_insertions_overlap(default_sequence_report):
-    """ Check that insertions in overlapping regions are correctly inserted into the whole genome consensus"""
+# noinspection DuplicatedCode
+def test_whole_genome_consensus_half_insertions(default_sequence_report):
+    """ Check that mixed insertions are correctly inserted into the whole genome consensus"""
     aligned_reads = prepare_reads("""\
-HIV1-B-FR-K03455-seed,15,0,9,1,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA
+HIV1-B-FR-K03455-seed,15,0,15,1,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTA---CTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,15,0,10,1,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTG---------GATCTACCACACACAAGGCTAAAACTTCCCTGATTAGCAGAACTACACACCAGG
 """)
-    # this is the ref genome from pos 6225 to 6315, plus an insertion of 'AAAAAAAAA' here  ^^^^^^^^^
-    # the insertion is between nucleotide 6284 and 6285
+    # this is the ref genome from pos 1 to 99 plus different insertions in each of the reads
+    # here and here:                                                            ^^^^^^^^^                     ^^^
+    # In the MAX, only the insertion from the majority of reads will show up.
+    # In the 0.1 mixture sequence, both insertions will show up as lower case.
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,,15,MAX,6226,,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA
-HIV1-B-FR-K03455-seed,,15,0.100,6226,,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA"""
+HIV1-B-FR-K03455-seed,,15,MAX,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,,15,0.100,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGaaaaaaaaaGATCTACCACACACAAGGCTAaaaCTTCCCTGATTAGCAGAACTACACACCAGG"""
 
     report_file = StringIO()
     default_sequence_report.write_consensus_all_header(report_file)
@@ -1052,6 +1057,42 @@ HIV1-B-FR-K03455-seed,,15,0.100,6226,,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGT
     key_lines = report_lines[1:3]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_section
+
+
+# noinspection DuplicatedCode
+def test_whole_genome_consensus_insertions_overlap(default_sequence_report, caplog):
+    """ Check that insertions in overlapping regions are correctly inserted into the whole genome consensus"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,9,1,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA
+""")
+    # this is the ref genome from pos 6225 to 6315, plus an insertion of 'AAAAAAAAA' here  ^^^^^^^^^
+    # the insertion is between nucleotide 6284 and 6285
+
+    expected_section = """\
+HIV1-B-FR-K03455-seed,,15,MAX,6226,,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA
+HIV1-B-FR-K03455-seed,,15,0.100,6226,,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA"""
+
+    expected_log = [('micall.core.aln2counts', 10, 'Disagreement or shift in insertions between regions'),
+                    ('micall.core.aln2counts', 10,
+                        "Insertions in dict: None,None,None,None,Counter({'AAAAAAAAT': 9}),None"),
+                    ('micall.core.aln2counts', 10, "Counts in region: Counter({'CAAAAAAAA': 9})")]
+
+    report_file = StringIO()
+    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_insertions()
+    default_sequence_report.combine_reports()
+    with caplog.at_level(logging.DEBUG):
+        default_sequence_report.write_whole_genome_consensus_from_nuc()
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 3
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+    key_lines = report_lines[1:3]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+    assert caplog.record_tuples[-3:] == expected_log
 
 
 def test_consensus_region_differences(caplog):
