@@ -194,7 +194,7 @@
     - {name: TRS-B-7, start: 27888, end: 27893, frame: 0, stop: N}  # Not displayed.
     - {name: TRS-B-8, start: 28260, end: 28273, frame: 0, stop: N}  # Not displayed.
     - {name: TRS-B-9, start: 29534, end: 29557, frame: 0, stop: N}  # Not displayed.
-    - {name: ORF1ab, start: 266, end: 21552, frame: 1, stop: N, duplicated_pos: 13468}  # Not displayed.
+    - {name: ORF1ab, start: 266, end: 21555, frame: 1, duplicated_pos: 13468}  # Not displayed.
     - {name: nsp2, start: 806, end: 2719, frame: 1, colour: darkgrey, stop: N}
     - {name: nsp1, start: 266, end: 805, frame: 1, colour: grey, stop: N}
     - {name: nsp3, start: 2720, end: 8554, frame: 1, colour: grey, stop: N}

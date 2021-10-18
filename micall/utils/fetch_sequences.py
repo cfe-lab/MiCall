@@ -55,7 +55,8 @@ def main():
 def check_length_and_translate(ref_name, sequence):
     length_error = 0
     if len(sequence) % 3 != 0:
-        print(f"Warning: Length of the sequence to be translated is not an even multiple of 3, region {ref_name}")
+        print(f"Warning: region {ref_name} has length {len(sequence)}, "
+              f"not an even multiple of 3.")
         length_error = 1
     translated_seq = translate(sequence)
     return translated_seq, length_error

@@ -7368,7 +7368,7 @@
         },
         {
           "coordinate_region": "SARS-CoV-2-ORF1ab",
-          "coordinate_region_length": 7096,
+          "coordinate_region_length": 7097,
           "key_positions": [],
           "min_coverage1": 10,
           "min_coverage2": 50,
