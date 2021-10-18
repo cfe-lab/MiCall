@@ -53,7 +53,7 @@ class ReportTemplate:
         self.genotype_pages = defaultdict(lambda: ReportPage({}, {}))
         err_string = "Error in configuration file"
         if not isinstance(virus_config, dict):
-            raise RuntimeError("""Configuration in {} must be a
+            raise ValueError("""Configuration in {} must be a
     single dict class, but found a {}""".format(REPORT_CONFIG_PATH, type(virus_config)))
         # The following keys must be present in the dict
         known_keys = frozenset([
@@ -80,13 +80,13 @@ class ReportTemplate:
         virus_config["res_level_dct"] = res_level_dct = {}
         for level, lev_tup in coltab.items():
             if len(lev_tup) != 3:
-                raise RuntimeError("{}: {} must have 3 entries: {}".format(
+                raise ValueError("{}: {} must have 3 entries: {}".format(
                     err_string, fld_name, lev_tup))
             lev_str, bg_col, fg_col = lev_tup
             types_ok = isinstance(lev_str, str) and isinstance(
                 bg_col, int) and isinstance(fg_col, int)
             if not types_ok:
-                raise RuntimeError("{}: {} string, int, int expected '{}'".format(
+                raise ValueError("{}: {} string, int, int expected {}".format(
                     err_string, fld_name, lev_tup))
             res_level_dct[level] = lev_str.upper()
         # check known_regions and turn it into a set of strings
@@ -119,7 +119,7 @@ class ReportTemplate:
         # make sure each drug class is defined
         got_drug_classes = set(drug_dct.keys())
         if known_drug_classes != got_drug_classes:
-            raise RuntimeError("{}: {} inconsistent drug_classes".format(
+            raise ValueError("{}: {} inconsistent with drug_classes".format(
                 err_string, fld_name))
         # Drug names and codes must be unique.
         drug_code_counts = Counter(drug[0]
@@ -137,12 +137,12 @@ class ReportTemplate:
             for drug_name, count in drug_name_counts.items()
             if count > 1))
         if duplicate_drug_codes:
-            raise RuntimeError("{}: {} duplicate drug identifiers: {}.".format(
+            raise ValueError("{}: {} duplicate drug identifiers: {}.".format(
                 err_string,
                 fld_name,
                 duplicate_drug_codes))
         if duplicate_drug_names:
-            raise RuntimeError("{}: {} duplicate drug names: {}.".format(
+            raise ValueError("{}: {} duplicate drug names: {}.".format(
                 err_string,
                 fld_name,
                 duplicate_drug_names))
@@ -163,7 +163,7 @@ class ReportTemplate:
 
     def __repr__(self):
         report_title = self.virus_config.get('report_title')
-        return "ReportPage({{'report_title': {!r}}})".format(report_title)
+        return "ReportTemplate({{'report_title': {!r}}})".format(report_title)
 
     def get_reported_genotypes(self):
         return sorted(self.genotype_pages.keys())
