@@ -91,6 +91,9 @@ def parse_args():
                         type=argparse.FileType('w'),
                         help='CSV containing consensus sequences (ignoring inadequate '
                              'coverage)')
+    parser.add_argument('--conseq_stitched_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing stitched whole genome consensus sequences')
     parser.add_argument('--failed_align_csv',
                         type=argparse.FileType('w'),
                         default=os.devnull,
@@ -211,6 +214,7 @@ class SequenceReport(object):
         self.genome_coverage_writer = self.minimap_hits_writer = None
         self.conseq_region_writer = self.fail_writer = None
         self.conseq_all_writer = None
+        self.conseq_stitched_writer = None
 
     @property
     def has_detail_counts(self):
@@ -386,8 +390,8 @@ class SequenceReport(object):
         if self.amino_detail_writer is not None and self.amino_writer is not None:
             self.write_amino_counts(self.amino_writer,
                                     coverage_summary=coverage_summary)
-        if self.conseq_all_writer is not None:
-            self.write_whole_genome_consensus_from_nuc(self.conseq_all_writer)
+        if self.conseq_stitched_writer is not None:
+            self.write_whole_genome_consensus_from_nuc(self.conseq_stitched_writer)
 
     def read(self,
              aligned_reads,
@@ -1003,8 +1007,8 @@ class SequenceReport(object):
             {"region": self.detail_seed},
         )
 
-    def write_whole_genome_consensus_from_nuc(self, conseq_all_writer=None):
-        conseq_all_writer = conseq_all_writer or self.conseq_all_writer
+    def write_whole_genome_consensus_from_nuc(self, conseq_stitched_writer=None):
+        conseq_stitched_writer = conseq_stitched_writer or self.conseq_stitched_writer
         landmark_reader = LandmarkReader(self.landmarks)
         for entry in self.combined_report_nucleotides:
             nuc_dict = {}
@@ -1034,11 +1038,10 @@ class SequenceReport(object):
             nuc_entries.sort(key=lambda elem: elem[0])
             self._write_consensus_helper(
                 nuc_entries,
-                conseq_all_writer,
+                conseq_stitched_writer,
                 {
                     "seed": entry,
-                    "region": None,
-                    "region-offset": None,
+                    "region": "whole genome consensus",
                 },
                 is_nucleotide=True,
             )
@@ -1050,6 +1053,13 @@ class SequenceReport(object):
             include_seed_region_offsets=True,
         )
         self.conseq_all_writer.writeheader()
+
+    def write_consensus_stitched_header(self, conseq_stitched_file):
+        self.conseq_stitched_writer = self._create_consensus_writer(
+            conseq_stitched_file,
+            include_seed=True,
+        )
+        self.conseq_stitched_writer.writeheader()
 
     def write_consensus_all(self, conseq_all_writer=None):
         conseq_all_writer = conseq_all_writer or self.conseq_all_writer
@@ -1429,6 +1439,7 @@ def aln2counts(aligned_csv,
                nuc_detail_csv=None,
                contigs_csv=None,
                conseq_all_csv=None,
+               conseq_stitched_csv=None,
                minimap_hits_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
@@ -1461,6 +1472,8 @@ def aln2counts(aligned_csv,
     @param contigs_csv: Open file handle to read contig sequences.
     @param conseq_all_csv: Open file handle to write consensus sequences *ignoring
         inadequate coverage*.
+    @param conseq_stitched_csv: Open file handle to write stitched whole genome
+        consensus sequences.
     @param minimap_hits_csv: Open file handle to write minimap2 match locations.
     """
     # load project information
@@ -1505,6 +1518,8 @@ def aln2counts(aligned_csv,
 
         if conseq_all_csv is not None:
             report.write_consensus_all_header(conseq_all_csv)
+        if conseq_stitched_csv is not None:
+            report.write_consensus_stitched_header(conseq_stitched_csv)
         if clipping_csv is not None:
             report.read_clipping(clipping_csv)
         if conseq_ins_csv is not None:
@@ -1557,6 +1572,7 @@ def main():
                genome_coverage_csv=args.genome_coverage_csv,
                contigs_csv=args.contigs_csv,
                conseq_all_csv=args.conseq_all_csv,
+               conseq_stitched_csv=args.conseq_stitched_csv,
                minimap_hits_csv=args.minimap_hits_csv)
 
 
