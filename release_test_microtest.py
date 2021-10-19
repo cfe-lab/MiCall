@@ -353,7 +353,7 @@ class ResultsFolder:
         mutations = [''.join(fields)
                      for fields in map(itemgetter('wt', 'refseq_nuc_pos', 'var'),
                                        mutation_rows)]
-        assert mutations == ['T13199C', 'T23C'], mutations
+        assert mutations == ['T13199C', 'T23C', 'T23C'], mutations
 
     def check_2200(self):
         amino_rows = list(self.read_file('2200A-SARSCOV2_S24', 'amino.csv'))
@@ -362,7 +362,7 @@ class ResultsFolder:
             pos = int(row['refseq.aa.pos'])
             coverage = int(row['coverage'])
             coverage_message = f'{coverage} coverage at {pos}'
-            assert row['region'] in ('SARS-CoV-2-nsp1', 'SARS-CoV-2-ORF1a'), row
+            assert row['region'] in ('SARS-CoV-2-nsp1', 'SARS-CoV-2-ORF1ab'), row
             if 27 <= pos <= 102:
                 assert coverage == 100, coverage_message
             else:

@@ -294,6 +294,7 @@ class ConsensusAligner:
                               start_pos: int,
                               end_pos: int,
                               repeat_pos: typing.Optional[int],
+                              skip_pos: typing.Optional[int],
                               amino_ref: str):
         translations = {
             reading_frame: translate(
@@ -342,21 +343,24 @@ class ConsensusAligner:
                     amino_alignment.query_end -= end_shift
                     amino_sections.append(amino_alignment)
                 query_progress = query_end
-            if repeat_pos is not None:
+            if repeat_pos is not None or skip_pos is not None:
                 for i, amino_alignment in enumerate(amino_sections):
                     if amino_alignment.action != CigarActions.MATCH:
                         continue
                     ref_start = amino_alignment.ref_start
                     ref_end = amino_alignment.ref_end
-                    if ref_start < repeat_pos-1 < ref_end:
-                        offset = repeat_pos - ref_start
+                    notable_pos = repeat_pos if repeat_pos is not None else skip_pos
+                    if ref_start < notable_pos-1 < ref_end:
+                        offset = notable_pos - ref_start
                         query_start = amino_alignment.query_start
                         amino_alignment2 = replace(
                             amino_alignment,
-                            ref_start=repeat_pos,
+                            ref_start=notable_pos,
                             query_start=query_start + offset-1,
                             reading_frame=(amino_alignment.reading_frame+1) % 3)
-                        amino_alignment.ref_end = repeat_pos
+                        if repeat_pos is not None:
+                            amino_alignment2.ref_end = ref_end+1
+                        amino_alignment.ref_end = notable_pos
                         amino_alignment.query_end = query_start + offset
                         amino_sections.insert(i+1, amino_alignment2)
                         break
@@ -409,6 +413,7 @@ class ConsensusAligner:
             report_nucleotides: typing.List[ReportNucleotide],
             report_aminos: typing.List[ReportAmino] = None,
             repeat_position: int = None,
+            skip_position: int = None,
             amino_ref: str = None):
         """ Add read counts to report counts for a section of the reference.
 
@@ -421,6 +426,8 @@ class ConsensusAligner:
         :param report_aminos: list of amino objects to collect counts.
             Will be extended to required size, if needed.
         :param repeat_position: if not None, repeat the nucleotide at this
+            1-based position in reference coordinates, but only in report_aminos.
+        :param skip_position: if not None, skip the nucleotide at this
             1-based position in reference coordinates, but only in report_aminos.
         :param amino_ref: amino acid sequence to align with, or None if only
             nucleotides are reported.
@@ -449,6 +456,7 @@ class ConsensusAligner:
                                     report_nucleotides,
                                     report_aminos,
                                     repeat_position,
+                                    skip_position,
                                     amino_ref)
 
     def get_seed_nuc(self, consensus_nuc_index: int):
@@ -467,6 +475,7 @@ class ConsensusAligner:
                            report_nucleotides: typing.List[ReportNucleotide],
                            report_aminos: typing.List[ReportAmino] = None,
                            repeat_position: int = None,
+                           skip_position: int = None,
                            amino_ref: str = None):
         """ Add read counts to report counts for a section of the reference.
         
@@ -482,13 +491,27 @@ class ConsensusAligner:
             Will be extended to required size, if needed.
         :param repeat_position: if not None, repeat the nucleotide at this
             1-based position in reference coordinates, but only in report_aminos.
+        :param skip_position: if not None, skip the nucleotide at this
+            1-based position in reference coordinates, but only in report_aminos.
         :param amino_ref: amino acid sequence to align with, or None if only
             nucleotides are reported.
         """
         self.find_amino_alignments(start_pos,
                                    end_pos,
                                    repeat_position,
+                                   skip_position,
                                    amino_ref)
+        if skip_position is not None:
+            has_skipped_nucleotide = False
+            reading_frame1 = reading_frame2 = None
+            for alignment in self.amino_alignments:
+                if alignment.ref_end == skip_position:
+                    reading_frame1 = alignment.reading_frame
+                elif alignment.ref_start == skip_position:
+                    reading_frame2 = alignment.reading_frame
+            if reading_frame1 is not None and reading_frame2 is not None:
+                if reading_frame1 != reading_frame2:
+                    has_skipped_nucleotide = True
         for amino_alignment in self.amino_alignments:
             if amino_alignment.action == CigarActions.DELETE:
                 coverage = self.get_deletion_coverage(
@@ -588,12 +611,23 @@ class ConsensusAligner:
                 if seed_amino.consensus_nuc_index is not None:
                     coordinate_inserts.remove(seed_amino.consensus_nuc_index)
                     prev_consensus_nuc_index = seed_amino.consensus_nuc_index
+                if skip_position is not None and coord_index == (skip_position-start_pos)//3 and amino_alignment.ref_end == skip_position:
+                    if has_skipped_nucleotide:
+                        skipped_nuc = self.reading_frames[amino_alignment.reading_frame][coord2conseq[(skip_position-start_pos)//3]+1].nucleotides[0]
+                    else:
+                        skipped_nuc = SeedNucleotide()
+                        coverage = self.get_deletion_coverage(coord2conseq[(skip_position-start_pos)//3]+1)
+                        skipped_nuc.count_nucleotides('-', coverage)
+                else:
+                    skipped_nuc = None
                 self.update_report_amino(coord_index,
                                          report_aminos,
                                          report_nucleotides,
                                          seed_amino,
                                          start_pos,
-                                         repeat_position)
+                                         repeat_position=repeat_position,
+                                         skip_position=skip_position,
+                                         skipped_nuc=skipped_nuc,)
             if prev_consensus_nuc_index is None:
                 coordinate_inserts.clear()
             else:
@@ -608,14 +642,19 @@ class ConsensusAligner:
                             report_nucleotides: typing.List[ReportNucleotide],
                             seed_amino: SeedAmino,
                             start_pos: int,
-                            repeat_position: int = None):
+                            repeat_position: int = None,
+                            skip_position: int = None,
+                            skipped_nuc = None,):
         report_amino = report_aminos[coord_index]
         report_amino.seed_amino.add(seed_amino)
         ref_nuc_pos = coord_index * 3 + start_pos
         for codon_nuc_index, seed_nuc in enumerate(
                 seed_amino.nucleotides):
             if len(report_nucleotides) <= coord_index * 3 + codon_nuc_index:
-                continue
+                if repeat_position is None:
+                    continue
+                elif repeat_position is not None and repeat_position >= ref_nuc_pos:
+                    continue
 
             report_nuc_index = coord_index * 3 + codon_nuc_index
             if repeat_position is not None and start_pos < repeat_position:
@@ -623,6 +662,12 @@ class ConsensusAligner:
                     report_nuc_index -= 1
                 if repeat_position == ref_nuc_pos - 1 and codon_nuc_index == 0:
                     continue
+            if skip_position is not None:
+                if skip_position == start_pos + report_nuc_index and skipped_nuc is not None:
+                    report_nuc = report_nucleotides[report_nuc_index+1]
+                    report_nuc.seed_nucleotide.add(skipped_nuc)
+                if skip_position < start_pos + report_nuc_index:
+                    report_nuc_index += 1
             report_nuc = report_nucleotides[report_nuc_index]
             report_nuc.seed_nucleotide.add(seed_nuc)
 

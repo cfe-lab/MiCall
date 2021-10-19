@@ -1163,8 +1163,10 @@ def test_read_aminos_no_midi(asi_algorithms):
     amino_csv = DictReader(amino_lines)
     min_fraction = 0.2
     min_coverage = 9
+    no_counts: typing.Dict[str, float] = {}
     expected_aminos = [AminoList('HCV1B-Con1-NS5b',
-                                 [{}] * 200 + [{'A': 1.0}]*136 + [{}] * 255,
+                                 [no_counts] * 200 +
+                                 [{'A': 1.0}]*136 + [no_counts] * 256,
                                  '1B',
                                  'HCV-1b',
                                  False)]
@@ -1274,7 +1276,8 @@ def test_read_aminos_ns5b_short(asi_algorithms):
     amino_csv = DictReader(amino_lines)
     min_fraction = 0.2
     min_coverage = 9
-    expected_mixtures = [{'A': 1.0}] * 400 + [{}] * 191
+    no_counts: typing.Dict[str, float] = {}
+    expected_mixtures = [{'A': 1.0}] * 400 + [no_counts] * 192
     expected_aminos = [AminoList('HCV1B-Con1-NS5b',
                                  expected_mixtures,
                                  '1B',
