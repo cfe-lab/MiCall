@@ -122,7 +122,7 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 300,
@@ -248,7 +248,7 @@
         },
         {
           "coordinate_region": "HCV1B-Con1-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 300,
@@ -416,7 +416,7 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 300,
@@ -572,7 +572,7 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 300,
@@ -818,7 +818,7 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 300,
@@ -968,7 +968,7 @@
         },
         {
           "coordinate_region": "HCV5-SA13-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 300,
@@ -1264,7 +1264,7 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 300,
@@ -1428,7 +1428,7 @@
         },
         {
           "coordinate_region": "HCV7-QC69-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 300,
@@ -4363,7 +4363,7 @@
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 591,
@@ -4382,7 +4382,7 @@
         },
         {
           "coordinate_region": "HCV1B-Con1-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 591,
@@ -4398,7 +4398,7 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 591,
@@ -4420,7 +4420,7 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 591,
@@ -4439,7 +4439,7 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 591,
@@ -4470,7 +4470,7 @@
         },
         {
           "coordinate_region": "HCV5-SA13-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 591,
@@ -4486,7 +4486,7 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 591,
@@ -4524,7 +4524,7 @@
         },
         {
           "coordinate_region": "HCV7-QC69-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 591,
@@ -4545,7 +4545,7 @@
       "regions": [
         {
           "coordinate_region": "HCV1A-H77-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 336,
@@ -4564,7 +4564,7 @@
         },
         {
           "coordinate_region": "HCV1B-Con1-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 336,
@@ -4580,7 +4580,7 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 336,
@@ -4602,7 +4602,7 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 336,
@@ -4621,7 +4621,7 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 336,
@@ -4652,7 +4652,7 @@
         },
         {
           "coordinate_region": "HCV5-SA13-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 336,
@@ -4668,7 +4668,7 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 336,
@@ -4706,7 +4706,7 @@
         },
         {
           "coordinate_region": "HCV7-QC69-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 336,
@@ -7870,7 +7870,7 @@
         },
         {
           "coordinate_region": "HCV1A-H77-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 530,
@@ -7996,7 +7996,7 @@
         },
         {
           "coordinate_region": "HCV1B-Con1-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 530,
@@ -8164,7 +8164,7 @@
         },
         {
           "coordinate_region": "HCV2-JFH-1-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 530,
@@ -8320,7 +8320,7 @@
         },
         {
           "coordinate_region": "HCV3-S52-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 530,
@@ -8566,7 +8566,7 @@
         },
         {
           "coordinate_region": "HCV4-ED43-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 530,
@@ -8716,7 +8716,7 @@
         },
         {
           "coordinate_region": "HCV5-SA13-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 530,
@@ -9012,7 +9012,7 @@
         },
         {
           "coordinate_region": "HCV6-EUHK2-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 530,
@@ -9176,7 +9176,7 @@
         },
         {
           "coordinate_region": "HCV7-QC69-NS5b",
-          "coordinate_region_length": 591,
+          "coordinate_region_length": 592,
           "key_positions": [
             {
               "end_pos": 530,

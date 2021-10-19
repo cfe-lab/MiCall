@@ -51,8 +51,8 @@
     - {name: NS4b, start: 5475, colour: '#7f7f7f', stop: N}
     - {name: NS4a, start: 5313, colour: '#e377c2', stop: N}
     - {name: NS5a, start: 6258, colour: '#bcbd22', stop: N}
-    - {name: NS5b, start: 7599, colour: '#17becf', stop: N}
-    - {name: "3'", start: 9372, end: 9646, colour: darkgrey}
+    - {name: NS5b, start: 7599, colour: '#17becf'}
+    - {name: "3'", start: 9375, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-1.*
   coordinates: HCV-1a
   prefix: HCV1A-H77-
@@ -67,8 +67,8 @@
     - {name: NS4b, start: 5475, colour: '#7f7f7f', stop: N}
     - {name: NS4a, start: 5313, colour: '#e377c2', stop: N}
     - {name: NS5a, start: 6258, colour: '#bcbd22', stop: N}
-    - {name: NS5b, start: 7602, colour: '#17becf', stop: N}
-    - {name: "3'", start: 9375, end: 9646, colour: darkgrey}
+    - {name: NS5b, start: 7602, colour: '#17becf'}
+    - {name: "3'", start: 9378, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-2.*
   coordinates: HCV-2a
   prefix: HCV2-JFH-1-
@@ -83,8 +83,8 @@
     - {name: NS4b, start: 5486, colour: '#7f7f7f', stop: N}
     - {name: NS4a, start: 5324, colour: '#e377c2', stop: N}
     - {name: NS5a, start: 6269, colour: '#bcbd22', stop: N}
-    - {name: NS5b, start: 7667, colour: '#17becf', stop: N}
-    - {name: "3'", start: 9441, end: 9646, colour: darkgrey}
+    - {name: NS5b, start: 7667, colour: '#17becf'}
+    - {name: "3'", start: 9443, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-3.*
   coordinates: HCV-3a
   prefix: HCV3-S52-
@@ -99,8 +99,8 @@
     - {name: NS4b, start: 5491, colour: '#7f7f7f', stop: N}
     - {name: NS4a, start: 5329, colour: '#e377c2', stop: N}
     - {name: NS5a, start: 6274, colour: '#bcbd22', stop: N}
-    - {name: NS5b, start: 7630, colour: '#17becf', stop: N}
-    - {name: "3'", start: 9404, end: 9646, colour: darkgrey}
+    - {name: NS5b, start: 7630, colour: '#17becf'}
+    - {name: "3'", start: 9406, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-4.*
   coordinates: HCV-4a
   prefix: HCV4-ED43-
@@ -115,8 +115,8 @@
     - {name: NS4b, start: 5474, colour: '#7f7f7f', stop: N}
     - {name: NS4a, start: 5312, colour: '#e377c2', stop: N}
     - {name: NS5a, start: 6257, colour: '#bcbd22', stop: N}
-    - {name: NS5b, start: 7592, colour: '#17becf', stop: N}
-    - {name: "3'", start: 9366, end: 9646, colour: darkgrey}
+    - {name: NS5b, start: 7592, colour: '#17becf'}
+    - {name: "3'", start: 9368, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-5.*
   coordinates: HCV-5a
   prefix: HCV5-SA13-
@@ -131,8 +131,8 @@
     - {name: NS4b, start: 5383, colour: '#7f7f7f', stop: N}
     - {name: NS4a, start: 5221, colour: '#e377c2', stop: N}
     - {name: NS5a, start: 6166, colour: '#bcbd22', stop: N}
-    - {name: NS5b, start: 7516, colour: '#17becf', stop: N}
-    - {name: "3'", start: 9289, end: 9646, colour: darkgrey}
+    - {name: NS5b, start: 7516, colour: '#17becf'}
+    - {name: "3'", start: 9292, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-6.*
   coordinates: HCV-6a
   prefix: HCV6-EUHK2-
@@ -147,8 +147,8 @@
     - {name: NS4b, start: 5429, colour: '#7f7f7f', stop: N}
     - {name: NS4a, start: 5267, colour: '#e377c2', stop: N}
     - {name: NS5a, start: 6212, colour: '#bcbd22', stop: N}
-    - {name: NS5b, start: 7565, colour: '#17becf', stop: N}
-    - {name: "3'", start: 9339, end: 9646, colour: darkgrey}
+    - {name: NS5b, start: 7565, colour: '#17becf'}
+    - {name: "3'", start: 9341, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-7.*
   coordinates: HCV-7a
   prefix: HCV7-QC69-
@@ -163,8 +163,8 @@
     - {name: NS4b, start: 5454, colour: '#7f7f7f', stop: N}
     - {name: NS4a, start: 5292, colour: '#e377c2', stop: N}
     - {name: NS5a, start: 6237, colour: '#bcbd22', stop: N}
-    - {name: NS5b, start: 7575, colour: '#17becf', stop: N}
-    - {name: "3'", start: 9349, end: 9646, colour: darkgrey}
+    - {name: NS5b, start: 7575, colour: '#17becf'}
+    - {name: "3'", start: 9351, end: 9646, colour: darkgrey}
 - seed_pattern: HLA-B-seed
   coordinates: HLA-B-seed
   prefix: HLA-B-

@@ -7,6 +7,7 @@ Finally, it reports any references that aren't documented yet.
 
 import re
 import typing
+from collections import defaultdict
 from difflib import Differ, SequenceMatcher
 from io import StringIO
 from itertools import chain, groupby, zip_longest
@@ -196,14 +197,20 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
         if region_name in nucleotide_region_names:
             source_sequences[region_name] = source_nuc_sequence
         else:
-            source_sequences[region_name], length_error = check_length_and_translate(region_name, source_nuc_sequence)
+            source_sequences[region_name], length_error = check_length_and_translate(
+                region_name,
+                source_nuc_sequence)
             length_errors += length_error
 
     consensus_b_v3_nuc_seq = consensus_b_env[876:981]
     overall_v3_nuc_seq = overall_consensus_env[855:960]
-    consensus_b_v3_amino_seq, length_error = check_length_and_translate('consensus_b_v3_nuc_seq', consensus_b_v3_nuc_seq)
+    consensus_b_v3_amino_seq, length_error = check_length_and_translate(
+        'consensus_b_v3_nuc_seq',
+        consensus_b_v3_nuc_seq)
     length_errors += length_error
-    overall_v3_amino_seq, length_error = check_length_and_translate('overall_v3_nuc_seq', overall_v3_nuc_seq)
+    overall_v3_amino_seq, length_error = check_length_and_translate(
+        'overall_v3_nuc_seq',
+        overall_v3_nuc_seq)
     length_errors += length_error
     assert 'CTRPNNNTRKSIHIGPGRAFYTTGEIIGDIRQAHC' == consensus_b_v3_amino_seq, consensus_b_v3_amino_seq
     assert 'CTRPNNNTRKSIRIGPGQAFYATGDIIGDIRQAHC' == overall_v3_amino_seq, overall_v3_amino_seq
@@ -220,7 +227,7 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
                  for project_region in hiv_project['regions']}
     unchecked_ref_names.difference_update(ref_names)
 
-    report_missing_positions(ref_positions, hxb2)
+    report_missing_positions(ref_positions, hxb2, 'HIV')
     report, error_count = compare_config(ref_names,
                                          project_config,
                                          source_sequences)
@@ -381,6 +388,7 @@ This script contains a complete list of the reference accession numbers.
     landmark_reader = LandmarkReader.load()
 
     source_sequences = {}
+    genotype_ref_positions = defaultdict(set)
     length_errors = 0
     for ref_name in sorted(ref_names):
         ref_parts = ref_name.split('-')
@@ -390,12 +398,20 @@ This script contains a complete list of the reference accession numbers.
             seed_name += 'a'
 
         coordinate_seq = source_nuc_sequences[genotype]
+        ref_positions = genotype_ref_positions[genotype]
         nuc_seq_ref_trimmed = extract_region(landmark_reader,
                                              seed_name,
                                              coordinate_seq,
-                                             ref_name)
-        source_sequences[ref_name], length_error = check_length_and_translate(ref_name, nuc_seq_ref_trimmed)
+                                             ref_name,
+                                             ref_positions)
+        source_sequences[ref_name], length_error = check_length_and_translate(
+            ref_name,
+            nuc_seq_ref_trimmed)
         length_errors += length_error
+
+    # for genotype, ref_positions in genotype_ref_positions.items():
+    #     seed_sequence = source_nuc_sequences[genotype]
+    #     report_missing_positions(ref_positions, seed_sequence, genotype)
 
     report, error_count = compare_config(ref_names,
                                          project_config,
@@ -542,7 +558,7 @@ cover any sections that weren't included elsewhere.
             length_errors += length_error
         print(ref_name, len(source_sequences[ref_name]))
 
-    report_missing_positions(ref_positions, seed_sequence)
+    report_missing_positions(ref_positions, seed_sequence, 'SARS-COV-2')
     report, error_count = compare_config(ref_names,
                                          project_config,
                                          source_sequences)
@@ -583,17 +599,28 @@ def check_scoring_config(scoring_config: ProjectConfig,
     return error_count
 
 
-def report_missing_positions(ref_positions: typing.Set[int], seed_sequence: str):
+def report_missing_positions(ref_positions: typing.Set[int],
+                             seed_sequence: str,
+                             genome_name: str):
     """ Print positions that were not covered by reported regions.
 
     :param ref_positions: all 1-based positions that were covered
     :param seed_sequence: reference sequence to show how long it is.
+    :param genome_name: label for displaying errors
     """
     all_positions = set(range(1, len(seed_sequence) + 1))
-    missing_positions = sorted(all_positions - ref_positions)
-    if missing_positions:
-        print('Missing positions from genome:')
-    for offset, items in groupby(enumerate(missing_positions),
+    print_positions(f'Missing positions from {genome_name} genome:',
+                    sorted(all_positions - ref_positions))
+
+    print_positions(f'Extra positions from {genome_name} genome:',
+                    sorted(ref_positions - all_positions))
+
+
+def print_positions(label, positions):
+    if not positions:
+        return
+    print(label)
+    for offset, items in groupby(enumerate(positions),
                                  lambda item: item[1] - item[0]):
         positions = [x for i, x in items]
         if len(positions) == 1:
