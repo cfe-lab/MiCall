@@ -995,11 +995,11 @@ HIV1-B-FR-K03455-seed,15,0,9,1,CAGAAAAATTGTGGGTCACAGTCTATTATGAAAAAAAAAGGGTACCTGT
     # the insertion is between nucleotide 6344 and 6345
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,,15,MAX,6316,,CAGAAAAATTGTGGGTCACAGTCTATTATGAAAAAAAAAGGGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
-HIV1-B-FR-K03455-seed,,15,0.100,6316,,CAGAAAAATTGTGGGTCACAGTCTATTATGAAAAAAAAAGGGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA"""
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,6316,CAGAAAAATTGTGGGTCACAGTCTATTATGAAAAAAAAAGGGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,6316,CAGAAAAATTGTGGGTCACAGTCTATTATGAAAAAAAAAGGGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA"""
 
     report_file = StringIO()
-    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.write_consensus_stitched_header(report_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
@@ -1023,11 +1023,11 @@ HIV1-B-FR-K03455-seed,15,0,9,1,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGA
     # the insertion is between nucleotide 48 and 49
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,,15,MAX,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
-HIV1-B-FR-K03455-seed,,15,0.100,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,2,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,2,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
 
     report_file = StringIO()
-    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.write_consensus_stitched_header(report_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
@@ -1053,11 +1053,11 @@ HIV1-B-FR-K03455-seed,15,0,9,1,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGA
     # the insertions are between nucleotide 48 and 49
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,,15,MAX,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
-HIV1-B-FR-K03455-seed,,15,0.100,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAARRRAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,2,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,2,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAARRRAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
 
     report_file = StringIO()
-    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.write_consensus_stitched_header(report_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
@@ -1085,11 +1085,11 @@ HIV1-B-FR-K03455-seed,15,0,10,1,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTG
     # In the 0.1 mixture sequence, both insertions will show up as lower case.
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,,15,MAX,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
-HIV1-B-FR-K03455-seed,,15,0.100,2,,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGaaaaaaaaaGATCTACCACACACAAGGCTAaaaCTTCCCTGATTAGCAGAACTACACACCAGG"""
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,2,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,2,GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGaaaaaaaaaGATCTACCACACACAAGGCTAaaaCTTCCCTGATTAGCAGAACTACACACCAGG"""
 
     report_file = StringIO()
-    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.write_consensus_stitched_header(report_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
@@ -1114,8 +1114,8 @@ HIV1-B-FR-K03455-seed,15,0,9,1,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATG
     # the insertion is between nucleotide 6284 and 6285
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,,15,MAX,6226,,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA
-HIV1-B-FR-K03455-seed,,15,0.100,6226,,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA"""
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,6226,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,6226,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA"""
 
     expected_log = [('micall.core.aln2counts', 10, 'Disagreement or shift in insertions between regions'),
                     ('micall.core.aln2counts', 10,
@@ -1123,7 +1123,7 @@ HIV1-B-FR-K03455-seed,,15,0.100,6226,,TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGT
                     ('micall.core.aln2counts', 10, "Counts in region: Counter({'CAAAAAAAA': 9})")]
 
     report_file = StringIO()
-    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.write_consensus_stitched_header(report_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
