@@ -556,16 +556,16 @@ SARS-CoV-2-seed,15,0,9,0,GCACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACAC
 
     #                                       A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
     expected_text = """\
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,1,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,4,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,7,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,10,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,13,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,16,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,18,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,21,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,24,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,1,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,4,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,7,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,10,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,13,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,16,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,18,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,21,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,24,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
 
     report_file = StringIO()
     default_sequence_report.write_amino_header(report_file)
@@ -574,7 +574,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,27,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 39
+    expected_size = 45
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -597,16 +597,16 @@ SARS-CoV-2-seed,15,0,9,10,GCACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTA
 
     #                                        A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
     expected_text = """\
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,11,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,14,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,17,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,20,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,23,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,26,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,28,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,31,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,34,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,11,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,14,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,17,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,20,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,23,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,26,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,28,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,31,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,34,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
     report_file = StringIO()
     default_sequence_report.write_amino_header(report_file)
     default_sequence_report.read(aligned_reads)
@@ -614,7 +614,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,37,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 37
+    expected_size = 43
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -637,16 +637,16 @@ SARS-CoV-2-seed,15,0,9,11,GCACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTA
 
     #                                        A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
     expected_text = """\
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,12,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,15,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,18,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,21,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,24,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,27,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,29,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,32,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,35,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,12,4396,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,15,4397,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,18,4398,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,21,4399,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,24,4400,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,27,4401,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,29,4402,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,32,4403,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,35,4404,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
     report_file = StringIO()
     default_sequence_report.write_amino_header(report_file)
     default_sequence_report.read(aligned_reads)
@@ -654,7 +654,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,38,4405,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 37
+    expected_size = 43
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -678,17 +678,17 @@ SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
 
     #                                        A,C,G,T,N,...,coverage
     expected_section = """\
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,21,13198,0,0,0,9,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,22,13199,0,0,0,9,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,23,13200,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,24,13201,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,25,13202,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,26,13203,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,27,13204,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,28,13205,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,29,13206,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,30,13207,0,0,0,9,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,31,13208,0,0,0,9,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,21,13198,0,0,0,9,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,22,13199,0,0,0,9,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,23,13200,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,24,13201,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,25,13202,9,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,26,13203,0,9,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,27,13204,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,28,13205,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,29,13206,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,30,13207,0,0,0,9,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,31,13208,0,0,0,9,0,0,0,0,0,9"""
 
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
@@ -697,13 +697,53 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,31,13208,0,0,0,9,0,0,0,0,0,9"""
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 115
+    expected_size = 131
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
     key_lines = report_lines[11:22]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_section
+
+
+# noinspection DuplicatedCode
+def test_nsp11_duplicated_sars_base(default_sequence_report):
+    """ Make sure that the duplicated position is NOT duplicated in nsp11"""
+
+    # refname,qcut,rank,count,offset,seq
+    aligned_reads = prepare_reads("""\
+SARS-CoV-2-seed,15,0,9,0,GCACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACAC
+""")
+    # Repeat is here:                     ^
+    # Expected amino sequence: AQSFLNGFAV
+
+    #                                   A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
+    expected_text = """\
+SARS-CoV-2-seed,SARS-CoV-2-nsp11,15,1,4,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp11,15,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp11,15,7,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp11,15,10,7,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp11,15,13,8,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp11,15,16,9,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp11,15,19,10,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp11,15,22,11,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp11,15,25,12,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-nsp11,15,28,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,9"""
+
+    report_file = StringIO()
+    default_sequence_report.write_amino_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_amino_counts()
+
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 45
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+
+    key_lines = report_lines[18:28]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
 
 
 # noinspection DuplicatedCode
@@ -714,13 +754,13 @@ def test_duplicated_sars_base_last_region_nuc(default_sequence_report):
     aligned_reads = prepare_reads("""\
 SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
 """)
-    #                                    ^ Duplicated base
+    #                                ^ Duplicated base
 
     #                                        A,C,G,T,N,...,coverage
     expected_section = """\
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,34,13211,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,35,13212,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,36,13213,0,0,9,0,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,34,13211,0,9,0,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,35,13212,0,0,9,0,0,0,0,0,0,9
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,36,13213,0,0,9,0,0,0,0,0,0,9"""
 
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
@@ -729,7 +769,7 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF1a,15,36,13213,0,0,9,0,0,0,0,0,0,9"""
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 115
+    expected_size = 131
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -747,7 +787,7 @@ def test_duplicated_sars_base_last_contig_nuc(default_sequence_report):
     aligned_reads = prepare_reads("""\
 SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
 """)
-    #                                    ^ Duplicated base
+    #                                ^ Duplicated base
 
     #                                        A,C,G,T,N,...,coverage
     expected_section = """\
@@ -763,15 +803,16 @@ SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,61,62,0,0,9,0,0,0,0,0,0,9"""
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 115
+    expected_size = 131
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[111:115]
+    key_lines = report_lines[127:131]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_section
 
 
+# noinspection DuplicatedCode
 def test_skipped_nucleotide_amino(default_sequence_report):
     """ Ensure that the aminos are aligned and output correctly for the skipped nucleotide in HXB2"""
 
@@ -805,7 +846,9 @@ HIV1-B-FR-K03455-seed,HIV1B-vpr,15,33,75,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     key_report = '\n'.join(key_lines)
     assert key_report == expected_section
 
-def test_NO_skipped_nucleotide_amino(default_sequence_report):
+
+# noinspection DuplicatedCode
+def test_no_skipped_nucleotide_amino(default_sequence_report):
     """ Ensure that the aminos are aligned and output correctly if there is no skipped nucleotide in HXB2"""
 
     # refname,qcut,rank,count,offset,seq
@@ -838,6 +881,7 @@ HIV1-B-FR-K03455-seed,HIV1B-vpr,15,32,75,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     assert key_report == expected_section
 
 
+# noinspection DuplicatedCode
 def test_skipped_nucleotide_nuc(default_sequence_report):
     """ Ensure that the nucleotides are output correctly for the skipped nucleotide in HXB2"""
 
@@ -875,7 +919,8 @@ HIV1-B-FR-K03455-seed,HIV1B-vpr,15,31,222,0,0,0,9,0,0,0,0,0,9"""
     assert key_report == expected_section
 
 
-def test_NO_skipped_nucleotide_nuc(default_sequence_report):
+# noinspection DuplicatedCode
+def test_no_skipped_nucleotide_nuc(default_sequence_report):
     """ Ensure that the nucleotides are output correctly if the skipped nucleotide in HXB2 is not present"""
 
     # refname,qcut,rank,count,offset,seq
@@ -922,11 +967,11 @@ HIV1-B-FR-K03455-seed,15,0,9,1,AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCCGAACAG
 """)
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,,15,MAX,601,,AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCCGAACAGGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG
-HIV1-B-FR-K03455-seed,,15,0.100,601,,AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCCGAACAGGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG"""
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,601,AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCCGAACAGGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,601,AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCCGAACAGGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG"""
 
     report_file = StringIO()
-    default_sequence_report.write_consensus_all_header(report_file)
+    default_sequence_report.write_consensus_stitched_header(report_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()

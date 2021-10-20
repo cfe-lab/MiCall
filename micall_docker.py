@@ -1150,6 +1150,7 @@ def collate_samples(run_info: RunInfo):
                  'coord_ins.csv',
                  'conseq.csv',
                  'conseq_all.csv',
+                 'conseq_stitched.csv',
                  'conseq_region.csv',
                  'failed_align.csv',
                  'coverage_scores.csv',

@@ -211,6 +211,7 @@ class Sample:
                 open(self.coverage_summary_csv, 'w') as coverage_summary_csv, \
                 open(self.genome_coverage_csv, 'w') as genome_coverage_csv, \
                 open(self.conseq_all_csv, "w") as conseq_all_csv, \
+                open(self.conseq_stitched_csv, "w") as conseq_stitched_csv, \
                 open(self.minimap_hits_csv, "w") as minimap_hits_csv:
 
             if not use_denovo:
@@ -235,6 +236,7 @@ class Sample:
                        genome_coverage_csv=genome_coverage_csv,
                        contigs_csv=contigs_csv,
                        conseq_all_csv=conseq_all_csv,
+                       conseq_stitched_csv=conseq_stitched_csv,
                        minimap_hits_csv=minimap_hits_csv)
 
         logger.info('Running coverage_plots on %s.', self)
