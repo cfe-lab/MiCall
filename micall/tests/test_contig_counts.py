@@ -180,14 +180,14 @@ refname,qcut,rank,count,offset,seq
 
 def test_display():
     counts = ContigCounts(start=100, end=102)
-    counts.counts = {'1-HIV1-B-FR-K03455-seed': {100: {'C': 5},
-                                                 101: {'C': 3, 'G': 2},
-                                                 102: {'T': 5}}}
+    counts.counts = {'1-HIV1-B-FR-K03455-seed': {100: {'C': 5000},
+                                                 101: {'C': 2000, 'G': 3000},
+                                                 103: {'T': 5000, 'A': 1}}}
     expected_display = """\
 1-HIV1-B-FR-K03455-seed:
 100: C (1.00)
-101: C (0.60), G (0.40)
-102: T (1.00)
+101: G (0.60), C (0.40)
+103: T (1.00)
 """
 
     display = counts.display()

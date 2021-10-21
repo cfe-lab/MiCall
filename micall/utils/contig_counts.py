@@ -103,13 +103,15 @@ class ContigCounts:
         for contig_name, contig_counts in self.counts.items():
             print(contig_name + ':', file=report)
             for position, position_counts in sorted(contig_counts.items()):
+                position_counts = Counter(position_counts)
                 report.write(f'{position}: ')
                 coverage = sum(position_counts.values())
-                for i, (nuc, nuc_count) in enumerate(sorted(position_counts.items())):
-                    if i != 0:
-                        report.write(', ')
-                    report.write(f'{nuc} ({nuc_count/coverage:0.2f})')
-                print(file=report)
+                position_display = []
+                for nuc, nuc_count in position_counts.most_common():
+                    prevalence = f'{nuc_count/coverage:0.2f}'
+                    if prevalence != '0.00':
+                        position_display.append(f'{nuc} ({prevalence})')
+                print(*position_display, sep=', ', file=report)
         return report.getvalue()
 
 
