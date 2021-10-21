@@ -92,8 +92,8 @@ class ContigCounts:
                     if len(sequence) <= nuc_index:
                         continue
                     nuc = sequence[nuc_index]
-                    if nuc == 'n':
-                        # Middle of read pair, don't count it.
+                    if nuc in 'nN':
+                        # Middle of read pair or low quality, don't count it.
                         continue
                     ref_pos = contig_positions[contig_pos]
                     contig_counts[ref_pos][nuc] += count
