@@ -195,7 +195,7 @@ refname,qcut,rank,count,offset,seq
 
 
 def test_display():
-    counts = ContigCounts(start=100, end=102)
+    counts = ContigCounts(start=100, end=103)
     counts.counts = {'1-HIV1-B-FR-K03455-seed': {100: {'C': 5000},
                                                  101: {'C': 2000, 'G': 3000},
                                                  103: {'T': 5000, 'A': 1}}}
@@ -204,6 +204,30 @@ def test_display():
 100: C (1.00)
 101: G (0.60), C (0.40)
 103: T (1.00)
+"""
+
+    display = counts.display()
+
+    assert display == expected_display
+
+
+def test_combined_display():
+    counts = ContigCounts(start=100, end=103)
+    counts.counts = {'2-HIV1-B-FR-K03455-seed': {101: {'G': 1},
+                                                 102: {'T': 5}},
+                     '1-HIV1-B-FR-K03455-seed': {100: {'C': 5},
+                                                 101: {'C': 2, 'G': 2}}}
+    expected_display = """\
+1-HIV1-B-FR-K03455-seed:
+100: C (1.00)
+101: C (0.50), G (0.50)
+2-HIV1-B-FR-K03455-seed:
+101: G (1.00)
+102: T (1.00)
+Combined:
+100: C (1.00)
+101: G (0.60), C (0.40)
+102: T (1.00)
 """
 
     display = counts.display()

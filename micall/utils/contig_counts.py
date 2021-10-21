@@ -100,7 +100,16 @@ class ContigCounts:
 
     def display(self) -> str:
         report = StringIO()
-        for contig_name, contig_counts in self.counts.items():
+        contig_groups = sorted(self.counts.items())
+        combined = defaultdict(Counter)
+        for contig_name, contig_counts in contig_groups:
+            for position, position_counts in list(contig_counts.items()):
+                position_counts = Counter(position_counts)
+                contig_counts[position] = position_counts
+                combined[position] += position_counts
+        if 1 < len(contig_groups):
+            contig_groups.append(('Combined', combined))
+        for contig_name, contig_counts in contig_groups:
             print(contig_name + ':', file=report)
             for position, position_counts in sorted(contig_counts.items()):
                 position_counts = Counter(position_counts)
