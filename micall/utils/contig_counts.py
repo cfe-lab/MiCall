@@ -95,8 +95,9 @@ class ContigCounts:
                     if nuc in 'nN':
                         # Middle of read pair or low quality, don't count it.
                         continue
-                    ref_pos = contig_positions[contig_pos]
-                    contig_counts[ref_pos][nuc] += count
+                    ref_pos = contig_positions.get(contig_pos)
+                    if ref_pos is not None:
+                        contig_counts[ref_pos][nuc] += count
 
     def display(self) -> str:
         report = StringIO()

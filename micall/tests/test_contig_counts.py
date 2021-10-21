@@ -109,6 +109,24 @@ refname,qcut,rank,count,offset,seq
     assert counts.counts == expected_counts
 
 
+def test_read_aligned_insertion():
+    aligned_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq
+1-HIV1-B-FR-K03455-seed,15,0,1,0,ACGTC
+""")
+    counts = ContigCounts(start=100, end=102)
+    counts.reference_prefix = 'HCV'
+    counts.position_map = {'1-HIV1-B-FR-K03455-seed': {2: 100, 3: 101, 5: 102}}
+    expected_counts = {'1-HIV1-B-FR-K03455-seed': {100: {'C': 1},
+                                                   101: {'G': 1},
+                                                   102: {'C': 1}}}
+
+    counts.read_aligned(aligned_csv)
+
+    assert counts.counts == expected_counts
+
+
+# noinspection DuplicatedCode
 def test_read_aligned_skip_middle():
     aligned_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq
@@ -125,6 +143,7 @@ refname,qcut,rank,count,offset,seq
     assert counts.counts == expected_counts
 
 
+# noinspection DuplicatedCode
 def test_read_aligned_skip_low_quality():
     aligned_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq
