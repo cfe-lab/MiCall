@@ -692,7 +692,7 @@ HCV-1a,HCV1A-H77-NS5b,15,2105,923,0,0,0,10000,0,0,0,0,0,10000
 HCV-1a,HCV1A-H77-NS5b,15,2106,924,0,10000,0,0,0,0,0,0,0,10000
 """)
     expected_nuc_mutations_csv = """\
-seed,region,wt,refseq_nuc_pos,var,prevalence
+seed,region,wt,refseq_nuc_pos,var,prevalence,ref_genome_pos
 """
     nuc_mutations_csv = StringIO()
 
@@ -703,14 +703,15 @@ seed,region,wt,refseq_nuc_pos,var,prevalence
 
 def test_write_nuc_mutation_complete():
     nuc_csv = StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,100,0,0,0,0,0,0,0,0,100
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,0,0,0,100,0,0,0,0,0,100
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,0,100,0,0,0,0,0,0,0,100
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,25393,100,0,0,0,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,25394,0,0,0,100,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,25395,0,100,0,0,0,0,0,0,0,100
 """)
     expected_nuc_mutations_csv = """\
-seed,region,wt,refseq_nuc_pos,var,prevalence
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,G,3,C,1.0
+seed,region,wt,refseq_nuc_pos,var,prevalence,ref_genome_pos
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,G,3,C,1.0,25395
 """
     nuc_mutations_csv = StringIO()
 
@@ -721,14 +722,15 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF3a,G,3,C,1.0
 
 def test_write_nuc_mutations_prevalence():
     nuc_csv = StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,100,0,0,0,0,0,0,0,0,100
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,0,0,5,95,0,0,0,0,0,100
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,0,4,96,0,0,0,0,0,0,100
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,25393,100,0,0,0,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,25394,0,0,5,95,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,25395,0,4,96,0,0,0,0,0,0,100
 """)
     expected_nuc_mutations_csv = """\
-seed,region,wt,refseq_nuc_pos,var,prevalence
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,G,0.05
+seed,region,wt,refseq_nuc_pos,var,prevalence,ref_genome_pos
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,G,0.05,25394
 """
     nuc_mutations_csv = StringIO()
 
@@ -739,15 +741,16 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,G,0.05
 
 def test_write_nuc_mutations_multiple():
     nuc_csv = StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,100,0,0,0,0,0,0,0,0,100
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,0,5,6,89,0,0,0,0,0,100
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,0,4,96,0,0,0,0,0,0,100
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,25393,100,0,0,0,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,25394,0,5,6,89,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,25395,0,4,96,0,0,0,0,0,0,100
 """)
     expected_nuc_mutations_csv = """\
-seed,region,wt,refseq_nuc_pos,var,prevalence
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,C,0.05
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,G,0.06
+seed,region,wt,refseq_nuc_pos,var,prevalence,ref_genome_pos
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,C,0.05,25394
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,G,0.06,25394
 """
     nuc_mutations_csv = StringIO()
 
@@ -758,13 +761,14 @@ SARS-CoV-2-seed,SARS-CoV-2-ORF3a,T,2,G,0.06
 
 def test_write_nuc_mutations_no_coverage():
     nuc_csv = StringIO("""\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,100,0,0,0,0,0,0,0,0,100
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,0,0,0,0,0,0,0,0,0,0
-SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,0,0,100,0,0,0,0,0,0,100
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25393,1,25393,100,0,0,0,0,0,0,0,0,100
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25394,2,25394,0,0,0,0,0,0,0,0,0,0
+SARS-CoV-2-seed,SARS-CoV-2-ORF3a,15,25395,3,25395,0,0,100,0,0,0,0,0,0,100
 """)
     expected_nuc_mutations_csv = """\
-seed,region,wt,refseq_nuc_pos,var,prevalence
+seed,region,wt,refseq_nuc_pos,var,prevalence,ref_genome_pos
 """
     nuc_mutations_csv = StringIO()
 
