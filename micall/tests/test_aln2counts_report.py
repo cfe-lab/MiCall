@@ -986,6 +986,27 @@ HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,601,AGACCCTTTTAGTCAGTGTGGA
     assert key_report == expected_section
 
 
+@pytest.mark.skip(reason="Is currently failing")
+def test_deleted_nucleotide(default_sequence_report):
+# this is the lost nucleotide:                                                                                                                                     *
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,10,1,ATTCATCTGTATTACTTTGACTGTTTTTCAGACTCTGCTATAAGAAAGGCCTTATTAGGACACATAGTTAGCCCTAGGTGTGAATATCAAGCAGGACATAACAAGGTAGGATCTCTACAATACTTGGCACTGCATGCATTAATAACACCAAAAAAGATAAAGCCACCTTTGCCTAGTGTTACGAAACTGACAGAGGATAGATGGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAG
+""")
+    expected_text = """\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,5359,ATTCATCTGTATTACTTTGACTGTTTTTCAGACTCTGCTATAAGAAAGGCCTTATTAGGACACATAGTTAGCCCTAGGTGTGAATATCAAGCAGGACATAACAAGGTAGGATCTCTACAATACTTGGCACTGCATGCATTAATAACACCAAAAAAGATAAAGCCACCTTTGCCTAGTGTTACGAAACTGACAGAGGATAGATGGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAG
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,5359,ATTCATCTGTATTACTTTGACTGTTTTTCAGACTCTGCTATAAGAAAGGCCTTATTAGGACACATAGTTAGCCCTAGGTGTGAATATCAAGCAGGACATAACAAGGTAGGATCTCTACAATACTTGGCACTGCATGCATTAATAACACCAAAAAAGATAAAGCCACCTTTGCCTAGTGTTACGAAACTGACAGAGGATAGATGGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAG"""
+    report_file = StringIO()
+    default_sequence_report.write_consensus_stitched_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    key_lines = report_lines[1:]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
 def test_consensus_region_differences(caplog):
     """ Test that the consensus is stitched together correctly, even if there are differences between the regions """
     nucleotide1 = SeedNucleotide()

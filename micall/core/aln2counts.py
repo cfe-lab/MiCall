@@ -1032,7 +1032,8 @@ class SequenceReport(object):
                     break
             else:
                 coordinate_name = None
-                logger.warning(f'No coordinate reference found for entry: {entry}')
+                if entry is not None and entry != '':
+                    logger.warning(f'No coordinate reference found for entry: {entry}')
                 continue
             sorted_regions: list = sorted(
                 self.combined_report_nucleotides[entry].items(),
