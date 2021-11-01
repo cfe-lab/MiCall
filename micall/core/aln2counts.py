@@ -270,6 +270,7 @@ class SequenceReport(object):
         # {seed_name: {pos: count}
         self.conseq_insertion_counts = (conseq_insertion_counts or
                                         defaultdict(Counter))
+        self.conseq_insertion_nucs = defaultdict(lambda: defaultdict(Counter))
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
         self.amino_writer = self.amino_detail_writer = None
         self.genome_coverage_writer = self.minimap_hits_writer = None
@@ -536,15 +537,22 @@ class SequenceReport(object):
 
         # {ref: {pos: set([qname])}}
         insertion_names = defaultdict(lambda: defaultdict(set))
+        insertion_nucs = defaultdict(lambda: defaultdict(Counter))
 
         for row in reader:
             ref_name = row['refname']
             pos = int(row['pos'])
+            pos_insertions = insertion_nucs[ref_name][pos]
             pos_names = insertion_names[ref_name][pos]
+            if row['qname'] not in pos_names:
+                pos_insertions.update([row['insert']])
             pos_names.add(row['qname'])
         for ref_name, ref_positions in insertion_names.items():
             self.conseq_insertion_counts[ref_name] = Counter(
                 {pos: len(names) for pos, names in ref_positions.items()})
+        for ref_name in insertion_nucs.keys():
+            for ref_position in insertion_nucs[ref_name].keys():
+                self.conseq_insertion_nucs[ref_name][ref_position] = insertion_nucs[ref_name][ref_position]
 
     @staticmethod
     def _create_amino_writer(amino_file):
