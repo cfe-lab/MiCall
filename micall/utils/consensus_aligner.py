@@ -381,8 +381,13 @@ class ConsensusAligner:
                 can_align = (MINIMUM_AMINO_ALIGNMENT <= min(
                     prev_alignment.amino_size,
                     next_alignment.amino_size))
-                if can_align and (size % 3 != 0 or MAXIMUM_AMINO_GAP < size//3):
-                    # Keep dividing around this indel.
+                has_frame_shift = (prev_alignment.reading_frame !=
+                                   next_alignment.reading_frame)
+                has_big_gap = MAXIMUM_AMINO_GAP < size // 3
+                if can_align and (has_frame_shift or has_big_gap):
+                    # Both neighbours are big enough, so we have a choice.
+                    # Either there's a frame shift or a big gap, so keep
+                    # dividing around this indel.
                     continue
                 # Merge the two sections on either side of this indel.
                 amino_sections.pop(i+1)
@@ -501,8 +506,8 @@ class ConsensusAligner:
                                    repeat_position,
                                    skip_position,
                                    amino_ref)
+        has_skipped_nucleotide = False
         if skip_position is not None:
-            has_skipped_nucleotide = False
             reading_frame1 = reading_frame2 = None
             for alignment in self.amino_alignments:
                 if alignment.ref_end == skip_position:
@@ -611,12 +616,14 @@ class ConsensusAligner:
                 if seed_amino.consensus_nuc_index is not None:
                     coordinate_inserts.remove(seed_amino.consensus_nuc_index)
                     prev_consensus_nuc_index = seed_amino.consensus_nuc_index
-                if skip_position is not None and coord_index == (skip_position-start_pos)//3 and amino_alignment.ref_end == skip_position:
+                if skip_position is not None and coord_index == (skip_position-start_pos)//3 and \
+                        amino_alignment.ref_end == skip_position:
+                    conseq_pos = coord2conseq[(skip_position - start_pos) // 3] + 1
                     if has_skipped_nucleotide:
-                        skipped_nuc = self.reading_frames[amino_alignment.reading_frame][coord2conseq[(skip_position-start_pos)//3]+1].nucleotides[0]
+                        skipped_nuc = self.reading_frames[amino_alignment.reading_frame][conseq_pos].nucleotides[0]
                     else:
                         skipped_nuc = SeedNucleotide()
-                        coverage = self.get_deletion_coverage(coord2conseq[(skip_position-start_pos)//3]+1)
+                        coverage = self.get_deletion_coverage(conseq_pos)
                         skipped_nuc.count_nucleotides('-', coverage)
                 else:
                     skipped_nuc = None
@@ -644,7 +651,7 @@ class ConsensusAligner:
                             start_pos: int,
                             repeat_position: int = None,
                             skip_position: int = None,
-                            skipped_nuc = None,):
+                            skipped_nuc=None):
         report_amino = report_aminos[coord_index]
         report_amino.seed_amino.add(seed_amino)
         ref_nuc_pos = coord_index * 3 + start_pos

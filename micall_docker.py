@@ -662,13 +662,13 @@ def process_run(run_info, args):
 
 def single_sample(args):
     resolved_args = MiCallArgs(args)
-    scratch_path = os.path.join(args.results_folder, "scratch")
+    scratch_path = os.path.join(resolved_args.results_folder, "scratch")
     makedirs(scratch_path)
 
     sample_groups = []
     run_info = RunInfo(sample_groups,
                        reports=['PR_RT', 'IN', 'NS3', 'NS5a', 'NS5b'],
-                       output_path=args.results_folder,
+                       output_path=resolved_args.results_folder,
                        scratch_path=scratch_path,
                        is_denovo=args.denovo)
     sample = Sample(fastq1=resolved_args.fastq1,

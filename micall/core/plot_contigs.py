@@ -131,6 +131,7 @@ class Arrow(Element):
 
 class ArrowGroup(Element):
     def __init__(self, arrows: typing.Sequence[Arrow], gap=3):
+        arrows = sorted(arrows, key=attrgetter('x', 'w'))
         self.arrows = []
         self.y_coordinates = []
         x_coordinates = []  # [(start, end, index)]

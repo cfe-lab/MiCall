@@ -764,6 +764,7 @@ class SequenceReport(object):
                                'q-cutoff',
                                'query.nuc.pos',
                                'refseq.nuc.pos',
+                               'genome.pos',
                                'A',
                                'C',
                                'G',
@@ -789,7 +790,8 @@ class SequenceReport(object):
                      region: str,
                      seed_nuc: SeedNucleotide,
                      report_nuc: ReportNucleotide,
-                     nuc_writer: DictWriter):
+                     nuc_writer: DictWriter,
+                     genome_start_pos = 1):
         """ Write rows of nucleotide counts for a single codon.
 
         :param seed: the seed reference name
@@ -797,6 +799,7 @@ class SequenceReport(object):
         :param seed_nuc: the SeedNucleotide object for this position
         :param report_nuc: the ReportNucleotide object for this position
         :param nuc_writer: the CSV writer to write the row into
+        :param genome_start_pos: one-based start position of region
         """
         if seed_nuc.consensus_index is None:
             query_pos_txt = ''
@@ -805,11 +808,15 @@ class SequenceReport(object):
         ref_pos = (str(report_nuc.position)
                    if report_nuc.position is not None
                    else '')
+        genome_pos = (str(report_nuc.position+genome_start_pos - 1)
+                      if report_nuc.position is not None
+                      else '')
         row = {'seed': seed,
                'region': region,
                'q-cutoff': self.qcut,
                'query.nuc.pos': query_pos_txt,
                'refseq.nuc.pos': ref_pos,
+               'genome.pos': genome_pos,
                'del': seed_nuc.counts['-'],
                'ins': seed_nuc.insertion_count,
                'clip': seed_nuc.clip_count,
@@ -902,14 +909,21 @@ class SequenceReport(object):
                          reports: typing.Dict[str, typing.List[ReportNucleotide]],
                          seed: str):
         self.merge_extra_counts()
+        landmark_reader = LandmarkReader(self.landmarks)
         report_nucleotides: typing.List[ReportNucleotide]
         for region, report_nucleotides in sorted(reports.items()):
+            try:
+                gene = landmark_reader.get_gene(self.seed, region)
+                genome_start_pos = gene['start']
+            except ValueError:
+                genome_start_pos = 1
             for report_nucleotide in report_nucleotides:
                 self.write_counts(seed,
                                   region,
                                   report_nucleotide.seed_nucleotide,
                                   report_nucleotide,
-                                  nuc_writer)
+                                  nuc_writer,
+                                  genome_start_pos)
 
     @staticmethod
     def _create_consensus_writer(
@@ -1018,7 +1032,8 @@ class SequenceReport(object):
                     break
             else:
                 coordinate_name = None
-                logger.warning(f'No coordinate reference found for entry: {entry}')
+                if entry is not None and entry != '':
+                    logger.warning(f'No coordinate reference found for entry: {entry}')
                 continue
             sorted_regions: list = sorted(
                 self.combined_report_nucleotides[entry].items(),
