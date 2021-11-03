@@ -991,7 +991,11 @@ GGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG"""
     assert key_report == expected_section
 
 
+# noinspection DuplicatedCode
 def test_deleted_nucleotide(default_sequence_report):
+    """ Make sure that there is no lost nucleotide after a single amino acid that aligns
+    in a different frame"""
+
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,10,1,ATTCATCTGTATTACTTTGACTGTTTTTCAGACTCTGCTATAAGAA\
 AGGCCTTATTAGGACACATAGTTAGCCCTAGGTGTGAATATCAAGCAGGACATAACAAGGTAGGATCTCTACAATACT\
@@ -1010,6 +1014,42 @@ ATTCATCTGTATTACTTTGACTGTTTTTCAGACTCTGCTATAAGAA\
 AGGCCTTATTAGGACACATAGTTAGCCCTAGGTGTGAATATCAAGCAGGACATAACAAGGTAGGATCTCTACAATACT\
 TGGCACTGCATGCATTAATAACACCAAAAAAGATAAAGCCACCTTTGCCTAGTGTTACGAAACTGACAGAGGATAGAT\
 GGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAG"""
+    report_file = StringIO()
+    default_sequence_report.write_consensus_stitched_header(report_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    key_lines = report_lines[1:]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
+# noinspection DuplicatedCode
+def test_deleted_nucleotide_vpr(default_sequence_report):
+    """ Make sure that there is no lost nucleotide after a single amino acid that aligns
+    in a different frame, specifically if this happens before the skip position in vpr"""
+
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,10,1,\
+ATGGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAGAGCTTTTAGAGGAGCTT\
+AAGAATGAAGCTGTTAGACATTTTCCTAGGATTTGGCTCCATGGCTTAGGGCAACATATCTATGAAACTTATGGGGAT\
+ACTTGGGCAGGAGTGGAAGCCATAATAAGAATTCTGCAACAACTGCTGTTTATTCATTTCAGAATTGGGTGTCGACAT\
+AGCAGAATAGGCGTTACTCGACAGAGGAGAGCAAGAAATGGAGCCAGTAGATCCTAG
+""")
+    #  ^ lost nucleotide is C towards the end of the 3rd line, in TTTCAGAA
+    expected_text = """\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,5559,\
+ATGGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAGAGCTTTTAGAGGAGCTT\
+AAGAATGAAGCTGTTAGACATTTTCCTAGGATTTGGCTCCATGGCTTAGGGCAACATATCTATGAAACTTATGGGGAT\
+ACTTGGGCAGGAGTGGAAGCCATAATAAGAATTCTGCAACAACTGCTGTTTATTCATTTCAGAATTGGGTGTCGACAT\
+AGCAGAATAGGCGTTACTCGACAGAGGAGAGCAAGAAATGGAGCCAGTAGATCCTAG
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,5559,\
+ATGGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAGAGCTTTTAGAGGAGCTT\
+AAGAATGAAGCTGTTAGACATTTTCCTAGGATTTGGCTCCATGGCTTAGGGCAACATATCTATGAAACTTATGGGGAT\
+ACTTGGGCAGGAGTGGAAGCCATAATAAGAATTCTGCAACAACTGCTGTTTATTCATTTCAGAATTGGGTGTCGACAT\
+AGCAGAATAGGCGTTACTCGACAGAGGAGAGCAAGAAATGGAGCCAGTAGATCCTAG"""
     report_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
     default_sequence_report.read(aligned_reads)

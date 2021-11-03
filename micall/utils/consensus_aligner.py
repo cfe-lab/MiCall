@@ -343,25 +343,42 @@ class ConsensusAligner:
                     amino_alignment.query_end -= end_shift
                     amino_sections.append(amino_alignment)
                 query_progress = query_end
-            if repeat_pos is not None or skip_pos is not None:
+            if repeat_pos is not None:
                 for i, amino_alignment in enumerate(amino_sections):
                     if amino_alignment.action != CigarActions.MATCH:
                         continue
                     ref_start = amino_alignment.ref_start
                     ref_end = amino_alignment.ref_end
-                    notable_pos = repeat_pos if repeat_pos is not None else skip_pos
-                    if ref_start < notable_pos-1 < ref_end:
-                        offset = notable_pos - ref_start
+                    if ref_start < repeat_pos-1 < ref_end:
+                        offset = repeat_pos - ref_start
                         query_start = amino_alignment.query_start
                         amino_alignment2 = replace(
                             amino_alignment,
-                            ref_start=notable_pos,
+                            ref_start=repeat_pos,
+                            ref_end=ref_end + 1,
                             query_start=query_start + offset-1,
                             reading_frame=(amino_alignment.reading_frame+1) % 3)
-                        if repeat_pos is not None:
-                            amino_alignment2.ref_end = ref_end+1
-                        amino_alignment.ref_end = notable_pos
+                        amino_alignment.ref_end = repeat_pos
                         amino_alignment.query_end = query_start + offset
+                        amino_sections.insert(i+1, amino_alignment2)
+                        break
+            if skip_pos is not None:
+                for i, amino_alignment in enumerate(amino_sections):
+                    if amino_alignment.action != CigarActions.MATCH:
+                        continue
+                    ref_start = amino_alignment.ref_start
+                    ref_end = amino_alignment.ref_end
+                    if ref_start < skip_pos-1 < ref_end:
+                        offset = skip_pos - ref_start
+                        query_start = amino_alignment.query_start
+                        amino_alignment2 = replace(
+                            amino_alignment,
+                            ref_start=skip_pos,
+                            query_start=query_start + offset,
+                            query_end=query_end+1,
+                            reading_frame=(amino_alignment.reading_frame+1) % 3)
+                        amino_alignment.ref_end = skip_pos
+                        amino_alignment.query_end = query_start + offset + 1
                         amino_sections.insert(i+1, amino_alignment2)
                         break
             for amino_alignment in amino_sections:
