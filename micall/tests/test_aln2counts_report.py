@@ -1027,7 +1027,6 @@ GGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAG"""
 
 
 # noinspection DuplicatedCode
-@pytest.mark.skip(reason="Is currently failing")
 def test_deleted_nucleotide_vpr(default_sequence_report):
     """ Make sure that there is no lost nucleotide after a single amino acid that aligns
     in a different frame, specifically if this happens before the skip position in vpr"""
