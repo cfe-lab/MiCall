@@ -821,14 +821,14 @@ def test_skipped_nucleotide_amino(default_sequence_report):
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTTCAGAATTGGGTGTCGACATAGCAGAA
 """)
-    # skipped pos is here:                             ^
+    # skipped pos is here:                          ^
     # expected amino sequence: QQLLFIHFRIGCRHSR
     #                                    A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
     expected_section = """\
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,14,69,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,17,70,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,20,71,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,72,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,24,72,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,27,73,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,30,74,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,33,75,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9"""
@@ -854,7 +854,7 @@ def test_no_skipped_nucleotide_amino(default_sequence_report):
 
     # refname,qcut,rank,count,offset,seq
     aligned_reads = prepare_reads("""\
-HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTTAGAATTGGGTGTCGACATAGCAGAA
+HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTCAGAATTGGGTGTCGACATAGCAGAA
 """)
     # expected amino sequence: QQLLFIHFRIGCRHSR
     #                                    A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,...,coverage
@@ -890,8 +890,8 @@ def test_skipped_nucleotide_nuc(default_sequence_report):
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTTCAGAATTGGGTGTCGACATAGCAGAA
 """)
-    # skipped pos is here:                             ^
-    # skipped pos is 5774 in the genome, and 24 within this read
+    # skipped pos is here:                          ^
+    # skipped pos is 5772 in the genome, and 21 within this read
 
     expected_section = """\
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,21,212,5770,9,0,0,0,0,0,0,0,0,9
@@ -926,17 +926,17 @@ def test_no_skipped_nucleotide_nuc(default_sequence_report):
 
     # refname,qcut,rank,count,offset,seq
     aligned_reads = prepare_reads("""\
-HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTTAGAATTGGGTGTCGACATAGCAGAA
+HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTCAGAATTGGGTGTCGACATAGCAGAA
 """)
-    # skipped pos is 5774 in the genome, and 24 within this read
+    # skipped pos is 5772 in the genome
 
     expected_section = """\
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,21,212,5770,9,0,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,22,213,5771,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,214,5772,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,24,215,5773,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,25,216,5774,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,,217,5775,0,0,0,0,0,9,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,,214,5772,0,0,0,0,0,9,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,215,5773,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,24,216,5774,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,25,217,5775,0,9,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,26,218,5776,9,0,0,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,27,219,5777,0,0,9,0,0,0,0,0,0,9
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,28,220,5778,9,0,0,0,0,0,0,0,0,9
