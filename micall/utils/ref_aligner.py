@@ -127,7 +127,7 @@ class SeedAlignment(AlignmentEvaluator):
                  project='HIV',
                  aligner_preset='asm10',
                  verbose=0,
-                 seed_group = None):
+                 seed_group=None):
         AlignmentEvaluator.__init__(self, ref_name, aligner_preset, project, verbose, seed_group)
         self.seed_name = seed_name
         self.seed_ref = self.projects.getReference(seed_name)

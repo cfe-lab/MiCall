@@ -69,3 +69,21 @@ class LandmarkReader:
             if re.fullmatch(seed_pattern, seed_name):
                 return genotype_landmarks['coordinates']
         raise ValueError(f'No landmarks match {seed_name!r}.')
+
+    def get_region(self, ref_name, position):
+        match_regions = []
+        matches = [entry
+                   for entry in self.landmarks
+                   if entry['coordinates'] == ref_name]
+        if not matches:
+            raise ValueError(f'Coordinates unknown: {ref_name!r}')
+        genotype_landmarks, = matches
+        regions = sorted(genotype_landmarks['landmarks'], key=itemgetter('start'))
+        for region in regions:
+            if region['start'] <= position <= region['end']:
+                full_name = region.get('full_name')
+                if full_name is not None:
+                    match_regions.append(full_name)
+                else:
+                    match_regions.append(region['name'])
+        return match_regions
