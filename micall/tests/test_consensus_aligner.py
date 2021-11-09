@@ -355,8 +355,8 @@ def test_start_contig_close_frame_changes(projects):
                           amino_ref=amino_ref)
 
     assert_consensus_nuc_indexes(report_aminos,
-                                 list(range(801, 900)) +
-                                 list(range(903, 1001)),
+                                 list(range(801, 904)) +
+                                 list(range(907, 1001)),
                                  790,
                                  2292)
 

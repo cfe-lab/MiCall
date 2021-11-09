@@ -470,7 +470,8 @@ def write_nuc_mutations(nuc_csv: typing.TextIO,
                                    'wt',
                                    'refseq_nuc_pos',
                                    'var',
-                                   'prevalence'],
+                                   'prevalence',
+                                   'ref_genome_pos'],
                                   lineterminator=os.linesep)
     mutations_writer.writeheader()
     for seed, seed_rows in groupby(nuc_rows, itemgetter('seed')):
@@ -499,7 +500,8 @@ def write_nuc_mutations(nuc_csv: typing.TextIO,
                                                        wt=wild_type,
                                                        refseq_nuc_pos=nuc_pos,
                                                        var=nuc,
-                                                       prevalence=prevalence))
+                                                       prevalence=prevalence,
+                                                       ref_genome_pos=row['genome.pos']))
 
 
 def create_consensus_writer(resistance_consensus_csv):

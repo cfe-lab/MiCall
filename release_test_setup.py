@@ -16,7 +16,7 @@ from itertools import groupby
 from operator import attrgetter
 import os
 from pathlib import Path
-from shutil import copy, rmtree
+from shutil import copy, rmtree, copytree
 
 from micall.utils.sample_sheet_parser import sample_sheet_parser
 
@@ -48,6 +48,11 @@ def parse_args():
         '--pipeline_version',
         default='0-dev',
         help='version suffix for folder names')
+    parser.add_argument(
+        '-n',
+        '--no_links',
+        action='store_true',
+        help='Copy data files instead of using symlinks.')
     return parser.parse_args()
 
 
@@ -133,6 +138,8 @@ class Sample(object):
                     if os.path.exists(suspended_fastq_path):
                         os.rename(suspended_fastq_path,
                                   target_path)
+                    elif self.config.no_links:
+                        copy(fastq_path, target_path)
                     else:
                         os.symlink(fastq_path, target_path)
         return sample_paths
@@ -158,8 +165,12 @@ class Sample(object):
                                            'Intensities',
                                            'BaseCalls')
             os.makedirs(base_calls_path)
-            os.symlink(os.path.join(self.run_name, 'InterOp'),
-                       os.path.join(target_run_path, 'InterOp'))
+            interop_source = os.path.join(self.run_name, 'InterOp')
+            interop_target = os.path.join(target_run_path, 'InterOp')
+            if self.config.no_links:
+                copytree(interop_source, interop_target)
+            else:
+                os.symlink(interop_source, interop_target)
             for filename in ('RunInfo.xml',
                              'SampleSheet.csv',
                              'needsprocessing'):

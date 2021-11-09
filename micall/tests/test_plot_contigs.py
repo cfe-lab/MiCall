@@ -1090,6 +1090,24 @@ def test_arrow_group(svg_differ):
 
 
 # noinspection DuplicatedCode
+def test_arrow_group_unordered(svg_differ):
+    expected_figure = Figure()
+    expected_figure.add(Track(1, 500, label='Header'))
+    h = 30
+    expected_figure.add(Arrow(1, 200, label='X', h=h), gap=-h)
+    expected_figure.add(Arrow(300, 500, label='Y', h=h))
+    expected_svg = expected_figure.show()
+
+    f = Figure()
+    f.add(Track(1, 500, label='Header'))
+    f.add(ArrowGroup([Arrow(300, 500, label='Y', h=h),
+                      Arrow(1, 200, label='X', h=h)]))
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+
+
+# noinspection DuplicatedCode
 def test_arrow_group_overlap(svg_differ):
     expected_figure = Figure()
     expected_figure.add(Track(1, 500, label='Header'))
