@@ -204,6 +204,7 @@ class Sample:
                 open(self.amino_csv, 'w') as amino_csv, \
                 open(self.amino_detail_csv, 'w') as amino_detail_csv, \
                 open(self.coord_ins_csv, 'w') as coord_ins_csv, \
+                open(self.insertions_csv, 'w') as insertions_csv, \
                 open(self.conseq_csv, 'w') as conseq_csv, \
                 open(self.conseq_region_csv, 'w') as conseq_region_csv, \
                 open(self.failed_align_csv, 'w') as failed_align_csv, \
@@ -222,6 +223,7 @@ class Sample:
                        nuc_csv,
                        amino_csv,
                        coord_ins_csv,
+                       insertions_csv,
                        conseq_csv,
                        failed_align_csv,
                        coverage_summary_csv=coverage_summary_csv,
