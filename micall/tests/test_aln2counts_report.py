@@ -1092,7 +1092,6 @@ GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAARRRAAAGATCTACCACACACAAGGCTACT
 
 
 # noinspection DuplicatedCode
-@pytest.mark.skip(reason="Currently fails because the deletion coverage is not counted properly yet")
 def test_whole_genome_consensus_half_insertions(default_sequence_report):
     """ Check that mixed insertions are correctly inserted into the whole genome consensus"""
     aligned_reads = prepare_reads("""\
@@ -1133,17 +1132,17 @@ def test_whole_genome_consensus_insertions_overlap(default_sequence_report, capl
     """ Check that insertions in overlapping regions are correctly inserted into the whole genome consensus"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,9,1,\
-TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA
+TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA
 """)
     # this is the ref genome from pos 6225 to 6315, plus an insertion of 'AAAAAAAAA' here
-    #                                                       ^^^^^^^^^
-    # the insertion is between nucleotide 6284 and 6285
+    #                                                      ^^^^^^^^^
+    # the insertion is between nucleotide 6283 and 6284
 
     expected_section = """\
 HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,6226,\
-TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA
+TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA
 HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,6226,\
-TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGCAAAAAAAAATCCTTGGGATGTTGATGATCTGTAGTGCTA"""
+TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA"""
 
     expected_log = [('micall.core.aln2counts', 10,
                      'Disagreement or shift in insertions between regions. Position 6284')]

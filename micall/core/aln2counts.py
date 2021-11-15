@@ -212,9 +212,8 @@ def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None)
     sorted_counts = sorted(insertions_counter.items(), key=lambda item: -len(item[0]))
     length = len(sorted_counts[0][0])
     for i in range(length):
-        # use non-integer positions for insertion nucleotides
         insertion_nuc = SeedNucleotide()
-        insertion_nuc.consensus_index = consensus_pos
+        insertion_nuc.consensus_index = consensus_pos + i
         for insertion in sorted_counts:
             if len(insertion[0]) > i:
                 insertion_nuc.count_nucleotides(insertion[0][i], insertion[1])
@@ -1172,18 +1171,25 @@ class SequenceReport(object):
     def _create_insertions_writer(
             insertions_file
     ):
-        columns = ["contig", "mixture cutoff", "region", "ref position", "contig position", "insertion"]
+        columns = ["contig", "mixture cutoff", "region", "region position", "genome position", "contig position", "insertion"]
         return csv.DictWriter(insertions_file, columns, lineterminator=os.linesep)
 
     def write_insertions_new(self, insertion_writer):
+        landmark_reader = LandmarkReader(self.landmarks)
         for region in self.aggregate_ref_insertions.keys():
+            region_info = landmark_reader.get_gene(self.seed, region)
+            region_start = region_info['start']
             if self.aggregate_ref_insertions[region] is not None:
                 for ref_pos in self.aggregate_ref_insertions[region].keys():
                     insertions = list(self.aggregate_ref_insertions[region][ref_pos].items())
                     for row in self.get_consensus_rows(insertions, is_nucleotide=True):
-                        insertions_row = {"insertion": row["sequence"], "contig": self.seed,
-                                          "mixture cutoff": row['consensus-percent-cutoff'], "region": region,
-                                          "ref position": ref_pos, "contig position": insertions[1][1].consensus_index}
+                        insertions_row = {"insertion": row["sequence"],
+                                          "contig": self.seed,
+                                          "mixture cutoff": row['consensus-percent-cutoff'],
+                                          "region": region,
+                                          "region position": ref_pos,
+                                          "genome position": ref_pos+region_start,
+                                          "contig position": insertions[1][1].consensus_index}
                         insertion_writer.writerow(insertions_row)
 
     def write_whole_genome_consensus_from_nuc(self, conseq_stitched_writer=None):
@@ -1573,21 +1579,26 @@ class InsertionWriter(object):
         insert_targets = {}  # {left: inserted_before_pos}
         insert_behind = {}
         insert_nuc_counts = {}
+        insertion_coverage = {}  # max coverage left and right of the insertion
         for left, right in insert_ranges:
-            for report_amino in report_aminos:
+            for i, report_amino in enumerate(report_aminos):
                 seed_amino = report_amino.seed_amino
                 if seed_amino.consensus_nuc_index == right:
                     insert_targets[left] = report_amino.position
                     insert_behind[left] = (report_amino.position-1)*3
-                    # calculate amino coverage here
+                    coverage_left = report_aminos[i-1].seed_amino.nucleotides[2].get_coverage() if i>0 else 0
+                    coverage_right = report_amino.seed_amino.nucleotides[0].get_coverage()
+                    insertion_coverage[left] = max(coverage_left, coverage_right)
                     break
             if len(report_aminos) == 0:
-                for report_nuc in report_nucleotides:
+                for i, report_nuc in enumerate(report_nucleotides):
                     seed_nuc = report_nuc.seed_nucleotide
                     if seed_nuc.consensus_index == right:
                         insert_targets[left] = report_nuc.position//3
                         insert_behind[left] = report_nuc.position-1
-                        # calculate nuc coverage here
+                        coverage_left = report_nucleotides[i-1].seed_nucleotide.get_coverage() if i>0 else 0
+                        coverage_right = report_nuc.seed_nucleotide.get_coverage()
+                        insertion_coverage[left] = max(coverage_left, coverage_right)
                         break
             current_counts = Counter()
             current_nuc_counts = Counter()
@@ -1606,8 +1617,9 @@ class InsertionWriter(object):
 
         for left in insert_counts.keys():
             ref_pos = insert_behind.get(left)
-            aggregated_ref_insertions[ref_pos] =\
-                aggregate_insertions(insert_nuc_counts[ref_pos], consensus_pos=left)
+            aggregated_ref_insertions[ref_pos] = aggregate_insertions(insert_nuc_counts[ref_pos],
+                                                                      consensus_pos=left,
+                                                                      coverage_nuc=insertion_coverage[left])
 
         # record insertions to CSV
         for left, counts in insert_counts.items():
