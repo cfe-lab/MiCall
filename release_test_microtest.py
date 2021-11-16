@@ -450,7 +450,7 @@ class SampleRunner:
                         'cascade.csv',
                         'nuc.csv',
                         'amino.csv',
-                        'coord_ins.csv',
+                        'insertions.csv',
                         'conseq.csv',
                         'conseq_all.csv',
                         'conseq_region.csv',
