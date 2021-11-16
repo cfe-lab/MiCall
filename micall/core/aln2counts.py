@@ -1388,7 +1388,7 @@ class SequenceReport(object):
                                           "region": region,
                                           "region position": ref_pos,
                                           "genome position": ref_pos + region_start - 1,
-                                          "contig position": insertions[1][1].consensus_index}
+                                          "contig position": insertions[0][1].consensus_index + 1}
                         insert_writer.writerow(insertions_row)
 
     def read_remap_conseqs(self, remap_conseq_csv):
