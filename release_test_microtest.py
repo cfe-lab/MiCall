@@ -454,6 +454,7 @@ class SampleRunner:
                         'conseq.csv',
                         'conseq_all.csv',
                         'conseq_region.csv',
+                        'conseq_stitched.csv'
                         'failed_align.csv',
                         'coverage_scores.csv',
                         'coverage_maps.tar',

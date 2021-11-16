@@ -55,6 +55,8 @@ def parse_args():
                         help='CSV containing consensus sequences with low coverage')
     parser.add_argument('conseq_region_csv',
                         help='CSV containing consensus sequences, split by region')
+    parser.add_argument('conseq_stitched_csv',
+                        help='CSV containing stitched whole genome consensus sequences')
     parser.add_argument('failed_align_csv',
                         help='CSV containing any consensus that failed to align')
     parser.add_argument('coverage_scores_csv',
