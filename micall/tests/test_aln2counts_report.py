@@ -33,7 +33,7 @@ def sequence_report():
 def default_sequence_report():
     """ Sequence report with stubbed files, but all default projects. """
     conseq_mixture_cutoffs = [0.1]
-    return StubbedSequenceReport(InsertionWriter(),
+    return StubbedSequenceReport(InsertionWriter(StringIO()),
                                  ProjectConfig.loadDefault(),
                                  conseq_mixture_cutoffs)
 
@@ -258,7 +258,7 @@ def create_sequence_report():
     - {name: R7b, start: 16, end: 27}
 """
     conseq_mixture_cutoffs = [0.1]
-    report = StubbedSequenceReport(InsertionWriter(),
+    report = StubbedSequenceReport(InsertionWriter(StringIO()),
                                    projects,
                                    conseq_mixture_cutoffs,
                                    landmarks_yaml=landmarks_yaml)

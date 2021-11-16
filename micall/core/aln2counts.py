@@ -338,7 +338,6 @@ class SequenceReport(object):
         self.conseq_region_writer = self.fail_writer = None
         self.conseq_all_writer = None
         self.conseq_stitched_writer = None
-        self.insertion_writer = None
 
     @property
     def has_detail_counts(self):
@@ -488,8 +487,6 @@ class SequenceReport(object):
 
             if self.insert_writer is not None:
                 self.write_insertions(self.insert_writer)
-            if self.insertion_writer is not None:
-                self.write_insertions_new(self.insertion_writer)
             if self.nuc_detail_writer is not None:
                 self.write_nuc_detail_counts(self.nuc_detail_writer)
             elif self.nuc_writer is not None:
@@ -1185,45 +1182,6 @@ class SequenceReport(object):
             {"region": self.detail_seed},
         )
 
-    def write_insertions_header(self, insertions_file):
-        self.insertion_writer = self._create_insertions_writer(insertions_file)
-        self.insertion_writer.writeheader()
-
-    @staticmethod
-    def _create_insertions_writer(
-            insertions_file
-    ):
-        columns = ["contig",
-                   "mixture cutoff",
-                   "region",
-                   "region position",
-                   "genome position",
-                   "contig position",
-                   "insertion"]
-        return csv.DictWriter(insertions_file, columns, lineterminator=os.linesep)
-
-    def write_insertions_new(self, insertion_writer=None):
-        insertion_writer = insertion_writer or self.insertion_writer
-        landmark_reader = LandmarkReader(self.landmarks)
-        for region in self.aggregate_ref_insertions.keys():
-            try:
-                region_info = landmark_reader.get_gene(self.seed, region)
-                region_start = region_info['start']
-            except ValueError:
-                region_start = 1
-            if self.aggregate_ref_insertions[region] is not None:
-                for ref_pos in self.aggregate_ref_insertions[region].keys():
-                    insertions = list(self.aggregate_ref_insertions[region][ref_pos].items())
-                    for row in self.get_consensus_rows(insertions, is_nucleotide=True):
-                        insertions_row = {"insertion": row["sequence"],
-                                          "contig": self.seed,
-                                          "mixture cutoff": row['consensus-percent-cutoff'],
-                                          "region": region,
-                                          "region position": ref_pos,
-                                          "genome position": ref_pos+region_start-1,
-                                          "contig position": insertions[1][1].consensus_index}
-                        insertion_writer.writerow(insertions_row)
-
     def write_whole_genome_consensus_from_nuc(self, conseq_stitched_writer=None):
         conseq_stitched_writer = conseq_stitched_writer or self.conseq_stitched_writer
         landmark_reader = LandmarkReader(self.landmarks)
@@ -1394,6 +1352,7 @@ class SequenceReport(object):
                                     self.reports[coordinate_name],
                                     self.report_nucleotides[coordinate_name])
         self.parse_conseq_insertions()
+        self.write_insertions_file(insert_writer.insert_writer)
 
     def parse_conseq_insertions(self):
         for insertion_position in self.aggregate_conseq_insertions.keys():
@@ -1410,6 +1369,27 @@ class SequenceReport(object):
                         self.aggregate_ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
                     self.aggregate_ref_insertions[region][current_insert_behind] = insertions
                     break
+
+    def write_insertions_file(self, insert_writer):
+        landmark_reader = LandmarkReader(self.landmarks)
+        for region in self.aggregate_ref_insertions.keys():
+            try:
+                region_info = landmark_reader.get_gene(self.seed, region)
+                region_start = region_info['start']
+            except ValueError:
+                region_start = 1
+            if self.aggregate_ref_insertions[region] is not None:
+                for ref_pos in self.aggregate_ref_insertions[region].keys():
+                    insertions = list(self.aggregate_ref_insertions[region][ref_pos].items())
+                    for row in self.get_consensus_rows(insertions, is_nucleotide=True):
+                        insertions_row = {"insertion": row["sequence"],
+                                          "contig": self.seed,
+                                          "mixture cutoff": row['consensus-percent-cutoff'],
+                                          "region": region,
+                                          "region position": ref_pos,
+                                          "genome position": ref_pos + region_start - 1,
+                                          "contig position": insertions[1][1].consensus_index}
+                        insert_writer.writerow(insertions_row)
 
     def read_remap_conseqs(self, remap_conseq_csv):
         # noinspection PyTypeChecker
@@ -1526,13 +1506,23 @@ class SequenceReport(object):
 
 
 class InsertionWriter(object):
-    def __init__(self):
+    def __init__(self, insert_file):
         """ Initialize a writer object.
 
         @param insert_file: an open file that the data will be written to
         """
-        self.insert_file = os.devnull
-        self.insert_writer = None
+        self.insert_file = insert_file
+        self.insert_writer = csv.DictWriter(insert_file,
+                                            ["contig",
+                                             "mixture cutoff",
+                                             "region",
+                                             "region position",
+                                             "genome position",
+                                             "contig position",
+                                             "insertion"],
+                                            lineterminator=os.linesep
+                                            )
+        self.insert_writer.writeheader()
 
         # {(seed, region): {pos: insert_count}}
         self.insert_pos_counts = defaultdict(Counter)
@@ -1731,7 +1721,7 @@ def aln2counts(aligned_csv,
     landmarks_yaml = landmarks_path.read_text()
 
     # initialize reporter classes
-    with InsertionWriter() as insert_writer:
+    with InsertionWriter(insertions_csv) as insert_writer:
         report = SequenceReport(insert_writer,
                                 projects,
                                 CONSEQ_MIXTURE_CUTOFFS,
@@ -1742,7 +1732,6 @@ def aln2counts(aligned_csv,
         report.write_consensus_regions_header(conseq_region_csv)
         report.write_failure_header(failed_align_csv)
         report.write_nuc_header(nuc_csv)
-        report.write_insertions_header(insertions_csv)
         if coverage_summary_csv is None:
             coverage_summary = coverage_writer = None
         else:
