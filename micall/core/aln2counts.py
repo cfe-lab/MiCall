@@ -1206,8 +1206,11 @@ class SequenceReport(object):
         insertion_writer = insertion_writer or self.insertion_writer
         landmark_reader = LandmarkReader(self.landmarks)
         for region in self.aggregate_ref_insertions.keys():
-            region_info = landmark_reader.get_gene(self.seed, region)
-            region_start = region_info['start']
+            try:
+                region_info = landmark_reader.get_gene(self.seed, region)
+                region_start = region_info['start']
+            except ValueError:
+                region_start = 1
             if self.aggregate_ref_insertions[region] is not None:
                 for ref_pos in self.aggregate_ref_insertions[region].keys():
                     insertions = list(self.aggregate_ref_insertions[region][ref_pos].items())
