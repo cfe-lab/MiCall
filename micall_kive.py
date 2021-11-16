@@ -39,6 +39,8 @@ def parse_args():
                         help='FASTQ R2 of reads that failed to map to any region')
     parser.add_argument('conseq_ins_csv',
                         help='CSV containing insertions relative to sample consensus')
+    parser.add_argument('insertions_csv',
+                        help='CSV containing all insertions')
     parser.add_argument('failed_csv',
                         help='CSV containing reads that failed to merge')
     parser.add_argument('cascade_csv',
@@ -47,8 +49,6 @@ def parse_args():
                         help='CSV containing nucleotide frequencies')
     parser.add_argument('amino_csv',
                         help='CSV containing amino frequencies')
-    parser.add_argument('coord_ins_csv',
-                        help='CSV containing insertions relative to coordinate reference')
     parser.add_argument('conseq_csv',
                         help='CSV containing consensus sequences')
     parser.add_argument('conseq_all_csv',
@@ -101,14 +101,15 @@ def load_sample(args):
                     unmapped1_fastq=args.unmapped1_fastq,
                     unmapped2_fastq=args.unmapped2_fastq,
                     conseq_ins_csv=args.conseq_ins_csv,
+                    insertions_csv=args.insertions_csv,
                     failed_csv=args.failed_csv,
                     cascade_csv=args.cascade_csv,
                     nuc_csv=args.nuc_csv,
                     amino_csv=args.amino_csv,
-                    coord_ins_csv=args.coord_ins_csv,
                     conseq_csv=args.conseq_csv,
                     conseq_all_csv=args.conseq_all_csv,
                     conseq_region_csv=args.conseq_region_csv,
+                    conseq_stitched_csv=args.conseq_stitched_csv,
                     failed_align_csv=args.failed_align_csv,
                     coverage_scores_csv=args.coverage_scores_csv,
                     aligned_csv=args.aligned_csv,

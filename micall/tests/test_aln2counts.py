@@ -1334,8 +1334,12 @@ seed,region,qcut,left,insert,count,before
 R3-seed,R3,15,22,G,9,5
 """
 
+        insertions_file = StringIO()
         self.report.read(aligned_reads)
         self.report.write_insertions()
+        self.report.write_insertions()
+        self.report.write_insertions_header(insertions_file)
+        self.report.write_insertions_new()
         self.report.write_nuc_header(StringIO())
         self.report.write_nuc_counts()  # calculates insertion counts
         self.report.write_amino_header(self.report_file)
@@ -1343,7 +1347,7 @@ R3-seed,R3,15,22,G,9,5
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
         self.assertEqual(expected_insertions,
-                         self.report.insert_writer.insert_file.getvalue())
+                         insertions_file.getvalue())
 
     def testInsertionBetweenSeedAndCoordinateNucleotideReport(self):
         """ Coordinate sequence is KFQTPREH, and this aligned read is HERKFQTGPREHQFK.
@@ -1412,16 +1416,19 @@ R3-seed,15,0,8,0,CATGAGCGAAAATTTCAGACTAAACCCCGAGAGCATCAGTTTAAA
     - {name: R3, start: 1, end: 27, colour: lightblue}
 """)
         expected_insertions = """\
-seed,region,qcut,left,insert,count,before
-R3-seed,R3,15,22,G,9,5
-R3-seed,R3,15,22,K,8,5
+contig,mixture cutoff,region,region position,genome position,contig position,insertion
+R3-seed,MAX,R3,12,12,22,GGG
+R3-seed,0.100,R3,12,12,22,RRR
 """
 
+        insertions_file = StringIO()
         self.report.read(aligned_reads)
         self.report.write_insertions()
+        self.report.write_insertions_header(insertions_file)
+        self.report.write_insertions_new()
 
         self.assertEqual(expected_insertions,
-                         self.report.insert_writer.insert_file.getvalue())
+                         insertions_file.getvalue())
 
     def testInsertionsSortedByLeft(self):
         """ Two insertions within a single consensus, sorted by position.
@@ -1475,12 +1482,22 @@ seed,region,qcut,left,insert,count,before
 R3-seed,R3,15,16,Q,9,5
 R3-seed,R3,15,34,E,9,10
 """
+        expected_insertions = """\
+contig,mixture cutoff,region,region position,genome position,contig position,insertion
+R3-seed,MAX,R3,12,15,16,CAG
+R3-seed,0.100,R3,12,15,16,CAG
+R3-seed,MAX,R3,27,30,34,GAG
+R3-seed,0.100,R3,27,30,34,GAG
+"""
 
+        insertions_file = StringIO()
         self.report.read(aligned_reads)
         self.report.write_insertions()
+        self.report.write_insertions_header(insertions_file)
+        self.report.write_insertions_new()
 
         self.assertEqual(expected_insertions,
-                         self.report.insert_writer.insert_file.getvalue())
+                         insertions_file.getvalue())
 
     def testInsertionInDifferentReadingFrame(self):
         """ Delete part of the first codon to throw off the reading frame.
@@ -1498,17 +1515,21 @@ R3-seed,15,0,9,0,AATTTCAGACTGGGCCCCGAGAGCAT
 """)
 
         expected_insertions = """\
-seed,region,qcut,left,insert,count,before
-R3-seed,R3,15,12,G,9,5
+contig,mixture cutoff,region,region position,genome position,contig position,insertion
+R3-seed,MAX,R3,12,12,12,GGG
+R3-seed,0.100,R3,12,12,12,GGG
 """
 
+        insertions_file = StringIO()
         self.report.read(aligned_reads)
         self.report.write_amino_header(StringIO())
         self.report.write_amino_counts()
         self.report.write_insertions()
+        self.report.write_insertions_header(insertions_file)
+        self.report.write_insertions_new()
 
         self.assertEqual(expected_insertions,
-                         self.report.insert_writer.insert_file.getvalue())
+                         insertions_file.getvalue())
 
     def testInsertionInSomeReads(self):
         """ Not all reads have the insertion, some end before it.
@@ -1528,17 +1549,21 @@ R3-seed,15,2,4,0,AAATTTCAGACTG
 """)
 
         expected_insertions = """\
-seed,region,qcut,left,insert,count,before
-R3-seed,R3,15,13,G,9,5
+contig,mixture cutoff,region,region position,genome position,contig position,insertion
+R3-seed,MAX,R3,12,12,13,GGG
+R3-seed,0.100,R3,12,12,13,Ggg
 """
 
+        insertions_file = StringIO()
         self.report.read(aligned_reads)
         self.report.write_amino_header(StringIO())
         self.report.write_amino_counts()
         self.report.write_insertions()
+        self.report.write_insertions_header(insertions_file)
+        self.report.write_insertions_new()
 
         self.assertEqual(expected_insertions,
-                         self.report.insert_writer.insert_file.getvalue())
+                         insertions_file.getvalue())
 
     def testMultipleCoordinateInsertionReport(self):
         """ Two coordinate regions map the same seed region, the consensus
@@ -1597,15 +1622,19 @@ R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
 """)
 
         expected_insertions = """\
-seed,region,qcut,left,insert,count,before
-R3-seed,R3a,15,13,G,9,5
+contig,mixture cutoff,region,region position,genome position,contig position,insertion
+R3-seed,MAX,R3a,12,12,13,GGG
+R3-seed,0.100,R3a,12,12,13,GGG
 """
 
+        insertions_file = StringIO()
         self.report.read(aligned_reads)
         self.report.write_insertions()
+        self.report.write_insertions_header(insertions_file)
+        self.report.write_insertions_new()
 
         self.assertEqual(expected_insertions,
-                         self.report.insert_writer.insert_file.getvalue())
+                         insertions_file.getvalue())
 
     def testGapBetweenForwardAndReverse(self):
         """ Lower-case n represents a gap between forward and reverse reads.
@@ -2235,8 +2264,8 @@ R2,GCCATTAAA
 
 class InsertionWriterTest(unittest.TestCase):
     def setUp(self):
-        self.insert_file = StringIO()
-        self.writer = InsertionWriter(self.insert_file)
+        self.insert_file = None
+        self.writer = InsertionWriter()
         self.writer.start_group(seed='R1-seed', qcut=15)
         self.nuc_seq_acdef = 'GCTTGTGACGAGTTT'
         self.nuc_seq_afdef = 'GCTTTTGACGAGTTT'

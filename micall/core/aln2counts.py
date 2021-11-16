@@ -79,10 +79,6 @@ def parse_args():
     parser.add_argument('--amino_detail_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing amino frequencies for each contig')
-    parser.add_argument('--coord_ins_csv',
-                        type=argparse.FileType('w'),
-                        default=os.devnull,
-                        help='CSV containing insertions relative to coordinate reference')
     parser.add_argument('--insertions_csv',
                         type=argparse.FileType('w'),
                         default=os.devnull,
@@ -1206,7 +1202,8 @@ class SequenceReport(object):
                    "insertion"]
         return csv.DictWriter(insertions_file, columns, lineterminator=os.linesep)
 
-    def write_insertions_new(self, insertion_writer):
+    def write_insertions_new(self, insertion_writer=None):
+        insertion_writer = insertion_writer or self.insertion_writer
         landmark_reader = LandmarkReader(self.landmarks)
         for region in self.aggregate_ref_insertions.keys():
             region_info = landmark_reader.get_gene(self.seed, region)
@@ -1220,7 +1217,7 @@ class SequenceReport(object):
                                           "mixture cutoff": row['consensus-percent-cutoff'],
                                           "region": region,
                                           "region position": ref_pos,
-                                          "genome position": ref_pos+region_start,
+                                          "genome position": ref_pos+region_start-1,
                                           "contig position": insertions[1][1].consensus_index}
                         insertion_writer.writerow(insertions_row)
 
@@ -1526,27 +1523,18 @@ class SequenceReport(object):
 
 
 class InsertionWriter(object):
-    def __init__(self, insert_file):
+    def __init__(self):
         """ Initialize a writer object.
 
         @param insert_file: an open file that the data will be written to
         """
-        self.insert_file = insert_file
-        self.insert_writer = csv.DictWriter(insert_file,
-                                            ['seed',
-                                             'region',
-                                             'qcut',
-                                             'left',
-                                             'insert',
-                                             'count',
-                                             'before'],
-                                            lineterminator=os.linesep)
-        self.insert_writer.writeheader()
+        self.insert_file = os.devnull
+        self.insert_writer = None
 
         # {(seed, region): {pos: insert_count}}
         self.insert_pos_counts = defaultdict(Counter)
         self.seed = self.qcut = None
-        self.insert_file_name = getattr(insert_file, 'name', None)
+        self.insert_file_name = None
         if self.insert_file_name is None or self.insert_file_name == os.devnull:
             self.nuc_seqs = Counter()
             self.nuc_seqs_context = None
@@ -1664,14 +1652,6 @@ class InsertionWriter(object):
                 # so ignore any that come before or after the reference.
                 # Also report if we're in test mode (no report_aminos).
                 if not report_aminos or insert_before not in (1, None):
-                    row = dict(seed=self.seed,
-                               region=region,
-                               qcut=self.qcut,
-                               left=left + 1,
-                               insert=insert_seq,
-                               count=count,
-                               before=insert_before)
-                    self.insert_writer.writerow(row)
                     if insert_before is not None:
                         region_insert_pos_counts[insert_before-1] += count
         return aggregated_ref_insertions
@@ -1688,7 +1668,6 @@ def format_cutoff(cutoff):
 def aln2counts(aligned_csv,
                nuc_csv,
                amino_csv,
-               coord_ins_csv,
                insertions_csv,
                conseq_csv,
                failed_align_csv,
@@ -1712,7 +1691,6 @@ def aln2counts(aligned_csv,
     @param aligned_csv:         Open file handle containing aligned reads (from sam2aln)
     @param nuc_csv:             Open file handle to write nucleotide frequencies.
     @param amino_csv:           Open file handle to write amino acid frequencies.
-    @param coord_ins_csv:       Open file handle to write insertions relative to coordinate reference.
     @param insertions_csv:      Open file handle to write insertions (new).
     @param conseq_csv:          Open file handle to write consensus sequences.
     @param failed_align_csv:    Open file handle to write sample consensus sequences that failed to
@@ -1750,7 +1728,7 @@ def aln2counts(aligned_csv,
     landmarks_yaml = landmarks_path.read_text()
 
     # initialize reporter classes
-    with InsertionWriter(coord_ins_csv) as insert_writer:
+    with InsertionWriter() as insert_writer:
         report = SequenceReport(insert_writer,
                                 projects,
                                 CONSEQ_MIXTURE_CUTOFFS,
@@ -1825,7 +1803,6 @@ def main():
     aln2counts(args.aligned_csv,
                args.nuc_csv,
                args.amino_csv,
-               args.coord_ins_csv,
                args.insertions_csv,
                args.conseq_csv,
                args.failed_align_csv,
