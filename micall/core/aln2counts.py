@@ -127,6 +127,32 @@ def trim_contig_name(contig_name):
     return seed_name
 
 
+def get_insertion_info(right, report_aminos, report_nucleotides):
+    insert_target = None
+    insert_behind = None
+    insertion_coverage = 0
+    for i, report_amino in enumerate(report_aminos):
+        seed_amino = report_amino.seed_amino
+        if seed_amino.consensus_nuc_index == right:
+            insert_target = report_amino.position
+            insert_behind = (report_amino.position - 1) * 3
+            coverage_left = report_aminos[i - 1].seed_amino.nucleotides[2].get_coverage() if i > 0 else 0
+            coverage_right = report_amino.seed_amino.nucleotides[0].get_coverage()
+            insertion_coverage = max(coverage_left, coverage_right)
+            break
+    if len(report_aminos) == 0:
+        for i, report_nuc in enumerate(report_nucleotides):
+            seed_nuc = report_nuc.seed_nucleotide
+            if seed_nuc.consensus_index == right:
+                insert_target = report_nuc.position // 3
+                insert_behind = report_nuc.position - 1
+                coverage_left = report_nucleotides[i - 1].seed_nucleotide.get_coverage() if i > 0 else 0
+                coverage_right = report_nuc.seed_nucleotide.get_coverage()
+                insertion_coverage = max(coverage_left, coverage_right)
+                break
+    return insert_target, insert_behind, insertion_coverage
+
+
 def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
     assert region_start is not None
     for nuc_index, nucleotide in enumerate(region_nucleotides):
@@ -307,7 +333,7 @@ class SequenceReport(object):
                                         defaultdict(Counter))
         self.conseq_insertion_nucs = defaultdict(lambda: defaultdict(Counter))
         # insertions relative to consensus, by consensus position:
-        self.aggregate_conseq_insertions = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: SeedNucleotide)))
+        self.aggregate_conseq_insertions = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
         # insertions relative to consensus, by ref position:
         self.aggregate_ref_insertions = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: SeedNucleotide)))
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
@@ -597,7 +623,7 @@ class SequenceReport(object):
                 self.conseq_insertion_nucs[ref_name][ref_position] = insertion_nucs[ref_name][ref_position]
         for ref_name in insertion_nucs.keys():
             for ref_position in insertion_nucs[ref_name].keys():
-                self.aggregate_conseq_insertions[ref_name][ref_position] = \
+                self.aggregate_conseq_insertions[ref_position] = \
                     aggregate_insertions(insertion_nucs[ref_name][ref_position], consensus_pos=ref_position)
 
     @staticmethod
@@ -1171,7 +1197,13 @@ class SequenceReport(object):
     def _create_insertions_writer(
             insertions_file
     ):
-        columns = ["contig", "mixture cutoff", "region", "region position", "genome position", "contig position", "insertion"]
+        columns = ["contig",
+                   "mixture cutoff",
+                   "region",
+                   "region position",
+                   "genome position",
+                   "contig position",
+                   "insertion"]
         return csv.DictWriter(insertions_file, columns, lineterminator=os.linesep)
 
     def write_insertions_new(self, insertion_writer):
@@ -1361,6 +1393,23 @@ class SequenceReport(object):
                                     coordinate_name,
                                     self.reports[coordinate_name],
                                     self.report_nucleotides[coordinate_name])
+        self.parse_conseq_insertions()
+
+    def parse_conseq_insertions(self):
+        for insertion_position in self.aggregate_conseq_insertions.keys():
+            insertions = self.aggregate_conseq_insertions[insertion_position]
+            for region in self.report_nucleotides:
+                report_aminos = []
+                report_nucleotides = self.report_nucleotides[region]
+                current_insert_target, current_insert_behind, current_insert_coverage = \
+                    get_insertion_info(insertion_position, report_aminos, report_nucleotides)
+                if current_insert_behind is not None:
+                    for position in insertions:
+                        insertions[position].count_nucleotides('-', count=current_insert_coverage)
+                    if self.aggregate_ref_insertions[region] is None:
+                        self.aggregate_ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
+                    self.aggregate_ref_insertions[region][current_insert_behind] = insertions
+                    break
 
     def read_remap_conseqs(self, remap_conseq_csv):
         # noinspection PyTypeChecker
@@ -1581,25 +1630,11 @@ class InsertionWriter(object):
         insert_nuc_counts = {}
         insertion_coverage = {}  # max coverage left and right of the insertion
         for left, right in insert_ranges:
-            for i, report_amino in enumerate(report_aminos):
-                seed_amino = report_amino.seed_amino
-                if seed_amino.consensus_nuc_index == right:
-                    insert_targets[left] = report_amino.position
-                    insert_behind[left] = (report_amino.position-1)*3
-                    coverage_left = report_aminos[i-1].seed_amino.nucleotides[2].get_coverage() if i>0 else 0
-                    coverage_right = report_amino.seed_amino.nucleotides[0].get_coverage()
-                    insertion_coverage[left] = max(coverage_left, coverage_right)
-                    break
-            if len(report_aminos) == 0:
-                for i, report_nuc in enumerate(report_nucleotides):
-                    seed_nuc = report_nuc.seed_nucleotide
-                    if seed_nuc.consensus_index == right:
-                        insert_targets[left] = report_nuc.position//3
-                        insert_behind[left] = report_nuc.position-1
-                        coverage_left = report_nucleotides[i-1].seed_nucleotide.get_coverage() if i>0 else 0
-                        coverage_right = report_nuc.seed_nucleotide.get_coverage()
-                        insertion_coverage[left] = max(coverage_left, coverage_right)
-                        break
+            current_insert_target, current_insert_behind, current_insert_coverage =\
+                get_insertion_info(right, report_aminos, report_nucleotides)
+            insert_targets[left] = current_insert_target
+            insert_behind[left] = current_insert_behind
+            insertion_coverage[left] = current_insert_coverage
             current_counts = Counter()
             current_nuc_counts = Counter()
             insert_counts[left] = current_counts
