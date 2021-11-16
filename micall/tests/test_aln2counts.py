@@ -1330,9 +1330,9 @@ R3-seed,R3,15,31,7,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 R3-seed,R3,15,34,8,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 """
         expected_insertions = """\
-contig,mixture cutoff,region,region position,genome position,contig position,insertion
-R3-seed,MAX,R3,12,12,22,GGG
-R3-seed,0.100,R3,12,12,22,GGG
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R3-seed,MAX,R3,12,12,21,GGG
+R3-seed,0.100,R3,12,12,21,GGG
 """
 
         self.report.read(aligned_reads)
@@ -1413,9 +1413,9 @@ R3-seed,15,0,8,0,CATGAGCGAAAATTTCAGACTAAACCCCGAGAGCATCAGTTTAAA
     - {name: R3, start: 1, end: 27, colour: lightblue}
 """)
         expected_insertions = """\
-contig,mixture cutoff,region,region position,genome position,contig position,insertion
-R3-seed,MAX,R3,12,12,22,GGG
-R3-seed,0.100,R3,12,12,22,RRR
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R3-seed,MAX,R3,12,12,21,GGG
+R3-seed,0.100,R3,12,12,21,RRR
 """
 
         self.report.read(aligned_reads)
@@ -1477,11 +1477,11 @@ R3-seed,R3,15,16,Q,9,5
 R3-seed,R3,15,34,E,9,10
 """
         expected_insertions = """\
-contig,mixture cutoff,region,region position,genome position,contig position,insertion
-R3-seed,MAX,R3,12,15,16,CAG
-R3-seed,0.100,R3,12,15,16,CAG
-R3-seed,MAX,R3,27,30,34,GAG
-R3-seed,0.100,R3,27,30,34,GAG
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R3-seed,MAX,R3,12,15,15,CAG
+R3-seed,0.100,R3,12,15,15,CAG
+R3-seed,MAX,R3,27,30,33,GAG
+R3-seed,0.100,R3,27,30,33,GAG
 """
 
         self.report.read(aligned_reads)
@@ -1506,9 +1506,9 @@ R3-seed,15,0,9,0,AATTTCAGACTGGGCCCCGAGAGCAT
 """)
 
         expected_insertions = """\
-contig,mixture cutoff,region,region position,genome position,contig position,insertion
-R3-seed,MAX,R3,12,12,12,GGG
-R3-seed,0.100,R3,12,12,12,GGG
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R3-seed,MAX,R3,12,12,11,GGG
+R3-seed,0.100,R3,12,12,11,GGG
 """
 
         self.report.read(aligned_reads)
@@ -1537,9 +1537,9 @@ R3-seed,15,2,4,0,AAATTTCAGACTG
 """)
 
         expected_insertions = """\
-contig,mixture cutoff,region,region position,genome position,contig position,insertion
-R3-seed,MAX,R3,12,12,13,GGG
-R3-seed,0.100,R3,12,12,13,Ggg
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R3-seed,MAX,R3,12,12,12,GGG
+R3-seed,0.100,R3,12,12,12,Ggg
 """
 
         self.report.read(aligned_reads)
@@ -1607,9 +1607,9 @@ R3-seed,15,0,9,0,AAATTTCAGACTGGGCCCCGAGAGCAT
 """)
 
         expected_insertions = """\
-contig,mixture cutoff,region,region position,genome position,contig position,insertion
-R3-seed,MAX,R3a,12,12,13,GGG
-R3-seed,0.100,R3a,12,12,13,GGG
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R3-seed,MAX,R3a,12,12,12,GGG
+R3-seed,0.100,R3a,12,12,12,GGG
 """
 
         self.report.read(aligned_reads)
@@ -2344,9 +2344,9 @@ R1-seed,R1,15,13,F,1,
 
     def testInsertsWithVariants(self):
         expected_text = """\
-contig,mixture cutoff,region,region position,genome position,contig position,insertion
-R1-seed,MAX,R1,7,7,8,GAC
-R1-seed,0.100,R1,7,7,8,GAC
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,7,7,7,GAC
+R1-seed,0.100,R1,7,7,7,GAC
 """
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)

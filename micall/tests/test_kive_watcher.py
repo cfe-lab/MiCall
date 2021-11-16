@@ -2214,7 +2214,6 @@ def test_fetch_run_status_filter_quality(raw_data_with_two_runs,
     assert new_run is None
 
 
-@pytest.mark.skip(reason="Is currently failing")
 def test_fetch_run_status_main(raw_data_with_two_runs,
                                mock_open_kive,
                                pipelines_config):
@@ -2250,8 +2249,8 @@ def test_fetch_run_status_main(raw_data_with_two_runs,
     assert new_run is None
     assert expected_insertion_path.exists()
     assert expected_nuc_path.exists()
-    assert [call(ANY, '/datasets/111/download/'),
-            call(ANY, '/datasets/110/download/')
+    assert [call(ANY, '/datasets/110/download/'),
+            call(ANY, '/datasets/111/download/')
             ] == mock_session.download_file.call_args_list
 
 

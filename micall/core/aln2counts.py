@@ -235,7 +235,7 @@ def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None)
     length = len(sorted_counts[0][0])
     for i in range(length):
         insertion_nuc = SeedNucleotide()
-        insertion_nuc.consensus_index = consensus_pos + i
+        insertion_nuc.consensus_index = consensus_pos
         for insertion in sorted_counts:
             if len(insertion[0]) > i:
                 insertion_nuc.count_nucleotides(insertion[0][i], insertion[1])
@@ -1382,13 +1382,13 @@ class SequenceReport(object):
                 for ref_pos in self.aggregate_ref_insertions[region].keys():
                     insertions = list(self.aggregate_ref_insertions[region][ref_pos].items())
                     for row in self.get_consensus_rows(insertions, is_nucleotide=True):
-                        insertions_row = {"insertion": row["sequence"],
-                                          "contig": self.seed,
-                                          "mixture cutoff": row['consensus-percent-cutoff'],
-                                          "region": region,
-                                          "region position": ref_pos,
-                                          "genome position": ref_pos + region_start - 1,
-                                          "contig position": insertions[0][1].consensus_index + 1}
+                        insertions_row = dict(insertion=row["sequence"],
+                                              seed=self.seed,
+                                              mixture_cutoff=row['consensus-percent-cutoff'],
+                                              region=region,
+                                              ref_region_pos=ref_pos,
+                                              ref_genome_pos=ref_pos + region_start - 1,
+                                              query_pos=insertions[0][1].consensus_index + 1)
                         insert_writer.writerow(insertions_row)
 
     def read_remap_conseqs(self, remap_conseq_csv):
@@ -1513,12 +1513,12 @@ class InsertionWriter(object):
         """
         self.insert_file = insert_file
         self.insert_writer = csv.DictWriter(insert_file,
-                                            ["contig",
-                                             "mixture cutoff",
+                                            ["seed",
+                                             "mixture_cutoff",
                                              "region",
-                                             "region position",
-                                             "genome position",
-                                             "contig position",
+                                             "ref_region_pos",
+                                             "ref_genome_pos",
+                                             "query_pos",
                                              "insertion"],
                                             lineterminator=os.linesep
                                             )
@@ -1634,7 +1634,7 @@ class InsertionWriter(object):
         for left in insert_counts.keys():
             ref_pos = insert_behind.get(left)
             aggregated_ref_insertions[ref_pos] = aggregate_insertions(insert_nuc_counts[ref_pos],
-                                                                      consensus_pos=left,
+                                                                      consensus_pos=left-1,
                                                                       coverage_nuc=insertion_coverage[left])
 
         # record insertions to CSV

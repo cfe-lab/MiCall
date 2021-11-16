@@ -39,8 +39,6 @@ def parse_args():
                         help='FASTQ R2 of reads that failed to map to any region')
     parser.add_argument('conseq_ins_csv',
                         help='CSV containing insertions relative to sample consensus')
-    parser.add_argument('insertions_csv',
-                        help='CSV containing all insertions')
     parser.add_argument('failed_csv',
                         help='CSV containing reads that failed to merge')
     parser.add_argument('cascade_csv',
@@ -49,6 +47,8 @@ def parse_args():
                         help='CSV containing nucleotide frequencies')
     parser.add_argument('amino_csv',
                         help='CSV containing amino frequencies')
+    parser.add_argument('insertions_csv',
+                        help='CSV containing all insertions')
     parser.add_argument('conseq_csv',
                         help='CSV containing consensus sequences')
     parser.add_argument('conseq_all_csv',
