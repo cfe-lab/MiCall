@@ -132,7 +132,7 @@ def get_insertion_info(right, report_aminos, report_nucleotides):
         if seed_amino.consensus_nuc_index == right:
             insert_target = report_amino.position
             insert_behind = (report_amino.position - 1) * 3
-            coverage_left = report_aminos[i - 1].seed_amino.nucleotides[2].get_coverage() if i > 0 else 0
+            coverage_left = report_aminos[i - 1].seed_amino.nucleotides[2].get_coverage() if i >= 0 else 0
             coverage_right = report_amino.seed_amino.nucleotides[0].get_coverage()
             insertion_coverage = max(coverage_left, coverage_right)
             break
@@ -142,7 +142,7 @@ def get_insertion_info(right, report_aminos, report_nucleotides):
             if seed_nuc.consensus_index == right:
                 insert_target = report_nuc.position // 3
                 insert_behind = report_nuc.position - 1
-                coverage_left = report_nucleotides[i - 1].seed_nucleotide.get_coverage() if i > 0 else 0
+                coverage_left = report_nucleotides[i - 1].seed_nucleotide.get_coverage() if i >= 0 else 0
                 coverage_right = report_nuc.seed_nucleotide.get_coverage()
                 insertion_coverage = max(coverage_left, coverage_right)
                 break
@@ -230,6 +230,9 @@ def find_consensus_insertions(insertions_dict, consensus_nucleotides):
 
 def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None):
     aggregated_insertions = defaultdict()
+
+    if len(insertions_counter) == 0:
+        return aggregated_insertions
 
     sorted_counts = sorted(insertions_counter.items(), key=lambda item: -len(item[0]))
     length = len(sorted_counts[0][0])

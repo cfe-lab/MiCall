@@ -4,8 +4,16 @@ import unittest
 import yaml
 
 from micall.core.aln2counts import InsertionWriter, SeedAmino, \
-    ReportAmino, ConsensusBuilder
+    ReportAmino, ConsensusBuilder, ReportNucleotide, SeedNucleotide
 from micall.tests.test_aln2counts_report import create_sequence_report, prepare_reads
+
+LANDMARKS_YAML = """\
+- seed_pattern: R1-.*
+  coordinates: R1-seed
+  landmarks:
+    # Extra 3 positions for stop codon to get dropped.
+    - {name: R1, start: 1, end: 12, colour: steelblue}
+"""
 
 
 # noinspection DuplicatedCode
@@ -2255,7 +2263,6 @@ R2,GCCATTAAA
         self.assertEqual(expected_reads, reads)
 
 
-@unittest.skip("Currently not working")
 class InsertionWriterTest(unittest.TestCase):
     def setUp(self):
         self.insert_file = StringIO()
@@ -2284,133 +2291,194 @@ seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
 R1-seed,MAX,R1,6,6,6,GAC
 R1-seed,0.100,R1,6,6,6,GAC
 """
-        landmarks_yaml = """\
-- seed_pattern: R1-.*
-  coordinates: R1-seed
-  landmarks:
-    # Extra 3 positions for stop codon to get dropped.
-    - {name: R1, start: 1, end: 12, colour: steelblue}
-"""
+        expected_counts = {('R1-seed', 'R1'): {2: 1}}
 
-        report_aminos = {'R1': [ReportAmino(SeedAmino(0), 0),
-                                ReportAmino(SeedAmino(3), 1),
-                                ReportAmino(SeedAmino(6), 2),
-                                ReportAmino(SeedAmino(9), 3)]}
+        report_aminos = {'R1': [ReportAmino(SeedAmino(0), 1),
+                                ReportAmino(SeedAmino(3), 2),
+                                ReportAmino(SeedAmino(9), 3),
+                                ReportAmino(SeedAmino(12), 4)]}
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(insertions={'R1': [6]},
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
-                          landmarks=yaml.safe_load(landmarks_yaml),
-                          consensus_builder=ConsensusBuilder([0.1, 'MAX'], 0))
-
-        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
-
-    def testInsertWithBefore(self):
-        expected_text = """\
-seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,10,E,1,2
-"""
-        expected_counts = {('R1-seed', 'R1'): {1: 1}}
-        seed_amino_after = SeedAmino(12)
-        report_amino_after = ReportAmino(seed_amino_after, position=2)
-
-        self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
-        self.writer.write(inserts=[9],
-                          region='R1',
-                          report_aminos=[report_amino_after])
+                          landmarks=yaml.safe_load(LANDMARKS_YAML),
+                          consensus_builder=ConsensusBuilder(['MAX', 0.1], 0))
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
         self.assertEqual(expected_counts, self.writer.insert_pos_counts)
+
+    def testInsertNuc(self):
+        expected_text = """\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,2,2,2,T
+R1-seed,0.100,R1,2,2,2,T
+"""
+
+        report_nucleotides = {'R1': [ReportNucleotide(1, SeedNucleotide()),
+                                     ReportNucleotide(2, SeedNucleotide()),
+                                     ReportNucleotide(3, SeedNucleotide()),
+                                     ReportNucleotide(4, SeedNucleotide())]}
+        report_nucleotides['R1'][0].seed_nucleotide.consensus_index = 0
+        report_nucleotides['R1'][1].seed_nucleotide.consensus_index = 1
+        report_nucleotides['R1'][2].seed_nucleotide.consensus_index = 3
+        report_nucleotides['R1'][3].seed_nucleotide.consensus_index = 4
+
+        self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
+        self.writer.write(insertions={'R1': [2]},
+                          report_aminos_all={'R1': []},
+                          report_nucleotides_all=report_nucleotides,
+                          landmarks=yaml.safe_load(LANDMARKS_YAML),
+                          consensus_builder=ConsensusBuilder(['MAX', 0.1], 0))
+
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testInsertDifferentReadingFrame(self):
         """ Add a partial codon at the start of the read to shift the reading
         frame.
         """
         expected_text = """\
-seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,8,D,1,
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,6,6,7,GAC
+R1-seed,0.100,R1,6,6,7,GAC
 """
+        report_aminos = {'R1': [ReportAmino(SeedAmino(1), 1),
+                                ReportAmino(SeedAmino(4), 2),
+                                ReportAmino(SeedAmino(10), 3),
+                                ReportAmino(SeedAmino(13), 4)]}
 
         self.writer.add_nuc_read(offset_sequence='A' + self.nuc_seq_acdef,
                                  count=1)
-        self.writer.write(inserts=[7], region='R1')
+        self.writer.write(insertions={'R1': [7]},
+                          report_aminos_all=report_aminos,
+                          report_nucleotides_all={'R1': []},
+                          landmarks=yaml.safe_load(LANDMARKS_YAML),
+                          consensus_builder=ConsensusBuilder(['MAX', 0.1], 0))
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testInsertWithOffset(self):
         expected_text = """\
-seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,7,D,1,
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,6,6,6,GAC
+R1-seed,0.100,R1,6,6,6,GAC
 """
+        report_aminos = {'R1': [ReportAmino(SeedAmino(0), 1),
+                                ReportAmino(SeedAmino(3), 2),
+                                ReportAmino(SeedAmino(9), 3),
+                                ReportAmino(SeedAmino(12), 4)]}
 
         #                                            C  D  E  F
         self.writer.add_nuc_read(offset_sequence='---TGTGACGAGTTT', count=1)
-        self.writer.write(inserts=[6], region='R1')
+        self.writer.write(insertions={'R1': [6]},
+                          report_aminos_all=report_aminos,
+                          report_nucleotides_all={'R1': []},
+                          landmarks=yaml.safe_load(LANDMARKS_YAML),
+                          consensus_builder=ConsensusBuilder(['MAX', 0.1], 0))
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testInsertWithDeletion(self):
         expected_text = """\
-seed,region,qcut,left,insert,count,before
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
 """
+
+        report_aminos = {'R1': [ReportAmino(SeedAmino(0), 1),
+                                ReportAmino(SeedAmino(3), 2),
+                                ReportAmino(SeedAmino(9), 3),
+                                ReportAmino(SeedAmino(12), 4)]}
 
         #                                         C  D     E  F
         self.writer.add_nuc_read(offset_sequence='TGTGAC---GAGTTT', count=1)
-        self.writer.write(inserts=[3, 6], region='R1')
+        self.writer.write(insertions={'R1': [3, 6]},
+                          report_aminos_all=report_aminos,
+                          report_nucleotides_all={'R1': []},
+                          landmarks=yaml.safe_load(LANDMARKS_YAML),
+                          consensus_builder=ConsensusBuilder(['MAX', 0.1], 0))
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testTwoInsertsWithOffset(self):
         expected_text = """\
-seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,7,D,1,
-R1-seed,R1,15,13,F,1,
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,6,6,6,GAC
+R1-seed,0.100,R1,6,6,6,GAC
+R1-seed,MAX,R1,9,9,12,TTT
+R1-seed,0.100,R1,9,9,12,TTT
 """
+        report_aminos = {'R1': [ReportAmino(SeedAmino(0), 1),
+                                ReportAmino(SeedAmino(3), 2),
+                                ReportAmino(SeedAmino(9), 3),
+                                ReportAmino(SeedAmino(15), 4)]}
 
         #                                            C  D  E  F  G
         self.writer.add_nuc_read(offset_sequence='---TGTGACGAGTTTGGG', count=1)
-        self.writer.write(inserts=[6, 12], region='R1')
+        self.writer.write(insertions={'R1': [6, 12]},
+                          report_aminos_all=report_aminos,
+                          report_nucleotides_all={'R1': []},
+                          landmarks=yaml.safe_load(LANDMARKS_YAML),
+                          consensus_builder=ConsensusBuilder(['MAX', 0.1], 0))
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testInsertsWithVariants(self):
         expected_text = """\
 seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
-R1-seed,MAX,R1,7,7,7,GAC
-R1-seed,0.100,R1,7,7,7,GAC
+R1-seed,MAX,R1,6,6,6,GAC
+R1-seed,0.100,R1,6,6,6,GAC
 """
+        report_aminos = {'R1': [ReportAmino(SeedAmino(0), 1),
+                                ReportAmino(SeedAmino(3), 2),
+                                ReportAmino(SeedAmino(9), 3),
+                                ReportAmino(SeedAmino(12), 4)]}
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_afdef, count=1)
-        self.writer.write(inserts=[6], region='R1')
+        self.writer.write(insertions={'R1': [6]},
+                          report_aminos_all=report_aminos,
+                          report_nucleotides_all={'R1': []},
+                          landmarks=yaml.safe_load(LANDMARKS_YAML),
+                          consensus_builder=ConsensusBuilder(['MAX', 0.1], 0))
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testDifferentInserts(self):
         expected_text = """\
-seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,4,C,2,
-R1-seed,R1,15,4,F,3,"""
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,3,3,3,TTT
+R1-seed,0.100,R1,3,3,3,TKT
+"""
+        report_aminos = {'R1': [ReportAmino(SeedAmino(0), 1),
+                                ReportAmino(SeedAmino(6), 2),
+                                ReportAmino(SeedAmino(9), 3),
+                                ReportAmino(SeedAmino(12), 4)]}
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=2)
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_afdef, count=3)
-        self.writer.write(inserts=[3], region='R1')
+        self.writer.write(insertions={'R1': [3]},
+                          report_aminos_all=report_aminos,
+                          report_nucleotides_all={'R1': []},
+                          landmarks=yaml.safe_load(LANDMARKS_YAML),
+                          consensus_builder=ConsensusBuilder(['MAX', 0.1], 0))
 
-        lines = self.insert_file.getvalue().splitlines()
-        lines.sort()
-        lines.insert(0, lines.pop())
-        text = '\n'.join(lines)
-        self.assertMultiLineEqual(expected_text, text)
+        self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testMulticharacterInsert(self):
         expected_text = """\
-seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,7,DE,1,
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,6,6,6,GACGAG
+R1-seed,0.100,R1,6,6,6,GACGAG
 """
+        report_aminos = {'R1': [ReportAmino(SeedAmino(0), 1),
+                                ReportAmino(SeedAmino(3), 2),
+                                ReportAmino(SeedAmino(12), 3)]}
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
-        self.writer.write(inserts=[6, 9], region='R1')
+        self.writer.write(insertions={'R1': [6,9]},
+                          report_aminos_all=report_aminos,
+                          report_nucleotides_all={'R1': []},
+                          landmarks=yaml.safe_load(LANDMARKS_YAML),
+                          consensus_builder=ConsensusBuilder(['MAX', 0.1], 0))
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
@@ -2418,21 +2486,36 @@ R1-seed,R1,15,7,DE,1,
         nuc_seq = 'GCTCTnGACGAGTTT'
 
         expected_text = """\
-seed,region,qcut,left,insert,count,before
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
 """
+        report_aminos = {'R1': [ReportAmino(SeedAmino(0), 1),
+                                ReportAmino(SeedAmino(6), 2),
+                                ReportAmino(SeedAmino(9), 3)]}
 
         self.writer.add_nuc_read(nuc_seq, count=1)
-        self.writer.write(inserts=[3], region='R1')
+        self.writer.write(insertions={'R1': [3]},
+                          report_aminos_all=report_aminos,
+                          report_nucleotides_all={'R1': []},
+                          landmarks=yaml.safe_load(LANDMARKS_YAML),
+                          consensus_builder=ConsensusBuilder(['MAX', 0.1], 0))
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testUnsortedInserts(self):
         expected_text = """\
-seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,7,DE,1,
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,6,6,6,GACGAG
+R1-seed,0.100,R1,6,6,6,GACGAG
 """
+        report_aminos = {'R1': [ReportAmino(SeedAmino(0), 1),
+                                ReportAmino(SeedAmino(3), 2),
+                                ReportAmino(SeedAmino(12), 3)]}
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
-        self.writer.write(inserts=(9, 6), region='R1')
+        self.writer.write(insertions={'R1': [9, 6]},
+                          report_aminos_all=report_aminos,
+                          report_nucleotides_all={'R1': []},
+                          landmarks=yaml.safe_load(LANDMARKS_YAML),
+                          consensus_builder=ConsensusBuilder(['MAX', 0.1], 0))
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
