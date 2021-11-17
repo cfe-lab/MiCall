@@ -152,18 +152,18 @@ def get_insertion_info(right, report_aminos, report_nucleotides):
 def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
     assert region_start is not None
     for nuc_index, nucleotide in enumerate(region_nucleotides):
-        position = region_start + nuc_index
+        position = region_start + nuc_index - 1
         if position not in nuc_dict.keys():
             nuc_dict[position] = nucleotide.seed_nucleotide
         else:
             if len(nuc_dict[position].counts) == 0 and len(nucleotide.seed_nucleotide.counts) != 0:
-                logger.debug(f"Zero count in dict at position {position}. Inserting non-zero counts.")
+                logger.debug(f"Zero count in dict at position {position + 1}. Inserting non-zero counts.")
                 nuc_dict[position] = nucleotide.seed_nucleotide
             elif len(nuc_dict[position].counts) != 0 and len(nucleotide.seed_nucleotide.counts) == 0:
-                logger.debug(f"Zero count in nucleotide at position {position}. Inserting non-zero counts.")
+                logger.debug(f"Zero count in nucleotide at position {position + 1}. Inserting non-zero counts.")
             else:
                 if nuc_dict[position].counts != nucleotide.seed_nucleotide.counts:
-                    logger.debug(f"Counts don't match up. Position {position}")
+                    logger.debug(f"Counts don't match up. Position {position + 1}")
                     logger.debug(f"Counts in dict: {nuc_dict[position].counts}")
                     logger.debug(f"Counts in nucleotide: {nucleotide.seed_nucleotide.counts}")
                     logger.debug("Continuing with dict counts.")
@@ -181,12 +181,12 @@ def combine_region_insertions(insertions_dict, region_insertions, region_start):
             shifted_positions = (ref_position-3, ref_position-2, ref_position-1, ref_position+1, ref_position+2,
                                  ref_position+3)
             if any(shift_pos in insertions_dict for shift_pos in shifted_positions):
-                logger.debug(f"Disagreement or shift in insertions between regions. Position {ref_position}")
+                logger.debug(f"Disagreement or shift in insertions between regions. Position {ref_position + 1}")
             else:
                 new_insertions[ref_position] = region_insertions[position]
         else:
             if insertions_dict[ref_position].items() != region_insertions[position].items():
-                logger.debug(f"Insertion counts don't match up. Position {ref_position}")
+                logger.debug(f"Insertion counts don't match up. Position {ref_position + 1}")
                 logger.debug("Continuing with dict counts.")
     insertions_dict.update(new_insertions)
     return insertions_dict
@@ -1500,7 +1500,7 @@ class InsertionWriter(object):
         # {(seed, region): {pos: insert_count}}
         self.insert_pos_counts = defaultdict(Counter)
         self.seed = self.qcut = None
-        self.insert_file_name = None
+        self.insert_file_name = getattr(insert_file, 'name', None)
         if self.insert_file_name is None or self.insert_file_name == os.devnull:
             self.nuc_seqs = Counter()
             self.nuc_seqs_context = None
@@ -1611,9 +1611,9 @@ class InsertionWriter(object):
                         current_nuc_counts[insert_nuc_seq] += count
 
             for left in insert_counts.keys():
-                ref_pos = insert_behind.get(left)
+                ref_pos = insert_behind.get(left) - 1
                 self.aggregate_ref_insertions[region][ref_pos] =\
-                    aggregate_insertions(insert_nuc_counts[ref_pos],
+                    aggregate_insertions(insert_nuc_counts[ref_pos + 1],
                                          consensus_pos=left-1,
                                          coverage_nuc=insertion_coverage[left])
 
@@ -1644,7 +1644,7 @@ class InsertionWriter(object):
                         insertions[position].count_nucleotides('-', count=current_insert_coverage)
                     if self.aggregate_ref_insertions[region] is None:
                         self.aggregate_ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
-                    self.aggregate_ref_insertions[region][current_insert_behind] = insertions
+                    self.aggregate_ref_insertions[region][current_insert_behind - 1] = insertions
                     break
 
     def write_insertions_file(self, landmarks, consensus_builder):
@@ -1663,8 +1663,8 @@ class InsertionWriter(object):
                                               seed=self.seed,
                                               mixture_cutoff=row['consensus-percent-cutoff'],
                                               region=region,
-                                              ref_region_pos=ref_pos,
-                                              ref_genome_pos=ref_pos + region_start - 1,
+                                              ref_region_pos=ref_pos + 1,
+                                              ref_genome_pos=ref_pos + region_start,
                                               query_pos=insertions[0][1].consensus_index + 1)
                         self.insert_writer.writerow(insertions_row)
 

@@ -4,7 +4,7 @@ import unittest
 import yaml
 
 from micall.core.aln2counts import InsertionWriter, SeedAmino, \
-    ReportAmino
+    ReportAmino, ConsensusBuilder
 from micall.tests.test_aln2counts_report import create_sequence_report, prepare_reads
 
 
@@ -2266,22 +2266,43 @@ class InsertionWriterTest(unittest.TestCase):
 
     def testNoInserts(self):
         expected_text = """\
-seed,region,qcut,left,insert,count,before
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
 """
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
-        self.writer.write(inserts=[], region='R1')
+        self.writer.write(insertions={},
+                          report_aminos_all=[],
+                          report_nucleotides_all=[],
+                          landmarks=None,
+                          consensus_builder=ConsensusBuilder([0.1, 'MAX'], 0))
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 
     def testInsert(self):
         expected_text = """\
-seed,region,qcut,left,insert,count,before
-R1-seed,R1,15,7,D,1,
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,6,6,6,GAC
+R1-seed,0.100,R1,6,6,6,GAC
+"""
+        landmarks_yaml = """\
+- seed_pattern: R1-.*
+  coordinates: R1-seed
+  landmarks:
+    # Extra 3 positions for stop codon to get dropped.
+    - {name: R1, start: 1, end: 12, colour: steelblue}
 """
 
+        report_aminos = {'R1': [ReportAmino(SeedAmino(0), 0),
+                                ReportAmino(SeedAmino(3), 1),
+                                ReportAmino(SeedAmino(6), 2),
+                                ReportAmino(SeedAmino(9), 3)]}
+
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
-        self.writer.write(inserts=[6], region='R1')
+        self.writer.write(insertions={'R1': [6]},
+                          report_aminos_all=report_aminos,
+                          report_nucleotides_all={'R1': []},
+                          landmarks=yaml.safe_load(landmarks_yaml),
+                          consensus_builder=ConsensusBuilder([0.1, 'MAX'], 0))
 
         self.assertMultiLineEqual(expected_text, self.insert_file.getvalue())
 

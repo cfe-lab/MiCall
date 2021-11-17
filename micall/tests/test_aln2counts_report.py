@@ -969,10 +969,10 @@ GGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG
 """)
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,601,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,600,\
 AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCCGAACA\
 GGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG
-HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,601,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,600,\
 AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCCGAACA\
 GGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG"""
 
@@ -996,17 +996,18 @@ def test_whole_genome_consensus_amino_insertions(default_sequence_report):
     """ Check that insertions are correctly inserted into the whole genome consensus from a translated region"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,9,1,\
-CAGAAAAATTGTGGGTCACAGTCTATTATGAAAAAAAAAGGGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
+CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
 """)
-    # this is the ref genome from pos 6315 to 6400
-    # plus an insertion of 'AAAAAAAAA' here                  ^^^^^^^^^
-    # the insertion is between nucleotide 6344 and 6345
+    # this is the ref genome from pos 6316 to 6400 (1 based)
+    # plus an insertion of 'AAAAAAAAA' here
+    #                           ^^^^^^^^^
+    # the insertion is between nucleotide 6347 and 6348 (1 based)
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,6316,\
-CAGAAAAATTGTGGGTCACAGTCTATTATGAAAAAAAAAGGGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
-HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,6316,\
-CAGAAAAATTGTGGGTCACAGTCTATTATGAAAAAAAAAGGGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA"""
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,6315,\
+CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,6315,\
+CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA"""
 
     report_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
@@ -1031,13 +1032,14 @@ def test_whole_genome_consensus_nuc_insertions(default_sequence_report):
 HIV1-B-FR-K03455-seed,15,0,9,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
 """)
-    # this is the ref genome from pos 1 to 99 plus an insertion of 'AAAAAAAAA' ^^^^^^^^^
+    # this is the ref genome from pos 1 to 99 (0 based) plus an insertion of 'AAAAAAAAA'
+    #                                           ^^^^^^^^^
     # the insertion is between nucleotide 48 and 49
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,2,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
-HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,2,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
 
     report_file = StringIO()
@@ -1065,14 +1067,14 @@ GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACT
 HIV1-B-FR-K03455-seed,15,0,9,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAGGGAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
 """)
-    # this is the ref genome from pos 1 to 99 plus two different insertions
+    # this is the ref genome from pos 1 to 99 (0 based) plus two different insertions
     #                                           ^^^^^^^^^
     # the insertions are between nucleotide 48 and 49
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,2,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
-HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,2,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAARRRAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
 
     report_file = StringIO()
@@ -1100,15 +1102,15 @@ GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTA--
 HIV1-B-FR-K03455-seed,15,0,10,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTG---------GATCTACCACACACAAGGCTAAAACTTCCCTGATTAGCAGAACTACACACCAGG
 """)
-    # this is the ref genome from pos 1 to 99 plus different insertions in each of the reads
+    # this is the ref genome from pos 1 to 99 (0 based) plus different insertions in each of the reads
     # here and here:                            ^^^^^^^^^                     ^^^
     # In the MAX, only the insertion from the majority of reads will show up.
     # In the 0.1 mixture sequence, both insertions will show up as lower case.
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,2,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
-HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,2,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGaaaaaaaaaGATCTACCACACACAAGGCTAaaaCTTCCCTGATTAGCAGAACTACACACCAGG"""
 
     report_file = StringIO()
@@ -1134,14 +1136,14 @@ def test_whole_genome_consensus_insertions_overlap(default_sequence_report, capl
 HIV1-B-FR-K03455-seed,15,0,9,1,\
 TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA
 """)
-    # this is the ref genome from pos 6225 to 6315, plus an insertion of 'AAAAAAAAA' here
+    # this is the ref genome from pos 6225 to 6315 (0 based), plus an insertion of 'AAAAAAAAA' here
     #                                                      ^^^^^^^^^
-    # the insertion is between nucleotide 6283 and 6284
+    # the insertion is between nucleotide 6283 and 6284 (0 based)
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,6226,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,6225,\
 TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA
-HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,6226,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,6225,\
 TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA"""
 
     expected_log = [('micall.core.aln2counts', 10,
@@ -1178,12 +1180,12 @@ GGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAG
 """)
     #  ^ lost nucleotide is G on the second line from the end, in TGC
     expected_text = """\
-HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,5359,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,5358,\
 ATTCATCTGTATTACTTTGACTGTTTTTCAGACTCTGCTATAAGAA\
 AGGCCTTATTAGGACACATAGTTAGCCCTAGGTGTGAATATCAAGCAGGACATAACAAGGTAGGATCTCTACAATACT\
 TGGCACTGCATGCATTAATAACACCAAAAAAGATAAAGCCACCTTTGCCTAGTGTTACGAAACTGACAGAGGATAGAT\
 GGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAG
-HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,5359,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,5358,\
 ATTCATCTGTATTACTTTGACTGTTTTTCAGACTCTGCTATAAGAA\
 AGGCCTTATTAGGACACATAGTTAGCCCTAGGTGTGAATATCAAGCAGGACATAACAAGGTAGGATCTCTACAATACT\
 TGGCACTGCATGCATTAATAACACCAAAAAAGATAAAGCCACCTTTGCCTAGTGTTACGAAACTGACAGAGGATAGAT\
@@ -1214,12 +1216,12 @@ AGCAGAATAGGCGTTACTCGACAGAGGAGAGCAAGAAATGGAGCCAGTAGATCCTAG
 """)
     #  ^ lost nucleotide is C towards the end of the 3rd line, in TTTCAGAA
     expected_text = """\
-HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,5559,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,5558,\
 ATGGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAGAGCTTTTAGAGGAGCTT\
 AAGAATGAAGCTGTTAGACATTTTCCTAGGATTTGGCTCCATGGCTTAGGGCAACATATCTATGAAACTTATGGGGAT\
 ACTTGGGCAGGAGTGGAAGCCATAATAAGAATTCTGCAACAACTGCTGTTTATTCATTTCAGAATTGGGTGTCGACAT\
 AGCAGAATAGGCGTTACTCGACAGAGGAGAGCAAGAAATGGAGCCAGTAGATCCTAG
-HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,5559,\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,5558,\
 ATGGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAGAGCTTTTAGAGGAGCTT\
 AAGAATGAAGCTGTTAGACATTTTCCTAGGATTTGGCTCCATGGCTTAGGGCAACATATCTATGAAACTTATGGGGAT\
 ACTTGGGCAGGAGTGGAAGCCATAATAAGAATTCTGCAACAACTGCTGTTTATTCATTTCAGAATTGGGTGTCGACAT\
@@ -1251,7 +1253,7 @@ def test_consensus_region_differences(caplog):
     nucleotide4.count_nucleotides('T', 3)
     nucleotide5.count_nucleotides('T', 6)
     nucleotide6.count_nucleotides('A', 6)
-    nuc_dict = {1: nucleotide1, 2: nucleotide2, 3: nucleotide3, 4: nucleotide_none, 5: nucleotide5}
+    nuc_dict = {0: nucleotide1, 1: nucleotide2, 2: nucleotide3, 3: nucleotide_none, 4: nucleotide5}
     # counts are: A:3, C:3, G:3, None, T:6
 
     region_nucleotides = [ReportNucleotide(1, seed_nucleotide=nucleotide2),
@@ -1261,7 +1263,7 @@ def test_consensus_region_differences(caplog):
                           ReportNucleotide(5, seed_nucleotide=nucleotide6)]
     # counts are: C:3, None, T:3, C:3, A:6 (starting at position 2)
 
-    expected_counts = {1: nucleotide1, 2: nucleotide2, 3: nucleotide3, 4: nucleotide4, 5: nucleotide5, 6: nucleotide6}
+    expected_counts = {0: nucleotide1, 1: nucleotide2, 2: nucleotide3, 3: nucleotide4, 4: nucleotide5, 5: nucleotide6}
     expected_log = [
         ('micall.core.aln2counts',
          logging.DEBUG,
