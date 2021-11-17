@@ -251,8 +251,8 @@ def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None)
 class ConsensusBuilder(object):
     """ Helper class to build the consensus for different mixture cutoffs."""
     def __init__(self,
-                   mixture_cutoffs,
-                   consensus_min_coverage):
+                 mixture_cutoffs,
+                 consensus_min_coverage):
         self.conseq_mixture_cutoffs = mixture_cutoffs
         self.consensus_min_coverage = consensus_min_coverage
         self.qcut = None
@@ -390,10 +390,6 @@ class SequenceReport(object):
         self.conseq_insertion_counts = (conseq_insertion_counts or
                                         defaultdict(Counter))
         self.conseq_insertion_nucs = defaultdict(lambda: defaultdict(Counter))
-        # insertions relative to consensus, by consensus position:
-        self.aggregate_conseq_insertions = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
-        # insertions relative to consensus, by ref position:
-        self.aggregate_ref_insertions = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: SeedNucleotide)))
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
         self.amino_writer = self.amino_detail_writer = None
         self.genome_coverage_writer = self.minimap_hits_writer = None
@@ -679,7 +675,7 @@ class SequenceReport(object):
                 self.conseq_insertion_nucs[ref_name][ref_position] = insertion_nucs[ref_name][ref_position]
         for ref_name in insertion_nucs.keys():
             for ref_position in insertion_nucs[ref_name].keys():
-                self.aggregate_conseq_insertions[ref_position] = \
+                self.insert_writer.aggregate_conseq_insertions[ref_position] = \
                     aggregate_insertions(insertion_nucs[ref_name][ref_position], consensus_pos=ref_position)
 
     @staticmethod
@@ -763,21 +759,21 @@ class SequenceReport(object):
                     else:
                         old_inserted_nucs[region][key] = report[key]
         old_aggregated_insertions = self.combined_aggregated_ref_insertions[group_ref]
-        for region in self.aggregate_ref_insertions:
-            if self.aggregate_ref_insertions[region] is not None:
-                for position in self.aggregate_ref_insertions[region]:
-                    for insertion_position in self.aggregate_ref_insertions[region][position]:
+        for region in self.insert_writer.aggregate_ref_insertions:
+            if self.insert_writer.aggregate_ref_insertions[region] is not None:
+                for position in self.insert_writer.aggregate_ref_insertions[region]:
+                    for insertion_position in self.insert_writer.aggregate_ref_insertions[region][position]:
                         nuc = old_aggregated_insertions[region][position].get(insertion_position)
                         if nuc is not None:
-                            nuc.add(self.aggregate_ref_insertions[region][position][insertion_position])
+                            nuc.add(self.insert_writer.aggregate_ref_insertions[region][position][insertion_position])
                         else:
                             old_aggregated_insertions[region][position][insertion_position] =\
-                                self.aggregate_ref_insertions[region][position][insertion_position]
+                                self.insert_writer.aggregate_ref_insertions[region][position][insertion_position]
 
         self.reports.clear()
         self.report_nucleotides.clear()
-        self.aggregate_ref_insertions.clear()
-        self.aggregate_conseq_insertions.clear()
+        self.insert_writer.aggregate_ref_insertions.clear()
+        self.insert_writer.aggregate_conseq_insertions.clear()
 
     def write_amino_report(self,
                            amino_writer: DictWriter,
@@ -1362,51 +1358,11 @@ class SequenceReport(object):
 
     def write_insertions(self, insert_writer=None):
         insert_writer = insert_writer or self.insert_writer
-        for coordinate_name, coordinate_inserts in self.inserts.items():
-            self.aggregate_ref_insertions[coordinate_name] =\
-                insert_writer.write(coordinate_inserts,
-                                    coordinate_name,
-                                    self.reports[coordinate_name],
-                                    self.report_nucleotides[coordinate_name])
-        self.parse_conseq_insertions()
-        self.write_insertions_file(insert_writer.insert_writer)
-
-    def parse_conseq_insertions(self):
-        for insertion_position in self.aggregate_conseq_insertions.keys():
-            insertions = self.aggregate_conseq_insertions[insertion_position]
-            for region in self.report_nucleotides:
-                report_aminos = []
-                report_nucleotides = self.report_nucleotides[region]
-                current_insert_target, current_insert_behind, current_insert_coverage = \
-                    get_insertion_info(insertion_position, report_aminos, report_nucleotides)
-                if current_insert_behind is not None:
-                    for position in insertions:
-                        insertions[position].count_nucleotides('-', count=current_insert_coverage)
-                    if self.aggregate_ref_insertions[region] is None:
-                        self.aggregate_ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
-                    self.aggregate_ref_insertions[region][current_insert_behind] = insertions
-                    break
-
-    def write_insertions_file(self, insert_writer):
-        landmark_reader = LandmarkReader(self.landmarks)
-        for region in self.aggregate_ref_insertions.keys():
-            try:
-                region_info = landmark_reader.get_gene(self.seed, region)
-                region_start = region_info['start']
-            except ValueError:
-                region_start = 1
-            if self.aggregate_ref_insertions[region] is not None:
-                for ref_pos in self.aggregate_ref_insertions[region].keys():
-                    insertions = list(self.aggregate_ref_insertions[region][ref_pos].items())
-                    for row in self.consensus_builder.get_consensus_rows(insertions, is_nucleotide=True):
-                        insertions_row = dict(insertion=row["sequence"],
-                                              seed=self.seed,
-                                              mixture_cutoff=row['consensus-percent-cutoff'],
-                                              region=region,
-                                              ref_region_pos=ref_pos,
-                                              ref_genome_pos=ref_pos + region_start - 1,
-                                              query_pos=insertions[0][1].consensus_index + 1)
-                        insert_writer.writerow(insertions_row)
+        insert_writer.write(self.inserts,
+                            self.reports,
+                            self.report_nucleotides,
+                            self.landmarks,
+                            self.consensus_builder)
 
     def read_remap_conseqs(self, remap_conseq_csv):
         # noinspection PyTypeChecker
@@ -1554,6 +1510,11 @@ class InsertionWriter(object):
                                        'nuc_read_counts')
             self.nuc_seqs = self.nuc_seqs_context = BigCounter(
                 file_prefix=file_prefix)
+        # insertions relative to consensus, by consensus position:
+        self.aggregate_conseq_insertions = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
+        # insertions relative to consensus, by ref position:
+        self.aggregate_ref_insertions = defaultdict(
+            lambda: defaultdict(lambda: defaultdict(lambda: SeedNucleotide)))
 
     def __enter__(self):
         """ Context manager makes sure that BigCounter gets cleaned up. """
@@ -1583,88 +1544,129 @@ class InsertionWriter(object):
         """
         self.nuc_seqs[offset_sequence] += count
 
-    def write(self, inserts, region, report_aminos=None, report_nucleotides=None):
+    def write(self, insertions, report_aminos_all, report_nucleotides_all, landmarks, consensus_builder):
         """ Write any insert ranges to the file.
 
         Sequence data comes from the reads that were added to the current group.
-        @param inserts: indexes of positions in the reads that should be
+        @param insertions: regions and indexes of positions in the reads that should be
             reported as insertions.
-        @param region: the name of the coordinate region the current group was
-            mapped to
-        @param report_aminos: a list of ReportAmino objects that represent the
+        @param report_aminos_all: a list of ReportAmino objects that represent the
             sequence that successfully mapped to the coordinate reference.
-        @param report_nucleotides: a list of ReportNucleotides objects that
+        @param report_nucleotides_all: a list of ReportNucleotides objects that
             represent the sequence, in case the region is not translated.
+        @param landmarks: landmarks for the seed
+        @param consensus_builder: helper function to write insertion consensus
         """
-        if len(inserts) == 0:
+        if len(insertions) == 0:
             return
 
-        aggregated_ref_insertions = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
+        for region, inserts in insertions.items():
+            self.aggregate_ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
 
-        report_aminos = report_aminos or []
-        report_nucleotides = report_nucleotides or []
+            report_aminos = report_aminos_all[region] or []
+            report_nucleotides = report_nucleotides_all[region] or []
 
-        region_insert_pos_counts = self.insert_pos_counts[(self.seed, region)]
-        inserts = list(inserts)
-        inserts.sort()
+            region_insert_pos_counts = self.insert_pos_counts[(self.seed, region)]
+            inserts = list(inserts)
+            inserts.sort()
 
-        # convert insertion coordinates into contiguous ranges
-        insert_ranges = []
-        if len(report_aminos) == 0 and len(report_nucleotides) != 0:
-            distance_insertions = 1
-        else:
-            distance_insertions = 3
-        for insert in inserts:
-            if not insert_ranges or insert != insert_ranges[-1][1]:
-                # just starting or we hit a gap
-                insert_ranges.append([insert, insert + distance_insertions])
+            # convert insertion coordinates into contiguous ranges
+            insert_ranges = []
+            if len(report_aminos) == 0 and len(report_nucleotides) != 0:
+                distance_insertions = 1
             else:
-                insert_ranges[-1][1] += distance_insertions
+                distance_insertions = 3
+            for insert in inserts:
+                if not insert_ranges or insert != insert_ranges[-1][1]:
+                    # just starting or we hit a gap
+                    insert_ranges.append([insert, insert + distance_insertions])
+                else:
+                    insert_ranges[-1][1] += distance_insertions
 
-        # enumerate insertions by popping out all AA sub-string variants
-        insert_counts = OrderedDict()  # {left: {insert_seq: count}}
-        insert_targets = {}  # {left: inserted_before_pos}
-        insert_behind = {}
-        insert_nuc_counts = {}
-        insertion_coverage = {}  # max coverage left and right of the insertion
-        for left, right in insert_ranges:
-            current_insert_target, current_insert_behind, current_insert_coverage =\
-                get_insertion_info(right, report_aminos, report_nucleotides)
-            insert_targets[left] = current_insert_target
-            insert_behind[left] = current_insert_behind
-            insertion_coverage[left] = current_insert_coverage
-            current_counts = Counter()
-            current_nuc_counts = Counter()
-            insert_counts[left] = current_counts
-            insert_nuc_counts[insert_behind.get(left)] = current_nuc_counts
-            for nuc_seq, count in self.nuc_seqs.items():
-                insert_nuc_seq = nuc_seq[left:right]
-                is_valid = (insert_nuc_seq and
-                            'n' not in insert_nuc_seq and
-                            '-' not in insert_nuc_seq)
-                if is_valid:
-                    insert_amino_seq = translate(insert_nuc_seq)
-                    if insert_amino_seq:
-                        current_counts[insert_amino_seq] += count
-                    current_nuc_counts[insert_nuc_seq] += count
+            # enumerate insertions by popping out all AA sub-string variants
+            insert_counts = OrderedDict()  # {left: {insert_seq: count}}
+            insert_targets = {}  # {left: inserted_before_pos}
+            insert_behind = {}
+            insert_nuc_counts = {}
+            insertion_coverage = {}  # max coverage left and right of the insertion
+            for left, right in insert_ranges:
+                current_insert_target, current_insert_behind, current_insert_coverage =\
+                    get_insertion_info(right, report_aminos, report_nucleotides)
+                insert_targets[left] = current_insert_target
+                insert_behind[left] = current_insert_behind
+                insertion_coverage[left] = current_insert_coverage
+                current_counts = Counter()
+                current_nuc_counts = Counter()
+                insert_counts[left] = current_counts
+                insert_nuc_counts[insert_behind.get(left)] = current_nuc_counts
+                for nuc_seq, count in self.nuc_seqs.items():
+                    insert_nuc_seq = nuc_seq[left:right]
+                    is_valid = (insert_nuc_seq and
+                                'n' not in insert_nuc_seq and
+                                '-' not in insert_nuc_seq)
+                    if is_valid:
+                        insert_amino_seq = translate(insert_nuc_seq)
+                        if insert_amino_seq:
+                            current_counts[insert_amino_seq] += count
+                        current_nuc_counts[insert_nuc_seq] += count
 
-        for left in insert_counts.keys():
-            ref_pos = insert_behind.get(left)
-            aggregated_ref_insertions[ref_pos] = aggregate_insertions(insert_nuc_counts[ref_pos],
-                                                                      consensus_pos=left-1,
-                                                                      coverage_nuc=insertion_coverage[left])
+            for left in insert_counts.keys():
+                ref_pos = insert_behind.get(left)
+                self.aggregate_ref_insertions[region][ref_pos] =\
+                    aggregate_insertions(insert_nuc_counts[ref_pos],
+                                         consensus_pos=left-1,
+                                         coverage_nuc=insertion_coverage[left])
 
-        # record insertions to CSV
-        for left, counts in insert_counts.items():
-            for insert_seq, count in counts.most_common():
-                insert_before = insert_targets.get(left)
-                # Only care about insertions in the middle of the sequence,
-                # so ignore any that come before or after the reference.
-                # Also report if we're in test mode (no report_aminos).
-                if not report_aminos or insert_before not in (1, None):
-                    if insert_before is not None:
-                        region_insert_pos_counts[insert_before-1] += count
-        return aggregated_ref_insertions
+            # record insertions to CSV
+            for left, counts in insert_counts.items():
+                for insert_seq, count in counts.most_common():
+                    insert_before = insert_targets.get(left)
+                    # Only care about insertions in the middle of the sequence,
+                    # so ignore any that come before or after the reference.
+                    # Also report if we're in test mode (no report_aminos).
+                    if not report_aminos or insert_before not in (1, None):
+                        if insert_before is not None:
+                            region_insert_pos_counts[insert_before-1] += count
+
+        self.parse_conseq_insertions(report_nucleotides_all)
+        self.write_insertions_file(landmarks, consensus_builder)
+
+    def parse_conseq_insertions(self, report_nucleotides_all):
+        for insertion_position in self.aggregate_conseq_insertions.keys():
+            insertions = self.aggregate_conseq_insertions[insertion_position]
+            for region in report_nucleotides_all:
+                report_aminos = []
+                report_nucleotides = report_nucleotides_all[region]
+                current_insert_target, current_insert_behind, current_insert_coverage = \
+                    get_insertion_info(insertion_position, report_aminos, report_nucleotides)
+                if current_insert_behind is not None:
+                    for position in insertions:
+                        insertions[position].count_nucleotides('-', count=current_insert_coverage)
+                    if self.aggregate_ref_insertions[region] is None:
+                        self.aggregate_ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
+                    self.aggregate_ref_insertions[region][current_insert_behind] = insertions
+                    break
+
+    def write_insertions_file(self, landmarks, consensus_builder):
+        landmark_reader = LandmarkReader(landmarks)
+        for region in self.aggregate_ref_insertions.keys():
+            try:
+                region_info = landmark_reader.get_gene(self.seed, region)
+                region_start = region_info['start']
+            except ValueError:
+                region_start = 1
+            if self.aggregate_ref_insertions[region] is not None:
+                for ref_pos in self.aggregate_ref_insertions[region].keys():
+                    insertions = list(self.aggregate_ref_insertions[region][ref_pos].items())
+                    for row in consensus_builder.get_consensus_rows(insertions, is_nucleotide=True):
+                        insertions_row = dict(insertion=row["sequence"],
+                                              seed=self.seed,
+                                              mixture_cutoff=row['consensus-percent-cutoff'],
+                                              region=region,
+                                              ref_region_pos=ref_pos,
+                                              ref_genome_pos=ref_pos + region_start - 1,
+                                              query_pos=insertions[0][1].consensus_index + 1)
+                        self.insert_writer.writerow(insertions_row)
 
 
 def format_cutoff(cutoff):
