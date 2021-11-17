@@ -119,6 +119,7 @@ R1-seed,15,MAX,6,TTTxGG
 R1-seed,15,0.100,6,TTTxGG
 """
         self.report.consensus_min_coverage = 1
+        self.report.consensus_builder.consensus_min_coverage = 1
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -136,6 +137,7 @@ R1-seed,15,0,1,7,NNNNN
 region,q-cutoff,consensus-percent-cutoff,offset,sequence
 """
         self.report.consensus_min_coverage = 1
+        self.report.consensus_builder.consensus_min_coverage = 1
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -156,6 +158,7 @@ R1-seed,15,MAX,0,AAATxxGGG
 R1-seed,15,0.100,0,AAATxxGGG
 """
         self.report.consensus_min_coverage = 10
+        self.report.consensus_builder.consensus_min_coverage = 10
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -175,6 +178,7 @@ R1-seed,15,MAX,4,TTGGG
 R1-seed,15,0.100,4,TTGGG
 """
         self.report.consensus_min_coverage = 10
+        self.report.consensus_builder.consensus_min_coverage = 10
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -194,6 +198,7 @@ R1-seed,15,MAX,0,AAAT
 R1-seed,15,0.100,0,AAAT
 """
         self.report.consensus_min_coverage = 10
+        self.report.consensus_builder.consensus_min_coverage = 10
 
         self.report.write_consensus_header(self.report_file)
         self.report.read(aligned_reads)
@@ -273,6 +278,7 @@ R1-seed,,15,MAX,6,,TTTxGG
 R1-seed,R1,15,MAX,6,3,TTTxGG
 """
         self.report.consensus_min_coverage = 1
+        self.report.consensus_builder.consensus_min_coverage = 1
 
         self.report.write_consensus_all_header(self.report_file)
         self.report.read(aligned_reads)
@@ -290,6 +296,7 @@ R1-seed,15,0,1,7,NNNNN
 seed,region,q-cutoff,consensus-percent-cutoff,seed-offset,region-offset,sequence
 """
         self.report.consensus_min_coverage = 1
+        self.report.consensus_builder.consensus_min_coverage = 1
 
         self.report.write_consensus_all_header(self.report_file)
         self.report.read(aligned_reads)
@@ -310,6 +317,7 @@ R1-seed,,15,MAX,0,,AAATTTGGG
 R1-seed,R1,15,MAX,0,0,AAATTTGGG
 """
         self.report.consensus_min_coverage = 10
+        self.report.consensus_builder.consensus_min_coverage = 10
 
         self.report.write_consensus_all_header(self.report_file)
         self.report.read(aligned_reads)
@@ -329,6 +337,7 @@ R1-seed,,15,MAX,0,,AAATTTGGG
 R1-seed,R1,15,MAX,0,0,AAATTTGGG
 """
         self.report.consensus_min_coverage = 10
+        self.report.consensus_builder.consensus_min_coverage = 10
 
         self.report.write_consensus_all_header(self.report_file)
         self.report.read(aligned_reads)
@@ -348,6 +357,7 @@ R1-seed,,15,MAX,0,,AAATTTGGG
 R1-seed,R1,15,MAX,0,0,AAATTTGGG
 """
         self.report.consensus_min_coverage = 10
+        self.report.consensus_builder.consensus_min_coverage = 10
 
         self.report.write_consensus_all_header(self.report_file)
         self.report.read(aligned_reads)
@@ -368,6 +378,7 @@ R7-seed,R7a,15,MAX,0,0,AAATTTCAG
 R7-seed,R7b,15,MAX,15,0,CGAGAGCAT
 """
         self.report.consensus_min_coverage = 10
+        self.report.consensus_builder.consensus_min_coverage = 10
 
         self.report.write_consensus_all_header(self.report_file)
         self.report.read(aligned_reads)

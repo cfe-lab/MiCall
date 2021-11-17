@@ -248,6 +248,64 @@ def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None)
     return aggregated_insertions
 
 
+class ConsensusBuilder(object):
+    """ Helper class to build the consensus for different mixture cutoffs."""
+    def __init__(self,
+                   mixture_cutoffs,
+                   consensus_min_coverage):
+        self.conseq_mixture_cutoffs = mixture_cutoffs
+        self.consensus_min_coverage = consensus_min_coverage
+        self.qcut = None
+
+    def get_consensus_rows(
+            self,
+            seed_entries,
+            ignore_coverage=False,
+            is_nucleotide=False,
+            discard_deletions=True,
+    ):
+        mixture_cutoffs = ([MAX_CUTOFF] if ignore_coverage
+                           else self.conseq_mixture_cutoffs)
+        min_coverage = 1 if ignore_coverage else self.consensus_min_coverage
+        for mixture_cutoff in mixture_cutoffs:
+            consensus = ''
+            seed_offset = None
+            if not is_nucleotide:
+                for seed_pos, seed_amino in seed_entries:
+                    for nuc_index, seed_nuc in enumerate(seed_amino.nucleotides):
+                        nuc_coverage = seed_nuc.get_coverage()
+                        if nuc_coverage < min_coverage:
+                            if seed_offset is not None:
+                                consensus += 'x'
+                        else:
+                            nuc_consensus = seed_nuc.get_consensus(mixture_cutoff, discard_deletions=discard_deletions)
+                            if seed_offset is None and nuc_consensus:
+                                seed_offset = seed_pos + nuc_index
+                            consensus += nuc_consensus
+                    if seed_offset is None:
+                        # Still haven't started, so reset the consensus.
+                        consensus = ''
+            else:
+                for nuc_index, seed_nuc in seed_entries:
+                    nuc_coverage = seed_nuc.get_coverage()
+                    if nuc_coverage < min_coverage:
+                        if seed_offset is not None:
+                            consensus += 'x'
+                    else:
+                        nuc_consensus = seed_nuc.get_consensus(mixture_cutoff, discard_deletions=discard_deletions)
+                        if seed_offset is None and nuc_consensus:
+                            seed_offset = nuc_index
+                        consensus += nuc_consensus
+            if seed_offset is not None:
+                consensus = consensus.rstrip('x')
+                yield {
+                    'q-cutoff': self.qcut,
+                    'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
+                    'seed-offset': seed_offset,
+                    'sequence': consensus
+                }
+
+
 class SequenceReport(object):
     """ Hold the data for several reports related to a sample's genetic sequence.
 
@@ -260,7 +318,8 @@ class SequenceReport(object):
                  conseq_mixture_cutoffs: typing.List[float],
                  clipping_counts=None,
                  conseq_insertion_counts=None,
-                 landmarks_yaml=None):
+                 landmarks_yaml=None,
+                 consensus_min_coverage=0):
         """ Create an object instance.
 
         :param insert_writer: will track reads and write out any insertions
@@ -270,7 +329,7 @@ class SequenceReport(object):
             determine what portion a variant must exceed before it will be
             included as a mixture in the consensus.
         """
-        self.consensus_min_coverage = 0
+        self.consensus_min_coverage = consensus_min_coverage
         self.callback_progress = 0
         self.callback_next = self.callback_chunk_size = self.callback_max = None
         self.insert_writer = insert_writer
@@ -295,6 +354,9 @@ class SequenceReport(object):
             landmarks_yaml = landmarks_path.read_text()
         self.landmarks = yaml.safe_load(landmarks_yaml)
         self.coordinate_refs = self.remap_conseqs = None
+
+        self.consensus_builder = ConsensusBuilder(self.conseq_mixture_cutoffs,
+                                                  consensus_min_coverage)
 
         self.combined_reports: typing.Dict[
             str,  # seed
@@ -373,6 +435,7 @@ class SequenceReport(object):
                 self.detail_seed = row['refname']
                 self.seed = trim_contig_name(self.detail_seed)
                 self.qcut = row['qcut']
+                self.consensus_builder.qcut = row['qcut']
             nuc_seq = row['seq']
             offset = int(row['offset'])
             count = int(row['count'])
@@ -1102,54 +1165,6 @@ class SequenceReport(object):
             columns = ["seed"] + columns
         return csv.DictWriter(conseq_file, columns, lineterminator=os.linesep)
 
-    def get_consensus_rows(
-            self,
-            seed_entries,
-            ignore_coverage=False,
-            is_nucleotide=False,
-            discard_deletions=True,
-    ):
-        mixture_cutoffs = ([MAX_CUTOFF] if ignore_coverage
-                           else self.conseq_mixture_cutoffs)
-        min_coverage = 1 if ignore_coverage else self.consensus_min_coverage
-        for mixture_cutoff in mixture_cutoffs:
-            consensus = ''
-            seed_offset = None
-            if not is_nucleotide:
-                for seed_pos, seed_amino in seed_entries:
-                    for nuc_index, seed_nuc in enumerate(seed_amino.nucleotides):
-                        nuc_coverage = seed_nuc.get_coverage()
-                        if nuc_coverage < min_coverage:
-                            if seed_offset is not None:
-                                consensus += 'x'
-                        else:
-                            nuc_consensus = seed_nuc.get_consensus(mixture_cutoff, discard_deletions=discard_deletions)
-                            if seed_offset is None and nuc_consensus:
-                                seed_offset = seed_pos + nuc_index
-                            consensus += nuc_consensus
-                    if seed_offset is None:
-                        # Still haven't started, so reset the consensus.
-                        consensus = ''
-            else:
-                for nuc_index, seed_nuc in seed_entries:
-                    nuc_coverage = seed_nuc.get_coverage()
-                    if nuc_coverage < min_coverage:
-                        if seed_offset is not None:
-                            consensus += 'x'
-                    else:
-                        nuc_consensus = seed_nuc.get_consensus(mixture_cutoff, discard_deletions=discard_deletions)
-                        if seed_offset is None and nuc_consensus:
-                            seed_offset = nuc_index
-                        consensus += nuc_consensus
-            if seed_offset is not None:
-                consensus = consensus.rstrip('x')
-                yield {
-                    'q-cutoff': self.qcut,
-                    'consensus-percent-cutoff': format_cutoff(mixture_cutoff),
-                    'seed-offset': seed_offset,
-                    'sequence': consensus
-                }
-
     def _write_consensus_helper(
             self,
             amino_entries,
@@ -1159,8 +1174,10 @@ class SequenceReport(object):
             is_nucleotide=False,
             discard_deletions=True,
     ):
-        for row in self.get_consensus_rows(amino_entries, ignore_coverage=ignore_coverage, is_nucleotide=is_nucleotide,
-                                           discard_deletions=discard_deletions):
+        for row in self.consensus_builder.get_consensus_rows(amino_entries,
+                                                             ignore_coverage=ignore_coverage,
+                                                             is_nucleotide=is_nucleotide,
+                                                             discard_deletions=discard_deletions):
             row.update(row_metadata)
             if 'region-offset' not in row_metadata:
                 row["offset"] = row.pop("seed-offset")
@@ -1381,7 +1398,7 @@ class SequenceReport(object):
             if self.aggregate_ref_insertions[region] is not None:
                 for ref_pos in self.aggregate_ref_insertions[region].keys():
                     insertions = list(self.aggregate_ref_insertions[region][ref_pos].items())
-                    for row in self.get_consensus_rows(insertions, is_nucleotide=True):
+                    for row in self.consensus_builder.get_consensus_rows(insertions, is_nucleotide=True):
                         insertions_row = dict(insertion=row["sequence"],
                                               seed=self.seed,
                                               mixture_cutoff=row['consensus-percent-cutoff'],
@@ -1725,8 +1742,8 @@ def aln2counts(aligned_csv,
         report = SequenceReport(insert_writer,
                                 projects,
                                 CONSEQ_MIXTURE_CUTOFFS,
-                                landmarks_yaml=landmarks_yaml)
-        report.consensus_min_coverage = CONSENSUS_MIN_COVERAGE
+                                landmarks_yaml=landmarks_yaml,
+                                consensus_min_coverage=CONSENSUS_MIN_COVERAGE)
         report.write_amino_header(amino_csv)
         report.write_consensus_header(conseq_csv)
         report.write_consensus_regions_header(conseq_region_csv)
