@@ -679,7 +679,7 @@ class SequenceReport(object):
         for ref_name in insertion_nucs.keys():
             for ref_position in insertion_nucs[ref_name].keys():
                 self.insert_writer.aggregate_conseq_insertions[ref_position] = \
-                    aggregate_insertions(insertion_nucs[ref_name][ref_position], consensus_pos=ref_position)
+                    aggregate_insertions(insertion_nucs[ref_name][ref_position], consensus_pos=ref_position - 1)
 
     @staticmethod
     def _create_amino_writer(amino_file):
@@ -1648,7 +1648,6 @@ class InsertionWriter(object):
                     if self.aggregate_ref_insertions[region] is None:
                         self.aggregate_ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
                     self.aggregate_ref_insertions[region][current_insert_behind - 1] = insertions
-                    break
 
     def write_insertions_file(self, landmarks, consensus_builder):
         landmark_reader = LandmarkReader(landmarks)

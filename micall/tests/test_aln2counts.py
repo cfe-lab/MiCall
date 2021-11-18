@@ -1637,6 +1637,36 @@ R3-seed,0.100,R3a,12,12,12,GGG
         self.assertEqual(expected_insertions,
                          self.report.insert_writer.insert_file.getvalue())
 
+    def testInsertionsRelativeToConsensus(self):
+        """ Test that insertions relative to the consensus are handled correctly """
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,10,0,AAATTTAGG
+""")
+        conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,R1-seed,3,AAC,AAA
+Example_read_2,F,R1-seed,3,AAC,AAA
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,0.100,R1,3,3,3,aac
+""")
+
+        self.report.read_insertions(conseq_ins_csv)
+        self.report.write_amino_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
     def testGapBetweenForwardAndReverse(self):
         """ Lower-case n represents a gap between forward and reverse reads.
 
