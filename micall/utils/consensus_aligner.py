@@ -349,7 +349,8 @@ class ConsensusAligner:
                         continue
                     ref_start = amino_alignment.ref_start
                     ref_end = amino_alignment.ref_end
-                    if ref_start < repeat_pos-1 < ref_end:
+                    # make sure that there are at least 3 nucleotides in each split alignment
+                    if ref_start <= repeat_pos-3 and repeat_pos+3 <= ref_end:
                         offset = repeat_pos - ref_start
                         query_start = amino_alignment.query_start
                         amino_alignment2 = replace(
@@ -368,17 +369,19 @@ class ConsensusAligner:
                         continue
                     ref_start = amino_alignment.ref_start
                     ref_end = amino_alignment.ref_end
-                    if ref_start < skip_pos-1 < ref_end:
+                    # make sure that there are at least 3 nucleotides in each split alignment
+                    if ref_start <= skip_pos-4 and skip_pos+3 <= ref_end:
                         offset = skip_pos - ref_start
                         query_start = amino_alignment.query_start
+                        query_end = amino_alignment.query_end
                         amino_alignment2 = replace(
                             amino_alignment,
                             ref_start=skip_pos,
-                            query_start=query_start + offset,
+                            query_start=query_start + offset - 1,
                             query_end=query_end+1,
                             reading_frame=(amino_alignment.reading_frame+1) % 3)
-                        amino_alignment.ref_end = skip_pos
-                        amino_alignment.query_end = query_start + offset + 1
+                        amino_alignment.ref_end = skip_pos - 1
+                        amino_alignment.query_end = query_start + offset
                         amino_sections.insert(i+1, amino_alignment2)
                         break
             for amino_alignment in amino_sections:
@@ -527,7 +530,7 @@ class ConsensusAligner:
         if skip_position is not None:
             reading_frame1 = reading_frame2 = None
             for alignment in self.amino_alignments:
-                if alignment.ref_end == skip_position:
+                if alignment.ref_end == skip_position-1:
                     reading_frame1 = alignment.reading_frame
                 elif alignment.ref_start == skip_position:
                     reading_frame2 = alignment.reading_frame
@@ -634,10 +637,10 @@ class ConsensusAligner:
                     coordinate_inserts.remove(seed_amino.consensus_nuc_index)
                     prev_consensus_nuc_index = seed_amino.consensus_nuc_index
                 if skip_position is not None and coord_index == (skip_position-start_pos)//3 and \
-                        amino_alignment.ref_end == skip_position:
-                    conseq_pos = coord2conseq[(skip_position - start_pos) // 3] + 1
+                        amino_alignment.ref_start <= skip_position-1 <= amino_alignment.ref_end:
+                    conseq_pos = coord2conseq[(skip_position - 1 - start_pos) // 3]
                     if has_skipped_nucleotide:
-                        skipped_nuc = self.reading_frames[amino_alignment.reading_frame][conseq_pos].nucleotides[0]
+                        skipped_nuc = self.reading_frames[amino_alignment.reading_frame][conseq_pos + 1].nucleotides[0]
                     else:
                         skipped_nuc = SeedNucleotide()
                         coverage = self.get_deletion_coverage(conseq_pos)
@@ -688,9 +691,9 @@ class ConsensusAligner:
                     continue
             if skip_position is not None:
                 if skip_position == start_pos + report_nuc_index and skipped_nuc is not None:
-                    report_nuc = report_nucleotides[report_nuc_index+1]
+                    report_nuc = report_nucleotides[report_nuc_index]
                     report_nuc.seed_nucleotide.add(skipped_nuc)
-                if skip_position < start_pos + report_nuc_index:
+                if skip_position-1 < start_pos + report_nuc_index:
                     report_nuc_index += 1
             report_nuc = report_nucleotides[report_nuc_index]
             report_nuc.seed_nucleotide.add(seed_nuc)
@@ -717,8 +720,10 @@ class ConsensusAligner:
             seed_aminos = self.reading_frames[0]
             for section_size, section_action in alignment.cigar:
                 if section_action == CigarActions.INSERT:
-                    consensus_nuc_index += section_size
-                    # TODO: Record insertion positions.
+                    for _ in range(section_size):
+                        if start_pos - 1 <= ref_nuc_index < end_pos:
+                            self.inserts.add(consensus_nuc_index)
+                        consensus_nuc_index += 1
                     continue
                 if section_action == CigarActions.DELETE:
                     coverage = self.get_deletion_coverage(consensus_nuc_index)
@@ -751,7 +756,8 @@ class ConsensusAligner:
 
 @dataclass
 class AminoAlignment:
-    """ Part of a full alignment, with aligned aminos. """
+    """ Part of a full alignment, with aligned aminos.
+     Positions are 0-based with non-inclusive ends."""
     query_start: int
     query_end: int
     ref_start: int

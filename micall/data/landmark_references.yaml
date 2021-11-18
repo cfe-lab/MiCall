@@ -26,7 +26,7 @@
 
     - {name: "3' LTR", full_name: "HIV1B-3' LTR", start: 9086, end: 9719, frame: 1, colour: darkgrey, stop: N}
     - {name: pol, start: 2085, end: 5096, frame: 2, colour: orange}
-    - {name: vpr, full_name: HIV1B-vpr, start: 5559, end: 5850, frame: 2, colour: turquoise, skipped_pos: 5774}
+    - {name: vpr, full_name: HIV1B-vpr, start: 5559, end: 5850, frame: 2, colour: turquoise, skipped_pos: 5772}
     - {name: rev, start: 5970, end: 6048, frame: 2, colour: yellowgreen, stop: N}
     - {name: env, start: 6225, end: 8795, frame: 2, colour: salmon}
     - {name: PR, start: 2253, end: 2549, frame: 3, colour: orange, stop: N}

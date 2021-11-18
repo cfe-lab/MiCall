@@ -178,8 +178,9 @@ class SeedNucleotide(object):
         """
         return ','.join(map(str, [self.counts[nuc] for nuc in 'ACGT']))
 
-    def get_coverage(self):
-        return sum(self.counts[nuc] for nuc in self.COUNTED_NUCS)
+    def get_coverage(self, count_nucs=None):
+        counted_nucs = self.COUNTED_NUCS if count_nucs is None else count_nucs
+        return sum(self.counts[nuc] for nuc in counted_nucs)
 
     def get_consensus(self, mixture_cutoff, no_coverage='', discard_deletions=False):
         """ Choose consensus nucleotide or mixture from the counts.
