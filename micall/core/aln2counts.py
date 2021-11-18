@@ -371,20 +371,11 @@ class SequenceReport(object):
             typing.Dict[str,  # coord_region
                         typing.List[ReportNucleotide]]] = defaultdict(
             lambda: defaultdict(list))
-        self.combined_insertion_nucs: typing.Dict[
-            str,    # seed
-            typing.Dict[str,    # coord_region
-                        typing.Dict[int, typing.Counter]]] = defaultdict(
-            lambda: defaultdict(lambda: defaultdict(Counter)))
-        self.combined_insertions: typing.Dict[
-            str,  # seed
-            typing.Dict[str,  # coord_region
-                        typing.Set[int]]] = defaultdict(lambda: defaultdict(set))
-        self.combined_aggregated_ref_insertions = defaultdict(lambda:
-                                                              defaultdict(lambda:
-                                                                          defaultdict(lambda:
-                                                                                      defaultdict(lambda:
-                                                                                                  SeedNucleotide))))
+        self.combined_insertions = defaultdict(lambda:  # reference
+                                               defaultdict(lambda:  # region
+                                                           defaultdict(lambda:  # ref position
+                                                                       defaultdict(lambda:  # insertion position
+                                                                                   SeedNucleotide))))
 
         # {seed_name: {pos: count}}
         self.clipping_counts = clipping_counts or defaultdict(Counter)
@@ -392,7 +383,6 @@ class SequenceReport(object):
         # {seed_name: {pos: count}
         self.conseq_insertion_counts = (conseq_insertion_counts or
                                         defaultdict(Counter))
-        self.conseq_insertion_nucs = defaultdict(lambda: defaultdict(Counter))
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
         self.amino_writer = self.amino_detail_writer = None
         self.genome_coverage_writer = self.minimap_hits_writer = None
@@ -675,9 +665,6 @@ class SequenceReport(object):
                 {pos: len(names) for pos, names in ref_positions.items()})
         for ref_name in insertion_nucs.keys():
             for ref_position in insertion_nucs[ref_name].keys():
-                self.conseq_insertion_nucs[ref_name][ref_position] = insertion_nucs[ref_name][ref_position]
-        for ref_name in insertion_nucs.keys():
-            for ref_position in insertion_nucs[ref_name].keys():
                 self.insert_writer.aggregate_conseq_insertions[ref_position] = \
                     aggregate_insertions(insertion_nucs[ref_name][ref_position], consensus_pos=ref_position - 1)
 
@@ -749,19 +736,7 @@ class SequenceReport(object):
                 while len(old_report_nuc) <= i:
                     old_report_nuc.append(ReportNucleotide(len(old_report_nuc)+1))
                 old_report_nuc[i].seed_nucleotide.add(report_nuc.seed_nucleotide)
-        old_insertions = self.combined_insertions[group_ref]
-        for region, report in self.inserts.items():
-            old_insertions_region = old_insertions[region]
-            self.combined_insertions[group_ref][region] = old_insertions_region.union(report)
-        old_inserted_nucs = self.combined_insertion_nucs[group_ref]
-        for region, report in self.insert_nucs.items():
-            if report is not None:
-                for key in report:
-                    if key in old_inserted_nucs:
-                        old_inserted_nucs[region][key].update(report[key])
-                    else:
-                        old_inserted_nucs[region][key] = report[key]
-        old_aggregated_insertions = self.combined_aggregated_ref_insertions[group_ref]
+        old_aggregated_insertions = self.combined_insertions[group_ref]
         for region in self.insert_writer.aggregate_ref_insertions:
             if self.insert_writer.aggregate_ref_insertions[region] is not None:
                 for position in self.insert_writer.aggregate_ref_insertions[region]:
@@ -1228,7 +1203,7 @@ class SequenceReport(object):
                     self.combined_report_nucleotides[entry][region],
                     region_start)
                 insertions_dict = combine_region_insertions(insertions_dict,
-                                                            self.combined_aggregated_ref_insertions[entry][region],
+                                                            self.combined_insertions[entry][region],
                                                             region_start)
             nuc_dict = insert_insertions(insertions_dict, nuc_dict)
             nuc_entries = list(nuc_dict.items())

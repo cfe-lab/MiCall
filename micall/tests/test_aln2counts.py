@@ -1491,11 +1491,6 @@ R3-seed,0.100,R3,12,12,21,RRR
 R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAAAAGAGCATCAGTTTAAACTC
 """)
         expected_insertions = """\
-seed,region,qcut,left,insert,count,before
-R3-seed,R3,15,16,Q,9,5
-R3-seed,R3,15,34,E,9,10
-"""
-        expected_insertions = """\
 seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
 R3-seed,MAX,R3,12,15,15,CAG
 R3-seed,0.100,R3,12,15,15,CAG
@@ -2504,7 +2499,7 @@ R1-seed,0.100,R1,6,6,6,GACGAG
                                 ReportAmino(SeedAmino(12), 3)]}
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
-        self.writer.write(insertions={'R1': [6,9]},
+        self.writer.write(insertions={'R1': [6, 9]},
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
