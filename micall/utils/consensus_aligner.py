@@ -612,7 +612,7 @@ class ConsensusAligner:
                                               amino_alignment.query_start -
                                               seed_amino.consensus_nuc_index)
                         end_codon_nuc = 2
-                        seed_amino2 = SeedAmino(None)
+                        seed_amino2 = SeedAmino(seed_amino.consensus_nuc_index)
                         seed_amino2.add(seed_amino,
                                         start_codon_nuc,
                                         end_codon_nuc)
@@ -622,7 +622,7 @@ class ConsensusAligner:
                         start_codon_nuc = 0
                         end_codon_nuc = (amino_alignment.query_end -
                                          seed_amino.consensus_nuc_index - 1)
-                        seed_amino2 = SeedAmino(None)
+                        seed_amino2 = SeedAmino(seed_amino.consensus_nuc_index)
                         seed_amino2.add(seed_amino,
                                         start_codon_nuc,
                                         end_codon_nuc)
