@@ -12,7 +12,7 @@ This assumes a consistent reading frame across the entire region.
 import argparse
 import re
 import typing
-from collections import Counter, defaultdict, OrderedDict
+from collections import Counter, defaultdict
 import csv
 from csv import DictWriter
 from itertools import groupby, chain
@@ -124,13 +124,11 @@ def trim_contig_name(contig_name):
 
 
 def get_insertion_info(right, report_aminos, report_nucleotides):
-    insert_target = None
     insert_behind = None
     insertion_coverage = 0
     for i, report_amino in enumerate(report_aminos):
         seed_amino = report_amino.seed_amino
         if seed_amino.consensus_nuc_index == right:
-            insert_target = report_amino.position
             insert_behind = (report_amino.position - 1) * 3
             coverage_left = report_aminos[i - 1].seed_amino.nucleotides[2].get_coverage() if i >= 0 else 0
             coverage_right = report_amino.seed_amino.nucleotides[0].get_coverage()
@@ -140,13 +138,12 @@ def get_insertion_info(right, report_aminos, report_nucleotides):
         for i, report_nuc in enumerate(report_nucleotides):
             seed_nuc = report_nuc.seed_nucleotide
             if seed_nuc.consensus_index == right:
-                insert_target = report_nuc.position // 3
                 insert_behind = report_nuc.position - 1
                 coverage_left = report_nucleotides[i - 1].seed_nucleotide.get_coverage() if i >= 0 else 0
                 coverage_right = report_nuc.seed_nucleotide.get_coverage()
                 insertion_coverage = max(coverage_left, coverage_right)
                 break
-    return insert_target, insert_behind, insertion_coverage
+    return insert_behind, insertion_coverage
 
 
 def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
@@ -200,32 +197,6 @@ def insert_insertions(insertions, consensus_nucs):
             insertion_position = position + (i + 1) / (num_insertions + 1)
             consensus_nucs[insertion_position] = insertions[position][i]
     return consensus_nucs
-
-
-def find_consensus_insertions(insertions_dict, consensus_nucleotides):
-    consensus_insertions = {}
-
-    for position, counter in insertions_dict.items():
-        neighbour_left = consensus_nucleotides.get(position)
-        neighbour_right = consensus_nucleotides.get(position + 1)
-        coverage_left = neighbour_left.get_coverage() if neighbour_left is not None else 0
-        coverage_right = neighbour_right.get_coverage() if neighbour_left is not None else 0
-        coverage_nuc = max(coverage_left, coverage_right)
-        sorted_counts = sorted(counter.items(), key=lambda item: -len(item[0]))
-        length = len(sorted_counts[0][0])
-        for i in range(length):
-            insertion_position = position + (i+1)/(length+1)  # use non-integer positions for insertion nucleotides
-            nuc = SeedNucleotide()
-            for insertion in sorted_counts:
-                if len(insertion[0]) > i:
-                    nuc.count_nucleotides(insertion[0][i], count=insertion[1])
-            coverage_insertion = nuc.get_coverage()
-            coverage_no_insertion = coverage_nuc - coverage_insertion
-            if coverage_no_insertion > 0:
-                nuc.count_nucleotides('-', count=coverage_no_insertion)
-            consensus_insertions[insertion_position] = nuc
-
-    return consensus_insertions
 
 
 def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None):
@@ -1528,6 +1499,7 @@ class InsertionWriter(object):
         Sequence data comes from the reads that were added to the current group.
         @param insertions: regions and indexes of positions in the reads that should be
             reported as insertions.
+        @param seed_name: name of the current seed
         @param report_aminos_all: a list of ReportAmino objects that represent the
             sequence that successfully mapped to the coordinate reference.
         @param report_nucleotides_all: a list of ReportNucleotides objects that
@@ -1562,49 +1534,40 @@ class InsertionWriter(object):
                     insert_ranges[-1][1] += distance_insertions
 
             # enumerate insertions by popping out all AA sub-string variants
-            insert_counts = OrderedDict()  # {left: {insert_seq: count}}
-            insert_targets = {}  # {left: inserted_before_pos}
             insert_behind = {}
             insert_nuc_counts = {}
             insertion_coverage = {}  # max coverage left and right of the insertion
             for left, right in insert_ranges:
-                current_insert_target, current_insert_behind, current_insert_coverage =\
+                current_insert_behind, current_insert_coverage =\
                     get_insertion_info(right, report_aminos, report_nucleotides)
-                insert_targets[left] = current_insert_target
                 insert_behind[left] = current_insert_behind
                 insertion_coverage[left] = current_insert_coverage
-                current_counts = Counter()
                 current_nuc_counts = Counter()
-                insert_counts[left] = current_counts
-                insert_nuc_counts[insert_behind.get(left)] = current_nuc_counts
+                insert_nuc_counts[left] = current_nuc_counts
                 for nuc_seq, count in self.nuc_seqs.items():
                     insert_nuc_seq = nuc_seq[left:right]
                     is_valid = (insert_nuc_seq and
                                 'n' not in insert_nuc_seq and
                                 '-' not in insert_nuc_seq)
                     if is_valid:
-                        insert_amino_seq = translate(insert_nuc_seq)
-                        if insert_amino_seq:
-                            current_counts[insert_amino_seq] += count
                         current_nuc_counts[insert_nuc_seq] += count
 
-            for left in insert_counts.keys():
+            for left in insert_nuc_counts.keys():
                 ref_pos = insert_behind.get(left) - 1
                 self.ref_insertions[region][ref_pos] =\
-                    aggregate_insertions(insert_nuc_counts[ref_pos + 1],
+                    aggregate_insertions(insert_nuc_counts[left],
                                          consensus_pos=left-1,
                                          coverage_nuc=insertion_coverage[left])
 
-            # record insertions to CSV
-            for left, counts in insert_counts.items():
-                for insert_seq, count in counts.most_common():
-                    insert_before = insert_targets.get(left)
-                    # Only care about insertions in the middle of the sequence,
-                    # so ignore any that come before or after the reference.
-                    # Also report if we're in test mode (no report_aminos).
-                    if not report_aminos or insert_before not in (1, None):
-                        if insert_before is not None:
-                            region_insert_pos_counts[insert_before-1] += count
+            for left, counts in insert_nuc_counts.items():
+                insert_pos = insert_behind.get(left) // 3
+                count = sum(counts.values())
+                # Only care about insertions in the middle of the sequence,
+                # so ignore any that come before or after the reference.
+                # Also report if we're in test mode (no report_aminos).
+                if not report_aminos or insert_pos not in (0, None):
+                    if insert_pos is not None:
+                        region_insert_pos_counts[insert_pos] += count
 
         self.parse_conseq_insertions(seed_name, report_nucleotides_all)
         self.write_insertions_file(landmarks, consensus_builder)
@@ -1615,7 +1578,7 @@ class InsertionWriter(object):
             for region in report_nucleotides_all:
                 report_aminos = []
                 report_nucleotides = report_nucleotides_all[region]
-                current_insert_target, current_insert_behind, current_insert_coverage = \
+                current_insert_behind, current_insert_coverage = \
                     get_insertion_info(insertion_position, report_aminos, report_nucleotides)
                 if current_insert_behind is not None:
                     for position in insertions:
