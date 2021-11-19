@@ -1491,11 +1491,6 @@ R3-seed,0.100,R3,12,12,21,RRR
 R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAAAAGAGCATCAGTTTAAACTC
 """)
         expected_insertions = """\
-seed,region,qcut,left,insert,count,before
-R3-seed,R3,15,16,Q,9,5
-R3-seed,R3,15,34,E,9,10
-"""
-        expected_insertions = """\
 seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
 R3-seed,MAX,R3,12,15,15,CAG
 R3-seed,0.100,R3,12,15,15,CAG
@@ -1660,6 +1655,7 @@ R1-seed,0.100,R1,3,3,3,aac
         self.report.write_nuc_counts()  # calculates ins counts
         self.report.write_amino_counts()
         self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
                                         self.report.reports,
                                         self.report.report_nucleotides,
                                         self.report.landmarks,
@@ -2308,6 +2304,7 @@ seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(insertions={},
+                          seed_name='',
                           report_aminos_all=[],
                           report_nucleotides_all=[],
                           landmarks=None,
@@ -2330,6 +2327,7 @@ R1-seed,0.100,R1,6,6,6,GAC
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(insertions={'R1': [6]},
+                          seed_name='R1-seed',
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
@@ -2356,6 +2354,7 @@ R1-seed,0.100,R1,2,2,2,T
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(insertions={'R1': [2]},
+                          seed_name='R1-seed',
                           report_aminos_all={'R1': []},
                           report_nucleotides_all=report_nucleotides,
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
@@ -2380,6 +2379,7 @@ R1-seed,0.100,R1,6,6,7,GAC
         self.writer.add_nuc_read(offset_sequence='A' + self.nuc_seq_acdef,
                                  count=1)
         self.writer.write(insertions={'R1': [7]},
+                          seed_name='R1-seed',
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
@@ -2401,6 +2401,7 @@ R1-seed,0.100,R1,6,6,6,GAC
         #                                            C  D  E  F
         self.writer.add_nuc_read(offset_sequence='---TGTGACGAGTTT', count=1)
         self.writer.write(insertions={'R1': [6]},
+                          seed_name='R1-seed',
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
@@ -2421,6 +2422,7 @@ seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
         #                                         C  D     E  F
         self.writer.add_nuc_read(offset_sequence='TGTGAC---GAGTTT', count=1)
         self.writer.write(insertions={'R1': [3, 6]},
+                          seed_name='R1-seed',
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
@@ -2444,6 +2446,7 @@ R1-seed,0.100,R1,9,9,12,TTT
         #                                            C  D  E  F  G
         self.writer.add_nuc_read(offset_sequence='---TGTGACGAGTTTGGG', count=1)
         self.writer.write(insertions={'R1': [6, 12]},
+                          seed_name='R1-seed',
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
@@ -2465,6 +2468,7 @@ R1-seed,0.100,R1,6,6,6,GAC
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_afdef, count=1)
         self.writer.write(insertions={'R1': [6]},
+                          seed_name='R1-seed',
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
@@ -2486,6 +2490,7 @@ R1-seed,0.100,R1,3,3,3,TKT
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=2)
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_afdef, count=3)
         self.writer.write(insertions={'R1': [3]},
+                          seed_name='R1-seed',
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
@@ -2504,7 +2509,8 @@ R1-seed,0.100,R1,6,6,6,GACGAG
                                 ReportAmino(SeedAmino(12), 3)]}
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
-        self.writer.write(insertions={'R1': [6,9]},
+        self.writer.write(insertions={'R1': [6, 9]},
+                          seed_name='R1-seed',
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
@@ -2524,6 +2530,7 @@ seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
 
         self.writer.add_nuc_read(nuc_seq, count=1)
         self.writer.write(insertions={'R1': [3]},
+                          seed_name='R1-seed',
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
@@ -2543,6 +2550,7 @@ R1-seed,0.100,R1,6,6,6,GACGAG
 
         self.writer.add_nuc_read(offset_sequence=self.nuc_seq_acdef, count=1)
         self.writer.write(insertions={'R1': [9, 6]},
+                          seed_name='R1-seed',
                           report_aminos_all=report_aminos,
                           report_nucleotides_all={'R1': []},
                           landmarks=yaml.safe_load(LANDMARKS_YAML),
