@@ -191,10 +191,19 @@ def combine_region_insertions(insertions_dict, region_insertions, region_start):
 
 def insert_insertions(insertions, consensus_nucs):
     for position in insertions.keys():
+        neighbour_left = consensus_nucs.get(position)
+        neighbour_right = consensus_nucs.get(position + 1)
+        coverage_left = neighbour_left.get_coverage() if neighbour_left is not None else 0
+        coverage_right = neighbour_right.get_coverage() if neighbour_left is not None else 0
+        coverage_nuc = max(coverage_left, coverage_right)
         num_insertions = len(insertions[position])
         for i in range(num_insertions):
             # use non-integer positions for insertion nucleotides
             insertion_position = position + (i + 1) / (num_insertions + 1)
+            coverage_insertion = insertions[position][i].get_coverage()
+            coverage_no_insertion = coverage_nuc - coverage_insertion
+            if coverage_no_insertion > 0:
+                insertions[position][i].counts['-'] = coverage_no_insertion
             consensus_nucs[insertion_position] = insertions[position][i]
     return consensus_nucs
 

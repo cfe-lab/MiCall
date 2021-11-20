@@ -1227,6 +1227,48 @@ GGAAGGGCTAATTCACTCCaacCAACGAtttAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCC
 
 
 # noinspection DuplicatedCode
+def test_whole_genome_consensus_different_contig_insertions(default_sequence_report):
+    """ Check that different insertions relative to the consensus are correctly inserted
+    into the whole genome consensus"""
+    aligned_reads1 = prepare_reads("""\
+1-HIV1-B-FR-K03455-seed,15,0,10,1,\
+GGAAGGGCTAATTCACTCCCAATTTCGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+""")
+# this is the ref genome from pos 1 to 99 (0 based) plus an insertion here:
+#                     ^^^
+    aligned_reads2 = prepare_reads("""\
+2-HIV1-B-FR-K03455-seed,15,0,5,1,\
+GGAAGGGCTAATTCACTCCCAACGAATTTGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+""")
+# this is the ref genome from pos 1 to 99 (0 based) plus an insertion here:
+#                         ^^^
+
+    expected_section = """\
+HIV1-B-FR-K03455-seed,whole genome consensus,15,MAX,1,\
+GGAAGGGCTAATTCACTCCCAATTTCGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,whole genome consensus,15,0.100,1,\
+GGAAGGGCTAATTCACTCCCAAtttCGAAtttGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
+
+    report_file = StringIO()
+    default_sequence_report.write_consensus_stitched_header(report_file)
+    default_sequence_report.read(aligned_reads1)
+    default_sequence_report.write_insertions()
+    default_sequence_report.combine_reports()
+    default_sequence_report.read(aligned_reads2)
+    default_sequence_report.write_insertions()
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    report = report_file.getvalue()
+    report_lines = report.splitlines()
+    expected_size = 3
+    if len(report_lines) != expected_size:
+        assert (len(report_lines), report) == (expected_size, '')
+    key_lines = report_lines[1:3]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_section
+
+
+# noinspection DuplicatedCode
 def test_whole_genome_consensus_insertions_overlap(default_sequence_report, caplog):
     """ Check that insertions in overlapping regions are correctly inserted into the whole genome consensus"""
     aligned_reads = prepare_reads("""\
