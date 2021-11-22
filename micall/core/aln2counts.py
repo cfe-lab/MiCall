@@ -355,7 +355,7 @@ class SequenceReport(object):
                                                defaultdict(lambda:  # region
                                                            defaultdict(lambda:  # ref position
                                                                        defaultdict(lambda:  # insertion position
-                                                                                   SeedNucleotide))))
+                                                                                   SeedNucleotide()))))
 
         # {seed_name: {pos: count}}
         self.clipping_counts = clipping_counts or defaultdict(Counter)
@@ -1469,10 +1469,10 @@ class InsertionWriter(object):
             self.nuc_seqs = self.nuc_seqs_context = BigCounter(
                 file_prefix=file_prefix)
         # insertions relative to consensus, by consensus position:
-        self.conseq_insertions = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: SeedNucleotide)))
+        self.conseq_insertions = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: SeedNucleotide())))
         # insertions relative to consensus, by ref position:
         self.ref_insertions = defaultdict(
-            lambda: defaultdict(lambda: defaultdict(lambda: SeedNucleotide)))
+            lambda: defaultdict(lambda: defaultdict(lambda: SeedNucleotide())))
 
     def __enter__(self):
         """ Context manager makes sure that BigCounter gets cleaned up. """
@@ -1520,7 +1520,7 @@ class InsertionWriter(object):
             return
 
         for region, inserts in insertions.items():
-            self.ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
+            self.ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide()))
 
             report_aminos = report_aminos_all[region] or []
             report_nucleotides = report_nucleotides_all[region] or []
@@ -1593,7 +1593,7 @@ class InsertionWriter(object):
                     for position in insertions:
                         insertions[position].count_nucleotides('-', count=current_insert_coverage)
                     if self.ref_insertions[region] is None:
-                        self.ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide))
+                        self.ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide()))
                     self.ref_insertions[region][current_insert_behind - 1] = insertions
 
     def write_insertions_file(self, landmarks, consensus_builder):
