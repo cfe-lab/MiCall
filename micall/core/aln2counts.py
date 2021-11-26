@@ -1107,8 +1107,11 @@ class SequenceReport(object):
             conseq_file,
             include_seed=False,
             include_seed_region_offsets=False,
+            include_region=True,
     ):
-        columns = ["region", "q-cutoff", "consensus-percent-cutoff"]
+        columns = ["q-cutoff", "consensus-percent-cutoff"]
+        if include_region:
+            columns = ["region"] + columns
         offsets = ["offset"]
         if include_seed_region_offsets:
             offsets = ["seed-offset", "region-offset"]
@@ -1192,7 +1195,6 @@ class SequenceReport(object):
                 conseq_stitched_writer,
                 {
                     "seed": entry,
-                    "region": "whole genome consensus",
                 },
                 is_nucleotide=True,
             )
@@ -1209,6 +1211,7 @@ class SequenceReport(object):
         self.conseq_stitched_writer = self._create_consensus_writer(
             conseq_stitched_file,
             include_seed=True,
+            include_region=False,
         )
         self.conseq_stitched_writer.writeheader()
 
