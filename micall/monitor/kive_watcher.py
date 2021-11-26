@@ -37,7 +37,6 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_all_csv',
                       'conseq_stitched.csv'
                       'conseq_region_csv',
-                      'conseq_ins_csv',
                       'insertions_csv',
                       'failed_csv',
                       'nuc_csv',

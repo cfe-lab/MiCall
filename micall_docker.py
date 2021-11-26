@@ -1075,7 +1075,6 @@ def collate_samples(run_info: RunInfo):
     """
     filenames = ['remap_counts.csv',
                  'remap_conseq.csv',
-                 'conseq_ins.csv',
                  'insertions.csv',
                  'failed_read.csv',
                  'nuc.csv',
