@@ -1564,14 +1564,15 @@ class InsertionWriter(object):
                     if is_valid:
                         current_nuc_counts[insert_nuc_seq] += count
 
-            for left in insert_nuc_counts.keys():
-                ref_pos = insert_behind.get(left) - 1
+            for left, counts in insert_nuc_counts.items():
+                pos = insert_behind.get(left)
+                if pos is None:
+                    continue
+                ref_pos = pos - 1
                 self.ref_insertions[region][ref_pos] =\
                     aggregate_insertions(insert_nuc_counts[left],
                                          consensus_pos=left-1,
                                          coverage_nuc=insertion_coverage[left])
-
-            for left, counts in insert_nuc_counts.items():
                 insert_pos = insert_behind.get(left) // 3
                 count = sum(counts.values())
                 # Only care about insertions in the middle of the sequence,
