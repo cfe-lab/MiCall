@@ -1423,7 +1423,7 @@ def test_consensus_region_differences(caplog):
          logging.DEBUG,
          'Continuing with dict counts.')]
     with caplog.at_level(logging.DEBUG):
-        nuc_dict = combine_region_nucleotides(nuc_dict, region_nucleotides, 2)
+        combine_region_nucleotides(nuc_dict, region_nucleotides, 2)
     assert nuc_dict == expected_counts
     assert caplog.record_tuples == expected_log
 

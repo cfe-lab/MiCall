@@ -164,7 +164,6 @@ def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
                     logger.debug(f"Counts in dict: {nuc_dict[position].counts}")
                     logger.debug(f"Counts in nucleotide: {nucleotide.seed_nucleotide.counts}")
                     logger.debug("Continuing with dict counts.")
-    return nuc_dict
 
 
 def combine_region_insertions(insertions_dict, region_insertions, region_start):
@@ -186,7 +185,6 @@ def combine_region_insertions(insertions_dict, region_insertions, region_start):
                 logger.debug(f"Insertion counts don't match up. Position {ref_position + 1}")
                 logger.debug("Continuing with dict counts.")
     insertions_dict.update(new_insertions)
-    return insertions_dict
 
 
 def insert_insertions(insertions, consensus_nucs):
@@ -214,14 +212,17 @@ def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None)
     if len(insertions_counter) == 0:
         return aggregated_insertions
 
-    sorted_counts = sorted(insertions_counter.items(), key=lambda item: -len(item[0]))
-    length = len(sorted_counts[0][0])
+    length = 0
+    for insertion in insertions_counter:
+        if len(insertion) > length:
+            length = len(insertion)
+
     for i in range(length):
         insertion_nuc = SeedNucleotide()
         insertion_nuc.consensus_index = consensus_pos
-        for insertion in sorted_counts:
-            if len(insertion[0]) > i:
-                insertion_nuc.count_nucleotides(insertion[0][i], insertion[1])
+        for insertion, count in insertions_counter.items():
+            if len(insertion) > i:
+                insertion_nuc.count_nucleotides(insertion[i], count)
         coverage_insertion = insertion_nuc.get_coverage(count_nucs='ACGT')
         coverage_no_insertion = coverage_nuc - coverage_insertion
         if coverage_no_insertion > 0:
@@ -643,10 +644,10 @@ class SequenceReport(object):
         for ref_name, ref_positions in insertion_names.items():
             self.conseq_insertion_counts[ref_name] = Counter(
                 {pos: len(names) for pos, names in ref_positions.items()})
-        for ref_name in insertion_nucs.keys():
-            for ref_position in insertion_nucs[ref_name].keys():
+        for ref_name in insertion_nucs:
+            for ref_position, insertions in insertion_nucs[ref_name].items():
                 self.insert_writer.conseq_insertions[ref_name][ref_position] = \
-                    aggregate_insertions(insertion_nucs[ref_name][ref_position], consensus_pos=ref_position - 1)
+                    aggregate_insertions(insertions, consensus_pos=ref_position - 1)
 
     @staticmethod
     def _create_amino_writer(amino_file):
@@ -1180,13 +1181,13 @@ class SequenceReport(object):
                 region_info = landmark_reader.get_gene(coordinate_name,
                                                        region)
                 region_start = region_info['start']
-                nuc_dict = combine_region_nucleotides(
+                combine_region_nucleotides(
                     nuc_dict,
                     self.combined_report_nucleotides[entry][region],
                     region_start)
-                insertions_dict = combine_region_insertions(insertions_dict,
-                                                            self.combined_insertions[entry][region],
-                                                            region_start)
+                combine_region_insertions(insertions_dict,
+                                          self.combined_insertions[entry][region],
+                                          region_start)
             nuc_dict = insert_insertions(insertions_dict, nuc_dict)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
