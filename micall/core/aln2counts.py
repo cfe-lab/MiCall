@@ -718,16 +718,14 @@ class SequenceReport(object):
                     old_report_nuc.append(ReportNucleotide(len(old_report_nuc)+1))
                 old_report_nuc[i].seed_nucleotide.add(report_nuc.seed_nucleotide)
         old_insertions = self.combined_insertions[group_ref]
-        for region in self.insert_writer.ref_insertions:
-            if self.insert_writer.ref_insertions[region] is not None:
-                for position in self.insert_writer.ref_insertions[region]:
-                    for insertion_position in self.insert_writer.ref_insertions[region][position]:
-                        nuc = old_insertions[region][position].get(insertion_position)
-                        if nuc is not None:
-                            nuc.add(self.insert_writer.ref_insertions[region][position][insertion_position])
-                        else:
-                            old_insertions[region][position][insertion_position] =\
-                                self.insert_writer.ref_insertions[region][position][insertion_position]
+        for region, region_dict in self.insert_writer.ref_insertions.items():
+            for position, insertion_dict in region_dict.items():
+                for insertion_position, insertion in insertion_dict.items():
+                    nuc = old_insertions[region][position].get(insertion_position)
+                    if nuc is not None:
+                        nuc.add(insertion)
+                    else:
+                        old_insertions[region][position][insertion_position] = insertion
 
         self.reports.clear()
         self.report_nucleotides.clear()
@@ -1513,10 +1511,10 @@ class InsertionWriter(object):
         @param insertions: regions and indexes of positions in the reads that should be
             reported as insertions.
         @param seed_name: name of the current seed
-        @param report_aminos_all: a list of ReportAmino objects that represent the
-            sequence that successfully mapped to the coordinate reference.
-        @param report_nucleotides_all: a list of ReportNucleotides objects that
-            represent the sequence, in case the region is not translated.
+        @param report_aminos_all: a dict of lists of ReportAmino objects that represent the
+            sequence that successfully mapped to the coordinate reference for each region.
+        @param report_nucleotides_all: a dict of lists of ReportNucleotides objects that
+            represent the sequence for each region.
         @param landmarks: landmarks for the seed
         @param consensus_builder: helper function to write insertion consensus
         """
@@ -1526,8 +1524,8 @@ class InsertionWriter(object):
         for region, inserts in insertions.items():
             self.ref_insertions[region] = defaultdict(lambda: defaultdict(lambda: SeedNucleotide()))
 
-            report_aminos = report_aminos_all[region] or []
-            report_nucleotides = report_nucleotides_all[region] or []
+            report_aminos = report_aminos_all[region]
+            report_nucleotides = report_nucleotides_all[region]
 
             region_insert_pos_counts = self.insert_pos_counts[(self.seed, region)]
             inserts = list(inserts)
@@ -1568,6 +1566,8 @@ class InsertionWriter(object):
             for left, counts in insert_nuc_counts.items():
                 pos = insert_behind.get(left)
                 if pos is None:
+                    # this can happen if the insertion is at the end of an alignment,
+                    # because we only look at the consensus on the right edge of the insert
                     continue
                 ref_pos = pos - 1
                 self.ref_insertions[region][ref_pos] =\
