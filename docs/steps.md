@@ -77,6 +77,9 @@ Individual files are described after the list of steps.
   * nuc.csv - downloaded - nucleotide counts at each position
   * amino.csv - downloaded - amino counts at each position
   * conseq.csv - downloaded - consensus sequence, minimum coverage (read depth) 100
+  * conseq_all.csv - downloaded - consensus for all seeds (whole and region-wise), no minimum coverage
+  * conseq_regions.csv - downloaded - consensus for all regions, HXB2-aligned
+  * conseq_stitched.csv - downloaded - stitched whole genome consensus
   * insertions.csv - downloaded - insertions for all regions, at different mixture cutoffs
   * failed_align.csv - downloaded - any consensus that failed to align to its ref
   * nuc_variants.csv - downloaded - top nucleotide variants for HLA
@@ -178,6 +181,10 @@ Individual files are described after the list of steps.
     [IUPAC nucleotide codes]. If deletions are present above the cutoff, the
     nucleotide code is lower case. If coverage is below 100 or if the only thing
     present above the cutoff is deletions, the nucleotide code is "x".
+* conseq_all.csv: same columns as conseq.csv, with two different offsets:
+  * seed-offset - offset of the seed relative to the reference
+  * region-offset - offset of the seed relative to the region
+* conseq_region.csv: same columns as conseq.csv
 * conseq_stitched.csv
   * seed - reference name
   * q-cutoff - minimum quality score
@@ -287,7 +294,10 @@ Individual files are described after the list of steps.
     relative to the full reference genome
   * query_pos - 1-based position of the nucleotide before the insertion,
     relative to the contig
-  * insertion - sequence of the insertion
+  * insertion - sequence of the insertion (as nucleotides), computed in the same
+    way as for conseq.csv (e.g. mixture cutoffs, deletions and low coverage).
+    If there was not an insertion in the reads at this position, this is counted
+    as a deletion relative to the insertion.
 * merged_contigs.csv
   * contig - the consensus sequence from all merged reads of that insert length
 * mutations.csv

@@ -968,27 +968,22 @@ HIV1-B-FR-K03455-seed,15,0,9,1,AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCCGAACA\
 GGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG
 """)
 
-    expected_section = """\
+    expected_text = """\
+seed,q-cutoff,consensus-percent-cutoff,offset,sequence
 HIV1-B-FR-K03455-seed,15,MAX,600,\
 AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCCGAACA\
 GGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG
 HIV1-B-FR-K03455-seed,15,0.100,600,\
 AGACCCTTTTAGTCAGTGTGGAAAATCTCTAGCAGTGGCGCCCGAACA\
-GGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG"""
+GGGACCTGAAAGCGAAAGGGAAACCAGAGGAGCTCTCTCGACGCAGGACTCG
+"""
 
     report_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    expected_size = 3
-    if len(report_lines) != expected_size:
-        assert (len(report_lines), report) == (expected_size, '')
-    key_lines = report_lines[1:3]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_section
+    assert report_file.getvalue() == expected_text
 
 
 # noinspection DuplicatedCode
@@ -1003,11 +998,13 @@ CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGT
     #                           ^^^^^^^^^
     # the insertion is between nucleotide 6347 and 6348 (1 based)
 
-    expected_section = """\
+    expected_text = """\
+seed,q-cutoff,consensus-percent-cutoff,offset,sequence
 HIV1-B-FR-K03455-seed,15,MAX,6315,\
 CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
 HIV1-B-FR-K03455-seed,15,0.100,6315,\
-CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA"""
+CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
+"""
 
     report_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
@@ -1015,14 +1012,7 @@ CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGT
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    expected_size = 3
-    if len(report_lines) != expected_size:
-        assert (len(report_lines), report) == (expected_size, '')
-    key_lines = report_lines[1:3]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_section
+    assert report_file.getvalue() == expected_text
 
 
 # noinspection DuplicatedCode
@@ -1036,11 +1026,13 @@ GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACT
     #                                           ^^^^^^^^^
     # the insertion is between nucleotide 48 and 49
 
-    expected_section = """\
+    expected_text = """\
+seed,q-cutoff,consensus-percent-cutoff,offset,sequence
 HIV1-B-FR-K03455-seed,15,MAX,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
 HIV1-B-FR-K03455-seed,15,0.100,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
+GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+"""
 
     report_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
@@ -1048,14 +1040,7 @@ GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACT
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    expected_size = 3
-    if len(report_lines) != expected_size:
-        assert (len(report_lines), report) == (expected_size, '')
-    key_lines = report_lines[1:3]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_section
+    assert report_file.getvalue() == expected_text
 
 
 # noinspection DuplicatedCode
@@ -1071,11 +1056,13 @@ GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAGGGAAAGATCTACCACACACAAGGCTACT
     #                                           ^^^^^^^^^
     # the insertions are between nucleotide 48 and 49
 
-    expected_section = """\
+    expected_text = """\
+seed,q-cutoff,consensus-percent-cutoff,offset,sequence
 HIV1-B-FR-K03455-seed,15,MAX,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
 HIV1-B-FR-K03455-seed,15,0.100,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAARRRAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
+GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAARRRAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+"""
 
     report_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
@@ -1083,14 +1070,7 @@ GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAARRRAAAGATCTACCACACACAAGGCTACT
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    expected_size = 3
-    if len(report_lines) != expected_size:
-        assert (len(report_lines), report) == (expected_size, '')
-    key_lines = report_lines[1:3]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_section
+    assert report_file.getvalue() == expected_text
 
 
 # noinspection DuplicatedCode
@@ -1107,11 +1087,13 @@ GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTG---------GATCTACCACACACAAGGCTAAA
     # In the MAX, only the insertion from the majority of reads will show up.
     # In the 0.1 mixture sequence, both insertions will show up as lower case.
 
-    expected_section = """\
+    expected_text = """\
+seed,q-cutoff,consensus-percent-cutoff,offset,sequence
 HIV1-B-FR-K03455-seed,15,MAX,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
 HIV1-B-FR-K03455-seed,15,0.100,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGaaaaaaaaaGATCTACCACACACAAGGCTAaaaCTTCCCTGATTAGCAGAACTACACACCAGG"""
+GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGaaaaaaaaaGATCTACCACACACAAGGCTAaaaCTTCCCTGATTAGCAGAACTACACACCAGG
+"""
 
     report_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
@@ -1119,14 +1101,7 @@ GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGaaaaaaaaaGATCTACCACACACAAGGCTAaa
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    expected_size = 3
-    if len(report_lines) != expected_size:
-        assert (len(report_lines), report) == (expected_size, '')
-    key_lines = report_lines[1:3]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_section
+    assert report_file.getvalue() == expected_text
 
 
 # noinspection DuplicatedCode
@@ -1143,11 +1118,13 @@ Example_read_1,F,HIV1-B-FR-K03455-seed,20,AAC,AAA
 Example_read_2,F,HIV1-B-FR-K03455-seed,20,AAC,AAA
 """)
 
-    expected_section = """\
+    expected_text = """\
+seed,q-cutoff,consensus-percent-cutoff,offset,sequence
 HIV1-B-FR-K03455-seed,15,MAX,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
 HIV1-B-FR-K03455-seed,15,0.100,1,\
-GGAAGGGCTAATTCACTCCaacCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
+GGAAGGGCTAATTCACTCCaacCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+"""
 
     report_file = StringIO()
     default_sequence_report.read_insertions(conseq_ins_csv)
@@ -1160,14 +1137,7 @@ GGAAGGGCTAATTCACTCCaacCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTG
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    expected_size = 3
-    if len(report_lines) != expected_size:
-        assert (len(report_lines), report) == (expected_size, '')
-    key_lines = report_lines[1:3]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_section
+    assert report_file.getvalue() == expected_text
 
 
 # noinspection DuplicatedCode
@@ -1192,11 +1162,13 @@ Example_read_1,F,2-HIV1-B-FR-K03455-seed,23,TTT,AAA
 Example_read_2,F,2-HIV1-B-FR-K03455-seed,23,TTT,AAA
 """)
 
-    expected_section = """\
+    expected_text = """\
+seed,q-cutoff,consensus-percent-cutoff,offset,sequence
 HIV1-B-FR-K03455-seed,15,MAX,1,\
 GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
 HIV1-B-FR-K03455-seed,15,0.100,1,\
-GGAAGGGCTAATTCACTCCaacCAACGAtttAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
+GGAAGGGCTAATTCACTCCaacCAACGAtttAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+"""
 
     report_file = StringIO()
     default_sequence_report.read_insertions(conseq_ins_csv)
@@ -1216,14 +1188,7 @@ GGAAGGGCTAATTCACTCCaacCAACGAtttAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCC
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    expected_size = 3
-    if len(report_lines) != expected_size:
-        assert (len(report_lines), report) == (expected_size, '')
-    key_lines = report_lines[1:3]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_section
+    assert report_file.getvalue() == expected_text
 
 
 # noinspection DuplicatedCode
@@ -1243,11 +1208,13 @@ GGAAGGGCTAATTCACTCCCAACGAATTTGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTG
 # this is the ref genome from pos 1 to 99 (0 based) plus an insertion here:
 #                         ^^^
 
-    expected_section = """\
+    expected_text = """\
+seed,q-cutoff,consensus-percent-cutoff,offset,sequence
 HIV1-B-FR-K03455-seed,15,MAX,1,\
 GGAAGGGCTAATTCACTCCCAATTTCGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
 HIV1-B-FR-K03455-seed,15,0.100,1,\
-GGAAGGGCTAATTCACTCCCAAtttCGAAtttGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG"""
+GGAAGGGCTAATTCACTCCCAAtttCGAAtttGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+"""
 
     report_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
@@ -1258,14 +1225,7 @@ GGAAGGGCTAATTCACTCCCAAtttCGAAtttGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCC
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    expected_size = 3
-    if len(report_lines) != expected_size:
-        assert (len(report_lines), report) == (expected_size, '')
-    key_lines = report_lines[1:3]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_section
+    assert report_file.getvalue() == expected_text
 
 
 # noinspection DuplicatedCode
@@ -1279,11 +1239,13 @@ TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATG
     #                                                      ^^^^^^^^^
     # the insertion is between nucleotide 6283 and 6284 (0 based)
 
-    expected_section = """\
+    expected_text = """\
+seed,q-cutoff,consensus-percent-cutoff,offset,sequence
 HIV1-B-FR-K03455-seed,15,MAX,6225,\
 TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA
 HIV1-B-FR-K03455-seed,15,0.100,6225,\
-TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA"""
+TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA
+"""
 
     expected_log = [('micall.core.aln2counts', 10,
                      'Disagreement or shift in insertions between regions. Position 6284')]
@@ -1295,15 +1257,7 @@ TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATG
     default_sequence_report.combine_reports()
     with caplog.at_level(logging.DEBUG):
         default_sequence_report.write_whole_genome_consensus_from_nuc()
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    expected_size = 3
-    if len(report_lines) != expected_size:
-        assert (len(report_lines), report) == (expected_size, '')
-    key_lines = report_lines[1:3]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_section
-    assert caplog.record_tuples[-1:] == expected_log
+    assert report_file.getvalue() == expected_text
 
 
 # noinspection DuplicatedCode
@@ -1319,6 +1273,7 @@ GGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAG
 """)
     #  ^ lost nucleotide is G on the second line from the end, in TGC
     expected_text = """\
+seed,q-cutoff,consensus-percent-cutoff,offset,sequence
 HIV1-B-FR-K03455-seed,15,MAX,5358,\
 ATTCATCTGTATTACTTTGACTGTTTTTCAGACTCTGCTATAAGAA\
 AGGCCTTATTAGGACACATAGTTAGCCCTAGGTGTGAATATCAAGCAGGACATAACAAGGTAGGATCTCTACAATACT\
@@ -1328,17 +1283,14 @@ HIV1-B-FR-K03455-seed,15,0.100,5358,\
 ATTCATCTGTATTACTTTGACTGTTTTTCAGACTCTGCTATAAGAA\
 AGGCCTTATTAGGACACATAGTTAGCCCTAGGTGTGAATATCAAGCAGGACATAACAAGGTAGGATCTCTACAATACT\
 TGGCACTGCATGCATTAATAACACCAAAAAAGATAAAGCCACCTTTGCCTAGTGTTACGAAACTGACAGAGGATAGAT\
-GGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAG"""
+GGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAG
+"""
     report_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    key_lines = report_lines[1:]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_text
+    assert report_file.getvalue() == expected_text
 
 
 # noinspection DuplicatedCode
@@ -1355,6 +1307,7 @@ AGCAGAATAGGCGTTACTCGACAGAGGAGAGCAAGAAATGGAGCCAGTAGATCCTAG
 """)
     #  ^ lost nucleotide is C towards the end of the 3rd line, in TTTCAGAA
     expected_text = """\
+seed,q-cutoff,consensus-percent-cutoff,offset,sequence
 HIV1-B-FR-K03455-seed,15,MAX,5558,\
 ATGGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAGAGCTTTTAGAGGAGCTT\
 AAGAATGAAGCTGTTAGACATTTTCCTAGGATTTGGCTCCATGGCTTAGGGCAACATATCTATGAAACTTATGGGGAT\
@@ -1364,17 +1317,14 @@ HIV1-B-FR-K03455-seed,15,0.100,5558,\
 ATGGAACAAGCCCCAGAAGACCAAGGGCCACAGAGGGAGCCACACAATGAATGGACACTAGAGCTTTTAGAGGAGCTT\
 AAGAATGAAGCTGTTAGACATTTTCCTAGGATTTGGCTCCATGGCTTAGGGCAACATATCTATGAAACTTATGGGGAT\
 ACTTGGGCAGGAGTGGAAGCCATAATAAGAATTCTGCAACAACTGCTGTTTATTCATTTCAGAATTGGGTGTCGACAT\
-AGCAGAATAGGCGTTACTCGACAGAGGAGAGCAAGAAATGGAGCCAGTAGATCCTAG"""
+AGCAGAATAGGCGTTACTCGACAGAGGAGAGCAAGAAATGGAGCCAGTAGATCCTAG
+"""
     report_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
-    report = report_file.getvalue()
-    report_lines = report.splitlines()
-    key_lines = report_lines[1:]
-    key_report = '\n'.join(key_lines)
-    assert key_report == expected_text
+    assert report_file.getvalue() == expected_text
 
 
 def test_consensus_region_differences(caplog):

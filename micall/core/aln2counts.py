@@ -169,7 +169,7 @@ def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
 def combine_region_insertions(insertions_dict, region_insertions, region_start):
     assert region_start is not None
     if region_insertions is None:
-        return insertions_dict
+        return
     new_insertions = {}
     for position in region_insertions.keys():
         ref_position = position + region_start - 1
