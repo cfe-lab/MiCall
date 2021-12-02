@@ -102,7 +102,6 @@ def load_sample(args):
                     remap_conseq_csv=args.remap_conseq_csv,
                     unmapped1_fastq=args.unmapped1_fastq,
                     unmapped2_fastq=args.unmapped2_fastq,
-                    conseq_ins_csv=args.conseq_ins_csv,
                     insertions_csv=args.insertions_csv,
                     failed_csv=args.failed_csv,
                     cascade_csv=args.cascade_csv,
