@@ -217,10 +217,10 @@ def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None)
         for insertion, count in insertions_counter.items():
             if len(insertion) > i:
                 insertion_nuc.count_nucleotides(insertion[i], count)
-        coverage_insertion = insertion_nuc.get_coverage(count_nucs='ACGT')
+        coverage_insertion = insertion_nuc.get_coverage()
         coverage_no_insertion = coverage_nuc - coverage_insertion
         if coverage_no_insertion > 0:
-            insertion_nuc.count_nucleotides('-', coverage_no_insertion)
+            insertion_nuc.counts['-'] += coverage_no_insertion
         aggregated_insertions[i] = insertion_nuc
 
     return aggregated_insertions
