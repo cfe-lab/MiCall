@@ -209,10 +209,7 @@ def insert_insertions(insertions, consensus_nucs):
 def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None):
     aggregated_insertions = defaultdict()
 
-    if len(insertions_counter) == 0:
-        return aggregated_insertions
-
-    length = len(max(insertions_counter, key=lambda ins: len(ins)))
+    length = len(max(insertions_counter, key=lambda ins: len(ins))) if len(insertions_counter) > 0 else 0
 
     for i in range(length):
         insertion_nuc = SeedNucleotide()
@@ -636,7 +633,7 @@ class SequenceReport(object):
             pos = int(row['pos'])
             pos_insertions = insertion_nucs[ref_name][pos]
             pos_names = insertion_names[ref_name][pos]
-            if row['qname'] not in pos_names:
+            if row['qname'] not in pos_names:  # don't count forward and reverse reads double
                 pos_insertions.update([row['insert']])
             pos_names.add(row['qname'])
         for ref_name, ref_positions in insertion_names.items():
