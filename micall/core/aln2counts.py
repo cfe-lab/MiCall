@@ -209,7 +209,10 @@ def insert_insertions(insertions, consensus_nucs):
 def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None):
     aggregated_insertions = defaultdict()
 
-    length = len(max(insertions_counter, key=lambda ins: len(ins))) if len(insertions_counter) > 0 else 0
+    if len(insertions_counter) == 0:
+        return aggregated_insertions
+
+    length = max(len(ins) for ins in insertions_counter)
 
     for i in range(length):
         insertion_nuc = SeedNucleotide()
