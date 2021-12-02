@@ -166,24 +166,23 @@ def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
                     logger.debug("Continuing with dict counts.")
 
 
-def combine_region_insertions(insertions_dict, region_insertions, region_start):
-    assert region_start is not None
+def combine_region_insertions(insertions_dict, region_insertions, region_start, previous_region_end):
+    assert region_start is not None and previous_region_end is not None
     if region_insertions is None:
         return
     new_insertions = {}
     for position in region_insertions:
         ref_position = position + region_start - 1
         if ref_position not in insertions_dict:
-            shifted_positions = (ref_position-3, ref_position-2, ref_position-1, ref_position+1, ref_position+2,
-                                 ref_position+3)
-            if any(shift_pos in insertions_dict for shift_pos in shifted_positions):
-                logger.debug(f"Disagreement or shift in insertions between regions. Position {ref_position + 1}")
+            if ref_position < previous_region_end:
+                logger.debug(f"Disagreement in insertion between regions. Position {ref_position + 1}")
+                logger.debug("Continuing with previous region's insertions.")
             else:
                 new_insertions[ref_position] = region_insertions[position]
         else:
             if insertions_dict[ref_position].items() != region_insertions[position].items():
                 logger.debug(f"Insertion counts don't match up. Position {ref_position + 1}")
-                logger.debug("Continuing with dict counts.")
+                logger.debug("Continuing with previous region's counts.")
     insertions_dict.update(new_insertions)
 
 
@@ -1173,6 +1172,7 @@ class SequenceReport(object):
                     coordinate_name,
                     item[0])['start'])
             regions_dict = dict(sorted_regions)
+            previous_region_end = 0
             for region in regions_dict:
                 region_info = landmark_reader.get_gene(coordinate_name,
                                                        region)
@@ -1183,7 +1183,9 @@ class SequenceReport(object):
                     region_start)
                 combine_region_insertions(insertions_dict,
                                           self.combined_insertions[entry][region],
-                                          region_start)
+                                          region_start,
+                                          previous_region_end)
+                previous_region_end = region_info['end']
             nuc_dict = insert_insertions(insertions_dict, nuc_dict)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])

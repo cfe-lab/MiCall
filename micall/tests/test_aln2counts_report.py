@@ -10,7 +10,8 @@ import yaml
 from mappy import revcomp
 
 from micall.core import project_config
-from micall.core.aln2counts import InsertionWriter, SequenceReport, combine_region_nucleotides
+from micall.core.aln2counts import InsertionWriter, SequenceReport, combine_region_nucleotides, \
+    combine_region_insertions
 from micall.core.project_config import ProjectConfig
 from micall.utils.report_amino import SeedNucleotide, ReportNucleotide
 
@@ -1375,6 +1376,30 @@ def test_consensus_region_differences(caplog):
     with caplog.at_level(logging.DEBUG):
         combine_region_nucleotides(nuc_dict, region_nucleotides, 2)
     assert nuc_dict == expected_counts
+    assert caplog.record_tuples == expected_log
+
+
+def test_consensus_insertion_differences(caplog):
+    insertion1 = SeedNucleotide()
+    insertion2 = SeedNucleotide()
+    insertion1.count_nucleotides('A', 10)
+    insertion2.count_nucleotides('C', 10)
+    insertions_dict = {}
+    region_insertions = {5: {1: insertion1, 2: insertion2}}
+    region_start = 20
+    previous_region_end = 30
+
+    expected_log = [
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         "Disagreement in insertion between regions. Position 25"),
+        ('micall.core.aln2counts',
+         logging.DEBUG,
+         "Continuing with previous region's insertions.")]
+
+    with caplog.at_level(logging.DEBUG):
+        combine_region_insertions(insertions_dict, region_insertions, region_start, previous_region_end)
+    assert insertions_dict == {}
     assert caplog.record_tuples == expected_log
 
 
