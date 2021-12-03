@@ -1189,7 +1189,8 @@ class SequenceReport(object):
                                           self.combined_insertions[entry][region],
                                           region_start,
                                           consumed_positions)
-                consumed_positions.add(i for i in range(region_start-1, region_end))
+                for i in range(region_start - 1, region_end):
+                    consumed_positions.add(i)
             nuc_dict = insert_insertions(insertions_dict, nuc_dict)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
