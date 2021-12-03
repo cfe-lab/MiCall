@@ -1387,7 +1387,7 @@ def test_consensus_insertion_differences(caplog):
     insertions_dict = {}
     region_insertions = {5: {1: insertion1, 2: insertion2}}
     region_start = 20
-    previous_region_end = 30
+    consumed_positions = set(i for i in range(0,31))
 
     expected_log = [
         ('micall.core.aln2counts',
@@ -1398,7 +1398,7 @@ def test_consensus_insertion_differences(caplog):
          "Continuing with previous region's insertions.")]
 
     with caplog.at_level(logging.DEBUG):
-        combine_region_insertions(insertions_dict, region_insertions, region_start, previous_region_end)
+        combine_region_insertions(insertions_dict, region_insertions, region_start, consumed_positions)
     assert insertions_dict == {}
     assert caplog.record_tuples == expected_log
 

@@ -166,15 +166,15 @@ def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
                     logger.debug("Continuing with dict counts.")
 
 
-def combine_region_insertions(insertions_dict, region_insertions, region_start, previous_region_end):
-    assert region_start is not None and previous_region_end is not None
+def combine_region_insertions(insertions_dict, region_insertions, region_start, consumed_positions):
+    assert region_start is not None
     if region_insertions is None:
         return
     new_insertions = {}
     for position in region_insertions:
         ref_position = position + region_start - 1
         if ref_position not in insertions_dict:
-            if ref_position < previous_region_end:
+            if ref_position in consumed_positions:
                 logger.debug(f"Disagreement in insertion between regions. Position {ref_position + 1}")
                 logger.debug("Continuing with previous region's insertions.")
             else:
@@ -1157,6 +1157,7 @@ class SequenceReport(object):
         for entry in self.combined_report_nucleotides:
             nuc_dict = {}
             insertions_dict = {}
+            consumed_positions = set()
             for seed_landmarks in self.landmarks:
                 if re.fullmatch(seed_landmarks['seed_pattern'], entry):
                     coordinate_name = seed_landmarks['coordinates']
@@ -1171,12 +1172,15 @@ class SequenceReport(object):
                 key=lambda item: landmark_reader.get_gene(
                     coordinate_name,
                     item[0])['start'])
+            sorted_regions: list = sorted(
+                sorted_regions,
+                key=lambda item: -self.projects.isAmino(item[0]))
             regions_dict = dict(sorted_regions)
-            previous_region_end = 0
             for region in regions_dict:
                 region_info = landmark_reader.get_gene(coordinate_name,
                                                        region)
                 region_start = region_info['start']
+                region_end = region_info['end']
                 combine_region_nucleotides(
                     nuc_dict,
                     self.combined_report_nucleotides[entry][region],
@@ -1184,8 +1188,9 @@ class SequenceReport(object):
                 combine_region_insertions(insertions_dict,
                                           self.combined_insertions[entry][region],
                                           region_start,
-                                          previous_region_end)
-                previous_region_end = region_info['end']
+                                          consumed_positions)
+                for i in range(region_start - 1, region_end):
+                    consumed_positions.add(i)
             nuc_dict = insert_insertions(insertions_dict, nuc_dict)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
