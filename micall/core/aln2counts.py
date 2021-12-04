@@ -1602,8 +1602,6 @@ class InsertionWriter(object):
                 if current_insert_behind is not None:
                     for position in insertions:
                         insertions[position].count_nucleotides('-', count=current_insert_coverage)
-                    if self.ref_insertions[region] is None:
-                        self.ref_insertions[region] = defaultdict(lambda: defaultdict(SeedNucleotide))
                     self.ref_insertions[region][current_insert_behind - 1] = insertions
 
     def write_insertions_file(self, landmarks, consensus_builder):
