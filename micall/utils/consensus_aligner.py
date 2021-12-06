@@ -606,23 +606,23 @@ class ConsensusAligner:
                             nuc.count_nucleotides('-', min_count)
                 else:
                     seed_amino = region_seed_aminos[conseq_index]
-                    if (seed_amino.consensus_nuc_index <
-                            amino_alignment.query_start):
+                    consensus_nuc_index = seed_amino.consensus_nuc_index
+                    if (consensus_nuc_index < amino_alignment.query_start):
                         start_codon_nuc = max(0,
                                               amino_alignment.query_start -
-                                              seed_amino.consensus_nuc_index)
+                                              consensus_nuc_index)
                         end_codon_nuc = 2
-                        seed_amino2 = SeedAmino(seed_amino.consensus_nuc_index)
+                        seed_amino2 = SeedAmino(None)
                         seed_amino2.add(seed_amino,
                                         start_codon_nuc,
                                         end_codon_nuc)
                         seed_amino = seed_amino2
                     if (amino_alignment.query_end <
-                            seed_amino.consensus_nuc_index+3):
+                            consensus_nuc_index+3):
                         start_codon_nuc = 0
                         end_codon_nuc = (amino_alignment.query_end -
-                                         seed_amino.consensus_nuc_index - 1)
-                        seed_amino2 = SeedAmino(seed_amino.consensus_nuc_index)
+                                         consensus_nuc_index - 1)
+                        seed_amino2 = SeedAmino(None)
                         seed_amino2.add(seed_amino,
                                         start_codon_nuc,
                                         end_codon_nuc)
@@ -630,7 +630,7 @@ class ConsensusAligner:
                     if prev_conseq_index is None:
                         coordinate_inserts = {i
                                               for i in coordinate_inserts
-                                              if i >= seed_amino.consensus_nuc_index}
+                                              if i >= consensus_nuc_index}
                     prev_conseq_index = conseq_index
 
                 if seed_amino.consensus_nuc_index is not None:
