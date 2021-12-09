@@ -146,44 +146,58 @@ def get_insertion_info(right, report_aminos, report_nucleotides):
     return insert_behind, insertion_coverage
 
 
-def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start):
+def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start, prev_region_end, is_amino, region_name):
     assert region_start is not None
+    mismatch = False
+    overlap_midpoint = int((prev_region_end - region_start + 1) / 2)
+    if overlap_midpoint < 0:
+        overlap_midpoint = 0
     for nuc_index, nucleotide in enumerate(region_nucleotides):
         position = region_start + nuc_index - 1
         if position not in nuc_dict:
+            # if we have not seen this position before, add it
             nuc_dict[position] = nucleotide.seed_nucleotide
         else:
-            if len(nuc_dict[position].counts) == 0 and len(nucleotide.seed_nucleotide.counts) != 0:
-                logger.debug(f"Zero count in dict at position {position + 1}. Inserting non-zero counts.")
+            if is_amino and nuc_index >= overlap_midpoint:
+                # after the middle of the overlap with the previous translated region, we use this region
                 nuc_dict[position] = nucleotide.seed_nucleotide
-            elif len(nuc_dict[position].counts) != 0 and len(nucleotide.seed_nucleotide.counts) == 0:
-                logger.debug(f"Zero count in nucleotide at position {position + 1}. Inserting non-zero counts.")
-            else:
-                if nuc_dict[position].counts != nucleotide.seed_nucleotide.counts:
-                    logger.debug(f"Counts don't match up. Position {position + 1}")
-                    logger.debug(f"Counts in dict: {nuc_dict[position].counts}")
-                    logger.debug(f"Counts in nucleotide: {nucleotide.seed_nucleotide.counts}")
-                    logger.debug("Continuing with dict counts.")
+            if nuc_dict[position].counts != nucleotide.seed_nucleotide.counts:
+                mismatch = True
+    if mismatch:
+        logger.debug(f"Disagreement in counts for region {region_name}")
 
 
-def combine_region_insertions(insertions_dict, region_insertions, region_start, consumed_positions):
+def combine_region_insertions(insertions_dict,
+                              region_insertions,
+                              region_start,
+                              prev_region_end,
+                              is_amino,
+                              consumed_positions):
     assert region_start is not None
     if region_insertions is None:
         return
-    new_insertions = {}
+    ref_overlap_midpoint = prev_region_end - 1
+    if is_amino:
+        overlap_midpoint = int((prev_region_end - region_start + 1) / 2)
+        if overlap_midpoint > 0:
+            ref_overlap_midpoint = prev_region_end - overlap_midpoint -1
+        to_remove = set()
+        for ref_position in insertions_dict:
+            if ref_position > ref_overlap_midpoint:
+                # we want to remove entries from the previous region past the midpoint of the overlap
+                to_remove.add(ref_position)
+        for position in to_remove:
+            del insertions_dict[position]
     for position in region_insertions:
         ref_position = position + region_start - 1
-        if ref_position not in insertions_dict:
-            if ref_position in consumed_positions:
-                logger.debug(f"Disagreement in insertion between regions. Position {ref_position + 1}")
-                logger.debug("Continuing with previous region's insertions.")
-            else:
-                new_insertions[ref_position] = region_insertions[position]
+        if is_amino:
+            if ref_position > ref_overlap_midpoint:
+                # after the midpoint of the overlap with the previous translated region, we go with this region
+                insertions_dict[ref_position] = region_insertions[position]
         else:
-            if insertions_dict[ref_position].items() != region_insertions[position].items():
-                logger.debug(f"Insertion counts don't match up. Position {ref_position + 1}")
-                logger.debug("Continuing with previous region's counts.")
-    insertions_dict.update(new_insertions)
+            if ref_position not in consumed_positions:
+                # for non-translated regions, only add insertions at position that we have not seen before
+                insertions_dict[ref_position] = region_insertions[position]
 
 
 def insert_insertions(insertions, consensus_nucs):
@@ -1176,21 +1190,29 @@ class SequenceReport(object):
                 sorted_regions,
                 key=lambda item: -self.projects.isAmino(item[0]))
             regions_dict = dict(sorted_regions)
+            prev_region_end = 0
             for region in regions_dict:
                 region_info = landmark_reader.get_gene(coordinate_name,
                                                        region)
                 region_start = region_info['start']
                 region_end = region_info['end']
+                is_amino = self.projects.isAmino(region)
                 combine_region_nucleotides(
                     nuc_dict,
                     self.combined_report_nucleotides[entry][region],
-                    region_start)
+                    region_start,
+                    prev_region_end,
+                    is_amino,
+                    region)
                 combine_region_insertions(insertions_dict,
                                           self.combined_insertions[entry][region],
                                           region_start,
+                                          prev_region_end,
+                                          is_amino,
                                           consumed_positions)
                 for i in range(region_start - 1, region_end):
                     consumed_positions.add(i)
+                prev_region_end = region_end
             nuc_dict = insert_insertions(insertions_dict, nuc_dict)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
