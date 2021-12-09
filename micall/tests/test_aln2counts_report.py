@@ -1328,79 +1328,136 @@ AGCAGAATAGGCGTTACTCGACAGAGGAGAGCAAGAAATGGAGCCAGTAGATCCTAG
     assert report_file.getvalue() == expected_text
 
 
-def test_consensus_region_differences(caplog):
-    """ Test that the consensus is stitched together correctly, even if there are differences between the regions """
+# noinspection DuplicatedCode
+def test_consensus_translated_region_differences(caplog):
+    """ Test that the consensus is stitched together correctly between two translated regions """
     nucleotide1 = SeedNucleotide()
     nucleotide2 = SeedNucleotide()
     nucleotide3 = SeedNucleotide()
     nucleotide4 = SeedNucleotide()
     nucleotide5 = SeedNucleotide()
     nucleotide6 = SeedNucleotide()
-    nucleotide_none = SeedNucleotide()
     nucleotide1.count_nucleotides('A', 3)
     nucleotide2.count_nucleotides('C', 3)
     nucleotide3.count_nucleotides('G', 3)
     nucleotide4.count_nucleotides('T', 3)
     nucleotide5.count_nucleotides('T', 6)
     nucleotide6.count_nucleotides('A', 6)
-    nuc_dict = {0: nucleotide1, 1: nucleotide2, 2: nucleotide3, 3: nucleotide_none, 4: nucleotide5}
-    # counts are: A:3, C:3, G:3, None, T:6
+    nuc_dict = {0: nucleotide1, 1: nucleotide2, 2: nucleotide3, 3: nucleotide1, 4: nucleotide1}
 
-    region_nucleotides = [ReportNucleotide(1, seed_nucleotide=nucleotide2),
-                          ReportNucleotide(2, seed_nucleotide=nucleotide_none),
+    region_nucleotides = [ReportNucleotide(1, seed_nucleotide=nucleotide4),
+                          ReportNucleotide(2, seed_nucleotide=nucleotide4),
                           ReportNucleotide(3, seed_nucleotide=nucleotide4),
-                          ReportNucleotide(4, seed_nucleotide=nucleotide2),
+                          ReportNucleotide(4, seed_nucleotide=nucleotide5),
                           ReportNucleotide(5, seed_nucleotide=nucleotide6)]
-    # counts are: C:3, None, T:3, C:3, A:6 (starting at position 2)
+
+    region_start = 2
+    prev_region_end = 5
+    is_amino = True
+    region_name = 'test-region'
 
     expected_counts = {0: nucleotide1, 1: nucleotide2, 2: nucleotide3, 3: nucleotide4, 4: nucleotide5, 5: nucleotide6}
     expected_log = [
         ('micall.core.aln2counts',
          logging.DEBUG,
-         'Zero count in nucleotide at position 3. Inserting non-zero counts.'),
-        ('micall.core.aln2counts',
-         logging.DEBUG,
-         'Zero count in dict at position 4. Inserting non-zero counts.'),
-        ('micall.core.aln2counts',
-         logging.DEBUG,
-         "Counts don't match up. Position 5"),
-        ('micall.core.aln2counts',
-         logging.DEBUG,
-         "Counts in dict: Counter({'T': 6})"),
-        ('micall.core.aln2counts',
-         logging.DEBUG,
-         "Counts in nucleotide: Counter({'C': 3})"),
-        ('micall.core.aln2counts',
-         logging.DEBUG,
-         'Continuing with dict counts.')]
+         'Disagreement in counts for region test-region')]
     with caplog.at_level(logging.DEBUG):
-        combine_region_nucleotides(nuc_dict, region_nucleotides, 2)
+        combine_region_nucleotides(nuc_dict, region_nucleotides, region_start, prev_region_end, is_amino, region_name)
     assert nuc_dict == expected_counts
     assert caplog.record_tuples == expected_log
 
 
-def test_consensus_insertion_differences(caplog):
-    insertion1 = SeedNucleotide()
-    insertion2 = SeedNucleotide()
-    insertion1.count_nucleotides('A', 10)
-    insertion2.count_nucleotides('C', 10)
-    insertions_dict = {}
-    region_insertions = {5: {1: insertion1, 2: insertion2}}
-    region_start = 20
-    consumed_positions = set(i for i in range(0,31))
+# noinspection DuplicatedCode
+def test_consensus_untranslated_region_differences(caplog):
+    """ Test that the consensus is stitched together correctly for an untranslated region """
+    nucleotide1 = SeedNucleotide()
+    nucleotide2 = SeedNucleotide()
+    nucleotide3 = SeedNucleotide()
+    nucleotide4 = SeedNucleotide()
+    nucleotide5 = SeedNucleotide()
+    nucleotide6 = SeedNucleotide()
+    nucleotide1.count_nucleotides('A', 3)
+    nucleotide2.count_nucleotides('C', 3)
+    nucleotide3.count_nucleotides('G', 3)
+    nucleotide4.count_nucleotides('T', 3)
+    nucleotide5.count_nucleotides('T', 6)
+    nucleotide6.count_nucleotides('A', 6)
+    nuc_dict = {0: nucleotide1, 1: nucleotide2, 2: nucleotide3, 3: nucleotide1, 4: nucleotide1}
 
+    region_nucleotides = [ReportNucleotide(1, seed_nucleotide=nucleotide4),
+                          ReportNucleotide(2, seed_nucleotide=nucleotide4),
+                          ReportNucleotide(3, seed_nucleotide=nucleotide4),
+                          ReportNucleotide(4, seed_nucleotide=nucleotide5),
+                          ReportNucleotide(5, seed_nucleotide=nucleotide6)]
+
+    region_start = 2
+    prev_region_end = 5
+    is_amino = False
+    region_name = 'test-region'
+
+    expected_counts = {0: nucleotide1, 1: nucleotide2, 2: nucleotide3, 3: nucleotide1, 4: nucleotide1, 5: nucleotide6}
     expected_log = [
         ('micall.core.aln2counts',
          logging.DEBUG,
-         "Disagreement in insertion between regions. Position 25"),
-        ('micall.core.aln2counts',
-         logging.DEBUG,
-         "Continuing with previous region's insertions.")]
-
+         'Disagreement in counts for region test-region')]
     with caplog.at_level(logging.DEBUG):
-        combine_region_insertions(insertions_dict, region_insertions, region_start, consumed_positions)
-    assert insertions_dict == {}
+        combine_region_nucleotides(nuc_dict, region_nucleotides, region_start, prev_region_end, is_amino, region_name)
+    assert nuc_dict == expected_counts
     assert caplog.record_tuples == expected_log
+
+
+# noinspection DuplicatedCode
+def test_consensus_insertion_translated_differences():
+    """ Test that the consensus insertions are handled correctly for translated regions """
+    insertion1 = SeedNucleotide()
+    insertion2 = SeedNucleotide()
+    insertion3 = SeedNucleotide()
+    insertion4 = SeedNucleotide()
+    insertion1.count_nucleotides('A', 10)
+    insertion2.count_nucleotides('C', 10)
+    insertion3.count_nucleotides('G', 10)
+    insertion4.count_nucleotides('T', 10)
+    insertions_dict = {10: {1: insertion1}, 22: {1: insertion2}, 28: {1: insertion1}}
+    region_insertions = {1: {1: insertion3}, 7: {1: insertion3}, 12: {1: insertion4}}
+    region_start = 20
+    prev_region_end = 29
+    consumed_positions = set(i for i in range(0,28))
+    is_amino = True
+
+    combine_region_insertions(insertions_dict,
+                              region_insertions,
+                              region_start,
+                              prev_region_end,
+                              is_amino,
+                              consumed_positions)
+    assert insertions_dict == {10: {1: insertion1}, 22: {1: insertion2}, 26: {1: insertion3}, 31: {1: insertion4}}
+
+
+# noinspection DuplicatedCode
+def test_consensus_insertion_untranslated_differences():
+    """ Test that the consensus insertions are handled correctly for untranslated regions """
+    insertion1 = SeedNucleotide()
+    insertion2 = SeedNucleotide()
+    insertion3 = SeedNucleotide()
+    insertion4 = SeedNucleotide()
+    insertion1.count_nucleotides('A', 10)
+    insertion2.count_nucleotides('C', 10)
+    insertion3.count_nucleotides('G', 10)
+    insertion4.count_nucleotides('T', 10)
+    insertions_dict = {10: {1: insertion1}, 22: {1: insertion2}, 28: {1: insertion1}}
+    region_insertions = {1: {1: insertion3}, 7: {1: insertion3}, 12: {1: insertion4}}
+    region_start = 20
+    prev_region_end = 29
+    consumed_positions = set(i for i in range(0,28))
+    is_amino = False
+
+    combine_region_insertions(insertions_dict,
+                              region_insertions,
+                              region_start,
+                              prev_region_end,
+                              is_amino,
+                              consumed_positions)
+    assert insertions_dict == {10: {1: insertion1}, 22: {1: insertion2}, 28: {1: insertion1}, 31: {1: insertion4}}
 
 
 def test_nucleotide_coordinates(default_sequence_report):
