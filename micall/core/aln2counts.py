@@ -180,7 +180,7 @@ def combine_region_insertions(insertions_dict,
     if is_amino:
         overlap_midpoint = int((prev_region_end - region_start + 1) / 2)
         if overlap_midpoint > 0:
-            ref_overlap_midpoint = prev_region_end - overlap_midpoint -1
+            ref_overlap_midpoint = prev_region_end - overlap_midpoint - 1
         to_remove = set()
         for ref_position in insertions_dict:
             if ref_position > ref_overlap_midpoint:
@@ -1618,7 +1618,7 @@ class InsertionWriter(object):
         self.write_insertions_file(landmarks, consensus_builder)
 
     def parse_conseq_insertions(self, seed_name, report_nucleotides_all):
-        for insertion_position in self.conseq_insertions[seed_name].keys():
+        for insertion_position in self.conseq_insertions[seed_name]:
             insertions = self.conseq_insertions[seed_name][insertion_position]
             for region in report_nucleotides_all:
                 report_aminos = []
