@@ -78,7 +78,7 @@ Individual files are described after the list of steps.
   * amino.csv - downloaded - amino counts at each position
   * conseq.csv - downloaded - consensus sequence, minimum coverage (read depth) 100
   * conseq_all.csv - downloaded - consensus for all seeds (whole and region-wise), no minimum coverage
-  * conseq_regions.csv - downloaded - consensus for all regions, HXB2-aligned
+  * conseq_region.csv - downloaded - consensus for all regions
   * conseq_stitched.csv - downloaded - stitched whole genome consensus
   * insertions.csv - downloaded - insertions for all regions, at different mixture cutoffs
   * failed_align.csv - downloaded - any consensus that failed to align to its ref

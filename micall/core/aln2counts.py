@@ -216,7 +216,6 @@ def insert_insertions(insertions, consensus_nucs):
             if coverage_no_insertion > 0:
                 insertions[position][i].counts['-'] = coverage_no_insertion
             consensus_nucs[insertion_position] = insertions[position][i]
-    return consensus_nucs
 
 
 def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None):
@@ -538,8 +537,6 @@ class SequenceReport(object):
                 self.write_consensus(self.conseq_writer)
             if self.conseq_all_writer is not None:
                 self.write_consensus_all(self.conseq_all_writer)
-            if self.conseq_region_writer is not None:
-                self.write_consensus_regions(self.conseq_region_writer)
             if self.genome_coverage_writer is not None:
                 self.write_genome_coverage_counts()
             if self.amino_detail_writer is not None:
@@ -558,6 +555,8 @@ class SequenceReport(object):
                                     coverage_summary=coverage_summary)
         if self.conseq_stitched_writer is not None:
             self.write_whole_genome_consensus_from_nuc(self.conseq_stitched_writer)
+        if self.conseq_region_writer is not None:
+            self.write_consensus_regions(self.conseq_region_writer)
 
     def read(self,
              aligned_reads,
@@ -1213,7 +1212,7 @@ class SequenceReport(object):
                 for i in range(region_start - 1, region_end):
                     consumed_positions.add(i)
                 prev_region_end = region_end
-            nuc_dict = insert_insertions(insertions_dict, nuc_dict)
+            insert_insertions(insertions_dict, nuc_dict)
             nuc_entries = list(nuc_dict.items())
             nuc_entries.sort(key=lambda elem: elem[0])
             self._write_consensus_helper(
@@ -1300,21 +1299,26 @@ class SequenceReport(object):
 
     def write_consensus_regions(self, conseq_region_writer=None):
         conseq_region_writer = conseq_region_writer or self.conseq_region_writer
-        regions = sorted(self.reports.keys())
-        for region in regions:
-            region_amino_entries = [
-                (3 * (report_amino.position-1), report_amino.seed_amino)
-                for report_amino in self.reports[region]
-            ]
-            self._write_consensus_helper(
-                region_amino_entries,
-                conseq_region_writer,
-                {
-                    "seed": self.seed,
-                    "region": region,
-                },
-                discard_deletions=False,
-            )
+        for entry in self.combined_report_nucleotides:
+            regions = sorted(self.combined_report_nucleotides[entry].keys())
+            for region in regions:
+                if self.projects.isAmino(region):
+                    nuc_dict = {}
+                    region_nucleotides = self.combined_report_nucleotides[entry][region]
+                    for nuc_index, nucleotide in enumerate(region_nucleotides):
+                        nuc_dict[nuc_index] = nucleotide.seed_nucleotide
+                    insert_insertions(self.combined_insertions[entry][region], nuc_dict)
+                    nuc_entries = list(nuc_dict.items())
+                    nuc_entries.sort(key=lambda elem: elem[0])
+                    self._write_consensus_helper(
+                        nuc_entries,
+                        conseq_region_writer,
+                        {
+                            "seed": entry,
+                            "region": region,
+                        },
+                        is_nucleotide=True,
+                    )
 
     @staticmethod
     def _create_failure_writer(fail_file):
