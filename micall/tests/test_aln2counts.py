@@ -2014,6 +2014,7 @@ R1-seed,R1b,15,0.100,3,MMMKKK
 
         self.report.read(aligned_reads)
         self.report.write_consensus_regions_header(self.report_file)
+        self.report.combine_reports()
         self.report.write_consensus_regions()
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
