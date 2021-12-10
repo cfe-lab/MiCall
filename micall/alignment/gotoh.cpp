@@ -245,9 +245,21 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb,
     int M = seqa->size(); // first group of pre-aligned sequences
     int N = seqb->size(); // second group
     
-    // minimum number of rows must be 2 to prevent a buffer overflow
-    // the extra row will not be used when M=0 (empty ref)
-    int nrows = (M>0) ? M+1 : 2;
+    // if empty ref, return seqb as-is, and seqa as gaps of size(seqb)
+    // prevents a buffer overflow in the traceback matrices which assume M>0
+    if (M==0)
+    {
+        int j;
+        int alignment_score=0;
+        for (j=0 ; j < N ; j++)
+        {
+            alignment_score += (j==0) ? gip : gep ;
+            *newseqa += '-';
+            *newseqb += (*seqb)[j];;
+        }
+        
+        return alignment_score;
+    }
     
     int i, j;
 
@@ -257,8 +269,8 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb,
     int *PP = new int[N+1];  // P(i, .)
 
     // Gotoh traceback matrices
-    int **piSS = new int*[nrows];
-    int **pjSS = new int*[nrows];
+    int **piSS = new int*[M+1];
+    int **pjSS = new int*[M+1];
 
     int u = -gip; // affine gap initiation penalty
     int v = -gep; // affine gap extension penalty
@@ -516,7 +528,7 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb,
     reverse(newseqa);
     reverse(newseqb);
 
-    for (i = 0; i < nrows; i++)
+    for (i = 0; i < M + 1; i++)
     {
         delete []piSS[i];
         delete []pjSS[i];
