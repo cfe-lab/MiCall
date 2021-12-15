@@ -1,6 +1,5 @@
 import unittest
-
-from micall.alignment import gotoh
+from gotoh import align_it, align_it_aa
 
 
 class AlignItGotohTest(unittest.TestCase):
@@ -12,7 +11,7 @@ class AlignItGotohTest(unittest.TestCase):
         gep=1
         use_terminal_gap_penalty=0
 
-        [result_seqa, result_seqb, result_score] = gotoh.align_it(seqa, seqb, gip, gep, use_terminal_gap_penalty)
+        [result_seqa, result_seqb, result_score] = align_it(seqa, seqb, gip, gep, use_terminal_gap_penalty)
 
         expected_seqa = "-"*len(seqb)
         expected_seqb = seqb
@@ -31,7 +30,7 @@ class AlignItGotohTest(unittest.TestCase):
         gep=1
         use_terminal_gap_penalty=0
 
-        [result_seqa, result_seqb, result_score] = gotoh.align_it(seqa, seqb, gip, gep, use_terminal_gap_penalty)
+        [result_seqa, result_seqb, result_score] = align_it(seqa, seqb, gip, gep, use_terminal_gap_penalty)
 
         expected_seqa = seqa
         expected_seqb = "-"*len(seqa)
@@ -50,7 +49,7 @@ class AlignItGotohTest(unittest.TestCase):
         gep=1
         use_terminal_gap_penalty=1
 
-        [result_seqa, result_seqb, result_score] = gotoh.align_it(seqa, seqb, gip, gep, use_terminal_gap_penalty)
+        [result_seqa, result_seqb, result_score] = align_it(seqa, seqb, gip, gep, use_terminal_gap_penalty)
 
         expected_seqa = ""
         expected_seqb = ""
@@ -69,7 +68,7 @@ class AlignItGotohTest(unittest.TestCase):
         gep=1
         use_terminal_gap_penalty=1
 
-        [result_seqa, result_seqb, result_score] = gotoh.align_it(seqa, seqb, gip, gep, use_terminal_gap_penalty)
+        [result_seqa, result_seqb, result_score] = align_it(seqa, seqb, gip, gep, use_terminal_gap_penalty)
 
         expected_seqa = "CTCGGCTTGCTGAAGCGCGCACGGCAAGAGGCGAG"
         expected_seqb = "---------CT--AGCG----------GAGGCTAG"
@@ -88,7 +87,7 @@ class AlignItGotohTest(unittest.TestCase):
         gep=0
         use_terminal_gap_penalty=1
 
-        [result_seqa, result_seqb, result_score] = gotoh.align_it(seqa, seqb, gip, gep, use_terminal_gap_penalty)
+        [result_seqa, result_seqb, result_score] = align_it(seqa, seqb, gip, gep, use_terminal_gap_penalty)
 
         expected_seqa = "CTCGGCTTGCTGAAGCGCGCACGGC-AAGAGGCGAG"
         expected_seqb = "CT----------A-GCG-G-A-GGCTA-G-------"
@@ -109,7 +108,7 @@ class AlignItGotohTest(unittest.TestCase):
         gep=1
         use_terminal_gap_penalty=1
 
-        [result_seqa, result_seqb, result_score] = gotoh.align_it_aa(seqa, seqb, gip, gep, use_terminal_gap_penalty)
+        [result_seqa, result_seqb, result_score] = align_it_aa(seqa, seqb, gip, gep, use_terminal_gap_penalty)
 
         expected_seqa = "ME--PVD--P-RLEP---W--------K-----H-P-----G-SQP--KTACTNCY---C----------KKCC--F-HCQVCF-ITKALG-----ISYG--RKKRRQRRRAHQNSQTHQASLSKQ*"
         expected_seqb = "MEQAPEDQGPQR-EPHNEWTLELLEELKNEAVRHFPRIWLHGLGQHIYET-----YGDTWAGVEAIIRILQQ--LLFIH----FRI----GCRHSRI--GVT----RQRR-AR-NG----ASRS--*"
@@ -130,7 +129,7 @@ class AlignItGotohTest(unittest.TestCase):
         gep=0
         use_terminal_gap_penalty=1
 
-        [result_seqa, result_seqb, result_score] = gotoh.align_it_aa(seqa, seqb, gip, gep, use_terminal_gap_penalty)
+        [result_seqa, result_seqb, result_score] = align_it_aa(seqa, seqb, gip, gep, use_terminal_gap_penalty)
 
         expected_seqa = "ME--PV-D--P-RLEP---W--------K-----H-P-----GS--QPK----TACTNCYC-----------KKCC------F-HCQVCFITKALGISYG-RKK--R----RQRRRAHQ-NSQTHQ-ASL-SKQ*"
         expected_seqb = "MEQAP-EDQGPQR-EPHNEWTLELLEELKNEAVRHFPRIWLHG-LGQ--HIYET-----Y-GDTWAGVEAIIR---ILQQLLFIH----F--R---I--GCR--HSRIGVTRQRR-A--RN-----GAS-RS--*"
