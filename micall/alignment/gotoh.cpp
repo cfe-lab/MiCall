@@ -253,7 +253,8 @@ int align(string* seqa, string* seqb, string* newseqa, string* newseqb,
         int alignment_score=0;
         for (j=0 ; j < N ; j++)
         {
-            alignment_score += (j==0) ? gip : gep ;
+            //skip terminal (whole seq) gap penalties if user specifies this option
+            if (use_terminal_gap_penalty==0) alignment_score += (j==0) ? (gip+gep) : gep ;
             *newseqa += '-';
             *newseqb += (*seqb)[j];;
         }
