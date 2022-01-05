@@ -65,7 +65,7 @@ Individual files are described after the list of steps.
     combines duplicates.
   * in - remap.csv
   * aligned.csv - reads aligned to consensus sequence
-  * conseq_ins.csv - downloaded - insertions relative to consensus sequence
+  * conseq_ins.csv - insertions relative to consensus sequence
   * failed_read.csv - downloaded - reads that fail to merge
   * clipping.csv - count of soft-clipped reads at each position
 * `aln2counts`: take the aligned reads, and count how many of each nucleotide
@@ -76,8 +76,11 @@ Individual files are described after the list of steps.
   * in - conseq_ins.csv
   * nuc.csv - downloaded - nucleotide counts at each position
   * amino.csv - downloaded - amino counts at each position
-  * coord_ins.csv - downloaded - insertions relative to coordinate reference
-  * conseq.csv - downloaded - consensus sequence
+  * conseq.csv - downloaded - consensus sequence, minimum coverage (read depth) 100
+  * conseq_all.csv - downloaded - consensus for all seeds (whole and region-wise), no minimum coverage
+  * conseq_region.csv - downloaded - consensus for all regions
+  * conseq_stitched.csv - downloaded - stitched whole genome consensus
+  * insertions.csv - downloaded - insertions for all regions, at different mixture cutoffs
   * failed_align.csv - downloaded - any consensus that failed to align to its ref
   * nuc_variants.csv - downloaded - top nucleotide variants for HLA
   * nuc_detail.csv - nucleotide counts split up by contig
@@ -178,6 +181,17 @@ Individual files are described after the list of steps.
     [IUPAC nucleotide codes]. If deletions are present above the cutoff, the
     nucleotide code is lower case. If coverage is below 100 or if the only thing
     present above the cutoff is deletions, the nucleotide code is "x".
+* conseq_all.csv: same columns as conseq.csv, with two different offsets:
+  * seed-offset - offset of the seed relative to the reference
+  * region-offset - offset of the seed relative to the region
+* conseq_region.csv: same columns as conseq.csv
+* conseq_stitched.csv
+  * seed - reference name
+  * q-cutoff - minimum quality score
+  * consensus-percent-cutoff - to be included in a mixture, a variant must make
+    up at least this fraction of the total valid counts
+  * offset - offset relative to the reference
+  * sequence - stitched whole genome consensus
 * conseq_ins.csv
   * qname - query name from the read
   * fwd_rev - F for forward reads, R for reverse
@@ -269,6 +283,21 @@ Individual files are described after the list of steps.
   * dels - number of deletions reported at this position
   * coverage - number of reads that aligned to this position, including
     deletions
+* insertions.csv
+  * seed - the name of the contig
+  * mixture_cutoff - to be included in a mixture, a variant must make
+    up at least this fraction of the total valid counts
+  * region - region where the insertion was found
+  * ref_region_pos - 1-based position of the nucleotide before the insertion, 
+    relative to the reference region
+  * ref_genome_pos - 1-based position of the nucleotide before the insertion,
+    relative to the full reference genome
+  * query_pos - 1-based position of the nucleotide before the insertion,
+    relative to the contig
+  * insertion - sequence of the insertion (as nucleotides), computed in the same
+    way as for conseq.csv (e.g. mixture cutoffs, deletions and low coverage).
+    If there was not an insertion in the reads at this position, this is counted
+    as a deletion relative to the insertion.
 * merged_contigs.csv
   * contig - the consensus sequence from all merged reads of that insert length
 * mutations.csv
