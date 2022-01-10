@@ -1022,9 +1022,14 @@ class SequenceReport(object):
                 break
 
     def merge_extra_counts(self):
-        for region, report_aminos in self.reports.items():
+        for region in self.report_nucleotides:
+            report_nucleotides = self.report_nucleotides[region]
+            report_aminos = self.reports[region]
             first_amino_index = None
             last_amino_index = None
+            first_nuc_index = None
+            last_nuc_index = None
+            last_consensus_nuc_index_amino = None
             last_consensus_nuc_index = None
             for i, report_amino in enumerate(report_aminos):
                 seed_amino = report_amino.seed_amino
@@ -1032,15 +1037,21 @@ class SequenceReport(object):
                     if first_amino_index is None:
                         first_amino_index = i
                     last_amino_index = i
-                    last_consensus_nuc_index = seed_amino.consensus_nuc_index
+                    last_consensus_nuc_index_amino = seed_amino.consensus_nuc_index
+            for i, report_nucleotide in enumerate(report_nucleotides):
+                seed_nucleotide = report_nucleotide.seed_nucleotide
+                if seed_nucleotide.consensus_index is not None:
+                    if first_nuc_index is None:
+                        first_nuc_index = i
+                    last_nuc_index = i
+                    last_consensus_nuc_index = seed_nucleotide.consensus_index
+            if not self.has_detail_counts:
+                seed_name = self.seed
+            else:
+                seed_name = self.detail_seed
+            seed_clipping = self.clipping_counts[seed_name]
+            seed_insertion_counts = self.conseq_insertion_counts[seed_name]
             if first_amino_index is not None:
-                if not self.has_detail_counts:
-                    seed_name = self.seed
-                else:
-                    seed_name = self.detail_seed
-                seed_clipping = self.clipping_counts[seed_name]
-                seed_insertion_counts = self.conseq_insertion_counts[seed_name]
-                report_nucleotides = self.report_nucleotides[region]
                 report_nuc_index = 0
                 for i, report_amino in enumerate(report_aminos):
                     seed_amino = report_amino.seed_amino
@@ -1048,7 +1059,7 @@ class SequenceReport(object):
                         consensus_nuc_index = (i - first_amino_index) * 3
                     elif i > last_amino_index:
                         consensus_nuc_index = (i - last_amino_index) * 3 + \
-                                              last_consensus_nuc_index
+                                              last_consensus_nuc_index_amino
                     else:
                         consensus_nuc_index = seed_amino.consensus_nuc_index
                         if consensus_nuc_index is None:
@@ -1074,6 +1085,26 @@ class SequenceReport(object):
                             report_nuc.seed_nucleotide.insertion_count += \
                                 seed_insertion_counts[query_pos]
                             report_nuc_index += 1
+            if first_amino_index is None and first_nuc_index is not None:
+                report_nuc_index = 0
+                for i, report_nuc in enumerate(report_nucleotides):
+                    seed_nuc = report_nuc.seed_nucleotide
+                    if i < first_nuc_index:
+                        consensus_nuc_index = i - first_nuc_index
+                    elif i > last_nuc_index:
+                        consensus_nuc_index = i - last_nuc_index + last_consensus_nuc_index
+                    else:
+                        consensus_nuc_index = seed_nuc.consensus_index
+                        if consensus_nuc_index is None:
+                            continue
+                    if len(report_nucleotides) <= report_nuc_index:
+                        break
+                    query_pos = consensus_nuc_index + 1
+                    insertion_counts = self.insert_writer.insert_pos_counts[(self.seed, region)]
+                    seed_nuc.insertion_count += insertion_counts[report_nuc.position]
+                    seed_nuc.insertion_count += seed_insertion_counts[query_pos]
+                    seed_nuc.clip_count = seed_clipping[query_pos]
+                    report_nuc_index += 1
 
     def write_nuc_detail_counts(self, nuc_detail_writer=None):
         nuc_detail_writer = nuc_detail_writer or self.nuc_detail_writer
@@ -1489,6 +1520,7 @@ class InsertionWriter(object):
         self.insert_writer.writeheader()
 
         # {(seed, region): {pos: insert_count}}
+        # caution: pos is amino-numbered for translated regions, and nuc-numbered for untranslated regions
         self.insert_pos_counts = defaultdict(Counter)
         self.seed = self.qcut = None
         self.insert_file_name = getattr(insert_file, 'name', None)
@@ -1605,7 +1637,12 @@ class InsertionWriter(object):
                     aggregate_insertions(insert_nuc_counts[left],
                                          consensus_pos=left-1,
                                          coverage_nuc=insertion_coverage[left])
-                insert_pos = insert_behind.get(left) // 3
+                # Caution: insertion counter is indexed with amino positions for translated regions,
+                # and with nuc positions for untranslated regions!
+                if report_aminos:
+                    insert_pos = insert_behind.get(left) // 3
+                else:
+                    insert_pos = insert_behind.get(left)
                 count = sum(counts.values())
                 # Only care about insertions in the middle of the sequence,
                 # so ignore any that come before or after the reference.
