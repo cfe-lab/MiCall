@@ -1186,6 +1186,49 @@ ATGGGTGCGAGAGCGTCAGaacTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAA
 
 
 # noinspection DuplicatedCode
+def test_nuc_minority_insertions(default_sequence_report):
+    """ Check that insertions relative to the consensus are correctly inserted into the nuc.csv file for translated
+    and untranslated region"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,10,1,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+""")
+    # this is the ref genome from pos 789 to 889 (0 based)
+    conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,HIV1-B-FR-K03455-seed,10,AAC,AAA
+Example_read_2,F,HIV1-B-FR-K03455-seed,10,AAC,AAA
+""")
+
+    expected_text_untranslated = """\
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,8,4,796,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,9,5,797,0,10,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,10,6,798,0,0,10,0,0,0,2,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,11,7,799,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,12,8,800,0,0,10,0,0,0,0,0,0,10"""
+    expected_text_translated = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,8,7,796,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,9,8,797,0,10,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,10,9,798,0,0,10,0,0,0,2,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,11,10,799,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,12,11,800,0,0,10,0,0,0,0,0,0,10"""
+
+    nuc_file = StringIO()
+    default_sequence_report.read_insertions(conseq_ins_csv)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_file)
+    default_sequence_report.write_nuc_counts()  # calculates ins counts
+    report = nuc_file.getvalue()
+    report_lines = report.splitlines()
+    key_lines1 = report_lines[105:110]
+    key_report1 = '\n'.join(key_lines1)
+    key_lines2 = report_lines[7:12]
+    key_report2 = '\n'.join(key_lines2)
+    assert key_report1 == expected_text_untranslated
+    assert key_report2 == expected_text_translated
+
+
+# noinspection DuplicatedCode
 def test_whole_genome_consensus_different_minority_insertions(default_sequence_report):
     """ Check that different insertions relative to the consensus are correctly inserted
     into the whole genome consensus"""
