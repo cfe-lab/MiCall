@@ -1022,8 +1022,7 @@ class SequenceReport(object):
                 break
 
     def merge_extra_counts(self):
-        for region in self.report_nucleotides:
-            report_nucleotides = self.report_nucleotides[region]
+        for region, report_nucleotides in self.report_nucleotides.items():
             report_aminos = self.reports[region]
             first_amino_index = None
             last_amino_index = None
@@ -1085,7 +1084,7 @@ class SequenceReport(object):
                             report_nuc.seed_nucleotide.insertion_count += \
                                 seed_insertion_counts[query_pos]
                             report_nuc_index += 1
-            if first_amino_index is None and first_nuc_index is not None:
+            elif first_nuc_index is not None:
                 report_nuc_index = 0
                 for i, report_nuc in enumerate(report_nucleotides):
                     seed_nuc = report_nuc.seed_nucleotide
