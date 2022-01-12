@@ -126,23 +126,14 @@ def trim_contig_name(contig_name):
 def get_insertion_info(right, report_aminos, report_nucleotides):
     insert_behind = None
     insertion_coverage = 0
-    for i, report_amino in enumerate(report_aminos):
-        seed_amino = report_amino.seed_amino
-        if seed_amino.consensus_nuc_index == right:
-            insert_behind = (report_amino.position - 1) * 3
-            coverage_left = report_aminos[i - 1].seed_amino.nucleotides[2].get_coverage() if i >= 0 else 0
-            coverage_right = report_amino.seed_amino.nucleotides[0].get_coverage()
+    for i, report_nuc in enumerate(report_nucleotides):
+        seed_nuc = report_nuc.seed_nucleotide
+        if seed_nuc.consensus_index == right:
+            insert_behind = report_nuc.position - 1
+            coverage_left = report_nucleotides[i - 1].seed_nucleotide.get_coverage() if i >= 0 else 0
+            coverage_right = report_nuc.seed_nucleotide.get_coverage()
             insertion_coverage = max(coverage_left, coverage_right)
             break
-    if len(report_aminos) == 0:
-        for i, report_nuc in enumerate(report_nucleotides):
-            seed_nuc = report_nuc.seed_nucleotide
-            if seed_nuc.consensus_index == right:
-                insert_behind = report_nuc.position - 1
-                coverage_left = report_nucleotides[i - 1].seed_nucleotide.get_coverage() if i >= 0 else 0
-                coverage_right = report_nuc.seed_nucleotide.get_coverage()
-                insertion_coverage = max(coverage_left, coverage_right)
-                break
     return insert_behind, insertion_coverage
 
 

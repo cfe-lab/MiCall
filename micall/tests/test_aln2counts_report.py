@@ -1261,7 +1261,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,66,56,845,0,0,0,10,0,0,0,0,0,10"""
 # noinspection DuplicatedCode
 def test_nuc_large_majority_insertion(default_sequence_report):
     """ Check that a large (>30) insertion relative to the reference is correctly inserted into the nuc.csv file
-    for translated untranslated regions"""
+    for translated regions"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,10,1,\
 ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATTCGGTTAAGG\
@@ -1293,7 +1293,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
 @pytest.mark.skip(reason="currently failing")
 def test_nuc_large_majority_insertion_frameshift(default_sequence_report):
     """ Check that a large (>30) insertion relative to the reference is correctly inserted into the nuc.csv file
-    for translated untranslated regions"""
+    for translated regions, even if it is out of frame"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,10,1,\
 ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAATTCGGTTAAGG\
@@ -1303,9 +1303,11 @@ CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
     #                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     expected_text = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,51,50,839,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,52,51,840,10,0,0,0,0,0,0,0,0,10
 HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,88,54,843,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,88,54,843,10,0,0,0,0,0,0,0,0,10
 HIV1-B-FR-K03455-seed,HIV1B-gag,15,89,55,844,10,0,0,0,0,0,0,0,0,10
 HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
 
@@ -1316,7 +1318,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
     default_sequence_report.write_nuc_counts()  # calculates ins counts
     report = nuc_file.getvalue()
     report_lines = report.splitlines()
-    key_lines = report_lines[52:57]
+    key_lines = report_lines[50:57]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 
