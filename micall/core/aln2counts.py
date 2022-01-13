@@ -134,6 +134,15 @@ def get_insertion_info(right, report_aminos, report_nucleotides):
             coverage_right = report_nuc.seed_nucleotide.get_coverage()
             insertion_coverage = max(coverage_left, coverage_right)
             break
+    if len(report_nucleotides) == 0:
+        for i, report_amino in enumerate(report_aminos):
+            seed_amino = report_amino.seed_amino
+            if seed_amino.consensus_nuc_index == right:
+                insert_behind = (report_amino.position - 1) * 3
+                coverage_left = report_aminos[i - 1].seed_amino.nucleotides[2].get_coverage() if i >= 0 else 0
+                coverage_right = report_amino.seed_amino.nucleotides[0].get_coverage()
+                insertion_coverage = max(coverage_left, coverage_right)
+                break
     return insert_behind, insertion_coverage
 
 
@@ -1051,7 +1060,8 @@ class SequenceReport(object):
                         consensus_nuc_index = (i - last_amino_index) * 3 + \
                                               last_consensus_nuc_index_amino
                     else:
-                        consensus_nuc_index = seed_amino.consensus_nuc_index
+                        consensus_nuc_index = seed_amino.nucleotides[0].consensus_index \
+                                              or seed_amino.consensus_nuc_index
                         if consensus_nuc_index is None:
                             continue
                     for j, seed_nuc in enumerate(seed_amino.nucleotides):
@@ -1061,13 +1071,12 @@ class SequenceReport(object):
                         query_pos = j + consensus_nuc_index + 1
                         seed_nuc.clip_count = seed_clipping[query_pos]
                         seed_nuc.insertion_count = seed_insertion_counts[query_pos]
-                        if j == 2:
-                            insertion_counts = self.insert_writer.insert_pos_counts[
-                                (self.seed, region)]
-                            seed_nuc.insertion_count += (
-                                insertion_counts[report_amino.position])
-                            report_nuc.seed_nucleotide.insertion_count += (
-                                insertion_counts[report_amino.position])
+                        insertion_counts = self.insert_writer.insert_pos_counts[
+                            (self.seed, region)]
+                        seed_nuc.insertion_count += (
+                            insertion_counts[report_nuc.position])
+                        report_nuc.seed_nucleotide.insertion_count += (
+                            insertion_counts[report_nuc.position])
                         if (report_nuc.seed_nucleotide.consensus_index in
                                 (None, seed_nuc.consensus_index)):
                             report_nuc.seed_nucleotide.clip_count = \
@@ -1510,7 +1519,6 @@ class InsertionWriter(object):
         self.insert_writer.writeheader()
 
         # {(seed, region): {pos: insert_count}}
-        # caution: pos is amino-numbered for translated regions, and nuc-numbered for untranslated regions
         self.insert_pos_counts = defaultdict(Counter)
         self.seed = self.qcut = None
         self.insert_file_name = getattr(insert_file, 'name', None)
@@ -1627,12 +1635,7 @@ class InsertionWriter(object):
                     aggregate_insertions(insert_nuc_counts[left],
                                          consensus_pos=left-1,
                                          coverage_nuc=insertion_coverage[left])
-                # Caution: insertion counter is indexed with amino positions for translated regions,
-                # and with nuc positions for untranslated regions!
-                if report_aminos:
-                    insert_pos = insert_behind.get(left) // 3
-                else:
-                    insert_pos = insert_behind.get(left)
+                insert_pos = insert_behind.get(left)
                 count = sum(counts.values())
                 # Only care about insertions in the middle of the sequence,
                 # so ignore any that come before or after the reference.

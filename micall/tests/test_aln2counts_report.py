@@ -1290,7 +1290,6 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
 
 
 # noinspection DuplicatedCode
-@pytest.mark.skip(reason="currently failing")
 def test_nuc_large_majority_insertion_frameshift(default_sequence_report):
     """ Check that a large (>30) insertion relative to the reference is correctly inserted into the nuc.csv file
     for translated regions, even if it is out of frame"""

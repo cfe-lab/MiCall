@@ -2319,7 +2319,7 @@ seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
 R1-seed,MAX,R1,6,6,6,GAC
 R1-seed,0.100,R1,6,6,6,GAC
 """
-        expected_counts = {('R1-seed', 'R1'): {2: 1}}
+        expected_counts = {('R1-seed', 'R1'): {6: 1}}
 
         report_aminos = {'R1': [ReportAmino(SeedAmino(0), 1),
                                 ReportAmino(SeedAmino(3), 2),

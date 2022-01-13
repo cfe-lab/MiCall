@@ -539,7 +539,7 @@ class ConsensusAligner:
                     has_skipped_nucleotide = True
         for amino_alignment in self.amino_alignments:
             if amino_alignment.action == CigarActions.DELETE:
-                self.parse_deletion(amino_alignment,
+                self.count_deletion(amino_alignment,
                                     amino_ref,
                                     report_aminos,
                                     report_nucleotides,
@@ -547,10 +547,10 @@ class ConsensusAligner:
                                     repeat_position,
                                     skip_position)
             elif amino_alignment.action == CigarActions.INSERT:
-                self.parse_insertion(amino_alignment, start_pos, end_pos)
+                self.count_insertion(amino_alignment, start_pos, end_pos)
             else:
                 assert amino_alignment.action == CigarActions.MATCH
-                self.parse_match(amino_alignment,
+                self.count_match(amino_alignment,
                                  amino_ref,
                                  report_aminos,
                                  report_nucleotides,
@@ -594,7 +594,7 @@ class ConsensusAligner:
             report_nuc = report_nucleotides[report_nuc_index]
             report_nuc.seed_nucleotide.add(seed_nuc)
 
-    def parse_deletion(self,
+    def count_deletion(self,
                        amino_alignment,
                        amino_ref,
                        report_aminos,
@@ -642,7 +642,7 @@ class ConsensusAligner:
             if coord_index == del_end_amino_index:
                 break
 
-    def parse_insertion(self, amino_alignment, start_pos, end_pos):
+    def count_insertion(self, amino_alignment, start_pos, end_pos):
         ref_nuc_index = amino_alignment.ref_start
         consensus_nuc_index = amino_alignment.query_start + self.consensus_offset - 1
         section_size = (amino_alignment.query_end - amino_alignment.query_start) // 3
@@ -651,7 +651,7 @@ class ConsensusAligner:
                 self.inserts.add(consensus_nuc_index)
             consensus_nuc_index += 3
 
-    def parse_match(self,
+    def count_match(self,
                     amino_alignment,
                     amino_ref,
                     report_aminos,
