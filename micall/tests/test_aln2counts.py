@@ -1319,14 +1319,14 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,5
         self.assertEqual(expected_text, self.report_file.getvalue())
 
     def testInsertionBetweenSeedAndCoordinateAminoReport(self):
-        """ Coordinate sequence is KFQTPREH, and this aligned read is HERKFQTGPREHQFK.
+        """ Coordinate sequence is KFQTPREH, and this aligned read is HERKFQTGPREH.
 
         The G must be an insertion in the seed reference with respect to the
         coordinate reference.
         """
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
-R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
+R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCAT
 """)
         self.report.landmarks = yaml.safe_load("""\
 - seed_pattern: R3-.*
@@ -1366,14 +1366,14 @@ R3-seed,0.100,R3,12,12,21,GGG
                          self.report.insert_writer.insert_file.getvalue())
 
     def testInsertionBetweenSeedAndCoordinateNucleotideReport(self):
-        """ Coordinate sequence is KFQTPREH, and this aligned read is HERKFQTGPREHQFK.
+        """ Coordinate sequence is KFQTPREH, and this aligned read is HERKFQTGPREH.
 
         The G must be an insertion in the seed reference with respect to the
         coordinate reference.
         """
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
-R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
+R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCAT
 """)
         self.report.landmarks = yaml.safe_load("""\
 - seed_pattern: R3-.*
@@ -1421,8 +1421,8 @@ R3-seed,R3,15,36,24,24,0,0,0,9,0,0,0,0,0,9
     def testInsertionsSortedByCount(self):
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("""\
-R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCATCAGTTTAAA
-R3-seed,15,0,8,0,CATGAGCGAAAATTTCAGACTAAACCCCGAGAGCATCAGTTTAAA
+R3-seed,15,0,9,0,CATGAGCGAAAATTTCAGACTGGGCCCCGAGAGCAT
+R3-seed,15,0,8,0,CATGAGCGAAAATTTCAGACTAAACCCCGAGAGCAT
 """)
         self.report.landmarks = yaml.safe_load("""\
 - seed_pattern: R3-.*

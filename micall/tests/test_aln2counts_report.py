@@ -1323,7 +1323,6 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
 
 
 # noinspection DuplicatedCode
-@pytest.mark.skip(reason="Another insertion that fails to be recorded")
 def test_nuc_large_insertion_not_multiple_of_three(default_sequence_report):
     """ Check that a large (>30) insertion relative to the reference is correctly inserted into the nuc.csv file
     for translated regions, even if it is out of frame"""

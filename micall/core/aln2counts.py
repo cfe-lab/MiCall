@@ -123,24 +123,30 @@ def trim_contig_name(contig_name):
     return seed_name
 
 
-def get_insertion_info(right, report_aminos, report_nucleotides):
+def get_insertion_info(left, report_aminos, report_nucleotides):
     insert_behind = None
     insertion_coverage = 0
     for i, report_nuc in enumerate(report_nucleotides):
         seed_nuc = report_nuc.seed_nucleotide
-        if seed_nuc.consensus_index == right:
-            insert_behind = report_nuc.position - 1
-            coverage_left = report_nucleotides[i - 1].seed_nucleotide.get_coverage() if i >= 0 else 0
-            coverage_right = report_nuc.seed_nucleotide.get_coverage()
+        if seed_nuc.consensus_index == left-1:
+            if len(report_nucleotides) > i+1:
+                coverage_right = report_nucleotides[i + 1].seed_nucleotide.get_coverage()
+            else:   # insertion at the very end of the region
+                break
+            insert_behind = report_nuc.position
+            coverage_left = report_nuc.seed_nucleotide.get_coverage()
             insertion_coverage = max(coverage_left, coverage_right)
             break
     if len(report_nucleotides) == 0:
         for i, report_amino in enumerate(report_aminos):
             seed_amino = report_amino.seed_amino
-            if seed_amino.consensus_nuc_index == right:
-                insert_behind = (report_amino.position - 1) * 3
-                coverage_left = report_aminos[i - 1].seed_amino.nucleotides[2].get_coverage() if i >= 0 else 0
-                coverage_right = report_amino.seed_amino.nucleotides[0].get_coverage()
+            if seed_amino.consensus_nuc_index == left-3:
+                if len(report_aminos) > i+1:
+                    coverage_right = report_aminos[i+1].seed_amino.nucleotides[0].get_coverage()
+                else:   # insertion at the very end of the region
+                    break
+                insert_behind = report_amino.position * 3
+                coverage_left = report_amino.seed_amino.nucleotides[2].get_coverage()
                 insertion_coverage = max(coverage_left, coverage_right)
                 break
     return insert_behind, insertion_coverage
@@ -1611,7 +1617,7 @@ class InsertionWriter(object):
             insertion_coverage = {}  # max coverage left and right of the insertion
             for left, right in insert_ranges:
                 current_insert_behind, current_insert_coverage =\
-                    get_insertion_info(right, report_aminos, report_nucleotides)
+                    get_insertion_info(left, report_aminos, report_nucleotides)
                 insert_behind[left] = current_insert_behind
                 insertion_coverage[left] = current_insert_coverage
                 current_nuc_counts = Counter()
@@ -1627,8 +1633,8 @@ class InsertionWriter(object):
             for left, counts in insert_nuc_counts.items():
                 pos = insert_behind.get(left)
                 if pos is None:
-                    # this can happen if the insertion is at the end of an alignment,
-                    # because we only look at the consensus on the right edge of the insert
+                    # this can happen if the insertion is at the start of an alignment,
+                    # because we only look at the consensus on the left edge of the insert
                     continue
                 ref_pos = pos - 1
                 self.ref_insertions[region][ref_pos] =\
