@@ -220,7 +220,9 @@ def insert_insertions(insertions, consensus_nucs):
             coverage_insertion = insertions[position][i].get_coverage()
             coverage_no_insertion = coverage_nuc - coverage_insertion
             if coverage_no_insertion > 0:
-                insertions[position][i].counts['-'] = coverage_no_insertion
+                # the non-insertion coverage is already set in aggregate_insertions and count_conseq_insertions for
+                # each individual contig, but here we increase it if necessary for the whole genome consensus counts.
+                insertions[position][i].counts['-'] += coverage_no_insertion
             consensus_nucs[insertion_position] = insertions[position][i]
 
 
@@ -1661,12 +1663,13 @@ class InsertionWriter(object):
                     get_insertion_info(insertion_position, report_aminos, report_nucleotides)
                 if current_insert_behind is not None:
                     for position in insertions:
-                        insertions[position].count_nucleotides('-', count=current_insert_coverage)
+                        insertions[position].counts['-'] = current_insert_coverage
                     if len(self.ref_insertions[region][current_insert_behind - 1]) == 0:
                         self.ref_insertions[region][current_insert_behind - 1] = insertions
                     else:
                         present_insertions = self.ref_insertions[region][current_insert_behind - 1]
-                        new_insertions = insertions
+                        new_insertions = defaultdict(SeedNucleotide)
+                        new_insertions.update(insertions)
                         length_conseq_insertions = len(insertions)
                         # shift present insertions by the length of the new insertions
                         for position, insertion in present_insertions.items():
