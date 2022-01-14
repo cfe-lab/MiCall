@@ -1356,6 +1356,48 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,91,56,845,0,0,0,10,0,0,0,0,0,10"""
 
 
 # noinspection DuplicatedCode
+def test_majority_and_minority_insertion(default_sequence_report):
+    """ Check that an insertion relative to the reference is correctly inserted into the insertions.csv file
+    for translated regions, even if there are also insertions relative to the consensus at that position"""
+    aligned_reads = prepare_reads("""\
+1-HIV1-B-FR-K03455-seed,15,0,10,1,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAATTCGGTTAAGG\
+CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+""")
+    # this is the ref genome from pos 789 to 889 (0 based), with an insertion here:
+    #                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,1-HIV1-B-FR-K03455-seed,54,AAC,AAA
+Example_read_2,F,1-HIV1-B-FR-K03455-seed,54,AAC,AAA
+""")
+
+    expected_regions = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,MAX,0,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAATTCGGTTAAGG\
+CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,0.100,0,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAaacTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAATTCGGTTAAGG\
+CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+"""
+
+    regions_file = StringIO()
+    default_sequence_report.read_insertions(conseq_ins_csv)
+    default_sequence_report.write_consensus_stitched_header(StringIO())
+    default_sequence_report.write_consensus_regions_header(regions_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(StringIO())
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calculates ins counts
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_consensus_regions()
+    assert regions_file.getvalue() == expected_regions
+
+
+# noinspection DuplicatedCode
 def test_whole_genome_consensus_different_minority_insertions(default_sequence_report):
     """ Check that different insertions relative to the consensus are correctly inserted
     into the whole genome consensus"""

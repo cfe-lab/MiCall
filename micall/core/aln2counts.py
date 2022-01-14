@@ -1650,12 +1650,11 @@ class InsertionWriter(object):
                     if insert_pos is not None:
                         region_insert_pos_counts[insert_pos] += count
 
-        self.parse_conseq_insertions(seed_name, report_nucleotides_all)
+        self.count_conseq_insertions(seed_name, report_nucleotides_all)
         self.write_insertions_file(landmarks, consensus_builder)
 
-    def parse_conseq_insertions(self, seed_name, report_nucleotides_all):
-        for insertion_position in self.conseq_insertions[seed_name]:
-            insertions = self.conseq_insertions[seed_name][insertion_position]
+    def count_conseq_insertions(self, seed_name, report_nucleotides_all):
+        for insertion_position, insertions in self.conseq_insertions[seed_name].items():
             for region in report_nucleotides_all:
                 report_aminos = []
                 report_nucleotides = report_nucleotides_all[region]
@@ -1664,7 +1663,16 @@ class InsertionWriter(object):
                 if current_insert_behind is not None:
                     for position in insertions:
                         insertions[position].count_nucleotides('-', count=current_insert_coverage)
-                    self.ref_insertions[region][current_insert_behind - 1] = insertions
+                    if self.ref_insertions[region][current_insert_behind - 1] is None:
+                        self.ref_insertions[region][current_insert_behind - 1] = insertions
+                    else:
+                        present_insertions = self.ref_insertions[region][current_insert_behind - 1]
+                        new_insertions = insertions
+                        length_conseq_insertions = len(insertions)
+                        # shift present insertions by the length of the new insertions
+                        for position, insertion in present_insertions.items():
+                            new_insertions[length_conseq_insertions + position] = insertion
+                        self.ref_insertions[region][current_insert_behind - 1] = new_insertions
 
     def write_insertions_file(self, landmarks, consensus_builder):
         landmark_reader = LandmarkReader(landmarks)
