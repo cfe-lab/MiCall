@@ -539,129 +539,25 @@ class ConsensusAligner:
                     has_skipped_nucleotide = True
         for amino_alignment in self.amino_alignments:
             if amino_alignment.action == CigarActions.DELETE:
-                coverage = self.get_deletion_coverage(
-                    amino_alignment.query_start)
-                seed_amino = SeedAmino(None)
-                seed_amino.count_aminos('---', coverage)
-
-                # Start index within region
-                del_start_nuc_index = amino_alignment.ref_start - start_pos + 1
-                del_end_nuc_index = amino_alignment.ref_end - start_pos
-                # Calculate amino index. amino_alignment is already trimmed to
-                # be between start_pos and end_pos, but HIV's vpr has an extra
-                # base that can roll over to an extra amino acid. Trim to length
-                # of amino reference.
-                del_start_amino_index = min(del_start_nuc_index // 3,
-                                            len(amino_ref)-1)
-                del_end_amino_index = min(del_end_nuc_index // 3,
-                                          len(amino_ref)-1)
-                for coord_index in count(del_start_amino_index):
-                    if coord_index == del_start_amino_index:
-                        start_codon_nuc = del_start_nuc_index % 3
-                        trimmed_seed_amino = SeedAmino(None)
-                        trimmed_seed_amino.add(seed_amino, start_codon_nuc)
-                        trimmed_seed_amino.consensus_nuc_index = (
-                                amino_alignment.query_start -
-                                start_codon_nuc)
-                    elif coord_index == del_end_amino_index:
-                        end_codon_nuc = del_end_nuc_index % 3
-                        trimmed_seed_amino = SeedAmino(None)
-                        trimmed_seed_amino.add(seed_amino, 0, end_codon_nuc)
-                    else:
-                        trimmed_seed_amino = seed_amino
-                    self.update_report_amino(coord_index,
-                                             report_aminos,
-                                             report_nucleotides,
-                                             trimmed_seed_amino,
-                                             start_pos,
-                                             repeat_position)
-                    if coord_index == del_end_amino_index:
-                        break
-
-            if amino_alignment.action != CigarActions.MATCH:
-                continue
-            region_seed_aminos = self.reading_frames[amino_alignment.reading_frame]
-            coord2conseq = amino_alignment.map_amino_sequences()
-
-            coordinate_inserts = {seed_amino.consensus_nuc_index
-                                  for seed_amino in region_seed_aminos}
-            prev_conseq_index = None
-            prev_consensus_nuc_index = None
-            max_conseq_index = max(coord2conseq.values())
-            for coord_index in range(len(amino_ref)):
-                conseq_index = coord2conseq.get(coord_index)
-                if conseq_index is None:
-                    seed_amino = SeedAmino(None)
-                    if (prev_conseq_index is not None and
-                            prev_conseq_index < max_conseq_index):
-                        prev_seed_amino = region_seed_aminos[prev_conseq_index]
-                        prev_count = sum(prev_seed_amino.counts.values())
-                        prev_count += prev_seed_amino.deletions
-                        next_seed_amino = region_seed_aminos[prev_conseq_index+1]
-                        next_count = sum(next_seed_amino.counts.values())
-                        next_count += next_seed_amino.deletions
-                        min_count = min(prev_count, next_count)
-                        seed_amino.deletions = min_count
-                        for nuc in seed_amino.nucleotides:
-                            nuc.count_nucleotides('-', min_count)
-                else:
-                    seed_amino = region_seed_aminos[conseq_index]
-                    consensus_nuc_index = seed_amino.consensus_nuc_index
-                    if (consensus_nuc_index < amino_alignment.query_start):
-                        start_codon_nuc = max(0,
-                                              amino_alignment.query_start -
-                                              consensus_nuc_index)
-                        end_codon_nuc = 2
-                        seed_amino2 = SeedAmino(None)
-                        seed_amino2.add(seed_amino,
-                                        start_codon_nuc,
-                                        end_codon_nuc)
-                        seed_amino = seed_amino2
-                    if (amino_alignment.query_end <
-                            consensus_nuc_index+3):
-                        start_codon_nuc = 0
-                        end_codon_nuc = (amino_alignment.query_end -
-                                         consensus_nuc_index - 1)
-                        seed_amino2 = SeedAmino(None)
-                        seed_amino2.add(seed_amino,
-                                        start_codon_nuc,
-                                        end_codon_nuc)
-                        seed_amino = seed_amino2
-                    if prev_conseq_index is None:
-                        coordinate_inserts = {i
-                                              for i in coordinate_inserts
-                                              if i >= consensus_nuc_index}
-                    prev_conseq_index = conseq_index
-
-                if seed_amino.consensus_nuc_index is not None:
-                    coordinate_inserts.remove(seed_amino.consensus_nuc_index)
-                    prev_consensus_nuc_index = seed_amino.consensus_nuc_index
-                if skip_position is not None and coord_index == (skip_position-start_pos)//3 and \
-                        amino_alignment.ref_start <= skip_position-1 <= amino_alignment.ref_end:
-                    conseq_pos = coord2conseq[(skip_position - 1 - start_pos) // 3]
-                    if has_skipped_nucleotide:
-                        skipped_nuc = self.reading_frames[amino_alignment.reading_frame][conseq_pos + 1].nucleotides[0]
-                    else:
-                        skipped_nuc = SeedNucleotide()
-                        coverage = self.get_deletion_coverage(conseq_pos)
-                        skipped_nuc.count_nucleotides('-', coverage)
-                else:
-                    skipped_nuc = None
-                self.update_report_amino(coord_index,
-                                         report_aminos,
-                                         report_nucleotides,
-                                         seed_amino,
-                                         start_pos,
-                                         repeat_position=repeat_position,
-                                         skip_position=skip_position,
-                                         skipped_nuc=skipped_nuc,)
-            if prev_consensus_nuc_index is None:
-                coordinate_inserts.clear()
+                self.count_deletion(amino_alignment,
+                                    amino_ref,
+                                    report_aminos,
+                                    report_nucleotides,
+                                    start_pos,
+                                    repeat_position,
+                                    skip_position)
+            elif amino_alignment.action == CigarActions.INSERT:
+                self.count_insertion(amino_alignment, start_pos, end_pos)
             else:
-                coordinate_inserts = {i
-                                      for i in coordinate_inserts
-                                      if i <= prev_consensus_nuc_index}
-            self.inserts.update(coordinate_inserts)
+                assert amino_alignment.action == CigarActions.MATCH
+                self.count_match(amino_alignment,
+                                 amino_ref,
+                                 report_aminos,
+                                 report_nucleotides,
+                                 start_pos,
+                                 repeat_position,
+                                 skip_position,
+                                 has_skipped_nucleotide)
 
     @staticmethod
     def update_report_amino(coord_index: int,
@@ -697,6 +593,155 @@ class ConsensusAligner:
                     report_nuc_index += 1
             report_nuc = report_nucleotides[report_nuc_index]
             report_nuc.seed_nucleotide.add(seed_nuc)
+
+    def count_deletion(self,
+                       amino_alignment,
+                       amino_ref,
+                       report_aminos,
+                       report_nucleotides,
+                       start_pos,
+                       repeat_position,
+                       skip_position):
+        coverage = self.get_deletion_coverage(
+            amino_alignment.query_start)
+        seed_amino = SeedAmino(None)
+        seed_amino.count_aminos('---', coverage)
+
+        # Start index within region
+        del_start_nuc_index = amino_alignment.ref_start - start_pos + 1
+        del_end_nuc_index = amino_alignment.ref_end - start_pos
+        # Calculate amino index. amino_alignment is already trimmed to
+        # be between start_pos and end_pos, but HIV's vpr has an extra
+        # base that can roll over to an extra amino acid. Trim to length
+        # of amino reference.
+        del_start_amino_index = min(del_start_nuc_index // 3,
+                                    len(amino_ref) - 1)
+        del_end_amino_index = min(del_end_nuc_index // 3,
+                                  len(amino_ref) - 1)
+        for coord_index in count(del_start_amino_index):
+            if coord_index == del_start_amino_index:
+                start_codon_nuc = del_start_nuc_index % 3
+                trimmed_seed_amino = SeedAmino(None)
+                trimmed_seed_amino.add(seed_amino, start_codon_nuc)
+                trimmed_seed_amino.consensus_nuc_index = (
+                        amino_alignment.query_start -
+                        start_codon_nuc)
+            elif coord_index == del_end_amino_index:
+                end_codon_nuc = del_end_nuc_index % 3
+                trimmed_seed_amino = SeedAmino(None)
+                trimmed_seed_amino.add(seed_amino, 0, end_codon_nuc)
+            else:
+                trimmed_seed_amino = seed_amino
+            self.update_report_amino(coord_index,
+                                     report_aminos,
+                                     report_nucleotides,
+                                     trimmed_seed_amino,
+                                     start_pos,
+                                     repeat_position=repeat_position,
+                                     skip_position=skip_position)
+            if coord_index == del_end_amino_index:
+                break
+
+    def count_insertion(self, amino_alignment, start_pos, end_pos):
+        ref_nuc_index = amino_alignment.ref_start
+        consensus_nuc_index = amino_alignment.query_start + self.consensus_offset - 1
+        section_size = (amino_alignment.query_end - amino_alignment.query_start) // 3
+        for _ in range(section_size):
+            if start_pos - 1 <= ref_nuc_index < end_pos:
+                self.inserts.add(consensus_nuc_index)
+            consensus_nuc_index += 3
+
+    def count_match(self,
+                    amino_alignment,
+                    amino_ref,
+                    report_aminos,
+                    report_nucleotides,
+                    start_pos,
+                    repeat_position,
+                    skip_position,
+                    has_skipped_nucleotide):
+        region_seed_aminos = self.reading_frames[amino_alignment.reading_frame]
+        coord2conseq = amino_alignment.map_amino_sequences()
+
+        coordinate_inserts = {seed_amino.consensus_nuc_index
+                              for seed_amino in region_seed_aminos}
+        prev_conseq_index = None
+        prev_consensus_nuc_index = None
+        max_conseq_index = max(coord2conseq.values())
+        for coord_index in range(len(amino_ref)):
+            conseq_index = coord2conseq.get(coord_index)
+            if conseq_index is None:
+                seed_amino = SeedAmino(None)
+                if (prev_conseq_index is not None and
+                        prev_conseq_index < max_conseq_index):
+                    prev_seed_amino = region_seed_aminos[prev_conseq_index]
+                    prev_count = sum(prev_seed_amino.counts.values())
+                    prev_count += prev_seed_amino.deletions
+                    next_seed_amino = region_seed_aminos[prev_conseq_index + 1]
+                    next_count = sum(next_seed_amino.counts.values())
+                    next_count += next_seed_amino.deletions
+                    min_count = min(prev_count, next_count)
+                    seed_amino.deletions = min_count
+                    for nuc in seed_amino.nucleotides:
+                        nuc.count_nucleotides('-', min_count)
+            else:
+                seed_amino = region_seed_aminos[conseq_index]
+                consensus_nuc_index = seed_amino.consensus_nuc_index
+                if consensus_nuc_index < amino_alignment.query_start:
+                    start_codon_nuc = max(0,
+                                          amino_alignment.query_start -
+                                          consensus_nuc_index)
+                    end_codon_nuc = 2
+                    seed_amino2 = SeedAmino(None)
+                    seed_amino2.add(seed_amino,
+                                    start_codon_nuc,
+                                    end_codon_nuc)
+                    seed_amino = seed_amino2
+                if amino_alignment.query_end < consensus_nuc_index + 3:
+                    start_codon_nuc = 0
+                    end_codon_nuc = (amino_alignment.query_end -
+                                     consensus_nuc_index - 1)
+                    seed_amino2 = SeedAmino(None)
+                    seed_amino2.add(seed_amino,
+                                    start_codon_nuc,
+                                    end_codon_nuc)
+                    seed_amino = seed_amino2
+                if prev_conseq_index is None:
+                    coordinate_inserts = {i
+                                          for i in coordinate_inserts
+                                          if i >= consensus_nuc_index}
+                prev_conseq_index = conseq_index
+
+            if seed_amino.consensus_nuc_index is not None:
+                coordinate_inserts.remove(seed_amino.consensus_nuc_index)
+                prev_consensus_nuc_index = seed_amino.consensus_nuc_index
+            if skip_position is not None and coord_index == (skip_position - start_pos) // 3 and \
+                    amino_alignment.ref_start <= skip_position - 1 <= amino_alignment.ref_end:
+                conseq_pos = coord2conseq[(skip_position - 1 - start_pos) // 3]
+                if has_skipped_nucleotide:
+                    skipped_nuc = \
+                        self.reading_frames[amino_alignment.reading_frame][conseq_pos + 1].nucleotides[0]
+                else:
+                    skipped_nuc = SeedNucleotide()
+                    coverage = self.get_deletion_coverage(conseq_pos)
+                    skipped_nuc.count_nucleotides('-', coverage)
+            else:
+                skipped_nuc = None
+            self.update_report_amino(coord_index,
+                                     report_aminos,
+                                     report_nucleotides,
+                                     seed_amino,
+                                     start_pos,
+                                     repeat_position=repeat_position,
+                                     skip_position=skip_position,
+                                     skipped_nuc=skipped_nuc, )
+        if prev_consensus_nuc_index is None:
+            coordinate_inserts.clear()
+        else:
+            coordinate_inserts = {i
+                                  for i in coordinate_inserts
+                                  if i <= prev_consensus_nuc_index}
+        self.inserts.update(coordinate_inserts)
 
     def build_nucleotide_report(self,
                                 start_pos: int,
