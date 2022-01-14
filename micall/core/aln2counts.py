@@ -1631,17 +1631,16 @@ class InsertionWriter(object):
                         current_nuc_counts[insert_nuc_seq] += count
 
             for left, counts in insert_nuc_counts.items():
-                pos = insert_behind.get(left)
-                if pos is None:
+                insert_pos = insert_behind.get(left)
+                if insert_pos is None:
                     # this can happen if the insertion is at the start of an alignment,
                     # because we only look at the consensus on the left edge of the insert
                     continue
-                ref_pos = pos - 1
+                ref_pos = insert_pos - 1
                 self.ref_insertions[region][ref_pos] =\
                     aggregate_insertions(insert_nuc_counts[left],
                                          consensus_pos=left-1,
                                          coverage_nuc=insertion_coverage[left])
-                insert_pos = insert_behind.get(left)
                 count = sum(counts.values())
                 # Only care about insertions in the middle of the sequence,
                 # so ignore any that come before or after the reference.

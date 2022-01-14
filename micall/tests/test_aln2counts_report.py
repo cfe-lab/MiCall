@@ -1357,7 +1357,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,91,56,845,0,0,0,10,0,0,0,0,0,10"""
 
 # noinspection DuplicatedCode
 def test_majority_and_minority_insertion(default_sequence_report):
-    """ Check that an insertion relative to the reference is correctly inserted into the insertions.csv file
+    """ Check that an insertion relative to the reference is correctly inserted into conseq_regions
     for translated regions, even if there are also insertions relative to the consensus at that position"""
     aligned_reads = prepare_reads("""\
 1-HIV1-B-FR-K03455-seed,15,0,10,1,\
