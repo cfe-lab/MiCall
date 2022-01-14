@@ -1662,7 +1662,7 @@ class InsertionWriter(object):
                 if current_insert_behind is not None:
                     for position in insertions:
                         insertions[position].count_nucleotides('-', count=current_insert_coverage)
-                    if self.ref_insertions[region][current_insert_behind - 1] is None:
+                    if len(self.ref_insertions[region][current_insert_behind - 1]) == 0:
                         self.ref_insertions[region][current_insert_behind - 1] = insertions
                     else:
                         present_insertions = self.ref_insertions[region][current_insert_behind - 1]
