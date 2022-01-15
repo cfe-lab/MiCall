@@ -1006,14 +1006,25 @@ CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGT
 HIV1-B-FR-K03455-seed,15,0.100,6315,\
 CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
 """
+    expected_regions = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+HIV1-B-FR-K03455-seed,GP120,15,MAX,91,\
+CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
+HIV1-B-FR-K03455-seed,GP120,15,0.100,91,\
+CAGAAAAATTGTGGGTCACAGTCTATTATGGGAAAAAAAAAGTACCTGTGTGGAAGGAAGCAACCACCACTCTATTTTGTGCATCAGATGCTAA
+"""
 
     report_file = StringIO()
+    region_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
+    default_sequence_report.write_consensus_regions_header(region_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_consensus_regions()
     assert report_file.getvalue() == expected_text
+    assert region_file.getvalue() == expected_regions
 
 
 # noinspection DuplicatedCode
@@ -1049,29 +1060,40 @@ def test_whole_genome_consensus_different_insertions(default_sequence_report):
     """ Check that mixed insertions are correctly inserted into the whole genome consensus"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,12,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGAAAAAAAAAGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
 HIV1-B-FR-K03455-seed,15,0,9,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAGGGAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGAAAGGGAAAGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """)
-    # this is the ref genome from pos 1 to 99 (0 based) plus two different insertions
+    # this is the ref genome from pos 789 to 889 (0 based) plus two different insertions
     #                                           ^^^^^^^^^
     # the insertions are between nucleotide 48 and 49
 
     expected_text = """\
 seed,q-cutoff,consensus-percent-cutoff,offset,sequence
-HIV1-B-FR-K03455-seed,15,MAX,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
-HIV1-B-FR-K03455-seed,15,0.100,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAARRRAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,15,MAX,789,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGAAAAAAAAAGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,15,0.100,789,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGAAARRRAAAGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+"""
+    expected_regions = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,MAX,0,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGAAAAAAAAAGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,0.100,0,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGAAARRRAAAGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """
 
     report_file = StringIO()
+    region_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
+    default_sequence_report.write_consensus_regions_header(region_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_consensus_regions()
     assert report_file.getvalue() == expected_text
+    assert region_file.getvalue() == expected_regions
 
 
 # noinspection DuplicatedCode
@@ -1079,30 +1101,41 @@ def test_whole_genome_consensus_half_insertions(default_sequence_report):
     """ Check that mixed insertions are correctly inserted into the whole genome consensus"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,15,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTA---CTTCCCTGATTAGCAGAACTACACACCAGG
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGAAAAAAAAAGAAAAAATTCGGTTAAGGCCA---GGGGGAAAGAAAAAATATAAATTAAAACATAT
 HIV1-B-FR-K03455-seed,15,0,10,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTG---------GATCTACCACACACAAGGCTAAAACTTCCCTGATTAGCAGAACTACACACCAGG
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGG---------GAAAAAATTCGGTTAAGGCCACCCGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """)
-    # this is the ref genome from pos 1 to 99 (0 based) plus different insertions in each of the reads
+    # this is the ref genome from pos 789 to 889 (0 based) plus different insertions in each of the reads
     # here and here:                            ^^^^^^^^^                     ^^^
     # In the MAX, only the insertion from the majority of reads will show up.
     # In the 0.1 mixture sequence, both insertions will show up as lower case.
 
     expected_text = """\
 seed,q-cutoff,consensus-percent-cutoff,offset,sequence
-HIV1-B-FR-K03455-seed,15,MAX,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGAAAAAAAAAGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
-HIV1-B-FR-K03455-seed,15,0.100,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGaaaaaaaaaGATCTACCACACACAAGGCTAaaaCTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,15,MAX,789,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGAAAAAAAAAGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,15,0.100,789,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGaaaaaaaaaGAAAAAATTCGGTTAAGGCCAcccGGGGGAAAGAAAAAATATAAATTAAAACATAT
+"""
+    expected_regions = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,MAX,0,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGAAAAAAAAAGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,0.100,0,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGaaaaaaaaaGAAAAAATTCGGTTAAGGCCAcccGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """
 
     report_file = StringIO()
+    region_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
+    default_sequence_report.write_consensus_regions_header(region_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_consensus_regions()
     assert report_file.getvalue() == expected_text
+    assert region_file.getvalue() == expected_regions
 
 
 # noinspection DuplicatedCode
@@ -1110,9 +1143,9 @@ def test_whole_genome_consensus_minority_insertions(default_sequence_report):
     """ Check that insertions relative to the consensus are correctly inserted into the whole genome consensus"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,10,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """)
-    # this is the ref genome from pos 1 to 99 (0 based)
+    # this is the ref genome from pos 789 to 889 (0 based)
     conseq_ins_csv = StringIO("""\
 qname,fwd_rev,refname,pos,insert,qual
 Example_read_1,F,HIV1-B-FR-K03455-seed,20,AAC,AAA
@@ -1121,15 +1154,24 @@ Example_read_2,F,HIV1-B-FR-K03455-seed,20,AAC,AAA
 
     expected_text = """\
 seed,q-cutoff,consensus-percent-cutoff,offset,sequence
-HIV1-B-FR-K03455-seed,15,MAX,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
-HIV1-B-FR-K03455-seed,15,0.100,1,\
-GGAAGGGCTAATTCACTCCaacCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,15,MAX,789,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,15,0.100,789,\
+ATGGGTGCGAGAGCGTCAGaacTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+"""
+    expected_regions = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,MAX,0,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,0.100,0,\
+ATGGGTGCGAGAGCGTCAGaacTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """
 
     report_file = StringIO()
+    region_file = StringIO()
     default_sequence_report.read_insertions(conseq_ins_csv)
     default_sequence_report.write_consensus_stitched_header(report_file)
+    default_sequence_report.write_consensus_regions_header(region_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_amino_header(StringIO())
     default_sequence_report.write_nuc_header(StringIO())
@@ -1138,7 +1180,303 @@ GGAAGGGCTAATTCACTCCaacCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTG
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_consensus_regions()
     assert report_file.getvalue() == expected_text
+    assert region_file.getvalue() == expected_regions
+
+
+# noinspection DuplicatedCode
+def test_nuc_minority_insertions(default_sequence_report):
+    """ Check that insertions relative to the consensus are correctly inserted into the nuc.csv file for translated
+    and untranslated region"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,10,1,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+""")
+    # this is the ref genome from pos 789 to 889 (0 based)
+    conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,HIV1-B-FR-K03455-seed,10,AAC,AAA
+Example_read_2,F,HIV1-B-FR-K03455-seed,10,AAC,AAA
+""")
+
+    expected_text_untranslated = """\
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,8,4,796,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,9,5,797,0,10,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,10,6,798,0,0,10,0,0,0,2,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,11,7,799,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,12,8,800,0,0,10,0,0,0,0,0,0,10"""
+    expected_text_translated = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,8,7,796,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,9,8,797,0,10,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,10,9,798,0,0,10,0,0,0,2,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,11,10,799,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,12,11,800,0,0,10,0,0,0,0,0,0,10"""
+
+    nuc_file = StringIO()
+    default_sequence_report.read_insertions(conseq_ins_csv)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_file)
+    default_sequence_report.write_nuc_counts()  # calculates ins counts
+    report = nuc_file.getvalue()
+    report_lines = report.splitlines()
+    key_lines1 = report_lines[105:110]
+    key_report1 = '\n'.join(key_lines1)
+    key_lines2 = report_lines[7:12]
+    key_report2 = '\n'.join(key_lines2)
+    assert key_report1 == expected_text_untranslated
+    assert key_report2 == expected_text_translated
+
+
+# noinspection DuplicatedCode
+def test_nuc_small_majority_insertion(default_sequence_report):
+    """ Check that a small insertion relative to the reference is correctly inserted into the nuc.csv file
+    for translated untranslated regions"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,10,1,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAATTTTTTTTTATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+""")
+    # this is the ref genome from pos 789 to 889 (0 based), with an insertion here:
+    #                                                 ^^^^^^^^^
+
+    expected_text = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,55,54,843,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,65,55,844,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,66,56,845,0,0,0,10,0,0,0,0,0,10"""
+
+    nuc_file = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_file)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calculates ins counts
+    report = nuc_file.getvalue()
+    report_lines = report.splitlines()
+    key_lines = report_lines[52:57]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
+# noinspection DuplicatedCode
+def test_nuc_large_majority_insertion(default_sequence_report):
+    """ Check that a large (>30) insertion relative to the reference is correctly inserted into the nuc.csv file
+    for translated regions"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,10,1,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATTCGGTTAAGG\
+CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+""")
+    # this is the ref genome from pos 789 to 889 (0 based), with an insertion here:
+    #                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    expected_text = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,55,54,843,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,89,55,844,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
+
+    nuc_file = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_file)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calculates ins counts
+    report = nuc_file.getvalue()
+    report_lines = report.splitlines()
+    key_lines = report_lines[52:57]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
+# noinspection DuplicatedCode
+def test_nuc_large_majority_insertion_frameshift(default_sequence_report):
+    """ Check that a large (>30) insertion relative to the reference is correctly inserted into the nuc.csv file
+    for translated regions, even if it is out of frame"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,10,1,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAATTCGGTTAAGG\
+CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+""")
+    # this is the ref genome from pos 789 to 889 (0 based), with an insertion here:
+    #                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    expected_text = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,51,50,839,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,52,51,840,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,88,54,843,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,89,55,844,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
+
+    nuc_file = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_file)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calculates ins counts
+    report = nuc_file.getvalue()
+    report_lines = report.splitlines()
+    key_lines = report_lines[50:57]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
+# noinspection DuplicatedCode
+def test_nuc_large_insertion_not_multiple_of_three(default_sequence_report):
+    """ Check that a large (>30) insertion relative to the reference is correctly inserted into the nuc.csv file
+    for translated regions, even if it is out of frame"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,10,1,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAATTCGGTTAAGG\
+CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+""")
+    # this is the ref genome from pos 789 to 889 (0 based), with an insertion here:
+    #                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    expected_text = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,51,50,839,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,52,51,840,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,89,54,843,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,55,844,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,91,56,845,0,0,0,10,0,0,0,0,0,10"""
+
+    nuc_file = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_file)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calculates ins counts
+    report = nuc_file.getvalue()
+    report_lines = report.splitlines()
+    key_lines = report_lines[50:57]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
+# noinspection DuplicatedCode
+def test_majority_and_minority_insertion(default_sequence_report):
+    """ Check that an insertion relative to the reference is correctly inserted into conseq_regions
+    for translated regions, even if there are also insertions relative to the consensus at that position"""
+    aligned_reads = prepare_reads("""\
+1-HIV1-B-FR-K03455-seed,15,0,10,1,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAATTCGGTTAAGG\
+CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+""")
+    # this is the ref genome from pos 789 to 889 (0 based), with an insertion here:
+    #                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,1-HIV1-B-FR-K03455-seed,54,AAC,AAA
+Example_read_2,F,1-HIV1-B-FR-K03455-seed,54,AAC,AAA
+""")
+
+    expected_regions = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,MAX,0,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAATTCGGTTAAGG\
+CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,0.100,0,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAaacTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAATTCGGTTAAGG\
+CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+"""
+
+    regions_file = StringIO()
+    default_sequence_report.read_insertions(conseq_ins_csv)
+    default_sequence_report.write_consensus_stitched_header(StringIO())
+    default_sequence_report.write_consensus_regions_header(regions_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(StringIO())
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calculates ins counts
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_consensus_regions()
+    assert regions_file.getvalue() == expected_regions
+
+
+# noinspection DuplicatedCode
+def test_insertion_end_of_region(default_sequence_report):
+    """ Check that an insertion relative to the consensus is not inserted into conseq_regions
+    if it is located at the very end of the region"""
+    aligned_reads = prepare_reads("""\
+1-HIV1-B-FR-K03455-seed,15,0,10,0,\
+CTCCCCCTCAGAAGCAGGAGCCGATAGACAAGGAACTGTATCCTTTAACTTCCCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGG
+""")
+    # this is the ref genome from pos 2200 to 2300 (0 based)
+
+    conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,1-HIV1-B-FR-K03455-seed,92,AAC,AAA
+Example_read_2,F,1-HIV1-B-FR-K03455-seed,92,AAC,AAA
+Example_read_3,F,1-HIV1-B-FR-K03455-seed,92,AAC,AAA
+""")
+
+    expected_regions = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,MAX,1411,\
+CTCCCCCTCAGAAGCAGGAGCCGATAGACAAGGAACTGTATCCTTTAACTTCCCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAA
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,0.100,1411,\
+CTCCCCCTCAGAAGCAGGAGCCGATAGACAAGGAACTGTATCCTTTAACTTCCCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAA"""
+
+    regions_file = StringIO()
+    default_sequence_report.read_insertions(conseq_ins_csv)
+    default_sequence_report.write_consensus_stitched_header(StringIO())
+    default_sequence_report.write_consensus_regions_header(regions_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(StringIO())
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calculates ins counts
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_consensus_regions()
+    report = regions_file.getvalue()
+    report_lines = report.splitlines()
+    key_lines = report_lines[0:3]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_regions
+
+
+# noinspection DuplicatedCode
+def test_insertion_10percent(default_sequence_report):
+    """ Check that an insertion relative to the consensus is inserted into conseq_regions
+    if its coverage is exactly 10%"""
+    aligned_reads = prepare_reads("""\
+1-HIV1-B-FR-K03455-seed,15,0,9,0,\
+CTCCCCCTCAGAAGCAGGAGCCGATAGACAAGGAACTGTATCCTTTAACTTCCCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGG
+""")
+    # this is the ref genome from pos 2200 to 2300 (0 based)
+
+    conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,1-HIV1-B-FR-K03455-seed,91,AAC,AAA
+""")
+
+    expected_regions = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,MAX,1411,\
+CTCCCCCTCAGAAGCAGGAGCCGATAGACAAGGAACTGTATCCTTTAACTTCCCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAA
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,0.100,1411,\
+CTCCCCCTCAGAAGCAGGAGCCGATAGACAAGGAACTGTATCCTTTAACTTCCCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAaacA"""
+
+    regions_file = StringIO()
+    default_sequence_report.read_insertions(conseq_ins_csv)
+    default_sequence_report.write_consensus_stitched_header(StringIO())
+    default_sequence_report.write_consensus_regions_header(regions_file)
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(StringIO())
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calculates ins counts
+    default_sequence_report.combine_reports()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_consensus_regions()
+    report = regions_file.getvalue()
+    report_lines = report.splitlines()
+    key_lines = report_lines[0:3]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_regions
 
 
 # noinspection DuplicatedCode
@@ -1147,14 +1485,14 @@ def test_whole_genome_consensus_different_minority_insertions(default_sequence_r
     into the whole genome consensus"""
     aligned_reads1 = prepare_reads("""\
 1-HIV1-B-FR-K03455-seed,15,0,10,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """)
-# this is the ref genome from pos 1 to 99 (0 based)
+# this is the ref genome from pos 789 to 889 (0 based)
     aligned_reads2 = prepare_reads("""\
 2-HIV1-B-FR-K03455-seed,15,0,10,1,\
-AGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+GGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """)
-# this is the ref genome from pos 4 to 99 (0 based)
+# this is the ref genome from pos 792 to 889 (0 based)
     conseq_ins_csv = StringIO("""\
 qname,fwd_rev,refname,pos,insert,qual
 Example_read_1,F,1-HIV1-B-FR-K03455-seed,20,AAC,AAA
@@ -1165,15 +1503,24 @@ Example_read_2,F,2-HIV1-B-FR-K03455-seed,23,TTT,AAA
 
     expected_text = """\
 seed,q-cutoff,consensus-percent-cutoff,offset,sequence
-HIV1-B-FR-K03455-seed,15,MAX,1,\
-GGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
-HIV1-B-FR-K03455-seed,15,0.100,1,\
-GGAAGGGCTAATTCACTCCaacCAACGAtttAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,15,MAX,789,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,15,0.100,789,\
+ATGGGTGCGAGAGCGTCAGaacTATTAAtttGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+"""
+    expected_regions = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,MAX,0,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,0.100,0,\
+ATGGGTGCGAGAGCGTCAGaacTATTAAtttGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """
 
     report_file = StringIO()
+    region_file = StringIO()
     default_sequence_report.read_insertions(conseq_ins_csv)
     default_sequence_report.write_consensus_stitched_header(report_file)
+    default_sequence_report.write_consensus_regions_header(region_file)
     default_sequence_report.read(aligned_reads1)
     default_sequence_report.write_amino_header(StringIO())
     default_sequence_report.write_nuc_header(StringIO())
@@ -1189,7 +1536,9 @@ GGAAGGGCTAATTCACTCCaacCAACGAtttAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCC
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_consensus_regions()
     assert report_file.getvalue() == expected_text
+    assert region_file.getvalue() == expected_regions
 
 
 # noinspection DuplicatedCode
@@ -1198,27 +1547,36 @@ def test_whole_genome_consensus_different_contig_insertions(default_sequence_rep
     into the whole genome consensus"""
     aligned_reads1 = prepare_reads("""\
 1-HIV1-B-FR-K03455-seed,15,0,10,1,\
-GGAAGGGCTAATTCACTCCCAATTTCGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+ATGGGTGCGAGAGCGTCAGTACCCTTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """)
-# this is the ref genome from pos 1 to 99 (0 based) plus an insertion here:
-#                     ^^^
+# this is the ref genome from pos 789 to 889 (0 based) plus an insertion here:
+#                    ^^^
     aligned_reads2 = prepare_reads("""\
 2-HIV1-B-FR-K03455-seed,15,0,5,1,\
-GGAAGGGCTAATTCACTCCCAACGAATTTGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+ATGGGTGCGAGAGCGTCAGTATTATTTAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """)
-# this is the ref genome from pos 1 to 99 (0 based) plus an insertion here:
-#                         ^^^
+# this is the ref genome from pos 789 to 889 (0 based) plus an insertion here:
+#                       ^^^
 
     expected_text = """\
 seed,q-cutoff,consensus-percent-cutoff,offset,sequence
-HIV1-B-FR-K03455-seed,15,MAX,1,\
-GGAAGGGCTAATTCACTCCCAATTTCGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
-HIV1-B-FR-K03455-seed,15,0.100,1,\
-GGAAGGGCTAATTCACTCCCAAtttCGAAtttGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTGATTAGCAGAACTACACACCAGG
+HIV1-B-FR-K03455-seed,15,MAX,789,\
+ATGGGTGCGAGAGCGTCAGTACCCTTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,15,0.100,789,\
+ATGGGTGCGAGAGCGTCAGTAcccTTAtttAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+"""
+    expected_regions = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,MAX,0,\
+ATGGGTGCGAGAGCGTCAGTACCCTTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,0.100,0,\
+ATGGGTGCGAGAGCGTCAGTAcccTTAtttAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
 """
 
     report_file = StringIO()
+    region_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
+    default_sequence_report.write_consensus_regions_header(region_file)
     default_sequence_report.read(aligned_reads1)
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
@@ -1226,11 +1584,13 @@ GGAAGGGCTAATTCACTCCCAAtttCGAAtttGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCC
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
     default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_consensus_regions()
     assert report_file.getvalue() == expected_text
+    assert region_file.getvalue() == expected_regions
 
 
 # noinspection DuplicatedCode
-def test_whole_genome_consensus_insertions_overlap(default_sequence_report, caplog):
+def test_whole_genome_consensus_insertions_overlap(default_sequence_report):
     """ Check that insertions in overlapping regions are correctly inserted into the whole genome consensus"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,9,1,\
@@ -1247,18 +1607,29 @@ TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATG
 HIV1-B-FR-K03455-seed,15,0.100,6225,\
 TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA
 """
-
-    expected_log = [('micall.core.aln2counts', 10,
-                     'Disagreement or shift in insertions between regions. Position 6284')]
+    expected_regions = """\
+seed,region,q-cutoff,consensus-percent-cutoff,offset,sequence
+HIV1-B-FR-K03455-seed,GP120,15,MAX,1,\
+TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA
+HIV1-B-FR-K03455-seed,GP120,15,0.100,1,\
+TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAGTGCTA
+HIV1-B-FR-K03455-seed,HIV1B-vpu,15,MAX,164,\
+TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAG
+HIV1-B-FR-K03455-seed,HIV1B-vpu,15,0.100,164,\
+TGAGAGTGAAGGAGAAATATCAGCACTTGTGGAGATGGGGGTGGAGATGGGGCACCATGAAAAAAAAACTCCTTGGGATGTTGATGATCTGTAG
+"""
 
     report_file = StringIO()
+    region_file = StringIO()
     default_sequence_report.write_consensus_stitched_header(report_file)
+    default_sequence_report.write_consensus_regions_header(region_file)
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_insertions()
     default_sequence_report.combine_reports()
-    with caplog.at_level(logging.DEBUG):
-        default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_whole_genome_consensus_from_nuc()
+    default_sequence_report.write_consensus_regions()
     assert report_file.getvalue() == expected_text
+    assert region_file.getvalue() == expected_regions
 
 
 # noinspection DuplicatedCode
@@ -1421,7 +1792,7 @@ def test_consensus_insertion_translated_differences():
     region_insertions = {1: {1: insertion3}, 7: {1: insertion3}, 12: {1: insertion4}}
     region_start = 20
     prev_region_end = 29
-    consumed_positions = set(i for i in range(0,28))
+    consumed_positions = set(i for i in range(0, 28))
     is_amino = True
 
     combine_region_insertions(insertions_dict,
@@ -1448,7 +1819,7 @@ def test_consensus_insertion_untranslated_differences():
     region_insertions = {1: {1: insertion3}, 7: {1: insertion3}, 12: {1: insertion4}}
     region_start = 20
     prev_region_end = 29
-    consumed_positions = set(i for i in range(0,28))
+    consumed_positions = set(i for i in range(0, 28))
     is_amino = False
 
     combine_region_insertions(insertions_dict,
