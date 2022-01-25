@@ -1231,7 +1231,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,12,11,800,0,0,10,0,0,0,0,0,0,10"""
 # noinspection DuplicatedCode
 def test_nuc_small_majority_insertion(default_sequence_report):
     """ Check that a small insertion relative to the reference is correctly inserted into the nuc.csv file
-    for translated untranslated regions"""
+    and the insertions.csv file for a translated region"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,10,1,\
 ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAATTTTTTTTTATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
@@ -1246,6 +1246,12 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,55,54,843,10,0,0,0,0,0,10,0,0,10
 HIV1-B-FR-K03455-seed,HIV1B-gag,15,65,55,844,10,0,0,0,0,0,0,0,0,10
 HIV1-B-FR-K03455-seed,HIV1B-gag,15,66,56,845,0,0,0,10,0,0,0,0,0,10"""
 
+    expected_insertions = """\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+HIV1-B-FR-K03455-seed,MAX,HIV1B-gag,54,843,55,TTTTTTTTT
+HIV1-B-FR-K03455-seed,0.100,HIV1B-gag,54,843,55,TTTTTTTTT
+"""
+
     nuc_file = StringIO()
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_nuc_header(nuc_file)
@@ -1256,6 +1262,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,66,56,845,0,0,0,10,0,0,0,0,0,10"""
     key_lines = report_lines[52:57]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
+    assert default_sequence_report.insert_writer.insert_file.getvalue() == expected_insertions
 
 
 # noinspection DuplicatedCode
