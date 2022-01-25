@@ -1652,7 +1652,7 @@ class InsertionWriter(object):
                         region_insert_pos_counts[insert_pos] += count
 
         self.count_conseq_insertions(seed_name, report_nucleotides_all)
-        self.write_insertions_file(landmarks, consensus_builder)
+        self.write_insertions_file(landmarks, seed_name, consensus_builder)
 
     def count_conseq_insertions(self, seed_name, report_nucleotides_all):
         for insertion_position, insertions in self.conseq_insertions[seed_name].items():
@@ -1676,11 +1676,19 @@ class InsertionWriter(object):
                             new_insertions[length_conseq_insertions + position] = insertion
                         self.ref_insertions[region][current_insert_behind - 1] = new_insertions
 
-    def write_insertions_file(self, landmarks, consensus_builder):
+    def write_insertions_file(self, landmarks, seed_name, consensus_builder):
         landmark_reader = LandmarkReader(landmarks)
         for region in self.ref_insertions:
             try:
-                region_info = landmark_reader.get_gene(self.seed, region)
+                for seed_landmarks in landmarks:
+                    if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
+                        coordinate_name = seed_landmarks['coordinates']
+                        break
+                else:
+                    coordinate_name = None
+                    if self.seed is not None and self.seed != '':
+                        logger.warning(f'No coordinate reference found for entry: {self.seed}')
+                region_info = landmark_reader.get_gene(coordinate_name, region)
                 region_start = region_info['start']
             except ValueError:
                 region_start = 1
@@ -1689,7 +1697,7 @@ class InsertionWriter(object):
                     insertions = list(self.ref_insertions[region][ref_pos].items())
                     for row in consensus_builder.get_consensus_rows(insertions, is_nucleotide=True):
                         insertions_row = dict(insertion=row["sequence"],
-                                              seed=self.seed,
+                                              seed=seed_name,
                                               mixture_cutoff=row['consensus-percent-cutoff'],
                                               region=region,
                                               ref_region_pos=ref_pos + 1,
