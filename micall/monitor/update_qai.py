@@ -55,22 +55,20 @@ def parse_args():
     return args
 
 
-def build_conseqs(conseqs_file, run, sample_sheet):
+def build_conseqs(conseqs_file, run_name, sample_sheet):
     """
     Parses a Pipeline-produced conseq file and builds JSON objects to send
     to QAI.
 
     @param conseqs_file: An open file that contains the consensus sequences
         from the counts2csf step for all samples in the run.
-    @param run: a hash with the attributes of the run record, including a
-        sequencing summary of all the samples and their target projects
+    @param run_name: date and machine number for the run
     @param sample_sheet: The data parsed from the sample sheet.
     @return an array of JSON hashes, one for each conseq.
     """
 
     result = []
     ss = sample_sheet
-    run_name = run['runname']
     conseqs_csv = csv.DictReader(conseqs_file)
     # ss["Data"] is keyed by (what should be) the FASTQ
     # filename, which looks like
@@ -108,18 +106,19 @@ def build_conseqs(conseqs_file, run, sample_sheet):
         curr_seq = row["sequence"] if len(row["sequence"]) > 0 else "-"
         seeds = sample_seeds.get(fastq_filename)
         if seeds is None:
-            target_project, = [row['project']
-                               for row in ss["DataSplit"]
-                               if row['filename'] == fastq_filename]
-            try:
-                seeds = projects.getProjectSeeds(target_project)
-            except KeyError:
-                if target_project != 'Unknown':
-                    logger.warning('Failed to load project seeds for %s in %s.',
-                                   fastq_filename,
-                                   run_name,
-                                   exc_info=True)
-                seeds = set()
+            seeds = set()
+            for sample_row in ss["DataSplit"]:
+                if sample_row['filename'] != fastq_filename:
+                    continue
+                target_project = sample_row['project']
+                try:
+                    seeds |= projects.getProjectSeeds(target_project)
+                except KeyError:
+                    if target_project != 'Unknown':
+                        logger.warning('Failed to load project seeds for %s in %s.',
+                                       fastq_filename,
+                                       run_name,
+                                       exc_info=True)
             sample_seeds[fastq_filename] = seeds
         ok_for_release = row["region"] in seeds
         result.append({
@@ -419,7 +418,7 @@ def process_remapped(result_folder, session, run, pipeline_version):
         run_path / 'SampleSheet.csv')
 
     with open(collated_conseqs) as f:
-        conseqs = build_conseqs(f, run, sample_sheet)
+        conseqs = build_conseqs(f, run['runname'], sample_sheet)
 
     with open(coverage_scores) as f, \
             open(collated_counts) as f2, \
