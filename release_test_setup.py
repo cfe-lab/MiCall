@@ -200,10 +200,15 @@ def suspend_inactive_runs(active_runs, rawdata_mount):
     for run_path in local_runs:
         base_run_name = os.path.basename(run_path)
         if base_run_name not in active_run_names and base_run_name != 'suspended':
-            suspended_path = os.path.join(rawdata_mount,
-                                          'MiSeq',
-                                          'runs',
-                                          'suspended',
+            suspended_folder_path = os.path.join(rawdata_mount,
+                                                 'MiSeq',
+                                                 'runs',
+                                                 'suspended')
+            try:
+                os.mkdir(suspended_folder_path)
+            except FileExistsError:
+                pass
+            suspended_path = os.path.join(suspended_folder_path,
                                           base_run_name)
             os.rename(run_path, suspended_path)
 
