@@ -15,8 +15,8 @@ From: centos:7
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
     KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv
     KIVE_OUTPUTS g2p_csv g2p_summary_csv remap_counts_csv \
-        remap_conseq_csv unmapped1_fastq unmapped2_fastq insertions_csv \
-        failed_csv cascade_csv nuc_csv amino_csv conseq_csv \
+        remap_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \
+        failed_csv cascade_csv nuc_csv amino_csv insertions_csv conseq_csv \
         conseq_all_csv conseq_region_csv conseq_stitched_csv failed_align_csv \
         coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
         genome_coverage_csv genome_coverage_svg
