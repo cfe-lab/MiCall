@@ -281,11 +281,14 @@ Most HCV seed references come from the HCV Sequence Genotype Reference,
 downloaded from https://hcv.lanl.gov/content/sequence/NEWALIGN/align.html
 This script contains a complete list of the reference accession numbers.
 """)
-    source_ids = {'HCV-1a': 'Ref.1a.US.77.H77.NC_004102',
+    source_ids = {# 'HCV1A': 'NC_004102', SAME, all HCV1 seeds except B use this
+                  'HCV-1a': 'Ref.1a.US.77.H77.NC_004102',
+                   # 'HCV1B': 'AJ238799', DIFFERENT, used only for B
                   'HCV-1b': 'Ref.1b.BR.03.BR1427_P1_10-7-03.EF032892',
                   'HCV-1c': 'Ref.1c.ID.x.HC-G9.D14853',
                   'HCV-1e': 'KJ439769',
                   'HCV-1g': 'Ref.1g.ES.x.1804.AM910652',
+                  # 'HCV2': 'AB047639', DIFFERENT, all HCV2 seeds use HCV-2a
                   'HCV-2a': 'Ref.2a.JP.x.AY746460.AY746460',
                   'HCV-2b': 'Ref.2b.JP.x.HC-J8.D10988',
                   'HCV-2c': 'Ref.2c.x.x.BEBE1.D50409',
@@ -293,10 +296,12 @@ This script contains a complete list of the reference accession numbers.
                   'HCV-2j': 'Ref.2j.VE.05.C1292.HM777359',
                   'HCV-2k': 'Ref.2k.MD.x.VAT96.AB031663',
                   'HCV-2q': 'Ref.2q.ES.01.852.FN666429',
+                  # 'HCV3': 'GU814263', DIFFERENT, all HCV3 seeds use HCV3a
                   'HCV-3a': 'Ref.3a.DE.x.HCVCENS1.X76918',
                   'HCV-3b': 'Ref.3b.JP.x.HCV-Tr.D49374',
                   'HCV-3i': 'Ref.3i.IN.02.IND-HCV-3i.FJ407092',
                   'HCV-3k': 'Ref.3k.ID.x.JK049.D63821',
+                  # 'HCV4': 'GU814265', DIFFERENT, all HCV4 seeds use HCV4a
                   'HCV-4a': 'Ref.4a.EG.x.ED43.Y11604',
                   'HCV-4b': 'Ref.4b.CA.x.QC264.FJ462435',
                   'HCV-4c': 'Ref.4c.CA.x.QC381.FJ462436',
@@ -313,7 +318,9 @@ This script contains a complete list of the reference accession numbers.
                   'HCV-4r': 'Ref.4r.CA.x.QC384.FJ462439',
                   'HCV-4t': 'Ref.4t.CA.x.QC155.FJ839869',
                   'HCV-4v': 'Ref.4v.CY.05.CYHCV048.HQ537008',
+                  # 'HCV5': 'AF064490', DIFFERENT, all HCV5 seeds use HCV5a
                   'HCV-5a': 'Ref.5a.GB.x.EUH1480.NC_009826',
+                  # 'HCV6': 'Y12083', DIFFERENT, all HCV6 seeds use HCV-6a
                   'HCV-6a': 'Ref.6a.HK.x.6a33.AY859526',
                   'HCV-6b': 'Ref.6b.x.x.Th580.NC_009827',
                   'HCV-6c': 'Ref.6c.TH.x.Th846.EF424629',
@@ -338,6 +345,7 @@ This script contains a complete list of the reference accession numbers.
                   'HCV-6v': 'EU158186',
                   'HCV-6w': 'Ref.6w.TW.x.HCV-6-D140.EU643834',
                   # EF108306.2 is available, but only extends 5' and 3'.
+                  # 'HCV7': 'EF108306.1' SAME
                   'HCV-7a': 'Ref.7a.CA.x.QC69.EF108306.1'}
     source_sequences = {}
     for ref_name, source_id in source_ids.items():
