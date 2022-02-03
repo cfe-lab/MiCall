@@ -86,8 +86,6 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
 ## Install dependencies for genetracks/drawSvg
 RUN apt-get install -q -y libcairo2-dev
 
-## Gotoh
-COPY micall/alignment /opt/micall/alignment
 COPY requirements.txt requirements-basespace.txt /opt/micall/
 
 ## Python packages, plus trigger matplotlib to build its font cache
