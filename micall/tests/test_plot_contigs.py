@@ -283,12 +283,12 @@ def test_summarize_arrow_group():
 def test_plot_genome_coverage():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-HCV-1a,HCV-1a,1,1,0,0,5
-1-HCV-1a,HCV-1a,2,2,0,0,5
-1-HCV-1a,HCV-1a,3,3,0,0,7
-1-HCV-1a,HCV-1a,4,4,0,0,5
-1-HCV-1a,HCV-1a,5,5,0,0,5
-1-HCV-1a,HCV-1a,6,6,0,0,5
+1-HCV-1a,HCV1A,1,1,0,0,5
+1-HCV-1a,HCV1A,2,2,0,0,5
+1-HCV-1a,HCV1A,3,3,0,0,7
+1-HCV-1a,HCV1A,4,4,0,0,5
+1-HCV-1a,HCV1A,5,5,0,0,5
+1-HCV-1a,HCV1A,6,6,0,0,5
 """)
     expected_figure = """\
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
@@ -307,18 +307,18 @@ def test_plot_genome_coverage_offset():
     """ When a contig extends before the reference start, offset everything. """
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-HCV-1a,HCV-1a,1,-2,0,0,5
-1-HCV-1a,HCV-1a,2,-1,0,0,5
-1-HCV-1a,HCV-1a,3,0,0,0,7
-1-HCV-1a,HCV-1a,4,1,0,0,5
-1-HCV-1a,HCV-1a,5,2,0,0,5
-1-HCV-1a,HCV-1a,6,3,0,0,5
-1-HCV-1a,HCV-1a,7,,0,0,5
-1-HCV-1a,HCV-1a,8,,0,0,5
-1-HCV-1a,HCV-1a,9,,0,0,5
-1-HCV-1a,HCV-1a,10,4,0,0,5
-1-HCV-1a,HCV-1a,11,5,0,0,5
-1-HCV-1a,HCV-1a,12,6,0,0,5
+1-HCV-1a,HCV1A,1,-2,0,0,5
+1-HCV-1a,HCV1A,2,-1,0,0,5
+1-HCV-1a,HCV1A,3,0,0,0,7
+1-HCV-1a,HCV1A,4,1,0,0,5
+1-HCV-1a,HCV1A,5,2,0,0,5
+1-HCV-1a,HCV1A,6,3,0,0,5
+1-HCV-1a,HCV1A,7,,0,0,5
+1-HCV-1a,HCV1A,8,,0,0,5
+1-HCV-1a,HCV1A,9,,0,0,5
+1-HCV-1a,HCV1A,10,4,0,0,5
+1-HCV-1a,HCV1A,11,5,0,0,5
+1-HCV-1a,HCV1A,12,6,0,0,5
 2-unknown-partial,,1,,0,0,6
 2-unknown-partial,,2,,0,0,6
 2-unknown-partial,,3,,0,0,6
@@ -345,18 +345,18 @@ def test_plot_genome_coverage_offset_blast():
     """ When a contig extends before the reference start, offset everything. """
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-HCV-1a,HCV-1a,1,-2,0,0,5
-1-HCV-1a,HCV-1a,2,-1,0,0,5
-1-HCV-1a,HCV-1a,3,0,0,0,7
-1-HCV-1a,HCV-1a,4,1,0,0,5
-1-HCV-1a,HCV-1a,5,2,0,0,5
-1-HCV-1a,HCV-1a,6,3,0,0,5
-1-HCV-1a,HCV-1a,7,,0,0,5
-1-HCV-1a,HCV-1a,8,,0,0,5
-1-HCV-1a,HCV-1a,9,,0,0,5
-1-HCV-1a,HCV-1a,10,4,0,0,5
-1-HCV-1a,HCV-1a,11,5,0,0,5
-1-HCV-1a,HCV-1a,12,6,0,0,5
+1-HCV-1a,HCV1A,1,-2,0,0,5
+1-HCV-1a,HCV1A,2,-1,0,0,5
+1-HCV-1a,HCV1A,3,0,0,0,7
+1-HCV-1a,HCV1A,4,1,0,0,5
+1-HCV-1a,HCV1A,5,2,0,0,5
+1-HCV-1a,HCV1A,6,3,0,0,5
+1-HCV-1a,HCV1A,7,,0,0,5
+1-HCV-1a,HCV1A,8,,0,0,5
+1-HCV-1a,HCV1A,9,,0,0,5
+1-HCV-1a,HCV1A,10,4,0,0,5
+1-HCV-1a,HCV1A,11,5,0,0,5
+1-HCV-1a,HCV1A,12,6,0,0,5
 2-unknown-partial,,1,,0,0,6
 2-unknown-partial,,2,,0,0,6
 2-unknown-partial,,3,,0,0,6
@@ -445,30 +445,30 @@ def test_add_partial_banner():
 def test_plot_genome_coverage_sorted():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
-1_3-HCV-1a,HCV-1a,1,1,0,5
-1_3-HCV-1a,HCV-1a,2,2,0,5
-1_3-HCV-1a,HCV-1a,3,3,0,7
-1_3-HCV-1a,HCV-1a,4,4,0,5
-1_3-HCV-1a,HCV-1a,5,5,0,5
-1_3-HCV-1a,HCV-1a,6,6,0,5
-1_3-HCV-1a,HCV-1a,101,101,0,15
-1_3-HCV-1a,HCV-1a,102,102,0,15
-1_3-HCV-1a,HCV-1a,103,103,0,17
-1_3-HCV-1a,HCV-1a,104,104,0,15
-1_3-HCV-1a,HCV-1a,105,105,0,15
-1_3-HCV-1a,HCV-1a,106,106,0,15
-contig-1-HCV-1a,HCV-1a,1,1,,
-contig-1-HCV-1a,HCV-1a,2,2,,
-contig-1-HCV-1a,HCV-1a,3,3,,
-contig-1-HCV-1a,HCV-1a,4,4,,
-contig-1-HCV-1a,HCV-1a,5,5,,
-contig-1-HCV-1a,HCV-1a,6,6,,
-contig-3-HCV-1a,HCV-1a,1,101,,
-contig-3-HCV-1a,HCV-1a,2,102,,
-contig-3-HCV-1a,HCV-1a,3,103,,
-contig-3-HCV-1a,HCV-1a,4,104,,
-contig-3-HCV-1a,HCV-1a,5,105,,
-contig-3-HCV-1a,HCV-1a,6,106,,
+1_3-HCV-1a,HCV1A,1,1,0,5
+1_3-HCV-1a,HCV1A,2,2,0,5
+1_3-HCV-1a,HCV1A,3,3,0,7
+1_3-HCV-1a,HCV1A,4,4,0,5
+1_3-HCV-1a,HCV1A,5,5,0,5
+1_3-HCV-1a,HCV1A,6,6,0,5
+1_3-HCV-1a,HCV1A,101,101,0,15
+1_3-HCV-1a,HCV1A,102,102,0,15
+1_3-HCV-1a,HCV1A,103,103,0,17
+1_3-HCV-1a,HCV1A,104,104,0,15
+1_3-HCV-1a,HCV1A,105,105,0,15
+1_3-HCV-1a,HCV1A,106,106,0,15
+contig-1-HCV-1a,HCV1A,1,1,,
+contig-1-HCV-1a,HCV1A,2,2,,
+contig-1-HCV-1a,HCV1A,3,3,,
+contig-1-HCV-1a,HCV1A,4,4,,
+contig-1-HCV-1a,HCV1A,5,5,,
+contig-1-HCV-1a,HCV1A,6,6,,
+contig-3-HCV-1a,HCV1A,1,101,,
+contig-3-HCV-1a,HCV1A,2,102,,
+contig-3-HCV-1a,HCV1A,3,103,,
+contig-3-HCV-1a,HCV1A,4,104,,
+contig-3-HCV-1a,HCV1A,5,105,,
+contig-3-HCV-1a,HCV1A,6,106,,
 2-HCV-1b-partial,,1,,0,5
 2-HCV-1b-partial,,2,,0,5
 2-HCV-1b-partial,,3,,0,29
@@ -532,16 +532,16 @@ No contigs found.(1-500)
 def test_plot_genome_coverage_gap():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-HCV-1a,HCV-1a,1,1,0,0,5
-1-HCV-1a,HCV-1a,2,2,0,0,5
-1-HCV-1a,HCV-1a,4,4,0,0,6
-1-HCV-1a,HCV-1a,5,5,0,0,6
-1-HCV-1a,HCV-1a,6,6,0,0,6
-contig-1-HCV-1a,HCV-1a,1,1,0,,
-contig-1-HCV-1a,HCV-1a,2,2,0,,
-contig-1-HCV-1a,HCV-1a,4,4,0,,
-contig-1-HCV-1a,HCV-1a,5,5,0,,
-contig-1-HCV-1a,HCV-1a,6,6,0,,
+1-HCV-1a,HCV1A,1,1,0,0,5
+1-HCV-1a,HCV1A,2,2,0,0,5
+1-HCV-1a,HCV1A,4,4,0,0,6
+1-HCV-1a,HCV1A,5,5,0,0,6
+1-HCV-1a,HCV1A,6,6,0,0,6
+contig-1-HCV-1a,HCV1A,1,1,0,,
+contig-1-HCV-1a,HCV1A,2,2,0,,
+contig-1-HCV-1a,HCV1A,4,4,0,,
+contig-1-HCV-1a,HCV1A,5,5,0,,
+contig-1-HCV-1a,HCV1A,6,6,0,,
 """)
     expected_figure = """\
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
@@ -560,18 +560,18 @@ Coverage 5x2, 0, 6x3
 def test_plot_genome_coverage_insertion():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-HCV-1a,HCV-1a,1,1,0,0,5
-1-HCV-1a,HCV-1a,2,2,0,0,5
-1-HCV-1a,HCV-1a,3,3,0,0,5
-1-HCV-1a,HCV-1a,4,,0,0,6
-1-HCV-1a,HCV-1a,5,,0,0,6
-1-HCV-1a,HCV-1a,6,,0,0,6
-1-HCV-1a,HCV-1a,7,4,0,0,7
-1-HCV-1a,HCV-1a,8,5,0,0,7
-1-HCV-1a,HCV-1a,9,6,0,0,7
-1-HCV-1a,HCV-1a,10,7,0,0,8
-1-HCV-1a,HCV-1a,11,8,0,0,8
-1-HCV-1a,HCV-1a,12,9,0,0,8
+1-HCV-1a,HCV1A,1,1,0,0,5
+1-HCV-1a,HCV1A,2,2,0,0,5
+1-HCV-1a,HCV1A,3,3,0,0,5
+1-HCV-1a,HCV1A,4,,0,0,6
+1-HCV-1a,HCV1A,5,,0,0,6
+1-HCV-1a,HCV1A,6,,0,0,6
+1-HCV-1a,HCV1A,7,4,0,0,7
+1-HCV-1a,HCV1A,8,5,0,0,7
+1-HCV-1a,HCV1A,9,6,0,0,7
+1-HCV-1a,HCV1A,10,7,0,0,8
+1-HCV-1a,HCV1A,11,8,0,0,8
+1-HCV-1a,HCV1A,12,9,0,0,8
 """)
     expected_figure = """\
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
@@ -589,18 +589,18 @@ Coverage 5x3, 7x3, 8x3
 def test_plot_genome_coverage_unmapped():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage,link
-1-HCV-1a,HCV-1a,1,1,0,0,5,M
-1-HCV-1a,HCV-1a,2,2,0,0,5,M
-1-HCV-1a,HCV-1a,3,3,0,0,5,M
-1-HCV-1a,HCV-1a,4,4,0,0,6,M
-1-HCV-1a,HCV-1a,5,5,0,0,6,U
-1-HCV-1a,HCV-1a,6,6,0,0,6,U
-1-HCV-1a,HCV-1a,7,7,0,0,7,U
-1-HCV-1a,HCV-1a,8,8,0,0,7,U
-1-HCV-1a,HCV-1a,9,9,0,0,7,U
-1-HCV-1a,HCV-1a,10,10,0,0,8,M
-1-HCV-1a,HCV-1a,11,11,0,0,8,M
-1-HCV-1a,HCV-1a,12,12,0,0,8,M
+1-HCV-1a,HCV1A,1,1,0,0,5,M
+1-HCV-1a,HCV1A,2,2,0,0,5,M
+1-HCV-1a,HCV1A,3,3,0,0,5,M
+1-HCV-1a,HCV1A,4,4,0,0,6,M
+1-HCV-1a,HCV1A,5,5,0,0,6,U
+1-HCV-1a,HCV1A,6,6,0,0,6,U
+1-HCV-1a,HCV1A,7,7,0,0,7,U
+1-HCV-1a,HCV1A,8,8,0,0,7,U
+1-HCV-1a,HCV1A,9,9,0,0,7,U
+1-HCV-1a,HCV1A,10,10,0,0,8,M
+1-HCV-1a,HCV1A,11,11,0,0,8,M
+1-HCV-1a,HCV1A,12,12,0,0,8,M
 """)
     expected_figure = """\
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
@@ -618,36 +618,36 @@ Coverage 5x3, 6x3, 7x3, 8x3
 def test_plot_genome_coverage_two_contigs():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
-1-HCV-1a,HCV-1a,1,1,0,5
-1-HCV-1a,HCV-1a,2,2,0,5
-1-HCV-1a,HCV-1a,3,3,0,7
-1-HCV-1a,HCV-1a,4,4,0,5
-1-HCV-1a,HCV-1a,5,5,0,5
-1-HCV-1a,HCV-1a,6,6,0,5
-contig-1-HCV-1a,HCV-1a,1,1,,
-contig-1-HCV-1a,HCV-1a,2,2,,
-contig-1-HCV-1a,HCV-1a,3,3,,
-contig-1-HCV-1a,HCV-1a,4,4,,
-contig-1-HCV-1a,HCV-1a,5,5,,
-contig-1-HCV-1a,HCV-1a,6,6,,
+1-HCV-1a,HCV1A,1,1,0,5
+1-HCV-1a,HCV1A,2,2,0,5
+1-HCV-1a,HCV1A,3,3,0,7
+1-HCV-1a,HCV1A,4,4,0,5
+1-HCV-1a,HCV1A,5,5,0,5
+1-HCV-1a,HCV1A,6,6,0,5
+contig-1-HCV-1a,HCV1A,1,1,,
+contig-1-HCV-1a,HCV1A,2,2,,
+contig-1-HCV-1a,HCV1A,3,3,,
+contig-1-HCV-1a,HCV1A,4,4,,
+contig-1-HCV-1a,HCV1A,5,5,,
+contig-1-HCV-1a,HCV1A,6,6,,
 2-HCV-1b-partial,,1,,0,5
 2-HCV-1b-partial,,2,,0,5
 2-HCV-1b-partial,,3,,0,29
 2-HCV-1b-partial,,4,,0,5
 2-HCV-1b-partial,,5,,0,5
 2-HCV-1b-partial,,6,,0,5
-3-HCV-1a,HCV-1a,101,101,0,15
-3-HCV-1a,HCV-1a,102,102,0,15
-3-HCV-1a,HCV-1a,103,103,0,17
-3-HCV-1a,HCV-1a,104,104,0,15
-3-HCV-1a,HCV-1a,105,105,0,15
-3-HCV-1a,HCV-1a,106,106,0,15
-contig-3-HCV-1a,HCV-1a,1,101,,
-contig-3-HCV-1a,HCV-1a,2,102,,
-contig-3-HCV-1a,HCV-1a,3,103,,
-contig-3-HCV-1a,HCV-1a,4,104,,
-contig-3-HCV-1a,HCV-1a,5,105,,
-contig-3-HCV-1a,HCV-1a,6,106,,
+3-HCV-1a,HCV1A,101,101,0,15
+3-HCV-1a,HCV1A,102,102,0,15
+3-HCV-1a,HCV1A,103,103,0,17
+3-HCV-1a,HCV1A,104,104,0,15
+3-HCV-1a,HCV1A,105,105,0,15
+3-HCV-1a,HCV1A,106,106,0,15
+contig-3-HCV-1a,HCV1A,1,101,,
+contig-3-HCV-1a,HCV1A,2,102,,
+contig-3-HCV-1a,HCV1A,3,103,,
+contig-3-HCV-1a,HCV1A,4,104,,
+contig-3-HCV-1a,HCV1A,5,105,,
+contig-3-HCV-1a,HCV1A,6,106,,
 """)
     expected_figure = """\
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
@@ -674,12 +674,12 @@ Coverage 5x2, 29, 5x3
 def test_plot_genome_coverage_blast():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-HCV-1a,HCV-1a,1,8001,0,0,5
-1-HCV-1a,HCV-1a,2,8002,0,0,5
-1-HCV-1a,HCV-1a,3,8003,0,0,7
-1-HCV-1a,HCV-1a,4,8004,0,0,5
-1-HCV-1a,HCV-1a,5,8005,0,0,5
-1-HCV-1a,HCV-1a,6,8006,0,0,5
+1-HCV-1a,HCV1A,1,8001,0,0,5
+1-HCV-1a,HCV1A,2,8002,0,0,5
+1-HCV-1a,HCV1A,3,8003,0,0,7
+1-HCV-1a,HCV1A,4,8004,0,0,5
+1-HCV-1a,HCV1A,5,8005,0,0,5
+1-HCV-1a,HCV1A,6,8006,0,0,5
 """)
     blast_csv = StringIO("""\
 contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
@@ -706,12 +706,12 @@ def test_plot_genome_coverage_minimap():
     """  Replace BLAST results with minimap2. """
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-HCV-1a,HCV-1a,1,8001,0,0,5
-1-HCV-1a,HCV-1a,2,8002,0,0,5
-1-HCV-1a,HCV-1a,3,8003,0,0,7
-1-HCV-1a,HCV-1a,4,8004,0,0,5
-1-HCV-1a,HCV-1a,5,8005,0,0,5
-1-HCV-1a,HCV-1a,6,8006,0,0,5
+1-HCV-1a,HCV1A,1,8001,0,0,5
+1-HCV-1a,HCV1A,2,8002,0,0,5
+1-HCV-1a,HCV1A,3,8003,0,0,7
+1-HCV-1a,HCV1A,4,8004,0,0,5
+1-HCV-1a,HCV1A,5,8005,0,0,5
+1-HCV-1a,HCV1A,6,8006,0,0,5
 """)
     minimap_hits_csv = StringIO("""\
 contig,ref_name,score,match,pident,start,end,ref_start,ref_end
@@ -736,12 +736,12 @@ Coverage 5x2, 7, 5x3
 def test_plot_genome_coverage_blast_past_end():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-HCV-1a,HCV-1a,1,8001,0,0,5
-1-HCV-1a,HCV-1a,2,8002,0,0,5
-1-HCV-1a,HCV-1a,3,8003,0,0,7
-1-HCV-1a,HCV-1a,4,8004,0,0,5
-1-HCV-1a,HCV-1a,5,8005,0,0,5
-1-HCV-1a,HCV-1a,6,8006,0,0,5
+1-HCV-1a,HCV1A,1,8001,0,0,5
+1-HCV-1a,HCV1A,2,8002,0,0,5
+1-HCV-1a,HCV1A,3,8003,0,0,7
+1-HCV-1a,HCV1A,4,8004,0,0,5
+1-HCV-1a,HCV1A,5,8005,0,0,5
+1-HCV-1a,HCV1A,6,8006,0,0,5
 """)
     blast_csv = StringIO("""\
 contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
@@ -767,10 +767,10 @@ Coverage 5x2, 7, 5x3
 def test_plot_genome_coverage_blast_past_start():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-HCV-1a,HCV-1a,3,8003,0,0,7
-1-HCV-1a,HCV-1a,4,8004,0,0,5
-1-HCV-1a,HCV-1a,5,8005,0,0,5
-1-HCV-1a,HCV-1a,6,8006,0,0,5
+1-HCV-1a,HCV1A,3,8003,0,0,7
+1-HCV-1a,HCV1A,4,8004,0,0,5
+1-HCV-1a,HCV1A,5,8005,0,0,5
+1-HCV-1a,HCV1A,6,8006,0,0,5
 """)
     blast_csv = StringIO("""\
 contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
@@ -870,12 +870,12 @@ def test_plot_genome_coverage_blast_collision():
     """ Two blast results end at the same position. """
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
-1-HCV-1a,HCV-1a,1,8001,0,0,5
-1-HCV-1a,HCV-1a,2,8002,0,0,5
-1-HCV-1a,HCV-1a,3,8003,0,0,7
-1-HCV-1a,HCV-1a,4,8004,0,0,5
-1-HCV-1a,HCV-1a,5,8005,0,0,5
-1-HCV-1a,HCV-1a,6,8006,0,0,5
+1-HCV-1a,HCV1A,1,8001,0,0,5
+1-HCV-1a,HCV1A,2,8002,0,0,5
+1-HCV-1a,HCV1A,3,8003,0,0,7
+1-HCV-1a,HCV1A,4,8004,0,0,5
+1-HCV-1a,HCV1A,5,8005,0,0,5
+1-HCV-1a,HCV1A,6,8006,0,0,5
 """)
     blast_csv = StringIO("""\
 contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
