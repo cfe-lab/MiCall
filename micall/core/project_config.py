@@ -71,6 +71,10 @@ class ProjectConfig(object):
         reference = self.config['regions'][region_name]['reference']
         return ''.join(reference)
 
+    def getGenotypeReference(self, region_name):
+        reference = self.config['genotype_references'][region_name]['reference']
+        return ''.join(reference)
+
     def isAmino(self, region_name):
         return not self.config['regions'][region_name]['is_nucleotide']
 

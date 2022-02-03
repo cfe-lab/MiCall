@@ -235,7 +235,7 @@ class ConsensusAligner:
         if not coordinate_name:
             return
         self.coordinate_name = coordinate_name
-        coordinate_seq = self.projects.getReference(coordinate_name)
+        coordinate_seq = self.projects.getGenotypeReference(coordinate_name)
         aligner = Aligner(seq=coordinate_seq, preset='map-ont')
         self.alignments = list(aligner.map(self.consensus))
         if self.alignments or 10_000 < len(self.consensus):

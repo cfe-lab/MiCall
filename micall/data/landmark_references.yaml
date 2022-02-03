@@ -37,7 +37,7 @@
     - {name: HIV1B-8796, start: 8796, end: 8796, frame: 3, stop: N}
     - {name: GP120, start: 6225, end: 7757, frame: 3, stop: N}  # Not displayed.
 - seed_pattern: HCV-1b
-  coordinates: HCV-1b
+  coordinates: HCV1B
   prefix: HCV1B-Con1-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
@@ -54,7 +54,7 @@
     - {name: NS5b, start: 7599, colour: '#17becf'}
     - {name: "3'", start: 9375, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-1.*
-  coordinates: HCV-1a
+  coordinates: HCV1A
   prefix: HCV1A-H77-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
@@ -70,7 +70,7 @@
     - {name: NS5b, start: 7602, colour: '#17becf'}
     - {name: "3'", start: 9378, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-2.*
-  coordinates: HCV-2a
+  coordinates: HCV2
   prefix: HCV2-JFH-1-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
@@ -86,7 +86,7 @@
     - {name: NS5b, start: 7667, colour: '#17becf'}
     - {name: "3'", start: 9443, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-3.*
-  coordinates: HCV-3a
+  coordinates: HCV3
   prefix: HCV3-S52-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
@@ -102,7 +102,7 @@
     - {name: NS5b, start: 7630, colour: '#17becf'}
     - {name: "3'", start: 9406, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-4.*
-  coordinates: HCV-4a
+  coordinates: HCV4
   prefix: HCV4-ED43-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
@@ -118,7 +118,7 @@
     - {name: NS5b, start: 7592, colour: '#17becf'}
     - {name: "3'", start: 9368, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-5.*
-  coordinates: HCV-5a
+  coordinates: HCV5
   prefix: HCV5-SA13-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
@@ -134,7 +134,7 @@
     - {name: NS5b, start: 7516, colour: '#17becf'}
     - {name: "3'", start: 9292, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-6.*
-  coordinates: HCV-6a
+  coordinates: HCV6
   prefix: HCV6-EUHK2-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
@@ -150,7 +150,7 @@
     - {name: NS5b, start: 7565, colour: '#17becf'}
     - {name: "3'", start: 9341, end: 9646, colour: darkgrey}
 - seed_pattern: HCV-7.*
-  coordinates: HCV-7a
+  coordinates: HCV7
   prefix: HCV7-QC69-
   landmarks:
     - {name: "5'", start: 1, colour: darkgrey}
