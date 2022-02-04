@@ -207,7 +207,7 @@ HIV1-C-BR-JX140663-seed,1.0,HIV1-C-BR-JX140663-seed,TGCACAAGACCCAACAACAATACAAGAA
     assert expected_contigs_csv == contigs_csv.getvalue()
 
 
-@mark.iva()
+@mark.iva()  # skip with -k-iva
 def test_denovo_iva(tmpdir, hcv_db):
     microtest_path = Path(__file__).parent / 'microtest'
     contigs_csv = StringIO()

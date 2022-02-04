@@ -480,7 +480,7 @@ def write_nuc_mutations(nuc_csv: typing.TextIO,
         landmark_reader = LandmarkReader.load()
         projects = ProjectConfig.loadDefault()
         for region_name, region_rows in groupby(seed_rows, itemgetter('region')):
-            region = landmark_reader.get_gene(seed, region_name)
+            region = landmark_reader.get_gene(seed, region_name, drop_stop_codon=False)
             seed_seq = projects.getReference(seed)
             ref_seq = seed_seq[region['start']-1:region['end']]
             for row in region_rows:
