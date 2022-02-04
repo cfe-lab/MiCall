@@ -97,6 +97,10 @@ class ProjectConfig(object):
         return {name: self.getReference(name)
                 for name in self.config['regions']}
 
+    def getAllGenotypeReferences(self):
+        return {name: self.getGenotypeReference(name)
+                for name in self.config['genotype_references']}
+
     def getMaxVariants(self, coordinate_region):
         """ Find the maximum number of variants to report for a coordinate
         region.
