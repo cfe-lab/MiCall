@@ -103,9 +103,17 @@ def main():
             project_version = session.post_json("/lab_miseq_project_versions",
                                                 {'pipeline_id': pipeline_id,
                                                  'project_id': project['id']})
-            for i, region_data in enumerate(project_data['regions']):
-                scoring_data = scoring_config['projects'][project_name]['regions'][i]
-                coordinate_region = regions[region_data['coordinate_region']]
+            for region_data in project_data['regions']:
+                region_name = region_data['coordinate_region']
+                if regions[region_name]["is_nucleotide"]:
+                    continue
+                for region in scoring_config['projects'][project_name]['regions']:
+                    if region['coordinate_region'] == region_name:
+                        scoring_data = region
+                        break
+                else:
+                    raise ValueError("Region not present in scoring config file")
+                coordinate_region = regions[region_name]
                 seed_region = regions[region_data['seed_region_names'][0]]
                 seed_group_id = seed_region['seed_group_id']
                 project_region = session.post_json(
