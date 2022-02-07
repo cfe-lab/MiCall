@@ -2,7 +2,7 @@ from io import StringIO
 from pathlib import Path
 from textwrap import dedent
 
-from micall.monitor.update_qai import build_conseqs
+from micall.monitor.update_qai import build_conseqs, build_review_decisions
 from micall.utils.sample_sheet_parser import sample_sheet_parser
 
 
@@ -157,3 +157,97 @@ Disablecontamcheck:2100A_HCV:FALSE;1337B_BOGUS:FALSE,
     assert conseqs == expected_conseqs
     assert caplog.messages == [
         'Failed to load project seeds for 2100A-HCV-1337B-BOGUS_S1 in 23-Jan-2014.']
+
+
+# noinspection DuplicatedCode
+def test_build_review_decisions():
+    coverage_file = StringIO(dedent("""\
+    sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
+    2140A-HIV_S17,HIVB,HIV1B-gag,HIV1-B-FR-K03455-seed,15,150,1,-3,4
+    """))
+    collated_counts_file = StringIO(dedent("""\
+    sample,type,count,filtered_count,seed_dist,other_dist,other_seed
+    2140A-HIV_S17,raw,20000
+    """))
+    cascade_file = StringIO(dedent("""\
+    sample,demultiplexed,v3loop,g2p,prelim_map,remap,aligned
+    2140A-HIV_S17,10000,0,0,10000,10000,10000
+    """))
+    sample_sheet_path = Path(__file__).parent / 'microtest' / 'SampleSheet.csv'
+    with sample_sheet_path.open() as sample_sheet_file:
+        sample_sheet = sample_sheet_parser(sample_sheet_file)
+
+    sequencings = [{'tag': 'N505-N702', 'target_project': 'HIVB', 'id': 'HIVid'}]
+
+    project_regions = [{'id': 'HIV project region id',
+                        'project_name': 'HIVB',
+                        'seed_region_names': 'HIV1-seed',
+                        'coordinate_region_name': 'HIV1B-gag'}]
+    regions = [{'id': 'HIV seed region id', 'name': 'HIV1-B-FR-K03455-seed'}]
+
+    expected_decisions = [{'sequencing_id': 'HIVid',
+                           'project_region_id': 'HIV project region id',
+                           'seed_region_id': 'HIV seed region id',
+                           'sample_name': '2140A-HIV_S17',
+                           'score': 4,
+                           'min_coverage': 150,
+                           'min_coverage_pos': 1,
+                           'raw_reads': 20000,
+                           'mapped_reads': None}]
+
+    decisions = build_review_decisions(coverage_file,
+                                       collated_counts_file,
+                                       cascade_file,
+                                       sample_sheet,
+                                       sequencings,
+                                       project_regions,
+                                       regions)
+
+    assert decisions == expected_decisions
+
+
+# noinspection DuplicatedCode
+def test_build_review_decisions_sequencing_different_project():
+    coverage_file = StringIO(dedent("""\
+    sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
+    2140A-HIV_S17,HIVB,HIV1B-gag,HIV1-B-FR-K03455-seed,15,150,1,-3,4
+    """))
+    collated_counts_file = StringIO(dedent("""\
+    sample,type,count,filtered_count,seed_dist,other_dist,other_seed
+    2140A-HIV_S17,raw,20000
+    """))
+    cascade_file = StringIO(dedent("""\
+    sample,demultiplexed,v3loop,g2p,prelim_map,remap,aligned
+    2140A-HIV_S17,10000,0,0,10000,10000,10000
+    """))
+    sample_sheet_path = Path(__file__).parent / 'microtest' / 'SampleSheet.csv'
+    with sample_sheet_path.open() as sample_sheet_file:
+        sample_sheet = sample_sheet_parser(sample_sheet_file)
+
+    sequencings = [{'tag': 'N505-N702', 'target_project': 'HIVGHA', 'id': 'HIVid'}]
+
+    project_regions = [{'id': 'HIV project region id',
+                        'project_name': 'HIVB',
+                        'seed_region_names': 'HIV1-seed',
+                        'coordinate_region_name': 'HIV1B-gag'}]
+    regions = [{'id': 'HIV seed region id', 'name': 'HIV1-B-FR-K03455-seed'}]
+
+    expected_decisions = [{'sequencing_id': 'HIVid',
+                           'project_region_id': 'HIV project region id',
+                           'seed_region_id': 'HIV seed region id',
+                           'sample_name': '2140A-HIV_S17',
+                           'score': -3,
+                           'min_coverage': 150,
+                           'min_coverage_pos': 1,
+                           'raw_reads': 20000,
+                           'mapped_reads': None}]
+
+    decisions = build_review_decisions(coverage_file,
+                                       collated_counts_file,
+                                       cascade_file,
+                                       sample_sheet,
+                                       sequencings,
+                                       project_regions,
+                                       regions)
+
+    assert decisions == expected_decisions
